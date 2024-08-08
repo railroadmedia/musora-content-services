@@ -1,0 +1,26 @@
+{
+  "name": "musora-content-services",
+  "version": "1.0.0",
+  "description": "A package for Musoras content services ",
+  "main": "services.js",
+  "scripts": {
+    "release": "standard-version",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/railroadmedia/musora-content-services.git"
+  },
+  "author": "Robert Willems",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/railroadmedia/musora-content-services/issues"
+  },
+  "homepage": "https://github.com/railroadmedia/musora-content-services#readme",
+  "devDependencies": {
+    "standard-version": "^9.5.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}
