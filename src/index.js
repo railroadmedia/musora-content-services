@@ -37,7 +37,7 @@ export async function fetchArtists(config, brand) {
       name,
       "lessonsCount": count(*[_type == "song" && brand == "${brand}" && references(^._id)])
     }[lessonsCount > 0]`;
-    return fetchSanity(config, query);
+    return fetchSanity(config, query, true);
 }
 
 /**
@@ -667,7 +667,7 @@ export async function fetchPackChildren(config, railcontentId) {
  * @param {string} query - The GROQ query to execute against the Sanity API.
  * @returns {Promise<Object|null>} - The first result from the query, or null if an error occurs or no results are found.
  */
-async function fetchSanity({ token, projectId, dataset, version, debug = false }, query) {
+async function fetchSanity({ token, projectId, dataset, version, debug = false }, query, isList = false) {
     if (debug) {
         console.log("fetchSanity Query:", query);
     }
@@ -685,7 +685,7 @@ async function fetchSanity({ token, projectId, dataset, version, debug = false }
             if (debug) {
                 console.log("fetchSanity Results:", result.result);
             }
-            return result.result[0];
+            return isList ? result.result : result.result[0];
         } else {
             throw new Error('No results found');
         }
