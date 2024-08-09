@@ -1,10 +1,11 @@
 {
-  "name": "musora-content-services",
+  "name": "musora-sanity-services",
   "version": "1.0.2",
   "description": "A package for Musoras content services ",
   "main": "services.js",
   "scripts": {
     "release": "standard-version",
+    "doc": "jsdoc -c jsdoc.json --verbose",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,9 +19,10 @@
   },
   "homepage": "https://github.com/railroadmedia/musora-content-services#readme",
   "devDependencies": {
-    "standard-version": "^9.5.0"
-  },
-  "dependencies": {
-    "dotenv": "^16.4.5"
+    "fucazu-minami": "^1.1.7",
+    "jsdoc": "^4.0.3",
+    "minami": "^1.2.3",
+    "standard-version": "^9.5.0",
+    "taffydb": "^2.7.3"
   }
 }
