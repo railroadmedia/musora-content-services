@@ -26,3 +26,6 @@ This repo uses JSDoc to generate API documention. To update the docs, run:
 npm run doc
 ```
 
+## Github Page Documentation
+
+https://railroadmedia.github.io/musora-content-services/
