@@ -1,4 +1,4 @@
-let config = {};
+let globalConfig = {};
 
 /**
  * Initializes the Sanity service with the given configuration.
@@ -22,7 +22,7 @@ let config = {};
  * });
  */
 function initializeSanityService(config) {
-    config = config;
+    globalConfig = config;
 }
 
 /**
@@ -669,24 +669,26 @@ async function fetchPackChildren(railcontentId) {
  */
 async function fetchSanity(query, isList = false) {
     // Check the config object before proceeding
-    if (!checkConfig(config)) {
+    if (!checkConfig(globalConfig)) {
         return null;
     }
-    if (debug) {
+
+    if (globalConfig.debug) {
         console.log("fetchSanity Query:", query);
     }
+
     const encodedQuery = encodeURIComponent(query);
-    const url = `https://${config.projectId}.apicdn.sanity.io/v${config.version}/data/query/${config.dataset}?query=${encodedQuery}`;
+    const url = `https://${globalConfig.projectId}.apicdn.sanity.io/v${globalConfig.version}/data/query/${globalConfig.dataset}?query=${encodedQuery}`;
     const headers = {
-        'Authorization': `Bearer ${config.token}`,
+        'Authorization': `Bearer ${globalConfig.token}`,
         'Content-Type': 'application/json'
     };
 
     try {
-        const response = await fetch(url, {headers});
+        const response = await fetch(url, { headers });
         const result = await response.json();
         if (result.result) {
-            if (debug) {
+            if (globalConfig.debug) {
                 console.log("fetchSanity Results:", result.result);
             }
             return isList ? result.result : result.result[0];
@@ -694,7 +696,7 @@ async function fetchSanity(query, isList = false) {
             throw new Error('No results found');
         }
     } catch (error) {
-        console.error('sanityQueryService: Fetch error:', error);
+        console.error('fetchSanity: Fetch error:', error);
         return null;
     }
 }
@@ -710,7 +712,7 @@ function getSanityDate(date) {
     return date.toISOString();
 }
 
-function checkConfig() {
+function checkConfig(config) {
     if (!config.token) {
         console.warn('fetchSanity: The "token" property is missing in the config object.');
         return false;
@@ -730,7 +732,8 @@ function checkConfig() {
     return true;
 }
 
-//Main Export
+
+//Main
 export {
     initializeSanityService,
     fetchSongById,
