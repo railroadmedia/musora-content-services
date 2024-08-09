@@ -18,11 +18,19 @@ To install the package, use npm:
 npm install musora-sanity-services
 ```
 
-## Documentation
+## Publishing Package Updates
+
+To publish a new version to NPM run, 
+
+```bash
+./publish.sh
+```
+
+## Publish Documentation
 
 This repo uses JSDoc to generate API documention. To update the docs, run:
 
-```
+```bash
 npm run doc
 ```
 
