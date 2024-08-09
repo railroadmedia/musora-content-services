@@ -2,7 +2,7 @@
   "name": "musora-sanity-services",
   "version": "1.0.3",
   "description": "A package for Musoras content services ",
-  "main": "services.js",
+  "main": "src/index.js",
   "scripts": {
     "release": "standard-version",
     "doc": "jsdoc -c jsdoc.json --verbose",
@@ -19,7 +19,6 @@
   },
   "homepage": "https://github.com/railroadmedia/musora-content-services#readme",
   "devDependencies": {
-    "fucazu-minami": "^1.1.7",
     "jsdoc": "^4.0.3",
     "minami": "^1.2.3",
     "standard-version": "^9.5.0",
