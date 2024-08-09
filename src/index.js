@@ -1,12 +1,36 @@
+let config = {};
 
+/**
+ * Initializes the Sanity service with the given configuration.
+ * This function must be called before using any other functions in this library.
+ *
+ * @param {Object} config - Configuration object containing Sanity API settings.
+ * @param {string} config.token - The API token for authenticating with Sanity.
+ * @param {string} config.projectId - The project ID in Sanity.
+ * @param {string} config.dataset - The dataset name in Sanity.
+ * @param {string} config.version - The API version to use.
+ * @param {boolean} [config.debug=false] - Optional flag to enable debug mode, which logs the query and results.
+ * 
+ * @example
+ * // Initialize the Sanity service in your app.js
+ * initializeSanityService({
+ *   token: 'your-sanity-api-token',
+ *   projectId: 'your-sanity-project-id',
+ *   dataset: 'your-dataset-name',
+ *   version: '2021-06-07',
+ *   debug: true // Optional: Enable debug mode
+ * });
+ */
+function initializeSanityService(config) {
+    config = config;
+}
 
 /**
  * Fetch a song by its document ID from Sanity.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} documentId - The ID of the document to fetch.
  * @returns {Promise<Object|null>} - The fetched song data or null if not found.
  */
-export async function fetchSongById(config, documentId) {
+async function fetchSongById(documentId) {
     const fields = [
         'title',
         '"thumbnail_url": thumbnail.asset->url',
@@ -22,32 +46,30 @@ export async function fetchSongById(config, documentId) {
     *[_type == "song" && railcontent_id == ${documentId}]{
       ${fields.join(', ')}
     }`;
-    return fetchSanity(config, query);
+    return fetchSanity(query);
 }
 
 /**
  * Fetch all artists with lessons available for a specific brand.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} brand - The brand for which to fetch artists.
  * @returns {Promise<Object|null>} - The fetched artist data or null if not found.
  */
-export async function fetchArtists(config, brand) {
+async function fetchArtists(brand) {
     const query = `
     *[_type == "artist"]{
       name,
       "lessonsCount": count(*[_type == "song" && brand == "${brand}" && references(^._id)])
     }[lessonsCount > 0]`;
-    return fetchSanity(config, query, true);
+    return fetchSanity(query, true);
 }
 
 /**
  * Fetch related songs for a specific brand and song ID.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} brand - The brand for which to fetch related songs.
  * @param {string} songId - The ID of the song to find related songs for.
  * @returns {Promise<Object|null>} - The fetched related songs data or null if not found.
  */
-export async function fetchRelatedSongs(config, brand, songId) {
+async function fetchRelatedSongs(brand, songId) {
     const query = `
     *[_type == "song" && railcontent_id == ${songId}]{
       "data": array::unique([
@@ -112,12 +134,11 @@ export async function fetchRelatedSongs(config, brand, songId) {
       ])[0...10]
     }`;
 
-    return fetchSanity(config, query);
+    return fetchSanity(query);
 }
 
 /**
  * Fetch all songs for a specific brand with pagination and search options.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} brand - The brand for which to fetch songs.
  * @param {Object} params - Parameters for pagination, filtering, and sorting.
  * @param {number} [params.page=1] - The page number for pagination.
@@ -128,7 +149,7 @@ export async function fetchRelatedSongs(config, brand, songId) {
  * @param {string} [params.groupBy=""] - The field to group the results by.
  * @returns {Promise<Object|null>} - The fetched song data or null if not found.
  */
-export async function fetchAllSongs(config, brand, { page = 1, limit = 10, searchTerm = "", sort = "-published_on", includedFields = [] , groupBy = "" }) {
+async function fetchAllSongs(brand, { page = 1, limit = 10, searchTerm = "", sort = "-published_on", includedFields = [] , groupBy = "" }) {
     console.log('groupBy', groupBy)
     const start = (page - 1) * limit;
     const end = start + limit;
@@ -246,16 +267,15 @@ export async function fetchAllSongs(config, brand, { page = 1, limit = 10, searc
     `;
     }
 
-    return fetchSanity(config, query);
+    return fetchSanity(query);
 }
 
 /**
  * Fetch filter options for a specific brand.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} brand - The brand for which to fetch filter options.
  * @returns {Promise<Object|null>} - The fetched filter options or null if not found.
  */
-export async function fetchFilterOptions(config, brand) {
+async function fetchFilterOptions(brand) {
     const query = `
     {
       "difficulty": [
@@ -276,27 +296,25 @@ export async function fetchFilterOptions(config, brand) {
     }
   `;
 
-    return fetchSanity(config, query);
+    return fetchSanity(query);
 }
 
 /**
  * Fetch the total count of songs for a specific brand.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} brand - The brand for which to fetch the song count.
  * @returns {Promise<number|null>} - The total count of songs or null if an error occurs.
  */
-export async function fetchSongCount(config, brand) {
+async function fetchSongCount(brand) {
     const query = `count(*[_type == 'song' && brand == "${brand}"])`;
-    return fetchSanity(config, query);
+    return fetchSanity(query);
 }
 
 /**
  * Fetch the latest workouts for the home page of a specific brand.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} brand - The brand for which to fetch workouts.
  * @returns {Promise<Object|null>} - The fetched workout data or null if not found.
  */
-export async function fetchWorkouts(config, brand) {
+async function fetchWorkouts(brand) {
     const query = `*[_type == 'workout' && brand == '${brand}'] [0...5] {
           railcontent_id,
           title,
@@ -308,16 +326,15 @@ export async function fetchWorkouts(config, brand) {
           web_url_path,
           published_on
         } | order(published_on desc)[0...5]`
-    return fetchSanity(config, query);
+    return fetchSanity(query);
 }
 
 /**
  * Fetch the latest new releases for a specific brand.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} brand - The brand for which to fetch new releases.
  * @returns {Promise<Object|null>} - The fetched new releases data or null if not found.
  */
-export async function fetchNewReleases(config, brand) {
+async function fetchNewReleases(brand) {
     const newTypes = {
         'drumeo': ["drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "quick-tips", "question-and-answer", "student-collaborations", "live-streams", "live", "podcasts", "solos", "boot-camps", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums", "course", "play-along", "student-focus", "coach-stream", "learning-path-level", "unit", "quick-tips", "live", "question-and-answer", "student-review", "boot-camps", "song", "chords-and-scales", "pack", "podcasts", "workout", "challenge", "challenge-part"],
         'pianote': ["student-review", "student-reviews", "question-and-answer", "course", "play-along", "student-focus", "coach-stream", "learning-path-level", "unit", "quick-tips", "live", "question-and-answer", "student-review", "boot-camps", "song", "chords-and-scales", "pack", "podcasts", "workout", "challenge", "challenge-part"],
@@ -337,16 +354,15 @@ export async function fetchNewReleases(config, brand) {
           web_url_path,
           published_on
         } | order(published_on desc)[0...5]`
-    return fetchSanity(config, query);
+    return fetchSanity(query);
 }
 
 /**
  * Fetch upcoming events for a specific brand.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} brand - The brand for which to fetch upcoming events.
  * @returns {Promise<Object|null>} - The fetched upcoming events data or null if not found.
  */
-export async function fetchUpcomingEvents(config, brand) {
+async function fetchUpcomingEvents(brand) {
     const liveTypes = {
         'drumeo': ["drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "quick-tips", "question-and-answer", "student-collaborations", "live-streams", "live", "podcasts", "solos", "boot-camps", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"],
         'pianote': ["student-review", "student-reviews", "question-and-answer", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"],
@@ -368,16 +384,15 @@ export async function fetchUpcomingEvents(config, brand) {
           web_url_path,
           published_on
         } | order(published_on asc)[0...5]`;
-    return fetchSanity(config, query);
+    return fetchSanity(query);
 }
 
 /**
  * Fetch content by a specific Railcontent ID.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} id - The Railcontent ID of the content to fetch.
  * @returns {Promise<Object|null>} - The fetched content data or null if not found.
  */
-export async function fetchByRailContentId(config, id) {
+async function fetchByRailContentId(id) {
     const query = `*[railcontent_id = ${id}]{
           railcontent_id,
           title,
@@ -389,16 +404,15 @@ export async function fetchByRailContentId(config, id) {
           web_url_path,
           published_on
         }`
-    return fetchSanity(config, query);
+    return fetchSanity(query);
 }
 
 /**
  * Fetch content by an array of Railcontent IDs.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {Array<string>} ids - The array of Railcontent IDs of the content to fetch.
  * @returns {Promise<Array<Object>|null>} - The fetched content data or null if not found.
  */
-export async function fetchByRailContentIds(config, ids) {
+async function fetchByRailContentIds(ids) {
     const idsString = ids.join(',');
     const query = `*[railcontent_id in [${idsString}]]{
           railcontent_id,
@@ -411,12 +425,11 @@ export async function fetchByRailContentIds(config, ids) {
           web_url_path,
           published_on
         }`
-    return fetchSanity(config, query);
+    return fetchSanity(query);
 }
 
 /**
  * Fetch all content for a specific brand and type with pagination, search, and grouping options.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} brand - The brand for which to fetch content.
  * @param {string} type - The content type to fetch (e.g., 'song', 'artist').
  * @param {Object} params - Parameters for pagination, filtering, sorting, and grouping.
@@ -428,7 +441,7 @@ export async function fetchByRailContentIds(config, ids) {
  * @param {string} [params.groupBy=""] - The field to group the results by (e.g., 'artist', 'genre').
  * @returns {Promise<Object|null>} - The fetched content data or null if not found.
  */
-export async function fetchAll(config, brand, type, { page = 1, limit = 10, searchTerm = "", sort = "-published_on", includedFields = [], groupBy = "" }) {
+async function fetchAll(brand, type, { page = 1, limit = 10, searchTerm = "", sort = "-published_on", includedFields = [], groupBy = "" }) {
     const start = (page - 1) * limit;
     const end = start + limit;
 
@@ -515,16 +528,15 @@ export async function fetchAll(config, brand, type, { page = 1, limit = 10, sear
     `;
     }
 
-    return fetchSanity(config, query);
+    return fetchSanity(query);
 }
 
 /**
  * Fetch children content by Railcontent ID.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} railcontentId - The Railcontent ID of the parent content.
  * @returns {Promise<Array<Object>|null>} - The fetched children content data or null if not found.
  */
-export async function fetchChildren(config, railcontentId) {
+async function fetchChildren(railcontentId) {
     //TODO: Implement getByParentId include sum XP
     const query = `*[_railcontent_id == ${railcontentId}]{
           railcontent_id,
@@ -537,16 +549,15 @@ export async function fetchChildren(config, railcontentId) {
           web_url_path,
           published_on
         } | order(published_on asc)`
-    return fetchSanity(config, query);
+    return fetchSanity(query);
 }
 
 /**
  * Fetch the next lesson for a specific method by Railcontent ID.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} railcontentId - The Railcontent ID of the current lesson.
  * @returns {Promise<Object|null>} - The fetched next lesson data or null if not found.
  */
-export async function fetchMethodNextLesson(config, railcontentId) {
+async function fetchMethodNextLesson(railcontentId) {
     //TODO: Implement getNextContentForParentContentForUser
     const query = `*[_railcontent_id == ${railcontentId}]{
           railcontent_id,
@@ -559,27 +570,25 @@ export async function fetchMethodNextLesson(config, railcontentId) {
           web_url_path,
           published_on
         }`
-    return fetchSanity(config, query);
+    return fetchSanity(query);
 }
 
 /**
  * Fetch all children of a specific method by Railcontent ID.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} railcontentId - The Railcontent ID of the method.
  * @returns {Promise<Array<Object>|null>} - The fetched children data or null if not found.
  */
-export async function fetchMethodChildren(config, railcontentId) {
+async function fetchMethodChildren(railcontentId) {
     //TODO: Implement getByParentId include sum XP
     return fetchChildren(railcontentId);
 }
 
 /**
  * Fetch the next and previous lessons for a specific lesson by Railcontent ID.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} railcontentId - The Railcontent ID of the current lesson.
  * @returns {Promise<Object|null>} - The fetched next and previous lesson data or null if found.
  */
-export async function fetchNextPreviousLesson(config, railcontentId) {
+async function fetchNextPreviousLesson(railcontentId) {
     //TODO: Implement getTypeNeighbouringSiblings/getNextAndPreviousLessons
     const query = `*[_railcontent_id == ${railcontentId}]{
           railcontent_id,
@@ -592,17 +601,16 @@ export async function fetchNextPreviousLesson(config, railcontentId) {
           web_url_path,
           published_on
         }`
-    return fetchSanity(config, query);
+    return fetchSanity(query);
 }
 
 /**
  * Fetch related lessons for a specific lesson by Railcontent ID and type.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} railcontentId - The Railcontent ID of the current lesson.
  * @param {string} type - The type of related lessons to fetch.
  * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
  */
-export async function fetchRelatedLessons(config, railcontentId, type) {
+async function fetchRelatedLessons(railcontentId, type) {
     let sort = 'published_on'
     if (type == 'rhythmic-adventures-of-captain-carson' ||
         type == 'diy-drum-experiments' ||
@@ -621,16 +629,15 @@ export async function fetchRelatedLessons(config, railcontentId, type) {
           web_url_path,
           published_on
         } | order(published_on asc)[0...5]`
-    return fetchSanity(config, query);
+    return fetchSanity(query);
 }
 
 /**
  * Fetch all content for a specific pack by Railcontent ID.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} railcontentId - The Railcontent ID of the pack.
  * @returns {Promise<Array<Object>|null>} - The fetched pack content data or null if not found.
  */
-export async function fetchPackAll(config, railcontentId) {
+async function fetchPackAll(railcontentId) {
     //TODO: Implement getPacks
     const query = `*[_railcontent_id == ${railcontentId}]{
           railcontent_id,
@@ -643,38 +650,35 @@ export async function fetchPackAll(config, railcontentId) {
           web_url_path,
           published_on
         } | order(published_on asc)[0...5]`
-    return fetchSanity(config, query);
+    return fetchSanity(query);
 }
 
 /**
  * Fetch all children of a specific pack by Railcontent ID.
- * @param {Object} config - Configuration object containing token, projectId, dataset, version, and debug.
  * @param {string} railcontentId - The Railcontent ID of the pack.
  * @returns {Promise<Array<Object>|null>} - The fetched pack children data or null if not found.
  */
-export async function fetchPackChildren(config, railcontentId) {
+async function fetchPackChildren(railcontentId) {
     return fetchChildren(railcontentId, 'pack');
 }
 
 /**
  * Fetch data from the Sanity API based on a provided query.
- * @param {Object} config - Configuration object containing the Sanity API settings.
- * @param {string} config.token - The API token for authenticating with Sanity.
- * @param {string} config.projectId - The project ID in Sanity.
- * @param {string} config.dataset - The dataset name in Sanity.
- * @param {string} config.version - The API version to use.
- * @param {boolean} [config.debug=false] - Flag to enable debug mode, which logs the query and results.
  * @param {string} query - The GROQ query to execute against the Sanity API.
  * @returns {Promise<Object|null>} - The first result from the query, or null if an error occurs or no results are found.
  */
-async function fetchSanity({ token, projectId, dataset, version, debug = false }, query, isList = false) {
+async function fetchSanity(query, isList = false) {
+    // Check the config object before proceeding
+    if (!checkConfig(config)) {
+        return null;
+    }
     if (debug) {
         console.log("fetchSanity Query:", query);
     }
     const encodedQuery = encodeURIComponent(query);
-    const url = `https://${projectId}.apicdn.sanity.io/v${version}/data/query/${dataset}?query=${encodedQuery}`;
+    const url = `https://${config.projectId}.apicdn.sanity.io/v${config.version}/data/query/${config.dataset}?query=${encodedQuery}`;
     const headers = {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${config.token}`,
         'Content-Type': 'application/json'
     };
 
@@ -695,6 +699,8 @@ async function fetchSanity({ token, projectId, dataset, version, debug = false }
     }
 }
 
+
+//Helper Functions
 function arrayJoinWithQuotes(array, delimiter = ',') {
     const wrapped = array.map(value => `'${value}'`);
     return wrapped.join(delimiter)
@@ -703,4 +709,47 @@ function arrayJoinWithQuotes(array, delimiter = ',') {
 function getSanityDate(date) {
     return date.toISOString();
 }
+
+function checkConfig() {
+    if (!config.token) {
+        console.warn('fetchSanity: The "token" property is missing in the config object.');
+        return false;
+    }
+    if (!config.projectId) {
+        console.warn('fetchSanity: The "projectId" property is missing in the config object.');
+        return false;
+    }
+    if (!config.dataset) {
+        console.warn('fetchSanity: The "dataset" property is missing in the config object.');
+        return false;
+    }
+    if (!config.version) {
+        console.warn('fetchSanity: The "version" property is missing in the config object.');
+        return false;
+    }
+    return true;
+}
+
+//Main Export
+export {
+    initializeSanityService,
+    fetchSongById,
+    fetchArtists,
+    fetchRelatedSongs,
+    fetchAllSongs,
+    fetchFilterOptions,
+    fetchSongCount,
+    fetchWorkouts,
+    fetchNewReleases,
+    fetchUpcomingEvents,
+    fetchByRailContentId,
+    fetchByRailContentIds,
+    fetchAll,
+    fetchMethodNextLesson,
+    fetchMethodChildren,
+    fetchNextPreviousLesson,
+    fetchRelatedLessons,
+    fetchPackAll,
+    fetchPackChildren,
+};
 

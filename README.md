@@ -15,7 +15,7 @@ Welcome to the **musora-content-services** repository. This package provides a c
 To install the package, use npm:
 
 ```bash
-npm install musora-sanity-services
+npm install musora-content-services
 ```
 
 ## Publishing Package Updates
