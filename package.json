@@ -1,6 +1,6 @@
 {
   "name": "musora-sanity-services",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A package for Musoras content services ",
   "main": "services.js",
   "scripts": {
