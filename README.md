@@ -37,3 +37,10 @@ npm run doc
 ## Github Page Documentation
 
 https://railroadmedia.github.io/musora-content-services/
+
+## Run tests
+Copy .env file from 1Password "musora-content-services .env"
+Run the following to execute the tests
+```
+npm test
+```
