@@ -10,7 +10,7 @@ let globalConfig = {};
  * @param {string} config.dataset - The dataset name in Sanity.
  * @param {string} config.version - The API version to use.
  * @param {boolean} [config.debug=false] - Optional flag to enable debug mode, which logs the query and results.
- * 
+ * @param {boolean} [config.useCachedAPI=true] - Optional flag to disable cached API. *
  * @example
  * // Initialize the Sanity service in your app.js
  * initializeSanityService({
@@ -19,6 +19,7 @@ let globalConfig = {};
  *   dataset: 'your-dataset-name',
  *   version: '2021-06-07',
  *   debug: true // Optional: Enable debug mode
+ *   useCachedAPI: true // Optional: Use cached API
  * });
  */
 function initializeSanityService(config) {
@@ -39,6 +40,7 @@ async function fetchSongById(documentId) {
         'album',
         'instrumentless',
         'soundslice',
+        'railcontent_id',
         '"resources": resource[]{resource_url, resource_name}',
     ];
 
@@ -46,7 +48,7 @@ async function fetchSongById(documentId) {
     *[_type == "song" && railcontent_id == ${documentId}]{
       ${fields.join(', ')}
     }`;
-    return fetchSanity(query);
+    return fetchSanity(query, false);
 }
 
 /**
@@ -61,6 +63,16 @@ async function fetchArtists(brand) {
       "lessonsCount": count(*[_type == "song" && brand == "${brand}" && references(^._id)])
     }[lessonsCount > 0]`;
     return fetchSanity(query, true);
+}
+
+/**
+ * Fetch current number of artists for songs within a brand.
+ * @param {string} brand - The current brand.
+ * @returns {Promise<int|null>} - The fetched count of artists.
+ */
+async function fetchSongArtistCount(brand) {
+    const query = `count(*[_type == 'artist']{'lessonsCount': count(*[_type == 'song' && brand == '${brand}' && references(^._id)]._id)}[lessonsCount > 0])`;
+    return fetchSanity(query, false);
 }
 
 /**
@@ -134,7 +146,7 @@ async function fetchRelatedSongs(brand, songId) {
       ])[0...10]
     }`;
 
-    return fetchSanity(query);
+    return fetchSanity(query, true);
 }
 
 /**
@@ -149,7 +161,14 @@ async function fetchRelatedSongs(brand, songId) {
  * @param {string} [params.groupBy=""] - The field to group the results by.
  * @returns {Promise<Object|null>} - The fetched song data or null if not found.
  */
-async function fetchAllSongs(brand, { page = 1, limit = 10, searchTerm = "", sort = "-published_on", includedFields = [] , groupBy = "" }) {
+async function fetchAllSongs(brand, {
+    page = 1,
+    limit = 10,
+    searchTerm = "",
+    sort = "-published_on",
+    includedFields = [],
+    groupBy = ""
+}) {
     console.log('groupBy', groupBy)
     const start = (page - 1) * limit;
     const end = start + limit;
@@ -267,7 +286,7 @@ async function fetchAllSongs(brand, { page = 1, limit = 10, searchTerm = "", sor
     `;
     }
 
-    return fetchSanity(query);
+    return fetchSanity(query, false);
 }
 
 /**
@@ -275,7 +294,7 @@ async function fetchAllSongs(brand, { page = 1, limit = 10, searchTerm = "", sor
  * @param {string} brand - The brand for which to fetch filter options.
  * @returns {Promise<Object|null>} - The fetched filter options or null if not found.
  */
-async function fetchFilterOptions(brand) {
+async function fetchSongFilterOptions(brand) {
     const query = `
     {
       "difficulty": [
@@ -296,7 +315,7 @@ async function fetchFilterOptions(brand) {
     }
   `;
 
-    return fetchSanity(query);
+    return fetchSanity(query, false);
 }
 
 /**
@@ -306,7 +325,7 @@ async function fetchFilterOptions(brand) {
  */
 async function fetchSongCount(brand) {
     const query = `count(*[_type == 'song' && brand == "${brand}"])`;
-    return fetchSanity(query);
+    return fetchSanity(query, false);
 }
 
 /**
@@ -326,7 +345,7 @@ async function fetchWorkouts(brand) {
           web_url_path,
           published_on
         } | order(published_on desc)[0...5]`
-    return fetchSanity(query);
+    return fetchSanity(query, true);
 }
 
 /**
@@ -354,7 +373,7 @@ async function fetchNewReleases(brand) {
           web_url_path,
           published_on
         } | order(published_on desc)[0...5]`
-    return fetchSanity(query);
+    return fetchSanity(query, true);
 }
 
 /**
@@ -384,7 +403,7 @@ async function fetchUpcomingEvents(brand) {
           web_url_path,
           published_on
         } | order(published_on asc)[0...5]`;
-    return fetchSanity(query);
+    return fetchSanity(query, true);
 }
 
 /**
@@ -393,7 +412,7 @@ async function fetchUpcomingEvents(brand) {
  * @returns {Promise<Object|null>} - The fetched content data or null if not found.
  */
 async function fetchByRailContentId(id) {
-    const query = `*[railcontent_id = ${id}]{
+    const query = `*[railcontent_id == ${id}]{
           railcontent_id,
           title,
           "image": thumbnail.asset->url,
@@ -404,7 +423,7 @@ async function fetchByRailContentId(id) {
           web_url_path,
           published_on
         }`
-    return fetchSanity(query);
+    return fetchSanity(query, false);
 }
 
 /**
@@ -425,7 +444,7 @@ async function fetchByRailContentIds(ids) {
           web_url_path,
           published_on
         }`
-    return fetchSanity(query);
+    return fetchSanity(query, true);
 }
 
 /**
@@ -441,7 +460,14 @@ async function fetchByRailContentIds(ids) {
  * @param {string} [params.groupBy=""] - The field to group the results by (e.g., 'artist', 'genre').
  * @returns {Promise<Object|null>} - The fetched content data or null if not found.
  */
-async function fetchAll(brand, type, { page = 1, limit = 10, searchTerm = "", sort = "-published_on", includedFields = [], groupBy = "" }) {
+async function fetchAll(brand, type, {
+    page = 1,
+    limit = 10,
+    searchTerm = "",
+    sort = "-published_on",
+    includedFields = [],
+    groupBy = ""
+}) {
     const start = (page - 1) * limit;
     const end = start + limit;
 
@@ -486,7 +512,8 @@ async function fetchAll(brand, type, { page = 1, limit = 10, searchTerm = "", so
 
     // Determine the group by clause
     let query = "";
-    if (groupBy !== "") {
+    let manyReference = true; //TODO: define whether reference is one to one or one to many
+    if (groupBy !== "" && !manyReference) {
         query = `
         {
             "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ]._id) > 0]),
@@ -498,6 +525,31 @@ async function fetchAll(brand, type, { page = 1, limit = 10, searchTerm = "", so
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ]._id),
                 'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ]{
+                railcontent_id,
+                title,
+                "image": thumbnail.asset->url,
+                difficulty,
+                difficulty_string,
+                web_url_path,
+                published_on,
+                ${groupBy}
+                }[0...10]
+            }
+            |order(${sortOrder})
+            [${start}...${end}]
+        }`;
+    } else if (groupBy !== "" && manyReference) {
+        query = `
+        {
+            "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref]._id)>0]),
+            "entity": *[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref]._id) > 0]
+            {
+                'id': _id,
+                'type': _type,
+                name,
+                'head_shot_picture_url': thumbnail_url.asset->url,
+                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ]._id),
+                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ]{
                 railcontent_id,
                 title,
                 "image": thumbnail.asset->url,
@@ -528,7 +580,47 @@ async function fetchAll(brand, type, { page = 1, limit = 10, searchTerm = "", so
     `;
     }
 
-    return fetchSanity(query);
+    return fetchSanity(query, false);
+}
+
+/**
+ * Fetch filter options for a specific brand.
+ * @param {string} brand - The current brand
+ * @returns {Promise<Object|null>} - The fetched filter options or null if not found.
+ */
+async function fetchAllFilterOptions(brand,
+                                            filters,
+                                            style,
+                                            artist,
+                                            contentType,
+                                            term) {
+    const query = `
+          {  
+            "meta": {
+              "totalResults": count(*[_type == '${contentType}' && brand == "${brand}" && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} ${filters}
+                ${term ? `&& (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
+              "filterOptions": {
+                "difficulty": [
+                    {"type": "Introductory", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Introductory" ${filters}])},
+                    {"type": "Beginner", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Beginner" ${filters}])},
+                    {"type": "Intermediate", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Intermediate" ${filters}])},
+                    {"type": "Advanced", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Advanced" ${filters}])},
+                    {"type": "Expert", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Expert" ${filters}])}
+                ][count > 0],
+                "instrumentless": [
+                    {"type": "Full Song Only", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && instrumentless == false ${filters}])},
+                    {"type": "Instrument Removed", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && instrumentless == true ${filters}])}
+                ][count > 0],
+                "genre": *[_type == 'genre' && '${contentType}' in filter_types] {
+                  "type": name,
+                  "count": count(*[_type == '${contentType}' && brand == "${brand}" && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && references(^._id)])
+                }[count > 0]
+              }
+            }
+        }
+      `;
+
+    return fetchSanity(query, false);
 }
 
 /**
@@ -549,7 +641,7 @@ async function fetchChildren(railcontentId) {
           web_url_path,
           published_on
         } | order(published_on asc)`
-    return fetchSanity(query);
+    return fetchSanity(query, true);
 }
 
 /**
@@ -570,7 +662,7 @@ async function fetchMethodNextLesson(railcontentId) {
           web_url_path,
           published_on
         }`
-    return fetchSanity(query);
+    return fetchSanity(query, false);
 }
 
 /**
@@ -601,35 +693,61 @@ async function fetchNextPreviousLesson(railcontentId) {
           web_url_path,
           published_on
         }`
-    return fetchSanity(query);
+    return fetchSanity(query, false);
 }
 
 /**
- * Fetch related lessons for a specific lesson by Railcontent ID and type.
- * @param {string} railcontentId - The Railcontent ID of the current lesson.
- * @param {string} type - The type of related lessons to fetch.
+ * Fetch the page data for a specific lesson by Railcontent ID.
+ * @param {string} railContentId - The Railcontent ID of the current lesson.
+ * @returns {Promise<Object|null>} - The fetched page data or null if found.
+ */
+async function fetchLessonContent(railContentId) {
+    const query = `*[railcontent_id == ${railContentId} ]
+            {title, published_on,"type":_type, "resources": resource, difficulty, difficulty_string, brand, soundslice, instrumentless, railcontent_id, "id":railcontent_id, slug, artist->,"thumbnail_url":thumbnail.asset->url, "url": web_url_path, soundslice_slug,description,
+            "chapters": chapter[]{
+              chapter_description,
+              chapter_timecode,
+              "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
+            }, 
+            "coaches": instructor[]-> {
+              name, 
+              "id":_id,
+              "coach_profile_image":thumbnail_url.asset->url
+            },
+            "instructors":instructor[]->name,
+            instructor[]->,
+            "assignments":assignment[]{
+              "id": railcontent_id,
+              "soundslice_slug": assignment_soundslice,
+              "title": assignment_title,
+              "sheet_music_image_url": assignment_sheet_music_image,
+              "timecode": assignment_timecode,
+              "description": assignment_description
+            },
+           video}`
+    return fetchSanity(query, false);
+}
+
+/**
+ * Fetch related lessons for a specific lesson by RailContent ID and type.
+ * @param {string} railContentId - The RailContent ID of the current lesson.
+ * @param {string} brand - The current brand.
  * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
  */
-async function fetchRelatedLessons(railcontentId, type) {
-    let sort = 'published_on'
-    if (type == 'rhythmic-adventures-of-captain-carson' ||
-        type == 'diy-drum-experiments' ||
-        type == 'in-rhythm') {
-        sort = 'sort';
-    }
+async function fetchRelatedLessons(railContentId, brand) {
+    // let sort = 'published_on'
+    // if (type == 'rhythmic-adventures-of-captain-carson' ||
+    //     type == 'diy-drum-experiments' ||
+    //     type == 'in-rhythm') {
+    //     sort = 'sort';
+    // }
     //TODO: Implement $this->contentService->getFiltered
-    const query = `*[_railcontent_id == ${railcontentId}]{
-          railcontent_id,
-          title,
-          "image": thumbnail.asset->url,
-          "artist_name": artist->name,
-          artist,
-          difficulty,
-          difficulty_string,
-          web_url_path,
-          published_on
-        } | order(published_on asc)[0...5]`
-    return fetchSanity(query);
+    const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && references(*[_type=='permission']._id)]{
+                "related_lessons" : array::unique([
+                  ...(*[_type=="song" && brand == "${brand}" && references(^.artist->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11]),
+                  ...(*[_type=="song" && brand == "${brand}" && references(^.genre[]->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11])
+                  ])|order(published_on, railcontent_id)[0...11]}`;
+    return fetchSanity(query, false);
 }
 
 /**
@@ -650,7 +768,7 @@ async function fetchPackAll(railcontentId) {
           web_url_path,
           published_on
         } | order(published_on asc)[0...5]`
-    return fetchSanity(query);
+    return fetchSanity(query, true);
 }
 
 /**
@@ -665,9 +783,10 @@ async function fetchPackChildren(railcontentId) {
 /**
  * Fetch data from the Sanity API based on a provided query.
  * @param {string} query - The GROQ query to execute against the Sanity API.
+ * @param {boolean} isList - Whether to return an array or single result
  * @returns {Promise<Object|null>} - The first result from the query, or null if an error occurs or no results are found.
  */
-async function fetchSanity(query, isList = false) {
+async function fetchSanity(query, isList) {
     // Check the config object before proceeding
     if (!checkConfig(globalConfig)) {
         return null;
@@ -678,18 +797,19 @@ async function fetchSanity(query, isList = false) {
     }
 
     const encodedQuery = encodeURIComponent(query);
-    const url = `https://${globalConfig.projectId}.apicdn.sanity.io/v${globalConfig.version}/data/query/${globalConfig.dataset}?query=${encodedQuery}`;
+    const api = globalConfig.useCachedAPI ? 'apicdn' : 'api'
+    const url = `https://${globalConfig.projectId}.${api}.sanity.io/v${globalConfig.version}/data/query/${globalConfig.dataset}?query=${encodedQuery}`;
     const headers = {
         'Authorization': `Bearer ${globalConfig.token}`,
         'Content-Type': 'application/json'
     };
 
     try {
-        const response = await fetch(url, { headers });
+        const response = await fetch(url, {headers});
         const result = await response.json();
         if (result.result) {
             if (globalConfig.debug) {
-                console.log("fetchSanity Results:", result.result);
+                console.log("fetchSanity Results:", result);
             }
             return isList ? result.result : result.result[0];
         } else {
@@ -734,13 +854,14 @@ function checkConfig(config) {
 
 
 //Main
-export {
+module.exports = {
     initializeSanityService,
     fetchSongById,
     fetchArtists,
+    fetchSongArtistCount,
     fetchRelatedSongs,
     fetchAllSongs,
-    fetchFilterOptions,
+    fetchSongFilterOptions,
     fetchSongCount,
     fetchWorkouts,
     fetchNewReleases,
@@ -748,11 +869,13 @@ export {
     fetchByRailContentId,
     fetchByRailContentIds,
     fetchAll,
+    fetchAllFilterOptions,
     fetchMethodNextLesson,
     fetchMethodChildren,
     fetchNextPreviousLesson,
     fetchRelatedLessons,
     fetchPackAll,
     fetchPackChildren,
+    fetchLessonContent
 };
 
