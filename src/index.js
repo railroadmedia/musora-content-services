@@ -10,7 +10,8 @@ let globalConfig = {};
  * @param {string} config.dataset - The dataset name in Sanity.
  * @param {string} config.version - The API version to use.
  * @param {boolean} [config.debug=false] - Optional flag to enable debug mode, which logs the query and results.
- * @param {boolean} [config.useCachedAPI=true] - Optional flag to disable cached API. *
+ * @param {boolean} [config.useCachedAPI=true] - Optional flag to disable cached API.
+ * 
  * @example
  * // Initialize the Sanity service in your app.js
  * initializeSanityService({
@@ -18,7 +19,7 @@ let globalConfig = {};
  *   projectId: 'your-sanity-project-id',
  *   dataset: 'your-dataset-name',
  *   version: '2021-06-07',
- *   debug: true // Optional: Enable debug mode
+ *   debug: true, // Optional: Enable debug mode
  *   useCachedAPI: true // Optional: Use cached API
  * });
  */
@@ -28,8 +29,14 @@ function initializeSanityService(config) {
 
 /**
  * Fetch a song by its document ID from Sanity.
+ *
  * @param {string} documentId - The ID of the document to fetch.
- * @returns {Promise<Object|null>} - The fetched song data or null if not found.
+ * @returns {Promise<Object|null>} - A promise that resolves to an object containing the song data or null if not found.
+ *
+ * @example
+ * fetchSongById('abc123')
+ *   .then(song => console.log(song))
+ *   .catch(error => console.error(error));
  */
 async function fetchSongById(documentId) {
     const fields = [
@@ -53,8 +60,14 @@ async function fetchSongById(documentId) {
 
 /**
  * Fetch all artists with lessons available for a specific brand.
+ *
  * @param {string} brand - The brand for which to fetch artists.
- * @returns {Promise<Object|null>} - The fetched artist data or null if not found.
+ * @returns {Promise<Object|null>} - A promise that resolves to an array of artist objects or null if not found.
+ *
+ * @example
+ * fetchArtists('drumeo')
+ *   .then(artists => console.log(artists))
+ *   .catch(error => console.error(error));
  */
 async function fetchArtists(brand) {
     const query = `
@@ -77,9 +90,15 @@ async function fetchSongArtistCount(brand) {
 
 /**
  * Fetch related songs for a specific brand and song ID.
+ *
  * @param {string} brand - The brand for which to fetch related songs.
  * @param {string} songId - The ID of the song to find related songs for.
- * @returns {Promise<Object|null>} - The fetched related songs data or null if not found.
+ * @returns {Promise<Object|null>} - A promise that resolves to an array of related song objects or null if not found.
+ *
+ * @example
+ * fetchRelatedSongs('drumeo', '12345')
+ *   .then(relatedSongs => console.log(relatedSongs))
+ *   .catch(error => console.error(error));
  */
 async function fetchRelatedSongs(brand, songId) {
     const query = `
@@ -160,6 +179,18 @@ async function fetchRelatedSongs(brand, songId) {
  * @param {Array<string>} [params.includedFields=[]] - The fields to include in the query.
  * @param {string} [params.groupBy=""] - The field to group the results by.
  * @returns {Promise<Object|null>} - The fetched song data or null if not found.
+ * 
+ * @example
+ * fetchAllSongs('drumeo', {
+ *   page: 2,
+ *   limit: 20,
+ *   searchTerm: 'rock',
+ *   sort: 'published_on',
+ *   includedFields: ['difficulty', 'style'],
+ *   groupBy: 'artist'
+ * })
+ *   .then(result => console.log(result))
+ *   .catch(error => console.error(error));
  */
 async function fetchAllSongs(brand, {
     page = 1,
@@ -291,8 +322,14 @@ async function fetchAllSongs(brand, {
 
 /**
  * Fetch filter options for a specific brand.
+ *
  * @param {string} brand - The brand for which to fetch filter options.
- * @returns {Promise<Object|null>} - The fetched filter options or null if not found.
+ * @returns {Promise<Object|null>} - A promise that resolves to an object containing filter options or null if not found.
+ *
+ * @example
+ * fetchSongFilterOptions('drumeo')
+ *   .then(options => console.log(options))
+ *   .catch(error => console.error(error));
  */
 async function fetchSongFilterOptions(brand) {
     const query = `
@@ -378,8 +415,14 @@ async function fetchNewReleases(brand) {
 
 /**
  * Fetch upcoming events for a specific brand.
+ *
  * @param {string} brand - The brand for which to fetch upcoming events.
- * @returns {Promise<Object|null>} - The fetched upcoming events data or null if not found.
+ * @returns {Promise<Object|null>} - A promise that resolves to an array of upcoming event objects or null if not found.
+ *
+ * @example
+ * fetchUpcomingEvents('drumeo')
+ *   .then(events => console.log(events))
+ *   .catch(error => console.error(error));
  */
 async function fetchUpcomingEvents(brand) {
     const liveTypes = {
@@ -408,8 +451,14 @@ async function fetchUpcomingEvents(brand) {
 
 /**
  * Fetch content by a specific Railcontent ID.
+ *
  * @param {string} id - The Railcontent ID of the content to fetch.
- * @returns {Promise<Object|null>} - The fetched content data or null if not found.
+ * @returns {Promise<Object|null>} - A promise that resolves to the content object or null if not found.
+ *
+ * @example
+ * fetchByRailContentId('abc123')
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
  */
 async function fetchByRailContentId(id) {
     const query = `*[railcontent_id == ${id}]{
@@ -428,8 +477,14 @@ async function fetchByRailContentId(id) {
 
 /**
  * Fetch content by an array of Railcontent IDs.
+ *
  * @param {Array<string>} ids - The array of Railcontent IDs of the content to fetch.
- * @returns {Promise<Array<Object>|null>} - The fetched content data or null if not found.
+ * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of content objects or null if not found.
+ *
+ * @example
+ * fetchByRailContentIds(['abc123', 'def456', 'ghi789'])
+ *   .then(contents => console.log(contents))
+ *   .catch(error => console.error(error));
  */
 async function fetchByRailContentIds(ids) {
     const idsString = ids.join(',');
@@ -459,6 +514,18 @@ async function fetchByRailContentIds(ids) {
  * @param {Array<string>} [params.includedFields=[]] - The fields to include in the query.
  * @param {string} [params.groupBy=""] - The field to group the results by (e.g., 'artist', 'genre').
  * @returns {Promise<Object|null>} - The fetched content data or null if not found.
+ * 
+ * @example
+ * fetchAll('drumeo', 'song', {
+ *   page: 2,
+ *   limit: 20,
+ *   searchTerm: 'jazz',
+ *   sort: '-popularity',
+ *   includedFields: ['difficulty,Intermediate'],
+ *   groupBy: 'artist'
+ * })
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
  */
 async function fetchAll(brand, type, {
     page = 1,
@@ -718,6 +785,11 @@ async function fetchNextPreviousLesson(railcontentId) {
  * Fetch the page data for a specific lesson by Railcontent ID.
  * @param {string} railContentId - The Railcontent ID of the current lesson.
  * @returns {Promise<Object|null>} - The fetched page data or null if found.
+ * 
+ * @example
+ * fetchLessonContent('lesson123')
+ *   .then(data => console.log(data))
+ *   .catch(error => console.error(error));
  */
 async function fetchLessonContent(railContentId) {
     const query = `*[railcontent_id == ${railContentId} ]
@@ -793,6 +865,11 @@ async function fetchPackAll(railcontentId) {
  * Fetch all children of a specific pack by Railcontent ID.
  * @param {string} railcontentId - The Railcontent ID of the pack.
  * @returns {Promise<Array<Object>|null>} - The fetched pack children data or null if not found.
+ * 
+ * @example
+ * fetchPackChildren('pack123')
+ *   .then(children => console.log(children))
+ *   .catch(error => console.error(error));
  */
 async function fetchPackChildren(railcontentId) {
     return fetchChildren(railcontentId, 'pack');
@@ -800,43 +877,50 @@ async function fetchPackChildren(railcontentId) {
 
 /**
  * Fetch data from the Sanity API based on a provided query.
+ *
  * @param {string} query - The GROQ query to execute against the Sanity API.
- * @param {boolean} isList - Whether to return an array or single result
- * @returns {Promise<Object|null>} - The first result from the query, or null if an error occurs or no results are found.
+ * @param {boolean} isList - Whether to return an array or a single result.
+ * @returns {Promise<Object|null>} - A promise that resolves to the fetched data or null if an error occurs or no results are found.
+ *
+ * @example
+ * const query = `*[_type == "song"]{title, artist->name}`;
+ * fetchSanity(query, true)
+ *   .then(data => console.log(data))
+ *   .catch(error => console.error(error));
  */
 async function fetchSanity(query, isList) {
-    // Check the config object before proceeding
-    if (!checkConfig(globalConfig)) {
-        return null;
-    }
+  // Check the config object before proceeding
+  if (!checkConfig(globalConfig)) {
+      return null;
+  }
 
-    if (globalConfig.debug) {
-        console.log("fetchSanity Query:", query);
-    }
+  if (globalConfig.debug) {
+      console.log("fetchSanity Query:", query);
+  }
 
-    const encodedQuery = encodeURIComponent(query);
-    const api = globalConfig.useCachedAPI ? 'apicdn' : 'api'
-    const url = `https://${globalConfig.projectId}.${api}.sanity.io/v${globalConfig.version}/data/query/${globalConfig.dataset}?query=${encodedQuery}`;
-    const headers = {
-        'Authorization': `Bearer ${globalConfig.token}`,
-        'Content-Type': 'application/json'
-    };
+  const encodedQuery = encodeURIComponent(query);
+  const api = globalConfig.useCachedAPI ? 'apicdn' : 'api'
+  const url = `https://${globalConfig.projectId}.${api}.sanity.io/v${globalConfig.version}/data/query/${globalConfig.dataset}?query=${encodedQuery}`;
+  const headers = {
+      'Authorization': `Bearer ${globalConfig.token}`,
+      'Content-Type': 'application/json'
+  };
 
-    try {
-        const response = await fetch(url, {headers});
-        const result = await response.json();
-        if (result.result) {
-            if (globalConfig.debug) {
-                console.log("fetchSanity Results:", result);
-            }
-            return isList ? result.result : result.result[0];
-        } else {
-            throw new Error('No results found');
-        }
-    } catch (error) {
-        console.error('fetchSanity: Fetch error:', error);
-        return null;
-    }
+  try {
+      const response = await fetch(url, {headers});
+      const result = await response.json();
+      if (result.result) {
+          if (globalConfig.debug) {
+              console.log("fetchSanity Results:", result);
+          }
+          return isList ? result.result : result.result[0];
+      } else {
+          throw new Error('No results found');
+      }
+  } catch (error) {
+      console.error('fetchSanity: Fetch error:', error);
+      return null;
+  }
 }
 
 

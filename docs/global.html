@@ -146,7 +146,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line463">line 463</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line530">line 530</a>
     </li></ul></dd>
     
 
@@ -189,6 +189,20 @@
 
 
 
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>fetchAll('drumeo', 'song', {
+  page: 2,
+  limit: 20,
+  searchTerm: 'jazz',
+  sort: '-popularity',
+  includedFields: ['difficulty,Intermediate'],
+  groupBy: 'artist'
+})
+  .then(content => console.log(content))
+  .catch(error => console.error(error));</code></pre>
 
 
 
@@ -625,7 +639,7 @@ The filter options are dynamically generated based on the provided filters, styl
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line607">line 607</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line674">line 674</a>
     </li></ul></dd>
     
 
@@ -967,7 +981,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line164">line 164</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line195">line 195</a>
     </li></ul></dd>
     
 
@@ -1010,6 +1024,20 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
 
 
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>fetchAllSongs('drumeo', {
+  page: 2,
+  limit: 20,
+  searchTerm: 'rock',
+  sort: 'published_on',
+  includedFields: ['difficulty', 'style'],
+  groupBy: 'artist'
+})
+  .then(result => console.log(result))
+  .catch(error => console.error(error));</code></pre>
 
 
 
@@ -1419,7 +1447,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line59">line 59</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line72">line 72</a>
     </li></ul></dd>
     
 
@@ -1462,6 +1490,13 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
 
 
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>fetchArtists('drumeo')
+  .then(artists => console.log(artists))
+  .catch(error => console.error(error));</code></pre>
 
 
 
@@ -1534,7 +1569,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
         
 <div class="param-desc">
-    - The fetched artist data or null if not found.
+    - A promise that resolves to an array of artist objects or null if not found.
 </div>
 
 
@@ -1577,7 +1612,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line414">line 414</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line463">line 463</a>
     </li></ul></dd>
     
 
@@ -1620,6 +1655,13 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
 
 
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>fetchByRailContentId('abc123')
+  .then(content => console.log(content))
+  .catch(error => console.error(error));</code></pre>
 
 
 
@@ -1692,7 +1734,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
         
 <div class="param-desc">
-    - The fetched content data or null if not found.
+    - A promise that resolves to the content object or null if not found.
 </div>
 
 
@@ -1735,7 +1777,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line434">line 434</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line489">line 489</a>
     </li></ul></dd>
     
 
@@ -1778,6 +1820,13 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
 
 
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>fetchByRailContentIds(['abc123', 'def456', 'ghi789'])
+  .then(contents => console.log(contents))
+  .catch(error => console.error(error));</code></pre>
 
 
 
@@ -1850,7 +1899,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
         
 <div class="param-desc">
-    - The fetched content data or null if not found.
+    - A promise that resolves to an array of content objects or null if not found.
 </div>
 
 
@@ -1893,7 +1942,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line649">line 649</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line716">line 716</a>
     </li></ul></dd>
     
 
@@ -2051,7 +2100,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line722">line 722</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line794">line 794</a>
     </li></ul></dd>
     
 
@@ -2094,6 +2143,13 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
 
 
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>fetchLessonContent('lesson123')
+  .then(data => console.log(data))
+  .catch(error => console.error(error));</code></pre>
 
 
 
@@ -2209,7 +2265,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line691">line 691</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line758">line 758</a>
     </li></ul></dd>
     
 
@@ -2367,7 +2423,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line670">line 670</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line737">line 737</a>
     </li></ul></dd>
     
 
@@ -2525,7 +2581,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line356">line 356</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line393">line 393</a>
     </li></ul></dd>
     
 
@@ -2683,7 +2739,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line701">line 701</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line768">line 768</a>
     </li></ul></dd>
     
 
@@ -2841,7 +2897,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line776">line 776</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line848">line 848</a>
     </li></ul></dd>
     
 
@@ -2999,7 +3055,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line797">line 797</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line874">line 874</a>
     </li></ul></dd>
     
 
@@ -3042,6 +3098,13 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
 
 
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>fetchPackChildren('pack123')
+  .then(children => console.log(children))
+  .catch(error => console.error(error));</code></pre>
 
 
 
@@ -3157,7 +3220,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line755">line 755</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line827">line 827</a>
     </li></ul></dd>
     
 
@@ -3339,7 +3402,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line84">line 84</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line103">line 103</a>
     </li></ul></dd>
     
 
@@ -3382,6 +3445,13 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
 
 
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>fetchRelatedSongs('drumeo', '12345')
+  .then(relatedSongs => console.log(relatedSongs))
+  .catch(error => console.error(error));</code></pre>
 
 
 
@@ -3478,7 +3548,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
         
 <div class="param-desc">
-    - The fetched related songs data or null if not found.
+    - A promise that resolves to an array of related song objects or null if not found.
 </div>
 
 
@@ -3521,7 +3591,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line807">line 807</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line891">line 891</a>
     </li></ul></dd>
     
 
@@ -3564,6 +3634,14 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
 
 
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>const query = `*[_type == "song"]{title, artist->name}`;
+fetchSanity(query, true)
+  .then(data => console.log(data))
+  .catch(error => console.error(error));</code></pre>
 
 
 
@@ -3634,7 +3712,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
             
 
-            <td class="description last">Whether to return an array or single result</td>
+            <td class="description last">Whether to return an array or a single result.</td>
         </tr>
 
     
@@ -3660,7 +3738,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
         
 <div class="param-desc">
-    - The first result from the query, or null if an error occurs or no results are found.
+    - A promise that resolves to the fetched data or null if an error occurs or no results are found.
 </div>
 
 
@@ -3703,7 +3781,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line73">line 73</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line86">line 86</a>
     </li></ul></dd>
     
 
@@ -3861,7 +3939,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line34">line 34</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line41">line 41</a>
     </li></ul></dd>
     
 
@@ -3904,6 +3982,13 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
 
 
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>fetchSongById('abc123')
+  .then(song => console.log(song))
+  .catch(error => console.error(error));</code></pre>
 
 
 
@@ -3976,7 +4061,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
         
 <div class="param-desc">
-    - The fetched song data or null if not found.
+    - A promise that resolves to an object containing the song data or null if not found.
 </div>
 
 
@@ -4019,7 +4104,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line326">line 326</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line363">line 363</a>
     </li></ul></dd>
     
 
@@ -4177,7 +4262,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line297">line 297</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line334">line 334</a>
     </li></ul></dd>
     
 
@@ -4220,6 +4305,13 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
 
 
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>fetchSongFilterOptions('drumeo')
+  .then(options => console.log(options))
+  .catch(error => console.error(error));</code></pre>
 
 
 
@@ -4292,7 +4384,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
         
 <div class="param-desc">
-    - The fetched filter options or null if not found.
+    - A promise that resolves to an object containing filter options or null if not found.
 </div>
 
 
@@ -4335,7 +4427,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line384">line 384</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line427">line 427</a>
     </li></ul></dd>
     
 
@@ -4378,6 +4470,13 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
 
 
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>fetchUpcomingEvents('drumeo')
+  .then(events => console.log(events))
+  .catch(error => console.error(error));</code></pre>
 
 
 
@@ -4450,7 +4549,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
         
 <div class="param-desc">
-    - The fetched upcoming events data or null if not found.
+    - A promise that resolves to an array of upcoming event objects or null if not found.
 </div>
 
 
@@ -4493,7 +4592,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line336">line 336</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line373">line 373</a>
     </li></ul></dd>
     
 
@@ -4652,7 +4751,7 @@ This function must be called before using any other functions in this library.</
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line25">line 25</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line26">line 26</a>
     </li></ul></dd>
     
 
@@ -4705,7 +4804,7 @@ initializeSanityService({
   projectId: 'your-sanity-project-id',
   dataset: 'your-dataset-name',
   version: '2021-06-07',
-  debug: true // Optional: Enable debug mode
+  debug: true, // Optional: Enable debug mode
   useCachedAPI: true // Optional: Use cached API
 });</code></pre>
 
@@ -5001,7 +5100,7 @@ initializeSanityService({
                 </td>
             
 
-            <td class="description last">Optional flag to disable cached API. *</td>
+            <td class="description last">Optional flag to disable cached API.</td>
         </tr>
 
     
@@ -5053,7 +5152,7 @@ initializeSanityService({
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Mon Aug 12 2024 14:00:38 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Mon Aug 12 2024 15:31:44 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
