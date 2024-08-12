@@ -584,43 +584,61 @@ async function fetchAll(brand, type, {
 }
 
 /**
- * Fetch filter options for a specific brand.
- * @param {string} brand - The current brand
- * @returns {Promise<Object|null>} - The fetched filter options or null if not found.
+ * Fetches all available filter options based on various criteria such as brand, filters, style, artist, content type, and search term.
+ *
+ * This function constructs a query to retrieve the total number of results and filter options such as difficulty, instrument type, and genre.
+ * The filter options are dynamically generated based on the provided filters, style, artist, and content type.
+ *
+ * @param {string} brand - The brand for which to fetch the filter options.
+ * @param {string} filters - Additional filters to apply to the query, typically in the format of Sanity GROQ queries.
+ * @param {string} [style] - Optional style or genre to filter the results. If provided, the query will check if the style exists in the genre array.
+ * @param {string} [artist] - Optional artist name to filter the results. If provided, the query will check if the artist's name matches.
+ * @param {string} contentType - The content type to fetch (e.g., 'song', 'lesson').
+ * @param {string} [term] - Optional search term to match against various fields such as title, album, artist name, and genre.
+ *
+ * @returns {Promise<Object|null>} - A promise that resolves to an object containing the total results and filter options, or null if the query fails.
+ *
+ * @example
+ * // Example usage:
+ * fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
+ *   .then(options => console.log(options))
+ *   .catch(error => console.error(error));
  */
-async function fetchAllFilterOptions(brand,
-                                            filters,
-                                            style,
-                                            artist,
-                                            contentType,
-                                            term) {
-    const query = `
-          {  
-            "meta": {
-              "totalResults": count(*[_type == '${contentType}' && brand == "${brand}" && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} ${filters}
-                ${term ? `&& (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
-              "filterOptions": {
-                "difficulty": [
-                    {"type": "Introductory", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Introductory" ${filters}])},
-                    {"type": "Beginner", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Beginner" ${filters}])},
-                    {"type": "Intermediate", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Intermediate" ${filters}])},
-                    {"type": "Advanced", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Advanced" ${filters}])},
-                    {"type": "Expert", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Expert" ${filters}])}
-                ][count > 0],
-                "instrumentless": [
-                    {"type": "Full Song Only", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && instrumentless == false ${filters}])},
-                    {"type": "Instrument Removed", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && instrumentless == true ${filters}])}
-                ][count > 0],
-                "genre": *[_type == 'genre' && '${contentType}' in filter_types] {
-                  "type": name,
-                  "count": count(*[_type == '${contentType}' && brand == "${brand}" && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && references(^._id)])
-                }[count > 0]
-              }
+async function fetchAllFilterOptions(
+  brand,
+  filters,
+  style,
+  artist,
+  contentType,
+  term
+){
+  const query = `
+        {  
+          "meta": {
+            "totalResults": count(*[_type == '${contentType}' && brand == "${brand}" && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} ${filters}
+              ${term ? `&& (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
+            "filterOptions": {
+              "difficulty": [
+                  {"type": "Introductory", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Introductory" ${filters}])},
+                  {"type": "Beginner", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Beginner" ${filters}])},
+                  {"type": "Intermediate", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Intermediate" ${filters}])},
+                  {"type": "Advanced", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Advanced" ${filters}])},
+                  {"type": "Expert", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Expert" ${filters}])}
+              ][count > 0],
+              "instrumentless": [
+                  {"type": "Full Song Only", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && instrumentless == false ${filters}])},
+                  {"type": "Instrument Removed", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && instrumentless == true ${filters}])}
+              ][count > 0],
+              "genre": *[_type == 'genre' && '${contentType}' in filter_types] {
+                "type": name,
+                "count": count(*[_type == '${contentType}' && brand == "${brand}" && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && references(^._id)])
+              }[count > 0]
             }
-        }
-      `;
+          }
+      }
+    `;
 
-    return fetchSanity(query, false);
+  return fetchSanity(query, false);
 }
 
 /**

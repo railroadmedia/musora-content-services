@@ -610,14 +610,17 @@
 
     
 
-    <h4 class="name" id="fetchAllFilterOptions"><span class="type-signature">(async) </span>fetchAllFilterOptions<span class="signature">(brand)</span><span class="type-signature"> &rarr; {Promise.&lt;(Object|null)>}</span></h4>
+    <h4 class="name" id="fetchAllFilterOptions"><span class="type-signature">(async) </span>fetchAllFilterOptions<span class="signature">(brand, filters, style<span class="signature-attributes">opt</span>, artist<span class="signature-attributes">opt</span>, contentType, term<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(Object|null)>}</span></h4>
 
     
 
 
 
 <div class="description">
-    Fetch filter options for a specific brand.
+    Fetches all available filter options based on various criteria such as brand, filters, style, artist, content type, and search term.
+
+This function constructs a query to retrieve the total number of results and filter options such as difficulty, instrument type, and genre.
+The filter options are dynamically generated based on the provided filters, style, artist, and content type.
 </div>
 
 
@@ -653,7 +656,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line591">line 591</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line607">line 607</a>
     </li></ul></dd>
     
 
@@ -685,6 +688,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -710,11 +715,195 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
             <td class="description last">
-                The current brand
+                The brand for which to fetch the filter options.
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>filters</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                Additional filters to apply to the query, typically in the format of Sanity GROQ queries.
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>style</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                Optional style or genre to filter the results. If provided, the query will check if the style exists in the genre array.
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>artist</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                Optional artist name to filter the results. If provided, the query will check if the artist's name matches.
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>contentType</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                The content type to fetch (e.g., 'song', 'lesson').
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>term</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                Optional search term to match against various fields such as title, album, artist name, and genre.
                 
             </td>
         </tr>
@@ -755,13 +944,23 @@
 
 
 <div class="param-desc">
-    - The fetched filter options or null if not found.
+    - A promise that resolves to an object containing the total results and filter options, or null if the query fails.
 </div>
 
     
 </div>
 
 
+
+<div class="section-examples">
+<h5>Example</h5>
+
+    <pre class="prettyprint"><code>// Example usage:
+fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
+  .then(options => console.log(options))
+  .catch(error => console.error(error));</code></pre>
+
+</div>
 
 </div>
         
@@ -1760,7 +1959,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line631">line 631</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line649">line 649</a>
     </li></ul></dd>
     
 
@@ -1920,7 +2119,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line704">line 704</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line722">line 722</a>
     </li></ul></dd>
     
 
@@ -2080,7 +2279,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line673">line 673</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line691">line 691</a>
     </li></ul></dd>
     
 
@@ -2240,7 +2439,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line652">line 652</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line670">line 670</a>
     </li></ul></dd>
     
 
@@ -2560,7 +2759,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line683">line 683</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line701">line 701</a>
     </li></ul></dd>
     
 
@@ -2720,7 +2919,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line758">line 758</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line776">line 776</a>
     </li></ul></dd>
     
 
@@ -2880,7 +3079,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line779">line 779</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line797">line 797</a>
     </li></ul></dd>
     
 
@@ -3040,7 +3239,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line737">line 737</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line755">line 755</a>
     </li></ul></dd>
     
 
@@ -3412,7 +3611,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line789">line 789</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line807">line 807</a>
     </li></ul></dd>
     
 
@@ -4943,7 +5142,7 @@ initializeSanityService({
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Mon Aug 12 2024 13:24:30 GMT+0000 (Coordinated Universal Time) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Mon Aug 12 2024 13:37:15 GMT+0000 (Coordinated Universal Time) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
