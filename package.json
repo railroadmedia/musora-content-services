@@ -22,8 +22,9 @@
     "dotenv": "^16.4.5",
     "jest": "^29.7.0",
     "jsdoc": "^4.0.3",
-    "minami": "^1.2.3",
-    "standard-version": "^9.5.0",
-    "taffydb": "^2.7.3"
+    "standard-version": "^9.5.0"
+  },
+  "dependencies": {
+    "docdash": "^2.0.2"
   }
 }
