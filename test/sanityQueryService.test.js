@@ -104,7 +104,15 @@ describe('Sanity Queries', function () {
     test('fetchAllChallenges', async () => {
         const response = await fetchAll('drumeo', 'challenge',{});
         console.log(response);
-        expect(response.entity[0].railcontent_id).toBeDefined();
+        expect(response.entity[0].registration_url).toBeDefined();
+        expect(response.entity[0].enrollment_start_time).toBeDefined();
+        expect(response.entity[0].enrollment_end_time).toBeDefined();
+
+        expect(response.entity[0].lesson_count).toBeDefined();
+        expect(response.entity[0].primary_cta_text).toBeDefined();
+        expect(response.entity[0].challenge_state).toBeDefined();
+        expect(response.entity[0].challenge_state_text).toBeDefined();
+
     });
     // test('fetchRelatedLessons', async () => {
     //     const id = 380094;
