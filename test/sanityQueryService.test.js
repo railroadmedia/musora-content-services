@@ -79,6 +79,29 @@ describe('Sanity Queries', function () {
         expect(response.railcontent_id).toBe(id);
     });
 
+    test('fetchAllSongs', async () => {
+        const response = await fetchAllSongs('drumeo', {});
+        console.log(response);
+        expect(response.entity[0].soundslice).toBeDefined();
+        expect(response.entity[0].artist_name).toBeDefined();
+        expect(response.entity[0].instrumentless).toBeDefined();
+    });
+
+    test('fetchAllSongsGroupByArtist', async () => {
+        const response = await fetchAllSongs('drumeo', {groupBy:"artist"});
+        expect(response.entity[0].lessons[0].soundslice).toBeDefined();
+        expect(response.entity[0].lessons[0].artist_name).toBeDefined();
+        expect(response.entity[0].lessons[0].instrumentless).toBeDefined();
+    }, 100000);
+
+
+    test('fetchAll', async () => {
+        const response = await fetchAll('drumeo', 'workout',{});
+        console.log(response);
+        expect(response.entity[0].railcontent_id).toBeDefined();
+    });
+
+
     // test('fetchRelatedLessons', async () => {
     //     const id = 380094;
     //     const response = await fetchRelatedLessons(id, 'singeo', 'song');

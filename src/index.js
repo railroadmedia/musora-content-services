@@ -200,124 +200,7 @@ async function fetchAllSongs(brand, {
     includedFields = [],
     groupBy = ""
 }) {
-    console.log('groupBy', groupBy)
-    const start = (page - 1) * limit;
-    const end = start + limit;
-
-    // Construct the search filter
-    const searchFilter = searchTerm
-        ? `&& (artist->name match "${searchTerm}*" || title match "${searchTerm}*")`
-        : "";
-
-    // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
-    const includedFieldsFilter = includedFields.length > 0
-        ? includedFields.map(field => {
-            let [key, value] = field.split(',');
-            if (key === 'difficulty') {
-                key = 'difficulty_string';
-            }
-            return `&& ${key} == "${value}"`;
-        }).join(' ')
-        : "";
-
-    // Determine the sort order
-    let sortOrder;
-    switch (sort) {
-        case "slug":
-            sortOrder = "artist->name asc";
-            break;
-        case "published_on":
-            sortOrder = "published_on desc";
-            break;
-        case "-published_on":
-            sortOrder = "published_on asc";
-            break;
-        case "-slug":
-            sortOrder = "artist->name desc";
-            break;
-        case "-popularity":
-            sortOrder = "popularity desc";
-            break;
-        default:
-            sortOrder = "published_on asc";
-            break;
-    }
-
-    // Determine the group by clause
-    let query = "";
-    if (groupBy === "artist") {
-        query = `
-      {
-        "total": count(*[_type == 'artist' && count(*[_type == 'song' && brand == '${brand}' && ^._id == artist._ref ]._id) > 0]),
-        "entity": *[_type == 'artist' && count(*[_type == 'song' && brand == '${brand}' && ^._id == artist._ref ]._id) > 0]
-          {
-            'id': _id,
-            'type': _type,
-            name,
-            'head_shot_picture_url': thumbnail_url.asset->url,
-            'all_lessons_count': count(*[_type == 'song' && brand == '${brand}' && ^._id == artist._ref ]._id),
-            'lessons': *[_type == 'song' && brand == '${brand}' && ^._id == artist._ref ]{
-             "id": railcontent_id,
-              "type": _type,
-              title,
-              "thumbnail_url": thumbnail.asset->url,
-              "artist_name": artist->name,
-              difficulty_string,
-              published_on,
-              soundslice, 
-              instrumentless,
-            }[0...10]
-          }
-        |order(${sortOrder})
-        [${start}...${end}]
-      }`;
-    } else if (groupBy === "style") {
-        query = `
-      {
-        "total": count(*[_type == 'genre'  && count(*[_type == 'song' && brand == '${brand}' && ^._id in genre[]._ref ]._id) > 0]),
-        "entity":
-          *[_type == 'genre'  && count(*[_type == 'song' && brand == '${brand}' && ^._id in genre[]._ref ]._id)>0]
-          {
-            'id': _id,
-            'type': _type,
-            name,
-            'head_shot_picture_url': thumbnail_url.asset->url,
-            'all_lessons_count': count(*[_type == 'song' && brand == '${brand}' && ^._id in genre[]._ref ]._id),
-            'lessons': *[_type == 'song' && brand == '${brand}' && ^._id in genre[]._ref ]{
-              "id": railcontent_id,
-              "type": _type,
-              title,
-              "thumbnail_url": thumbnail.asset->url,
-              "artist_name": artist->name,
-              difficulty_string,
-              published_on,
-              soundslice, 
-              instrumentless,
-            }[0...10]
-          }
-        |order(${sortOrder})
-        [${start}...${end}]
-      }`;
-    } else {
-        query = `
-      {
-        "entity": *[_type == 'song' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter}] | order(${sortOrder}) [${start}...${end}] {
-          "id": railcontent_id,
-          "type": _type,
-          title,
-          "thumbnail_url": thumbnail.asset->url,
-          "artist_name": artist->name,
-          difficulty_string,
-          published_on,
-          soundslice, 
-          instrumentless,
-        },
-        "total": count(*[_type == 'song' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter}])
-      }
-    `;
-    }
-
-    return fetchSanity(query, true);
+    return fetchAll(brand, 'song', {page, limit, searchTerm, sort, includedFields, groupBy});
 }
 
 /**
@@ -535,6 +418,33 @@ async function fetchAll(brand, type, {
     includedFields = [],
     groupBy = ""
 }) {
+    let additionalFields = [];
+    let isGroupByOneToOne = false;
+    switch (type) {
+        case 'song':
+            additionalFields = [
+                '"artist_name": artist->name',
+                'soundslice',
+                'instrumentless'];
+            if(groupBy == "artist"){
+                isGroupByOneToOne = true;
+            }
+            break;
+    }
+    return fetchAllLogic(brand, type, {page, limit, searchTerm, sort, includedFields, groupBy}, additionalFields, isGroupByOneToOne);
+}
+
+
+async function fetchAllLogic(brand, type, {
+                                 page = 1,
+                                 limit = 10,
+                                 searchTerm = "",
+                                 sort = "-published_on",
+                                 includedFields = [],
+                                 groupBy = ""
+                             },
+                             additionalFields = [],
+                             isGroupByOneToOne) {
     const start = (page - 1) * limit;
     const end = start + limit;
 
@@ -577,10 +487,20 @@ async function fetchAll(brand, type, {
             break;
     }
 
+    let defaultFields = ['railcontent_id',
+        'title',
+        '"image": thumbnail.asset->url',
+        'difficulty',
+        'difficulty_string',
+        'web_url_path',
+        'published_on'];
+
+    let fields = defaultFields.concat(additionalFields);
+    let fieldsString = fields.join(',');
+
     // Determine the group by clause
     let query = "";
-    let manyReference = true; //TODO: define whether reference is one to one or one to many
-    if (groupBy !== "" && !manyReference) {
+    if (groupBy !== "" && isGroupByOneToOne) {
         query = `
         {
             "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ]._id) > 0]),
@@ -592,20 +512,14 @@ async function fetchAll(brand, type, {
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ]._id),
                 'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ]{
-                railcontent_id,
-                title,
-                "image": thumbnail.asset->url,
-                difficulty,
-                difficulty_string,
-                web_url_path,
-                published_on,
-                ${groupBy}
+                    ${fieldsString},
+                    ${groupBy}
                 }[0...10]
             }
             |order(${sortOrder})
             [${start}...${end}]
         }`;
-    } else if (groupBy !== "" && manyReference) {
+    } else if (groupBy !== "") {
         query = `
         {
             "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref]._id)>0]),
@@ -617,14 +531,8 @@ async function fetchAll(brand, type, {
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ]._id),
                 'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ]{
-                railcontent_id,
-                title,
-                "image": thumbnail.asset->url,
-                difficulty,
-                difficulty_string,
-                web_url_path,
-                published_on,
-                ${groupBy}
+                    ${fieldsString},
+                    ${groupBy}
                 }[0...10]
             }
             |order(${sortOrder})
@@ -634,20 +542,14 @@ async function fetchAll(brand, type, {
         query = `
         {
             "entity": *[_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter}] | order(${sortOrder}) [${start}...${end}] {
-            railcontent_id,
-            title,
-            "image": thumbnail.asset->url,
-            difficulty,
-            difficulty_string,
-            web_url_path,
-            published_on
+                ${fieldsString}
             },
             "total": count(*[_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter}])
         }
     `;
     }
 
-    return fetchSanity(query, false);
+    return fetchSanity(query, true);
 }
 
 /**
