@@ -1,7 +1,8 @@
+const {initializeProgressModule} = require('../src/progress.js');
 let globalConfig = {};
 
 /**
- * Initializes the Sanity service with the given configuration.
+ * Initializes the service with the given configuration.
  * This function must be called before using any other functions in this library.
  *
  * @param {Object} config - Configuration object containing Sanity API settings.
@@ -9,22 +10,28 @@ let globalConfig = {};
  * @param {string} config.projectId - The project ID in Sanity.
  * @param {string} config.dataset - The dataset name in Sanity.
  * @param {string} config.version - The API version to use.
+ * @param {string} config.musoraToken - The authentication token for musora web platform.
+ * @param {string} [config.musoraBaseURL=''] - Optional base url for musora web platform.  If not provided uses relative paths.
  * @param {boolean} [config.debug=false] - Optional flag to enable debug mode, which logs the query and results.
  * @param {boolean} [config.useCachedAPI=true] - Optional flag to disable cached API.
- * 
+ *
  * @example
- * // Initialize the Sanity service in your app.js
+ * // Initialize the service in your app.js
  * initializeSanityService({
  *   token: 'your-sanity-api-token',
  *   projectId: 'your-sanity-project-id',
  *   dataset: 'your-dataset-name',
  *   version: '2021-06-07',
+ *   musoraToken: 'your-musora-api-token'
+ *   musoraBaseURL: 'https://www.musora.com'
  *   debug: true, // Optional: Enable debug mode
  *   useCachedAPI: true // Optional: Use cached API
  * });
  */
 function initializeSanityService(config) {
     globalConfig = config;
+    const musoraConfig = {baseURL: config.musoraBaseURL, token: config.musoraToken}
+    initializeProgressModule(musoraConfig);
 }
 
 /**
@@ -179,7 +186,7 @@ async function fetchRelatedSongs(brand, songId) {
  * @param {Array<string>} [params.includedFields=[]] - The fields to include in the query.
  * @param {string} [params.groupBy=""] - The field to group the results by.
  * @returns {Promise<Object|null>} - The fetched song data or null if not found.
- * 
+ *
  * @example
  * fetchAllSongs('drumeo', {
  *   page: 2,
@@ -514,7 +521,7 @@ async function fetchByRailContentIds(ids) {
  * @param {Array<string>} [params.includedFields=[]] - The fields to include in the query.
  * @param {string} [params.groupBy=""] - The field to group the results by (e.g., 'artist', 'genre').
  * @returns {Promise<Object|null>} - The fetched content data or null if not found.
- * 
+ *
  * @example
  * fetchAll('drumeo', 'song', {
  *   page: 2,
@@ -672,14 +679,14 @@ async function fetchAll(brand, type, {
  *   .catch(error => console.error(error));
  */
 async function fetchAllFilterOptions(
-  brand,
-  filters,
-  style,
-  artist,
-  contentType,
-  term
-){
-  const query = `
+    brand,
+    filters,
+    style,
+    artist,
+    contentType,
+    term
+) {
+    const query = `
         {  
           "meta": {
             "totalResults": count(*[_type == '${contentType}' && brand == "${brand}" && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} ${filters}
@@ -705,7 +712,7 @@ async function fetchAllFilterOptions(
       }
     `;
 
-  return fetchSanity(query, false);
+    return fetchSanity(query, false);
 }
 
 /**
@@ -785,7 +792,7 @@ async function fetchNextPreviousLesson(railcontentId) {
  * Fetch the page data for a specific lesson by Railcontent ID.
  * @param {string} railContentId - The Railcontent ID of the current lesson.
  * @returns {Promise<Object|null>} - The fetched page data or null if found.
- * 
+ *
  * @example
  * fetchLessonContent('lesson123')
  *   .then(data => console.log(data))
@@ -865,7 +872,7 @@ async function fetchPackAll(railcontentId) {
  * Fetch all children of a specific pack by Railcontent ID.
  * @param {string} railcontentId - The Railcontent ID of the pack.
  * @returns {Promise<Array<Object>|null>} - The fetched pack children data or null if not found.
- * 
+ *
  * @example
  * fetchPackChildren('pack123')
  *   .then(children => console.log(children))
@@ -889,38 +896,38 @@ async function fetchPackChildren(railcontentId) {
  *   .catch(error => console.error(error));
  */
 async function fetchSanity(query, isList) {
-  // Check the config object before proceeding
-  if (!checkConfig(globalConfig)) {
-      return null;
-  }
+    // Check the config object before proceeding
+    if (!checkSanityAPIConfig(globalConfig)) {
+        return null;
+    }
 
-  if (globalConfig.debug) {
-      console.log("fetchSanity Query:", query);
-  }
+    if (globalConfig.debug) {
+        console.log("fetchSanity Query:", query);
+    }
 
-  const encodedQuery = encodeURIComponent(query);
-  const api = globalConfig.useCachedAPI ? 'apicdn' : 'api'
-  const url = `https://${globalConfig.projectId}.${api}.sanity.io/v${globalConfig.version}/data/query/${globalConfig.dataset}?query=${encodedQuery}`;
-  const headers = {
-      'Authorization': `Bearer ${globalConfig.token}`,
-      'Content-Type': 'application/json'
-  };
+    const encodedQuery = encodeURIComponent(query);
+    const api = globalConfig.useCachedAPI ? 'apicdn' : 'api'
+    const url = `https://${globalConfig.projectId}.${api}.sanity.io/v${globalConfig.version}/data/query/${globalConfig.dataset}?query=${encodedQuery}`;
+    const headers = {
+        'Authorization': `Bearer ${globalConfig.token}`,
+        'Content-Type': 'application/json'
+    };
 
-  try {
-      const response = await fetch(url, {headers});
-      const result = await response.json();
-      if (result.result) {
-          if (globalConfig.debug) {
-              console.log("fetchSanity Results:", result);
-          }
-          return isList ? result.result : result.result[0];
-      } else {
-          throw new Error('No results found');
-      }
-  } catch (error) {
-      console.error('fetchSanity: Fetch error:', error);
-      return null;
-  }
+    try {
+        const response = await fetch(url, {headers});
+        const result = await response.json();
+        if (result.result) {
+            if (globalConfig.debug) {
+                console.log("fetchSanity Results:", result);
+            }
+            return isList ? result.result : result.result[0];
+        } else {
+            throw new Error('No results found');
+        }
+    } catch (error) {
+        console.error('fetchSanity: Fetch error:', error);
+        return null;
+    }
 }
 
 
@@ -934,7 +941,7 @@ function getSanityDate(date) {
     return date.toISOString();
 }
 
-function checkConfig(config) {
+function checkSanityAPIConfig(config) {
     if (!config.token) {
         console.warn('fetchSanity: The "token" property is missing in the config object.');
         return false;
