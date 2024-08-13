@@ -1034,6 +1034,7 @@ module.exports = {
     fetchSongCount,
     fetchWorkouts,
     fetchNewReleases,
+    fetchLiveEvent,
     fetchUpcomingEvents,
     fetchByRailContentId,
     fetchByRailContentIds,
