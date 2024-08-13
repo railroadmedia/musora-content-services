@@ -378,7 +378,7 @@ async function fetchSongCount(brand) {
  */
 async function fetchWorkouts(brand) {
     const query = `*[_type == 'workout' && brand == '${brand}'] [0...5] {
-          railcontent_id,
+          "id": railcontent_id,
           title,
           "image": thumbnail.asset->url,
           "artist_name": instructor[0]->name,
