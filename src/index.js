@@ -496,9 +496,9 @@ async function fetchLiveEvent(brand) {
   // Adjust the query to filter events based on the calculated time window
   const query = `
     *[_type in [${typesString}] && brand == '${brand}' 
-    && published_on > '${twoDaysAgo}' 
-    && published_on <= '${now}' 
-    && dateTime(published_on) + length_in_seconds * 1000 > '${now}'] {
+      && published_on > '${twoDaysAgo}' 
+      || (published_on <= '${now}' && dateTime(published_on) + length_in_seconds * 1000 > '${now}')
+    ] {
       "id": railcontent_id,
       title,
       "image": thumbnail.asset->url,
