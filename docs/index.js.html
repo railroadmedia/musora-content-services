@@ -132,7 +132,7 @@ async function fetchArtists(brand) {
  */
 async function fetchSongArtistCount(brand) {
     const query = `count(*[_type == 'artist']{'lessonsCount': count(*[_type == 'song' &amp;&amp; brand == '${brand}' &amp;&amp; references(^._id)]._id)}[lessonsCount > 0])`;
-    return fetchSanity(query, false);
+    return fetchSanity(query, true);
 }
 
 /**
@@ -304,21 +304,21 @@ async function fetchAllSongs(brand, {
             'head_shot_picture_url': thumbnail_url.asset->url,
             'all_lessons_count': count(*[_type == 'song' &amp;&amp; brand == '${brand}' &amp;&amp; ^._id == artist._ref ]._id),
             'lessons': *[_type == 'song' &amp;&amp; brand == '${brand}' &amp;&amp; ^._id == artist._ref ]{
-              railcontent_id,
+             "id": railcontent_id,
+              "type": _type,
               title,
-              "image": thumbnail.asset->url,
+              "thumbnail_url": thumbnail.asset->url,
               "artist_name": artist->name,
-              artist,
-              difficulty,
               difficulty_string,
-              web_url_path,
-              published_on
+              published_on,
+              soundslice, 
+              instrumentless,
             }[0...10]
           }
         |order(${sortOrder})
         [${start}...${end}]
       }`;
-    } else if (groupBy === "genre") {
+    } else if (groupBy === "style") {
         query = `
       {
         "total": count(*[_type == 'genre'  &amp;&amp; count(*[_type == 'song' &amp;&amp; brand == '${brand}' &amp;&amp; ^._id in genre[]._ref ]._id) > 0]),
@@ -331,15 +331,15 @@ async function fetchAllSongs(brand, {
             'head_shot_picture_url': thumbnail_url.asset->url,
             'all_lessons_count': count(*[_type == 'song' &amp;&amp; brand == '${brand}' &amp;&amp; ^._id in genre[]._ref ]._id),
             'lessons': *[_type == 'song' &amp;&amp; brand == '${brand}' &amp;&amp; ^._id in genre[]._ref ]{
-              railcontent_id,
+              "id": railcontent_id,
+              "type": _type,
               title,
-              "image": thumbnail.asset->url,
+              "thumbnail_url": thumbnail.asset->url,
               "artist_name": artist->name,
-              artist,
-              difficulty,
               difficulty_string,
-              web_url_path,
-              published_on
+              published_on,
+              soundslice, 
+              instrumentless,
             }[0...10]
           }
         |order(${sortOrder})
@@ -349,22 +349,22 @@ async function fetchAllSongs(brand, {
         query = `
       {
         "entity": *[_type == 'song' &amp;&amp; brand == "${brand}" ${searchFilter} ${includedFieldsFilter}] | order(${sortOrder}) [${start}...${end}] {
-          railcontent_id,
+          "id": railcontent_id,
+          "type": _type,
           title,
-          "image": thumbnail.asset->url,
+          "thumbnail_url": thumbnail.asset->url,
           "artist_name": artist->name,
-          artist,
-          difficulty,
           difficulty_string,
-          web_url_path,
-          published_on
+          published_on,
+          soundslice, 
+          instrumentless,
         },
         "total": count(*[_type == 'song' &amp;&amp; brand == "${brand}" ${searchFilter} ${includedFieldsFilter}])
       }
     `;
     }
 
-    return fetchSanity(query, false);
+    return fetchSanity(query, true);
 }
 
 /**
@@ -382,24 +382,24 @@ async function fetchSongFilterOptions(brand) {
     const query = `
     {
       "difficulty": [
-        {"type": "Introductory", "count": count(*[_type == 'song' &amp;&amp; brand == ${brand} &amp;&amp; difficulty_string == "Introductory"]._id)},
-        {"type": "Beginner", "count": count(*[_type == 'song' &amp;&amp; brand == ${brand} &amp;&amp; difficulty_string == "Beginner"]._id)},
-        {"type": "Intermediate", "count": count(*[_type == 'song' &amp;&amp; brand == ${brand} &amp;&amp; difficulty_string == "Intermediate"]._id)},
-        {"type": "Advanced", "count": count(*[_type == 'song' &amp;&amp; brand == ${brand} &amp;&amp; difficulty_string == "Advanced"]._id)},
-        {"type": "Expert", "count": count(*[_type == 'song' &amp;&amp; brand == ${brand} &amp;&amp; difficulty_string == "Expert"]._id)}
+        {"type": "Introductory", "count": count(*[_type == 'song' &amp;&amp; brand == '${brand}' &amp;&amp; difficulty_string == "Introductory"]._id)},
+        {"type": "Beginner", "count": count(*[_type == 'song' &amp;&amp; brand == '${brand}' &amp;&amp; difficulty_string == "Beginner"]._id)},
+        {"type": "Intermediate", "count": count(*[_type == 'song' &amp;&amp; brand == '${brand}' &amp;&amp; difficulty_string == "Intermediate"]._id)},
+        {"type": "Advanced", "count": count(*[_type == 'song' &amp;&amp; brand == '${brand}' &amp;&amp; difficulty_string == "Advanced"]._id)},
+        {"type": "Expert", "count": count(*[_type == 'song' &amp;&amp; brand == '${brand}' &amp;&amp; difficulty_string == "Expert"]._id)}
       ],
       "genre": *[_type == 'genre' &amp;&amp; 'song' in filter_types] {
         "type": name,
-        "count": count(*[_type == 'song' &amp;&amp; brand == ${brand} &amp;&amp; references(^._id)]._id)
+        "count": count(*[_type == 'song' &amp;&amp; brand == '${brand}' &amp;&amp; references(^._id)]._id)
       },
       "instrumentless": [
-        {"type": "Full Song Only", "count": count(*[_type == 'song' &amp;&amp; brand == ${brand} &amp;&amp; instrumentless == false]._id)},
-        {"type": "Instrument Removed", "count": count(*[_type == 'song' &amp;&amp; brand == ${brand} &amp;&amp; instrumentless == true]._id)}
+        {"type": "Full Song Only", "count": count(*[_type == 'song' &amp;&amp; brand == '${brand}' &amp;&amp; instrumentless == false]._id)},
+        {"type": "Instrument Removed", "count": count(*[_type == 'song' &amp;&amp; brand == '${brand}' &amp;&amp; instrumentless == true]._id)}
       ]
     }
   `;
 
-    return fetchSanity(query, false);
+    return fetchSanity(query, true);
 }
 
 /**
@@ -414,16 +414,22 @@ async function fetchSongCount(brand) {
 
 /**
  * Fetch the latest workouts for the home page of a specific brand.
- * @param {string} brand - The brand for which to fetch workouts.
- * @returns {Promise&lt;Object|null>} - The fetched workout data or null if not found.
+ * This function retrieves the latest workout content for a given brand, fetching up to five workouts. The workouts are sorted in descending order by their publication date.
+ * @param {string} brand - The brand for which to fetch workouts (e.g., 'drumeo', 'pianote').
+ * @returns {Promise&lt;Array&lt;Object>|null>} - A promise that resolves to an array of workout data objects or null if no workouts are found.
+ *
+ * @example
+ * fetchWorkouts('drumeo')
+ *   .then(workouts => console.log(workouts))
+ *   .catch(error => console.error(error));
  */
 async function fetchWorkouts(brand) {
     const query = `*[_type == 'workout' &amp;&amp; brand == '${brand}'] [0...5] {
           railcontent_id,
           title,
           "image": thumbnail.asset->url,
-          "artist_name": artist->name,
-          artist,
+          "artist_name": instructor[0]->name,
+          "artists": instructor[]->name,
           difficulty,
           difficulty_string,
           web_url_path,
@@ -1027,7 +1033,6 @@ module.exports = {
     fetchPackChildren,
     fetchLessonContent
 };
-
 </code></pre>
         </article>
     </section>
@@ -1042,7 +1047,7 @@ module.exports = {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Mon Aug 12 2024 15:31:44 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Tue Aug 13 2024 02:40:03 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

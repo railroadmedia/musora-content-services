@@ -367,16 +367,22 @@ async function fetchSongCount(brand) {
 
 /**
  * Fetch the latest workouts for the home page of a specific brand.
- * @param {string} brand - The brand for which to fetch workouts.
- * @returns {Promise<Object|null>} - The fetched workout data or null if not found.
+ * This function retrieves the latest workout content for a given brand, fetching up to five workouts. The workouts are sorted in descending order by their publication date.
+ * @param {string} brand - The brand for which to fetch workouts (e.g., 'drumeo', 'pianote').
+ * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of workout data objects or null if no workouts are found.
+ *
+ * @example
+ * fetchWorkouts('drumeo')
+ *   .then(workouts => console.log(workouts))
+ *   .catch(error => console.error(error));
  */
 async function fetchWorkouts(brand) {
     const query = `*[_type == 'workout' && brand == '${brand}'] [0...5] {
           railcontent_id,
           title,
           "image": thumbnail.asset->url,
-          "artist_name": artist->name,
-          artist,
+          "artist_name": instructor[0]->name,
+          "artists": instructor[]->name,
           difficulty,
           difficulty_string,
           web_url_path,
