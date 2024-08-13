@@ -408,15 +408,17 @@ async function fetchNewReleases(brand) {
     };
     const typesString = arrayJoinWithQuotes(newTypes[brand] ?? newTypes['default']);
     const query = `*[_type in [${typesString}] && brand == '${brand}'] | order(releaseDate desc) [0...5] {
-          railcontent_id,
+          "id": railcontent_id,
           title,
           "image": thumbnail.asset->url,
-          "artist_name": artist->name,
-          artist,
+          "artist_name": instructor[0]->name,
+          "artists": instructor[]->name,
           difficulty,
           difficulty_string,
+          length_in_seconds,
+          published_on,
+          "type": _type,
           web_url_path,
-          published_on
         } | order(published_on desc)[0...5]`
     return fetchSanity(query, true);
 }
@@ -444,15 +446,17 @@ async function fetchUpcomingEvents(brand) {
     const now = getSanityDate(new Date());
     //TODO: status = 'scheduled'  is this handled in sanity?
     const query = `*[_type in [${typesString}] && brand == '${brand}' && published_on > '${now}']{
-          railcontent_id,
+          "id": railcontent_id,
           title,
           "image": thumbnail.asset->url,
-          "artist_name": artist->name,
-          artist,
+          "artist_name": instructor[0]->name,
+          "artists": instructor[]->name,
           difficulty,
           difficulty_string,
+          length_in_seconds,
+          published_on,
+          "type": _type,
           web_url_path,
-          published_on
         } | order(published_on asc)[0...5]`;
     return fetchSanity(query, true);
 }
