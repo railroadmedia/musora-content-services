@@ -29,7 +29,7 @@
 <nav >
     
     
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#fetchAll">fetchAll</a></li><li><a href="global.html#fetchAllFilterOptions">fetchAllFilterOptions</a></li><li><a href="global.html#fetchAllSongs">fetchAllSongs</a></li><li><a href="global.html#fetchArtists">fetchArtists</a></li><li><a href="global.html#fetchByRailContentId">fetchByRailContentId</a></li><li><a href="global.html#fetchByRailContentIds">fetchByRailContentIds</a></li><li><a href="global.html#fetchChildren">fetchChildren</a></li><li><a href="global.html#fetchLessonContent">fetchLessonContent</a></li><li><a href="global.html#fetchMethodChildren">fetchMethodChildren</a></li><li><a href="global.html#fetchMethodNextLesson">fetchMethodNextLesson</a></li><li><a href="global.html#fetchNewReleases">fetchNewReleases</a></li><li><a href="global.html#fetchNextPreviousLesson">fetchNextPreviousLesson</a></li><li><a href="global.html#fetchPackAll">fetchPackAll</a></li><li><a href="global.html#fetchPackChildren">fetchPackChildren</a></li><li><a href="global.html#fetchRelatedLessons">fetchRelatedLessons</a></li><li><a href="global.html#fetchRelatedSongs">fetchRelatedSongs</a></li><li><a href="global.html#fetchSanity">fetchSanity</a></li><li><a href="global.html#fetchSongArtistCount">fetchSongArtistCount</a></li><li><a href="global.html#fetchSongById">fetchSongById</a></li><li><a href="global.html#fetchSongCount">fetchSongCount</a></li><li><a href="global.html#fetchSongFilterOptions">fetchSongFilterOptions</a></li><li><a href="global.html#fetchUpcomingEvents">fetchUpcomingEvents</a></li><li><a href="global.html#fetchWorkouts">fetchWorkouts</a></li><li><a href="global.html#initializeSanityService">initializeSanityService</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#fetchAll">fetchAll</a></li><li><a href="global.html#fetchAllFilterOptions">fetchAllFilterOptions</a></li><li><a href="global.html#fetchAllSongs">fetchAllSongs</a></li><li><a href="global.html#fetchArtists">fetchArtists</a></li><li><a href="global.html#fetchByRailContentId">fetchByRailContentId</a></li><li><a href="global.html#fetchByRailContentIds">fetchByRailContentIds</a></li><li><a href="global.html#fetchChildren">fetchChildren</a></li><li><a href="global.html#fetchLessonContent">fetchLessonContent</a></li><li><a href="global.html#fetchLiveEvent">fetchLiveEvent</a></li><li><a href="global.html#fetchMethodChildren">fetchMethodChildren</a></li><li><a href="global.html#fetchMethodNextLesson">fetchMethodNextLesson</a></li><li><a href="global.html#fetchNewReleases">fetchNewReleases</a></li><li><a href="global.html#fetchNextPreviousLesson">fetchNextPreviousLesson</a></li><li><a href="global.html#fetchPackAll">fetchPackAll</a></li><li><a href="global.html#fetchPackChildren">fetchPackChildren</a></li><li><a href="global.html#fetchRelatedLessons">fetchRelatedLessons</a></li><li><a href="global.html#fetchRelatedSongs">fetchRelatedSongs</a></li><li><a href="global.html#fetchSanity">fetchSanity</a></li><li><a href="global.html#fetchSongArtistCount">fetchSongArtistCount</a></li><li><a href="global.html#fetchSongById">fetchSongById</a></li><li><a href="global.html#fetchSongCount">fetchSongCount</a></li><li><a href="global.html#fetchSongFilterOptions">fetchSongFilterOptions</a></li><li><a href="global.html#fetchUpcomingEvents">fetchUpcomingEvents</a></li><li><a href="global.html#fetchWorkouts">fetchWorkouts</a></li><li><a href="global.html#initializeSanityService">initializeSanityService</a></li></ul>
     
 </nav>
 
@@ -482,12 +482,13 @@ async function fetchNewReleases(brand) {
  *   .catch(error => console.error(error));
  */
 async function fetchUpcomingEvents(brand) {
+    const baseLiveTypes = ["student-review", "student-reviews", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"];
     const liveTypes = {
-        'drumeo': ["drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "quick-tips", "question-and-answer", "student-collaborations", "live-streams", "live", "podcasts", "solos", "boot-camps", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"],
-        'pianote': ["student-review", "student-reviews", "question-and-answer", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"],
-        'guitareo': ["student-review", "student-reviews", "question-and-answer", "archives", "recording", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"],
-        'singeo': ["student-review", "student-reviews", "question-and-answer", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"],
-        'default': ["student-review", "student-reviews", "question-and-answer", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"]
+        'drumeo': [...baseLiveTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "quick-tips", "student-collaborations", "live-streams", "podcasts", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums"],
+        'pianote': baseLiveTypes,
+        'guitareo': [...baseLiveTypes, "archives"],
+        'singeo': baseLiveTypes,
+        'default': baseLiveTypes
     };
     const typesString = arrayJoinWithQuotes(liveTypes[brand] ?? liveTypes['default']);
     const now = getSanityDate(new Date());
@@ -507,6 +508,60 @@ async function fetchUpcomingEvents(brand) {
         } | order(published_on asc)[0...5]`;
     return fetchSanity(query, true);
 }
+
+/**
+ * Fetch upcoming events for a specific brand that are within 48 hours before their `published_on` date 
+ * and are currently ongoing based on their `length_in_seconds`.
+ *
+ * This function retrieves events that have a `published_on` date within the last 48 hours or are currently
+ * ongoing based on the event's duration (`length_in_seconds`).
+ *
+ * @param {string} brand - The brand for which to fetch upcoming events (e.g., 'drumeo', 'pianote', etc.).
+ * @returns {Promise&lt;Array&lt;Object>|null>} - A promise that resolves to an array of event objects or null if no events are found.
+ *
+ * @example
+ * // Example usage:
+ * fetchUpcomingEvents('drumeo')
+ *   .then(events => console.log(events))
+ *   .catch(error => console.error(error));
+ * 
+ */
+async function fetchLiveEvent(brand) {
+  const baseLiveTypes = ["student-review", "student-reviews", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"];
+  const liveTypes = {
+      'drumeo': [...baseLiveTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "quick-tips", "student-collaborations", "live-streams", "podcasts", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums"],
+      'pianote': baseLiveTypes,
+      'guitareo': [...baseLiveTypes, "archives"],
+      'singeo': baseLiveTypes,
+      'default': baseLiveTypes
+  };
+
+  const typesString = arrayJoinWithQuotes(liveTypes[brand] ?? liveTypes['default']);
+  const now = getSanityDate(new Date());
+  const twoDaysAgo = getSanityDate(new Date(Date.now() - 48 * 60 * 60 * 1000)); // 48 hours ago
+
+  // Adjust the query to filter events based on the calculated time window
+  const query = `
+    *[_type in [${typesString}] &amp;&amp; brand == '${brand}' 
+    &amp;&amp; published_on > '${twoDaysAgo}' 
+    &amp;&amp; published_on &lt;= '${now}' 
+    &amp;&amp; dateTime(published_on) + length_in_seconds * 1000 > '${now}'] {
+      "id": railcontent_id,
+      title,
+      "image": thumbnail.asset->url,
+      "artist_name": instructor[0]->name,
+      "artists": instructor[]->name,
+      difficulty,
+      difficulty_string,
+      length_in_seconds,
+      published_on,
+      "type": _type,
+      web_url_path,
+    } | order(published_on asc)[0]`;
+
+  return fetchSanity(query, true);
+}
+
 
 /**
  * Fetch content by a specific Railcontent ID.
@@ -1053,7 +1108,7 @@ module.exports = {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Tue Aug 13 2024 03:55:03 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Tue Aug 13 2024 18:37:07 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
