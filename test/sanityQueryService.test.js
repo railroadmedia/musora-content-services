@@ -95,13 +95,17 @@ describe('Sanity Queries', function () {
     }, 100000);
 
 
-    test('fetchAll', async () => {
+    test('fetchAllWorkouts', async () => {
         const response = await fetchAll('drumeo', 'workout',{});
         console.log(response);
         expect(response.entity[0].railcontent_id).toBeDefined();
     });
 
-
+    test('fetchAllChallenges', async () => {
+        const response = await fetchAll('drumeo', 'challenge',{});
+        console.log(response);
+        expect(response.entity[0].railcontent_id).toBeDefined();
+    });
     // test('fetchRelatedLessons', async () => {
     //     const id = 380094;
     //     const response = await fetchRelatedLessons(id, 'singeo', 'song');

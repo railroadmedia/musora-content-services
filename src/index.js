@@ -1,3 +1,5 @@
+const {contentTypeConfig} = require('../src/contentTypeConfig.js');
+
 let globalConfig = {};
 
 /**
@@ -11,7 +13,7 @@ let globalConfig = {};
  * @param {string} config.version - The API version to use.
  * @param {boolean} [config.debug=false] - Optional flag to enable debug mode, which logs the query and results.
  * @param {boolean} [config.useCachedAPI=true] - Optional flag to disable cached API.
- * 
+ *
  * @example
  * // Initialize the Sanity service in your app.js
  * initializeSanityService({
@@ -179,7 +181,7 @@ async function fetchRelatedSongs(brand, songId) {
  * @param {Array<string>} [params.includedFields=[]] - The fields to include in the query.
  * @param {string} [params.groupBy=""] - The field to group the results by.
  * @returns {Promise<Object|null>} - The fetched song data or null if not found.
- * 
+ *
  * @example
  * fetchAllSongs('drumeo', {
  *   page: 2,
@@ -397,7 +399,7 @@ async function fetchByRailContentIds(ids) {
  * @param {Array<string>} [params.includedFields=[]] - The fields to include in the query.
  * @param {string} [params.groupBy=""] - The field to group the results by (e.g., 'artist', 'genre').
  * @returns {Promise<Object|null>} - The fetched content data or null if not found.
- * 
+ *
  * @example
  * fetchAll('drumeo', 'song', {
  *   page: 2,
@@ -418,33 +420,9 @@ async function fetchAll(brand, type, {
     includedFields = [],
     groupBy = ""
 }) {
-    let additionalFields = [];
-    let isGroupByOneToOne = false;
-    switch (type) {
-        case 'song':
-            additionalFields = [
-                '"artist_name": artist->name',
-                'soundslice',
-                'instrumentless'];
-            if(groupBy == "artist"){
-                isGroupByOneToOne = true;
-            }
-            break;
-    }
-    return fetchAllLogic(brand, type, {page, limit, searchTerm, sort, includedFields, groupBy}, additionalFields, isGroupByOneToOne);
-}
-
-
-async function fetchAllLogic(brand, type, {
-                                 page = 1,
-                                 limit = 10,
-                                 searchTerm = "",
-                                 sort = "-published_on",
-                                 includedFields = [],
-                                 groupBy = ""
-                             },
-                             additionalFields = [],
-                             isGroupByOneToOne) {
+    let config = contentTypeConfig[type] ?? {};
+    let additionalFields = config?.fields ?? [];
+    let isGroupByOneToOne = (groupBy ? config?.relationships[groupBy]?.isOneToOne : false) ?? false;
     const start = (page - 1) * limit;
     const end = start + limit;
 
@@ -574,14 +552,14 @@ async function fetchAllLogic(brand, type, {
  *   .catch(error => console.error(error));
  */
 async function fetchAllFilterOptions(
-  brand,
-  filters,
-  style,
-  artist,
-  contentType,
-  term
-){
-  const query = `
+    brand,
+    filters,
+    style,
+    artist,
+    contentType,
+    term
+) {
+    const query = `
         {  
           "meta": {
             "totalResults": count(*[_type == '${contentType}' && brand == "${brand}" && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} ${filters}
@@ -607,7 +585,7 @@ async function fetchAllFilterOptions(
       }
     `;
 
-  return fetchSanity(query, false);
+    return fetchSanity(query, false);
 }
 
 /**
@@ -687,7 +665,7 @@ async function fetchNextPreviousLesson(railcontentId) {
  * Fetch the page data for a specific lesson by Railcontent ID.
  * @param {string} railContentId - The Railcontent ID of the current lesson.
  * @returns {Promise<Object|null>} - The fetched page data or null if found.
- * 
+ *
  * @example
  * fetchLessonContent('lesson123')
  *   .then(data => console.log(data))
@@ -767,7 +745,7 @@ async function fetchPackAll(railcontentId) {
  * Fetch all children of a specific pack by Railcontent ID.
  * @param {string} railcontentId - The Railcontent ID of the pack.
  * @returns {Promise<Array<Object>|null>} - The fetched pack children data or null if not found.
- * 
+ *
  * @example
  * fetchPackChildren('pack123')
  *   .then(children => console.log(children))
@@ -791,38 +769,38 @@ async function fetchPackChildren(railcontentId) {
  *   .catch(error => console.error(error));
  */
 async function fetchSanity(query, isList) {
-  // Check the config object before proceeding
-  if (!checkConfig(globalConfig)) {
-      return null;
-  }
+    // Check the config object before proceeding
+    if (!checkConfig(globalConfig)) {
+        return null;
+    }
 
-  if (globalConfig.debug) {
-      console.log("fetchSanity Query:", query);
-  }
+    if (globalConfig.debug) {
+        console.log("fetchSanity Query:", query);
+    }
 
-  const encodedQuery = encodeURIComponent(query);
-  const api = globalConfig.useCachedAPI ? 'apicdn' : 'api'
-  const url = `https://${globalConfig.projectId}.${api}.sanity.io/v${globalConfig.version}/data/query/${globalConfig.dataset}?query=${encodedQuery}`;
-  const headers = {
-      'Authorization': `Bearer ${globalConfig.token}`,
-      'Content-Type': 'application/json'
-  };
+    const encodedQuery = encodeURIComponent(query);
+    const api = globalConfig.useCachedAPI ? 'apicdn' : 'api'
+    const url = `https://${globalConfig.projectId}.${api}.sanity.io/v${globalConfig.version}/data/query/${globalConfig.dataset}?query=${encodedQuery}`;
+    const headers = {
+        'Authorization': `Bearer ${globalConfig.token}`,
+        'Content-Type': 'application/json'
+    };
 
-  try {
-      const response = await fetch(url, {headers});
-      const result = await response.json();
-      if (result.result) {
-          if (globalConfig.debug) {
-              console.log("fetchSanity Results:", result);
-          }
-          return isList ? result.result : result.result[0];
-      } else {
-          throw new Error('No results found');
-      }
-  } catch (error) {
-      console.error('fetchSanity: Fetch error:', error);
-      return null;
-  }
+    try {
+        const response = await fetch(url, {headers});
+        const result = await response.json();
+        if (result.result) {
+            if (globalConfig.debug) {
+                console.log("fetchSanity Results:", result);
+            }
+            return isList ? result.result : result.result[0];
+        } else {
+            throw new Error('No results found');
+        }
+    } catch (error) {
+        console.error('fetchSanity: Fetch error:', error);
+        return null;
+    }
 }
 
 
