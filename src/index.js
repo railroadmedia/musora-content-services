@@ -385,8 +385,10 @@ async function fetchWorkouts(brand) {
           "artists": instructor[]->name,
           difficulty,
           difficulty_string,
+          length_in_seconds,
+          published_on,
+          "type": _type,
           web_url_path,
-          published_on
         } | order(published_on desc)[0...5]`
     return fetchSanity(query, true);
 }
