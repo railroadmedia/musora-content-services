@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>Home - Documentation</title>
+    <title>services/user.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,63 +35,124 @@
 
 <div id="main">
     
+    <h1 class="page-title">services/user.js</h1>
+    
 
     
 
 
 
     
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module UserServices
+ */
 
 
-    <section class="package">
-        <h3> </h3>		
+/**
+ * Fetches the completion status of a specific song for the current user.
+ *
+ * @param {string} userId - The ID of the current user.
+ * @param {string} content_id - The ID of the song content to check.
+ * @param {string} token - The CSRF token for authentication.
+ * @returns {Promise&lt;Object|null>} - Returns the completion status object if found, otherwise null.
+ * @example
+ * fetchCurrentSongComplete('user123', 'song456', 'csrf-token')
+ *   .then(status => console.log(status))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchCurrentSongComplete(userId, content_id, token) {
+    const url = `/content/user_progress/${userId}?content_ids[]=${content_id}`;
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': token
+    };
+
+    try {
+        const response = await fetch(url, { headers });
+        const result = await response.json();
+        if(result){
+            return result[userId];
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
+
+/**
+ * Fetches the completion status for multiple songs for the current user.
+ *
+ * @param {string} userId - The ID of the current user.
+ * @param {Array&lt;string>} contentIds - An array of content IDs to check.
+ * @param {string} token - The CSRF token for authentication.
+ * @returns {Promise&lt;Object|null>} - Returns an object containing completion statuses keyed by content ID, or null if an error occurs.
+ * @example
+ * fetchAllCompletedStates('user123', ['song456', 'song789'], 'csrf-token')
+ *   .then(statuses => console.log(statuses))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchAllCompletedStates(userId, contentIds, token) {
+    const url = `/content/user_progress/${userId}?${contentIds.map(id => `content_ids[]=${id}`).join('&amp;')}`;
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': token
+    };
+
+    try {
+        const response = await fetch(url, { headers });
+        const result = await response.json();
+        if(result){
+            return result;
+        } else {
+            console.log('result not json');
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
+
+/**
+ * Fetches a list of songs that are currently in progress for the current user.
+ *
+ * @param {string} userId - The ID of the current user.
+ * @param {string} brand - The brand associated with the songs.
+ * @param {string} token - The CSRF token for authentication.
+ * @returns {Promise&lt;Object|null>} - Returns an object containing in-progress songs if found, otherwise null.
+ * @example
+ * fetchSongsInProgress('user123', 'drumeo', 'csrf-token')
+ *   .then(songs => console.log(songs))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchSongsInProgress(userId, brand, token) {
+    const url = `/content/in_progress/${userId}?content_type=song&amp;brand=${brand}`;
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': token
+    };
+
+    try {
+        const response = await fetch(url, { headers });
+        const result = await response.json();
+        if(result){
+            console.log('fetchSongsInProgress', result);
+            return result;
+        } else {
+            console.log('result not json');
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
+</code></pre>
+        </article>
     </section>
-
-
-
-
-
-
-
-
-
-    
-
-
-
-    <section class="readme usertext">
-        <article><h1>Musora Content Services</h1>
-<p>Welcome to the <strong>musora-content-services</strong> repository. This package provides a collection of utility functions designed to fetch and manage content from our Sanity Studio. These functions are tailored to interact with our Sanity backend, allowing you to easily retrieve, filter, and manipulate content for use in various applications.</p>
-<h2>Features</h2>
-<ul>
-<li><strong>Fetch Content by ID</strong>: Retrieve specific content items using their unique Railcontent ID.</li>
-<li><strong>Fetch All Songs</strong>: Get a list of all songs for a brand with pagination and search capabilities.</li>
-<li><strong>Filter Options</strong>: Generate filtering options based on difficulty, genre, and more.</li>
-<li><strong>Fetch Related Content</strong>: Easily fetch related lessons, songs, and content items.</li>
-<li><strong>Sanity Integration</strong>: Simplified interaction with the Sanity API using customizable configurations.</li>
-</ul>
-<h2>Installation</h2>
-<p>To install the package, use npm:</p>
-<pre class="prettyprint source lang-bash"><code>npm install musora-content-services
-</code></pre>
-<h2>Publishing Package Updates</h2>
-<p>To publish a new version to NPM run,</p>
-<pre class="prettyprint source lang-bash"><code>./publish.sh
-</code></pre>
-<h2>Publish Documentation</h2>
-<p>This repo uses JSDoc to generate API documention. To update the docs, run:</p>
-<pre class="prettyprint source lang-bash"><code>npm run doc
-</code></pre>
-<h2>Github Page Documentation</h2>
-<p>https://railroadmedia.github.io/musora-content-services/</p>
-<h2>Run tests</h2>
-<p>Copy .env file from 1Password &quot;musora-content-services .env&quot;
-Run the following to execute the tests</p>
-<pre class="prettyprint source"><code>npm test
-</code></pre></article>
-    </section>
-
-
 
 
 
