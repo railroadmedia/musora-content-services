@@ -3,7 +3,7 @@ let contentTypeConfig = {
         'fields': [
             '"artist_name": artist->name',
             'soundslice',
-            'instrumentless'
+            'instrumentless',
         ],
         'relationships': {
             'artist': {

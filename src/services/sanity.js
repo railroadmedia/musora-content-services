@@ -1,11 +1,10 @@
 /**
  * @module Sanity-Services
  */
+import {contentTypeConfig} from "../contentTypeConfig";
+import {globalConfig} from "./config";
 
-const { contentTypeConfig } = require('../contentTypeConfig.js');
-const { globalConfig } = require('./config');
-
-import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js'; 
+import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
 
 /**
 * Fetch a song by its document ID from Sanity.
@@ -20,6 +19,10 @@ import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent
 */
 export async function fetchSongById(documentId) {
     const fields = [
+      '"id": railcontent_id',
+      'railcontent_id',
+      '"type": _type',
+      'description',
       'title',
       '"thumbnail_url": thumbnail.asset->url',
       '"style": genre[0]->name',
@@ -28,8 +31,9 @@ export async function fetchSongById(documentId) {
       'instrumentless',
       'soundslice',
       '"resources": resource[]{resource_url, resource_name}',
+      '"url": web_url_path',
     ];
-  
+
     const query = `
         *[_type == "song" && railcontent_id == ${documentId}]{
             ${fields.join(', ')}
@@ -144,11 +148,11 @@ export async function fetchRelatedSongs(brand, songId) {
           }[0...10])
         ])[0...10]
     }`;
-  
+
     // Fetch the related songs data
     return fetchSanity(query, false);
 }
-  
+
 /**
  * Fetch all songs for a specific brand with pagination and search options.
  * @param {string} brand - The brand for which to fetch songs.
@@ -289,7 +293,7 @@ export async function fetchNewReleases(brand) {
 
 
 /**
- * Fetch upcoming events for a specific brand that are within 48 hours before their `published_on` date 
+ * Fetch upcoming events for a specific brand that are within 48 hours before their `published_on` date
  * and are currently ongoing based on their `length_in_seconds`.
  *
  * This function retrieves events that have a `published_on` date within the last 48 hours or are currently
@@ -303,7 +307,7 @@ export async function fetchNewReleases(brand) {
  * fetchLiveEvent('drumeo')
  *   .then(events => console.log(events))
  *   .catch(error => console.error(error));
- * 
+ *
  */
 export async function fetchLiveEvent(brand) {
     const baseLiveTypes = ["student-review", "student-reviews", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"];
@@ -511,7 +515,10 @@ export async function fetchAll(brand, type, {
           break;
   }
 
-    let defaultFields = ['railcontent_id',
+    let defaultFields = [
+        '"id": railcontent_id',
+        'railcontent_id',
+        '"type": _type',
         'title',
         '"image": thumbnail.asset->url',
         'difficulty',

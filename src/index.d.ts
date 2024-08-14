@@ -1,5 +1,4 @@
 import {
-    initializeService,
     fetchSongById,
     fetchArtists,
     fetchSongArtistCount,
@@ -9,6 +8,7 @@ import {
     fetchSongCount,
     fetchWorkouts,
     fetchNewReleases,
+    fetchLiveEvent,
     fetchUpcomingEvents,
     fetchByRailContentId,
     fetchByRailContentIds,
@@ -21,7 +21,9 @@ import {
     fetchPackAll,
     fetchPackChildren,
     fetchLessonContent
-} from './index.js';
+  } from './services/sanity.js';
+  
+  import { initializeService } from './services/config.js';
 
 declare module 'musora-content-services' {
     export {
