@@ -18,7 +18,6 @@ const { globalConfig } = require('./config');
  */
 export async function fetchCurrentSongComplete(content_id) {
     const url = `/content/user_progress/${globalConfig.railcontentConfig.userId}?content_ids[]=${content_id}`;
-    console.log('Request URL:', url); // Debugging log
 
     const headers = {
         'Content-Type': 'application/json',
@@ -27,19 +26,21 @@ export async function fetchCurrentSongComplete(content_id) {
 
     try {
         const response = await fetch(url, { headers });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
         const result = await response.json();
-        if (result) {
-            console.log('API result:', result);
-            return result[globalConfig.railcontentConfig.userId];
+
+        if (result && result[content_id]) {
+            console.log('result', result[content_id]);
+            return result[content_id];  // Return the correct object
+        } else {
+            console.log('Invalid result structure', result);
+            return null;  // Handle unexpected structure
         }
     } catch (error) {
         console.error('Fetch error:', error);
         return null;
     }
 }
+
 
 /**
  * Fetches the completion status for multiple songs for the current user.
