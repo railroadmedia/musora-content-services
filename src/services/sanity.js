@@ -38,10 +38,16 @@ export async function fetchSongById(songId) {
     const currentSongComplete = await fetchCurrentSongComplete(songId);
   
     if (songData && currentSongComplete) {
-      songData.completed = currentSongComplete.state !== "not started";
-      songData.progress_percent = currentSongComplete.percent.toString();
+        console.log('song data', songData);
+        console.log('currentSongComplete', currentSongComplete);
+        songData.completed = currentSongComplete.state !== "not started";
+        songData.progress_percent = currentSongComplete.percent.toString();
+    } else {
+        console.log('no song data', songData);
+        console.log('no currentSongComplete', currentSongComplete);
     }
-  
+    
+    console.log('all songData', songData)
     return songData;
 }
 

@@ -23,11 +23,11 @@ export async function fetchCurrentSongComplete(content_id) {
         'Content-Type': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
-
     try {
         const response = await fetch(url, { headers });
         const result = await response.json();
         if(result){
+            console.log('result', result[globalConfig.railcontentConfig.userId])
             return result[globalConfig.railcontentConfig.userId];
         }
     } catch (error) {
