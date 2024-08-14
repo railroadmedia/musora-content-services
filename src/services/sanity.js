@@ -18,40 +18,25 @@ import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent
 *   .then(song => console.log(song))
 *   .catch(error => console.error(error));
 */
-export async function fetchSongById(songId) {
+export async function fetchSongById(documentId) {
+    const fields = [
+      'title',
+      '"thumbnail_url": thumbnail.asset->url',
+      '"style": genre[0]->name',
+      '"artist": artist->name',
+      'album',
+      'instrumentless',
+      'soundslice',
+      '"resources": resource[]{resource_url, resource_name}',
+    ];
+  
     const query = `
-    *[_type == "song" && railcontent_id == ${songId}]{
-      title,
-      "thumbnail_url": thumbnail.asset->url,
-      "style": genre[0]->name,
-      "artist": artist->name,
-      album,
-      instrumentless,
-      soundslice,
-      railcontent_id,
-      "resources": resource[]{resource_url, resource_name},
-    }`;
+        *[_type == "song" && railcontent_id == ${documentId}]{
+            ${fields.join(', ')}
+        }`;
 
-    try {
-        const songData = await fetchSanity(query, false);
-        const currentSongComplete = await fetchCurrentSongComplete(songId);
-
-        if (songData && currentSongComplete) {
-            console.log('currentSongComplete', currentSongComplete);
-            songData.completed = currentSongComplete.state !== "not started";
-            songData.progress_percent = currentSongComplete.percent.toString();
-        } else {
-            console.log('no currentSongComplete', currentSongComplete);
-        }
-
-        console.log('all songData', songData);
-        return songData;
-    } catch (error) {
-        console.error('Error fetching song by ID:', error);
-        return null;
-    }
+    return fetchSanity(query, true);
 }
-
 
 /**
 * Fetch all artists with lessons available for a specific brand.
@@ -161,32 +146,7 @@ export async function fetchRelatedSongs(brand, songId) {
     }`;
   
     // Fetch the related songs data
-    const relatedSongsData = await fetchSanity(query, true);
-  
-    if (!relatedSongsData || !userId || !token) {
-        return relatedSongsData;
-    }
-  
-    // Extract the IDs of related lessons
-    const relatedLessonIds = relatedSongsData.data.map(lesson => lesson.id);
-  
-    // Fetch the completion states for the related lessons
-    const relatedLessonsCompletionStates = await fetchAllCompletedStates(relatedLessonIds);
-  
-    // Map the completion states to the related lessons
-    relatedSongsData.data = relatedSongsData.data.map(lesson => {
-        const lessonCompletionState = relatedLessonsCompletionStates[lesson.id];
-        if (lessonCompletionState) {
-            return {
-                ...lesson,
-                completed: lessonCompletionState.state !== "not started",
-                lesson_progress: lessonCompletionState.percent.toString()
-            };
-        }
-        return lesson;
-    });
-  
-    return relatedSongsData;
+    return fetchSanity(query, true);
 }
   
 /**
