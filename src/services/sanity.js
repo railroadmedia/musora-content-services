@@ -20,6 +20,9 @@ import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent
 */
 export async function fetchSongById(documentId) {
     const fields = [
+      '"id": railcontent_id',
+      '"type": _type',
+      'description',
       'title',
       '"thumbnail_url": thumbnail.asset->url',
       '"style": genre[0]->name',
@@ -28,6 +31,7 @@ export async function fetchSongById(documentId) {
       'instrumentless',
       'soundslice',
       '"resources": resource[]{resource_url, resource_name}',
+      "url": web_url_path,
     ];
   
     const query = `
