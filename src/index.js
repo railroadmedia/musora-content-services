@@ -1,3 +1,5 @@
+import { initializeService } from './services/config.js';
+
 import {
   fetchSongById,
   fetchArtists,
@@ -23,7 +25,10 @@ import {
   fetchLessonContent
 } from './services/sanity.js';
 
-import { initializeService } from './services/config.js';
+import { 
+  fetchCurrentSongComplete, 
+  fetchAllCompletedStates 
+} from './services/railcontent.js';
 
 
 export {
@@ -49,5 +54,7 @@ export {
     fetchRelatedLessons,
     fetchPackAll,
     fetchPackChildren,
-    fetchLessonContent
+    fetchLessonContent,
+    fetchCurrentSongComplete, 
+    fetchAllCompletedStates 
 }
