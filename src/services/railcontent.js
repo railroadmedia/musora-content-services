@@ -18,16 +18,21 @@ const { globalConfig } = require('./config');
  */
 export async function fetchCurrentSongComplete(content_id) {
     const url = `/content/user_progress/${globalConfig.railcontentConfig.userId}?content_ids[]=${content_id}`;
+    console.log('Request URL:', url); // Debugging log
 
     const headers = {
         'Content-Type': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
+
     try {
         const response = await fetch(url, { headers });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const result = await response.json();
-        if(result){
-            console.log('result', result[globalConfig.railcontentConfig.userId])
+        if (result) {
+            console.log('API result:', result);
             return result[globalConfig.railcontentConfig.userId];
         }
     } catch (error) {
