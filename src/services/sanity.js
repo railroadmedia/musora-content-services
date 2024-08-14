@@ -31,7 +31,7 @@ export async function fetchSongById(documentId) {
       'instrumentless',
       'soundslice',
       '"resources": resource[]{resource_url, resource_name}',
-      "url": web_url_path,
+      '"url": web_url_path',
     ];
   
     const query = `
