@@ -8,6 +8,7 @@ import {
   fetchSongCount,
   fetchWorkouts,
   fetchNewReleases,
+  fetchLiveEvent,
   fetchUpcomingEvents,
   fetchByRailContentId,
   fetchByRailContentIds,
@@ -22,9 +23,7 @@ import {
   fetchLessonContent
 } from './services/sanity.js';
 
-import {
-  initializeService
-} from './services/config.js'
+import { initializeService } from './services/config.js';
 
 
 export {
@@ -38,6 +37,7 @@ export {
     fetchSongCount,
     fetchWorkouts,
     fetchNewReleases,
+    fetchLiveEvent,
     fetchUpcomingEvents,
     fetchByRailContentId,
     fetchByRailContentIds,
