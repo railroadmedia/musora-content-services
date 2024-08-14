@@ -1,9 +1,8 @@
 /**
  * @module Sanity-Services
  */
-
-const { contentTypeConfig } = require('../contentTypeConfig.js');
-const { globalConfig } = require('./config');
+import {contentTypeConfig} from "../contentTypeConfig";
+import {globalConfig} from "./config";
 
 import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
 
@@ -516,7 +515,10 @@ export async function fetchAll(brand, type, {
           break;
   }
 
-    let defaultFields = ['railcontent_id',
+    let defaultFields = [
+        '"id": railcontent_id',
+        'railcontent_id',
+        '"type": _type',
         'title',
         '"image": thumbnail.asset->url',
         'difficulty',
