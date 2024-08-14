@@ -35,7 +35,7 @@ export async function fetchSongById(documentId) {
             ${fields.join(', ')}
         }`;
 
-    return fetchSanity(query, true);
+    return fetchSanity(query, false);
 }
 
 /**
@@ -146,7 +146,7 @@ export async function fetchRelatedSongs(brand, songId) {
     }`;
   
     // Fetch the related songs data
-    return fetchSanity(query, true);
+    return fetchSanity(query, false);
 }
   
 /**
