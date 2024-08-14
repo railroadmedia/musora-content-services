@@ -31,23 +31,27 @@ export async function fetchSongById(songId) {
       railcontent_id,
       "resources": resource[]{resource_url, resource_name},
     }`;
-  
-    const songData = await fetchSanity(query, false);
-  
-    // Fetch the completion state for the current song
-    const currentSongComplete = await fetchCurrentSongComplete(songId);
-  
-    if (songData && currentSongComplete) {
-        console.log('currentSongComplete', currentSongComplete);
-        songData.completed = currentSongComplete.state !== "not started";
-        songData.progress_percent = currentSongComplete.percent.toString();
-    } else {
-        console.log('no currentSongComplete', currentSongComplete);
+
+    try {
+        const songData = await fetchSanity(query, false);
+        const currentSongComplete = await fetchCurrentSongComplete(songId);
+
+        if (songData && currentSongComplete) {
+            console.log('currentSongComplete', currentSongComplete);
+            songData.completed = currentSongComplete.state !== "not started";
+            songData.progress_percent = currentSongComplete.percent.toString();
+        } else {
+            console.log('no currentSongComplete', currentSongComplete);
+        }
+
+        console.log('all songData', songData);
+        return songData;
+    } catch (error) {
+        console.error('Error fetching song by ID:', error);
+        return null;
     }
-    
-    console.log('all songData', songData)
-    return songData;
 }
+
 
 /**
 * Fetch all artists with lessons available for a specific brand.
