@@ -21,6 +21,9 @@ import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent
 export async function fetchSongById(songId) {
     const query = `
     *[_type == "song" && railcontent_id == ${songId}]{
+      "id": railcontent_id,
+      "type": _type,
+      description,
       title,
       "thumbnail_url": thumbnail.asset->url,
       "style": genre[0]->name,
@@ -30,6 +33,7 @@ export async function fetchSongById(songId) {
       soundslice,
       railcontent_id,
       "resources": resource[]{resource_url, resource_name},
+      "url": web_url_path,
     }`;
   
     const songData = await fetchSanity(query, false);

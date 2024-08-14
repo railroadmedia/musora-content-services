@@ -3,7 +3,9 @@ let contentTypeConfig = {
         'fields': [
             '"artist_name": artist->name',
             'soundslice',
-            'instrumentless'
+            'instrumentless',
+            '"id": railcontent_id',
+            '"type": _type',
         ],
         'relationships': {
             'artist': {
