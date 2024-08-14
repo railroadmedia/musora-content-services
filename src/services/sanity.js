@@ -2,9 +2,8 @@
  * @module Sanity-Services
  */
 import {contentTypeConfig} from "../contentTypeConfig";
+import {artistOrInstructor, artistOrInstructorAsArray} from "./queryUtility";
 import {globalConfig} from "./config";
-
-import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
 
 /**
 * Fetch a song by its document ID from Sanity.
@@ -26,7 +25,7 @@ export async function fetchSongById(documentId) {
       'title',
       '"thumbnail_url": thumbnail.asset->url',
       '"style": genre[0]->name',
-      '"artist": artist->name',
+      artistOrInstructor(),
       'album',
       'instrumentless',
       'soundslice',
@@ -249,8 +248,8 @@ export async function fetchWorkouts(brand) {
         "id": railcontent_id,
         title,
         "image": thumbnail.asset->url,
-        "artist_name": instructor[0]->name,
-        "artists": instructor[]->name,
+        ${artistOrInstructor()},
+        ${artistOrInstructorAsArray()},
         difficulty,
         difficulty_string,
         length_in_seconds,
