@@ -1,6 +1,6 @@
 {
     "source": {
-      "include": ["src/index.js", "src/services/user.js"],
+      "include": ["src/services/config.js", "src/services/sanity.js", "src/services/railcontent.js", "src/index.js"],
       "includePattern": ".js$",
       "excludePattern": "(node_modules/|docs)"
     },

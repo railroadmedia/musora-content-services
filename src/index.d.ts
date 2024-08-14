@@ -1,5 +1,5 @@
 import {
-    initializeSanityService,
+    initializeService,
     fetchSongById,
     fetchArtists,
     fetchSongArtistCount,
@@ -25,7 +25,7 @@ import {
 
 declare module 'musora-content-services' {
     export {
-        initializeSanityService,
+        initializeService,
         fetchSongById,
         fetchArtists,
         fetchSongArtistCount,

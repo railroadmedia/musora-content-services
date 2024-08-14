@@ -1,7 +1,8 @@
 /**
- * @module UserServices
+ * @module Railcontent-Services
  */
 
+const { globalConfig } = require('./config');
 
 /**
  * Fetches the completion status of a specific song for the current user.
@@ -15,19 +16,19 @@
  *   .then(status => console.log(status))
  *   .catch(error => console.error(error));
  */
-export async function fetchCurrentSongComplete(userId, content_id, token) {
-    const url = `/content/user_progress/${userId}?content_ids[]=${content_id}`;
+export async function fetchCurrentSongComplete(content_id) {
+    const url = `/content/user_progress/${globalConfig.railcontentConfig.userId}?content_ids[]=${content_id}`;
 
     const headers = {
         'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': token
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
 
     try {
         const response = await fetch(url, { headers });
         const result = await response.json();
         if(result){
-            return result[userId];
+            return result[globalConfig.railcontentConfig.userId];
         }
     } catch (error) {
         console.error('Fetch error:', error);
@@ -47,12 +48,12 @@ export async function fetchCurrentSongComplete(userId, content_id, token) {
  *   .then(statuses => console.log(statuses))
  *   .catch(error => console.error(error));
  */
-export async function fetchAllCompletedStates(userId, contentIds, token) {
-    const url = `/content/user_progress/${userId}?${contentIds.map(id => `content_ids[]=${id}`).join('&')}`;
+export async function fetchAllCompletedStates(contentIds) {
+    const url = `/content/user_progress/${globalConfig.railcontentConfig.userId}?${contentIds.map(id => `content_ids[]=${id}`).join('&')}`;
 
     const headers = {
         'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': token
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
 
     try {
@@ -81,12 +82,12 @@ export async function fetchAllCompletedStates(userId, contentIds, token) {
  *   .then(songs => console.log(songs))
  *   .catch(error => console.error(error));
  */
-export async function fetchSongsInProgress(userId, brand, token) {
-    const url = `/content/in_progress/${userId}?content_type=song&brand=${brand}`;
+export async function fetchSongsInProgress(brand) {
+    const url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=song&brand=${brand}`;
 
     const headers = {
         'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': token
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
 
     try {
