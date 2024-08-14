@@ -34,15 +34,10 @@ export async function fetchSongById(songId) {
   
     const songData = await fetchSanity(query, false);
   
-    // Check if the necessary user information is available in globalConfig
-    if (!songData || !globalConfig.railcontentConfig.userId || !globalConfig.railcontentConfig.token) {
-      return songData;
-    }
-  
     // Fetch the completion state for the current song
     const currentSongComplete = await fetchCurrentSongComplete(songId);
   
-    if (currentSongComplete) {
+    if (songData && currentSongComplete) {
       songData.completed = currentSongComplete.state !== "not started";
       songData.progress_percent = currentSongComplete.percent.toString();
     }
