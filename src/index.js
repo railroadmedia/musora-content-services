@@ -27,7 +27,8 @@ import {
 
 import { 
   fetchCurrentSongComplete, 
-  fetchAllCompletedStates 
+  fetchAllCompletedStates,
+  fetchContentInProgress 
 } from './services/railcontent.js';
 
 
@@ -56,5 +57,6 @@ export {
     fetchPackChildren,
     fetchLessonContent,
     fetchCurrentSongComplete, 
-    fetchAllCompletedStates 
+    fetchAllCompletedStates,
+    fetchContentInProgress
 }
