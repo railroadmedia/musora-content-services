@@ -469,7 +469,7 @@ export async function fetchAll(brand, type, {
   sort = "-published_on",
   includedFields = [],
   groupBy = ""
-}) {
+} = {}) {
     let config = contentTypeConfig[type] ?? {};
     let additionalFields = config?.fields ?? [];
     let isGroupByOneToOne = (groupBy ? config?.relationships[groupBy]?.isOneToOne : false) ?? false;
