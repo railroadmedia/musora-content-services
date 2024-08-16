@@ -22,7 +22,8 @@ import {
   fetchRelatedLessons,
   fetchPackAll,
   fetchPackChildren,
-  fetchLessonContent
+  fetchLessonContent,
+  fetchCourseOverview,
 } from './services/sanity.js';
 
 import { 
@@ -58,5 +59,6 @@ export {
     fetchLessonContent,
     fetchCurrentSongComplete, 
     fetchAllCompletedStates,
-    fetchContentInProgress
+    fetchContentInProgress,
+    fetchCourseOverview,
 }

@@ -810,6 +810,43 @@ export async function fetchPackChildren(railcontentId) {
 }
 
 /**
+ * Fetch the data needed for the Course Overview screen.
+ * @param {string} id - The Railcontent ID of the course
+ * @returns {Promise<Object|null>} - The course information and lessons or null if not found.
+ * 
+ * @example
+ * fetchCourseOverview('course123')
+ *   .then(course => console.log(course))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchCourseOverview(id) {
+  // WIP
+  const query = `*[railcontent_id == ${id}]{
+        "id": railcontent_id,
+        railcontent_id,
+        title,
+        "image": thumbnail.asset->url,
+        "instructors": instructor[]->name,
+        difficulty,
+        difficulty_string,
+        web_url_path,
+        published_on,
+        "type": _type,
+        total_xp,
+        xp,
+        "description": description[0]->children[0]->text,
+        "lessons": child[]->{
+          "id": railcontent_id,
+          title,
+          "image": thumbnail.asset->url,
+          "instructors": instructor[]->name,
+          length_in_seconds,
+        }
+      }`
+  return fetchSanity(query, false);
+}
+
+/**
  * Fetch data from the Sanity API based on a provided query.
  *
  * @param {string} query - The GROQ query to execute against the Sanity API.
