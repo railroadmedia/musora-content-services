@@ -499,10 +499,10 @@ export async function fetchAll(brand, type, {
           sortOrder = "artist->name asc";
           break;
       case "published_on":
-          sortOrder = "published_on desc";
+          sortOrder = "published_on asc";
           break;
       case "-published_on":
-          sortOrder = "published_on asc";
+          sortOrder = "published_on desc";
           break;
       case "-slug":
           sortOrder = "artist->name desc";
