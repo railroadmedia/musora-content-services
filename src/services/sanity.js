@@ -472,7 +472,7 @@ export async function fetchAll(brand, type, {
 } = {}) {
     let config = contentTypeConfig[type] ?? {};
     let additionalFields = config?.fields ?? [];
-    let isGroupByOneToOne = (groupBy ? config?.relationships[groupBy]?.isOneToOne : false) ?? false;
+    let isGroupByOneToOne = (groupBy ? config?.relationships?.[groupBy]?.isOneToOne : false) ?? false;
     const start = (page - 1) * limit;
     const end = start + limit;
 
@@ -834,7 +834,8 @@ export async function fetchCourseOverview(id) {
         "type": _type,
         total_xp,
         xp,
-        "description": description[0]->children[0]->text,
+        description,
+        resource,
         "lessons": child[]->{
           "id": railcontent_id,
           title,
