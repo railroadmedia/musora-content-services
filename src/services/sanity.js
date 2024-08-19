@@ -615,15 +615,15 @@ export async function fetchAllFilterOptions(
     const query = `
         {  
           "meta": {
-            "totalResults": count(*[_type == '${contentType}' && brand == "${brand}" && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} ${filters}
-              ${term ? `&& (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
+            "totalResults": count(*[_type == '${contentType}' && brand == "${brand}" ${style ? ` && '${style}' in genre[]->name` : ''} ${artist ? ` && artist->name == '${artist}'` : ''} ${filters ? ` && ${filters}` : ''}
+              ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
             "filterOptions": {
               "difficulty": [
-                  {"type": "Introductory", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Introductory" ${filters}])},
-                  {"type": "Beginner", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Beginner" ${filters}])},
-                  {"type": "Intermediate", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Intermediate" ${filters}])},
-                  {"type": "Advanced", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Advanced" ${filters}])},
-                  {"type": "Expert", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && difficulty_string == "Expert" ${filters}])}
+                  {"type": "Introductory", "count": count(*[_type == '${contentType}' && brand == '${brand}' ${style ? `&& '${style}' in genre[]->name` : ''} ${artist ? ` && artist->name == '${artist}'` : ''} && difficulty_string == "Introductory" ${filters ? ` && ${filters}` : ''}])},
+                  {"type": "Beginner", "count": count(*[_type == '${contentType}' && brand == '${brand}' ${style ? `&& '${style}' in genre[]->name` : ''} ${artist ? ` && artist->name == '${artist}'` : ''} && difficulty_string == "Beginner" ${filters ? ` && ${filters}` : ''}])},
+                  {"type": "Intermediate", "count": count(*[_type == '${contentType}' && brand == '${brand}' ${style ? `&& '${style}' in genre[]->name` : ''} ${artist ? ` && artist->name == '${artist}'` : ''} && difficulty_string == "Intermediate" ${filters ? ` && ${filters}` : ''}])},
+                  {"type": "Advanced", "count": count(*[_type == '${contentType}' && brand == '${brand}' ${style ? `&& '${style}' in genre[]->name` : ''} ${artist ? ` && artist->name == '${artist}'` : ''} && difficulty_string == "Advanced" ${filters ? ` && ${filters}` : ''}])},
+                  {"type": "Expert", "count": count(*[_type == '${contentType}' && brand == '${brand}' ${style ? `&& '${style}' in genre[]->name` : ''} ${artist ? ` && artist->name == '${artist}'` : ''} && difficulty_string == "Expert" ${filters ? ` && ${filters}` : ''}])}
               ][count > 0],
               "instrumentless": [
                   {"type": "Full Song Only", "count": count(*[_type == '${contentType}' && brand == '${brand}' && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && instrumentless == false ${filters}])},
@@ -631,15 +631,14 @@ export async function fetchAllFilterOptions(
               ][count > 0],
               "genre": *[_type == 'genre' && '${contentType}' in filter_types] {
                 "type": name,
-                "count": count(*[_type == '${contentType}' && brand == "${brand}" && ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} && references(^._id)])
+                "count": count(*[_type == '${contentType}' && brand == "${brand}" ${style ? ` && '${style}' in genre[]->name` : ''} ${ artist ? ` && artist->name == '${artist}'` : ''} && references(^._id)])
               }[count > 0]
             }
           }
         }
-    }
   `;
 
-    return fetchSanity(query, false);
+    return fetchSanity(query, true);
 }
 
 /**
