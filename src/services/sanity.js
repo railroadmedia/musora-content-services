@@ -4,6 +4,8 @@
 import {contentTypeConfig} from "../contentTypeConfig";
 import {globalConfig} from "./config";
 
+import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
+
 /**
 * Fetch a song by its document ID from Sanity.
 *
@@ -232,16 +234,18 @@ export async function fetchSongCount(brand) {
 }
 
 /**
-* Fetch the latest workouts for the home page of a specific brand.
-* This function retrieves the latest workout content for a given brand, fetching up to five workouts. The workouts are sorted in descending order by their publication date.
-* @param {string} brand - The brand for which to fetch workouts (e.g., 'drumeo', 'pianote').
-* @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of workout data objects or null if no workouts are found.
-*
-* @example
-* fetchWorkouts('drumeo')
-*   .then(workouts => console.log(workouts))
-*   .catch(error => console.error(error));
-*/
+ * Fetch the latest workouts for a specific brand, including completion status and progress.
+ * This function retrieves up to five of the latest workout content for a given brand, sorted in descending order by their publication date.
+ * It also includes completion status and progress percentage for each workout by fetching additional data about user progress.
+ * 
+ * @param {string} brand - The brand for which to fetch workouts (e.g., 'drumeo', 'pianote').
+ * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of workout data objects with additional properties for completion status and progress percentage, or null if no workouts are found.
+ * 
+ * @example
+ * fetchWorkouts('drumeo')
+ *   .then(workouts => console.log(workouts))
+ *   .catch(error => console.error(error));
+ */
 export async function fetchWorkouts(brand) {
   const query = `*[_type == 'workout' && brand == '${brand}'] [0...5] {
         "id": railcontent_id,
@@ -289,59 +293,6 @@ export async function fetchNewReleases(brand) {
   return fetchSanity(query, true);
 }
 
-
-/**
- * Fetch upcoming events for a specific brand that are within 48 hours before their `published_on` date
- * and are currently ongoing based on their `length_in_seconds`.
- *
- * This function retrieves events that have a `published_on` date within the last 48 hours or are currently
- * ongoing based on the event's duration (`length_in_seconds`).
- *
- * @param {string} brand - The brand for which to fetch upcoming events (e.g., 'drumeo', 'pianote', etc.).
- * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of event objects or null if no events are found.
- *
- * @example
- * // Example usage:
- * fetchLiveEvent('drumeo')
- *   .then(events => console.log(events))
- *   .catch(error => console.error(error));
- *
- */
-export async function fetchLiveEvent(brand) {
-    const baseLiveTypes = ["student-review", "student-reviews", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"];
-    const liveTypes = {
-        'drumeo': [...baseLiveTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "quick-tips", "student-collaborations", "live-streams", "podcasts", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums"],
-        'pianote': baseLiveTypes,
-        'guitareo': [...baseLiveTypes, "archives"],
-        'singeo': baseLiveTypes,
-        'default': baseLiveTypes
-    };
-
-    const typesString = arrayJoinWithQuotes(liveTypes[brand] ?? liveTypes['default']);
-    const now = getSanityDate(new Date());
-    const twoDaysAgo = getSanityDate(new Date(Date.now() - 48 * 60 * 60 * 1000)); // 48 hours ago
-
-    // Adjust the query to filter events based on the calculated time window
-    const query = `
-        *[_type in [${typesString}] && brand == '${brand}' 
-        && published_on > '${twoDaysAgo}' 
-        || (published_on <= '${now}' && dateTime(published_on) + length_in_seconds * 1000 > '${now}')
-        ] {
-        "id": railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": instructor[0]->name,
-        "artists": instructor[]->name,
-        difficulty,
-        difficulty_string,
-        length_in_seconds,
-        published_on,
-        "type": _type,
-        web_url_path,
-        } | order(published_on asc)[0]`;
-
-    return fetchSanity(query, true);
-}
 
 /**
 * Fetch upcoming events for a specific brand.
@@ -474,44 +425,44 @@ export async function fetchAll(brand, type, {
     const start = (page - 1) * limit;
     const end = start + limit;
 
-  // Construct the search filter
-  const searchFilter = searchTerm
-      ? `&& (artist->name match "${searchTerm}*" || title match "${searchTerm}*")`
-      : "";
+    // Construct the search filter
+    const searchFilter = searchTerm
+        ? `&& (artist->name match "${searchTerm}*" || title match "${searchTerm}*")`
+        : "";
 
-  // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
-  const includedFieldsFilter = includedFields.length > 0
-      ? includedFields.map(field => {
-          let [key, value] = field.split(',');
-          if (key === 'difficulty') {
-              key = 'difficulty_string';
-          }
-          return `&& ${key} == "${value}"`;
-      }).join(' ')
-      : "";
+    // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
+    const includedFieldsFilter = includedFields.length > 0
+        ? includedFields.map(field => {
+            let [key, value] = field.split(',');
+            if (key === 'difficulty') {
+                key = 'difficulty_string';
+            }
+            return `&& ${key} == "${value}"`;
+        }).join(' ')
+        : "";
 
-  // Determine the sort order
-  let sortOrder;
-  switch (sort) {
-      case "slug":
-          sortOrder = "artist->name asc";
-          break;
-      case "published_on":
-          sortOrder = "published_on asc";
-          break;
-      case "-published_on":
-          sortOrder = "published_on desc";
-          break;
-      case "-slug":
-          sortOrder = "artist->name desc";
-          break;
-      case "-popularity":
-          sortOrder = "popularity desc";
-          break;
-      default:
-          sortOrder = "published_on asc";
-          break;
-  }
+    // Determine the sort order
+    let sortOrder;
+    switch (sort) {
+        case "slug":
+            sortOrder = "artist->name asc";
+            break;
+        case "published_on":
+            sortOrder = "published_on asc";
+            break;
+        case "-published_on":
+            sortOrder = "published_on desc";
+            break;
+        case "-slug":
+            sortOrder = "artist->name desc";
+            break;
+        case "-popularity":
+            sortOrder = "popularity desc";
+            break;
+        default:
+            sortOrder = "published_on asc";
+            break;
+    }
 
     let defaultFields = [
         '"id": railcontent_id',
@@ -633,10 +584,10 @@ export async function fetchAllFilterOptions(
                 "count": count(*[${commonFilter} && references(^._id)])
               }[count > 0]
             }
-          }
         }
-  `;
-    return fetchSanity(query, true);
+      }
+    }`;
+  return fetchSanity(query, true);
 }
 
 /**
