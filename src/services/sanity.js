@@ -293,59 +293,6 @@ export async function fetchNewReleases(brand) {
 
 
 /**
- * Fetch upcoming events for a specific brand that are within 48 hours before their `published_on` date
- * and are currently ongoing based on their `length_in_seconds`.
- *
- * This function retrieves events that have a `published_on` date within the last 48 hours or are currently
- * ongoing based on the event's duration (`length_in_seconds`).
- *
- * @param {string} brand - The brand for which to fetch upcoming events (e.g., 'drumeo', 'pianote', etc.).
- * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of event objects or null if no events are found.
- *
- * @example
- * // Example usage:
- * fetchLiveEvent('drumeo')
- *   .then(events => console.log(events))
- *   .catch(error => console.error(error));
- *
- */
-export async function fetchLiveEvent(brand) {
-    const baseLiveTypes = ["student-review", "student-reviews", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"];
-    const liveTypes = {
-        'drumeo': [...baseLiveTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "quick-tips", "student-collaborations", "live-streams", "podcasts", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums"],
-        'pianote': baseLiveTypes,
-        'guitareo': [...baseLiveTypes, "archives"],
-        'singeo': baseLiveTypes,
-        'default': baseLiveTypes
-    };
-
-    const typesString = arrayJoinWithQuotes(liveTypes[brand] ?? liveTypes['default']);
-    const now = getSanityDate(new Date());
-    const twoDaysAgo = getSanityDate(new Date(Date.now() - 48 * 60 * 60 * 1000)); // 48 hours ago
-
-    // Adjust the query to filter events based on the calculated time window
-    const query = `
-        *[_type in [${typesString}] && brand == '${brand}' 
-        && published_on > '${twoDaysAgo}' 
-        || (published_on <= '${now}' && dateTime(published_on) + length_in_seconds * 1000 > '${now}')
-        ] {
-        "id": railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": instructor[0]->name,
-        "artists": instructor[]->name,
-        difficulty,
-        difficulty_string,
-        length_in_seconds,
-        published_on,
-        "type": _type,
-        web_url_path,
-        } | order(published_on asc)[0]`;
-
-    return fetchSanity(query, true);
-}
-
-/**
 * Fetch upcoming events for a specific brand.
 *
 * @param {string} brand - The brand for which to fetch upcoming events.
