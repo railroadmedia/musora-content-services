@@ -281,32 +281,85 @@ export async function fetchSongCount(brand) {
 }
 
 /**
-* Fetch the latest workouts for the home page of a specific brand.
-* This function retrieves the latest workout content for a given brand, fetching up to five workouts. The workouts are sorted in descending order by their publication date.
-* @param {string} brand - The brand for which to fetch workouts (e.g., 'drumeo', 'pianote').
-* @returns {Promise&lt;Array&lt;Object>|null>} - A promise that resolves to an array of workout data objects or null if no workouts are found.
-*
-* @example
-* fetchWorkouts('drumeo')
-*   .then(workouts => console.log(workouts))
-*   .catch(error => console.error(error));
-*/
+ * Fetch the latest workouts for a specific brand, including completion status and progress.
+ * This function retrieves up to five of the latest workout content for a given brand, sorted in descending order by their publication date.
+ * It also includes completion status and progress percentage for each workout by fetching additional data about user progress.
+ * 
+ * @param {string} brand - The brand for which to fetch workouts (e.g., 'drumeo', 'pianote').
+ * @returns {Promise&lt;Array&lt;Object>|null>} - A promise that resolves to an array of workout data objects with additional properties for completion status and progress percentage, or null if no workouts are found.
+ * 
+ * @example
+ * fetchWorkouts('drumeo')
+ *   .then(workouts => console.log(workouts))
+ *   .catch(error => console.error(error));
+ */
+
 export async function fetchWorkouts(brand) {
-  const query = `*[_type == 'workout' &amp;&amp; brand == '${brand}'] [0...5] {
-        "id": railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": instructor[0]->name,
-        "artists": instructor[]->name,
-        difficulty,
-        difficulty_string,
-        length_in_seconds,
-        published_on,
-        "type": _type,
-        web_url_path,
-      } | order(published_on desc)[0...5]`
-  return fetchSanity(query, true);
+    const query = `*[_type == 'workout' &amp;&amp; brand == '${brand}'] [0...5] {
+          "id": railcontent_id,
+          title,
+          "image": thumbnail.asset->url,
+          "artist_name": instructor[0]->name,
+          "artists": instructor[]->name,
+          difficulty,
+          difficulty_string,
+          length_in_seconds,
+          published_on,
+          "type": _type,
+          web_url_path,
+        } | order(published_on desc)[0...5]`;
+  
+    try {
+      // Fetch the workouts
+      const workouts = await fetchSanity(query, true);
+  
+      if (!workouts || workouts.length === 0) {
+        return [];
+      }
+  
+      // Extract content IDs
+      const contentIds = workouts.map(workout => workout.id);
+  
+      // Fetch completion states using the existing function
+      const completedStatesObject = await fetchAllCompletedStates(contentIds);
+  
+      // Check if completedStatesObject is an object and convert to array if necessary
+      if (typeof completedStatesObject !== 'object' || completedStatesObject === null) {
+        console.error('Completed states are not an object:', completedStatesObject);
+        return workouts;
+      }
+  
+      // Convert object to array and create a map for fast lookup
+      const completedStatesArray = Object.entries(completedStatesObject).map(([content_id, state]) => ({
+        content_id: parseInt(content_id, 10), // Convert key to integer if necessary
+        ...state
+      }));
+  
+      const completedStatesMap = completedStatesArray.reduce((map, state) => {
+        map[state.content_id] = state;
+        return map;
+      }, {});
+  
+      // Add completion status and progress percentage to each workout
+      return workouts.map(workout => {
+        const state = completedStatesMap[workout.id];
+        if (state) {
+          workout.completed = state.state !== "not started";
+          workout.progress_percent = state.percent.toString();
+        } else {
+          workout.completed = false;
+          workout.progress_percent = "0";
+        }
+        //console.log(workout)
+        return workout;
+      });
+  
+    } catch (error) {
+      console.error('Error fetching workouts with completion:', error);
+      return [];
+    }
 }
+
 
 /**
 * Fetch the latest new releases for a specific brand.
@@ -470,44 +523,44 @@ export async function fetchAll(brand, type, {
     const start = (page - 1) * limit;
     const end = start + limit;
 
-  // Construct the search filter
-  const searchFilter = searchTerm
-      ? `&amp;&amp; (artist->name match "${searchTerm}*" || title match "${searchTerm}*")`
-      : "";
+    // Construct the search filter
+    const searchFilter = searchTerm
+        ? `&amp;&amp; (artist->name match "${searchTerm}*" || title match "${searchTerm}*")`
+        : "";
 
-  // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
-  const includedFieldsFilter = includedFields.length > 0
-      ? includedFields.map(field => {
-          let [key, value] = field.split(',');
-          if (key === 'difficulty') {
-              key = 'difficulty_string';
-          }
-          return `&amp;&amp; ${key} == "${value}"`;
-      }).join(' ')
-      : "";
+    // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
+    const includedFieldsFilter = includedFields.length > 0
+        ? includedFields.map(field => {
+            let [key, value] = field.split(',');
+            if (key === 'difficulty') {
+                key = 'difficulty_string';
+            }
+            return `&amp;&amp; ${key} == "${value}"`;
+        }).join(' ')
+        : "";
 
-  // Determine the sort order
-  let sortOrder;
-  switch (sort) {
-      case "slug":
-          sortOrder = "artist->name asc";
-          break;
-      case "published_on":
-          sortOrder = "published_on asc";
-          break;
-      case "-published_on":
-          sortOrder = "published_on desc";
-          break;
-      case "-slug":
-          sortOrder = "artist->name desc";
-          break;
-      case "-popularity":
-          sortOrder = "popularity desc";
-          break;
-      default:
-          sortOrder = "published_on asc";
-          break;
-  }
+    // Determine the sort order
+    let sortOrder;
+    switch (sort) {
+        case "slug":
+            sortOrder = "artist->name asc";
+            break;
+        case "published_on":
+            sortOrder = "published_on asc";
+            break;
+        case "-published_on":
+            sortOrder = "published_on desc";
+            break;
+        case "-slug":
+            sortOrder = "artist->name desc";
+            break;
+        case "-popularity":
+            sortOrder = "popularity desc";
+            break;
+        default:
+            sortOrder = "published_on asc";
+            break;
+    }
 
     let defaultFields = [
         '"id": railcontent_id',
@@ -936,7 +989,7 @@ function checkSanityConfig(config) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Tue Aug 20 2024 12:50:34 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Tue Aug 20 2024 14:36:28 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
