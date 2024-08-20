@@ -2,7 +2,7 @@
  * @module Sanity-Services
  */
 import {contentTypeConfig} from "../contentTypeConfig";
-import {artistOrInstructor, artistOrInstructorAsArray} from "./queryUtility";
+import {artistOrInstructor, artistOrInstructorAsArray, defaultContentTypeFields} from "./queryUtility";
 import {globalConfig} from "./config";
 
 /**
@@ -253,7 +253,7 @@ export async function fetchWorkouts(brand) {
         difficulty,
         difficulty_string,
         length_in_seconds,
-        published_on,
+        published_on,;
         "type": _type,
         web_url_path,
       } | order(published_on desc)[0...5]`
@@ -514,18 +514,8 @@ export async function fetchAll(brand, type, {
           break;
   }
 
-    let defaultFields = [
-        '"id": railcontent_id',
-        'railcontent_id',
-        '"type": _type',
-        'title',
-        '"image": thumbnail.asset->url',
-        'difficulty',
-        'difficulty_string',
-        'web_url_path',
-        'published_on'];
 
-    let fields = defaultFields.concat(additionalFields);
+    let fields = defaultContentTypeFields().concat(additionalFields);
     let fieldsString = fields.join(',');
 
     // Determine the group by clause
@@ -649,17 +639,11 @@ export async function fetchAllFilterOptions(
 export async function fetchChildren(railcontentId) {
   //TODO: Implement getByParentId include sum XP
   const query = `*[_railcontent_id == ${railcontentId}]{
-        railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": artist->name,
-        artist,
-        difficulty,
-        difficulty_string,
-        web_url_path,
-        published_on
-      } | order(published_on asc)`
-  return fetchSanity(query, true);
+        'children': child[]->{
+                           ${defaultContentTypeFields(true)},
+                        },
+      }`;
+  return fetchSanity(query, true)['children'];
 }
 
 /**
