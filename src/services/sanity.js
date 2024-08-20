@@ -561,27 +561,29 @@ export async function fetchAllFilterOptions(
     contentType,
     term
 ) {
-  const query = `
-    {
-      "meta": {
-        "totalResults": count(*[_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''}${filters}
-          ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
-        "filterOptions": {
-          "difficulty": [
-            {"type": "Introductory", "count": count(*[_type == '${contentType}' && brand == '${brand}'${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} && difficulty_string == "Introductory"${filters}])},
-            {"type": "Beginner", "count": count(*[_type == '${contentType}' && brand == '${brand}'${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} && difficulty_string == "Beginner"${filters}])},
-            {"type": "Intermediate", "count": count(*[_type == '${contentType}' && brand == '${brand}'${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} && difficulty_string == "Intermediate"${filters}])},
-            {"type": "Advanced", "count": count(*[_type == '${contentType}' && brand == '${brand}'${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} && difficulty_string == "Advanced"${filters}])},
-            {"type": "Expert", "count": count(*[_type == '${contentType}' && brand == '${brand}'${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} && difficulty_string == "Expert"${filters}])}
-          ][count > 0],
-          "instrumentless": [
-            {"type": "Full Song Only", "count": count(*[_type == '${contentType}' && brand == '${brand}'${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} && instrumentless == false${filters}])},
-            {"type": "Instrument Removed", "count": count(*[_type == '${contentType}' && brand == '${brand}'${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} && instrumentless == true${filters}])}
-          ][count > 0],
-          "genre": *[_type == 'genre' && '${contentType}' in filter_types] {
-            "type": name,
-            "count": count(*[_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} && references(^._id)])
-          }[count > 0]
+    const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${filters ? filters : ''}`;
+    const query = `
+        {  
+          "meta": {
+            "totalResults": count(*[${commonFilter}
+              ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
+            "filterOptions": {
+              "difficulty": [
+                  {"type": "Introductory", "count": count(*[${commonFilter} && difficulty_string == "Introductory"])},
+                  {"type": "Beginner", "count": count(*[${commonFilter} && difficulty_string == "Beginner"])},
+                  {"type": "Intermediate", "count": count(*[${commonFilter} && difficulty_string == "Intermediate" ])},
+                  {"type": "Advanced", "count": count(*[${commonFilter} && difficulty_string == "Advanced" ])},
+                  {"type": "Expert", "count": count(*[${commonFilter} && difficulty_string == "Expert" ])}
+              ][count > 0],
+              "instrumentless": [
+                  {"type": "Full Song Only", "count": count(*[${commonFilter} && instrumentless == false ])},
+                  {"type": "Instrument Removed", "count": count(*[${commonFilter} && instrumentless == true ])}
+              ][count > 0],
+              "genre": *[_type == 'genre' && '${contentType}' in filter_types] {
+                "type": name,
+                "count": count(*[${commonFilter} && references(^._id)])
+              }[count > 0]
+            }
         }
       }
     }`;
