@@ -659,34 +659,31 @@ export async function fetchAllFilterOptions(
     contentType,
     term
 ) {
-    const query = `
-        {  
-          "meta": {
-            "totalResults": count(*[_type == '${contentType}' &amp;&amp; brand == "${brand}" &amp;&amp; ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} ${filters}
-              ${term ? `&amp;&amp; (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
-            "filterOptions": {
-              "difficulty": [
-                  {"type": "Introductory", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}' &amp;&amp; ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} &amp;&amp; difficulty_string == "Introductory" ${filters}])},
-                  {"type": "Beginner", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}' &amp;&amp; ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} &amp;&amp; difficulty_string == "Beginner" ${filters}])},
-                  {"type": "Intermediate", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}' &amp;&amp; ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} &amp;&amp; difficulty_string == "Intermediate" ${filters}])},
-                  {"type": "Advanced", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}' &amp;&amp; ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} &amp;&amp; difficulty_string == "Advanced" ${filters}])},
-                  {"type": "Expert", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}' &amp;&amp; ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} &amp;&amp; difficulty_string == "Expert" ${filters}])}
-              ][count > 0],
-              "instrumentless": [
-                  {"type": "Full Song Only", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}' &amp;&amp; ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} &amp;&amp; instrumentless == false ${filters}])},
-                  {"type": "Instrument Removed", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}' &amp;&amp; ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} &amp;&amp; instrumentless == true ${filters}])}
-              ][count > 0],
-              "genre": *[_type == 'genre' &amp;&amp; '${contentType}' in filter_types] {
-                "type": name,
-                "count": count(*[_type == '${contentType}' &amp;&amp; brand == "${brand}" &amp;&amp; ${style ? `'${style}' in genre[]->name` : `artist->name == '${artist}'`} &amp;&amp; references(^._id)])
-              }[count > 0]
-            }
-          }
+  const query = `
+    {
+      "meta": {
+        "totalResults": count(*[_type == '${contentType}' &amp;&amp; brand == "${brand}"${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''}${filters}
+          ${term ? ` &amp;&amp; (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
+        "filterOptions": {
+          "difficulty": [
+            {"type": "Introductory", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}'${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} &amp;&amp; difficulty_string == "Introductory"${filters}])},
+            {"type": "Beginner", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}'${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} &amp;&amp; difficulty_string == "Beginner"${filters}])},
+            {"type": "Intermediate", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}'${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} &amp;&amp; difficulty_string == "Intermediate"${filters}])},
+            {"type": "Advanced", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}'${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} &amp;&amp; difficulty_string == "Advanced"${filters}])},
+            {"type": "Expert", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}'${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} &amp;&amp; difficulty_string == "Expert"${filters}])}
+          ][count > 0],
+          "instrumentless": [
+            {"type": "Full Song Only", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}'${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} &amp;&amp; instrumentless == false${filters}])},
+            {"type": "Instrument Removed", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}'${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} &amp;&amp; instrumentless == true${filters}])}
+          ][count > 0],
+          "genre": *[_type == 'genre' &amp;&amp; '${contentType}' in filter_types] {
+            "type": name,
+            "count": count(*[_type == '${contentType}' &amp;&amp; brand == "${brand}"${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} &amp;&amp; references(^._id)])
+          }[count > 0]
         }
-    }
-  `;
-
-    return fetchSanity(query, false);
+      }
+    }`;
+  return fetchSanity(query, true);
 }
 
 /**
@@ -989,7 +986,7 @@ function checkSanityConfig(config) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Tue Aug 20 2024 14:36:28 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Tue Aug 20 2024 19:53:05 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
