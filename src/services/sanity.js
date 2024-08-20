@@ -246,73 +246,22 @@ export async function fetchSongCount(brand) {
  *   .then(workouts => console.log(workouts))
  *   .catch(error => console.error(error));
  */
-
 export async function fetchWorkouts(brand) {
-    const query = `*[_type == 'workout' && brand == '${brand}'] [0...5] {
-          "id": railcontent_id,
-          title,
-          "image": thumbnail.asset->url,
-          "artist_name": instructor[0]->name,
-          "artists": instructor[]->name,
-          difficulty,
-          difficulty_string,
-          length_in_seconds,
-          published_on,
-          "type": _type,
-          web_url_path,
-        } | order(published_on desc)[0...5]`;
-  
-    try {
-      // Fetch the workouts
-      const workouts = await fetchSanity(query, true);
-  
-      if (!workouts || workouts.length === 0) {
-        return [];
-      }
-  
-      // Extract content IDs
-      const contentIds = workouts.map(workout => workout.id);
-  
-      // Fetch completion states using the existing function
-      const completedStatesObject = await fetchAllCompletedStates(contentIds);
-  
-      // Check if completedStatesObject is an object and convert to array if necessary
-      if (typeof completedStatesObject !== 'object' || completedStatesObject === null) {
-        console.error('Completed states are not an object:', completedStatesObject);
-        return workouts;
-      }
-  
-      // Convert object to array and create a map for fast lookup
-      const completedStatesArray = Object.entries(completedStatesObject).map(([content_id, state]) => ({
-        content_id: parseInt(content_id, 10), // Convert key to integer if necessary
-        ...state
-      }));
-  
-      const completedStatesMap = completedStatesArray.reduce((map, state) => {
-        map[state.content_id] = state;
-        return map;
-      }, {});
-  
-      // Add completion status and progress percentage to each workout
-      return workouts.map(workout => {
-        const state = completedStatesMap[workout.id];
-        if (state) {
-          workout.completed = state.state !== "not started";
-          workout.progress_percent = state.percent.toString();
-        } else {
-          workout.completed = false;
-          workout.progress_percent = "0";
-        }
-        //console.log(workout)
-        return workout;
-      });
-  
-    } catch (error) {
-      console.error('Error fetching workouts with completion:', error);
-      return [];
-    }
+  const query = `*[_type == 'workout' && brand == '${brand}'] [0...5] {
+        "id": railcontent_id,
+        title,
+        "image": thumbnail.asset->url,
+        "artist_name": instructor[0]->name,
+        "artists": instructor[]->name,
+        difficulty,
+        difficulty_string,
+        length_in_seconds,
+        published_on,
+        "type": _type,
+        web_url_path,
+      } | order(published_on desc)[0...5]`
+  return fetchSanity(query, true);
 }
-
 
 /**
 * Fetch the latest new releases for a specific brand.
