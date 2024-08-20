@@ -614,7 +614,7 @@ export async function fetchAllFilterOptions(
     const query = `
         {  
           "meta": {
-            "totalResults": count(*[${commonFilter}}
+            "totalResults": count(*[${commonFilter}
               ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
             "filterOptions": {
               "difficulty": [
