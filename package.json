@@ -22,12 +22,12 @@
     "dotenv": "^16.4.5",
     "jest": "^29.7.0",
     "jsdoc": "^4.0.3",
-    "standard-version": "^9.5.0"
+    "standard-version": "^9.5.0",
+    "ts-jest": "^29.2.4"
   },
   "dependencies": {
     "@babel/preset-env": "^7.25.3",
     "babel-jest": "^29.7.0",
-    "docdash": "^2.0.2",
-    "ts-jest": "^29.2.4"
+    "docdash": "^2.0.2"
   }
 }

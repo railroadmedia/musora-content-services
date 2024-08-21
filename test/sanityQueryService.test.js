@@ -26,14 +26,16 @@ const {
 
 describe('Sanity Queries', function () {
     beforeEach(() => {
-        const config = { 'sanityConfig':{
-            token: process.env.SANITY_API_TOKEN,
-            projectId: process.env.SANITY_PROJECT_ID,
-            dataset: process.env.SANITY_DATASET,
-            useCachedAPI: process.env.SANITY_USE_CACHED_API || true,
-            version: '2021-06-07',
-            debug: process.env.DEBUG || false
-        }};
+        const config = { 
+            sanityConfig: {
+                token: process.env.SANITY_API_TOKEN,
+                projectId: process.env.SANITY_PROJECT_ID,
+                dataset: process.env.SANITY_DATASET,
+                useCachedAPI: process.env.SANITY_USE_CACHED_API || true,
+                version: '2021-06-07',
+                debug: process.env.DEBUG || false
+            }
+        };
         initializeService(config);
     });
 
