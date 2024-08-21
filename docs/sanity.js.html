@@ -492,7 +492,7 @@ export async function fetchAll(brand, type, {
     let sortOrder;
     switch (sort) {
         case "slug":
-            sortOrder = "artist->name asc";
+            sortOrder = "title asc";
             break;
         case "published_on":
             sortOrder = "published_on asc";
@@ -501,7 +501,7 @@ export async function fetchAll(brand, type, {
             sortOrder = "published_on desc";
             break;
         case "-slug":
-            sortOrder = "artist->name desc";
+            sortOrder = "title desc";
             break;
         case "-popularity":
             sortOrder = "popularity desc";
@@ -608,27 +608,29 @@ export async function fetchAllFilterOptions(
     contentType,
     term
 ) {
-  const query = `
-    {
-      "meta": {
-        "totalResults": count(*[_type == '${contentType}' &amp;&amp; brand == "${brand}"${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''}${filters}
-          ${term ? ` &amp;&amp; (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
-        "filterOptions": {
-          "difficulty": [
-            {"type": "Introductory", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}'${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} &amp;&amp; difficulty_string == "Introductory"${filters}])},
-            {"type": "Beginner", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}'${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} &amp;&amp; difficulty_string == "Beginner"${filters}])},
-            {"type": "Intermediate", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}'${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} &amp;&amp; difficulty_string == "Intermediate"${filters}])},
-            {"type": "Advanced", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}'${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} &amp;&amp; difficulty_string == "Advanced"${filters}])},
-            {"type": "Expert", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}'${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} &amp;&amp; difficulty_string == "Expert"${filters}])}
-          ][count > 0],
-          "instrumentless": [
-            {"type": "Full Song Only", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}'${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} &amp;&amp; instrumentless == false${filters}])},
-            {"type": "Instrument Removed", "count": count(*[_type == '${contentType}' &amp;&amp; brand == '${brand}'${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} &amp;&amp; instrumentless == true${filters}])}
-          ][count > 0],
-          "genre": *[_type == 'genre' &amp;&amp; '${contentType}' in filter_types] {
-            "type": name,
-            "count": count(*[_type == '${contentType}' &amp;&amp; brand == "${brand}"${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} &amp;&amp; references(^._id)])
-          }[count > 0]
+    const commonFilter = `_type == '${contentType}' &amp;&amp; brand == "${brand}"${style ? ` &amp;&amp; '${style}' in genre[]->name` : ''}${artist ? ` &amp;&amp; artist->name == '${artist}'` : ''} ${filters ? filters : ''}`;
+    const query = `
+        {  
+          "meta": {
+            "totalResults": count(*[${commonFilter}
+              ${term ? ` &amp;&amp; (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
+            "filterOptions": {
+              "difficulty": [
+                  {"type": "Introductory", "count": count(*[${commonFilter} &amp;&amp; difficulty_string == "Introductory"])},
+                  {"type": "Beginner", "count": count(*[${commonFilter} &amp;&amp; difficulty_string == "Beginner"])},
+                  {"type": "Intermediate", "count": count(*[${commonFilter} &amp;&amp; difficulty_string == "Intermediate" ])},
+                  {"type": "Advanced", "count": count(*[${commonFilter} &amp;&amp; difficulty_string == "Advanced" ])},
+                  {"type": "Expert", "count": count(*[${commonFilter} &amp;&amp; difficulty_string == "Expert" ])}
+              ][count > 0],
+              "instrumentless": [
+                  {"type": "Full Song Only", "count": count(*[${commonFilter} &amp;&amp; instrumentless == false ])},
+                  {"type": "Instrument Removed", "count": count(*[${commonFilter} &amp;&amp; instrumentless == true ])}
+              ][count > 0],
+              "genre": *[_type == 'genre' &amp;&amp; '${contentType}' in filter_types] {
+                "type": name,
+                "count": count(*[${commonFilter} &amp;&amp; references(^._id)])
+              }[count > 0]
+            }
         }
       }
     }`;
@@ -862,10 +864,10 @@ export async function fetchSanity(query, isList) {
   if (globalConfig.sanityConfig.debug) {
       console.log("fetchSanity Query:", query);
   }
-
+  const perspective = globalConfig.sanityConfig.perspective ?? 'published';
   const encodedQuery = encodeURIComponent(query);
   const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api';
-  const url = `https://${globalConfig.sanityConfig.projectId}.${api}.sanity.io/v${globalConfig.sanityConfig.version}/data/query/${globalConfig.sanityConfig.dataset}?query=${encodedQuery}`;
+  const url = `https://${globalConfig.sanityConfig.projectId}.${api}.sanity.io/v${globalConfig.sanityConfig.version}/data/query/${globalConfig.sanityConfig.dataset}?perspective=${perspective}&amp;query=${encodedQuery}`;
   const headers = {
       'Authorization': `Bearer ${globalConfig.sanityConfig.token}`,
       'Content-Type': 'application/json'
@@ -935,7 +937,7 @@ function checkSanityConfig(config) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Tue Aug 20 2024 20:28:18 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Wed Aug 21 2024 17:33:07 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
