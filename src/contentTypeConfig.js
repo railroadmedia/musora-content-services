@@ -28,6 +28,11 @@ let contentTypeConfig = {
             '"instructors": instructor[]->name'
         ]
     },
+    'student-focus': {
+        'fields': [
+            '"instructors": instructor[]->name',
+        ]
+    },
 }
 
 
