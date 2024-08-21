@@ -26,6 +26,20 @@ To publish a new version to NPM run,
 ./publish.sh
 ```
 
+## Symlinking 
+
+To link this package to the MWP repo for local development run,  
+
+```bash
+./link_mcs.sh
+```
+
+If either of these commands fail due to permissions, 
+
+```
+chmod +x <command>
+```
+
 ## Publish Documentation
 
 This repo uses JSDoc to generate API documention. To update the docs, run:
@@ -41,6 +55,7 @@ https://railroadmedia.github.io/musora-content-services/
 ## Run tests
 Copy .env file from 1Password "musora-content-services .env"
 Run the following to execute the tests
+You may need to install jest (npm install --save-dev jest)
 ```
 npm test
 ```

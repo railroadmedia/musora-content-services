@@ -10,7 +10,6 @@ import {
   fetchSongCount,
   fetchWorkouts,
   fetchNewReleases,
-  fetchLiveEvent,
   fetchUpcomingEvents,
   fetchByRailContentId,
   fetchByRailContentIds,
@@ -22,12 +21,14 @@ import {
   fetchRelatedLessons,
   fetchPackAll,
   fetchPackChildren,
-  fetchLessonContent
+  fetchLessonContent,
+  fetchCourseOverview,
 } from './services/sanity.js';
 
 import { 
   fetchCurrentSongComplete, 
-  fetchAllCompletedStates 
+  fetchAllCompletedStates,
+  fetchContentInProgress 
 } from './services/railcontent.js';
 
 
@@ -42,7 +43,6 @@ export {
     fetchSongCount,
     fetchWorkouts,
     fetchNewReleases,
-    fetchLiveEvent,
     fetchUpcomingEvents,
     fetchByRailContentId,
     fetchByRailContentIds,
@@ -56,5 +56,7 @@ export {
     fetchPackChildren,
     fetchLessonContent,
     fetchCurrentSongComplete, 
-    fetchAllCompletedStates 
+    fetchAllCompletedStates,
+    fetchContentInProgress,
+    fetchCourseOverview,
 }
