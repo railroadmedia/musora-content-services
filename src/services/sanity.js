@@ -445,7 +445,7 @@ export async function fetchAll(brand, type, {
     let sortOrder;
     switch (sort) {
         case "slug":
-            sortOrder = "artist->name asc";
+            sortOrder = "title asc";
             break;
         case "published_on":
             sortOrder = "published_on asc";
@@ -454,7 +454,7 @@ export async function fetchAll(brand, type, {
             sortOrder = "published_on desc";
             break;
         case "-slug":
-            sortOrder = "artist->name desc";
+            sortOrder = "title desc";
             break;
         case "-popularity":
             sortOrder = "popularity desc";
