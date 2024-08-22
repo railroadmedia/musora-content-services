@@ -445,7 +445,12 @@ export async function fetchAll(brand, type, {
     let sortOrder;
     switch (sort) {
         case "slug":
-            sortOrder = "title asc";
+            if(groupBy){
+              sortOrder = "name asc";
+            } else {
+              sortOrder = "title asc";
+            }
+
             break;
         case "published_on":
             sortOrder = "published_on asc";
@@ -454,7 +459,12 @@ export async function fetchAll(brand, type, {
             sortOrder = "published_on desc";
             break;
         case "-slug":
-            sortOrder = "title desc";
+            if(groupBy){
+              sortOrder = "name desc";
+            } else {
+              sortOrder = "title desc";
+            }
+
             break;
         case "-popularity":
             sortOrder = "popularity desc";
