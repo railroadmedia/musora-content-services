@@ -636,6 +636,7 @@ export async function fetchMethods(brand) {
       length_in_seconds,
       permission,
       popularity,
+      published_on,
       railcontent_id,
       "slug": slug.current,
       status,
