@@ -612,6 +612,34 @@ export async function fetchChildren(railcontentId) {
 }
 
 /**
+* Fetch the Methods (learning-paths) for a specific brand.
+* @param {string} brand - The brand for which to fetch methods.
+* @returns {Promise<Object|null>} - The fetched methods data or null if not found.
+*/
+export async function fetchMethods(brand) {
+    const query = `*[_type == 'learning-path' && brand == "drumeo"] {
+      child_count,
+      difficulty,
+      "description": description[0].children[0].text,
+      hide_from_recsys,
+      "instructors":instructor[]->name,
+      length_in_seconds,
+      permission,
+      popularity,
+      railcontent_id,
+      "slug": slug.current,
+      status,
+      "thumbnail": thumbnail.asset->url,
+      title,
+      total_xp,
+      "type": _type,
+      web_url_path,
+      xp
+    } | order(published_on asc)`
+  return fetchSanity(query, true);
+}
+
+/**
 * Fetch the next lesson for a specific method by Railcontent ID.
 * @param {string} railcontentId - The Railcontent ID of the current lesson.
 * @returns {Promise<Object|null>} - The fetched next lesson data or null if not found.
