@@ -627,7 +627,7 @@ export async function fetchChildren(railcontentId) {
 * @returns {Promise<Object|null>} - The fetched methods data or null if not found.
 */
 export async function fetchMethods(brand) {
-    const query = `*[_type == 'learning-path' && brand == "drumeo"] {
+    const query = `*[_type == 'learning-path' && brand == "${brand}"] {
       child_count,
       difficulty,
       "description": description[0].children[0].text,
@@ -641,14 +641,45 @@ export async function fetchMethods(brand) {
       "slug": slug.current,
       status,
       "thumbnail": thumbnail.asset->url,
-      "thumbnail_logo": logo_image_url.asset->url
+      "thumbnail_logo": logo_image_url.asset->url,
       title,
       total_xp,
       "type": _type,
       web_url_path,
-      xp
+      xp,
     } | order(published_on asc)`
   return fetchSanity(query, true);
+}
+
+/**
+* Fetch the Method (learning-paths) for a specific brand.
+* @param {string} brand - The brand for which to fetch methods.
+* @param {string} slug - The slug of the method.
+* @returns {Promise<Object|null>} - The fetched methods data or null if not found.
+*/
+export async function fetchMethod(brand, slug) {
+  const query = `*[_type == 'learning-path' && brand == "${brand}" && slug.current == "${slug}"] {
+    "description": description[0].children[0].text,
+    "instructors":instructor[]->name,
+    published_on,
+    "id": railcontent_id,
+    railcontent_id,
+    "slug": slug.current,
+    status,
+    title,
+    video,
+    "type": _type,
+    "levels": child[]->
+      {
+        "id": railcontent_id,
+        published_on,
+        "thumbnail_url": thumbnail.asset->url,
+        "instructor": instructor[]->{name},
+        title,
+        "description": description[0].children[0].text,
+      }
+  } | order(published_on asc)`
+return fetchSanity(query, false);
 }
 
 /**
