@@ -23,6 +23,8 @@ import {
   fetchPackChildren,
   fetchLessonContent,
   fetchCourseOverview,
+  fetchChildren,
+  fetchParentByRailContentId,
 } from './services/sanity.js';
 
 import { 
@@ -59,4 +61,6 @@ export {
     fetchAllCompletedStates,
     fetchContentInProgress,
     fetchCourseOverview,
+    fetchChildren,
+    fetchParentByRailContentId,
 }

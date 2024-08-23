@@ -2,7 +2,7 @@
  * @module Sanity-Services
  */
 import {contentTypeConfig} from "../contentTypeConfig";
-import {artistOrInstructor, artistOrInstructorAsArray, defaultContentTypeFields} from "./queryUtility";
+import {artistOrInstructor, artistOrInstructorAsArray, defaultContentTypeFields, defaultContentTypeFieldsAsString} from "./queryUtility";
 import {globalConfig} from "./config";
 
 /**
@@ -345,15 +345,7 @@ export async function fetchUpcomingEvents(brand) {
 */
 export async function fetchByRailContentId(id) {
   const query = `*[railcontent_id == ${id}]{
-        railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": artist->name,
-        artist,
-        difficulty,
-        difficulty_string,
-        web_url_path,
-        published_on
+        ${defaultContentTypeFieldsAsString()}
       }`
   return fetchSanity(query, false);
 }
@@ -372,15 +364,7 @@ export async function fetchByRailContentId(id) {
 export async function fetchByRailContentIds(ids) {
   const idsString = ids.join(',');
   const query = `*[railcontent_id in [${idsString}]]{
-        railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": artist->name,
-        artist,
-        difficulty,
-        difficulty_string,
-        web_url_path,
-        published_on
+        ${defaultContentTypeFieldsAsString()}
       }`
   return fetchSanity(query, true);
 }
@@ -441,30 +425,9 @@ export async function fetchAll(brand, type, {
         : "";
 
     // Determine the sort order
-    let sortOrder;
-    switch (sort) {
-        case "slug":
-            sortOrder = "artist->name asc";
-            break;
-        case "published_on":
-            sortOrder = "published_on asc";
-            break;
-        case "-published_on":
-            sortOrder = "published_on desc";
-            break;
-        case "-slug":
-            sortOrder = "artist->name desc";
-            break;
-        case "-popularity":
-            sortOrder = "popularity desc";
-            break;
-        default:
-            sortOrder = "published_on asc";
-            break;
-    }
+    const sortOrder = getSortOrder(sort);
 
-
-    let fields = defaultContentTypeFields().concat(additionalFields);
+    let fields = defaultContentTypeFields.concat(additionalFields);
     let fieldsString = fields.join(',');
 
     // Determine the group by clause
@@ -519,6 +482,27 @@ export async function fetchAll(brand, type, {
     }
 
     return fetchSanity(query, true);
+}
+
+export function getSortOrder(sort= '-published-on')
+{
+    // Determine the sort order
+    let sortOrder = '';
+    const isDesc = sort.startsWith('-');
+    sort = isDesc ? sort.substring(1) : sort;
+    switch (sort) {
+        case "slug":
+            sortOrder = "artist->name";
+            break;
+        case "published_on":
+            sortOrder = "published_on";
+            break;
+        default:
+            sortOrder = "published_on";
+            break;
+    }
+    sortOrder += isDesc ? ' desc' : ' asc';
+    return sortOrder;
 }
 
 /**
@@ -582,16 +566,33 @@ export async function fetchAllFilterOptions(
 /**
 * Fetch children content by Railcontent ID.
 * @param {string} railcontentId - The Railcontent ID of the parent content.
-* @returns {Promise<Array<Object>|null>} - The fetched children content data or null if not found.
+* @returns {Promise<Array<Object>|null>} - The fetched children content data or [] if not found.
 */
 export async function fetchChildren(railcontentId) {
-  //TODO: Implement getByParentId include sum XP
-  const query = `*[_railcontent_id == ${railcontentId}]{
+  const query = `*[railcontent_id == ${railcontentId}]{
         'children': child[]->{
-                           ${defaultContentTypeFields(true)},
+                           ${defaultContentTypeFieldsAsString()},
                         },
-      }`;
-  return fetchSanity(query, true)['children'];
+      }[0..1]`;
+  let parent = await fetchSanity(query, true);
+  return parent[0]['children'] ?? [];
+}
+
+/**
+ *
+ * @param railcontentId - railcontent id of the child
+ * @returns {Promise<*|*[]>} - The fetched parent content data or [] if not found
+ */
+export async function fetchParentByRailContentId(railcontentId) {
+    const query = `*[railcontent_id == ${railcontentId}]{
+        'parents': array::unique([
+            ...(*[references(^._id)]{
+                ${defaultContentTypeFieldsAsString()}
+                })
+            ])
+        }[0...1]`;
+    let child = await fetchSanity(query, true);
+    return child[0]['parents'][0] ?? [];
 }
 
 /**
@@ -624,6 +625,8 @@ export async function fetchMethodChildren(railcontentId) {
   //TODO: Implement getByParentId include sum XP
   return fetchChildren(railcontentId);
 }
+
+
 
 /**
 * Fetch the next and previous lessons for a specific lesson by Railcontent ID.
@@ -829,6 +832,31 @@ export async function fetchSanity(query, isList) {
   }
 }
 
+/**
+ * Fetch CatalogueMetadata from Sanity. This information may be duplicated in the contentTypeConfig.js.
+ *
+ * @param {string} contentType - name of the contentype to pull
+ * @returns {Promise<Object|null>} - A promise that resolves to the fetched data or null if an error occurs or no results are found.
+ *
+ * @example
+ *
+ * fetchCatalogMetadata('song')
+ *   .then(data => console.log(data))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchCatalogMetadata(contentType)
+{   const query = `*[_type == 'CatalogMetadata']{
+        catalog_type,
+        brand,
+        groq_results,
+        groq_search_fields,
+        meta_data_groq,
+        modal_text,
+        sort_by,
+      }`
+    return fetchSanity(query, false);
+}
+
 
 //Helper Functions
 function arrayJoinWithQuotes(array, delimiter = ',') {
@@ -859,3 +887,5 @@ function checkSanityConfig(config) {
   }
   return true;
 }
+
+

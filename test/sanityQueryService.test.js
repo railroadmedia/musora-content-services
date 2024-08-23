@@ -1,4 +1,5 @@
 import {initializeService} from '../src/services/config.js';
+import {fetchChildren, fetchParentByRailContentId} from "../src";
 
 const {
     fetchSongById,
@@ -21,7 +22,9 @@ const {
     fetchRelatedLessons,
     fetchPackAll,
     fetchPackChildren,
-    fetchLessonContent
+    fetchLessonContent,
+    getSortOrder,
+    fetchParnte
 } = require('../src/services/sanity.js');
 
 describe('Sanity Queries', function () {
@@ -115,10 +118,59 @@ describe('Sanity Queries', function () {
         expect(response.entity[0].challenge_state_text).toBeDefined();
 
     });
-    // test('fetchRelatedLessons', async () => {
-    //     const id = 380094;
-    //     const response = await fetchRelatedLessons(id, 'singeo', 'song');
-    //     console.log(response.related_lessons[0]);
-    //     expect(response.related_lessons[0]).toBe(id);
-    // });
+
+    test('fetchRelatedLessons', async () => {
+        const id = 380094;
+        const document = await fetchByRailContentId(id);
+        let artist = document.artist.name;
+        const response = await fetchRelatedLessons(id, 'singeo', 'song');
+        let relatedDoc = await fetchByRailContentId(response.related_lessons[0].id);
+        // match on artist or any genre
+        let isMatch = artist === relatedDoc.artist.name;
+        isMatch = isMatch || document.genre.some((genre) => {
+            return relatedDoc.genre.some((relatedGenre) => {
+                return genre._ref === relatedGenre._ref;
+            });
+        });
+        expect(isMatch).toBeTruthy();
+    });
+
+    test('fetchChildren', async () => {
+        // complement test to fetchParentByRailContentId
+        const id = 191338; ////https://web-staging-one.musora.com/admin/studio/publishing/structure/play-along;play-along_191338
+        const expectedChildID = 191492;
+        const response = await fetchChildren(id);
+        console.log('num children', response.length);
+        console.log(response);
+        
+        expect(response.length > 0).toBeTruthy();
+        const foundExpectedChild = response.some((child) => {
+            return child['id'] = expectedChildID; 
+        });
+        expect(foundExpectedChild).toBeTruthy();
+    });
+
+    test('fetchParentByRailContentId', async () => {
+        // complement test to fetchChildren
+        const childId = 191492; // child of https://web-staging-one.musora.com/admin/studio/publishing/structure/play-along;play-along_191338
+        const expectedParent = 191338;
+        const response = await fetchParentByRailContentId(childId);
+        expect(response['id']).toBe(expectedParent);
+    });
+
+    test('getSortOrder',  () => {
+        let sort = getSortOrder()
+        expect(sort).toBe('published_on desc');
+        sort = getSortOrder('slug')
+        expect(sort).toBe('artist->name asc');
+        sort = getSortOrder('-slug')
+        expect(sort).toBe('artist->name desc');
+        sort = getSortOrder('published-on')
+        expect(sort).toBe('published_on asc');
+    });
+
+
+
+
+
 });
