@@ -6,6 +6,18 @@ import {globalConfig} from "./config";
 
 import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
 
+const DEFAULT_FIELDS = [
+        '"id": railcontent_id',
+        'railcontent_id',
+        '"type": _type',
+        'title',
+        '"image": thumbnail.asset->url',
+        'difficulty',
+        'difficulty_string',
+        'web_url_path',
+        'published_on'
+      ];
+
 /**
 * Fetch a song by its document ID from Sanity.
 *
@@ -363,6 +375,7 @@ export async function fetchByRailContentId(id) {
 * Fetch content by an array of Railcontent IDs.
 *
 * @param {Array<string>} ids - The array of Railcontent IDs of the content to fetch.
+* @param {string} [contentType] - The content type the IDs to add needed fields to the response.
 * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of content objects or null if not found.
 *
 * @example
@@ -370,18 +383,11 @@ export async function fetchByRailContentId(id) {
 *   .then(contents => console.log(contents))
 *   .catch(error => console.error(error));
 */
-export async function fetchByRailContentIds(ids) {
+export async function fetchByRailContentIds(ids, contentType = undefined) {
+  const fields = contentType ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? []) : DEFAULT_FIELDS;
   const idsString = ids.join(',');
   const query = `*[railcontent_id in [${idsString}]]{
-        railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": artist->name,
-        artist,
-        difficulty,
-        difficulty_string,
-        web_url_path,
-        published_on
+        ${fields.join(', ')}
       }`
   return fetchSanity(query, true);
 }
@@ -474,19 +480,7 @@ export async function fetchAll(brand, type, {
             break;
     }
 
-    let defaultFields = [
-        '"id": railcontent_id',
-        'railcontent_id',
-        '"type": _type',
-        'title',
-        '"image": thumbnail.asset->url',
-        'difficulty',
-        'difficulty_string',
-        'web_url_path',
-        'published_on'
-      ];
-
-    let fields = defaultFields.concat(additionalFields);
+    let fields = DEFAULT_FIELDS.concat(additionalFields);
     let fieldsString = fields.join(',');
 
     // Determine the group by clause
