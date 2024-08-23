@@ -655,7 +655,7 @@ export async function fetchMethods(brand) {
       "type": _type,
       web_url_path,
       xp
-    } | order(published_on asc)`
+    }`
   return fetchSanity(query, true);
 }
 
