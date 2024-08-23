@@ -512,7 +512,7 @@ export function getSortOrder(sort= '-published-on')
 * The filter options are dynamically generated based on the provided filters, style, artist, and content type.
 *
 * @param {string} brand - The brand for which to fetch the filter options.
-* @param {string} filters - Additional filters to apply to the query, typically in the format of Sanity GROQ queries.
+* @param {string[]} filters - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock']
 * @param {string} [style] - Optional style or genre to filter the results. If provided, the query will check if the style exists in the genre array.
 * @param {string} [artist] - Optional artist name to filter the results. If provided, the query will check if the artist's name matches.
 * @param {string} contentType - The content type to fetch (e.g., 'song', 'lesson').
@@ -534,7 +534,16 @@ export async function fetchAllFilterOptions(
     contentType,
     term
 ) {
-    const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${filters ? filters : ''}`;
+    const filtersToGroq = filters?.length > 0 ? filters.map(field => {
+            let [key, value] = field.split(',');
+            if (key === 'difficulty') {
+                key = 'difficulty_string';
+            }
+            return `&& ${key} == "${value}"`;
+        }).join(' ')
+        : undefined;
+    
+    const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${filtersToGroq ? filtersToGroq : ''}`;
     const query = `
         {  
           "meta": {
@@ -558,8 +567,7 @@ export async function fetchAllFilterOptions(
               }[count > 0]
             }
         }
-      }
-    }`;
+      }`;
   return fetchSanity(query, true);
 }
 
@@ -593,6 +601,36 @@ export async function fetchParentByRailContentId(railcontentId) {
         }[0...1]`;
     let child = await fetchSanity(query, true);
     return child[0]['parents'][0] ?? [];
+}
+
+/**
+* Fetch the Methods (learning-paths) for a specific brand.
+* @param {string} brand - The brand for which to fetch methods.
+* @returns {Promise<Object|null>} - The fetched methods data or null if not found.
+*/
+export async function fetchMethods(brand) {
+    const query = `*[_type == 'learning-path' && brand == "drumeo"] {
+      child_count,
+      difficulty,
+      "description": description[0].children[0].text,
+      hide_from_recsys,
+      "instructors":instructor[]->name,
+      length_in_seconds,
+      permission,
+      popularity,
+      published_on,
+      railcontent_id,
+      "slug": slug.current,
+      status,
+      "thumbnail": thumbnail.asset->url,
+      "thumbnail_logo": logo_image_url.asset->url,
+      title,
+      total_xp,
+      "type": _type,
+      web_url_path,
+      xp
+    }`
+  return fetchSanity(query, true);
 }
 
 /**
