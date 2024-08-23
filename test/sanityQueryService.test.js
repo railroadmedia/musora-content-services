@@ -164,9 +164,11 @@ describe('Sanity Queries', function () {
         let sort = getSortOrder()
         expect(sort).toBe('published_on desc');
         sort = getSortOrder('slug')
-        expect(sort).toBe('artist->name asc');
+        expect(sort).toBe('title asc');
         sort = getSortOrder('-slug')
-        expect(sort).toBe('artist->name desc');
+        expect(sort).toBe('title desc');
+        sort = getSortOrder('-slug', true)
+        expect(sort).toBe('name desc');
         sort = getSortOrder('published-on')
         expect(sort).toBe('published_on asc');
     });

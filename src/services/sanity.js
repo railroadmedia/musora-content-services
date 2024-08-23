@@ -484,7 +484,7 @@ export async function fetchAll(brand, type, {
     return fetchSanity(query, true);
 }
 
-export function getSortOrder(sort= '-published-on')
+export function getSortOrder(sort= '-published_on', groupBy)
 {
     // Determine the sort order
     let sortOrder = '';
@@ -492,11 +492,12 @@ export function getSortOrder(sort= '-published-on')
     sort = isDesc ? sort.substring(1) : sort;
     switch (sort) {
         case "slug":
-            sortOrder = "artist->name";
+            sortOrder = groupBy ? 'name' : "title";
+            break;
+        case "popularity":
+            sortOrder = "popularity";
             break;
         case "published_on":
-            sortOrder = "published_on";
-            break;
         default:
             sortOrder = "published_on";
             break;
@@ -661,7 +662,31 @@ export async function fetchMethodNextLesson(railcontentId) {
 */
 export async function fetchMethodChildren(railcontentId) {
   //TODO: Implement getByParentId include sum XP
-  return fetchChildren(railcontentId);
+    const query = `*[_type == 'learning-path' && railcontent_id == ${methodId}]{
+    'children': child[]-> {
+        'id': railcontent_id,
+            'children': child[]-> {
+            'id': railcontent_id,
+                'children': child[]-> {
+                'id': railcontent_id,
+            }
+        }
+    }
+}`;
+    let allChildren = await fetchSanity(query, false);
+    return allChildren;
+}
+
+function getChildrenToDepth(parent, depth = 1)
+{
+    let allChildrenIds = [];
+    if (parent['children']) {
+        parent['children'].forEach((child) => {
+            allChildrenIds.push(child['id']);
+            allChildrenIds.concat(getChildrenToDepth(child, depth-1));
+        })
+    }
+    return allChildrenIds;
 }
 
 
