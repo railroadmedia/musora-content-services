@@ -434,10 +434,12 @@ export async function fetchAll(brand, type, {
     const includedFieldsFilter = includedFields.length > 0
         ? includedFields.map(field => {
             let [key, value] = field.split(',');
-            if (key === 'difficulty') {
+            if(key && value){
+              if (key === 'difficulty') {
                 key = 'difficulty_string';
+              }
+              return `&& ${key} == "${value}"`;
             }
-            return `&& ${key} == "${value}"`;
         }).join(' ')
         : "";
 
