@@ -483,7 +483,8 @@ export async function fetchAll(brand, type, {
         'difficulty',
         'difficulty_string',
         'web_url_path',
-        'published_on'];
+        'published_on'
+      ];
 
     let fields = defaultFields.concat(additionalFields);
     let fieldsString = fields.join(',');
@@ -636,11 +637,13 @@ export async function fetchChildren(railcontentId) {
 */
 export async function fetchMethods(brand) {
     const query = `*[_type == 'learning-path' && brand == "drumeo"] {
-      child_count,
       difficulty,
+      difficulty_string,
       "description": description[0].children[0].text,
       hide_from_recsys,
+      "image": thumbnail.asset->url,
       "instructors":instructor[]->name,
+      "lesson_count": child_count,
       length_in_seconds,
       permission,
       popularity,
@@ -648,7 +651,6 @@ export async function fetchMethods(brand) {
       railcontent_id,
       "slug": slug.current,
       status,
-      "thumbnail": thumbnail.asset->url,
       "thumbnail_logo": logo_image_url.asset->url,
       title,
       total_xp,
