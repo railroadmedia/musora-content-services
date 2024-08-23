@@ -641,7 +641,7 @@ export async function fetchMethods(brand) {
       "slug": slug.current,
       status,
       "thumbnail": thumbnail.asset->url,
-      "thumbnail_logo": logo_image_url.asset->url
+      "thumbnail_logo": logo_image_url.asset->url,
       title,
       total_xp,
       "type": _type,
