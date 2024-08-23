@@ -636,7 +636,7 @@ export async function fetchChildren(railcontentId) {
 * @returns {Promise<Object|null>} - The fetched methods data or null if not found.
 */
 export async function fetchMethods(brand) {
-    const query = `*[_type == 'learning-path' && brand == ${drumeo}] {
+    const query = `*[_type == 'learning-path' && brand == ${brand}] {
       difficulty,
       difficulty_string,
       "description": description[0].children[0].text,
