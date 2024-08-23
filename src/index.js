@@ -26,6 +26,7 @@ import {
   fetchCourseOverview,
   fetchChildren,
   fetchParentByRailContentId,
+    fetchMethodPreviousNextLesson,
 } from './services/sanity.js';
 
 import { 
@@ -65,4 +66,5 @@ export {
     fetchCourseOverview,
     fetchChildren,
     fetchParentByRailContentId,
+    fetchMethodPreviousNextLesson,
 }

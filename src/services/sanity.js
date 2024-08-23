@@ -236,10 +236,10 @@ export async function fetchSongCount(brand) {
  * Fetch the latest workouts for a specific brand, including completion status and progress.
  * This function retrieves up to five of the latest workout content for a given brand, sorted in descending order by their publication date.
  * It also includes completion status and progress percentage for each workout by fetching additional data about user progress.
- * 
+ *
  * @param {string} brand - The brand for which to fetch workouts (e.g., 'drumeo', 'pianote').
  * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of workout data objects with additional properties for completion status and progress percentage, or null if no workouts are found.
- * 
+ *
  * @example
  * fetchWorkouts('drumeo')
  *   .then(workouts => console.log(workouts))
@@ -543,10 +543,10 @@ export async function fetchAllFilterOptions(
             return `&& ${key} == "${value}"`;
         }).join(' ')
         : undefined;
-    
+
     const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${filtersToGroq ? filtersToGroq : ''}`;
     const query = `
-        {  
+        {
           "meta": {
             "totalResults": count(*[${commonFilter}
               ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
@@ -637,22 +637,34 @@ export async function fetchMethods(brand) {
 /**
 * Fetch the next lesson for a specific method by Railcontent ID.
 * @param {string} railcontentId - The Railcontent ID of the current lesson.
+ * @param {string} methodId - The RailcontentID of the method
 * @returns {Promise<Object|null>} - The fetched next lesson data or null if not found.
 */
-export async function fetchMethodNextLesson(railcontentId) {
-  //TODO: Implement getNextContentForParentContentForUser
-  const query = `*[_railcontent_id == ${railcontentId}]{
-        railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": artist->name,
-        artist,
-        difficulty,
-        difficulty_string,
-        web_url_path,
-        published_on
-      }`
-  return fetchSanity(query, false);
+export async function fetchMethodNextLesson(railcontentId, methodId) {
+  const sortedChildren = await fetchMethodChildren(methodId);
+  const index = sortedChildren.indexOf(railcontentId);
+  return sortedChildren[index + 1] ?? null;
+}
+
+
+/**
+ * Fetch the next lesson for a specific method by Railcontent ID.
+ * @param {string} railcontentId - The Railcontent ID of the current lesson.
+ * @param {string} methodId - The RailcontentID of the method
+ * @returns {Promise<Object|null>} - The fetched next lesson data or null if not found.
+ */
+export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
+    const sortedChildren = await fetchMethodChildren(methodId);
+    const index = sortedChildren.indexOf(railcontentId);
+    console.log(index);
+    console.log(sortedChildren);
+    //TODO adrian, this is null for some reason
+    let nextId = sortedChildren[index + 1];
+    let previousId = sortedChildren[index  -1];
+    let nextPrev = await fetchByRailContentIds([nexdId, previousId]);
+    const nextLesson = nextPrev.find((elem) => {elem['id'] === nextId});
+    const prevLesson = nextPrev.find((elem) => {elem['id'] === previousId});
+    return {nextLesson, preLesson};
 }
 
 /**
@@ -662,7 +674,8 @@ export async function fetchMethodNextLesson(railcontentId) {
 */
 export async function fetchMethodChildren(railcontentId) {
   //TODO: Implement getByParentId include sum XP
-    const query = `*[_type == 'learning-path' && railcontent_id == ${methodId}]{
+    //ADRIAN what the fuck seriously
+    const query = `*[_type == 'learning-path' && railcontent_id == ${railcontentId}]{
     'children': child[]-> {
         'id': railcontent_id,
             'children': child[]-> {
@@ -674,7 +687,8 @@ export async function fetchMethodChildren(railcontentId) {
     }
 }`;
     let allChildren = await fetchSanity(query, false);
-    return allChildren;
+    let sortedChildrenIDs = getChildrenToDepth(allChildren, 4);
+    return sortedChildrenIDs;
 }
 
 function getChildrenToDepth(parent, depth = 1)
@@ -683,7 +697,7 @@ function getChildrenToDepth(parent, depth = 1)
     if (parent['children']) {
         parent['children'].forEach((child) => {
             allChildrenIds.push(child['id']);
-            allChildrenIds.concat(getChildrenToDepth(child, depth-1));
+            allChildrenIds = allChildrenIds.concat(getChildrenToDepth(child, depth-1));
         })
     }
     return allChildrenIds;
@@ -729,9 +743,9 @@ export async function fetchLessonContent(railContentId) {
             chapter_description,
             chapter_timecode,
             "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
-          }, 
+          },
           "coaches": instructor[]-> {
-            name, 
+            name,
             "id":_id,
             "coach_profile_image":thumbnail_url.asset->url
           },
@@ -810,7 +824,7 @@ export async function fetchPackChildren(railcontentId) {
  * Fetch the data needed for the Course Overview screen.
  * @param {string} id - The Railcontent ID of the course
  * @returns {Promise<Object|null>} - The course information and lessons or null if not found.
- * 
+ *
  * @example
  * fetchCourseOverview('course123')
  *   .then(course => console.log(course))
