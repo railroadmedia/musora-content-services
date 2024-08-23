@@ -1,3 +1,5 @@
+import { initializeService } from './services/config.js';
+
 import {
   fetchSongById,
   fetchArtists,
@@ -8,22 +10,27 @@ import {
   fetchSongCount,
   fetchWorkouts,
   fetchNewReleases,
-  fetchLiveEvent,
   fetchUpcomingEvents,
   fetchByRailContentId,
   fetchByRailContentIds,
   fetchAll,
   fetchAllFilterOptions,
   fetchMethodNextLesson,
+  fetchMethods,
   fetchMethodChildren,
   fetchNextPreviousLesson,
   fetchRelatedLessons,
   fetchPackAll,
   fetchPackChildren,
-  fetchLessonContent
+  fetchLessonContent,
+  fetchCourseOverview,
 } from './services/sanity.js';
 
-import { initializeService } from './services/config.js';
+import { 
+  fetchCurrentSongComplete, 
+  fetchAllCompletedStates,
+  fetchContentInProgress 
+} from './services/railcontent.js';
 
 
 export {
@@ -37,17 +44,21 @@ export {
     fetchSongCount,
     fetchWorkouts,
     fetchNewReleases,
-    fetchLiveEvent,
     fetchUpcomingEvents,
     fetchByRailContentId,
     fetchByRailContentIds,
     fetchAll,
     fetchAllFilterOptions,
+    fetchMethods,
     fetchMethodNextLesson,
     fetchMethodChildren,
     fetchNextPreviousLesson,
     fetchRelatedLessons,
     fetchPackAll,
     fetchPackChildren,
-    fetchLessonContent
+    fetchLessonContent,
+    fetchCurrentSongComplete, 
+    fetchAllCompletedStates,
+    fetchContentInProgress,
+    fetchCourseOverview,
 }

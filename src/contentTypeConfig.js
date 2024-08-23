@@ -23,7 +23,18 @@ let contentTypeConfig = {
             'challenge_state',
             'challenge_state_text',
         ]
-    }
+    },
+    'course': {
+        'fields': [
+            '"lesson_count": child_count',
+            '"instructors": instructor[]->name'
+        ]
+    },
+    'student-focus': {
+        'fields': [
+            '"instructors": instructor[]->name',
+        ]
+    },
 }
 
 

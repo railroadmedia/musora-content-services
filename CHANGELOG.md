@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.48](https://github.com/railroadmedia/musora-content-services/compare/v1.0.47...v1.0.48) (2024-08-22)
+
+### [1.0.47](https://github.com/railroadmedia/musora-content-services/compare/v1.0.46...v1.0.47) (2024-08-22)
+
+### [1.0.46](https://github.com/railroadmedia/musora-content-services/compare/v1.0.45...v1.0.46) (2024-08-22)
+
+### [1.0.45](https://github.com/railroadmedia/musora-content-services/compare/v1.0.44...v1.0.45) (2024-08-22)
+
+### [1.0.44](https://github.com/railroadmedia/musora-content-services/compare/v1.0.43...v1.0.44) (2024-08-21)
+
+### [1.0.43](https://github.com/railroadmedia/musora-content-services/compare/v1.0.42...v1.0.43) (2024-08-20)
+
+### [1.0.42](https://github.com/railroadmedia/musora-content-services/compare/v1.0.41...v1.0.42) (2024-08-20)
+
+### [1.0.41](https://github.com/railroadmedia/musora-content-services/compare/v1.0.40...v1.0.41) (2024-08-20)
+
+### [1.0.40](https://github.com/railroadmedia/musora-content-services/compare/v1.0.39...v1.0.40) (2024-08-20)
+
+### [1.0.39](https://github.com/railroadmedia/musora-content-services/compare/v1.0.37...v1.0.39) (2024-08-20)
+
+### [1.0.37](https://github.com/railroadmedia/musora-content-services/compare/v1.0.35...v1.0.37) (2024-08-20)
+
+### [1.0.35](https://github.com/railroadmedia/musora-content-services/compare/v1.0.34...v1.0.35) (2024-08-15)
+
+### [1.0.34](https://github.com/railroadmedia/musora-content-services/compare/v1.0.32...v1.0.34) (2024-08-15)
+
+### [1.0.32](https://github.com/railroadmedia/musora-content-services/compare/v1.0.31...v1.0.32) (2024-08-14)
+
+### [1.0.31](https://github.com/railroadmedia/musora-content-services/compare/v1.0.30...v1.0.31) (2024-08-14)
+
+### [1.0.30](https://github.com/railroadmedia/musora-content-services/compare/v1.0.29...v1.0.30) (2024-08-14)
+
+### [1.0.29](https://github.com/railroadmedia/musora-content-services/compare/v1.0.28...v1.0.29) (2024-08-14)
+
+### [1.0.28](https://github.com/railroadmedia/musora-content-services/compare/v1.0.27...v1.0.28) (2024-08-14)
+
+### [1.0.27](https://github.com/railroadmedia/musora-content-services/compare/v1.0.26...v1.0.27) (2024-08-14)
+
+### [1.0.26](https://github.com/railroadmedia/musora-content-services/compare/v1.0.25...v1.0.26) (2024-08-14)
+
+### [1.0.25](https://github.com/railroadmedia/musora-content-services/compare/v1.0.24...v1.0.25) (2024-08-14)
+
 ### [1.0.24](https://github.com/railroadmedia/musora-content-services/compare/v1.0.23...v1.0.24) (2024-08-14)
 
 ### [1.0.23](https://github.com/railroadmedia/musora-content-services/compare/v1.0.22...v1.0.23) (2024-08-14)
