@@ -631,6 +631,7 @@ export async function fetchMethod(brand, slug) {
         "thumbnail_url": thumbnail.asset->url,
         "instructor": instructor[]->{name},
         title,
+        "type": _type,
         "description": description[0].children[0].text,
       }
   } | order(published_on asc)`
