@@ -34,7 +34,6 @@ const assignmentsField = `"assignments":assignment[]{
 let contentTypeConfig = {
     'song': {
         'fields': [
-            '"artist_name": artist->name',
             'soundslice',
             'instrumentless',
         ],
