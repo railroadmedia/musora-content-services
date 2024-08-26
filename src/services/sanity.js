@@ -628,11 +628,13 @@ export async function fetchMethod(brand, slug) {
       {
         "id": railcontent_id,
         published_on,
+        difficulty,
         "thumbnail_url": thumbnail.asset->url,
         "instructor": instructor[]->{name},
         title,
         "type": _type,
         "description": description[0].children[0].text,
+        xp,
       }
   } | order(published_on asc)`
 return fetchSanity(query, false);
