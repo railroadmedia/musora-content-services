@@ -397,7 +397,9 @@ export async function fetchAll(brand, type, {
 
     // Construct the search filter
     const searchFilter = searchTerm
-        ? `&& (artist->name match "${searchTerm}*" || title match "${searchTerm}*")`
+        ? groupBy !== "" ?
+          `&& (^.name match "${searchTerm}*"  || ${groupBy}->name match "${searchTerm}*" || title match "${searchTerm}*")`
+          : `&& (artist->name match "${searchTerm}*" || "${searchTerm}*" in instructor[]->name || title match "${searchTerm}*")`
         : "";
 
     // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
@@ -422,15 +424,15 @@ export async function fetchAll(brand, type, {
     if (groupBy !== "" && isGroupByOneToOne) {
         query = `
         {
-            "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ]._id) > 0]),
-            "entity": *[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ]._id) > 0]
+            "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter}]._id) > 0]),
+            "entity": *[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter}]._id) > 0]
             {
                 'id': _id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
-                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ]._id),
-                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ]{
+                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter}]._id),
+                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...10]
@@ -441,15 +443,15 @@ export async function fetchAll(brand, type, {
     } else if (groupBy !== "") {
         query = `
         {
-            "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref]._id)>0]),
-            "entity": *[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref]._id) > 0]
+            "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter}]._id) > 0]),
+            "entity": *[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter}]._id) > 0]
             {
                 'id': _id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
-                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ]._id),
-                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ]{
+                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter}]._id),
+                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...10]
