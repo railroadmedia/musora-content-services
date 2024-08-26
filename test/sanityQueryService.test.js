@@ -21,7 +21,9 @@ const {
     fetchRelatedLessons,
     fetchPackAll,
     fetchPackChildren,
-    fetchLessonContent
+    fetchLessonContent,
+    fetchMethod,
+    fetchMethods,
 } = require('../src/services/sanity.js');
 
 describe('Sanity Queries', function () {
@@ -116,6 +118,20 @@ describe('Sanity Queries', function () {
         expect(response.entity[0].challenge_state).toBeDefined();
         expect(response.entity[0].challenge_state_text).toBeDefined();
 
+    });
+
+    test('fetchMethod', async () => {
+        const response = await fetchMethod('drumeo', 'drumeo-method');
+        //console.log(response);
+        expect(response).toBeDefined();
+        expect(response.levels.length).toBeGreaterThan(0);
+    });
+
+    test('fetchMethods', async () => {
+        const response = await fetchMethods('drumeo');
+        //console.log(response);
+        expect(response.length).toBeGreaterThan(0);
+        expect(response[0].type).toBe('learning-path');
     });
     // test('fetchRelatedLessons', async () => {
     //     const id = 380094;
