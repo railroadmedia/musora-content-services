@@ -1,6 +1,7 @@
 const DEFAULT_FIELDS = [
     "'sanity_id' : _id",
     "'id': railcontent_id",
+    'railcontent_id',
     artistOrInstructorName(),
     "artist",
     "title",
@@ -12,7 +13,7 @@ const DEFAULT_FIELDS = [
     "published_on",
     "'type': _type",
     "progress_percent",
-    "'length_in_seconds' : soundslice[0].soundslice_length_in_second",
+    "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
     "brand",
     "genre",
     'status',
@@ -88,7 +89,7 @@ let contentTypeConfig = {
 }
 
 function artistOrInstructorName(key='artist_name') {
-    return `'${key}': select(artist->name != null => artist->name, instructor[0]->name)`;
+    return `'${key}': coalesce(artist->name, instructor[0]->name)`;
 }
 
 function artistOrInstructorNameAsArray(key='artists') {
