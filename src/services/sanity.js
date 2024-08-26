@@ -628,6 +628,7 @@ export async function fetchMethod(brand, slug) {
       {
         "id": railcontent_id,
         published_on,
+        child_count,
         difficulty,
         difficulty_string,
         "thumbnail_url": thumbnail.asset->url,
