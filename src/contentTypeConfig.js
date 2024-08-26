@@ -15,7 +15,7 @@ const DEFAULT_FIELDS = [
     "progress_percent",
     "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
     "brand",
-    "genre",
+    "'genre': genre[]->name",
     'status',
     "'slug' : slug.current",
 ];
