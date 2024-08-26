@@ -98,7 +98,7 @@ function artistOrInstructorNameAsArray(key='artists') {
 
 function getFieldsForContentType(contentType, asQueryString=true) {
     const fields = contentType ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? []) : DEFAULT_FIELDS;
-    return asQueryString ? fields.toString() : fields;
+    return asQueryString ? fields.toString() + ',' : fields;
 }
 
 module.exports = {
