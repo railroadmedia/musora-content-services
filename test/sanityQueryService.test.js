@@ -16,12 +16,15 @@ const {
     fetchAll,
     fetchAllFilterOptions,
     fetchMethodNextLesson,
-    fetchMethodChildren,
+    fetchMethodChildrenIds,
     fetchNextPreviousLesson,
     fetchRelatedLessons,
     fetchPackAll,
     fetchPackChildren,
     fetchLessonContent,
+    getSortOrder,
+    fetchParentByRailContentId,
+    fetchChildren,
     fetchMethod,
     fetchMethods,
 } = require('../src/services/sanity.js');
@@ -44,7 +47,7 @@ describe('Sanity Queries', function () {
     test('fetchSongById', async () => {
         const id = 380094;
         const response = await fetchSongById(id);
-        expect(response.railcontent_id).toBe(id);
+        expect(response.id).toBe(id);
 
     });
 
@@ -64,14 +67,14 @@ describe('Sanity Queries', function () {
     test('fetchByRailContentId', async () => {
         const id = 380094;
         const response = await fetchByRailContentId(id);
-        expect(response.railcontent_id).toBe(id);
+        expect(response.id).toBe(id);
     });
 
     test('fetchByRailContentIds', async () => {
         const id = 380094;
         const id2 = 402204;
         const response = await fetchByRailContentIds([id, id2]);
-        const returnedIds = response.map((x) => x.railcontent_id);
+        const returnedIds = response.map((x) => x.id);
         expect(returnedIds).toContain(id);
         expect(returnedIds).toContain(id2);
         expect(returnedIds.length).toBe(2);
@@ -81,7 +84,7 @@ describe('Sanity Queries', function () {
     test('fetchLessonContent', async () => {
         const id = 380094;
         const response = await fetchLessonContent(id);
-        expect(response.railcontent_id).toBe(id);
+        expect(response.id).toBe(id);
     });
 
     test('fetchAllSongs', async () => {
@@ -103,7 +106,7 @@ describe('Sanity Queries', function () {
     test('fetchAllWorkouts', async () => {
         const response = await fetchAll('drumeo', 'workout',{});
         console.log(response);
-        expect(response.entity[0].railcontent_id).toBeDefined();
+        expect(response.entity[0].id).toBeDefined();
     });
 
     test('fetchAllChallenges', async () => {
@@ -120,6 +123,58 @@ describe('Sanity Queries', function () {
 
     });
 
+    test('fetchRelatedLessons', async () => {
+        const id = 380094;
+        const document = await fetchByRailContentId(id);
+        let artist = document.artist.name;
+        const response = await fetchRelatedLessons(id, 'singeo', 'song');
+        let relatedDoc = await fetchByRailContentId(response.related_lessons[0].id);
+        // match on artist or any genre
+        let isMatch = artist === relatedDoc.artist.name;
+        isMatch = isMatch || document.genre.some((genre) => {
+            return relatedDoc.genre.some((relatedGenre) => {
+                return genre._ref === relatedGenre._ref;
+            });
+        });
+        expect(isMatch).toBeTruthy();
+    });
+
+    test('fetchChildren', async () => {
+        // complement test to fetchParentByRailContentId
+        const id = 191338; ////https://web-staging-one.musora.com/admin/studio/publishing/structure/play-along;play-along_191338
+        const expectedChildID = 191492;
+        const response = await fetchChildren(id);
+        console.log('num children', response.length);
+        console.log(response);
+        
+        expect(response.length > 0).toBeTruthy();
+        const foundExpectedChild = response.some((child) => {
+            return child['id'] = expectedChildID; 
+        });
+        expect(foundExpectedChild).toBeTruthy();
+    });
+
+    test('fetchParentByRailContentId', async () => {
+        // complement test to fetchChildren
+        const childId = 191492; // child of https://web-staging-one.musora.com/admin/studio/publishing/structure/play-along;play-along_191338
+        const expectedParent = 191338;
+        const response = await fetchParentByRailContentId(childId);
+        expect(response['id']).toBe(expectedParent);
+    });
+
+    test('getSortOrder',  () => {
+        let sort = getSortOrder()
+        expect(sort).toBe('published_on desc');
+        sort = getSortOrder('slug')
+        expect(sort).toBe('title asc');
+        sort = getSortOrder('-slug')
+        expect(sort).toBe('title desc');
+        sort = getSortOrder('-slug', true)
+        expect(sort).toBe('name desc');
+        sort = getSortOrder('published-on')
+        expect(sort).toBe('published_on asc');
+    });
+
     test('fetchMethod', async () => {
         const response = await fetchMethod('drumeo', 'drumeo-method');
         //console.log(response);
@@ -133,10 +188,4 @@ describe('Sanity Queries', function () {
         expect(response.length).toBeGreaterThan(0);
         expect(response[0].type).toBe('learning-path');
     });
-    // test('fetchRelatedLessons', async () => {
-    //     const id = 380094;
-    //     const response = await fetchRelatedLessons(id, 'singeo', 'song');
-    //     console.log(response.related_lessons[0]);
-    //     expect(response.related_lessons[0]).toBe(id);
-    // });
 });
