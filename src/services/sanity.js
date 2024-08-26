@@ -567,7 +567,7 @@ export async function fetchAllFilterOptions(
 export async function fetchChildren(railcontentId) {
   const query = `*[railcontent_id == ${railcontentId}]{
         'children': child[]->{
-                           ${getFieldsForContentType()},
+                           ${getFieldsForContentType()}
                         },
       }[0..1]`;
   let parent = await fetchSanity(query, true);

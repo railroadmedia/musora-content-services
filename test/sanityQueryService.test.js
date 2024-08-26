@@ -187,8 +187,5 @@ describe('Sanity Queries', function () {
         //console.log(response);
         expect(response.length).toBeGreaterThan(0);
         expect(response[0].type).toBe('learning-path');
-
-
-
-
+    });
 });
