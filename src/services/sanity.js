@@ -6,6 +6,18 @@ import {globalConfig} from "./config";
 
 import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
 
+const DEFAULT_FIELDS = [
+        '"id": railcontent_id',
+        'railcontent_id',
+        '"type": _type',
+        'title',
+        '"image": thumbnail.asset->url',
+        'difficulty',
+        'difficulty_string',
+        'web_url_path',
+        'published_on'
+      ];
+
 /**
 * Fetch a song by its document ID from Sanity.
 *
@@ -363,6 +375,7 @@ export async function fetchByRailContentId(id) {
 * Fetch content by an array of Railcontent IDs.
 *
 * @param {Array<string>} ids - The array of Railcontent IDs of the content to fetch.
+* @param {string} [contentType] - The content type the IDs to add needed fields to the response.
 * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of content objects or null if not found.
 *
 * @example
@@ -370,18 +383,11 @@ export async function fetchByRailContentId(id) {
 *   .then(contents => console.log(contents))
 *   .catch(error => console.error(error));
 */
-export async function fetchByRailContentIds(ids) {
+export async function fetchByRailContentIds(ids, contentType = undefined) {
+  const fields = contentType ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? []) : DEFAULT_FIELDS;
   const idsString = ids.join(',');
   const query = `*[railcontent_id in [${idsString}]]{
-        railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": artist->name,
-        artist,
-        difficulty,
-        difficulty_string,
-        web_url_path,
-        published_on
+        ${fields.join(', ')}
       }`
   return fetchSanity(query, true);
 }
@@ -474,18 +480,7 @@ export async function fetchAll(brand, type, {
             break;
     }
 
-    let defaultFields = [
-        '"id": railcontent_id',
-        'railcontent_id',
-        '"type": _type',
-        'title',
-        '"image": thumbnail.asset->url',
-        'difficulty',
-        'difficulty_string',
-        'web_url_path',
-        'published_on'];
-
-    let fields = defaultFields.concat(additionalFields);
+    let fields = DEFAULT_FIELDS.concat(additionalFields);
     let fieldsString = fields.join(',');
 
     // Determine the group by clause
@@ -549,7 +544,7 @@ export async function fetchAll(brand, type, {
 * The filter options are dynamically generated based on the provided filters, style, artist, and content type.
 *
 * @param {string} brand - The brand for which to fetch the filter options.
-* @param {string} filters - Additional filters to apply to the query, typically in the format of Sanity GROQ queries.
+* @param {string[]} filters - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock']
 * @param {string} [style] - Optional style or genre to filter the results. If provided, the query will check if the style exists in the genre array.
 * @param {string} [artist] - Optional artist name to filter the results. If provided, the query will check if the artist's name matches.
 * @param {string} contentType - The content type to fetch (e.g., 'song', 'lesson').
@@ -571,7 +566,16 @@ export async function fetchAllFilterOptions(
     contentType,
     term
 ) {
-    const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${filters ? filters : ''}`;
+    const filtersToGroq = filters?.length > 0 ? filters.map(field => {
+            let [key, value] = field.split(',');
+            if (key === 'difficulty') {
+                key = 'difficulty_string';
+            }
+            return `&& ${key} == "${value}"`;
+        }).join(' ')
+        : undefined;
+    
+    const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${filtersToGroq ? filtersToGroq : ''}`;
     const query = `
         {  
           "meta": {
@@ -595,8 +599,7 @@ export async function fetchAllFilterOptions(
               }[count > 0]
             }
         }
-      }
-    }`;
+      }`;
   return fetchSanity(query, true);
 }
 
@@ -630,12 +633,16 @@ export async function fetchMethods(brand) {
     const query = `*[_type == 'learning-path' && brand == "${brand}"] {
       child_count,
       difficulty,
+      difficulty_string,
       "description": description[0].children[0].text,
       hide_from_recsys,
+      "image": thumbnail.asset->url,
       "instructors":instructor[]->name,
+      "lesson_count": child_count,
       length_in_seconds,
       permission,
       popularity,
+      "position": count(*[_type == 'learning-path' && brand == '${brand}' && (published_on < ^.published_on || (published_on == ^.published_on && _id < ^._id))]) + 1,
       published_on,
       railcontent_id,
       "slug": slug.current,
@@ -646,6 +653,7 @@ export async function fetchMethods(brand) {
       total_xp,
       "type": _type,
       web_url_path,
+      "url": web_url_path,
       xp,
     } | order(published_on asc)`
   return fetchSanity(query, true);
