@@ -1,22 +1,10 @@
 /**
  * @module Sanity-Services
  */
-import {contentTypeConfig} from "../contentTypeConfig";
+import {assignmentsField, contentTypeConfig, DEFAULT_FIELDS, getFieldsForContentType} from "../contentTypeConfig";
 import {globalConfig} from "./config";
 
 import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
-
-const DEFAULT_FIELDS = [
-        '"id": railcontent_id',
-        'railcontent_id',
-        '"type": _type',
-        'title',
-        '"image": thumbnail.asset->url',
-        'difficulty',
-        'difficulty_string',
-        'web_url_path',
-        'published_on'
-      ];
 
 /**
 * Fetch a song by its document ID from Sanity.
@@ -30,25 +18,10 @@ const DEFAULT_FIELDS = [
 *   .catch(error => console.error(error));
 */
 export async function fetchSongById(documentId) {
-    const fields = [
-      '"id": railcontent_id',
-      'railcontent_id',
-      '"type": _type',
-      'description',
-      'title',
-      '"thumbnail_url": thumbnail.asset->url',
-      '"style": genre[0]->name',
-      '"artist": artist->name',
-      'album',
-      'instrumentless',
-      'soundslice',
-      '"resources": resource[]{resource_url, resource_name}',
-      '"url": web_url_path',
-    ];
 
     const query = `
         *[_type == "song" && railcontent_id == ${documentId}]{
-            ${fields.join(', ')}
+            ${getFieldsForContentType('song', true)}
         }`;
 
     return fetchSanity(query, false);
@@ -249,10 +222,10 @@ export async function fetchSongCount(brand) {
  * Fetch the latest workouts for a specific brand, including completion status and progress.
  * This function retrieves up to five of the latest workout content for a given brand, sorted in descending order by their publication date.
  * It also includes completion status and progress percentage for each workout by fetching additional data about user progress.
- * 
+ *
  * @param {string} brand - The brand for which to fetch workouts (e.g., 'drumeo', 'pianote').
  * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of workout data objects with additional properties for completion status and progress percentage, or null if no workouts are found.
- * 
+ *
  * @example
  * fetchWorkouts('drumeo')
  *   .then(workouts => console.log(workouts))
@@ -263,12 +236,12 @@ export async function fetchWorkouts(brand) {
         "id": railcontent_id,
         title,
         "image": thumbnail.asset->url,
-        "artist_name": instructor[0]->name,
-        "artists": instructor[]->name,
+        ${artistOrInstructor()},
+        ${artistOrInstructorAsArray()},
         difficulty,
         difficulty_string,
         length_in_seconds,
-        published_on,
+        published_on,;
         "type": _type,
         web_url_path,
       } | order(published_on desc)[0...5]`
@@ -356,17 +329,9 @@ export async function fetchUpcomingEvents(brand) {
 *   .then(content => console.log(content))
 *   .catch(error => console.error(error));
 */
-export async function fetchByRailContentId(id) {
+export async function fetchByRailContentId(id, contentType) {
   const query = `*[railcontent_id == ${id}]{
-        railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": artist->name,
-        artist,
-        difficulty,
-        difficulty_string,
-        web_url_path,
-        published_on
+        ${getFieldsForContentType(contentType)}
       }`
   return fetchSanity(query, false);
 }
@@ -384,10 +349,9 @@ export async function fetchByRailContentId(id) {
 *   .catch(error => console.error(error));
 */
 export async function fetchByRailContentIds(ids, contentType = undefined) {
-  const fields = contentType ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? []) : DEFAULT_FIELDS;
   const idsString = ids.join(',');
   const query = `*[railcontent_id in [${idsString}]]{
-        ${fields.join(', ')}
+        ${getFieldsForContentType(contentType)}
       }`
   return fetchSanity(query, true);
 }
@@ -448,37 +412,7 @@ export async function fetchAll(brand, type, {
         : "";
 
     // Determine the sort order
-    let sortOrder;
-    switch (sort) {
-        case "slug":
-            if(groupBy){
-              sortOrder = "name asc";
-            } else {
-              sortOrder = "title asc";
-            }
-
-            break;
-        case "published_on":
-            sortOrder = "published_on asc";
-            break;
-        case "-published_on":
-            sortOrder = "published_on desc";
-            break;
-        case "-slug":
-            if(groupBy){
-              sortOrder = "name desc";
-            } else {
-              sortOrder = "title desc";
-            }
-
-            break;
-        case "-popularity":
-            sortOrder = "popularity desc";
-            break;
-        default:
-            sortOrder = "published_on asc";
-            break;
-    }
+    const sortOrder = getSortOrder(sort);
 
     let fields = DEFAULT_FIELDS.concat(additionalFields);
     let fieldsString = fields.join(',');
@@ -537,6 +471,28 @@ export async function fetchAll(brand, type, {
     return fetchSanity(query, true);
 }
 
+export function getSortOrder(sort= '-published_on', groupBy)
+{
+    // Determine the sort order
+    let sortOrder = '';
+    const isDesc = sort.startsWith('-');
+    sort = isDesc ? sort.substring(1) : sort;
+    switch (sort) {
+        case "slug":
+            sortOrder = groupBy ? 'name' : "title";
+            break;
+        case "popularity":
+            sortOrder = "popularity";
+            break;
+        case "published_on":
+        default:
+            sortOrder = "published_on";
+            break;
+    }
+    sortOrder += isDesc ? ' desc' : ' asc';
+    return sortOrder;
+}
+
 /**
 * Fetches all available filter options based on various criteria such as brand, filters, style, artist, content type, and search term.
 *
@@ -574,10 +530,10 @@ export async function fetchAllFilterOptions(
             return `&& ${key} == "${value}"`;
         }).join(' ')
         : undefined;
-    
+
     const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${filtersToGroq ? filtersToGroq : ''}`;
     const query = `
-        {  
+        {
           "meta": {
             "totalResults": count(*[${commonFilter}
               ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
@@ -606,22 +562,33 @@ export async function fetchAllFilterOptions(
 /**
 * Fetch children content by Railcontent ID.
 * @param {string} railcontentId - The Railcontent ID of the parent content.
-* @returns {Promise<Array<Object>|null>} - The fetched children content data or null if not found.
+* @returns {Promise<Array<Object>|null>} - The fetched children content data or [] if not found.
 */
 export async function fetchChildren(railcontentId) {
-  //TODO: Implement getByParentId include sum XP
-  const query = `*[_railcontent_id == ${railcontentId}]{
-        railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": artist->name,
-        artist,
-        difficulty,
-        difficulty_string,
-        web_url_path,
-        published_on
-      } | order(published_on asc)`
-  return fetchSanity(query, true);
+  const query = `*[railcontent_id == ${railcontentId}]{
+        'children': child[]->{
+                           ${getFieldsForContentType()}
+                        },
+      }[0..1]`;
+  let parent = await fetchSanity(query, true);
+  return parent[0]['children'] ?? [];
+}
+
+/**
+ *
+ * @param railcontentId - railcontent id of the child
+ * @returns {Promise<Array<string>|null>} - The fetched parent content data or [] if not found
+ */
+export async function fetchParentByRailContentId(railcontentId) {
+    const query = `*[railcontent_id == ${railcontentId}]{
+        'parents': array::unique([
+            ...(*[references(^._id)]{
+                ${getFieldsForContentType()}
+                })
+            ])
+        }[0...1]`;
+    let child = await fetchSanity(query, true);
+    return child[0]['parents'][0] ?? [];
 }
 
 /**
@@ -630,31 +597,11 @@ export async function fetchChildren(railcontentId) {
 * @returns {Promise<Object|null>} - The fetched methods data or null if not found.
 */
 export async function fetchMethods(brand) {
-    const query = `*[_type == 'learning-path' && brand == "${brand}"] {
-      child_count,
-      difficulty,
-      difficulty_string,
-      "description": description[0].children[0].text,
-      hide_from_recsys,
-      "image": thumbnail.asset->url,
-      "instructors":instructor[]->name,
-      "lesson_count": child_count,
-      length_in_seconds,
-      permission,
-      popularity,
+    //TODOS
+    //ADD INSTRUCTORS AND POSITION
+    const query = `*[_type == 'learning-path' && brand == '${brand}'] {
+      ${getFieldsForContentType('method')}
       "position": count(*[_type == 'learning-path' && brand == '${brand}' && (published_on < ^.published_on || (published_on == ^.published_on && _id < ^._id))]) + 1,
-      published_on,
-      railcontent_id,
-      "slug": slug.current,
-      status,
-      "thumbnail": thumbnail.asset->url,
-      "thumbnail_logo": logo_image_url.asset->url,
-      title,
-      total_xp,
-      "type": _type,
-      web_url_path,
-      "url": web_url_path,
-      xp,
     } | order(published_on asc)`
   return fetchSanity(query, true);
 }
@@ -693,22 +640,36 @@ return fetchSanity(query, false);
 /**
 * Fetch the next lesson for a specific method by Railcontent ID.
 * @param {string} railcontentId - The Railcontent ID of the current lesson.
+ * @param {string} methodId - The RailcontentID of the method
 * @returns {Promise<Object|null>} - The fetched next lesson data or null if not found.
 */
-export async function fetchMethodNextLesson(railcontentId) {
-  //TODO: Implement getNextContentForParentContentForUser
-  const query = `*[_railcontent_id == ${railcontentId}]{
-        railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": artist->name,
-        artist,
-        difficulty,
-        difficulty_string,
-        web_url_path,
-        published_on
-      }`
-  return fetchSanity(query, false);
+export async function fetchMethodNextLesson(railcontentId, methodId) {
+  const sortedChildren = await fetchMethodChildrenIds(methodId);
+  const index = sortedChildren.indexOf(railcontentId);
+  const childIndex = sortedChildren[index + 1];
+  return childIndex ? await fetchByRailContentId(childIndex) : null;
+}
+
+
+/**
+ * Fetch the next lesson for a specific method by Railcontent ID.
+ * @param {string} railcontentId - The Railcontent ID of the current lesson.
+ * @param {string} methodId - The RailcontentID of the method
+ * @returns {Promise<Object|null>} - object with `nextLesson` and `previousLesson` attributes
+ * @example
+ * fetchMethodPreviousNextLesson(241284, 241247)
+ *  .then(data => { console.log('nextLesson', data.nextLesson); console.log('prevlesson', data.prevLesson);})
+ *  .catch(error => console.error(error));
+ */
+export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
+    const sortedChildren = await fetchMethodChildrenIds(methodId);
+    const index = sortedChildren.indexOf(railcontentId);
+    let nextId = sortedChildren[index + 1];
+    let previousId = sortedChildren[index  -1];
+    let nextPrev = await fetchByRailContentIds([nextId, previousId]);
+    const nextLesson = nextPrev.find((elem) => {return elem['id'] === nextId});
+    const prevLesson = nextPrev.find((elem) => {return elem['id'] === previousId});
+    return {nextLesson, prevLesson};
 }
 
 /**
@@ -716,10 +677,36 @@ export async function fetchMethodNextLesson(railcontentId) {
 * @param {string} railcontentId - The Railcontent ID of the method.
 * @returns {Promise<Array<Object>|null>} - The fetched children data or null if not found.
 */
-export async function fetchMethodChildren(railcontentId) {
+export async function fetchMethodChildrenIds(railcontentId) {
   //TODO: Implement getByParentId include sum XP
-  return fetchChildren(railcontentId);
+    const query = `*[_type == 'learning-path' && railcontent_id == ${railcontentId}]{
+    'children': child[]-> {
+        'id': railcontent_id,
+            'children': child[]-> {
+            'id': railcontent_id,
+                'children': child[]-> {
+                'id': railcontent_id,
+            }
+        }
+    }
+}`;
+    let allChildren = await fetchSanity(query, false);
+    return getChildrenToDepth(allChildren, 4);;
 }
+
+function getChildrenToDepth(parent, depth = 1)
+{
+    let allChildrenIds = [];
+    if (parent['children']) {
+        parent['children'].forEach((child) => {
+            allChildrenIds.push(child['id']);
+            allChildrenIds = allChildrenIds.concat(getChildrenToDepth(child, depth-1));
+        })
+    }
+    return allChildrenIds;
+}
+
+
 
 /**
 * Fetch the next and previous lessons for a specific lesson by Railcontent ID.
@@ -759,22 +746,15 @@ export async function fetchLessonContent(railContentId) {
             chapter_description,
             chapter_timecode,
             "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
-          }, 
+          },
           "coaches": instructor[]-> {
-            name, 
+            name,
             "id":_id,
             "coach_profile_image":thumbnail_url.asset->url
           },
           "instructors":instructor[]->name,
           instructor[]->,
-          "assignments":assignment[]{
-            "id": railcontent_id,
-            "soundslice_slug": assignment_soundslice,
-            "title": assignment_title,
-            "sheet_music_image_url": assignment_sheet_music_image,
-            "timecode": assignment_timecode,
-            "description": assignment_description
-          },
+          ${assignmentsField}
          video}`
   return fetchSanity(query, false);
 }
@@ -840,7 +820,7 @@ export async function fetchPackChildren(railcontentId) {
  * Fetch the data needed for the Course Overview screen.
  * @param {string} id - The Railcontent ID of the course
  * @returns {Promise<Object|null>} - The course information and lessons or null if not found.
- * 
+ *
  * @example
  * fetchCourseOverview('course123')
  *   .then(course => console.log(course))
@@ -925,6 +905,32 @@ export async function fetchSanity(query, isList) {
   }
 }
 
+/**
+ * Fetch CatalogueMetadata from Sanity. This information may be duplicated in the contentTypeConfig.js.
+ * It's an ongoing discussion (Aug 2024), but it's been included here if necessary
+ *
+ * @param {string} contentType - name of the contentype to pull
+ * @returns {Promise<Object|null>} - A promise that resolves to the fetched data or null if an error occurs or no results are found.
+ *
+ * @example
+ *
+ * fetchCatalogMetadata('song')
+ *   .then(data => console.log(data))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchCatalogMetadata(contentType)
+{   const query = `*[_type == 'CatalogMetadata']{
+        catalog_type,
+        brand,
+        groq_results,
+        groq_search_fields,
+        meta_data_groq,
+        modal_text,
+        sort_by,
+      }`
+    return fetchSanity(query, false);
+}
+
 
 //Helper Functions
 function arrayJoinWithQuotes(array, delimiter = ',') {
@@ -955,3 +961,5 @@ function checkSanityConfig(config) {
   }
   return true;
 }
+
+

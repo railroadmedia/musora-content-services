@@ -16,15 +16,18 @@ import {
   fetchAll,
   fetchAllFilterOptions,
   fetchMethodNextLesson,
-  fetchMethods,
   fetchMethod,
-  fetchMethodChildren,
+  fetchMethods,
+  fetchMethodChildrenIds,
   fetchNextPreviousLesson,
   fetchRelatedLessons,
   fetchPackAll,
   fetchPackChildren,
   fetchLessonContent,
   fetchCourseOverview,
+  fetchChildren,
+  fetchParentByRailContentId,
+  fetchMethodPreviousNextLesson,
 } from './services/sanity.js';
 
 import { 
@@ -53,7 +56,7 @@ export {
     fetchMethods,
     fetchMethod,
     fetchMethodNextLesson,
-    fetchMethodChildren,
+    fetchMethodChildrenIds,
     fetchNextPreviousLesson,
     fetchRelatedLessons,
     fetchPackAll,
@@ -63,4 +66,7 @@ export {
     fetchAllCompletedStates,
     fetchContentInProgress,
     fetchCourseOverview,
+    fetchChildren,
+    fetchParentByRailContentId,
+    fetchMethodPreviousNextLesson,
 }

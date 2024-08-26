@@ -1,11 +1,41 @@
+const DEFAULT_FIELDS = [
+    "'sanity_id' : _id",
+    "'id': railcontent_id",
+    'railcontent_id',
+    artistOrInstructorName(),
+    "artist",
+    "title",
+    "'image': thumbnail.asset->url",
+    "'thumbnail': thumbnail.asset->url",
+    "difficulty",
+    "difficulty_string",
+    "web_url_path",
+    "published_on",
+    "'type': _type",
+    "progress_percent",
+    "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
+    "brand",
+    "'genre': genre[]->name",
+    'status',
+    "'slug' : slug.current",
+];
+
+const descriptionField = 'description[0].children[0].text';
+
+const assignmentsField = `"assignments":assignment[]{
+    "id": railcontent_id,
+        "soundslice_slug": assignment_soundslice,
+        "title": assignment_title,
+        "sheet_music_image_url": assignment_sheet_music_image,
+        "timecode": assignment_timecode,
+        "description": assignment_description
+},`
+
 let contentTypeConfig = {
     'song': {
         'fields': [
-            '"artist_name": artist->name',
             'soundslice',
             'instrumentless',
-            '"id": railcontent_id',
-            '"type": _type',
         ],
         'relationships': {
             'artist': {
@@ -35,9 +65,46 @@ let contentTypeConfig = {
             '"instructors": instructor[]->name',
         ]
     },
+    'method': {
+        'fields': [
+            `"description": ${descriptionField}`,
+            'hide_from_recsys',
+            '"image": thumbnail.asset->url',
+            '"instructors":instructor[]->name',
+            '"lesson_count": child_count',
+            'length_in_seconds',
+            'permission',
+            'popularity',
+            'published_on',
+            'railcontent_id',
+            '"thumbnail_logo": logo_image_url.asset->url',
+            'title',
+            'total_xp',
+            '"type": _type',
+            '"url": web_url_path',
+            'xp',
+        ]
+    }
 }
 
+function artistOrInstructorName(key='artist_name') {
+    return `'${key}': coalesce(artist->name, instructor[0]->name)`;
+}
+
+function artistOrInstructorNameAsArray(key='artists') {
+    return `'${key}': select(artist->name != null => [artist->name], instructor[]->name)`;
+}
+
+function getFieldsForContentType(contentType, asQueryString=true) {
+    const fields = contentType ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? []) : DEFAULT_FIELDS;
+    return asQueryString ? fields.toString() + ',' : fields;
+}
 
 module.exports = {
-    contentTypeConfig
+    contentTypeConfig,
+    artistOrInstructorName,
+    artistOrInstructorNameAsArray,
+    getFieldsForContentType,
+    DEFAULT_FIELDS,
+    assignmentsField
 }
