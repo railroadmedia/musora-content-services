@@ -1,5 +1,4 @@
 import {initializeService} from '../src/services/config.js';
-import {fetchChildren, fetchParentByRailContentId} from "../src";
 
 const {
     fetchSongById,
@@ -24,7 +23,8 @@ const {
     fetchPackChildren,
     fetchLessonContent,
     getSortOrder,
-    fetchParnte
+    fetchParentByRailContentId,
+    fetchChildren,
 } = require('../src/services/sanity.js');
 
 describe('Sanity Queries', function () {
@@ -45,7 +45,7 @@ describe('Sanity Queries', function () {
     test('fetchSongById', async () => {
         const id = 380094;
         const response = await fetchSongById(id);
-        expect(response.railcontent_id).toBe(id);
+        expect(response.id).toBe(id);
 
     });
 
@@ -65,14 +65,14 @@ describe('Sanity Queries', function () {
     test('fetchByRailContentId', async () => {
         const id = 380094;
         const response = await fetchByRailContentId(id);
-        expect(response.railcontent_id).toBe(id);
+        expect(response.id).toBe(id);
     });
 
     test('fetchByRailContentIds', async () => {
         const id = 380094;
         const id2 = 402204;
         const response = await fetchByRailContentIds([id, id2]);
-        const returnedIds = response.map((x) => x.railcontent_id);
+        const returnedIds = response.map((x) => x.id);
         expect(returnedIds).toContain(id);
         expect(returnedIds).toContain(id2);
         expect(returnedIds.length).toBe(2);
@@ -82,7 +82,7 @@ describe('Sanity Queries', function () {
     test('fetchLessonContent', async () => {
         const id = 380094;
         const response = await fetchLessonContent(id);
-        expect(response.railcontent_id).toBe(id);
+        expect(response.id).toBe(id);
     });
 
     test('fetchAllSongs', async () => {
@@ -104,7 +104,7 @@ describe('Sanity Queries', function () {
     test('fetchAllWorkouts', async () => {
         const response = await fetchAll('drumeo', 'workout',{});
         console.log(response);
-        expect(response.entity[0].railcontent_id).toBeDefined();
+        expect(response.entity[0].id).toBeDefined();
     });
 
     test('fetchAllChallenges', async () => {

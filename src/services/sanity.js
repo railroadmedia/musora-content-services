@@ -1,9 +1,10 @@
 /**
  * @module Sanity-Services
  */
-import {contentTypeConfig} from "../contentTypeConfig";
-import {artistOrInstructor, artistOrInstructorAsArray, defaultContentTypeFields, defaultContentTypeFieldsAsString} from "./queryUtility";
+import {assignmentsField, contentTypeConfig, DEFAULT_FIELDS, getFieldsForContentType} from "../contentTypeConfig";
 import {globalConfig} from "./config";
+
+import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
 
 /**
 * Fetch a song by its document ID from Sanity.
@@ -17,25 +18,10 @@ import {globalConfig} from "./config";
 *   .catch(error => console.error(error));
 */
 export async function fetchSongById(documentId) {
-    const fields = [
-      '"id": railcontent_id',
-      'railcontent_id',
-      '"type": _type',
-      'description',
-      'title',
-      '"thumbnail_url": thumbnail.asset->url',
-      '"style": genre[0]->name',
-      artistOrInstructor(),
-      'album',
-      'instrumentless',
-      'soundslice',
-      '"resources": resource[]{resource_url, resource_name}',
-      '"url": web_url_path',
-    ];
 
     const query = `
         *[_type == "song" && railcontent_id == ${documentId}]{
-            ${fields.join(', ')}
+            ${getFieldsForContentType('song', true)}
         }`;
 
     return fetchSanity(query, false);
@@ -343,9 +329,9 @@ export async function fetchUpcomingEvents(brand) {
 *   .then(content => console.log(content))
 *   .catch(error => console.error(error));
 */
-export async function fetchByRailContentId(id) {
+export async function fetchByRailContentId(id, contentType) {
   const query = `*[railcontent_id == ${id}]{
-        ${defaultContentTypeFieldsAsString()}
+        ${getFieldsForContentType(contentType)}
       }`
   return fetchSanity(query, false);
 }
@@ -354,6 +340,7 @@ export async function fetchByRailContentId(id) {
 * Fetch content by an array of Railcontent IDs.
 *
 * @param {Array<string>} ids - The array of Railcontent IDs of the content to fetch.
+* @param {string} [contentType] - The content type the IDs to add needed fields to the response.
 * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of content objects or null if not found.
 *
 * @example
@@ -361,10 +348,10 @@ export async function fetchByRailContentId(id) {
 *   .then(contents => console.log(contents))
 *   .catch(error => console.error(error));
 */
-export async function fetchByRailContentIds(ids) {
+export async function fetchByRailContentIds(ids, contentType = undefined) {
   const idsString = ids.join(',');
   const query = `*[railcontent_id in [${idsString}]]{
-        ${defaultContentTypeFieldsAsString()}
+        ${getFieldsForContentType(contentType)}
       }`
   return fetchSanity(query, true);
 }
@@ -427,7 +414,7 @@ export async function fetchAll(brand, type, {
     // Determine the sort order
     const sortOrder = getSortOrder(sort);
 
-    let fields = defaultContentTypeFields.concat(additionalFields);
+    let fields = DEFAULT_FIELDS.concat(additionalFields);
     let fieldsString = fields.join(',');
 
     // Determine the group by clause
@@ -580,7 +567,7 @@ export async function fetchAllFilterOptions(
 export async function fetchChildren(railcontentId) {
   const query = `*[railcontent_id == ${railcontentId}]{
         'children': child[]->{
-                           ${defaultContentTypeFieldsAsString()},
+                           ${getFieldsForContentType()},
                         },
       }[0..1]`;
   let parent = await fetchSanity(query, true);
@@ -590,13 +577,13 @@ export async function fetchChildren(railcontentId) {
 /**
  *
  * @param railcontentId - railcontent id of the child
- * @returns {Promise<*|*[]>} - The fetched parent content data or [] if not found
+ * @returns {Promise<Array<string>|null>} - The fetched parent content data or [] if not found
  */
 export async function fetchParentByRailContentId(railcontentId) {
     const query = `*[railcontent_id == ${railcontentId}]{
         'parents': array::unique([
             ...(*[references(^._id)]{
-                ${defaultContentTypeFieldsAsString()}
+                ${getFieldsForContentType()}
                 })
             ])
         }[0...1]`;
@@ -610,26 +597,11 @@ export async function fetchParentByRailContentId(railcontentId) {
 * @returns {Promise<Object|null>} - The fetched methods data or null if not found.
 */
 export async function fetchMethods(brand) {
-    const query = `*[_type == 'learning-path' && brand == "drumeo"] {
-      child_count,
-      difficulty,
-      "description": description[0].children[0].text,
-      hide_from_recsys,
-      "instructors":instructor[]->name,
-      length_in_seconds,
-      permission,
-      popularity,
-      published_on,
-      railcontent_id,
-      "slug": slug.current,
-      status,
-      "thumbnail": thumbnail.asset->url,
-      "thumbnail_logo": logo_image_url.asset->url,
-      title,
-      total_xp,
-      "type": _type,
-      web_url_path,
-      xp
+    //TODOS
+    //ADD INSTRUCTORS AND POSITION
+    const query = `*[_type == 'learning-path' && brand == '${brand}'] {
+      ${getFieldsForContentType('method')}
+      "position": count(*[_type == 'learning-path' && brand == '${brand}' && (published_on < ^.published_on || (published_on == ^.published_on && _id < ^._id))]) + 1",
     }`
   return fetchSanity(query, true);
 }
@@ -676,7 +648,6 @@ export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
 */
 export async function fetchMethodChildrenIds(railcontentId) {
   //TODO: Implement getByParentId include sum XP
-    //ADRIAN what the fuck seriously
     const query = `*[_type == 'learning-path' && railcontent_id == ${railcontentId}]{
     'children': child[]-> {
         'id': railcontent_id,
@@ -689,8 +660,7 @@ export async function fetchMethodChildrenIds(railcontentId) {
     }
 }`;
     let allChildren = await fetchSanity(query, false);
-    let sortedChildrenIDs = getChildrenToDepth(allChildren, 4);
-    return sortedChildrenIDs;
+    return getChildrenToDepth(allChildren, 4);;
 }
 
 function getChildrenToDepth(parent, depth = 1)
@@ -753,14 +723,7 @@ export async function fetchLessonContent(railContentId) {
           },
           "instructors":instructor[]->name,
           instructor[]->,
-          "assignments":assignment[]{
-            "id": railcontent_id,
-            "soundslice_slug": assignment_soundslice,
-            "title": assignment_title,
-            "sheet_music_image_url": assignment_sheet_music_image,
-            "timecode": assignment_timecode,
-            "description": assignment_description
-          },
+          ${assignmentsField}
          video}`
   return fetchSanity(query, false);
 }
@@ -913,6 +876,7 @@ export async function fetchSanity(query, isList) {
 
 /**
  * Fetch CatalogueMetadata from Sanity. This information may be duplicated in the contentTypeConfig.js.
+ * It's an ongoing discussion (Aug 2024), but it's been included here if necessary
  *
  * @param {string} contentType - name of the contentype to pull
  * @returns {Promise<Object|null>} - A promise that resolves to the fetched data or null if an error occurs or no results are found.
