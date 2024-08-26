@@ -641,9 +641,10 @@ export async function fetchMethods(brand) {
 * @returns {Promise<Object|null>} - The fetched next lesson data or null if not found.
 */
 export async function fetchMethodNextLesson(railcontentId, methodId) {
-  const sortedChildren = await fetchMethodChildren(methodId);
+  const sortedChildren = await fetchMethodChildrenIds(methodId);
   const index = sortedChildren.indexOf(railcontentId);
-  return sortedChildren[index + 1] ?? null;
+  const childIndex = sortedChildren[index + 1];
+  return childIndex ? await fetchByRailContentId(childIndex) : null;
 }
 
 
@@ -651,20 +652,21 @@ export async function fetchMethodNextLesson(railcontentId, methodId) {
  * Fetch the next lesson for a specific method by Railcontent ID.
  * @param {string} railcontentId - The Railcontent ID of the current lesson.
  * @param {string} methodId - The RailcontentID of the method
- * @returns {Promise<Object|null>} - The fetched next lesson data or null if not found.
+ * @returns {Promise<Object|null>} - object with `nextLesson` and `previousLesson` attributes
+ * @example
+ * fetchMethodPreviousNextLesson(241284, 241247)
+ *  .then(data => { console.log('nextLesson', data.nextLesson); console.log('prevlesson', data.prevLesson);})
+ *  .catch(error => console.error(error));
  */
 export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
-    const sortedChildren = await fetchMethodChildren(methodId);
+    const sortedChildren = await fetchMethodChildrenIds(methodId);
     const index = sortedChildren.indexOf(railcontentId);
-    console.log(index);
-    console.log(sortedChildren);
-    //TODO adrian, this is null for some reason
     let nextId = sortedChildren[index + 1];
     let previousId = sortedChildren[index  -1];
-    let nextPrev = await fetchByRailContentIds([nexdId, previousId]);
-    const nextLesson = nextPrev.find((elem) => {elem['id'] === nextId});
-    const prevLesson = nextPrev.find((elem) => {elem['id'] === previousId});
-    return {nextLesson, preLesson};
+    let nextPrev = await fetchByRailContentIds([nextId, previousId]);
+    const nextLesson = nextPrev.find((elem) => {return elem['id'] === nextId});
+    const prevLesson = nextPrev.find((elem) => {return elem['id'] === previousId});
+    return {nextLesson, prevLesson};
 }
 
 /**
@@ -672,7 +674,7 @@ export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
 * @param {string} railcontentId - The Railcontent ID of the method.
 * @returns {Promise<Array<Object>|null>} - The fetched children data or null if not found.
 */
-export async function fetchMethodChildren(railcontentId) {
+export async function fetchMethodChildrenIds(railcontentId) {
   //TODO: Implement getByParentId include sum XP
     //ADRIAN what the fuck seriously
     const query = `*[_type == 'learning-path' && railcontent_id == ${railcontentId}]{

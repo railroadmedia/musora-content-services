@@ -17,7 +17,7 @@ import {
   fetchAllFilterOptions,
   fetchMethodNextLesson,
   fetchMethods,
-  fetchMethodChildren,
+  fetchMethodChildrenIds,
   fetchNextPreviousLesson,
   fetchRelatedLessons,
   fetchPackAll,
@@ -26,7 +26,7 @@ import {
   fetchCourseOverview,
   fetchChildren,
   fetchParentByRailContentId,
-    fetchMethodPreviousNextLesson,
+  fetchMethodPreviousNextLesson,
 } from './services/sanity.js';
 
 import { 
@@ -54,7 +54,7 @@ export {
     fetchAllFilterOptions,
     fetchMethods,
     fetchMethodNextLesson,
-    fetchMethodChildren,
+    fetchMethodChildrenIds,
     fetchNextPreviousLesson,
     fetchRelatedLessons,
     fetchPackAll,

@@ -17,7 +17,7 @@ const {
     fetchAll,
     fetchAllFilterOptions,
     fetchMethodNextLesson,
-    fetchMethodChildren,
+    fetchMethodChildrenIds,
     fetchNextPreviousLesson,
     fetchRelatedLessons,
     fetchPackAll,
