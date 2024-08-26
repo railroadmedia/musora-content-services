@@ -649,7 +649,7 @@ export async function fetchMethods(brand) {
       length_in_seconds,
       permission,
       popularity,
-      "position": count(*[_type == 'learning-path' && brand == '${brand}' && published_on <= ^.published_on]) - count(*[_type == 'learning-path' && brand == '${brand}' && published_on < ^.published_on]),
+      "position": count(*[_type == 'learning-path' && brand == 'drumeo' && (published_on < ^.published_on || (published_on == ^.published_on && _id < ^._id))]) + 1,
       published_on,
       railcontent_id,
       "slug": slug.current,
