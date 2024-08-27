@@ -62,7 +62,6 @@ let contentTypeConfig = {
     },
     'student-focus': {
         'fields': [
-            'length_in_seconds',
             '"instructors": instructor[]->name'
         ]
     },
@@ -88,7 +87,6 @@ let contentTypeConfig = {
     },
     'quick-tips': {
         'fields': [
-            'length_in_seconds',
             '"instructors": instructor[]->name'
         ]
     },
@@ -99,134 +97,112 @@ let contentTypeConfig = {
     },
     'drum-fest-international-aa2022': {
         'fields': [
-            'length_in_seconds',
             '"instructors": instructor[]->name'
         ]
     },
     'spotlight': {
         'fields': [
-            'length_in_seconds',
             '"instructors": instructor[]->name'
         ]
     },
     'the-history-of-electronic-drums': {
         'fields': [
-            'length_in_seconds',
             '"instructors": instructor[]->name'
         ]
     },
     'backstage-secrets': {
         'fields': [
-            'length_in_seconds',
             '"instructors": instructor[]->name'
         ]
     },
     'question-and-answer': {
         'fields': [
-            'length_in_seconds',
             '"instructors": instructor[]->name'
         ]
     },
     'student-collaborations': {
         'fields': [
-            'length_in_seconds',
             '"instructors": instructor[]->name'
         ]
     },
     'live': {
         'fields': [
-            'length_in_seconds',
             '"instructors": instructor[]->name'
         ]
     },
     'podcasts': {
         'fields': [
             'sort',
-            'length_in_seconds',
         ]
     },
     'solos': {
         'fields': [
-            'length_in_seconds',
             '"instructors": instructor[]->name'
         ]
     },
     'boot-camps': {
         'fields': [
-            'length_in_seconds',
             '"instructors": instructor[]->name'
         ]
     },
     'gear-guids': {
         'fields': [
-            'length_in_seconds',
             '"instructors": instructor[]->name'
         ]
     },
     'performances': {
         'fields': [
-            'length_in_seconds',
             '"instructors": instructor[]->name'
         ]
     },
     'in-rhythm': {
         'fields': [
             'sort',
-            'length_in_seconds',
         ]
     },
     'challenges': {
         'fields': [
-            'length_in_seconds',
             '"instructors": instructor[]->name'
         ]
     },
     'on-the-road': {
         'fields': [
-            'length_in_seconds',
             '"instructors": instructor[]->name'
         ]
     },
     'diy-drum-experiments': {
         'fields': [
             'sort',
-            'length_in_seconds',
         ]
     },
     'rhythmic-adventures-of-captain-carson': {
         'fields': [
             'sort',
-            'length_in_seconds',
         ]
     },
     'study-the-greats': {
         'fields': [
             'sort',
-            'length_in_seconds',
         ]
     },
     'rhythms-from-another-planet': {
         'fields': [
             'sort',
-            'length_in_seconds',
         ]
     },
     'paiste-cymbals': {
         'fields': [
-            'length_in_seconds',
             '"instructors": instructor[]->name'
         ]
     },
     'behind-the-scenes': {
         'fields': [
             'sort',
-            'length_in_seconds',
         ]
     },
     'exploring-beats': {
         'fields': [
             'sort',
-            'length_in_seconds',
         ]
     },
     'play-along': {
