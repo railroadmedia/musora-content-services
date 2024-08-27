@@ -1,7 +1,14 @@
 /**
  * @module Sanity-Services
  */
-import {assignmentsField, contentTypeConfig, DEFAULT_FIELDS, getFieldsForContentType} from "../contentTypeConfig";
+import {
+    artistOrInstructorName,
+    artistOrInstructorNameAsArray,
+    assignmentsField,
+    contentTypeConfig,
+    DEFAULT_FIELDS,
+    getFieldsForContentType
+} from "../contentTypeConfig";
 import {globalConfig} from "./config";
 
 import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
@@ -232,20 +239,13 @@ export async function fetchSongCount(brand) {
  *   .catch(error => console.error(error));
  */
 export async function fetchWorkouts(brand) {
+    const fields = getFieldsForContentType('workout');
   const query = `*[_type == 'workout' && brand == '${brand}'] [0...5] {
-        "id": railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        ${artistOrInstructor()},
-        ${artistOrInstructorAsArray()},
-        difficulty,
-        difficulty_string,
-        length_in_seconds,
-        published_on,;
-        "type": _type,
-        web_url_path,
+        ${fields.toString()}
       } | order(published_on desc)[0...5]`
-  return fetchSanity(query, true);
+  const a = fetchSanity(query, true);
+  console.log('werkouts result', a);
+  return a;
 }
 
 /**
@@ -301,8 +301,7 @@ export async function fetchUpcomingEvents(brand) {
   };
   const typesString = arrayJoinWithQuotes(liveTypes[brand] ?? liveTypes['default']);
   const now = getSanityDate(new Date());
-  //TODO: status = 'scheduled'  is this handled in sanity?
-  const query = `*[_type in [${typesString}] && brand == '${brand}' && published_on > '${now}']{
+  const query = `*[_type in [${typesString}] && brand == '${brand}' && published_on > '${now}' && status == 'scheduled']{
         "id": railcontent_id,
         title,
         "image": thumbnail.asset->url,
@@ -805,6 +804,48 @@ export async function fetchPackAll(railcontentId) {
         published_on
       } | order(published_on asc)[0...5]`
   return fetchSanity(query, true);
+}
+
+export async function fetchLiveEvent(brand) {
+    //calendarIDs taken from addevent.php
+    // TODO import instructor calendars to Sanity
+    let defaultCalendarID = '';
+    switch(brand) {
+        case ('drumeo'):
+            defaultCalendarID = 'GP142387';
+             break;
+        case ('pianote'):
+            defaultCalendarID = 'be142408';
+            break;
+        case ('guitareo'):
+            defaultCalendarID = 'IJ142407';
+            break;
+        case ('singeo'):
+            defaultCalendarID = 'bk354284';
+            break;
+        default:
+            break;
+    }
+    const yesterday = '';
+    const now = Date.now();
+
+    // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
+    // this has some +- on times
+    // But this query just finds the first scheduled event (sorted by start_time) that ends after now()
+    // TODO remove slug.current match, this was just for testing known items
+    const query = `*[slug.current match 'adrian-test' && status == 'scheduled' && defined(live_event_start_time) && published_on > '2024-08-25T23:13:15.082Z' && live_event_end_time >= '${getSanityDate(new Date())}']{
+  'slug': slug.current,
+  'id': railcontent_id,
+    live_event_start_time,
+    live_event_end_time,
+  railcontent_id,
+    published_on,
+    'event_coach_url' : instructor[0]->web_url_path,
+    'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
+    'videoId': coalesce(live_event_youtube_id, video.external_id),
+} | order(live_event_start_time)[0...1]`;
+    const liveEvents = await fetchSanity(query, false);
+    return liveEvents;
 }
 
 /**

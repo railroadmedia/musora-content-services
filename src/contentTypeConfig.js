@@ -84,6 +84,11 @@ let contentTypeConfig = {
             '"url": web_url_path',
             'xp',
         ]
+    },
+    'workout': {
+        'fields': [
+            artistOrInstructorNameAsArray(),
+        ]
     }
 }
 
