@@ -636,6 +636,7 @@ export async function fetchMethod(brand, slug) {
         title,
         "type": _type,
         "description": description[0].children[0].text,
+        "url": web_url_path,
         xp,
       }
   } | order(published_on asc)`
