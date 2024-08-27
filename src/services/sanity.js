@@ -236,12 +236,12 @@ export async function fetchWorkouts(brand) {
         "id": railcontent_id,
         title,
         "image": thumbnail.asset->url,
-        ${artistOrInstructor()},
-        ${artistOrInstructorAsArray()},
+        "artist_name": instructor[0]->name,
+        "artists": instructor[]->name,
         difficulty,
         difficulty_string,
         length_in_seconds,
-        published_on,;
+        published_on,
         "type": _type,
         web_url_path,
       } | order(published_on desc)[0...5]`
@@ -636,6 +636,7 @@ export async function fetchMethod(brand, slug) {
         title,
         "type": _type,
         "description": description[0].children[0].text,
+        "url": web_url_path,
         xp,
       }
   } | order(published_on asc)`
