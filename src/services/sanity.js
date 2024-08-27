@@ -398,8 +398,8 @@ export async function fetchAll(brand, type, {
     // Construct the search filter
     const searchFilter = searchTerm
         ? groupBy !== "" ?
-          `&& (^.name match "${searchTerm}*"  || ${groupBy}->name match "${searchTerm}*" || title match "${searchTerm}*")`
-          : `&& (artist->name match "${searchTerm}*" || "${searchTerm}*" in instructor[]->name || title match "${searchTerm}*")`
+          `&& (^.name match "${searchTerm}*" || title match "${searchTerm}*")`
+          : `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*")`
         : "";
 
     // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
@@ -424,15 +424,15 @@ export async function fetchAll(brand, type, {
     if (groupBy !== "" && isGroupByOneToOne) {
         query = `
         {
-            "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter}]._id) > 0]),
-            "entity": *[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter}]._id) > 0]
+            "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter}]._id) > 0]),
+            "entity": *[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter}]._id) > 0]
             {
                 'id': _id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
-                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter}]._id),
-                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter}]{
+                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter}]._id),
+                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...10]
@@ -443,15 +443,15 @@ export async function fetchAll(brand, type, {
     } else if (groupBy !== "") {
         query = `
         {
-            "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter}]._id) > 0]),
-            "entity": *[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter}]._id) > 0]
+            "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter}]._id) > 0]),
+            "entity": *[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter}]._id) > 0]
             {
                 'id': _id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
-                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter}]._id),
-                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter}]{
+                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter}]._id),
+                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...10]
@@ -630,9 +630,7 @@ export async function fetchMethod(brand, slug) {
       {
         "id": railcontent_id,
         published_on,
-        child_count,
         difficulty,
-        difficulty_string,
         "thumbnail_url": thumbnail.asset->url,
         "instructor": instructor[]->{name},
         title,
