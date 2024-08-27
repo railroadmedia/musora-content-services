@@ -96,6 +96,7 @@ function artistOrInstructorNameAsArray(key='artists') {
 }
 
 function getFieldsForContentType(contentType, asQueryString=true) {
+    console.log('this was called, ', contentType)
     const fields = contentType ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? []) : DEFAULT_FIELDS;
     return asQueryString ? fields.toString() + ',' : fields;
 }
