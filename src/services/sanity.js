@@ -1,7 +1,7 @@
 /**
  * @module Sanity-Services
  */
-import {assignmentsField, contentTypeConfig, DEFAULT_FIELDS, getFieldsForContentType} from "../contentTypeConfig";
+import {assignmentsField, contentTypeConfig, DEFAULT_FIELDS, getFieldsForContentType, filtersToGroq} from "../contentTypeConfig";
 import {globalConfig} from "./config";
 
 import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
@@ -404,13 +404,7 @@ export async function fetchAll(brand, type, {
 
     // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
     const includedFieldsFilter = includedFields.length > 0
-        ? includedFields.map(field => {
-            let [key, value] = field.split(',');
-            if (key === 'difficulty') {
-                key = 'difficulty_string';
-            }
-            return `&& ${key} == "${value}"`;
-        }).join(' ')
+        ? filtersToGroq(includedFields)
         : "";
 
     // Determine the sort order
@@ -524,16 +518,9 @@ export async function fetchAllFilterOptions(
     contentType,
     term
 ) {
-    const filtersToGroq = filters?.length > 0 ? filters.map(field => {
-            let [key, value] = field.split(',');
-            if (key === 'difficulty') {
-                key = 'difficulty_string';
-            }
-            return `&& ${key} == "${value}"`;
-        }).join(' ')
-        : undefined;
+    const includedFieldsFilter = filters?.length > 0 ? filtersToGroq(filters) : undefined;
 
-    const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${filtersToGroq ? filtersToGroq : ''}`;
+    const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${includedFieldsFilter ? includedFieldsFilter : ''}`;
     const query = `
         {
           "meta": {

@@ -238,6 +238,27 @@ function getFieldsForContentType(contentType, asQueryString=true) {
     const fields = contentType ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? []) : DEFAULT_FIELDS;
     return asQueryString ? fields.toString() + ',' : fields;
 }
+/**
+ * Takes the included fields array and returns a string that can be used in a groq query.
+ * @param {Array<string>} filters - An array of strings that represent applied filters. This should be in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock']
+ * @returns {string} - A string that can be used in a groq query
+ */
+function filtersToGroq(filters) {
+    const groq = filters.map(field => {
+            let [key, value] = field.split(',');
+            switch (key) {
+              case 'difficulty':
+                return `&& difficulty_string == "${value}"`;
+              case 'genre':
+                return `&& genre[]->name match "${value}"`;
+              case 'topic':
+                return `&& topic[]->name match "${value}"`;
+              default:
+                return `&& ${key} == "${value}"`;
+            }
+        }).join(' ');
+    return groq;
+}
 
 module.exports = {
     contentTypeConfig,
@@ -245,5 +266,6 @@ module.exports = {
     artistOrInstructorNameAsArray,
     getFieldsForContentType,
     DEFAULT_FIELDS,
-    assignmentsField
+    assignmentsField,
+    filtersToGroq,
 }
