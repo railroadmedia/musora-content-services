@@ -559,12 +559,13 @@ export async function fetchAllFilterOptions(
 /**
 * Fetch children content by Railcontent ID.
 * @param {string} railcontentId - The Railcontent ID of the parent content.
+* @param {string} [contentType] - The content type the IDs to add needed fields to the response.
 * @returns {Promise<Array<Object>|null>} - The fetched children content data or [] if not found.
 */
-export async function fetchChildren(railcontentId) {
+export async function fetchChildren(railcontentId, contentType) {
   const query = `*[railcontent_id == ${railcontentId}]{
         'children': child[]->{
-                           ${getFieldsForContentType()}
+                           ${getFieldsForContentType(contentType)}
                         },
       }[0..1]`;
   let parent = await fetchSanity(query, true);
@@ -597,8 +598,8 @@ export async function fetchMethods(brand) {
     //TODOS
     //ADD INSTRUCTORS AND POSITION
     const query = `*[_type == 'learning-path' && brand == '${brand}'] {
-      ${getFieldsForContentType('method')}
-      "position": count(*[_type == 'learning-path' && brand == '${brand}' && (published_on < ^.published_on || (published_on == ^.published_on && _id < ^._id))]) + 1,
+      ${ getFieldsForContentType() },
+      "position": count(*[_type == 'learning-path' && brand == '${brand}' && (published_on < ^.published_on || (published_on == ^.published_on && _id < ^._id))]) + 1
     } | order(published_on asc)`
   return fetchSanity(query, true);
 }
@@ -633,10 +634,20 @@ export async function fetchMethod(brand, slug) {
         title,
         "type": _type,
         "description": description[0].children[0].text,
+        "url": web_url_path,
         xp,
       }
   } | order(published_on asc)`
 return fetchSanity(query, false);
+}
+
+/**
+* Fetch the child courses for a specific method by Railcontent ID.
+* @param {string} railcontentId - The Railcontent ID of the current lesson.
+* @returns {Promise<Object|null>} - The fetched next lesson data or null if not found.
+*/
+export async function fetchMethodChildren(railcontentId) {
+  return fetchChildren(railcontentId, 'method');
 }
 
 /**
