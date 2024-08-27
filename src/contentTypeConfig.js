@@ -242,7 +242,6 @@ let contentTypeConfig = {
     'pack': {
         'fields': [
             '"lesson_count": child_count',
-            '"description": description[][0].children[0].text',
             'xp',
            `"description": ${descriptionField}`,
         ],
