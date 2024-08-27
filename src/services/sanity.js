@@ -239,13 +239,11 @@ export async function fetchSongCount(brand) {
  *   .catch(error => console.error(error));
  */
 export async function fetchWorkouts(brand) {
-    const fields = getFieldsForContentType('workout');
+  const fields = getFieldsForContentType('workout');
   const query = `*[_type == 'workout' && brand == '${brand}'] [0...5] {
         ${fields.toString()}
       } | order(published_on desc)[0...5]`
-  const a = fetchSanity(query, true);
-  console.log('werkouts result', a);
-  return a;
+  return fetchSanity(query, true);
 }
 
 /**
@@ -826,14 +824,13 @@ export async function fetchLiveEvent(brand) {
         default:
             break;
     }
-    const yesterday = '';
-    const now = Date.now();
+    let dateTemp = new Date();
+    dateTemp.setDate(dateTemp.getDate() - 1);
 
     // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
     // this has some +- on times
     // But this query just finds the first scheduled event (sorted by start_time) that ends after now()
-    // TODO remove slug.current match, this was just for testing known items
-    const query = `*[slug.current match 'adrian-test' && status == 'scheduled' && defined(live_event_start_time) && published_on > '2024-08-25T23:13:15.082Z' && live_event_end_time >= '${getSanityDate(new Date())}']{
+    const query = `*[status == 'scheduled' && defined(live_event_start_time) && published_on > '${getSanityDate(dateTemp)}' && live_event_end_time >= '${getSanityDate(new Date())}']{
   'slug': slug.current,
   'id': railcontent_id,
     live_event_start_time,
@@ -844,8 +841,7 @@ export async function fetchLiveEvent(brand) {
     'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
     'videoId': coalesce(live_event_youtube_id, video.external_id),
 } | order(live_event_start_time)[0...1]`;
-    const liveEvents = await fetchSanity(query, false);
-    return liveEvents;
+    return await fetchSanity(query, false);
 }
 
 /**
