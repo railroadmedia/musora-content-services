@@ -220,6 +220,7 @@ let contentTypeConfig = {
             '"lesson_count": child_count',
             'xp',
            `"description": ${descriptionField}`,
+           '"instructors": instructor[]->name'
         ],
     }
 }
