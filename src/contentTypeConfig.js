@@ -85,6 +85,11 @@ let contentTypeConfig = {
             'xp',
         ]
     },
+    'workout': {
+        'fields': [
+            artistOrInstructorNameAsArray(),
+        ]
+    },
     'quick-tips': {
         'fields': [
             '"instructors": instructor[]->name'
