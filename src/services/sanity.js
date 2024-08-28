@@ -1,7 +1,7 @@
 /**
  * @module Sanity-Services
  */
-import {assignmentsField, contentTypeConfig, DEFAULT_FIELDS, getFieldsForContentType} from "../contentTypeConfig";
+import {assignmentsField, descriptionField, contentTypeConfig, DEFAULT_FIELDS, getFieldsForContentType} from "../contentTypeConfig";
 import {globalConfig} from "./config";
 
 import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
@@ -569,6 +569,8 @@ export async function fetchAllFilterOptions(
 */
 export async function fetchChildren(railcontentId, contentType) {
   const query = `*[railcontent_id == ${railcontentId}]{
+        title,
+
         'children': child[]->{
                            ${getFieldsForContentType(contentType)}
                         },
@@ -617,7 +619,7 @@ export async function fetchMethods(brand) {
 */
 export async function fetchMethod(brand, slug) {
   const query = `*[_type == 'learning-path' && brand == "${brand}" && slug.current == "${slug}"] {
-    "description": description[0].children[0].text,
+    "description": ${descriptionField},
     "instructors":instructor[]->name,
     published_on,
     "id": railcontent_id,
@@ -638,7 +640,7 @@ export async function fetchMethod(brand, slug) {
         "instructor": instructor[]->{name},
         title,
         "type": _type,
-        "description": description[0].children[0].text,
+        "description": ${descriptionField},
         "url": web_url_path,
         xp,
       }
@@ -652,7 +654,16 @@ return fetchSanity(query, false);
 * @returns {Promise<Object|null>} - The fetched next lesson data or null if not found.
 */
 export async function fetchMethodChildren(railcontentId) {
-  return fetchChildren(railcontentId, 'method');
+  const query = `*[railcontent_id == ${railcontentId}]{
+    child_count,
+    "description": ${descriptionField},
+    title,
+    xp,
+    'children': child[]->{
+        ${getFieldsForContentType('method')}
+    },
+  }[0..1]`;
+  return fetchSanity(query, true);
 }
 
 /**
@@ -758,8 +769,23 @@ export async function fetchNextPreviousLesson(railcontentId) {
  *   .catch(error => console.error(error));
  */
 export async function fetchLessonContent(railContentId) {
-  const query = `*[railcontent_id == ${railContentId} ]
-          {title, published_on,"type":_type, "resources": resource, difficulty, difficulty_string, brand, soundslice, instrumentless, railcontent_id, "id":railcontent_id, slug, artist->,"thumbnail_url":thumbnail.asset->url, "url": web_url_path, soundslice_slug,description,
+  const query = `*[railcontent_id == ${railContentId} ]{
+          title, 
+          published_on,
+          "type":_type, 
+          "resources": resource, 
+          difficulty, 
+          difficulty_string, 
+          brand, 
+          soundslice, 
+          instrumentless, 
+          railcontent_id, 
+          "id":railcontent_id, 
+          slug, artist->,
+          "thumbnail_url":thumbnail.asset->url, 
+          "url": web_url_path, 
+          soundslice_slug,
+          description,
           "chapters": chapter[]{
             chapter_description,
             chapter_timecode,

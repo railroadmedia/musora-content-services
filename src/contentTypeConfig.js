@@ -240,6 +240,7 @@ function getFieldsForContentType(contentType, asQueryString=true) {
 
 module.exports = {
     contentTypeConfig,
+    descriptionField,
     artistOrInstructorName,
     artistOrInstructorNameAsArray,
     getFieldsForContentType,
