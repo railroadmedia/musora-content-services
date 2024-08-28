@@ -590,7 +590,7 @@ export async function fetchMethods(brand) {
     //TODOS
     //ADD INSTRUCTORS AND POSITION
     const query = `*[_type == 'learning-path' && brand == '${brand}'] {
-      ${ getFieldsForContentType() },
+      ${ getFieldsForContentType() }
       "position": count(*[_type == 'learning-path' && brand == '${brand}' && (published_on < ^.published_on || (published_on == ^.published_on && _id < ^._id))]) + 1
     } | order(published_on asc)`
   return fetchSanity(query, true);
