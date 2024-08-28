@@ -1,7 +1,16 @@
 /**
  * @module Sanity-Services
  */
-import {assignmentsField, descriptionField, contentTypeConfig, DEFAULT_FIELDS, getFieldsForContentType} from "../contentTypeConfig";
+import {
+    artistOrInstructorName,
+    artistOrInstructorNameAsArray,
+    assignmentsField,
+    descriptionField,
+    contentTypeConfig,
+    DEFAULT_FIELDS,
+    getFieldsForContentType,
+    filtersToGroq
+} from "../contentTypeConfig";
 import {globalConfig} from "./config";
 
 import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
@@ -232,18 +241,9 @@ export async function fetchSongCount(brand) {
  *   .catch(error => console.error(error));
  */
 export async function fetchWorkouts(brand) {
+  const fields = getFieldsForContentType('workout');
   const query = `*[_type == 'workout' && brand == '${brand}'] [0...5] {
-        "id": railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": instructor[0]->name,
-        "artists": instructor[]->name,
-        difficulty,
-        difficulty_string,
-        length_in_seconds,
-        published_on,
-        "type": _type,
-        web_url_path,
+        ${fields.toString()}
       } | order(published_on desc)[0...5]`
   return fetchSanity(query, true);
 }
@@ -301,8 +301,7 @@ export async function fetchUpcomingEvents(brand) {
   };
   const typesString = arrayJoinWithQuotes(liveTypes[brand] ?? liveTypes['default']);
   const now = getSanityDate(new Date());
-  //TODO: status = 'scheduled'  is this handled in sanity?
-  const query = `*[_type in [${typesString}] && brand == '${brand}' && published_on > '${now}']{
+  const query = `*[_type in [${typesString}] && brand == '${brand}' && published_on > '${now}' && status == 'scheduled']{
         "id": railcontent_id,
         title,
         "image": thumbnail.asset->url,
@@ -404,13 +403,7 @@ export async function fetchAll(brand, type, {
 
     // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
     const includedFieldsFilter = includedFields.length > 0
-        ? includedFields.map(field => {
-            let [key, value] = field.split(',');
-            if (key === 'difficulty') {
-                key = 'difficulty_string';
-            }
-            return `&& ${key} == "${value}"`;
-        }).join(' ')
+        ? filtersToGroq(includedFields)
         : "";
 
     // Determine the sort order
@@ -524,16 +517,9 @@ export async function fetchAllFilterOptions(
     contentType,
     term
 ) {
-    const filtersToGroq = filters?.length > 0 ? filters.map(field => {
-            let [key, value] = field.split(',');
-            if (key === 'difficulty') {
-                key = 'difficulty_string';
-            }
-            return `&& ${key} == "${value}"`;
-        }).join(' ')
-        : undefined;
+    const includedFieldsFilter = filters?.length > 0 ? filtersToGroq(filters) : undefined;
 
-    const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${filtersToGroq ? filtersToGroq : ''}`;
+    const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${includedFieldsFilter ? includedFieldsFilter : ''}`;
     const query = `
         {
           "meta": {
@@ -602,11 +588,8 @@ export async function fetchParentByRailContentId(railcontentId) {
 * @returns {Promise<Object|null>} - The fetched methods data or null if not found.
 */
 export async function fetchMethods(brand) {
-    //TODOS
-    //ADD INSTRUCTORS AND POSITION
     const query = `*[_type == 'learning-path' && brand == '${brand}'] {
-      ${ getFieldsForContentType() },
-      "position": count(*[_type == 'learning-path' && brand == '${brand}' && (published_on < ^.published_on || (published_on == ^.published_on && _id < ^._id))]) + 1
+      ${ getFieldsForContentType() }
     } | order(published_on asc)`
   return fetchSanity(query, true);
 }
@@ -844,6 +827,46 @@ export async function fetchPackAll(railcontentId) {
         published_on
       } | order(published_on asc)[0...5]`
   return fetchSanity(query, true);
+}
+
+export async function fetchLiveEvent(brand) {
+    //calendarIDs taken from addevent.php
+    // TODO import instructor calendars to Sanity
+    let defaultCalendarID = '';
+    switch(brand) {
+        case ('drumeo'):
+            defaultCalendarID = 'GP142387';
+             break;
+        case ('pianote'):
+            defaultCalendarID = 'be142408';
+            break;
+        case ('guitareo'):
+            defaultCalendarID = 'IJ142407';
+            break;
+        case ('singeo'):
+            defaultCalendarID = 'bk354284';
+            break;
+        default:
+            break;
+    }
+    let dateTemp = new Date();
+    dateTemp.setDate(dateTemp.getDate() - 1);
+
+    // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
+    // this has some +- on times
+    // But this query just finds the first scheduled event (sorted by start_time) that ends after now()
+    const query = `*[status == 'scheduled' && defined(live_event_start_time) && published_on > '${getSanityDate(dateTemp)}' && live_event_end_time >= '${getSanityDate(new Date())}']{
+  'slug': slug.current,
+  'id': railcontent_id,
+    live_event_start_time,
+    live_event_end_time,
+  railcontent_id,
+    published_on,
+    'event_coach_url' : instructor[0]->web_url_path,
+    'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
+    'videoId': coalesce(live_event_youtube_id, video.external_id),
+} | order(live_event_start_time)[0...1]`;
+    return await fetchSanity(query, false);
 }
 
 /**
