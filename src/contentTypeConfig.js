@@ -253,6 +253,8 @@ function filtersToGroq(filters) {
                 return `&& genre[]->name match "${value}"`;
               case 'topic':
                 return `&& topic[]->name match "${value}"`;
+              case 'instrumentless':
+                return `&& instrumentless == ${value}`;
               default:
                 return `&& ${key} == "${value}"`;
             }
