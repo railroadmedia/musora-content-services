@@ -856,16 +856,19 @@ export async function fetchLiveEvent(brand) {
     // this has some +- on times
     // But this query just finds the first scheduled event (sorted by start_time) that ends after now()
     const query = `*[status == 'scheduled' && defined(live_event_start_time) && published_on > '${getSanityDate(dateTemp)}' && live_event_end_time >= '${getSanityDate(new Date())}']{
-  'slug': slug.current,
-  'id': railcontent_id,
-    live_event_start_time,
-    live_event_end_time,
-  railcontent_id,
-    published_on,
-    'event_coach_url' : instructor[0]->web_url_path,
-    'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
-    'videoId': coalesce(live_event_youtube_id, video.external_id),
-} | order(live_event_start_time)[0...1]`;
+      'slug': slug.current,
+      'id': railcontent_id,
+      live_event_start_time,
+      live_event_end_time,
+      railcontent_id,
+      published_on,
+      'event_coach_url' : instructor[0]->web_url_path,
+      'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
+      title,
+      "image": thumbnail.asset->url,
+      "instructors": instructor[]->name,
+      'videoId': coalesce(live_event_youtube_id, video.external_id),
+    } | order(live_event_start_time)[0...1]`;
     return await fetchSanity(query, false);
 }
 
