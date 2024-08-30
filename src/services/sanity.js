@@ -886,6 +886,39 @@ export async function fetchPackChildren(railcontentId) {
   return fetchChildren(railcontentId, 'pack');
 }
 
+export async function fetchChallengeOverview(id) {
+  // WIP
+  const query = `*[railcontent_id == ${id}]{
+        "id": railcontent_id,
+        railcontent_id,
+        title,
+        "image": thumbnail.asset->url,
+        "instructors": instructor[]->name,
+        difficulty,
+        difficulty_string,
+        web_url_path,
+        published_on,
+        "type": _type,
+        total_xp,
+        xp,
+        'coach_top_banner_image': coach_top_banner_image.asset->url,
+        "header_image_url": header_image_url.asset->url,
+        "logo_image_url": logo_image_url.asset->url,
+        "description": description[0]->children[0]->text,
+        "lessons": child[]->{
+          "id": railcontent_id,
+          title,
+          "image": thumbnail.asset->url,
+          "instructors": instructor[]->name,
+          length_in_seconds,
+          difficulty_string,
+          difficulty,
+          "type": _type,
+        }
+      }`;
+  return fetchSanity(query, false);
+}
+
 /**
  * Fetch the data needed for the Course Overview screen.
  * @param {string} id - The Railcontent ID of the course
