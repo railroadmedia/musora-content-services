@@ -16,6 +16,7 @@ import {
     fetchAllFilterOptions,
     fetchMethods,
     fetchMethod,
+    fetchMethodChildren,
     fetchMethodNextLesson,
     fetchMethodChildrenIds,
     fetchNextPreviousLesson,
@@ -48,6 +49,7 @@ declare module 'musora-content-services' {
         fetchMethods,
         fetchMethod,
         fetchMethodNextLesson,
+        fetchMethodChildren,
         fetchMethodChildrenIds,
         fetchNextPreviousLesson,
         fetchRelatedLessons,
@@ -55,6 +57,7 @@ declare module 'musora-content-services' {
         fetchPackChildren,
         fetchLessonContent,
         fetchCourseOverview,
+        fetchLiveEvent,
     }
     
 }
