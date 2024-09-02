@@ -639,6 +639,7 @@ return fetchSanity(query, false);
 export async function fetchMethodChildren(railcontentId) {
   const query = `*[railcontent_id == ${railcontentId}]{
     child_count,
+    "id": railcontent_id,
     "description": ${descriptionField},
     title,
     xp,
@@ -815,8 +816,9 @@ export async function fetchRelatedLessons(railContentId, brand) {
 */
 export async function fetchPackAll(railcontentId) {
   //TODO: Implement getPacks
-  const query = `*[_railcontent_id == ${railcontentId}]{
+  const query = `*[railcontent_id == ${railcontentId}]{
         railcontent_id,
+        "id": railcontent_id,
         title,
         "image": thumbnail.asset->url,
         "artist_name": artist->name,
