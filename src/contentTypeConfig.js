@@ -52,7 +52,7 @@ let contentTypeConfig = {
             '"primary_cta_text": select(dateTime(published_on) > dateTime(now()) && dateTime(enrollment_start_time) > dateTime(now()) => "Notify Me", "Start Challenge")',
             'challenge_state',
             'challenge_state_text',
-            'description',
+            `"description": ${descriptionField}`,
             'total_xp',
             'xp',
             '"instructors": instructor[]->name',
