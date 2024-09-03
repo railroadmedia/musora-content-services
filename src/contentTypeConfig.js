@@ -261,7 +261,7 @@ function filtersToGroq(filters) {
               case 'instrumentless':
                 return `&& instrumentless == ${value}`;
               default:
-                return `&& ${key} == "${value}"`;
+                return `&& ${key} == ${/^\d+$/.test(value) ? value : `"$${value}"`}`;
             }
         }).join(' ');
     return groq;
