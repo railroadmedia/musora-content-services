@@ -52,6 +52,12 @@ let contentTypeConfig = {
             '"primary_cta_text": select(dateTime(published_on) > dateTime(now()) && dateTime(enrollment_start_time) > dateTime(now()) => "Notify Me", "Start Challenge")',
             'challenge_state',
             'challenge_state_text',
+            'description',
+            'total_xp',
+            'xp',
+            '"instructors": instructor[]->name',
+            '"header_image_url": header_image_url.asset->url',
+            '"logo_image_url": logo_image_url.asset->url',
         ]
     },
     'course': {
