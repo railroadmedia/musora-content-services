@@ -44,7 +44,7 @@ let contentTypeConfig = {
         }
     },
     'challenge':{
-        'fields':[
+        'fields': [
             'enrollment_start_time',
             'enrollment_end_time',
             'registration_url',
@@ -227,6 +227,21 @@ let contentTypeConfig = {
            `"description": ${descriptionField}`,
            '"instructors": instructor[]->name'
         ],
+    },
+    'pack-bundle': {
+        'fields': [
+            'child_count',
+            `"children": child[]->{
+                "description": ${descriptionField},
+                ${getFieldsForContentType()}
+            }`,
+            '"image": logo_image_url.asset->url',
+            '"thumbnail": thumbnail.asset->url',
+            '"light_logo": light_mode_logo_url.asset->url',
+            '"dark_logo": dark_mode_logo_url.asset->url',
+            `"description": ${descriptionField}`,
+            'total_xp',
+        ]
     }
 }
 
