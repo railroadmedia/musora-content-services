@@ -227,6 +227,13 @@ let contentTypeConfig = {
            `"description": ${descriptionField}`,
            '"instructors": instructor[]->name'
         ],
+    },
+    'routine':{
+        'fields': [
+            'description',
+            'high_soundslice_slug',
+            'low_soundslice_slug'
+        ]
     }
 }
 
