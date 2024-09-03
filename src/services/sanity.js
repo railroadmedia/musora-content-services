@@ -888,6 +888,16 @@ export async function fetchPackChildren(railcontentId) {
   return fetchChildren(railcontentId, 'pack');
 }
 
+/**
+ * Fetch the data needed for the Challenge Overview screen.
+ * @param {string} id - The Railcontent ID of the course
+ * @returns {Promise<Object|null>} - The challenge information and lessons or null if not found.
+ *
+ * @example
+ * fetchChallengeOverview('challenge123')
+ *   .then(challenge => console.log(challenge))
+ *   .catch(error => console.error(error));
+ */
 export async function fetchChallengeOverview(id) {
   // WIP
   const query = `*[railcontent_id == ${id}]{
