@@ -234,6 +234,13 @@ let contentTypeConfig = {
            '"instructors": instructor[]->name'
         ],
     },
+    'routine':{
+        'fields': [
+            `"description": ${descriptionField}`,
+            'high_soundslice_slug',
+            'low_soundslice_slug'
+        ]
+    },
     'pack-bundle': {
         'fields': [
             'child_count',
