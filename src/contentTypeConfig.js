@@ -230,7 +230,7 @@ let contentTypeConfig = {
     },
     'routine':{
         'fields': [
-            'description',
+            `"description": ${descriptionField}`,
             'high_soundslice_slug',
             'low_soundslice_slug'
         ]
