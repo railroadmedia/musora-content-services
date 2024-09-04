@@ -173,3 +173,35 @@ export async function fetchContentInProgress(type="all", brand) {
         return null;
     }
 }
+
+
+/**
+ * Fetches user context data for a specific piece of content.
+ *
+ * @param {int} contentId - The content id.
+ * @returns {Promise<Object|null>} - Returns an object containing user context data if found, otherwise null.
+ * @example
+ * fetchContentPageUserData(406548)
+ *   .then(data => console.log(data))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchContentPageUserData(contentId) {
+    let url = `/content/${contentId}/user_data/${globalConfig.railcontentConfig.userId}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
+    };
+    try {
+        const response = await fetch(url, { headers });
+        const result = await response.json();
+        if(result){
+            console.log('fetchContentPageUserData', result);
+            return result;
+        } else {
+            console.log('result not json');
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
