@@ -204,12 +204,18 @@ describe('Sanity Queries', function () {
         expect(response[0].type).toBe('learning-path');
     });
 
-    test('fetchAllProgress', async () => {
+    test('fetchAll-WithProgress', async () => {
         const response = await fetchAll('drumeo', 'song', {
             sort: 'slug',
             progressIds: [410213, 305649]
         });
         expect(response.entity[0].id = 305649);
         expect(response.entity[1].id = 410213);
+    });
+
+    test('fetchAllFilterOptions-WithProgress', async () => {
+        const response = await fetchAllFilterOptions('drumeo', '', '', '', 'song', '', [410213, 305649]);
+        console.log(response);
+        expect(response.meta.totalResults).toBe(2);
     });
 });
