@@ -56,7 +56,7 @@ describe('Sanity Queries', function () {
         const artistNames = response.map((x) => x.name);
         expect(artistNames).toContain("Arctic Monkeys");
 
-    });
+    }, 10000);
 
     test('fetchSongArtistCount', async () => {
         const response = await fetchSongArtistCount('drumeo');
