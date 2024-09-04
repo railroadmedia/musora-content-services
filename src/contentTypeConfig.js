@@ -258,27 +258,26 @@ let contentTypeConfig = {
     },
     'foundation': {
         'fields': [
-        `"description": ${descriptionField}`,
-        `"instructors":instructor[]->name`,
-        `published_on`,
-        `"id": railcontent_id`,
-        `title`,
-        `"type": _type`,
-        `"units": child[]->
-          {
-            "id": railcontent_id,
-            published_on,
-            child_count,
-            difficulty,
-            difficulty_string,
-            "thumbnail_url": thumbnail.asset->url,
-            "instructor": instructor[]->{name},
-            title,
-            "type": _type,
-            "description": ${descriptionField},
-            "url": web_url_path,
-            xp,
-          }`
+            `"description": ${descriptionField}`,
+            `"instructors":instructor[]->name`,
+            `published_on`,
+            `"id": railcontent_id`,
+            `title`,
+            `"type": _type`,
+            `"units": child[]->{
+                "id": railcontent_id,
+                published_on,
+                child_count,
+                difficulty,
+                difficulty_string,
+                "thumbnail_url": thumbnail.asset->url,
+                "instructor": instructor[]->{name},
+                title,
+                "type": _type,
+                "description": ${descriptionField},
+                "url": web_url_path,
+                xp,
+            }`
         ]
     },
 }
