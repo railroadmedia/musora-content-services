@@ -4,17 +4,18 @@
 
 const { globalConfig } = require('./config');
 
+
 /**
- * Fetches the completion status of a specific song for the current user.
+ * Fetches the completion status of a specific lesson for the current user.
  *
- * @param {string} content_id - The ID of the song content to check.
+ * @param {string} content_id - The ID of the lesson content to check.
  * @returns {Promise<Object|null>} - Returns the completion status object if found, otherwise null.
  * @example
- * fetchCurrentSongComplete('user123', 'song456', 'csrf-token')
+ * fetchCurrentSongComplete('user123', 'lesson456', 'csrf-token')
  *   .then(status => console.log(status))
  *   .catch(error => console.error(error));
  */
-export async function fetchCurrentSongComplete(content_id) {
+export async function fetchCompletedState(content_id) {
     const url = `/content/user_progress/${globalConfig.railcontentConfig.userId}?content_ids[]=${content_id}`;
 
     const headers = {
@@ -26,11 +27,8 @@ export async function fetchCurrentSongComplete(content_id) {
         const response = await fetch(url, { headers });
         const result = await response.json();
 
-        if (result && result[content_id]) {
-            console.log('result', result[content_id]);
-            return result[content_id];  // Return the correct object
+        if (result && result[content_id]) {            return result[content_id];  // Return the correct object
         } else {
-            console.log('Invalid result structure', result);
             return null;  // Handle unexpected structure
         }
     } catch (error) {
