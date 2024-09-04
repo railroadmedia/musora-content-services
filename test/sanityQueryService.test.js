@@ -203,4 +203,13 @@ describe('Sanity Queries', function () {
         expect(response.length).toBeGreaterThan(0);
         expect(response[0].type).toBe('learning-path');
     });
+
+    test('fetchAllProgress', async () => {
+        const response = await fetchAll('drumeo', 'song', {
+            sort: 'slug',
+            progressIds: [410213, 305649]
+        });
+        expect(response.entity[0].id = 305649);
+        expect(response.entity[1].id = 410213);
+    });
 });

@@ -506,7 +506,7 @@ export function getSortOrder(sort= '-published_on', groupBy)
 * @param {string} [artist] - Optional artist name to filter the results. If provided, the query will check if the artist's name matches.
 * @param {string} contentType - The content type to fetch (e.g., 'song', 'lesson').
 * @param {string} [term] - Optional search term to match against various fields such as title, album, artist name, and genre.
-* @param {Array<string>} [params.progressIds=undefined] - An array of railcontent IDs to filter the results by. Used for filtering by progress.
+* @param {Array<string>} [progressIds=undefined] - An array of railcontent IDs to filter the results by. Used for filtering by progress.
 * @returns {Promise<Object|null>} - A promise that resolves to an object containing the total results and filter options, or null if the query fails.
 *
 * @example
