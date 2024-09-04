@@ -109,6 +109,21 @@ describe('Sanity Queries', function () {
         expect(response.entity[0].id).toBeDefined();
     });
 
+    test('fetchAllInstructorField', async () => {
+        const response = await fetchAll('drumeo', 'quick-tips',{searchTerm: 'Domino Santantonio'});
+        console.log(response);
+        expect(response.entity[0].id).toBeDefined();
+        expect(response.entity[0].instructors).toBeTruthy();
+    });
+
+    test('fetchAllSortField', async () => {
+        const response = await fetchAll('drumeo', 'rhythmic-adventures-of-captain-carson',{});
+        console.log(response);
+        expect(response.entity[0].id).toBeDefined();
+        expect(response.entity[0].sort).toBeDefined();
+    });
+
+
     test('fetchAllChallenges', async () => {
         const response = await fetchAll('drumeo', 'challenge',{});
         console.log(response);
