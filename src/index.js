@@ -30,6 +30,7 @@ import {
   fetchParentByRailContentId,
   fetchMethodPreviousNextLesson,
   fetchLiveEvent,
+  fetchChallengeOverview,
 } from './services/sanity.js';
 
 import { 
@@ -73,4 +74,5 @@ export {
     fetchParentByRailContentId,
     fetchMethodPreviousNextLesson,
     fetchLiveEvent,
+    fetchChallengeOverview,
 }

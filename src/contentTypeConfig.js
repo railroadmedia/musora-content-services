@@ -56,7 +56,7 @@ let contentTypeConfig = {
         }
     },
     'challenge':{
-        'fields':[
+        'fields': [
             'enrollment_start_time',
             'enrollment_end_time',
             'registration_url',
@@ -64,6 +64,12 @@ let contentTypeConfig = {
             '"primary_cta_text": select(dateTime(published_on) > dateTime(now()) && dateTime(enrollment_start_time) > dateTime(now()) => "Notify Me", "Start Challenge")',
             'challenge_state',
             'challenge_state_text',
+            `"description": ${descriptionField}`,
+            'total_xp',
+            'xp',
+            '"instructors": instructor[]->name',
+            '"header_image_url": header_image_url.asset->url',
+            '"logo_image_url": logo_image_url.asset->url',
         ]
     },
     'course': {
@@ -119,6 +125,28 @@ let contentTypeConfig = {
     'rudiment': {
         'fields': [
             'sheet_music_thumbnail_url',
+        ]
+    },
+    'routine':{
+        'fields': [
+            `"description": ${descriptionField}`,
+            'high_soundslice_slug',
+            'low_soundslice_slug'
+        ]
+    },
+    'pack-bundle': {
+        'fields': [
+            'child_count',
+            `"children": child[]->{
+                "description": ${descriptionField},
+                ${getFieldsForContentType()}
+            }`,
+            '"image": logo_image_url.asset->url',
+            '"thumbnail": thumbnail.asset->url',
+            '"light_logo": light_mode_logo_url.asset->url',
+            '"dark_logo": dark_mode_logo_url.asset->url',
+            `"description": ${descriptionField}`,
+            'total_xp',
         ]
     },
     // content with just the added 'instructors' Field

@@ -24,7 +24,8 @@ import {
     fetchPackAll,
     fetchPackChildren,
     fetchLessonContent,
-    fetchCourseOverview
+    fetchCourseOverview,
+    fetchChallengeOverview,
   } from './services/sanity.js';
   
   import { initializeService } from './services/config.js';
@@ -58,6 +59,7 @@ declare module 'musora-content-services' {
         fetchLessonContent,
         fetchCourseOverview,
         fetchLiveEvent,
+        fetchChallengeOverview,
     }
     
 }
