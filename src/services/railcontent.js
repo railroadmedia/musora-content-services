@@ -37,6 +37,40 @@ export async function fetchCompletedState(content_id) {
     }
 }
 
+/**
+ * Fetches the vimeo meta-data
+ *
+ * @param {string} vimeo_id - The vimeo id, found in the <document>.video.external_id field for lessons
+ * @returns {Promise<Object|null>} - Returns the
+ * @example
+ * fetchVimeoData('642900215')
+ *   .then(vimeoData => console.log(vimeoData))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchVimeoData(vimeo_id) {
+    const url = `/content/vimeo-data/${vimeo_id}`;
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
+    };
+
+    try {
+        const response = await fetch(url, { headers });
+        const result = await response.json();
+
+        if (result) {
+            return result;  // Return the correct object
+        } else {
+            console.log('Invalid result structure', result);
+            return null;  // Handle unexpected structure
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
+
 
 /**
  * Fetches the completion status for multiple songs for the current user.
