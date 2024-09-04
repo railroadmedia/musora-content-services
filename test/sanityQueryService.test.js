@@ -205,17 +205,33 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchAll-WithProgress', async () => {
-        const response = await fetchAll('drumeo', 'song', {
+        const ids = [410213, 305649];
+        let response = await fetchAll('drumeo', 'song', {
             sort: 'slug',
-            progressIds: [410213, 305649]
+            progressIds: ids,
         });
+        expect(response.entity.length).toBe(2);
         expect(response.entity[0].id = 305649);
         expect(response.entity[1].id = 410213);
+        // change the type and we expect no results
+        response = await fetchAll('drumeo', 'quick-tip', {
+            sort: 'slug',
+            progressIds: ids,
+        });
+        expect(response.entity.length).toBe(0);
     });
 
     test('fetchAllFilterOptions-WithProgress', async () => {
-        const response = await fetchAllFilterOptions('drumeo', '', '', '', 'song', '', [410213, 305649]);
-        console.log(response);
+        const ids = [410213, 305649];
+        let response = await fetchAllFilterOptions('drumeo', '', '', '', 'song', '', ids);
         expect(response.meta.totalResults).toBe(2);
+        // change the brand and we expect no results
+        response = await fetchAllFilterOptions('singeo', '', '', '', 'song', '', ids);
+        expect(response.meta.totalResults).toBe(0);
+
+    });
+
+    test('fetchAllFilterOptions-WithProgress', async () => {
+
     });
 });
