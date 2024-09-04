@@ -31,6 +31,18 @@ const assignmentsField = `"assignments":assignment[]{
         "description": assignment_description
 },`
 
+const contentWithInstructorsField = {
+    'fields': [
+        '"instructors": instructor[]->name',
+    ]
+}
+
+const contentWithSortField = {
+    'fields': [
+        'sort',
+    ]
+}
+
 let contentTypeConfig = {
     'song': {
         'fields': [
@@ -66,11 +78,7 @@ let contentTypeConfig = {
             '"instructors": instructor[]->name'
         ]
     },
-    'student-focus': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
+
     'method': {
         'fields': [
             `"description": ${descriptionField}`,
@@ -96,126 +104,6 @@ let contentTypeConfig = {
             artistOrInstructorNameAsArray(),
         ]
     },
-    'quick-tips': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'rudiment': {
-        'fields': [
-            'sheet_music_thumbnail_url',
-        ]
-    },
-    'drum-fest-international-aa2022': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'spotlight': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'the-history-of-electronic-drums': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'backstage-secrets': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'question-and-answer': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'student-collaborations': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'live': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'podcasts': {
-        'fields': [
-            'sort',
-        ]
-    },
-    'solos': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'boot-camps': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'gear-guids': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'performances': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'in-rhythm': {
-        'fields': [
-            'sort',
-        ]
-    },
-    'challenges': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'on-the-road': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'diy-drum-experiments': {
-        'fields': [
-            'sort',
-        ]
-    },
-    'rhythmic-adventures-of-captain-carson': {
-        'fields': [
-            'sort',
-        ]
-    },
-    'study-the-greats': {
-        'fields': [
-            'sort',
-        ]
-    },
-    'rhythms-from-another-planet': {
-        'fields': [
-            'sort',
-        ]
-    },
-    'paiste-cymbals': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'behind-the-scenes': {
-        'fields': [
-            'sort',
-        ]
-    },
-    'exploring-beats': {
-        'fields': [
-            'sort',
-        ]
-    },
     'play-along': {
         'fields': [
             '"style": genre[]->name',
@@ -230,9 +118,21 @@ let contentTypeConfig = {
         'fields': [
             '"lesson_count": child_count',
             'xp',
-           `"description": ${descriptionField}`,
-           '"instructors": instructor[]->name'
+            `"description": ${descriptionField}`,
+            '"instructors": instructor[]->name'
         ],
+    },
+    'rudiment': {
+        'fields': [
+            'sheet_music_thumbnail_url',
+        ]
+    },
+    'routine':{
+        'fields': [
+            `"description": ${descriptionField}`,
+            'high_soundslice_slug',
+            'low_soundslice_slug'
+        ]
     },
     'pack-bundle': {
         'fields': [
@@ -248,7 +148,33 @@ let contentTypeConfig = {
             `"description": ${descriptionField}`,
             'total_xp',
         ]
-    }
+    },
+    // content with just the added 'instructors' Field
+    'student-focus': contentWithInstructorsField,
+    'quick-tips': contentWithInstructorsField,
+    'drum-fest-international-aa2022': contentWithInstructorsField,
+    'spotlight': contentWithInstructorsField,
+    'the-history-of-electronic-drums': contentWithInstructorsField,
+    'backstage-secrets': contentWithInstructorsField,
+    'question-and-answer': contentWithInstructorsField,
+    'student-collaborations': contentWithInstructorsField,
+    'live': contentWithInstructorsField,
+    'solos': contentWithInstructorsField,
+    'boot-camps': contentWithInstructorsField,
+    'gear-guids': contentWithInstructorsField,
+    'performances': contentWithInstructorsField,
+    'challenges': contentWithInstructorsField,
+    'on-the-road': contentWithInstructorsField,
+    // content with just the added 'sort' field
+    'podcasts': contentWithSortField,
+    'in-rhythm': contentWithSortField,
+    'diy-drum-experiments': contentWithSortField,
+    'rhythmic-adventures-of-captain-carson': contentWithSortField,
+    'study-the-greats': contentWithSortField,
+    'rhythms-from-another-planet': contentWithSortField,
+    'paiste-cymbals': contentWithInstructorsField,
+    'behind-the-scenes': contentWithSortField,
+    'exploring-beats': contentWithSortField,
 }
 
 function artistOrInstructorName(key='artist_name') {
