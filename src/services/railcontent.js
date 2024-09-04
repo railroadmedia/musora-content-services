@@ -60,7 +60,6 @@ export async function fetchVimeoData(vimeo_id) {
         const result = await response.json();
 
         if (result) {
-            console.log('result', result);
             return result;  // Return the correct object
         } else {
             console.log('Invalid result structure', result);
