@@ -170,6 +170,13 @@ let contentTypeConfig = {
             }`
         ]
     },
+    'instructor': {
+        'fields': [
+            'name',
+            '"coach_card_image": coach_card_image.asset->url',
+            'focus'
+        ]
+    },
     // content with just the added 'instructors' Field
     'student-focus': contentWithInstructorsField,
     'quick-tips': contentWithInstructorsField,
