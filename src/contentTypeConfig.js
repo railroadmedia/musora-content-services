@@ -153,10 +153,6 @@ let contentTypeConfig = {
         'fields': [
             `"description": ${descriptionField}`,
             `"instructors":instructor[]->name`,
-            `published_on`,
-            `"id": railcontent_id`,
-            `title`,
-            `"type": _type`,
             `"units": child[]->{
                 "id": railcontent_id,
                 published_on,
