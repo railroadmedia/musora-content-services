@@ -27,6 +27,8 @@ const {
     fetchChildren,
     fetchMethod,
     fetchMethods,
+    getCurrentRequiredContentPermissionsQueryString,
+    getFilterString,
 } = require('../src/services/sanity.js');
 
 describe('Sanity Queries', function () {
@@ -37,31 +39,42 @@ describe('Sanity Queries', function () {
                 projectId: process.env.SANITY_PROJECT_ID,
                 dataset: process.env.SANITY_DATASET,
                 useCachedAPI: process.env.SANITY_USE_CACHED_API || true,
-                version: '2021-06-07',
-                debug: process.env.DEBUG || false
+                apiVersion: '2021-06-07',
+                debug: process.env.DEBUG || false,
+                useCdn: false
             }
         };
         initializeService(config);
     });
 
     test('fetchSongById', async () => {
-        const id = 380094;
+        const id = 406895;
         const response = await fetchSongById(id);
-        expect(response.id).toBe(id);
 
+        expect(response.id).toBe(id);
     });
 
     test('fetchArtists', async () => {
         const response = await fetchArtists('drumeo');
         const artistNames = response.map((x) => x.name);
+
         expect(artistNames).toContain("Arctic Monkeys");
 
     });
 
     test('fetchSongArtistCount', async () => {
         const response = await fetchSongArtistCount('drumeo');
-        console.log(response);
+
         expect(response).toBeGreaterThan(1000);
+    });
+
+    test('fetchRelatedSongs', async () => {
+        const id = 406895;
+        const song = await fetchSongById(id);
+        const response = await fetchRelatedSongs('drumeo', song.artist.name, song.genre[0]);
+
+        expect(response).toHaveLength(10);
+        expect(JSON.stringify(response)).toContain("Metal");
     });
 
     test('fetchByRailContentId', async () => {
@@ -177,15 +190,27 @@ describe('Sanity Queries', function () {
 
     test('fetchMethod', async () => {
         const response = await fetchMethod('drumeo', 'drumeo-method');
-        //console.log(response);
+
         expect(response).toBeDefined();
         expect(response.levels.length).toBeGreaterThan(0);
     });
 
     test('fetchMethods', async () => {
         const response = await fetchMethods('drumeo');
-        //console.log(response);
+
         expect(response.length).toBeGreaterThan(0);
         expect(response[0].type).toBe('learning-path');
+    });
+
+    test('getCurrentRequiredQueryContentPermissionsString', async () => {
+        const response = getCurrentRequiredContentPermissionsQueryString(['my-permission-1', 'my-permission-2'], true);
+
+        expect(response).toBe(' && references(*[_type == "permission" && _id in ["my-permission-1","my-permission-2"]]._id)');
+    });
+
+    test('getFilterString', async () => {
+        const response = getFilterString(['my-permission-1', 'my-permission-2']);
+
+        expect(response).toBe('test');
     });
 });

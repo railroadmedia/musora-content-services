@@ -1,279 +1,144 @@
-const DEFAULT_FIELDS = [
-    "'sanity_id' : _id",
-    "'id': railcontent_id",
-    'railcontent_id',
-    artistOrInstructorName(),
-    "artist",
-    "title",
-    "'image': thumbnail.asset->url",
-    "'thumbnail': thumbnail.asset->url",
-    "difficulty",
-    "difficulty_string",
-    "web_url_path",
-    "published_on",
-    "'type': _type",
-    "progress_percent",
-    "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
-    "brand",
-    "'genre': genre[]->name",
-    'status',
-    "'slug' : slug.current",
-];
+import {nullToUndefined, q} from 'groqd';
 
-const descriptionField = 'description[0].children[0].text';
+const DEFAULT_FIELDS = {
+    sanity_id: ['_id', q.string()],
+    id: ['railcontent_id', q.number()],
+    railcontent_id: q.number(),
+    artist_name: ['coalesce(artist->name, instructor[0]->name)', q.string()],
+    artist: q.object(),
+    title: q.string(),
+    image: ['thumbnail.asset->url', q.string()],
+    thumbnail: ['thumbnail.asset->url', q.string()],
+    difficulty: q.number(),
+    difficulty_string: q.string(),
+    web_url_path: q.string(),
+    published_on: q.string(),
+    type: ['_type', q.string()],
+    progress_percent: q.number().optional(),
+    length_in_seconds: ['coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)', q.number()],
+    brand: q.string(),
+    genre: ['genre[]->name', q.array(q.string())],
+    status: q.string().optional(),
+    slug: ['slug.current', q.string()],
+};
 
-const assignmentsField = `"assignments":assignment[]{
-    "id": railcontent_id,
-        "soundslice_slug": assignment_soundslice,
-        "title": assignment_title,
-        "sheet_music_image_url": assignment_sheet_music_image,
-        "timecode": assignment_timecode,
-        "description": assignment_description
-},`
-
-let contentTypeConfig = {
-    'song': {
-        'fields': [
-            'soundslice',
-            'instrumentless',
-        ],
-        'relationships': {
-            'artist': {
-                isOneToOne: true
-            }
+const CONTENT_TYPE_CONFIG = {
+    song: {
+        fields: {
+            soundslice: q.array(),
+            instrumentless: q.boolean(),
+        },
+        relationships: {
+            artist: { isOneToOne: true }
         }
     },
-    'challenge':{
-        'fields':[
-            'enrollment_start_time',
-            'enrollment_end_time',
-            'registration_url',
-            '"lesson_count": child_count',
-            '"primary_cta_text": select(dateTime(published_on) > dateTime(now()) && dateTime(enrollment_start_time) > dateTime(now()) => "Notify Me", "Start Challenge")',
-            'challenge_state',
-            'challenge_state_text',
-        ]
+    challenge: {
+        fields: {
+            enrollment_start_time: q.string(),
+            enrollment_end_time: q.string(),
+            registration_url: q.string(),
+            lesson_count: ['child_count', q.number()],
+            primary_cta_text: q.select({
+                'dateTime(published_on) > dateTime(now()) && dateTime(enrollment_start_time) > dateTime(now())': q.literal("Notify Me"),
+                default: q.literal("Start Challenge")
+            }),
+            challenge_state: q.string(),
+            challenge_state_text: q.string(),
+        }
     },
-    'course': {
-        'fields': [
-            '"lesson_count": child_count',
-            '"instructors": instructor[]->name'
-        ]
+    course: {
+        fields: {
+            lesson_count: ['child_count', q.number()],
+            instructors: ['instructor[]->name', q.array(q.string())],
+        }
     },
     'student-focus': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
+        fields: {
+            instructors: ['instructor[]->name', q.array(q.string())],
+        }
     },
-    'method': {
-        'fields': [
-            `"description": ${descriptionField}`,
-            'hide_from_recsys',
-            '"image": thumbnail.asset->url',
-            '"instructors":instructor[]->name',
-            '"lesson_count": child_count',
-            'length_in_seconds',
-            'permission',
-            'popularity',
-            'published_on',
-            'railcontent_id',
-            '"thumbnail_logo": logo_image_url.asset->url',
-            'title',
-            'total_xp',
-            '"type": _type',
-            '"url": web_url_path',
-            'xp',
-        ]
+    method: {
+        fields: {
+            description: ['description[0].children[0].text', q.string()],
+            hide_from_recsys: q.boolean(),
+            image: ['thumbnail.asset->url', q.string()],
+            instructors: ['instructor[]->name', q.array(q.string())],
+            lesson_count: ['child_count', q.number()],
+            length_in_seconds: q.number(),
+            permission: q.string(),
+            popularity: q.number(),
+            published_on: q.string(),
+            railcontent_id: q.string(),
+            thumbnail_logo: ['logo_image_url.asset->url', q.string()],
+            title: q.string(),
+            total_xp: q.number(),
+            type: ['_type', q.string()],
+            url: ['web_url_path', q.string()],
+            xp: q.number(),
+        }
     },
-    'workout': {
-        'fields': [
-            artistOrInstructorNameAsArray(),
-        ]
+    workout: {
+        fields: {
+            artists: ['select(artist->name != null => [artist->name], instructor[]->name)', q.array(q.string())],
+        }
     },
     'quick-tips': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
+        fields: {
+            instructors: ['instructor[]->name', q.array(q.string())],
+        }
     },
-    'rudiment': {
-        'fields': [
-            'sheet_music_thumbnail_url',
-        ]
-    },
-    'drum-fest-international-aa2022': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'spotlight': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'the-history-of-electronic-drums': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'backstage-secrets': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'question-and-answer': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'student-collaborations': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'live': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'podcasts': {
-        'fields': [
-            'sort',
-        ]
-    },
-    'solos': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'boot-camps': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'gear-guids': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'performances': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'in-rhythm': {
-        'fields': [
-            'sort',
-        ]
-    },
-    'challenges': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'on-the-road': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'diy-drum-experiments': {
-        'fields': [
-            'sort',
-        ]
-    },
-    'rhythmic-adventures-of-captain-carson': {
-        'fields': [
-            'sort',
-        ]
-    },
-    'study-the-greats': {
-        'fields': [
-            'sort',
-        ]
-    },
-    'rhythms-from-another-planet': {
-        'fields': [
-            'sort',
-        ]
-    },
-    'paiste-cymbals': {
-        'fields': [
-            '"instructors": instructor[]->name'
-        ]
-    },
-    'behind-the-scenes': {
-        'fields': [
-            'sort',
-        ]
-    },
-    'exploring-beats': {
-        'fields': [
-            'sort',
-        ]
+    rudiment: {
+        fields: {
+            sheet_music_thumbnail_url: q.string(),
+        }
     },
     'play-along': {
-        'fields': [
-            '"style": genre[]->name',
-            'mp3_no_drums_no_click_url',
-            'mp3_yes_drums_yes_click_url',
-            'mp3_no_drums_yes_click_url',
-            'mp3_yes_drums_no_click_url',
-            'bpm',
-        ]
+        fields: {
+            style: ['genre[]->name', q.array(q.string())],
+            mp3_no_drums_no_click_url: q.string(),
+            mp3_yes_drums_yes_click_url: q.string(),
+            mp3_no_drums_yes_click_url: q.string(),
+            mp3_yes_drums_no_click_url: q.string(),
+            bpm: q.number(),
+        }
     },
-    'pack': {
-        'fields': [
-            '"lesson_count": child_count',
-            'xp',
-           `"description": ${descriptionField}`,
-           '"instructors": instructor[]->name'
-        ],
+    pack: {
+        fields: {
+            lesson_count: ['child_count', q.number()],
+            xp: q.number(),
+            description: ['description[0].children[0].text', q.string()],
+            instructors: ['instructor[]->name', q.array(q.string())],
+        }
     }
+};
+
+function getGrabObject(contentType) {
+    const contentTypeFields = CONTENT_TYPE_CONFIG[contentType]?.fields || {};
+
+    return nullToUndefined({ ...DEFAULT_FIELDS, ...contentTypeFields });
 }
 
-function artistOrInstructorName(key='artist_name') {
-    return `'${key}': coalesce(artist->name, instructor[0]->name)`;
-}
-
-function artistOrInstructorNameAsArray(key='artists') {
-    return `'${key}': select(artist->name != null => [artist->name], instructor[]->name)`;
-}
-
-function getFieldsForContentType(contentType, asQueryString=true) {
-    console.log('this was called, ', contentType)
-    const fields = contentType ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? []) : DEFAULT_FIELDS;
-    return asQueryString ? fields.toString() + ',' : fields;
-}
-/**
- * Takes the included fields array and returns a string that can be used in a groq query.
- * @param {Array<string>} filters - An array of strings that represent applied filters. This should be in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock']
- * @returns {string} - A string that can be used in a groq query
- */
 function filtersToGroq(filters) {
-    const groq = filters.map(field => {
-            let [key, value] = field.split(',');
-            switch (key) {
-              case 'difficulty':
-                return `&& difficulty_string == "${value}"`;
-              case 'genre':
-                return `&& genre[]->name match "${value}"`;
-              case 'topic':
-                return `&& topic[]->name match "${value}"`;
-              case 'instrumentless':
-                return `&& instrumentless == ${value}`;
-              default:
-                return `&& ${key} == "${value}"`;
-            }
-        }).join(' ');
-    return groq;
+    return (base) => filters.reduce((acc, filter) => {
+        const [key, value] = filter.split(',');
+        switch (key) {
+            case 'difficulty':
+                return acc.filter(`difficulty_string == "${value}"`);
+            case 'genre':
+                return acc.filter(`"${value}" in genre[]->name`);
+            case 'topic':
+                return acc.filter(`"${value}" in topic[]->name`);
+            case 'instrumentless':
+                return acc.filter(`instrumentless == ${value}`);
+            default:
+                return acc.filter(`${key} == "${value}"`);
+        }
+    }, base);
 }
 
-module.exports = {
-    contentTypeConfig,
-    descriptionField,
-    artistOrInstructorName,
-    artistOrInstructorNameAsArray,
-    getFieldsForContentType,
-    DEFAULT_FIELDS,
-    assignmentsField,
+export {
+    getGrabObject,
     filtersToGroq,
-}
+    CONTENT_TYPE_CONFIG,
+    DEFAULT_FIELDS,
+};
