@@ -27,6 +27,7 @@ const {
     fetchChildren,
     fetchMethod,
     fetchMethods,
+    fetchFoundation,
 } = require('../src/services/sanity.js');
 
 describe('Sanity Queries', function () {
@@ -56,7 +57,7 @@ describe('Sanity Queries', function () {
         const artistNames = response.map((x) => x.name);
         expect(artistNames).toContain("Arctic Monkeys");
 
-    });
+    }, 10000);
 
     test('fetchSongArtistCount', async () => {
         const response = await fetchSongArtistCount('drumeo');
@@ -231,7 +232,10 @@ describe('Sanity Queries', function () {
 
     });
 
-    test('fetchAllFilterOptions-WithProgress', async () => {
-
+    test('fetchFoundation', async () => {
+        const response = await fetchFoundation('foundations-2019');
+        //console.log(response);
+        expect(response.units.length).toBeGreaterThan(0);
+        expect(response.type).toBe('foundation');
     });
 });

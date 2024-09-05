@@ -605,6 +605,18 @@ export async function fetchMethods(brand) {
 }
 
 /**
+* Fetch the Foundations 2019.
+* @param {string} slug - The slug of the method.
+* @returns {Promise<Object|null>} - The fetched foundation data or null if not found.
+*/
+export async function fetchFoundation(slug) {
+  const query = `*[_type == 'foundation' && slug.current == "${slug}"] {
+    ${ getFieldsForContentType('foundation') }
+  } | order(published_on asc)`
+return fetchSanity(query, false);
+}
+
+/**
 * Fetch the Method (learning-paths) for a specific brand.
 * @param {string} brand - The brand for which to fetch methods.
 * @param {string} slug - The slug of the method.

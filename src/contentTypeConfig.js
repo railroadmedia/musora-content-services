@@ -134,19 +134,40 @@ let contentTypeConfig = {
             'low_soundslice_slug'
         ]
     },
-    'pack-bundle': {
+    'pack-children': {
         'fields': [
             'child_count',
             `"children": child[]->{
                 "description": ${descriptionField},
                 ${getFieldsForContentType()}
             }`,
+            '"resources": resource',
             '"image": logo_image_url.asset->url',
             '"thumbnail": thumbnail.asset->url',
             '"light_logo": light_mode_logo_url.asset->url',
             '"dark_logo": dark_mode_logo_url.asset->url',
             `"description": ${descriptionField}`,
             'total_xp',
+        ]
+    },
+    'foundation': {
+        'fields': [
+            `"description": ${descriptionField}`,
+            `"instructors":instructor[]->name`,
+            `"units": child[]->{
+                "id": railcontent_id,
+                published_on,
+                child_count,
+                difficulty,
+                difficulty_string,
+                "thumbnail_url": thumbnail.asset->url,
+                "instructor": instructor[]->{name},
+                title,
+                "type": _type,
+                "description": ${descriptionField},
+                "url": web_url_path,
+                xp,
+            }`
         ]
     },
     // content with just the added 'instructors' Field
