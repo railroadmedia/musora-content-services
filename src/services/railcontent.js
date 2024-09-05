@@ -4,17 +4,18 @@
 
 const { globalConfig } = require('./config');
 
+
 /**
- * Fetches the completion status of a specific song for the current user.
+ * Fetches the completion status of a specific lesson for the current user.
  *
- * @param {string} content_id - The ID of the song content to check.
+ * @param {string} content_id - The ID of the lesson content to check.
  * @returns {Promise<Object|null>} - Returns the completion status object if found, otherwise null.
  * @example
- * fetchCurrentSongComplete('user123', 'song456', 'csrf-token')
+ * fetchCurrentSongComplete('user123', 'lesson456', 'csrf-token')
  *   .then(status => console.log(status))
  *   .catch(error => console.error(error));
  */
-export async function fetchCurrentSongComplete(content_id) {
+export async function fetchCompletedState(content_id) {
     const url = `/content/user_progress/${globalConfig.railcontentConfig.userId}?content_ids[]=${content_id}`;
 
     const headers = {
@@ -26,9 +27,40 @@ export async function fetchCurrentSongComplete(content_id) {
         const response = await fetch(url, { headers });
         const result = await response.json();
 
-        if (result && result[content_id]) {
-            console.log('result', result[content_id]);
-            return result[content_id];  // Return the correct object
+        if (result && result[content_id]) {            return result[content_id];  // Return the correct object
+        } else {
+            return null;  // Handle unexpected structure
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
+
+/**
+ * Fetches the vimeo meta-data
+ *
+ * @param {string} vimeo_id - The vimeo id, found in the <document>.video.external_id field for lessons
+ * @returns {Promise<Object|null>} - Returns the
+ * @example
+ * fetchVimeoData('642900215')
+ *   .then(vimeoData => console.log(vimeoData))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchVimeoData(vimeo_id) {
+    const url = `/content/vimeo-data/${vimeo_id}`;
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
+    };
+
+    try {
+        const response = await fetch(url, { headers });
+        const result = await response.json();
+
+        if (result) {
+            return result;  // Return the correct object
         } else {
             console.log('Invalid result structure', result);
             return null;  // Handle unexpected structure
@@ -132,6 +164,38 @@ export async function fetchContentInProgress(type="all", brand) {
         const result = await response.json();
         if(result){
             console.log('contentInProgress', result);
+            return result;
+        } else {
+            console.log('result not json');
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
+
+
+/**
+ * Fetches user context data for a specific piece of content.
+ *
+ * @param {int} contentId - The content id.
+ * @returns {Promise<Object|null>} - Returns an object containing user context data if found, otherwise null.
+ * @example
+ * fetchContentPageUserData(406548)
+ *   .then(data => console.log(data))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchContentPageUserData(contentId) {
+    let url = `/content/${contentId}/user_data/${globalConfig.railcontentConfig.userId}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
+    };
+    try {
+        const response = await fetch(url, { headers });
+        const result = await response.json();
+        if(result){
+            console.log('fetchContentPageUserData', result);
             return result;
         } else {
             console.log('result not json');

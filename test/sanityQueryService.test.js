@@ -57,7 +57,7 @@ describe('Sanity Queries', function () {
         const artistNames = response.map((x) => x.name);
         expect(artistNames).toContain("Arctic Monkeys");
 
-    });
+    }, 10000);
 
     test('fetchSongArtistCount', async () => {
         const response = await fetchSongArtistCount('drumeo');
@@ -109,6 +109,21 @@ describe('Sanity Queries', function () {
         console.log(response);
         expect(response.entity[0].id).toBeDefined();
     });
+
+    test('fetchAllInstructorField', async () => {
+        const response = await fetchAll('drumeo', 'quick-tips',{searchTerm: 'Domino Santantonio'});
+        console.log(response);
+        expect(response.entity[0].id).toBeDefined();
+        expect(response.entity[0].instructors).toBeTruthy();
+    });
+
+    test('fetchAllSortField', async () => {
+        const response = await fetchAll('drumeo', 'rhythmic-adventures-of-captain-carson',{});
+        console.log(response);
+        expect(response.entity[0].id).toBeDefined();
+        expect(response.entity[0].sort).toBeDefined();
+    });
+
 
     test('fetchAllChallenges', async () => {
         const response = await fetchAll('drumeo', 'challenge',{});

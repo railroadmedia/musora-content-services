@@ -35,9 +35,10 @@ import {
 } from './services/sanity.js';
 
 import { 
-  fetchCurrentSongComplete, 
+  fetchCompletedState, 
   fetchAllCompletedStates,
-  fetchContentInProgress 
+  fetchContentInProgress,
+  fetchVimeoData,
 } from './services/railcontent.js';
 
 
@@ -68,7 +69,7 @@ export {
     fetchPackAll,
     fetchPackChildren,
     fetchLessonContent,
-    fetchCurrentSongComplete, 
+    fetchCompletedState, 
     fetchAllCompletedStates,
     fetchContentInProgress,
     fetchCourseOverview,
@@ -77,4 +78,5 @@ export {
     fetchMethodPreviousNextLesson,
     fetchLiveEvent,
     fetchChallengeOverview,
+    fetchVimeoData,
 }

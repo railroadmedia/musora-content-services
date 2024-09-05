@@ -329,7 +329,6 @@ export async function fetchUpcomingEvents(brand) {
 *   .catch(error => console.error(error));
 */
 export async function fetchByRailContentId(id, contentType) {
-  console.log('contentType', contentType)
   const query = `*[railcontent_id == ${id}]{
         ${getFieldsForContentType(contentType)}
       }`
