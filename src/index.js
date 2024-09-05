@@ -16,6 +16,7 @@ import {
   fetchAll,
   fetchAllFilterOptions,
   fetchMethodNextLesson,
+  fetchFoundation,
   fetchMethod,
   fetchMethods,
   fetchMethodChildren,
@@ -36,7 +37,8 @@ import {
 import { 
   fetchCompletedState, 
   fetchAllCompletedStates,
-  fetchContentInProgress 
+  fetchContentInProgress,
+  fetchVimeoData,
 } from './services/railcontent.js';
 
 
@@ -56,6 +58,7 @@ export {
     fetchByRailContentIds,
     fetchAll,
     fetchAllFilterOptions,
+    fetchFoundation,
     fetchMethods,
     fetchMethod,
     fetchMethodChildren,
@@ -75,4 +78,5 @@ export {
     fetchMethodPreviousNextLesson,
     fetchLiveEvent,
     fetchChallengeOverview,
+    fetchVimeoData,
 }

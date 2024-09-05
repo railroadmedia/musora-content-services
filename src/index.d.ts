@@ -14,6 +14,7 @@ import {
     fetchByRailContentIds,
     fetchAll,
     fetchAllFilterOptions,
+    fetchFoundation,
     fetchMethods,
     fetchMethod,
     fetchMethodChildren,
@@ -27,8 +28,12 @@ import {
     fetchCourseOverview,
     fetchChallengeOverview,
   } from './services/sanity.js';
-  
-  import { initializeService } from './services/config.js';
+
+import {
+    fetchVimeoData,
+} from "./services/railcontent";
+
+import { initializeService } from './services/config.js';
 
 declare module 'musora-content-services' {
     export {
@@ -47,6 +52,7 @@ declare module 'musora-content-services' {
         fetchByRailContentIds,
         fetchAll,
         fetchAllFilterOptions,
+        fetchFoundation,
         fetchMethods,
         fetchMethod,
         fetchMethodNextLesson,
@@ -60,6 +66,7 @@ declare module 'musora-content-services' {
         fetchCourseOverview,
         fetchLiveEvent,
         fetchChallengeOverview,
+        fetchVimeoData,
     }
     
 }

@@ -150,6 +150,26 @@ let contentTypeConfig = {
             'total_xp',
         ]
     },
+    'foundation': {
+        'fields': [
+            `"description": ${descriptionField}`,
+            `"instructors":instructor[]->name`,
+            `"units": child[]->{
+                "id": railcontent_id,
+                published_on,
+                child_count,
+                difficulty,
+                difficulty_string,
+                "thumbnail_url": thumbnail.asset->url,
+                "instructor": instructor[]->{name},
+                title,
+                "type": _type,
+                "description": ${descriptionField},
+                "url": web_url_path,
+                xp,
+            }`
+        ]
+    },
     // content with just the added 'instructors' Field
     'student-focus': contentWithInstructorsField,
     'quick-tips': contentWithInstructorsField,

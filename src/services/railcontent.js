@@ -37,6 +37,40 @@ export async function fetchCompletedState(content_id) {
     }
 }
 
+/**
+ * Fetches the vimeo meta-data
+ *
+ * @param {string} vimeo_id - The vimeo id, found in the <document>.video.external_id field for lessons
+ * @returns {Promise<Object|null>} - Returns the
+ * @example
+ * fetchVimeoData('642900215')
+ *   .then(vimeoData => console.log(vimeoData))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchVimeoData(vimeo_id) {
+    const url = `/content/vimeo-data/${vimeo_id}`;
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
+    };
+
+    try {
+        const response = await fetch(url, { headers });
+        const result = await response.json();
+
+        if (result) {
+            return result;  // Return the correct object
+        } else {
+            console.log('Invalid result structure', result);
+            return null;  // Handle unexpected structure
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
+
 
 /**
  * Fetches the completion status for multiple songs for the current user.
@@ -130,6 +164,38 @@ export async function fetchContentInProgress(type="all", brand) {
         const result = await response.json();
         if(result){
             console.log('contentInProgress', result);
+            return result;
+        } else {
+            console.log('result not json');
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
+
+
+/**
+ * Fetches user context data for a specific piece of content.
+ *
+ * @param {int} contentId - The content id.
+ * @returns {Promise<Object|null>} - Returns an object containing user context data if found, otherwise null.
+ * @example
+ * fetchContentPageUserData(406548)
+ *   .then(data => console.log(data))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchContentPageUserData(contentId) {
+    let url = `/content/${contentId}/user_data/${globalConfig.railcontentConfig.userId}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
+    };
+    try {
+        const response = await fetch(url, { headers });
+        const result = await response.json();
+        if(result){
+            console.log('fetchContentPageUserData', result);
             return result;
         } else {
             console.log('result not json');
