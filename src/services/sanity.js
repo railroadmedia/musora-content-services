@@ -890,7 +890,10 @@ export async function fetchLiveEvent(brand) {
       'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
       title,
       "image": thumbnail.asset->url,
-      "instructors": instructor[]->name,
+      "instructors": instructor[]->{
+            name,
+            web_url_path,
+          },
       'videoId': coalesce(live_event_youtube_id, video.external_id),
     } | order(live_event_start_time)[0...1]`;
     return await fetchSanity(query, false);
