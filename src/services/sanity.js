@@ -417,7 +417,7 @@ export async function fetchAll(brand, type, {
     // Determine the sort order
     const sortOrder = getSortOrder(sort);
 
-    let fields = DEFAULT_FIELDS.concat(additionalFields);
+    let fields = useDefaultFields ?  customFields.concat(DEFAULT_FIELDS.concat(additionalFields)) : customFields;
     let fieldsString = fields.join(',');
 
     // Determine the group by clause
@@ -434,8 +434,7 @@ export async function fetchAll(brand, type, {
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
                 'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
-                    ${useDefaultFields ? fieldsString + ',' : ''}
-                    ${customFields.length > 0 ? customFields.join(', ') + ','  : ''}
+                    ${fieldsString},
                     ${groupBy}
                 }[0...10]
             }
@@ -454,8 +453,7 @@ export async function fetchAll(brand, type, {
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
                 'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
-                    ${useDefaultFields ? fieldsString + ',' : ''}
-                    ${customFields.length > 0 ? customFields.join(', ') + ',' : ''}
+                    ${fieldsString},
                     ${groupBy}
                 }[0...10]
             }
@@ -466,8 +464,7 @@ export async function fetchAll(brand, type, {
         query = `
         {
             "entity": *[_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter} ${progressFilter}] | order(${sortOrder}) [${start}...${end}] {
-                ${useDefaultFields ? fieldsString + ',' : ''}
-                ${customFields.length > 0 ? customFields.join(', ') + ',' : ''}
+                ${fieldsString},
             },
             "total": count(*[_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter} ${progressFilter}])
         }
