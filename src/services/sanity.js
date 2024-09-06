@@ -5,6 +5,7 @@ import { getSanityFieldsToGrab } from "../definitions/sanityFieldDefinitions";
 import { createClient } from '@sanity/client';
 import {q, makeSafeQueryRunner, nullToUndefined, sanityImage} from "groqd";
 import { globalConfig } from "./config";
+import {FilterBuilder} from "../filterBuilder";
 
 let sanityClient = null;
 let runSanityQuery = null;
@@ -212,7 +213,7 @@ export async function fetchNewReleases(brand) {
     const typesArray = newTypes[brand] ?? newTypes['default'];
 
     const query = q('*')
-        .filter(`_type in $types && brand == '${brand}'`)
+        .filter(new FilterBulder(`_type in $types && brand == '${brand}'`))
         .grab({
             id: q.alias('railcontent_id', q.string()),
             title: q.string(),

@@ -197,7 +197,6 @@ describe('Sanity Queries', function () {
 
     test('fetchMethods', async () => {
         const response = await fetchMethods('drumeo');
-
         expect(response.length).toBeGreaterThan(0);
         expect(response[0].type).toBe('learning-path');
     });
