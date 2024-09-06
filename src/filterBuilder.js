@@ -45,7 +45,7 @@ export class FilterBuilder {
 
     _applyContentStatuses() {
         if (this.availableContentStatuses.length === 0) return this;
-        console.log('statuses', this.availableContentStatuses);
+        // I'm not sure if I'm 100% on this logic, but this is my intepretation of the ContentRepository logic
         if (this.getFutureScheduledContentsOnly && this.availableContentStatuses.includes(this.STATUS_SCHEDULED)) {
             const now = new Date().toISOString();
             let statuses = this.availableContentStatuses.splice(this.availableContentStatuses.indexOf(this.STATUS_SCHEDULED));
