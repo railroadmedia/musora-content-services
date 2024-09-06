@@ -239,6 +239,8 @@ function filtersToGroq(filters) {
                       return `&& ${key} == ${/^\d+$/.test(value) ? value : `"$${value}"`}`;
                   }
             }
+            
+            return field;
         }).join(' ');
     return groq;
 }
