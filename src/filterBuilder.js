@@ -33,8 +33,7 @@ export class FilterBuilder {
                                 });
     }
 
-    buildFilter(baseFilter = '') {
-        this.filter = baseFilter;
+    buildFilter() {
         return this._applyContentStatuses()
             ._applyPermissions()
             ._applyPublishingDateRestrictions()
