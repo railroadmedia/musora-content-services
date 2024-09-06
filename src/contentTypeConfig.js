@@ -68,7 +68,7 @@ let contentTypeConfig = {
             'total_xp',
             'xp',
             '"instructors": instructor[]->name',
-            '"header_image_url": header_image_url.asset->url',
+            '"header_image_url": thumbnail.asset->url',
             '"logo_image_url": logo_image_url.asset->url',
         ]
     },
@@ -119,7 +119,9 @@ let contentTypeConfig = {
             '"lesson_count": child_count',
             'xp',
             `"description": ${descriptionField}`,
-            '"instructors": instructor[]->name'
+            '"instructors": instructor[]->name',
+            '"logo_image_url": logo_image_url.asset->url',
+            'total_xp'
         ],
     },
     'rudiment': {
