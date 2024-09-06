@@ -960,16 +960,17 @@ export async function fetchChallengeOverview(id) {
  */
 export async function fetchCoachLessons(brand, id, {
   sortOrder = '-published_on',
+  searchTerm = '',
   page = 1,
   limit = 20,
 } = {}) {
   const fieldsString = DEFAULT_FIELDS.join(',');
   const start = (page - 1) * limit;
   const end = start + limit;
-    
+  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''  
 
   const query = `{
-      "entity": *[brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${id}]._id)] | order(${sortOrder}) [${start}...${end}]
+      "entity": *[brand == '${brand}' ${searchFilter} && references(*[_type=='instructor' && railcontent_id == ${id}]._id)] | order(${sortOrder}) [${start}...${end}]
         {
           ${fieldsString}
         },
