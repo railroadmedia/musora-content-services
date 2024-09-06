@@ -214,3 +214,21 @@ describe('Sanity Queries', function () {
         expect(response).toBe('test');
     });
 });
+
+describe('Filter Builder', function () {
+
+    test('baseConstructor', async () => {
+        const builder = new FilterBuilder({});
+        const filter = 'railcontent_id = 111'
+        const finalFilter = builder.buildFilter(filter);
+        expect(finalFilter).toBe(filter);
+    });
+
+    test('withOnlyFilterAvailableStatuses', async () => {
+        const builder =  FilterBuilder.withOnlyFilterAvailableStatuses(['published', 'unlisted'])
+        const filter = 'railcontent_id = 111'
+        const finalFilter = builder.buildFilter(filter);
+        expect(finalFilter).toBe("railcontent_id = 111 && status in ['published','unlisted']");
+    });
+
+});
