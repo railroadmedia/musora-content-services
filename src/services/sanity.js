@@ -388,7 +388,9 @@ export async function fetchAll(brand, type, {
   sort = "-published_on",
   includedFields = [],
   groupBy = "",
-  progressIds = undefined
+  progressIds = undefined,
+  useDefaultFields = false,
+  customFields = [],
 } = {}) {
     let config = contentTypeConfig[type] ?? {};
     let additionalFields = config?.fields ?? [];
@@ -432,7 +434,7 @@ export async function fetchAll(brand, type, {
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
                 'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
-                    ${fieldsString},
+                    ${useDefaultFields ? fieldsString : ''},
                     ${groupBy}
                 }[0...10]
             }
@@ -451,7 +453,7 @@ export async function fetchAll(brand, type, {
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
                 'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
-                    ${fieldsString},
+                    ${useDefaultFields ? fieldsString : ''},
                     ${groupBy}
                 }[0...10]
             }
@@ -462,7 +464,8 @@ export async function fetchAll(brand, type, {
         query = `
         {
             "entity": *[_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter} ${progressFilter}] | order(${sortOrder}) [${start}...${end}] {
-                ${fieldsString}
+                ${useDefaultFields ? fieldsString : ''},
+                ${customFields.length > 0 ? customFields.join(', ') : ''}
             },
             "total": count(*[_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter} ${progressFilter}])
         }
