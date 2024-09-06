@@ -367,6 +367,8 @@ export async function fetchByRailContentIds(ids, contentType = undefined) {
  * @param {Array<string>} [params.includedFields=[]] - The fields to include in the query.
  * @param {string} [params.groupBy=""] - The field to group the results by (e.g., 'artist', 'genre').
  * @param {Array<string>} [params.progressIds=undefined] - An array of railcontent IDs to filter the results by. Used for filtering by progress.
+ * @param {boolean} [params.useDefaultFields=true] - use the default sanity fields for content Type
+ * @param {Array<string>} [params.customFields=[]] - An array of sanity fields to include in the request
  * @returns {Promise<Object|null>} - The fetched content data or null if not found.
  *
  * @example
@@ -376,7 +378,10 @@ export async function fetchByRailContentIds(ids, contentType = undefined) {
  *   searchTerm: 'jazz',
  *   sort: '-popularity',
  *   includedFields: ['difficulty,Intermediate'],
- *   groupBy: 'artist'
+ *   groupBy: 'artist',
+ *   progressIds: [123, 321],
+ *   useDefaultFields: false,
+ *   customFields: ['is_house_coach', 'slug.current', "'instructors': instructor[]->name"],
  * })
  *   .then(content => console.log(content))
  *   .catch(error => console.error(error));
@@ -388,7 +393,9 @@ export async function fetchAll(brand, type, {
   sort = "-published_on",
   includedFields = [],
   groupBy = "",
-  progressIds = undefined
+  progressIds = undefined,
+  useDefaultFields = true,
+  customFields = [],
 } = {}) {
     let config = contentTypeConfig[type] ?? {};
     let additionalFields = config?.fields ?? [];
@@ -415,7 +422,7 @@ export async function fetchAll(brand, type, {
     // Determine the sort order
     const sortOrder = getSortOrder(sort);
 
-    let fields = DEFAULT_FIELDS.concat(additionalFields);
+    let fields = useDefaultFields ?  customFields.concat(DEFAULT_FIELDS, additionalFields) : customFields;
     let fieldsString = fields.join(',');
 
     // Determine the group by clause
@@ -462,7 +469,7 @@ export async function fetchAll(brand, type, {
         query = `
         {
             "entity": *[_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter} ${progressFilter}] | order(${sortOrder}) [${start}...${end}] {
-                ${fieldsString}
+                ${fieldsString},
             },
             "total": count(*[_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter} ${progressFilter}])
         }
