@@ -949,6 +949,37 @@ export async function fetchChallengeOverview(id) {
 }
 
 /**
+ * Fetch the data needed for the coach screen.
+ * @param {string} id - The Railcontent ID of the coach
+ * @returns {Promise<Object|null>} - The lessons for the instructor or null if not found.
+ *
+ * @example
+ * fetchCoachLessons('coach123')
+ *   .then(lessons => console.log(lessons))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchCoachLessons(brand, id, {
+  sortOrder = '-published_on',
+  searchTerm = '',
+  page = 1,
+  limit = 20,
+} = {}) {
+  const fieldsString = DEFAULT_FIELDS.join(',');
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''  
+
+  const query = `{
+      "entity": *[brand == '${brand}' ${searchFilter} && references(*[_type=='instructor' && railcontent_id == ${id}]._id)] | order(${sortOrder}) [${start}...${end}]
+        {
+          ${fieldsString}
+        },
+      "total": count(*[brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${id}]._id)])
+    }`;
+  return fetchSanity(query, true);
+}
+
+/**
  * Fetch the data needed for the Course Overview screen.
  * @param {string} id - The Railcontent ID of the course
  * @returns {Promise<Object|null>} - The course information and lessons or null if not found.

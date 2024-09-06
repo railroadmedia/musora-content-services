@@ -225,17 +225,19 @@ function getFieldsForContentType(contentType, asQueryString=true) {
 function filtersToGroq(filters) {
     const groq = filters.map(field => {
             let [key, value] = field.split(',');
-            switch (key) {
-              case 'difficulty':
-                return `&& difficulty_string == "${value}"`;
-              case 'genre':
-                return `&& genre[]->name match "${value}"`;
-              case 'topic':
-                return `&& topic[]->name match "${value}"`;
-              case 'instrumentless':
-                return `&& instrumentless == ${value}`;
-              default:
-                return `&& ${key} == ${/^\d+$/.test(value) ? value : `"$${value}"`}`;
+            if(key && value){
+                switch (key) {
+                    case 'difficulty':
+                      return `&& difficulty_string == "${value}"`;
+                    case 'genre':
+                      return `&& genre[]->name match "${value}"`;
+                    case 'topic':
+                      return `&& topic[]->name match "${value}"`;
+                    case 'instrumentless':
+                      return `&& instrumentless == ${value}`;
+                    default:
+                      return `&& ${key} == ${/^\d+$/.test(value) ? value : `"$${value}"`}`;
+                  }
             }
         }).join(' ');
     return groq;

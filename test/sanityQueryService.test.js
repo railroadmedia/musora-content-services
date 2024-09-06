@@ -28,6 +28,7 @@ const {
     fetchMethod,
     fetchMethods,
     fetchFoundation,
+    fetchCoachLessons,
 } = require('../src/services/sanity.js');
 
 describe('Sanity Queries', function () {
@@ -212,7 +213,7 @@ describe('Sanity Queries', function () {
 
     test('fetchMethods', async () => {
         const response = await fetchMethods('drumeo');
-        //console.log(response);
+        console.log(response);
         expect(response.length).toBeGreaterThan(0);
         expect(response[0].type).toBe('learning-path');
     });
@@ -246,8 +247,13 @@ describe('Sanity Queries', function () {
 
     test('fetchFoundation', async () => {
         const response = await fetchFoundation('foundations-2019');
-        //console.log(response);
+        console.log(response);
         expect(response.units.length).toBeGreaterThan(0);
         expect(response.type).toBe('foundation');
+    });
+
+    test('fetchCoachLessons', async () => {
+        const response = await fetchCoachLessons('drumeo',233797);
+        expect(response.entity.length).toBeGreaterThan(0);
     });
 });
