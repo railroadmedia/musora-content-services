@@ -240,7 +240,7 @@ function filtersToGroq(filters) {
                   }
             }
             
-            return field;
+            return `&& ${field}`;
         }).join(' ');
     return groq;
 }
