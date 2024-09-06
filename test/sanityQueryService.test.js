@@ -139,6 +139,18 @@ describe('Sanity Queries', function () {
 
     });
 
+    test('fetchAll-CustomFields', async () => {
+        let response = await fetchAll('drumeo', 'challenge',{customFields:['garbage']});
+        console.log(response);
+        expect(response.entity[0].garbage).toBeDefined();
+        expect(response.entity[0].id).toBeDefined();
+
+        response = await fetchAll('drumeo', 'challenge',{useDefaultFields: false, customFields:['garbage']});
+        console.log(response);
+        expect(response.entity[0].garbage).toBeDefined();
+        expect.not.objectContaining(response.entity[0].id);
+    });
+
     test('fetchRelatedLessons', async () => {
         const id = 380094;
         const document = await fetchByRailContentId(id);
