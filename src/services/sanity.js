@@ -417,7 +417,7 @@ export async function fetchAll(brand, type, {
     // Determine the sort order
     const sortOrder = getSortOrder(sort);
 
-    let fields = useDefaultFields ?  customFields.concat(DEFAULT_FIELDS.concat(additionalFields)) : customFields;
+    let fields = useDefaultFields ?  customFields.concat(DEFAULT_FIELDS, additionalFields) : customFields;
     let fieldsString = fields.join(',');
 
     // Determine the group by clause
