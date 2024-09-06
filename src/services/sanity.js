@@ -435,6 +435,7 @@ export async function fetchAll(brand, type, {
                 'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
                 'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
                     ${useDefaultFields ? fieldsString : ''},
+                    ${customFields.length > 0 ? customFields.join(', ') : ''}
                     ${groupBy}
                 }[0...10]
             }
@@ -454,6 +455,7 @@ export async function fetchAll(brand, type, {
                 'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
                 'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
                     ${useDefaultFields ? fieldsString : ''},
+                    ${customFields.length > 0 ? customFields.join(', ') : ''}
                     ${groupBy}
                 }[0...10]
             }
