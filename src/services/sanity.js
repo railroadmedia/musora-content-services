@@ -958,14 +958,24 @@ export async function fetchChallengeOverview(id) {
  *   .then(lessons => console.log(lessons))
  *   .catch(error => console.error(error));
  */
-export async function fetchCoachLessons(id) {
+export async function fetchCoachLessons(brand, id, {
+  sortOrder = '-published_on',
+  page = 1,
+  limit = 20,
+} = {}) {
   const fieldsString = DEFAULT_FIELDS.join(',');
+  const start = (page - 1) * limit;
+  const end = start + limit;
+    
 
-  const query = `*[references(*[_type=='instructor' && railcontent_id == ${id}]._id)]
-  {
-    ${fieldsString}
-  }`;
-  return fetchSanity(query, false);
+  const query = `{
+      "entity": *[brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${id}]._id)] | order(${sortOrder}) [${start}...${end}]
+        {
+          ${fieldsString}
+        },
+      "total": count(*[brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${id}]._id)])
+    }`;
+  return fetchSanity(query, true);
 }
 
 /**

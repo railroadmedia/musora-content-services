@@ -253,8 +253,7 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchCoachLessons', async () => {
-        const response = await fetchCoachLessons(233797);
-        console.log(response)
-        // expect(response.entity.length).toBeGreaterThan(0);
+        const response = await fetchCoachLessons('drumeo',233797);
+        expect(response.entity.length).toBeGreaterThan(0);
     });
 });
