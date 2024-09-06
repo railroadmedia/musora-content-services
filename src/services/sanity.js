@@ -366,6 +366,7 @@ export async function fetchByRailContentIds(ids, contentType = undefined) {
  * @param {string} [params.sort="-published_on"] - The field to sort the content by.
  * @param {Array<string>} [params.includedFields=[]] - The fields to include in the query.
  * @param {string} [params.groupBy=""] - The field to group the results by (e.g., 'artist', 'genre').
+ * @param {Array<string>} [params.progressIds=undefined] - An array of railcontent IDs to filter the results by. Used for filtering by progress.
  * @returns {Promise<Object|null>} - The fetched content data or null if not found.
  *
  * @example
@@ -386,7 +387,8 @@ export async function fetchAll(brand, type, {
   searchTerm = "",
   sort = "-published_on",
   includedFields = [],
-  groupBy = ""
+  groupBy = "",
+  progressIds = undefined
 } = {}) {
     let config = contentTypeConfig[type] ?? {};
     let additionalFields = config?.fields ?? [];
@@ -406,6 +408,10 @@ export async function fetchAll(brand, type, {
         ? filtersToGroq(includedFields)
         : "";
 
+    // limits the results to supplied progressIds for started & completed filters
+    const progressFilter = progressIds !== undefined ?
+        `&& railcontent_id in [${progressIds.join(',')}]` : "";
+
     // Determine the sort order
     const sortOrder = getSortOrder(sort);
 
@@ -417,15 +423,15 @@ export async function fetchAll(brand, type, {
     if (groupBy !== "" && isGroupByOneToOne) {
         query = `
         {
-            "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter}]._id) > 0]),
-            "entity": *[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter}]._id) > 0]
+            "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]),
+            "entity": *[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]
             {
                 'id': _id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
-                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter}]._id),
-                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter}]{
+                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
+                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...10]
@@ -436,15 +442,15 @@ export async function fetchAll(brand, type, {
     } else if (groupBy !== "") {
         query = `
         {
-            "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter}]._id) > 0]),
-            "entity": *[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter}]._id) > 0]
+            "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]),
+            "entity": *[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]
             {
                 'id': _id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
-                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter}]._id),
-                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter}]{
+                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
+                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...10]
@@ -455,10 +461,10 @@ export async function fetchAll(brand, type, {
     } else {
         query = `
         {
-            "entity": *[_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter}] | order(${sortOrder}) [${start}...${end}] {
+            "entity": *[_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter} ${progressFilter}] | order(${sortOrder}) [${start}...${end}] {
                 ${fieldsString}
             },
-            "total": count(*[_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter}])
+            "total": count(*[_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter} ${progressFilter}])
         }
     `;
     }
@@ -500,7 +506,7 @@ export function getSortOrder(sort= '-published_on', groupBy)
 * @param {string} [artist] - Optional artist name to filter the results. If provided, the query will check if the artist's name matches.
 * @param {string} contentType - The content type to fetch (e.g., 'song', 'lesson').
 * @param {string} [term] - Optional search term to match against various fields such as title, album, artist name, and genre.
-*
+* @param {Array<string>} [progressIds=undefined] - An array of railcontent IDs to filter the results by. Used for filtering by progress.
 * @returns {Promise<Object|null>} - A promise that resolves to an object containing the total results and filter options, or null if the query fails.
 *
 * @example
@@ -515,11 +521,15 @@ export async function fetchAllFilterOptions(
     style,
     artist,
     contentType,
-    term
+    term,
+    progressIds = undefined
 ) {
     const includedFieldsFilter = filters?.length > 0 ? filtersToGroq(filters) : undefined;
 
-    const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${includedFieldsFilter ? includedFieldsFilter : ''}`;
+    const progressFilter = progressIds !== undefined ?
+        `&& railcontent_id in [${progressIds.join(',')}]` : "";
+
+    const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${includedFieldsFilter ? includedFieldsFilter : ''}`;
     const query = `
         {
           "meta": {
@@ -887,7 +897,10 @@ export async function fetchLiveEvent(brand) {
       'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
       title,
       "image": thumbnail.asset->url,
-      "instructors": instructor[]->name,
+      "instructors": instructor[]->{
+            name,
+            web_url_path,
+          },
       'videoId': coalesce(live_event_youtube_id, video.external_id),
     } | order(live_event_start_time)[0...1]`;
     return await fetchSanity(query, false);

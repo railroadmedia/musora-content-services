@@ -40,6 +40,7 @@ import {
   fetchAllCompletedStates,
   fetchContentInProgress,
   fetchVimeoData,
+  fetchContentPageUserData,
 } from './services/railcontent.js';
 
 
@@ -81,4 +82,5 @@ export {
     fetchLiveEvent,
     fetchChallengeOverview,
     fetchVimeoData,
+    fetchContentPageUserData,
 }

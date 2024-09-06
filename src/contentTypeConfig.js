@@ -136,13 +136,14 @@ let contentTypeConfig = {
             'low_soundslice_slug'
         ]
     },
-    'pack-bundle': {
+    'pack-children': {
         'fields': [
             'child_count',
             `"children": child[]->{
                 "description": ${descriptionField},
                 ${getFieldsForContentType()}
             }`,
+            '"resources": resource',
             '"image": logo_image_url.asset->url',
             '"thumbnail": thumbnail.asset->url',
             '"light_logo": light_mode_logo_url.asset->url',
@@ -169,6 +170,13 @@ let contentTypeConfig = {
                 "url": web_url_path,
                 xp,
             }`
+        ]
+    },
+    'instructor': {
+        'fields': [
+            'name',
+            '"coach_card_image": coach_card_image.asset->url',
+            'focus'
         ]
     },
     // content with just the added 'instructors' Field
