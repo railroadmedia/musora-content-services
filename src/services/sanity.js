@@ -389,7 +389,7 @@ export async function fetchAll(brand, type, {
   includedFields = [],
   groupBy = "",
   progressIds = undefined,
-  useDefaultFields = false,
+  useDefaultFields = true,
   customFields = [],
 } = {}) {
     let config = contentTypeConfig[type] ?? {};
