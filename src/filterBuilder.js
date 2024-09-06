@@ -4,7 +4,9 @@ export class FilterBuilder {
 
     STATUS_SCHEDULED = 'scheduled';
 
-    constructor({
+    constructor(
+                filter = '',
+                {
                     user = undefined,
                     availableContentStatuses = [],
                     bypassPermissions = false,
@@ -13,15 +15,15 @@ export class FilterBuilder {
                     getFollowedContentOnly = false,
                     getFutureScheduledContentsOnly = false,
 
-                }) {
-        this.user = user;
+                }={}) {
+        this.user = user ?? null;
         this.availableContentStatuses = availableContentStatuses;
         this.bypassPermissions = bypassPermissions;
         this.pullFutureContent = pullFutureContent;
         this.getFutureContentOnly = getFutureContentOnly;
         this.getFollowedContentOnly = getFollowedContentOnly;
         this.getFutureScheduledContentsOnly = getFutureScheduledContentsOnly;
-        this.filter = '';
+        this.filter = filter;
     }
 
 
@@ -42,7 +44,8 @@ export class FilterBuilder {
     }
 
     _applyContentStatuses() {
-        if (!this.availableContentStatuses) return this;
+        if (this.availableContentStatuses.length === 0) return this;
+        console.log('statuses', this.availableContentStatuses);
         if (this.getFutureScheduledContentsOnly && this.availableContentStatuses.includes(this.STATUS_SCHEDULED)) {
             const now = new Date().toISOString();
             let statuses = this.availableContentStatuses.splice(this.availableContentStatuses.indexOf(this.STATUS_SCHEDULED));
@@ -55,12 +58,14 @@ export class FilterBuilder {
 
     _applyPermissions() {
         if (this.bypassPermissions) return this;
-        const hardcodedPermissions = ["my-permission-1","my-permission-2"]; //todo switch these to railcontent_ids
+        let hardcodedPermissions = ["my-permission-1","my-permission-2"]; //todo switch these to railcontent_ids
+        hardcodedPermissions = [91, 92];
         // todo these need to be pulled from the user and reference either ID, or railcontent_id
         const requiredPermissions = hardcodedPermissions;
+        if (requiredPermissions.length === 0) return this;
         // handle pullSongsContent, I think the flagging on this needs to be backwards compared to BE
         // if using id, switch railcontent_id to _id in the below query
-        this._andWhere(`references(*[_type == "permission" && railcontent_id in ${FilterBuilder.arrayToStringRepresentation(requiredPermissions)}._id`);
+        this._andWhere(`references(*[_type == "permission" && railcontent_id in ${FilterBuilder.arrayToRawRepresentation(requiredPermissions)}]._id)`);
         return this;
 
     }
@@ -77,13 +82,13 @@ export class FilterBuilder {
     _applyPublishingDateRestrictions() {
         const now = new Date().toISOString();
         if (this.getFutureContentOnly) {
-            this._andWhere(`published_on >= ${now}`);
+            this._andWhere(`published_on >= '${now}'`);
         } else if (!this.pullFutureContent) {
-            this._andWhere(`published_on <= ${now}`);
+            this._andWhere(`published_on <= '${now}'`);
         } else {
             const date = new Date();
             const theFuture =  new Date(date.setMonth(date.getMonth() + 18));
-            this._andWhere(`published_on <= ${theFuture}`);
+            this._andWhere(`published_on <= '${theFuture}'`);
         }
         return this;
     }
@@ -107,5 +112,9 @@ export class FilterBuilder {
 
     static arrayToStringRepresentation(arr) {
         return '[' + arr.map(item => `"${item}"`).join(',') + ']';
+    }
+
+    static arrayToRawRepresentation(arr) {
+        return '[' + arr.map(item => `${item}`).join(',') + ']';
     }
 }

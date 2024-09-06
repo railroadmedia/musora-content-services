@@ -72,7 +72,6 @@ describe('Sanity Queries', function () {
         const id = 406895;
         const song = await fetchSongById(id);
         const response = await fetchRelatedSongs('drumeo', song.artist.name, song.genre[0]);
-
         expect(response).toHaveLength(10);
         expect(JSON.stringify(response)).toContain("Metal");
     });

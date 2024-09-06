@@ -34,14 +34,10 @@ export async function fetchSongById(documentId) {
     initializeSanityClient();
 
     let contentType = 'song';
-
+    const filter = new FilterBuilder(`_type == "${contentType}" && railcontent_id == ${documentId}`).buildFilter();
+    console.log(filter);
     const query = q('*')
-        .filter(
-            `_type == "${contentType}" && railcontent_id == ${documentId}` +
-            getCurrentRequiredContentPermissionsQueryString(true)
-
-            `&& references(*[_type == "permission" && _id in ["permission_drumeoedge", "permission_drumeolifetimemember"]]._id)]`
-        )
+        .filter(filter)
         .grab(getSanityFieldsToGrab(contentType))
         .slice(0, 1);
 
@@ -105,9 +101,9 @@ export async function fetchSongArtistCount(brand) {
  */
 export async function fetchRelatedSongs(brand, songArtist, songGenre) {
     initializeSanityClient();
-
+    const filter = new FilterBuilder(`_type == 'song' && brand == "${brand}" && (artist->name == "${songArtist}" || (count((genre[]->name)[@ in ["${songGenre}"]]) > 0))`).buildFilter();
     const query = q('*')
-        .filter(`_type == 'song' && brand == "${brand}" && (artist->name == "${songArtist}" || (count((genre[]->name)[@ in ["${songGenre}"]]) > 0))`)
+        .filter(filter)
         .order('published_on desc')
         .grab(getSanityFieldsToGrab('song'))
         .slice(0, 9);
@@ -324,7 +320,7 @@ export async function fetchAll(brand, type, options = {}) {
         groupBy = ""
     } = options;
 
-    // const config = contentTypeConfig[type] ?? {};
+    //const config = contentTypeConfig[type] ?? {};
     const additionalFields = config?.fields ?? [];
     const isGroupByOneToOne = groupBy ? config?.relationships?.[groupBy]?.isOneToOne ?? false : false;
 
@@ -400,9 +396,11 @@ function buildGroupByManyToManyQuery(brand, type, groupBy, searchFilter, include
 }
 
 function buildDefaultQuery(brand, type, searchFilter, includedFieldsFilter, sortOrder, start, end, fields) {
+    const filter = new FilterBuilder(`_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter}`).buildFilter();
+    console.log(filter);
     return q.object({
         entity: q('*')
-            .filter(`_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter}`)
+            .filter(filter)
             .grab(fields)
             .order(sortOrder)
             .slice(start, end),
