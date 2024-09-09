@@ -839,6 +839,22 @@ export async function fetchRelatedLessons(railContentId, brand) {
 }
 
 /**
+* Fetch all packs.
+* @param {string} brand - The brand for which to fetch packs.
+* @param {string} [searchTerm=""] - The search term to filter packs.
+* @param {string} [sort="-published_on"] - The field to sort the packs by.
+* @returns {Promise<Array<Object>|null>} - The fetched pack content data or null if not found.
+*/
+export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = "") {
+  const sortOrder = getSortOrder(sort);
+
+  const query = `*[_type == 'pack' && brand == '${brand}' && title match "${searchTerm}*"]{
+      ${getFieldsForContentType('pack')}
+    } | order(${sortOrder})`
+  return fetchSanity(query, true);
+}
+
+/**
 * Fetch all content for a specific pack by Railcontent ID.
 * @param {string} railcontentId - The Railcontent ID of the pack.
 * @returns {Promise<Array<Object>|null>} - The fetched pack content data or null if not found.
@@ -846,18 +862,9 @@ export async function fetchRelatedLessons(railContentId, brand) {
 export async function fetchPackAll(railcontentId) {
   //TODO: Implement getPacks
   const query = `*[railcontent_id == ${railcontentId}]{
-        railcontent_id,
-        "id": railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": artist->name,
-        artist,
-        difficulty,
-        difficulty_string,
-        web_url_path,
-        published_on
-      } | order(published_on asc)[0...5]`
-  return fetchSanity(query, true);
+    ${getFieldsForContentType('pack')}
+  } | order(published_on asc)[0...1]`
+  return fetchSanity(query, false);
 }
 
 export async function fetchLiveEvent(brand) {
