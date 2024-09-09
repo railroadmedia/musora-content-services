@@ -1025,6 +1025,43 @@ export async function fetchCourseOverview(id) {
 }
 
 /**
+ * Fetch the data needed for the coach screen.
+ * @param {string} id - The Railcontent ID of the coach
+ * 
+ * @returns {Promise<Object|null>} - The lessons for the instructor or null if not found.
+ *
+ * @example
+ * fetchCoachLessons('coach123')
+ *   .then(lessons => console.log(lessons))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchByReference(brand, {
+  sortOrder = '-published_on',
+  searchTerm = '',
+  page = 1,
+  limit = 20,
+  includedFields = [],
+} = {}) {
+  const fieldsString = DEFAULT_FIELDS.join(',');
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: '';
+  const includedFieldsFilter = includedFields.length > 0
+        ? includedFields.join(' && ')
+        : "";
+
+  const query = `{
+      "entity": *[brand == '${brand}' ${searchFilter} && references(*[${includedFieldsFilter}]._id)] | order(${sortOrder}) [${start}...${end}]
+        {
+          ${fieldsString}
+        },
+      "total": count(*[brand == '${brand}' && references(*[${includedFieldsFilter}]._id)])
+    }`;
+  return fetchSanity(query, true);
+}
+
+
+/**
  * Fetch data from the Sanity API based on a provided query.
  *
  * @param {string} query - The GROQ query to execute against the Sanity API.
