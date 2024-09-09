@@ -820,16 +820,17 @@ export async function fetchLessonContent(railContentId) {
 * Fetch related lessons for a specific lesson by RailContent ID and type.
 * @param {string} railContentId - The RailContent ID of the current lesson.
 * @param {string} brand - The current brand.
+* @param {string} contentType - name of the contentype to pull
 * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
 */
-export async function fetchRelatedLessons(railContentId, brand, type) {
-  let typeQuery = "" 
-  if(type) typeQuery = `_type=="${type}" &&`;
+export async function fetchRelatedLessons(railContentId, brand, contentType) {
+  let typeQuery = contentType ? `_type=="${contentType}" &&` : ""; 
+  
   //TODO: Implement $this->contentService->getFiltered
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && references(*[_type=='permission']._id)]{
               "related_lessons" : array::unique([
                 _...(*[${typeQuery} brand == "${brand}" && references(^.artist->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11]),
-                ...(*[${typeQuery} && brand == "${brand}" && references(^.genre[]->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11])
+                ...(*[${typeQuery} brand == "${brand}" && references(^.genre[]->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11])
                 ])|order(published_on, railcontent_id)[0...11]}`;
   return fetchSanity(query, false);
 }
