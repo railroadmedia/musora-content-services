@@ -72,7 +72,6 @@ describe('Sanity Queries', function () {
         const id = 406895;
         const song = await fetchSongById(id);
         const response = await fetchRelatedSongs('drumeo', song.artist.name, song.genre[0]);
-
         expect(response).toHaveLength(10);
         expect(JSON.stringify(response)).toContain("Metal");
     });
@@ -197,7 +196,6 @@ describe('Sanity Queries', function () {
 
     test('fetchMethods', async () => {
         const response = await fetchMethods('drumeo');
-
         expect(response.length).toBeGreaterThan(0);
         expect(response[0].type).toBe('learning-path');
     });
@@ -213,4 +211,22 @@ describe('Sanity Queries', function () {
 
         expect(response).toBe('test');
     });
+});
+
+describe('Filter Builder', function () {
+
+    test('baseConstructor', async () => {
+        const builder = new FilterBuilder({});
+        const filter = 'railcontent_id = 111'
+        const finalFilter = builder.buildFilter(filter);
+        expect(finalFilter).toBe(filter);
+    });
+
+    test('withOnlyFilterAvailableStatuses', async () => {
+        const builder =  FilterBuilder.withOnlyFilterAvailableStatuses(['published', 'unlisted'])
+        const filter = 'railcontent_id = 111'
+        const finalFilter = builder.buildFilter(filter);
+        expect(finalFilter).toBe("railcontent_id = 111 && status in ['published','unlisted']");
+    });
+
 });
