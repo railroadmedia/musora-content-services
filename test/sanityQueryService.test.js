@@ -158,7 +158,7 @@ describe('Sanity Queries', function () {
         const id = 380094;
         const document = await fetchByRailContentId(id);
         let artist = document.artist.name;
-        const response = await fetchRelatedLessons(id, 'singeo', 'song');
+        const response = await fetchRelatedLessons(id, 'singeo');
         let relatedDoc = await fetchByRailContentId(response.related_lessons[0].id);
         // match on artist or any genre
         let isMatch = artist === relatedDoc.artist.name;
