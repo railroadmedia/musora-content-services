@@ -31,6 +31,7 @@ const {
     fetchAllPacks,
     fetchPacksAll,
     fetchCoachLessons,
+    fetchByReference,
 } = require('../src/services/sanity.js');
 
 describe('Sanity Queries', function () {
@@ -270,6 +271,7 @@ describe('Sanity Queries', function () {
         response = await fetchAllPacks('drumeo', 'slug', 'Creative Control');
         expect(response[0].id).toBe(212899);
     });
+
     test('fetchCoachLessons', async () => {
         const response = await fetchCoachLessons('drumeo',233797);
         expect(response.entity.length).toBeGreaterThan(0);
@@ -277,6 +279,11 @@ describe('Sanity Queries', function () {
 
     test('fetchAll-IncludedFields', async () => {
         let response = await fetchAll('drumeo', 'instructor',{includedFields: ['is_active']});
-        console.log('---------------------------------------',response);
+        expect(response.entity.length).toBeGreaterThan(0);
+    });
+
+    test('fetchByReference', async () => {
+        const response = await fetchByReference('drumeo', { includedFields: ['is_featured'] });
+        expect(response.entity.length).toBeGreaterThan(0);
     });
 });

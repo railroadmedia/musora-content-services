@@ -34,6 +34,7 @@ import {
   fetchLiveEvent,
   fetchChallengeOverview,
   fetchCoachLessons,
+  fetchByReference,
 } from './services/sanity.js';
 
 import { 
@@ -85,4 +86,5 @@ export {
     fetchVimeoData,
     fetchContentPageUserData,
     fetchCoachLessons,
+    fetchByReference,
 }
