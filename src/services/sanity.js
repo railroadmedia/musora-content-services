@@ -856,7 +856,7 @@ export async function fetchPackAll(railcontentId) {
   //TODO: Implement getPacks
   const query = `*[railcontent_id == ${railcontentId}]{
     ${getFieldsForContentType('pack')}
-  } | order(published_on asc)`
+  } | order(published_on asc)[0...1]`
   return fetchSanity(query, false);
 }
 
