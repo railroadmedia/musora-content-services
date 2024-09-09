@@ -30,6 +30,7 @@ const {
     fetchFoundation,
     fetchAllPacks,
     fetchPacksAll,
+    fetchCoachLessons,
 } = require('../src/services/sanity.js');
 
 describe('Sanity Queries', function () {
@@ -141,6 +142,18 @@ describe('Sanity Queries', function () {
 
     });
 
+    test('fetchAll-CustomFields', async () => {
+        let response = await fetchAll('drumeo', 'challenge',{customFields:['garbage']});
+        console.log(response);
+        expect(response.entity[0].garbage).toBeDefined();
+        expect(response.entity[0].id).toBeDefined();
+
+        response = await fetchAll('drumeo', 'challenge',{useDefaultFields: false, customFields:['garbage']});
+        console.log(response);
+        expect(response.entity[0].garbage).toBeDefined();
+        expect.not.objectContaining(response.entity[0].id);
+    });
+
     test('fetchRelatedLessons', async () => {
         const id = 380094;
         const document = await fetchByRailContentId(id);
@@ -202,7 +215,7 @@ describe('Sanity Queries', function () {
 
     test('fetchMethods', async () => {
         const response = await fetchMethods('drumeo');
-        //console.log(response);
+        console.log(response);
         expect(response.length).toBeGreaterThan(0);
         expect(response[0].type).toBe('learning-path');
     });
@@ -236,14 +249,14 @@ describe('Sanity Queries', function () {
 
     test('fetchFoundation', async () => {
         const response = await fetchFoundation('foundations-2019');
-        //console.log(response);
+        //  console.log(response);
         expect(response.units.length).toBeGreaterThan(0);
         expect(response.type).toBe('foundation');
     });
 
     test('fetchPackAll', async () => {
         const response = await fetchPackAll(212899); //https://web-staging-one.musora.com/admin/studio/publishing/structure/pack;pack_212899%2Cinspect%3Don
-        console.log(response);
+        // console.log(response);
         expect(response.slug).toBe('creative-control');
     });
 
@@ -256,5 +269,14 @@ describe('Sanity Queries', function () {
         expect(titles).toStrictEqual(sortedTitles);
         response = await fetchAllPacks('drumeo', 'slug', 'Creative Control');
         expect(response[0].id).toBe(212899);
+    });
+    test('fetchCoachLessons', async () => {
+        const response = await fetchCoachLessons('drumeo',233797);
+        expect(response.entity.length).toBeGreaterThan(0);
+    });
+
+    test('fetchAll-IncludedFields', async () => {
+        let response = await fetchAll('drumeo', 'instructor',{includedFields: ['is_active']});
+        console.log('---------------------------------------',response);
     });
 });
