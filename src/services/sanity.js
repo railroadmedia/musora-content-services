@@ -820,35 +820,22 @@ export async function fetchLessonContent(railContentId) {
 * Fetch related lessons for a specific lesson by RailContent ID and type.
 * @param {string} railContentId - The RailContent ID of the current lesson.
 * @param {string} brand - The current brand.
-* @param {string} contentType - name of the contentype to pull
 * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
 */
-export async function fetchRelatedLessons(railContentId, brand, contentType) {
-  let typeQuery = contentType ? `_type=="${contentType}" &&` : ""; 
-  
+export async function fetchRelatedLessons(railContentId, brand) {
+  // let sort = 'published_on'
+  // if (type == 'rhythmic-adventures-of-captain-carson' ||
+  //     type == 'diy-drum-experiments' ||
+  //     type == 'in-rhythm') {
+  //     sort = 'sort';
+  // }
   //TODO: Implement $this->contentService->getFiltered
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && references(*[_type=='permission']._id)]{
               "related_lessons" : array::unique([
-                _...(*[${typeQuery} brand == "${brand}" && references(^.artist->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11]),
-                ...(*[${typeQuery} brand == "${brand}" && references(^.genre[]->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11])
+                ...(*[_type=="song" && brand == "${brand}" && references(^.artist->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11]),
+                ...(*[_type=="song" && brand == "${brand}" && references(^.genre[]->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11])
                 ])|order(published_on, railcontent_id)[0...11]}`;
   return fetchSanity(query, false);
-}
-
-/**
-* Fetch all packs.
-* @param {string} brand - The brand for which to fetch packs.
-* @param {string} [searchTerm=""] - The search term to filter packs.
-* @param {string} [sort="-published_on"] - The field to sort the packs by.
-* @returns {Promise<Array<Object>|null>} - The fetched pack content data or null if not found.
-*/
-export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = "") {
-  const sortOrder = getSortOrder(sort);
-
-  const query = `*[_type == 'pack' && brand == '${brand}' && title match "${searchTerm}*"]{
-      ${getFieldsForContentType('pack')}
-    } | order(${sortOrder})`
-  return fetchSanity(query, true);
 }
 
 /**
@@ -859,9 +846,18 @@ export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = 
 export async function fetchPackAll(railcontentId) {
   //TODO: Implement getPacks
   const query = `*[railcontent_id == ${railcontentId}]{
-    ${getFieldsForContentType('pack')}
-  } | order(published_on asc)[0...1]`
-  return fetchSanity(query, false);
+        railcontent_id,
+        "id": railcontent_id,
+        title,
+        "image": thumbnail.asset->url,
+        "artist_name": artist->name,
+        artist,
+        difficulty,
+        difficulty_string,
+        web_url_path,
+        published_on
+      } | order(published_on asc)[0...5]`
+  return fetchSanity(query, true);
 }
 
 export async function fetchLiveEvent(brand) {
