@@ -22,6 +22,7 @@ import {
     fetchMethodChildrenIds,
     fetchNextPreviousLesson,
     fetchRelatedLessons,
+    fetchAllPacks,
     fetchPackAll,
     fetchPackChildren,
     fetchLessonContent,
@@ -30,10 +31,15 @@ import {
   } from './services/sanity.js';
 
 import {
+    fetchCompletedState, 
+    fetchAllCompletedStates,
+    fetchContentInProgress,
     fetchVimeoData,
+    fetchContentPageUserData,
 } from "./services/railcontent";
 
 import { initializeService } from './services/config.js';
+
 
 declare module 'musora-content-services' {
     export {
@@ -60,6 +66,7 @@ declare module 'musora-content-services' {
         fetchMethodChildrenIds,
         fetchNextPreviousLesson,
         fetchRelatedLessons,
+        fetchAllPacks,
         fetchPackAll,
         fetchPackChildren,
         fetchLessonContent,
@@ -67,6 +74,10 @@ declare module 'musora-content-services' {
         fetchLiveEvent,
         fetchChallengeOverview,
         fetchVimeoData,
+        fetchCompletedState, 
+        fetchAllCompletedStates,
+        fetchContentInProgress,
+        fetchContentPageUserData,
     }
     
 }

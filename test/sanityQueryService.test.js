@@ -28,6 +28,8 @@ const {
     fetchMethod,
     fetchMethods,
     fetchFoundation,
+    fetchAllPacks,
+    fetchPacksAll,
     fetchCoachLessons,
 } = require('../src/services/sanity.js');
 
@@ -247,11 +249,27 @@ describe('Sanity Queries', function () {
 
     test('fetchFoundation', async () => {
         const response = await fetchFoundation('foundations-2019');
-        console.log(response);
+        //  console.log(response);
         expect(response.units.length).toBeGreaterThan(0);
         expect(response.type).toBe('foundation');
     });
 
+    test('fetchPackAll', async () => {
+        const response = await fetchPackAll(212899); //https://web-staging-one.musora.com/admin/studio/publishing/structure/pack;pack_212899%2Cinspect%3Don
+        // console.log(response);
+        expect(response.slug).toBe('creative-control');
+    });
+
+    test('fetchAllPacks', async () => {
+        let response = await fetchAllPacks('drumeo');
+        response = await fetchAllPacks('drumeo', 'slug');
+        const titles = response.map((doc) => doc.title);
+        const sortedTitles = [...titles].sort((a, b) => a.localeCompare(b));
+        // This  fails for upper/lower case compare and I couldn't  figure it out. Sanity sorts with case sensativity, and localeCompare should do the same but doesn't
+        expect(titles).toStrictEqual(sortedTitles);
+        response = await fetchAllPacks('drumeo', 'slug', 'Creative Control');
+        expect(response[0].id).toBe(212899);
+    });
     test('fetchCoachLessons', async () => {
         const response = await fetchCoachLessons('drumeo',233797);
         expect(response.entity.length).toBeGreaterThan(0);
