@@ -118,27 +118,8 @@ function getGrabObject(contentType) {
     return nullToUndefined({ ...DEFAULT_FIELDS, ...contentTypeFields });
 }
 
-function filtersToGroq(filters) {
-    return (base) => filters.reduce((acc, filter) => {
-        const [key, value] = filter.split(',');
-        switch (key) {
-            case 'difficulty':
-                return acc.filter(`difficulty_string == "${value}"`);
-            case 'genre':
-                return acc.filter(`"${value}" in genre[]->name`);
-            case 'topic':
-                return acc.filter(`"${value}" in topic[]->name`);
-            case 'instrumentless':
-                return acc.filter(`instrumentless == ${value}`);
-            default:
-                return acc.filter(`${key} == "${value}"`);
-        }
-    }, base);
-}
-
 export {
     getGrabObject,
-    filtersToGroq,
     CONTENT_TYPE_CONFIG,
     DEFAULT_FIELDS,
 };

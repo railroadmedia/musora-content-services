@@ -35,7 +35,6 @@ export async function fetchSongById(documentId) {
 
     let contentType = 'song';
     const filter = new FilterBuilder(`_type == "${contentType}" && railcontent_id == ${documentId}`).buildFilter();
-    console.log(filter);
     const query = q('*')
         .filter(filter)
         .grab(getSanityFieldsToGrab(contentType))

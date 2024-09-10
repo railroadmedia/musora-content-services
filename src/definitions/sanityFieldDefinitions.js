@@ -6,7 +6,7 @@ const SANITY_FIELD_DEFINITIONS = {
     railcontent_id: q.number().optional(),
     artist_name: ['coalesce(artist->name, instructor[0]->name)', q.string().optional()],
     artist: q('artist').deref().grab({
-        name: q.string().optional(),
+        name: q.string(),
         thumbnail_url: sanityImage('thumbnail_url'),
     }),
     title: q.string(),
@@ -168,14 +168,15 @@ const CONTENT_TYPE_FIELDS = {
     }
 };
 
-function getSanityFieldsToGrab(contentType) {
-    let fields = {...CONTENT_TYPE_FIELDS.defaults.fields, ...(CONTENT_TYPE_FIELDS[contentType]?.fields || {})};
+function getSanityFieldsToGrab(contentType, includeDefault= true) {
+
+    let defaultFields = includeDefault ? CONTENT_TYPE_FIELDS.defaults.fields : {};
+    let fields = {...defaultFields, ...(CONTENT_TYPE_FIELDS[contentType]?.fields || {})};
 
     return nullToUndefined(fields);
 }
 
 
-// todo
 function filtersToGroq(filters) {
     return (base) => filters.reduce((acc, filter) => {
         const [key, value] = filter.split(',');
@@ -183,11 +184,8 @@ function filtersToGroq(filters) {
             case 'difficulty':
                 return acc.filter(`difficulty_string == "${value}"`);
             case 'genre':
-                return acc.filter(`"${value}" in genre[]->name`);
             case 'topic':
-                return acc.filter(`"${value}" in topic[]->name`);
-            case 'instrumentless':
-                return acc.filter(`instrumentless == ${value}`);
+                return acc.filter(`"${value}" in ${key}[]->name`);
             default:
                 return acc.filter(`${key} == "${value}"`);
         }

@@ -16,19 +16,22 @@ export class FilterBuilder {
                     getFutureScheduledContentsOnly = false,
 
                 }={}) {
-        this.user = user ?? null;
+        this.user = user;
         this.availableContentStatuses = availableContentStatuses;
         this.bypassPermissions = bypassPermissions;
         this.pullFutureContent = pullFutureContent;
         this.getFutureContentOnly = getFutureContentOnly;
+        // TODO should getFollowedContentOnly be removed? It only related to coaches.
+        // SEE ContentQueryBuilder.restrictFollowedContent
+        // There is a discussion in slack to remove this behaviour entirely
         this.getFollowedContentOnly = getFollowedContentOnly;
         this.getFutureScheduledContentsOnly = getFutureScheduledContentsOnly;
         this.filter = filter;
     }
 
 
-    static withOnlyFilterAvailableStatuses(availableContentStatuses) {
-        return new FilterBuilder( {
+    static withOnlyFilterAvailableStatuses(filter, availableContentStatuses) {
+        return new FilterBuilder(filter,{
                                 availableContentStatuses,
                                 });
     }
@@ -57,16 +60,18 @@ export class FilterBuilder {
 
     _applyPermissions() {
         if (this.bypassPermissions) return this;
-        let hardcodedPermissions = ["my-permission-1","my-permission-2"]; //todo switch these to railcontent_ids
-        hardcodedPermissions = [91, 92];
         // todo these need to be pulled from the user and reference either ID, or railcontent_id
-        const requiredPermissions = hardcodedPermissions;
+        const requiredPermissions = this._getUserPermissions();
         if (requiredPermissions.length === 0) return this;
         // handle pullSongsContent, I think the flagging on this needs to be backwards compared to BE
         // if using id, switch railcontent_id to _id in the below query
         this._andWhere(`references(*[_type == "permission" && railcontent_id in ${FilterBuilder.arrayToRawRepresentation(requiredPermissions)}]._id)`);
         return this;
 
+    }
+
+    _getUserPermissions() {
+        return this?.user?.permissions ?? [];
     }
 
     _applyFollowedContentOnly() {

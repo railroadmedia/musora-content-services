@@ -1,4 +1,4 @@
-import {initializeService} from '../src/services/config.js';
+import {globalConfig, initializeService, runSanityQuery} from '../src/services/config.js';
 
 const {
     fetchSongById,
@@ -22,7 +22,6 @@ const {
     fetchPackAll,
     fetchPackChildren,
     fetchLessonContent,
-    getSortOrder,
     fetchParentByRailContentId,
     fetchChildren,
     fetchMethod,
@@ -46,7 +45,8 @@ describe('Sanity Queries', function () {
                 apiVersion: '2021-06-07',
                 debug: process.env.DEBUG || false,
                 useCdn: false
-            }
+            },
+            railcontentConfig: {},
         };
         initializeService(config);
     });
@@ -220,18 +220,39 @@ describe('Sanity Queries', function () {
 describe('Filter Builder', function () {
 
     test('baseConstructor', async () => {
-        const builder = new FilterBuilder({});
         const filter = 'railcontent_id = 111'
+        const builder = new FilterBuilder(filter);
         const finalFilter = builder.buildFilter(filter);
-        expect(finalFilter).toBe(filter);
+        const clauses = spliceFilterUnsafe(finalFilter);
+        expect(clauses[0].phrase).toBe(filter);
+        expect(clauses[1].field).toBe('published_on');
     });
 
     test('withOnlyFilterAvailableStatuses', async () => {
-        const builder =  FilterBuilder.withOnlyFilterAvailableStatuses(['published', 'unlisted'])
         const filter = 'railcontent_id = 111'
-        const finalFilter = builder.buildFilter(filter);
-        console.log(finalFilter);
-        expect(finalFilter).toBe("railcontent_id = 111 && status in ['published','unlisted']");
+        const builder =  FilterBuilder.withOnlyFilterAvailableStatuses(filter,['published', 'unlisted']);
+        const finalFilter = builder.buildFilter();
+        const clauses = spliceFilterUnsafe(finalFilter);
+        expect(clauses[0].phrase).toBe(filter);
+        expect(clauses[1].field).toBe('status');
+        expect(clauses[1].operator).toBe('in');
+        // not sure I like this
+        expect(clauses[1].condition).toBe("[\"published\",\"unlisted\"]");
+        expect(clauses[2].field).toBe('published_on');
     });
+
+    function spliceFilterUnsafe(filter) {
+        // this will break for more complicated filters
+        let phrases = filter.split(' && ');
+        let clauses= [];
+        phrases.forEach((phrase) => {
+            const  field = phrase.substring(0, phrase.indexOf(' '));
+            const temp = phrase.substring(phrase.indexOf(' ') + 1);
+            const operator = temp.substring(0, temp.indexOf(' '));
+            const condition = temp.substring(temp.indexOf(' ') + 1);
+            clauses.push({phrase, field, operator, condition});
+        });
+        return clauses;
+    }
 
 });
