@@ -31,6 +31,10 @@ const {
     getFilterString,
 } = require('../src/services/sanity.js');
 
+const {
+    FilterBuilder,
+} = require('../src/filterBuilder.js');
+
 describe('Sanity Queries', function () {
     beforeEach(() => {
         const config = { 
@@ -226,6 +230,7 @@ describe('Filter Builder', function () {
         const builder =  FilterBuilder.withOnlyFilterAvailableStatuses(['published', 'unlisted'])
         const filter = 'railcontent_id = 111'
         const finalFilter = builder.buildFilter(filter);
+        console.log(finalFilter);
         expect(finalFilter).toBe("railcontent_id = 111 && status in ['published','unlisted']");
     });
 
