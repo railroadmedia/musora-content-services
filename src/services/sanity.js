@@ -224,7 +224,7 @@ export async function fetchSongFilterOptions(brand) {
 */
 export async function fetchSongCount(brand) {
   const query = `count(*[_type == 'song' && brand == "${brand}"])`;
-  return fetchSanity(query, false);
+  return fetchSanity(query, true);
 }
 
 /**
