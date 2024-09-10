@@ -286,11 +286,14 @@ export async function fetchNewReleases(brand) {
 * @returns {Promise<Object|null>} - A promise that resolves to an array of upcoming event objects or null if not found.
 *
 * @example
-* fetchUpcomingEvents('drumeo')
+* fetchUpcomingEvents('drumeo', {
+*   page: 2,
+*   limit: 20,
+* })
 *   .then(events => console.log(events))
 *   .catch(error => console.error(error));
 */
-export async function fetchUpcomingEvents(brand) {
+export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 }) {
   const baseLiveTypes = ["student-review", "student-reviews", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"];
   const liveTypes = {
       'drumeo': [...baseLiveTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "quick-tips", "student-collaborations", "live-streams", "podcasts", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums"],
@@ -301,6 +304,8 @@ export async function fetchUpcomingEvents(brand) {
   };
   const typesString = arrayJoinWithQuotes(liveTypes[brand] ?? liveTypes['default']);
   const now = getSanityDate(new Date());
+  const start = (page - 1) * limit;
+  const end = start + limit;
   const query = `*[_type in [${typesString}] && brand == '${brand}' && published_on > '${now}' && status == 'scheduled']{
         "id": railcontent_id,
         title,
@@ -313,7 +318,7 @@ export async function fetchUpcomingEvents(brand) {
         published_on,
         "type": _type,
         web_url_path,
-      } | order(published_on asc)[0...5]`;
+    } | order(published_on asc)[${start}...${end}]`;
   return fetchSanity(query, true);
 }
 
