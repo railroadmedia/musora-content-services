@@ -262,3 +262,24 @@ function fetchAbsolute(url, params) {
     } 
     return fetch(url, params);
 }
+
+export async function fetchUserContext() {
+    let url = `/content/user_data`;
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
+    };
+    try {
+        const response = await fetch(url, {headers});
+        const result = await response.json();
+        if (result) {
+            console.log('fetchContentPageUserData', result);
+            return result;
+        } else {
+            console.log('result not json');
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
