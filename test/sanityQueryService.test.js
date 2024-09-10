@@ -21,7 +21,6 @@ const {
     fetchRelatedLessons,
     fetchPackAll,
     fetchPackChildren,
-    fetchLessonContent,
     fetchParentByRailContentId,
     fetchChildren,
     fetchMethod,
@@ -54,7 +53,7 @@ describe('Sanity Queries', function () {
     test('fetchSongById', async () => {
         const id = 406895;
         const response = await fetchSongById(id);
-
+        console.log(response);
         expect(response.id).toBe(id);
     });
 
@@ -68,7 +67,12 @@ describe('Sanity Queries', function () {
 
     test('fetchSongArtistCount', async () => {
         const response = await fetchSongArtistCount('drumeo');
+        expect(response).toBeGreaterThan(1000);
+    });
 
+    test('fetchSongCount', async () => {
+        const response = await fetchSongCount('drumeo');
+        console.log(response);
         expect(response).toBeGreaterThan(1000);
     });
 
@@ -83,13 +87,15 @@ describe('Sanity Queries', function () {
     test('fetchByRailContentId', async () => {
         const id = 380094;
         const response = await fetchByRailContentId(id);
+        console.log(response);
         expect(response.id).toBe(id);
     });
 
     test('fetchByRailContentIds', async () => {
-        const id = 380094;
-        const id2 = 402204;
+        const id = 406895;
+        const id2 = 380094;
         const response = await fetchByRailContentIds([id, id2]);
+        console.log(response);
         const returnedIds = response.map((x) => x.id);
         expect(returnedIds).toContain(id);
         expect(returnedIds).toContain(id2);
@@ -97,11 +103,13 @@ describe('Sanity Queries', function () {
 
     });
 
-    test('fetchLessonContent', async () => {
-        const id = 380094;
-        const response = await fetchLessonContent(id);
-        expect(response.id).toBe(id);
-    });
+    // TODO?
+    // no longer supported?
+    // test('fetchLessonContent', async () => {
+    //     const id = 380094;
+    //     const response = await fetchLessonContent(id);
+    //     expect(response.id).toBe(id);
+    // });
 
     test('fetchAllSongs', async () => {
         const response = await fetchAllSongs('drumeo', {});
@@ -113,6 +121,7 @@ describe('Sanity Queries', function () {
 
     test('fetchAllSongsGroupByArtist', async () => {
         const response = await fetchAllSongs('drumeo', {groupBy:"artist"});
+
         expect(response.entity[0].lessons[0].soundslice).toBeDefined();
         expect(response.entity[0].lessons[0].artist_name).toBeDefined();
         expect(response.entity[0].lessons[0].instrumentless).toBeDefined();

@@ -27,6 +27,7 @@ export class FilterBuilder {
         this.getFollowedContentOnly = getFollowedContentOnly;
         this.getFutureScheduledContentsOnly = getFutureScheduledContentsOnly;
         this.filter = filter;
+        this.debug = true;
     }
 
 
@@ -37,12 +38,15 @@ export class FilterBuilder {
     }
 
     buildFilter() {
-        return this._applyContentStatuses()
+        if (this.debug) console.log('baseFilter', this.filter);
+        const filter = this._applyContentStatuses()
             ._applyPermissions()
             ._applyPublishingDateRestrictions()
             ._applyFollowedContentOnly()
             ._trimAmpersands() // just in case
             .filter;
+        if (this.debug) console.log('finalFilter', filter);
+        return filter;
     }
 
     _applyContentStatuses() {

@@ -6,6 +6,7 @@ import { createClient } from '@sanity/client';
 import {q, makeSafeQueryRunner, nullToUndefined, sanityImage} from "groqd";
 import { globalConfig } from "./config";
 import {FilterBuilder} from "../filterBuilder";
+import {CONTENT_TYPE_CONFIG} from "../contentTypeConfig";
 
 let sanityClient = null;
 let runSanityQuery = null;
@@ -31,18 +32,7 @@ function initializeSanityClient() {
  * @returns {Promise<Object|null>} - A promise that resolves to the song data or null if not found.
  */
 export async function fetchSongById(documentId) {
-    initializeSanityClient();
-
-    let contentType = 'song';
-    const filter = new FilterBuilder(`_type == "${contentType}" && railcontent_id == ${documentId}`).buildFilter();
-    const query = q('*')
-        .filter(filter)
-        .grab(getSanityFieldsToGrab(contentType))
-        .slice(0, 1);
-
-    let results = await runSanityQuery(query);
-
-    return results[0] || undefined;
+    return fetchByRailContentId(documentId, 'song');
 }
 
 /**
@@ -61,7 +51,7 @@ export async function fetchArtists(brand) {
         })
         .filter('lessonsCount > 0');
 
-    return await runSanityQuery(query);
+    return fetch(query);
 }
 
 /**
@@ -82,7 +72,7 @@ export async function fetchSongArtistCount(brand) {
 
     const query = q(`count(${subQuery.query})`);
 
-    return await runSanityQuery(query);
+    return fetch(query);
 }
 
 /**
@@ -107,7 +97,7 @@ export async function fetchRelatedSongs(brand, songArtist, songGenre) {
         .grab(getSanityFieldsToGrab('song'))
         .slice(0, 9);
 
-    return await runSanityQuery(query)
+    return fetch(query)
 }
 
 /**
@@ -168,8 +158,9 @@ export async function fetchSongFilterOptions(brand) {
  */
 export async function fetchSongCount(brand) {
     initializeSanityClient();
-    const query = q('count').filter(`_type == 'song' && brand == "${brand}"`);
-    return runSanityQuery(query);
+    const subQuery = q('*').filter(`_type == 'song' && brand == "${brand}"`);
+    const query = q(`count(${subQuery.query})`);
+    return fetch(query);
 }
 
 /**
@@ -278,11 +269,12 @@ export async function fetchUpcomingEvents(brand) {
  */
 export async function fetchByRailContentId(id, contentType) {
     initializeSanityClient();
+    const baseFilter = `railcontent_id == ${id}` + (contentType ? ` && _type == '${contentType}'` : '');
+    const filter = new FilterBuilder(baseFilter).buildFilter();
     const query = q('*')
-        .filter(`railcontent_id == ${id}`)
-        .grab(getFieldsForContentType(contentType));
-
-    return runSanityQuery(query);
+        .filter(filter)
+        .grab(getSanityFieldsToGrab(contentType));
+    return fetch(query, false);
 }
 
 /**
@@ -293,12 +285,13 @@ export async function fetchByRailContentId(id, contentType) {
  */
 export async function fetchByRailContentIds(ids, contentType) {
     initializeSanityClient();
+    const filter = new FilterBuilder(`railcontent_id in ${arrayToRawRepresentation(ids)}`).buildFilter();
     const query = q('*')
-        .filter(`railcontent_id in $ids`)
-        .grab(getFieldsForContentType(contentType))
-        .params({ ids });
-
-    return runSanityQuery(query);
+        .filter(filter)
+        .grab(getSanityFieldsToGrab(contentType))
+        .slice(0, 1)
+        .order('published_on asc');
+    return fetch(query);
 }
 
 /**
@@ -319,8 +312,7 @@ export async function fetchAll(brand, type, options = {}) {
         groupBy = ""
     } = options;
 
-    //const config = contentTypeConfig[type] ?? {};
-    const additionalFields = config?.fields ?? [];
+    const config = CONTENT_TYPE_CONFIG[type] ?? {};
     const isGroupByOneToOne = groupBy ? config?.relationships?.[groupBy]?.isOneToOne ?? false : false;
 
     const start = (page - 1) * limit;
@@ -336,7 +328,7 @@ export async function fetchAll(brand, type, options = {}) {
 
     const sortOrder = getSortOrder(sort, groupBy);
 
-    const fields = [...DEFAULT_FIELDS, ...additionalFields];
+    const fields = getSanityFieldsToGrab(type);
 
     let query;
     if (groupBy && isGroupByOneToOne) {
@@ -347,26 +339,27 @@ export async function fetchAll(brand, type, options = {}) {
         query = buildDefaultQuery(brand, type, searchFilter, includedFieldsFilter, sortOrder, start, end, fields);
     }
 
-    return runSanityQuery(query);
+    return fetch(query);
 }
 
 // Helper functions
 
 function buildGroupByOneToOneQuery(brand, type, groupBy, searchFilter, includedFieldsFilter, sortOrder, start, end, fields) {
+    const baseFilter = `_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter}]._id) > 0`;
     return q.object({
-        total: q('count').filter(`_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter}]._id) > 0`),
+        total: q('count').filter(baseFilter),
         entity: q('*')
-            .filter(`_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter}]._id) > 0`)
+            .filter(baseFilter)
             .grab({
                 id: q.string(),
-                type: q.string(),
-                name: q.string(),
-                head_shot_picture_url: q.string(),
-                all_lessons_count: q.number(),
-                lessons: q('*')
-                    .filter(`_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter}`)
-                    .grab({ ...fields, [groupBy]: q.string() })
-                    .slice(0, 10)
+                // type: q.string(),
+                // name: q.string().optional(),
+                // head_shot_picture_url: q.string().optional(),
+                // all_lessons_count: q.number().optional(),
+                // lessons: q('*')
+                //     .filter(`_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter}`)
+                //     .grab({ ...fields, [groupBy]: q.string() })
+                //     .slice(0, 10)
             })
             .order(sortOrder)
             .slice(start, end)
@@ -395,15 +388,16 @@ function buildGroupByManyToManyQuery(brand, type, groupBy, searchFilter, include
 }
 
 function buildDefaultQuery(brand, type, searchFilter, includedFieldsFilter, sortOrder, start, end, fields) {
-    const filter = new FilterBuilder(`_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter}`).buildFilter();
-    console.log(filter);
-    return q.object({
-        entity: q('*')
-            .filter(filter)
+    const baseFilter = `_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter}`;
+    const filter = new FilterBuilder(baseFilter).buildFilter();
+    const subQuery =q('*')
+            .filter(baseFilter)
             .grab(fields)
             .order(sortOrder)
-            .slice(start, end),
-        total: q('count').filter(`_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter}`)
+            .slice(start, end);
+    return q.object({
+        entity: subQuery,
+        total: q(`count(${subQuery.query})`),
     });
 }
 
@@ -423,42 +417,16 @@ function getSortOrder(sort = '-published_on', groupBy) {
     }
 }
 
-export function getFilterString(query, restrictByContentPermissions = true, restrictByContentStatuses = true) {
-    if (restrictByContentPermissions) {
-        query += getCurrentRequiredContentPermissionsQueryString(true);
-    }
-
-    if (restrictByContentStatuses) {
-        query += getCurrentRequiredContentPermissionsQueryString(true);
-    }
-}
-
-export function getCurrentRequiredContentPermissionsQueryString(
-    requiredPermissionIdOverride = null,
-    withPrependedAmpersands = true
-) {
-    let queryString = (withPrependedAmpersands ? ' && ' : '') + 'references(*[_type == "permission" && _id in ';
-    let permissionsToFilterBy = requiredPermissionIdOverride ? requiredPermissionIdOverride : requiredContentPermissions;
-
-    queryString += arrayToStringRepresentation(permissionsToFilterBy);
-    queryString += ']._id)';
-
-    return queryString;
-}
-
-
-export function getCurrentIncludedContentStatusesQueryString(
-    includedStatusesOverrideOverride = null,
-    withPrependedAmpersands = true
-) {
-    let queryString = (withPrependedAmpersands ? ' && ' : '') + 'status in ';
-    let permissionsToFilterBy = requiredPermissionIdOverride ? requiredPermissionIdOverride : requiredContentPermissions;
-
-    queryString += arrayToStringRepresentation(permissionsToFilterBy);
-
-    return queryString;
+async function fetch(query, asList=true) {
+    //if (globalConfig.sanityConfig.debug) console.log('executed query', query);
+    if (asList) return runSanityQuery(query);
+    else return (await runSanityQuery(query))[0] ?? undefined;
 }
 
 function arrayToStringRepresentation(arr) {
     return '[' + arr.map(item => `"${item}"`).join(',') + ']';
+}
+
+function arrayToRawRepresentation(arr) {
+    return '[' + arr.map(item => `${item}`).join(',') + ']';
 }
