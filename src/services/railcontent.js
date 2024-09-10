@@ -273,7 +273,7 @@ export async function fetchUserContext() {
         const response = await fetch(url, {headers});
         const result = await response.json();
         if (result) {
-            console.log('fetchContentPageUserData', result);
+            console.log('fetchUserContext', result);
             return result;
         } else {
             console.log('result not json');
