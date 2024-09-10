@@ -22,6 +22,8 @@ let globalConfig = {
  * @param {Object} config.railcontentConfig - Configuration for user services.
  * @param {string} config.railcontentConfig.token - The token for authenticating user-specific requests.
  * @param {string} config.railcontentConfig.userId - The user ID for fetching user-specific data.
+ * @param {string} config.railcontentConfig.baseUrl - The url for the enviroment.
+
  *
  * @example
  * // Initialize the service in your app.js
@@ -36,7 +38,8 @@ let globalConfig = {
  *   },
  *   railcontentConfig: {
  *     token: 'your-user-api-token',
- *     userId: 'current-user-id'
+ *     userId: 'current-user-id',
+ *     baseUrl: 'https://web-staging-one.musora.com'
  *   }
  * });
  */
