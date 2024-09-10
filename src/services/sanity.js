@@ -990,29 +990,8 @@ export async function fetchCoachLessons(brand, id, {
  *   .catch(error => console.error(error));
  */
 export async function fetchCourseOverview(id) {
-  // WIP
   const query = `*[railcontent_id == ${id}]{
-        "id": railcontent_id,
-        railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "instructors": instructor[]->name,
-        difficulty,
-        difficulty_string,
-        web_url_path,
-        published_on,
-        "type": _type,
-        total_xp,
-        xp,
-        description,
-        resource,
-        "lessons": child[]->{
-          "id": railcontent_id,
-          title,
-          "image": thumbnail.asset->url,
-          "instructors": instructor[]->name,
-          length_in_seconds,
-        }
+        ${getFieldsForContentType("course", true)}
       }`
   return fetchSanity(query, false);
 }
