@@ -174,9 +174,21 @@ let contentTypeConfig = {
     },
     'instructor': {
         'fields': [
-            'name',
+            '"coach_top_banner_image": coach_top_banner_image.asset->url',
+            '"coach_bottom_banner_image": coach_bottom_banner_image.asset->url',
             '"coach_card_image": coach_card_image.asset->url',
-            'focus'
+            '"coach_featured_image": coach_featured_image.asset->url',
+            '"coach_top_banner_image": coach_top_banner_image.asset->url',
+            'focus',
+            'focus_text',
+            'forum_thread_id',
+            '"id": railcontent_id',
+            '"id": railcontent_id',
+            'long_bio',
+            'name',
+            'short_bio',
+            'bands',
+            'endorsements',
         ]
     },
     // content with just the added 'instructors' Field
