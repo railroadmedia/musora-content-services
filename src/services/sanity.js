@@ -420,7 +420,7 @@ export async function fetchAll(brand, type, {
         `&& railcontent_id in [${progressIds.join(',')}]` : "";
 
     // Determine the sort order
-    const sortOrder = getSortOrder(sort, undefined, type);
+    const sortOrder = getSortOrder(sort);
 
     let fields = useDefaultFields ?  customFields.concat(DEFAULT_FIELDS, additionalFields) : customFields;
     let fieldsString = fields.join(',');
@@ -487,7 +487,10 @@ export function getSortOrder(sort= '-published_on', groupBy, contentType)
     sort = isDesc ? sort.substring(1) : sort;
     switch (sort) {
         case "slug":
-            sortOrder = groupBy || ['instructor'].includes(contentType) ? 'name' : "title";
+            sortOrder = groupBy ? 'name' : "title";
+            break;
+        case "name":
+            sortOrder = "name";
             break;
         case "popularity":
             sortOrder = "popularity";
