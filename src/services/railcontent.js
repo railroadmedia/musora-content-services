@@ -165,7 +165,46 @@ export async function fetchContentInProgress(type="all", brand, limit=20, page=1
         const response = await fetchAbsolute(url, { headers });
         const result = await response.json();
         if(result){
-            console.log('contentInProgress', result);
+            //console.log('contentInProgress', result);
+            return result;
+        } else {
+            console.log('result not json');
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
+
+/**
+ * Fetches a list of content that has been completed for the current user.
+ *
+ * @param {string} type - The content type associated with the content.
+ * @param {string} brand - The brand associated with the content.
+ * @param {number} [limit=20] - The limit of results per page.
+ * @param {number} [page=1] - The page number for pagination.
+ * @returns {Promise<Object|null>} - Returns an object containing in-progress content if found, otherwise null.
+ * @example
+ * fetchCompletedContent('song', 'drumeo')
+ *   .then(songs => console.log(songs))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchCompletedContent(type="all", brand, limit=20, page=1) {
+    let url;
+    if(type !== "all") {
+        url = `/content/completed/${globalConfig.railcontentConfig.userId}?brand=${brand}&limit=${limit}&page=${page}`;
+    } else {
+        url = `/content/completed/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}&limit=${limit}&page=${page}`;
+    }
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
+    };
+    try {
+        const response = await fetchAbsolute(url, { headers });
+        const result = await response.json();
+        if(result){
+            //console.log('completed content', result);
             return result;
         } else {
             console.log('result not json');
