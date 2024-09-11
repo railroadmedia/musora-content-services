@@ -812,7 +812,9 @@ export async function fetchLessonContent(railContentId) {
           "instructors":instructor[]->name,
           instructor[]->,
           ${assignmentsField}
-         video}`
+          video,
+          length_in_seconds
+        }`
   return fetchSanity(query, false);
 }
 
