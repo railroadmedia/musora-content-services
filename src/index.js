@@ -41,6 +41,7 @@ import {
   fetchCompletedState, 
   fetchAllCompletedStates,
   fetchContentInProgress,
+  fetchCompletedContent,
   fetchVimeoData,
   fetchContentPageUserData,
 } from './services/railcontent.js';
@@ -77,6 +78,7 @@ export {
     fetchCompletedState, 
     fetchAllCompletedStates,
     fetchContentInProgress,
+    fetchCompletedContent,
     fetchCourseOverview,
     fetchChildren,
     fetchParentByRailContentId,
