@@ -672,6 +672,7 @@ export async function fetchMethodChildren(railcontentId) {
     "description": ${descriptionField},
     title,
     xp,
+    total_xp,
     'children': child[]->{
         ${getFieldsForContentType('method')}
     },
