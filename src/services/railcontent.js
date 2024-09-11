@@ -142,18 +142,20 @@ export async function fetchSongsInProgress(brand) {
  *
  * @param {string} type - The content type associated with the content.
  * @param {string} brand - The brand associated with the content.
+ * @param {number} [limit=20] - The limit of results per page.
+ * @param {number} [page=1] - The page number for pagination.
  * @returns {Promise<Object|null>} - Returns an object containing in-progress content if found, otherwise null.
  * @example
  * fetchContentInProgress('song', 'drumeo')
  *   .then(songs => console.log(songs))
  *   .catch(error => console.error(error));
  */
-export async function fetchContentInProgress(type="all", brand) {
+export async function fetchContentInProgress(type="all", brand, limit=20, page=1) {
     let url;
-    if(type!=="all") {
-        url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?brand=${brand}`;
+    if(type !== "all") {
+        url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?brand=${brand}&limit=${limit}&page=${page}`;
     } else {
-        url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}`;
+        url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}&limit=${limit}&page=${page}`;
     }
     const headers = {
         'Content-Type': 'application/json',
