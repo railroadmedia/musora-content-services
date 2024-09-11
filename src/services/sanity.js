@@ -420,7 +420,7 @@ export async function fetchAll(brand, type, {
         `&& railcontent_id in [${progressIds.join(',')}]` : "";
 
     // Determine the sort order
-    const sortOrder = getSortOrder(sort);
+    const sortOrder = getSortOrder(sort, undefined, type);
 
     let fields = useDefaultFields ?  customFields.concat(DEFAULT_FIELDS, additionalFields) : customFields;
     let fieldsString = fields.join(',');
@@ -479,7 +479,7 @@ export async function fetchAll(brand, type, {
     return fetchSanity(query, true);
 }
 
-export function getSortOrder(sort= '-published_on', groupBy)
+export function getSortOrder(sort= '-published_on', groupBy, contentType)
 {
     // Determine the sort order
     let sortOrder = '';
@@ -487,7 +487,7 @@ export function getSortOrder(sort= '-published_on', groupBy)
     sort = isDesc ? sort.substring(1) : sort;
     switch (sort) {
         case "slug":
-            sortOrder = groupBy ? 'name' : "title";
+            sortOrder = groupBy || ['instructor'].includes(contentType) ? 'name' : "title";
             break;
         case "popularity":
             sortOrder = "popularity";
