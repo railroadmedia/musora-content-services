@@ -293,7 +293,7 @@ export async function fetchNewReleases(brand) {
 *   .then(events => console.log(events))
 *   .catch(error => console.error(error));
 */
-export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 }) {
+export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 }={}) {
   const baseLiveTypes = ["student-review", "student-reviews", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"];
   const liveTypes = {
       'drumeo': [...baseLiveTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "quick-tips", "student-collaborations", "live-streams", "podcasts", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums"],
