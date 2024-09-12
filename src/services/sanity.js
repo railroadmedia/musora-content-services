@@ -255,10 +255,13 @@ export async function fetchWorkouts(brand) {
 * @param {string} brand - The brand for which to fetch new releases.
 * @returns {Promise<Object|null>} - The fetched new releases data or null if not found.
 */
-export async function fetchNewReleases(brand) {
+export async function fetchNewReleases(brand, { page = 1, limit = 10, sort="-published_on" } = {}) {
   const newTypes = getNewReleasesTypes();
   const typesString = arrayJoinWithQuotes(newTypes[brand] ?? newTypes['default']);
-  const query = `*[_type in [${typesString}] && brand == '${brand}'] | order(releaseDate desc) [0...5] {
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const sortOrder = getSortOrder(sort);
+  const query = `*[_type in [${typesString}] && brand == '${brand}']{
         "id": railcontent_id,
         title,
         "image": thumbnail.asset->url,
@@ -270,7 +273,7 @@ export async function fetchNewReleases(brand) {
         published_on,
         "type": _type,
         web_url_path,
-      } | order(published_on desc)[0...5]`
+      } | order(${sortOrder})[${start}..${end}]`
   return fetchSanity(query, true);
 }
 
@@ -289,7 +292,7 @@ export async function fetchNewReleases(brand) {
 *   .then(events => console.log(events))
 *   .catch(error => console.error(error));
 */
-export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 }={}) {
+export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) {
   const liveTypes = getUpcomingEventsTypes();
   const typesString = arrayJoinWithQuotes(liveTypes[brand] ?? liveTypes['default']);
   const now = getSanityDate(new Date());
@@ -965,7 +968,7 @@ export async function fetchLiveEvent(brand) {
  *   .catch(error => console.error(error));
  */
 export async function fetchPackChildren(railcontentId) {
-  return fetchChildren(railcontentId, 'pack');
+  return fetchChildren(railcontentId, 'pack-children');
 }
 
 /**
@@ -1079,6 +1082,89 @@ export async function fetchByReference(brand, {
     }`;
   return fetchSanity(query, true);
 }
+
+/**
+ * Fetch the artist's lessons.
+ * @param {string} brand - The brand for which to fetch lessons.
+ * @param {string} name - The name of the artist
+ * @param {string} contentType - The type of the lessons we need to get from the artist. If not defined, groq will get lessons from all content types
+ * @returns {Promise<Object|null>} - The lessons for the artist and some details about the artist (name and thumbnail).
+ *
+ * @example
+ * fetchArtistLessons('10 Years', 'song')
+ *   .then(lessons => console.log(lessons))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchArtistLessons(brand, name, contentType, {
+  sort = '-published_on',
+  searchTerm = '',
+  page = 1,
+  limit = 10,
+  includedFields = [],
+} = {}) {
+  const fieldsString = DEFAULT_FIELDS.join(',');
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''  
+  const sortOrder = getSortOrder(sort);
+  const addType = contentType ? `_type == '${contentType}' && `:''
+  const includedFieldsFilter = includedFields.length > 0
+  ? filtersToGroq(includedFields)
+  : "";
+
+  const query = `{
+    "entity": 
+      *[_type == 'artist' && name == '${name}']
+        {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
+        'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]), 
+        'lessons': *[${addType} brand == '${brand}' && references(^._id) ${searchFilter} ${includedFieldsFilter}]{${fieldsString}}
+      [${start}...${end}]}
+      |order(${sortOrder})
+  }`;
+  return fetchSanity(query, true);
+}
+
+/**
+ * Fetch the genre's lessons.
+ * @param {string} brand - The brand for which to fetch lessons.
+ * @param {string} name - The name of the genre
+ * @param {string} contentType - The type of the lessons we need to get from the genre. If not defined, groq will get lessons from all content types
+ * @returns {Promise<Object|null>} - The lessons for the genre and some details about the genre (name and thumbnail).
+ *
+ * @example
+ * fetchGenreLessons('Blues', 'song')
+ *   .then(lessons => console.log(lessons))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchGenreLessons(brand, name, contentType, {
+  sort = '-published_on',
+  searchTerm = '',
+  page = 1,
+  limit = 10,
+  includedFields = [],
+} = {}) {
+  const fieldsString = DEFAULT_FIELDS.join(',');
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''  
+  const sortOrder = getSortOrder(sort);
+  const addType = contentType ? `_type == '${contentType}' && `:''
+  const includedFieldsFilter = includedFields.length > 0
+  ? filtersToGroq(includedFields)
+  : "";
+
+  const query = `{
+    "entity": 
+      *[_type == 'genre' && name == '${name}']
+        {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
+        'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]), 
+        'lessons': *[${addType} brand == '${brand}' && references(^._id) ${searchFilter} ${includedFieldsFilter}]{${fieldsString}}
+      [${start}...${end}]}
+      |order(${sortOrder})
+  }`;
+  return fetchSanity(query, true);
+}
+
 
 
 /**
