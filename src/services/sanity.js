@@ -442,6 +442,7 @@ export async function fetchAll(brand, type, {
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
+                web_url_path,
                 'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
                 'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
                     ${fieldsString},
@@ -461,6 +462,7 @@ export async function fetchAll(brand, type, {
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
+                web_url_path,
                 'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
                 'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
                     ${fieldsString},
