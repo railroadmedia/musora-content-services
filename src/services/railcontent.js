@@ -126,7 +126,7 @@ export async function fetchSongsInProgress(brand) {
         const response = await fetchAbsolute(url, { headers });
         const result = await response.json();
         if(result){
-            console.log('fetchSongsInProgress', result);
+            //console.log('fetchSongsInProgress', result);
             return result;
         } else {
             console.log('result not json');
@@ -155,7 +155,7 @@ export async function fetchContentInProgress(type="all", brand, {
     limit = 10,
   } = {}) {
     let url;
-    if(type !== "all") {
+    if(type === "all") {
         url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?brand=${brand}&limit=${limit}&page=${page}`;
     } else {
         url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}&limit=${limit}&page=${page}`;
@@ -197,7 +197,7 @@ export async function fetchCompletedContent(type="all", brand, {
     limit = 10,
   } = {}) {
     let url;
-    if(type !== "all") {
+    if(type === "all") {
         url = `/content/completed/${globalConfig.railcontentConfig.userId}?brand=${brand}&limit=${limit}&page=${page}`;
     } else {
         url = `/content/completed/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}&limit=${limit}&page=${page}`;
@@ -254,10 +254,11 @@ export async function fetchContentPageUserData(contentId) {
     }
 }
 
-function fetchAbsolute(url, params) {  
-    if (url.startsWith('/')) {
-        return fetch(globalConfig.railcontentConfig.baseUrl + url, params)
-    } else {
-        return fetch(url, params);
-    }   
+function fetchAbsolute(url, params) { 
+    if(globalConfig.railcontentConfig.baseUrl) {
+        if (url.startsWith('/')) {
+            return fetch(globalConfig.railcontentConfig.baseUrl + url, params)
+        }
+    } 
+    return fetch(url, params);
 }
