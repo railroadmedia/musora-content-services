@@ -786,20 +786,20 @@ export async function fetchNextPreviousLesson(railcontentId) {
  */
 export async function fetchLessonContent(railContentId) {
   const query = `*[railcontent_id == ${railContentId} ]{
-          title,
+          title, 
           published_on,
-          "type":_type,
-          "resources": resource,
-          difficulty,
-          difficulty_string,
-          brand,
-          soundslice,
-          instrumentless,
-          railcontent_id,
-          "id":railcontent_id,
+          "type":_type, 
+          "resources": resource, 
+          difficulty, 
+          difficulty_string, 
+          brand, 
+          soundslice, 
+          instrumentless, 
+          railcontent_id, 
+          "id":railcontent_id, 
           slug, artist->,
-          "thumbnail_url":thumbnail.asset->url,
-          "url": web_url_path,
+          "thumbnail_url":thumbnail.asset->url, 
+          "url": web_url_path, 
           soundslice_slug,
           description,
           "chapters": chapter[]{
@@ -970,7 +970,7 @@ export async function fetchCoachLessons(brand, id, {
   const fieldsString = DEFAULT_FIELDS.join(',');
   const start = (page - 1) * limit;
   const end = start + limit;
-  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''
+  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''  
 
   const query = `{
       "entity": *[brand == '${brand}' ${searchFilter} && references(*[_type=='instructor' && railcontent_id == ${id}]._id)] | order(${sortOrder}) [${start}...${end}]
@@ -1023,7 +1023,7 @@ export async function fetchCourseOverview(id) {
 /**
  * Fetch the data needed for the coach screen.
  * @param {string} id - The Railcontent ID of the coach
- *
+ * 
  * @returns {Promise<Object|null>} - The lessons for the instructor or null if not found.
  *
  * @example
