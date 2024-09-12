@@ -253,7 +253,7 @@ export async function fetchWorkouts(brand) {
 * @param {string} brand - The brand for which to fetch new releases.
 * @returns {Promise<Object|null>} - The fetched new releases data or null if not found.
 */
-export async function fetchNewReleases(brand) {
+export async function fetchNewReleases(brand, { page = 1, limit = 10, sort="-published_on" } = {}) {
   const newTypes = {
       'drumeo': ["drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "quick-tips", "question-and-answer", "student-collaborations", "live-streams", "live", "podcasts", "solos", "boot-camps", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums", "course", "play-along", "student-focus", "coach-stream", "learning-path-level", "unit", "quick-tips", "live", "question-and-answer", "student-review", "boot-camps", "song", "chords-and-scales", "pack", "podcasts", "workout", "challenge", "challenge-part"],
       'pianote': ["student-review", "student-reviews", "question-and-answer", "course", "play-along", "student-focus", "coach-stream", "learning-path-level", "unit", "quick-tips", "live", "question-and-answer", "student-review", "boot-camps", "song", "chords-and-scales", "pack", "podcasts", "workout", "challenge", "challenge-part"],
@@ -262,7 +262,10 @@ export async function fetchNewReleases(brand) {
       'default': ["student-review", "student-reviews", "question-and-answer", "course", "play-along", "student-focus", "coach-stream", "learning-path-level", "unit", "quick-tips", "live", "question-and-answer", "student-review", "boot-camps", "song", "chords-and-scales", "pack", "podcasts", "workout", "challenge", "challenge-part"]
   };
   const typesString = arrayJoinWithQuotes(newTypes[brand] ?? newTypes['default']);
-  const query = `*[_type in [${typesString}] && brand == '${brand}'] | order(releaseDate desc) [0...5] {
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const sortOrder = getSortOrder(sort);
+  const query = `*[_type in [${typesString}] && brand == '${brand}']{
         "id": railcontent_id,
         title,
         "image": thumbnail.asset->url,
@@ -274,7 +277,7 @@ export async function fetchNewReleases(brand) {
         published_on,
         "type": _type,
         web_url_path,
-      } | order(published_on desc)[0...5]`
+      } | order(${sortOrder})[${start}..${end}]`
   return fetchSanity(query, true);
 }
 
@@ -293,7 +296,7 @@ export async function fetchNewReleases(brand) {
 *   .then(events => console.log(events))
 *   .catch(error => console.error(error));
 */
-export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 }={}) {
+export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) {
   const baseLiveTypes = ["student-review", "student-reviews", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"];
   const liveTypes = {
       'drumeo': [...baseLiveTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "quick-tips", "student-collaborations", "live-streams", "podcasts", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums"],
@@ -934,7 +937,7 @@ export async function fetchLiveEvent(brand) {
  *   .catch(error => console.error(error));
  */
 export async function fetchPackChildren(railcontentId) {
-  return fetchChildren(railcontentId, 'pack');
+  return fetchChildren(railcontentId, 'pack-children');
 }
 
 /**
