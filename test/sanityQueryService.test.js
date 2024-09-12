@@ -4,23 +4,13 @@ const {
     fetchSongById,
     fetchArtists,
     fetchSongArtistCount,
-    fetchRelatedSongs,
     fetchAllSongs,
-    fetchSongFilterOptions,
-    fetchSongCount,
-    fetchWorkouts,
-    fetchNewReleases,
-    fetchUpcomingEvents,
     fetchByRailContentId,
     fetchByRailContentIds,
     fetchAll,
     fetchAllFilterOptions,
-    fetchMethodNextLesson,
-    fetchMethodChildrenIds,
-    fetchNextPreviousLesson,
     fetchRelatedLessons,
     fetchPackAll,
-    fetchPackChildren,
     fetchLessonContent,
     getSortOrder,
     fetchParentByRailContentId,
@@ -29,10 +19,15 @@ const {
     fetchMethods,
     fetchFoundation,
     fetchAllPacks,
-    fetchPacksAll,
     fetchCoachLessons,
     fetchByReference,
+    fetchUpcomingEvents,
+    fetchNewReleases,
 } = require('../src/services/sanity.js');
+
+const {
+    FilterBuilder,
+} = require('../src/filterBuilder.js');
 
 describe('Sanity Queries', function () {
     beforeEach(() => {
@@ -85,6 +80,17 @@ describe('Sanity Queries', function () {
         expect(returnedIds.length).toBe(2);
 
     });
+
+    test('fetchUpcomingEvents', async () => {
+        const response = await fetchUpcomingEvents('drumeo', {});
+        expect(response.length).toBeGreaterThan(0);
+    });
+
+    test('fetchUpcomingNewReleases', async () => {
+        const response = await fetchNewReleases('drumeo');
+        expect(response.length).toBeGreaterThan(0);
+    });
+
 
     test('fetchLessonContent', async () => {
         const id = 380094;
@@ -286,4 +292,149 @@ describe('Sanity Queries', function () {
         const response = await fetchByReference('drumeo', { includedFields: ['is_featured'] });
         expect(response.entity.length).toBeGreaterThan(0);
     });
+});
+
+describe('Filter Builder', function () {
+
+    test('baseConstructor', async () => {
+        const filter = 'railcontent_id = 111'
+        let builder = new FilterBuilder(filter);
+        let finalFilter = builder.buildFilter(filter);
+        let clauses = spliceFilterForAnds(finalFilter);
+        expect(clauses[0].phrase).toBe(filter);
+        expect(clauses[1].field).toBe('published_on');
+
+        builder = new FilterBuilder();
+        finalFilter = builder.buildFilter(filter);
+        clauses = spliceFilterForAnds(finalFilter);
+        expect(clauses[0].field).toBe('published_on');
+        expect(clauses[0].operator).toBe('<=');
+    });
+
+    test('withOnlyFilterAvailableStatuses', async () => {
+        const filter = 'railcontent_id = 111'
+        const builder =  FilterBuilder.withOnlyFilterAvailableStatuses(filter,['published', 'unlisted']);
+        const finalFilter = builder.buildFilter();
+        const clauses = spliceFilterForAnds(finalFilter);
+        expect(clauses[0].phrase).toBe(filter);
+        expect(clauses[1].field).toBe('status');
+        expect(clauses[1].operator).toBe('in');
+        // not sure I like this
+        expect(clauses[1].condition).toBe("['published','unlisted']");
+        expect(clauses[2].field).toBe('published_on');
+    });
+
+    test('withContentStatusAndFutureScheduledContent', async () => {
+        const filter = 'railcontent_id = 111'
+        const builder =  new FilterBuilder(filter,{
+            availableContentStatuses: ['published', 'unlisted', 'scheduled'],
+            getFutureScheduledContentsOnly: true});
+        const finalFilter = builder.buildFilter();
+        const clauses = spliceFilterForAnds(finalFilter);
+        expect(clauses[0].phrase).toBe(filter);
+        expect(clauses[1].field).toBe('(status'); // extra ( because it's a multi part filter
+        expect(clauses[1].operator).toBe('in');
+        // this needs to match on the
+        const expected = "['published','unlisted'] || (status == 'scheduled' && published_on >=";
+        console.log(clauses[1].condition);
+        console.log(expected)
+        const isMatch = finalFilter.includes(expected);
+        expect(isMatch).toBeTruthy();
+    });
+
+    test('withUserPermissions', async () => {
+        const filter = 'railcontent_id = 111'
+        const builder = new FilterBuilder(filter,
+            { user: {
+                    user: {},
+                    permissions: [91, 92],
+                }});
+        const finalFilter = builder.buildFilter();
+        const expected = "references(*[_type == 'permission' && railcontent_id in [91,92]]._id)"
+        const isMatch = finalFilter.includes(expected);
+        expect(isMatch).toBeTruthy();
+    });
+
+    test('withUserPermissions', async () => {
+        const filter = 'railcontent_id = 111'
+        const builder = new FilterBuilder(filter,
+            {
+                user: getPlusUser()
+            });
+        const finalFilter = builder.buildFilter();
+        const expected = "references(*[_type == 'permission' && railcontent_id in [91,92]]._id)"
+        const isMatch = finalFilter.includes(expected);
+        expect(isMatch).toBeTruthy();
+    });
+
+    test('withPermissionBypass', async () => {
+        const filter = 'railcontent_id = 111'
+        const builder = new FilterBuilder(filter,
+            {
+                user: getPlusUser(),
+                bypassPermissions:true
+            });
+        const finalFilter = builder.buildFilter();
+        const expected = "references(*[_type == 'permission' && railcontent_id in [91,92]]._id)"
+        const isMatch = finalFilter.includes(expected);
+        expect(isMatch).toBeFalsy();
+        const clauses = spliceFilterForAnds(finalFilter);
+        expect(clauses[0].field).toBe('railcontent_id');
+        expect(clauses[1].field).toBe('published_on');
+    });
+
+
+    test('withPublishOnRestrictions', async () => {
+        // testing dates is a pain more frustration than I'm willing to deal with, so I'm just testing operators.
+
+        const filter = 'railcontent_id = 111'
+        let builder =  new FilterBuilder(filter, {
+            user: {},
+            pullFutureContent: true,
+        });
+
+        let finalFilter = builder.buildFilter();
+        let clauses = spliceFilterForAnds(finalFilter);
+        expect(clauses[0].phrase).toBe(filter);
+
+        expect(clauses[1].field).toBe('published_on');
+        expect(clauses[1].operator).toBe('<=');
+        const restrictionDate = new Date(clauses[1].condition)
+        const now = new Date();
+        expect(now.getTime()).toBeLessThan(restrictionDate.getTime());
+
+        builder = new FilterBuilder(filter,
+            {
+                user: {},
+                getFutureContentOnly: true,
+        });
+        finalFilter = builder.buildFilter();
+        clauses = spliceFilterForAnds(finalFilter);
+        expect(clauses[0].phrase).toBe(filter);
+        expect(clauses[1].field).toBe('published_on');
+        expect(clauses[1].operator).toBe('>=');
+    });
+
+    function getPlusUser() {
+        return {
+            permissions: [91,92],
+        }
+    }
+
+    function spliceFilterForAnds(filter) {
+        // this will not correctly split complex filters with && and || conditions.
+        let phrases = filter.split(' && ');
+        let clauses= [];
+        phrases.forEach((phrase) => {
+            let  field = phrase.substring(0, phrase.indexOf(' '));
+            //if(field.charAt(0) === '(' ) field = field.substring(1);
+            const temp = phrase.substring(phrase.indexOf(' ') + 1);
+            const operator = temp.substring(0, temp.indexOf(' '));
+            let condition = temp.substring(temp.indexOf(' ') + 1);
+            //if(condition.charAt(condition.length) === ')') condition = condition.slice(-1);
+            clauses.push({phrase, field, operator, condition});
+        });
+        return clauses;
+    }
+
 });
