@@ -35,6 +35,8 @@ import {
   fetchChallengeOverview,
   fetchCoachLessons,
   fetchByReference,
+  fetchArtistLessons,
+  fetchGenreLessons,
 } from './services/sanity.js';
 
 import { 
@@ -89,4 +91,6 @@ export {
     fetchContentPageUserData,
     fetchCoachLessons,
     fetchByReference,
+    fetchArtistLessons,
+    fetchGenreLessons,
 }
