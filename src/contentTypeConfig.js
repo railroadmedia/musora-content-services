@@ -215,6 +215,28 @@ let contentTypeConfig = {
     'exploring-beats': contentWithSortField,
 }
 
+function getNewReleasesTypes() {
+    const baseNewTypes = ["student-review", "student-reviews", "student-focus", "coach-stream", "live", "question-and-answer", "boot-camps", "quick-tips", "workout", "challenge", "challenge-part", "podcasts", "pack", "song", "learning-path-level", "play-along", "course", "unit"];
+    return {
+        'drumeo': [...baseNewTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "student-collaborations", "live-streams", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums"],
+        'pianote': baseNewTypes,
+        'guitareo': [...baseNewTypes, "archives", "recording", "chords-and-scales"],
+        'singeo': baseNewTypes,
+        'default': baseNewTypes
+    };
+}
+
+function getUpcomingEventsTypes() {
+    const baseLiveTypes = ["student-review", "student-reviews", "student-focus", "coach-stream", "live", "question-and-answer", "boot-camps", "quick-tips", "recording", "pack-bundle-lesson"];
+    return {
+        'drumeo': [...baseLiveTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "student-collaborations", "live-streams", "podcasts", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums"],
+        'pianote': baseLiveTypes,
+        'guitareo': [...baseLiveTypes, "archives"],
+        'singeo': baseLiveTypes,
+        'default': baseLiveTypes
+    };
+}
+
 function artistOrInstructorName(key='artist_name') {
     return `'${key}': coalesce(artist->name, instructor[0]->name)`;
 }
@@ -264,4 +286,6 @@ module.exports = {
     DEFAULT_FIELDS,
     assignmentsField,
     filtersToGroq,
+    getNewReleasesTypes,
+    getUpcomingEventsTypes,
 }
