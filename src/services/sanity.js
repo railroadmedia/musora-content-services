@@ -407,7 +407,7 @@ export async function fetchAll(brand, type, {
     const searchFilter = searchTerm
         ? groupBy !== "" ?
           `&& (^.name match "${searchTerm}*" || title match "${searchTerm}*")`
-          : `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*")`
+          : `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*" || name match "*${searchTerm}*")`
         : "";
 
     // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
