@@ -183,7 +183,6 @@ let contentTypeConfig = {
             'focus_text',
             'forum_thread_id',
             '"id": railcontent_id',
-            '"id": railcontent_id',
             'long_bio',
             'name',
             'short_bio',
