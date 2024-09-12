@@ -823,6 +823,7 @@ export async function fetchLessonContent(railContentId) {
           },
           "instructors":instructor[]->name,
           "instructor": instructor[]->{
+            "id":_id,
             name,
             web_url_path,
             "coach_card_image": coach_card_image.asset->url,
