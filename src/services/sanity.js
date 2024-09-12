@@ -822,7 +822,11 @@ export async function fetchLessonContent(railContentId) {
             "coach_profile_image":thumbnail_url.asset->url
           },
           "instructors":instructor[]->name,
-          instructor[]->,
+          "instructor": instructor[]->{
+            name,
+            web_url_path,
+            "coach_card_image": coach_card_image.asset->url,
+          },
           ${assignmentsField}
           video,
           length_in_seconds
