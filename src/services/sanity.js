@@ -664,6 +664,7 @@ export async function fetchMethod(brand, slug) {
         "type": _type,
         "description": ${descriptionField},
         "url": web_url_path,
+        web_url_path,
         xp,
       }
   } | order(published_on asc)`
