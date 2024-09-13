@@ -248,9 +248,14 @@ export async function fetchSongCount(brand) {
  */
 export async function fetchWorkouts(brand) {
   const fields = getFieldsForContentType('workout');
-  const query = `*[_type == 'workout' && brand == '${brand}'] [0...5] {
-        ${fields.toString()}
-      } | order(published_on desc)[0...5]`
+  const filterParams = {};
+  const query = buildQuery(
+      `_type == 'workout' && brand == '${brand}'`,
+      filterParams,
+      fields,
+      {
+          end: 5,
+      });
   return fetchSanity(query, true);
 }
 
@@ -268,9 +273,7 @@ export async function fetchNewReleases(brand) {
       'default': ["student-review", "student-reviews", "question-and-answer", "course", "play-along", "student-focus", "coach-stream", "learning-path-level", "unit", "quick-tips", "live", "question-and-answer", "student-review", "boot-camps", "song", "chords-and-scales", "pack", "podcasts", "workout", "challenge", "challenge-part"]
     };
     const typesString = arrayToStringRepresentation(newTypes[brand] ?? newTypes['default']);
-
-    const filter = new FilterBuilder().buildFilter();
-
+    const filter = `_type in ${typesString} && brand == '${brand}'`;
     const fields = `"id": railcontent_id,
         title,
         "image": thumbnail.asset->url,
@@ -284,7 +287,7 @@ export async function fetchNewReleases(brand) {
         web_url_path,`;
     const filterParams = {};
     const query = buildQuery(
-        `_type in ${typesString} && brand == '${brand}'`,
+        filter,
         filterParams,
         fields,
         {
@@ -350,6 +353,7 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 }) {
 * Fetch content by a specific Railcontent ID.
 *
 * @param {string} id - The Railcontent ID of the content to fetch.
+ * @param {string} contentType - The document type of content to fetch
 * @returns {Promise<Object|null>} - A promise that resolves to the content object or null if not found.
 *
 * @example
@@ -360,7 +364,7 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 }) {
 export async function fetchByRailContentId(id, contentType) {
 
     const query = buildRawQuery(
-        `railcontent_id == ${id}`,
+        `railcontent_id == ${id} && _type == '${contentType}'`,
         getFieldsForContentType(contentType),
         {
             isSingle: true,
@@ -616,8 +620,8 @@ export async function fetchChildren(railcontentId, contentType) {
                            ${getFieldsForContentType(contentType)}
                         },
       }[0..1]`;
-  let parent = await fetchSanity(query, true);
-  return parent[0]['children'] ?? [];
+  let parent = await fetchSanity(query, false);
+  return parent['children'] ?? [];
 }
 
 /**
@@ -996,7 +1000,7 @@ export async function fetchPackChildren(railcontentId) {
 export async function fetchChallengeOverview(id) {
   // WIP
   const query = `*[railcontent_id == ${id}]{
-    ${getFieldsForContentType("challenge", true)}
+    ${getFieldsForContentType("challenge")}
     "lessons": child[]->{
       "id": railcontent_id,
       title,
@@ -1007,7 +1011,7 @@ export async function fetchChallengeOverview(id) {
       difficulty,
       "type": _type,
     }
-  }`;
+  } [0...1]`;
   return fetchSanity(query, false);
 }
 
@@ -1027,18 +1031,21 @@ export async function fetchCoachLessons(brand, id, {
   page = 1,
   limit = 20,
 } = {}) {
-  const fieldsString = DEFAULT_FIELDS.join(',');
+  const fieldsString = getFieldsForContentType();
   const start = (page - 1) * limit;
   const end = start + limit;
-  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''  
-
-  const query = `{
-      "entity": *[brand == '${brand}' ${searchFilter} && references(*[_type=='instructor' && railcontent_id == ${id}]._id)] | order(${sortOrder}) [${start}...${end}]
-        {
-          ${fieldsString}
-        },
-      "total": count(*[brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${id}]._id)])
-    }`;
+  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''
+  const filter = `brand == '${brand}' ${searchFilter} && references(*[_type=='instructor' && railcontent_id == ${id}]._id)`;
+  sortOrder = getSortOrder(sortOrder);
+  const query = buildEntityAndTotalQuery(
+    filter,
+    fieldsString,
+      {
+          sortOrder: sortOrder,
+          start: start,
+          end: end,
+      },
+  );
   return fetchSanity(query, true);
 }
 
@@ -1053,10 +1060,7 @@ export async function fetchCoachLessons(brand, id, {
  *   .catch(error => console.error(error));
  */
 export async function fetchCourseOverview(id) {
-  const query = `*[railcontent_id == ${id}]{
-        ${getFieldsForContentType("course", true)}
-      }`
-  return fetchSanity(query, false);
+  return fetchByRailContentId(id, 'course');
 }
 
 /**
@@ -1077,21 +1081,23 @@ export async function fetchByReference(brand, {
   limit = 20,
   includedFields = [],
 } = {}) {
-  const fieldsString = DEFAULT_FIELDS.join(',');
+  const fieldsString = getFieldsForContentType();
   const start = (page - 1) * limit;
   const end = start + limit;
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: '';
   const includedFieldsFilter = includedFields.length > 0
         ? includedFields.join(' && ')
         : "";
-
-  const query = `{
-      "entity": *[brand == '${brand}' ${searchFilter} && references(*[${includedFieldsFilter}]._id)] | order(${sortOrder}) [${start}...${end}]
-        {
-          ${fieldsString}
-        },
-      "total": count(*[brand == '${brand}' && references(*[${includedFieldsFilter}]._id)])
-    }`;
+  const filter = `brand == '${brand}' ${searchFilter} && references(*[${includedFieldsFilter}]._id)`;
+  const query = buildEntityAndTotalQuery(
+      filter,
+      fieldsString,
+      {
+          sortOrder: getSortOrder(sortOrder),
+          start: start,
+          end: end,
+      },
+  );
   return fetchSanity(query, true);
 }
 
@@ -1238,6 +1244,29 @@ function     buildQuery(
     const filter = new FilterBuilder(baseFilter, filterParams).buildFilter();
     return buildRawQuery(filter, fields, {sortOrder, start, end, isSingle});
 }
+
+function     buildEntityAndTotalQuery(
+    filter = '',
+    fields = '...',
+    {
+        sortOrder = 'published_on desc',
+        start = 0,
+        end = 10,
+        isSingle = false,
+    },
+) {
+    const sortString = sortOrder ? `order(${sortOrder})` : '';
+    const countString = isSingle ? '[0...1]' : `[${start}...${end}]`;
+    const query = `{
+      "entity": *[${filter}] | ${sortString}${countString} 
+      {
+        ${fields}
+      },
+      "total": count(*[${filter}])
+    }`;
+    return query;
+}
+
 
 
 

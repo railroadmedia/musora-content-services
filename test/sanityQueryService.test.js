@@ -4,25 +4,32 @@ const {
     fetchSongById,
     fetchArtists,
     fetchSongArtistCount,
+    fetchRelatedSongs,
     fetchAllSongs,
+    fetchSongFilterOptions,
+    fetchSongCount,
+    fetchWorkouts,
+    fetchNewReleases,
+    fetchUpcomingEvents,
     fetchByRailContentId,
     fetchByRailContentIds,
     fetchAll,
     fetchAllFilterOptions,
+    fetchFoundation,
+    fetchMethods,
+    fetchMethod,
     fetchRelatedLessons,
+    fetchAllPacks,
     fetchPackAll,
     fetchLessonContent,
-    getSortOrder,
-    fetchParentByRailContentId,
+    fetchCourseOverview,
     fetchChildren,
-    fetchMethod,
-    fetchMethods,
-    fetchFoundation,
-    fetchAllPacks,
+    fetchParentByRailContentId,
+    fetchLiveEvent,
+    fetchChallengeOverview,
     fetchCoachLessons,
     fetchByReference,
-    fetchUpcomingEvents,
-    fetchNewReleases,
+
 } = require('../src/services/sanity.js');
 
 const {
@@ -70,6 +77,13 @@ describe('Sanity Queries', function () {
         expect(response.id).toBe(id);
     });
 
+    test('fetchChallengeOverview', async () => {
+        const id = 402197;
+        const response = await fetchChallengeOverview(id);
+        expect(response.lessons).toBeDefined();
+        expect(response.id).toBe(id);
+    });
+
     test('fetchByRailContentIds', async () => {
         const id = 380094;
         const id2 = 402204;
@@ -98,12 +112,32 @@ describe('Sanity Queries', function () {
         expect(response.id).toBe(id);
     });
 
+
+    test('fetchCourseOverview', async () => {
+        const id = 310414;
+        const response = await fetchCourseOverview(id);
+        expect(response.id).toBe(id);
+        expect(response.type).toBe('course');
+    });
+
+    test('fetchSongCount', async () => {
+        const response = await fetchSongCount('drumeo');
+        expect(response).toBeGreaterThan(1000);
+    });
+
     test('fetchAllSongs', async () => {
         const response = await fetchAllSongs('drumeo', {});
         console.log(response);
         expect(response.entity[0].soundslice).toBeDefined();
         expect(response.entity[0].artist_name).toBeDefined();
         expect(response.entity[0].instrumentless).toBeDefined();
+    });
+
+    test('fetchSongFilterOptions', async () => {
+        const response = await fetchSongFilterOptions('drumeo', {});
+        //console.log(response);
+        expect(response.genre).toBeDefined();
+        expect(response.difficulty).toBeDefined();
     });
 
     test('fetchAllSongsGroupByArtist', async () => {
@@ -114,10 +148,17 @@ describe('Sanity Queries', function () {
     }, 100000);
 
 
-    test('fetchAllWorkouts', async () => {
-        const response = await fetchAll('drumeo', 'workout',{});
-        console.log(response);
-        expect(response.entity[0].id).toBeDefined();
+    test('fetchWorkouts', async () => {
+        const response = await fetchWorkouts('drumeo');
+        //console.log(response);
+        expect(response[0].id).toBeDefined();
+        expect(response[0].type).toBe('workout');
+    });
+
+    test('fetchNewReleases', async () => {
+        const response = await fetchNewReleases('drumeo');
+        //console.log(response);
+        expect(response[0].id).toBeDefined();
     });
 
     test('fetchAllInstructorField', async () => {
@@ -279,7 +320,7 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchCoachLessons', async () => {
-        const response = await fetchCoachLessons('drumeo',233797);
+        const response = await fetchCoachLessons('drumeo',411493, {});
         expect(response.entity.length).toBeGreaterThan(0);
     });
 
