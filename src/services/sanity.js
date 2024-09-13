@@ -256,8 +256,8 @@ export async function fetchWorkouts(brand) {
 * @returns {Promise<Object|null>} - The fetched new releases data or null if not found.
 */
 export async function fetchNewReleases(brand, { page = 1, limit = 10, sort="-published_on" } = {}) {
-  const newTypes = getNewReleasesTypes();
-  const typesString = arrayJoinWithQuotes(newTypes[brand] ?? newTypes['default']);
+  const newTypes = getNewReleasesTypes(brand);
+  const typesString = arrayJoinWithQuotes(newTypes);
   const start = (page - 1) * limit;
   const end = start + limit;
   const sortOrder = getSortOrder(sort);
