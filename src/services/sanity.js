@@ -293,8 +293,8 @@ export async function fetchNewReleases(brand, { page = 1, limit = 10, sort="-pub
 *   .catch(error => console.error(error));
 */
 export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) {
-  const liveTypes = getUpcomingEventsTypes();
-  const typesString = arrayJoinWithQuotes(liveTypes[brand] ?? liveTypes['default']);
+  const liveTypes = getUpcomingEventsTypes(brand);
+  const typesString = arrayJoinWithQuotes(liveTypes);
   const now = getSanityDate(new Date());
   const start = (page - 1) * limit;
   const end = start + limit;
