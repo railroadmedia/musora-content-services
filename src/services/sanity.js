@@ -1258,6 +1258,13 @@ function getSanityDate(date) {
   return date.toISOString();
 }
 
+const merge = (a, b, predicate = (a, b) => a === b) => {
+  const c = [...a]; // copy to avoid side effects
+  // add all items from B to copy C if they're not already present
+  b.forEach((bItem) => (c.some((cItem) => predicate(bItem, cItem)) ? null : c.push(bItem)))
+  return c;
+}
+
 function checkSanityConfig(config) {
   if (!config.sanityConfig.token) {
       console.warn('fetchSanity: The "token" property is missing in the config object.');
