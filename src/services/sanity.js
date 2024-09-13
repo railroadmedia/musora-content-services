@@ -490,10 +490,8 @@ export function getSortOrder(sort= '-published_on', groupBy)
             sortOrder = groupBy ? 'name' : "title";
             break;
         case "name":
-            sortOrder = "name";
-            break;
         case "popularity":
-            sortOrder = "popularity";
+            sortOrder = sort;
             break;
         case "published_on":
         default:
