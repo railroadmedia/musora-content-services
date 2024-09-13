@@ -692,6 +692,7 @@ export async function fetchMethod(brand, slug) {
         "type": _type,
         "description": ${descriptionField},
         "url": web_url_path,
+        web_url_path,
         xp,
       }
   } | order(published_on asc)`
@@ -849,7 +850,12 @@ export async function fetchLessonContent(railContentId) {
             "coach_profile_image":thumbnail_url.asset->url
           },
           "instructors":instructor[]->name,
-          instructor[]->,
+          "instructor": instructor[]->{
+            "id":_id,
+            name,
+            web_url_path,
+            "coach_card_image": coach_card_image.asset->url,
+          },
           ${assignmentsField}
           video,
           length_in_seconds
