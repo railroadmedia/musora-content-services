@@ -415,7 +415,7 @@ export async function fetchAll(brand, type, {
     const searchFilter = searchTerm
         ? groupBy !== "" ?
           `&& (^.name match "${searchTerm}*" || title match "${searchTerm}*")`
-          : `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*")`
+          : `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*" || name match "${searchTerm}*")`
         : "";
 
     // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
@@ -499,8 +499,9 @@ export function getSortOrder(sort= '-published_on', groupBy)
         case "slug":
             sortOrder = groupBy ? 'name' : "title";
             break;
+        case "name":
         case "popularity":
-            sortOrder = "popularity";
+            sortOrder = sort;
             break;
         case "published_on":
         default:
