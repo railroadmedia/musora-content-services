@@ -329,13 +329,10 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
  *   .catch(error => console.error(error));
  */
 export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
-  const upcomingTypes = getUpcomingEventsTypes();
-  const newTypes = getNewReleasesTypes();
+  const upcomingTypes = getUpcomingEventsTypes(brand);
+  const newTypes = getNewReleasesTypes(brand);
 
-  const scheduledTypes = Object.keys(upcomingTypes).reduce((acc, key) => {
-    acc[key] = [...new Set([...upcomingTypes[key], ...newTypes[key]])];
-    return acc;
-  }, {});
+  const scheduledTypes = merge(upcomingTypes, newTypes)
   const typesString = arrayJoinWithQuotes(scheduledTypes[brand] ?? scheduledTypes['default']);
   const now = getSanityDate(new Date());
   const start = (page - 1) * limit;
