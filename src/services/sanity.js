@@ -11,7 +11,7 @@ import {
     getFieldsForContentType,
     filtersToGroq,
     getUpcomingEventsTypes,
-    getNewReleasesTypes
+    getNewReleasesTypes,
 } from "../contentTypeConfig";
 import {globalConfig} from "./config";
 
@@ -256,8 +256,8 @@ export async function fetchWorkouts(brand) {
 * @returns {Promise<Object|null>} - The fetched new releases data or null if not found.
 */
 export async function fetchNewReleases(brand, { page = 1, limit = 10, sort="-published_on" } = {}) {
-  const newTypes = getNewReleasesTypes();
-  const typesString = arrayJoinWithQuotes(newTypes[brand] ?? newTypes['default']);
+  const newTypes = getNewReleasesTypes(brand);
+  const typesString = arrayJoinWithQuotes(newTypes);
   const start = (page - 1) * limit;
   const end = start + limit;
   const sortOrder = getSortOrder(sort);
@@ -293,8 +293,8 @@ export async function fetchNewReleases(brand, { page = 1, limit = 10, sort="-pub
 *   .catch(error => console.error(error));
 */
 export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) {
-  const liveTypes = getUpcomingEventsTypes();
-  const typesString = arrayJoinWithQuotes(liveTypes[brand] ?? liveTypes['default']);
+  const liveTypes = getUpcomingEventsTypes(brand);
+  const typesString = arrayJoinWithQuotes(liveTypes);
   const now = getSanityDate(new Date());
   const start = (page - 1) * limit;
   const end = start + limit;
@@ -329,14 +329,11 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
  *   .catch(error => console.error(error));
  */
 export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
-  const upcomingTypes = getUpcomingEventsTypes();
-  const newTypes = getNewReleasesTypes();
+  const upcomingTypes = getUpcomingEventsTypes(brand);
+  const newTypes = getNewReleasesTypes(brand);
 
-  const scheduledTypes = Object.keys(upcomingTypes).reduce((acc, key) => {
-    acc[key] = [...new Set([...upcomingTypes[key], ...newTypes[key]])];
-    return acc;
-  }, {});
-  const typesString = arrayJoinWithQuotes(scheduledTypes[brand] ?? scheduledTypes['default']);
+  const scheduledTypes = merge(upcomingTypes, newTypes)
+  const typesString = arrayJoinWithQuotes(scheduledTypes);
   const now = getSanityDate(new Date());
   const start = (page - 1) * limit;
   const end = start + limit;
@@ -695,6 +692,7 @@ export async function fetchMethod(brand, slug) {
         "type": _type,
         "description": ${descriptionField},
         "url": web_url_path,
+        web_url_path,
         xp,
       }
   } | order(published_on asc)`
@@ -852,7 +850,12 @@ export async function fetchLessonContent(railContentId) {
             "coach_profile_image":thumbnail_url.asset->url
           },
           "instructors":instructor[]->name,
-          instructor[]->,
+          "instructor": instructor[]->{
+            "id":_id,
+            name,
+            web_url_path,
+            "coach_card_image": coach_card_image.asset->url,
+          },
           ${assignmentsField}
           video,
           length_in_seconds
@@ -1253,6 +1256,13 @@ function arrayJoinWithQuotes(array, delimiter = ',') {
 
 function getSanityDate(date) {
   return date.toISOString();
+}
+
+const merge = (a, b, predicate = (a, b) => a === b) => {
+  const c = [...a]; // copy to avoid side effects
+  // add all items from B to copy C if they're not already present
+  b.forEach((bItem) => (c.some((cItem) => predicate(bItem, cItem)) ? null : c.push(bItem)))
+  return c;
 }
 
 function checkSanityConfig(config) {
