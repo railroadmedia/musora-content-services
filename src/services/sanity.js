@@ -333,7 +333,7 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
   const newTypes = getNewReleasesTypes(brand);
 
   const scheduledTypes = merge(upcomingTypes, newTypes)
-  const typesString = arrayJoinWithQuotes(scheduledTypes[brand] ?? scheduledTypes['default']);
+  const typesString = arrayJoinWithQuotes(scheduledTypes);
   const now = getSanityDate(new Date());
   const start = (page - 1) * limit;
   const end = start + limit;
