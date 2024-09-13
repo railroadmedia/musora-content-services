@@ -32,6 +32,7 @@ const {
     fetchPacksAll,
     fetchCoachLessons,
     fetchByReference,
+    fetchScheduledReleases
 } = require('../src/services/sanity.js');
 
 describe('Sanity Queries', function () {
@@ -285,5 +286,10 @@ describe('Sanity Queries', function () {
     test('fetchByReference', async () => {
         const response = await fetchByReference('drumeo', { includedFields: ['is_featured'] });
         expect(response.entity.length).toBeGreaterThan(0);
+    });
+
+    test('fetchScheduledReleases', async () => {
+        const response = await fetchScheduledReleases('drumeo', {});
+        expect(response.length).toBeGreaterThan(0);
     });
 });

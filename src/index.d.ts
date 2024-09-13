@@ -28,6 +28,7 @@ import {
     fetchLessonContent,
     fetchCourseOverview,
     fetchChallengeOverview,
+    fetchScheduledReleases,
     fetchArtistLessons,
     fetchGenreLessons,
   } from './services/sanity.js';
@@ -80,6 +81,7 @@ declare module 'musora-content-services' {
         fetchAllCompletedStates,
         fetchContentInProgress,
         fetchContentPageUserData,
+        fetchScheduledReleases,
         fetchArtistLessons,
         fetchGenreLessons,
     }

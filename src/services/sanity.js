@@ -9,7 +9,9 @@ import {
     contentTypeConfig,
     DEFAULT_FIELDS,
     getFieldsForContentType,
-    filtersToGroq
+    filtersToGroq,
+    getUpcomingEventsTypes,
+    getNewReleasesTypes,
 } from "../contentTypeConfig";
 import {globalConfig} from "./config";
 
@@ -254,14 +256,8 @@ export async function fetchWorkouts(brand) {
 * @returns {Promise<Object|null>} - The fetched new releases data or null if not found.
 */
 export async function fetchNewReleases(brand, { page = 1, limit = 10, sort="-published_on" } = {}) {
-  const newTypes = {
-      'drumeo': ["drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "quick-tips", "question-and-answer", "student-collaborations", "live-streams", "live", "podcasts", "solos", "boot-camps", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums", "course", "play-along", "student-focus", "coach-stream", "learning-path-level", "unit", "quick-tips", "live", "question-and-answer", "student-review", "boot-camps", "song", "chords-and-scales", "pack", "podcasts", "workout", "challenge", "challenge-part"],
-      'pianote': ["student-review", "student-reviews", "question-and-answer", "course", "play-along", "student-focus", "coach-stream", "learning-path-level", "unit", "quick-tips", "live", "question-and-answer", "student-review", "boot-camps", "song", "chords-and-scales", "pack", "podcasts", "workout", "challenge", "challenge-part"],
-      'guitareo': ["student-review", "student-reviews", "question-and-answer", "archives", "recording", "course", "play-along", "student-focus", "coach-stream", "learning-path-level", "unit", "quick-tips", "live", "question-and-answer", "student-review", "boot-camps", "song", "chords-and-scales", "pack", "podcasts", "workout", "challenge", "challenge-part"],
-      'singeo': ["student-review", "student-reviews", "question-and-answer", "course", "play-along", "student-focus", "coach-stream", "learning-path-level", "unit", "quick-tips", "live", "question-and-answer", "student-review", "boot-camps", "song", "chords-and-scales", "pack", "podcasts", "workout", "challenge", "challenge-part"],
-      'default': ["student-review", "student-reviews", "question-and-answer", "course", "play-along", "student-focus", "coach-stream", "learning-path-level", "unit", "quick-tips", "live", "question-and-answer", "student-review", "boot-camps", "song", "chords-and-scales", "pack", "podcasts", "workout", "challenge", "challenge-part"]
-  };
-  const typesString = arrayJoinWithQuotes(newTypes[brand] ?? newTypes['default']);
+  const newTypes = getNewReleasesTypes(brand);
+  const typesString = arrayJoinWithQuotes(newTypes);
   const start = (page - 1) * limit;
   const end = start + limit;
   const sortOrder = getSortOrder(sort);
@@ -297,15 +293,8 @@ export async function fetchNewReleases(brand, { page = 1, limit = 10, sort="-pub
 *   .catch(error => console.error(error));
 */
 export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) {
-  const baseLiveTypes = ["student-review", "student-reviews", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"];
-  const liveTypes = {
-      'drumeo': [...baseLiveTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "quick-tips", "student-collaborations", "live-streams", "podcasts", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums"],
-      'pianote': baseLiveTypes,
-      'guitareo': [...baseLiveTypes, "archives"],
-      'singeo': baseLiveTypes,
-      'default': baseLiveTypes
-  };
-  const typesString = arrayJoinWithQuotes(liveTypes[brand] ?? liveTypes['default']);
+  const liveTypes = getUpcomingEventsTypes(brand);
+  const typesString = arrayJoinWithQuotes(liveTypes);
   const now = getSanityDate(new Date());
   const start = (page - 1) * limit;
   const end = start + limit;
@@ -322,6 +311,45 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         "type": _type,
         web_url_path,
     } | order(published_on asc)[${start}...${end}]`;
+  return fetchSanity(query, true);
+}
+
+/**
+ * Fetch scheduled releases for a specific brand.
+ *
+ * @param {string} brand - The brand for which to fetch scheduled releasess.
+ * @returns {Promise<Object|null>} - A promise that resolves to an array of scheduled release objects or null if not found.
+ *
+ * @example
+ * fetchScheduledReleases('drumeo', {
+ *   page: 2,
+ *   limit: 20,
+ * })
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
+  const upcomingTypes = getUpcomingEventsTypes(brand);
+  const newTypes = getNewReleasesTypes(brand);
+
+  const scheduledTypes = merge(upcomingTypes, newTypes)
+  const typesString = arrayJoinWithQuotes(scheduledTypes);
+  const now = getSanityDate(new Date());
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const query = `*[_type in [${typesString}] && brand == '${brand}' && status in ['published','scheduled'] && published_on > '${now}']{
+      "id": railcontent_id,
+      title,
+      "image": thumbnail.asset->url,
+      "artist_name": instructor[0]->name,
+      "artists": instructor[]->name,
+      difficulty,
+      difficulty_string,
+      length_in_seconds,
+      published_on,
+      "type": _type,
+      web_url_path,
+  } | order(published_on asc)[${start}...${end}]`;
   return fetchSanity(query, true);
 }
 
@@ -1229,6 +1257,13 @@ function arrayJoinWithQuotes(array, delimiter = ',') {
 
 function getSanityDate(date) {
   return date.toISOString();
+}
+
+const merge = (a, b, predicate = (a, b) => a === b) => {
+  const c = [...a]; // copy to avoid side effects
+  // add all items from B to copy C if they're not already present
+  b.forEach((bItem) => (c.some((cItem) => predicate(bItem, cItem)) ? null : c.push(bItem)))
+  return c;
 }
 
 function checkSanityConfig(config) {

@@ -225,6 +225,34 @@ let contentTypeConfig = {
     'exploring-beats': contentWithSortField,
 }
 
+function getNewReleasesTypes(brand) {
+    const baseNewTypes = ["student-review", "student-reviews", "student-focus", "coach-stream", "live", "question-and-answer", "boot-camps", "quick-tips", "workout", "challenge", "challenge-part", "podcasts", "pack", "song", "learning-path-level", "play-along", "course", "unit"];
+    switch(brand) {        
+        case 'drumeo':
+            return [...baseNewTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "student-collaborations", "live-streams", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums"];
+        case 'guitareo': 
+            return [...baseNewTypes, "archives", "recording", "chords-and-scales"];
+        case 'pianote':    
+        case 'singeo':
+        default:
+            return baseNewTypes
+        }
+}
+
+function getUpcomingEventsTypes(brand) {
+    const baseLiveTypes = ["student-review", "student-reviews", "student-focus", "coach-stream", "live", "question-and-answer", "boot-camps", "quick-tips", "recording", "pack-bundle-lesson"];
+    switch(brand) {
+        case 'drumeo': 
+            return [...baseLiveTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "student-collaborations", "live-streams", "podcasts", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums"];
+        case 'guitareo':
+            return [...baseLiveTypes, "archives"];
+        case 'pianote':
+        case 'singeo':
+        default:
+            return baseLiveTypes;
+  }
+}
+
 function artistOrInstructorName(key='artist_name') {
     return `'${key}': coalesce(artist->name, instructor[0]->name)`;
 }
@@ -274,4 +302,6 @@ module.exports = {
     DEFAULT_FIELDS,
     assignmentsField,
     filtersToGroq,
+    getNewReleasesTypes,
+    getUpcomingEventsTypes,
 }
