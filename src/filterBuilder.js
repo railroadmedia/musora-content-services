@@ -118,8 +118,8 @@ export class FilterBuilder {
 
     _trimAmpersands() {
         this.filter = this.filter.trim();
-        while( this.filter.charAt(0) === '&' ) this.filter = this.filter.substring(1);
-        while( this.filter.charAt(this.filter.length) === '&' ) this.filter = this.filter.slice(-1);
+        while( this.filter.charAt(0) === '&'  || this.filter.charAt(0) === ' ' ) this.filter = this.filter.substring(1);
+        while( this.filter.charAt(this.filter.length) === '&' || this.filter.charAt(this.filter.length) === ' ' ) this.filter = this.filter.slice(-1);
         return this;
     }
 
