@@ -11,7 +11,7 @@ import {
     getFieldsForContentType,
     filtersToGroq,
     getUpcomingEventsTypes,
-    getNewReleasesTypes
+    getNewReleasesTypes,
 } from "../contentTypeConfig";
 import {globalConfig} from "./config";
 
