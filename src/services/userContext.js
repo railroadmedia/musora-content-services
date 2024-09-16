@@ -1,4 +1,4 @@
-import {fetchUserContext} from "./railcontent";
+import {fetchUserContext, fetchLikeContent, fetchUnlikeContent} from "./railcontent";
 
 const StorageKey = "userContext";
 let userContext = null;
@@ -8,13 +8,15 @@ export function init(localCache) {
     cache = localCache;
 }
 
-async function getUserContext(contextHash) {
-    if (!contextHash) throw new Error('contextHash not provided.');
-    if (!userContext) {
-        tryLoadFromCache();
-    }
+export function version() {
+    ensureLocalContextLoaded();
+    return userContext.version;
+}
+
+async function getUserContext() {
+    ensureLocalContextLoaded();
     if (userContext) {
-        clearContextIfHashInvalid(contextHash);
+        verifyContextIsValid();
     }
     if (!userContext) {
         await fetchFromServer();
@@ -22,16 +24,27 @@ async function getUserContext(contextHash) {
     return userContext;
 }
 
-function clearContextIfHashInvalid(contextHash) {
-    if (userContext.hash !== contextHash) {
-        clearCache();
-    }
+function verifyContextIsValid() {
+
 }
 
-function tryLoadFromCache() {
+function ensureLocalContextLoaded() {
+    if (userContext) return;
     let localData = cache.getItem(StorageKey);
     if (localData) {
         userContext = JSON.parse(localData);
+    }
+}
+
+function updateLocalContext(contentId, updateFunction) {
+    ensureLocalContextLoaded();
+    if (userContext) {
+        let contentData = userContext.data[contentId] ?? [];
+        updateFunction(contentData);
+        userContext.data[contentId] = contentData;
+        userContext.version++;
+        let data = JSON.stringify(userContext);
+        cache.setItem(StorageKey, data);
     }
 }
 
@@ -42,9 +55,18 @@ async function fetchFromServer() {
 }
 
 
-export async function fetchContentData(contextHash, contentId) {
-    let userContext = await getUserContext(contextHash);
-    return userContext.data[contentId];
+function transformData(data, contentId) {
+    let transformed = [];
+    transformed["contentId"] = contentId;
+    transformed["liked"] = (data && data.l) ?? 0;
+    return transformed;
+}
+
+export async function fetchContentData(contentId) {
+    let userContext = await getUserContext();
+    let data = userContext.data[contentId];
+    data = transformData(data, contentId);
+    return data;
 }
 
 export function clearCache() {
@@ -54,4 +76,30 @@ export function clearCache() {
 
 export function testClearLocal() {
     userContext = null;
+}
+
+export async function likeContent(contentId) {
+    updateLocalContext(contentId,
+        function (contentData) {
+            contentData.l = 1;
+        }
+    );
+
+    let result = await fetchLikeContent(contentId);
+    if (result.version !== userContext.version) {
+        clearCache();
+    }
+}
+
+export async function unlikeContent(contentId) {
+    updateLocalContext(contentId,
+        function (contentData) {
+            contentData.l = 0;
+        }
+    );
+
+    let result = await fetchUnlikeContent(contentId);
+    if (result.version !== userContext.version) {
+        clearCache();
+    }
 }

@@ -2,7 +2,7 @@
  * @module Railcontent-Services
  */
 
-const { globalConfig } = require('./config');
+const {globalConfig} = require('./config');
 
 
 /**
@@ -24,10 +24,11 @@ export async function fetchCompletedState(content_id) {
     };
 
     try {
-        const response = await fetchAbsolute(url, { headers });
+        const response = await fetchAbsolute(url, {headers});
         const result = await response.json();
 
-        if (result && result[content_id]) {            return result[content_id];  // Return the correct object
+        if (result && result[content_id]) {
+            return result[content_id];  // Return the correct object
         } else {
             return null;  // Handle unexpected structure
         }
@@ -56,7 +57,7 @@ export async function fetchVimeoData(vimeo_id) {
     };
 
     try {
-        const response = await fetchAbsolute(url, { headers });
+        const response = await fetchAbsolute(url, {headers});
         const result = await response.json();
 
         if (result) {
@@ -91,9 +92,9 @@ export async function fetchAllCompletedStates(contentIds) {
     };
 
     try {
-        const response = await fetchAbsolute(url, { headers });
+        const response = await fetchAbsolute(url, {headers});
         const result = await response.json();
-        if(result){
+        if (result) {
             return result;
         } else {
             console.log('result not json');
@@ -123,9 +124,9 @@ export async function fetchSongsInProgress(brand) {
     };
 
     try {
-        const response = await fetchAbsolute(url, { headers });
+        const response = await fetchAbsolute(url, {headers});
         const result = await response.json();
-        if(result){
+        if (result) {
             //console.log('fetchSongsInProgress', result);
             return result;
         } else {
@@ -150,12 +151,12 @@ export async function fetchSongsInProgress(brand) {
  *   .then(songs => console.log(songs))
  *   .catch(error => console.error(error));
  */
-export async function fetchContentInProgress(type="all", brand, {
+export async function fetchContentInProgress(type = "all", brand, {
     page = 1,
     limit = 10,
-  } = {}) {
+} = {}) {
     let url;
-    if(type === "all") {
+    if (type === "all") {
         url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?brand=${brand}&limit=${limit}&page=${page}`;
     } else {
         url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}&limit=${limit}&page=${page}`;
@@ -165,9 +166,9 @@ export async function fetchContentInProgress(type="all", brand, {
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
     try {
-        const response = await fetchAbsolute(url, { headers });
+        const response = await fetchAbsolute(url, {headers});
         const result = await response.json();
-        if(result){
+        if (result) {
             //console.log('contentInProgress', result);
             return result;
         } else {
@@ -192,12 +193,12 @@ export async function fetchContentInProgress(type="all", brand, {
  *   .then(songs => console.log(songs))
  *   .catch(error => console.error(error));
  */
-export async function fetchCompletedContent(type="all", brand, {
+export async function fetchCompletedContent(type = "all", brand, {
     page = 1,
     limit = 10,
-  } = {}) {
+} = {}) {
     let url;
-    if(type === "all") {
+    if (type === "all") {
         url = `/content/completed/${globalConfig.railcontentConfig.userId}?brand=${brand}&limit=${limit}&page=${page}`;
     } else {
         url = `/content/completed/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}&limit=${limit}&page=${page}`;
@@ -207,9 +208,9 @@ export async function fetchCompletedContent(type="all", brand, {
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
     try {
-        const response = await fetchAbsolute(url, { headers });
+        const response = await fetchAbsolute(url, {headers});
         const result = await response.json();
-        if(result){
+        if (result) {
             //console.log('completed content', result);
             return result;
         } else {
@@ -240,9 +241,9 @@ export async function fetchContentPageUserData(contentId) {
     };
 
     try {
-        const response = await fetchAbsolute(url, { headers });
+        const response = await fetchAbsolute(url, {headers});
         const result = await response.json();
-        if(result){
+        if (result) {
             console.log('fetchContentPageUserData', result);
             return result;
         } else {
@@ -254,17 +255,17 @@ export async function fetchContentPageUserData(contentId) {
     }
 }
 
-function fetchAbsolute(url, params) { 
-    if(globalConfig.railcontentConfig.baseUrl) {
+function fetchAbsolute(url, params) {
+    if (globalConfig.railcontentConfig.baseUrl) {
         if (url.startsWith('/')) {
             return fetch(globalConfig.railcontentConfig.baseUrl + url, params)
         }
-    } 
+    }
     return fetch(url, params);
 }
 
 export async function fetchUserContext() {
-    let url = `/content/user_data`;
+    let url = `/content/user_data_all`;
     const headers = {
         'Content-Type': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
@@ -282,4 +283,33 @@ export async function fetchUserContext() {
         console.error('Fetch error:', error);
         return null;
     }
+}
+
+export async function fetchHandler(url, method = "get") {
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
+    };
+    try {
+        const response = await fetch(url, {method, headers});
+        const result = await response.json();
+        if (result) {
+            return result;
+        } else {
+            console.log('result not json');
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
+
+export async function fetchLikeContent(contentId) {
+    let url = `/content/${contentId}/like`;
+    return await fetchHandler(url, "post");
+}
+
+export async function fetchUnlikeContent(contentId) {
+    let url = `/content/${contentId}/unlike`;
+    return await fetchHandler(url, "post");
 }
