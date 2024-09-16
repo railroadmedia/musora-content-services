@@ -854,6 +854,7 @@ export async function fetchLessonContent(railContentId) {
           "instructor": instructor[]->{
             "id":_id,
             name,
+            short_bio,
             web_url_path,
             "coach_card_image": coach_card_image.asset->url,
           },
