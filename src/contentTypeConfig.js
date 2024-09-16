@@ -78,13 +78,15 @@ let contentTypeConfig = {
             '"instructors": instructor[]->name',
             `"description": ${descriptionField}`,
             'resource',
+            'xp',
+            'total_xp',
             `"lessons": child[]->{
                 "id": railcontent_id,
                 title,
                 "image": thumbnail.asset->url,
                 "instructors": instructor[]->name,
                 length_in_seconds,
-            }`, 
+            }`,
         ]
     },
     'method': {
