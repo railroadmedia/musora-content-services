@@ -264,7 +264,7 @@ function fetchAbsolute(url, params) {
 }
 
 export async function fetchUserContext() {
-    let url = `/content/user_data`;
+    let url = `/content/user_data_all`;
     const headers = {
         'Content-Type': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
@@ -282,4 +282,33 @@ export async function fetchUserContext() {
         console.error('Fetch error:', error);
         return null;
     }
+}
+
+export async function fetchHandler(url, method = "get") {
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
+    };
+    try {
+        const response = await fetch(url, {method, headers});
+        const result = await response.json();
+        if (result) {
+            return result;
+        } else {
+            console.log('result not json');
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
+
+export async function fetchLikeContent(contentId) {
+    let url = `/content/${contentId}/like`;
+    return await fetchHandler(url, "post");
+}
+
+export async function fetchUnlikeContent(contentId) {
+    let url = `/content/${contentId}/unlike`;
+    return await fetchHandler(url, "post");
 }
