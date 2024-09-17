@@ -860,17 +860,7 @@ export async function fetchLessonContent(railContentId) {
           },
           ${assignmentsField}
           video,
-          length_in_seconds,
-          "related_lessons": *[references(^._id)][0].child[]->{
-            "id": railcontent_id,
-            "type": _type,
-            title,
-            "description": description[0].children[0].text, // Extraer texto plano
-            "thumbnail_url": thumbnail.asset->url,
-            "url": web_url_path,
-            difficulty,
-            difficulty_string,
-          }
+          length_in_seconds
         }`
   return fetchSanity(query, false);
 }
@@ -894,6 +884,24 @@ export async function fetchRelatedLessons(railContentId, brand) {
                 ...(*[_type=="song" && brand == "${brand}" && references(^.artist->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11]),
                 ...(*[_type=="song" && brand == "${brand}" && references(^.genre[]->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11])
                 ])|order(published_on, railcontent_id)[0...11]}`;
+  return fetchSanity(query, false);
+}
+
+export async function fetchRelatedMethodLesson(railContentId, brand) {
+  const query = `*[railcontent_id == ${railContentId} ]{
+      "id":_id,
+      "related_lessons": *[references(^._id)][0].child[]->{
+        "id": railcontent_id,
+        "type": _type,
+        title,
+        "description": description[0].children[0].text, // Extraer texto plano
+        "thumbnail_url": thumbnail.asset->url,
+        "url": web_url_path,
+        difficulty,
+        difficulty_string,
+      }
+    }
+  }`
   return fetchSanity(query, false);
 }
 
