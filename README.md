@@ -68,13 +68,13 @@ chmod +x <command>
 
 ## Publish Documentation
 
-This repo uses JSDoc to generate API documention. To update the docs, run:
+This repo uses JSDoc to generate API documentation. To update the docs, run:
 
 ```bash
 npm run doc
 ```
 
-## Github Page Documentation
+## GitHub Page Documentation
 
 https://railroadmedia.github.io/musora-content-services/
 
