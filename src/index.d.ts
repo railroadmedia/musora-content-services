@@ -33,13 +33,14 @@ import {
     fetchGenreLessons,
   } from './services/sanity.js';
 
-import {
+import { 
     fetchCompletedState, 
     fetchAllCompletedStates,
     fetchContentInProgress,
+    fetchCompletedContent,
     fetchVimeoData,
     fetchContentPageUserData,
-} from "./services/railcontent";
+} from './services/railcontent.js';
 
 import { initializeService } from './services/config.js';
 
@@ -80,6 +81,7 @@ declare module 'musora-content-services' {
         fetchCompletedState, 
         fetchAllCompletedStates,
         fetchContentInProgress,
+        fetchCompletedContent,
         fetchContentPageUserData,
         fetchScheduledReleases,
         fetchArtistLessons,
