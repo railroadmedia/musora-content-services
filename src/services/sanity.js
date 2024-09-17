@@ -238,7 +238,7 @@ export async function fetchSongCount(brand) {
  * @example
  * fetchWorkouts('drumeo')
  *   .then(workouts => console.log(workouts))
- *   .catch(error => console.error(error));
+ *   .catch(error => console.error(error)); 
  */
 export async function fetchWorkouts(brand) {
   const fields = getFieldsForContentType('workout');

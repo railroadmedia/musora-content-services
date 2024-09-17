@@ -46,6 +46,7 @@ const contentWithSortField = {
 let contentTypeConfig = {
     'song': {
         'fields': [
+            'album',
             'soundslice',
             'instrumentless',
         ],
@@ -78,6 +79,8 @@ let contentTypeConfig = {
             '"instructors": instructor[]->name',
             `"description": ${descriptionField}`,
             'resource',
+            'xp', 
+            'total_xp',
             `"lessons": child[]->{
                 "id": railcontent_id,
                 title,
