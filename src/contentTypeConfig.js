@@ -285,6 +285,14 @@ function filtersToGroq(filters) {
                       return `&& topic[]->name match "${value}"`;
                     case 'instrumentless':
                       return `&& instrumentless == ${value}`;
+                    case 'creativity':
+                      return `&& creativity[]->name match "${value}"`;
+                    case 'theory':
+                      return `&& theory[]->name match "${value}"`;
+                    case 'essentials':
+                      return `&& essential[]->name match "${value}"`;
+                    case 'lifestyle':
+                      return `&& lifestyle[]->name match "${value}"`;
                     default:
                       return `&& ${key} == ${/^\d+$/.test(value) ? value : `"$${value}"`}`;
                   }
