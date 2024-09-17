@@ -887,8 +887,14 @@ export async function fetchRelatedLessons(railContentId, brand) {
   return fetchSanity(query, false);
 }
 
-export async function fetchRelatedMethodLesson(railContentId, brand) {
-  const query = `*[railcontent_id == ${railContentId} ]{
+/**
+* Fetch related method lessons for a specific lesson by RailContent ID and type.
+* @param {string} railContentId - The RailContent ID of the current lesson.
+* @param {string} brand - The current brand.
+* @returns {Promise<Object>|null>} - The fetched related lessons
+*/
+export async function fetchRelatedMethodLessons(railContentId, brand) {
+  const query = `*[railcontent_id == ${railContentId} && brand == "${brand}"]{
       "id":_id,
       "related_lessons": *[references(^._id)][0].child[]->{
         "id": railcontent_id,
