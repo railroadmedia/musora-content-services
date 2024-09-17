@@ -1,6 +1,32 @@
 # Musora Content Services
 
-Welcome to the **musora-content-services** repository. This package provides a collection of utility functions designed to fetch and manage content from our Sanity Studio. These functions are tailored to interact with our Sanity backend, allowing you to easily retrieve, filter, and manipulate content for use in various applications.
+Welcome to the **musora-content-services** repository. This package provides a collection of utility functions designed 
+to fetch and manage content from our Sanity Studio. These functions are tailored to interact with our Sanity backend, 
+allowing you to easily retrieve, filter, and manipulate content for use in various applications.
+
+## Setup
+To set up the Musora Content Services project for local development, follow these steps:
+- Pull the latest railenvironment `php-8-3-upgrade` branch changes
+- In the railenvironment directory, start up the container with the `./rrr.sh` command
+- Run `r setup musora-content-services`
+- Run `npm install --save-dev jest`
+- Create a new `.env` file in the root of the project and copy the contents from 1Password "musora-content-services .env"
+
+You're now set for doing basic development and running tests through npm. To set up an even better developer experience, 
+you can also do the following:
+- Find the location of node within the container by running `which node` in your terminal (inside the rrr shell)
+  - This should be something along the lines of _/home/.nvm/versions/node/v20.14.0/bin/node_
+- Add the Node interpreter to your IDE. The following steps are for PHPStorm:
+  - Go to File > Settings
+  - Under Languages & Frameworks, click on Node.js
+  - Under the Node interpreter dropdown, click "Add..." and select "Add Remote..."
+  - In the next window, choose the Docker option
+    - Set the Server to Docker
+    - For the Image name, use the dropdown to select _railenvironment_docker-manager:latest_ (this is the docker image 
+    that we're in when running the rrr shell)
+    - For the Node.js interpreter path, paste in the path from step 1 (e.g. /home/.nvm/versions/node/v20.14.0/bin/node) 
+  - Apply the changes and click OK
+ - You now have a Node interpreter set up that will assist in linting, tests, etc.
 
 ## Features
 
@@ -53,9 +79,10 @@ npm run doc
 https://railroadmedia.github.io/musora-content-services/
 
 ## Run tests
-Copy .env file from 1Password "musora-content-services .env"
-Run the following to execute the tests
-You may need to install jest (npm install --save-dev jest)
+Ensure that the setup process has been completed, including copying .env file from 1Password "musora-content-services .env" 
+and having jest installed (`npm install --save-dev jest`). To run the full test suite, simply run the following:
 ```
 npm test
 ```
+You can also filter down to specific tests with the `-- -t="..."` option. e.g. you can run the userContext test suite 
+with `npm test -- -t="userContext"` or just the contentLiked test with `npm test -- -t="contentLiked"`
