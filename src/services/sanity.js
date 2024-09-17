@@ -860,7 +860,17 @@ export async function fetchLessonContent(railContentId) {
           },
           ${assignmentsField}
           video,
-          length_in_seconds
+          length_in_seconds,
+          "related_lessons": *[references(^._id)][0].child[]->{
+            "id": railcontent_id,
+            "type": _type,
+            title,
+            "description": description[0].children[0].text, // Extraer texto plano
+            "thumbnail_url": thumbnail.asset->url,
+            "url": web_url_path,
+            difficulty,
+            difficulty_string,
+          }
         }`
   return fetchSanity(query, false);
 }
