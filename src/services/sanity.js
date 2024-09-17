@@ -230,27 +230,6 @@ export async function fetchSongCount(brand) {
 }
 
 /**
- * Fetch the latest workouts for a specific brand, including completion status and progress.
- * This function retrieves up to five of the latest workout content for a given brand, sorted in descending order by their publication date.
- * It also includes completion status and progress percentage for each workout by fetching additional data about user progress.
- *
- * @param {string} brand - The brand for which to fetch workouts (e.g., 'drumeo', 'pianote').
- * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of workout data objects with additional properties for completion status and progress percentage, or null if no workouts are found.
- *
- * @example
- * fetchWorkouts('drumeo')
- *   .then(workouts => console.log(workouts))
- *   .catch(error => console.error(error));
- */
-export async function fetchWorkouts(brand) {
-  const fields = getFieldsForContentType('workout');
-  const query = `*[_type == 'workout' && brand == '${brand}'] [0...5] {
-        ${fields.toString()}
-      } | order(published_on desc)[0...5]`
-  return fetchSanity(query, true);
-}
-
-/**
 * Fetch the latest new releases for a specific brand.
 * @param {string} brand - The brand for which to fetch new releases.
 * @returns {Promise<Object|null>} - The fetched new releases data or null if not found.
