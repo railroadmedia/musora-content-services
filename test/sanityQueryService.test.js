@@ -37,14 +37,14 @@ const {
 
 describe('Sanity Queries', function () {
     beforeEach(() => {
-        const config = { 
+        const config = {
             sanityConfig: {
                 token: process.env.SANITY_API_TOKEN,
                 projectId: process.env.SANITY_PROJECT_ID,
                 dataset: process.env.SANITY_DATASET,
-                useCachedAPI: process.env.SANITY_USE_CACHED_API || true,
+                useCachedAPI: process.env.SANITY_USE_CACHED_API === 'true' || true,
                 version: '2021-06-07',
-                debug: process.env.DEBUG || false
+                debug: process.env.DEBUG === 'true' || false
             }
         };
         initializeService(config);
@@ -66,7 +66,7 @@ describe('Sanity Queries', function () {
 
     test('fetchSongArtistCount', async () => {
         const response = await fetchSongArtistCount('drumeo');
-        console.log(response);
+        // console.log(response);
         expect(response).toBeGreaterThan(1000);
     });
 
@@ -95,7 +95,7 @@ describe('Sanity Queries', function () {
 
     test('fetchAllSongs', async () => {
         const response = await fetchAllSongs('drumeo', {});
-        console.log(response);
+        // console.log(response);
         expect(response.entity[0].soundslice).toBeDefined();
         expect(response.entity[0].artist_name).toBeDefined();
         expect(response.entity[0].instrumentless).toBeDefined();
@@ -111,20 +111,20 @@ describe('Sanity Queries', function () {
 
     test('fetchAllWorkouts', async () => {
         const response = await fetchAll('drumeo', 'workout',{});
-        console.log(response);
+        // console.log(response);
         expect(response.entity[0].id).toBeDefined();
     });
 
     test('fetchAllInstructorField', async () => {
         const response = await fetchAll('drumeo', 'quick-tips',{searchTerm: 'Domino Santantonio'});
-        console.log(response);
+        // console.log(response);
         expect(response.entity[0].id).toBeDefined();
         expect(response.entity[0].instructors).toBeTruthy();
     });
 
     test('fetchAllSortField', async () => {
         const response = await fetchAll('drumeo', 'rhythmic-adventures-of-captain-carson',{});
-        console.log(response);
+        // console.log(response);
         expect(response.entity[0].id).toBeDefined();
         expect(response.entity[0].sort).toBeDefined();
     });
@@ -132,7 +132,7 @@ describe('Sanity Queries', function () {
 
     test('fetchAllChallenges', async () => {
         const response = await fetchAll('drumeo', 'challenge',{});
-        console.log(response);
+        // console.log(response);
         expect(response.entity[0].registration_url).toBeDefined();
         expect(response.entity[0].enrollment_start_time).toBeDefined();
         expect(response.entity[0].enrollment_end_time).toBeDefined();
@@ -146,12 +146,12 @@ describe('Sanity Queries', function () {
 
     test('fetchAll-CustomFields', async () => {
         let response = await fetchAll('drumeo', 'challenge',{customFields:['garbage']});
-        console.log(response);
+        // console.log(response);
         expect(response.entity[0].garbage).toBeDefined();
         expect(response.entity[0].id).toBeDefined();
 
         response = await fetchAll('drumeo', 'challenge',{useDefaultFields: false, customFields:['garbage']});
-        console.log(response);
+        // console.log(response);
         expect(response.entity[0].garbage).toBeDefined();
         expect.not.objectContaining(response.entity[0].id);
     });
@@ -177,8 +177,8 @@ describe('Sanity Queries', function () {
         const id = 191338; ////https://web-staging-one.musora.com/admin/studio/publishing/structure/play-along;play-along_191338
         const expectedChildID = 191492;
         const response = await fetchChildren(id);
-        console.log('num children', response.length);
-        console.log(response);
+        // console.log('num children', response.length);
+        // console.log(response);
         
         expect(response.length > 0).toBeTruthy();
         const foundExpectedChild = response.some((child) => {
@@ -217,7 +217,7 @@ describe('Sanity Queries', function () {
 
     test('fetchMethods', async () => {
         const response = await fetchMethods('drumeo');
-        console.log(response);
+        // console.log(response);
         expect(response.length).toBeGreaterThan(0);
         expect(response[0].type).toBe('learning-path');
     });
@@ -266,8 +266,9 @@ describe('Sanity Queries', function () {
         let response = await fetchAllPacks('drumeo');
         response = await fetchAllPacks('drumeo', 'slug');
         const titles = response.map((doc) => doc.title);
-        const sortedTitles = [...titles].sort((a, b) => a.localeCompare(b));
-        // This  fails for upper/lower case compare and I couldn't  figure it out. Sanity sorts with case sensativity, and localeCompare should do the same but doesn't
+
+        const sortedTitles = [...titles].sort((a, b) => a === b ? 0 : a > b ? 1 : -1);
+
         expect(titles).toStrictEqual(sortedTitles);
         response = await fetchAllPacks('drumeo', 'slug', 'Creative Control');
         expect(response[0].id).toBe(212899);
