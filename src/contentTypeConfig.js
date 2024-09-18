@@ -56,6 +56,11 @@ let contentTypeConfig = {
             }
         }
     },
+    'song-tutorial': {
+        'fields': [
+            '"lesson_count": child_count',
+        ]
+    },
     'challenge':{
         'fields': [
             'enrollment_start_time',
