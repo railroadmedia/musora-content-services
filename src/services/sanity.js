@@ -9,7 +9,9 @@ import {
     contentTypeConfig,
     DEFAULT_FIELDS,
     getFieldsForContentType,
-    filtersToGroq
+    filtersToGroq,
+    getUpcomingEventsTypes,
+    getNewReleasesTypes,
 } from "../contentTypeConfig";
 import {globalConfig} from "./config";
 
@@ -234,67 +236,39 @@ export async function fetchSongCount(brand) {
 }
 
 /**
- * Fetch the latest workouts for a specific brand, including completion status and progress.
- * This function retrieves up to five of the latest workout content for a given brand, sorted in descending order by their publication date.
- * It also includes completion status and progress percentage for each workout by fetching additional data about user progress.
- *
- * @param {string} brand - The brand for which to fetch workouts (e.g., 'drumeo', 'pianote').
- * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of workout data objects with additional properties for completion status and progress percentage, or null if no workouts are found.
- *
- * @example
- * fetchWorkouts('drumeo')
- *   .then(workouts => console.log(workouts))
- *   .catch(error => console.error(error));
- */
-export async function fetchWorkouts(brand) {
-  const fields = getFieldsForContentType('workout');
-  const filterParams = {};
-  const query = buildQuery(
-      `_type == 'workout' && brand == '${brand}'`,
-      filterParams,
-      fields,
-      {
-          end: 5,
-      });
-  return fetchSanity(query, true);
-}
-
-/**
 * Fetch the latest new releases for a specific brand.
 * @param {string} brand - The brand for which to fetch new releases.
 * @returns {Promise<Object|null>} - The fetched new releases data or null if not found.
 */
-export async function fetchNewReleases(brand) {
-    const newTypes = {
-      'drumeo': ["drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "quick-tips", "question-and-answer", "student-collaborations", "live-streams", "live", "podcasts", "solos", "boot-camps", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums", "course", "play-along", "student-focus", "coach-stream", "learning-path-level", "unit", "quick-tips", "live", "question-and-answer", "student-review", "boot-camps", "song", "chords-and-scales", "pack", "podcasts", "workout", "challenge", "challenge-part"],
-      'pianote': ["student-review", "student-reviews", "question-and-answer", "course", "play-along", "student-focus", "coach-stream", "learning-path-level", "unit", "quick-tips", "live", "question-and-answer", "student-review", "boot-camps", "song", "chords-and-scales", "pack", "podcasts", "workout", "challenge", "challenge-part"],
-      'guitareo': ["student-review", "student-reviews", "question-and-answer", "archives", "recording", "course", "play-along", "student-focus", "coach-stream", "learning-path-level", "unit", "quick-tips", "live", "question-and-answer", "student-review", "boot-camps", "song", "chords-and-scales", "pack", "podcasts", "workout", "challenge", "challenge-part"],
-      'singeo': ["student-review", "student-reviews", "question-and-answer", "course", "play-along", "student-focus", "coach-stream", "learning-path-level", "unit", "quick-tips", "live", "question-and-answer", "student-review", "boot-camps", "song", "chords-and-scales", "pack", "podcasts", "workout", "challenge", "challenge-part"],
-      'default': ["student-review", "student-reviews", "question-and-answer", "course", "play-along", "student-focus", "coach-stream", "learning-path-level", "unit", "quick-tips", "live", "question-and-answer", "student-review", "boot-camps", "song", "chords-and-scales", "pack", "podcasts", "workout", "challenge", "challenge-part"]
-    };
-    const typesString = arrayToStringRepresentation(newTypes[brand] ?? newTypes['default']);
-    const filter = `_type in ${typesString} && brand == '${brand}'`;
-    const fields = `"id": railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": instructor[0]->name,
-        "artists": instructor[]->name,
-        difficulty,
-        difficulty_string,
-        length_in_seconds,
-        published_on,
-        "type": _type,
-        web_url_path,`;
-    const filterParams = {};
-    const query = buildQuery(
-        filter,
-        filterParams,
-        fields,
-        {
-            sortOrder: 'published_on desc',
-            end:5,
-        });
-    return fetchSanity(query, true);
+export async function fetchNewReleases(brand, { page = 1, limit = 10, sort="-published_on" } = {}) {
+  const newTypes = getNewReleasesTypes(brand);
+  const typesString = arrayToStringRepresentation(newTypes);
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const sortOrder = getSortOrder(sort);
+  const filter = `_type in ${typesString} && brand == '${brand}'`;
+  const fields = `
+     "id": railcontent_id,
+      title,
+      "image": thumbnail.asset->url,
+      "artist_name": instructor[0]->name,
+      "artists": instructor[]->name,
+      difficulty,
+      difficulty_string,
+      length_in_seconds,
+      published_on,
+      "type": _type,
+      web_url_path,`;
+  const filterParams = {};
+  const query = buildQuery(
+      filter,
+      filterParams,
+      fields,
+      {
+          sortOrder: 'published_on desc',
+          end:5,
+      });
+  return fetchSanity(query, true);
 }
 
 
@@ -312,16 +286,9 @@ export async function fetchNewReleases(brand) {
 *   .then(events => console.log(events))
 *   .catch(error => console.error(error));
 */
-export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 }) {
-  const baseLiveTypes = ["student-review", "student-reviews", "student-focus", "coach-stream", "live", "question-and-answer", "student-review", "boot-camps", "recording", "pack-bundle-lesson"];
-  const liveTypes = {
-      'drumeo': [...baseLiveTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "quick-tips", "student-collaborations", "live-streams", "podcasts", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor-drums"],
-      'pianote': baseLiveTypes,
-      'guitareo': [...baseLiveTypes, "archives"],
-      'singeo': baseLiveTypes,
-      'default': baseLiveTypes
-  };
-  const typesString = arrayToStringRepresentation(liveTypes[brand] ?? liveTypes['default']);
+export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) {
+  const liveTypes = getUpcomingEventsTypes(brand);
+  const typesString = arrayToStringRepresentation(liveTypes);
   const now = getSanityDate(new Date());
   const start = (page - 1) * limit;
   const end = start + limit;
@@ -346,6 +313,45 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 }) {
           end: end,
       },
   );
+  return fetchSanity(query, true);
+}
+
+/**
+ * Fetch scheduled releases for a specific brand.
+ *
+ * @param {string} brand - The brand for which to fetch scheduled releasess.
+ * @returns {Promise<Object|null>} - A promise that resolves to an array of scheduled release objects or null if not found.
+ *
+ * @example
+ * fetchScheduledReleases('drumeo', {
+ *   page: 2,
+ *   limit: 20,
+ * })
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
+  const upcomingTypes = getUpcomingEventsTypes(brand);
+  const newTypes = getNewReleasesTypes(brand);
+
+  const scheduledTypes = merge(upcomingTypes, newTypes)
+  const typesString = arrayJoinWithQuotes(scheduledTypes);
+  const now = getSanityDate(new Date());
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const query = `*[_type in [${typesString}] && brand == '${brand}' && status in ['published','scheduled'] && published_on > '${now}']{
+      "id": railcontent_id,
+      title,
+      "image": thumbnail.asset->url,
+      "artist_name": instructor[0]->name,
+      "artists": instructor[]->name,
+      difficulty,
+      difficulty_string,
+      length_in_seconds,
+      published_on,
+      "type": _type,
+      web_url_path,
+  } | order(published_on asc)[${start}...${end}]`;
   return fetchSanity(query, true);
 }
 
@@ -447,7 +453,7 @@ export async function fetchAll(brand, type, {
     const searchFilter = searchTerm
         ? groupBy !== "" ?
           `&& (^.name match "${searchTerm}*" || title match "${searchTerm}*")`
-          : `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*")`
+          : `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*" || name match "${searchTerm}*")`
         : "";
 
     // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
@@ -531,8 +537,9 @@ export function getSortOrder(sort= '-published_on', groupBy)
         case "slug":
             sortOrder = groupBy ? 'name' : "title";
             break;
+        case "name":
         case "popularity":
-            sortOrder = "popularity";
+            sortOrder = sort;
             break;
         case "published_on":
         default:
@@ -703,6 +710,7 @@ export async function fetchMethod(brand, slug) {
         "type": _type,
         "description": ${descriptionField},
         "url": web_url_path,
+        web_url_path,
         xp,
       }
   } | order(published_on asc)`
@@ -859,7 +867,13 @@ export async function fetchLessonContent(railContentId) {
             "coach_profile_image":thumbnail_url.asset->url
           },
           "instructors":instructor[]->name,
-          instructor[]->,
+          "instructor": instructor[]->{
+            "id":_id,
+            name,
+            short_bio,
+            web_url_path,
+            "coach_card_image": coach_card_image.asset->url,
+          },
           ${assignmentsField}
           video,
           length_in_seconds`;
@@ -893,6 +907,30 @@ export async function fetchRelatedLessons(railContentId, brand) {
                 ...(*[_type=="song" && brand == "${brand}" && references(^.artist->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11]),
                 ...(*[_type=="song" && brand == "${brand}" && references(^.genre[]->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11])
                 ])|order(published_on, railcontent_id)[0...11]}`;
+  return fetchSanity(query, false);
+}
+
+/**
+* Fetch related method lessons for a specific lesson by RailContent ID and type.
+* @param {string} railContentId - The RailContent ID of the current lesson.
+* @param {string} brand - The current brand.
+* @returns {Promise<Object>|null>} - The fetched related lessons
+*/
+export async function fetchRelatedMethodLessons(railContentId, brand) {
+  const query = `*[railcontent_id == ${railContentId} && brand == "${brand}"]{
+      "id":_id,
+      "related_lessons": *[references(^._id)][0].child[]->{
+        "id": railcontent_id,
+        "type": _type,
+        title,
+        "description": description[0].children[0].text, // Extraer texto plano
+        "thumbnail_url": thumbnail.asset->url,
+        "url": web_url_path,
+        difficulty,
+        difficulty_string,
+      }
+    }
+  }`
   return fetchSanity(query, false);
 }
 
@@ -984,7 +1022,7 @@ export async function fetchLiveEvent(brand) {
  *   .catch(error => console.error(error));
  */
 export async function fetchPackChildren(railcontentId) {
-  return fetchChildren(railcontentId, 'pack');
+  return fetchChildren(railcontentId, 'pack-children');
 }
 
 /**
@@ -1101,6 +1139,89 @@ export async function fetchByReference(brand, {
   return fetchSanity(query, true);
 }
 
+/**
+ * Fetch the artist's lessons.
+ * @param {string} brand - The brand for which to fetch lessons.
+ * @param {string} name - The name of the artist
+ * @param {string} contentType - The type of the lessons we need to get from the artist. If not defined, groq will get lessons from all content types
+ * @returns {Promise<Object|null>} - The lessons for the artist and some details about the artist (name and thumbnail).
+ *
+ * @example
+ * fetchArtistLessons('10 Years', 'song')
+ *   .then(lessons => console.log(lessons))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchArtistLessons(brand, name, contentType, {
+  sort = '-published_on',
+  searchTerm = '',
+  page = 1,
+  limit = 10,
+  includedFields = [],
+} = {}) {
+  const fieldsString = DEFAULT_FIELDS.join(',');
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''  
+  const sortOrder = getSortOrder(sort);
+  const addType = contentType ? `_type == '${contentType}' && `:''
+  const includedFieldsFilter = includedFields.length > 0
+  ? filtersToGroq(includedFields)
+  : "";
+
+  const query = `{
+    "entity": 
+      *[_type == 'artist' && name == '${name}']
+        {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
+        'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]), 
+        'lessons': *[${addType} brand == '${brand}' && references(^._id) ${searchFilter} ${includedFieldsFilter}]{${fieldsString}}
+      [${start}...${end}]}
+      |order(${sortOrder})
+  }`;
+  return fetchSanity(query, true);
+}
+
+/**
+ * Fetch the genre's lessons.
+ * @param {string} brand - The brand for which to fetch lessons.
+ * @param {string} name - The name of the genre
+ * @param {string} contentType - The type of the lessons we need to get from the genre. If not defined, groq will get lessons from all content types
+ * @returns {Promise<Object|null>} - The lessons for the genre and some details about the genre (name and thumbnail).
+ *
+ * @example
+ * fetchGenreLessons('Blues', 'song')
+ *   .then(lessons => console.log(lessons))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchGenreLessons(brand, name, contentType, {
+  sort = '-published_on',
+  searchTerm = '',
+  page = 1,
+  limit = 10,
+  includedFields = [],
+} = {}) {
+  const fieldsString = DEFAULT_FIELDS.join(',');
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''  
+  const sortOrder = getSortOrder(sort);
+  const addType = contentType ? `_type == '${contentType}' && `:''
+  const includedFieldsFilter = includedFields.length > 0
+  ? filtersToGroq(includedFields)
+  : "";
+
+  const query = `{
+    "entity": 
+      *[_type == 'genre' && name == '${name}']
+        {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
+        'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]), 
+        'lessons': *[${addType} brand == '${brand}' && references(^._id) ${searchFilter} ${includedFieldsFilter}]{${fieldsString}}
+      [${start}...${end}]}
+      |order(${sortOrder})
+  }`;
+  return fetchSanity(query, true);
+}
+
+
 
 /**
  * Fetch data from the Sanity API based on a provided query.
@@ -1188,6 +1309,13 @@ function arrayJoinWithQuotes(array, delimiter = ',') {
 
 function getSanityDate(date) {
   return date.toISOString();
+}
+
+const merge = (a, b, predicate = (a, b) => a === b) => {
+  const c = [...a]; // copy to avoid side effects
+  // add all items from B to copy C if they're not already present
+  b.forEach((bItem) => (c.some((cItem) => predicate(bItem, cItem)) ? null : c.push(bItem)))
+  return c;
 }
 
 function checkSanityConfig(config) {

@@ -8,7 +8,6 @@ import {
   fetchAllSongs,
   fetchSongFilterOptions,
   fetchSongCount,
-  fetchWorkouts,
   fetchNewReleases,
   fetchUpcomingEvents,
   fetchByRailContentId,
@@ -35,6 +34,10 @@ import {
   fetchChallengeOverview,
   fetchCoachLessons,
   fetchByReference,
+  fetchScheduledReleases,
+  fetchArtistLessons,
+  fetchGenreLessons,
+  fetchRelatedMethodLessons,
 } from './services/sanity.js';
 
 import { 
@@ -56,7 +59,6 @@ export {
     fetchAllSongs,
     fetchSongFilterOptions,
     fetchSongCount,
-    fetchWorkouts,
     fetchNewReleases,
     fetchUpcomingEvents,
     fetchByRailContentId,
@@ -89,4 +91,8 @@ export {
     fetchContentPageUserData,
     fetchCoachLessons,
     fetchByReference,
+    fetchScheduledReleases,
+    fetchArtistLessons,
+    fetchGenreLessons,
+    fetchRelatedMethodLessons,
 }
