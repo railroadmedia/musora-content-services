@@ -96,6 +96,7 @@ export async function fetchRelatedSongs(brand, songId) {
             "url": web_url_path,
             "published_on": published_on,
             status,
+            "image": thumbnail.asset->url,
             "fields": [
               {
                 "key": "title",
@@ -114,10 +115,6 @@ export async function fetchRelatedSongs(brand, songId) {
                 "value": soundslice[0].soundslice_length_in_second
               }
             ],
-            "data": [{
-              "key": "thumbnail_url",
-              "value": thumbnail.asset->url
-            }]
           }[0...10]),
             ...(*[_type == "song" && brand == "${brand}" && railcontent_id != ${songId} && references(^.genre[]->_id)]{
             "type": _type,
@@ -232,6 +229,27 @@ export async function fetchSongFilterOptions(brand) {
 */
 export async function fetchSongCount(brand) {
   const query = `count(*[_type == 'song' && brand == "${brand}"])`;
+  return fetchSanity(query, true);
+}
+
+/**
+ * Fetch the latest workouts for a specific brand, including completion status and progress.
+ * This function retrieves up to five of the latest workout content for a given brand, sorted in descending order by their publication date.
+ * It also includes completion status and progress percentage for each workout by fetching additional data about user progress.
+ *
+ * @param {string} brand - The brand for which to fetch workouts (e.g., 'drumeo', 'pianote').
+ * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of workout data objects with additional properties for completion status and progress percentage, or null if no workouts are found.
+ *
+ * @example
+ * fetchWorkouts('drumeo')
+ *   .then(workouts => console.log(workouts))
+ *   .catch(error => console.error(error)); 
+ */
+export async function fetchWorkouts(brand) {
+  const fields = getFieldsForContentType('workout');
+  const query = `*[_type == 'workout' && brand == '${brand}'] [0...5] {
+        ${fields.toString()}
+      } | order(published_on desc)[0...5]`
   return fetchSanity(query, true);
 }
 
@@ -749,7 +767,6 @@ export async function fetchMethodNextLesson(railcontentId, methodId) {
   const childIndex = sortedChildren[index + 1];
   return childIndex ? await fetchByRailContentId(childIndex) : null;
 }
-
 
 /**
  * Fetch the next lesson for a specific method by Railcontent ID.
