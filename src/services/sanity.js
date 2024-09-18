@@ -230,27 +230,6 @@ export async function fetchSongCount(brand) {
 }
 
 /**
- * Fetch the latest workouts for a specific brand, including completion status and progress.
- * This function retrieves up to five of the latest workout content for a given brand, sorted in descending order by their publication date.
- * It also includes completion status and progress percentage for each workout by fetching additional data about user progress.
- *
- * @param {string} brand - The brand for which to fetch workouts (e.g., 'drumeo', 'pianote').
- * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of workout data objects with additional properties for completion status and progress percentage, or null if no workouts are found.
- *
- * @example
- * fetchWorkouts('drumeo')
- *   .then(workouts => console.log(workouts))
- *   .catch(error => console.error(error));
- */
-export async function fetchWorkouts(brand) {
-  const fields = getFieldsForContentType('workout');
-  const query = `*[_type == 'workout' && brand == '${brand}'] [0...5] {
-        ${fields.toString()}
-      } | order(published_on desc)[0...5]`
-  return fetchSanity(query, true);
-}
-
-/**
 * Fetch the latest new releases for a specific brand.
 * @param {string} brand - The brand for which to fetch new releases.
 * @returns {Promise<Object|null>} - The fetched new releases data or null if not found.
@@ -884,6 +863,30 @@ export async function fetchRelatedLessons(railContentId, brand) {
                 ...(*[_type=="song" && brand == "${brand}" && references(^.artist->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11]),
                 ...(*[_type=="song" && brand == "${brand}" && references(^.genre[]->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11])
                 ])|order(published_on, railcontent_id)[0...11]}`;
+  return fetchSanity(query, false);
+}
+
+/**
+* Fetch related method lessons for a specific lesson by RailContent ID and type.
+* @param {string} railContentId - The RailContent ID of the current lesson.
+* @param {string} brand - The current brand.
+* @returns {Promise<Object>|null>} - The fetched related lessons
+*/
+export async function fetchRelatedMethodLessons(railContentId, brand) {
+  const query = `*[railcontent_id == ${railContentId} && brand == "${brand}"]{
+      "id":_id,
+      "related_lessons": *[references(^._id)][0].child[]->{
+        "id": railcontent_id,
+        "type": _type,
+        title,
+        "description": description[0].children[0].text, // Extraer texto plano
+        "thumbnail_url": thumbnail.asset->url,
+        "url": web_url_path,
+        difficulty,
+        difficulty_string,
+      }
+    }
+  }`
   return fetchSanity(query, false);
 }
 

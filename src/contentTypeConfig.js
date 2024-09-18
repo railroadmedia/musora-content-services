@@ -46,6 +46,7 @@ const contentWithSortField = {
 let contentTypeConfig = {
     'song': {
         'fields': [
+            'album',
             'soundslice',
             'instrumentless',
         ],
