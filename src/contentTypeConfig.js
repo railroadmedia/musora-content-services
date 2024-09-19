@@ -289,7 +289,7 @@ function getFieldsForContentType(contentType, asQueryString=true) {
 function filtersToGroq(filters) {
     const groq = filters.map(field => {
             let [key, value] = field.split(',');
-            if(key && value){
+            if(key && value && field.split(',').length === 2){
                 switch (key) {
                     case 'difficulty':
                       return `&& difficulty_string == "${value}"`;
