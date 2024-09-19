@@ -295,19 +295,19 @@ describe('Sanity Queries', function () {
 
     test('fetchAll-GroupBy-Genre', async () => {
         let response = await fetchAll('drumeo', 'solo',{groupBy: 'genre'});
-        // console.log(response);
+        log(response);
         expect(response.entity[0].web_url_path).toContain('/drumeo/genres/');
     });
 
     test('fetchAll-GroupBy-Artists', async () => {
         let response = await fetchAll('drumeo', 'song',{groupBy: 'artist'});
-        // console.log(response);
+        log(response);
         expect(response.entity[0].web_url_path).toContain('/drumeo/artists/');
     });
 
     test('fetchAll-GroupBy-Instructors', async () => {
         let response = await fetchAll('drumeo', 'course',{groupBy: 'instructor'});
-        // console.log(response);
+        log(response);
         expect(response.entity[0].web_url_path).toContain('/drumeo/coaches/');
     });
 });
