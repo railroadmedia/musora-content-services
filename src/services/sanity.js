@@ -16,6 +16,7 @@ import {
 import {globalConfig} from "./config";
 
 import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
+import {arrayToStringRepresentation, FilterBuilder} from "../filterBuilder";
 
 /**
 * Fetch a song by its document ID from Sanity.
@@ -29,12 +30,15 @@ import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent
 *   .catch(error => console.error(error));
 */
 export async function fetchSongById(documentId) {
-
-    const query = `
-        *[_type == "song" && railcontent_id == ${documentId}]{
-            ${getFieldsForContentType('song', true)}
-        }`;
-
+    const fields = getFieldsForContentType('song');
+    const filterParams = {};
+    const query = buildQuery(
+        `_type == "song" && railcontent_id == ${documentId}`,
+        filterParams,
+        fields,
+        {
+            isSingle: true,
+        });
     return fetchSanity(query, false);
 }
 
@@ -50,10 +54,11 @@ export async function fetchSongById(documentId) {
 *   .catch(error => console.error(error));
 */
 export async function fetchArtists(brand) {
+  const filter = new FilterBuilder(`_type == "song" && brand == "${brand}" && references(^._id)`).buildFilter();
   const query = `
   *[_type == "artist"]{
     name,
-    "lessonsCount": count(*[_type == "song" && brand == "${brand}" && references(^._id)])
+    "lessonsCount": count(*[${filter}])
   }[lessonsCount > 0]`;
   return fetchSanity(query, true);
 }
@@ -254,23 +259,32 @@ export async function fetchWorkouts(brand) {
 */
 export async function fetchNewReleases(brand, { page = 1, limit = 10, sort="-published_on" } = {}) {
   const newTypes = getNewReleasesTypes(brand);
-  const typesString = arrayJoinWithQuotes(newTypes);
+  const typesString = arrayToStringRepresentation(newTypes);
   const start = (page - 1) * limit;
   const end = start + limit;
   const sortOrder = getSortOrder(sort);
-  const query = `*[_type in [${typesString}] && brand == '${brand}']{
-        "id": railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": instructor[0]->name,
-        "artists": instructor[]->name,
-        difficulty,
-        difficulty_string,
-        length_in_seconds,
-        published_on,
-        "type": _type,
-        web_url_path,
-      } | order(${sortOrder})[${start}..${end}]`
+  const filter = `_type in ${typesString} && brand == '${brand}'`;
+  const fields = `
+     "id": railcontent_id,
+      title,
+      "image": thumbnail.asset->url,
+      "artist_name": instructor[0]->name,
+      "artists": instructor[]->name,
+      difficulty,
+      difficulty_string,
+      length_in_seconds,
+      published_on,
+      "type": _type,
+      web_url_path,`;
+  const filterParams = {};
+  const query = buildQuery(
+      filter,
+      filterParams,
+      fields,
+      {
+          sortOrder: sortOrder,
+          end: end,
+      });
   return fetchSanity(query, true);
 }
 
@@ -291,11 +305,11 @@ export async function fetchNewReleases(brand, { page = 1, limit = 10, sort="-pub
 */
 export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) {
   const liveTypes = getUpcomingEventsTypes(brand);
-  const typesString = arrayJoinWithQuotes(liveTypes);
+  const typesString = arrayToStringRepresentation(liveTypes);
   const now = getSanityDate(new Date());
   const start = (page - 1) * limit;
   const end = start + limit;
-  const query = `*[_type in [${typesString}] && brand == '${brand}' && published_on > '${now}' && status == 'scheduled']{
+  const fields = `
         "id": railcontent_id,
         title,
         "image": thumbnail.asset->url,
@@ -306,8 +320,16 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         length_in_seconds,
         published_on,
         "type": _type,
-        web_url_path,
-    } | order(published_on asc)[${start}...${end}]`;
+        web_url_path,`;
+  const query = buildRawQuery(
+      `_type in ${typesString} && brand == '${brand}' && published_on > '${now}' && status == 'scheduled'`,
+      fields,
+      {
+          sortOrder: 'published_on asc',
+          start: start,
+          end: end,
+      },
+  );
   return fetchSanity(query, true);
 }
 
@@ -354,6 +376,7 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
 * Fetch content by a specific Railcontent ID.
 *
 * @param {string} id - The Railcontent ID of the content to fetch.
+* @param {string} contentType - The document type of content to fetch
 * @returns {Promise<Object|null>} - A promise that resolves to the content object or null if not found.
 *
 * @example
@@ -362,10 +385,16 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
 *   .catch(error => console.error(error));
 */
 export async function fetchByRailContentId(id, contentType) {
-  const query = `*[railcontent_id == ${id}]{
-        ${getFieldsForContentType(contentType)}
-      }`
-  return fetchSanity(query, false);
+
+    const query = buildRawQuery(
+        `railcontent_id == ${id} && _type == '${contentType}'`,
+        getFieldsForContentType(contentType),
+        {
+            isSingle: true,
+        },
+    );
+
+    return fetchSanity(query, false);
 }
 
 /**
@@ -382,6 +411,7 @@ export async function fetchByRailContentId(id, contentType) {
 */
 export async function fetchByRailContentIds(ids, contentType = undefined) {
   const idsString = ids.join(',');
+
   const query = `*[railcontent_id in [${idsString}]]{
         ${getFieldsForContentType(contentType)}
       }`
@@ -617,8 +647,8 @@ export async function fetchChildren(railcontentId, contentType) {
                            ${getFieldsForContentType(contentType)}
                         },
       }[0..1]`;
-  let parent = await fetchSanity(query, true);
-  return parent[0]['children'] ?? [];
+  let parent = await fetchSanity(query, false);
+  return parent['children'] ?? [];
 }
 
 /**
@@ -634,8 +664,8 @@ export async function fetchParentByRailContentId(railcontentId) {
                 })
             ])
         }[0...1]`;
-    let child = await fetchSanity(query, true);
-    return child[0]['parents'][0] ?? [];
+    let child = await fetchSanity(query, false);
+    return child['parents'][0] ?? [];
 }
 
 /**
@@ -656,9 +686,16 @@ export async function fetchMethods(brand) {
 * @returns {Promise<Object|null>} - The fetched foundation data or null if not found.
 */
 export async function fetchFoundation(slug) {
-  const query = `*[_type == 'foundation' && slug.current == "${slug}"] {
-    ${ getFieldsForContentType('foundation') }
-  } | order(published_on asc)`
+  const filterParams = {};
+  const query = buildQuery(
+      `_type == 'foundation' && slug.current == "${slug}"`,
+      filterParams,
+      getFieldsForContentType('foundation'),
+      {
+          sortOrder: 'published_on asc',
+          isSingle: true,
+      }
+  );
 return fetchSanity(query, false);
 }
 
@@ -761,7 +798,6 @@ export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
 * @returns {Promise<Array<Object>|null>} - The fetched children data or null if not found.
 */
 export async function fetchMethodChildrenIds(railcontentId) {
-  //TODO: Implement getByParentId include sum XP
     const query = `*[_type == 'learning-path' && railcontent_id == ${railcontentId}]{
     'children': child[]-> {
         'id': railcontent_id,
@@ -774,7 +810,7 @@ export async function fetchMethodChildrenIds(railcontentId) {
     }
 }`;
     let allChildren = await fetchSanity(query, false);
-    return getChildrenToDepth(allChildren, 4);;
+    return getChildrenToDepth(allChildren, 4);
 }
 
 function getChildrenToDepth(parent, depth = 1)
@@ -823,8 +859,8 @@ export async function fetchNextPreviousLesson(railcontentId) {
  *   .catch(error => console.error(error));
  */
 export async function fetchLessonContent(railContentId) {
-  const query = `*[railcontent_id == ${railContentId} ]{
-          title, 
+    const filterParams = {};
+    const fields = `title, 
           published_on,
           "type":_type, 
           "resources": resource, 
@@ -864,8 +900,15 @@ export async function fetchLessonContent(railContentId) {
           mp3_no_drums_no_click_url,
           mp3_no_drums_yes_click_url,
           mp3_yes_drums_no_click_url,
-          mp3_yes_drums_yes_click_url,
-        }`
+          mp3_yes_drums_yes_click_url,`;
+    const query = buildQuery(
+        `railcontent_id == ${railContentId}`,
+        filterParams,
+        fields,
+        {
+            isSingle: true,
+        }
+    );
   return fetchSanity(query, false);
 }
 
@@ -924,10 +967,16 @@ export async function fetchRelatedMethodLessons(railContentId, brand) {
 */
 export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = "") {
   const sortOrder = getSortOrder(sort);
-
-  const query = `*[_type == 'pack' && brand == '${brand}' && title match "${searchTerm}*"]{
-      ${getFieldsForContentType('pack')}
-    } | order(${sortOrder})`
+  const filter = `_type == 'pack' && brand == '${brand}' && title match "${searchTerm}*"`
+  const filterParams = {};
+  const query = buildQuery(
+    filter,
+    filterParams,
+    getFieldsForContentType('pack'),
+      {
+          sortOrder: sortOrder,
+      }
+  );
   return fetchSanity(query, true);
 }
 
@@ -937,11 +986,7 @@ export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = 
 * @returns {Promise<Array<Object>|null>} - The fetched pack content data or null if not found.
 */
 export async function fetchPackAll(railcontentId) {
-  //TODO: Implement getPacks
-  const query = `*[railcontent_id == ${railcontentId}]{
-    ${getFieldsForContentType('pack')}
-  } | order(published_on asc)[0...1]`
-  return fetchSanity(query, false);
+  return fetchByRailContentId(railcontentId, 'pack');
 }
 
 export async function fetchLiveEvent(brand) {
@@ -1017,7 +1062,7 @@ export async function fetchPackChildren(railcontentId) {
 export async function fetchChallengeOverview(id) {
   // WIP
   const query = `*[railcontent_id == ${id}]{
-    ${getFieldsForContentType("challenge", true)}
+    ${getFieldsForContentType("challenge")}
     "lessons": child[]->{
       "id": railcontent_id,
       title,
@@ -1028,7 +1073,7 @@ export async function fetchChallengeOverview(id) {
       difficulty,
       "type": _type,
     }
-  }`;
+  } [0...1]`;
   return fetchSanity(query, false);
 }
 
@@ -1048,18 +1093,21 @@ export async function fetchCoachLessons(brand, id, {
   page = 1,
   limit = 20,
 } = {}) {
-  const fieldsString = DEFAULT_FIELDS.join(',');
+  const fieldsString = getFieldsForContentType();
   const start = (page - 1) * limit;
   const end = start + limit;
-  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''  
-
-  const query = `{
-      "entity": *[brand == '${brand}' ${searchFilter} && references(*[_type=='instructor' && railcontent_id == ${id}]._id)] | order(${sortOrder}) [${start}...${end}]
-        {
-          ${fieldsString}
-        },
-      "total": count(*[brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${id}]._id)])
-    }`;
+  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''
+  const filter = `brand == '${brand}' ${searchFilter} && references(*[_type=='instructor' && railcontent_id == ${id}]._id)`;
+  sortOrder = getSortOrder(sortOrder);
+  const query = buildEntityAndTotalQuery(
+    filter,
+    fieldsString,
+      {
+          sortOrder: sortOrder,
+          start: start,
+          end: end,
+      },
+  );
   return fetchSanity(query, true);
 }
 
@@ -1074,10 +1122,7 @@ export async function fetchCoachLessons(brand, id, {
  *   .catch(error => console.error(error));
  */
 export async function fetchCourseOverview(id) {
-  const query = `*[railcontent_id == ${id}]{
-        ${getFieldsForContentType("course", true)}
-      }`
-  return fetchSanity(query, false);
+  return fetchByRailContentId(id, 'course');
 }
 
 /**
@@ -1098,21 +1143,23 @@ export async function fetchByReference(brand, {
   limit = 20,
   includedFields = [],
 } = {}) {
-  const fieldsString = DEFAULT_FIELDS.join(',');
+  const fieldsString = getFieldsForContentType();
   const start = (page - 1) * limit;
   const end = start + limit;
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: '';
   const includedFieldsFilter = includedFields.length > 0
         ? includedFields.join(' && ')
         : "";
-
-  const query = `{
-      "entity": *[brand == '${brand}' ${searchFilter} && references(*[${includedFieldsFilter}]._id)] | order(${sortOrder}) [${start}...${end}]
-        {
-          ${fieldsString}
-        },
-      "total": count(*[brand == '${brand}' && references(*[${includedFieldsFilter}]._id)])
-    }`;
+  const filter = `brand == '${brand}' ${searchFilter} && references(*[${includedFieldsFilter}]._id)`;
+  const query = buildEntityAndTotalQuery(
+      filter,
+      fieldsString,
+      {
+          sortOrder: getSortOrder(sortOrder),
+          start: start,
+          end: end,
+      },
+  );
   return fetchSanity(query, true);
 }
 
@@ -1314,5 +1361,66 @@ function checkSanityConfig(config) {
   }
   return true;
 }
+
+
+function     buildRawQuery(
+    filter = '',
+    fields = '...',
+    {
+        sortOrder = 'published_on desc',
+        start = 0,
+        end = 10,
+        isSingle = false,
+    }
+) {
+    const sortString = sortOrder ? `order(${sortOrder})` : '';
+    const countString = isSingle ? '[0...1]' : `[${start}...${end}]`;
+    const query = `*[${filter}]{
+        ${fields}
+    } | ${sortString}${countString}`
+    return query;
+}
+
+
+function     buildQuery(
+    baseFilter = '',
+    filterParams = {},
+    fields = '...',
+    {
+        sortOrder = 'published_on desc',
+        start = 0,
+        end = 10,
+        isSingle = false,
+    },
+) {
+    const filter = new FilterBuilder(baseFilter, filterParams).buildFilter();
+    return buildRawQuery(filter, fields, {sortOrder, start, end, isSingle});
+}
+
+function     buildEntityAndTotalQuery(
+    filter = '',
+    fields = '...',
+    {
+        sortOrder = 'published_on desc',
+        start = 0,
+        end = 10,
+        isSingle = false,
+    },
+) {
+    const sortString = sortOrder ? `order(${sortOrder})` : '';
+    const countString = isSingle ? '[0...1]' : `[${start}...${end}]`;
+    const query = `{
+      "entity": *[${filter}] | ${sortString}${countString} 
+      {
+        ${fields}
+      },
+      "total": count(*[${filter}])
+    }`;
+    return query;
+}
+
+
+
+
 
 
