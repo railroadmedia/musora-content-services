@@ -293,4 +293,22 @@ describe('Sanity Queries', function () {
         const response = await fetchScheduledReleases('drumeo', {});
         expect(response.length).toBeGreaterThan(0);
     });
+
+    test('fetchAll-GroupBy-Genre', async () => {
+        let response = await fetchAll('drumeo', 'solo',{groupBy: 'genre'});
+        // console.log(response);
+        expect(response.entity[0].web_url_path).toContain('/drumeo/genres/');
+    });
+
+    test('fetchAll-GroupBy-Artists', async () => {
+        let response = await fetchAll('drumeo', 'song',{groupBy: 'artist'});
+        // console.log(response);
+        expect(response.entity[0].web_url_path).toContain('/drumeo/artists/');
+    });
+
+    test('fetchAll-GroupBy-Instructors', async () => {
+        let response = await fetchAll('drumeo', 'course',{groupBy: 'instructor'});
+        // console.log(response);
+        expect(response.entity[0].web_url_path).toContain('/drumeo/coaches/');
+    });
 });
