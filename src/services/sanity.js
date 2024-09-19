@@ -1191,13 +1191,13 @@ export async function fetchGenreLessons(brand, name, contentType, {
 }
 
 
-
 /**
- * Fetch data from the Sanity API based on a provided query.
  *
  * @param {string} query - The GROQ query to execute against the Sanity API.
  * @param {boolean} isList - Whether to return an array or a single result.
- * @returns {Promise<Object|null>} - A promise that resolves to the fetched data or null if an error occurs or no results are found.
+ * @param {Function} [customPostProcess=null] - custom post process callback
+ * @param {boolean} [processNeedAccess=true] - execute the needs_access callback
+ * @returns {Promise<*|null>} - A promise that resolves to the fetched data or null if an error occurs or no results are found.
  *
  * @example
  * const query = `*[_type == "song"]{title, artist->name}`;
@@ -1205,7 +1205,9 @@ export async function fetchGenreLessons(brand, name, contentType, {
  *   .then(data => console.log(data))
  *   .catch(error => console.error(error));
  */
-export async function fetchSanity(query, isList) {
+
+export async function fetchSanity(query, isList,
+                                    { customPostProcess = null, processNeedAccess = true,}) {
   // Check the config object before proceeding
   if (!checkSanityConfig(globalConfig)) {
       return null;
@@ -1233,7 +1235,9 @@ export async function fetchSanity(query, isList) {
           if (globalConfig.sanityConfig.debug) {
               console.log("fetchSanity Results:", result);
           }
-          return isList ? result.result : result.result[0];
+          let results = isList ? result.result : result.result[0];
+          results = processNeedAccess ? needsAccessHandler(results) : results;
+          return postProcess ? postProcess(results) : results;
       } else {
           throw new Error('No results found');
       }
@@ -1242,6 +1246,27 @@ export async function fetchSanity(query, isList) {
       return null;
   }
 }
+
+function needsAccessHandler(results)
+{
+    const userPermissions = new Set[getUserPermissions()];
+    if (userPermissions.length === 0) return results;
+    results.forEach((result) => {
+        const permissions =  new Set(result.permission_id ?? []);
+        let needAccess = false;
+        if (permissions.length > 0) {
+
+        }
+    });
+    return results;
+}
+
+function getUserPermissions()
+{
+    //TODO need to grab user permissions once the user store is available
+    return [];
+}
+
 
 /**
  * Fetch CatalogueMetadata from Sanity. This information may be duplicated in the contentTypeConfig.js.

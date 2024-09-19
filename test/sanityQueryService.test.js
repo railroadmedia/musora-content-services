@@ -1,4 +1,6 @@
 import {initializeService} from '../src/services/config.js';
+import {getFieldsForContentType} from "../src/contentTypeConfig";
+import {fetchSanity} from "../src/services/sanity";
 
 const {
     fetchSongById,
@@ -57,6 +59,7 @@ describe('Sanity Queries', function () {
 
     });
 
+
     test('fetchArtists', async () => {
         const response = await fetchArtists('drumeo');
         const artistNames = response.map((x) => x.name);
@@ -70,10 +73,31 @@ describe('Sanity Queries', function () {
         expect(response).toBeGreaterThan(1000);
     });
 
-    test('fetchByRailContentId', async () => {
+    test('fetchSanity-WithPostProcess', async () => {
         const id = 380094;
-        const response = await fetchByRailContentId(id);
+        const query = `*[railcontent_id == ${id}]{
+        ${getFieldsForContentType('song')}
+          }`
+        const newSlug = 'keysmash1';
+        const newField = 1
+        const postProcess = (result) => {
+            result['new_field'] = newField;
+            result['slug'] = newSlug;
+            return result;
+        };
+        const response = await fetchSanity(query, false, postProcess);
+        //console.log(response);
         expect(response.id).toBe(id);
+        expect(response.new_field).toBe(newField);
+        expect(response.slug).toBe(newSlug);
+    });
+
+
+    test('fetchSanityPostProcess', async () => {
+        const id = 380094;
+        const response = await fetchSongById(id);
+        expect(response.id).toBe(id);
+
     });
 
     test('fetchByRailContentIds', async () => {
