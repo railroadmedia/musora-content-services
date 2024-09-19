@@ -463,6 +463,7 @@ export async function fetchAll(brand, type, {
     let config = contentTypeConfig[type] ?? {};
     let additionalFields = config?.fields ?? [];
     let isGroupByOneToOne = (groupBy ? config?.relationships?.[groupBy]?.isOneToOne : false) ?? false;
+    let webUrlPathType = config?.slug ?? type;
     const start = (page - 1) * limit;
     const end = start + limit;
 
@@ -491,6 +492,7 @@ export async function fetchAll(brand, type, {
     // Determine the group by clause
     let query = "";
     if (groupBy !== "" && isGroupByOneToOne) {
+        let webUrlPath = 'artists';
         query = `
         {
             "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]),
@@ -500,7 +502,7 @@ export async function fetchAll(brand, type, {
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
-                web_url_path,
+                'web_url_path': '/${brand}/${webUrlPath}/'+name+'?included_fieds[]=type,${type}',
                 'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
                 'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
                     ${fieldsString},
@@ -511,6 +513,7 @@ export async function fetchAll(brand, type, {
             [${start}...${end}]
         }`;
     } else if (groupBy !== "") {
+        let webUrlPath = (groupBy == 'genre')?'/genres':'';
         query = `
         {
             "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]),
@@ -520,7 +523,7 @@ export async function fetchAll(brand, type, {
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
-                web_url_path,
+                'web_url_path': select(defined(web_url_path)=> web_url_path +'?included_fieds[]=type,${type}',!defined(web_url_path)=> '/${brand}${webUrlPath}/'+name+'/${webUrlPathType}'),
                 'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
                 'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
                     ${fieldsString},
@@ -713,6 +716,7 @@ export async function fetchMethod(brand, slug) {
     status,
     title,
     video,
+    length_in_seconds,
     "type": _type,
     "levels": child[]->
       {
@@ -892,7 +896,11 @@ export async function fetchLessonContent(railContentId) {
           },
           ${assignmentsField}
           video,
-          length_in_seconds`;
+          length_in_seconds,
+          mp3_no_drums_no_click_url,
+          mp3_no_drums_yes_click_url,
+          mp3_yes_drums_no_click_url,
+          mp3_yes_drums_yes_click_url,`;
     const query = buildQuery(
         `railcontent_id == ${railContentId}`,
         filterParams,
