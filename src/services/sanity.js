@@ -282,8 +282,8 @@ export async function fetchNewReleases(brand, { page = 1, limit = 10, sort="-pub
       filterParams,
       fields,
       {
-          sortOrder: 'published_on desc',
-          end:5,
+          sortOrder: sortOrder,
+          end: end,
       });
   return fetchSanity(query, true);
 }
@@ -376,7 +376,7 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
 * Fetch content by a specific Railcontent ID.
 *
 * @param {string} id - The Railcontent ID of the content to fetch.
- * @param {string} contentType - The document type of content to fetch
+* @param {string} contentType - The document type of content to fetch
 * @returns {Promise<Object|null>} - A promise that resolves to the content object or null if not found.
 *
 * @example
