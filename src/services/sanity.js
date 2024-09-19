@@ -437,6 +437,9 @@ export async function fetchAll(brand, type, {
     const start = (page - 1) * limit;
     const end = start + limit;
 
+    // Construct the type filter
+    const typeFilter = type ? `&& _type == '${type}'` : "";
+
     // Construct the search filter
     const searchFilter = searchTerm
         ? groupBy !== "" ?
@@ -465,8 +468,8 @@ export async function fetchAll(brand, type, {
         let webUrlPath = 'artists';
         query = `
         {
-            "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]),
-            "entity": *[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]
+            "total": count(*[_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id == ${groupBy}._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]),
+            "entity": *[_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id == ${groupBy}._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]
             {
                 'id': _id,
                 'type': _type,
@@ -486,16 +489,16 @@ export async function fetchAll(brand, type, {
         let webUrlPath = (groupBy == 'genre')?'/genres':'';
         query = `
         {
-            "total": count(*[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]),
-            "entity": *[_type == '${groupBy}' && count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]
+            "total": count(*[_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]),
+            "entity": *[_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]
             {
                 'id': _id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': select(defined(web_url_path)=> web_url_path +'?included_fieds[]=type,${type}',!defined(web_url_path)=> '/${brand}${webUrlPath}/'+name+'/${webUrlPathType}'),
-                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
-                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id in ${groupBy}[]._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
+                'all_lessons_count': count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
+                'lessons': *[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...10]
@@ -506,10 +509,10 @@ export async function fetchAll(brand, type, {
     } else {
         query = `
         {
-            "entity": *[_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter} ${progressFilter}] | order(${sortOrder}) [${start}...${end}] {
+            "entity": *[brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}] | order(${sortOrder}) [${start}...${end}] {
                 ${fieldsString},
             },
-            "total": count(*[_type == '${type}' && brand == "${brand}" ${searchFilter} ${includedFieldsFilter} ${progressFilter}])
+            "total": count(*[brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}])
         }
     `;
     }
