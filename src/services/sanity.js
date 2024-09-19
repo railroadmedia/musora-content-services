@@ -69,7 +69,6 @@ export async function fetchArtists(brand) {
 * @returns {Promise<int|null>} - The fetched count of artists.
 */
 export async function fetchSongArtistCount(brand) {
-  const filter = new FilterBuilder()
   const query = `count(*[_type == 'artist']{'lessonsCount': count(*[_type == 'song' && brand == '${brand}' && references(^._id)]._id)}[lessonsCount > 0])`;
   return fetchSanity(query, true);
 }

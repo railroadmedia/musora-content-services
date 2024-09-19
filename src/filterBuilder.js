@@ -20,12 +20,9 @@ export class FilterBuilder {
         this.bypassPermissions = bypassPermissions;
         this.pullFutureContent = pullFutureContent;
         this.getFutureContentOnly = getFutureContentOnly;
-        // TODO should getFollowedContentOnly be re-added. Currently prod this is only based on subscribed coaches.
-        // If so update _applyFollowedContentOnly()
-        // this.getFollowedContentOnly = getFollowedContentOnly;
         this.getFutureScheduledContentsOnly = getFutureScheduledContentsOnly;
         this.filter = filter;
-        this.debug = true;
+        this.debug = process.env.DEBUG === 'true' || false;
     }
 
 
@@ -41,7 +38,6 @@ export class FilterBuilder {
             ._applyContentStatuses()
             ._applyPermissions()
             ._applyPublishingDateRestrictions()
-            ._applyFollowedContentOnly()
             ._trimAmpersands() // just in case
             .filter;
         if (this.debug) console.log('finalFilter', filter);
@@ -81,15 +77,6 @@ export class FilterBuilder {
     _getUserPermissions() {
         // TODO need user store up and running to complete this, until then just null check
         return this?.user?.permissions ?? [];
-    }
-
-    _applyFollowedContentOnly() {
-        return this;
-        // if (!this.getFollowedContentOnly) return this;
-        // // todo getfollowedContentFromUser from user store
-        // const followedContentIds = [];
-        // this._andWhere(`railcontent_id in ${FilterBuilder.arrayToStringRepresentation(followedContentIds)}`);
-        // return this;
     }
 
     _applyPublishingDateRestrictions() {

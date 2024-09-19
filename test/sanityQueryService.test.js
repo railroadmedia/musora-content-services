@@ -374,7 +374,7 @@ describe('Filter Builder', function () {
         expect(clauses[0].phrase).toBe(filter);
         expect(clauses[1].field).toBe('(status'); // extra ( because it's a multi part filter
         expect(clauses[1].operator).toBe('in');
-        // this needs to match on the
+        // getFutureScheduledContentsOnly doesn't make a filter that's splicable, so we match on the more static string
         const expected = "['published','unlisted'] || (status == 'scheduled' && published_on >=";
         console.log(clauses[1].condition);
         console.log(expected)
@@ -395,7 +395,7 @@ describe('Filter Builder', function () {
         expect(isMatch).toBeTruthy();
     });
 
-    test('withUserPermissions', async () => {
+    test('withUserPermissionsForPlusUser', async () => {
         const filter = 'railcontent_id = 111'
         const builder = new FilterBuilder(filter,
             {
