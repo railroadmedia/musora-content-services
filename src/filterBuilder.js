@@ -49,7 +49,7 @@ export class FilterBuilder {
         if (this.availableContentStatuses.length === 0) return this;
         // I'm not sure if I'm 100% on this logic, but this is my intepretation of the ContentRepository logic
         if (this.getFutureScheduledContentsOnly && this.availableContentStatuses.includes(this.STATUS_SCHEDULED)) {
-            // we must pull in future content here, otherwise
+            // we must pull in future content here, otherwise we'll restrict on content this is published in the past and remove any scheduled content
             this.pullFutureContent = true;
             const now = new Date().toISOString();
             let statuses = [...this.availableContentStatuses];
