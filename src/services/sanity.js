@@ -679,6 +679,7 @@ export async function fetchMethod(brand, slug) {
     status,
     title,
     video,
+    length_in_seconds,
     "type": _type,
     "levels": child[]->
       {
