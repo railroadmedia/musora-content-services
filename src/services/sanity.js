@@ -257,7 +257,7 @@ export async function fetchWorkouts(brand) {
 * @param {string} brand - The brand for which to fetch new releases.
 * @returns {Promise<Object|null>} - The fetched new releases data or null if not found.
 */
-export async function fetchNewReleases(brand, { page = 1, limit = 10, sort="-published_on" } = {}) {
+export async function fetchNewReleases(brand, { page = 1, limit = 20, sort="-published_on" } = {}) {
   const newTypes = getNewReleasesTypes(brand);
   const typesString = arrayToStringRepresentation(newTypes);
   const start = (page - 1) * limit;
@@ -510,7 +510,7 @@ export async function fetchAll(brand, type, {
                 'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
                     ${fieldsString},
                     ${groupBy}
-                }[0...10]
+                }[0...20]
             }
             |order(${sortOrder})
             [${start}...${end}]
@@ -531,7 +531,7 @@ export async function fetchAll(brand, type, {
                 'lessons': *[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
                     ${fieldsString},
                     ${groupBy}
-                }[0...10]
+                }[0...20]
             }
             |order(${sortOrder})
             [${start}...${end}]
