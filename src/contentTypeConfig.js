@@ -55,12 +55,14 @@ let contentTypeConfig = {
             'artist': {
                 isOneToOne: true
             }
-        }
+        },
+        'slug':'songs',
     },
     'song-tutorial': {
         'fields': [
             '"lesson_count": child_count',
-        ]
+        ],
+        'slug':'song-tutorials',
     },
     'challenge':{
         'fields': [
@@ -94,7 +96,8 @@ let contentTypeConfig = {
                 "instructors": instructor[]->name,
                 length_in_seconds,
             }`,
-        ]
+        ],
+        'slug':'courses',
     },
     'method': {
         'fields': [
@@ -119,7 +122,8 @@ let contentTypeConfig = {
     'workout': {
         'fields': [
             artistOrInstructorNameAsArray(),
-        ]
+        ],
+        'slug':'workouts',
     },
     'play-along': {
         'fields': [
@@ -129,7 +133,8 @@ let contentTypeConfig = {
             'mp3_no_drums_yes_click_url',
             'mp3_yes_drums_no_click_url',
             'bpm',
-        ]
+        ],
+        'slug':'play-alongs',
     },
     'pack': {
         'fields': [
@@ -144,14 +149,16 @@ let contentTypeConfig = {
     'rudiment': {
         'fields': [
             'sheet_music_thumbnail_url',
-        ]
+        ],
+        'slug':'rudiments',
     },
     'routine':{
         'fields': [
             `"description": ${descriptionField}`,
             'high_soundslice_slug',
             'low_soundslice_slug'
-        ]
+        ],
+        'slug':'routines',
     },
     'pack-children': {
         'fields': [
@@ -209,29 +216,30 @@ let contentTypeConfig = {
     // content with just the added 'instructors' Field
     'student-focus': contentWithInstructorsField,
     'quick-tips': contentWithInstructorsField,
-    'drum-fest-international-aa2022': contentWithInstructorsField,
+    'drum-fest-international-2022': contentWithInstructorsField,
     'spotlight': contentWithInstructorsField,
     'the-history-of-electronic-drums': contentWithInstructorsField,
     'backstage-secrets': contentWithInstructorsField,
     'question-and-answer': contentWithInstructorsField,
     'student-collaborations': contentWithInstructorsField,
-    'live': contentWithInstructorsField,
-    'solos': contentWithInstructorsField,
+    'live': { ...contentWithInstructorsField, 'slug': 'live-streams' },
+    'solo': { ...contentWithInstructorsField, 'slug': 'solos' },
     'boot-camps': contentWithInstructorsField,
     'gear-guids': contentWithInstructorsField,
     'performances': contentWithInstructorsField,
     'challenges': contentWithInstructorsField,
     'on-the-road': contentWithInstructorsField,
     // content with just the added 'sort' field
-    'podcasts': contentWithSortField,
+    'podcast': contentWithSortField,
     'in-rhythm': contentWithSortField,
-    'diy-drum-experiments': contentWithSortField,
+    'diy-drum-experiment': contentWithSortField,
     'rhythmic-adventures-of-captain-carson': contentWithSortField,
     'study-the-greats': contentWithSortField,
     'rhythms-from-another-planet': contentWithSortField,
     'paiste-cymbals': contentWithInstructorsField,
     'behind-the-scenes': contentWithSortField,
     'exploring-beats': contentWithSortField,
+    'sonor': contentWithSortField,
 }
 
 function getNewReleasesTypes(brand) {
@@ -282,7 +290,7 @@ function getFieldsForContentType(contentType, asQueryString=true) {
 function filtersToGroq(filters) {
     const groq = filters.map(field => {
             let [key, value] = field.split(',');
-            if(key && value){
+            if(key && value && field.split(',').length === 2){
                 switch (key) {
                     case 'difficulty':
                       return `&& difficulty_string == "${value}"`;

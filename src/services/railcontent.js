@@ -150,15 +150,15 @@ export async function fetchSongsInProgress(brand) {
  *   .then(songs => console.log(songs))
  *   .catch(error => console.error(error));
  */
-export async function fetchContentInProgress(type="all", brand, {
-    page = 1,
-    limit = 10,
-  } = {}) {
+export async function fetchContentInProgress(type="all", brand, { page, limit } = {}) {
     let url;
+    const limitString = limit ? `&limit=${limit}` : '';
+    const pageString = page ? `&page=${page}` : '';
+
     if(type === "all") {
-        url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?brand=${brand}&limit=${limit}&page=${page}`;
+        url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?brand=${brand}${limitString}${pageString}`;
     } else {
-        url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}&limit=${limit}&page=${page}`;
+        url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}${limitString}${pageString}`;
     }
     const headers = {
         'Content-Type': 'application/json',
@@ -192,15 +192,15 @@ export async function fetchContentInProgress(type="all", brand, {
  *   .then(songs => console.log(songs))
  *   .catch(error => console.error(error));
  */
-export async function fetchCompletedContent(type="all", brand, {
-    page = 1,
-    limit = 10,
-  } = {}) {
+export async function fetchCompletedContent(type="all", brand, { page, limit } = {}) {
     let url;
+    const limitString = limit ? `&limit=${limit}` : '';
+    const pageString = page ? `&page=${page}` : '';
+
     if(type === "all") {
-        url = `/content/completed/${globalConfig.railcontentConfig.userId}?brand=${brand}&limit=${limit}&page=${page}`;
+        url = `/content/completed/${globalConfig.railcontentConfig.userId}?brand=${brand}${limitString}${pageString}`;
     } else {
-        url = `/content/completed/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}&limit=${limit}&page=${page}`;
+        url = `/content/completed/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}${limitString}${pageString}`;
     }
     const headers = {
         'Content-Type': 'application/json',

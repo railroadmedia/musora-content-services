@@ -1,6 +1,7 @@
 import {initializeService} from '../src/services/config.js';
 import {getFieldsForContentType} from "../src/contentTypeConfig";
 import {fetchSanity} from "../src/services/sanity";
+import {log} from './log.js';
 
 const {
     fetchSongById,
@@ -10,32 +11,33 @@ const {
     fetchAllSongs,
     fetchSongFilterOptions,
     fetchSongCount,
-    fetchWorkouts,
     fetchNewReleases,
     fetchUpcomingEvents,
     fetchByRailContentId,
     fetchByRailContentIds,
     fetchAll,
     fetchAllFilterOptions,
-    fetchMethodNextLesson,
-    fetchMethodChildrenIds,
-    fetchNextPreviousLesson,
-    fetchRelatedLessons,
-    fetchPackAll,
-    fetchPackChildren,
-    fetchLessonContent,
-    getSortOrder,
-    fetchParentByRailContentId,
-    fetchChildren,
-    fetchMethod,
-    fetchMethods,
     fetchFoundation,
+    fetchMethods,
+    fetchMethod,
+    fetchRelatedLessons,
     fetchAllPacks,
-    fetchPacksAll,
+    fetchPackAll,
+    fetchLessonContent,
+    fetchCourseOverview,
+    fetchChildren,
+    fetchParentByRailContentId,
+    fetchLiveEvent,
+    fetchChallengeOverview,
     fetchCoachLessons,
     fetchByReference,
-    fetchScheduledReleases
+    fetchScheduledReleases,
+    getSortOrder,
 } = require('../src/services/sanity.js');
+
+const {
+    FilterBuilder,
+} = require('../src/filterBuilder.js');
 
 describe('Sanity Queries', function () {
     beforeEach(() => {
@@ -46,7 +48,8 @@ describe('Sanity Queries', function () {
                 dataset: process.env.SANITY_DATASET,
                 useCachedAPI: process.env.SANITY_USE_CACHED_API === 'true' || true,
                 version: '2021-06-07',
-                debug: process.env.DEBUG === 'true' || false
+                debug: process.env.DEBUG === 'true' || false,
+                useDummyRailContentMethods: true,
             }
         };
         initializeService(config);
@@ -69,7 +72,7 @@ describe('Sanity Queries', function () {
 
     test('fetchSongArtistCount', async () => {
         const response = await fetchSongArtistCount('drumeo');
-        // console.log(response);
+        log(response);
         expect(response).toBeGreaterThan(1000);
     });
 
@@ -85,7 +88,7 @@ describe('Sanity Queries', function () {
             result['slug'] = newSlug;
             return result;
         };
-        const response = await fetchSanity(query, false, postProcess);
+        const response = await fetchSanity(query, false, {customPostProcess: postProcess});
         //console.log(response);
         expect(response.id).toBe(id);
         expect(response.new_field).toBe(newField);
@@ -95,7 +98,14 @@ describe('Sanity Queries', function () {
 
     test('fetchSanityPostProcess', async () => {
         const id = 380094;
-        const response = await fetchSongById(id);
+        const response = await fetchByRailContentId(id, "song");
+        expect(response.id).toBe(id);
+    });
+
+    test('fetchChallengeOverview', async () => {
+        const id = 402197;
+        const response = await fetchChallengeOverview(id);
+        expect(response.lessons).toBeDefined();
         expect(response.id).toBe(id);
 
     });
@@ -111,18 +121,49 @@ describe('Sanity Queries', function () {
 
     });
 
+    test('fetchUpcomingEvents', async () => {
+        const response = await fetchUpcomingEvents('drumeo', {});
+        expect(response.length).toBeGreaterThan(0);
+    });
+
+    test('fetchUpcomingNewReleases', async () => {
+        const response = await fetchNewReleases('drumeo');
+        expect(response.length).toBeGreaterThan(0);
+    });
+
+
     test('fetchLessonContent', async () => {
         const id = 380094;
         const response = await fetchLessonContent(id);
         expect(response.id).toBe(id);
     });
 
+
+    test('fetchCourseOverview', async () => {
+        const id = 310414;
+        const response = await fetchCourseOverview(id);
+        expect(response.id).toBe(id);
+        expect(response.type).toBe('course');
+    });
+
+    test('fetchSongCount', async () => {
+        const response = await fetchSongCount('drumeo');
+        expect(response).toBeGreaterThan(1000);
+    });
+
     test('fetchAllSongs', async () => {
         const response = await fetchAllSongs('drumeo', {});
-        // console.log(response);
+        log(response);
         expect(response.entity[0].soundslice).toBeDefined();
         expect(response.entity[0].artist_name).toBeDefined();
         expect(response.entity[0].instrumentless).toBeDefined();
+    });
+
+    test('fetchSongFilterOptions', async () => {
+        const response = await fetchSongFilterOptions('drumeo', {});
+        log(response);
+        expect(response.genre).toBeDefined();
+        expect(response.difficulty).toBeDefined();
     });
 
     test('fetchAllSongsGroupByArtist', async () => {
@@ -133,22 +174,28 @@ describe('Sanity Queries', function () {
     }, 100000);
 
 
+    test('fetchNewReleases', async () => {
+        const response = await fetchNewReleases('drumeo');
+        log(response);
+        expect(response[0].id).toBeDefined();
+    });
+
     test('fetchAllWorkouts', async () => {
         const response = await fetchAll('drumeo', 'workout',{});
-        // console.log(response);
+        log(response);
         expect(response.entity[0].id).toBeDefined();
     });
 
     test('fetchAllInstructorField', async () => {
         const response = await fetchAll('drumeo', 'quick-tips',{searchTerm: 'Domino Santantonio'});
-        // console.log(response);
+        log(response);
         expect(response.entity[0].id).toBeDefined();
         expect(response.entity[0].instructors).toBeTruthy();
     });
 
     test('fetchAllSortField', async () => {
         const response = await fetchAll('drumeo', 'rhythmic-adventures-of-captain-carson',{});
-        // console.log(response);
+        log(response);
         expect(response.entity[0].id).toBeDefined();
         expect(response.entity[0].sort).toBeDefined();
     });
@@ -156,7 +203,7 @@ describe('Sanity Queries', function () {
 
     test('fetchAllChallenges', async () => {
         const response = await fetchAll('drumeo', 'challenge',{});
-        // console.log(response);
+        log(response);
         expect(response.entity[0].registration_url).toBeDefined();
         expect(response.entity[0].enrollment_start_time).toBeDefined();
         expect(response.entity[0].enrollment_end_time).toBeDefined();
@@ -170,22 +217,22 @@ describe('Sanity Queries', function () {
 
     test('fetchAll-CustomFields', async () => {
         let response = await fetchAll('drumeo', 'challenge',{customFields:['garbage']});
-        // console.log(response);
+        log(response);
         expect(response.entity[0].garbage).toBeDefined();
         expect(response.entity[0].id).toBeDefined();
 
         response = await fetchAll('drumeo', 'challenge',{useDefaultFields: false, customFields:['garbage']});
-        // console.log(response);
+        log(response);
         expect(response.entity[0].garbage).toBeDefined();
         expect.not.objectContaining(response.entity[0].id);
     });
 
     test('fetchRelatedLessons', async () => {
         const id = 380094;
-        const document = await fetchByRailContentId(id);
+        const document = await fetchByRailContentId(id, 'song');
         let artist = document.artist.name;
         const response = await fetchRelatedLessons(id, 'singeo');
-        let relatedDoc = await fetchByRailContentId(response.related_lessons[0].id);
+        let relatedDoc = await fetchByRailContentId(response.related_lessons[0].id, 'song');
         // match on artist or any genre
         let isMatch = artist === relatedDoc.artist.name;
         isMatch = isMatch || document.genre.some((genre) => {
@@ -201,8 +248,8 @@ describe('Sanity Queries', function () {
         const id = 191338; ////https://web-staging-one.musora.com/admin/studio/publishing/structure/play-along;play-along_191338
         const expectedChildID = 191492;
         const response = await fetchChildren(id);
-        // console.log('num children', response.length);
-        // console.log(response);
+        log('num children', response.length);
+        log(response);
         
         expect(response.length > 0).toBeTruthy();
         const foundExpectedChild = response.some((child) => {
@@ -233,15 +280,14 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchMethod', async () => {
-        const response = await fetchMethod('drumeo', 'drumeo-method');
-        //console.log(response);
+        const response = await fetchMethod('drumeo', 'drumeo-method');log(response);
         expect(response).toBeDefined();
         expect(response.levels.length).toBeGreaterThan(0);
     });
 
     test('fetchMethods', async () => {
         const response = await fetchMethods('drumeo');
-        // console.log(response);
+        log(response);
         expect(response.length).toBeGreaterThan(0);
         expect(response[0].type).toBe('learning-path');
     });
@@ -274,15 +320,14 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchFoundation', async () => {
-        const response = await fetchFoundation('foundations-2019');
-        //  console.log(response);
+        const response = await fetchFoundation('foundations-2019');log(response);
         expect(response.units.length).toBeGreaterThan(0);
         expect(response.type).toBe('foundation');
     });
 
     test('fetchPackAll', async () => {
         const response = await fetchPackAll(212899); //https://web-staging-one.musora.com/admin/studio/publishing/structure/pack;pack_212899%2Cinspect%3Don
-        // console.log(response);
+        log(response);
         expect(response.slug).toBe('creative-control');
     });
 
@@ -299,7 +344,7 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchCoachLessons', async () => {
-        const response = await fetchCoachLessons('drumeo',233797);
+        const response = await fetchCoachLessons('drumeo',411493, {});
         expect(response.entity.length).toBeGreaterThan(0);
     });
 
@@ -317,4 +362,167 @@ describe('Sanity Queries', function () {
         const response = await fetchScheduledReleases('drumeo', {});
         expect(response.length).toBeGreaterThan(0);
     });
+
+    test('fetchAll-GroupBy-Genre', async () => {
+        let response = await fetchAll('drumeo', 'solo',{groupBy: 'genre'});
+        log(response);
+        expect(response.entity[0].web_url_path).toContain('/drumeo/genres/');
+    });
+
+    test('fetchAll-GroupBy-Artists', async () => {
+        let response = await fetchAll('drumeo', 'song',{groupBy: 'artist'});
+        log(response);
+        expect(response.entity[0].web_url_path).toContain('/drumeo/artists/');
+    });
+
+    test('fetchAll-GroupBy-Instructors', async () => {
+        let response = await fetchAll('drumeo', 'course',{groupBy: 'instructor'});
+        log(response);
+        expect(response.entity[0].web_url_path).toContain('/drumeo/coaches/');
+    });
+});
+
+describe('Filter Builder', function () {
+
+    test('baseConstructor', async () => {
+        const filter = 'railcontent_id = 111'
+        let builder = new FilterBuilder(filter);
+        let finalFilter = builder.buildFilter(filter);
+        let clauses = spliceFilterForAnds(finalFilter);
+        expect(clauses[0].phrase).toBe(filter);
+        expect(clauses[1].field).toBe('published_on');
+
+        builder = new FilterBuilder();
+        finalFilter = builder.buildFilter(filter);
+        clauses = spliceFilterForAnds(finalFilter);
+        expect(clauses[0].field).toBe('published_on');
+        expect(clauses[0].operator).toBe('<=');
+    });
+
+    test('withOnlyFilterAvailableStatuses', async () => {
+        const filter = 'railcontent_id = 111'
+        const builder =  FilterBuilder.withOnlyFilterAvailableStatuses(filter,['published', 'unlisted']);
+        const finalFilter = builder.buildFilter();
+        const clauses = spliceFilterForAnds(finalFilter);
+        expect(clauses[0].phrase).toBe(filter);
+        expect(clauses[1].field).toBe('status');
+        expect(clauses[1].operator).toBe('in');
+        // not sure I like this
+        expect(clauses[1].condition).toBe("['published','unlisted']");
+        expect(clauses[2].field).toBe('published_on');
+    });
+
+    test('withContentStatusAndFutureScheduledContent', async () => {
+        const filter = 'railcontent_id = 111'
+        const builder =  new FilterBuilder(filter,{
+            availableContentStatuses: ['published', 'unlisted', 'scheduled'],
+            getFutureScheduledContentsOnly: true});
+        const finalFilter = builder.buildFilter();
+        const clauses = spliceFilterForAnds(finalFilter);
+        expect(clauses[0].phrase).toBe(filter);
+        expect(clauses[1].field).toBe('(status'); // extra ( because it's a multi part filter
+        expect(clauses[1].operator).toBe('in');
+        // getFutureScheduledContentsOnly doesn't make a filter that's splicable, so we match on the more static string
+        const expected = "['published','unlisted'] || (status == 'scheduled' && published_on >=";
+        console.log(clauses[1].condition);
+        console.log(expected)
+        const isMatch = finalFilter.includes(expected);
+        expect(isMatch).toBeTruthy();
+    });
+
+    test('withUserPermissions', async () => {
+        const filter = 'railcontent_id = 111'
+        const builder = new FilterBuilder(filter,
+            { user: {
+                    user: {},
+                    permissions: [91, 92],
+                }});
+        const finalFilter = builder.buildFilter();
+        const expected = "references(*[_type == 'permission' && railcontent_id in [91,92]]._id)"
+        const isMatch = finalFilter.includes(expected);
+        expect(isMatch).toBeTruthy();
+    });
+
+    test('withUserPermissionsForPlusUser', async () => {
+        const filter = 'railcontent_id = 111'
+        const builder = new FilterBuilder(filter,
+            {
+                user: getPlusUser()
+            });
+        const finalFilter = builder.buildFilter();
+        const expected = "references(*[_type == 'permission' && railcontent_id in [91,92]]._id)"
+        const isMatch = finalFilter.includes(expected);
+        expect(isMatch).toBeTruthy();
+    });
+
+    test('withPermissionBypass', async () => {
+        const filter = 'railcontent_id = 111'
+        const builder = new FilterBuilder(filter,
+            {
+                user: getPlusUser(),
+                bypassPermissions:true
+            });
+        const finalFilter = builder.buildFilter();
+        const expected = "references(*[_type == 'permission' && railcontent_id in [91,92]]._id)"
+        const isMatch = finalFilter.includes(expected);
+        expect(isMatch).toBeFalsy();
+        const clauses = spliceFilterForAnds(finalFilter);
+        expect(clauses[0].field).toBe('railcontent_id');
+        expect(clauses[1].field).toBe('published_on');
+    });
+
+
+    test('withPublishOnRestrictions', async () => {
+        // testing dates is a pain more frustration than I'm willing to deal with, so I'm just testing operators.
+
+        const filter = 'railcontent_id = 111'
+        let builder =  new FilterBuilder(filter, {
+            user: {},
+            pullFutureContent: true,
+        });
+
+        let finalFilter = builder.buildFilter();
+        let clauses = spliceFilterForAnds(finalFilter);
+        expect(clauses[0].phrase).toBe(filter);
+
+        expect(clauses[1].field).toBe('published_on');
+        expect(clauses[1].operator).toBe('<=');
+        const restrictionDate = new Date(clauses[1].condition)
+        const now = new Date();
+        expect(now.getTime()).toBeLessThan(restrictionDate.getTime());
+
+        builder = new FilterBuilder(filter,
+            {
+                user: {},
+                getFutureContentOnly: true,
+        });
+        finalFilter = builder.buildFilter();
+        clauses = spliceFilterForAnds(finalFilter);
+        expect(clauses[0].phrase).toBe(filter);
+        expect(clauses[1].field).toBe('published_on');
+        expect(clauses[1].operator).toBe('>=');
+    });
+
+    function getPlusUser() {
+        return {
+            permissions: [91,92],
+        }
+    }
+
+    function spliceFilterForAnds(filter) {
+        // this will not correctly split complex filters with && and || conditions.
+        let phrases = filter.split(' && ');
+        let clauses= [];
+        phrases.forEach((phrase) => {
+            let  field = phrase.substring(0, phrase.indexOf(' '));
+            //if(field.charAt(0) === '(' ) field = field.substring(1);
+            const temp = phrase.substring(phrase.indexOf(' ') + 1);
+            const operator = temp.substring(0, temp.indexOf(' '));
+            let condition = temp.substring(temp.indexOf(' ') + 1);
+            //if(condition.charAt(condition.length) === ')') condition = condition.slice(-1);
+            clauses.push({phrase, field, operator, condition});
+        });
+        return clauses;
+    }
+
 });
