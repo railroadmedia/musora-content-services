@@ -1129,6 +1129,21 @@ export async function fetchCourseOverview(id) {
 }
 
 /**
+ * Fetch the data needed for an overview screen. It can be course, learning-path-course, unit
+ * @param {number} id - The Railcontent ID of the content
+ * @param {string} contentType - The type of the content
+ * @returns {Promise<Object|null>} - The course information and lessons or null if not found.
+ *
+ * @example
+ * fetchOverview(336470, 'course')
+ *   .then(course => console.log(course))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchOverview(id, contentType) {
+  return fetchByRailContentId(id, contentType);
+}
+
+/**
  * Fetch the data needed for the coach screen.
  * @param {string} id - The Railcontent ID of the coach
  * 
@@ -1272,6 +1287,7 @@ export async function fetchSanity(query, isList) {
   if (globalConfig.sanityConfig.debug) {
       console.log("fetchSanity Query:", query);
   }
+
   const perspective = globalConfig.sanityConfig.perspective ?? 'published';
   const encodedQuery = encodeURIComponent(query);
   const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api';
