@@ -1256,7 +1256,6 @@ async function needsAccessDecorator(results)
 {
     let userPermissions = await getUserPermissions();
     userPermissions = new Set(userPermissions);
-    if (userPermissions.length === 0) return results;
     if (Array.isArray(results)) {
         results.forEach((result) => {
             result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
