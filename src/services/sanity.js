@@ -1272,7 +1272,6 @@ export async function fetchSanity(query, isList) {
   if (globalConfig.sanityConfig.debug) {
       console.log("fetchSanity Query:", query);
   }
-
   const perspective = globalConfig.sanityConfig.perspective ?? 'published';
   const encodedQuery = encodeURIComponent(query);
   const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api';
