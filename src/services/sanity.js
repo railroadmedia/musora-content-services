@@ -13,9 +13,10 @@ import {
     getUpcomingEventsTypes,
     getNewReleasesTypes,
 } from "../contentTypeConfig";
+
 import {globalConfig} from "./config";
 
-import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
+import { fetchUserPermissions } from './railcontent.js';
 
 /**
 * Fetch a song by its document ID from Sanity.
@@ -1206,8 +1207,12 @@ export async function fetchGenreLessons(brand, name, contentType, {
  *   .catch(error => console.error(error));
  */
 
-export async function fetchSanity(query, isList,
-                                    { customPostProcess = null, processNeedAccess = true,}) {
+export async function fetchSanity(query,
+                                  isList,
+                                  { customPostProcess = null,
+                                    processNeedAccess = true,} = {}
+) {
+
   // Check the config object before proceeding
   if (!checkSanityConfig(globalConfig)) {
       return null;
@@ -1236,8 +1241,8 @@ export async function fetchSanity(query, isList,
               console.log("fetchSanity Results:", result);
           }
           let results = isList ? result.result : result.result[0];
-          results = processNeedAccess ? needsAccessDecorator(results) : results;
-          return postProcess ? postProcess(results) : results;
+          results = processNeedAccess ? await needsAccessDecorator(results) : results;
+          return customPostProcess ? customPostProcess(results) : results;
       } else {
           throw new Error('No results found');
       }
@@ -1247,31 +1252,39 @@ export async function fetchSanity(query, isList,
   }
 }
 
-function needsAccessDecorator(results)
+async function needsAccessDecorator(results)
 {
-    const userPermissions = new Set[getUserPermissions()];
+    let userPermissions = await getUserPermissions();
+    userPermissions = new Set(userPermissions);
     if (userPermissions.length === 0) return results;
-    results.forEach((result) => {
-        const permissions =  new Set(result.permission_id ?? []);
-        if (permissions.length === 0) {
-            result['need_access'] = false;
-            return;
-        }
-        for (let permission of permissions) {
-            if (userPermissions.has(permission)) {
-                result['need_access'] = false;
-                return;
-            }
-        }
-        result['need_access'] = true;
-    });
+    if (Array.isArray(results)) {
+        results.forEach((result) => {
+            result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+        });
+    } else {
+        results['need_access'] = doesUserNeedAccessToContent(results, userPermissions);
+    }
     return results;
 }
 
-function getUserPermissions()
+function doesUserNeedAccessToContent(result, userPermissions)
 {
-    //TODO need to grab user permissions once the user store is available
-    return [];
+    const permissions =  new Set(result.permission_id ?? []);
+    if (permissions.length === 0) {
+        return false;
+    }
+    for (let permission of permissions) {
+        if (userPermissions.has(permission)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+async function getUserPermissions()
+{
+    const permissions = await fetchUserPermissions();
+    return permissions;
 }
 
 
