@@ -1236,7 +1236,7 @@ export async function fetchSanity(query, isList,
               console.log("fetchSanity Results:", result);
           }
           let results = isList ? result.result : result.result[0];
-          results = processNeedAccess ? needsAccessHandler(results) : results;
+          results = processNeedAccess ? needsAccessDecorator(results) : results;
           return postProcess ? postProcess(results) : results;
       } else {
           throw new Error('No results found');
@@ -1247,16 +1247,23 @@ export async function fetchSanity(query, isList,
   }
 }
 
-function needsAccessHandler(results)
+function needsAccessDecorator(results)
 {
     const userPermissions = new Set[getUserPermissions()];
     if (userPermissions.length === 0) return results;
     results.forEach((result) => {
         const permissions =  new Set(result.permission_id ?? []);
-        let needAccess = false;
-        if (permissions.length > 0) {
-
+        if (permissions.length === 0) {
+            result['need_access'] = false;
+            return;
         }
+        for (let permission of permissions) {
+            if (userPermissions.has(permission)) {
+                result['need_access'] = false;
+                return;
+            }
+        }
+        result['need_access'] = true;
     });
     return results;
 }

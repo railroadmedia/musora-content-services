@@ -40,6 +40,7 @@ import {
     fetchCompletedContent,
     fetchVimeoData,
     fetchContentPageUserData,
+    fetchUserPermissions,
 } from './services/railcontent.js';
 
 import { initializeService } from './services/config.js';
@@ -86,6 +87,7 @@ declare module 'musora-content-services' {
         fetchScheduledReleases,
         fetchArtistLessons,
         fetchGenreLessons,
+        fetchUserPermissions,
     }
     
 }

@@ -48,6 +48,7 @@ import {
   fetchCompletedContent,
   fetchVimeoData,
   fetchContentPageUserData,
+  fetchUserPermissions,
 } from './services/railcontent.js';
 
 
@@ -97,4 +98,5 @@ export {
     fetchArtistLessons,
     fetchGenreLessons,
     fetchRelatedMethodLessons,
+    fetchUserPermissions,
 }

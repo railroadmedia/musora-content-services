@@ -180,6 +180,48 @@ export async function fetchContentInProgress(type="all", brand, {
 }
 
 /**
+ * Fetches a list of content that is currently in progress for the current user.
+ *
+ * @param {string} type - The content type associated with the content.
+ * @param {string} brand - The brand associated with the content.
+ * @param {number} [params.limit=20] - The limit of results per page.
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @returns {Promise<Object|null>} - Returns an object containing in-progress content if found, otherwise null.
+ * @example
+ * fetchContentInProgress('song', 'drumeo')
+ *   .then(songs => console.log(songs))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchContentInProgress(type="all", brand, {
+    page = 1,
+    limit = 10,
+} = {}) {
+    let url;
+    if(type === "all") {
+        url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?brand=${brand}&limit=${limit}&page=${page}`;
+    } else {
+        url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}&limit=${limit}&page=${page}`;
+    }
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
+    };
+    try {
+        const response = await fetchAbsolute(url, { headers });
+        const result = await response.json();
+        if(result){
+            //console.log('contentInProgress', result);
+            return result;
+        } else {
+            console.log('result not json');
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
+
+/**
  * Fetches a list of content that has been completed for the current user.
  *
  * @param {string} type - The content type associated with the content.
@@ -254,15 +296,6 @@ export async function fetchContentPageUserData(contentId) {
     }
 }
 
-function fetchAbsolute(url, params) { 
-    if(globalConfig.railcontentConfig.baseUrl) {
-        if (url.startsWith('/')) {
-            return fetch(globalConfig.railcontentConfig.baseUrl + url, params)
-        }
-    } 
-    return fetch(url, params);
-}
-
 export async function fetchUserContext() {
     let url = `/content/user_data_all`;
     const headers = {
@@ -270,7 +303,7 @@ export async function fetchUserContext() {
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
     try {
-        const response = await fetch(url, {headers});
+        const response = await fetchAbsolute(url, {headers});
         const result = await response.json();
         if (result) {
             console.log('fetchUserContext', result);
@@ -284,13 +317,22 @@ export async function fetchUserContext() {
     }
 }
 
+export async function fetchUserPermissions() {
+    let url = `/content/user_data_permissions`;
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
+    };
+    return fetchHandler(url, 'get');
+}
+
 export async function fetchHandler(url, method = "get") {
     const headers = {
         'Content-Type': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
     try {
-        const response = await fetch(url, {method, headers});
+        const response = await fetchAbsolute(url, {method, headers});
         const result = await response.json();
         if (result) {
             return result;
@@ -311,4 +353,13 @@ export async function fetchLikeContent(contentId) {
 export async function fetchUnlikeContent(contentId) {
     let url = `/content/${contentId}/unlike`;
     return await fetchHandler(url, "post");
+}
+
+function fetchAbsolute(url, params) {
+    if(globalConfig.railcontentConfig.baseUrl) {
+        if (url.startsWith('/')) {
+            return fetch(globalConfig.railcontentConfig.baseUrl + url, params)
+        }
+    }
+    return fetch(url, params);
 }
