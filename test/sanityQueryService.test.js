@@ -31,6 +31,8 @@ const {
     fetchByReference,
     fetchScheduledReleases,
     getSortOrder,
+    fetchShowsData,
+    fetchMetadata
 } = require('../src/services/sanity.js');
 
 const {
@@ -355,6 +357,19 @@ describe('Sanity Queries', function () {
         log(response);
         expect(response.entity[0].web_url_path).toContain('/drumeo/coaches/');
     });
+
+    test('fetchShowsData', async () => {
+        const response = await fetchShowsData('singeo');
+        log(response);
+        expect(response.length).toBeGreaterThan(0);
+    });
+
+    test('fetchMetadata', async () => {
+        const response = await fetchMetadata('drumeo','song');
+        log(response);
+        expect(response.tabs.length).toBeGreaterThan(0);
+    });
+
 });
 
 describe('Filter Builder', function () {
