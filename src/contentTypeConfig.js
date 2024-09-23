@@ -918,7 +918,7 @@ const contentMetadata = {
         'coaches': {
             name: 'Coaches',
             icon: 'icon-coach',
-            description: "Your drumming journey is unique. You need personalized coaching that helps you reach your goals. Learn from some of the best drummers in the world!",
+            description: "Tackle your next guitar goal with bite-sized courses from many of the world's best guitarists.",
             allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'creativity', 'lifestyle'],
             sortBy: '-published_on',
         },
