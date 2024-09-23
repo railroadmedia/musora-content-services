@@ -616,7 +616,7 @@ const contentMetadata = {
         'coaches': {
             name: 'Coaches',
             icon: 'icon-coach',
-            description: "Your drumming journey is unique. You need personalized coaching that helps you reach your goals. Learn from some of the best drummers in the world!",
+            description: "Your piano journey is unique. You need personalized coaching that helps you reach your goals. Learn from some of the best pianists in the world!",
             allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'creativity', 'lifestyle'],
             sortBy: '-published_on',
         },
