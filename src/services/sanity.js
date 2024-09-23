@@ -1479,7 +1479,7 @@ function processMetadata(brand, type, withFilters = false) {
 
     if (withFilters) {
         Object.keys(metadataElement).forEach(key => {
-            if (key !== 'thumbnailUrl' && key !== 'name' && key !== 'description') {
+            if ( !['thumbnailUrl', 'name', 'description'].includes(key) ) {
                 processedData[key] = metadataElement[key];
             }
         });
