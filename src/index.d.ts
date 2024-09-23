@@ -32,7 +32,7 @@ import {
     fetchArtistLessons,
     fetchGenreLessons,
     fetchShowsData,
-    fetchCatalogMetadata,
+    fetchMetadata,
   } from './services/sanity.js';
 
 import { 
@@ -89,7 +89,7 @@ declare module 'musora-content-services' {
         fetchArtistLessons,
         fetchGenreLessons,
         fetchShowsData,
-        fetchCatalogMetadata,
+        fetchMetadata,
     }
     
 }
