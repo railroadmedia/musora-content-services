@@ -12,6 +12,8 @@ import {
     filtersToGroq,
     getUpcomingEventsTypes,
     getNewReleasesTypes,
+    showsTypes,
+    contentMetadata
 } from "../contentTypeConfig";
 import {globalConfig} from "./config";
 
@@ -1327,6 +1329,48 @@ export async function fetchCatalogMetadata(contentType)
     return fetchSanity(query, false);
 }
 
+/**
+ * Fetch shows data for a brand.
+ *
+ * @param brand - The brand for which to fetch shows.
+ * @returns {Promise<[]>}
+ *
+ *  @example
+ *
+ * fetchShowsData('drumeo')
+ *   .then(data => console.log(data))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchShowsData(brand) {
+    let shows = showsTypes[brand] ?? [];
+    const showsInfo = [];
+
+    shows.forEach(type => {
+        const processedData = processMetadata(brand, type);
+        if (processedData) showsInfo.push(processedData)
+    });
+
+    return showsInfo;
+}
+
+/**
+ * Fetch metadata from the contentTypeConfig.js based on brand and type.
+ *
+ * @param {string} brand - The brand for which to fetch metadata.
+ * @param {string} type - The type for which to fetch metadata.
+ * @returns {Promise<{name, description, type: *, thumbnailUrl}>}
+ *
+ * @example
+ *
+ * fetchMetadata('drumeo','song')
+ *   .then(data => console.log(data))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchMetadata(brand, type) {
+    const processedData = processMetadata(brand, type, true);
+    return processedData ? processedData : {};
+}
+
 
 //Helper Functions
 function arrayJoinWithQuotes(array, delimiter = ',') {
@@ -1421,7 +1465,28 @@ function     buildEntityAndTotalQuery(
     }`;
     return query;
 }
+function processMetadata(brand, type, withFilters = false) {
+    const metadataElement = contentMetadata[brand]?.[type];
+    if (!metadataElement) {
+        return null;
+    }
+    const processedData = {
+        type,
+        thumbnailUrl: metadataElement.thumbnailUrl || null,
+        name: metadataElement.name || null,
+        description: metadataElement.description || null
+    };
 
+    if (withFilters) {
+        Object.keys(metadataElement).forEach(key => {
+            if ( !['thumbnailUrl', 'name', 'description'].includes(key) ) {
+                processedData[key] = metadataElement[key];
+            }
+        });
+    }
+
+    return processedData;
+}
 
 
 
