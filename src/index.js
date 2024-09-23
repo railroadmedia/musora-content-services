@@ -39,6 +39,8 @@ import {
   fetchArtistLessons,
   fetchGenreLessons,
   fetchRelatedMethodLessons,
+  fetchShowsData,
+  fetchCatalogMetadata,
 } from './services/sanity.js';
 
 import { 
@@ -97,4 +99,6 @@ export {
     fetchArtistLessons,
     fetchGenreLessons,
     fetchRelatedMethodLessons,
+    fetchShowsData,
+    fetchCatalogMetadata,
 }
