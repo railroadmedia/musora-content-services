@@ -1336,8 +1336,14 @@ let contentTypeConfig = {
     'song-tutorial': {
         'fields': [
             '"lesson_count": child_count',
-        ],
-        'slug':'song-tutorials',
+            `"lessons": child[]->{
+                "id": railcontent_id,
+                title,
+                "image": thumbnail.asset->url,
+                "instructors": instructor[]->name,
+                length_in_seconds,
+            }`,
+        ]
     },
     'challenge':{
         'fields': [
@@ -1392,6 +1398,23 @@ let contentTypeConfig = {
             '"type": _type',
             '"url": web_url_path',
             'xp',
+        ]
+    },
+    'learning-path-course': {
+        'fields': [
+            '"lesson_count": child_count',
+            '"instructors": instructor[]->name',
+            `"description": ${descriptionField}`,
+            'resource',
+            'xp',
+            'total_xp',
+            `"lessons": child[]->{
+                "id": railcontent_id,
+                title,
+                "image": thumbnail.asset->url,
+                "instructors": instructor[]->name,
+                length_in_seconds,
+            }`,
         ]
     },
     'workout': {
@@ -1470,6 +1493,23 @@ let contentTypeConfig = {
                 xp,
             }`
         ]
+    },
+    'unit': {
+        'fields': [
+            '"lesson_count": child_count',
+            '"instructors": instructor[]->name',
+            `"description": ${descriptionField}`,
+            'resource',
+            'xp',
+            'total_xp',
+            `"lessons": child[]->{
+                "id": railcontent_id,
+                title,
+                "image": thumbnail.asset->url,
+                "instructors": instructor[]->name,
+                length_in_seconds,
+            }`,
+        ],
     },
     'instructor': {
         'fields': [
