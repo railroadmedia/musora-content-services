@@ -464,8 +464,90 @@ const contentMetadata = {
             description: "Collaborate with the community with Drumeo Monthly Collaborations! Each month a new Play-Along is chosen and members are tasked to submit their videos playing along to the song. At the end of each month, every video is joined together to create a single performance!",
             allowableFilters: [],
             sortBy: '-published_on',
-            trailer1: 448684113,
-            trailer2: 448684140,
+            trailer1: {
+                vimeo_video_id: 448684113,
+                video_playback_endpoints: [
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/448684113/rendition/240p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=7f75733de09ec3266322845bdd2dd9a0e740c916b9a824710d6272b8d51793ae",
+                        width: 426,
+                        height: 240
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/448684113/rendition/360p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=c55155a36018e86d6f008d905075bb749f2ee5fb12989845a3d2e5a9c28141e6",
+                        width: 640,
+                        height: 360
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/448684113/rendition/540p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=d71e1f8771e78e398c17ee0167611c1619ef11f90b0287b6dff1678279cb67a3",
+                        width: 960,
+                        height: 540
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/448684113/rendition/720p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=538b5eec06dd01591f156a96c4108e217bd7ad8903e5084e8fb3428e0f8a69a6",
+                        width: 1280,
+                        height: 720
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/448684113/rendition/1080p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=589537c220ca4c99e746a2d24e2dad8017da016d195485a17a2c8409b3ea8c60",
+                        width: 1920,
+                        height: 1080
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/448684113/rendition/1440p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=dda9240afee2489dbedda42499d432ebc1454e5ff2bb615bf2af8b8a298d6044",
+                        width: 2560,
+                        height: 1440
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/448684113/rendition/2160p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=92997d941ff58b9cf8e17d6cf8ec07b332bcf61138e8ea0805fba091501e0e7c",
+                        width: 3840,
+                        height: 2160
+                    }
+                ],
+                length_in_seconds: 53,
+                hlsManifestUrl: "https://player.vimeo.com/external/448684113.m3u8?s=dfb6ad351fcc3f2e5d98c7e7fac7303fa2b0a416&oauth2_token_id=1284792283",
+            },
+            trailer2: {
+                vimeo_video_id: 448684140,
+                video_playback_endpoints: [
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/448684140/rendition/240p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=1c9adb344eaf45a1f854a209e62616e19feea57516c37f5eb1f884cac928fb06",
+                        width: 426,
+                        height: 240
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/448684140/rendition/360p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=cde9f4fb028217960e5a2612688d8d18550db81964f1bf21f003fced6b9f63dd",
+                        width: 640,
+                        height: 360
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/448684140/rendition/540p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=eb870305e3c2719aad514b07026030d7738b5a107693794d0745574e5392fd12",
+                        width: 960,
+                        height: 540
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/448684140/rendition/720p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=309527ab8047731ace6a103a24536f952a5dc3bd8be2c5c2529385cc2377f8f6",
+                        width: 1280,
+                        height: 720
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/448684140/rendition/1080p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=f93e002d6d73facf146a3cdcb2d74d8b42677897282d0f89abb02871c664d6d4",
+                        width: 1920,
+                        height: 1080
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/448684140/rendition/1440p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=4b83c2a73161532bbe36dfae5a1203aa4b6475c60554117533dcd303e76cb67b",
+                        width: 2560,
+                        height: 1440
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/448684140/rendition/2160p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=3108a1db7e86bd133fe01fd4384980ffaa62e854af5588d94a7f8befb92db563",
+                        width: 3840,
+                        height: 2160
+                    }
+                ],
+                length_in_seconds: 106,
+                hlsManifestUrl: "https://player.vimeo.com/external/448684140.m3u8?s=06db72bb51f3bc10cde8367452c3cb19ed8834b2&oauth2_token_id=1284792283",
+            }
         },
         'diy-drum-experiment': {
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/diy-drum-experiments.jpg',
@@ -1267,6 +1349,43 @@ const contentMetadata = {
                     value: '',
                 },
             ],
+            trailer: {
+                vimeo_video_id: 578243377,
+                video_playback_endpoints: [
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/578243377/rendition/360p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=9eff053636a9b8abc19a0e44ae437f7fa50a0cf0a83c39373e8ae29b50dff9b6",
+                        width: 640,
+                        height: 360
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/578243377/rendition/540p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=f8a01157cd5707e6ade5f84a867edbd4f549f091c6c284c5352ec290b9db7bf7",
+                        width: 960,
+                        height: 540
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/578243377/rendition/720p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=8ccd1473aae48a510d44d38df2312a72c254e210e230f79cc0c3efae7b82f6b6",
+                        width: 1280,
+                        height: 720
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/578243377/rendition/1080p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=a3b326c9c79746ddf4915133220f70e4f9498e5fb089ebba0361583d2a55376d",
+                        width: 1920,
+                        height: 1080
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/578243377/rendition/1440p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=c0309249419ce7f80d9bbc89c63851fbb194e623fca6046b7e685611627eceac",
+                        width: 2560,
+                        height: 1440
+                    },
+                    {
+                        file: "https://player.vimeo.com/progressive_redirect/playback/578243377/rendition/2160p/file.mp4?loc=external&oauth2_token_id=1284792283&signature=6ea971d1165f0f1df7af46ccdc33041a70e917028d1c1cd7af4279edd2ef9550",
+                        width: 3840,
+                        height: 2160
+                    }
+                ],
+                length_in_seconds: 82,
+                hlsManifestUrl: "https://player.vimeo.com/external/578243377.m3u8?s=3def726f48a4a300420f793090e4913a48c8d1f9&oauth2_token_id=1284792283"
+            }
         },
         'workout': {
             allowableFilters: ['difficulty', 'genre', 'topic'],
