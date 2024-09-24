@@ -1192,7 +1192,7 @@ export async function fetchArtistLessons(brand, name, contentType, {
   const end = start + limit;
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''  
   const sortOrder = getSortOrder(sort);
-  const addType = contentType ? `_type == '${contentType}' && `:''
+  const addType = contentType && Array.isArray(contentType) ? `_type in ['${contentType.join("', '")}'] &&` : contentType ? `_type == '${contentType}' && `:''
   const includedFieldsFilter = includedFields.length > 0
   ? filtersToGroq(includedFields)
   : "";
