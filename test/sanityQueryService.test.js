@@ -517,4 +517,20 @@ describe('Filter Builder', function () {
         return clauses;
     }
 
+    test('fetchAllFilterOptions', async () => {
+        let response = await fetchAllFilterOptions('drumeo', '', '', '', 'song', '');
+        log(response);
+        expect(response.meta).toBeDefined();
+    });
+
+    test('fetchAllFilterOptions-Rudiment', async () => {
+        let response = await fetchAllFilterOptions('drumeo', '', '', '', 'rudiment', '');
+        log(response);
+        expect(response).toBeDefined();
+    });
+    test('fetchAllFilterOptions-PlayAlong', async () => {
+        let response = await fetchAllFilterOptions('drumeo', '', '', '', 'play-along', '');
+        log(response);
+        expect(response).toBeDefined();
+    });
 });

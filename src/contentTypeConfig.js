@@ -65,7 +65,7 @@ const contentMetadata = {
             name: 'Courses',
             icon: 'icon-courses',
             description: "Tackle your next drumming goal with bite-sized courses from many of the world's best drummers.",
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'lifestyle', 'creativity'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle', 'creativity'],
             sortBy: '-published_on',
             tabs: [
                 {
@@ -117,7 +117,7 @@ const contentMetadata = {
             name: 'Student Focus',
             icon: 'icon-student-focus',
             description: "Submit your playing for personalized and direct feedback, or look at the archive to see what challenges our instructors have already addressed.",
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'creativity', 'lifestyle'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
             sortBy: '-published_on',
             tabs: [
                 {
@@ -236,7 +236,7 @@ const contentMetadata = {
             name: 'Boot Camps',
             icon: 'icon-shows',
             description: "Grab your sticks and practice along while watching a lesson! These boot camps are designed like workout videos so you can follow along and push your drumming at the same time.",
-            allowableFilters: ['difficulty', 'genre', 'essentials'],
+            allowableFilters: ['difficulty', 'genre', 'essential'],
             sortBy: '-published_on',
             tabs: [
                 {
@@ -263,7 +263,7 @@ const contentMetadata = {
             name: 'Quick Tips',
             icon: 'icon-shows',
             description: "Only have 10 minutes? These short lessons are designed to inspire you with quick tips and exercises, even if you don’t have lots of time to practice.",
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'lifestyle', 'creativity'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle', 'creativity'],
             sortBy: '-published_on',
             tabs: [
                 {
@@ -327,7 +327,7 @@ const contentMetadata = {
             shortname: 'Live Lessons',
             icon: 'icon-shows',
             description: "Practice sessions, Q&A, celebrations, and more are available during Drumeo live lessons. Subscribe to an event or the whole calendar, so you don’t miss out!",
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory'],
             sortBy: '-published_on',
             tabs: [
                 {
@@ -453,7 +453,7 @@ const contentMetadata = {
             shortname: 'Lessons',
             icon: 'icon-shows',
             description: "Get any drum related question answered by a Drumeo instructor on our weekly Q&A episodes! You can submit as many questions as you like by clicking the button below, and either join us live for the next episode, or check for your answer in the archived videos below!",
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory'],
             sortBy: '-published_on',
         },
         'student-collaboration': {
@@ -685,7 +685,7 @@ const contentMetadata = {
             ],
         },
         'pack': {
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'lifestyle'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle'],
         },
     },
     'pianote':{
@@ -729,7 +729,7 @@ const contentMetadata = {
         'course': {
             name: "Courses",
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/pianote/courses.jpg',
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'creativity', 'lifestyle'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
             sortBy: '-published_on',
             shortname: 'Courses',
             icon: "icon-courses",
@@ -789,7 +789,7 @@ const contentMetadata = {
         'student-review': {
             name: 'Student Reviews',
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/pianote/student-review.jpg',
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'creativity', 'lifestyle'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
             shortname: 'Student Reviews',
             icon: 'icon-student-focus',
             description: "Want feedback on your playing? Submit a video for student review. We will watch your submission and then provide helpful encouragement and feedback. This is a great way to build accountability and benefit from the expertise of our teachers.",
@@ -819,7 +819,7 @@ const contentMetadata = {
         'question-and-answer': {
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/pianote/question-answer.jpg',
             name: 'Q&A',
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory'],
             sortBy: '-published_on',
             shortname: 'Q&A',
             icon: 'icon-student-focus',
@@ -849,7 +849,7 @@ const contentMetadata = {
         'boot-camp': {
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/pianote/bootcamps.jpg',
             name: 'Bootcamps',
-            allowableFilters: ['difficulty', 'genre', 'essentials'],
+            allowableFilters: ['difficulty', 'genre', 'essential'],
             sortBy: '-published_on',
             shortname: 'Bootcamps',
             icon: 'icon-chords-scales-icon',
@@ -1002,7 +1002,7 @@ const contentMetadata = {
             name: "Courses",
             icon: "icon-courses",
             description: "These jam-packed training courses cover various lesson topics in detail. Find one that suits your guitar goals, and get started!",
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'creativity', 'lifestyle'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
             tabs: [
                 {
                     name: 'Courses',
@@ -1052,7 +1052,7 @@ const contentMetadata = {
             name: "Play Alongs",
             icon: "icon-play-alongs",
             description: "Our play-along feature teaches you chords, strumming patterns, riffs, and song layouts -- with handy playback tools to help you create the perfect performance.",
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'lifestyle'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle'],
             tabs: [
                 {
                     name: 'All Play-Alongs',
@@ -1093,7 +1093,7 @@ const contentMetadata = {
             shortname: "quick-tips",
             icon: "icon-shows",
             description: "Only have 10 minutes? These short lessons are designed to inspire you with quick tips and exercises, even if you don’t have lots of time to practice.",
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'lifestyle'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle'],
             tabs: [
                 {
                     name: 'Lessons',
@@ -1119,14 +1119,14 @@ const contentMetadata = {
             name: "Q&A",
             icon: "fas fa-question-circle",
             description: "Each week we go live to answer your questions. Submit your questions in advance using the button below, in the Q&A thread in the forums, or live in the community chat.",
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory'],
         },
         'student-review': {
             thumbnailUrl: 'https://d1923uyy6spedc.cloudfront.net/student-reviews-singeo.png',
             name: "Student Reviews",
             icon: "icon-student-focus",
             description: "Want feedback on your playing? Submit a video for student review. We will watch your submission and then provide helpful encouragement and feedback. This is a great way to build accountability and benefit from the expertise of our teachers.",
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'creativity', 'lifestyle'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
             tabs: [
                 {
                     name: 'Lessons',
@@ -1213,7 +1213,7 @@ const contentMetadata = {
             name: "Courses",
             icon: "icon-courses",
             description: "Tackle your next singing goal with bite-sized courses from many of the world's best vocalists.",
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'creativity', 'lifestyle'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
             tabs: [
                 {
                     name: 'Courses',
@@ -1264,7 +1264,7 @@ const contentMetadata = {
             name: "Quick Tips",
             icon: "icon-shows",
             description: "Only have 10 minutes? These short lessons are designed to inspire you with quick tips and exercises, even if you don’t have lots of time to practice.",
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'creativity', 'lifestyle'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
             tabs: [
                 {
                     name: 'Lessons',
@@ -1290,7 +1290,7 @@ const contentMetadata = {
             name: "Q&A",
             icon: "fas fa-question-circle",
             description: "Each week we go live to answer your questions. Submit your questions in advance using the button below, in the Q&A thread in the forums, or live in the community chat.",
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory'],
             tabs: [
                 {
                     name: 'Lessons',
@@ -1316,7 +1316,7 @@ const contentMetadata = {
             name: "Student Reviews",
             icon: "icon-student-focus",
             description: "Want feedback on your singing? Submit a video for student review. We will watch your submission and then provide helpful encouragement and feedback. This is a great way to build accountability and benefit from the expertise of our teachers.",
-            allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'creativity', 'lifestyle'],
+            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
             tabs: [
                 {
                     name: 'Lessons',
