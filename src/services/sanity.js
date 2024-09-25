@@ -971,6 +971,7 @@ export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = 
   const sortOrder = getSortOrder(sort);
   const filter = `_type == 'pack' && brand == '${brand}' && title match "${searchTerm}*"`
   const filterParams = {};
+  const fields = getFieldsForContentType('pack');
   const query = buildQuery(
     filter,
     filterParams,
