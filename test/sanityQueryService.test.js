@@ -14,6 +14,7 @@ const {
     fetchByRailContentId,
     fetchByRailContentIds,
     fetchAll,
+    fetchAllOld,
     fetchAllFilterOptions,
     fetchFoundation,
     fetchMethods,
@@ -353,7 +354,7 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchAll-GroupBy-Instructors', async () => {
-        let response = await fetchAll('drumeo', 'course',{groupBy: 'instructor'});
+        let response = await fetchAllOld('drumeo', 'course',{groupBy: 'instructor'});
         log(response);
         expect(response.entity[0].web_url_path).toContain('/drumeo/coaches/');
     });
@@ -373,6 +374,40 @@ describe('Sanity Queries', function () {
     });
 
 });
+
+describe('FetchAllRefactor', function () {
+    beforeEach(() => {
+        const config = {
+            sanityConfig: {
+                token: process.env.SANITY_API_TOKEN,
+                projectId: process.env.SANITY_PROJECT_ID,
+                dataset: process.env.SANITY_DATASET,
+                useCachedAPI: process.env.SANITY_USE_CACHED_API === 'true' || true,
+                version: '2021-06-07',
+                debug: process.env.DEBUG === 'true' || false
+            }
+        };
+        initializeService(config);
+    });
+    test('baseConstructor', async () => {
+        const ids = [410213, 305649];
+        let response = await fetchAll('drumeo', 'song', {
+            sort: 'slug',
+            progressIds: ids,
+        });
+
+        let response2 = await fetchAllOld('drumeo', 'song', {
+            sort: 'slug',
+            progressIds: ids,
+        });
+        log(response);
+        log(response2);
+        expect(response).toStrictEqual(response2);
+    });
+
+
+});
+
 
 describe('Filter Builder', function () {
 
