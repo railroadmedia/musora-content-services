@@ -525,11 +525,16 @@ describe('Filter Builder', function () {
 
 describe('MetaData', function () {
 
-    test('custom', async () => {
+    test('customBrandTypeExists', async () => {
         const metaData = processMetadata('guitareo', 'recording');
         expect(metaData.type).toBe('recording');
         expect(metaData.name).toBe('Archives');
         expect(metaData.description).toBeDefined();
+    });
+
+    test('invalidContentType', async () => {
+        const metaData = processMetadata('guitareo', 'not a real type');
+        expect(metaData).toBeNull();
     });
 
     test('onlyCommon', async () => {

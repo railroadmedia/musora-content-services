@@ -2,176 +2,174 @@
 
 // Metadata is taken from the 'common' element and then merged with the <brand> metadata.
 // Brand values are prioritized and will override the same property in the 'common' element.
-
-const contentMetadata = {
-    'common' :{
-        'coaches': {
-            name: 'Coaches',
+const commonMetadata ={
+    'coaches': {
+        name: 'Coaches',
             icon: 'icon-coach',
             allowableFilters: ['genre', 'focus'],
             sortBy: '-published_on',
-        },
-        'challenge': {
-            name: 'Challenges',
+    },
+    'challenge': {
+        name: 'Challenges',
             icon: 'icon-courses',
             description: "... ",
             allowableFilters: ['difficulty', 'topic', 'genre'],
             sortBy: '-published_on',
             modalText: 'Challenges are a collection of Workout-style videos that build your skills one step at a time. They help you develop broader musical skills at a manageable pace — usually over a few days.',
             tabs: [
-                {
-                    name: 'All',
-                    short_name: 'All',
-                    value: '',
-                },
-                {
-                    name: 'Skill Level',
-                    short_name: 'SKILL LEVEL',
-                    is_group_by: true,
-                    value: 'difficulty_string',
-                },
-                {
-                    name: 'Genres',
-                    short_name: 'Genres',
-                    is_group_by: true,
-                    value: 'genre',
-                },
-                {
-                    name: 'Completed',
-                    short_name: 'COMPLETED',
-                    is_group_by: true,
-                    value: 'completed'
-                },
-                {
-                    name: 'Owned Challenges',
-                    short_name: 'OWNED CHALLENGES',
-                    is_group_by: true,
-                    value: 'owned',
-                },
-            ],
-        },
-        'challenge-part': {
-            name: 'Challenge Part',
+            {
+                name: 'All',
+                short_name: 'All',
+                value: '',
+            },
+            {
+                name: 'Skill Level',
+                short_name: 'SKILL LEVEL',
+                is_group_by: true,
+                value: 'difficulty_string',
+            },
+            {
+                name: 'Genres',
+                short_name: 'Genres',
+                is_group_by: true,
+                value: 'genre',
+            },
+            {
+                name: 'Completed',
+                short_name: 'COMPLETED',
+                is_group_by: true,
+                value: 'completed'
+            },
+            {
+                name: 'Owned Challenges',
+                short_name: 'OWNED CHALLENGES',
+                is_group_by: true,
+                value: 'owned',
+            },
+        ],
+    },
+    'challenge-part': {
+        name: 'Challenge Part',
             icon: 'icon-courses',
             description: "... ",
             allowableFilters: ['difficulty', 'genre', 'topic'],
             sortBy: '-published_on',
-        },
-        'pack': {
-            allowableFilters: [],
-        },
-        'student-review': {
-            name: "Student Reviews",
+    },
+    'pack': {
+        allowableFilters: [],
+    },
+    'student-review': {
+        name: "Student Reviews",
             icon: "icon-student-focus",
             allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'creativity', 'lifestyle'],
             sortBy: '-published_on',
             tabs: [
-                {
-                    name: 'Lessons',
-                    short_name: 'LESSONS',
-                    value: '',
-                },
-                {
-                    name: 'Instructors',
-                    short_name: 'INSTRUCTORS',
-                    is_group_by: true,
-                    value: 'instructor',
-                },
-                {
-                    name: 'Genres',
-                    short_name: 'Genres',
-                    is_group_by: true,
-                    value: 'genre',
-                },
-            ],
-        },
-        'song': {
-            name: "Songs",
+            {
+                name: 'Lessons',
+                short_name: 'LESSONS',
+                value: '',
+            },
+            {
+                name: 'Instructors',
+                short_name: 'INSTRUCTORS',
+                is_group_by: true,
+                value: 'instructor',
+            },
+            {
+                name: 'Genres',
+                short_name: 'Genres',
+                is_group_by: true,
+                value: 'genre',
+            },
+        ],
+    },
+    'song': {
+        name: "Songs",
             icon: "icon-songs",
             description: "Play the songs you love with note-for-note transcriptions and handy practice tools.",
             allowableFilters: ['difficulty', 'genre', 'instrumentless'],
             tabs: [
-                {
-                    name: 'Songs',
-                    short_name: 'Songs',
-                    value: '',
-                },
-                {
-                    name: 'Artists',
-                    short_name: 'ARTISTS',
-                    is_group_by: true,
-                    value: 'artist',
-                },
-                {
-                    name: 'Genres',
-                    short_name: 'Genres',
-                    is_group_by: true,
-                    value: 'genre',
-                },
-            ],
-        },
-        'quick-tips': {
-            name: 'Quick Tips',
+            {
+                name: 'Songs',
+                short_name: 'Songs',
+                value: '',
+            },
+            {
+                name: 'Artists',
+                short_name: 'ARTISTS',
+                is_group_by: true,
+                value: 'artist',
+            },
+            {
+                name: 'Genres',
+                short_name: 'Genres',
+                is_group_by: true,
+                value: 'genre',
+            },
+        ],
+    },
+    'quick-tips': {
+        name: 'Quick Tips',
             icon: 'icon-shows',
             description: "Only have 10 minutes? These short lessons are designed to inspire you with quick tips and exercises, even if you don’t have lots of time to practice.",
             allowableFilters: ['difficulty', 'genre', 'essentials', 'theory', 'lifestyle', 'creativity'],
             sortBy: '-published_on',
             tabs: [
-                {
-                    name: 'Lessons',
-                    short_name: 'LESSONS',
-                    value: '',
-                },
-                {
-                    name: 'Instructors',
-                    short_name: 'INSTRUCTORS',
-                    is_group_by: true,
-                    value: 'instructor',
-                },
-                {
-                    name: 'Genres',
-                    short_name: 'Genres',
-                    value: 'genre',
-                },
-            ],
-        },
-        'question-and-answer': {
-            name: 'Q&A',
+            {
+                name: 'Lessons',
+                short_name: 'LESSONS',
+                value: '',
+            },
+            {
+                name: 'Instructors',
+                short_name: 'INSTRUCTORS',
+                is_group_by: true,
+                value: 'instructor',
+            },
+            {
+                name: 'Genres',
+                short_name: 'Genres',
+                value: 'genre',
+            },
+        ],
+    },
+    'question-and-answer': {
+        name: 'Q&A',
             description: "Each week we go live to answer your questions. Submit your questions in advance using the button below, in the Q&A thread in the forums, or live in the community chat.",
             allowableFilters: ['difficulty', 'genre', 'essentials', 'theory'],
             sortBy: '-published_on',
-        },
-        'workout': {
-            allowableFilters: ['difficulty', 'genre', 'topic'],
-            tabs: [
-                {
-                    name: 'All',
-                    short_name: 'ALL',
-                    value: '',
-                },
-                {
-                    name: '5 Minutes',
-                    short_name: '5 MINS',
-                    is_required_field: true,
-                    value: 'length_in_seconds < 450',
-                },
-                {
-                    name: '10 Minutes',
-                    short_name: '10 MINS',
-                    is_required_field: true,
-                    value: 'length_in_seconds > 450 && length_in_seconds < 750',
-                },
-                {
-                    name: 'Instructors',
-                    short_name: 'INSTRUCTORS',
-                    is_group_by: true,
-                    value: 'instructor',
-                },
-            ],
-            modalText: 'Workouts are fun play-along lessons that help hone your musical skills. They cover various topics, and have multiple difficulty and duration options — so there’s always a perfect Workout for you. Just pick one, press start, and play along!',
-        },
     },
-
+    'workout': {
+        allowableFilters: ['difficulty', 'genre', 'topic'],
+            tabs: [
+            {
+                name: 'All',
+                short_name: 'ALL',
+                value: '',
+            },
+            {
+                name: '5 Minutes',
+                short_name: '5 MINS',
+                is_required_field: true,
+                value: 'length_in_seconds < 450',
+            },
+            {
+                name: '10 Minutes',
+                short_name: '10 MINS',
+                is_required_field: true,
+                value: 'length_in_seconds > 450 && length_in_seconds < 750',
+            },
+            {
+                name: 'Instructors',
+                short_name: 'INSTRUCTORS',
+                is_group_by: true,
+                value: 'instructor',
+            },
+        ],
+            modalText: 'Workouts are fun play-along lessons that help hone your musical skills. They cover various topics, and have multiple difficulty and duration options — so there’s always a perfect Workout for you. Just pick one, press start, and play along!',
+    },
+}
+const contentMetadata = {
     'drumeo': {
         'coaches': {
             description: "Your drumming journey is unique. You need personalized coaching that helps you reach your goals. Learn from some of the best drummers in the world!",
@@ -1120,30 +1118,30 @@ const contentMetadata = {
     }
 };
 
-function processMetadata(brand, type, withFilters = false) {
-    let commonMetaData = contentMetadata['common']?.[type];
+function processMetadata(brand, type, withFilters = false)
+{
+    let brandMetaData = contentMetadata[brand]?.[type];
     // If the type is explicitly defined as null or the brand doesn't exist return null
     // Specifically this is for drumeo.student-review
-    if (contentMetadata[brand]?.[type] === null) {
+    if (brandMetaData === null) {
         return null;
     }
-
-    let metadataElement = contentMetadata[brand]?.[type];
-    metadataElement = {...commonMetaData, ...metadataElement};
-    if (!metadataElement) {
+    let commonMetaData = commonMetadata[type];
+    brandMetaData = {...commonMetaData, ...brandMetaData};
+    if (Object.keys(brandMetaData).length === 0) {
         return null;
     }
     const processedData = {
         type,
-        thumbnailUrl: metadataElement.thumbnailUrl || null,
-        name: metadataElement.name || null,
-        description: metadataElement.description || null
+        thumbnailUrl: brandMetaData.thumbnailUrl || null,
+        name: brandMetaData.name || null,
+        description: brandMetaData.description || null
     };
 
     if (withFilters) {
-        Object.keys(metadataElement).forEach(key => {
+        Object.keys(brandMetaData).forEach(key => {
             if (!['thumbnailUrl', 'name', 'description'].includes(key)) {
-                processedData[key] = metadataElement[key];
+                processedData[key] = brandMetaData[key];
             }
         });
     }
