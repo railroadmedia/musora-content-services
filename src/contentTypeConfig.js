@@ -321,7 +321,7 @@ const contentMetadata = {
             allowableFilters: [],
             sortBy: 'sort',
         },
-        'live-stream': {
+        'live': {
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/show-live.jpg',
             name: 'Live',
             shortname: 'Live Lessons',
@@ -1680,7 +1680,7 @@ function getNewReleasesTypes(brand) {
     const baseNewTypes = ["student-review", "student-review", "student-focus", "coach-stream", "live", "question-and-answer", "boot-camps", "quick-tips", "workout", "challenge", "challenge-part", "podcasts", "pack", "song", "learning-path-level", "play-along", "course", "unit"];
     switch(brand) {        
         case 'drumeo':
-            return [...baseNewTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "student-collaborations", "live-streams", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor"];
+            return [...baseNewTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "student-collaborations", "live", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor"];
         case 'guitareo': 
             return [...baseNewTypes, "archives", "recording", "chords-and-scales"];
         case 'pianote':    
@@ -1694,7 +1694,7 @@ function getUpcomingEventsTypes(brand) {
     const baseLiveTypes = ["student-review", "student-review", "student-focus", "coach-stream", "live", "question-and-answer", "boot-camps", "quick-tips", "recording", "pack-bundle-lesson"];
     switch(brand) {
         case 'drumeo': 
-            return [...baseLiveTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "student-collaborations", "live-streams", "podcasts", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor"];
+            return [...baseLiveTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "student-collaborations", "live", "podcasts", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor"];
         case 'guitareo':
             return [...baseLiveTypes, "archives"];
         case 'pianote':

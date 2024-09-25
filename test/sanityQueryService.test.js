@@ -359,9 +359,11 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchShowsData', async () => {
-        const response = await fetchShowsData('singeo');
+        const response = await fetchShowsData('drumeo');
         log(response);
         expect(response.length).toBeGreaterThan(0);
+        const showTypes = response.map((x) => x.type);
+        expect(showTypes).toContain('live');
     });
 
     test('fetchMetadata', async () => {
