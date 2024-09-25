@@ -499,7 +499,7 @@ describe('Filter Builder', function () {
         expect(clauses[1].operator).toBe('>=');
     });
 
-    function getPlusUser() {challenges
+    function getPlusUser() {
         return {
             permissions: [91,92],
         }
