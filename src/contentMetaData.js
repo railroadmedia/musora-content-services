@@ -15,7 +15,7 @@ const commonMetadata ={
             description: "... ",
             allowableFilters: ['difficulty', 'topic', 'genre'],
             sortBy: '-published_on',
-            modalText: 'Challenges are a collection of Workout-style videos that build your skills one step at a time. They help you develop broader musical skills at a manageable pace — usually over a few days.',
+            modalText: 'Challenges are a series of guided lessons designed to build your skills day-by-day.',
             tabs: [
             {
                 name: 'All',
