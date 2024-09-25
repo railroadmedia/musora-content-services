@@ -389,23 +389,45 @@ describe('FetchAllRefactor', function () {
         };
         initializeService(config);
     });
-    test('baseConstructor', async () => {
+    test('fetchAll-Progress', async () => {
         const ids = [410213, 305649];
-        let response = await fetchAll('drumeo', 'song', {
+        await compareOldAndNew('drumeo', 'song', {
             sort: 'slug',
             progressIds: ids,
         });
+    });
 
-        let response2 = await fetchAllOld('drumeo', 'song', {
-            sort: 'slug',
-            progressIds: ids,
-        });
+    test('fetchAll-GroupBy-Artists', async () => {
+        await compareOldAndNew('drumeo', 'song',{groupBy: 'artist'});
+    });
+
+    test('fetchAll-IncludedFields', async () => {
+        await compareOldAndNew('drumeo', 'instructor',{includedFields: ['is_active']});
+    });
+
+    test('fetchAll-GroupBy-Instructors', async () => {
+        await compareOldAndNew('drumeo', 'course',{groupBy: 'instructor'});
+    });
+
+    test('fetchAll-CustomFields', async () => {
+        await compareOldAndNew('drumeo', 'challenge',{customFields:['garbage']});
+    });
+
+    test('fetchAllSortField', async () => {
+        await compareOldAndNew('drumeo', 'rhythmic-adventures-of-captain-carson',{});
+    });
+
+    test('fetchAll-GroupBy-Genre', async () => {
+        await compareOldAndNew('drumeo', 'solo', {groupBy: 'genre'});
+    });
+
+    async function compareOldAndNew(brand, type, params={}){
+        let response = await fetchAll(brand, type,params);
+        let response2 = await fetchAllOld(brand, type,params);
         log(response);
         log(response2);
         expect(response).toStrictEqual(response2);
-    });
-
-
+    }
 });
 
 

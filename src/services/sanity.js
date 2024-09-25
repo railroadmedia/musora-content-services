@@ -527,7 +527,7 @@ export async function fetchAll(brand, type, {
                     ${fieldsString},
                     ${groupBy}
                 }[0...20]`;
-        filter = `_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]`;
+        filter = `_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0`;
     } else {
         filter = `brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}`
         entityFieldsString = fieldsString;
@@ -589,51 +589,58 @@ export async function fetchAllOld(brand, type, {
 
     // Determine the group by clause
     let query = "";
-    let entityFieldsString = "";
-    let filter = "";
     if (groupBy !== "" && isGroupByOneToOne) {
-        const webUrlPath = 'artists';
-        const lessonsFilter = `_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
-        entityFieldsString = `
+        let webUrlPath = 'artists';
+        query = `
+        {
+            "total": count(*[_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id == ${groupBy}._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]),
+            "entity": *[_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id == ${groupBy}._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]
+            {
                 'id': _id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': '/${brand}/${webUrlPath}/'+name+'?included_fieds[]=type,${type}',
-                'all_lessons_count': count(*[${lessonsFilter}]._id),
-                'lessons': *[${lessonsFilter}]{
+                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
+                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...20]
-        `;
-        filter = `_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id == ${groupBy}._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0`;
+            }
+            |order(${sortOrder})
+            [${start}...${end}]
+        }`;
     } else if (groupBy !== "") {
-        const webUrlPath = (groupBy == 'genre')?'/genres':'';
-        const lessonsFilter = `brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
-        entityFieldsString = `
+        let webUrlPath = (groupBy == 'genre')?'/genres':'';
+        query = `
+        {
+            "total": count(*[_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]),
+            "entity": *[_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]
+            {
                 'id': _id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': select(defined(web_url_path)=> web_url_path +'?included_fieds[]=type,${type}',!defined(web_url_path)=> '/${brand}${webUrlPath}/'+name+'/${webUrlPathType}'),
-                'all_lessons_count': count(*[${lessonsFilter}]._id),
-                'lessons': *[${lessonsFilter}]{
+                'all_lessons_count': count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
+                'lessons': *[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
                     ${fieldsString},
                     ${groupBy}
-                }[0...20]`;
-        filter = `_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]`;
+                }[0...20]
+            }
+            |order(${sortOrder})
+            [${start}...${end}]
+        }`;
     } else {
-        filter = `brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}`
-        entityFieldsString = fieldsString;
-    }
-    query = buildEntityAndTotalQuery(
-        filter,
-        entityFieldsString,
+        query = `
         {
-            sortOrder: sortOrder,
-            start: start,
-            end: end,
-        });
+            "entity": *[brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}] | order(${sortOrder}) [${start}...${end}] {
+                ${fieldsString},
+            },
+            "total": count(*[brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}])
+        }
+    `;
+    }
 
     return fetchSanity(query, true);
 }
