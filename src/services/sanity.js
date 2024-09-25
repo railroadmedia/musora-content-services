@@ -217,8 +217,7 @@ export async function fetchSongFilterOptions(brand) {
       {"type": "Full Song Only", "count": count(*[_type == 'song' && brand == '${brand}' && instrumentless == false]._id)},
       {"type": "Instrument Removed", "count": count(*[_type == 'song' && brand == '${brand}' && instrumentless == true]._id)}
     ]
-  }
-`;
+  }`;
 
   return fetchSanity(query, true);
 }
@@ -830,8 +829,6 @@ function getChildrenToDepth(parent, depth = 1)
     return allChildrenIds;
 }
 
-
-
 /**
 * Fetch the next and previous lessons for a specific lesson by Railcontent ID.
 * @param {string} railcontentId - The Railcontent ID of the current lesson.
@@ -977,10 +974,11 @@ export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = 
   const query = buildQuery(
     filter,
     filterParams,
-    getFieldsForContentType('pack'),
-      {
-          sortOrder: sortOrder,
-      }
+    fields,
+    {
+      logo_image_url: 'logo_image_url.asset->url',
+      sortOrder: sortOrder,
+    }
   );
   return fetchSanity(query, true);
 }
