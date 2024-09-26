@@ -254,15 +254,6 @@ export async function fetchContentPageUserData(contentId) {
     }
 }
 
-function fetchAbsolute(url, params) { 
-    if(globalConfig.railcontentConfig.baseUrl) {
-        if (url.startsWith('/')) {
-            return fetch(globalConfig.railcontentConfig.baseUrl + url, params)
-        }
-    } 
-    return fetch(url, params);
-}
-
 export async function fetchUserContext() {
     let url = `/content/user_data_all`;
     const headers = {
@@ -270,7 +261,7 @@ export async function fetchUserContext() {
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
     try {
-        const response = await fetch(url, {headers});
+        const response = await fetchAbsolute(url, {headers});
         const result = await response.json();
         if (result) {
             console.log('fetchUserContext', result);
@@ -284,13 +275,23 @@ export async function fetchUserContext() {
     }
 }
 
+export async function fetchUserPermissions() {
+    let url = `/content/user_data_permissions`;
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
+    };
+    // in the case of an unauthorized user, we return empty permissions
+    return fetchHandler(url, 'get') ?? [];
+}
+
 export async function fetchHandler(url, method = "get") {
     const headers = {
         'Content-Type': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
     try {
-        const response = await fetch(url, {method, headers});
+        const response = await fetchAbsolute(url, {method, headers});
         const result = await response.json();
         if (result) {
             return result;
@@ -299,8 +300,8 @@ export async function fetchHandler(url, method = "get") {
         }
     } catch (error) {
         console.error('Fetch error:', error);
-        return null;
     }
+    return null;
 }
 
 export async function fetchLikeContent(contentId) {
@@ -311,4 +312,13 @@ export async function fetchLikeContent(contentId) {
 export async function fetchUnlikeContent(contentId) {
     let url = `/content/${contentId}/unlike`;
     return await fetchHandler(url, "post");
+}
+
+function fetchAbsolute(url, params) {
+    if(globalConfig.railcontentConfig.baseUrl) {
+        if (url.startsWith('/')) {
+            return fetch(globalConfig.railcontentConfig.baseUrl + url, params)
+        }
+    }
+    return fetch(url, params);
 }

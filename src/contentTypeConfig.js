@@ -18,6 +18,7 @@ const DEFAULT_FIELDS = [
     "'genre': genre[]->name",
     'status',
     "'slug' : slug.current",
+    "'permission_id': permission[]->railcontent_id",
 ];
 
 const descriptionField = 'description[0].children[0].text';

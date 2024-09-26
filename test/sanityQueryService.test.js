@@ -1,4 +1,6 @@
 import {initializeService} from '../src/services/config.js';
+import {getFieldsForContentType} from "../src/contentTypeConfig";
+import {fetchSanity} from "../src/services/sanity";
 import {log} from './log.js';
 
 const {
@@ -53,7 +55,8 @@ describe('Sanity Queries', function () {
                 dataset: process.env.SANITY_DATASET,
                 useCachedAPI: process.env.SANITY_USE_CACHED_API === 'true' || true,
                 version: '2021-06-07',
-                debug: process.env.DEBUG === 'true' || false
+                debug: process.env.DEBUG === 'true' || false,
+                useDummyRailContentMethods: true,
             }
         };
         initializeService(config);
@@ -65,6 +68,7 @@ describe('Sanity Queries', function () {
         expect(response.id).toBe(id);
 
     });
+
 
     test('fetchArtists', async () => {
         const response = await fetchArtists('drumeo');
@@ -79,7 +83,27 @@ describe('Sanity Queries', function () {
         expect(response).toBeGreaterThan(1000);
     });
 
-    test('fetchByRailContentId', async () => {
+    test('fetchSanity-WithPostProcess', async () => {
+        const id = 380094;
+        const query = `*[railcontent_id == ${id}]{
+        ${getFieldsForContentType('song')}
+          }`
+        const newSlug = 'keysmash1';
+        const newField = 1
+        const postProcess = (result) => {
+            result['new_field'] = newField;
+            result['slug'] = newSlug;
+            return result;
+        };
+        const response = await fetchSanity(query, false, {customPostProcess: postProcess});
+        log(response);
+        expect(response.id).toBe(id);
+        expect(response.new_field).toBe(newField);
+        expect(response.slug).toBe(newSlug);
+    });
+
+
+    test('fetchSanityPostProcess', async () => {
         const id = 380094;
         const response = await fetchByRailContentId(id, "song");
         expect(response.id).toBe(id);
@@ -90,6 +114,7 @@ describe('Sanity Queries', function () {
         const response = await fetchChallengeOverview(id);
         expect(response.lessons).toBeDefined();
         expect(response.id).toBe(id);
+
     });
 
     test('fetchByRailContentIds', async () => {
