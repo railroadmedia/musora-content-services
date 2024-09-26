@@ -221,8 +221,7 @@ export async function fetchSongFilterOptions(brand) {
       {"type": "Full Song Only", "count": count(*[_type == 'song' && brand == '${brand}' && instrumentless == false]._id)},
       {"type": "Instrument Removed", "count": count(*[_type == 'song' && brand == '${brand}' && instrumentless == true]._id)}
     ]
-  }
-`;
+  }`;
 
   return fetchSanity(query, true);
 }
@@ -615,27 +614,22 @@ export async function fetchAllFilterOptions(
         `&& railcontent_id in [${progressIds.join(',')}]` : "";
 
     const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${includedFieldsFilter ? includedFieldsFilter : ''}`;
+    const metaData = processMetadata(brand, contentType, true);
+    const allowableFilters = (metaData) ? metaData['allowableFilters'] : [];
+
+    let dynamicFilterOptions = '';
+    allowableFilters.forEach(filter => {
+        const filterOption = getFilterOptions(filter, commonFilter, contentType);
+        dynamicFilterOptions += filterOption;
+    });
+
     const query = `
         {
           "meta": {
             "totalResults": count(*[${commonFilter}
               ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
             "filterOptions": {
-              "difficulty": [
-                  {"type": "Introductory", "count": count(*[${commonFilter} && difficulty_string == "Introductory"])},
-                  {"type": "Beginner", "count": count(*[${commonFilter} && difficulty_string == "Beginner"])},
-                  {"type": "Intermediate", "count": count(*[${commonFilter} && difficulty_string == "Intermediate" ])},
-                  {"type": "Advanced", "count": count(*[${commonFilter} && difficulty_string == "Advanced" ])},
-                  {"type": "Expert", "count": count(*[${commonFilter} && difficulty_string == "Expert" ])}
-              ][count > 0],
-              "instrumentless": [
-                  {"type": "Full Song Only", "count": count(*[${commonFilter} && instrumentless == false ])},
-                  {"type": "Instrument Removed", "count": count(*[${commonFilter} && instrumentless == true ])}
-              ][count > 0],
-              "genre": *[_type == 'genre' && '${contentType}' in filter_types] {
-                "type": name,
-                "count": count(*[${commonFilter} && references(^._id)])
-              }[count > 0]
+              ${dynamicFilterOptions}
             }
         }
       }`;
@@ -834,8 +828,6 @@ function getChildrenToDepth(parent, depth = 1)
     return allChildrenIds;
 }
 
-
-
 /**
 * Fetch the next and previous lessons for a specific lesson by Railcontent ID.
 * @param {string} railcontentId - The Railcontent ID of the current lesson.
@@ -978,13 +970,15 @@ export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = 
   const sortOrder = getSortOrder(sort);
   const filter = `_type == 'pack' && brand == '${brand}' && title match "${searchTerm}*"`
   const filterParams = {};
+  const fields = getFieldsForContentType('pack');
   const query = buildQuery(
     filter,
     filterParams,
-    getFieldsForContentType('pack'),
-      {
-          sortOrder: sortOrder,
-      }
+    fields,
+    {
+      logo_image_url: 'logo_image_url.asset->url',
+      sortOrder: sortOrder,
+    }
   );
   return fetchSanity(query, true);
 }
@@ -1470,6 +1464,64 @@ function     buildEntityAndTotalQuery(
     return query;
 }
 
+
+function getFilterOptions(option, commonFilter,contentType){
+    let filterGroq = '';
+    switch (option) {
+        case "difficulty":
+            filterGroq = ` 
+                "difficulty": [
+        {"type": "Introductory", "count": count(*[${commonFilter} && difficulty_string == "Introductory"])},
+        {"type": "Beginner", "count": count(*[${commonFilter} && difficulty_string == "Beginner"])},
+        {"type": "Intermediate", "count": count(*[${commonFilter} && difficulty_string == "Intermediate" ])},
+        {"type": "Advanced", "count": count(*[${commonFilter} && difficulty_string == "Advanced" ])},
+        {"type": "Expert", "count": count(*[${commonFilter} && difficulty_string == "Expert" ])}
+        ][count > 0],`;
+            break;
+        case "genre":
+        case "essential":
+        case "focus":
+        case "theory":
+        case "topic":
+        case "lifestyle":
+        case "creativity":
+            filterGroq = `
+            "${option}": *[_type == '${option}' && '${contentType}' in filter_types] {
+            "type": name,
+                "count": count(*[${commonFilter} && references(^._id)])
+        }[count > 0],`;
+            break;
+        case "instrumentless":
+            filterGroq = `
+            "${option}":  [
+                  {"type": "Full Song Only", "count": count(*[${commonFilter} && instrumentless == false ])},
+                  {"type": "Instrument Removed", "count": count(*[${commonFilter} && instrumentless == true ])}
+              ][count > 0],`;
+            break;
+        case "gear":
+            filterGroq = `
+            "${option}":  [
+                  {"type": "Practice Pad", "count": count(*[${commonFilter} && gear match 'Practice Pad' ])},
+                  {"type": "Drum-Set", "count": count(*[${commonFilter} && gear match 'Drum-Set'])}
+              ][count > 0],`;
+            break;
+        case "bpm":
+            filterGroq = `
+            "${option}":  [
+                  {"type": "50-90", "count": count(*[${commonFilter} && bpm > 50 && bpm < 91])},
+                  {"type": "91-120", "count": count(*[${commonFilter} && bpm > 90 && bpm < 121])},
+                  {"type": "121-150", "count": count(*[${commonFilter} && bpm > 120 && bpm < 151])},
+                  {"type": "151-180", "count": count(*[${commonFilter} && bpm > 150 && bpm < 181])},
+                  {"type": "180+", "count": count(*[${commonFilter} && bpm > 180])},
+              ][count > 0],`;
+            break;
+        default:
+            filterGroq = "";
+            break;
+    }
+
+    return filterGroq;
+}
 
 
 

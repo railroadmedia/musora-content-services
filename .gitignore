@@ -50,7 +50,6 @@ web_modules/
 
 # Optional npm cache directory
 .npm
-.env
 
 # Optional eslint cache
 .eslintcache
@@ -75,10 +74,7 @@ web_modules/
 
 # dotenv environment variable files
 .env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
+.env.*
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -101,9 +97,8 @@ dist
 # vuepress build output
 .vuepress/dist
 
-# vuepress v2.x temp and cache directory
+# vuepress v2.x temp directory
 .temp
-.cache
 
 # Docusaurus cache and generated files
 .docusaurus
@@ -130,5 +125,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# IDE settings
 .idea
 .codebuddy
