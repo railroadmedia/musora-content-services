@@ -40,6 +40,10 @@ const {
     FilterBuilder,
 } = require('../src/filterBuilder.js');
 
+const {
+    processMetadata,
+} = require('../src/contentMetaData.js');
+
 describe('Sanity Queries', function () {
     beforeEach(() => {
         const config = {
@@ -549,5 +553,58 @@ describe('Filter Builder', function () {
         expect(response.meta.filterOptions.focus.length).toBeGreaterThan(0);
         expect(response.meta.filterOptions.genre).toBeDefined();
         expect(response.meta.filterOptions.genre.length).toBeGreaterThan(0);
+    });
+});
+
+describe('MetaData', function () {
+
+    test('customBrandTypeExists', async () => {
+        const metaData = processMetadata('guitareo', 'recording');
+        expect(metaData.type).toBe('recording');
+        expect(metaData.name).toBe('Archives');
+        expect(metaData.description).toBeDefined();
+    });
+
+    test('invalidContentType', async () => {
+        const metaData = processMetadata('guitareo', 'not a real type');
+        expect(metaData).toBeNull();
+    });
+
+    test('onlyCommon', async () => {
+        const guitareoMetaData = processMetadata('guitareo', 'challenge');
+        const drumeoMetaData = processMetadata('drumeo', 'challenge');
+        expect(guitareoMetaData).toStrictEqual(drumeoMetaData);
+        expect(guitareoMetaData.type).toBe('challenge');
+        expect(guitareoMetaData.name).toBe('Challenges');
+    });
+
+    test('withCommon', async () => {
+        const guitareoMetaData = processMetadata('guitareo', 'instructor');
+        const drumeoMetaData = processMetadata('drumeo', 'instructor');
+        expect(guitareoMetaData.description).not.toBe(drumeoMetaData.description);
+        guitareoMetaData.description = ''
+        drumeoMetaData.description = ''
+        expect(guitareoMetaData).toStrictEqual(drumeoMetaData);
+    });
+
+    test('withWithoutFilters', async () => {
+        let metaData = processMetadata('singeo', 'student-review', true);
+        expect(metaData.type).toBeDefined()
+        expect(metaData.name).toBeDefined()
+        expect(metaData.description).toBeDefined();
+        expect(metaData.thumbnailUrl).toBeDefined();
+        expect(metaData.tabs).toBeDefined();
+        metaData = processMetadata('singeo', 'student-review', false);
+        expect(metaData.type).toBeDefined()
+        expect(metaData.name).toBeDefined()
+        expect(metaData.description).toBeDefined();
+        expect(metaData.tabs).not.toBeDefined();
+    });
+
+    test('nulled', async () => {
+        let metaData = processMetadata('drumeo', 'student-review');
+        expect(metaData).toBeNull();
+        metaData = processMetadata('singeo', 'student-review');
+        expect(metaData).not.toBeNull();
     });
 });

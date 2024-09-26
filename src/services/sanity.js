@@ -12,9 +12,13 @@ import {
     filtersToGroq,
     getUpcomingEventsTypes,
     showsTypes,
-    contentMetadata,
     getNewReleasesTypes,
 } from "../contentTypeConfig";
+
+import {
+    processMetadata,
+} from "../contentMetaData";
+
 import {globalConfig} from "./config";
 
 import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
@@ -1341,7 +1345,7 @@ export async function fetchShowsData(brand) {
 }
 
 /**
- * Fetch metadata from the contentTypeConfig.js based on brand and type.
+ * Fetch metadata from the contentMetaData.js based on brand and type.
  *
  * @param {string} brand - The brand for which to fetch metadata.
  * @param {string} type - The type for which to fetch metadata.
@@ -1452,28 +1456,7 @@ function     buildEntityAndTotalQuery(
     }`;
     return query;
 }
-function processMetadata(brand, type, withFilters = false) {
-    const metadataElement = contentMetadata[brand]?.[type];
-    if (!metadataElement) {
-        return null;
-    }
-    const processedData = {
-        type,
-        thumbnailUrl: metadataElement.thumbnailUrl || null,
-        name: metadataElement.name || null,
-        description: metadataElement.description || null
-    };
 
-    if (withFilters) {
-        Object.keys(metadataElement).forEach(key => {
-            if ( !['thumbnailUrl', 'name', 'description'].includes(key) ) {
-                processedData[key] = metadataElement[key];
-            }
-        });
-    }
-
-    return processedData;
-}
 
 function getFilterOptions(option, commonFilter,contentType){
     let filterGroq = '';
