@@ -16,6 +16,7 @@ const {
     fetchByRailContentId,
     fetchByRailContentIds,
     fetchAll,
+    fetchAllOld,
     fetchAllFilterOptions,
     fetchFoundation,
     fetchMethods,
@@ -33,11 +34,17 @@ const {
     fetchByReference,
     fetchScheduledReleases,
     getSortOrder,
+    fetchShowsData,
+    fetchMetadata
 } = require('../src/services/sanity.js');
 
 const {
     FilterBuilder,
 } = require('../src/filterBuilder.js');
+
+const {
+    processMetadata,
+} = require('../src/contentMetaData.js');
 
 describe('Sanity Queries', function () {
     beforeEach(() => {
@@ -380,6 +387,21 @@ describe('Sanity Queries', function () {
         log(response);
         expect(response.entity[0].web_url_path).toContain('/drumeo/coaches/');
     });
+
+    test('fetchShowsData', async () => {
+        const response = await fetchShowsData('drumeo');
+        log(response);
+        expect(response.length).toBeGreaterThan(0);
+        const showTypes = response.map((x) => x.type);
+        expect(showTypes).toContain('live');
+    });
+
+    test('fetchMetadata', async () => {
+        const response = await fetchMetadata('drumeo','song');
+        log(response);
+        expect(response.tabs.length).toBeGreaterThan(0);
+    });
+
 });
 
 describe('Filter Builder', function () {
@@ -525,4 +547,89 @@ describe('Filter Builder', function () {
         return clauses;
     }
 
+    test('fetchAllFilterOptions', async () => {
+        let response = await fetchAllFilterOptions('drumeo', '', '', '', 'song', '');
+        log(response);
+        expect(response.meta.filterOptions.difficulty).toBeDefined();
+        expect(response.meta.filterOptions.genre).toBeDefined();
+        expect(response.meta.filterOptions.lifestyle).toBeDefined();
+        expect(response.meta.filterOptions.instrumentless).toBeDefined();
+    });
+
+    test('fetchAllFilterOptions-Rudiment', async () => {
+        let response = await fetchAllFilterOptions('drumeo', '', '', '', 'rudiment', '');
+        log(response);
+        expect(response.meta.filterOptions.gear).toBeDefined();
+        expect(response.meta.filterOptions.genre).toBeDefined();
+        expect(response.meta.filterOptions.topic).toBeDefined();
+    });
+    test('fetchAllFilterOptions-PlayAlong', async () => {
+        let response = await fetchAllFilterOptions('drumeo', '', '', '', 'play-along', '');
+        log(response);
+        expect(response.meta.filterOptions.difficulty).toBeDefined();
+        expect(response.meta.filterOptions.genre).toBeDefined();
+        expect(response.meta.filterOptions.bpm).toBeDefined();
+    });
+
+    test('fetchAllFilterOptions-Coaches', async () => {
+        let response = await fetchAllFilterOptions('drumeo', '', '', '', 'instructor', '');
+        log(response);
+        expect(response.meta.filterOptions.focus).toBeDefined();
+        expect(response.meta.filterOptions.focus.length).toBeGreaterThan(0);
+        expect(response.meta.filterOptions.genre).toBeDefined();
+        expect(response.meta.filterOptions.genre.length).toBeGreaterThan(0);
+    });
+});
+
+describe('MetaData', function () {
+
+    test('customBrandTypeExists', async () => {
+        const metaData = processMetadata('guitareo', 'recording');
+        expect(metaData.type).toBe('recording');
+        expect(metaData.name).toBe('Archives');
+        expect(metaData.description).toBeDefined();
+    });
+
+    test('invalidContentType', async () => {
+        const metaData = processMetadata('guitareo', 'not a real type');
+        expect(metaData).toBeNull();
+    });
+
+    test('onlyCommon', async () => {
+        const guitareoMetaData = processMetadata('guitareo', 'challenge');
+        const drumeoMetaData = processMetadata('drumeo', 'challenge');
+        expect(guitareoMetaData).toStrictEqual(drumeoMetaData);
+        expect(guitareoMetaData.type).toBe('challenge');
+        expect(guitareoMetaData.name).toBe('Challenges');
+    });
+
+    test('withCommon', async () => {
+        const guitareoMetaData = processMetadata('guitareo', 'instructor');
+        const drumeoMetaData = processMetadata('drumeo', 'instructor');
+        expect(guitareoMetaData.description).not.toBe(drumeoMetaData.description);
+        guitareoMetaData.description = ''
+        drumeoMetaData.description = ''
+        expect(guitareoMetaData).toStrictEqual(drumeoMetaData);
+    });
+
+    test('withWithoutFilters', async () => {
+        let metaData = processMetadata('singeo', 'student-review', true);
+        expect(metaData.type).toBeDefined()
+        expect(metaData.name).toBeDefined()
+        expect(metaData.description).toBeDefined();
+        expect(metaData.thumbnailUrl).toBeDefined();
+        expect(metaData.tabs).toBeDefined();
+        metaData = processMetadata('singeo', 'student-review', false);
+        expect(metaData.type).toBeDefined()
+        expect(metaData.name).toBeDefined()
+        expect(metaData.description).toBeDefined();
+        expect(metaData.tabs).not.toBeDefined();
+    });
+
+    test('nulled', async () => {
+        let metaData = processMetadata('drumeo', 'student-review');
+        expect(metaData).toBeNull();
+        metaData = processMetadata('singeo', 'student-review');
+        expect(metaData).not.toBeNull();
+    });
 });

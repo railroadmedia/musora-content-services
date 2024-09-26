@@ -11,8 +11,13 @@ import {
     getFieldsForContentType,
     filtersToGroq,
     getUpcomingEventsTypes,
+    showsTypes,
     getNewReleasesTypes,
 } from "../contentTypeConfig";
+
+import {
+    processMetadata,
+} from "../contentMetaData";
 
 import {globalConfig} from "./config";
 
@@ -216,8 +221,7 @@ export async function fetchSongFilterOptions(brand) {
       {"type": "Full Song Only", "count": count(*[_type == 'song' && brand == '${brand}' && instrumentless == false]._id)},
       {"type": "Instrument Removed", "count": count(*[_type == 'song' && brand == '${brand}' && instrumentless == true]._id)}
     ]
-  }
-`;
+  }`;
 
   return fetchSanity(query, true);
 }
@@ -495,58 +499,51 @@ export async function fetchAll(brand, type, {
 
     // Determine the group by clause
     let query = "";
+    let entityFieldsString = "";
+    let filter = "";
     if (groupBy !== "" && isGroupByOneToOne) {
-        let webUrlPath = 'artists';
-        query = `
-        {
-            "total": count(*[_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id == ${groupBy}._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]),
-            "entity": *[_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id == ${groupBy}._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]
-            {
+        const webUrlPath = 'artists';
+        const lessonsFilter = `_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
+        entityFieldsString = `
                 'id': _id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': '/${brand}/${webUrlPath}/'+name+'?included_fieds[]=type,${type}',
-                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
-                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
+                'all_lessons_count': count(*[${lessonsFilter}]._id),
+                'lessons': *[${lessonsFilter}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...20]
-            }
-            |order(${sortOrder})
-            [${start}...${end}]
-        }`;
+        `;
+        filter = `_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id == ${groupBy}._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0`;
     } else if (groupBy !== "") {
-        let webUrlPath = (groupBy == 'genre')?'/genres':'';
-        query = `
-        {
-            "total": count(*[_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]),
-            "entity": *[_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]
-            {
+        const webUrlPath = (groupBy == 'genre')?'/genres':'';
+        const lessonsFilter = `brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
+        entityFieldsString = `
                 'id': _id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': select(defined(web_url_path)=> web_url_path +'?included_fieds[]=type,${type}',!defined(web_url_path)=> '/${brand}${webUrlPath}/'+name+'/${webUrlPathType}'),
-                'all_lessons_count': count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
-                'lessons': *[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
+                'all_lessons_count': count(*[${lessonsFilter}]._id),
+                'lessons': *[${lessonsFilter}]{
                     ${fieldsString},
                     ${groupBy}
-                }[0...20]
-            }
-            |order(${sortOrder})
-            [${start}...${end}]
-        }`;
+                }[0...20]`;
+        filter = `_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0`;
     } else {
-        query = `
-        {
-            "entity": *[brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}] | order(${sortOrder}) [${start}...${end}] {
-                ${fieldsString},
-            },
-            "total": count(*[brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}])
-        }
-    `;
+        filter = `brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}`
+        entityFieldsString = fieldsString;
     }
+    query = buildEntityAndTotalQuery(
+        filter,
+        entityFieldsString,
+        {
+            sortOrder: sortOrder,
+            start: start,
+            end: end,
+        });
 
     return fetchSanity(query, true);
 }
@@ -610,27 +607,22 @@ export async function fetchAllFilterOptions(
         `&& railcontent_id in [${progressIds.join(',')}]` : "";
 
     const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${includedFieldsFilter ? includedFieldsFilter : ''}`;
+    const metaData = processMetadata(brand, contentType, true);
+    const allowableFilters = (metaData) ? metaData['allowableFilters'] : [];
+
+    let dynamicFilterOptions = '';
+    allowableFilters.forEach(filter => {
+        const filterOption = getFilterOptions(filter, commonFilter, contentType);
+        dynamicFilterOptions += filterOption;
+    });
+
     const query = `
         {
           "meta": {
             "totalResults": count(*[${commonFilter}
               ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
             "filterOptions": {
-              "difficulty": [
-                  {"type": "Introductory", "count": count(*[${commonFilter} && difficulty_string == "Introductory"])},
-                  {"type": "Beginner", "count": count(*[${commonFilter} && difficulty_string == "Beginner"])},
-                  {"type": "Intermediate", "count": count(*[${commonFilter} && difficulty_string == "Intermediate" ])},
-                  {"type": "Advanced", "count": count(*[${commonFilter} && difficulty_string == "Advanced" ])},
-                  {"type": "Expert", "count": count(*[${commonFilter} && difficulty_string == "Expert" ])}
-              ][count > 0],
-              "instrumentless": [
-                  {"type": "Full Song Only", "count": count(*[${commonFilter} && instrumentless == false ])},
-                  {"type": "Instrument Removed", "count": count(*[${commonFilter} && instrumentless == true ])}
-              ][count > 0],
-              "genre": *[_type == 'genre' && '${contentType}' in filter_types] {
-                "type": name,
-                "count": count(*[${commonFilter} && references(^._id)])
-              }[count > 0]
+              ${dynamicFilterOptions}
             }
         }
       }`;
@@ -829,8 +821,6 @@ function getChildrenToDepth(parent, depth = 1)
     return allChildrenIds;
 }
 
-
-
 /**
 * Fetch the next and previous lessons for a specific lesson by Railcontent ID.
 * @param {string} railcontentId - The Railcontent ID of the current lesson.
@@ -973,13 +963,15 @@ export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = 
   const sortOrder = getSortOrder(sort);
   const filter = `_type == 'pack' && brand == '${brand}' && title match "${searchTerm}*"`
   const filterParams = {};
+  const fields = getFieldsForContentType('pack');
   const query = buildQuery(
     filter,
     filterParams,
     getFieldsForContentType('pack'),
-      {
-          sortOrder: sortOrder,
-      }
+    {
+      logo_image_url: 'logo_image_url.asset->url',
+      sortOrder: sortOrder,
+    }
   );
   return fetchSanity(query, true);
 }
@@ -1191,7 +1183,7 @@ export async function fetchArtistLessons(brand, name, contentType, {
   const end = start + limit;
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''  
   const sortOrder = getSortOrder(sort);
-  const addType = contentType ? `_type == '${contentType}' && `:''
+  const addType = contentType && Array.isArray(contentType) ? `_type in ['${contentType.join("', '")}'] &&` : contentType ? `_type == '${contentType}' && `:''
   const includedFieldsFilter = includedFields.length > 0
   ? filtersToGroq(includedFields)
   : "";
@@ -1371,6 +1363,48 @@ export async function fetchCatalogMetadata(contentType)
     return fetchSanity(query, false);
 }
 
+/**
+ * Fetch shows data for a brand.
+ *
+ * @param brand - The brand for which to fetch shows.
+ * @returns {Promise<[]>}
+ *
+ *  @example
+ *
+ * fetchShowsData('drumeo')
+ *   .then(data => console.log(data))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchShowsData(brand) {
+    let shows = showsTypes[brand] ?? [];
+    const showsInfo = [];
+
+    shows.forEach(type => {
+        const processedData = processMetadata(brand, type);
+        if (processedData) showsInfo.push(processedData)
+    });
+
+    return showsInfo;
+}
+
+/**
+ * Fetch metadata from the contentMetaData.js based on brand and type.
+ *
+ * @param {string} brand - The brand for which to fetch metadata.
+ * @param {string} type - The type for which to fetch metadata.
+ * @returns {Promise<{name, description, type: *, thumbnailUrl}>}
+ *
+ * @example
+ *
+ * fetchMetadata('drumeo','song')
+ *   .then(data => console.log(data))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchMetadata(brand, type) {
+    const processedData = processMetadata(brand, type, true);
+    return processedData ? processedData : {};
+}
+
 
 //Helper Functions
 function arrayJoinWithQuotes(array, delimiter = ',') {
@@ -1466,6 +1500,64 @@ function     buildEntityAndTotalQuery(
     return query;
 }
 
+
+function getFilterOptions(option, commonFilter,contentType){
+    let filterGroq = '';
+    switch (option) {
+        case "difficulty":
+            filterGroq = ` 
+                "difficulty": [
+        {"type": "Introductory", "count": count(*[${commonFilter} && difficulty_string == "Introductory"])},
+        {"type": "Beginner", "count": count(*[${commonFilter} && difficulty_string == "Beginner"])},
+        {"type": "Intermediate", "count": count(*[${commonFilter} && difficulty_string == "Intermediate" ])},
+        {"type": "Advanced", "count": count(*[${commonFilter} && difficulty_string == "Advanced" ])},
+        {"type": "Expert", "count": count(*[${commonFilter} && difficulty_string == "Expert" ])}
+        ][count > 0],`;
+            break;
+        case "genre":
+        case "essential":
+        case "focus":
+        case "theory":
+        case "topic":
+        case "lifestyle":
+        case "creativity":
+            filterGroq = `
+            "${option}": *[_type == '${option}' && '${contentType}' in filter_types] {
+            "type": name,
+                "count": count(*[${commonFilter} && references(^._id)])
+        }[count > 0],`;
+            break;
+        case "instrumentless":
+            filterGroq = `
+            "${option}":  [
+                  {"type": "Full Song Only", "count": count(*[${commonFilter} && instrumentless == false ])},
+                  {"type": "Instrument Removed", "count": count(*[${commonFilter} && instrumentless == true ])}
+              ][count > 0],`;
+            break;
+        case "gear":
+            filterGroq = `
+            "${option}":  [
+                  {"type": "Practice Pad", "count": count(*[${commonFilter} && gear match 'Practice Pad' ])},
+                  {"type": "Drum-Set", "count": count(*[${commonFilter} && gear match 'Drum-Set'])}
+              ][count > 0],`;
+            break;
+        case "bpm":
+            filterGroq = `
+            "${option}":  [
+                  {"type": "50-90", "count": count(*[${commonFilter} && bpm > 50 && bpm < 91])},
+                  {"type": "91-120", "count": count(*[${commonFilter} && bpm > 90 && bpm < 121])},
+                  {"type": "121-150", "count": count(*[${commonFilter} && bpm > 120 && bpm < 151])},
+                  {"type": "151-180", "count": count(*[${commonFilter} && bpm > 150 && bpm < 181])},
+                  {"type": "180+", "count": count(*[${commonFilter} && bpm > 180])},
+              ][count > 0],`;
+            break;
+        default:
+            filterGroq = "";
+            break;
+    }
+
+    return filterGroq;
+}
 
 
 
