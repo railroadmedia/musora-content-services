@@ -517,4 +517,36 @@ describe('Filter Builder', function () {
         return clauses;
     }
 
+    test('fetchAllFilterOptions', async () => {
+        let response = await fetchAllFilterOptions('drumeo', '', '', '', 'song', '');
+        log(response);
+        expect(response.meta.filterOptions.difficulty).toBeDefined();
+        expect(response.meta.filterOptions.genre).toBeDefined();
+        expect(response.meta.filterOptions.lifestyle).toBeDefined();
+        expect(response.meta.filterOptions.instrumentless).toBeDefined();
+    });
+
+    test('fetchAllFilterOptions-Rudiment', async () => {
+        let response = await fetchAllFilterOptions('drumeo', '', '', '', 'rudiment', '');
+        log(response);
+        expect(response.meta.filterOptions.gear).toBeDefined();
+        expect(response.meta.filterOptions.genre).toBeDefined();
+        expect(response.meta.filterOptions.topic).toBeDefined();
+    });
+    test('fetchAllFilterOptions-PlayAlong', async () => {
+        let response = await fetchAllFilterOptions('drumeo', '', '', '', 'play-along', '');
+        log(response);
+        expect(response.meta.filterOptions.difficulty).toBeDefined();
+        expect(response.meta.filterOptions.genre).toBeDefined();
+        expect(response.meta.filterOptions.bpm).toBeDefined();
+    });
+
+    test('fetchAllFilterOptions-Coaches', async () => {
+        let response = await fetchAllFilterOptions('drumeo', '', '', '', 'instructor', '');
+        log(response);
+        expect(response.meta.filterOptions.focus).toBeDefined();
+        expect(response.meta.filterOptions.focus.length).toBeGreaterThan(0);
+        expect(response.meta.filterOptions.genre).toBeDefined();
+        expect(response.meta.filterOptions.genre.length).toBeGreaterThan(0);
+    });
 });
