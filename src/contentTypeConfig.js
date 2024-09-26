@@ -54,7 +54,7 @@ const showsTypes = {
 
 const contentMetadata = {
     'drumeo': {
-        'coaches': {
+        'instructor': {
             name: 'Coaches',
             icon: 'icon-coach',
             description: "Your drumming journey is unique. You need personalized coaching that helps you reach your goals. Learn from some of the best drummers in the world!",
@@ -689,7 +689,7 @@ const contentMetadata = {
         },
     },
     'pianote':{
-        'coaches': {
+        'instructor': {
             name: 'Coaches',
             icon: 'icon-coach',
             description: "Your piano journey is unique. You need personalized coaching that helps you reach your goals. Learn from some of the best pianists in the world!",
@@ -991,7 +991,7 @@ const contentMetadata = {
         },
     },
     'guitareo': {
-        'coaches': {
+        'instructor': {
             name: 'Coaches',
             icon: 'icon-coach',
             description: "Tackle your next guitar goal with bite-sized courses from many of the world's best guitarists.",
@@ -1202,7 +1202,7 @@ const contentMetadata = {
         },
     },
     'singeo':{
-        'coaches': {
+        'instructor': {
             name: 'Coaches',
             icon: 'icon-coach',
             description: "Your singing journey is unique. You need personalized coaching that helps you reach your goals. Learn from some of the best singers and vocal coaches in the world!",

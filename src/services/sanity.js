@@ -1498,6 +1498,7 @@ function getFilterOptions(option, commonFilter,contentType){
             break;
         case "genre":
         case "essential":
+        case "focus":
         case "theory":
         case "topic":
         case "lifestyle":
@@ -1526,7 +1527,10 @@ function getFilterOptions(option, commonFilter,contentType){
             filterGroq = `
             "${option}":  [
                   {"type": "50-90", "count": count(*[${commonFilter} && bpm > 50 && bpm < 91])},
-                  {"type": "91-120", "count": count(*[${commonFilter} && bpm > 90 && bpm < 121])}
+                  {"type": "91-120", "count": count(*[${commonFilter} && bpm > 90 && bpm < 121])},
+                  {"type": "121-150", "count": count(*[${commonFilter} && bpm > 120 && bpm < 151])},
+                  {"type": "151-180", "count": count(*[${commonFilter} && bpm > 150 && bpm < 181])},
+                  {"type": "180+", "count": count(*[${commonFilter} && bpm > 180])},
               ][count > 0],`;
             break;
         default:
