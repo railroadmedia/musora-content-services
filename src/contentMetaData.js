@@ -55,6 +55,30 @@ const commonMetadata ={
             allowableFilters: ['difficulty', 'genre', 'topic'],
             sortBy: '-published_on',
     },
+    'course': {
+        name: "Courses",
+        allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
+        icon: "icon-courses",
+        tabs: [
+            {
+                name: 'Courses',
+                short_name: 'COURSES',
+                value: '',
+            },
+            {
+                name: 'Instructors',
+                short_name: 'INSTRUCTORS',
+                is_group_by: true,
+                value: 'instructor',
+            },
+            {
+                name: 'Genres',
+                short_name: 'Genres',
+                is_group_by: true,
+                value: 'genre',
+            },
+        ],
+    },
     'pack': {
         allowableFilters: [],
     },
@@ -175,30 +199,8 @@ const contentMetadata = {
             description: "Your drumming journey is unique. You need personalized coaching that helps you reach your goals. Learn from some of the best drummers in the world!",
         },
         'course': {
-            name: 'Courses',
-            icon: 'icon-courses',
             description: "Tackle your next drumming goal with bite-sized courses from many of the world's best drummers.",
-            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle', 'creativity'],
             sortBy: '-published_on',
-            tabs: [
-                {
-                    name: 'Courses',
-                    short_name: 'COURSES',
-                    value: '',
-                },
-                {
-                    name: 'Instructors',
-                    short_name: 'INSTRUCTORS',
-                    is_group_by: true,
-                    value: 'instructor',
-                },
-                {
-                    name: 'Genres',
-                    short_name: 'Genres',
-                    is_group_by: true,
-                    value: 'genre',
-                },
-            ],
         },
         'song': {
             sortBy: 'slug',
@@ -714,34 +716,13 @@ const contentMetadata = {
             sortBy: 'slug',
         },
         'course': {
-            name: "Courses",
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/pianote/courses.jpg',
-            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
             sortBy: '-published_on',
             shortname: 'Courses',
             icon: "icon-courses",
             description: "Tackle your next piano goal with bite-sized courses from many of the world's best pianists.",
             amountOfFutureLessonsToShow: 3,
             showFutureLessonAtTopOrBottom: 'bottom',
-            tabs: [
-                {
-                    name: 'Courses',
-                    short_name: 'COURSES',
-                    value: '',
-                },
-                {
-                    name: 'Instructors',
-                    short_name: 'INSTRUCTORS',
-                    is_group_by: true,
-                    value: 'instructor',
-                },
-                {
-                    name: 'Genres',
-                    short_name: 'Genres',
-                    is_group_by: true,
-                    value: 'genre',
-                },
-            ],
         },
         'quick-tips': {
             thumbnailUrl: 'https://imagedelivery.net/0Hon__GSkIjm-B_W77SWCA/7979495d-d06a-4f78-161f-2f670f6f9800/public',
@@ -879,30 +860,8 @@ const contentMetadata = {
         'instructor': {
             description: "Tackle your next guitar goal with bite-sized courses from many of the world's best guitarists.",
         },
-        'courses': {
-            name: "Courses",
-            icon: "icon-courses",
+        'course': {
             description: "These jam-packed training courses cover various lesson topics in detail. Find one that suits your guitar goals, and get started!",
-            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
-            tabs: [
-                {
-                    name: 'Courses',
-                    short_name: 'COURSES',
-                    value: '',
-                },
-                {
-                    name: 'Instructors',
-                    short_name: 'INSTRUCTORS',
-                    is_group_by: true,
-                    value: 'instructor',
-                },
-                {
-                    name: 'Genres',
-                    short_name: 'Genres',
-                    is_group_by: true,
-                    value: 'genre',
-                },
-            ],
         },
         'challenge': {
             tabs: [
@@ -987,30 +946,8 @@ const contentMetadata = {
         'instructor': {
             description: "Your singing journey is unique. You need personalized coaching that helps you reach your goals. Learn from some of the best singers and vocal coaches in the world!",
         },
-        'courses': {
-            name: "Courses",
-            icon: "icon-courses",
+        'course': {
             description: "Tackle your next singing goal with bite-sized courses from many of the world's best vocalists.",
-            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
-            tabs: [
-                {
-                    name: 'Courses',
-                    short_name: 'COURSES',
-                    value: '',
-                },
-                {
-                    name: 'Instructors',
-                    short_name: 'INSTRUCTORS',
-                    is_group_by: true,
-                    value: 'instructor',
-                },
-                {
-                    name: 'Genres',
-                    short_name: 'Genres',
-                    is_group_by: true,
-                    value: 'genre',
-                },
-            ],
         },
         'quick-tips': {
             thumbnailUrl: 'https://imagedelivery.net/0Hon__GSkIjm-B_W77SWCA/8464033e-9b4e-458e-d613-e89fb47e2a00/public',
