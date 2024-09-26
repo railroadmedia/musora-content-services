@@ -11,8 +11,8 @@ import {
     getFieldsForContentType,
     filtersToGroq,
     getUpcomingEventsTypes,
-    getNewReleasesTypes,
     showsTypes,
+    getNewReleasesTypes,
 } from "../contentTypeConfig";
 
 import {
@@ -499,58 +499,51 @@ export async function fetchAll(brand, type, {
 
     // Determine the group by clause
     let query = "";
+    let entityFieldsString = "";
+    let filter = "";
     if (groupBy !== "" && isGroupByOneToOne) {
-        let webUrlPath = 'artists';
-        query = `
-        {
-            "total": count(*[_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id == ${groupBy}._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]),
-            "entity": *[_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id == ${groupBy}._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]
-            {
+        const webUrlPath = 'artists';
+        const lessonsFilter = `_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
+        entityFieldsString = `
                 'id': _id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': '/${brand}/${webUrlPath}/'+name+'?included_fieds[]=type,${type}',
-                'all_lessons_count': count(*[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
-                'lessons': *[_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
+                'all_lessons_count': count(*[${lessonsFilter}]._id),
+                'lessons': *[${lessonsFilter}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...20]
-            }
-            |order(${sortOrder})
-            [${start}...${end}]
-        }`;
+        `;
+        filter = `_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id == ${groupBy}._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0`;
     } else if (groupBy !== "") {
-        let webUrlPath = (groupBy == 'genre')?'/genres':'';
-        query = `
-        {
-            "total": count(*[_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]),
-            "entity": *[_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0]
-            {
+        const webUrlPath = (groupBy == 'genre')?'/genres':'';
+        const lessonsFilter = `brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
+        entityFieldsString = `
                 'id': _id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': select(defined(web_url_path)=> web_url_path +'?included_fieds[]=type,${type}',!defined(web_url_path)=> '/${brand}${webUrlPath}/'+name+'/${webUrlPathType}'),
-                'all_lessons_count': count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id),
-                'lessons': *[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{
+                'all_lessons_count': count(*[${lessonsFilter}]._id),
+                'lessons': *[${lessonsFilter}]{
                     ${fieldsString},
                     ${groupBy}
-                }[0...20]
-            }
-            |order(${sortOrder})
-            [${start}...${end}]
-        }`;
+                }[0...20]`;
+        filter = `_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0`;
     } else {
-        query = `
-        {
-            "entity": *[brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}] | order(${sortOrder}) [${start}...${end}] {
-                ${fieldsString},
-            },
-            "total": count(*[brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}])
-        }
-    `;
+        filter = `brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}`
+        entityFieldsString = fieldsString;
     }
+    query = buildEntityAndTotalQuery(
+        filter,
+        entityFieldsString,
+        {
+            sortOrder: sortOrder,
+            start: start,
+            end: end,
+        });
 
     return fetchSanity(query, true);
 }
@@ -974,7 +967,7 @@ export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = 
   const query = buildQuery(
     filter,
     filterParams,
-    fields,
+    getFieldsForContentType('pack'),
     {
       logo_image_url: 'logo_image_url.asset->url',
       sortOrder: sortOrder,
