@@ -89,7 +89,7 @@ describe('Sanity Queries', function () {
             return result;
         };
         const response = await fetchSanity(query, false, {customPostProcess: postProcess});
-        //console.log(response);
+        log(response);
         expect(response.id).toBe(id);
         expect(response.new_field).toBe(newField);
         expect(response.slug).toBe(newSlug);

@@ -1341,8 +1341,7 @@ function doesUserNeedAccessToContent(result, userPermissions)
 
 async function getUserPermissions()
 {
-    const permissions = await fetchUserPermissions();
-    return permissions;
+    return await fetchUserPermissions();
 }
 
 
