@@ -19,6 +19,7 @@ let globalConfig = {
  * @param {string} config.sanityConfig.version - The API version to use.
  * @param {boolean} [config.sanityConfig.debug=false] - Optional flag to enable debug mode.
  * @param {boolean} [config.sanityConfig.useCachedAPI=true] - Optional flag to enable or disable the use of the cached API.
+ * @param {boolean} [config.sanityConfig.useDummyRailContentMethods=false] - Optional flag to use test harness for railcontent methods. Should only be used by jest tests.
  * @param {Object} config.railcontentConfig - Configuration for user services.
  * @param {string} config.railcontentConfig.token - The token for authenticating user-specific requests.
  * @param {string} config.railcontentConfig.userId - The user ID for fetching user-specific data.
