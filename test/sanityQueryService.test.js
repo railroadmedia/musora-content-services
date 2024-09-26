@@ -578,8 +578,8 @@ describe('MetaData', function () {
     });
 
     test('withCommon', async () => {
-        const guitareoMetaData = processMetadata('guitareo', 'coaches');
-        const drumeoMetaData = processMetadata('drumeo', 'coaches');
+        const guitareoMetaData = processMetadata('guitareo', 'instructor');
+        const drumeoMetaData = processMetadata('drumeo', 'instructor');
         expect(guitareoMetaData.description).not.toBe(drumeoMetaData.description);
         guitareoMetaData.description = ''
         drumeoMetaData.description = ''
