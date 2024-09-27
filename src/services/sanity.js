@@ -1072,6 +1072,8 @@ export async function fetchChallengeOverview(id) {
       difficulty_string,
       difficulty,
       "type": _type,
+      is_always_unlocked,
+      is_bonus_content,
     }
   } [0...1]`;
   return fetchSanity(query, false);

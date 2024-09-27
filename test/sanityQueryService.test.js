@@ -433,6 +433,16 @@ describe('Sanity Queries', function () {
         expect(response.tabs.length).toBeGreaterThan(0);
     });
 
+    test('fetchChallengesV2Fields', async () => {
+        const id = 402197;
+        const response = await fetchChallengeOverview(id);
+        log(response);
+        expect(response.award).toBeDefined();
+        expect(response.award_template).toBeDefined();
+        expect(response.lessons[0].is_always_unlocked).toBeDefined();
+        expect(response.lessons[0].is_bonus_content).toBeDefined();
+    });
+
 });
 
 describe('Filter Builder', function () {
@@ -617,6 +627,7 @@ describe('Filter Builder', function () {
         expect(response.meta.filterOptions).toBeDefined();
     });
 });
+
 
 describe('MetaData', function () {
 

@@ -95,6 +95,11 @@ let contentTypeConfig = {
             '"instructors": instructor[]->name',
             '"header_image_url": thumbnail.asset->url',
             '"logo_image_url": logo_image_url.asset->url',
+            '"award": award.asset->url',
+            `"award_template": award_template[]{
+                streak_minimum,
+                "template" : template.asset->url,
+            }`,
         ]
     },
     'course': {
