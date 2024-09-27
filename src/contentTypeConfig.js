@@ -338,35 +338,51 @@ function getFieldsForContentType(contentType, asQueryString=true) {
  *     'genre,rock']
  * @returns {string} - A string that can be used in a groq query
  */
-function filtersToGroq(filters) {
-    const groq = filters.map(field => {
-            let [key, value] = field.split(',');
-            if(key && value && field.split(',').length === 2){
-                switch (key) {
-                    case 'difficulty':
-                      return `&& difficulty_string == "${value}"`;
-                    case 'genre':
-                      return `&& genre[]->name match "${value}"`;
-                    case 'topic':
-                      return `&& topic[]->name match "${value}"`;
-                    case 'instrumentless':
-                      return `&& instrumentless == ${value}`;
-                    case 'creativity':
-                      return `&& creativity[]->name match "${value}"`;
-                    case 'theory':
-                      return `&& theory[]->name match "${value}"`;
-                    case 'essentials':
-                      return `&& essential[]->name match "${value}"`;
-                    case 'lifestyle':
-                      return `&& lifestyle[]->name match "${value}"`;
-                    default:
-                      return `&& ${key} == ${/^\d+$/.test(value) ? value : `"$${value}"`}`;
-                  }
+function filtersToGroq(filters, selectedFilters = []) {
+    const groupedFilters = groupFilters(filters);
+    const filterClauses = Object.entries(groupedFilters).map(([key, values]) => {
+        if (!key || values.length === 0) return '';
+        if (key.startsWith('is_')) {
+            return `&& ${key} == true`;
+        }
+        // Filter out values that exist in selectedFilters
+        const joinedValues = values.map(value => {
+            if (key === 'bpm' && !selectedFilters.includes('bpm')) {
+                if (value.includes('-')) {
+                    const [min, max] = value.split('-').map(Number);
+                    return `(bpm > ${min} && bpm < ${max})`;
+                } else if (value.includes('+')) {
+                    const min = parseInt(value, 10);
+                    return `(bpm > ${min})`;
+                } else {
+                    return `bpm == ${value}`;
+                }
+            } else if (['creativity', 'essential', 'focus', 'genre', 'lifestyle', 'theory', 'topic'].includes(key) && !selectedFilters.includes(key)) {
+                return `${key}[]->name match "${value}"`;
+            } else if (key === 'gear' && !selectedFilters.includes('gear')) {
+                return `gear match "${value}"`;
+            } else if (key === 'instrumentless' && !selectedFilters.includes(key)) {
+                return `instrumentless == ${value}`;
+            } else if (key === 'difficulty' && !selectedFilters.includes(key)) {
+                return `difficulty_string == "${value}"`;
+            } else if (!selectedFilters.includes(key)) {
+                return `&& ${key} == ${/^\d+$/.test(value) ? value : `"$${value}"`}`;
             }
-            
-            return `&& ${field}`;
-        }).join(' ');
-    return groq;
+        }).filter(Boolean).join(' || ');
+
+        // Return the constructed filter clause
+        return joinedValues.length > 0 ? `&& (${joinedValues})` : '';
+    }).filter(Boolean).join(' ');
+
+    return filterClauses;
+}
+function groupFilters(filters) {
+    return filters.reduce((acc, filter) => {
+        const [category, value] = filter.split(',');
+        if (!acc[category]) acc[category] = [];
+        acc[category].push(value);
+        return acc;
+    }, {});
 }
 
 module.exports = {
