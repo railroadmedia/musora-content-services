@@ -608,13 +608,11 @@ export async function fetchAllFilterOptions(
 
     const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${includedFieldsFilter ? includedFieldsFilter : ''}`;
     const metaData = processMetadata(brand, contentType, true);
-    const allowableFilters = (metaData) ? metaData['allowableFilters'] : [];
+    const allowableFilters = metaData?.allowableFilters || [];
 
-    let dynamicFilterOptions = '';
-    allowableFilters.forEach(filter => {
-        const filterOption = getFilterOptions(filter, commonFilter, contentType);
-        dynamicFilterOptions += filterOption;
-    });
+    const dynamicFilterOptions = allowableFilters.map(filter =>
+        getFilterOptions(filter, commonFilter, contentType)
+    ).join(' ');
 
     const query = `
         {

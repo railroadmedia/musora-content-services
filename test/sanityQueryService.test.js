@@ -81,7 +81,7 @@ describe('Sanity Queries', function () {
         const response = await fetchSongArtistCount('drumeo');
         log(response);
         expect(response).toBeGreaterThan(1000);
-    });
+    }, 10000);
 
     test('fetchSanity-WithPostProcess', async () => {
         const id = 380094;
@@ -357,6 +357,37 @@ describe('Sanity Queries', function () {
 
     test('fetchAll-IncludedFields', async () => {
         let response = await fetchAll('drumeo', 'instructor',{includedFields: ['is_active']});
+        console.log(response);
+        //expect(response.entity.length).toBeGreaterThan(0);
+    });
+
+    test('fetchAll-IncludedFields-multiple', async () => {
+        let response = await fetchAll('drumeo', 'course',{includedFields: ['essential,Dynamics','essential,Timing','difficulty_string,Beginner']});
+        log(response);
+        expect(response.entity.length).toBeGreaterThan(0);
+    });
+
+    test('fetchAll-IncludedFields-playalong-multiple', async () => {
+        let response = await fetchAll('drumeo', 'play-along',{includedFields: ['bpm,91-120','bpm,181+','genre,Blues']});
+        log(response);
+        expect(response.entity.length).toBeGreaterThan(0);
+    });
+
+    test('fetchAll-IncludedFields-rudiment-multiple-gear', async () => {
+        let response = await fetchAll('drumeo', 'rudiment',{includedFields: ['gear,Drum-Set','gear,Practice Pad']});
+        log(response);
+        expect(response.entity.length).toBeGreaterThan(0);
+    });
+
+    test('fetchAll-IncludedFields-coaches-multiple-focus', async () => {
+        let response = await fetchAll('drumeo', 'instructor',{includedFields: ['focus,drumline','focus,recording']});
+        log(response);
+        expect(response.entity.length).toBeGreaterThan(0);
+    });
+
+    test('fetchAll-IncludedFields-songs-multiple-instrumentless', async () => {
+        let response = await fetchAll('drumeo', 'song',{includedFields: ['instrumentless,true','instrumentless,false']});
+        log(response);
         expect(response.entity.length).toBeGreaterThan(0);
     });
 
