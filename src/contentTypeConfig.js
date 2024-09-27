@@ -338,15 +338,16 @@ function getFieldsForContentType(contentType, asQueryString=true) {
  *     'genre,rock']
  * @returns {string} - A string that can be used in a groq query
  */
-function filtersToGroq(filters) {
+function filtersToGroq(filters, selectedFilters = []) {
     const groupedFilters = groupFilters(filters);
     const filterClauses = Object.entries(groupedFilters).map(([key, values]) => {
         if (!key || values.length === 0) return '';
         if (key.startsWith('is_')) {
             return `&& ${key} == true`;
         }
+        // Filter out values that exist in selectedFilters
         const joinedValues = values.map(value => {
-            if (key === 'bpm') {
+            if (key === 'bpm' && !selectedFilters.includes('bpm')) {
                 if (value.includes('-')) {
                     const [min, max] = value.split('-').map(Number);
                     return `(bpm > ${min} && bpm < ${max})`;
@@ -356,20 +357,21 @@ function filtersToGroq(filters) {
                 } else {
                     return `bpm == ${value}`;
                 }
-            } else if (['creativity', 'essential', 'focus', 'genre', 'lifestyle', 'theory', 'topic'].includes(key)) {
+            } else if (['creativity', 'essential', 'focus', 'genre', 'lifestyle', 'theory', 'topic'].includes(key) && !selectedFilters.includes(key)) {
                 return `${key}[]->name match "${value}"`;
-            } else if (key === 'gear') {
+            } else if (key === 'gear' && !selectedFilters.includes('gear')) {
                 return `gear match "${value}"`;
-            } else if (key === 'instrumentless') {
+            } else if (key === 'instrumentless' && !selectedFilters.includes(key)) {
                 return `instrumentless == ${value}`;
-            } else if (key === 'difficulty_string') {
+            } else if (key === 'difficulty' && !selectedFilters.includes(key)) {
                 return `difficulty_string == "${value}"`;
-            } else {
+            } else if (!selectedFilters.includes(key)) {
                 return `&& ${key} == ${/^\d+$/.test(value) ? value : `"$${value}"`}`;
             }
-        }).join(' || ');
+        }).filter(Boolean).join(' || ');
 
-        return `&& (${joinedValues})`;
+        // Return the constructed filter clause
+        return joinedValues.length > 0 ? `&& (${joinedValues})` : '';
     }).filter(Boolean).join(' ');
 
     return filterClauses;
