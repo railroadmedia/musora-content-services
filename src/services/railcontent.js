@@ -276,6 +276,8 @@ export async function fetchUserContext() {
 }
 
 export async function fetchUserPermissions() {
+    //TODO: Should be investigate why throw 500 errors on MA
+    return [];
     let url = `/content/user_data_permissions`;
     const headers = {
         'Content-Type': 'application/json',
