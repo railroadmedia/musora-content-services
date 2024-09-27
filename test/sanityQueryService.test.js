@@ -402,6 +402,12 @@ describe('Sanity Queries', function () {
         expect(response.tabs.length).toBeGreaterThan(0);
     });
 
+    test('fetchMetadata-Coach-Lessons', async () => {
+        const response = await fetchMetadata('drumeo','coach-lessons');
+        log(response);
+        expect(response).toBeDefined();
+    });
+
 });
 
 describe('Filter Builder', function () {

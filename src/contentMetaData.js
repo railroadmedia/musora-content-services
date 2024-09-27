@@ -192,6 +192,9 @@ const commonMetadata ={
         ],
             modalText: 'Workouts are fun play-along lessons that help hone your musical skills. They cover various topics, and have multiple difficulty and duration options — so there’s always a perfect Workout for you. Just pick one, press start, and play along!',
     },
+    'coach-lessons':{
+        allowableFilters: ['difficulty', 'genre', 'essential','theory','lifestyle'],
+    }
 }
 const contentMetadata = {
     'drumeo': {
