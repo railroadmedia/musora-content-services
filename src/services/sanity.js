@@ -594,13 +594,14 @@ export function getSortOrder(sort= '-published_on', groupBy)
 */
 export async function fetchAllFilterOptions(
     brand,
-    filters,
+    filters = [],
     style,
     artist,
     contentType,
     term,
     progressIds = undefined
 ) {
+    filters = Array.isArray(filters) ? filters : [];
     const includedFieldsFilter = filters?.length > 0 ? filtersToGroq(filters) : undefined;
 
     const progressFilter = progressIds !== undefined ?
@@ -608,13 +609,16 @@ export async function fetchAllFilterOptions(
 
     const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${includedFieldsFilter ? includedFieldsFilter : ''}`;
     const metaData = processMetadata(brand, contentType, true);
-    const allowableFilters = (metaData) ? metaData['allowableFilters'] : [];
+    const allowableFilters = metaData?.allowableFilters || [];
 
-    let dynamicFilterOptions = '';
-    allowableFilters.forEach(filter => {
-        const filterOption = getFilterOptions(filter, commonFilter, contentType);
-        dynamicFilterOptions += filterOption;
-    });
+    const dynamicFilterOptions = allowableFilters.map(filter => {
+        // Create a modified common filter for each allowable filter
+        let includedFieldsFilterWithoutSelectedOption = filters?.length > 0 ? filtersToGroq(filters, filter) : undefined;
+        const commonFilterWithoutSelectedOption = `_type == '${contentType}' && brand == "${brand}"${(style && filter !== "style") ? ` && '${style}' in genre[]->name` : ''}${(artist && filter !== "artist") ? ` && artist->name == '${artist}'` : ''} ${includedFieldsFilterWithoutSelectedOption ? includedFieldsFilterWithoutSelectedOption : ''}`;
+
+        // Call getFilterOptions with the modified common filter
+        return getFilterOptions(filter, commonFilterWithoutSelectedOption,  contentType);
+    }).join(' ');
 
     const query = `
         {
@@ -1068,6 +1072,8 @@ export async function fetchChallengeOverview(id) {
       difficulty_string,
       difficulty,
       "type": _type,
+      is_always_unlocked,
+      is_bonus_content,
     }
   } [0...1]`;
   return fetchSanity(query, false);
@@ -1557,6 +1563,30 @@ function getFilterOptions(option, commonFilter,contentType){
     }
 
     return filterGroq;
+}
+
+function cleanUpGroq(query) {
+    // Split the query into clauses based on the logical operators
+    const clauses = query.split(/(\s*&&|\s*\|\|)/).map(clause => clause.trim());
+
+    // Filter out empty clauses
+    const filteredClauses = clauses.filter(clause => clause.length > 0);
+
+    // Check if there are valid conditions in the clauses
+    const hasConditions = filteredClauses.some(clause => !clause.match(/^\s*&&\s*|\s*\|\|\s*$/));
+
+    if (!hasConditions) {
+        // If no valid conditions, return an empty string or the original query
+        return '';
+    }
+
+    // Remove occurrences of '&& ()'
+    const cleanedQuery = filteredClauses.join(' ')
+        .replace(/&&\s*\(\)/g, '')
+        .replace(/(\s*&&|\s*\|\|)(?=\s*[\s()]*$|(?=\s*&&|\s*\|\|))/g, '')
+        .trim();
+
+    return cleanedQuery;
 }
 
 
