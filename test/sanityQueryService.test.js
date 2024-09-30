@@ -354,6 +354,15 @@ describe('Sanity Queries', function () {
         const response = await fetchCoachLessons('drumeo',411493, {});
         expect(response.entity.length).toBeGreaterThan(0);
     });
+    test('fetchCoachLessons-WithTypeFilters', async () => {
+        const response = await fetchAllFilterOptions('drumeo',['type,course','type,live'], '','','','',[],31880);
+        log(response);
+        expect(response.meta.filterOptions.difficulty).toBeDefined();
+        expect(response.meta.filterOptions.type).toBeDefined();
+        expect(response.meta.filterOptions.lifestyle).toBeDefined();
+        expect(response.meta.filterOptions.genre).toBeDefined();
+    });
+
 
     test('fetchAll-IncludedFields', async () => {
         let response = await fetchAll('drumeo', 'instructor',{includedFields: ['is_active']});
