@@ -873,7 +873,7 @@ export async function fetchLessonContent(railContentId) {
           "thumbnail_url":thumbnail.asset->url, 
           "url": web_url_path, 
           soundslice_slug,
-          description,
+          "description": description[0].children[0].text,
           "chapters": chapter[]{
             chapter_description,
             chapter_timecode,
@@ -889,6 +889,7 @@ export async function fetchLessonContent(railContentId) {
             "id":_id,
             name,
             short_bio,
+            "biography": short_bio[0].children[0].text, 
             web_url_path,
             "coach_card_image": coach_card_image.asset->url,
           },

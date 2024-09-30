@@ -22,7 +22,8 @@ export class FilterBuilder {
         this.getFutureContentOnly = getFutureContentOnly;
         this.getFutureScheduledContentsOnly = getFutureScheduledContentsOnly;
         this.filter = filter;
-        this.debug = process.env.DEBUG === 'true' || false;
+        // this.debug = process.env.DEBUG === 'true' || false;
+        this.debug = false;
     }
 
 
