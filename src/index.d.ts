@@ -6,16 +6,21 @@ import {
 } from './services/config.js';
 
 import {
+	isContentLiked,
+	likeContent,
+	unlikeContent
+} from './services/contentLikes.js';
+
+import {
 	fetchAllCompletedStates,
 	fetchCompletedContent,
 	fetchCompletedState,
 	fetchContentInProgress,
 	fetchContentPageUserData,
 	fetchHandler,
-	fetchLikeContent,
 	fetchSongsInProgress,
-	fetchUnlikeContent,
-	fetchUserContext,
+	fetchUserLikes,
+	fetchUserPermissions,
 	fetchVimeoData
 } from './services/railcontent.js';
 
@@ -65,19 +70,8 @@ import {
 	getSortOrder
 } from './services/sanity.js';
 
-import {
-	clearCache,
-	fetchContentData,
-	init,
-	likeContent,
-	testClearLocal,
-	unlikeContent,
-	version
-} from './services/userContext.js';
-
 declare module 'musora-content-services' {
 	export {
-		clearCache,
 		fetchAll,
 		fetchAllCompletedStates,
 		fetchAllFilterOptions,
@@ -94,7 +88,6 @@ declare module 'musora-content-services' {
 		fetchCoachLessons,
 		fetchCompletedContent,
 		fetchCompletedState,
-		fetchContentData,
 		fetchContentInProgress,
 		fetchContentPageUserData,
 		fetchCourseOverview,
@@ -102,7 +95,6 @@ declare module 'musora-content-services' {
 		fetchGenreLessons,
 		fetchHandler,
 		fetchLessonContent,
-		fetchLikeContent,
 		fetchLiveEvent,
 		fetchMetadata,
 		fetchMethod,
@@ -127,18 +119,16 @@ declare module 'musora-content-services' {
 		fetchSongCount,
 		fetchSongFilterOptions,
 		fetchSongsInProgress,
-		fetchUnlikeContent,
 		fetchUpcomingEvents,
-		fetchUserContext,
+		fetchUserLikes,
+		fetchUserPermissions,
 		fetchVimeoData,
 		fetchWorkouts,
 		getSortOrder,
 		globalConfig,
-		init,
 		initializeService,
+		isContentLiked,
 		likeContent,
-		testClearLocal,
 		unlikeContent,
-		version,
 	}
 }
