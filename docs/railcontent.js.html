@@ -49,7 +49,7 @@
  * @module Railcontent-Services
  */
 
-const { globalConfig } = require('./config');
+const {globalConfig} = require('./config');
 
 
 /**
@@ -71,10 +71,11 @@ export async function fetchCompletedState(content_id) {
     };
 
     try {
-        const response = await fetchAbsolute(url, { headers });
+        const response = await fetchAbsolute(url, {headers});
         const result = await response.json();
 
-        if (result &amp;&amp; result[content_id]) {            return result[content_id];  // Return the correct object
+        if (result &amp;&amp; result[content_id]) {
+            return result[content_id];  // Return the correct object
         } else {
             return null;  // Handle unexpected structure
         }
@@ -103,7 +104,7 @@ export async function fetchVimeoData(vimeo_id) {
     };
 
     try {
-        const response = await fetchAbsolute(url, { headers });
+        const response = await fetchAbsolute(url, {headers});
         const result = await response.json();
 
         if (result) {
@@ -138,9 +139,9 @@ export async function fetchAllCompletedStates(contentIds) {
     };
 
     try {
-        const response = await fetchAbsolute(url, { headers });
+        const response = await fetchAbsolute(url, {headers});
         const result = await response.json();
-        if(result){
+        if (result) {
             return result;
         } else {
             console.log('result not json');
@@ -170,9 +171,9 @@ export async function fetchSongsInProgress(brand) {
     };
 
     try {
-        const response = await fetchAbsolute(url, { headers });
+        const response = await fetchAbsolute(url, {headers});
         const result = await response.json();
-        if(result){
+        if (result) {
             //console.log('fetchSongsInProgress', result);
             return result;
         } else {
@@ -197,12 +198,12 @@ export async function fetchSongsInProgress(brand) {
  *   .then(songs => console.log(songs))
  *   .catch(error => console.error(error));
  */
-export async function fetchContentInProgress(type="all", brand, { page, limit } = {}) {
+export async function fetchContentInProgress(type = "all", brand, {page, limit} = {}) {
     let url;
     const limitString = limit ? `&amp;limit=${limit}` : '';
     const pageString = page ? `&amp;page=${page}` : '';
 
-    if(type === "all") {
+    if (type === "all") {
         url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?brand=${brand}${limitString}${pageString}`;
     } else {
         url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=${type}&amp;brand=${brand}${limitString}${pageString}`;
@@ -212,9 +213,9 @@ export async function fetchContentInProgress(type="all", brand, { page, limit } 
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
     try {
-        const response = await fetchAbsolute(url, { headers });
+        const response = await fetchAbsolute(url, {headers});
         const result = await response.json();
-        if(result){
+        if (result) {
             //console.log('contentInProgress', result);
             return result;
         } else {
@@ -239,12 +240,12 @@ export async function fetchContentInProgress(type="all", brand, { page, limit } 
  *   .then(songs => console.log(songs))
  *   .catch(error => console.error(error));
  */
-export async function fetchCompletedContent(type="all", brand, { page, limit } = {}) {
+export async function fetchCompletedContent(type = "all", brand, {page, limit} = {}) {
     let url;
     const limitString = limit ? `&amp;limit=${limit}` : '';
     const pageString = page ? `&amp;page=${page}` : '';
 
-    if(type === "all") {
+    if (type === "all") {
         url = `/content/completed/${globalConfig.railcontentConfig.userId}?brand=${brand}${limitString}${pageString}`;
     } else {
         url = `/content/completed/${globalConfig.railcontentConfig.userId}?content_type=${type}&amp;brand=${brand}${limitString}${pageString}`;
@@ -254,9 +255,9 @@ export async function fetchCompletedContent(type="all", brand, { page, limit } =
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
     try {
-        const response = await fetchAbsolute(url, { headers });
+        const response = await fetchAbsolute(url, {headers});
         const result = await response.json();
-        if(result){
+        if (result) {
             //console.log('completed content', result);
             return result;
         } else {
@@ -287,31 +288,10 @@ export async function fetchContentPageUserData(contentId) {
     };
 
     try {
-        const response = await fetchAbsolute(url, { headers });
-        const result = await response.json();
-        if(result){
-            console.log('fetchContentPageUserData', result);
-            return result;
-        } else {
-            console.log('result not json');
-        }
-    } catch (error) {
-        console.error('Fetch error:', error);
-        return null;
-    }
-}
-
-export async function fetchUserContext() {
-    let url = `/content/user_data_all`;
-    const headers = {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
-    };
-    try {
         const response = await fetchAbsolute(url, {headers});
         const result = await response.json();
         if (result) {
-            console.log('fetchUserContext', result);
+            console.log('fetchContentPageUserData', result);
             return result;
         } else {
             console.log('result not json');
@@ -334,11 +314,16 @@ export async function fetchUserPermissions() {
     return fetchHandler(url, 'get') ?? [];
 }
 
-export async function fetchHandler(url, method = "get") {
-    const headers = {
+async function fetchDataHandler(url, dataVersion, method = "get") {
+    return fetchHandler(url, method, dataVersion);
+}
+
+export async function fetchHandler(url, method = "get", dataVersion = null) {
+    let headers = {
         'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
     };
+    if (dataVersion) headers['Data-Version'] = dataVersion;
     try {
         const response = await fetchAbsolute(url, {method, headers});
         const result = await response.json();
@@ -353,18 +338,23 @@ export async function fetchHandler(url, method = "get") {
     return null;
 }
 
-export async function fetchLikeContent(contentId) {
-    let url = `/content/${contentId}/like`;
+export async function fetchUserLikes(currentVersion) {
+    let url = `/content/user/likes/all`;
+    return fetchDataHandler(url, currentVersion);
+}
+
+export async function postContentLiked(contentId) {
+    let url = `/content/user/likes/like/${contentId}`;
     return await fetchHandler(url, "post");
 }
 
-export async function fetchUnlikeContent(contentId) {
-    let url = `/content/${contentId}/unlike`;
+export async function postContentUnliked(contentId) {
+    let url = `/content/user/likes/unlike/${contentId}`;
     return await fetchHandler(url, "post");
 }
 
 function fetchAbsolute(url, params) {
-    if(globalConfig.railcontentConfig.baseUrl) {
+    if (globalConfig.railcontentConfig.baseUrl) {
         if (url.startsWith('/')) {
             return fetch(globalConfig.railcontentConfig.baseUrl + url, params)
         }
@@ -384,7 +374,7 @@ function fetchAbsolute(url, params) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Fri Sep 27 2024 21:58:51 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Wed Oct 02 2024 10:51:04 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

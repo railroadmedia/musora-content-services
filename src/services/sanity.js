@@ -937,7 +937,7 @@ export async function fetchRelatedLessons(railContentId, brand) {
 * Fetch related method lessons for a specific lesson by RailContent ID and type.
 * @param {string} railContentId - The RailContent ID of the current lesson.
 * @param {string} brand - The current brand.
-* @returns {Promise<Object>|null>} - The fetched related lessons
+* @returns {Promise<Array<Object>|null>} - The fetched related lessons
 */
 export async function fetchRelatedMethodLessons(railContentId, brand) {
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}"]{
@@ -1385,7 +1385,7 @@ export async function fetchCatalogMetadata(contentType)
  * Fetch shows data for a brand.
  *
  * @param brand - The brand for which to fetch shows.
- * @returns {Promise<[]>}
+ * @returns {Promise<{name, description, type: *, thumbnailUrl}>}
  *
  *  @example
  *
