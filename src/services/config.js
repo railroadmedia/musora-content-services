@@ -4,7 +4,8 @@
 
 let globalConfig = {
     sanityConfig: {},
-    railcontentConfig: {}
+    railcontentConfig: {},
+    localStorage: null
   };
   
 /**
@@ -24,6 +25,7 @@ let globalConfig = {
  * @param {string} config.railcontentConfig.token - The token for authenticating user-specific requests.
  * @param {string} config.railcontentConfig.userId - The user ID for fetching user-specific data.
  * @param {string} config.railcontentConfig.baseUrl - The url for the enviroment.
+ * @param {Object} config.localStorage - Cache to use for localStorage
 
  *
  * @example
@@ -41,12 +43,14 @@ let globalConfig = {
  *     token: 'your-user-api-token',
  *     userId: 'current-user-id',
  *     baseUrl: 'https://web-staging-one.musora.com'
- *   }
+ *   },
+ *   localStorage: localStorage
  * });
  */
 function initializeService(config) {
     globalConfig.sanityConfig = config.sanityConfig;
     globalConfig.railcontentConfig = config.railcontentConfig;
+    globalConfig.localStorage = config.localStorage;
 }
 
 // Export both the initialization function and the config object

@@ -6,16 +6,21 @@ import {
 } from './services/config.js';
 
 import {
+	isContentLiked,
+	likeContent,
+	unlikeContent
+} from './services/contentLikes.js';
+
+import {
 	fetchAllCompletedStates,
 	fetchCompletedContent,
 	fetchCompletedState,
 	fetchContentInProgress,
 	fetchContentPageUserData,
 	fetchHandler,
-	fetchLikeContent,
 	fetchSongsInProgress,
-	fetchUnlikeContent,
-	fetchUserContext,
+	fetchUserLikes,
+	fetchUserPermissions,
 	fetchVimeoData
 } from './services/railcontent.js';
 
@@ -65,18 +70,7 @@ import {
 	getSortOrder
 } from './services/sanity.js';
 
-import {
-	clearCache,
-	fetchContentData,
-	init,
-	likeContent,
-	testClearLocal,
-	unlikeContent,
-	version
-} from './services/userContext.js';
-
 export {
-	clearCache,
 	fetchAll,
 	fetchAllCompletedStates,
 	fetchAllFilterOptions,
@@ -93,7 +87,6 @@ export {
 	fetchCoachLessons,
 	fetchCompletedContent,
 	fetchCompletedState,
-	fetchContentData,
 	fetchContentInProgress,
 	fetchContentPageUserData,
 	fetchCourseOverview,
@@ -101,7 +94,6 @@ export {
 	fetchGenreLessons,
 	fetchHandler,
 	fetchLessonContent,
-	fetchLikeContent,
 	fetchLiveEvent,
 	fetchMetadata,
 	fetchMethod,
@@ -126,17 +118,15 @@ export {
 	fetchSongCount,
 	fetchSongFilterOptions,
 	fetchSongsInProgress,
-	fetchUnlikeContent,
 	fetchUpcomingEvents,
-	fetchUserContext,
+	fetchUserLikes,
+	fetchUserPermissions,
 	fetchVimeoData,
 	fetchWorkouts,
 	getSortOrder,
 	globalConfig,
-	init,
 	initializeService,
+	isContentLiked,
 	likeContent,
-	testClearLocal,
 	unlikeContent,
-	version,
 };
