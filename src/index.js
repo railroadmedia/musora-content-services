@@ -19,7 +19,6 @@ import {
 	fetchContentPageUserData,
 	fetchHandler,
 	fetchSongsInProgress,
-	fetchUserLikes,
 	fetchUserPermissions,
 	fetchVimeoData
 } from './services/railcontent.js';
@@ -119,7 +118,6 @@ export {
 	fetchSongFilterOptions,
 	fetchSongsInProgress,
 	fetchUpcomingEvents,
-	fetchUserLikes,
 	fetchUserPermissions,
 	fetchVimeoData,
 	fetchWorkouts,

@@ -44,6 +44,15 @@ To install the package, use npm:
 npm install musora-content-services
 ```
 
+## Generating index.js and index.d.ts
+
+The `index.js` and `index.d.ts` files provide all exported functions from this package, and are generated automatically.
+Simply run `npm run build-index` to build these files. It works by running the `tools/generate-index.js` file, which simply 
+parses the files under the `src/services` directory and builds up the index files with any functions tagged with `export`.
+
+If you want to exclude any of your exported functions from the generated index files, be sure to add the function name to 
+the `excludeFromGeneratedIndex` array inside the service file.
+
 ## Publishing Package Updates
 
 To publish a new version to NPM run, 

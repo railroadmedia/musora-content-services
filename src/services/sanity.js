@@ -26,6 +26,12 @@ import { fetchUserPermissions, fetchAllCompletedStates, fetchCurrentSongComplete
 import {arrayToStringRepresentation, FilterBuilder} from "../filterBuilder";
 
 /**
+ * Exported functions that are excluded from index generation.
+ *
+ * @type {string[]}
+ */
+const excludeFromGeneratedIndex = [];
+/**
 * Fetch a song by its document ID from Sanity.
 *
 * @param {string} documentId - The ID of the document to fetch.
