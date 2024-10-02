@@ -1116,6 +1116,7 @@ export async function fetchChallengeOverview(id) {
 
 /**
  * Fetch the data needed for the coach screen.
+ * @param {string} brand - The brand for which to fetch coach lessons
  * @param {string} id - The Railcontent ID of the coach
  * @returns {Promise<Object|null>} - The lessons for the instructor or null if not found.
  * @param {Object} params - Parameters for pagination, filtering and sorting.
