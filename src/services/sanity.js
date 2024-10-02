@@ -1315,7 +1315,8 @@ export async function fetchSanity(query,
                                   { customPostProcess = null,
                                     processNeedAccess = true,} = {}
 ) {
-
+    //TODO:  Disable need_access decorator - should be deleted, but first should chck why the /content/user_data_permissions endpoint return 500 error
+    processNeedAccess = false;
   // Check the config object before proceeding
   if (!checkSanityConfig(globalConfig)) {
       return null;
