@@ -373,6 +373,12 @@ describe('Sanity Queries', function () {
             .toThrow("Invalid contentType: 'course' for coachId. It must be 'coach-lessons'.");
     });
 
+    test('fetchCoachLessons-IncludedFields', async () => {
+        const response = await fetchCoachLessons('drumeo',31880, {includedFields: ['genre,Pop/Rock','difficulty,Beginner']});
+        log(response);
+        expect(response.entity.length).toBeGreaterThan(0);
+    });
+
 
     test('fetchAll-IncludedFields', async () => {
         let response = await fetchAll('drumeo', 'instructor',{includedFields: ['is_active']});

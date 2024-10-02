@@ -1160,7 +1160,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'coach-lessons', 'Love'
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1000">line 1000</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1001">line 1001</a>
     </li></ul></dd>
     
 
@@ -1880,7 +1880,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'coach-lessons', 'Love'
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1214">line 1214</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1227">line 1227</a>
     </li></ul></dd>
     
 
@@ -2656,7 +2656,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'coach-lessons', 'Love'
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1175">line 1175</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1188">line 1188</a>
     </li></ul></dd>
     
 
@@ -2822,7 +2822,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1393">line 1393</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1406">line 1406</a>
     </li></ul></dd>
     
 
@@ -2987,7 +2987,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1096">line 1096</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1097">line 1097</a>
     </li></ul></dd>
     
 
@@ -3338,7 +3338,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
 
     
 
-    <h4 class="name" id=".fetchCoachLessons"><span class="type-signature type-signature-static">(static) </span>fetchCoachLessons<span class="signature">(id)</span><span class="type-signature"> &rarr; {Promise.&lt;(Object|null)>}</span></h4>
+    <h4 class="name" id=".fetchCoachLessons"><span class="type-signature type-signature-static">(static) </span>fetchCoachLessons<span class="signature">(brand, id, params)</span><span class="type-signature"> &rarr; {Promise.&lt;(Object|null)>}</span></h4>
 
     
 
@@ -3354,7 +3354,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1126">line 1126</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1134">line 1134</a>
     </li></ul></dd>
     
 
@@ -3433,6 +3433,30 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
 
         <tr>
             
+                <td class="name"><code>brand</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The brand for which to fetch coach lessons</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>id</code></td>
             
 
@@ -3451,6 +3475,260 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
             
 
             <td class="description last">The Railcontent ID of the coach</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Parameters for pagination, filtering and sorting.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>sortOrder</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>"-published_on"</code>
+                
+                </td>
+            
+
+            <td class="description last">The field to sort the lessons by.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>searchTerm</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>""</code>
+                
+                </td>
+            
+
+            <td class="description last">The search term to filter content by title.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>page</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>1</code>
+                
+                </td>
+            
+
+            <td class="description last">The page number for pagination.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>limit</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>10</code>
+                
+                </td>
+            
+
+            <td class="description last">The number of items per page.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>includedFields</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>[]</code>
+                
+                </td>
+            
+
+            <td class="description last">Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -3519,7 +3797,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1160">line 1160</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1173">line 1173</a>
     </li></ul></dd>
     
 
@@ -3842,7 +4120,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1255">line 1255</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1268">line 1268</a>
     </li></ul></dd>
     
 
@@ -4220,7 +4498,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1443">line 1443</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1456">line 1456</a>
     </li></ul></dd>
     
 
@@ -5748,7 +6026,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1022">line 1022</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1023">line 1023</a>
     </li></ul></dd>
     
 
@@ -5906,7 +6184,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1082">line 1082</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1083">line 1083</a>
     </li></ul></dd>
     
 
@@ -6220,7 +6498,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line953">line 953</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line954">line 954</a>
     </li></ul></dd>
     
 
@@ -6386,7 +6664,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
 
     
 
-    <h4 class="name" id=".fetchRelatedMethodLessons"><span class="type-signature type-signature-static">(static) </span>fetchRelatedMethodLessons<span class="signature">(railContentId, brand)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".fetchRelatedMethodLessons"><span class="type-signature type-signature-static">(static) </span>fetchRelatedMethodLessons<span class="signature">(railContentId, brand)</span><span class="type-signature"> &rarr; {Promise.&lt;(Array.&lt;Object>|null)>}</span></h4>
 
     
 
@@ -6402,7 +6680,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line975">line 975</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line976">line 976</a>
     </li></ul></dd>
     
 
@@ -6540,7 +6818,24 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
 <h5 class="h5-returns">Returns:</h5>
 
         
+<div class="param-desc">
+    - The fetched related lessons
+</div>
 
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;(Array.&lt;Object>|null)></span>
+
+
+
+    </dd>
+</dl>
 
     
 
@@ -6753,7 +7048,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1300">line 1300</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1313">line 1313</a>
     </li></ul></dd>
     
 
@@ -7203,7 +7498,7 @@ fetchSanity(query, true)
 
     
 
-    <h4 class="name" id=".fetchShowsData"><span class="type-signature type-signature-static">(static) </span>fetchShowsData<span class="signature">(brand)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".fetchShowsData"><span class="type-signature type-signature-static">(static) </span>fetchShowsData<span class="signature">(brand)</span><span class="type-signature"> &rarr; {Promise.&lt;{name, description, type: *, thumbnailUrl}>}</span></h4>
 
     
 
@@ -7219,7 +7514,7 @@ fetchSanity(query, true)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1418">line 1418</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1431">line 1431</a>
     </li></ul></dd>
     
 
@@ -7335,6 +7630,19 @@ fetchSanity(query, true)
 
         
 
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;{name, description, type: *, thumbnailUrl}></span>
+
+
+
+    </dd>
+</dl>
 
     
 
@@ -8341,7 +8649,7 @@ It also includes completion status and progress percentage for each workout by f
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Wed Oct 02 2024 11:27:48 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Wed Oct 02 2024 12:20:08 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
