@@ -355,12 +355,22 @@ describe('Sanity Queries', function () {
         expect(response.entity.length).toBeGreaterThan(0);
     });
     test('fetchCoachLessons-WithTypeFilters', async () => {
-        const response = await fetchAllFilterOptions('drumeo',['type,course','type,live'], '','','','',[],31880);
+        const response = await fetchAllFilterOptions('drumeo',['type,course','type,live'], '','','coach-lessons','',[],31880);
         log(response);
         expect(response.meta.filterOptions.difficulty).toBeDefined();
         expect(response.meta.filterOptions.type).toBeDefined();
         expect(response.meta.filterOptions.lifestyle).toBeDefined();
         expect(response.meta.filterOptions.genre).toBeDefined();
+    });
+
+    test('fetchCoachLessons-WithTypeFilters-InvalidContentType', async () => {
+        const brand = 'drumeo';
+        const coachId = 31880;
+        const invalidContentType = 'course'; // Not 'coach-lessons'
+
+        await expect(fetchAllFilterOptions(brand, ['type,course', 'type,live'], '', '', invalidContentType, '', [], coachId))
+            .rejects
+            .toThrow("Invalid contentType: 'course' for coachId. It must be 'coach-lessons'.");
     });
 
 

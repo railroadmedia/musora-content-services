@@ -577,6 +577,7 @@ export function getSortOrder(sort= '-published_on', groupBy)
 *
 * This function constructs a query to retrieve the total number of results and filter options such as difficulty, instrument type, and genre.
 * The filter options are dynamically generated based on the provided filters, style, artist, and content type.
+* If a coachId is provided, the content type must be 'coach-lessons'.
 *
 * @param {string} brand - The brand for which to fetch the filter options.
 * @param {string[]} filters - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock']
@@ -585,11 +586,20 @@ export function getSortOrder(sort= '-published_on', groupBy)
 * @param {string} contentType - The content type to fetch (e.g., 'song', 'lesson').
 * @param {string} [term] - Optional search term to match against various fields such as title, album, artist name, and genre.
 * @param {Array<string>} [progressIds=undefined] - An array of railcontent IDs to filter the results by. Used for filtering by progress.
+* @param {string} [coachId=undefined] - Optional coach ID to filter the results by a specific coach. If provided, contentType must be 'coach-lessons'.
 * @returns {Promise<Object|null>} - A promise that resolves to an object containing the total results and filter options, or null if the query fails.
 *
+* @throws {Error} Will throw an error if coachId is provided but contentType is not 'coach-lessons'.
+ *
 * @example
 * // Example usage:
 * fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
+*   .then(options => console.log(options))
+*   .catch(error => console.error(error));
+*
+* @example
+* // Example usage with coachId:
+* fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'coach-lessons', 'Love', undefined, '123')
 *   .then(options => console.log(options))
 *   .catch(error => console.error(error));
 */
@@ -603,6 +613,10 @@ export async function fetchAllFilterOptions(
     progressIds = undefined,
     coachId = undefined, // New parameter for coach ID
 ) {
+    if (coachId && contentType !== 'coach-lessons') {
+        throw new Error(`Invalid contentType: '${contentType}' for coachId. It must be 'coach-lessons'.`);
+    }
+
     filters = Array.isArray(filters) ? filters : [];
     const includedFieldsFilter = filters?.length > 0 ? filtersToGroq(filters) : undefined;
 
@@ -621,7 +635,7 @@ export async function fetchAllFilterOptions(
     }
 
     // Determine metadata and allowable filters (handle coach lessons if coachId exists)
-    const metaData = processMetadata(brand, coachId ? 'coach-lessons' : contentType, true);
+    const metaData = processMetadata(brand, contentType, true);
     const allowableFilters = metaData?.allowableFilters || [];
 
     // Dynamic filter options construction
