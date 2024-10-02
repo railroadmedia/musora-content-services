@@ -354,11 +354,31 @@ describe('Sanity Queries', function () {
         const response = await fetchCoachLessons('drumeo',411493, {});
         expect(response.entity.length).toBeGreaterThan(0);
     });
+    test('fetchCoachLessons-WithTypeFilters', async () => {
+        const response = await fetchAllFilterOptions('drumeo',['type,course','type,live'], '','','coach-lessons','',[],31880);
+        log(response);
+        expect(response.meta.filterOptions.difficulty).toBeDefined();
+        expect(response.meta.filterOptions.type).toBeDefined();
+        expect(response.meta.filterOptions.lifestyle).toBeDefined();
+        expect(response.meta.filterOptions.genre).toBeDefined();
+    });
+
+    test('fetchCoachLessons-WithTypeFilters-InvalidContentType', async () => {
+        const brand = 'drumeo';
+        const coachId = 31880;
+        const invalidContentType = 'course'; // Not 'coach-lessons'
+
+        await expect(fetchAllFilterOptions(brand, ['type,course', 'type,live'], '', '', invalidContentType, '', [], coachId))
+            .rejects
+            .toThrow("Invalid contentType: 'course' for coachId. It must be 'coach-lessons'.");
+    });
+
     test('fetchCoachLessons-IncludedFields', async () => {
         const response = await fetchCoachLessons('drumeo',31880, {includedFields: ['genre,Pop/Rock','difficulty,Beginner']});
         log(response);
         expect(response.entity.length).toBeGreaterThan(0);
     });
+
 
     test('fetchAll-IncludedFields', async () => {
         let response = await fetchAll('drumeo', 'instructor',{includedFields: ['is_active']});
@@ -446,6 +466,20 @@ describe('Sanity Queries', function () {
         expect(response.award_template).toBeDefined();
         expect(response.lessons[0].is_always_unlocked).toBeDefined();
         expect(response.lessons[0].is_bonus_content).toBeDefined();
+    });
+
+    test('fetchShowsData-OddTimes', async () => {
+        const response = await fetchShowsData('drumeo');
+        log(response);
+        expect(response.length).toBeGreaterThan(0);
+        const showTypes = response.map((x) => x.type);
+        expect(showTypes).toContain('odd-times');
+    });
+
+    test('fetchMetadata-Coach-Lessons', async () => {
+        const response = await fetchMetadata('drumeo','coach-lessons');
+        log(response);
+        expect(response).toBeDefined();
     });
 
 });

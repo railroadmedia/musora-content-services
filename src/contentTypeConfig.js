@@ -44,7 +44,7 @@ const contentWithSortField = {
     ]
 }
 const showsTypes = {
-    'drumeo': ['drum-fest-international-2022', 'spotlight', 'the-history-of-electronic-drums', 'backstage-secret', 'quick-tips', 'question-and-answer', 'student-collaboration',
+    'drumeo': ['odd-times','drum-fest-international-2022', 'spotlight', 'the-history-of-electronic-drums', 'backstage-secret', 'quick-tips', 'question-and-answer', 'student-collaboration',
          'live', 'podcast', 'solo', 'boot-camp', 'gear-guide', 'performance', 'in-rhythm', 'challenges', 'on-the-road', 'diy-drum-experiment', 'rhythmic-adventures-of-captain-carson',
         'study-the-greats', 'rhythms-from-another-planet', 'tama', 'paiste-cymbals', 'behind-the-scenes', 'exploring-beats', 'sonor'
     ],
@@ -53,6 +53,7 @@ const showsTypes = {
     'singeo': ['student-review', 'question-and-answer']
 }
 
+const coachLessonsTypes = ['course', 'course-part', 'coach-stream', 'student-focus', 'quick-tips', 'pack', 'semester-pack', 'question-and-answer', 'song-tutorial', 'song-tutorial-children', 'workout'];
 
 let contentTypeConfig = {
     'song': {
@@ -370,8 +371,10 @@ function filtersToGroq(filters, selectedFilters = []) {
                 return `instrumentless == ${value}`;
             } else if (key === 'difficulty' && !selectedFilters.includes(key)) {
                 return `difficulty_string == "${value}"`;
+            } else if (key === 'type' && !selectedFilters.includes(key)) {
+                return `_type == "${value}"`;
             } else if (!selectedFilters.includes(key)) {
-                return `&& ${key} == ${/^\d+$/.test(value) ? value : `"$${value}"`}`;
+                return ` ${key} == ${/^\d+$/.test(value) ? value : `"$${value}"`}`;
             }
         }).filter(Boolean).join(' || ');
 
@@ -402,4 +405,5 @@ module.exports = {
     getNewReleasesTypes,
     getUpcomingEventsTypes,
     showsTypes,
+    coachLessonsTypes
 }

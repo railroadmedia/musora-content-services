@@ -192,6 +192,9 @@ const commonMetadata ={
         ],
             modalText: 'Workouts are fun play-along lessons that help hone your musical skills. They cover various topics, and have multiple difficulty and duration options — so there’s always a perfect Workout for you. Just pick one, press start, and play along!',
     },
+    'coach-lessons':{
+        allowableFilters: ['difficulty', 'genre', 'essential','theory','lifestyle','type'],
+    }
 }
 const contentMetadata = {
     'drumeo': {
@@ -702,6 +705,14 @@ const contentMetadata = {
         },
         'pack': {
             allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle'],
+        },
+        'odd-times': {
+            thumbnailUrl: 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/1bf6fc7a-d1a5-4934-d322-b9f6da454000/public',
+            name: 'Odd Times With Aaron Edgar',
+            shortname: 'Episodes',
+            icon: 'icon-shows',
+            allowableFilters: [],
+            sortBy: 'sort',
         },
     },
     'pianote':{
