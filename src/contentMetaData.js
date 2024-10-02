@@ -703,6 +703,14 @@ const contentMetadata = {
         'pack': {
             allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle'],
         },
+        'odd-times': {
+            thumbnailUrl: 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/1bf6fc7a-d1a5-4934-d322-b9f6da454000/public',
+            name: 'Odd Times With Aaron Edgar',
+            shortname: 'Episodes',
+            icon: 'icon-shows',
+            allowableFilters: [],
+            sortBy: 'sort',
+        },
     },
     'pianote':{
         'instructor': {

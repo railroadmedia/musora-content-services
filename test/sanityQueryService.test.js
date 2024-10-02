@@ -443,6 +443,14 @@ describe('Sanity Queries', function () {
         expect(response.lessons[0].is_bonus_content).toBeDefined();
     });
 
+    test('fetchShowsData-OddTimes', async () => {
+        const response = await fetchShowsData('drumeo');
+        log(response);
+        expect(response.length).toBeGreaterThan(0);
+        const showTypes = response.map((x) => x.type);
+        expect(showTypes).toContain('odd-times');
+    });
+
 });
 
 describe('Filter Builder', function () {
