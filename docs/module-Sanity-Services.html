@@ -100,7 +100,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line457">line 457</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line458">line 458</a>
     </li></ul></dd>
     
 
@@ -695,7 +695,7 @@
 
     
 
-    <h4 class="name" id=".fetchAllFilterOptions"><span class="type-signature type-signature-static">(static) </span>fetchAllFilterOptions<span class="signature">(brand, filters, style<span class="signature-attributes">opt</span>, artist<span class="signature-attributes">opt</span>, contentType, term<span class="signature-attributes">opt</span>, progressIds<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(Object|null)>}</span></h4>
+    <h4 class="name" id=".fetchAllFilterOptions"><span class="type-signature type-signature-static">(static) </span>fetchAllFilterOptions<span class="signature">(brand, filters, style<span class="signature-attributes">opt</span>, artist<span class="signature-attributes">opt</span>, contentType, term<span class="signature-attributes">opt</span>, progressIds<span class="signature-attributes">opt</span>, coachId<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(Object|null)>}</span></h4>
 
     
 
@@ -708,13 +708,14 @@
     <dd class="tag-description"><ul class="dummy"><li>Fetches all available filter options based on various criteria such as brand, filters, style, artist, content type, and search term.
 
 This function constructs a query to retrieve the total number of results and filter options such as difficulty, instrument type, and genre.
-The filter options are dynamically generated based on the provided filters, style, artist, and content type.</li></ul></dd>
+The filter options are dynamically generated based on the provided filters, style, artist, and content type.
+If a coachId is provided, the content type must be 'coach-lessons'.</li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line595">line 595</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line606">line 606</a>
     </li></ul></dd>
     
 
@@ -759,10 +760,15 @@ The filter options are dynamically generated based on the provided filters, styl
 
 
 
-    <h5 class="h5-examples">Example</h5>
+    <h5 class="h5-examples">Examples</h5>
     
     <pre class="prettyprint"><code>// Example usage:
 fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
+  .then(options => console.log(options))
+  .catch(error => console.error(error));</code></pre>
+
+    <pre class="prettyprint"><code>// Example usage with coachId:
+fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'coach-lessons', 'Love', undefined, '123')
   .then(options => console.log(options))
   .catch(error => console.error(error));</code></pre>
 
@@ -1025,6 +1031,40 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>coachId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Optional coach ID to filter the results by a specific coach. If provided, contentType must be 'coach-lessons'.</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -1041,6 +1081,36 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
 
 
 
+<h5 class="h5-throws">Throws:</h5>
+
+        
+
+<dl>
+    <dt>
+        <div class="param-desc usertext">
+        Will throw an error if coachId is provided but contentType is not 'coach-lessons'.
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl class="param-type">
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type">Error</span>
+
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+
+    
 
 
 <h5 class="h5-returns">Returns:</h5>
@@ -1090,7 +1160,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line966">line 966</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1000">line 1000</a>
     </li></ul></dd>
     
 
@@ -1344,7 +1414,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line184">line 184</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line185">line 185</a>
     </li></ul></dd>
     
 
@@ -1810,7 +1880,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1178">line 1178</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1214">line 1214</a>
     </li></ul></dd>
     
 
@@ -2023,7 +2093,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line62">line 62</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line63">line 63</a>
     </li></ul></dd>
     
 
@@ -2188,7 +2258,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line392">line 392</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line393">line 393</a>
     </li></ul></dd>
     
 
@@ -2377,7 +2447,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line417">line 417</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line418">line 418</a>
     </li></ul></dd>
     
 
@@ -2586,7 +2656,7 @@ fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1139">line 1139</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1175">line 1175</a>
     </li></ul></dd>
     
 
@@ -2752,7 +2822,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1357">line 1357</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1393">line 1393</a>
     </li></ul></dd>
     
 
@@ -2917,7 +2987,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1062">line 1062</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1096">line 1096</a>
     </li></ul></dd>
     
 
@@ -3082,7 +3152,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line642">line 642</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line676">line 676</a>
     </li></ul></dd>
     
 
@@ -3284,7 +3354,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1090">line 1090</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1126">line 1126</a>
     </li></ul></dd>
     
 
@@ -3449,7 +3519,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1124">line 1124</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1160">line 1160</a>
     </li></ul></dd>
     
 
@@ -3614,7 +3684,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line688">line 688</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line722">line 722</a>
     </li></ul></dd>
     
 
@@ -3772,7 +3842,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1219">line 1219</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1255">line 1255</a>
     </li></ul></dd>
     
 
@@ -3985,7 +4055,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line859">line 859</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line893">line 893</a>
     </li></ul></dd>
     
 
@@ -4150,7 +4220,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1407">line 1407</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1443">line 1443</a>
     </li></ul></dd>
     
 
@@ -4335,7 +4405,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line708">line 708</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line742">line 742</a>
     </li></ul></dd>
     
 
@@ -4517,7 +4587,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line746">line 746</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line780">line 780</a>
     </li></ul></dd>
     
 
@@ -4675,7 +4745,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line800">line 800</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line834">line 834</a>
     </li></ul></dd>
     
 
@@ -4833,7 +4903,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line767">line 767</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line801">line 801</a>
     </li></ul></dd>
     
 
@@ -5015,7 +5085,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line784">line 784</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line818">line 818</a>
     </li></ul></dd>
     
 
@@ -5204,7 +5274,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line676">line 676</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line710">line 710</a>
     </li></ul></dd>
     
 
@@ -5362,7 +5432,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line265">line 265</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line266">line 266</a>
     </li></ul></dd>
     
 
@@ -5520,7 +5590,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line833">line 833</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line867">line 867</a>
     </li></ul></dd>
     
 
@@ -5678,7 +5748,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line988">line 988</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1022">line 1022</a>
     </li></ul></dd>
     
 
@@ -5836,7 +5906,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1048">line 1048</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1082">line 1082</a>
     </li></ul></dd>
     
 
@@ -5998,7 +6068,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line659">line 659</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line693">line 693</a>
     </li></ul></dd>
     
 
@@ -6150,7 +6220,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line919">line 919</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line953">line 953</a>
     </li></ul></dd>
     
 
@@ -6332,7 +6402,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line941">line 941</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line975">line 975</a>
     </li></ul></dd>
     
 
@@ -6497,7 +6567,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line94">line 94</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line95">line 95</a>
     </li></ul></dd>
     
 
@@ -6683,7 +6753,7 @@ It's an ongoing discussion (Aug 2024), but it's been included here if necessary<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1264">line 1264</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1300">line 1300</a>
     </li></ul></dd>
     
 
@@ -6981,7 +7051,7 @@ fetchSanity(query, true)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line355">line 355</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line356">line 356</a>
     </li></ul></dd>
     
 
@@ -7149,7 +7219,7 @@ fetchSanity(query, true)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1382">line 1382</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line1418">line 1418</a>
     </li></ul></dd>
     
 
@@ -7291,7 +7361,7 @@ fetchSanity(query, true)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line77">line 77</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line78">line 78</a>
     </li></ul></dd>
     
 
@@ -7449,7 +7519,7 @@ fetchSanity(query, true)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line38">line 38</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line39">line 39</a>
     </li></ul></dd>
     
 
@@ -7614,7 +7684,7 @@ fetchSanity(query, true)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line234">line 234</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line235">line 235</a>
     </li></ul></dd>
     
 
@@ -7772,7 +7842,7 @@ fetchSanity(query, true)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line206">line 206</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line207">line 207</a>
     </li></ul></dd>
     
 
@@ -7937,7 +8007,7 @@ fetchSanity(query, true)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line311">line 311</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line312">line 312</a>
     </li></ul></dd>
     
 
@@ -8107,7 +8177,7 @@ It also includes completion status and progress percentage for each workout by f
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line252">line 252</a>
+        <a href="sanity.js.html">sanity.js</a>, <a href="sanity.js.html#line253">line 253</a>
     </li></ul></dd>
     
 
@@ -8271,7 +8341,7 @@ It also includes completion status and progress percentage for each workout by f
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Fri Sep 27 2024 21:58:51 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Wed Oct 02 2024 11:27:48 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

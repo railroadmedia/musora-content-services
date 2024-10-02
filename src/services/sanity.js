@@ -13,6 +13,7 @@ import {
     getUpcomingEventsTypes,
     showsTypes,
     getNewReleasesTypes,
+    coachLessonsTypes
 } from "../contentTypeConfig";
 
 import {
@@ -576,6 +577,7 @@ export function getSortOrder(sort= '-published_on', groupBy)
 *
 * This function constructs a query to retrieve the total number of results and filter options such as difficulty, instrument type, and genre.
 * The filter options are dynamically generated based on the provided filters, style, artist, and content type.
+* If a coachId is provided, the content type must be 'coach-lessons'.
 *
 * @param {string} brand - The brand for which to fetch the filter options.
 * @param {string[]} filters - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock']
@@ -584,11 +586,20 @@ export function getSortOrder(sort= '-published_on', groupBy)
 * @param {string} contentType - The content type to fetch (e.g., 'song', 'lesson').
 * @param {string} [term] - Optional search term to match against various fields such as title, album, artist name, and genre.
 * @param {Array<string>} [progressIds=undefined] - An array of railcontent IDs to filter the results by. Used for filtering by progress.
+* @param {string} [coachId=undefined] - Optional coach ID to filter the results by a specific coach. If provided, contentType must be 'coach-lessons'.
 * @returns {Promise<Object|null>} - A promise that resolves to an object containing the total results and filter options, or null if the query fails.
 *
+* @throws {Error} Will throw an error if coachId is provided but contentType is not 'coach-lessons'.
+ *
 * @example
 * // Example usage:
 * fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
+*   .then(options => console.log(options))
+*   .catch(error => console.error(error));
+*
+* @example
+* // Example usage with coachId:
+* fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'coach-lessons', 'Love', undefined, '123')
 *   .then(options => console.log(options))
 *   .catch(error => console.error(error));
 */
@@ -599,25 +610,48 @@ export async function fetchAllFilterOptions(
     artist,
     contentType,
     term,
-    progressIds = undefined
+    progressIds = undefined,
+    coachId = undefined, // New parameter for coach ID
 ) {
+    if (coachId && contentType !== 'coach-lessons') {
+        throw new Error(`Invalid contentType: '${contentType}' for coachId. It must be 'coach-lessons'.`);
+    }
+
     filters = Array.isArray(filters) ? filters : [];
     const includedFieldsFilter = filters?.length > 0 ? filtersToGroq(filters) : undefined;
 
     const progressFilter = progressIds !== undefined ?
         `&& railcontent_id in [${progressIds.join(',')}]` : "";
 
-    const commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${includedFieldsFilter ? includedFieldsFilter : ''}`;
+    // General common filter logic
+    let commonFilter;
+
+    if (coachId) {
+        // Coach-specific filtering
+        commonFilter = `brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${includedFieldsFilter ? includedFieldsFilter : ''}`;
+    } else {
+        // Regular content filtering
+        commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${includedFieldsFilter ? includedFieldsFilter : ''}`;
+    }
+
+    // Determine metadata and allowable filters (handle coach lessons if coachId exists)
     const metaData = processMetadata(brand, contentType, true);
     const allowableFilters = metaData?.allowableFilters || [];
 
+    // Dynamic filter options construction
     const dynamicFilterOptions = allowableFilters.map(filter => {
-        // Create a modified common filter for each allowable filter
         let includedFieldsFilterWithoutSelectedOption = filters?.length > 0 ? filtersToGroq(filters, filter) : undefined;
-        const commonFilterWithoutSelectedOption = `_type == '${contentType}' && brand == "${brand}"${(style && filter !== "style") ? ` && '${style}' in genre[]->name` : ''}${(artist && filter !== "artist") ? ` && artist->name == '${artist}'` : ''} ${includedFieldsFilterWithoutSelectedOption ? includedFieldsFilterWithoutSelectedOption : ''}`;
+        let commonFilterWithoutSelectedOption;
+
+        if (coachId) {
+            commonFilterWithoutSelectedOption = `brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${includedFieldsFilterWithoutSelectedOption ? includedFieldsFilterWithoutSelectedOption : ''}`;
+        } else {
+            // Regular content filter without the selected option
+            commonFilterWithoutSelectedOption = `_type == '${contentType}' && brand == "${brand}"${(style && filter !== "style") ? ` && '${style}' in genre[]->name` : ''}${(artist && filter !== "artist") ? ` && artist->name == '${artist}'` : ''} ${includedFieldsFilterWithoutSelectedOption ? includedFieldsFilterWithoutSelectedOption : ''}`;
+        }
 
         // Call getFilterOptions with the modified common filter
-        return getFilterOptions(filter, commonFilterWithoutSelectedOption,  contentType);
+        return getFilterOptions(filter, commonFilterWithoutSelectedOption, contentType, brand);
     }).join(' ');
 
     const query = `
@@ -1508,8 +1542,10 @@ function     buildEntityAndTotalQuery(
 }
 
 
-function getFilterOptions(option, commonFilter,contentType){
+function getFilterOptions(option, commonFilter,contentType, brand){
     let filterGroq = '';
+    const types = Array.from(new Set([...coachLessonsTypes,...showsTypes[brand]]));
+
     switch (option) {
         case "difficulty":
             filterGroq = ` 
@@ -1521,6 +1557,12 @@ function getFilterOptions(option, commonFilter,contentType){
         {"type": "Expert", "count": count(*[${commonFilter} && difficulty_string == "Expert" ])}
         ][count > 0],`;
             break;
+        case "type":
+            const dynamicTypeOptions = types.map(filter => {
+                return `{"type": "${filter}", "count": count(*[${commonFilter} && _type == "${filter}"])}`
+            }).join(', ');
+            filterGroq = `"type": [${dynamicTypeOptions}][count > 0],`;
+            break;
         case "genre":
         case "essential":
         case "focus":
@@ -1529,7 +1571,7 @@ function getFilterOptions(option, commonFilter,contentType){
         case "lifestyle":
         case "creativity":
             filterGroq = `
-            "${option}": *[_type == '${option}' && '${contentType}' in filter_types] {
+            "${option}": *[_type == '${option}' ${contentType ? ` && '${contentType}' in filter_types` : ''} ] {
             "type": name,
                 "count": count(*[${commonFilter} && references(^._id)])
         }[count > 0],`;

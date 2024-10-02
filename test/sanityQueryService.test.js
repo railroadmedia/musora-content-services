@@ -354,6 +354,25 @@ describe('Sanity Queries', function () {
         const response = await fetchCoachLessons('drumeo',411493, {});
         expect(response.entity.length).toBeGreaterThan(0);
     });
+    test('fetchCoachLessons-WithTypeFilters', async () => {
+        const response = await fetchAllFilterOptions('drumeo',['type,course','type,live'], '','','coach-lessons','',[],31880);
+        log(response);
+        expect(response.meta.filterOptions.difficulty).toBeDefined();
+        expect(response.meta.filterOptions.type).toBeDefined();
+        expect(response.meta.filterOptions.lifestyle).toBeDefined();
+        expect(response.meta.filterOptions.genre).toBeDefined();
+    });
+
+    test('fetchCoachLessons-WithTypeFilters-InvalidContentType', async () => {
+        const brand = 'drumeo';
+        const coachId = 31880;
+        const invalidContentType = 'course'; // Not 'coach-lessons'
+
+        await expect(fetchAllFilterOptions(brand, ['type,course', 'type,live'], '', '', invalidContentType, '', [], coachId))
+            .rejects
+            .toThrow("Invalid contentType: 'course' for coachId. It must be 'coach-lessons'.");
+    });
+
 
     test('fetchAll-IncludedFields', async () => {
         let response = await fetchAll('drumeo', 'instructor',{includedFields: ['is_active']});
@@ -449,6 +468,12 @@ describe('Sanity Queries', function () {
         expect(response.length).toBeGreaterThan(0);
         const showTypes = response.map((x) => x.type);
         expect(showTypes).toContain('odd-times');
+    });
+
+    test('fetchMetadata-Coach-Lessons', async () => {
+        const response = await fetchMetadata('drumeo','coach-lessons');
+        log(response);
+        expect(response).toBeDefined();
     });
 
 });
