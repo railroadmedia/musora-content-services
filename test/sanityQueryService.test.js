@@ -354,6 +354,11 @@ describe('Sanity Queries', function () {
         const response = await fetchCoachLessons('drumeo',411493, {});
         expect(response.entity.length).toBeGreaterThan(0);
     });
+    test('fetchCoachLessons-IncludedFields', async () => {
+        const response = await fetchCoachLessons('drumeo',31880, {includedFields: ['genre,Pop/Rock','difficulty,Beginner']});
+        log(response);
+        expect(response.entity.length).toBeGreaterThan(0);
+    });
 
     test('fetchAll-IncludedFields', async () => {
         let response = await fetchAll('drumeo', 'instructor',{includedFields: ['is_active']});

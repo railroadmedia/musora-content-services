@@ -1084,6 +1084,12 @@ export async function fetchChallengeOverview(id) {
  * Fetch the data needed for the coach screen.
  * @param {string} id - The Railcontent ID of the coach
  * @returns {Promise<Object|null>} - The lessons for the instructor or null if not found.
+ * @param {Object} params - Parameters for pagination, filtering and sorting.
+ * @param {string} [params.sortOrder="-published_on"] - The field to sort the lessons by.
+ * @param {string} [params.searchTerm=""] - The search term to filter content by title.
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {number} [params.limit=10] - The number of items per page.
+ * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  *
  * @example
  * fetchCoachLessons('coach123')
@@ -1095,12 +1101,17 @@ export async function fetchCoachLessons(brand, id, {
   searchTerm = '',
   page = 1,
   limit = 20,
+  includedFields = [],
 } = {}) {
   const fieldsString = getFieldsForContentType();
   const start = (page - 1) * limit;
   const end = start + limit;
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''
-  const filter = `brand == '${brand}' ${searchFilter} && references(*[_type=='instructor' && railcontent_id == ${id}]._id)`;
+  const includedFieldsFilter = includedFields.length > 0
+        ? filtersToGroq(includedFields)
+        : "";
+  const filter = `brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='instructor' && railcontent_id == ${id}]._id)`;
+
   sortOrder = getSortOrder(sortOrder);
   const query = buildEntityAndTotalQuery(
     filter,
