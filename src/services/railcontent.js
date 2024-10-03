@@ -257,10 +257,6 @@ export async function fetchContentPageUserData(contentId) {
 
 export async function fetchUserPermissions() {
     let url = `/content/user_data_permissions`;
-    const headers = {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
-    };
     // in the case of an unauthorized user, we return empty permissions
     return fetchHandler(url, 'get') ?? [];
 }

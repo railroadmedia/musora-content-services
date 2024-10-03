@@ -618,6 +618,7 @@ export async function fetchAllFilterOptions(
     progressIds = undefined,
     coachId = undefined, // New parameter for coach ID
 ) {
+  console.log('brand', brand)
     if (coachId && contentType !== 'coach-lessons') {
         throw new Error(`Invalid contentType: '${contentType}' for coachId. It must be 'coach-lessons'.`);
     }
@@ -1382,9 +1383,8 @@ async function needsAccessDecorator(results)
 
 function doesUserNeedAccessToContent(result, userPermissions)
 {
-    const permissions =  new Set(result.permission_id ?? []);
-
-    if (permissions.size === 0) {
+    const permissions =  new Set(result?.permission_id ?? []);
+    if (permissions.length === 0) {
         return false;
     }
     for (let permission of permissions) {
