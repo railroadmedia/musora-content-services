@@ -316,7 +316,7 @@ export async function fetchUserAward(contentId) {
 }
 
 export async function postChallengesSetStartDate(contentId, startDate) {
-    let url = `/challenges/${contentId}?set_start_date=${startDate}`;
+    let url = `/challenges/set_start_date/${contentId}?start_date=${startDate}`;
     return await fetchHandler(url, 'post');
 }
 
