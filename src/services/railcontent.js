@@ -300,6 +300,41 @@ export async function postContentUnliked(contentId) {
     return await fetchHandler(url, "post");
 }
 
+export async function fetchChallengeMetadata(contentId) {
+    let url = `/challenges/${contentId}`;
+    return await fetchHandler(url, 'get');
+}
+
+export async function fetchUserChallengeProgress(contentId) {
+    let url = `/challenges/user_data/${contentId}`;
+    return await fetchHandler(url, 'get');
+}
+
+export async function fetchUserAward(contentId) {
+    let url = `/challenges/download_award/${contentId}`;
+    return await fetchHandler(url, 'get');
+}
+
+export async function postChallengesSetStartDate(contentId, startDate) {
+    let url = `/challenges/${contentId}?set_start_date=${startDate}`;
+    return await fetchHandler(url, 'post');
+}
+
+export async function postChallengesUnlock(contentId) {
+    let url = `/challenges/unlock/${contentId}`;
+    return await fetchHandler(url, 'post');
+}
+
+export async function postChallengesEnroll(contentId) {
+    let url = `/challenges/enroll/${contentId}`;
+    return await fetchHandler(url, 'post');
+}
+
+export async function postChallengesLeave(contentId) {
+    let url = `/challenges/leave/${contentId}`;
+    return await fetchHandler(url, 'post');
+}
+
 function fetchAbsolute(url, params) {
     if (globalConfig.railcontentConfig.baseUrl) {
         if (url.startsWith('/')) {

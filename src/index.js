@@ -13,15 +13,24 @@ import {
 
 import {
 	fetchAllCompletedStates,
+	fetchChallengeMetadata,
 	fetchCompletedContent,
 	fetchCompletedState,
 	fetchContentInProgress,
 	fetchContentPageUserData,
 	fetchHandler,
 	fetchSongsInProgress,
+	fetchUserAward,
+	fetchUserChallengeProgress,
 	fetchUserLikes,
 	fetchUserPermissions,
-	fetchVimeoData
+	fetchVimeoData,
+	postChallengesEnroll,
+	postChallengesLeave,
+	postChallengesSetStartDate,
+	postChallengesUnlock,
+	postContentLiked,
+	postContentUnliked
 } from './services/railcontent.js';
 
 import {
@@ -82,6 +91,7 @@ export {
 	fetchByRailContentIds,
 	fetchByReference,
 	fetchCatalogMetadata,
+	fetchChallengeMetadata,
 	fetchChallengeOverview,
 	fetchChildren,
 	fetchCoachLessons,
@@ -119,6 +129,8 @@ export {
 	fetchSongFilterOptions,
 	fetchSongsInProgress,
 	fetchUpcomingEvents,
+	fetchUserAward,
+	fetchUserChallengeProgress,
 	fetchUserLikes,
 	fetchUserPermissions,
 	fetchVimeoData,
@@ -128,5 +140,11 @@ export {
 	initializeService,
 	isContentLiked,
 	likeContent,
+	postChallengesEnroll,
+	postChallengesLeave,
+	postChallengesSetStartDate,
+	postChallengesUnlock,
+	postContentLiked,
+	postContentUnliked,
 	unlikeContent,
 };
