@@ -22,15 +22,11 @@ import {
 	fetchSongsInProgress,
 	fetchUserAward,
 	fetchUserChallengeProgress,
-	fetchUserLikes,
 	fetchUserPermissions,
-	fetchVimeoData,
 	postChallengesEnroll,
 	postChallengesLeave,
 	postChallengesSetStartDate,
-	postChallengesUnlock,
-	postContentLiked,
-	postContentUnliked
+	postChallengesUnlock
 } from './services/railcontent.js';
 
 import {
@@ -132,9 +128,7 @@ declare module 'musora-content-services' {
 		fetchUpcomingEvents,
 		fetchUserAward,
 		fetchUserChallengeProgress,
-		fetchUserLikes,
 		fetchUserPermissions,
-		fetchVimeoData,
 		fetchWorkouts,
 		getSortOrder,
 		globalConfig,
@@ -145,8 +139,6 @@ declare module 'musora-content-services' {
 		postChallengesLeave,
 		postChallengesSetStartDate,
 		postChallengesUnlock,
-		postContentLiked,
-		postContentUnliked,
 		unlikeContent,
 	}
 }

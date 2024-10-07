@@ -7,7 +7,14 @@ let globalConfig = {
     railcontentConfig: {},
     localStorage: null
   };
-  
+
+/**
+ * Exported functions that are excluded from index generation.
+ *
+ * @type {string[]}
+ */
+const excludeFromGeneratedIndex = [];
+
 /**
  * Initializes the service with the given configuration.
  * This function must be called before using any other functions in this library.

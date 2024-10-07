@@ -1,6 +1,13 @@
 import {fetchUserLikes, postContentLiked, postContentUnliked} from "./railcontent";
 import {DataContext, ContentVersionKey} from "./dataContext";
 
+/**
+ * Exported functions that are excluded from index generation.
+ *
+ * @type {string[]}
+ */
+const excludeFromGeneratedIndex = [];
+
 export let dataContext = new DataContext(ContentVersionKey, fetchUserLikes);
 
 export async function isContentLiked(contentId) {

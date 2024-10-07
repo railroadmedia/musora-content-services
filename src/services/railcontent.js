@@ -4,6 +4,13 @@
 
 const {globalConfig} = require('./config');
 
+/**
+ * Exported functions that are excluded from index generation.
+ *
+ * @type {string[]}
+ */
+const excludeFromGeneratedIndex = ['fetchUserLikes', 'postContentLiked', 'postContentUnliked'];
+
 
 /**
  * Fetches the completion status of a specific lesson for the current user.
@@ -30,40 +37,6 @@ export async function fetchCompletedState(content_id) {
         if (result && result[content_id]) {
             return result[content_id];  // Return the correct object
         } else {
-            return null;  // Handle unexpected structure
-        }
-    } catch (error) {
-        console.error('Fetch error:', error);
-        return null;
-    }
-}
-
-/**
- * Fetches the vimeo meta-data
- *
- * @param {string} vimeo_id - The vimeo id, found in the <document>.video.external_id field for lessons
- * @returns {Promise<Object|null>} - Returns the
- * @example
- * fetchVimeoData('642900215')
- *   .then(vimeoData => console.log(vimeoData))
- *   .catch(error => console.error(error));
- */
-export async function fetchVimeoData(vimeo_id) {
-    const url = `/content/vimeo-data/${vimeo_id}`;
-
-    const headers = {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
-    };
-
-    try {
-        const response = await fetchAbsolute(url, {headers});
-        const result = await response.json();
-
-        if (result) {
-            return result;  // Return the correct object
-        } else {
-            console.log('Invalid result structure', result);
             return null;  // Handle unexpected structure
         }
     } catch (error) {

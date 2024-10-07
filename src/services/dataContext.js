@@ -1,5 +1,12 @@
 import {globalConfig} from "./config";
 
+/**
+ * Exported functions that are excluded from index generation.
+ *
+ * @type {string[]}
+ */
+const excludeFromGeneratedIndex = [];
+
 //These constants need to match MWP UserDataVersionKeyEnum enum
 export const ContentVersionKey = 0;
 

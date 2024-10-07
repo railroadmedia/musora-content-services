@@ -22,15 +22,11 @@ import {
 	fetchSongsInProgress,
 	fetchUserAward,
 	fetchUserChallengeProgress,
-	fetchUserLikes,
 	fetchUserPermissions,
-	fetchVimeoData,
 	postChallengesEnroll,
 	postChallengesLeave,
 	postChallengesSetStartDate,
-	postChallengesUnlock,
-	postContentLiked,
-	postContentUnliked
+	postChallengesUnlock
 } from './services/railcontent.js';
 
 import {
@@ -131,9 +127,7 @@ export {
 	fetchUpcomingEvents,
 	fetchUserAward,
 	fetchUserChallengeProgress,
-	fetchUserLikes,
 	fetchUserPermissions,
-	fetchVimeoData,
 	fetchWorkouts,
 	getSortOrder,
 	globalConfig,
@@ -144,7 +138,5 @@ export {
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock,
-	postContentLiked,
-	postContentUnliked,
 	unlikeContent,
 };
