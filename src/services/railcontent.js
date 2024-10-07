@@ -4,6 +4,13 @@
 
 const {globalConfig} = require('./config');
 
+/**
+ * Exported functions that are excluded from index generation.
+ *
+ * @type {string[]}
+ */
+const excludeFromGeneratedIndex = ['fetchUserLikes', 'postContentLiked', 'postContentUnliked'];
+
 
 /**
  * Fetches the completion status of a specific lesson for the current user.

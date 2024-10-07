@@ -19,7 +19,6 @@ import {
 	fetchContentPageUserData,
 	fetchHandler,
 	fetchSongsInProgress,
-	fetchUserLikes,
 	fetchUserPermissions,
 	fetchVimeoData
 } from './services/railcontent.js';
@@ -120,7 +119,6 @@ declare module 'musora-content-services' {
 		fetchSongFilterOptions,
 		fetchSongsInProgress,
 		fetchUpcomingEvents,
-		fetchUserLikes,
 		fetchUserPermissions,
 		fetchVimeoData,
 		fetchWorkouts,
