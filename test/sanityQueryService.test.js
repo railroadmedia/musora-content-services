@@ -273,7 +273,7 @@ describe('Sanity Queries', function () {
             expect(lesson.sort).toBeGreaterThan(episode);
             episode = lesson.sort;
         });
-    },10000);
+    });
 
     test('fetchRelatedLessons-child', async () => {
         const id = 362278;
