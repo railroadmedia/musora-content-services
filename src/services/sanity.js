@@ -1112,18 +1112,6 @@ export async function fetchChallengeOverview(id) {
   // WIP
   const query = `*[railcontent_id == ${id}]{
     ${getFieldsForContentType("challenge")}
-    "lessons": child[]->{
-      "id": railcontent_id,
-      title,
-      "image": thumbnail.asset->url,
-      "instructors": instructor[]->name,
-      length_in_seconds,
-      difficulty_string,
-      difficulty,
-      "type": _type,
-      is_always_unlocked,
-      is_bonus_content,
-    }
   } [0...1]`;
   return fetchSanity(query, false);
 }

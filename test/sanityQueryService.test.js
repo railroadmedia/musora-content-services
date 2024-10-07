@@ -463,9 +463,9 @@ describe('Sanity Queries', function () {
         const response = await fetchChallengeOverview(id);
         log(response);
         expect(response.award).toBeDefined();
-        expect(response.award_template).toBeDefined();
-        expect(response.lessons[0].is_always_unlocked).toBeDefined();
-        expect(response.lessons[0].is_bonus_content).toBeDefined();
+        expect(response.award_custom_text).toBeDefined();
+        expect(response.lessons[0].is_always_unlocked_for_challenge).toBeDefined();
+        expect(response.lessons[0].is_bonus_content_for_challenge).toBeDefined();
     });
 
     test('fetchShowsData-OddTimes', async () => {
