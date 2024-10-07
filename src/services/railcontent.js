@@ -45,40 +45,6 @@ export async function fetchCompletedState(content_id) {
     }
 }
 
-/**
- * Fetches the vimeo meta-data
- *
- * @param {string} vimeo_id - The vimeo id, found in the <document>.video.external_id field for lessons
- * @returns {Promise<Object|null>} - Returns the
- * @example
- * fetchVimeoData('642900215')
- *   .then(vimeoData => console.log(vimeoData))
- *   .catch(error => console.error(error));
- */
-export async function fetchVimeoData(vimeo_id) {
-    const url = `/content/vimeo-data/${vimeo_id}`;
-
-    const headers = {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
-    };
-
-    try {
-        const response = await fetchAbsolute(url, {headers});
-        const result = await response.json();
-
-        if (result) {
-            return result;  // Return the correct object
-        } else {
-            console.log('Invalid result structure', result);
-            return null;  // Handle unexpected structure
-        }
-    } catch (error) {
-        console.error('Fetch error:', error);
-        return null;
-    }
-}
-
 
 /**
  * Fetches the completion status for multiple songs for the current user.
@@ -305,6 +271,41 @@ export async function postContentLiked(contentId) {
 export async function postContentUnliked(contentId) {
     let url = `/content/user/likes/unlike/${contentId}`;
     return await fetchHandler(url, "post");
+}
+
+export async function fetchChallengeMetadata(contentId) {
+    let url = `/challenges/${contentId}`;
+    return await fetchHandler(url, 'get');
+}
+
+export async function fetchUserChallengeProgress(contentId) {
+    let url = `/challenges/user_data/${contentId}`;
+    return await fetchHandler(url, 'get');
+}
+
+export async function fetchUserAward(contentId) {
+    let url = `/challenges/download_award/${contentId}`;
+    return await fetchHandler(url, 'get');
+}
+
+export async function postChallengesSetStartDate(contentId, startDate) {
+    let url = `/challenges/set_start_date/${contentId}?start_date=${startDate}`;
+    return await fetchHandler(url, 'post');
+}
+
+export async function postChallengesUnlock(contentId) {
+    let url = `/challenges/unlock/${contentId}`;
+    return await fetchHandler(url, 'post');
+}
+
+export async function postChallengesEnroll(contentId) {
+    let url = `/challenges/enroll/${contentId}`;
+    return await fetchHandler(url, 'post');
+}
+
+export async function postChallengesLeave(contentId) {
+    let url = `/challenges/leave/${contentId}`;
+    return await fetchHandler(url, 'post');
 }
 
 function fetchAbsolute(url, params) {
