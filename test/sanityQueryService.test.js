@@ -261,6 +261,20 @@ describe('Sanity Queries', function () {
         });
     });
 
+    test('fetchRelatedLessons-in-rhythm', async () => {
+        const id = 236677;
+        const response = await fetchRelatedLessons(id, 'drumeo');
+        log(response);
+        const relatedLessons = response.related_lessons;
+        let episode = 0;
+        expect(Array.isArray(relatedLessons)).toBe(true);
+        relatedLessons.forEach(lesson => {
+            expect(lesson._type).toBe('in-rhythm');
+            expect(lesson.sort).toBeGreaterThan(episode);
+            episode = lesson.sort;
+        });
+    },10000);
+
     test('fetchRelatedLessons-child', async () => {
         const id = 362278;
         const course = await fetchByRailContentId(362277, 'course');

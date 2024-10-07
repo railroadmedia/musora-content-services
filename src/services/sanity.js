@@ -18,6 +18,7 @@ import {
 
 import {
     processMetadata,
+    typeWithSortOrder
 } from "../contentMetaData";
 
 import {globalConfig} from "./config";
@@ -972,7 +973,8 @@ export async function fetchRelatedLessons(railContentId, brand) {
                 ...(*[references(^._id)][0].child[]->{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}),
                 ...(*[_type=="song" && brand == "${brand}" && references(^.artist->_id) && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...11]),
                 ...(*[_type=="song" && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...11]),
-                ...(*[_type==^._type && brand == "${brand}" && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...11])
+                ...(*[_type==^._type &&  _type in ${JSON.stringify(typeWithSortOrder)} && brand == "${brand}" && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, sort}|order(sort asc, title asc)[0...11]),
+                ...(*[_type==^._type && !(_type in ${JSON.stringify(typeWithSortOrder)}) && brand == "${brand}" && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...11]),
                 ])[0...11]}`;
 
     return fetchSanity(query, false);
