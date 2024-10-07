@@ -966,19 +966,16 @@ export async function fetchLessonContent(railContentId) {
 * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
 */
 export async function fetchRelatedLessons(railContentId, brand) {
-  // let sort = 'published_on'
-  // if (type == 'rhythmic-adventures-of-captain-carson' ||
-  //     type == 'diy-drum-experiments' ||
-  //     type == 'in-rhythm') {
-  //     sort = 'sort';
-  // }
-  //TODO: Implement $this->contentService->getFiltered
-  const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && references(*[_type=='permission']._id)]{
+    const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && references(*[_type=='permission']._id)]{
+   _type, parent_type, railcontent_id,
               "related_lessons" : array::unique([
-                ...(*[_type=="song" && brand == "${brand}" && references(^.artist->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,}[0...11]),
-                ...(*[_type=="song" && brand == "${brand}" && references(^.genre[]->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,}[0...11])
-                ])|order(published_on, railcontent_id)[0...11]}`;
-  return fetchSanity(query, false);
+                ...(*[references(^._id)][0].child[]->{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}),
+                ...(*[_type=="song" && brand == "${brand}" && references(^.artist->_id) && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...11]),
+                ...(*[_type=="song" && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...11]),
+                ...(*[_type==^._type && brand == "${brand}" && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...11])
+                ])[0...11]}`;
+
+    return fetchSanity(query, false);
 }
 
 /**
