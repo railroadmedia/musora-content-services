@@ -918,11 +918,13 @@ export async function fetchLessonContent(railContentId) {
           "coaches": instructor[]-> {
             name,
             "id":_id,
+            railcontent_id,
             "coach_profile_image":thumbnail_url.asset->url
           },
           "instructors":instructor[]->name,
           "instructor": instructor[]->{
             "id":_id,
+            railcontent_id,
             name,
             short_bio,
             "biography": short_bio[0].children[0].text, 
