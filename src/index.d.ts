@@ -13,15 +13,20 @@ import {
 
 import {
 	fetchAllCompletedStates,
+	fetchChallengeMetadata,
 	fetchCompletedContent,
 	fetchCompletedState,
 	fetchContentInProgress,
 	fetchContentPageUserData,
 	fetchHandler,
 	fetchSongsInProgress,
-	fetchUserLikes,
+	fetchUserAward,
+	fetchUserChallengeProgress,
 	fetchUserPermissions,
-	fetchVimeoData
+	postChallengesEnroll,
+	postChallengesLeave,
+	postChallengesSetStartDate,
+	postChallengesUnlock
 } from './services/railcontent.js';
 
 import {
@@ -83,6 +88,7 @@ declare module 'musora-content-services' {
 		fetchByRailContentIds,
 		fetchByReference,
 		fetchCatalogMetadata,
+		fetchChallengeMetadata,
 		fetchChallengeOverview,
 		fetchChildren,
 		fetchCoachLessons,
@@ -120,15 +126,19 @@ declare module 'musora-content-services' {
 		fetchSongFilterOptions,
 		fetchSongsInProgress,
 		fetchUpcomingEvents,
-		fetchUserLikes,
+		fetchUserAward,
+		fetchUserChallengeProgress,
 		fetchUserPermissions,
-		fetchVimeoData,
 		fetchWorkouts,
 		getSortOrder,
 		globalConfig,
 		initializeService,
 		isContentLiked,
 		likeContent,
+		postChallengesEnroll,
+		postChallengesLeave,
+		postChallengesSetStartDate,
+		postChallengesUnlock,
 		unlikeContent,
 	}
 }

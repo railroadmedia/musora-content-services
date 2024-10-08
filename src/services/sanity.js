@@ -26,6 +26,12 @@ import { fetchUserPermissions, fetchAllCompletedStates, fetchCurrentSongComplete
 import {arrayToStringRepresentation, FilterBuilder} from "../filterBuilder";
 
 /**
+ * Exported functions that are excluded from index generation.
+ *
+ * @type {string[]}
+ */
+const excludeFromGeneratedIndex = [];
+/**
 * Fetch a song by its document ID from Sanity.
 *
 * @param {string} documentId - The ID of the document to fetch.
@@ -67,7 +73,7 @@ export async function fetchArtists(brand) {
     name,
     "lessonsCount": count(*[${filter}])
   }[lessonsCount > 0]`;
-  return fetchSanity(query, true);
+  return fetchSanity(query, true, {processNeedAccess:false});
 }
 
 /**
@@ -77,7 +83,7 @@ export async function fetchArtists(brand) {
 */
 export async function fetchSongArtistCount(brand) {
   const query = `count(*[_type == 'artist']{'lessonsCount': count(*[_type == 'song' && brand == '${brand}' && references(^._id)]._id)}[lessonsCount > 0])`;
-  return fetchSanity(query, true);
+  return fetchSanity(query, true, {processNeedAccess:false});
 }
 
 /**
@@ -234,7 +240,7 @@ export async function fetchSongFilterOptions(brand) {
 */
 export async function fetchSongCount(brand) {
   const query = `count(*[_type == 'song' && brand == "${brand}"])`;
-  return fetchSanity(query, true);
+  return fetchSanity(query, true, {processNeedAccess:false});
 }
 
 /**
@@ -243,7 +249,8 @@ export async function fetchSongCount(brand) {
  * It also includes completion status and progress percentage for each workout by fetching additional data about user progress.
  *
  * @param {string} brand - The brand for which to fetch workouts (e.g., 'drumeo', 'pianote').
- * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of workout data objects with additional properties for completion status and progress percentage, or null if no workouts are found.
+ * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of workout data objects with additional properties for completion status and progress percentage,
+ *     or null if no workouts are found.
  *
  * @example
  * fetchWorkouts('drumeo')
@@ -281,7 +288,9 @@ export async function fetchNewReleases(brand, { page = 1, limit = 20, sort="-pub
       length_in_seconds,
       published_on,
       "type": _type,
-      web_url_path,`;
+      web_url_path,
+      "permission_id": permission[]->railcontent_id,
+      `;
   const filterParams = {};
   const query = buildQuery(
       filter,
@@ -326,7 +335,8 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         length_in_seconds,
         published_on,
         "type": _type,
-        web_url_path,`;
+        web_url_path,
+        "permission_id": permission[]->railcontent_id,`;
   const query = buildRawQuery(
       `_type in ${typesString} && brand == '${brand}' && published_on > '${now}' && status == 'scheduled'`,
       fields,
@@ -374,6 +384,7 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
       published_on,
       "type": _type,
       web_url_path,
+      "permission_id": permission[]->railcontent_id,
   } | order(published_on asc)[${start}...${end}]`;
   return fetchSanity(query, true);
 }
@@ -615,6 +626,7 @@ export async function fetchAllFilterOptions(
     progressIds = undefined,
     coachId = undefined, // New parameter for coach ID
 ) {
+  console.log('brand', brand)
     if (coachId && contentType !== 'coach-lessons') {
         throw new Error(`Invalid contentType: '${contentType}' for coachId. It must be 'coach-lessons'.`);
     }
@@ -666,7 +678,7 @@ export async function fetchAllFilterOptions(
             }
         }
       }`;
-  return fetchSanity(query, true);
+  return fetchSanity(query, true, {processNeedAccess:false});
 }
 
 /**
@@ -754,6 +766,7 @@ export async function fetchMethod(brand, slug) {
     video,
     length_in_seconds,
     "type": _type,
+    "permission_id": permission[]->railcontent_id,
     "levels": child[]->
       {
         "id": railcontent_id,
@@ -966,8 +979,8 @@ export async function fetchRelatedLessons(railContentId, brand) {
   //TODO: Implement $this->contentService->getFiltered
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && references(*[_type=='permission']._id)]{
               "related_lessons" : array::unique([
-                ...(*[_type=="song" && brand == "${brand}" && references(^.artist->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11]),
-                ...(*[_type=="song" && brand == "${brand}" && references(^.genre[]->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->}[0...11])
+                ...(*[_type=="song" && brand == "${brand}" && references(^.artist->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,}[0...11]),
+                ...(*[_type=="song" && brand == "${brand}" && references(^.genre[]->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,}[0...11])
                 ])|order(published_on, railcontent_id)[0...11]}`;
   return fetchSanity(query, false);
 }
@@ -1103,18 +1116,6 @@ export async function fetchChallengeOverview(id) {
   // WIP
   const query = `*[railcontent_id == ${id}]{
     ${getFieldsForContentType("challenge")}
-    "lessons": child[]->{
-      "id": railcontent_id,
-      title,
-      "image": thumbnail.asset->url,
-      "instructors": instructor[]->name,
-      length_in_seconds,
-      difficulty_string,
-      difficulty,
-      "type": _type,
-      is_always_unlocked,
-      is_bonus_content,
-    }
   } [0...1]`;
   return fetchSanity(query, false);
 }
@@ -1368,6 +1369,10 @@ async function needsAccessDecorator(results)
         results.forEach((result) => {
             result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
         });
+    }else if (results.entity && Array.isArray(results.entity)) {
+        results.entity.forEach((result) => {
+            result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+        });
     } else {
         results['need_access'] = doesUserNeedAccessToContent(results, userPermissions);
     }
@@ -1376,7 +1381,7 @@ async function needsAccessDecorator(results)
 
 function doesUserNeedAccessToContent(result, userPermissions)
 {
-    const permissions =  new Set(result.permission_id ?? []);
+    const permissions =  new Set(result?.permission_id ?? []);
     if (permissions.length === 0) {
         return false;
     }
@@ -1417,7 +1422,7 @@ export async function fetchCatalogMetadata(contentType)
         modal_text,
         sort_by,
       }`
-    return fetchSanity(query, false);
+    return fetchSanity(query, false, {processNeedAccess:false});
 }
 
 /**

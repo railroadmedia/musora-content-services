@@ -11,7 +11,7 @@ const fileExports = {};
 /**
  * Helper function to extract function names from ES module and CommonJS exports
  *
- * @param filePath
+ * @param {string} filePath
  * @returns {string[]}
  */
 function extractExportedFunctions(filePath) {
@@ -30,9 +30,29 @@ function extractExportedFunctions(filePath) {
         matches = matches.concat(exportsList);
     }
 
+    const excludedFunctions = getExclusionList(fileContent);
+    matches = matches.filter(fn => !excludedFunctions.includes(fn));
+
     return matches.sort();
 }
 
+/**
+ * Helper function to find the list of exclusions from the file's exports
+ *
+ * @param {string} fileContent
+ * @returns {string[]}
+ */
+function getExclusionList(fileContent) {
+    const excludeRegex = /const\s+excludeFromGeneratedIndex\s*=\s*\[(.*?)\];/;
+    const excludeMatch = fileContent.match(excludeRegex);
+    let excludedFunctions = [];
+    if (excludeMatch) {
+        excludedFunctions = excludeMatch[1]
+            .split(',')
+            .map(name => name.trim().replace(/['"`]/g, ''));
+    }
+    return excludedFunctions;
+}
 
 // get all files in the services directory
 const servicesDir = path.join(__dirname, '../src/services');
