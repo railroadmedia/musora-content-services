@@ -250,6 +250,44 @@ describe('Sanity Queries', function () {
         expect(isMatch).toBeTruthy();
     });
 
+    test('fetchRelatedLessons-quick-tips', async () => {
+        const id = 406213;
+        const response = await fetchRelatedLessons(id, 'singeo');
+        log(response);
+        const relatedLessons = response.related_lessons;
+        expect(Array.isArray(relatedLessons)).toBe(true);
+        relatedLessons.forEach(lesson => {
+            expect(lesson._type).toBe('quick-tips');
+        });
+    });
+
+    test('fetchRelatedLessons-in-rhythm', async () => {
+        const id = 236677;
+        const response = await fetchRelatedLessons(id, 'drumeo');
+        log(response);
+        const relatedLessons = response.related_lessons;
+        let episode = 0;
+        expect(Array.isArray(relatedLessons)).toBe(true);
+        relatedLessons.forEach(lesson => {
+            expect(lesson._type).toBe('in-rhythm');
+            expect(lesson.sort).toBeGreaterThan(episode);
+            episode = lesson.sort;
+        });
+    });
+
+    test('fetchRelatedLessons-child', async () => {
+        const id = 362278;
+        const course = await fetchByRailContentId(362277, 'course');
+        const lessonIds = course.lessons.map((doc) => doc.id);
+        const response = await fetchRelatedLessons(id, 'drumeo');
+        log(response.related_lessons);
+        const relatedLessons = response.related_lessons;
+        expect(Array.isArray(relatedLessons)).toBe(true);
+        expect(relatedLessons.some(
+            lesson => lessonIds.includes(lesson.id)
+        )).toBe(true);
+    },10000);
+
     test('fetchChildren', async () => {
         // complement test to fetchParentByRailContentId
         const id = 191338; ////https://web-staging-one.musora.com/admin/studio/publishing/structure/play-along;play-along_191338
