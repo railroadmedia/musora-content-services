@@ -153,6 +153,7 @@ const commonMetadata ={
             {
                 name: 'Genres',
                 short_name: 'Genres',
+                is_group_by: true,
                 value: 'genre',
             },
         ],
