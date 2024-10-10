@@ -518,8 +518,7 @@ export async function fetchAll(brand, type, {
         const webUrlPath = 'artists';
         const lessonsFilter = `_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
         entityFieldsString = `
-                'id': _id,
-                railcontent_id,
+                'id': railcontent_id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
@@ -535,8 +534,7 @@ export async function fetchAll(brand, type, {
         const webUrlPath = (groupBy == 'genre')?'/genres':'';
         const lessonsFilter = `brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
         entityFieldsString = `
-                'id': _id,
-                railcontent_id,
+                'id': railcontent_id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
