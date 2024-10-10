@@ -880,18 +880,12 @@ function getChildrenToDepth(parent, depth = 1)
 */
 export async function fetchNextPreviousLesson(railcontentId) {
   //TODO: Implement getTypeNeighbouringSiblings/getNextAndPreviousLessons
-  const query = `*[_railcontent_id == ${railcontentId}]{
-        railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": artist->name,
-        artist,
-        difficulty,
-        difficulty_string,
-        web_url_path,
-        published_on
-      }`
-  return fetchSanity(query, false);
+    const document = await fetchLessonContent(railcontentId);
+    const query  = `{
+  "prev": *[brand == "${document.brand}" && _type == "${document.type}" && published_on <= "${document.published_on}" && railcontent_id != ${railcontentId}] | order(published_on desc)[0...1],
+  "next": *[brand == "${document.brand}" && _type == "${document.type}" && published_on >= "${document.published_on}" && railcontent_id != ${railcontentId}] | order(published_on asc)[0...1]
+}`;
+    return await fetchSanity(query, true);
 }
 
 /**

@@ -35,7 +35,8 @@ const {
     fetchScheduledReleases,
     getSortOrder,
     fetchShowsData,
-    fetchMetadata
+    fetchMetadata,
+    fetchNextPreviousLesson
 } = require('../src/services/sanity.js');
 
 const {
@@ -518,6 +519,12 @@ describe('Sanity Queries', function () {
         const response = await fetchMetadata('drumeo','coach-lessons');
         log(response);
         expect(response).toBeDefined();
+    });
+
+    test('fetchNextPreviousLesson', async () => {
+        const response = await fetchNextPreviousLesson('401858');
+        log(response);
+       // expect(response).toBeDefined();
     });
 
 });
