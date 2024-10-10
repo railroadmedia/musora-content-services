@@ -153,6 +153,7 @@ const commonMetadata ={
             {
                 name: 'Genres',
                 short_name: 'Genres',
+                is_group_by: true,
                 value: 'genre',
             },
         ],
@@ -1066,6 +1067,7 @@ const contentMetadata = {
     }
 };
 
+const typeWithSortOrder = ['in-rhythm', 'diy-drum-experiments', 'rhythmic-adventures-of-captain-carson'];
 function processMetadata(brand, type, withFilters = false)
 {
     let brandMetaData = contentMetadata[brand]?.[type];
@@ -1099,4 +1101,5 @@ function processMetadata(brand, type, withFilters = false)
 
 module.exports = {
     processMetadata,
+    typeWithSortOrder
 }

@@ -18,6 +18,7 @@ import {
 
 import {
     processMetadata,
+    typeWithSortOrder
 } from "../contentMetaData";
 
 import {globalConfig} from "./config";
@@ -928,21 +929,15 @@ export async function fetchLessonContent(railContentId) {
             chapter_timecode,
             "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
           },
-          "coaches": instructor[]-> {
-            name,
-            "id":_id,
-            railcontent_id,
-            "coach_profile_image":thumbnail_url.asset->url
-          },
           "instructors":instructor[]->name,
           "instructor": instructor[]->{
-            "id":_id,
-            railcontent_id,
+            "id":railcontent_id,
             name,
             short_bio,
             "biography": short_bio[0].children[0].text, 
             web_url_path,
             "coach_card_image": coach_card_image.asset->url,
+            "coach_profile_image":thumbnail_url.asset->url
           },
           ${assignmentsField}
           video,
@@ -970,19 +965,17 @@ export async function fetchLessonContent(railContentId) {
 * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
 */
 export async function fetchRelatedLessons(railContentId, brand) {
-  // let sort = 'published_on'
-  // if (type == 'rhythmic-adventures-of-captain-carson' ||
-  //     type == 'diy-drum-experiments' ||
-  //     type == 'in-rhythm') {
-  //     sort = 'sort';
-  // }
-  //TODO: Implement $this->contentService->getFiltered
-  const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && references(*[_type=='permission']._id)]{
+    const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && references(*[_type=='permission']._id)]{
+   _type, parent_type, railcontent_id,
               "related_lessons" : array::unique([
-                ...(*[_type=="song" && brand == "${brand}" && references(^.artist->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,}[0...11]),
-                ...(*[_type=="song" && brand == "${brand}" && references(^.genre[]->_id)]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,}[0...11])
-                ])|order(published_on, railcontent_id)[0...11]}`;
-  return fetchSanity(query, false);
+                ...(*[references(^._id)][0].child[]->{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}),
+                ...(*[_type=="song" && _type==^._type && brand == "${brand}" && references(^.artist->_id) && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
+                ...(*[_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
+                ...(*[_type==^._type &&  _type in ${JSON.stringify(typeWithSortOrder)} && brand == "${brand}" && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, sort}|order(sort asc, title asc)[0...10]),
+                ...(*[_type==^._type && !(_type in ${JSON.stringify(typeWithSortOrder)}) && !(defined(parent_type)) && brand == "${brand}" && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
+                ])[0...10]}`;
+
+    return fetchSanity(query, false);
 }
 
 /**
@@ -1382,7 +1375,7 @@ async function needsAccessDecorator(results)
 function doesUserNeedAccessToContent(result, userPermissions)
 {
     const permissions =  new Set(result?.permission_id ?? []);
-    if (permissions.length === 0) {
+    if (permissions.size === 0) {
         return false;
     }
     for (let permission of permissions) {
