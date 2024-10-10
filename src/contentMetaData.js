@@ -176,13 +176,19 @@ const commonMetadata ={
                 name: '5 Minutes',
                 short_name: '5 MINS',
                 is_required_field: true,
-                value: 'length_in_seconds < 450',
+                value: 'length_in_seconds,-450',
             },
             {
                 name: '10 Minutes',
                 short_name: '10 MINS',
                 is_required_field: true,
-                value: 'length_in_seconds > 450 && length_in_seconds < 750',
+                value: 'length_in_seconds,450-750',
+            },
+            {
+                name: '15+ Minutes',
+                short_name: '15+ MINS',
+                is_required_field: true,
+                value: 'length_in_seconds,750+',
             },
             {
                 name: 'Instructors',
@@ -251,25 +257,25 @@ const contentMetadata = {
                     name: 'Drags',
                     short_name: 'DRAGS',
                     is_required_field: true,
-                    value: 'topic[]->name match "drags"',
+                    value: 'topic,drags',
                 },
                 {
                     name: 'Flams',
                     short_name: 'FLAMS',
                     is_required_field: true,
-                    value: 'topic[]->name match "flams"',
+                    value: 'topic,flams',
                 },
                 {
                     name: 'Paradiddles',
                     short_name: 'PARADIDDLES',
                     is_required_field: true,
-                    value: 'topic[]->name match "paradiddles"',
+                    value: 'topic,paradiddles',
                 },
                 {
                     name: 'Rolls',
                     short_name: 'ROLLS',
                     is_required_field: true,
-                    value: 'topic[]->name match "rolls"',
+                    value: 'topic,rolls',
                 },
             ],
             sortBy: 'sort',
@@ -1063,6 +1069,33 @@ const contentMetadata = {
                 length_in_seconds: 82,
                 hlsManifestUrl: "https://player.vimeo.com/external/578243377.m3u8?s=3def726f48a4a300420f793090e4913a48c8d1f9&oauth2_token_id=1284792283"
             }
+        },
+        'workout': {
+            tabs: [
+                {
+                    name: 'All',
+                    short_name: 'ALL',
+                    value: '',
+                },
+                {
+                    name: '5 Minutes',
+                    short_name: '5 MINS',
+                    is_required_field: true,
+                    value: 'length_in_seconds,-450',
+                },
+                {
+                    name: '10 Minutes',
+                    short_name: '10 MINS',
+                    is_required_field: true,
+                    value: 'length_in_seconds,450-750',
+                },
+                {
+                    name: 'Instructors',
+                    short_name: 'INSTRUCTORS',
+                    is_group_by: true,
+                    value: 'instructor',
+                },
+            ],
         },
     }
 };
