@@ -386,6 +386,16 @@ function filtersToGroq(filters, selectedFilters = []) {
                 return `difficulty_string == "${value}"`;
             } else if (key === 'type' && !selectedFilters.includes(key)) {
                 return `_type == "${value}"`;
+            } else if (key === 'length_in_seconds') {
+                if (value.includes('-')) {
+                    const [min, max] = value.split('-').map(Number);
+                    return `(${key} > ${min} && ${key} < ${max})`;
+                } else if (value.includes('+')) {
+                    const min = parseInt(value, 10);
+                    return `(${key} > ${min})`;
+                } else {
+                    return `${key} == ${value}`;
+                }
             } else if (!selectedFilters.includes(key)) {
                 return ` ${key} == ${/^\d+$/.test(value) ? value : `"$${value}"`}`;
             }
