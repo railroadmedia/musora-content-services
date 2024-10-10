@@ -1377,7 +1377,7 @@ async function needsAccessDecorator(results)
 function doesUserNeedAccessToContent(result, userPermissions)
 {
     const permissions =  new Set(result?.permission_id ?? []);
-    if (permissions.length === 0) {
+    if (permissions.size === 0) {
         return false;
     }
     for (let permission of permissions) {
