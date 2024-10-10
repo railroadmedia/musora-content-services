@@ -927,19 +927,15 @@ export async function fetchLessonContent(railContentId) {
             chapter_timecode,
             "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
           },
-          "coaches": instructor[]-> {
-            name,
-            "id":_id,
-            "coach_profile_image":thumbnail_url.asset->url
-          },
           "instructors":instructor[]->name,
           "instructor": instructor[]->{
-            "id":_id,
+            "id":railcontent_id,
             name,
             short_bio,
             "biography": short_bio[0].children[0].text, 
             web_url_path,
             "coach_card_image": coach_card_image.asset->url,
+            "coach_profile_image":thumbnail_url.asset->url
           },
           ${assignmentsField}
           video,
