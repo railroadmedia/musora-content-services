@@ -171,6 +171,23 @@ let contentTypeConfig = {
             }`,
         ]
     },
+    'learning-path-level': {
+        'fields': [
+            '"lesson_count": child_count',
+            '"instructors": instructor[]->name',
+            `"description": ${descriptionField}`,
+            'resource',
+            'xp',
+            'total_xp',
+            `"lessons": child[]->{
+                "id": railcontent_id,
+                title,
+                "image": thumbnail.asset->url,
+                "instructors": instructor[]->name,
+                length_in_seconds,
+            }`,
+        ]
+    },
     'workout': {
         'fields': [
             artistOrInstructorNameAsArray(),
