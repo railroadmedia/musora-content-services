@@ -831,7 +831,7 @@ export async function fetchMethodNextLesson(railcontentId, methodId) {
  */
 export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
     const sortedChildren = await fetchMethodChildrenIds(methodId);
-    const index = sortedChildren.indexOf(railcontentId);
+    const index = sortedChildren.indexOf(Number(railcontentId));
     let nextId = sortedChildren[index + 1];
     let previousId = sortedChildren[index  -1];
     let nextPrev = await fetchByRailContentIds([nextId, previousId]);
@@ -849,10 +849,13 @@ export async function fetchMethodChildrenIds(railcontentId) {
     const query = `*[_type == 'learning-path' && railcontent_id == ${railcontentId}]{
     'children': child[]-> {
         'id': railcontent_id,
+        'type' : _type,
             'children': child[]-> {
-            'id': railcontent_id,
-                'children': child[]-> {
                 'id': railcontent_id,
+                'type' : _type,
+                    'children': child[]-> {
+                        'id': railcontent_id,
+                        'type' : _type,
             }
         }
     }
@@ -866,7 +869,9 @@ function getChildrenToDepth(parent, depth = 1)
     let allChildrenIds = [];
     if (parent['children']) {
         parent['children'].forEach((child) => {
-            allChildrenIds.push(child['id']);
+            if(child['type'] == 'learning-path-lesson') {
+                allChildrenIds.push(child['id']);
+            }
             allChildrenIds = allChildrenIds.concat(getChildrenToDepth(child, depth-1));
         })
     }
@@ -881,6 +886,9 @@ function getChildrenToDepth(parent, depth = 1)
 export async function fetchNextPreviousLesson(railcontentId) {
   //TODO: Implement getTypeNeighbouringSiblings/getNextAndPreviousLessons
     const document = await fetchLessonContent(railcontentId);
+//     const learning = await fetchMethodPreviousNextLesson(railcontentId, 241247)
+//     return learning;
+//     console.log('learning path lesson .......................',learning);
     const query  = `{
   "prev": *[brand == "${document.brand}" && _type == "${document.type}" && published_on <= "${document.published_on}" && railcontent_id != ${railcontentId}] | order(published_on desc)[0...1],
   "next": *[brand == "${document.brand}" && _type == "${document.type}" && published_on >= "${document.published_on}" && railcontent_id != ${railcontentId}] | order(published_on asc)[0...1]
