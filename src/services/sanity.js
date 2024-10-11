@@ -1214,10 +1214,17 @@ export async function fetchByReference(brand, {
  * @param {string} brand - The brand for which to fetch lessons.
  * @param {string} name - The name of the artist
  * @param {string} contentType - The type of the lessons we need to get from the artist. If not defined, groq will get lessons from all content types
+ * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
+ * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
+ * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {number} [params.limit=10] - The number of items per page.
+ * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
+ * @param {Array<number>} [params.progressIds] - The ids of the lessons that are in progress or completed
  * @returns {Promise<Object|null>} - The lessons for the artist and some details about the artist (name and thumbnail).
  *
  * @example
- * fetchArtistLessons('10 Years', 'song')
+ * fetchArtistLessons('drumeo', '10 Years', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
  *   .then(lessons => console.log(lessons))
  *   .catch(error => console.error(error));
  */
@@ -1229,6 +1236,7 @@ export async function fetchArtistLessons(brand, name, contentType, {
   includedFields = [],
   progressIds = undefined,
 } = {}) {
+
   const fieldsString = DEFAULT_FIELDS.join(',');
   const start = (page - 1) * limit;
   const end = start + limit;
@@ -1258,11 +1266,17 @@ export async function fetchArtistLessons(brand, name, contentType, {
  * Fetch the genre's lessons.
  * @param {string} brand - The brand for which to fetch lessons.
  * @param {string} name - The name of the genre
- * @param {string} contentType - The type of the lessons we need to get from the genre. If not defined, groq will get lessons from all content types
- * @returns {Promise<Object|null>} - The lessons for the genre and some details about the genre (name and thumbnail).
+ * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
+ * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
+ * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {number} [params.limit=10] - The number of items per page.
+ * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
+ * @param {Array<number>} [params.progressIds] - The ids of the lessons that are in progress or completed
+ * @returns {Promise<Object|null>} - The lessons for the artist and some details about the artist (name and thumbnail).
  *
  * @example
- * fetchGenreLessons('Blues', 'song')
+ * fetchGenreLessons('drumeo', 'Blues', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
  *   .then(lessons => console.log(lessons))
  *   .catch(error => console.error(error));
  */
