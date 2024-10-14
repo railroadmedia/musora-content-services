@@ -61,6 +61,7 @@ let contentTypeConfig = {
             'album',
             'soundslice',
             'instrumentless',
+            '"resources": resource',
         ],
         'relationships': {
             'artist': {
