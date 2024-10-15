@@ -61,6 +61,7 @@ let contentTypeConfig = {
             'album',
             'soundslice',
             'instrumentless',
+            '"resources": resource',
         ],
         'relationships': {
             'artist': {
@@ -171,6 +172,23 @@ let contentTypeConfig = {
             }`,
         ]
     },
+    'learning-path-level': {
+        'fields': [
+            '"lesson_count": child_count',
+            '"instructors": instructor[]->name',
+            `"description": ${descriptionField}`,
+            'resource',
+            'xp',
+            'total_xp',
+            `"lessons": child[]->{
+                "id": railcontent_id,
+                title,
+                "image": thumbnail.asset->url,
+                "instructors": instructor[]->name,
+                length_in_seconds,
+            }`,
+        ]
+    },
     'workout': {
         'fields': [
             artistOrInstructorNameAsArray(),
@@ -195,7 +213,17 @@ let contentTypeConfig = {
             `"description": ${descriptionField}`,
             '"instructors": instructor[]->name',
             '"logo_image_url": logo_image_url.asset->url',
-            'total_xp'
+            'total_xp',
+            `"children": child[]->{
+                "description": ${descriptionField},
+                "lesson_count": child_count,
+                ${getFieldsForContentType()}
+            }`,
+            '"resources": resource',
+            '"thumbnail": thumbnail.asset->url',
+            '"light_logo": light_mode_logo_url.asset->url',
+            '"dark_logo": dark_mode_logo_url.asset->url',
+            `"description": ${descriptionField}`,
         ],
     },
     'rudiment': {

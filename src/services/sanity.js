@@ -299,6 +299,7 @@ export async function fetchNewReleases(brand, { page = 1, limit = 20, sort="-pub
       fields,
       {
           sortOrder: sortOrder,
+          start,
           end: end,
       });
   return fetchSanity(query, true);
@@ -967,14 +968,13 @@ export async function fetchLessonContent(railContentId) {
 export async function fetchRelatedLessons(railContentId, brand) {
     const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && references(*[_type=='permission']._id)]{
    _type, parent_type, railcontent_id,
-              "related_lessons" : array::unique([
-                ...(*[references(^._id)][0].child[]->{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}),
-                ...(*[_type=="song" && _type==^._type && brand == "${brand}" && references(^.artist->_id) && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
-                ...(*[_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
-                ...(*[_type==^._type &&  _type in ${JSON.stringify(typeWithSortOrder)} && brand == "${brand}" && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, sort}|order(sort asc, title asc)[0...10]),
-                ...(*[_type==^._type && !(_type in ${JSON.stringify(typeWithSortOrder)}) && !(defined(parent_type)) && brand == "${brand}" && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, title, "thumbnail_url":thumbnail.asset->url, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
-                ])[0...10]}`;
-
+    "related_lessons" : array::unique([
+      ...(*[references(^._id)][0].child[]->{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}),
+      ...(*[_type=="song" && _type==^._type && brand == "${brand}" && references(^.artist->_id) && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
+      ...(*[_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
+      ...(*[_type==^._type &&  _type in ${JSON.stringify(typeWithSortOrder)} && brand == "${brand}" && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, sort}|order(sort asc, title asc)[0...10]),
+      ...(*[_type==^._type && !(_type in ${JSON.stringify(typeWithSortOrder)}) && !(defined(parent_type)) && brand == "${brand}" && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
+      ])[0...10]}`;
     return fetchSanity(query, false);
 }
 
@@ -1007,13 +1007,18 @@ export async function fetchRelatedMethodLessons(railContentId, brand) {
 * @param {string} brand - The brand for which to fetch packs.
 * @param {string} [searchTerm=""] - The search term to filter packs.
 * @param {string} [sort="-published_on"] - The field to sort the packs by.
+* @param {number} [params.page=1] - The page number for pagination.
+* @param {number} [params.limit=10] - The number of items per page.
 * @returns {Promise<Array<Object>|null>} - The fetched pack content data or null if not found.
 */
-export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = "") {
+export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = "", page = 1, limit = 10) {
   const sortOrder = getSortOrder(sort);
   const filter = `_type == 'pack' && brand == '${brand}' && title match "${searchTerm}*"`
   const filterParams = {};
   const fields = getFieldsForContentType('pack');
+  const start = (page - 1) * limit;
+  const end = start + limit;
+
   const query = buildQuery(
     filter,
     filterParams,
@@ -1021,6 +1026,8 @@ export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = 
     {
       logo_image_url: 'logo_image_url.asset->url',
       sortOrder: sortOrder,
+      start,
+      end
     }
   );
   return fetchSanity(query, true);
@@ -1093,6 +1100,23 @@ export async function fetchLiveEvent(brand) {
  */
 export async function fetchPackChildren(railcontentId) {
   return fetchChildren(railcontentId, 'pack-children');
+}
+
+/**
+ * Fetch the data needed for the Pack Overview screen.
+ * @param {number} id - The Railcontent ID of the pack
+ * @returns {Promise<Object|null>} - The pack information and lessons or null if not found.
+ *
+ * @example
+ * fetchPackData(404048)
+ *   .then(challenge => console.log(challenge))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchPackData(id) {
+  const query = `*[railcontent_id == ${id}]{
+    ${getFieldsForContentType("pack")}
+  } [0...1]`;
+  return fetchSanity(query, false);
 }
 
 /**
@@ -1216,10 +1240,17 @@ export async function fetchByReference(brand, {
  * @param {string} brand - The brand for which to fetch lessons.
  * @param {string} name - The name of the artist
  * @param {string} contentType - The type of the lessons we need to get from the artist. If not defined, groq will get lessons from all content types
+ * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
+ * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
+ * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {number} [params.limit=10] - The number of items per page.
+ * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
+ * @param {Array<number>} [params.progressIds] - The ids of the lessons that are in progress or completed
  * @returns {Promise<Object|null>} - The lessons for the artist and some details about the artist (name and thumbnail).
  *
  * @example
- * fetchArtistLessons('10 Years', 'song')
+ * fetchArtistLessons('drumeo', '10 Years', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
  *   .then(lessons => console.log(lessons))
  *   .catch(error => console.error(error));
  */
@@ -1229,7 +1260,9 @@ export async function fetchArtistLessons(brand, name, contentType, {
   page = 1,
   limit = 10,
   includedFields = [],
+  progressIds = undefined,
 } = {}) {
+
   const fieldsString = DEFAULT_FIELDS.join(',');
   const start = (page - 1) * limit;
   const end = start + limit;
@@ -1240,12 +1273,15 @@ export async function fetchArtistLessons(brand, name, contentType, {
   ? filtersToGroq(includedFields)
   : "";
 
+  // limits the results to supplied progressIds for started & completed filters
+  const progressFilter = progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : "";
+
   const query = `{
     "entity": 
       *[_type == 'artist' && name == '${name}']
         {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
         'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]), 
-        'lessons': *[${addType} brand == '${brand}' && references(^._id) ${searchFilter} ${includedFieldsFilter}]{${fieldsString}}
+        'lessons': *[${addType} brand == '${brand}' && references(^._id) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
       [${start}...${end}]}
       |order(${sortOrder})
   }`;
@@ -1256,11 +1292,17 @@ export async function fetchArtistLessons(brand, name, contentType, {
  * Fetch the genre's lessons.
  * @param {string} brand - The brand for which to fetch lessons.
  * @param {string} name - The name of the genre
- * @param {string} contentType - The type of the lessons we need to get from the genre. If not defined, groq will get lessons from all content types
- * @returns {Promise<Object|null>} - The lessons for the genre and some details about the genre (name and thumbnail).
+ * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
+ * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
+ * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {number} [params.limit=10] - The number of items per page.
+ * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
+ * @param {Array<number>} [params.progressIds] - The ids of the lessons that are in progress or completed
+ * @returns {Promise<Object|null>} - The lessons for the artist and some details about the artist (name and thumbnail).
  *
  * @example
- * fetchGenreLessons('Blues', 'song')
+ * fetchGenreLessons('drumeo', 'Blues', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
  *   .then(lessons => console.log(lessons))
  *   .catch(error => console.error(error));
  */
@@ -1270,6 +1312,7 @@ export async function fetchGenreLessons(brand, name, contentType, {
   page = 1,
   limit = 10,
   includedFields = [],
+  progressIds = undefined,
 } = {}) {
   const fieldsString = DEFAULT_FIELDS.join(',');
   const start = (page - 1) * limit;
@@ -1280,13 +1323,15 @@ export async function fetchGenreLessons(brand, name, contentType, {
   const includedFieldsFilter = includedFields.length > 0
   ? filtersToGroq(includedFields)
   : "";
+  // limits the results to supplied progressIds for started & completed filters
+  const progressFilter = progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : "";
 
   const query = `{
     "entity": 
       *[_type == 'genre' && name == '${name}']
         {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
         'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]), 
-        'lessons': *[${addType} brand == '${brand}' && references(^._id) ${searchFilter} ${includedFieldsFilter}]{${fieldsString}}
+        'lessons': *[${addType} brand == '${brand}' && references(^._id) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
       [${start}...${end}]}
       |order(${sortOrder})
   }`;
