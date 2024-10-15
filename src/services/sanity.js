@@ -299,6 +299,7 @@ export async function fetchNewReleases(brand, { page = 1, limit = 20, sort="-pub
       fields,
       {
           sortOrder: sortOrder,
+          start,
           end: end,
       });
   return fetchSanity(query, true);
@@ -1004,13 +1005,18 @@ export async function fetchRelatedMethodLessons(railContentId, brand) {
 * @param {string} brand - The brand for which to fetch packs.
 * @param {string} [searchTerm=""] - The search term to filter packs.
 * @param {string} [sort="-published_on"] - The field to sort the packs by.
+* @param {number} [params.page=1] - The page number for pagination.
+* @param {number} [params.limit=10] - The number of items per page.
 * @returns {Promise<Array<Object>|null>} - The fetched pack content data or null if not found.
 */
-export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = "") {
+export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = "", page = 1, limit = 10) {
   const sortOrder = getSortOrder(sort);
   const filter = `_type == 'pack' && brand == '${brand}' && title match "${searchTerm}*"`
   const filterParams = {};
   const fields = getFieldsForContentType('pack');
+  const start = (page - 1) * limit;
+  const end = start + limit;
+
   const query = buildQuery(
     filter,
     filterParams,
@@ -1018,6 +1024,8 @@ export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = 
     {
       logo_image_url: 'logo_image_url.asset->url',
       sortOrder: sortOrder,
+      start,
+      end
     }
   );
   return fetchSanity(query, true);
@@ -1090,6 +1098,23 @@ export async function fetchLiveEvent(brand) {
  */
 export async function fetchPackChildren(railcontentId) {
   return fetchChildren(railcontentId, 'pack-children');
+}
+
+/**
+ * Fetch the data needed for the Pack Overview screen.
+ * @param {number} id - The Railcontent ID of the pack
+ * @returns {Promise<Object|null>} - The pack information and lessons or null if not found.
+ *
+ * @example
+ * fetchPackData(404048)
+ *   .then(challenge => console.log(challenge))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchPackData(id) {
+  const query = `*[railcontent_id == ${id}]{
+    ${getFieldsForContentType("pack")}
+  } [0...1]`;
+  return fetchSanity(query, false);
 }
 
 /**
