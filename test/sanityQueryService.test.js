@@ -521,10 +521,40 @@ describe('Sanity Queries', function () {
         expect(response).toBeDefined();
     });
 
-    test('fetchNextPreviousLesson', async () => {
-        const response = await fetchNextPreviousLesson('401858');
+    test('fetchNextPreviousLesson-Show-With-Episodes', async () => {
+        const id = 227136;
+        const document = await fetchByRailContentId(id, 'behind-the-scenes');
+        const response = await fetchNextPreviousLesson(id);
         log(response);
-       // expect(response).toBeDefined();
+        expect(response.prevLesson).toBeDefined();
+        expect(response.prevLesson.sort).toBeLessThanOrEqual(document.sort);
+        expect(response.nextLesson).toBeDefined();
+        expect(response.nextLesson.sort).toBeGreaterThanOrEqual(document.sort);
+    });
+
+    test('fetchNextPreviousLesson-Method-Lesson', async () => {
+        const id = 241265;
+        const response = await fetchNextPreviousLesson(id);
+        log(response);
+        expect(response.prevLesson).toBeDefined();
+        expect(response.prevLesson.id).toBe(241264);
+        expect(response.prevLesson.type).toBe('learning-path-lesson');
+        expect(response.nextLesson).toBeDefined();
+        expect(response.nextLesson.id).toBe(241267);
+        expect(response.nextLesson.type).toBe('learning-path-lesson');
+    });
+
+    test('fetchNextPreviousLesson-Quick-Tips', async () => {
+        const id = 412277;
+        const response = await fetchNextPreviousLesson(id);
+        const document = await fetchByRailContentId(id, 'quick-tips');
+        const documentPublishedOn = new Date(document.published_on);
+        const prevDocumentPublishedOn = new Date(response.prevLesson.published_on);
+        const nextDocumentPublishedOn = new Date(response.nextLesson.published_on);
+        expect(response.prevLesson).toBeDefined();
+        expect(prevDocumentPublishedOn.getTime()).toBeLessThan(documentPublishedOn.getTime());
+        expect(response.nextLesson).toBeDefined();
+        expect(documentPublishedOn.getTime()).toBeLessThan(nextDocumentPublishedOn.getTime());
     });
 
 });
