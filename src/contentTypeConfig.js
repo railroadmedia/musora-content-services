@@ -213,7 +213,17 @@ let contentTypeConfig = {
             `"description": ${descriptionField}`,
             '"instructors": instructor[]->name',
             '"logo_image_url": logo_image_url.asset->url',
-            'total_xp'
+            'total_xp',
+            `"children": child[]->{
+                "description": ${descriptionField},
+                "lesson_count": child_count,
+                ${getFieldsForContentType()}
+            }`,
+            '"resources": resource',
+            '"thumbnail": thumbnail.asset->url',
+            '"light_logo": light_mode_logo_url.asset->url',
+            '"dark_logo": dark_mode_logo_url.asset->url',
+            `"description": ${descriptionField}`,
         ],
     },
     'rudiment': {
