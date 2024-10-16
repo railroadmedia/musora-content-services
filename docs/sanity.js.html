@@ -149,7 +149,7 @@ export async function fetchSongArtistCount(brand) {
 export async function fetchRelatedSongs(brand, songId) {
     const query = `
       *[_type == "song" &amp;&amp; railcontent_id == ${songId}]{
-        "data": array::unique([
+        "entity": array::unique([
             ...(*[_type == "song" &amp;&amp; brand == "${brand}" &amp;&amp; railcontent_id != ${songId} &amp;&amp; references(^.artist->_id)]{
             "type": _type,
             "id": railcontent_id,
@@ -879,7 +879,7 @@ export async function fetchMethodNextLesson(railcontentId, methodId) {
  */
 export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
     const sortedChildren = await fetchMethodChildrenIds(methodId);
-    const index = sortedChildren.indexOf(railcontentId);
+    const index = sortedChildren.indexOf(Number(railcontentId));
     let nextId = sortedChildren[index + 1];
     let previousId = sortedChildren[index  -1];
     let nextPrev = await fetchByRailContentIds([nextId, previousId]);
@@ -894,13 +894,16 @@ export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
 * @returns {Promise&lt;Array&lt;Object>|null>} - The fetched children data or null if not found.
 */
 export async function fetchMethodChildrenIds(railcontentId) {
-    const query = `*[_type == 'learning-path' &amp;&amp; railcontent_id == ${railcontentId}]{
+    const query = `*[ railcontent_id == ${railcontentId}]{
     'children': child[]-> {
         'id': railcontent_id,
+        'type' : _type,
             'children': child[]-> {
-            'id': railcontent_id,
-                'children': child[]-> {
                 'id': railcontent_id,
+                'type' : _type,
+                    'children': child[]-> {
+                        'id': railcontent_id,
+                        'type' : _type,
             }
         }
     }
@@ -912,9 +915,11 @@ export async function fetchMethodChildrenIds(railcontentId) {
 function getChildrenToDepth(parent, depth = 1)
 {
     let allChildrenIds = [];
-    if (parent['children']) {
+    if (parent &amp;&amp; parent['children'] &amp;&amp; depth > 0) {
         parent['children'].forEach((child) => {
-            allChildrenIds.push(child['id']);
+            if(!child['children']) {
+                allChildrenIds.push(child['id']);
+            }
             allChildrenIds = allChildrenIds.concat(getChildrenToDepth(child, depth-1));
         })
     }
@@ -927,19 +932,27 @@ function getChildrenToDepth(parent, depth = 1)
 * @returns {Promise&lt;Object|null>} - The fetched next and previous lesson data or null if found.
 */
 export async function fetchNextPreviousLesson(railcontentId) {
-  //TODO: Implement getTypeNeighbouringSiblings/getNextAndPreviousLessons
-  const query = `*[_railcontent_id == ${railcontentId}]{
-        railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": artist->name,
-        artist,
-        difficulty,
-        difficulty_string,
-        web_url_path,
-        published_on
-      }`
-  return fetchSanity(query, false);
+    const document = await fetchLessonContent(railcontentId);
+    if (document.parent_content_data &amp;&amp; document.parent_content_data.length > 0) {
+        const lastElement = document.parent_content_data[document.parent_content_data.length - 1];
+        const results = await fetchMethodPreviousNextLesson(railcontentId, lastElement.id);
+        return results;
+    }
+    const processedData = processMetadata(document.brand, document.type, true);
+    let sortBy = processedData?.sortBy ?? 'published_on';
+    const isDesc = sortBy.startsWith('-');
+    sortBy = isDesc ? sortBy.substring(1) : sortBy;
+    const sortValue = document[sortBy];
+    const isNumeric = !isNaN(sortValue);
+    let prevComparison = isNumeric ? `${sortBy} &lt;= ${sortValue}` : `${sortBy} &lt;= "${sortValue}"`;
+    let nextComparison = isNumeric ? `${sortBy} >= ${sortValue}` : `${sortBy} >= "${sortValue}"`;
+    const fields = getFieldsForContentType(document.type);
+    const query = `{
+      "prevLesson": *[brand == "${document.brand}" &amp;&amp; status == "${document.status}" &amp;&amp; _type == "${document.type}" &amp;&amp; ${prevComparison} &amp;&amp; railcontent_id != ${railcontentId}] | order(${sortBy} desc){${fields}}[0...1][0],
+      "nextLesson": *[brand == "${document.brand}" &amp;&amp; status == "${document.status}" &amp;&amp; _type == "${document.type}" &amp;&amp; ${nextComparison} &amp;&amp; railcontent_id != ${railcontentId}] | order(${sortBy} asc){${fields}}[0...1][0]
+    }`;
+
+    return await fetchSanity(query, true);
 }
 
 /**
@@ -961,6 +974,7 @@ export async function fetchLessonContent(railContentId) {
           difficulty, 
           difficulty_string, 
           brand, 
+          status,
           soundslice, 
           instrumentless, 
           railcontent_id, 
@@ -992,7 +1006,9 @@ export async function fetchLessonContent(railContentId) {
           mp3_no_drums_yes_click_url,
           mp3_yes_drums_no_click_url,
           mp3_yes_drums_yes_click_url,
-          "permission_id": permission[]->railcontent_id,`;
+          "permission_id": permission[]->railcontent_id,
+          parent_content_data,
+          sort`;
     const query = buildQuery(
         `railcontent_id == ${railContentId}`,
         filterParams,
@@ -1443,23 +1459,36 @@ export async function fetchSanity(query,
   }
 }
 
-async function needsAccessDecorator(results)
-{
-    if (globalConfig.sanityConfig.useDummyRailContentMethods) return results;
-    let userPermissions = await getUserPermissions();
-    userPermissions = new Set(userPermissions);
-    if (Array.isArray(results)) {
-        results.forEach((result) => {
-            result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
-        });
-    }else if (results.entity &amp;&amp; Array.isArray(results.entity)) {
-        results.entity.forEach((result) => {
-            result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
-        });
-    } else {
-        results['need_access'] = doesUserNeedAccessToContent(results, userPermissions);
-    }
-    return results;
+async function needsAccessDecorator(results) {
+  if (globalConfig.sanityConfig.useDummyRailContentMethods) return results;
+  
+  let userPermissions = await getUserPermissions();
+  userPermissions = new Set(userPermissions);
+  
+  if (Array.isArray(results)) {
+      results.forEach((result) => {
+          result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+      });
+  } else if (results.entity &amp;&amp; Array.isArray(results.entity)) {
+      // Group By
+      results.entity.forEach((result) => {
+          if (result.lessons) {
+              result.lessons.forEach((lesson) => {
+                  lesson['need_access'] = doesUserNeedAccessToContent(lesson, userPermissions); // Updated to check lesson access
+              });
+          } else {
+              result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+          }
+      });
+  } else if (results.related_lessons &amp;&amp; Array.isArray(results.related_lessons)) {
+    results.related_lessons.forEach((result) => {
+      result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+    })
+  } else {
+      results['need_access'] = doesUserNeedAccessToContent(results, userPermissions);
+  }
+
+  return results;
 }
 
 function doesUserNeedAccessToContent(result, userPermissions)
@@ -1754,7 +1783,7 @@ function cleanUpGroq(query) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Tue Oct 15 2024 11:28:17 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Wed Oct 16 2024 19:36:10 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
