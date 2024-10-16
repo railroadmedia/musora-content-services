@@ -238,6 +238,10 @@ async function fetchDataHandler(url, dataVersion, method = "get") {
     return fetchHandler(url, method, dataVersion);
 }
 
+async function postDataHandler(url, data) {
+    return fetchHandler(url, 'post', data);
+}
+
 export async function fetchHandler(url, method = "get", dataVersion = null, body = null) {
     let headers = {
         'Content-Type': 'application/json',
@@ -272,12 +276,40 @@ export async function fetchUserLikes(currentVersion) {
 
 export async function postContentLiked(contentId) {
     let url = `/content/user/likes/like/${contentId}`;
-    return await fetchHandler(url, "post");
+    return await postDataHandler(url);
 }
 
 export async function postContentUnliked(contentId) {
     let url = `/content/user/likes/unlike/${contentId}`;
-    return await fetchHandler(url, "post");
+    return await postDataHandler(url);
+}
+
+export async function fetchContentProgress(currentVersion) {
+    let url = `/content/user/progress/all`;
+    return fetchDataHandler(url, currentVersion);
+}
+
+export async function postStartWatchSession({
+                                                mediaId,
+                                                mediaType,
+                                                mediaCategory,
+                                                watchPosition,
+                                                totalDuration,
+                                                sessionToken,
+                                                brand,
+                                                contentId = null
+                                            }) {
+    let url = `/content/user/progress/all`;
+    return fetchDataHandler(url, {
+        mediaId,
+        mediaType,
+        mediaCategory,
+        watchPosition,
+        totalDuration,
+        sessionToken,
+        brand,
+        contentId
+    });
 }
 
 export async function fetchChallengeMetadata(contentId) {
