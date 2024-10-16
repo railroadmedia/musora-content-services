@@ -4,7 +4,7 @@ import {initializeService} from "../src";
 
 const railContentModule = require('../src/services/railcontent.js')
 
-describe('commentLikesDataContext', function () {
+describe('contentLikesDataContext', function () {
     let mock = null;
     const testVersion = 1;
 
