@@ -832,7 +832,7 @@ export async function fetchMethodNextLesson(railcontentId, methodId) {
  */
 export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
     const sortedChildren = await fetchMethodChildrenIds(methodId);
-    const index = sortedChildren.indexOf(railcontentId);
+    const index = sortedChildren.indexOf(Number(railcontentId));
     let nextId = sortedChildren[index + 1];
     let previousId = sortedChildren[index  -1];
     let nextPrev = await fetchByRailContentIds([nextId, previousId]);
@@ -847,13 +847,16 @@ export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
 * @returns {Promise<Array<Object>|null>} - The fetched children data or null if not found.
 */
 export async function fetchMethodChildrenIds(railcontentId) {
-    const query = `*[_type == 'learning-path' && railcontent_id == ${railcontentId}]{
+    const query = `*[ railcontent_id == ${railcontentId}]{
     'children': child[]-> {
         'id': railcontent_id,
+        'type' : _type,
             'children': child[]-> {
-            'id': railcontent_id,
-                'children': child[]-> {
                 'id': railcontent_id,
+                'type' : _type,
+                    'children': child[]-> {
+                        'id': railcontent_id,
+                        'type' : _type,
             }
         }
     }
@@ -865,9 +868,11 @@ export async function fetchMethodChildrenIds(railcontentId) {
 function getChildrenToDepth(parent, depth = 1)
 {
     let allChildrenIds = [];
-    if (parent['children']) {
+    if (parent && parent['children'] && depth > 0) {
         parent['children'].forEach((child) => {
-            allChildrenIds.push(child['id']);
+            if(!child['children']) {
+                allChildrenIds.push(child['id']);
+            }
             allChildrenIds = allChildrenIds.concat(getChildrenToDepth(child, depth-1));
         })
     }
@@ -880,19 +885,27 @@ function getChildrenToDepth(parent, depth = 1)
 * @returns {Promise<Object|null>} - The fetched next and previous lesson data or null if found.
 */
 export async function fetchNextPreviousLesson(railcontentId) {
-  //TODO: Implement getTypeNeighbouringSiblings/getNextAndPreviousLessons
-  const query = `*[_railcontent_id == ${railcontentId}]{
-        railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "artist_name": artist->name,
-        artist,
-        difficulty,
-        difficulty_string,
-        web_url_path,
-        published_on
-      }`
-  return fetchSanity(query, false);
+    const document = await fetchLessonContent(railcontentId);
+    if (document.parent_content_data && document.parent_content_data.length > 0) {
+        const lastElement = document.parent_content_data[document.parent_content_data.length - 1];
+        const results = await fetchMethodPreviousNextLesson(railcontentId, lastElement.id);
+        return results;
+    }
+    const processedData = processMetadata(document.brand, document.type, true);
+    let sortBy = processedData?.sortBy ?? 'published_on';
+    const isDesc = sortBy.startsWith('-');
+    sortBy = isDesc ? sortBy.substring(1) : sortBy;
+    const sortValue = document[sortBy];
+    const isNumeric = !isNaN(sortValue);
+    let prevComparison = isNumeric ? `${sortBy} <= ${sortValue}` : `${sortBy} <= "${sortValue}"`;
+    let nextComparison = isNumeric ? `${sortBy} >= ${sortValue}` : `${sortBy} >= "${sortValue}"`;
+    const fields = getFieldsForContentType(document.type);
+    const query = `{
+      "prevLesson": *[brand == "${document.brand}" && status == "${document.status}" && _type == "${document.type}" && ${prevComparison} && railcontent_id != ${railcontentId}] | order(${sortBy} desc){${fields}}[0...1][0],
+      "nextLesson": *[brand == "${document.brand}" && status == "${document.status}" && _type == "${document.type}" && ${nextComparison} && railcontent_id != ${railcontentId}] | order(${sortBy} asc){${fields}}[0...1][0]
+    }`;
+
+    return await fetchSanity(query, true);
 }
 
 /**
@@ -914,6 +927,7 @@ export async function fetchLessonContent(railContentId) {
           difficulty, 
           difficulty_string, 
           brand, 
+          status,
           soundslice, 
           instrumentless, 
           railcontent_id, 
@@ -945,7 +959,9 @@ export async function fetchLessonContent(railContentId) {
           mp3_no_drums_yes_click_url,
           mp3_yes_drums_no_click_url,
           mp3_yes_drums_yes_click_url,
-          "permission_id": permission[]->railcontent_id,`;
+          "permission_id": permission[]->railcontent_id,
+          parent_content_data,
+          sort`;
     const query = buildQuery(
         `railcontent_id == ${railContentId}`,
         filterParams,
