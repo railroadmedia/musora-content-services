@@ -1,7 +1,7 @@
 import {fetchUserLikes, postContentLiked, postContentUnliked} from "./railcontent";
-import {DataContext, ContentVersionKey} from "./dataContext";
+import {DataContext, ContentLikesVersionKey} from "./dataContext";
 
-export let dataContext = new DataContext(ContentVersionKey, fetchUserLikes);
+export let dataContext = new DataContext(ContentLikesVersionKey, fetchUserLikes);
 
 export async function isContentLiked(contentId) {
     let data = await dataContext.getData();

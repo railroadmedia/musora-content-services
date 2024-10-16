@@ -1,7 +1,8 @@
 import {globalConfig} from "./config";
 
 //These constants need to match MWP UserDataVersionKeyEnum enum
-export const ContentVersionKey = 0;
+export const ContentLikesVersionKey = 0;
+export const ContentProgressVersionKey = 1;
 
 let cache = null;
 
