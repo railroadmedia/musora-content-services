@@ -102,7 +102,7 @@ export async function fetchSongArtistCount(brand) {
 export async function fetchRelatedSongs(brand, songId) {
     const query = `
       *[_type == "song" && railcontent_id == ${songId}]{
-        "data": array::unique([
+        "entity": array::unique([
             ...(*[_type == "song" && brand == "${brand}" && railcontent_id != ${songId} && references(^.artist->_id)]{
             "type": _type,
             "id": railcontent_id,
@@ -1412,23 +1412,36 @@ export async function fetchSanity(query,
   }
 }
 
-async function needsAccessDecorator(results)
-{
-    if (globalConfig.sanityConfig.useDummyRailContentMethods) return results;
-    let userPermissions = await getUserPermissions();
-    userPermissions = new Set(userPermissions);
-    if (Array.isArray(results)) {
-        results.forEach((result) => {
-            result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
-        });
-    }else if (results.entity && Array.isArray(results.entity)) {
-        results.entity.forEach((result) => {
-            result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
-        });
-    } else {
-        results['need_access'] = doesUserNeedAccessToContent(results, userPermissions);
-    }
-    return results;
+async function needsAccessDecorator(results) {
+  if (globalConfig.sanityConfig.useDummyRailContentMethods) return results;
+  
+  let userPermissions = await getUserPermissions();
+  userPermissions = new Set(userPermissions);
+  
+  if (Array.isArray(results)) {
+      results.forEach((result) => {
+          result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+      });
+  } else if (results.entity && Array.isArray(results.entity)) {
+      // Group By
+      results.entity.forEach((result) => {
+          if (result.lessons) {
+              result.lessons.forEach((lesson) => {
+                  lesson['need_access'] = doesUserNeedAccessToContent(lesson, userPermissions); // Updated to check lesson access
+              });
+          } else {
+              result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+          }
+      });
+  } else if (results.related_lessons && Array.isArray(results.related_lessons)) {
+    results.related_lessons.forEach((result) => {
+      result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+    })
+  } else {
+      results['need_access'] = doesUserNeedAccessToContent(results, userPermissions);
+  }
+
+  return results;
 }
 
 function doesUserNeedAccessToContent(result, userPermissions)
