@@ -289,7 +289,7 @@ export async function fetchContentProgress(currentVersion) {
     return fetchDataHandler(url, currentVersion);
 }
 
-export async function postStartWatchSession({
+export async function postRecordWatchSession({
                                                 mediaId,
                                                 mediaType,
                                                 mediaCategory,
@@ -299,8 +299,8 @@ export async function postStartWatchSession({
                                                 brand,
                                                 contentId = null
                                             }) {
-    let url = `/content/user/progress/all`;
-    return fetchDataHandler(url, {
+    let url = `/railtracker/media-playback-session`;
+    return postDataHandler(url, {
         mediaId,
         mediaType,
         mediaCategory,
@@ -655,6 +655,21 @@ export async function fetchPlaylistItems(playlistId) {
 export async function updatePlaylistItem(updatedData) {
     const url = `/playlists/item`;
     return await fetchHandler(url, "POST", null, updatedData);
+}
+
+export async function postContentStarted(contentId) {
+    let url = `/content/${contentId}/started`;
+    return postDataHandler(url);
+}
+
+export async function postContentCompleted(contentId) {
+    let url = `/content/${contentId}/completed`;
+    return postDataHandler(url);
+}
+
+export async function postContentReset(contentId) {
+    let url = `/content/${contentId}/reset`;
+    return postDataHandler(url);
 }
 
 
