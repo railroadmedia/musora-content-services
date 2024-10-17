@@ -23,7 +23,7 @@ export class DataContext {
     }
 
     async getData() {
-        this.ensureLocalContextLoaded();
+        await this.ensureLocalContextLoaded();
         if (!this.context || this.shouldVerifyServerVerions()) {
             let version = this.version();
             let data = await this.fetchData(version);
@@ -40,10 +40,10 @@ export class DataContext {
         return await this.fetchDataFunction(version);
     }
 
-    ensureLocalContextLoaded() {
+    async ensureLocalContextLoaded() {
         if (this.context) return;
         this.verifyConfig();
-        let localData = cache.getItem(this.localStorageKey);
+        let localData = globalConfig.isMA ? await cache.getItem(this.localStorageKey): cache.getItem(this.localStorageKey) ;
         if (localData) {
             this.context = JSON.parse(localData);
         }
@@ -56,8 +56,8 @@ export class DataContext {
         }
     }
 
-    shouldVerifyServerVerions() {
-        let lastUpdated = cache.getItem(this.localStorageLastUpdatedKey);
+    async shouldVerifyServerVerions() {
+        let lastUpdated = globalConfig.isMA ? await cache.getItem(this.localStorageLastUpdatedKey) : cache.getItem(this.localStorageLastUpdatedKey);
         if (!lastUpdated) return false;
         const verifyServerTime = 10000; //10 s
         return (new Date().getTime() - lastUpdated) > verifyServerTime;
@@ -74,7 +74,7 @@ export class DataContext {
     }
 
     async update(localUpdateFunction, serverUpdateFunction) {
-        this.ensureLocalContextLoaded();
+        await this.ensureLocalContextLoaded();
         if (this.context) {
             localUpdateFunction(this.context);
             this.context.version++;

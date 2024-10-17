@@ -5,7 +5,8 @@
 let globalConfig = {
     sanityConfig: {},
     railcontentConfig: {},
-    localStorage: null
+    localStorage: null,
+    isMA: false,
   };
 
 /**
@@ -33,6 +34,7 @@ const excludeFromGeneratedIndex = [];
  * @param {string} config.railcontentConfig.userId - The user ID for fetching user-specific data.
  * @param {string} config.railcontentConfig.baseUrl - The url for the enviroment.
  * @param {Object} config.localStorage - Cache to use for localStorage
+ * @param {boolean} config.isMA - Variable that tells if the library is used by MA or FEW
 
  *
  * @example
@@ -51,13 +53,15 @@ const excludeFromGeneratedIndex = [];
  *     userId: 'current-user-id',
  *     baseUrl: 'https://web-staging-one.musora.com'
  *   },
- *   localStorage: localStorage
+ *   localStorage: localStorage,
+ *   isMA: false
  * });
  */
 function initializeService(config) {
     globalConfig.sanityConfig = config.sanityConfig;
     globalConfig.railcontentConfig = config.railcontentConfig;
     globalConfig.localStorage = config.localStorage;
+    globalConfig.isMA = config.isMA || false;
 }
 
 // Export both the initialization function and the config object
