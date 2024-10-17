@@ -1,4 +1,10 @@
-import {fetchContentProgress, postStartWatchSession} from "./railcontent";
+import {
+    fetchContentProgress,
+    postContentCompleted,
+    postContentReset,
+    postContentStarted,
+    postRecordWatchSession
+} from "./railcontent";
 import {DataContext, ContentProgressVersionKey} from "./dataContext";
 
 const STATE_STARTED = 'started';
@@ -32,29 +38,41 @@ export async function contentStatusStarted(contentId) {
             }
 
             data['s'] = status;
-            data['t'] = watchPositionSeconds;
             context.data[contentId] = data;
         },
         async function () {
-            return postStartWatchSession({
-                mediaId,
-                mediaType,
-                mediaCategory,
-                watchPositionSeconds,
-                totalDurationSeconds,
-                sessionToken,
-                brand,
-                contentId
-            });
-        }
+            return postContentStarted(contentId);
+        });
 }
 
-export async function contentStatusCompleted(contentId) {
 
+export async function contentStatusCompleted(contentId) {
+    await dataContext.update(
+        function (context) {
+            let data = context.data[contentId] ?? [];
+            let status = data?.['s'] ?? 0;
+
+            status = STATE_COMPLETED;
+
+            data['s'] = status;
+            context.data[contentId] = data;
+        },
+        async function () {
+            return postContentCompleted(contentId);
+        });
 }
 
 export async function contentStatusReset(contentId) {
-
+    await dataContext.update(
+        function (context) {
+            const index = context.data.indexOf(contentId);
+            if (index > -1) { // only splice array when item is found
+                context.data.splice(index, 1); // 2nd parameter means remove one item only
+            }
+        },
+        async function () {
+            return postContentReset(contentId);
+        });
 }
 
 
@@ -80,13 +98,14 @@ export async function recordWatchSession({
                     progress = Math.min(99, Math.round(watchPositionSeconds ?? 0 / Math.max(1, totalDurationSeconds ?? 0) * 100));
                 }
 
+                data['p'] = progress;
                 data['s'] = status;
                 data['t'] = watchPositionSeconds;
                 context.data[contentId] = data;
             }
         },
         async function () {
-            return postStartWatchSession({
+            return postRecordWatchSession({
                 mediaId,
                 mediaType,
                 mediaCategory,
