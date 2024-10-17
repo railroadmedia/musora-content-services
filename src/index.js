@@ -13,6 +13,7 @@ import {
 
 import {
 	fetchAllCompletedStates,
+	fetchChallengeLessonData,
 	fetchChallengeMetadata,
 	fetchCompletedContent,
 	fetchCompletedState,
@@ -23,7 +24,9 @@ import {
 	fetchUserAward,
 	fetchUserChallengeProgress,
 	fetchUserPermissions,
+	postChallengesCommunityNotification,
 	postChallengesEnroll,
+	postChallengesEnrollmentNotification,
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock
@@ -88,6 +91,7 @@ export {
 	fetchByRailContentIds,
 	fetchByReference,
 	fetchCatalogMetadata,
+	fetchChallengeLessonData,
 	fetchChallengeMetadata,
 	fetchChallengeOverview,
 	fetchChildren,
@@ -136,7 +140,9 @@ export {
 	initializeService,
 	isContentLiked,
 	likeContent,
+	postChallengesCommunityNotification,
 	postChallengesEnroll,
+	postChallengesEnrollmentNotification,
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock,

@@ -278,6 +278,11 @@ export async function fetchChallengeMetadata(contentId) {
     return await fetchHandler(url, 'get');
 }
 
+export async function fetchChallengeLessonData(contentId) {
+    let url = `/challenges/lessons/${contentId}`;
+    return await fetchHandler(url, 'get');
+}
+
 export async function fetchUserChallengeProgress(contentId) {
     let url = `/challenges/user_data/${contentId}`;
     return await fetchHandler(url, 'get');
@@ -307,6 +312,18 @@ export async function postChallengesLeave(contentId) {
     let url = `/challenges/leave/${contentId}`;
     return await fetchHandler(url, 'post');
 }
+
+export async function postChallengesEnrollmentNotification(contentId) {
+    let url = `/challenges/notifications/enrollment_open/${contentId}`;
+    return await fetchHandler(url, 'post');
+}
+
+export async function postChallengesCommunityNotification(contentId) {
+    let url = `/challenges/notifications/community_reminders/${contentId}`;
+    return await fetchHandler(url, 'post');
+}
+
+
 
 function fetchAbsolute(url, params) {
     if (globalConfig.railcontentConfig.baseUrl) {
