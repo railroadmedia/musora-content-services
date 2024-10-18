@@ -36,7 +36,9 @@ const {
     getSortOrder,
     fetchShowsData,
     fetchMetadata,
-    fetchNextPreviousLesson
+    fetchNextPreviousLesson,
+    fetchHierarchy,
+    fetchTopLevelParentId
 } = require('../src/services/sanity.js');
 
 const {
@@ -175,7 +177,7 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchAllSongsGroupByArtist', async () => {
-        const response = await fetchAllSongs('drumeo', {groupBy:"artist"});
+        const response = await fetchAllSongs('drumeo', {groupBy: "artist"});
         expect(response.entity[0].lessons[0].soundslice).toBeDefined();
         expect(response.entity[0].lessons[0].artist_name).toBeDefined();
         expect(response.entity[0].lessons[0].instrumentless).toBeDefined();
@@ -189,20 +191,20 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchAllWorkouts', async () => {
-        const response = await fetchAll('drumeo', 'workout',{});
+        const response = await fetchAll('drumeo', 'workout', {});
         log(response);
         expect(response.entity[0].id).toBeDefined();
     });
 
     test('fetchAllInstructorField', async () => {
-        const response = await fetchAll('drumeo', 'quick-tips',{searchTerm: 'Domino Santantonio'});
+        const response = await fetchAll('drumeo', 'quick-tips', {searchTerm: 'Domino Santantonio'});
         log(response);
         expect(response.entity[0].id).toBeDefined();
         expect(response.entity[0].instructors).toBeTruthy();
     });
 
     test('fetchAllSortField', async () => {
-        const response = await fetchAll('drumeo', 'rhythmic-adventures-of-captain-carson',{});
+        const response = await fetchAll('drumeo', 'rhythmic-adventures-of-captain-carson', {});
         log(response);
         expect(response.entity[0].id).toBeDefined();
         expect(response.entity[0].sort).toBeDefined();
@@ -210,7 +212,7 @@ describe('Sanity Queries', function () {
 
 
     test('fetchAllChallenges', async () => {
-        const response = await fetchAll('drumeo', 'challenge',{});
+        const response = await fetchAll('drumeo', 'challenge', {});
         log(response);
         expect(response.entity[0].registration_url).toBeDefined();
         expect(response.entity[0].enrollment_start_time).toBeDefined();
@@ -224,12 +226,12 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchAll-CustomFields', async () => {
-        let response = await fetchAll('drumeo', 'challenge',{customFields:['garbage']});
+        let response = await fetchAll('drumeo', 'challenge', {customFields: ['garbage']});
         log(response);
         expect(response.entity[0].garbage).toBeDefined();
         expect(response.entity[0].id).toBeDefined();
 
-        response = await fetchAll('drumeo', 'challenge',{useDefaultFields: false, customFields:['garbage']});
+        response = await fetchAll('drumeo', 'challenge', {useDefaultFields: false, customFields: ['garbage']});
         log(response);
         expect(response.entity[0].garbage).toBeDefined();
         expect.not.objectContaining(response.entity[0].id);
@@ -296,10 +298,10 @@ describe('Sanity Queries', function () {
         const response = await fetchChildren(id);
         log('num children', response.length);
         log(response);
-        
+
         expect(response.length > 0).toBeTruthy();
         const foundExpectedChild = response.some((child) => {
-            return child['id'] = expectedChildID; 
+            return child['id'] = expectedChildID;
         });
         expect(foundExpectedChild).toBeTruthy();
     });
@@ -312,7 +314,7 @@ describe('Sanity Queries', function () {
         expect(response['id']).toBe(expectedParent);
     });
 
-    test('getSortOrder',  () => {
+    test('getSortOrder', () => {
         let sort = getSortOrder()
         expect(sort).toBe('published_on desc');
         sort = getSortOrder('slug')
@@ -326,7 +328,8 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchMethod', async () => {
-        const response = await fetchMethod('drumeo', 'drumeo-method');log(response);
+        const response = await fetchMethod('drumeo', 'drumeo-method');
+        log(response);
         expect(response).toBeDefined();
         expect(response.levels.length).toBeGreaterThan(0);
     });
@@ -366,7 +369,8 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchFoundation', async () => {
-        const response = await fetchFoundation('foundations-2019');log(response);
+        const response = await fetchFoundation('foundations-2019');
+        log(response);
         expect(response.units.length).toBeGreaterThan(0);
         expect(response.type).toBe('foundation');
     });
@@ -390,7 +394,7 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchCoachLessons', async () => {
-        const response = await fetchCoachLessons('drumeo',411493, {});
+        const response = await fetchCoachLessons('drumeo', 411493, {});
         expect(response.entity.length).toBeGreaterThan(0);
     });
     test('fetchCoachLessons-WithTypeFilters', async () => {
@@ -420,43 +424,43 @@ describe('Sanity Queries', function () {
 
 
     test('fetchAll-IncludedFields', async () => {
-        let response = await fetchAll('drumeo', 'instructor',{includedFields: ['is_active']});
+        let response = await fetchAll('drumeo', 'instructor', {includedFields: ['is_active']});
         console.log(response);
         expect(response.entity.length).toBeGreaterThan(0);
     });
 
     test('fetchAll-IncludedFields-multiple', async () => {
-        let response = await fetchAll('drumeo', 'course',{includedFields: ['essential,Dynamics','essential,Timing','difficulty,Beginner']});
+        let response = await fetchAll('drumeo', 'course', {includedFields: ['essential,Dynamics', 'essential,Timing', 'difficulty,Beginner']});
         log(response);
         expect(response.entity.length).toBeGreaterThan(0);
     });
 
     test('fetchAll-IncludedFields-playalong-multiple', async () => {
-        let response = await fetchAll('drumeo', 'play-along',{includedFields: ['bpm,91-120','bpm,181+','genre,Blues']});
+        let response = await fetchAll('drumeo', 'play-along', {includedFields: ['bpm,91-120', 'bpm,181+', 'genre,Blues']});
         log(response);
         expect(response.entity.length).toBeGreaterThan(0);
     });
 
     test('fetchAll-IncludedFields-rudiment-multiple-gear', async () => {
-        let response = await fetchAll('drumeo', 'rudiment',{includedFields: ['gear,Drum-Set','gear,Practice Pad']});
+        let response = await fetchAll('drumeo', 'rudiment', {includedFields: ['gear,Drum-Set', 'gear,Practice Pad']});
         log(response);
         expect(response.entity.length).toBeGreaterThan(0);
     });
 
     test('fetchAll-IncludedFields-coaches-multiple-focus', async () => {
-        let response = await fetchAll('drumeo', 'instructor',{includedFields: ['focus,drumline','focus,recording']});
+        let response = await fetchAll('drumeo', 'instructor', {includedFields: ['focus,drumline', 'focus,recording']});
         log(response);
         expect(response.entity.length).toBeGreaterThan(0);
     });
 
     test('fetchAll-IncludedFields-songs-multiple-instrumentless', async () => {
-        let response = await fetchAll('drumeo', 'song',{includedFields: ['instrumentless,true','instrumentless,false']});
+        let response = await fetchAll('drumeo', 'song', {includedFields: ['instrumentless,true', 'instrumentless,false']});
         log(response);
         expect(response.entity.length).toBeGreaterThan(0);
     });
 
     test('fetchByReference', async () => {
-        const response = await fetchByReference('drumeo', { includedFields: ['is_featured'] });
+        const response = await fetchByReference('drumeo', {includedFields: ['is_featured']});
         expect(response.entity.length).toBeGreaterThan(0);
     });
 
@@ -466,19 +470,19 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchAll-GroupBy-Genre', async () => {
-        let response = await fetchAll('drumeo', 'solo',{groupBy: 'genre'});
+        let response = await fetchAll('drumeo', 'solo', {groupBy: 'genre'});
         log(response);
         expect(response.entity[0].web_url_path).toContain('/drumeo/genres/');
     });
 
     test('fetchAll-GroupBy-Artists', async () => {
-        let response = await fetchAll('drumeo', 'song',{groupBy: 'artist'});
+        let response = await fetchAll('drumeo', 'song', {groupBy: 'artist'});
         log(response);
         expect(response.entity[0].web_url_path).toContain('/drumeo/artists/');
     });
 
     test('fetchAll-GroupBy-Instructors', async () => {
-        let response = await fetchAll('drumeo', 'course',{groupBy: 'instructor'});
+        let response = await fetchAll('drumeo', 'course', {groupBy: 'instructor'});
         log(response);
         expect(response.entity[0].web_url_path).toContain('/drumeo/coaches/');
     });
@@ -492,7 +496,7 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchMetadata', async () => {
-        const response = await fetchMetadata('drumeo','song');
+        const response = await fetchMetadata('drumeo', 'song');
         log(response);
         expect(response.tabs.length).toBeGreaterThan(0);
     });
@@ -557,6 +561,28 @@ describe('Sanity Queries', function () {
         expect(documentPublishedOn.getTime()).toBeLessThan(nextDocumentPublishedOn.getTime());
     });
 
+    test('fetchTopLevelParentId', async () => {
+        let contentId = await fetchTopLevelParentId(241250);
+        expect(contentId).toBe(241247);
+        contentId = await fetchTopLevelParentId(241249);
+        expect(contentId).toBe(241247);
+        contentId = await fetchTopLevelParentId(241248);
+        expect(contentId).toBe(241247);
+        contentId = await fetchTopLevelParentId(241247);
+        expect(contentId).toBe(241247);
+        contentId = await fetchTopLevelParentId(0);
+        expect(contentId).toBe(null);
+    });
+
+    test('fetchHierarchy', async () => {
+        let hierarchy = await fetchHierarchy(241250);
+        expect(hierarchy.parents[241250]).toBe(241249);
+        expect(hierarchy.parents[241249]).toBe(241248);
+        expect(hierarchy.parents[241248]).toBe(241247);
+        expect(hierarchy.children[241250]).toStrictEqual([]);
+        expect(hierarchy.children[243085]).toStrictEqual([ 243170, 243171, 243172, 243174, 243176 ]);
+    });
+
 });
 
 describe('Filter Builder', function () {
@@ -578,7 +604,7 @@ describe('Filter Builder', function () {
 
     test('withOnlyFilterAvailableStatuses', async () => {
         const filter = 'railcontent_id = 111'
-        const builder =  FilterBuilder.withOnlyFilterAvailableStatuses(filter,['published', 'unlisted']);
+        const builder = FilterBuilder.withOnlyFilterAvailableStatuses(filter, ['published', 'unlisted']);
         const finalFilter = builder.buildFilter();
         const clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].phrase).toBe(filter);
@@ -591,9 +617,10 @@ describe('Filter Builder', function () {
 
     test('withContentStatusAndFutureScheduledContent', async () => {
         const filter = 'railcontent_id = 111'
-        const builder =  new FilterBuilder(filter,{
+        const builder = new FilterBuilder(filter, {
             availableContentStatuses: ['published', 'unlisted', 'scheduled'],
-            getFutureScheduledContentsOnly: true});
+            getFutureScheduledContentsOnly: true
+        });
         const finalFilter = builder.buildFilter();
         const clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].phrase).toBe(filter);
@@ -610,10 +637,12 @@ describe('Filter Builder', function () {
     test('withUserPermissions', async () => {
         const filter = 'railcontent_id = 111'
         const builder = new FilterBuilder(filter,
-            { user: {
+            {
+                user: {
                     user: {},
                     permissions: [91, 92],
-                }});
+                }
+            });
         const finalFilter = builder.buildFilter();
         const expected = "references(*[_type == 'permission' && railcontent_id in [91,92]]._id)"
         const isMatch = finalFilter.includes(expected);
@@ -637,7 +666,7 @@ describe('Filter Builder', function () {
         const builder = new FilterBuilder(filter,
             {
                 user: getPlusUser(),
-                bypassPermissions:true
+                bypassPermissions: true
             });
         const finalFilter = builder.buildFilter();
         const expected = "references(*[_type == 'permission' && railcontent_id in [91,92]]._id)"
@@ -653,7 +682,7 @@ describe('Filter Builder', function () {
         // testing dates is a pain more frustration than I'm willing to deal with, so I'm just testing operators.
 
         const filter = 'railcontent_id = 111'
-        let builder =  new FilterBuilder(filter, {
+        let builder = new FilterBuilder(filter, {
             user: {},
             pullFutureContent: true,
         });
@@ -672,7 +701,7 @@ describe('Filter Builder', function () {
             {
                 user: {},
                 getFutureContentOnly: true,
-        });
+            });
         finalFilter = builder.buildFilter();
         clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].phrase).toBe(filter);
@@ -682,16 +711,16 @@ describe('Filter Builder', function () {
 
     function getPlusUser() {
         return {
-            permissions: [91,92],
+            permissions: [91, 92],
         }
     }
 
     function spliceFilterForAnds(filter) {
         // this will not correctly split complex filters with && and || conditions.
         let phrases = filter.split(' && ');
-        let clauses= [];
+        let clauses = [];
         phrases.forEach((phrase) => {
-            let  field = phrase.substring(0, phrase.indexOf(' '));
+            let field = phrase.substring(0, phrase.indexOf(' '));
             //if(field.charAt(0) === '(' ) field = field.substring(1);
             const temp = phrase.substring(phrase.indexOf(' ') + 1);
             const operator = temp.substring(0, temp.indexOf(' '));
@@ -736,7 +765,7 @@ describe('Filter Builder', function () {
     });
 
     test('fetchAllFilterOptions-filter-selected', async () => {
-        let response = await fetchAllFilterOptions('drumeo', ['theory,notation','theory,time signatures','creativity,Grooves','creativity,Fills & Chops','difficulty,Beginner','difficulty,Intermediate','difficulty,Expert'], '', '', 'course', '');
+        let response = await fetchAllFilterOptions('drumeo', ['theory,notation', 'theory,time signatures', 'creativity,Grooves', 'creativity,Fills & Chops', 'difficulty,Beginner', 'difficulty,Intermediate', 'difficulty,Expert'], '', '', 'course', '');
         log(response);
         expect(response.meta.filterOptions).toBeDefined();
     });

@@ -1362,6 +1362,77 @@ export async function fetchGenreLessons(brand, name, contentType, {
   return fetchSanity(query, true);
 }
 
+export async function fetchTopLevelParentId(railcontentId) {
+    const query = `*[railcontent_id == ${railcontentId}]{
+      railcontent_id,
+      'parents': *[^._id in child[]._ref && !(_id in path('drafts.**'))]{
+        railcontent_id,
+          'parents': *[^._id in child[]._ref && !(_id in path('drafts.**'))]{
+            railcontent_id,
+            'parents': *[^._id in child[]._ref && !(_id in path('drafts.**'))]{
+              railcontent_id,
+               'parents': *[^._id in child[]._ref && !(_id in path('drafts.**'))]{
+                  railcontent_id,               
+            } 
+          }
+        }
+      }
+    }`;
+    let response = await fetchSanity(query, false, {processNeedAccess: false});
+    if (!response) return null;
+    let currentLevel = response;
+    for (let i = 0; i < 4; i++) {
+        if (currentLevel['parents'].length > 0) {
+            currentLevel = currentLevel['parents'][0];
+        } else {
+            return currentLevel['railcontent_id'];
+        }
+    }
+    return null;
+}
+
+export async function fetchHierarchy(railcontentId) {
+    let topLevelId = await fetchTopLevelParentId(railcontentId);
+    const query = `*[railcontent_id == ${topLevelId}]{
+      railcontent_id,
+      'children': child[]->{
+        railcontent_id,
+        'children': child[]->{
+            railcontent_id,
+            'children': child[]->{
+               railcontent_id,
+               'children': child[]->{
+                  railcontent_id,               
+            } 
+          }
+        }
+      }
+    }`;
+    let response = await fetchSanity(query, false, {processNeedAccess: false});
+    if (!response) return null;
+    let data = {
+        parents: {},
+        children: {}
+    };
+    populateHierarchyLookups(response, data, null);
+    return data;
+}
+
+function populateHierarchyLookups(currentLevel, data, parentId) {
+    let contentId = currentLevel['railcontent_id'];
+    let children = currentLevel['children'];
+    data.parents[contentId] = parentId;
+    if (children) {
+        data.children[contentId] = children.map(child => child['railcontent_id']);
+        for (let i = 0; i < children.length; i++) {
+            populateHierarchyLookups(children[i], data, contentId);
+        }
+    } else {
+        data.children[contentId] = [];
+    }
+}
+
+
 
 /**
  *
