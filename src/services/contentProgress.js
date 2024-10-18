@@ -6,7 +6,7 @@ import {
     postRecordWatchSession
 } from "./railcontent";
 import {DataContext, ContentProgressVersionKey} from "./dataContext";
-import {fetchParentByRailContentId} from "./sanity";
+import {fetchHierarchy, fetchParentByRailContentId} from "./sanity";
 
 const STATE_STARTED = 'started';
 const STATE_COMPLETED = 'completed';
@@ -32,8 +32,8 @@ export async function getResumeTimeSeconds(contentId) {
 
 export async function contentStatusStarted(contentId) {
     await dataContext.update(
-        function (context) {
-            let data = context.data[contentId] ?? [];
+        function (localContext) {
+            let data = localContext.data[contentId] ?? [];
             let progress = data?.[DATA_KEY_PROGRESS] ?? 0;
             let status = data?.[DATA_KEY_STATUS] ?? 0;
 
@@ -42,7 +42,7 @@ export async function contentStatusStarted(contentId) {
             }
 
             data[DATA_KEY_STATUS] = status;
-            context.data[contentId] = data;
+            localContext.data[contentId] = data;
         },
         async function () {
             return postContentStarted(contentId);
@@ -52,11 +52,11 @@ export async function contentStatusStarted(contentId) {
 
 export async function contentStatusCompleted(contentId) {
     await dataContext.update(
-        function (context) {
-            let data = context.data[contentId] ?? [];
+        function (localContext) {
+            let data = localContext.data[contentId] ?? [];
 
             data[DATA_KEY_STATUS] = STATE_COMPLETED;
-            context.data[contentId] = data;
+            localContext.data[contentId] = data;
         },
         async function () {
             return postContentCompleted(contentId);
@@ -65,10 +65,10 @@ export async function contentStatusCompleted(contentId) {
 
 export async function contentStatusReset(contentId) {
     await dataContext.update(
-        function (context) {
-            const index = context.data.indexOf(contentId);
+        function (localContext) {
+            const index = localContext.data.indexOf(contentId);
             if (index > -1) { // only splice array when item is found
-                context.data.splice(index, 1); // 2nd parameter means remove one item only
+                localContext.data.splice(index, 1); // 2nd parameter means remove one item only
             }
         },
         async function () {
@@ -88,9 +88,9 @@ export async function recordWatchSession({
                                              contentId = null
                                          }) {
     await dataContext.update(
-        function (context) {
+        async function (localContext) {
             if (contentId) {
-                let data = context.data[contentId] ?? [];
+                let data = localContext.data[contentId] ?? [];
                 let progress = data?.[DATA_KEY_PROGRESS] ?? 0;
                 let status = data?.[DATA_KEY_STATUS] ?? 0;
 
@@ -102,11 +102,10 @@ export async function recordWatchSession({
                 data[DATA_KEY_PROGRESS] = progress;
                 data[DATA_KEY_STATUS] = status;
                 data[DATA_KEY_RESUME_TIME] = watchPositionSeconds;
-                context.data[contentId] = data;
+                localContext.data[contentId] = data;
 
-                let hierarchy = fetchFullContentHeirarchy();
-
-
+                let hierarchy = await fetchHierarchy(contentId);
+                bubbleProgress(hierarchy, contentId, localContext);
             }
         },
         async function () {
@@ -122,5 +121,22 @@ export async function recordWatchSession({
             });
         }
     );
+}
+
+function bubbleProgress(hierarchy, contentId, localContext) {
+    let parentId = hierarchy.parents[contentId];
+    if (!parentId) return;
+    let data = localContext.data[parentId] ?? [];
+    let progress = data[DATA_KEY_PROGRESS];
+    let status = data[DATA_KEY_STATUS];
+    if (status !== STATE_COMPLETED && progress !== 100) {
+        let childProgress = hierarchy.children[parentId].map(function (childId) {
+            return localContext.data[childId]?.[DATA_KEY_PROGRESS] ?? 0;
+        });
+        progress = Math.round(childProgress.reduce((a, b) => a + b, 0) / childProgress.length);
+        data[DATA_KEY_PROGRESS] = progress;
+        localContext.data[parentId] = data;
+    }
+    bubbleProgress(hierarchy, parentId, localContext);
 }
 

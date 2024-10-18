@@ -79,7 +79,7 @@ export class DataContext {
     async update(localUpdateFunction, serverUpdateFunction) {
         await this.ensureLocalContextLoaded();
         if (this.context) {
-            localUpdateFunction(this.context);
+            await localUpdateFunction(this.context);
             this.context.version++;
             let data = JSON.stringify(this.context);
             cache.setItem(this.localStorageKey, data);

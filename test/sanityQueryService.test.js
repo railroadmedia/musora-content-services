@@ -2,6 +2,7 @@ import {initializeService} from '../src/services/config.js';
 import {getFieldsForContentType} from "../src/contentTypeConfig";
 import {fetchSanity} from "../src/services/sanity";
 import {log} from './log.js';
+import {LocalStorageMock} from "./localStorageMock";
 
 const {
     fetchSongById,
@@ -49,20 +50,25 @@ const {
     processMetadata,
 } = require('../src/contentMetaData.js');
 
+export function initializeTestService(){
+    const config = {
+        sanityConfig: {
+            token: process.env.SANITY_API_TOKEN,
+            projectId: process.env.SANITY_PROJECT_ID,
+            dataset: process.env.SANITY_DATASET,
+            useCachedAPI: process.env.SANITY_USE_CACHED_API === 'true' || true,
+            version: '2021-06-07',
+            debug: process.env.DEBUG === 'true' || false,
+            useDummyRailContentMethods: true,
+        },
+        localStorage:  new LocalStorageMock()
+    };
+    initializeService(config);
+}
+
 describe('Sanity Queries', function () {
     beforeEach(() => {
-        const config = {
-            sanityConfig: {
-                token: process.env.SANITY_API_TOKEN,
-                projectId: process.env.SANITY_PROJECT_ID,
-                dataset: process.env.SANITY_DATASET,
-                useCachedAPI: process.env.SANITY_USE_CACHED_API === 'true' || true,
-                version: '2021-06-07',
-                debug: process.env.DEBUG === 'true' || false,
-                useDummyRailContentMethods: true,
-            }
-        };
-        initializeService(config);
+        initializeTestService();
     });
 
     test('fetchSongById', async () => {
