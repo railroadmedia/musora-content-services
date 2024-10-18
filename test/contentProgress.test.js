@@ -1,5 +1,4 @@
 import {getProgressPercentage, dataContext, recordWatchSession} from "../src/services/contentProgress";
-import {initializeService} from "../src";
 import {initializeTestService} from "./sanityQueryService.test";
 
 const railContentModule = require('../src/services/railcontent.js')
