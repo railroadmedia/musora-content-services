@@ -135,7 +135,7 @@ let contentTypeConfig = {
         ],
         'slug':'courses',
     },
-    'course-download': {
+    'parent-download': {
         'fields': [
             '"lesson_count": child_count',
             '"instructors": instructor[]->name',

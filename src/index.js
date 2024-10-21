@@ -74,7 +74,7 @@ import {
 	fetchUpcomingEvents,
 	fetchWorkouts,
 	getSortOrder,
-	fetchCourseOverviewForDownload,
+	fetchParentForDownload,
 } from './services/sanity.js';
 
 export {
@@ -142,5 +142,5 @@ export {
 	postChallengesSetStartDate,
 	postChallengesUnlock,
 	unlikeContent,
-	fetchCourseOverviewForDownload,
+	fetchParentForDownload,
 };

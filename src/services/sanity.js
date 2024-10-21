@@ -1217,14 +1217,14 @@ export async function fetchCourseOverview(id) {
  * @returns {Promise<Object|null>} - The course information and lessons or null if not found.
  *
  * @example
- * fetchCourseOverviewForDownload('course123')
+ * fetchParentForDownload('course123')
  *   .then(course => console.log(course))
  *   .catch(error => console.error(error));
  */
-export async function fetchCourseOverviewForDownload(id) {
+export async function fetchParentForDownload(id) {
   const query = buildRawQuery(
     `railcontent_id == ${id}`,
-    getFieldsForContentType('course-download'),
+    getFieldsForContentType('parent-download'),
     {
       isSingle: true,
     },
