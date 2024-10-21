@@ -556,6 +556,20 @@ describe('Sanity Queries', function () {
         expect(response.nextLesson).toBeDefined();
         expect(documentPublishedOn.getTime()).toBeLessThan(nextDocumentPublishedOn.getTime());
     });
+    test('fetchNextPreviousLesson-Song', async () => {
+        const id = 411128;
+        const response = await fetchNextPreviousLesson(id);
+        expect(response.prevLesson).toBeDefined();
+        expect(response.nextLesson).toBeDefined();
+    });
+    test('fetchNextPreviousLesson-Last-Lesson-From-Course', async () => {
+        const id = 410432;
+        const response = await fetchNextPreviousLesson(id);
+        log(response);
+        expect(response.prevLesson).toBeDefined();
+        expect(response.nextLesson).toBeDefined();
+        expect(response.nextLesson).toBeNull();
+    });
 
 });
 

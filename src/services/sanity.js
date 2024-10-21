@@ -833,11 +833,12 @@ export async function fetchMethodNextLesson(railcontentId, methodId) {
 export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
     const sortedChildren = await fetchMethodChildrenIds(methodId);
     const index = sortedChildren.indexOf(Number(railcontentId));
-    let nextId = sortedChildren[index + 1];
-    let previousId = sortedChildren[index  -1];
-    let nextPrev = await fetchByRailContentIds([nextId, previousId]);
-    const nextLesson = nextPrev.find((elem) => {return elem['id'] === nextId});
-    const prevLesson = nextPrev.find((elem) => {return elem['id'] === previousId});
+    let nextId = index < sortedChildren.length - 1 ? sortedChildren[index + 1] : null;
+    let previousId = index > 0 ? sortedChildren[index - 1] : null;
+    const idsToFetch = [nextId, previousId].filter(id => id !== null);
+    let nextPrev = await fetchByRailContentIds(idsToFetch);
+    const nextLesson = nextPrev.find((elem) => elem['id'] === nextId) || null;
+    const prevLesson = nextPrev.find((elem) => elem['id'] === previousId) || null;
     return {nextLesson, prevLesson};
 }
 
@@ -886,7 +887,7 @@ function getChildrenToDepth(parent, depth = 1)
 */
 export async function fetchNextPreviousLesson(railcontentId) {
     const document = await fetchLessonContent(railcontentId);
-    if (document.parent_content_data && document.parent_content_data.length > 0) {
+    if (document?.parent_content_data && document?.parent_content_data.length > 0) {
         const lastElement = document.parent_content_data[document.parent_content_data.length - 1];
         const results = await fetchMethodPreviousNextLesson(railcontentId, lastElement.id);
         return results;
@@ -895,17 +896,29 @@ export async function fetchNextPreviousLesson(railcontentId) {
     let sortBy = processedData?.sortBy ?? 'published_on';
     const isDesc = sortBy.startsWith('-');
     sortBy = isDesc ? sortBy.substring(1) : sortBy;
-    const sortValue = document[sortBy];
+
+    const sortValue = sortBy == 'slug' ? document['slug'].current : document[sortBy];
+    sortBy = sortBy == 'slug' ? 'slug.current' : sortBy;
     const isNumeric = !isNaN(sortValue);
+
     let prevComparison = isNumeric ? `${sortBy} <= ${sortValue}` : `${sortBy} <= "${sortValue}"`;
     let nextComparison = isNumeric ? `${sortBy} >= ${sortValue}` : `${sortBy} >= "${sortValue}"`;
+    if (document.type === 'song') {
+        const artistRef = `references(^.artist->_id)`;
+        const genreRef = `references(^.genre[]->_id)` ;
+
+        const conditions = [artistRef, genreRef].filter(Boolean).join(' || ');
+
+        prevComparison = `(${conditions}) && ${sortBy} <= "${sortValue}"`;
+        nextComparison = `(${conditions}) && ${sortBy} >= "${sortValue}"`;
+    }
     const fields = getFieldsForContentType(document.type);
-    const query = `{
-      "prevLesson": *[brand == "${document.brand}" && status == "${document.status}" && _type == "${document.type}" && ${prevComparison} && railcontent_id != ${railcontentId}] | order(${sortBy} desc){${fields}}[0...1][0],
-      "nextLesson": *[brand == "${document.brand}" && status == "${document.status}" && _type == "${document.type}" && ${nextComparison} && railcontent_id != ${railcontentId}] | order(${sortBy} asc){${fields}}[0...1][0]
+    const query = `*[railcontent_id == ${railcontentId}]{
+      "prevLesson": *[brand == ^.brand && status == "${document.status}" && _type == "${document.type}" && ${prevComparison} && railcontent_id != ${railcontentId}] | order(${sortBy} desc){${fields}}[0...1][0],
+      "nextLesson": *[brand == ^.brand && status == "${document.status}" && _type == "${document.type}" && ${nextComparison} && railcontent_id != ${railcontentId}] | order(${sortBy} asc){${fields}}[0...1][0]
     }`;
 
-    return await fetchSanity(query, true);
+    return await fetchSanity(query, false);
 }
 
 /**
