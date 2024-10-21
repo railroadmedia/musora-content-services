@@ -1212,6 +1212,28 @@ export async function fetchCourseOverview(id) {
 }
 
 /**
+ * Fetch the data needed for the Course Overview screen.
+ * @param {string} id - The Railcontent ID of the course
+ * @returns {Promise<Object|null>} - The course information and lessons or null if not found.
+ *
+ * @example
+ * fetchCourseOverviewForDownload('course123')
+ *   .then(course => console.log(course))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchCourseOverviewForDownload(id) {
+  const query = buildRawQuery(
+    `railcontent_id == ${id}`,
+    getFieldsForContentType('course-download'),
+    {
+      isSingle: true,
+    },
+  );
+
+  return fetchSanity(query, false);
+}
+
+/**
  * Fetch the data needed for the coach screen.
  * @param {string} id - The Railcontent ID of the coach
  * 
