@@ -308,6 +308,11 @@ export async function postChallengesLeave(contentId) {
     return await fetchHandler(url, 'post');
 }
 
+export async function fetchUserPlaylists(currentVersion) {
+    let url = `/playlists`;
+    return fetchDataHandler(url, currentVersion);
+}
+
 function fetchAbsolute(url, params) {
     if (globalConfig.railcontentConfig.baseUrl) {
         if (url.startsWith('/')) {
