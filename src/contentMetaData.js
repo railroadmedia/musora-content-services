@@ -23,10 +23,16 @@ const commonMetadata ={
                 value: '',
             },
             {
-                name: 'Skill Level',
-                short_name: 'SKILL LEVEL',
+                name: 'Difficulty',
+                short_name: 'Difficulty',
                 is_group_by: true,
                 value: 'difficulty_string',
+            },
+            {
+                name: 'Topics',
+                short_name: 'Topics',
+                is_group_by: true,
+                value: 'topic',
             },
             {
                 name: 'Genres',
@@ -37,13 +43,11 @@ const commonMetadata ={
             {
                 name: 'Completed',
                 short_name: 'COMPLETED',
-                is_group_by: true,
                 value: 'completed'
             },
             {
                 name: 'Owned Challenges',
                 short_name: 'OWNED CHALLENGES',
-                is_group_by: true,
                 value: 'owned',
             },
         ],
@@ -891,13 +895,11 @@ const contentMetadata = {
                 {
                     name: 'Completed',
                     short_name: 'COMPLETED',
-                    is_group_by: true,
                     value: 'completed'
                 },
                 {
                     name: 'Owned Challenges',
                     short_name: 'OWNED CHALLENGES',
-                    is_group_by: true,
                     value: 'owned',
                 },
             ],
@@ -981,13 +983,11 @@ const contentMetadata = {
                 {
                     name: 'Completed',
                     short_name: 'COMPLETED',
-                    is_group_by: true,
                     value: 'completed'
                 },
                 {
                     name: 'Owned Challenges',
                     short_name: 'OWNED CHALLENGES',
-                    is_group_by: true,
                     value: 'owned',
                 },
             ],
