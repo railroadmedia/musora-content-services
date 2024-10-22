@@ -53,14 +53,25 @@ export async function contentStatusStarted(contentId) {
 export async function contentStatusCompleted(contentId) {
     await dataContext.update(
         function (localContext) {
-            let data = localContext.data[contentId] ?? [];
-
-            data[DATA_KEY_STATUS] = STATE_COMPLETED;
-            localContext.data[contentId] = data;
+            let hierarchy = fetchHierarchy(contentId);
+            completeStatusInLocalContext(contentId, localContext, hierarchy);
         },
         async function () {
             return postContentCompleted(contentId);
         });
+}
+
+function completeStatusInLocalContext(contentId, localContext, hierarchy) {
+    let data = localContext.data[contentId] ?? [];
+    data[DATA_KEY_STATUS] = STATE_COMPLETED;
+    data[DATA_KEY_PROGRESS] = 100;
+    localContext.data[contentId] = data;
+
+    let children = hierarchy.children[contentId] ?? [];
+    for(let i = 0; i < children.length; i++) {
+        let childId  = children[i];
+        completeStatusInLocalContext(childId, localContext, hierarchy);
+    }
 }
 
 export async function contentStatusReset(contentId) {
