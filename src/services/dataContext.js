@@ -23,7 +23,7 @@ export class DataContext {
     }
 
     async getData() {
-        this.ensureLocalContextLoaded();
+        await this.ensureLocalContextLoaded();
         if (!this.context || this.shouldVerifyServerVerions()) {
             let version = this.version();
             let data = await this.fetchData(version);
@@ -74,7 +74,7 @@ export class DataContext {
     }
 
     async update(localUpdateFunction, serverUpdateFunction) {
-        this.ensureLocalContextLoaded();
+        await this.ensureLocalContextLoaded();
         if (this.context) {
             localUpdateFunction(this.context);
             this.context.version++;
