@@ -9,7 +9,7 @@ describe('commentLikesDataContext', function () {
     const testVersion = 1;
 
     beforeEach(() => {
-        initializeService({localStorage: new LocalStorageMock()});
+        initializeService({localStorage: new LocalStorageMock(), isMA: false});
         mock = jest.spyOn(dataContext, 'fetchData');
         var json = JSON.parse(`{"version":${testVersion},"data":[308516,308515,308514,308518]}`);
         mock.mockImplementation(() => json);
