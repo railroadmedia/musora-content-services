@@ -12,6 +12,11 @@ import {
 } from './services/contentLikes.js';
 
 import {
+	addItemToPlaylist,
+	createPlaylist
+} from './services/playlists.js';
+
+import {
 	fetchAllCompletedStates,
 	fetchChallengeMetadata,
 	fetchCompletedContent,
@@ -23,6 +28,7 @@ import {
 	fetchUserAward,
 	fetchUserChallengeProgress,
 	fetchUserPermissions,
+	fetchUserPlaylists,
 	postChallengesEnroll,
 	postChallengesLeave,
 	postChallengesSetStartDate,
@@ -78,6 +84,8 @@ import {
 
 declare module 'musora-content-services' {
 	export {
+		addItemToPlaylist,
+		createPlaylist,
 		fetchAll,
 		fetchAllCompletedStates,
 		fetchAllFilterOptions,
@@ -131,6 +139,7 @@ declare module 'musora-content-services' {
 		fetchUserAward,
 		fetchUserChallengeProgress,
 		fetchUserPermissions,
+		fetchUserPlaylists,
 		fetchWorkouts,
 		getSortOrder,
 		globalConfig,

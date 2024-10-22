@@ -1,4 +1,5 @@
 import {PlaylistsContext, ContentVersionKey} from "./playlistsContext";
+import {fetchUserPlaylists} from "./railcontent";
 
 /**
  * Exported functions that are excluded from index generation.
@@ -7,7 +8,7 @@ import {PlaylistsContext, ContentVersionKey} from "./playlistsContext";
  */
 const excludeFromGeneratedIndex = [];
 
-export let playlistsContext = new PlaylistsContext(ContentVersionKey, fetchUserLikes);
+export let playlistsContext = new PlaylistsContext(ContentVersionKey, fetchUserPlaylists);
 export async function createPlaylist() {
 
 }

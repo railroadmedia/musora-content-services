@@ -12,6 +12,11 @@ import {
 } from './services/contentLikes.js';
 
 import {
+	addItemToPlaylist,
+	createPlaylist
+} from './services/playlists.js';
+
+import {
 	fetchAllCompletedStates,
 	fetchChallengeMetadata,
 	fetchCompletedContent,
@@ -23,6 +28,7 @@ import {
 	fetchUserAward,
 	fetchUserChallengeProgress,
 	fetchUserPermissions,
+	fetchUserPlaylists,
 	postChallengesEnroll,
 	postChallengesLeave,
 	postChallengesSetStartDate,
@@ -77,6 +83,8 @@ import {
 } from './services/sanity.js';
 
 export {
+	addItemToPlaylist,
+	createPlaylist,
 	fetchAll,
 	fetchAllCompletedStates,
 	fetchAllFilterOptions,
@@ -130,6 +138,7 @@ export {
 	fetchUserAward,
 	fetchUserChallengeProgress,
 	fetchUserPermissions,
+	fetchUserPlaylists,
 	fetchWorkouts,
 	getSortOrder,
 	globalConfig,

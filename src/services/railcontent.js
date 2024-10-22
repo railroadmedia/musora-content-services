@@ -309,7 +309,7 @@ export async function postChallengesLeave(contentId) {
 }
 
 export async function fetchUserPlaylists(currentVersion) {
-    let url = `/playlists`;
+    let url = `/playlists/all`;
     return fetchDataHandler(url, currentVersion);
 }
 
