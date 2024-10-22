@@ -238,14 +238,22 @@ async function fetchDataHandler(url, dataVersion, method = "get") {
     return fetchHandler(url, method, dataVersion);
 }
 
-export async function fetchHandler(url, method = "get", dataVersion = null) {
-    let headers = {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
-    };
-    if (dataVersion) headers['Data-Version'] = dataVersion;
+async function postDataHandler(url, data) {
+    return fetchHandler(url, 'post', data);
+}
+
+export async function fetchHandler(url, method = "get", dataVersion = null, data = null) {
     try {
-        const response = await fetchAbsolute(url, {method, headers});
+        let headers = {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+        };
+        if (dataVersion) headers['Data-Version'] = dataVersion;
+        let inits = {method, headers};
+        if (data) {
+            inits['body'] = data;
+        }
+        const response = await fetchAbsolute(url, inits);
         const result = await response.json();
         if (result) {
             return result;
@@ -265,12 +273,40 @@ export async function fetchUserLikes(currentVersion) {
 
 export async function postContentLiked(contentId) {
     let url = `/content/user/likes/like/${contentId}`;
-    return await fetchHandler(url, "post");
+    return await postDataHandler(url);
 }
 
 export async function postContentUnliked(contentId) {
     let url = `/content/user/likes/unlike/${contentId}`;
-    return await fetchHandler(url, "post");
+    return await postDataHandler(url);
+}
+
+export async function fetchContentProgress(currentVersion) {
+    let url = `/content/user/progress/all`;
+    return fetchDataHandler(url, currentVersion);
+}
+
+export async function postRecordWatchSession({
+                                                mediaId,
+                                                mediaType,
+                                                mediaCategory,
+                                                watchPosition,
+                                                totalDuration,
+                                                sessionToken,
+                                                brand,
+                                                contentId = null
+                                            }) {
+    let url = `/railtracker/media-playback-session`;
+    return postDataHandler(url, {
+        mediaId,
+        mediaType,
+        mediaCategory,
+        watchPosition,
+        totalDuration,
+        sessionToken,
+        brand,
+        contentId
+    });
 }
 
 export async function fetchChallengeMetadata(contentId) {
@@ -323,6 +359,20 @@ export async function postChallengesCommunityNotification(contentId) {
     return await fetchHandler(url, 'post');
 }
 
+export async function postContentStarted(contentId) {
+    let url = `/content/${contentId}/started`;
+    return postDataHandler(url);
+}
+
+export async function postContentCompleted(contentId) {
+    let url = `/content/${contentId}/completed`;
+    return postDataHandler(url);
+}
+
+export async function postContentReset(contentId) {
+    let url = `/content/${contentId}/reset`;
+    return postDataHandler(url);
+}
 
 
 function fetchAbsolute(url, params) {

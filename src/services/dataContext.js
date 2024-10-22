@@ -8,7 +8,8 @@ import {globalConfig} from "./config";
 const excludeFromGeneratedIndex = [];
 
 //These constants need to match MWP UserDataVersionKeyEnum enum
-export const ContentVersionKey = 0;
+export const ContentLikesVersionKey = 0;
+export const ContentProgressVersionKey = 1;
 
 let cache = null;
 
@@ -78,7 +79,7 @@ export class DataContext {
     async update(localUpdateFunction, serverUpdateFunction) {
         await this.ensureLocalContextLoaded();
         if (this.context) {
-            localUpdateFunction(this.context);
+            await localUpdateFunction(this.context);
             this.context.version++;
             let data = JSON.stringify(this.context);
             cache.setItem(this.localStorageKey, data);
