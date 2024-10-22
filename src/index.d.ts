@@ -73,7 +73,8 @@ import {
 	fetchSongFilterOptions,
 	fetchUpcomingEvents,
 	fetchWorkouts,
-	getSortOrder
+	getSortOrder,
+	fetchParentForDownload,
 } from './services/sanity.js';
 
 declare module 'musora-content-services' {
@@ -142,5 +143,6 @@ declare module 'musora-content-services' {
 		postChallengesSetStartDate,
 		postChallengesUnlock,
 		unlikeContent,
+		fetchParentForDownload,
 	}
 }

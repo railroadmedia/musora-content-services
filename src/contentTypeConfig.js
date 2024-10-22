@@ -135,6 +135,49 @@ let contentTypeConfig = {
         ],
         'slug':'courses',
     },
+    'parent-download': {
+        'fields': [
+            '"lesson_count": child_count',
+            '"instructors": instructor[]->name',
+            `"description": ${descriptionField}`,
+            'resource',
+            'xp',
+            'total_xp',
+            `"lessons": child[]->{
+                "id": railcontent_id,
+                title,
+                published_on,
+                "type":_type,
+                "image": thumbnail.asset->url,
+                "instructors": instructor[]->name,
+                length_in_seconds,
+                "resources": resource, 
+                difficulty, 
+                difficulty_string,
+                artist->,
+                "thumbnail_url":thumbnail.asset->url,
+                "description": description[0].children[0].text,
+                "chapters": chapter[]{
+                    chapter_description,
+                    chapter_timecode,
+                    "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
+                },
+                "instructors":instructor[]->name,
+                "instructor": instructor[]->{
+                    "id":railcontent_id,
+                    name,
+                    short_bio,
+                    "biography": short_bio[0].children[0].text, 
+                    web_url_path,
+                    "coach_card_image": coach_card_image.asset->url,
+                    "coach_profile_image":thumbnail_url.asset->url
+                },
+                ${assignmentsField}
+                video,
+                parent_content_data,
+            }`,
+        ],
+    },
     'method': {
         'fields': [
             `"description": ${descriptionField}`,
