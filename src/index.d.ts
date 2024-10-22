@@ -13,6 +13,7 @@ import {
 
 import {
 	fetchAllCompletedStates,
+	fetchChallengeLessonData,
 	fetchChallengeMetadata,
 	fetchCompletedContent,
 	fetchCompletedState,
@@ -23,7 +24,9 @@ import {
 	fetchUserAward,
 	fetchUserChallengeProgress,
 	fetchUserPermissions,
+	postChallengesCommunityNotification,
 	postChallengesEnroll,
+	postChallengesEnrollmentNotification,
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock
@@ -90,6 +93,7 @@ declare module 'musora-content-services' {
 		fetchByRailContentIds,
 		fetchByReference,
 		fetchCatalogMetadata,
+		fetchChallengeLessonData,
 		fetchChallengeMetadata,
 		fetchChallengeOverview,
 		fetchChildren,
@@ -138,7 +142,9 @@ declare module 'musora-content-services' {
 		initializeService,
 		isContentLiked,
 		likeContent,
+		postChallengesCommunityNotification,
 		postChallengesEnroll,
+		postChallengesEnrollmentNotification,
 		postChallengesLeave,
 		postChallengesSetStartDate,
 		postChallengesUnlock,
