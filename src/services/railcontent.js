@@ -238,14 +238,21 @@ async function fetchDataHandler(url, dataVersion, method = "get") {
     return fetchHandler(url, method, dataVersion);
 }
 
-export async function fetchHandler(url, method = "get", dataVersion = null) {
+export async function fetchHandler(url, method = "get", dataVersion = null, body = null) {
     let headers = {
         'Content-Type': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
     };
     if (dataVersion) headers['Data-Version'] = dataVersion;
+    const options = {
+        method,
+        headers,
+    };
+    if (body) {
+        options.body = JSON.stringify(body);
+    }
     try {
-        const response = await fetchAbsolute(url, {method, headers});
+        const response = await fetchAbsolute(url, options);
         const result = await response.json();
         if (result) {
             return result;
@@ -308,9 +315,46 @@ export async function postChallengesLeave(contentId) {
     return await fetchHandler(url, 'post');
 }
 
-export async function fetchUserPlaylists(currentVersion) {
-    let url = `/playlists/all`;
-    return fetchDataHandler(url, currentVersion);
+/**
+ * Fetches user playlists for a specific brand.
+ *
+ * It allows optional pagination and sorting parameters to control the result set.
+ *
+ * @param {string} brand - The brand identifier for which playlists are being fetched.
+ * @param {number} [params.limit=10] - The maximum number of playlists to return per page (default is 10).
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {number} [params.sort='-created_at'] - The sorting order for the playlists (default is by created_at in descending order).
+ *
+ * @returns {Promise<Object|null>} - A promise that resolves to the response from the API, containing the user playlists data.
+ *
+ * @example
+ * fetchUserPlaylists('drumeo', { page: 1, sort: 'name' })
+ *   .then(playlists => console.log(playlists))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchUserPlaylists(brand, {page, limit, sort} = {}) {
+    let url;
+    const limitString = limit ? `&limit=${limit}` : '';
+    const pageString = page ? `&page=${page}` : '';
+    url = `/playlists/all?brand=${brand}${limitString}${pageString}`;
+    return await fetchHandler(url);
+}
+
+export async function postDuplicatePlaylist(playlistId) {
+    let url = `/playlists/duplicate`;
+    const payload = { playlist_id: playlistId };
+    return await fetchHandler(url, "post",null, payload);
+}
+
+export async function deletePlaylist(playlistId) {
+    let url = `/playlists/playlist`;
+    const payload = { playlist_id: playlistId };
+    return await fetchHandler(url, "delete",  null, payload);
+}
+
+export async function updatePlaylist(playlistId, updatedData) {
+    const url = `/playlists/playlist/${playlistId}`;
+    return await fetchHandler(url, "PUT", null, updatedData);
 }
 
 function fetchAbsolute(url, params) {
