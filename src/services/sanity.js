@@ -961,7 +961,8 @@ export async function fetchLessonContent(railContentId) {
           mp3_yes_drums_yes_click_url,
           "permission_id": permission[]->railcontent_id,
           parent_content_data,
-          sort`;
+          sort,
+          xp`;
     const query = buildQuery(
         `railcontent_id == ${railContentId}`,
         filterParams,
