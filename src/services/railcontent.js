@@ -357,6 +357,28 @@ export async function updatePlaylist(playlistId, updatedData) {
     return await fetchHandler(url, "PUT", null, updatedData);
 }
 
+export async function createPlaylist(playlistData) {
+    const url = `/playlists/playlist`;
+    return await fetchHandler(url, "POST", null, playlistData);
+}
+
+export async function likePlaylist(playlistId) {
+    const url = `/playlists/playlist/like`;
+    const payload = { playlist_id: playlistId };
+    return await fetchHandler(url, "PUT", null, payload);
+}
+
+export async function deletePlaylistLike(playlistId) {
+    const url = `/playlists/like`;
+    const payload = { playlist_id: playlistId };
+    return await fetchHandler(url, "DELETE", null, payload);
+}
+
+export async function fetchPlaylist(playlistId) {
+    const url = `/playlists/playlist?playlist_id=${playlistId}`;
+    return await fetchHandler(url, "GET");
+}
+
 function fetchAbsolute(url, params) {
     if (globalConfig.railcontentConfig.baseUrl) {
         if (url.startsWith('/')) {

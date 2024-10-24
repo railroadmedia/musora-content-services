@@ -12,11 +12,9 @@ import {
 } from './services/contentLikes.js';
 
 import {
-	addItemToPlaylist,
-	createPlaylist
-} from './services/playlists.js';
-
-import {
+	createPlaylist,
+	deletePlaylist,
+	deletePlaylistLike,
 	fetchAllCompletedStates,
 	fetchChallengeMetadata,
 	fetchCompletedContent,
@@ -24,15 +22,19 @@ import {
 	fetchContentInProgress,
 	fetchContentPageUserData,
 	fetchHandler,
+	fetchPlaylist,
 	fetchSongsInProgress,
 	fetchUserAward,
 	fetchUserChallengeProgress,
 	fetchUserPermissions,
 	fetchUserPlaylists,
+	likePlaylist,
 	postChallengesEnroll,
 	postChallengesLeave,
 	postChallengesSetStartDate,
-	postChallengesUnlock
+	postChallengesUnlock,
+	postDuplicatePlaylist,
+	updatePlaylist
 } from './services/railcontent.js';
 
 import {
@@ -83,8 +85,9 @@ import {
 } from './services/sanity.js';
 
 export {
-	addItemToPlaylist,
 	createPlaylist,
+	deletePlaylist,
+	deletePlaylistLike,
 	fetchAll,
 	fetchAllCompletedStates,
 	fetchAllFilterOptions,
@@ -123,6 +126,7 @@ export {
 	fetchPackChildren,
 	fetchPackData,
 	fetchParentByRailContentId,
+	fetchPlaylist,
 	fetchRelatedLessons,
 	fetchRelatedMethodLessons,
 	fetchRelatedSongs,
@@ -145,9 +149,12 @@ export {
 	initializeService,
 	isContentLiked,
 	likeContent,
+	likePlaylist,
 	postChallengesEnroll,
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock,
+	postDuplicatePlaylist,
 	unlikeContent,
+	updatePlaylist,
 };

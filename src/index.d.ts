@@ -12,11 +12,9 @@ import {
 } from './services/contentLikes.js';
 
 import {
-	addItemToPlaylist,
-	createPlaylist
-} from './services/playlists.js';
-
-import {
+	createPlaylist,
+	deletePlaylist,
+	deletePlaylistLike,
 	fetchAllCompletedStates,
 	fetchChallengeMetadata,
 	fetchCompletedContent,
@@ -24,15 +22,19 @@ import {
 	fetchContentInProgress,
 	fetchContentPageUserData,
 	fetchHandler,
+	fetchPlaylist,
 	fetchSongsInProgress,
 	fetchUserAward,
 	fetchUserChallengeProgress,
 	fetchUserPermissions,
 	fetchUserPlaylists,
+	likePlaylist,
 	postChallengesEnroll,
 	postChallengesLeave,
 	postChallengesSetStartDate,
-	postChallengesUnlock
+	postChallengesUnlock,
+	postDuplicatePlaylist,
+	updatePlaylist
 } from './services/railcontent.js';
 
 import {
@@ -84,8 +86,9 @@ import {
 
 declare module 'musora-content-services' {
 	export {
-		addItemToPlaylist,
 		createPlaylist,
+		deletePlaylist,
+		deletePlaylistLike,
 		fetchAll,
 		fetchAllCompletedStates,
 		fetchAllFilterOptions,
@@ -124,6 +127,7 @@ declare module 'musora-content-services' {
 		fetchPackChildren,
 		fetchPackData,
 		fetchParentByRailContentId,
+		fetchPlaylist,
 		fetchRelatedLessons,
 		fetchRelatedMethodLessons,
 		fetchRelatedSongs,
@@ -146,10 +150,13 @@ declare module 'musora-content-services' {
 		initializeService,
 		isContentLiked,
 		likeContent,
+		likePlaylist,
 		postChallengesEnroll,
 		postChallengesLeave,
 		postChallengesSetStartDate,
 		postChallengesUnlock,
+		postDuplicatePlaylist,
 		unlikeContent,
+		updatePlaylist,
 	}
 }
