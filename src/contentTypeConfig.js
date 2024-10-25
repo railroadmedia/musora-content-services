@@ -143,6 +143,7 @@ let contentTypeConfig = {
             'resource',
             'xp',
             'total_xp',
+            '"thumbnail_url":thumbnail.asset->url',
             `"lessons": child[]->{
                 "id": railcontent_id,
                 title,
