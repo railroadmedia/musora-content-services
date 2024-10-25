@@ -20,6 +20,11 @@ describe('commentLikesDataContext', function () {
         expect(result).toBe(true);
     });
 
+    test('contentLikedStringInput', async () => {
+        let result = await isContentLiked("308516");
+        expect(result).toBe(true);
+    });
+
     test('contentNotLiked', async () => {
         let result = await isContentLiked(121111);
         expect(result).toBe(false);
