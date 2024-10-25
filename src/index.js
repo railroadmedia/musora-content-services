@@ -15,6 +15,7 @@ import {
 	createPlaylist,
 	deletePlaylist,
 	deletePlaylistLike,
+	duplicatePlaylist,
 	fetchAllCompletedStates,
 	fetchChallengeMetadata,
 	fetchCompletedContent,
@@ -23,6 +24,7 @@ import {
 	fetchContentPageUserData,
 	fetchHandler,
 	fetchPlaylist,
+	fetchPlaylistItems,
 	fetchSongsInProgress,
 	fetchUserAward,
 	fetchUserChallengeProgress,
@@ -33,7 +35,6 @@ import {
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock,
-	postDuplicatePlaylist,
 	updatePlaylist
 } from './services/railcontent.js';
 
@@ -88,6 +89,7 @@ export {
 	createPlaylist,
 	deletePlaylist,
 	deletePlaylistLike,
+	duplicatePlaylist,
 	fetchAll,
 	fetchAllCompletedStates,
 	fetchAllFilterOptions,
@@ -127,6 +129,7 @@ export {
 	fetchPackData,
 	fetchParentByRailContentId,
 	fetchPlaylist,
+	fetchPlaylistItems,
 	fetchRelatedLessons,
 	fetchRelatedMethodLessons,
 	fetchRelatedSongs,
@@ -154,7 +157,6 @@ export {
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock,
-	postDuplicatePlaylist,
 	unlikeContent,
 	updatePlaylist,
 };

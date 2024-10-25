@@ -15,6 +15,7 @@ import {
 	createPlaylist,
 	deletePlaylist,
 	deletePlaylistLike,
+	duplicatePlaylist,
 	fetchAllCompletedStates,
 	fetchChallengeMetadata,
 	fetchCompletedContent,
@@ -23,6 +24,7 @@ import {
 	fetchContentPageUserData,
 	fetchHandler,
 	fetchPlaylist,
+	fetchPlaylistItems,
 	fetchSongsInProgress,
 	fetchUserAward,
 	fetchUserChallengeProgress,
@@ -33,7 +35,6 @@ import {
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock,
-	postDuplicatePlaylist,
 	updatePlaylist
 } from './services/railcontent.js';
 
@@ -89,6 +90,7 @@ declare module 'musora-content-services' {
 		createPlaylist,
 		deletePlaylist,
 		deletePlaylistLike,
+		duplicatePlaylist,
 		fetchAll,
 		fetchAllCompletedStates,
 		fetchAllFilterOptions,
@@ -128,6 +130,7 @@ declare module 'musora-content-services' {
 		fetchPackData,
 		fetchParentByRailContentId,
 		fetchPlaylist,
+		fetchPlaylistItems,
 		fetchRelatedLessons,
 		fetchRelatedMethodLessons,
 		fetchRelatedSongs,
@@ -155,7 +158,6 @@ declare module 'musora-content-services' {
 		postChallengesLeave,
 		postChallengesSetStartDate,
 		postChallengesUnlock,
-		postDuplicatePlaylist,
 		unlikeContent,
 		updatePlaylist,
 	}
