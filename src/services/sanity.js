@@ -644,6 +644,7 @@ export async function fetchAllFilterOptions(
   const metaData = processMetadata(brand, contentType, true);
   const allowableFilters = metaData?.allowableFilters || [];
   const tabs = metaData?.tabs || [];
+  const catalogName = metaData?.shortname || metaData?.name;
 
   const dynamicFilterOptions = allowableFilters.map(filter => getFilterOptions(filter, constructCommonFilter(filter), contentType, brand)).join(' ');
 
@@ -660,7 +661,7 @@ export async function fetchAllFilterOptions(
 
   const results = await fetchSanity(query, true, { processNeedAccess: false });
 
-  return includeTabs ? { ...results, tabs } : results;
+  return includeTabs ? { ...results, tabs, catalogName } : results;
 }
 
 

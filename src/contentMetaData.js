@@ -165,8 +165,10 @@ const commonMetadata ={
             sortBy: '-published_on',
     },
     'workout': {
+        name: "Workouts",
+        shortname: 'Workouts',
         allowableFilters: ['difficulty', 'genre', 'topic'],
-            tabs: [
+        tabs: [
             {
                 name: 'All',
                 short_name: 'ALL',
@@ -1071,6 +1073,8 @@ const contentMetadata = {
             }
         },
         'workout': {
+            name: "Workouts",
+            shortname: 'Workouts',
             tabs: [
                 {
                     name: 'All',
