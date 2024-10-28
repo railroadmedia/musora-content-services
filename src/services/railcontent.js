@@ -474,7 +474,7 @@ export async function createPlaylist(playlistData) {
  *   .catch(error => console.error('Error liking playlist:', error));
  */
 export async function likePlaylist(playlistId) {
-    const url = `/playlists/playlist/like`;
+    const url = `/playlists/like`;
     const payload = { playlist_id: playlistId };
     return await fetchHandler(url, "PUT", null, payload);
 }
