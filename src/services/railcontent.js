@@ -344,29 +344,33 @@ export async function fetchUserPlaylists(brand, {page, limit, sort} = {}) {
  * Duplicates an existing playlist by sending a POST request to the API.
  *
  * This function calls the `/playlists/duplicate` endpoint, where the server replicates the specified playlist,
- * including its items. Optionally, new name, description, category, or thumbnail_url parameters can be provided
- * to customize the duplicated playlist. If new name is not provided, the server appends " (Duplicate)" to the original name.
+ * including its items. Optionally, new `name`, `description`, `category`, or `thumbnail_url` parameters can be provided
+ * to customize the duplicated playlist. If a new name is not provided, the server appends " (Duplicate)" to the original name.
  *
  * @param {string|number} playlistId - The unique identifier of the playlist to be duplicated.
+ * @param {Object} [playlistData] - Optional data to customize the duplicated playlist.
+ * @param {string} [playlistData.name] - New name for the duplicated playlist (default is original name + " (Duplicate)").
+ * @param {string} [playlistData.description] - New description for the duplicated playlist (defaults to original description).
+ * @param {string} [playlistData.category] - New category for the duplicated playlist (defaults to original category).
+ * @param {string} [playlistData.thumbnail_url] - New URL for the duplicated playlist thumbnail (defaults to original thumbnail).
  *
  * @returns {Promise<Object>} - A promise that resolves to the duplicated playlist data, or rejects with an error if the duplication fails.
  *
  * The duplicated playlist contains:
- *  - `name`: Name of the new playlist (original name + " (Duplicate)" if not specified).
- *  - `description`: Description of the duplicated playlist (same as original if not specified).
- *  - `category`: Category of the duplicated playlist (same as original if not specified).
- *  - `thumbnail_url`: URL of the playlist thumbnail (same as original if not specified).
- *  - `items`: A list of items (songs, tracks, etc.) copied from the original playlist.
+ *  - `name` (string): Name of the new playlist.
+ *  - `description` (string|null): Description of the duplicated playlist.
+ *  - `category` (string|null): Category of the duplicated playlist.
+ *  - `thumbnail_url` (string|null): URL of the playlist thumbnail.
+ *  - `items` (Array): A list of items (e.g., songs, tracks) copied from the original playlist.
  *
  * @example
- * postDuplicatePlaylist(12345)
+ * duplicatePlaylist(12345, { name: "My New Playlist" })
  *   .then(duplicatedPlaylist => console.log(duplicatedPlaylist))
  *   .catch(error => console.error('Error duplicating playlist:', error));
  */
-export async function duplicatePlaylist(playlistId) {
-    let url = `/playlists/duplicate`;
-    const payload = { playlist_id: playlistId };
-    return await fetchHandler(url, "post",null, payload);
+export async function duplicatePlaylist(playlistId, playlistData) {
+    let url = `/playlists/duplicate/${playlistId}`;
+    return await fetchHandler(url, "post",null, playlistData);
 }
 
 /**
