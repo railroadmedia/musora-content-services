@@ -103,6 +103,7 @@ let contentTypeConfig = {
             '"gold_award": gold_award.asset->url',
             '"silver_award": silver_award.asset->url',
             '"bronze_award": bronze_award.asset->url',
+            'is_solo_challenge',
             `"lessons": child[]->{
                     "id": railcontent_id,
                     title,
