@@ -318,25 +318,28 @@ export async function postChallengesLeave(contentId) {
 /**
  * Fetches user playlists for a specific brand.
  *
- * It allows optional pagination and sorting parameters to control the result set.
+ * Allows optional pagination, sorting, and search parameters to control the result set.
  *
  * @param {string} brand - The brand identifier for which playlists are being fetched.
  * @param {number} [params.limit=10] - The maximum number of playlists to return per page (default is 10).
  * @param {number} [params.page=1] - The page number for pagination.
- * @param {number} [params.sort='-created_at'] - The sorting order for the playlists (default is by created_at in descending order).
+ * @param {string} [params.sort='-created_at'] - The sorting order for the playlists (default is by created_at in descending order).
+ * @param {string} [params.searchTerm] - A search term to filter playlists by name.
  *
  * @returns {Promise<Object|null>} - A promise that resolves to the response from the API, containing the user playlists data.
  *
  * @example
- * fetchUserPlaylists('drumeo', { page: 1, sort: 'name' })
+ * fetchUserPlaylists('drumeo', { page: 1, sort: 'name', searchTerm: 'rock' })
  *   .then(playlists => console.log(playlists))
  *   .catch(error => console.error(error));
  */
-export async function fetchUserPlaylists(brand, {page, limit, sort} = {}) {
+export async function fetchUserPlaylists(brand, {page, limit, sort, searchTerm} = {}) {
     let url;
     const limitString = limit ? `&limit=${limit}` : '';
     const pageString = page ? `&page=${page}` : '';
-    url = `/playlists/all?brand=${brand}${limitString}${pageString}`;
+    const sortString = sort ? '&sort=${sort}':'';
+    const searchFilter = searchTerm ? `&term=${searchTerm}`: '';
+    url = `/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}`;
     return await fetchHandler(url);
 }
 
