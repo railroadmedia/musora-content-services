@@ -337,7 +337,7 @@ export async function fetchUserPlaylists(brand, {page, limit, sort, searchTerm} 
     let url;
     const limitString = limit ? `&limit=${limit}` : '';
     const pageString = page ? `&page=${page}` : '';
-    const sortString = sort ? '&sort=${sort}':'';
+    const sortString = sort ? `&sort=${sort}`:'';
     const searchFilter = searchTerm ? `&term=${searchTerm}`: '';
     url = `/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}`;
     return await fetchHandler(url);
