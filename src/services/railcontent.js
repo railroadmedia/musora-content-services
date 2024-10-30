@@ -549,6 +549,38 @@ export async function fetchPlaylistItems(playlistId) {
     return await fetchHandler(url, "GET");
 }
 
+/**
+ * Updates a playlist item with the provided data.
+ *
+ * @param {Object} updatedData - The data to update the playlist item with.
+ * @param {number} updatedData.user_playlist_item_id - The ID of the playlist item to update.
+ * @param {number} [updatedData.start_second] - (Optional) The start time in seconds for the item.
+ * @param {number} [updatedData.end_second] - (Optional) The end time in seconds for the item.
+ * @param {string} [updatedData.playlist_item_name] - (Optional) The new name for the playlist item.
+ * @returns {Promise<any|null>} - A promise that resolves to the response data, or null if the request fails.
+ * @throws {Error} - Throws an error if the request fails.
+ *
+ * @example
+ * const updatedData = {
+ *   user_playlist_item_id: 123,
+ *   start_second: 30,
+ *   end_second: 120,
+ *   playlist_item_name: "Updated Playlist Item Name"
+ * };
+ *
+ * updatePlaylistItem(updatedData)
+ *   .then(response => {
+ *     console.log("Playlist item updated successfully:", response);
+ *   })
+ *   .catch(error => {
+ *     console.error("Error updating playlist item:", error);
+ *   });
+ */
+export async function updatePlaylistItem(updatedData) {
+    const url = `/playlists/item`;
+    return await fetchHandler(url, "POST", null, updatedData);
+}
+
 function fetchAbsolute(url, params) {
     if (globalConfig.railcontentConfig.baseUrl) {
         if (url.startsWith('/')) {
