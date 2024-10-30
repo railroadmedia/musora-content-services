@@ -904,6 +904,9 @@ export async function fetchNextPreviousLesson(railcontentId) {
  */
 export async function fetchLessonContent(railContentId) {
     const filterParams = {};
+    // Format changes made to the `fields` object may also need to be reflected in Musora-web-platform SanityGateway.php $fields object
+    // Currently only for challenges and challenge lessons
+    // If you're unsure, message Adrian, or just add them.
     const fields = `title, 
           published_on,
           "type":_type, 
