@@ -35,7 +35,8 @@ import {
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock,
-	updatePlaylist
+	updatePlaylist,
+	updatePlaylistItem
 } from './services/railcontent.js';
 
 import {
@@ -160,5 +161,6 @@ declare module 'musora-content-services' {
 		postChallengesUnlock,
 		unlikeContent,
 		updatePlaylist,
+		updatePlaylistItem,
 	}
 }

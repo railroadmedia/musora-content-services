@@ -35,7 +35,8 @@ import {
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock,
-	updatePlaylist
+	updatePlaylist,
+	updatePlaylistItem
 } from './services/railcontent.js';
 
 import {
@@ -159,4 +160,5 @@ export {
 	postChallengesUnlock,
 	unlikeContent,
 	updatePlaylist,
+	updatePlaylistItem,
 };
