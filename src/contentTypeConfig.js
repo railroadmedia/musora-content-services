@@ -481,6 +481,8 @@ function filtersToGroq(filters, selectedFilters = []) {
     return filterClauses;
 }
 function groupFilters(filters) {
+    if (filters.length === 0) return {};
+
     return filters.reduce((acc, filter) => {
         const [category, value] = filter.split(',');
         if (!acc[category]) acc[category] = [];

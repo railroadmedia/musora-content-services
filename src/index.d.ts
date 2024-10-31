@@ -12,6 +12,10 @@ import {
 } from './services/contentLikes.js';
 
 import {
+	createPlaylist,
+	deletePlaylist,
+	deletePlaylistLike,
+	duplicatePlaylist,
 	fetchAllCompletedStates,
 	fetchChallengeLessonData,
 	fetchChallengeMetadata,
@@ -20,16 +24,22 @@ import {
 	fetchContentInProgress,
 	fetchContentPageUserData,
 	fetchHandler,
+	fetchPlaylist,
+	fetchPlaylistItems,
 	fetchSongsInProgress,
 	fetchUserAward,
 	fetchUserChallengeProgress,
 	fetchUserPermissions,
+	fetchUserPlaylists,
+	likePlaylist,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,
 	postChallengesLeave,
 	postChallengesSetStartDate,
-	postChallengesUnlock
+	postChallengesUnlock,
+	updatePlaylist,
+	updatePlaylistItem
 } from './services/railcontent.js';
 
 import {
@@ -64,6 +74,7 @@ import {
 	fetchPackChildren,
 	fetchPackData,
 	fetchParentByRailContentId,
+	fetchParentForDownload,
 	fetchRelatedLessons,
 	fetchRelatedMethodLessons,
 	fetchRelatedSongs,
@@ -76,12 +87,15 @@ import {
 	fetchSongFilterOptions,
 	fetchUpcomingEvents,
 	fetchWorkouts,
-	getSortOrder,
-	fetchParentForDownload,
+	getSortOrder
 } from './services/sanity.js';
 
 declare module 'musora-content-services' {
 	export {
+		createPlaylist,
+		deletePlaylist,
+		deletePlaylistLike,
+		duplicatePlaylist,
 		fetchAll,
 		fetchAllCompletedStates,
 		fetchAllFilterOptions,
@@ -121,6 +135,9 @@ declare module 'musora-content-services' {
 		fetchPackChildren,
 		fetchPackData,
 		fetchParentByRailContentId,
+		fetchParentForDownload,
+		fetchPlaylist,
+		fetchPlaylistItems,
 		fetchRelatedLessons,
 		fetchRelatedMethodLessons,
 		fetchRelatedSongs,
@@ -136,12 +153,14 @@ declare module 'musora-content-services' {
 		fetchUserAward,
 		fetchUserChallengeProgress,
 		fetchUserPermissions,
+		fetchUserPlaylists,
 		fetchWorkouts,
 		getSortOrder,
 		globalConfig,
 		initializeService,
 		isContentLiked,
 		likeContent,
+		likePlaylist,
 		postChallengesCommunityNotification,
 		postChallengesEnroll,
 		postChallengesEnrollmentNotification,
@@ -149,6 +168,7 @@ declare module 'musora-content-services' {
 		postChallengesSetStartDate,
 		postChallengesUnlock,
 		unlikeContent,
-		fetchParentForDownload,
+		updatePlaylist,
+		updatePlaylistItem,
 	}
 }
