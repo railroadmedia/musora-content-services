@@ -11,12 +11,14 @@ const excludeFromGeneratedIndex = [];
 export let dataContext = new DataContext(ContentVersionKey, fetchUserLikes);
 
 export async function isContentLiked(contentId) {
+    contentId = parseInt(contentId);
     let data = await dataContext.getData();
     return data.includes(contentId);
 }
 
 export async function likeContent(contentId) {
-   await dataContext.update(
+    contentId = parseInt(contentId);
+    await dataContext.update(
         function (context) {
             if (!context.data.includes(contentId)) {
                 context.data.push(contentId);
@@ -29,6 +31,7 @@ export async function likeContent(contentId) {
 }
 
 export async function unlikeContent(contentId) {
+    contentId = parseInt(contentId);
     await dataContext.update(
         function (context) {
             if (context.data.includes(contentId)) {

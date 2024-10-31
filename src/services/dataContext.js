@@ -24,7 +24,9 @@ export class DataContext {
 
     async getData() {
         await this.ensureLocalContextLoaded();
-        if (!this.context || this.shouldVerifyServerVerions()) {
+        const shouldVerify = await this.shouldVerifyServerVerions();
+
+        if ((!this.context) || shouldVerify) {
             let version = this.version();
             let data = await this.fetchData(version);
             if (data.version !== "No Change") {

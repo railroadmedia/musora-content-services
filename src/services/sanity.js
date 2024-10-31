@@ -586,100 +586,84 @@ export function getSortOrder(sort= '-published_on', groupBy)
 }
 
 /**
-* Fetches all available filter options based on various criteria such as brand, filters, style, artist, content type, and search term.
+* Fetches all available filter options based on brand, filters, and various optional criteria.
 *
 * This function constructs a query to retrieve the total number of results and filter options such as difficulty, instrument type, and genre.
 * The filter options are dynamically generated based on the provided filters, style, artist, and content type.
 * If a coachId is provided, the content type must be 'coach-lessons'.
 *
-* @param {string} brand - The brand for which to fetch the filter options.
-* @param {string[]} filters - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock']
-* @param {string} [style] - Optional style or genre to filter the results. If provided, the query will check if the style exists in the genre array.
-* @param {string} [artist] - Optional artist name to filter the results. If provided, the query will check if the artist's name matches.
-* @param {string} contentType - The content type to fetch (e.g., 'song', 'lesson').
-* @param {string} [term] - Optional search term to match against various fields such as title, album, artist name, and genre.
-* @param {Array<string>} [progressIds=undefined] - An array of railcontent IDs to filter the results by. Used for filtering by progress.
-* @param {string} [coachId=undefined] - Optional coach ID to filter the results by a specific coach. If provided, contentType must be 'coach-lessons'.
-* @returns {Promise<Object|null>} - A promise that resolves to an object containing the total results and filter options, or null if the query fails.
+* @param {string} brand - Brand to filter.
+* @param {string[]} filters - Key-value pairs to filter the query.
+* @param {string} [style] - Optional style/genre filter.
+* @param {string} [artist] - Optional artist name filter.
+* @param {string} contentType - Content type (e.g., 'song', 'lesson').
+* @param {string} [term] - Optional search term for title, album, artist, or genre.
+* @param {Array<string>} [progressIds] - Optional array of progress IDs to filter by.
+* @param {string} [coachId] - Optional coach ID (only valid if contentType is 'coach-lessons').
+* @param {boolean} [includeTabs=false] - Whether to include tabs in the returned metadata.
+* @returns {Promise<Object>} - The filter options and metadata.
+* @throws {Error} If coachId is provided but contentType isn't 'coach-lessons'.
 *
-* @throws {Error} Will throw an error if coachId is provided but contentType is not 'coach-lessons'.
- *
 * @example
-* // Example usage:
-* fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'song', 'Love')
+* // Fetch filter options for 'song' content type:
+* fetchAllFilterOptions('myBrand', [], 'Rock', 'John Doe', 'song', 'Love')
 *   .then(options => console.log(options))
 *   .catch(error => console.error(error));
 *
 * @example
-* // Example usage with coachId:
-* fetchAllFilterOptions('myBrand', '', 'Rock', 'John Doe', 'coach-lessons', 'Love', undefined, '123')
+* // Fetch filter options for a coach's lessons with coachId:
+* fetchAllFilterOptions('myBrand', [], 'Rock', 'John Doe', 'coach-lessons', 'Love', undefined, '123')
 *   .then(options => console.log(options))
 *   .catch(error => console.error(error));
 */
 export async function fetchAllFilterOptions(
-    brand,
-    filters = [],
-    style,
-    artist,
-    contentType,
-    term,
-    progressIds = undefined,
-    coachId = undefined, // New parameter for coach ID
+  brand,
+  filters = [],
+  style,
+  artist,
+  contentType,
+  term,
+  progressIds,
+  coachId,
+  includeTabs = false,
 ) {
-  console.log('brand', brand)
-    if (coachId && contentType !== 'coach-lessons') {
-        throw new Error(`Invalid contentType: '${contentType}' for coachId. It must be 'coach-lessons'.`);
-    }
+  if (coachId && contentType !== 'coach-lessons') {
+      throw new Error(`Invalid contentType: '${contentType}' for coachId. It must be 'coach-lessons'.`);
+  }
 
-    filters = Array.isArray(filters) ? filters : [];
-    const includedFieldsFilter = filters?.length > 0 ? filtersToGroq(filters) : undefined;
+  const includedFieldsFilter = filters?.length ? filtersToGroq(filters) : undefined;
+  const progressFilter = progressIds ? `&& railcontent_id in [${progressIds.join(',')}]` : "";
 
-    const progressFilter = progressIds !== undefined ?
-        `&& railcontent_id in [${progressIds.join(',')}]` : "";
+  const constructCommonFilter = (excludeFilter) => {
+      const filterWithoutOption = excludeFilter ? filtersToGroq(filters, excludeFilter) : includedFieldsFilter;
+      return coachId 
+          ? `brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${filterWithoutOption || ''}`
+          : `_type == '${contentType}' && brand == "${brand}"${style && excludeFilter !== "style" ? ` && '${style}' in genre[]->name` : ''}${artist && excludeFilter !== "artist" ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${filterWithoutOption || ''}`;
+  };
 
-    // General common filter logic
-    let commonFilter;
+  const metaData = processMetadata(brand, contentType, true);
+  const allowableFilters = metaData?.allowableFilters || [];
+  const tabs = metaData?.tabs || [];
+  const catalogName = metaData?.shortname || metaData?.name;
 
-    if (coachId) {
-        // Coach-specific filtering
-        commonFilter = `brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${includedFieldsFilter ? includedFieldsFilter : ''}`;
-    } else {
-        // Regular content filtering
-        commonFilter = `_type == '${contentType}' && brand == "${brand}"${style ? ` && '${style}' in genre[]->name` : ''}${artist ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${includedFieldsFilter ? includedFieldsFilter : ''}`;
-    }
+  const dynamicFilterOptions = allowableFilters.map(filter => getFilterOptions(filter, constructCommonFilter(filter), contentType, brand)).join(' ');
 
-    // Determine metadata and allowable filters (handle coach lessons if coachId exists)
-    const metaData = processMetadata(brand, contentType, true);
-    const allowableFilters = metaData?.allowableFilters || [];
+  const query = `
+      {
+        "meta": {
+          "totalResults": count(*[${constructCommonFilter()}
+            ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
+          "filterOptions": {
+            ${dynamicFilterOptions}
+          }
+      }
+    }`;
 
-    // Dynamic filter options construction
-    const dynamicFilterOptions = allowableFilters.map(filter => {
-        let includedFieldsFilterWithoutSelectedOption = filters?.length > 0 ? filtersToGroq(filters, filter) : undefined;
-        let commonFilterWithoutSelectedOption;
+  const results = await fetchSanity(query, true, { processNeedAccess: false });
 
-        if (coachId) {
-            commonFilterWithoutSelectedOption = `brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${includedFieldsFilterWithoutSelectedOption ? includedFieldsFilterWithoutSelectedOption : ''}`;
-        } else {
-            // Regular content filter without the selected option
-            commonFilterWithoutSelectedOption = `_type == '${contentType}' && brand == "${brand}"${(style && filter !== "style") ? ` && '${style}' in genre[]->name` : ''}${(artist && filter !== "artist") ? ` && artist->name == '${artist}'` : ''} ${includedFieldsFilterWithoutSelectedOption ? includedFieldsFilterWithoutSelectedOption : ''}`;
-        }
-
-        // Call getFilterOptions with the modified common filter
-        return getFilterOptions(filter, commonFilterWithoutSelectedOption, contentType, brand);
-    }).join(' ');
-
-    const query = `
-        {
-          "meta": {
-            "totalResults": count(*[${commonFilter}
-              ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}]),
-            "filterOptions": {
-              ${dynamicFilterOptions}
-            }
-        }
-      }`;
-  return fetchSanity(query, true, {processNeedAccess:false});
+  return includeTabs ? { ...results, tabs, catalogName } : results;
 }
+
 
 /**
 * Fetch children content by Railcontent ID.
@@ -920,6 +904,9 @@ export async function fetchNextPreviousLesson(railcontentId) {
  */
 export async function fetchLessonContent(railContentId) {
     const filterParams = {};
+    // Format changes made to the `fields` object may also need to be reflected in Musora-web-platform SanityGateway.php $fields object
+    // Currently only for challenges and challenge lessons
+    // If you're unsure, message Adrian, or just add them.
     const fields = `title, 
           published_on,
           "type":_type, 
@@ -961,7 +948,8 @@ export async function fetchLessonContent(railContentId) {
           mp3_yes_drums_yes_click_url,
           "permission_id": permission[]->railcontent_id,
           parent_content_data,
-          sort`;
+          sort,
+          xp`;
     const query = buildQuery(
         `railcontent_id == ${railContentId}`,
         filterParams,
@@ -1209,6 +1197,28 @@ export async function fetchCoachLessons(brand, id, {
  */
 export async function fetchCourseOverview(id) {
   return fetchByRailContentId(id, 'course');
+}
+
+/**
+ * Fetch the data needed for the Course Overview screen.
+ * @param {string} id - The Railcontent ID of the course
+ * @returns {Promise<Object|null>} - The course information and lessons or null if not found.
+ *
+ * @example
+ * fetchParentForDownload('course123')
+ *   .then(course => console.log(course))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchParentForDownload(id) {
+  const query = buildRawQuery(
+    `railcontent_id == ${id}`,
+    getFieldsForContentType('parent-download'),
+    {
+      isSingle: true,
+    },
+  );
+
+  return fetchSanity(query, false);
 }
 
 /**

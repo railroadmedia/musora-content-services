@@ -17,6 +17,7 @@ import {
 	deletePlaylistLike,
 	duplicatePlaylist,
 	fetchAllCompletedStates,
+	fetchChallengeLessonData,
 	fetchChallengeMetadata,
 	fetchCompletedContent,
 	fetchCompletedState,
@@ -29,9 +30,14 @@ import {
 	fetchUserAward,
 	fetchUserChallengeProgress,
 	fetchUserPermissions,
+<<<<<<< HEAD
 	fetchUserPlaylists,
 	likePlaylist,
+=======
+	postChallengesCommunityNotification,
+>>>>>>> main
 	postChallengesEnroll,
+	postChallengesEnrollmentNotification,
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock,
@@ -83,7 +89,8 @@ import {
 	fetchSongFilterOptions,
 	fetchUpcomingEvents,
 	fetchWorkouts,
-	getSortOrder
+	getSortOrder,
+	fetchParentForDownload,
 } from './services/sanity.js';
 
 export {
@@ -102,6 +109,7 @@ export {
 	fetchByRailContentIds,
 	fetchByReference,
 	fetchCatalogMetadata,
+	fetchChallengeLessonData,
 	fetchChallengeMetadata,
 	fetchChallengeOverview,
 	fetchChildren,
@@ -153,12 +161,21 @@ export {
 	initializeService,
 	isContentLiked,
 	likeContent,
+<<<<<<< HEAD
 	likePlaylist,
+=======
+	postChallengesCommunityNotification,
+>>>>>>> main
 	postChallengesEnroll,
+	postChallengesEnrollmentNotification,
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock,
 	unlikeContent,
+<<<<<<< HEAD
 	updatePlaylist,
 	updatePlaylistItem,
+=======
+	fetchParentForDownload,
+>>>>>>> main
 };

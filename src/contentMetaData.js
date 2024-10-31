@@ -165,8 +165,10 @@ const commonMetadata ={
             sortBy: '-published_on',
     },
     'workout': {
+        name: "Workouts",
+        shortname: 'Workouts',
         allowableFilters: ['difficulty', 'genre', 'topic'],
-            tabs: [
+        tabs: [
             {
                 name: 'All',
                 short_name: 'ALL',
@@ -177,18 +179,24 @@ const commonMetadata ={
                 short_name: '5 MINS',
                 is_required_field: true,
                 value: 'length_in_seconds,-450',
+                value_web: ["length_in_seconds < 450"]
             },
             {
                 name: '10 Minutes',
                 short_name: '10 MINS',
                 is_required_field: true,
                 value: 'length_in_seconds,450-750',
+                value_web:  [
+                    "length_in_seconds > 451",
+                    "length_in_seconds < 751"
+                ]
             },
             {
                 name: '15+ Minutes',
                 short_name: '15+ MINS',
                 is_required_field: true,
                 value: 'length_in_seconds,750+',
+                value_web: ["length_in_seconds > 750"]
             },
             {
                 name: 'Instructors',
@@ -1071,6 +1079,8 @@ const contentMetadata = {
             }
         },
         'workout': {
+            name: "Workouts",
+            shortname: 'Workouts',
             tabs: [
                 {
                     name: 'All',
@@ -1082,12 +1092,17 @@ const contentMetadata = {
                     short_name: '5 MINS',
                     is_required_field: true,
                     value: 'length_in_seconds,-450',
+                    value_web: ["length_in_seconds < 450"]
                 },
                 {
                     name: '10 Minutes',
                     short_name: '10 MINS',
                     is_required_field: true,
                     value: 'length_in_seconds,450-750',
+                    value_web:  [
+                        "length_in_seconds > 451",
+                        "length_in_seconds < 751"
+                    ]
                 },
                 {
                     name: 'Instructors',

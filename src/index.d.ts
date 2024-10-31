@@ -17,6 +17,7 @@ import {
 	deletePlaylistLike,
 	duplicatePlaylist,
 	fetchAllCompletedStates,
+	fetchChallengeLessonData,
 	fetchChallengeMetadata,
 	fetchCompletedContent,
 	fetchCompletedState,
@@ -29,9 +30,14 @@ import {
 	fetchUserAward,
 	fetchUserChallengeProgress,
 	fetchUserPermissions,
+<<<<<<< HEAD
 	fetchUserPlaylists,
 	likePlaylist,
+=======
+	postChallengesCommunityNotification,
+>>>>>>> main
 	postChallengesEnroll,
+	postChallengesEnrollmentNotification,
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock,
@@ -83,7 +89,8 @@ import {
 	fetchSongFilterOptions,
 	fetchUpcomingEvents,
 	fetchWorkouts,
-	getSortOrder
+	getSortOrder,
+	fetchParentForDownload,
 } from './services/sanity.js';
 
 declare module 'musora-content-services' {
@@ -103,6 +110,7 @@ declare module 'musora-content-services' {
 		fetchByRailContentIds,
 		fetchByReference,
 		fetchCatalogMetadata,
+		fetchChallengeLessonData,
 		fetchChallengeMetadata,
 		fetchChallengeOverview,
 		fetchChildren,
@@ -154,13 +162,22 @@ declare module 'musora-content-services' {
 		initializeService,
 		isContentLiked,
 		likeContent,
+<<<<<<< HEAD
 		likePlaylist,
+=======
+		postChallengesCommunityNotification,
+>>>>>>> main
 		postChallengesEnroll,
+		postChallengesEnrollmentNotification,
 		postChallengesLeave,
 		postChallengesSetStartDate,
 		postChallengesUnlock,
 		unlikeContent,
+<<<<<<< HEAD
 		updatePlaylist,
 		updatePlaylistItem,
+=======
+		fetchParentForDownload,
+>>>>>>> main
 	}
 }
