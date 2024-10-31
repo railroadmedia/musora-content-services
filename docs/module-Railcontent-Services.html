@@ -185,7 +185,7 @@ the new playlist with the authenticated user. The `name` field is required, whil
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="railcontent.js.html">railcontent.js</a>, <a href="railcontent.js.html#line470">line 470</a>
+        <a href="railcontent.js.html">railcontent.js</a>, <a href="railcontent.js.html#line483">line 483</a>
     </li></ul></dd>
     
 
@@ -363,7 +363,7 @@ If the user is authorized, it deletes both the playlist and its associated items
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="railcontent.js.html">railcontent.js</a>, <a href="railcontent.js.html#line413">line 413</a>
+        <a href="railcontent.js.html">railcontent.js</a>, <a href="railcontent.js.html#line417">line 417</a>
     </li></ul></dd>
     
 
@@ -411,7 +411,11 @@ If the user is authorized, it deletes both the playlist and its associated items
     <h5 class="h5-examples">Example</h5>
     
     <pre class="prettyprint"><code>deletePlaylist(12345)
-  .then(response => console.log(response.message))
+  .then(response => {
+      if (response.success) {
+          console.log(response.message);
+      }
+  })
   .catch(error => console.error('Error deleting playlist:', error));</code></pre>
 
 
@@ -488,11 +492,11 @@ If the user is authorized, it deletes both the playlist and its associated items
 
         
 <div class="param-desc">
-    - A promise that resolves to a confirmation message if the deletion is successful,
-or rejects with an error if the user is unauthorized or if the playlist does not exist.
+    - A promise that resolves to an object containing:
+ - `success` (boolean): Indicates if the deletion was successful (`true` for success).
+ - `message` (string): Success confirmation message (e.g., "Playlist and associated items deleted successfully").
 
-The server response includes:
- - `message`: Success confirmation message (e.g., "Playlist and associated items deleted successfully").
+If the user is unauthorized or the playlist does not exist, the promise rejects with an error.
 </div>
 
 
@@ -538,7 +542,7 @@ and checks if a like by the authenticated user already exists for the specified 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="railcontent.js.html">railcontent.js</a>, <a href="railcontent.js.html#line520">line 520</a>
+        <a href="railcontent.js.html">railcontent.js</a>, <a href="railcontent.js.html#line543">line 543</a>
     </li></ul></dd>
     
 
@@ -586,7 +590,11 @@ and checks if a like by the authenticated user already exists for the specified 
     <h5 class="h5-examples">Example</h5>
     
     <pre class="prettyprint"><code>deletePlaylistLike(12345)
-  .then(response => console.log(response.message))
+  .then(response => {
+      if (response.success) {
+          console.log(response.message);
+      }
+  })
   .catch(error => console.error('Error removing playlist like:', error));</code></pre>
 
 
@@ -663,8 +671,9 @@ and checks if a like by the authenticated user already exists for the specified 
 
         
 <div class="param-desc">
-    - A promise that resolves with the response from the API. The response may contain:
- - `message` (string): A success message if the playlist like is removed successfully or a notification if the playlist was not liked.
+    - A promise that resolves with the response from the API. The response contains:
+ - `success` (boolean): Indicates if the removal was successful (`true` for success).
+ - `message` (string): A success message if the playlist like is removed successfully or a notification if the playlist was not previously liked.
 </div>
 
 
@@ -2186,7 +2195,7 @@ The server validates the user's access to the playlist and returns playlist deta
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="railcontent.js.html">railcontent.js</a>, <a href="railcontent.js.html#line542">line 542</a>
+        <a href="railcontent.js.html">railcontent.js</a>, <a href="railcontent.js.html#line565">line 565</a>
     </li></ul></dd>
     
 
@@ -2358,7 +2367,7 @@ The server combines data from the playlist and additional metadata from Sanity t
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="railcontent.js.html">railcontent.js</a>, <a href="railcontent.js.html#line562">line 562</a>
+        <a href="railcontent.js.html">railcontent.js</a>, <a href="railcontent.js.html#line585">line 585</a>
     </li></ul></dd>
     
 
@@ -3035,7 +3044,7 @@ if the authenticated user has already liked the playlist. If not, it creates a n
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="railcontent.js.html">railcontent.js</a>, <a href="railcontent.js.html#line498">line 498</a>
+        <a href="railcontent.js.html">railcontent.js</a>, <a href="railcontent.js.html#line516">line 516</a>
     </li></ul></dd>
     
 
@@ -3083,7 +3092,11 @@ if the authenticated user has already liked the playlist. If not, it creates a n
     <h5 class="h5-examples">Example</h5>
     
     <pre class="prettyprint"><code>likePlaylist(12345)
-  .then(response => console.log(response.message))
+  .then(response => {
+      if (response.success) {
+          console.log(response.message);
+      }
+  })
   .catch(error => console.error('Error liking playlist:', error));</code></pre>
 
 
@@ -3160,8 +3173,9 @@ if the authenticated user has already liked the playlist. If not, it creates a n
 
         
 <div class="param-desc">
-    - A promise that resolves with the response from the API. The response may contain:
- - `message` (string): A success message if the playlist is liked successfully, or a notification if the playlist is already liked.
+    - A promise that resolves with the response from the API. The response contains:
+ - `success` (boolean): Indicates if the like action was successful (`true` for success).
+ - `message` (string): A success message if the playlist is liked successfully, or a notification if it was already liked.
  - `like` (Object|null): Details of the created "like" entry if the playlist is newly liked, or null if it was already liked.
 
 The `like` object in the response includes:
@@ -3214,7 +3228,7 @@ and verifies that the authenticated user is the playlist owner. If authorized, i
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="railcontent.js.html">railcontent.js</a>, <a href="railcontent.js.html#line440">line 440</a>
+        <a href="railcontent.js.html">railcontent.js</a>, <a href="railcontent.js.html#line453">line 453</a>
     </li></ul></dd>
     
 
@@ -3262,7 +3276,11 @@ and verifies that the authenticated user is the playlist owner. If authorized, i
     <h5 class="h5-examples">Example</h5>
     
     <pre class="prettyprint"><code>updatePlaylist(12345, { name: "My New Playlist Name", description: "Updated description" })
-  .then(response => console.log(response.message))
+  .then(response => {
+      if (response.success) {
+          console.log(response.message);
+      }
+  })
   .catch(error => console.error('Error updating playlist:', error));</code></pre>
 
 
@@ -3368,7 +3386,12 @@ and verifies that the authenticated user is the playlist owner. If authorized, i
 
         
 <div class="param-desc">
-    - A promise that resolves to the updated playlist data if successful, or an error response if the user is unauthorized or the data validation fails.
+    - A promise that resolves to an object containing:
+ - `success` (boolean): Indicates if the update was successful (`true` for success).
+ - `message` (string): Success confirmation message if the update is successful.
+ - Other fields containing the updated playlist data.
+
+If the user is unauthorized or the data validation fails, the promise rejects with an error.
 </div>
 
 
@@ -3395,7 +3418,7 @@ and verifies that the authenticated user is the playlist owner. If authorized, i
 
     
 
-    <h4 class="name" id=".updatePlaylistItem"><span class="type-signature type-signature-static">(static) </span>updatePlaylistItem<span class="signature">(updatedData)</span><span class="type-signature"> &rarr; {Promise.&lt;(any|null)>}</span></h4>
+    <h4 class="name" id=".updatePlaylistItem"><span class="type-signature type-signature-static">(static) </span>updatePlaylistItem<span class="signature">(updatedData)</span><span class="type-signature"> &rarr; {Promise.&lt;(Object|null)>}</span></h4>
 
     
 
@@ -3411,7 +3434,7 @@ and verifies that the authenticated user is the playlist owner. If authorized, i
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="railcontent.js.html">railcontent.js</a>, <a href="railcontent.js.html#line594">line 594</a>
+        <a href="railcontent.js.html">railcontent.js</a>, <a href="railcontent.js.html#line623">line 623</a>
     </li></ul></dd>
     
 
@@ -3467,7 +3490,9 @@ and verifies that the authenticated user is the playlist owner. If authorized, i
 
 updatePlaylistItem(updatedData)
   .then(response => {
-    console.log("Playlist item updated successfully:", response);
+    if (response.success) {
+      console.log("Playlist item updated successfully:", response.data);
+    }
   })
   .catch(error => {
     console.error("Error updating playlist item:", error);
@@ -3736,7 +3761,11 @@ updatePlaylistItem(updatedData)
 
         
 <div class="param-desc">
-    - A promise that resolves to the response data, or null if the request fails.
+    - A promise that resolves to an object containing:
+ - `success` (boolean): Indicates if the update was successful (`true` for success).
+ - `data` (Object): The updated playlist item data.
+
+Resolves to `null` if the request fails.
 </div>
 
 
@@ -3747,7 +3776,7 @@ updatePlaylistItem(updatedData)
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;(any|null)></span>
+<span class="param-type">Promise.&lt;(Object|null)></span>
 
 
 
@@ -3778,7 +3807,7 @@ updatePlaylistItem(updatedData)
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Thu Oct 31 2024 12:40:14 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Thu Oct 31 2024 13:45:42 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

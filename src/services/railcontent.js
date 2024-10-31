@@ -399,15 +399,19 @@ export async function duplicatePlaylist(playlistId, playlistData) {
  *
  * @param {string|number} playlistId - The unique identifier of the playlist to be deleted.
  *
- * @returns {Promise<Object>} - A promise that resolves to a confirmation message if the deletion is successful,
- * or rejects with an error if the user is unauthorized or if the playlist does not exist.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing:
+ *  - `success` (boolean): Indicates if the deletion was successful (`true` for success).
+ *  - `message` (string): Success confirmation message (e.g., "Playlist and associated items deleted successfully").
  *
- * The server response includes:
- *  - `message`: Success confirmation message (e.g., "Playlist and associated items deleted successfully").
+ * If the user is unauthorized or the playlist does not exist, the promise rejects with an error.
  *
  * @example
  * deletePlaylist(12345)
- *   .then(response => console.log(response.message))
+ *   .then(response => {
+ *       if (response.success) {
+ *           console.log(response.message);
+ *       }
+ *   })
  *   .catch(error => console.error('Error deleting playlist:', error));
  */
 export async function deletePlaylist(playlistId) {
@@ -430,11 +434,20 @@ export async function deletePlaylist(playlistId) {
  *  - `private` (boolean): Whether the playlist is private.
  *  - `thumbnail_url` (string): The URL of the playlist thumbnail.
  *
- * @returns {Promise<Object>} - A promise that resolves to the updated playlist data if successful, or an error response if the user is unauthorized or the data validation fails.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing:
+ *  - `success` (boolean): Indicates if the update was successful (`true` for success).
+ *  - `message` (string): Success confirmation message if the update is successful.
+ *  - Other fields containing the updated playlist data.
+ *
+ * If the user is unauthorized or the data validation fails, the promise rejects with an error.
  *
  * @example
  * updatePlaylist(12345, { name: "My New Playlist Name", description: "Updated description" })
- *   .then(response => console.log(response.message))
+ *   .then(response => {
+ *       if (response.success) {
+ *           console.log(response.message);
+ *       }
+ *   })
  *   .catch(error => console.error('Error updating playlist:', error));
  */
 export async function updatePlaylist(playlistId, updatedData) {
@@ -480,8 +493,9 @@ export async function createPlaylist(playlistData) {
  *
  * @param {string|number} playlistId - The unique identifier of the playlist to be liked.
  *
- * @returns {Promise<Object>} - A promise that resolves with the response from the API. The response may contain:
- *  - `message` (string): A success message if the playlist is liked successfully, or a notification if the playlist is already liked.
+ * @returns {Promise<Object>} - A promise that resolves with the response from the API. The response contains:
+ *  - `success` (boolean): Indicates if the like action was successful (`true` for success).
+ *  - `message` (string): A success message if the playlist is liked successfully, or a notification if it was already liked.
  *  - `like` (Object|null): Details of the created "like" entry if the playlist is newly liked, or null if it was already liked.
  *
  * The `like` object in the response includes:
@@ -492,7 +506,11 @@ export async function createPlaylist(playlistData) {
  *
  * @example
  * likePlaylist(12345)
- *   .then(response => console.log(response.message))
+ *   .then(response => {
+ *       if (response.success) {
+ *           console.log(response.message);
+ *       }
+ *   })
  *   .catch(error => console.error('Error liking playlist:', error));
  */
 export async function likePlaylist(playlistId) {
@@ -509,12 +527,17 @@ export async function likePlaylist(playlistId) {
  *
  * @param {string|number} playlistId - The unique identifier of the playlist whose like is to be removed.
  *
- * @returns {Promise<Object>} - A promise that resolves with the response from the API. The response may contain:
- *  - `message` (string): A success message if the playlist like is removed successfully or a notification if the playlist was not liked.
+ * @returns {Promise<Object>} - A promise that resolves with the response from the API. The response contains:
+ *  - `success` (boolean): Indicates if the removal was successful (`true` for success).
+ *  - `message` (string): A success message if the playlist like is removed successfully or a notification if the playlist was not previously liked.
  *
  * @example
  * deletePlaylistLike(12345)
- *   .then(response => console.log(response.message))
+ *   .then(response => {
+ *       if (response.success) {
+ *           console.log(response.message);
+ *       }
+ *   })
  *   .catch(error => console.error('Error removing playlist like:', error));
  */
 export async function deletePlaylistLike(playlistId) {
@@ -572,7 +595,11 @@ export async function fetchPlaylistItems(playlistId) {
  * @param {number} [updatedData.start_second] - (Optional) The start time in seconds for the item.
  * @param {number} [updatedData.end_second] - (Optional) The end time in seconds for the item.
  * @param {string} [updatedData.playlist_item_name] - (Optional) The new name for the playlist item.
- * @returns {Promise<any|null>} - A promise that resolves to the response data, or null if the request fails.
+ * @returns {Promise<Object|null>} - A promise that resolves to an object containing:
+ *  - `success` (boolean): Indicates if the update was successful (`true` for success).
+ *  - `data` (Object): The updated playlist item data.
+ *
+ * Resolves to `null` if the request fails.
  * @throws {Error} - Throws an error if the request fails.
  *
  * @example
@@ -585,7 +612,9 @@ export async function fetchPlaylistItems(playlistId) {
  *
  * updatePlaylistItem(updatedData)
  *   .then(response => {
- *     console.log("Playlist item updated successfully:", response);
+ *     if (response.success) {
+ *       console.log("Playlist item updated successfully:", response.data);
+ *     }
  *   })
  *   .catch(error => {
  *     console.error("Error updating playlist item:", error);
