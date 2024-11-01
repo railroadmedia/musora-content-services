@@ -301,8 +301,9 @@ export async function fetchUserAward(contentId) {
 }
 
 export async function fetchChallengeIndexMetadata(contentIds) {
-    let url = `/challenges/user_progress_for_index_page`;
-    return await fetchHandler(url, 'get', null, {'content_ids': contentIds});
+    let idsString = contentIds.toString();
+    let url = `/challenges/user_progress_for_index_page/get?content_ids=${idsString}`;
+    return await fetchHandler(url, 'get');
 }
 
 export async function postChallengesSetStartDate(contentId, startDate) {
