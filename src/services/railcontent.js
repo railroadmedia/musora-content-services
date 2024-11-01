@@ -280,62 +280,140 @@ export async function postContentUnliked(contentId) {
     return await fetchHandler(url, "post");
 }
 
+/**
+ * Fetch enrolled user data for a given challenge. Intended to be used in the enrolled modal
+ *
+ * @param contentId - railcontent id of the challenge
+ * @returns {Promise<any|null>}
+ */
 export async function fetchChallengeMetadata(contentId) {
     let url = `/challenges/${contentId}`;
     return await fetchHandler(url, 'get');
 }
 
+/**
+ * Fetch lesson, user, and challenge data for a given lesson
+ *
+ * @param contentId - railcontent id of the lesson
+ * @returns {Promise<any|null>}
+ */
 export async function fetchChallengeLessonData(contentId) {
     let url = `/challenges/lessons/${contentId}`;
     return await fetchHandler(url, 'get');
 }
 
+/**
+ * Fetch challenge, lesson, and user metadata for a given challenge
+ *
+ * @param contentId - railcontent id of the challenge
+ * @returns {Promise<any|null>}
+ */
 export async function fetchUserChallengeProgress(contentId) {
     let url = `/challenges/user_data/${contentId}`;
     return await fetchHandler(url, 'get');
 }
 
+/**
+ * Fetch the user's best award for this challenge
+ *
+ * @param contentId - railcontent id of the challenge
+ * @returns {Promise<any|null>} - streamed PDF
+ */
 export async function fetchUserAward(contentId) {
     let url = `/challenges/download_award/${contentId}`;
     return await fetchHandler(url, 'get');
 }
 
+/**
+ * Get challange duration, user progress, and status for the list of challenges
+ * Intended to be used on the index page for challenges
+ *
+ * @param {array} contentIds - arary of railcontent ids of the challenges
+ * @returns {Promise<any|null>}
+ */
 export async function fetchChallengeIndexMetadata(contentIds) {
     let idsString = contentIds.toString();
     let url = `/challenges/user_progress_for_index_page/get?content_ids=${idsString}`;
     return await fetchHandler(url, 'get');
 }
 
+/**
+ * Enroll a user in a challenge and set the start date of the challenge to the provided day.
+ * Clears any existing progress data for this challenge
+ *
+ * @param {int|string} contentId - railcontent id of the challenge
+ * @param {string} startDate - prefered format YYYYMMDD, but any Carbon parsable string will do.
+ * @returns {Promise<any|null>}
+ */
 export async function postChallengesSetStartDate(contentId, startDate) {
     let url = `/challenges/set_start_date/${contentId}?start_date=${startDate}`;
     return await fetchHandler(url, 'post');
 }
 
+/**
+ * Enroll the user in the provided challenge and set to unlocked
+ * Clears any current progress data for this challenge
+ *
+ * @param {int|string} contentId - railcontent id of the challenge
+ * @returns {Promise<any|null>}
+ */
 export async function postChallengesUnlock(contentId) {
     let url = `/challenges/unlock/${contentId}`;
     return await fetchHandler(url, 'post');
 }
 
+/**
+ * Enroll the user in the given challenge on the challenge published_on date
+ *  Clears any current progress data for this challenge
+ *
+ * @param {int|string} contentId - railcontent id of the challenge
+ * @returns {Promise<any|null>}
+ */
 export async function postChallengesEnroll(contentId) {
     let url = `/challenges/enroll/${contentId}`;
     return await fetchHandler(url, 'post');
 }
 
+/**
+ * Remove the user from the provided challenge
+ * Clears any current progress data for this challenge
+ *
+ * @param {int|string} contentId - railcontent id of the challenge
+ * @returns {Promise<any|null>}
+ */
 export async function postChallengesLeave(contentId) {
     let url = `/challenges/leave/${contentId}`;
     return await fetchHandler(url, 'post');
 }
 
+/**
+ * Enable enrollment notifications for the provided challenge
+ *
+ * @param {int|string} contentId - railcontent id of the challenge
+ * @returns {Promise<any|null>}
+ */
 export async function postChallengesEnrollmentNotification(contentId) {
     let url = `/challenges/notifications/enrollment_open/${contentId}`;
     return await fetchHandler(url, 'post');
 }
 
+/**
+ * Enable community notifications for the provided challenge
+ *
+ * @param {int|string} contentId - railcontent id of the challenge
+ * @returns {Promise<any|null>}
+ */
 export async function postChallengesCommunityNotification(contentId) {
     let url = `/challenges/notifications/community_reminders/${contentId}`;
     return await fetchHandler(url, 'post');
 }
 
+/**
+ * Complete the challenge lesson and update challenge progress
+ *
+ * @param {int|string} contentId - railcontent id of the challenge
+ * @returns {Promise<any|null>} - Modal data to display
+ */
 export async function postCompleteLesson(contentId) {
     let url = `/challenges/complete_lesson/${contentId}`;
     return await fetchHandler(url, 'post');
