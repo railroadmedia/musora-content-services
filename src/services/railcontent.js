@@ -9,7 +9,15 @@ const {globalConfig} = require('./config');
  *
  * @type {string[]}
  */
-const excludeFromGeneratedIndex = ['fetchUserLikes', 'postContentLiked', 'postContentUnliked'];
+const excludeFromGeneratedIndex = [
+    'fetchUserLikes',
+    'postContentLiked',
+    'postContentUnliked',
+    'postRecordWatchSession',
+    'postContentStarted',
+    'postContentCompleted',
+    'postContentReset'
+];
 
 
 /**
@@ -238,6 +246,10 @@ async function fetchDataHandler(url, dataVersion, method = "get") {
     return fetchHandler(url, method, dataVersion);
 }
 
+async function postDataHandler(url, data) {
+    return fetchHandler(url, 'post', data);
+}
+
 export async function fetchHandler(url, method = "get", dataVersion = null, body = null) {
     let headers = {
         'Content-Type': 'application/json',
@@ -272,12 +284,40 @@ export async function fetchUserLikes(currentVersion) {
 
 export async function postContentLiked(contentId) {
     let url = `/content/user/likes/like/${contentId}`;
-    return await fetchHandler(url, "post");
+    return await postDataHandler(url);
 }
 
 export async function postContentUnliked(contentId) {
     let url = `/content/user/likes/unlike/${contentId}`;
-    return await fetchHandler(url, "post");
+    return await postDataHandler(url);
+}
+
+export async function fetchContentProgress(currentVersion) {
+    let url = `/content/user/progress/all`;
+    return fetchDataHandler(url, currentVersion);
+}
+
+export async function postRecordWatchSession({
+                                                mediaId,
+                                                mediaType,
+                                                mediaCategory,
+                                                watchPosition,
+                                                totalDuration,
+                                                sessionToken,
+                                                brand,
+                                                contentId = null
+                                            }) {
+    let url = `/railtracker/media-playback-session`;
+    return postDataHandler(url, {
+        mediaId,
+        mediaType,
+        mediaCategory,
+        watchPosition,
+        totalDuration,
+        sessionToken,
+        brand,
+        contentId
+    });
 }
 
 export async function fetchChallengeMetadata(contentId) {
@@ -623,6 +663,21 @@ export async function fetchPlaylistItems(playlistId) {
 export async function updatePlaylistItem(updatedData) {
     const url = `/playlists/item`;
     return await fetchHandler(url, "POST", null, updatedData);
+}
+
+export async function postContentStarted(contentId) {
+    let url = `/content/${contentId}/started`;
+    return postDataHandler(url);
+}
+
+export async function postContentCompleted(contentId) {
+    let url = `/content/${contentId}/completed`;
+    return postDataHandler(url);
+}
+
+export async function postContentReset(contentId) {
+    let url = `/content/${contentId}/reset`;
+    return postDataHandler(url);
 }
 
 
