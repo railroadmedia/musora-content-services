@@ -16,7 +16,8 @@ const excludeFromGeneratedIndex = [
     'postRecordWatchSession',
     'postContentStarted',
     'postContentCompleted',
-    'postContentReset'];
+    'postContentReset'
+];
 
 
 /**
