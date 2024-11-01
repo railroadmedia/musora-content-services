@@ -662,6 +662,36 @@ export async function deletePlaylistItem(payload) {
     return await fetchHandler(url, "DELETE", null, payload);
 }
 
+/**
+ * Fetches detailed data for a specific playlist item, including associated Sanity and Assignment information if available.
+ *
+ * @param {Object} payload - The request payload containing necessary parameters.
+ * @param {number} payload.user_playlist_item_id - The ID of the playlist item to fetch.
+ * @returns {Promise<Object|null>} - A promise that resolves to an object containing the playlist item data, including:
+ *  - `success` (boolean): Indicates if the retrieval was successful (`true` for success).
+ *  - `data` (Object): The playlist item data enriched with Sanity and Assignment details.
+ *
+ * Resolves to `null` if the request fails.
+ * @throws {Error} - Throws an error if the request fails.
+ *
+ * @example
+ * const payload = { user_playlist_item_id: 123 };
+ *
+ * fetchPlaylistItem(payload)
+ *   .then(response => {
+ *     if (response.success) {
+ *       console.log("Fetched playlist item data:", response.data);
+ *     }
+ *   })
+ *   .catch(error => {
+ *     console.error("Error fetching playlist item:", error);
+ *   });
+ */
+export async function fetchPlaylistItem(payload) {
+    const url = `/playlists/item`;
+    return await fetchHandler(url, "GET", null, payload);
+}
+
 function fetchAbsolute(url, params) {
     if (globalConfig.railcontentConfig.baseUrl) {
         if (url.startsWith('/')) {
