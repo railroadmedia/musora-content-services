@@ -17,6 +17,7 @@ import {
 	deletePlaylistLike,
 	duplicatePlaylist,
 	fetchAllCompletedStates,
+	fetchChallengeIndexMetadata,
 	fetchChallengeLessonData,
 	fetchChallengeMetadata,
 	fetchCompletedContent,
@@ -38,6 +39,7 @@ import {
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock,
+	postCompleteLesson,
 	updatePlaylist,
 	updatePlaylistItem
 } from './services/railcontent.js';
@@ -106,6 +108,7 @@ export {
 	fetchByRailContentIds,
 	fetchByReference,
 	fetchCatalogMetadata,
+	fetchChallengeIndexMetadata,
 	fetchChallengeLessonData,
 	fetchChallengeMetadata,
 	fetchChallengeOverview,
@@ -166,6 +169,7 @@ export {
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock,
+	postCompleteLesson,
 	unlikeContent,
 	updatePlaylist,
 	updatePlaylistItem,

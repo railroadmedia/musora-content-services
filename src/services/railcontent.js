@@ -300,6 +300,11 @@ export async function fetchUserAward(contentId) {
     return await fetchHandler(url, 'get');
 }
 
+export async function fetchChallengeIndexMetadata(contentIds) {
+    let url = `/challenges/user_progress_for_index_page`;
+    return await fetchHandler(url, 'get', null, {'content_ids': contentIds});
+}
+
 export async function postChallengesSetStartDate(contentId, startDate) {
     let url = `/challenges/set_start_date/${contentId}?start_date=${startDate}`;
     return await fetchHandler(url, 'post');
@@ -327,6 +332,11 @@ export async function postChallengesEnrollmentNotification(contentId) {
 
 export async function postChallengesCommunityNotification(contentId) {
     let url = `/challenges/notifications/community_reminders/${contentId}`;
+    return await fetchHandler(url, 'post');
+}
+
+export async function postCompleteLesson(contentId) {
+    let url = `/challenges/complete_lesson/${contentId}`;
     return await fetchHandler(url, 'post');
 }
 

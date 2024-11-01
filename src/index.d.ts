@@ -17,6 +17,7 @@ import {
 	deletePlaylistLike,
 	duplicatePlaylist,
 	fetchAllCompletedStates,
+	fetchChallengeIndexMetadata,
 	fetchChallengeLessonData,
 	fetchChallengeMetadata,
 	fetchCompletedContent,
@@ -38,6 +39,7 @@ import {
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock,
+	postCompleteLesson,
 	updatePlaylist,
 	updatePlaylistItem
 } from './services/railcontent.js';
@@ -107,6 +109,7 @@ declare module 'musora-content-services' {
 		fetchByRailContentIds,
 		fetchByReference,
 		fetchCatalogMetadata,
+		fetchChallengeIndexMetadata,
 		fetchChallengeLessonData,
 		fetchChallengeMetadata,
 		fetchChallengeOverview,
@@ -167,6 +170,7 @@ declare module 'musora-content-services' {
 		postChallengesLeave,
 		postChallengesSetStartDate,
 		postChallengesUnlock,
+		postCompleteLesson,
 		unlikeContent,
 		updatePlaylist,
 		updatePlaylistItem,
