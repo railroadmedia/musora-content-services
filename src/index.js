@@ -14,6 +14,7 @@ import {
 import {
 	createPlaylist,
 	deletePlaylist,
+	deletePlaylistItem,
 	deletePlaylistLike,
 	duplicatePlaylist,
 	fetchAllCompletedStates,
@@ -93,6 +94,7 @@ import {
 export {
 	createPlaylist,
 	deletePlaylist,
+	deletePlaylistItem,
 	deletePlaylistLike,
 	duplicatePlaylist,
 	fetchAll,

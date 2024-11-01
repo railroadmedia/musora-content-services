@@ -14,6 +14,7 @@ import {
 import {
 	createPlaylist,
 	deletePlaylist,
+	deletePlaylistItem,
 	deletePlaylistLike,
 	duplicatePlaylist,
 	fetchAllCompletedStates,
@@ -94,6 +95,7 @@ declare module 'musora-content-services' {
 	export {
 		createPlaylist,
 		deletePlaylist,
+		deletePlaylistItem,
 		deletePlaylistLike,
 		duplicatePlaylist,
 		fetchAll,
