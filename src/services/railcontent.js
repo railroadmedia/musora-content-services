@@ -9,7 +9,14 @@ const {globalConfig} = require('./config');
  *
  * @type {string[]}
  */
-const excludeFromGeneratedIndex = ['fetchUserLikes', 'postContentLiked', 'postContentUnliked'];
+const excludeFromGeneratedIndex = [
+    'fetchUserLikes',
+    'postContentLiked',
+    'postContentUnliked',
+    'postRecordWatchSession',
+    'postContentStarted',
+    'postContentCompleted',
+    'postContentReset'];
 
 
 /**
