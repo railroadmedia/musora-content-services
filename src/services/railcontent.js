@@ -239,7 +239,7 @@ export async function fetchContentPageUserData(contentId) {
 export async function fetchUserPermissions() {
     let url = `/content/user_data_permissions`;
     // in the case of an unauthorized user, we return empty permissions
-    return fetchHandler(url, 'get') ?? [];
+    return await fetchHandler(url, 'get') ?? [];
 }
 
 async function fetchDataHandler(url, dataVersion, method = "get") {
