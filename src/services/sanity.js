@@ -1500,7 +1500,7 @@ export async function fetchSanity(query,
   }
 }
 
-async function needsAccessDecorator(results, userPermissions) {
+function needsAccessDecorator(results, userPermissions) {
   if (globalConfig.sanityConfig.useDummyRailContentMethods) return results;
   
   userPermissions = new Set(userPermissions);

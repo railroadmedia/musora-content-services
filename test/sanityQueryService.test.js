@@ -3,6 +3,7 @@ import {getFieldsForContentType} from "../src/contentTypeConfig";
 import {fetchSanity} from "../src/services/sanity";
 import {log} from './log.js';
 import {LocalStorageMock} from "./localStorageMock";
+const railContentModule = require('../src/services/railcontent.js')
 
 const {
     fetchSongById,
@@ -64,6 +65,9 @@ export function initializeTestService(){
         localStorage:  new LocalStorageMock()
     };
     initializeService(config);
+
+    let mock = jest.spyOn(railContentModule, 'fetchUserPermissionsData');
+    mock.mockImplementation(() => [1,52,72,73,77,78,81]);
 }
 
 describe('Sanity Queries', function () {

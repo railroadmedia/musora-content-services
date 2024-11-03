@@ -3,7 +3,7 @@ const {fetchUserPermissions} = require("../src/services/userPermissions");
 
 describe('userPermissions', function () {
     let mock = null;
-    let testData = JSON.parse("[1,52,72,73,77,78,81]");
+    let testData = [1,52,72,73,77,78,81];
     beforeEach(() => {
         mock = jest.spyOn(railContentModule, 'fetchUserPermissionsData');
         mock.mockImplementation(() => testData);
