@@ -1,12 +1,12 @@
 import {
-    fetchUserPermissions
+    fetchUserPermissionsData
 } from "./railcontent";
 
 let userPermissionsPromise = null;
 
 export async function fetchUserPermissions() {
     if (!userPermissionsPromise) {
-        userPermissionsPromise = fetchUserPermissions();
+        userPermissionsPromise = fetchUserPermissionsData();
     }
     return await userPermissionsPromise;
 }

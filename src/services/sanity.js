@@ -23,8 +23,9 @@ import {
 
 import {globalConfig} from "./config";
 
-import { fetchUserPermissions, fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
+import { fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
 import {arrayToStringRepresentation, FilterBuilder} from "../filterBuilder";
+import {fetchUserPermissions} from "./userPermissions";
 
 /**
  * Exported functions that are excluded from index generation.
@@ -1472,7 +1473,13 @@ export async function fetchSanity(query,
   };
 
   try {
-      const response = await fetch(url, {headers});
+      let promisesResult = await Promise.all([
+          fetch(url, {headers}),
+          processNeedAccess ? fetchUserPermissions() : null
+      ]);
+      const response = promisesResult[0];
+      const userPermissions = promisesResult[1];
+
       if (!response.ok) {
           throw new Error(`Sanity API error: ${response.status} - ${response.statusText}`);
       }
@@ -1482,7 +1489,7 @@ export async function fetchSanity(query,
               console.log("fetchSanity Results:", result);
           }
           let results = isList ? result.result : result.result[0];
-          results = processNeedAccess ? await needsAccessDecorator(results) : results;
+          results = processNeedAccess ? await needsAccessDecorator(results, userPermissions) : results;
           return customPostProcess ? customPostProcess(results) : results;
       } else {
           throw new Error('No results found');
@@ -1493,10 +1500,9 @@ export async function fetchSanity(query,
   }
 }
 
-async function needsAccessDecorator(results) {
+async function needsAccessDecorator(results, userPermissions) {
   if (globalConfig.sanityConfig.useDummyRailContentMethods) return results;
   
-  let userPermissions = await getUserPermissions();
   userPermissions = new Set(userPermissions);
   
   if (Array.isArray(results)) {
@@ -1538,12 +1544,6 @@ function doesUserNeedAccessToContent(result, userPermissions)
     }
     return true;
 }
-
-async function getUserPermissions()
-{
-    return await fetchUserPermissions();
-}
-
 
 /**
  * Fetch CatalogueMetadata from Sanity. This information may be duplicated in the contentTypeConfig.js.
