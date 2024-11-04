@@ -692,7 +692,7 @@ export async function deletePlaylistItem(payload) {
 export async function fetchPlaylistItem(payload) {
     const playlistItemId = payload.user_playlist_item_id;
     const url = `/playlists/item/${playlistItemId}`;
-    return await fetchHandler(url, "GET", null, payload);
+    return await fetchHandler(url);
 }
 
 
