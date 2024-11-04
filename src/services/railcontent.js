@@ -666,21 +666,23 @@ export async function deletePlaylistItem(payload) {
  * Fetches detailed data for a specific playlist item, including associated Sanity and Assignment information if available.
  *
  * @param {Object} payload - The request payload containing necessary parameters.
- * @param {number} payload.user_playlist_item_id - The ID of the playlist item to fetch.
- * @returns {Promise<Object|null>} - A promise that resolves to an object containing the playlist item data, including:
- *  - `success` (boolean): Indicates if the retrieval was successful (`true` for success).
- *  - `data` (Object): The playlist item data enriched with Sanity and Assignment details.
+ * @param {number} payload.user_playlist_item_id - The unique ID of the playlist item to fetch.
+ * @returns {Promise<Object|null>} - A promise that resolves to an object with the fetched playlist item data, including:
+ *  - `success` (boolean): Indicates if the data retrieval was successful (`true` on success).
+ *  - `data` (Object): Contains the detailed playlist item data enriched with Sanity and Assignment details, if available.
  *
  * Resolves to `null` if the request fails.
- * @throws {Error} - Throws an error if the request fails.
+ * @throws {Error} - Throws an error if the request encounters issues during retrieval.
  *
  * @example
  * const payload = { user_playlist_item_id: 123 };
  *
  * fetchPlaylistItem(payload)
  *   .then(response => {
- *     if (response.success) {
+ *     if (response?.success) {
  *       console.log("Fetched playlist item data:", response.data);
+ *     } else {
+ *       console.log("Failed to fetch playlist item data.");
  *     }
  *   })
  *   .catch(error => {
@@ -688,9 +690,11 @@ export async function deletePlaylistItem(payload) {
  *   });
  */
 export async function fetchPlaylistItem(payload) {
-    const url = `/playlists/item`;
+    const playlistItemId = payload.user_playlist_item_id;
+    const url = `/playlists/item/${playlistItemId}`;
     return await fetchHandler(url, "GET", null, payload);
 }
+
 
 function fetchAbsolute(url, params) {
     if (globalConfig.railcontentConfig.baseUrl) {
