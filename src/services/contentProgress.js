@@ -13,7 +13,7 @@ const STATE_COMPLETED = 'completed';
 const DATA_KEY_STATUS = 's';
 const DATA_KEY_PROGRESS = 'p';
 const DATA_KEY_RESUME_TIME = 't';
-export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress());
+export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress);
 
 export async function getProgressPercentage(contentId) {
     let data = await dataContext.getData();
@@ -23,6 +23,24 @@ export async function getProgressPercentage(contentId) {
 export async function getProgressState(contentId) {
     let data = await dataContext.getData();
     return data[contentId]?.[DATA_KEY_STATUS] ?? 0;
+}
+
+export async function getProgressPercentageOnArray(contentIds) {
+    const data = await dataContext.getData();
+    let progress = {};
+
+    contentIds?.forEach(id => progress[id] = data[id]?.[DATA_KEY_PROGRESS] ?? 0 );
+
+    return progress;
+}
+
+export async function getProgressStateOnArray(contentIds) {
+    const data = await dataContext.getData();
+    let progress = {};
+
+    contentIds?.forEach(id => progress[id] = data[id]?.[DATA_KEY_STATUS] ?? 0 );
+
+    return progress;
 }
 
 export async function getResumeTimeSeconds(contentId) {

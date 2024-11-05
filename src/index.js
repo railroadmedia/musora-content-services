@@ -18,7 +18,9 @@ import {
 	getProgressPercentage,
 	getProgressState,
 	getResumeTimeSeconds,
-	recordWatchSession
+	recordWatchSession,
+	getProgressPercentageOnArray,
+	getProgressStateOnArray
 } from './services/contentProgress.js';
 
 import {
@@ -214,4 +216,6 @@ export {
 	unlikeContent,
 	updatePlaylist,
 	updatePlaylistItem,
+	getProgressPercentageOnArray,
+	getProgressStateOnArray
 };
