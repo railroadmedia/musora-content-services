@@ -20,25 +20,25 @@ export async function getProgressPercentage(contentId) {
     return data[contentId]?.[DATA_KEY_PROGRESS] ?? 0;
 }
 
-export async function getProgressState(contentId) {
-    let data = await dataContext.getData();
-    return data[contentId]?.[DATA_KEY_STATUS] ?? 0;
-}
-
-export async function getProgressPercentageOnArray(contentIds) {
+export async function getProgressPercentageByIds(contentIds) {
     const data = await dataContext.getData();
     let progress = {};
 
-    contentIds?.forEach(id => progress[id] = data[id]?.[DATA_KEY_PROGRESS] ?? 0 );
+    contentIds?.forEach(id => progress[id] = data[id]?.[DATA_KEY_PROGRESS] ?? 0);
 
     return progress;
 }
 
-export async function getProgressStateOnArray(contentIds) {
+export async function getProgressState(contentId) {
+    let data = await dataContext.getData();
+    return data[contentId]?.[DATA_KEY_STATUS] ?? "";
+}
+
+export async function getProgressStateByIds(contentIds) {
     const data = await dataContext.getData();
     let progress = {};
 
-    contentIds?.forEach(id => progress[id] = data[id]?.[DATA_KEY_STATUS] ?? 0 );
+    contentIds?.forEach(id => progress[id] = data[id]?.[DATA_KEY_STATUS] ?? "");
 
     return progress;
 }
@@ -86,8 +86,8 @@ function completeStatusInLocalContext(contentId, localContext, hierarchy) {
     localContext.data[contentId] = data;
 
     let children = hierarchy.children[contentId] ?? [];
-    for(let i = 0; i < children.length; i++) {
-        let childId  = children[i];
+    for (let i = 0; i < children.length; i++) {
+        let childId = children[i];
         completeStatusInLocalContext(childId, localContext, hierarchy);
     }
 }

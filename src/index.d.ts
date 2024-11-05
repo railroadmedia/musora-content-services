@@ -16,11 +16,11 @@ import {
 	contentStatusReset,
 	contentStatusStarted,
 	getProgressPercentage,
+	getProgressPercentageByIds,
 	getProgressState,
+	getProgressStateByIds,
 	getResumeTimeSeconds,
-	recordWatchSession,
-	getProgressPercentageOnArray,
-	getProgressStateOnArray
+	recordWatchSession
 } from './services/contentProgress.js';
 
 import {
@@ -192,7 +192,9 @@ declare module 'musora-content-services' {
 		fetchUserPlaylists,
 		fetchWorkouts,
 		getProgressPercentage,
+		getProgressPercentageByIds,
 		getProgressState,
+		getProgressStateByIds,
 		getResumeTimeSeconds,
 		getSortOrder,
 		globalConfig,
@@ -217,7 +219,5 @@ declare module 'musora-content-services' {
 		unlikeContent,
 		updatePlaylist,
 		updatePlaylistItem,
-		getProgressPercentageOnArray,
-		getProgressStateOnArray
 	}
 }

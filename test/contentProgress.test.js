@@ -1,4 +1,9 @@
-import {getProgressPercentage, dataContext, recordWatchSession} from "../src/services/contentProgress";
+import {
+    getProgressPercentage,
+    dataContext,
+    recordWatchSession,
+    getProgressPercentageByIds, getProgressState, getProgressStateByIds
+} from "../src/services/contentProgress";
 import {initializeTestService} from "./sanityQueryService.test";
 
 const railContentModule = require('../src/services/railcontent.js')
@@ -20,9 +25,26 @@ describe('contentProgressDataContext', function () {
         expect(result).toBe(6);
     });
 
+    test('getProgressPercentageByIds', async () => {
+        let result = await getProgressPercentageByIds([234191, 111111]);
+        expect(result[234191]).toBe(6);
+        expect(result[111111]).toBe(0);
+    });
+
     test('getProgressPercentage_notExists', async () => {
         let result = await getProgressPercentage(111111);
         expect(result).toBe(0);
+    });
+
+    test('getProgressState', async () => {
+        let result = await getProgressState(234191);
+        expect(result).toBe("started");
+    });
+
+    test('getProgressStateByIds', async () => {
+        let result = await getProgressStateByIds([234191, 120402]);
+        expect(result[234191]).toBe("started");
+        expect(result[120402]).toBe("");
     });
 
     test('progressBubbling', async () => {
