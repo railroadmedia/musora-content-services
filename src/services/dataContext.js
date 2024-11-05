@@ -19,8 +19,8 @@ export class DataContext {
     constructor(dataVersionKey, fetchDataFunction) {
         this.dataVersionKey = dataVersionKey;
         this.fetchDataFunction = fetchDataFunction;
-        this.localStorageKey = `dataContext_${this.dataVersionKey}`;
-        this.localStorageLastUpdatedKey = `dataContext_${this.dataVersionKey}_lastUpdated`;
+        this.localStorageKey = `dataContext_${this.dataVersionKey.toString()}`;
+        this.localStorageLastUpdatedKey = `dataContext_${this.dataVersionKey.toString()}_lastUpdated`;
     }
 
     async getData() {
