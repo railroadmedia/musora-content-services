@@ -415,9 +415,8 @@ export async function duplicatePlaylist(playlistId, playlistData) {
  *   .catch(error => console.error('Error deleting playlist:', error));
  */
 export async function deletePlaylist(playlistId) {
-    let url = `/playlists/playlist`;
-    const payload = { playlist_id: playlistId };
-    return await fetchHandler(url, "delete",  null, payload);
+    let url = `/playlists/playlist/${playlistId}`;
+    return await fetchHandler(url, "delete");
 }
 
 /**
@@ -563,7 +562,7 @@ export async function deletePlaylistLike(playlistId) {
  *   .catch(error => console.error('Error fetching playlist:', error));
  */
 export async function fetchPlaylist(playlistId) {
-    const url = `/playlists/playlist?playlist_id=${playlistId}`;
+    const url = `/playlists/playlist/${playlistId}`;
     return await fetchHandler(url, "GET");
 }
 
