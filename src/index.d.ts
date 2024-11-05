@@ -14,7 +14,6 @@ import {
 import {
 	contentStatusCompleted,
 	contentStatusReset,
-	contentStatusStarted,
 	getProgressPercentage,
 	getProgressPercentageByIds,
 	getProgressState,
@@ -59,7 +58,6 @@ import {
 	postContentCompleted,
 	postContentLiked,
 	postContentReset,
-	postContentStarted,
 	postContentUnliked,
 	postRecordWatchSession,
 	updatePlaylist,
@@ -120,7 +118,6 @@ declare module 'musora-content-services' {
 	export {
 		contentStatusCompleted,
 		contentStatusReset,
-		contentStatusStarted,
 		createPlaylist,
 		deletePlaylist,
 		deletePlaylistItem,
@@ -212,7 +209,6 @@ declare module 'musora-content-services' {
 		postContentCompleted,
 		postContentLiked,
 		postContentReset,
-		postContentStarted,
 		postContentUnliked,
 		postRecordWatchSession,
 		recordWatchSession,

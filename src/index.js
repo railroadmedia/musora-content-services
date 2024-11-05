@@ -14,7 +14,6 @@ import {
 import {
 	contentStatusCompleted,
 	contentStatusReset,
-	contentStatusStarted,
 	getProgressPercentage,
 	getProgressPercentageByIds,
 	getProgressState,
@@ -59,7 +58,6 @@ import {
 	postContentCompleted,
 	postContentLiked,
 	postContentReset,
-	postContentStarted,
 	postContentUnliked,
 	postRecordWatchSession,
 	updatePlaylist,
@@ -119,7 +117,6 @@ import {
 export {
 	contentStatusCompleted,
 	contentStatusReset,
-	contentStatusStarted,
 	createPlaylist,
 	deletePlaylist,
 	deletePlaylistItem,
@@ -211,7 +208,6 @@ export {
 	postContentCompleted,
 	postContentLiked,
 	postContentReset,
-	postContentStarted,
 	postContentUnliked,
 	postRecordWatchSession,
 	recordWatchSession,

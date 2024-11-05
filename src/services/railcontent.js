@@ -823,11 +823,6 @@ export async function fetchPlaylistItem(payload) {
     return await fetchHandler(url);
 }
 
-export async function postContentStarted(contentId) {
-    let url = `/content/${contentId}/started`;
-    return postDataHandler(url);
-}
-
 export async function postContentCompleted(contentId) {
     let url = `/content/${contentId}/completed`;
     return postDataHandler(url);

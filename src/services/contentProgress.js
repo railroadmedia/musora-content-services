@@ -48,26 +48,6 @@ export async function getResumeTimeSeconds(contentId) {
     return data[contentId]?.[DATA_KEY_RESUME_TIME] ?? 0;
 }
 
-export async function contentStatusStarted(contentId) {
-    await dataContext.update(
-        function (localContext) {
-            let data = localContext.data[contentId] ?? [];
-            let progress = data?.[DATA_KEY_PROGRESS] ?? 0;
-            let status = data?.[DATA_KEY_STATUS] ?? 0;
-
-            if (status !== STATE_COMPLETED && progress !== 100) {
-                status = STATE_STARTED;
-            }
-
-            data[DATA_KEY_STATUS] = status;
-            localContext.data[contentId] = data;
-        },
-        async function () {
-            return postContentStarted(contentId);
-        });
-}
-
-
 export async function contentStatusCompleted(contentId) {
     await dataContext.update(
         function (localContext) {
