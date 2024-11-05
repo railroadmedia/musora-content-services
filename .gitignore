@@ -128,3 +128,6 @@ dist
 # IDE settings
 .idea
 .codebuddy
+
+# Remove .swp file from Vim
+*.swp
