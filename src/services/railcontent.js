@@ -454,7 +454,7 @@ export async function postChallengesCommunityNotification(contentId) {
  * @param {int|string} contentId - railcontent id of the challenge
  * @returns {Promise<any|null>} - Modal data to display
  */
-export async function postCompleteLesson(contentId) {
+export async function postChallengesCompleteLesson(contentId) {
     let url = `/challenges/complete_lesson/${contentId}`;
     return await fetchHandler(url, 'post');
 }
