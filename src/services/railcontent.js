@@ -365,7 +365,7 @@ export async function fetchUserAward(contentId) {
 }
 
 /**
- * Get challange duration, user progress, and status for the list of challenges
+ * Get challenge duration, user progress, and status for the list of challenges
  * Intended to be used on the index page for challenges
  *
  * @param {array} contentIds - arary of railcontent ids of the challenges
@@ -374,6 +374,18 @@ export async function fetchUserAward(contentId) {
 export async function fetchChallengeIndexMetadata(contentIds) {
     let idsString = contentIds.toString();
     let url = `/challenges/user_progress_for_index_page/get?content_ids=${idsString}`;
+    return await fetchHandler(url, 'get');
+}
+
+/**
+ * Fetch all completed badges for the user ordered by completion date descending
+ *
+ * @param {string|null} brand -
+ * @returns {Promise<any|null>}
+ */
+export async function fetchUserBadges(brand = null) {
+    let brandParam = brand ? `?brand=${brand}` : '';
+    let url = `/challenges/user_badges/get${brandParam}`;
     return await fetchHandler(url, 'get');
 }
 
