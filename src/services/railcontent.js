@@ -544,9 +544,8 @@ export async function duplicatePlaylist(playlistId, playlistData) {
  *   .catch(error => console.error('Error deleting playlist:', error));
  */
 export async function deletePlaylist(playlistId) {
-    let url = `/playlists/playlist`;
-    const payload = { playlist_id: playlistId };
-    return await fetchHandler(url, "delete",  null, payload);
+    let url = `/playlists/playlist/${playlistId}`;
+    return await fetchHandler(url, "delete");
 }
 
 /**
@@ -692,7 +691,7 @@ export async function deletePlaylistLike(playlistId) {
  *   .catch(error => console.error('Error fetching playlist:', error));
  */
 export async function fetchPlaylist(playlistId) {
-    const url = `/playlists/playlist?playlist_id=${playlistId}`;
+    const url = `/playlists/playlist/${playlistId}`;
     return await fetchHandler(url, "GET");
 }
 
@@ -724,6 +723,7 @@ export async function fetchPlaylistItems(playlistId) {
  * @param {number} [updatedData.start_second] - (Optional) The start time in seconds for the item.
  * @param {number} [updatedData.end_second] - (Optional) The end time in seconds for the item.
  * @param {string} [updatedData.playlist_item_name] - (Optional) The new name for the playlist item.
+ * @param {number} [updatedData.position] - (Optional) The new position for the playlist item within the playlist.
  * @returns {Promise<Object|null>} - A promise that resolves to an object containing:
  *  - `success` (boolean): Indicates if the update was successful (`true` for success).
  *  - `data` (Object): The updated playlist item data.
@@ -736,7 +736,8 @@ export async function fetchPlaylistItems(playlistId) {
  *   user_playlist_item_id: 123,
  *   start_second: 30,
  *   end_second: 120,
- *   playlist_item_name: "Updated Playlist Item Name"
+ *   playlist_item_name: "Updated Playlist Item Name",
+ *   position: 2
  * };
  *
  * updatePlaylistItem(updatedData)
@@ -754,6 +755,74 @@ export async function updatePlaylistItem(updatedData) {
     return await fetchHandler(url, "POST", null, updatedData);
 }
 
+/**
+ * Deletes a playlist item and repositions other items in the playlist if necessary.
+ *
+ * @param {Object} payload - The data required to delete the playlist item.
+ * @param {number} payload.user_playlist_item_id - The ID of the playlist item to delete.
+ * @returns {Promise<Object|null>} - A promise that resolves to an object containing:
+ *  - `success` (boolean): Indicates if the deletion was successful (`true` for success).
+ *  - `message` (string): A success message if the item is deleted successfully.
+ *  - `error` (string): An error message if the deletion fails.
+ *
+ * Resolves to `null` if the request fails.
+ * @throws {Error} - Throws an error if the request fails.
+ *
+ * @example
+ * const payload = {
+ *   user_playlist_item_id: 123
+ * };
+ *
+ * deletePlaylistItem(payload)
+ *   .then(response => {
+ *     if (response.success) {
+ *       console.log("Playlist item deleted successfully:", response.message);
+ *     } else {
+ *       console.error("Error:", response.error);
+ *     }
+ *   })
+ *   .catch(error => {
+ *     console.error("Error deleting playlist item:", error);
+ *   });
+ */
+export async function deletePlaylistItem(payload) {
+    const url = `/playlists/item`;
+    return await fetchHandler(url, "DELETE", null, payload);
+}
+
+/**
+ * Fetches detailed data for a specific playlist item, including associated Sanity and Assignment information if available.
+ *
+ * @param {Object} payload - The request payload containing necessary parameters.
+ * @param {number} payload.user_playlist_item_id - The unique ID of the playlist item to fetch.
+ * @returns {Promise<Object|null>} - A promise that resolves to an object with the fetched playlist item data, including:
+ *  - `success` (boolean): Indicates if the data retrieval was successful (`true` on success).
+ *  - `data` (Object): Contains the detailed playlist item data enriched with Sanity and Assignment details, if available.
+ *
+ * Resolves to `null` if the request fails.
+ * @throws {Error} - Throws an error if the request encounters issues during retrieval.
+ *
+ * @example
+ * const payload = { user_playlist_item_id: 123 };
+ *
+ * fetchPlaylistItem(payload)
+ *   .then(response => {
+ *     if (response?.success) {
+ *       console.log("Fetched playlist item data:", response.data);
+ *     } else {
+ *       console.log("Failed to fetch playlist item data.");
+ *     }
+ *   })
+ *   .catch(error => {
+ *     console.error("Error fetching playlist item:", error);
+ *   });
+ */
+export async function fetchPlaylistItem(payload) {
+    const playlistItemId = payload.user_playlist_item_id;
+    const url = `/playlists/item/${playlistItemId}`;
+    return await fetchHandler(url);
+}
+
 export async function postContentStarted(contentId) {
     let url = `/content/${contentId}/started`;
     return postDataHandler(url);
@@ -768,7 +837,6 @@ export async function postContentReset(contentId) {
     let url = `/content/${contentId}/reset`;
     return postDataHandler(url);
 }
-
 
 
 function fetchAbsolute(url, params) {
