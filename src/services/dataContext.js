@@ -34,7 +34,7 @@ export class DataContext {
                 this.context = data;
                 cache.setItem(this.localStorageKey, JSON.stringify(data));
             }
-            cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime());
+            cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime()?.toString());
         }
         return this.context.data;
     }
@@ -83,10 +83,10 @@ export class DataContext {
             this.context.version++;
             let data = JSON.stringify(this.context);
             cache.setItem(this.localStorageKey, data);
-            cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime());
+            cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime().toString());
         }
         let response = await serverUpdateFunction();
-        if (response.version !== this.version()) {
+        if (response?.version !== this.version()) {
             this.clearCache();
         }
     }
