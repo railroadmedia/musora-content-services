@@ -265,11 +265,11 @@ export async function fetchHandler(url, method = "get", dataVersion = null, body
     }
     try {
         const response = await fetchAbsolute(url, options);
-        const result = await response.json();
-        if (result) {
-            return result;
+        if (response.ok) {
+            return await response.json();
         } else {
-            console.log('result not json');
+            console.log('fetch error:', response.status);
+            console.log(response);
         }
     } catch (error) {
         console.error('Fetch error:', error);
@@ -298,15 +298,15 @@ export async function fetchContentProgress(currentVersion) {
 }
 
 export async function postRecordWatchSession({
-                                                mediaId,
-                                                mediaType,
-                                                mediaCategory,
-                                                watchPosition,
-                                                totalDuration,
-                                                sessionToken,
-                                                brand,
-                                                contentId = null
-                                            }) {
+                                                 mediaId,
+                                                 mediaType,
+                                                 mediaCategory,
+                                                 watchPosition,
+                                                 totalDuration,
+                                                 sessionToken,
+                                                 brand,
+                                                 contentId = null
+                                             }) {
     let url = `/railtracker/media-playback-session`;
     return postDataHandler(url, {
         mediaId,
@@ -493,8 +493,8 @@ export async function fetchUserPlaylists(brand, {page, limit, sort, searchTerm} 
     let url;
     const limitString = limit ? `&limit=${limit}` : '';
     const pageString = page ? `&page=${page}` : '';
-    const sortString = sort ? `&sort=${sort}`:'';
-    const searchFilter = searchTerm ? `&term=${searchTerm}`: '';
+    const sortString = sort ? `&sort=${sort}` : '';
+    const searchFilter = searchTerm ? `&term=${searchTerm}` : '';
     url = `/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}`;
     return await fetchHandler(url);
 }
@@ -529,7 +529,7 @@ export async function fetchUserPlaylists(brand, {page, limit, sort, searchTerm} 
  */
 export async function duplicatePlaylist(playlistId, playlistData) {
     let url = `/playlists/duplicate/${playlistId}`;
-    return await fetchHandler(url, "post",null, playlistData);
+    return await fetchHandler(url, "post", null, playlistData);
 }
 
 /**
@@ -655,7 +655,7 @@ export async function createPlaylist(playlistData) {
  */
 export async function likePlaylist(playlistId) {
     const url = `/playlists/like`;
-    const payload = { playlist_id: playlistId };
+    const payload = {playlist_id: playlistId};
     return await fetchHandler(url, "PUT", null, payload);
 }
 
@@ -682,7 +682,7 @@ export async function likePlaylist(playlistId) {
  */
 export async function deletePlaylistLike(playlistId) {
     const url = `/playlists/like`;
-    const payload = { playlist_id: playlistId };
+    const payload = {playlist_id: playlistId};
     return await fetchHandler(url, "DELETE", null, payload);
 }
 
