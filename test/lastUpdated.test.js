@@ -1,5 +1,5 @@
-const {initializeTestService} = require("./sanityQueryService.test");
 const {setLastUpdatedTime, wasLastUpdateOlderThanXSeconds} = require("../src/services/lastUpdated");
+const {initializeTestService} = require("./initializeTests");
 
 describe('lastUpdated', function () {
 

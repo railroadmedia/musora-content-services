@@ -1,14 +1,9 @@
-const railContentModule = require('../src/services/railcontent.js')
 const {fetchUserPermissions} = require("../src/services/userPermissions");
-const {initializeTestService} = require("./sanityQueryService.test");
+const {initializeTestService} = require("./initializeTests");
 
 describe('userPermissions', function () {
-    let mock = null;
-    let testData = {"permissions": [1, 52, 72, 73, 77, 78, 81, 92], "isAdmin": false};
     beforeEach(() => {
-        initializeTestService();
-        mock = jest.spyOn(railContentModule, 'fetchUserPermissionsData');
-        mock.mockImplementation(() => testData);
+       initializeTestService();
     });
 
     test('fetchUserPermissions', async () => {
@@ -17,7 +12,8 @@ describe('userPermissions', function () {
 
         //This breaks when running tests in parallel
         //expect(railContentModule.fetchUserPermissionsData).toHaveBeenCalledTimes(1);
-        expect(result).toBe(testData);
+        expect(result.permissions).toStrictEqual([78,91,92]);
+        expect(result.isAdmin).toStrictEqual(false);
         expect(result).toBe(result2);
     });
 });
