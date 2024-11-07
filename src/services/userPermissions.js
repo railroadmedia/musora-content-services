@@ -8,7 +8,7 @@ import {setLastUpdatedTime, wasLastUpdateOlderThanXSeconds} from "./lastUpdated"
  *
  * @type {string[]}
  */
-const excludeFromGeneratedIndex = ['wasLastUpdateOlderThanXSeconds'];
+const excludeFromGeneratedIndex = [];
 let userPermissionsPromise = null;
 let lastUpdatedKey = `userPermissions_lastUpdated`;
 
