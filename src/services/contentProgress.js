@@ -2,17 +2,17 @@ import {
     fetchContentProgress,
     postContentCompleted,
     postContentReset,
-    postContentStarted,
     postRecordWatchSession
 } from "./railcontent";
 import {DataContext, ContentProgressVersionKey} from "./dataContext";
-import {fetchHierarchy, fetchParentByRailContentId} from "./sanity";
+import {fetchHierarchy} from "./sanity";
 
 const STATE_STARTED = 'started';
 const STATE_COMPLETED = 'completed';
 const DATA_KEY_STATUS = 's';
 const DATA_KEY_PROGRESS = 'p';
 const DATA_KEY_RESUME_TIME = 't';
+const DATA_KEY_LAST_UPDATED_TIME = 'u';
 export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress);
 
 export async function getProgressPercentage(contentId) {
@@ -43,23 +43,41 @@ export async function getProgressStateByIds(contentIds) {
     return progress;
 }
 
-export async function getAllStarted() {
+export async function getAllStarted(limit = null) {
     const data = await dataContext.getData();
     let ids = Object.keys(data).filter(function (key) {
         return data[parseInt(key)][DATA_KEY_STATUS] === STATE_STARTED;
     }).map(function (key) {
         return parseInt(key);
+    }).sort(function (a, b) {
+        let v1 = data[a][DATA_KEY_LAST_UPDATED_TIME];
+        let v2 = data[b][DATA_KEY_LAST_UPDATED_TIME];
+        if (v1 > v2) return -1;
+        else if (v1 < v2) return 1;
+        return 0;
     });
+    if (limit) {
+        ids = ids.slice(0, limit);
+    }
     return ids;
 }
 
-export async function getAllCompleted() {
+export async function getAllCompleted(limit = null) {
     const data = await dataContext.getData();
     let ids = Object.keys(data).filter(function (key) {
         return data[parseInt(key)][DATA_KEY_STATUS] === STATE_COMPLETED;
     }).map(function (key) {
         return parseInt(key);
+    }).sort(function (a, b) {
+        let v1 = data[a][DATA_KEY_LAST_UPDATED_TIME];
+        let v2 = data[b][DATA_KEY_LAST_UPDATED_TIME];
+        if (v1 > v2) return -1;
+        else if (v1 < v2) return 1;
+        return 0;
     });
+    if (limit) {
+        ids = ids.slice(0, limit);
+    }
     return ids;
 }
 
@@ -83,6 +101,7 @@ function completeStatusInLocalContext(contentId, localContext, hierarchy) {
     let data = localContext.data[contentId] ?? [];
     data[DATA_KEY_STATUS] = STATE_COMPLETED;
     data[DATA_KEY_PROGRESS] = 100;
+    data[DATA_KEY_LAST_UPDATED_TIME] = new Date().getTime()?.toString();
     localContext.data[contentId] = data;
 
     let children = hierarchy.children[contentId] ?? [];
@@ -137,6 +156,7 @@ export async function recordWatchSession(contentId, mediaType, mediaCategory, me
                 data[DATA_KEY_PROGRESS] = progress;
                 data[DATA_KEY_STATUS] = status;
                 data[DATA_KEY_RESUME_TIME] = currentSeconds;
+                data[DATA_KEY_LAST_UPDATED_TIME] = new Date().getTime()?.toString();
                 localContext.data[contentId] = data;
 
                 let hierarchy = await fetchHierarchy(contentId);

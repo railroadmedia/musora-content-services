@@ -15,7 +15,7 @@ describe('contentProgressDataContext', function () {
     beforeEach(() => {
         initializeTestService();
         mock = jest.spyOn(dataContext, 'fetchData');
-        var json = JSON.parse(`{"version":${testVersion},"data":{"234191":{"s":"started","p":6,"t":20},"233955":{"s":"started","p":1},"259426":{"s":"completed","p":100}}}`);
+        var json = JSON.parse(`{"version":${testVersion},"data":{"234191":{"s":"started","p":6,"t":20,"u":1731108880082},"233955":{"s":"started","p":1,"u":1731108880083},"259426":{"s":"completed","p":100,"u":1731108880085}}}`);
         mock.mockImplementation(() => json);
 
     });
@@ -49,13 +49,15 @@ describe('contentProgressDataContext', function () {
 
     test('getAllStarted', async () => {
         let result = await getAllStarted();
-        expect(result).toContain(234191);
-        expect(result).toContain(233955);
+        expect(result).toStrictEqual([233955, 234191]);
+
+        result = await getAllStarted(1);
+        expect(result).toStrictEqual([233955]);
     });
 
     test('getAllCompleted', async () => {
         let result = await getAllCompleted();
-        expect(result).toContain(259426);
+        expect(result).toStrictEqual([259426]);
     });
 
     test('progressBubbling', async () => {
