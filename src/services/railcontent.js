@@ -835,6 +835,81 @@ export async function postContentReset(contentId) {
     return postDataHandler(url);
 }
 
+/**
+ * Adds an item to one or more playlists by making a POST request to the `/playlists/add-item` endpoint.
+ *
+ * @param {Object} payload - The request payload containing necessary parameters.
+ * @param {number} payload.content_id - The ID of the content to add to the playlist(s).
+ * @param {Array<number>} payload.playlist_id - An array of playlist IDs where the content should be added.
+ * @param {boolean} [payload.import_full_soundslice_assignment=false] - Flag to include full Soundslice assignments.
+ * @param {boolean} [payload.import_instrumentless_soundslice_assignment=false] - Flag to include instrumentless Soundslice assignments.
+ * @param {boolean} [payload.import_high_routine=false] - Flag to include high routine content.
+ * @param {boolean} [payload.import_low_routine=false] - Flag to include low routine content.
+ * @param {boolean} [payload.import_all_assignments=false] - Flag to include all Soundslice assignments if true.
+ *
+ * @returns {Promise<Object|null>} - A promise that resolves to an object with the response data, including:
+ *  - `success` (boolean): Indicates if the items were added successfully (`true` on success).
+ *  - `limit_excedeed` (Array): A list of playlists where the item limit was exceeded, if any.
+ *  - `successful` (Array): A list of successfully added items (empty if none).
+ *
+ * Resolves to `null` if the request fails.
+ * @throws {Error} - Throws an error if the request encounters issues during the operation.
+ *
+ * @example
+ * const payload = {
+ *     content_id: 123,
+ *     playlist_id: [1, 2, 3],
+ *     import_all_assignments: true
+ * };
+ *
+ * addItemToPlaylist(payload)
+ *   .then(response => {
+ *     if (response?.success) {
+ *       console.log("Item(s) added to playlist successfully");
+ *     }
+ *     if (response?.limit_excedeed) {
+ *       console.warn("Some playlists exceeded the item limit:", response.limit_excedeed);
+ *     }
+ *   })
+ *   .catch(error => {
+ *     console.error("Error adding item to playlist:", error);
+ *   });
+ */
+export async function addItemToPlaylist(payload) {
+    const url = `/playlists/add-item`;
+    return await fetchHandler(url, "POST", null, payload);
+}
+
+/**
+ * Retrieves the count of lessons and assignments associated with a specific content ID.
+ *
+ * @param {number} contentId - The ID of the content for which to count lessons and assignments.
+ *
+ * @returns {Promise<Object|null>} - A promise that resolves to an object containing the counts:
+ *  - `lessons_count` (number): The number of lessons associated with the content.
+ *  - `soundslice_assignments_count` (number): The number of Soundslice assignments associated with the content.
+ *
+ * @example
+ * const contentId = 123;
+ *
+ * countAssignmentsAndLessons(contentId)
+ *   .then(response => {
+ *     if (response) {
+ *       console.log("Lessons count:", response.lessons_count);
+ *       console.log("Soundslice assignments count:", response.soundslice_assignments_count);
+ *     } else {
+ *       console.log("Failed to retrieve counts.");
+ *     }
+ *   })
+ *   .catch(error => {
+ *     console.error("Error fetching assignments and lessons count:", error);
+ *   });
+ */
+export async function countAssignmentsAndLessons(contentId) {
+    const url = `/playlists/count-lessons-and-assignments/${contentId}`;
+    return await fetchHandler(url);
+}
+
 
 function fetchAbsolute(url, params) {
     if (globalConfig.railcontentConfig.baseUrl) {
