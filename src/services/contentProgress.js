@@ -13,42 +13,40 @@ const STATE_COMPLETED = 'completed';
 const DATA_KEY_STATUS = 's';
 const DATA_KEY_PROGRESS = 'p';
 const DATA_KEY_RESUME_TIME = 't';
-export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress());
+export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress);
 
 export async function getProgressPercentage(contentId) {
     let data = await dataContext.getData();
     return data[contentId]?.[DATA_KEY_PROGRESS] ?? 0;
 }
 
+export async function getProgressPercentageByIds(contentIds) {
+    const data = await dataContext.getData();
+    let progress = {};
+
+    contentIds?.forEach(id => progress[id] = data[id]?.[DATA_KEY_PROGRESS] ?? 0);
+
+    return progress;
+}
+
 export async function getProgressState(contentId) {
     let data = await dataContext.getData();
-    return data[contentId]?.[DATA_KEY_STATUS] ?? 0;
+    return data[contentId]?.[DATA_KEY_STATUS] ?? "";
+}
+
+export async function getProgressStateByIds(contentIds) {
+    const data = await dataContext.getData();
+    let progress = {};
+
+    contentIds?.forEach(id => progress[id] = data[id]?.[DATA_KEY_STATUS] ?? "");
+
+    return progress;
 }
 
 export async function getResumeTimeSeconds(contentId) {
     let data = await dataContext.getData();
     return data[contentId]?.[DATA_KEY_RESUME_TIME] ?? 0;
 }
-
-export async function contentStatusStarted(contentId) {
-    await dataContext.update(
-        function (localContext) {
-            let data = localContext.data[contentId] ?? [];
-            let progress = data?.[DATA_KEY_PROGRESS] ?? 0;
-            let status = data?.[DATA_KEY_STATUS] ?? 0;
-
-            if (status !== STATE_COMPLETED && progress !== 100) {
-                status = STATE_STARTED;
-            }
-
-            data[DATA_KEY_STATUS] = status;
-            localContext.data[contentId] = data;
-        },
-        async function () {
-            return postContentStarted(contentId);
-        });
-}
-
 
 export async function contentStatusCompleted(contentId) {
     await dataContext.update(
@@ -68,8 +66,8 @@ function completeStatusInLocalContext(contentId, localContext, hierarchy) {
     localContext.data[contentId] = data;
 
     let children = hierarchy.children[contentId] ?? [];
-    for(let i = 0; i < children.length; i++) {
-        let childId  = children[i];
+    for (let i = 0; i < children.length; i++) {
+        let childId = children[i];
         completeStatusInLocalContext(childId, localContext, hierarchy);
     }
 }
@@ -77,9 +75,9 @@ function completeStatusInLocalContext(contentId, localContext, hierarchy) {
 export async function contentStatusReset(contentId) {
     await dataContext.update(
         function (localContext) {
-            const index = localContext.data.indexOf(contentId);
+            const index = Object.keys(localContext.data).indexOf(contentId);
             if (index > -1) { // only splice array when item is found
-                localContext.data.splice(index, 1); // 2nd parameter means remove one item only
+                delete localContext.data[contentId];
             }
         },
         async function () {
@@ -87,32 +85,38 @@ export async function contentStatusReset(contentId) {
         });
 }
 
-
-export async function recordWatchSession({
-                                             mediaId,
-                                             mediaType,
-                                             mediaCategory,
-                                             watchPositionSeconds,
-                                             totalDurationSeconds,
-                                             sessionToken,
-                                             brand,
-                                             contentId = null
-                                         }) {
+/**
+ * Record watch session
+ * @return {string} sessionId - provide in future calls to update progress
+ * @param {int} contentId
+ * @param {string} mediaType - options are video, assignment, practice
+ * @param {string} mediaCategory - options are youtube, vimeo, soundslice, play-alongs
+ * @param {int} mediaLengthSeconds
+ * @param {int} currentSeconds
+ * @param {int} secondsPlayed
+ * @param {string} sessionId - This function records a sessionId to pass into future updates to progress on the same video
+ */
+export async function recordWatchSession(contentId, mediaType, mediaCategory, mediaLengthSeconds, currentSeconds, secondsPlayed, sessionId = null) {
+    let mediaTypeId = getMediaTypeId(mediaType, mediaCategory);
+    let updateLocalProgress = mediaTypeId === 1 || mediaTypeId === 2; //only update for video playback
+    if (!sessionId) {
+        sessionId = uuidv4();
+    }
     await dataContext.update(
         async function (localContext) {
-            if (contentId) {
+            if (contentId && updateLocalProgress) {
                 let data = localContext.data[contentId] ?? [];
                 let progress = data?.[DATA_KEY_PROGRESS] ?? 0;
                 let status = data?.[DATA_KEY_STATUS] ?? 0;
 
                 if (status !== STATE_COMPLETED && progress !== 100) {
                     status = STATE_STARTED;
-                    progress = Math.min(99, Math.round(watchPositionSeconds ?? 0 / Math.max(1, totalDurationSeconds ?? 0) * 100));
+                    progress = Math.min(99, Math.round(currentSeconds ?? 0 / Math.max(1, mediaLengthSeconds ?? 0) * 100));
                 }
 
                 data[DATA_KEY_PROGRESS] = progress;
                 data[DATA_KEY_STATUS] = status;
-                data[DATA_KEY_RESUME_TIME] = watchPositionSeconds;
+                data[DATA_KEY_RESUME_TIME] = currentSeconds;
                 localContext.data[contentId] = data;
 
                 let hierarchy = await fetchHierarchy(contentId);
@@ -120,17 +124,30 @@ export async function recordWatchSession({
             }
         },
         async function () {
-            return postRecordWatchSession({
-                mediaId,
-                mediaType,
-                mediaCategory,
-                watchPositionSeconds,
-                totalDurationSeconds,
-                sessionToken,
-                brand,
-                contentId
-            });
+            return postRecordWatchSession(contentId, mediaTypeId, mediaLengthSeconds, currentSeconds, secondsPlayed, sessionId);
         }
+    );
+    return sessionId;
+}
+
+function getMediaTypeId(mediaType, mediaCategory) {
+    switch (`${mediaType}_${mediaCategory}`) {
+        case "video_youtube":
+            return 1;
+        case "video_vimeo":
+            return 2;
+        case "assignment_soundslice":
+            return 3;
+        case "practice_play-alongs":
+            return 4;
+        default:
+            throw Error(`Unsupported media type: ${mediaType}_${mediaCategory}`);
+    }
+}
+
+function uuidv4() {
+    return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
+        (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
     );
 }
 

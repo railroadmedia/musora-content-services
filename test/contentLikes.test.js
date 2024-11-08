@@ -1,6 +1,5 @@
 import {isContentLiked, dataContext, likeContent, unlikeContent} from "../src/services/contentLikes";
-import {LocalStorageMock} from "./localStorageMock";
-import {initializeService} from "../src";
+import {initializeTestService} from "./initializeTests";
 
 const railContentModule = require('../src/services/railcontent.js')
 
@@ -9,7 +8,7 @@ describe('contentLikesDataContext', function () {
     const testVersion = 1;
 
     beforeEach(() => {
-        initializeService({localStorage: new LocalStorageMock()});
+        initializeTestService();
         mock = jest.spyOn(dataContext, 'fetchData');
         var json = JSON.parse(`{"version":${testVersion},"data":[308516,308515,308514,308518]}`);
         mock.mockImplementation(() => json);

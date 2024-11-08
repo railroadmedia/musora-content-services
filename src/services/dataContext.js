@@ -19,8 +19,8 @@ export class DataContext {
     constructor(dataVersionKey, fetchDataFunction) {
         this.dataVersionKey = dataVersionKey;
         this.fetchDataFunction = fetchDataFunction;
-        this.localStorageKey = `dataContext_${this.dataVersionKey}`;
-        this.localStorageLastUpdatedKey = `dataContext_${this.dataVersionKey}_lastUpdated`;
+        this.localStorageKey = `dataContext_${this.dataVersionKey.toString()}`;
+        this.localStorageLastUpdatedKey = `dataContext_${this.dataVersionKey.toString()}_lastUpdated`;
     }
 
     async getData() {
@@ -34,7 +34,7 @@ export class DataContext {
                 this.context = data;
                 cache.setItem(this.localStorageKey, JSON.stringify(data));
             }
-            cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime());
+            cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime()?.toString());
         }
         return this.context.data;
     }
@@ -83,10 +83,10 @@ export class DataContext {
             this.context.version++;
             let data = JSON.stringify(this.context);
             cache.setItem(this.localStorageKey, data);
-            cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime());
+            cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime().toString());
         }
         let response = await serverUpdateFunction();
-        if (response.version !== this.version()) {
+        if (response?.version !== this.version()) {
             this.clearCache();
         }
     }

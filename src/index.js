@@ -14,9 +14,10 @@ import {
 import {
 	contentStatusCompleted,
 	contentStatusReset,
-	contentStatusStarted,
 	getProgressPercentage,
+	getProgressPercentageByIds,
 	getProgressState,
+	getProgressStateByIds,
 	getResumeTimeSeconds,
 	recordWatchSession
 } from './services/contentProgress.js';
@@ -44,22 +45,22 @@ import {
 	fetchPlaylistItems,
 	fetchSongsInProgress,
 	fetchUserAward,
+	fetchUserBadges,
 	fetchUserChallengeProgress,
 	fetchUserLikes,
-	fetchUserPermissions,
+	fetchUserPermissionsData,
 	fetchUserPlaylists,
 	likePlaylist,
 	postChallengesCommunityNotification,
+	postChallengesCompleteLesson,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock,
-	postCompleteLesson,
 	postContentCompleted,
 	postContentLiked,
 	postContentReset,
-	postContentStarted,
 	postContentUnliked,
 	postRecordWatchSession,
 	updatePlaylist,
@@ -116,12 +117,20 @@ import {
 	getSortOrder
 } from './services/sanity.js';
 
+import {
+	fetchUserPermissions,
+	reset
+} from './services/userPermissions.js';
+
 export {
 	addItemToPlaylist,
 	contentStatusCompleted,
 	contentStatusReset,
+<<<<<<< HEAD
 	contentStatusStarted,
 	countAssignmentsAndLessons,
+=======
+>>>>>>> main
 	createPlaylist,
 	deletePlaylist,
 	deletePlaylistItem,
@@ -187,13 +196,17 @@ export {
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	fetchUserAward,
+	fetchUserBadges,
 	fetchUserChallengeProgress,
 	fetchUserLikes,
 	fetchUserPermissions,
+	fetchUserPermissionsData,
 	fetchUserPlaylists,
 	fetchWorkouts,
 	getProgressPercentage,
+	getProgressPercentageByIds,
 	getProgressState,
+	getProgressStateByIds,
 	getResumeTimeSeconds,
 	getSortOrder,
 	globalConfig,
@@ -202,19 +215,19 @@ export {
 	likeContent,
 	likePlaylist,
 	postChallengesCommunityNotification,
+	postChallengesCompleteLesson,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,
 	postChallengesLeave,
 	postChallengesSetStartDate,
 	postChallengesUnlock,
-	postCompleteLesson,
 	postContentCompleted,
 	postContentLiked,
 	postContentReset,
-	postContentStarted,
 	postContentUnliked,
 	postRecordWatchSession,
 	recordWatchSession,
+	reset,
 	unlikeContent,
 	updatePlaylist,
 	updatePlaylistItem,

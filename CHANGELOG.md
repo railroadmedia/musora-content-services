@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.160](https://github.com/railroadmedia/musora-content-services/compare/v1.0.159...v1.0.160) (2024-11-08)
+
+### [1.0.159](https://github.com/railroadmedia/musora-content-services/compare/v1.0.158...v1.0.159) (2024-11-08)
+
+### [1.0.158](https://github.com/railroadmedia/musora-content-services/compare/v1.0.157...v1.0.158) (2024-11-08)
+
+### [1.0.157](https://github.com/railroadmedia/musora-content-services/compare/v1.0.156...v1.0.157) (2024-11-08)
+
+### [1.0.156](https://github.com/railroadmedia/musora-content-services/compare/v1.0.155...v1.0.156) (2024-11-06)
+
+### [1.0.155](https://github.com/railroadmedia/musora-content-services/compare/v1.0.154...v1.0.155) (2024-11-05)
+
+### [1.0.154](https://github.com/railroadmedia/musora-content-services/compare/v1.0.153...v1.0.154) (2024-11-05)
+
+### [1.0.153](https://github.com/railroadmedia/musora-content-services/compare/v1.0.152...v1.0.153) (2024-11-05)
+
 ### [1.0.152](https://github.com/railroadmedia/musora-content-services/compare/v1.0.142...v1.0.152) (2024-11-05)
 
 ### [1.0.151](https://github.com/railroadmedia/musora-content-services/compare/v1.0.142...v1.0.151) (2024-11-05)

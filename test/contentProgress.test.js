@@ -1,5 +1,10 @@
-import {getProgressPercentage, dataContext, recordWatchSession} from "../src/services/contentProgress";
-import {initializeTestService} from "./sanityQueryService.test";
+import {
+    getProgressPercentage,
+    dataContext,
+    recordWatchSession,
+    getProgressPercentageByIds, getProgressState, getProgressStateByIds
+} from "../src/services/contentProgress";
+import {initializeTestService} from "./initializeTests";
 
 const railContentModule = require('../src/services/railcontent.js')
 
@@ -20,9 +25,26 @@ describe('contentProgressDataContext', function () {
         expect(result).toBe(6);
     });
 
+    test('getProgressPercentageByIds', async () => {
+        let result = await getProgressPercentageByIds([234191, 111111]);
+        expect(result[234191]).toBe(6);
+        expect(result[111111]).toBe(0);
+    });
+
     test('getProgressPercentage_notExists', async () => {
         let result = await getProgressPercentage(111111);
         expect(result).toBe(0);
+    });
+
+    test('getProgressState', async () => {
+        let result = await getProgressState(234191);
+        expect(result).toBe("started");
+    });
+
+    test('getProgressStateByIds', async () => {
+        let result = await getProgressStateByIds([234191, 120402]);
+        expect(result[234191]).toBe("started");
+        expect(result[120402]).toBe("");
     });
 
     test('progressBubbling', async () => {
@@ -31,17 +53,17 @@ describe('contentProgressDataContext', function () {
         mock2.mockImplementation(() => JSON.parse(`{"version": ${serverVersion}}`));
         let progress = await getProgressPercentage(241250); //force load context
 
-        let result = await recordWatchSession({watchPositionSeconds: 50, totalDurationSeconds: 100, contentId: 241250});
+        await recordWatchSession(241250, "video", "vimeo", 100, 50, 50);
         serverVersion++;
-        await recordWatchSession({watchPositionSeconds: 50, totalDurationSeconds: 100, contentId: 241251});
+        await recordWatchSession(241251, "video", "vimeo", 100, 50, 50);
         serverVersion++;
-        await recordWatchSession({watchPositionSeconds: 50, totalDurationSeconds: 100, contentId: 241252});
+        await recordWatchSession(241252, "video", "vimeo", 100, 50, 50);
         serverVersion++;
-        await recordWatchSession({watchPositionSeconds: 100, totalDurationSeconds: 100, contentId: 241260});
+        await recordWatchSession(241260, "video", "vimeo", 100, 100, 100);
         serverVersion++;
-        await recordWatchSession({watchPositionSeconds: 100, totalDurationSeconds: 100, contentId: 241261});
+        await recordWatchSession(241261, "video", "vimeo", 100, 100, 100);
         serverVersion++;
-        progress = await getProgressPercentage(241250); //force load context
+        progress = await getProgressPercentage(241250);
 
         expect(progress).toBe(50);
         let progress241249 = await getProgressPercentage(241249);
