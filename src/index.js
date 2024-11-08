@@ -46,7 +46,7 @@ import {
 	fetchUserBadges,
 	fetchUserChallengeProgress,
 	fetchUserLikes,
-	fetchUserPermissions,
+	fetchUserPermissionsData,
 	fetchUserPlaylists,
 	likePlaylist,
 	postChallengesCommunityNotification,
@@ -114,6 +114,11 @@ import {
 	fetchWorkouts,
 	getSortOrder
 } from './services/sanity.js';
+
+import {
+	fetchUserPermissions,
+	reset
+} from './services/userPermissions.js';
 
 export {
 	contentStatusCompleted,
@@ -187,6 +192,7 @@ export {
 	fetchUserChallengeProgress,
 	fetchUserLikes,
 	fetchUserPermissions,
+	fetchUserPermissionsData,
 	fetchUserPlaylists,
 	fetchWorkouts,
 	getProgressPercentage,
@@ -213,6 +219,7 @@ export {
 	postContentUnliked,
 	postRecordWatchSession,
 	recordWatchSession,
+	reset,
 	unlikeContent,
 	updatePlaylist,
 	updatePlaylistItem,

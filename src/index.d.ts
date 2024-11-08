@@ -46,7 +46,7 @@ import {
 	fetchUserBadges,
 	fetchUserChallengeProgress,
 	fetchUserLikes,
-	fetchUserPermissions,
+	fetchUserPermissionsData,
 	fetchUserPlaylists,
 	likePlaylist,
 	postChallengesCommunityNotification,
@@ -114,6 +114,11 @@ import {
 	fetchWorkouts,
 	getSortOrder
 } from './services/sanity.js';
+
+import {
+	fetchUserPermissions,
+	reset
+} from './services/userPermissions.js';
 
 declare module 'musora-content-services' {
 	export {
@@ -188,6 +193,7 @@ declare module 'musora-content-services' {
 		fetchUserChallengeProgress,
 		fetchUserLikes,
 		fetchUserPermissions,
+		fetchUserPermissionsData,
 		fetchUserPlaylists,
 		fetchWorkouts,
 		getProgressPercentage,
@@ -214,6 +220,7 @@ declare module 'musora-content-services' {
 		postContentUnliked,
 		postRecordWatchSession,
 		recordWatchSession,
+		reset,
 		unlikeContent,
 		updatePlaylist,
 		updatePlaylistItem,

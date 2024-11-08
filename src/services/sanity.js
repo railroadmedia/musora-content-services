@@ -23,8 +23,9 @@ import {
 
 import {globalConfig} from "./config";
 
-import { fetchUserPermissions, fetchAllCompletedStates, fetchCurrentSongComplete } from './railcontent.js';
+import {fetchAllCompletedStates, fetchCurrentSongComplete} from './railcontent.js';
 import {arrayToStringRepresentation, FilterBuilder} from "../filterBuilder";
+import {fetchUserPermissions} from "./userPermissions";
 
 /**
  * Exported functions that are excluded from index generation.
@@ -32,21 +33,22 @@ import {arrayToStringRepresentation, FilterBuilder} from "../filterBuilder";
  * @type {string[]}
  */
 const excludeFromGeneratedIndex = [];
+
 /**
-* Fetch a song by its document ID from Sanity.
-*
-* @param {string} documentId - The ID of the document to fetch.
-* @returns {Promise<Object|null>} - A promise that resolves to an object containing the song data or null if not found.
-*
-* @example
-* fetchSongById('abc123')
-*   .then(song => console.log(song))
-*   .catch(error => console.error(error));
-*/
+ * Fetch a song by its document ID from Sanity.
+ *
+ * @param {string} documentId - The ID of the document to fetch.
+ * @returns {Promise<Object|null>} - A promise that resolves to an object containing the song data or null if not found.
+ *
+ * @example
+ * fetchSongById('abc123')
+ *   .then(song => console.log(song))
+ *   .catch(error => console.error(error));
+ */
 export async function fetchSongById(documentId) {
     const fields = getFieldsForContentType('song');
     const filterParams = {};
-    const query = buildQuery(
+    const query = await buildQuery(
         `_type == "song" && railcontent_id == ${documentId}`,
         filterParams,
         fields,
@@ -57,48 +59,48 @@ export async function fetchSongById(documentId) {
 }
 
 /**
-* Fetch all artists with lessons available for a specific brand.
-*
-* @param {string} brand - The brand for which to fetch artists.
-* @returns {Promise<Object|null>} - A promise that resolves to an array of artist objects or null if not found.
-*
-* @example
-* fetchArtists('drumeo')
-*   .then(artists => console.log(artists))
-*   .catch(error => console.error(error));
-*/
+ * Fetch all artists with lessons available for a specific brand.
+ *
+ * @param {string} brand - The brand for which to fetch artists.
+ * @returns {Promise<Object|null>} - A promise that resolves to an array of artist objects or null if not found.
+ *
+ * @example
+ * fetchArtists('drumeo')
+ *   .then(artists => console.log(artists))
+ *   .catch(error => console.error(error));
+ */
 export async function fetchArtists(brand) {
-  const filter = new FilterBuilder(`_type == "song" && brand == "${brand}" && references(^._id)`).buildFilter();
-  const query = `
+    const filter = await new FilterBuilder(`_type == "song" && brand == "${brand}" && references(^._id)`, {bypassPermissions: true}).buildFilter();
+    const query = `
   *[_type == "artist"]{
     name,
     "lessonsCount": count(*[${filter}])
   }[lessonsCount > 0]`;
-  return fetchSanity(query, true, {processNeedAccess:false});
+    return fetchSanity(query, true, {processNeedAccess: false});
 }
 
 /**
-* Fetch current number of artists for songs within a brand.
-* @param {string} brand - The current brand.
-* @returns {Promise<int|null>} - The fetched count of artists.
-*/
+ * Fetch current number of artists for songs within a brand.
+ * @param {string} brand - The current brand.
+ * @returns {Promise<int|null>} - The fetched count of artists.
+ */
 export async function fetchSongArtistCount(brand) {
-  const query = `count(*[_type == 'artist']{'lessonsCount': count(*[_type == 'song' && brand == '${brand}' && references(^._id)]._id)}[lessonsCount > 0])`;
-  return fetchSanity(query, true, {processNeedAccess:false});
+    const query = `count(*[_type == 'artist']{'lessonsCount': count(*[_type == 'song' && brand == '${brand}' && references(^._id)]._id)}[lessonsCount > 0])`;
+    return fetchSanity(query, true, {processNeedAccess: false});
 }
 
 /**
-* Fetch related songs for a specific brand and song ID.
-*
-* @param {string} brand - The brand for which to fetch related songs.
-* @param {string} songId - The ID of the song to find related songs for.
-* @returns {Promise<Object|null>} - A promise that resolves to an array of related song objects or null if not found.
-*
-* @example
-* fetchRelatedSongs('drumeo', '12345')
-*   .then(relatedSongs => console.log(relatedSongs))
-*   .catch(error => console.error(error));
-*/
+ * Fetch related songs for a specific brand and song ID.
+ *
+ * @param {string} brand - The brand for which to fetch related songs.
+ * @param {string} songId - The ID of the song to find related songs for.
+ * @returns {Promise<Object|null>} - A promise that resolves to an array of related song objects or null if not found.
+ *
+ * @example
+ * fetchRelatedSongs('drumeo', '12345')
+ *   .then(relatedSongs => console.log(relatedSongs))
+ *   .catch(error => console.error(error));
+ */
 export async function fetchRelatedSongs(brand, songId) {
     const query = `
       *[_type == "song" && railcontent_id == ${songId}]{
@@ -190,29 +192,29 @@ export async function fetchRelatedSongs(brand, songId) {
  *   .catch(error => console.error(error));
  */
 export async function fetchAllSongs(brand, {
-  page = 1,
-  limit = 10,
-  searchTerm = "",
-  sort = "-published_on",
-  includedFields = [],
-  groupBy = ""
+    page = 1,
+    limit = 10,
+    searchTerm = "",
+    sort = "-published_on",
+    includedFields = [],
+    groupBy = ""
 }) {
     return fetchAll(brand, 'song', {page, limit, searchTerm, sort, includedFields, groupBy});
 }
 
 /**
-* Fetch filter options for a specific brand.
-*
-* @param {string} brand - The brand for which to fetch filter options.
-* @returns {Promise<Object|null>} - A promise that resolves to an object containing filter options or null if not found.
-*
-* @example
-* fetchSongFilterOptions('drumeo')
-*   .then(options => console.log(options))
-*   .catch(error => console.error(error));
-*/
+ * Fetch filter options for a specific brand.
+ *
+ * @param {string} brand - The brand for which to fetch filter options.
+ * @returns {Promise<Object|null>} - A promise that resolves to an object containing filter options or null if not found.
+ *
+ * @example
+ * fetchSongFilterOptions('drumeo')
+ *   .then(options => console.log(options))
+ *   .catch(error => console.error(error));
+ */
 export async function fetchSongFilterOptions(brand) {
-  const query = `
+    const query = `
   {
     "difficulty": [
       {"type": "Introductory", "count": count(*[_type == 'song' && brand == '${brand}' && difficulty_string == "Introductory"]._id)},
@@ -231,17 +233,17 @@ export async function fetchSongFilterOptions(brand) {
     ]
   }`;
 
-  return fetchSanity(query, true);
+    return fetchSanity(query, true);
 }
 
 /**
-* Fetch the total count of songs for a specific brand.
-* @param {string} brand - The brand for which to fetch the song count.
-* @returns {Promise<number|null>} - The total count of songs or null if an error occurs.
-*/
+ * Fetch the total count of songs for a specific brand.
+ * @param {string} brand - The brand for which to fetch the song count.
+ * @returns {Promise<number|null>} - The total count of songs or null if an error occurs.
+ */
 export async function fetchSongCount(brand) {
-  const query = `count(*[_type == 'song' && brand == "${brand}"])`;
-  return fetchSanity(query, true, {processNeedAccess:false});
+    const query = `count(*[_type == 'song' && brand == "${brand}"])`;
+    return fetchSanity(query, true, {processNeedAccess: false});
 }
 
 /**
@@ -256,29 +258,29 @@ export async function fetchSongCount(brand) {
  * @example
  * fetchWorkouts('drumeo')
  *   .then(workouts => console.log(workouts))
- *   .catch(error => console.error(error)); 
+ *   .catch(error => console.error(error));
  */
 export async function fetchWorkouts(brand) {
-  const fields = getFieldsForContentType('workout');
-  const query = `*[_type == 'workout' && brand == '${brand}'] [0...5] {
+    const fields = getFieldsForContentType('workout');
+    const query = `*[_type == 'workout' && brand == '${brand}'] [0...5] {
         ${fields.toString()}
       } | order(published_on desc)[0...5]`
-  return fetchSanity(query, true);
+    return fetchSanity(query, true);
 }
 
 /**
-* Fetch the latest new releases for a specific brand.
-* @param {string} brand - The brand for which to fetch new releases.
-* @returns {Promise<Object|null>} - The fetched new releases data or null if not found.
-*/
-export async function fetchNewReleases(brand, { page = 1, limit = 20, sort="-published_on" } = {}) {
-  const newTypes = getNewReleasesTypes(brand);
-  const typesString = arrayToStringRepresentation(newTypes);
-  const start = (page - 1) * limit;
-  const end = start + limit;
-  const sortOrder = getSortOrder(sort);
-  const filter = `_type in ${typesString} && brand == '${brand}'`;
-  const fields = `
+ * Fetch the latest new releases for a specific brand.
+ * @param {string} brand - The brand for which to fetch new releases.
+ * @returns {Promise<Object|null>} - The fetched new releases data or null if not found.
+ */
+export async function fetchNewReleases(brand, {page = 1, limit = 20, sort = "-published_on"} = {}) {
+    const newTypes = getNewReleasesTypes(brand);
+    const typesString = arrayToStringRepresentation(newTypes);
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const sortOrder = getSortOrder(sort);
+    const filter = `_type in ${typesString} && brand == '${brand}'`;
+    const fields = `
      "id": railcontent_id,
       title,
       "image": thumbnail.asset->url,
@@ -292,41 +294,41 @@ export async function fetchNewReleases(brand, { page = 1, limit = 20, sort="-pub
       web_url_path,
       "permission_id": permission[]->railcontent_id,
       `;
-  const filterParams = {};
-  const query = buildQuery(
-      filter,
-      filterParams,
-      fields,
-      {
-          sortOrder: sortOrder,
-          start,
-          end: end,
-      });
-  return fetchSanity(query, true);
+    const filterParams = {};
+    const query = await buildQuery(
+        filter,
+        filterParams,
+        fields,
+        {
+            sortOrder: sortOrder,
+            start,
+            end: end,
+        });
+    return fetchSanity(query, true);
 }
 
 
 /**
-* Fetch upcoming events for a specific brand.
-*
-* @param {string} brand - The brand for which to fetch upcoming events.
-* @returns {Promise<Object|null>} - A promise that resolves to an array of upcoming event objects or null if not found.
-*
-* @example
-* fetchUpcomingEvents('drumeo', {
-*   page: 2,
-*   limit: 20,
-* })
-*   .then(events => console.log(events))
-*   .catch(error => console.error(error));
-*/
-export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) {
-  const liveTypes = getUpcomingEventsTypes(brand);
-  const typesString = arrayToStringRepresentation(liveTypes);
-  const now = getSanityDate(new Date());
-  const start = (page - 1) * limit;
-  const end = start + limit;
-  const fields = `
+ * Fetch upcoming events for a specific brand.
+ *
+ * @param {string} brand - The brand for which to fetch upcoming events.
+ * @returns {Promise<Object|null>} - A promise that resolves to an array of upcoming event objects or null if not found.
+ *
+ * @example
+ * fetchUpcomingEvents('drumeo', {
+ *   page: 2,
+ *   limit: 20,
+ * })
+ *   .then(events => console.log(events))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchUpcomingEvents(brand, {page = 1, limit = 10} = {}) {
+    const liveTypes = getUpcomingEventsTypes(brand);
+    const typesString = arrayToStringRepresentation(liveTypes);
+    const now = getSanityDate(new Date());
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const fields = `
         "id": railcontent_id,
         title,
         "image": thumbnail.asset->url,
@@ -339,16 +341,16 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         "type": _type,
         web_url_path,
         "permission_id": permission[]->railcontent_id,`;
-  const query = buildRawQuery(
-      `_type in ${typesString} && brand == '${brand}' && published_on > '${now}' && status == 'scheduled'`,
-      fields,
-      {
-          sortOrder: 'published_on asc',
-          start: start,
-          end: end,
-      },
-  );
-  return fetchSanity(query, true);
+    const query = buildRawQuery(
+        `_type in ${typesString} && brand == '${brand}' && published_on > '${now}' && status == 'scheduled'`,
+        fields,
+        {
+            sortOrder: 'published_on asc',
+            start: start,
+            end: end,
+        },
+    );
+    return fetchSanity(query, true);
 }
 
 /**
@@ -365,16 +367,16 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
  *   .then(content => console.log(content))
  *   .catch(error => console.error(error));
  */
-export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
-  const upcomingTypes = getUpcomingEventsTypes(brand);
-  const newTypes = getNewReleasesTypes(brand);
+export async function fetchScheduledReleases(brand, {page = 1, limit = 10}) {
+    const upcomingTypes = getUpcomingEventsTypes(brand);
+    const newTypes = getNewReleasesTypes(brand);
 
-  const scheduledTypes = merge(upcomingTypes, newTypes)
-  const typesString = arrayJoinWithQuotes(scheduledTypes);
-  const now = getSanityDate(new Date());
-  const start = (page - 1) * limit;
-  const end = start + limit;
-  const query = `*[_type in [${typesString}] && brand == '${brand}' && status in ['published','scheduled'] && published_on > '${now}']{
+    const scheduledTypes = merge(upcomingTypes, newTypes)
+    const typesString = arrayJoinWithQuotes(scheduledTypes);
+    const now = getSanityDate(new Date());
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const query = `*[_type in [${typesString}] && brand == '${brand}' && status in ['published','scheduled'] && published_on > '${now}']{
       "id": railcontent_id,
       title,
       "image": thumbnail.asset->url,
@@ -388,21 +390,21 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
       web_url_path,
       "permission_id": permission[]->railcontent_id,
   } | order(published_on asc)[${start}...${end}]`;
-  return fetchSanity(query, true);
+    return fetchSanity(query, true);
 }
 
 /**
-* Fetch content by a specific Railcontent ID.
-*
-* @param {string} id - The Railcontent ID of the content to fetch.
-* @param {string} contentType - The document type of content to fetch
-* @returns {Promise<Object|null>} - A promise that resolves to the content object or null if not found.
-*
-* @example
-* fetchByRailContentId('abc123')
-*   .then(content => console.log(content))
-*   .catch(error => console.error(error));
-*/
+ * Fetch content by a specific Railcontent ID.
+ *
+ * @param {string} id - The Railcontent ID of the content to fetch.
+ * @param {string} contentType - The document type of content to fetch
+ * @returns {Promise<Object|null>} - A promise that resolves to the content object or null if not found.
+ *
+ * @example
+ * fetchByRailContentId('abc123')
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ */
 export async function fetchByRailContentId(id, contentType) {
 
     const query = buildRawQuery(
@@ -417,24 +419,24 @@ export async function fetchByRailContentId(id, contentType) {
 }
 
 /**
-* Fetch content by an array of Railcontent IDs.
-*
-* @param {Array<string>} ids - The array of Railcontent IDs of the content to fetch.
-* @param {string} [contentType] - The content type the IDs to add needed fields to the response.
-* @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of content objects or null if not found.
-*
-* @example
-* fetchByRailContentIds(['abc123', 'def456', 'ghi789'])
-*   .then(contents => console.log(contents))
-*   .catch(error => console.error(error));
-*/
+ * Fetch content by an array of Railcontent IDs.
+ *
+ * @param {Array<string>} ids - The array of Railcontent IDs of the content to fetch.
+ * @param {string} [contentType] - The content type the IDs to add needed fields to the response.
+ * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of content objects or null if not found.
+ *
+ * @example
+ * fetchByRailContentIds(['abc123', 'def456', 'ghi789'])
+ *   .then(contents => console.log(contents))
+ *   .catch(error => console.error(error));
+ */
 export async function fetchByRailContentIds(ids, contentType = undefined) {
-  const idsString = ids.join(',');
+    const idsString = ids.join(',');
 
-  const query = `*[railcontent_id in [${idsString}]]{
+    const query = `*[railcontent_id in [${idsString}]]{
         ${getFieldsForContentType(contentType)}
       }`
-  return fetchSanity(query, true);
+    return fetchSanity(query, true);
 }
 
 /**
@@ -469,15 +471,15 @@ export async function fetchByRailContentIds(ids, contentType = undefined) {
  *   .catch(error => console.error(error));
  */
 export async function fetchAll(brand, type, {
-  page = 1,
-  limit = 10,
-  searchTerm = "",
-  sort = "-published_on",
-  includedFields = [],
-  groupBy = "",
-  progressIds = undefined,
-  useDefaultFields = true,
-  customFields = [],
+    page = 1,
+    limit = 10,
+    searchTerm = "",
+    sort = "-published_on",
+    includedFields = [],
+    groupBy = "",
+    progressIds = undefined,
+    useDefaultFields = true,
+    customFields = [],
 } = {}) {
     let config = contentTypeConfig[type] ?? {};
     let additionalFields = config?.fields ?? [];
@@ -492,8 +494,8 @@ export async function fetchAll(brand, type, {
     // Construct the search filter
     const searchFilter = searchTerm
         ? groupBy !== "" ?
-          `&& (^.name match "${searchTerm}*" || title match "${searchTerm}*")`
-          : `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*" || name match "${searchTerm}*")`
+            `&& (^.name match "${searchTerm}*" || title match "${searchTerm}*")`
+            : `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*" || name match "${searchTerm}*")`
         : "";
 
     // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
@@ -508,7 +510,7 @@ export async function fetchAll(brand, type, {
     // Determine the sort order
     const sortOrder = getSortOrder(sort);
 
-    let fields = useDefaultFields ?  customFields.concat(DEFAULT_FIELDS, additionalFields) : customFields;
+    let fields = useDefaultFields ? customFields.concat(DEFAULT_FIELDS, additionalFields) : customFields;
     let fieldsString = fields.join(',');
 
     // Determine the group by clause
@@ -532,7 +534,7 @@ export async function fetchAll(brand, type, {
         `;
         filter = `_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id == ${groupBy}._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0`;
     } else if (groupBy !== "") {
-        const webUrlPath = (groupBy == 'genre')?'/genres':'';
+        const webUrlPath = (groupBy == 'genre') ? '/genres' : '';
         const lessonsFilter = `brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
         entityFieldsString = `
                 'id': railcontent_id,
@@ -562,8 +564,7 @@ export async function fetchAll(brand, type, {
     return fetchSanity(query, true);
 }
 
-export function getSortOrder(sort= '-published_on', groupBy)
-{
+export function getSortOrder(sort = '-published_on', groupBy) {
     // Determine the sort order
     let sortOrder = '';
     const isDesc = sort.startsWith('-');
@@ -586,69 +587,69 @@ export function getSortOrder(sort= '-published_on', groupBy)
 }
 
 /**
-* Fetches all available filter options based on brand, filters, and various optional criteria.
-*
-* This function constructs a query to retrieve the total number of results and filter options such as difficulty, instrument type, and genre.
-* The filter options are dynamically generated based on the provided filters, style, artist, and content type.
-* If a coachId is provided, the content type must be 'coach-lessons'.
-*
-* @param {string} brand - Brand to filter.
-* @param {string[]} filters - Key-value pairs to filter the query.
-* @param {string} [style] - Optional style/genre filter.
-* @param {string} [artist] - Optional artist name filter.
-* @param {string} contentType - Content type (e.g., 'song', 'lesson').
-* @param {string} [term] - Optional search term for title, album, artist, or genre.
-* @param {Array<string>} [progressIds] - Optional array of progress IDs to filter by.
-* @param {string} [coachId] - Optional coach ID (only valid if contentType is 'coach-lessons').
-* @param {boolean} [includeTabs=false] - Whether to include tabs in the returned metadata.
-* @returns {Promise<Object>} - The filter options and metadata.
-* @throws {Error} If coachId is provided but contentType isn't 'coach-lessons'.
-*
-* @example
-* // Fetch filter options for 'song' content type:
-* fetchAllFilterOptions('myBrand', [], 'Rock', 'John Doe', 'song', 'Love')
-*   .then(options => console.log(options))
-*   .catch(error => console.error(error));
-*
-* @example
-* // Fetch filter options for a coach's lessons with coachId:
-* fetchAllFilterOptions('myBrand', [], 'Rock', 'John Doe', 'coach-lessons', 'Love', undefined, '123')
-*   .then(options => console.log(options))
-*   .catch(error => console.error(error));
-*/
+ * Fetches all available filter options based on brand, filters, and various optional criteria.
+ *
+ * This function constructs a query to retrieve the total number of results and filter options such as difficulty, instrument type, and genre.
+ * The filter options are dynamically generated based on the provided filters, style, artist, and content type.
+ * If a coachId is provided, the content type must be 'coach-lessons'.
+ *
+ * @param {string} brand - Brand to filter.
+ * @param {string[]} filters - Key-value pairs to filter the query.
+ * @param {string} [style] - Optional style/genre filter.
+ * @param {string} [artist] - Optional artist name filter.
+ * @param {string} contentType - Content type (e.g., 'song', 'lesson').
+ * @param {string} [term] - Optional search term for title, album, artist, or genre.
+ * @param {Array<string>} [progressIds] - Optional array of progress IDs to filter by.
+ * @param {string} [coachId] - Optional coach ID (only valid if contentType is 'coach-lessons').
+ * @param {boolean} [includeTabs=false] - Whether to include tabs in the returned metadata.
+ * @returns {Promise<Object>} - The filter options and metadata.
+ * @throws {Error} If coachId is provided but contentType isn't 'coach-lessons'.
+ *
+ * @example
+ * // Fetch filter options for 'song' content type:
+ * fetchAllFilterOptions('myBrand', [], 'Rock', 'John Doe', 'song', 'Love')
+ *   .then(options => console.log(options))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Fetch filter options for a coach's lessons with coachId:
+ * fetchAllFilterOptions('myBrand', [], 'Rock', 'John Doe', 'coach-lessons', 'Love', undefined, '123')
+ *   .then(options => console.log(options))
+ *   .catch(error => console.error(error));
+ */
 export async function fetchAllFilterOptions(
-  brand,
-  filters = [],
-  style,
-  artist,
-  contentType,
-  term,
-  progressIds,
-  coachId,
-  includeTabs = false,
+    brand,
+    filters = [],
+    style,
+    artist,
+    contentType,
+    term,
+    progressIds,
+    coachId,
+    includeTabs = false,
 ) {
-  if (coachId && contentType !== 'coach-lessons') {
-      throw new Error(`Invalid contentType: '${contentType}' for coachId. It must be 'coach-lessons'.`);
-  }
+    if (coachId && contentType !== 'coach-lessons') {
+        throw new Error(`Invalid contentType: '${contentType}' for coachId. It must be 'coach-lessons'.`);
+    }
 
-  const includedFieldsFilter = filters?.length ? filtersToGroq(filters) : undefined;
-  const progressFilter = progressIds ? `&& railcontent_id in [${progressIds.join(',')}]` : "";
+    const includedFieldsFilter = filters?.length ? filtersToGroq(filters) : undefined;
+    const progressFilter = progressIds ? `&& railcontent_id in [${progressIds.join(',')}]` : "";
 
-  const constructCommonFilter = (excludeFilter) => {
-      const filterWithoutOption = excludeFilter ? filtersToGroq(filters, excludeFilter) : includedFieldsFilter;
-      return coachId 
-          ? `brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${filterWithoutOption || ''}`
-          : `_type == '${contentType}' && brand == "${brand}"${style && excludeFilter !== "style" ? ` && '${style}' in genre[]->name` : ''}${artist && excludeFilter !== "artist" ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${filterWithoutOption || ''}`;
-  };
+    const constructCommonFilter = (excludeFilter) => {
+        const filterWithoutOption = excludeFilter ? filtersToGroq(filters, excludeFilter) : includedFieldsFilter;
+        return coachId
+            ? `brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${filterWithoutOption || ''}`
+            : `_type == '${contentType}' && brand == "${brand}"${style && excludeFilter !== "style" ? ` && '${style}' in genre[]->name` : ''}${artist && excludeFilter !== "artist" ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${filterWithoutOption || ''}`;
+    };
 
-  const metaData = processMetadata(brand, contentType, true);
-  const allowableFilters = metaData?.allowableFilters || [];
-  const tabs = metaData?.tabs || [];
-  const catalogName = metaData?.shortname || metaData?.name;
+    const metaData = processMetadata(brand, contentType, true);
+    const allowableFilters = metaData?.allowableFilters || [];
+    const tabs = metaData?.tabs || [];
+    const catalogName = metaData?.shortname || metaData?.name;
 
-  const dynamicFilterOptions = allowableFilters.map(filter => getFilterOptions(filter, constructCommonFilter(filter), contentType, brand)).join(' ');
+    const dynamicFilterOptions = allowableFilters.map(filter => getFilterOptions(filter, constructCommonFilter(filter), contentType, brand)).join(' ');
 
-  const query = `
+    const query = `
       {
         "meta": {
           "totalResults": count(*[${constructCommonFilter()}
@@ -659,28 +660,28 @@ export async function fetchAllFilterOptions(
       }
     }`;
 
-  const results = await fetchSanity(query, true, { processNeedAccess: false });
+    const results = await fetchSanity(query, true, {processNeedAccess: false});
 
-  return includeTabs ? { ...results, tabs, catalogName } : results;
+    return includeTabs ? {...results, tabs, catalogName} : results;
 }
 
 
 /**
-* Fetch children content by Railcontent ID.
-* @param {string} railcontentId - The Railcontent ID of the parent content.
-* @param {string} [contentType] - The content type the IDs to add needed fields to the response.
-* @returns {Promise<Array<Object>|null>} - The fetched children content data or [] if not found.
-*/
+ * Fetch children content by Railcontent ID.
+ * @param {string} railcontentId - The Railcontent ID of the parent content.
+ * @param {string} [contentType] - The content type the IDs to add needed fields to the response.
+ * @returns {Promise<Array<Object>|null>} - The fetched children content data or [] if not found.
+ */
 export async function fetchChildren(railcontentId, contentType) {
-  const query = `*[railcontent_id == ${railcontentId}]{
+    const query = `*[railcontent_id == ${railcontentId}]{
         title,
 
         'children': child[]->{
                            ${getFieldsForContentType(contentType)}
                         },
       }[0..1]`;
-  let parent = await fetchSanity(query, false);
-  return parent['children'] ?? [];
+    let parent = await fetchSanity(query, false);
+    return parent['children'] ?? [];
 }
 
 /**
@@ -701,44 +702,44 @@ export async function fetchParentByRailContentId(railcontentId) {
 }
 
 /**
-* Fetch the Methods (learning-paths) for a specific brand.
-* @param {string} brand - The brand for which to fetch methods.
-* @returns {Promise<Object|null>} - The fetched methods data or null if not found.
-*/
+ * Fetch the Methods (learning-paths) for a specific brand.
+ * @param {string} brand - The brand for which to fetch methods.
+ * @returns {Promise<Object|null>} - The fetched methods data or null if not found.
+ */
 export async function fetchMethods(brand) {
     const query = `*[_type == 'learning-path' && brand == '${brand}'] {
-      ${ getFieldsForContentType() }
+      ${getFieldsForContentType()}
     } | order(published_on asc)`
-  return fetchSanity(query, true);
+    return fetchSanity(query, true);
 }
 
 /**
-* Fetch the Foundations 2019.
-* @param {string} slug - The slug of the method.
-* @returns {Promise<Object|null>} - The fetched foundation data or null if not found.
-*/
+ * Fetch the Foundations 2019.
+ * @param {string} slug - The slug of the method.
+ * @returns {Promise<Object|null>} - The fetched foundation data or null if not found.
+ */
 export async function fetchFoundation(slug) {
-  const filterParams = {};
-  const query = buildQuery(
-      `_type == 'foundation' && slug.current == "${slug}"`,
-      filterParams,
-      getFieldsForContentType('foundation'),
-      {
-          sortOrder: 'published_on asc',
-          isSingle: true,
-      }
-  );
-return fetchSanity(query, false);
+    const filterParams = {};
+    const query = await buildQuery(
+        `_type == 'foundation' && slug.current == "${slug}"`,
+        filterParams,
+        getFieldsForContentType('foundation'),
+        {
+            sortOrder: 'published_on asc',
+            isSingle: true,
+        }
+    );
+    return fetchSanity(query, false);
 }
 
 /**
-* Fetch the Method (learning-paths) for a specific brand.
-* @param {string} brand - The brand for which to fetch methods.
-* @param {string} slug - The slug of the method.
-* @returns {Promise<Object|null>} - The fetched methods data or null if not found.
-*/
+ * Fetch the Method (learning-paths) for a specific brand.
+ * @param {string} brand - The brand for which to fetch methods.
+ * @param {string} slug - The slug of the method.
+ * @returns {Promise<Object|null>} - The fetched methods data or null if not found.
+ */
 export async function fetchMethod(brand, slug) {
-  const query = `*[_type == 'learning-path' && brand == "${brand}" && slug.current == "${slug}"] {
+    const query = `*[_type == 'learning-path' && brand == "${brand}" && slug.current == "${slug}"] {
     "description": ${descriptionField},
     "instructors":instructor[]->name,
     published_on,
@@ -768,16 +769,16 @@ export async function fetchMethod(brand, slug) {
         xp,
       }
   } | order(published_on asc)`
-return fetchSanity(query, false);
+    return fetchSanity(query, false);
 }
 
 /**
-* Fetch the child courses for a specific method by Railcontent ID.
-* @param {string} railcontentId - The Railcontent ID of the current lesson.
-* @returns {Promise<Object|null>} - The fetched next lesson data or null if not found.
-*/
+ * Fetch the child courses for a specific method by Railcontent ID.
+ * @param {string} railcontentId - The Railcontent ID of the current lesson.
+ * @returns {Promise<Object|null>} - The fetched next lesson data or null if not found.
+ */
 export async function fetchMethodChildren(railcontentId) {
-  const query = `*[railcontent_id == ${railcontentId}]{
+    const query = `*[railcontent_id == ${railcontentId}]{
     child_count,
     "id": railcontent_id,
     "description": ${descriptionField},
@@ -788,20 +789,20 @@ export async function fetchMethodChildren(railcontentId) {
         ${getFieldsForContentType('method')}
     },
   }[0..1]`;
-  return fetchSanity(query, true);
+    return fetchSanity(query, true);
 }
 
 /**
-* Fetch the next lesson for a specific method by Railcontent ID.
-* @param {string} railcontentId - The Railcontent ID of the current lesson.
+ * Fetch the next lesson for a specific method by Railcontent ID.
+ * @param {string} railcontentId - The Railcontent ID of the current lesson.
  * @param {string} methodId - The RailcontentID of the method
-* @returns {Promise<Object|null>} - The fetched next lesson data or null if not found.
-*/
+ * @returns {Promise<Object|null>} - The fetched next lesson data or null if not found.
+ */
 export async function fetchMethodNextLesson(railcontentId, methodId) {
-  const sortedChildren = await fetchMethodChildrenIds(methodId);
-  const index = sortedChildren.indexOf(railcontentId);
-  const childIndex = sortedChildren[index + 1];
-  return childIndex ? await fetchByRailContentId(childIndex) : null;
+    const sortedChildren = await fetchMethodChildrenIds(methodId);
+    const index = sortedChildren.indexOf(railcontentId);
+    const childIndex = sortedChildren[index + 1];
+    return childIndex ? await fetchByRailContentId(childIndex) : null;
 }
 
 /**
@@ -818,18 +819,22 @@ export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
     const sortedChildren = await fetchMethodChildrenIds(methodId);
     const index = sortedChildren.indexOf(Number(railcontentId));
     let nextId = sortedChildren[index + 1];
-    let previousId = sortedChildren[index  -1];
+    let previousId = sortedChildren[index - 1];
     let nextPrev = await fetchByRailContentIds([nextId, previousId]);
-    const nextLesson = nextPrev.find((elem) => {return elem['id'] === nextId});
-    const prevLesson = nextPrev.find((elem) => {return elem['id'] === previousId});
+    const nextLesson = nextPrev.find((elem) => {
+        return elem['id'] === nextId
+    });
+    const prevLesson = nextPrev.find((elem) => {
+        return elem['id'] === previousId
+    });
     return {nextLesson, prevLesson};
 }
 
 /**
-* Fetch all children of a specific method by Railcontent ID.
-* @param {string} railcontentId - The Railcontent ID of the method.
-* @returns {Promise<Array<Object>|null>} - The fetched children data or null if not found.
-*/
+ * Fetch all children of a specific method by Railcontent ID.
+ * @param {string} railcontentId - The Railcontent ID of the method.
+ * @returns {Promise<Array<Object>|null>} - The fetched children data or null if not found.
+ */
 export async function fetchMethodChildrenIds(railcontentId) {
     const query = `*[ railcontent_id == ${railcontentId}]{
     'children': child[]-> {
@@ -849,25 +854,24 @@ export async function fetchMethodChildrenIds(railcontentId) {
     return getChildrenToDepth(allChildren, 4);
 }
 
-function getChildrenToDepth(parent, depth = 1)
-{
+function getChildrenToDepth(parent, depth = 1) {
     let allChildrenIds = [];
     if (parent && parent['children'] && depth > 0) {
         parent['children'].forEach((child) => {
-            if(!child['children']) {
+            if (!child['children']) {
                 allChildrenIds.push(child['id']);
             }
-            allChildrenIds = allChildrenIds.concat(getChildrenToDepth(child, depth-1));
+            allChildrenIds = allChildrenIds.concat(getChildrenToDepth(child, depth - 1));
         })
     }
     return allChildrenIds;
 }
 
 /**
-* Fetch the next and previous lessons for a specific lesson by Railcontent ID.
-* @param {string} railcontentId - The Railcontent ID of the current lesson.
-* @returns {Promise<Object|null>} - The fetched next and previous lesson data or null if found.
-*/
+ * Fetch the next and previous lessons for a specific lesson by Railcontent ID.
+ * @param {string} railcontentId - The Railcontent ID of the current lesson.
+ * @returns {Promise<Object|null>} - The fetched next and previous lesson data or null if found.
+ */
 export async function fetchNextPreviousLesson(railcontentId) {
     const document = await fetchLessonContent(railcontentId);
     if (document.parent_content_data && document.parent_content_data.length > 0) {
@@ -950,7 +954,7 @@ export async function fetchLessonContent(railContentId) {
           parent_content_data,
           sort,
           xp`;
-    const query = buildQuery(
+    const query = await buildQuery(
         `railcontent_id == ${railContentId}`,
         filterParams,
         fields,
@@ -958,15 +962,15 @@ export async function fetchLessonContent(railContentId) {
             isSingle: true,
         }
     );
-  return fetchSanity(query, false);
+    return fetchSanity(query, false);
 }
 
 /**
-* Fetch related lessons for a specific lesson by RailContent ID and type.
-* @param {string} railContentId - The RailContent ID of the current lesson.
-* @param {string} brand - The current brand.
-* @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
-*/
+ * Fetch related lessons for a specific lesson by RailContent ID and type.
+ * @param {string} railContentId - The RailContent ID of the current lesson.
+ * @param {string} brand - The current brand.
+ * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
+ */
 export async function fetchRelatedLessons(railContentId, brand) {
     const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && references(*[_type=='permission']._id)]{
    _type, parent_type, railcontent_id,
@@ -981,13 +985,13 @@ export async function fetchRelatedLessons(railContentId, brand) {
 }
 
 /**
-* Fetch related method lessons for a specific lesson by RailContent ID and type.
-* @param {string} railContentId - The RailContent ID of the current lesson.
-* @param {string} brand - The current brand.
-* @returns {Promise<Array<Object>|null>} - The fetched related lessons
-*/
+ * Fetch related method lessons for a specific lesson by RailContent ID and type.
+ * @param {string} railContentId - The RailContent ID of the current lesson.
+ * @param {string} brand - The current brand.
+ * @returns {Promise<Array<Object>|null>} - The fetched related lessons
+ */
 export async function fetchRelatedMethodLessons(railContentId, brand) {
-  const query = `*[railcontent_id == ${railContentId} && brand == "${brand}"]{
+    const query = `*[railcontent_id == ${railContentId} && brand == "${brand}"]{
       "id":_id,
       "related_lessons": *[references(^._id)][0].child[]->{
         "id": railcontent_id,
@@ -1001,57 +1005,57 @@ export async function fetchRelatedMethodLessons(railContentId, brand) {
       }
     }
   }`
-  return fetchSanity(query, false);
+    return fetchSanity(query, false);
 }
 
 /**
-* Fetch all packs.
-* @param {string} brand - The brand for which to fetch packs.
-* @param {string} [searchTerm=""] - The search term to filter packs.
-* @param {string} [sort="-published_on"] - The field to sort the packs by.
-* @param {number} [params.page=1] - The page number for pagination.
-* @param {number} [params.limit=10] - The number of items per page.
-* @returns {Promise<Array<Object>|null>} - The fetched pack content data or null if not found.
-*/
+ * Fetch all packs.
+ * @param {string} brand - The brand for which to fetch packs.
+ * @param {string} [searchTerm=""] - The search term to filter packs.
+ * @param {string} [sort="-published_on"] - The field to sort the packs by.
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {number} [params.limit=10] - The number of items per page.
+ * @returns {Promise<Array<Object>|null>} - The fetched pack content data or null if not found.
+ */
 export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = "", page = 1, limit = 10) {
-  const sortOrder = getSortOrder(sort);
-  const filter = `_type == 'pack' && brand == '${brand}' && title match "${searchTerm}*"`
-  const filterParams = {};
-  const fields = getFieldsForContentType('pack');
-  const start = (page - 1) * limit;
-  const end = start + limit;
+    const sortOrder = getSortOrder(sort);
+    const filter = `_type == 'pack' && brand == '${brand}' && title match "${searchTerm}*"`
+    const filterParams = {};
+    const fields = getFieldsForContentType('pack');
+    const start = (page - 1) * limit;
+    const end = start + limit;
 
-  const query = buildQuery(
-    filter,
-    filterParams,
-    getFieldsForContentType('pack'),
-    {
-      logo_image_url: 'logo_image_url.asset->url',
-      sortOrder: sortOrder,
-      start,
-      end
-    }
-  );
-  return fetchSanity(query, true);
+    const query = await buildQuery(
+        filter,
+        filterParams,
+        getFieldsForContentType('pack'),
+        {
+            logo_image_url: 'logo_image_url.asset->url',
+            sortOrder: sortOrder,
+            start,
+            end
+        }
+    );
+    return fetchSanity(query, true);
 }
 
 /**
-* Fetch all content for a specific pack by Railcontent ID.
-* @param {string} railcontentId - The Railcontent ID of the pack.
-* @returns {Promise<Array<Object>|null>} - The fetched pack content data or null if not found.
-*/
+ * Fetch all content for a specific pack by Railcontent ID.
+ * @param {string} railcontentId - The Railcontent ID of the pack.
+ * @returns {Promise<Array<Object>|null>} - The fetched pack content data or null if not found.
+ */
 export async function fetchPackAll(railcontentId) {
-  return fetchByRailContentId(railcontentId, 'pack');
+    return fetchByRailContentId(railcontentId, 'pack');
 }
 
 export async function fetchLiveEvent(brand) {
     //calendarIDs taken from addevent.php
     // TODO import instructor calendars to Sanity
     let defaultCalendarID = '';
-    switch(brand) {
+    switch (brand) {
         case ('drumeo'):
             defaultCalendarID = 'GP142387';
-             break;
+            break;
         case ('pianote'):
             defaultCalendarID = 'be142408';
             break;
@@ -1101,7 +1105,7 @@ export async function fetchLiveEvent(brand) {
  *   .catch(error => console.error(error));
  */
 export async function fetchPackChildren(railcontentId) {
-  return fetchChildren(railcontentId, 'pack-children');
+    return fetchChildren(railcontentId, 'pack-children');
 }
 
 /**
@@ -1115,10 +1119,10 @@ export async function fetchPackChildren(railcontentId) {
  *   .catch(error => console.error(error));
  */
 export async function fetchPackData(id) {
-  const query = `*[railcontent_id == ${id}]{
+    const query = `*[railcontent_id == ${id}]{
     ${getFieldsForContentType("pack")}
   } [0...1]`;
-  return fetchSanity(query, false);
+    return fetchSanity(query, false);
 }
 
 /**
@@ -1132,11 +1136,11 @@ export async function fetchPackData(id) {
  *   .catch(error => console.error(error));
  */
 export async function fetchChallengeOverview(id) {
-  // WIP
-  const query = `*[railcontent_id == ${id}]{
+    // WIP
+    const query = `*[railcontent_id == ${id}]{
     ${getFieldsForContentType("challenge")}
   } [0...1]`;
-  return fetchSanity(query, false);
+    return fetchSanity(query, false);
 }
 
 /**
@@ -1157,32 +1161,32 @@ export async function fetchChallengeOverview(id) {
  *   .catch(error => console.error(error));
  */
 export async function fetchCoachLessons(brand, id, {
-  sortOrder = '-published_on',
-  searchTerm = '',
-  page = 1,
-  limit = 20,
-  includedFields = [],
+    sortOrder = '-published_on',
+    searchTerm = '',
+    page = 1,
+    limit = 20,
+    includedFields = [],
 } = {}) {
-  const fieldsString = getFieldsForContentType();
-  const start = (page - 1) * limit;
-  const end = start + limit;
-  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''
-  const includedFieldsFilter = includedFields.length > 0
+    const fieldsString = getFieldsForContentType();
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
+    const includedFieldsFilter = includedFields.length > 0
         ? filtersToGroq(includedFields)
         : "";
-  const filter = `brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='instructor' && railcontent_id == ${id}]._id)`;
+    const filter = `brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='instructor' && railcontent_id == ${id}]._id)`;
 
-  sortOrder = getSortOrder(sortOrder);
-  const query = buildEntityAndTotalQuery(
-    filter,
-    fieldsString,
-      {
-          sortOrder: sortOrder,
-          start: start,
-          end: end,
-      },
-  );
-  return fetchSanity(query, true);
+    sortOrder = getSortOrder(sortOrder);
+    const query = buildEntityAndTotalQuery(
+        filter,
+        fieldsString,
+        {
+            sortOrder: sortOrder,
+            start: start,
+            end: end,
+        },
+    );
+    return fetchSanity(query, true);
 }
 
 /**
@@ -1196,7 +1200,7 @@ export async function fetchCoachLessons(brand, id, {
  *   .catch(error => console.error(error));
  */
 export async function fetchCourseOverview(id) {
-  return fetchByRailContentId(id, 'course');
+    return fetchByRailContentId(id, 'course');
 }
 
 /**
@@ -1210,21 +1214,21 @@ export async function fetchCourseOverview(id) {
  *   .catch(error => console.error(error));
  */
 export async function fetchParentForDownload(id) {
-  const query = buildRawQuery(
-    `railcontent_id == ${id}`,
-    getFieldsForContentType('parent-download'),
-    {
-      isSingle: true,
-    },
-  );
+    const query = buildRawQuery(
+        `railcontent_id == ${id}`,
+        getFieldsForContentType('parent-download'),
+        {
+            isSingle: true,
+        },
+    );
 
-  return fetchSanity(query, false);
+    return fetchSanity(query, false);
 }
 
 /**
  * Fetch the data needed for the coach screen.
  * @param {string} id - The Railcontent ID of the coach
- * 
+ *
  * @returns {Promise<Object|null>} - The lessons for the instructor or null if not found.
  *
  * @example
@@ -1233,30 +1237,30 @@ export async function fetchParentForDownload(id) {
  *   .catch(error => console.error(error));
  */
 export async function fetchByReference(brand, {
-  sortOrder = '-published_on',
-  searchTerm = '',
-  page = 1,
-  limit = 20,
-  includedFields = [],
+    sortOrder = '-published_on',
+    searchTerm = '',
+    page = 1,
+    limit = 20,
+    includedFields = [],
 } = {}) {
-  const fieldsString = getFieldsForContentType();
-  const start = (page - 1) * limit;
-  const end = start + limit;
-  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: '';
-  const includedFieldsFilter = includedFields.length > 0
+    const fieldsString = getFieldsForContentType();
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : '';
+    const includedFieldsFilter = includedFields.length > 0
         ? includedFields.join(' && ')
         : "";
-  const filter = `brand == '${brand}' ${searchFilter} && references(*[${includedFieldsFilter}]._id)`;
-  const query = buildEntityAndTotalQuery(
-      filter,
-      fieldsString,
-      {
-          sortOrder: getSortOrder(sortOrder),
-          start: start,
-          end: end,
-      },
-  );
-  return fetchSanity(query, true);
+    const filter = `brand == '${brand}' ${searchFilter} && references(*[${includedFieldsFilter}]._id)`;
+    const query = buildEntityAndTotalQuery(
+        filter,
+        fieldsString,
+        {
+            sortOrder: getSortOrder(sortOrder),
+            start: start,
+            end: end,
+        },
+    );
+    return fetchSanity(query, true);
 }
 
 /**
@@ -1279,28 +1283,28 @@ export async function fetchByReference(brand, {
  *   .catch(error => console.error(error));
  */
 export async function fetchArtistLessons(brand, name, contentType, {
-  sort = '-published_on',
-  searchTerm = '',
-  page = 1,
-  limit = 10,
-  includedFields = [],
-  progressIds = undefined,
+    sort = '-published_on',
+    searchTerm = '',
+    page = 1,
+    limit = 10,
+    includedFields = [],
+    progressIds = undefined,
 } = {}) {
 
-  const fieldsString = DEFAULT_FIELDS.join(',');
-  const start = (page - 1) * limit;
-  const end = start + limit;
-  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''  
-  const sortOrder = getSortOrder(sort);
-  const addType = contentType && Array.isArray(contentType) ? `_type in ['${contentType.join("', '")}'] &&` : contentType ? `_type == '${contentType}' && `:''
-  const includedFieldsFilter = includedFields.length > 0
-  ? filtersToGroq(includedFields)
-  : "";
+    const fieldsString = DEFAULT_FIELDS.join(',');
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
+    const sortOrder = getSortOrder(sort);
+    const addType = contentType && Array.isArray(contentType) ? `_type in ['${contentType.join("', '")}'] &&` : contentType ? `_type == '${contentType}' && ` : ''
+    const includedFieldsFilter = includedFields.length > 0
+        ? filtersToGroq(includedFields)
+        : "";
 
-  // limits the results to supplied progressIds for started & completed filters
-  const progressFilter = progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : "";
+    // limits the results to supplied progressIds for started & completed filters
+    const progressFilter = progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : "";
 
-  const query = `{
+    const query = `{
     "entity": 
       *[_type == 'artist' && name == '${name}']
         {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
@@ -1309,7 +1313,7 @@ export async function fetchArtistLessons(brand, name, contentType, {
       [${start}...${end}]}
       |order(${sortOrder})
   }`;
-  return fetchSanity(query, true);
+    return fetchSanity(query, true);
 }
 
 /**
@@ -1331,26 +1335,26 @@ export async function fetchArtistLessons(brand, name, contentType, {
  *   .catch(error => console.error(error));
  */
 export async function fetchGenreLessons(brand, name, contentType, {
-  sort = '-published_on',
-  searchTerm = '',
-  page = 1,
-  limit = 10,
-  includedFields = [],
-  progressIds = undefined,
+    sort = '-published_on',
+    searchTerm = '',
+    page = 1,
+    limit = 10,
+    includedFields = [],
+    progressIds = undefined,
 } = {}) {
-  const fieldsString = DEFAULT_FIELDS.join(',');
-  const start = (page - 1) * limit;
-  const end = start + limit;
-  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"`: ''  
-  const sortOrder = getSortOrder(sort);
-  const addType = contentType ? `_type == '${contentType}' && `:''
-  const includedFieldsFilter = includedFields.length > 0
-  ? filtersToGroq(includedFields)
-  : "";
-  // limits the results to supplied progressIds for started & completed filters
-  const progressFilter = progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : "";
+    const fieldsString = DEFAULT_FIELDS.join(',');
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
+    const sortOrder = getSortOrder(sort);
+    const addType = contentType ? `_type == '${contentType}' && ` : ''
+    const includedFieldsFilter = includedFields.length > 0
+        ? filtersToGroq(includedFields)
+        : "";
+    // limits the results to supplied progressIds for started & completed filters
+    const progressFilter = progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : "";
 
-  const query = `{
+    const query = `{
     "entity": 
       *[_type == 'genre' && name == '${name}']
         {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
@@ -1359,7 +1363,7 @@ export async function fetchGenreLessons(brand, name, contentType, {
       [${start}...${end}]}
       |order(${sortOrder})
   }`;
-  return fetchSanity(query, true);
+    return fetchSanity(query, true);
 }
 
 export async function fetchTopLevelParentId(railcontentId) {
@@ -1433,7 +1437,6 @@ function populateHierarchyLookups(currentLevel, data, parentId) {
 }
 
 
-
 /**
  *
  * @param {string} query - The GROQ query to execute against the Sanity API.
@@ -1451,83 +1454,89 @@ function populateHierarchyLookups(currentLevel, data, parentId) {
 
 export async function fetchSanity(query,
                                   isList,
-                                  { customPostProcess = null,
-                                    processNeedAccess = true,} = {}
+                                  {
+                                      customPostProcess = null,
+                                      processNeedAccess = true,
+                                  } = {}
 ) {
-  // Check the config object before proceeding
-  if (!checkSanityConfig(globalConfig)) {
-      return null;
-  }
+    // Check the config object before proceeding
+    if (!checkSanityConfig(globalConfig)) {
+        return null;
+    }
 
-  if (globalConfig.sanityConfig.debug) {
-      console.log("fetchSanity Query:", query);
-  }
-  const perspective = globalConfig.sanityConfig.perspective ?? 'published';
-  const encodedQuery = encodeURIComponent(query);
-  const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api';
-  const url = `https://${globalConfig.sanityConfig.projectId}.${api}.sanity.io/v${globalConfig.sanityConfig.version}/data/query/${globalConfig.sanityConfig.dataset}?perspective=${perspective}&query=${encodedQuery}`;
-  const headers = {
-      'Authorization': `Bearer ${globalConfig.sanityConfig.token}`,
-      'Content-Type': 'application/json'
-  };
+    if (globalConfig.sanityConfig.debug) {
+        console.log("fetchSanity Query:", query);
+    }
+    const perspective = globalConfig.sanityConfig.perspective ?? 'published';
+    const encodedQuery = encodeURIComponent(query);
+    const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api';
+    const url = `https://${globalConfig.sanityConfig.projectId}.${api}.sanity.io/v${globalConfig.sanityConfig.version}/data/query/${globalConfig.sanityConfig.dataset}?perspective=${perspective}&query=${encodedQuery}`;
+    const headers = {
+        'Authorization': `Bearer ${globalConfig.sanityConfig.token}`,
+        'Content-Type': 'application/json'
+    };
 
-  try {
-      const response = await fetch(url, {headers});
-      if (!response.ok) {
-          throw new Error(`Sanity API error: ${response.status} - ${response.statusText}`);
-      }
-      const result = await response.json();
-      if (result.result) {
-          if (globalConfig.sanityConfig.debug) {
-              console.log("fetchSanity Results:", result);
-          }
-          let results = isList ? result.result : result.result[0];
-          results = processNeedAccess ? await needsAccessDecorator(results) : results;
-          return customPostProcess ? customPostProcess(results) : results;
-      } else {
-          throw new Error('No results found');
-      }
-  } catch (error) {
-      console.error('fetchSanity: Fetch error:', error);
-      return null;
-  }
+    try {
+        let promisesResult = await Promise.all([
+            fetch(url, {headers}),
+            processNeedAccess ? fetchUserPermissions() : null
+        ]);
+        const response = promisesResult[0];
+        const userPermissions = promisesResult[1]?.permissions;
+
+        if (!response.ok) {
+            throw new Error(`Sanity API error: ${response.status} - ${response.statusText}`);
+        }
+        const result = await response.json();
+        if (result.result) {
+            if (globalConfig.sanityConfig.debug) {
+                console.log("fetchSanity Results:", result);
+            }
+            let results = isList ? result.result : result.result[0];
+            results = processNeedAccess ? await needsAccessDecorator(results, userPermissions) : results;
+            return customPostProcess ? customPostProcess(results) : results;
+        } else {
+            throw new Error('No results found');
+        }
+    } catch (error) {
+        console.error('fetchSanity: Fetch error:', error);
+        return null;
+    }
 }
 
-async function needsAccessDecorator(results) {
-  if (globalConfig.sanityConfig.useDummyRailContentMethods) return results;
-  
-  let userPermissions = await getUserPermissions();
-  userPermissions = new Set(userPermissions);
-  
-  if (Array.isArray(results)) {
-      results.forEach((result) => {
-          result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
-      });
-  } else if (results.entity && Array.isArray(results.entity)) {
-      // Group By
-      results.entity.forEach((result) => {
-          if (result.lessons) {
-              result.lessons.forEach((lesson) => {
-                  lesson['need_access'] = doesUserNeedAccessToContent(lesson, userPermissions); // Updated to check lesson access
-              });
-          } else {
-              result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
-          }
-      });
-  } else if (results.related_lessons && Array.isArray(results.related_lessons)) {
-    results.related_lessons.forEach((result) => {
-      result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
-    })
-  } else {
-      results['need_access'] = doesUserNeedAccessToContent(results, userPermissions);
-  }
+function needsAccessDecorator(results, userPermissions) {
+    if (globalConfig.sanityConfig.useDummyRailContentMethods) return results;
 
-  return results;
+    userPermissions = new Set(userPermissions);
+
+    if (Array.isArray(results)) {
+        results.forEach((result) => {
+            result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+        });
+    } else if (results.entity && Array.isArray(results.entity)) {
+        // Group By
+        results.entity.forEach((result) => {
+            if (result.lessons) {
+                result.lessons.forEach((lesson) => {
+                    lesson['need_access'] = doesUserNeedAccessToContent(lesson, userPermissions); // Updated to check lesson access
+                });
+            } else {
+                result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+            }
+        });
+    } else if (results.related_lessons && Array.isArray(results.related_lessons)) {
+        results.related_lessons.forEach((result) => {
+            result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+        })
+    } else {
+        results['need_access'] = doesUserNeedAccessToContent(results, userPermissions);
+    }
+
+    return results;
 }
 
-function doesUserNeedAccessToContent(result, userPermissions)
-{
-    const permissions =  new Set(result?.permission_id ?? []);
+function doesUserNeedAccessToContent(result, userPermissions) {
+    const permissions = new Set(result?.permission_id ?? []);
     if (permissions.size === 0) {
         return false;
     }
@@ -1538,12 +1547,6 @@ function doesUserNeedAccessToContent(result, userPermissions)
     }
     return true;
 }
-
-async function getUserPermissions()
-{
-    return await fetchUserPermissions();
-}
-
 
 /**
  * Fetch CatalogueMetadata from Sanity. This information may be duplicated in the contentTypeConfig.js.
@@ -1558,8 +1561,8 @@ async function getUserPermissions()
  *   .then(data => console.log(data))
  *   .catch(error => console.error(error));
  */
-export async function fetchCatalogMetadata(contentType)
-{   const query = `*[_type == 'CatalogMetadata']{
+export async function fetchCatalogMetadata(contentType) {
+    const query = `*[_type == 'CatalogMetadata']{
         catalog_type,
         brand,
         groq_results,
@@ -1568,7 +1571,7 @@ export async function fetchCatalogMetadata(contentType)
         modal_text,
         sort_by,
       }`
-    return fetchSanity(query, false, {processNeedAccess:false});
+    return fetchSanity(query, false, {processNeedAccess: false});
 }
 
 /**
@@ -1616,43 +1619,43 @@ export async function fetchMetadata(brand, type) {
 
 //Helper Functions
 function arrayJoinWithQuotes(array, delimiter = ',') {
-  const wrapped = array.map(value => `'${value}'`);
-  return wrapped.join(delimiter)
+    const wrapped = array.map(value => `'${value}'`);
+    return wrapped.join(delimiter)
 }
 
 function getSanityDate(date) {
-  return date.toISOString();
+    return date.toISOString();
 }
 
 const merge = (a, b, predicate = (a, b) => a === b) => {
-  const c = [...a]; // copy to avoid side effects
-  // add all items from B to copy C if they're not already present
-  b.forEach((bItem) => (c.some((cItem) => predicate(bItem, cItem)) ? null : c.push(bItem)))
-  return c;
+    const c = [...a]; // copy to avoid side effects
+    // add all items from B to copy C if they're not already present
+    b.forEach((bItem) => (c.some((cItem) => predicate(bItem, cItem)) ? null : c.push(bItem)))
+    return c;
 }
 
 function checkSanityConfig(config) {
-  if (!config.sanityConfig.token) {
-      console.warn('fetchSanity: The "token" property is missing in the config object.');
-      return false;
-  }
-  if (!config.sanityConfig.projectId) {
-      console.warn('fetchSanity: The "projectId" property is missing in the config object.');
-      return false;
-  }
-  if (!config.sanityConfig.dataset) {
-      console.warn('fetchSanity: The "dataset" property is missing in the config object.');
-      return false;
-  }
-  if (!config.sanityConfig.version) {
-      console.warn('fetchSanity: The "version" property is missing in the config object.');
-      return false;
-  }
-  return true;
+    if (!config.sanityConfig.token) {
+        console.warn('fetchSanity: The "token" property is missing in the config object.');
+        return false;
+    }
+    if (!config.sanityConfig.projectId) {
+        console.warn('fetchSanity: The "projectId" property is missing in the config object.');
+        return false;
+    }
+    if (!config.sanityConfig.dataset) {
+        console.warn('fetchSanity: The "dataset" property is missing in the config object.');
+        return false;
+    }
+    if (!config.sanityConfig.version) {
+        console.warn('fetchSanity: The "version" property is missing in the config object.');
+        return false;
+    }
+    return true;
 }
 
 
-function     buildRawQuery(
+function buildRawQuery(
     filter = '',
     fields = '...',
     {
@@ -1671,7 +1674,7 @@ function     buildRawQuery(
 }
 
 
-function     buildQuery(
+async function buildQuery(
     baseFilter = '',
     filterParams = {},
     fields = '...',
@@ -1682,11 +1685,11 @@ function     buildQuery(
         isSingle = false,
     },
 ) {
-    const filter = new FilterBuilder(baseFilter, filterParams).buildFilter();
+    const filter = await new FilterBuilder(baseFilter, filterParams).buildFilter();
     return buildRawQuery(filter, fields, {sortOrder, start, end, isSingle});
 }
 
-function     buildEntityAndTotalQuery(
+function buildEntityAndTotalQuery(
     filter = '',
     fields = '...',
     {
@@ -1709,9 +1712,9 @@ function     buildEntityAndTotalQuery(
 }
 
 
-function getFilterOptions(option, commonFilter,contentType, brand){
+function getFilterOptions(option, commonFilter, contentType, brand) {
     let filterGroq = '';
-    const types = Array.from(new Set([...coachLessonsTypes,...showsTypes[brand]]));
+    const types = Array.from(new Set([...coachLessonsTypes, ...showsTypes[brand]]));
 
     switch (option) {
         case "difficulty":

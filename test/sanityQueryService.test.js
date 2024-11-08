@@ -1,8 +1,7 @@
-import {initializeService} from '../src/services/config.js';
 import {getFieldsForContentType} from "../src/contentTypeConfig";
 import {fetchSanity} from "../src/services/sanity";
 import {log} from './log.js';
-import {LocalStorageMock} from "./localStorageMock";
+import {initializeTestService} from "./initializeTests";
 
 const {
     fetchSongById,
@@ -49,22 +48,6 @@ const {
 const {
     processMetadata,
 } = require('../src/contentMetaData.js');
-
-export function initializeTestService(){
-    const config = {
-        sanityConfig: {
-            token: process.env.SANITY_API_TOKEN,
-            projectId: process.env.SANITY_PROJECT_ID,
-            dataset: process.env.SANITY_DATASET,
-            useCachedAPI: process.env.SANITY_USE_CACHED_API === 'true' || true,
-            version: '2021-06-07',
-            debug: process.env.DEBUG === 'true' || false,
-            useDummyRailContentMethods: true,
-        },
-        localStorage:  new LocalStorageMock()
-    };
-    initializeService(config);
-}
 
 describe('Sanity Queries', function () {
     beforeEach(() => {
@@ -295,7 +278,7 @@ describe('Sanity Queries', function () {
         expect(relatedLessons.some(
             lesson => lessonIds.includes(lesson.id)
         )).toBe(true);
-    },10000);
+    }, 10000);
 
     test('fetchChildren', async () => {
         // complement test to fetchParentByRailContentId
@@ -404,7 +387,7 @@ describe('Sanity Queries', function () {
         expect(response.entity.length).toBeGreaterThan(0);
     });
     test('fetchCoachLessons-WithTypeFilters', async () => {
-        const response = await fetchAllFilterOptions('drumeo',['type,course','type,live'], '','','coach-lessons','',[],31880);
+        const response = await fetchAllFilterOptions('drumeo', ['type,course', 'type,live'], '', '', 'coach-lessons', '', [], 31880);
         log(response);
         expect(response.meta.filterOptions.difficulty).toBeDefined();
         expect(response.meta.filterOptions.type).toBeDefined();
@@ -423,7 +406,7 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchCoachLessons-IncludedFields', async () => {
-        const response = await fetchCoachLessons('drumeo',31880, {includedFields: ['genre,Pop/Rock','difficulty,Beginner']});
+        const response = await fetchCoachLessons('drumeo', 31880, {includedFields: ['genre,Pop/Rock', 'difficulty,Beginner']});
         log(response);
         expect(response.entity.length).toBeGreaterThan(0);
     });
@@ -526,7 +509,7 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchMetadata-Coach-Lessons', async () => {
-        const response = await fetchMetadata('drumeo','coach-lessons');
+        const response = await fetchMetadata('drumeo', 'coach-lessons');
         log(response);
         expect(response).toBeDefined();
     });
@@ -586,23 +569,27 @@ describe('Sanity Queries', function () {
         expect(hierarchy.parents[241249]).toBe(241248);
         expect(hierarchy.parents[241248]).toBe(241247);
         expect(hierarchy.children[241250]).toStrictEqual([]);
-        expect(hierarchy.children[243085]).toStrictEqual([ 243170, 243171, 243172, 243174, 243176 ]);
+        expect(hierarchy.children[243085]).toStrictEqual([243170, 243171, 243172, 243174, 243176]);
     });
 
 });
 
 describe('Filter Builder', function () {
 
+    beforeEach(() => {
+        initializeTestService();
+    });
+
     test('baseConstructor', async () => {
         const filter = 'railcontent_id = 111'
-        let builder = new FilterBuilder(filter);
-        let finalFilter = builder.buildFilter(filter);
+        let builder = new FilterBuilder(filter, {bypassPermissions: true});
+        let finalFilter = await builder.buildFilter(filter);
         let clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].phrase).toBe(filter);
         expect(clauses[1].field).toBe('published_on');
 
-        builder = new FilterBuilder();
-        finalFilter = builder.buildFilter(filter);
+        builder = new FilterBuilder('', {bypassPermissions: true});
+        finalFilter = await builder.buildFilter(filter);
         clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].field).toBe('published_on');
         expect(clauses[0].operator).toBe('<=');
@@ -610,8 +597,8 @@ describe('Filter Builder', function () {
 
     test('withOnlyFilterAvailableStatuses', async () => {
         const filter = 'railcontent_id = 111'
-        const builder = FilterBuilder.withOnlyFilterAvailableStatuses(filter, ['published', 'unlisted']);
-        const finalFilter = builder.buildFilter();
+        const builder = FilterBuilder.withOnlyFilterAvailableStatuses(filter, ['published', 'unlisted'], true);
+        const finalFilter = await builder.buildFilter();
         const clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].phrase).toBe(filter);
         expect(clauses[1].field).toBe('status');
@@ -627,7 +614,7 @@ describe('Filter Builder', function () {
             availableContentStatuses: ['published', 'unlisted', 'scheduled'],
             getFutureScheduledContentsOnly: true
         });
-        const finalFilter = builder.buildFilter();
+        const finalFilter = await builder.buildFilter();
         const clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].phrase).toBe(filter);
         expect(clauses[1].field).toBe('(status'); // extra ( because it's a multi part filter
@@ -642,27 +629,18 @@ describe('Filter Builder', function () {
 
     test('withUserPermissions', async () => {
         const filter = 'railcontent_id = 111'
-        const builder = new FilterBuilder(filter,
-            {
-                user: {
-                    user: {},
-                    permissions: [91, 92],
-                }
-            });
-        const finalFilter = builder.buildFilter();
-        const expected = "references(*[_type == 'permission' && railcontent_id in [91,92]]._id)"
+        const builder = new FilterBuilder(filter);
+        const finalFilter = await builder.buildFilter();
+        const expected = "references(*[_type == 'permission' && railcontent_id in [78,91,92]]._id)"
         const isMatch = finalFilter.includes(expected);
         expect(isMatch).toBeTruthy();
     });
 
     test('withUserPermissionsForPlusUser', async () => {
         const filter = 'railcontent_id = 111'
-        const builder = new FilterBuilder(filter,
-            {
-                user: getPlusUser()
-            });
-        const finalFilter = builder.buildFilter();
-        const expected = "references(*[_type == 'permission' && railcontent_id in [91,92]]._id)"
+        const builder = new FilterBuilder(filter);
+        const finalFilter = await builder.buildFilter();
+        const expected = "references(*[_type == 'permission' && railcontent_id in [78,91,92]]._id)"
         const isMatch = finalFilter.includes(expected);
         expect(isMatch).toBeTruthy();
     });
@@ -671,11 +649,10 @@ describe('Filter Builder', function () {
         const filter = 'railcontent_id = 111'
         const builder = new FilterBuilder(filter,
             {
-                user: getPlusUser(),
                 bypassPermissions: true
             });
-        const finalFilter = builder.buildFilter();
-        const expected = "references(*[_type == 'permission' && railcontent_id in [91,92]]._id)"
+        const finalFilter = await builder.buildFilter();
+        const expected = "references(*[_type == 'permission' && railcontent_id in [78,91,92]]._id)"
         const isMatch = finalFilter.includes(expected);
         expect(isMatch).toBeFalsy();
         const clauses = spliceFilterForAnds(finalFilter);
@@ -689,11 +666,11 @@ describe('Filter Builder', function () {
 
         const filter = 'railcontent_id = 111'
         let builder = new FilterBuilder(filter, {
-            user: {},
             pullFutureContent: true,
+            bypassPermissions: true
         });
 
-        let finalFilter = builder.buildFilter();
+        let finalFilter = await builder.buildFilter();
         let clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].phrase).toBe(filter);
 
@@ -705,21 +682,15 @@ describe('Filter Builder', function () {
 
         builder = new FilterBuilder(filter,
             {
-                user: {},
                 getFutureContentOnly: true,
+                bypassPermissions: true
             });
-        finalFilter = builder.buildFilter();
+        finalFilter = await builder.buildFilter();
         clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].phrase).toBe(filter);
         expect(clauses[1].field).toBe('published_on');
         expect(clauses[1].operator).toBe('>=');
     });
-
-    function getPlusUser() {
-        return {
-            permissions: [91, 92],
-        }
-    }
 
     function spliceFilterForAnds(filter) {
         // this will not correctly split complex filters with && and || conditions.

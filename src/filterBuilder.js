@@ -1,3 +1,4 @@
+import {fetchUserPermissions} from "./services/userPermissions";
 
 
 export class FilterBuilder {
@@ -5,17 +6,15 @@ export class FilterBuilder {
     STATUS_SCHEDULED = 'scheduled';
 
     constructor(
-                filter = '',
-                {
-                    user = undefined,
-                    availableContentStatuses = [],
-                    bypassPermissions = false,
-                    pullFutureContent = false,
-                    getFutureContentOnly = false,
-                    getFutureScheduledContentsOnly = false,
+        filter = '',
+        {
+            availableContentStatuses = [],
+            bypassPermissions = false,
+            pullFutureContent = false,
+            getFutureContentOnly = false,
+            getFutureScheduledContentsOnly = false,
 
-                }={}) {
-        this.user = user;
+        } = {}) {
         this.availableContentStatuses = availableContentStatuses;
         this.bypassPermissions = bypassPermissions;
         this.pullFutureContent = pullFutureContent;
@@ -27,13 +26,15 @@ export class FilterBuilder {
     }
 
 
-    static withOnlyFilterAvailableStatuses(filter, availableContentStatuses) {
-        return new FilterBuilder(filter,{
-                                availableContentStatuses,
-                                });
+    static withOnlyFilterAvailableStatuses(filter, availableContentStatuses, bypassPermissions) {
+        return new FilterBuilder(filter, {
+            availableContentStatuses,
+            bypassPermissions,
+        });
     }
 
-    buildFilter() {
+    async buildFilter() {
+        this.userData = await fetchUserPermissions();
         if (this.debug) console.log('baseFilter', this.filter);
         const filter = this
             ._applyContentStatuses()
@@ -64,20 +65,15 @@ export class FilterBuilder {
     }
 
     _applyPermissions() {
-        if (this.bypassPermissions) return this;
-        // TODO these need to be pulled from the user and reference either ID, or railcontent_id
+        if (this.bypassPermissions || this.userData.isAdmin) return this;
         const requiredPermissions = this._getUserPermissions();
         if (requiredPermissions.length === 0) return this;
-        // handle pullSongsContent, I think the flagging on this needs to be backwards compared to BE
-        // if using id, switch railcontent_id to _id in the below query
         this._andWhere(`references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id)`);
         return this;
-
     }
 
     _getUserPermissions() {
-        // TODO need user store up and running to complete this, until then just null check
-        return this?.user?.permissions ?? [];
+        return this.userData.permissions;
     }
 
     _applyPublishingDateRestrictions() {
@@ -88,7 +84,7 @@ export class FilterBuilder {
             this._andWhere(`published_on <= '${now}'`);
         } else {
             const date = new Date();
-            const theFuture =  new Date(date.setMonth(date.getMonth() + 18));
+            const theFuture = new Date(date.setMonth(date.getMonth() + 18));
             this._andWhere(`published_on <= '${theFuture}'`);
         }
         return this;
@@ -106,8 +102,8 @@ export class FilterBuilder {
 
     _trimAmpersands() {
         this.filter = this.filter.trim();
-        while( this.filter.charAt(0) === '&'  || this.filter.charAt(0) === ' ' ) this.filter = this.filter.substring(1);
-        while( this.filter.charAt(this.filter.length) === '&' || this.filter.charAt(this.filter.length) === ' ' ) this.filter = this.filter.slice(-1);
+        while (this.filter.charAt(0) === '&' || this.filter.charAt(0) === ' ') this.filter = this.filter.substring(1);
+        while (this.filter.charAt(this.filter.length) === '&' || this.filter.charAt(this.filter.length) === ' ') this.filter = this.filter.slice(-1);
         return this;
     }
 

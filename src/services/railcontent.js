@@ -16,7 +16,8 @@ const excludeFromGeneratedIndex = [
     'postRecordWatchSession',
     'postContentStarted',
     'postContentCompleted',
-    'postContentReset'
+    'postContentReset',
+    'fetchUserPermissionsData'
 ];
 
 
@@ -236,10 +237,10 @@ export async function fetchContentPageUserData(contentId) {
     }
 }
 
-export async function fetchUserPermissions() {
-    let url = `/content/user_data_permissions`;
+export async function fetchUserPermissionsData() {
+    let url = `/content/user/permissions`;
     // in the case of an unauthorized user, we return empty permissions
-    return fetchHandler(url, 'get') ?? [];
+    return await fetchHandler(url, 'get') ?? [];
 }
 
 async function fetchDataHandler(url, dataVersion, method = "get") {
