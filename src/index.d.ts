@@ -22,6 +22,8 @@ import {
 } from './services/contentProgress.js';
 
 import {
+	addItemToPlaylist,
+	countAssignmentsAndLessons,
 	createPlaylist,
 	deletePlaylist,
 	deletePlaylistItem,
@@ -116,9 +118,11 @@ import {
 
 declare module 'musora-content-services' {
 	export {
+		addItemToPlaylist,
 		contentStatusCompleted,
 		contentStatusReset,
 		contentStatusStarted,
+		countAssignmentsAndLessons,
 		createPlaylist,
 		deletePlaylist,
 		deletePlaylistItem,

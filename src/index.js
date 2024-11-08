@@ -22,6 +22,8 @@ import {
 } from './services/contentProgress.js';
 
 import {
+	addItemToPlaylist,
+	countAssignmentsAndLessons,
 	createPlaylist,
 	deletePlaylist,
 	deletePlaylistItem,
@@ -115,9 +117,11 @@ import {
 } from './services/sanity.js';
 
 export {
+	addItemToPlaylist,
 	contentStatusCompleted,
 	contentStatusReset,
 	contentStatusStarted,
+	countAssignmentsAndLessons,
 	createPlaylist,
 	deletePlaylist,
 	deletePlaylistItem,
