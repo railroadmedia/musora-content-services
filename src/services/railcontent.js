@@ -298,26 +298,15 @@ export async function fetchContentProgress(currentVersion) {
     return fetchDataHandler(url, currentVersion);
 }
 
-export async function postRecordWatchSession({
-                                                 mediaId,
-                                                 mediaType,
-                                                 mediaCategory,
-                                                 watchPosition,
-                                                 totalDuration,
-                                                 sessionToken,
-                                                 brand,
-                                                 contentId = null
-                                             }) {
-    let url = `/railtracker/media-playback-session`;
+export async function postRecordWatchSession(contentId, mediaTypeId, mediaLengthSeconds, currentSeconds, secondsPlayed, sessionId) {
+    let url = `/v2/railtracker/media-playback-session`;
     return postDataHandler(url, {
-        mediaId,
-        mediaType,
-        mediaCategory,
-        watchPosition,
-        totalDuration,
-        sessionToken,
-        brand,
-        contentId
+        "content_id": contentId,
+        "media_type_id": mediaTypeId,
+        "media_length_seconds": mediaLengthSeconds,
+        "current_second": currentSeconds,
+        "seconds_played": secondsPlayed,
+        "session_id": sessionId
     });
 }
 

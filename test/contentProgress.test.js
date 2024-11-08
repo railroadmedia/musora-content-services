@@ -53,17 +53,17 @@ describe('contentProgressDataContext', function () {
         mock2.mockImplementation(() => JSON.parse(`{"version": ${serverVersion}}`));
         let progress = await getProgressPercentage(241250); //force load context
 
-        let result = await recordWatchSession({watchPositionSeconds: 50, totalDurationSeconds: 100, contentId: 241250});
+        await recordWatchSession(241250, "video", "vimeo", 100, 50, 50);
         serverVersion++;
-        await recordWatchSession({watchPositionSeconds: 50, totalDurationSeconds: 100, contentId: 241251});
+        await recordWatchSession(241251, "video", "vimeo", 100, 50, 50);
         serverVersion++;
-        await recordWatchSession({watchPositionSeconds: 50, totalDurationSeconds: 100, contentId: 241252});
+        await recordWatchSession(241252, "video", "vimeo", 100, 50, 50);
         serverVersion++;
-        await recordWatchSession({watchPositionSeconds: 100, totalDurationSeconds: 100, contentId: 241260});
+        await recordWatchSession(241260, "video", "vimeo", 100, 100, 100);
         serverVersion++;
-        await recordWatchSession({watchPositionSeconds: 100, totalDurationSeconds: 100, contentId: 241261});
+        await recordWatchSession(241261, "video", "vimeo", 100, 100, 100);
         serverVersion++;
-        progress = await getProgressPercentage(241250); //force load context
+        progress = await getProgressPercentage(241250);
 
         expect(progress).toBe(50);
         let progress241249 = await getProgressPercentage(241249);

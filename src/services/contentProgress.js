@@ -86,31 +86,24 @@ export async function contentStatusReset(contentId) {
 }
 
 
-export async function recordWatchSession({
-                                             mediaId,
-                                             mediaType,
-                                             mediaCategory,
-                                             watchPositionSeconds,
-                                             totalDurationSeconds,
-                                             sessionToken,
-                                             brand,
-                                             contentId = null
-                                         }) {
+export async function recordWatchSession(contentId, mediaType, mediaCategory, mediaLengthSeconds, currentSeconds, secondsPlayed, sessionId = null) {
+    let mediaTypeId = getMediaTypeId(mediaType, mediaCategory);
+    let updateLocalProgress = mediaTypeId === 1 || mediaTypeId === 2; //only update for video playback
     await dataContext.update(
         async function (localContext) {
-            if (contentId) {
+            if (contentId && updateLocalProgress ) {
                 let data = localContext.data[contentId] ?? [];
                 let progress = data?.[DATA_KEY_PROGRESS] ?? 0;
                 let status = data?.[DATA_KEY_STATUS] ?? 0;
 
                 if (status !== STATE_COMPLETED && progress !== 100) {
                     status = STATE_STARTED;
-                    progress = Math.min(99, Math.round(watchPositionSeconds ?? 0 / Math.max(1, totalDurationSeconds ?? 0) * 100));
+                    progress = Math.min(99, Math.round(currentSeconds ?? 0 / Math.max(1, mediaLengthSeconds ?? 0) * 100));
                 }
 
                 data[DATA_KEY_PROGRESS] = progress;
                 data[DATA_KEY_STATUS] = status;
-                data[DATA_KEY_RESUME_TIME] = watchPositionSeconds;
+                data[DATA_KEY_RESUME_TIME] = currentSeconds;
                 localContext.data[contentId] = data;
 
                 let hierarchy = await fetchHierarchy(contentId);
@@ -118,17 +111,30 @@ export async function recordWatchSession({
             }
         },
         async function () {
-            return postRecordWatchSession({
-                mediaId,
-                mediaType,
-                mediaCategory,
-                watchPositionSeconds,
-                totalDurationSeconds,
-                sessionToken,
-                brand,
-                contentId
-            });
+            return postRecordWatchSession(contentId, mediaTypeId, mediaLengthSeconds, currentSeconds, secondsPlayed, sessionId);
         }
+    );
+    return sessionId;
+}
+
+function getMediaTypeId(mediaType, mediaCategory) {
+    switch (`${mediaType}_${mediaCategory}`) {
+        case "video_youtube":
+            return 1;
+        case "video_vimeo":
+            return 2;
+        case "assignment_soundslice":
+            return 3;
+        case "practice_play-alongs":
+            return 4;
+        default:
+            throw Error(`Unsupported media type: ${mediaType}_${mediaCategory}`);
+    }
+}
+
+function uuidv4() {
+    return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
+        (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
     );
 }
 
