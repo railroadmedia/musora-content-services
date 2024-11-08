@@ -43,6 +43,26 @@ export async function getProgressStateByIds(contentIds) {
     return progress;
 }
 
+export async function getAllStarted() {
+    const data = await dataContext.getData();
+    let ids = Object.keys(data).filter(function (key) {
+        return data[parseInt(key)][DATA_KEY_STATUS] === STATE_STARTED;
+    }).map(function (key) {
+        return parseInt(key);
+    });
+    return ids;
+}
+
+export async function getAllCompleted() {
+    const data = await dataContext.getData();
+    let ids = Object.keys(data).filter(function (key) {
+        return data[parseInt(key)][DATA_KEY_STATUS] === STATE_COMPLETED;
+    }).map(function (key) {
+        return parseInt(key);
+    });
+    return ids;
+}
+
 export async function getResumeTimeSeconds(contentId) {
     let data = await dataContext.getData();
     return data[contentId]?.[DATA_KEY_RESUME_TIME] ?? 0;
@@ -146,7 +166,7 @@ function getMediaTypeId(mediaType, mediaCategory) {
 }
 
 function uuidv4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });

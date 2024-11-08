@@ -14,6 +14,8 @@ import {
 import {
 	contentStatusCompleted,
 	contentStatusReset,
+	getAllCompleted,
+	getAllStarted,
 	getProgressPercentage,
 	getProgressPercentageByIds,
 	getProgressState,
@@ -199,6 +201,8 @@ export {
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
 	fetchWorkouts,
+	getAllCompleted,
+	getAllStarted,
 	getProgressPercentage,
 	getProgressPercentageByIds,
 	getProgressState,

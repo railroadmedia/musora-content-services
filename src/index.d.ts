@@ -14,6 +14,8 @@ import {
 import {
 	contentStatusCompleted,
 	contentStatusReset,
+	getAllCompleted,
+	getAllStarted,
 	getProgressPercentage,
 	getProgressPercentageByIds,
 	getProgressState,
@@ -200,6 +202,8 @@ declare module 'musora-content-services' {
 		fetchUserPermissionsData,
 		fetchUserPlaylists,
 		fetchWorkouts,
+		getAllCompleted,
+		getAllStarted,
 		getProgressPercentage,
 		getProgressPercentageByIds,
 		getProgressState,

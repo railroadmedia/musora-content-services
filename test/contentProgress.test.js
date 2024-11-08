@@ -2,7 +2,7 @@ import {
     getProgressPercentage,
     dataContext,
     recordWatchSession,
-    getProgressPercentageByIds, getProgressState, getProgressStateByIds
+    getProgressPercentageByIds, getProgressState, getProgressStateByIds, getAllStarted, getAllCompleted
 } from "../src/services/contentProgress";
 import {initializeTestService} from "./initializeTests";
 
@@ -15,7 +15,7 @@ describe('contentProgressDataContext', function () {
     beforeEach(() => {
         initializeTestService();
         mock = jest.spyOn(dataContext, 'fetchData');
-        var json = JSON.parse(`{"version":${testVersion},"data":{"234191":{"s":"started","p":6,"t":20},"233955":{"s":"started","p":1}}}`);
+        var json = JSON.parse(`{"version":${testVersion},"data":{"234191":{"s":"started","p":6,"t":20},"233955":{"s":"started","p":1},"259426":{"s":"completed","p":100}}}`);
         mock.mockImplementation(() => json);
 
     });
@@ -45,6 +45,17 @@ describe('contentProgressDataContext', function () {
         let result = await getProgressStateByIds([234191, 120402]);
         expect(result[234191]).toBe("started");
         expect(result[120402]).toBe("");
+    });
+
+    test('getAllStarted', async () => {
+        let result = await getAllStarted();
+        expect(result).toContain(234191);
+        expect(result).toContain(233955);
+    });
+
+    test('getAllCompleted', async () => {
+        let result = await getAllCompleted();
+        expect(result).toContain(259426);
     });
 
     test('progressBubbling', async () => {
