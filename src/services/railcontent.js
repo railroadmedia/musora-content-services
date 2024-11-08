@@ -299,7 +299,7 @@ export async function fetchContentProgress(currentVersion) {
 }
 
 export async function postRecordWatchSession(contentId, mediaTypeId, mediaLengthSeconds, currentSeconds, secondsPlayed, sessionId) {
-    let url = `/v2/railtracker/media-playback-session`;
+    let url = `/railtracker/v2/media-playback-session`;
     return postDataHandler(url, {
         "content_id": contentId,
         "media_type_id": mediaTypeId,
