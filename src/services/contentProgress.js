@@ -85,13 +85,26 @@ export async function contentStatusReset(contentId) {
         });
 }
 
-
+/**
+ * Record watch session
+ * @return {string} sessionId - provide in future calls to update progress
+ * @param {int} contentId
+ * @param {string} mediaType - options are video, assignment, practice
+ * @param {string} mediaCategory - options are youtube, vimeo, soundslice, play-alongs
+ * @param {int} mediaLengthSeconds
+ * @param {int} currentSeconds
+ * @param {int} secondsPlayed
+ * @param {string} sessionId - This function records a sessionId to pass into future updates to progress on the same video
+ */
 export async function recordWatchSession(contentId, mediaType, mediaCategory, mediaLengthSeconds, currentSeconds, secondsPlayed, sessionId = null) {
     let mediaTypeId = getMediaTypeId(mediaType, mediaCategory);
     let updateLocalProgress = mediaTypeId === 1 || mediaTypeId === 2; //only update for video playback
+    if (!sessionId) {
+        sessionId = uuidv4();
+    }
     await dataContext.update(
         async function (localContext) {
-            if (contentId && updateLocalProgress ) {
+            if (contentId && updateLocalProgress) {
                 let data = localContext.data[contentId] ?? [];
                 let progress = data?.[DATA_KEY_PROGRESS] ?? 0;
                 let status = data?.[DATA_KEY_STATUS] ?? 0;
