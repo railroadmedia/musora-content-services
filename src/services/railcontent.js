@@ -248,7 +248,7 @@ async function fetchDataHandler(url, dataVersion, method = "get") {
 }
 
 async function postDataHandler(url, data) {
-    return fetchHandler(url, 'post', data);
+    return fetchHandler(url, 'post', null, data);
 }
 
 export async function fetchHandler(url, method = "get", dataVersion = null, body = null) {
