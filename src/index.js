@@ -23,6 +23,8 @@ import {
 } from './services/contentProgress.js';
 
 import {
+	addItemToPlaylist,
+	countAssignmentsAndLessons,
 	createPlaylist,
 	deletePlaylist,
 	deletePlaylistItem,
@@ -121,8 +123,10 @@ import {
 } from './services/userPermissions.js';
 
 export {
+	addItemToPlaylist,
 	contentStatusCompleted,
 	contentStatusReset,
+	countAssignmentsAndLessons,
 	createPlaylist,
 	deletePlaylist,
 	deletePlaylistItem,
