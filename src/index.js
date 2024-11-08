@@ -126,11 +126,7 @@ export {
 	addItemToPlaylist,
 	contentStatusCompleted,
 	contentStatusReset,
-<<<<<<< HEAD
-	contentStatusStarted,
 	countAssignmentsAndLessons,
-=======
->>>>>>> main
 	createPlaylist,
 	deletePlaylist,
 	deletePlaylistItem,

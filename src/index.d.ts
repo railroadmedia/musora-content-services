@@ -127,11 +127,7 @@ declare module 'musora-content-services' {
 		addItemToPlaylist,
 		contentStatusCompleted,
 		contentStatusReset,
-<<<<<<< HEAD
-		contentStatusStarted,
 		countAssignmentsAndLessons,
-=======
->>>>>>> main
 		createPlaylist,
 		deletePlaylist,
 		deletePlaylistItem,
