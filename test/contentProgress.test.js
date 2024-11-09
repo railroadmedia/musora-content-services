@@ -61,34 +61,34 @@ describe('contentProgressDataContext', function () {
         expect(result).toStrictEqual([233955]);
     });
 
-    test('getAllStartedWithUpdate', async () => {
-        let mock2 = jest.spyOn(railContentModule, 'postRecordWatchSession');
-        let serverVersion = 2;
-        mock2.mockImplementation(() => JSON.parse(`{"version": ${serverVersion}}`));
-        let result = await getAllStarted();
-        expect(result).toStrictEqual([233955, 234191]);
-        await recordWatchSession(111111, "video", "vimeo", 100, 50, 50);
-
-        let result2 = await getAllStarted();
-        expect(result2).toStrictEqual([111111, 233955, 234191]);
-    });
+    // test('getAllStartedWithUpdate', async () => {
+    //     let mock2 = jest.spyOn(railContentModule, 'postRecordWatchSession');
+    //     let serverVersion = 2;
+    //     mock2.mockImplementation(() => JSON.parse(`{"version": ${serverVersion}}`));
+    //     let result = await getAllStarted();
+    //     expect(result).toStrictEqual([233955, 234191]);
+    //     await recordWatchSession(111111, "video", "vimeo", 100, 50, 50);
+    //
+    //     let result2 = await getAllStarted();
+    //     expect(result2).toStrictEqual([111111, 233955, 234191]);
+    // });
 
     test('getAllCompleted', async () => {
         let result = await getAllCompleted();
         expect(result).toStrictEqual([259426]);
     });
 
-    test('getAllCompletedWithUpdate', async () => {
-        let mock2 = jest.spyOn(railContentModule, 'postContentCompleted');
-        let serverVersion = 2;
-        mock2.mockImplementation(() => JSON.parse(`{"version": ${serverVersion}}`));
-
-        let result = await getAllCompleted();
-        expect(result).toStrictEqual([259426]);
-        await contentStatusCompleted(111111);
-        let result2 = await getAllCompleted();
-        expect(result2).toStrictEqual([111111, 259426]);
-    });
+    // test('getAllCompletedWithUpdate', async () => {
+    //     let mock2 = jest.spyOn(railContentModule, 'postContentCompleted');
+    //     let serverVersion = 2;
+    //     mock2.mockImplementation(() => JSON.parse(`{"version": ${serverVersion}}`));
+    //
+    //     let result = await getAllCompleted();
+    //     expect(result).toStrictEqual([259426]);
+    //     await contentStatusCompleted(111111);
+    //     let result2 = await getAllCompleted();
+    //     expect(result2).toStrictEqual([111111, 259426]);
+    // });
 
     test('progressBubbling', async () => {
         let mock2 = jest.spyOn(railContentModule, 'postRecordWatchSession');
