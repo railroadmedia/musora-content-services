@@ -2,9 +2,15 @@ import {
     getProgressPercentage,
     dataContext,
     recordWatchSession,
-    getProgressPercentageByIds, getProgressState, getProgressStateByIds, getAllStarted, getAllCompleted
+    getProgressPercentageByIds,
+    getProgressState,
+    getProgressStateByIds,
+    getAllStarted,
+    getAllCompleted,
+    contentStatusCompleted
 } from "../src/services/contentProgress";
 import {initializeTestService} from "./initializeTests";
+import {postContentCompleted} from "../src";
 
 const railContentModule = require('../src/services/railcontent.js')
 
@@ -15,7 +21,7 @@ describe('contentProgressDataContext', function () {
     beforeEach(() => {
         initializeTestService();
         mock = jest.spyOn(dataContext, 'fetchData');
-        var json = JSON.parse(`{"version":${testVersion},"data":{"234191":{"s":"started","p":6,"t":20,"u":1731108880082},"233955":{"s":"started","p":1,"u":1731108880083},"259426":{"s":"completed","p":100,"u":1731108880085}}}`);
+        var json = JSON.parse(`{"version":${testVersion},"data":{"234191":{"s":"started","p":6,"t":20,"u":1731108082},"233955":{"s":"started","p":1,"u":1731108083},"259426":{"s":"completed","p":100,"u":1731108085}}}`);
         mock.mockImplementation(() => json);
 
     });
@@ -55,9 +61,33 @@ describe('contentProgressDataContext', function () {
         expect(result).toStrictEqual([233955]);
     });
 
+    test('getAllStartedWithUpdate', async () => {
+        let mock2 = jest.spyOn(railContentModule, 'postRecordWatchSession');
+        let serverVersion = 2;
+        mock2.mockImplementation(() => JSON.parse(`{"version": ${serverVersion}}`));
+        let result = await getAllStarted();
+        expect(result).toStrictEqual([233955, 234191]);
+        await recordWatchSession(111111, "video", "vimeo", 100, 50, 50);
+
+        let result2 = await getAllStarted();
+        expect(result2).toStrictEqual([111111, 233955, 234191]);
+    });
+
     test('getAllCompleted', async () => {
         let result = await getAllCompleted();
         expect(result).toStrictEqual([259426]);
+    });
+
+    test('getAllCompletedWithUpdate', async () => {
+        let mock2 = jest.spyOn(railContentModule, 'postContentCompleted');
+        let serverVersion = 2;
+        mock2.mockImplementation(() => JSON.parse(`{"version": ${serverVersion}}`));
+
+        let result = await getAllCompleted();
+        expect(result).toStrictEqual([259426]);
+        await contentStatusCompleted(111111);
+        let result2 = await getAllCompleted();
+        expect(result2).toStrictEqual([111111, 259426]);
     });
 
     test('progressBubbling', async () => {

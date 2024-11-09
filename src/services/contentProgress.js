@@ -88,8 +88,8 @@ export async function getResumeTimeSeconds(contentId) {
 
 export async function contentStatusCompleted(contentId) {
     await dataContext.update(
-        function (localContext) {
-            let hierarchy = fetchHierarchy(contentId);
+        async function (localContext) {
+            let hierarchy = await fetchHierarchy(contentId);
             completeStatusInLocalContext(contentId, localContext, hierarchy);
         },
         async function () {
@@ -98,10 +98,10 @@ export async function contentStatusCompleted(contentId) {
 }
 
 function completeStatusInLocalContext(contentId, localContext, hierarchy) {
-    let data = localContext.data[contentId] ?? [];
+    let data = localContext.data[contentId] ?? {};
     data[DATA_KEY_STATUS] = STATE_COMPLETED;
     data[DATA_KEY_PROGRESS] = 100;
-    data[DATA_KEY_LAST_UPDATED_TIME] = new Date().getTime()?.toString();
+    data[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000);
     localContext.data[contentId] = data;
 
     let children = hierarchy.children[contentId] ?? [];
@@ -144,7 +144,7 @@ export async function recordWatchSession(contentId, mediaType, mediaCategory, me
     await dataContext.update(
         async function (localContext) {
             if (contentId && updateLocalProgress) {
-                let data = localContext.data[contentId] ?? [];
+                let data = localContext.data[contentId] ?? {};
                 let progress = data?.[DATA_KEY_PROGRESS] ?? 0;
                 let status = data?.[DATA_KEY_STATUS] ?? 0;
 
@@ -156,7 +156,7 @@ export async function recordWatchSession(contentId, mediaType, mediaCategory, me
                 data[DATA_KEY_PROGRESS] = progress;
                 data[DATA_KEY_STATUS] = status;
                 data[DATA_KEY_RESUME_TIME] = currentSeconds;
-                data[DATA_KEY_LAST_UPDATED_TIME] = new Date().getTime()?.toString();
+                data[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000);
                 localContext.data[contentId] = data;
 
                 let hierarchy = await fetchHierarchy(contentId);
@@ -195,7 +195,7 @@ function uuidv4() {
 function bubbleProgress(hierarchy, contentId, localContext) {
     let parentId = hierarchy.parents[contentId];
     if (!parentId) return;
-    let data = localContext.data[parentId] ?? [];
+    let data = localContext.data[parentId] ?? {};
     let progress = data[DATA_KEY_PROGRESS];
     let status = data[DATA_KEY_STATUS];
     if (status !== STATE_COMPLETED && progress !== 100) {
