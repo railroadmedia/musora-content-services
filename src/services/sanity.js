@@ -1446,10 +1446,15 @@ export async function fetchCommentModContentData(ids) {
     const idsString = ids.join(',');
     const fields = `"id": railcontent_id, title, "parent": *[^._id in child[]._ref]{"id":railcontent_id, title}`;
     const query = await buildQuery(`railcontent_id in [${idsString}]`,
-        {},
+        {bypassPermissions: true},
         fields,
         {});
-    return fetchSanity(query, true);
+    let data = await fetchSanity(query, true);
+    let mapped = {};
+    data.forEach(function (content) {
+        mapped[content.id] = {"id": content.id, "title": content.title, "parentTitle": content.parent[0].title};
+    });
+    return mapped;
 }
 
 

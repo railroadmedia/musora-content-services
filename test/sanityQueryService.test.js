@@ -574,10 +574,9 @@ describe('Sanity Queries', function () {
 
     test('fetchCommentData', async()=>{
         let data = await fetchCommentModContentData([241251,241252]);
-        expect(data[0].title).toBe("Setting Up Your Space");
-        expect(data[0].parent[0].id).toBe(241249);
-        expect(data[0].parent[0].title).toBe("Gear");
-        expect(data[1].title).toBe("Setting Up Your Pedals & Throne");
+        expect(data[241251].title).toBe("Setting Up Your Space");
+        expect(data[241251].parentTitle).toBe("Gear");
+        expect(data[241252].title).toBe("Setting Up Your Pedals & Throne");
     });
 
 });
