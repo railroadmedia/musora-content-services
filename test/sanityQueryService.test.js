@@ -573,7 +573,7 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchCommentData', async()=>{
-        let data = await fetchCommentModContentData([241251,241252]);
+        let data = await fetchCommentModContentData([241251,241252, 211153]);
         expect(data[241251].title).toBe("Setting Up Your Space");
         expect(data[241251].type).toBe("learning-path-lesson");
         expect(data[241251].parentTitle).toBe("Gear");
