@@ -1444,7 +1444,7 @@ function populateHierarchyLookups(currentLevel, data, parentId) {
  */
 export async function fetchCommentModContentData(ids) {
     const idsString = ids.join(',');
-    const fields = `"id": railcontent_id, title, "parent": *[^._id in child[]._ref]{"id":railcontent_id, title}`;
+    const fields = `"id": railcontent_id, "type": _type, title, "parent": *[^._id in child[]._ref]{"id": railcontent_id, title}`;
     const query = await buildQuery(`railcontent_id in [${idsString}]`,
         {bypassPermissions: true},
         fields,
@@ -1452,7 +1452,7 @@ export async function fetchCommentModContentData(ids) {
     let data = await fetchSanity(query, true);
     let mapped = {};
     data.forEach(function (content) {
-        mapped[content.id] = {"id": content.id, "title": content.title, "parentTitle": content.parent[0].title};
+        mapped[content.id] = {"id": content.id, "type": content.type,"title": content.title, "parentTitle": content.parent[0].title};
     });
     return mapped;
 }
