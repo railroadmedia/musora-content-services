@@ -32,7 +32,8 @@ const excludeFromGeneratedIndex = [];
  * @param {Object} config.railcontentConfig - Configuration for user services.
  * @param {string} config.railcontentConfig.token - The token for authenticating user-specific requests.
  * @param {string} config.railcontentConfig.userId - The user ID for fetching user-specific data.
- * @param {string} config.railcontentConfig.baseUrl - The url for the enviroment.
+ * @param {string} config.railcontentConfig.baseUrl - The url for the environment.
+ * @param {string} config.railcontentConfig.authToken - The bearer authorization token.
  * @param {Object} config.localStorage - Cache to use for localStorage
  * @param {boolean} config.isMA - Variable that tells if the library is used by MA or FEW
 

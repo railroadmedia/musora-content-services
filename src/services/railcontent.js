@@ -256,6 +256,9 @@ export async function fetchHandler(url, method = "get", dataVersion = null, body
         'Content-Type': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
     };
+    if (globalConfig.railcontentConfig.authToken) {
+        headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`;
+    }
     if (dataVersion) headers['Data-Version'] = dataVersion;
     const options = {
         method,
@@ -269,7 +272,7 @@ export async function fetchHandler(url, method = "get", dataVersion = null, body
         if (response.ok) {
             return await response.json();
         } else {
-            console.log('fetch error:', response.status);
+            console.error(`Fetch error: ${method} ${url} ${response.status} ${response.statusText}`);
             console.log(response);
         }
     } catch (error) {
@@ -826,13 +829,13 @@ export async function fetchPlaylistItem(payload) {
 }
 
 export async function postContentCompleted(contentId) {
-    let url = `/content/${contentId}/completed`;
-    return postDataHandler(url);
+    let url = `/content/user/progress/complete`;
+    return postDataHandler(url, {"contentId": contentId});
 }
 
 export async function postContentReset(contentId) {
-    let url = `/content/${contentId}/reset`;
-    return postDataHandler(url);
+    let url = `/content/user/progress/reset`;
+    return postDataHandler(url, {"contentId": contentId});
 }
 
 /**

@@ -21,9 +21,8 @@ describe('contentProgressDataContext', function () {
     beforeEach(() => {
         initializeTestService();
         mock = jest.spyOn(dataContext, 'fetchData');
-        var json = JSON.parse(`{"version":${testVersion},"data":{"234191":{"s":"started","p":6,"t":20,"u":1731108082},"233955":{"s":"started","p":1,"u":1731108083},"259426":{"s":"completed","p":100,"u":1731108085}}}`);
+        var json = JSON.parse(`{"version":${testVersion},"config":{"key":1,"enabled":1,"checkInterval":1,"refreshInterval":2},"data":{"234191":{"s":"started","p":6,"t":20,"u":1731108082},"233955":{"s":"started","p":1,"u":1731108083},"259426":{"s":"completed","p":100,"u":1731108085}}}`);
         mock.mockImplementation(() => json);
-
     });
 
     test('getProgressPercentage', async () => {

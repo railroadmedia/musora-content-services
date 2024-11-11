@@ -114,7 +114,7 @@ function completeStatusInLocalContext(contentId, localContext, hierarchy) {
 export async function contentStatusReset(contentId) {
     await dataContext.update(
         function (localContext) {
-            const index = Object.keys(localContext.data).indexOf(contentId);
+            const index = Object.keys(localContext.data).indexOf(contentId.toString());
             if (index > -1) { // only splice array when item is found
                 delete localContext.data[contentId];
             }
