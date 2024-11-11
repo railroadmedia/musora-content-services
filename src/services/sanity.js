@@ -1436,6 +1436,22 @@ function populateHierarchyLookups(currentLevel, data, parentId) {
     }
 }
 
+/**
+ * Fetch data for comment mod page
+ *
+ * @param {array} ids - List of ids get data for
+ * @returns {Promise<Object|null>} - A promise that resolves to an object containing the data
+ */
+export async function fetchCommentModContentData(ids) {
+    const idsString = ids.join(',');
+    const fields = `"id": railcontent_id, title, "parent": *[^._id in child[]._ref]{"id":railcontent_id, title}`;
+    const query = await buildQuery(`railcontent_id in [${idsString}]`,
+        {},
+        fields,
+        {});
+    return fetchSanity(query, true);
+}
+
 
 /**
  *

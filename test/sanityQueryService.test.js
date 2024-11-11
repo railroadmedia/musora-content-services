@@ -1,5 +1,5 @@
 import {getFieldsForContentType} from "../src/contentTypeConfig";
-import {fetchSanity} from "../src/services/sanity";
+import {fetchCommentModContentData, fetchSanity} from "../src/services/sanity";
 import {log} from './log.js';
 import {initializeTestService} from "./initializeTests";
 
@@ -570,6 +570,14 @@ describe('Sanity Queries', function () {
         expect(hierarchy.parents[241248]).toBe(241247);
         expect(hierarchy.children[241250]).toStrictEqual([]);
         expect(hierarchy.children[243085]).toStrictEqual([243170, 243171, 243172, 243174, 243176]);
+    });
+
+    test('fetchCommentData', async()=>{
+        let data = await fetchCommentModContentData([241251,241252]);
+        expect(data[0].title).toBe("Setting Up Your Space");
+        expect(data[0].parent[0].id).toBe(241249);
+        expect(data[0].parent[0].title).toBe("Gear");
+        expect(data[1].title).toBe("Setting Up Your Pedals & Throne");
     });
 
 });
