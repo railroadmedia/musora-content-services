@@ -576,6 +576,7 @@ describe('Sanity Queries', function () {
         let data = await fetchCommentModContentData([241251,241252, 211153]);
         expect(data[241251].title).toBe("Setting Up Your Space");
         expect(data[241251].type).toBe("learning-path-lesson");
+        expect(data[241251].url).toBe( "/drumeo/method/drumeo-method/241247/getting-started-on-the-drums/241248/gear/241249/setting-up-your-space/241251");
         expect(data[241251].parentTitle).toBe("Gear");
         expect(data[241252].title).toBe("Setting Up Your Pedals & Throne");
     });

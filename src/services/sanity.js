@@ -1452,7 +1452,13 @@ export async function fetchCommentModContentData(ids) {
     let data = await fetchSanity(query, true);
     let mapped = {};
     data.forEach(function (content) {
-        mapped[content.id] = {"id": content.id, "type": content.type,"title": content.title, "parentTitle": content.parent[0]?.title ?? null};
+        mapped[content.id] = {
+            "id": content.id,
+            "type": content.type,
+            "title": content.title,
+            "url": content.url,
+            "parentTitle": content.parent[0]?.title ?? null
+        };
     });
     return mapped;
 }
