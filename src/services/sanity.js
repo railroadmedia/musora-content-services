@@ -1448,7 +1448,7 @@ export async function fetchCommentModContentData(ids) {
     const query = await buildQuery(`railcontent_id in [${idsString}]`,
         {bypassPermissions: true},
         fields,
-        {});
+        {end:50});
     let data = await fetchSanity(query, true);
     let mapped = {};
     data.forEach(function (content) {
