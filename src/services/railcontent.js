@@ -371,8 +371,7 @@ export async function fetchChallengeIndexMetadata(contentIds) {
 }
 
 /**
- * Get
- * Intended to be used on the index page for challenges
+ * Get active brand challenges for the authorized user
  *
  * @returns {Promise<any|null>}
  */
