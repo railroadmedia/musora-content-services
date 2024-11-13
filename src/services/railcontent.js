@@ -371,6 +371,17 @@ export async function fetchChallengeIndexMetadata(contentIds) {
 }
 
 /**
+ * Get active brand challenges for the authorized user
+ *
+ * @returns {Promise<any|null>}
+ */
+export async function fetchChallengeUserActiveChallenges(brand = null) {
+    let brandParam = brand ? `?brand=${brand}` : '';
+    let url = `/challenges/user_active_challenges/get${brandParam}`;
+    return await fetchHandler(url, 'get');
+}
+
+/**
  * Fetch all completed badges for the user ordered by completion date descending
  *
  * @param {string|null} brand -
