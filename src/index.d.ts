@@ -12,6 +12,7 @@ import {
 } from './services/contentLikes.js';
 
 import {
+	assignmentStatusCompleted,
 	contentStatusCompleted,
 	contentStatusReset,
 	getAllCompleted,
@@ -77,6 +78,7 @@ import {
 	fetchAllSongs,
 	fetchArtistLessons,
 	fetchArtists,
+	fetchAssignments,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -129,6 +131,7 @@ import {
 declare module 'musora-content-services' {
 	export {
 		addItemToPlaylist,
+		assignmentStatusCompleted,
 		contentStatusCompleted,
 		contentStatusReset,
 		countAssignmentsAndLessons,
@@ -144,6 +147,7 @@ declare module 'musora-content-services' {
 		fetchAllSongs,
 		fetchArtistLessons,
 		fetchArtists,
+		fetchAssignments,
 		fetchByRailContentId,
 		fetchByRailContentIds,
 		fetchByReference,

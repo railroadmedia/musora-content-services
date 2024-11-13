@@ -12,6 +12,7 @@ import {
 } from './services/contentLikes.js';
 
 import {
+	assignmentStatusCompleted,
 	contentStatusCompleted,
 	contentStatusReset,
 	getAllCompleted,
@@ -77,6 +78,7 @@ import {
 	fetchAllSongs,
 	fetchArtistLessons,
 	fetchArtists,
+	fetchAssignments,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -128,6 +130,7 @@ import {
 
 export {
 	addItemToPlaylist,
+	assignmentStatusCompleted,
 	contentStatusCompleted,
 	contentStatusReset,
 	countAssignmentsAndLessons,
@@ -143,6 +146,7 @@ export {
 	fetchAllSongs,
 	fetchArtistLessons,
 	fetchArtists,
+	fetchAssignments,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
