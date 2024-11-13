@@ -1,3 +1,4 @@
+import { v5 as uuidv5, v4 as uuidv4 } from 'uuid';
 import {
     fetchContentProgress,
     postContentCompleted,
@@ -138,9 +139,7 @@ export async function contentStatusReset(contentId) {
 export async function recordWatchSession(contentId, mediaType, mediaCategory, mediaLengthSeconds, currentSeconds, secondsPlayed, sessionId = null) {
     let mediaTypeId = getMediaTypeId(mediaType, mediaCategory);
     let updateLocalProgress = mediaTypeId === 1 || mediaTypeId === 2; //only update for video playback
-    if (!sessionId) {
-        sessionId = uuidv4();
-    }
+    const calculatedSessionId = sessionId ? generateUUID(sessionId) : generateUUID();
     await dataContext.update(
         async function (localContext) {
             if (contentId && updateLocalProgress) {
@@ -164,10 +163,10 @@ export async function recordWatchSession(contentId, mediaType, mediaCategory, me
             }
         },
         async function () {
-            return postRecordWatchSession(contentId, mediaTypeId, mediaLengthSeconds, currentSeconds, secondsPlayed, sessionId);
+            return postRecordWatchSession(contentId, mediaTypeId, mediaLengthSeconds, currentSeconds, secondsPlayed, calculatedSessionId);
         }
     );
-    return sessionId;
+    return calculatedSessionId;
 }
 
 function getMediaTypeId(mediaType, mediaCategory) {
@@ -185,11 +184,12 @@ function getMediaTypeId(mediaType, mediaCategory) {
     }
 }
 
-function uuidv4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
+function generateUUID(input) {
+    if (!input) {
+        return uuidv4();
+    }
+    const UUID_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+    return uuidv5(input, UUID_NAMESPACE);
 }
 
 function bubbleProgress(hierarchy, contentId, localContext) {
