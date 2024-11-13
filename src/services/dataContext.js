@@ -46,7 +46,7 @@ export class DataContext {
     async ensureLocalContextLoaded() {
         if (this.context) return;
         this.verifyConfig();
-        let localData = globalConfig.isMA ? await cache.getItem(this.localStorageKey): cache.getItem(this.localStorageKey) ;
+        let localData = globalConfig.isMA ? await cache.getItem(this.localStorageKey) : cache.getItem(this.localStorageKey);
         if (localData) {
             this.context = JSON.parse(localData);
         }
@@ -85,10 +85,13 @@ export class DataContext {
             cache.setItem(this.localStorageKey, data);
             cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime().toString());
         }
-        let response = await serverUpdateFunction();
-        if (response?.version !== this.version()) {
-            this.clearCache();
-        }
+        const updatePromise = serverUpdateFunction();
+        updatePromise.then((response) => {
+            if (response?.version !== this.version()) {
+                this.clearCache();
+            }
+        });
+        return updatePromise;
     }
 
     version() {

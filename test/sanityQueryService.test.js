@@ -1,5 +1,5 @@
 import {getFieldsForContentType} from "../src/contentTypeConfig";
-import {fetchCommentModContentData, fetchSanity} from "../src/services/sanity";
+import {fetchAssignments, fetchCommentModContentData, fetchSanity} from "../src/services/sanity";
 import {log} from './log.js';
 import {initializeTestService} from "./initializeTests";
 
@@ -568,7 +568,7 @@ describe('Sanity Queries', function () {
         expect(hierarchy.parents[241250]).toBe(241249);
         expect(hierarchy.parents[241249]).toBe(241248);
         expect(hierarchy.parents[241248]).toBe(241247);
-        expect(hierarchy.children[241250]).toStrictEqual([]);
+        expect(hierarchy.children[241250]).toStrictEqual([241676]);
         expect(hierarchy.children[243085]).toStrictEqual([243170, 243171, 243172, 243174, 243176]);
     });
 
@@ -579,6 +579,11 @@ describe('Sanity Queries', function () {
         expect(data[241251].url).toBe( "/drumeo/method/drumeo-method/241247/getting-started-on-the-drums/241248/gear/241249/setting-up-your-space/241251");
         expect(data[241251].parentTitle).toBe("Gear");
         expect(data[241252].title).toBe("Setting Up Your Pedals & Throne");
+    });
+
+    test('fetchAssignments', async()=>{
+        let data = await fetchAssignments(241250);
+        expect(data).toContain(241676);
     });
 
 });

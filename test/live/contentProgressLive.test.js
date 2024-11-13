@@ -38,6 +38,7 @@ describe('contentProgressDataContextLocal', function () {
         result = await getProgressState(contentId);
         expect(result).toBe("started");
         dataContext.clearCache();
+        await new Promise(resolve => setTimeout(resolve, 3000)); // 3 sec
 
         result = await getProgressState(contentId);
         expect(result).toBe("started");

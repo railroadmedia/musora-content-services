@@ -1399,18 +1399,22 @@ export async function fetchHierarchy(railcontentId) {
     let topLevelId = await fetchTopLevelParentId(railcontentId);
     const query = `*[railcontent_id == ${topLevelId}]{
       railcontent_id,
+      'assignments': assignment[]{railcontent_id},
       'children': child[]->{
         railcontent_id,
+        'assignments': assignment[]{railcontent_id},
         'children': child[]->{
             railcontent_id,
+            'assignments': assignment[]{railcontent_id},
             'children': child[]->{
                railcontent_id,
+               'assignments': assignment[]{railcontent_id},
                'children': child[]->{
-                  railcontent_id,               
+                  railcontent_id,                
             } 
           }
         }
-      }
+      },
     }`;
     let response = await fetchSanity(query, false, {processNeedAccess: false});
     if (!response) return null;
@@ -1422,9 +1426,11 @@ export async function fetchHierarchy(railcontentId) {
     return data;
 }
 
+
 function populateHierarchyLookups(currentLevel, data, parentId) {
     let contentId = currentLevel['railcontent_id'];
     let children = currentLevel['children'];
+
     data.parents[contentId] = parentId;
     if (children) {
         data.children[contentId] = children.map(child => child['railcontent_id']);
@@ -1434,6 +1440,36 @@ function populateHierarchyLookups(currentLevel, data, parentId) {
     } else {
         data.children[contentId] = [];
     }
+
+    let assignments = currentLevel['assignments'];
+    if (assignments) {
+        let assignmentIds = assignments.map(assignment => assignment['railcontent_id']);
+        data.children[contentId] = (data.children[contentId] ?? []).concat(assignmentIds);
+        assignmentIds.forEach(assignmentId => {
+            data.parents[assignmentId] = contentId;
+        });
+    }
+
+}
+
+/**
+ * Fetch assignments for content
+ *
+ * @param {integer} contentId - List of ids get data for
+ * @returns {Promise<array|null>} - A promise that resolves to an array containing the data
+ */
+export async function fetchAssignments(contentId) {
+    const fields = `"id": railcontent_id,"assignments":assignment[]{"id": railcontent_id}`;
+    const query = await buildQuery(`railcontent_id == ${contentId}`,
+        {bypassPermissions: true},
+        fields,
+        {end: 100});
+    let data = await fetchSanity(query, false);
+    let mapped = [];
+    data.assignments.forEach(function (content) {
+        mapped.push(content.id);
+    });
+    return mapped;
 }
 
 /**
@@ -1448,7 +1484,7 @@ export async function fetchCommentModContentData(ids) {
     const query = await buildQuery(`railcontent_id in [${idsString}]`,
         {bypassPermissions: true},
         fields,
-        {end:50});
+        {end: 50});
     let data = await fetchSanity(query, true);
     let mapped = {};
     data.forEach(function (content) {
