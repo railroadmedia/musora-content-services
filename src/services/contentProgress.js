@@ -151,22 +151,38 @@ function getChildrenToDepth(parentId, hierarchy, depth = 1) {
 }
 
 
-export async function contentStatusReset(contentId) {
+export async function assignmentStatusReset(assignmentId, contentId) {
     await dataContext.update(
         async function (localContext) {
             let hierarchy = await fetchHierarchy(contentId);
-            let allChildIds = getChildrenToDepth(contentId, hierarchy, 5);
-            allChildIds.push(contentId);
-            allChildIds.forEach(id => {
-                const index = Object.keys(localContext.data).indexOf(id.toString());
-                if (index > -1) { // only splice array when item is found
-                    delete localContext.data[id];
-                }
-            });
+            resetStatusInLocalContext(localContext, assignmentId, hierarchy);
         },
         async function () {
             return postContentReset(contentId);
         });
+}
+
+export async function contentStatusReset(contentId) {
+    await dataContext.update(
+        async function (localContext) {
+            let hierarchy = await fetchHierarchy(contentId);
+            resetStatusInLocalContext(localContext, contentId, hierarchy);
+        },
+        async function () {
+            return postContentReset(contentId);
+        });
+}
+
+function resetStatusInLocalContext(localContext, contentId, hierarchy) {
+    let allChildIds = getChildrenToDepth(contentId, hierarchy, 5);
+    allChildIds.push(contentId);
+    allChildIds.forEach(id => {
+        const index = Object.keys(localContext.data).indexOf(id.toString());
+        if (index > -1) { // only splice array when item is found
+            delete localContext.data[id];
+        }
+    });
+    bubbleProgress(hierarchy, contentId, localContext);
 }
 
 /**
@@ -230,17 +246,13 @@ function bubbleProgress(hierarchy, contentId, localContext) {
     let parentId = hierarchy.parents[contentId];
     if (!parentId) return;
     let data = localContext.data[parentId] ?? {};
-    let progress = data[DATA_KEY_PROGRESS];
-    let status = data[DATA_KEY_STATUS];
-    if (status !== STATE_COMPLETED && progress !== 100) {
-        let childProgress = hierarchy.children[parentId].map(function (childId) {
-            return localContext.data[childId]?.[DATA_KEY_PROGRESS] ?? 0;
-        });
-        progress = Math.round(childProgress.reduce((a, b) => a + b, 0) / childProgress.length);
-        data[DATA_KEY_PROGRESS] = progress;
-        data[DATA_KEY_STATUS] = progress === 100 ? STATE_COMPLETED : STATE_STARTED;
-        localContext.data[parentId] = data;
-    }
+    let childProgress = hierarchy.children[parentId].map(function (childId) {
+        return localContext.data[childId]?.[DATA_KEY_PROGRESS] ?? 0;
+    });
+    let progress = Math.round(childProgress.reduce((a, b) => a + b, 0) / childProgress.length);
+    data[DATA_KEY_PROGRESS] = progress;
+    data[DATA_KEY_STATUS] = progress === 100 ? STATE_COMPLETED : STATE_STARTED;
+    localContext.data[parentId] = data;
     bubbleProgress(hierarchy, parentId, localContext);
 }
 

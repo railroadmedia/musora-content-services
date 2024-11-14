@@ -7,7 +7,7 @@ import {
     getProgressStateByIds,
     getAllStarted,
     getAllCompleted,
-    contentStatusCompleted, assignmentStatusCompleted, contentStatusReset
+    contentStatusCompleted, assignmentStatusCompleted, contentStatusReset, assignmentStatusReset
 } from "../src/services/contentProgress";
 import {initializeTestService} from "./initializeTests";
 import {postContentCompleted} from "../src";
@@ -149,7 +149,7 @@ describe('contentProgressDataContext', function () {
     //     expect(state).toBe("completed");
     // });
     //
-    // test('assignmentCompleteBubblingToCompletedMultiple', async () => {
+    // test('assignmentCompleteResetBubblingMultiple', async () => {
     //     let contentId = 281709;
     //
     //     let state = await getProgressState(contentId);
@@ -162,9 +162,18 @@ describe('contentProgressDataContext', function () {
     //         expect(state).toBe("completed");
     //     }
     //
-    //     state = await getProgressState(contentId); //assignment
+    //     state = await getProgressState(contentId);
     //     expect(state).toBe("completed");
+    //
+    //     await assignmentStatusReset(assignmentIds[0], contentId);
+    //     state = await getProgressState(assignmentIds[0]);
+    //     expect(state).toBe("");
+    //     state = await getProgressState(contentId);
+    //     expect(state).toBe("started");
+    //     let percentage = await getProgressPercentage(contentId);
+    //     expect(percentage).toBe(83);
     // });
+
 
     //
     // test('completeBubbling', async () => {
