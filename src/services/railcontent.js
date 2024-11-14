@@ -485,6 +485,7 @@ export async function postChallengesCompleteLesson(contentId) {
  * @param {number} [params.page=1] - The page number for pagination.
  * @param {string} [params.sort='-created_at'] - The sorting order for the playlists (default is by created_at in descending order).
  * @param {string} [params.searchTerm] - A search term to filter playlists by name.
+ * @param {int|string} [params.content_id] - If content_id exists, the endpoint checks in each playlist if we have the content in the items.
  *
  * @returns {Promise<Object|null>} - A promise that resolves to the response from the API, containing the user playlists data.
  *
@@ -493,13 +494,14 @@ export async function postChallengesCompleteLesson(contentId) {
  *   .then(playlists => console.log(playlists))
  *   .catch(error => console.error(error));
  */
-export async function fetchUserPlaylists(brand, {page, limit, sort, searchTerm} = {}) {
+export async function fetchUserPlaylists(brand, {page, limit, sort, searchTerm, content_id} = {}) {
     let url;
     const limitString = limit ? `&limit=${limit}` : '';
     const pageString = page ? `&page=${page}` : '';
     const sortString = sort ? `&sort=${sort}` : '';
     const searchFilter = searchTerm ? `&term=${searchTerm}` : '';
-    url = `/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}`;
+    const content = content_id ? `&content_id=${content_id}` : '';
+    url = `/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}`;
     return await fetchHandler(url);
 }
 
