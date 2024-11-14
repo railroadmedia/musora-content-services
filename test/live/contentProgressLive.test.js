@@ -2,7 +2,7 @@ import {
     recordWatchSession,
     getProgressPercentage,
     dataContext,
-    getProgressState, contentStatusCompleted, contentStatusReset
+    getProgressState, contentStatusCompleted, contentStatusReset, assignmentStatusCompleted
 } from "../../src/services/contentProgress";
 import {initializeTestService} from "../initializeTests";
 
@@ -78,6 +78,35 @@ describe('contentProgressDataContextLocal', function () {
 
         result = await getProgressState(contentId);
         expect(result).toBe("");
+    }, 100000);
+
+    test('assignmentCompleteBubblingToCompletedMultiple', async () => {
+        let contentId = 281709;
+        await contentStatusReset(contentId);
+
+        let state = await getProgressState(contentId);
+        expect(state).toBe("");
+
+        let assignmentIds = [281710, 281711, 281712, 281713, 281714, 281715];
+        for (const assignmentId of assignmentIds) {
+            await assignmentStatusCompleted(assignmentId, contentId);
+            state = await getProgressState(assignmentId);
+            expect(state).toBe("completed");
+        }
+
+        state = await getProgressState(contentId); //assignment
+        expect(state).toBe("completed");
+
+        dataContext.clearCache();
+
+        state = await getProgressState(contentId); //assignment
+        expect(state).toBe("completed");
+
+        for (const assignmentId of assignmentIds) {
+            state = await getProgressState(assignmentId);
+            expect(state).toBe("completed");
+        }
+
     }, 100000);
 
 

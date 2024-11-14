@@ -149,6 +149,24 @@ describe('contentProgressDataContext', function () {
     //     expect(state).toBe("completed");
     // });
     //
+    // test('assignmentCompleteBubblingToCompletedMultiple', async () => {
+    //     let contentId = 281709;
+    //
+    //     let state = await getProgressState(contentId);
+    //     expect(state).toBe("");
+    //
+    //     let assignmentIds = [281710, 281711, 281712, 281713, 281714, 281715];
+    //     for (const assignmentId of assignmentIds) {
+    //         await assignmentStatusCompleted(assignmentId, contentId);
+    //         state = await getProgressState(assignmentId);
+    //         expect(state).toBe("completed");
+    //     }
+    //
+    //     state = await getProgressState(contentId); //assignment
+    //     expect(state).toBe("completed");
+    // });
+
+    //
     // test('completeBubbling', async () => {
     //     let state = await getProgressState(276698);
     //     expect(state).toBe("");
@@ -179,7 +197,6 @@ describe('contentProgressDataContext', function () {
     //     expect(state).toBe("");
     //
     // });
-
 
 
 });
