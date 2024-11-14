@@ -13,6 +13,7 @@ import {
 
 import {
 	assignmentStatusCompleted,
+	assignmentStatusReset,
 	contentStatusCompleted,
 	contentStatusReset,
 	getAllCompleted,
@@ -132,6 +133,7 @@ declare module 'musora-content-services' {
 	export {
 		addItemToPlaylist,
 		assignmentStatusCompleted,
+		assignmentStatusReset,
 		contentStatusCompleted,
 		contentStatusReset,
 		countAssignmentsAndLessons,

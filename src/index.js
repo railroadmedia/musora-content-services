@@ -13,6 +13,7 @@ import {
 
 import {
 	assignmentStatusCompleted,
+	assignmentStatusReset,
 	contentStatusCompleted,
 	contentStatusReset,
 	getAllCompleted,
@@ -131,6 +132,7 @@ import {
 export {
 	addItemToPlaylist,
 	assignmentStatusCompleted,
+	assignmentStatusReset,
 	contentStatusCompleted,
 	contentStatusReset,
 	countAssignmentsAndLessons,
