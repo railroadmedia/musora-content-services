@@ -7,7 +7,11 @@ import {
     getProgressStateByIds,
     getAllStarted,
     getAllCompleted,
-    contentStatusCompleted, assignmentStatusCompleted, contentStatusReset, assignmentStatusReset
+    contentStatusCompleted,
+    assignmentStatusCompleted,
+    contentStatusReset,
+    assignmentStatusReset,
+    getAllStartedOrCompleted
 } from "../src/services/contentProgress";
 import {initializeTestService} from "./initializeTests";
 import {postContentCompleted} from "../src";
@@ -70,6 +74,12 @@ describe('contentProgressDataContext', function () {
         result = await getAllStarted(1);
         expect(result).toStrictEqual([233955]);
     });
+
+    test('getAllStartedOrCompleted', async () => {
+        let result = await getAllStartedOrCompleted();
+        expect(result).toStrictEqual([259426, 233955, 234191]);
+    });
+
 
     // test('getAllStartedWithUpdate', async () => {
     //     let mock2 = jest.spyOn(railContentModule, 'postRecordWatchSession');
