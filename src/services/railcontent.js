@@ -485,6 +485,7 @@ export async function postChallengesCompleteLesson(contentId) {
  * @param {number} [params.page=1] - The page number for pagination.
  * @param {string} [params.sort='-created_at'] - The sorting order for the playlists (default is by created_at in descending order).
  * @param {string} [params.searchTerm] - A search term to filter playlists by name.
+ * @param {int|string} [params.content_id] - If content_id exists, the endpoint checks in each playlist if we have the content in the items.
  *
  * @returns {Promise<Object|null>} - A promise that resolves to the response from the API, containing the user playlists data.
  *
@@ -493,13 +494,14 @@ export async function postChallengesCompleteLesson(contentId) {
  *   .then(playlists => console.log(playlists))
  *   .catch(error => console.error(error));
  */
-export async function fetchUserPlaylists(brand, {page, limit, sort, searchTerm} = {}) {
+export async function fetchUserPlaylists(brand, {page, limit, sort, searchTerm, content_id} = {}) {
     let url;
     const limitString = limit ? `&limit=${limit}` : '';
     const pageString = page ? `&page=${page}` : '';
     const sortString = sort ? `&sort=${sort}` : '';
     const searchFilter = searchTerm ? `&term=${searchTerm}` : '';
-    url = `/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}`;
+    const content = content_id ? `&content_id=${content_id}` : '';
+    url = `/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}`;
     return await fetchHandler(url);
 }
 
@@ -924,6 +926,101 @@ export async function countAssignmentsAndLessons(contentId) {
     return await fetchHandler(url);
 }
 
+/**
+ * Pins a playlist to the user's playlist menu.
+ *
+ * @param {number} playlistId - The ID of the playlist to pin.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing:
+ *  - `success` (boolean): Indicates if the pinning operation was successful (`true` for success).
+ *  - `message` (string): A success message if the playlist was pinned successfully.
+ *  - `error` (string): An error message if the pinning operation fails.
+ *
+ * Resolves to an error message if the request fails.
+ * @throws {Error} - Throws an error if the request fails.
+ *
+ * @example
+ * const playlistId = 123;
+ *
+ * pinPlaylist(playlistId)
+ *   .then(response => {
+ *     if (response.success) {
+ *       console.log("Playlist pinned successfully:", response.message);
+ *     } else {
+ *       console.error("Error:", response.error);
+ *     }
+ *   })
+ *   .catch(error => {
+ *     console.error("Error pinning playlist:", error);
+ *   });
+ */
+export async function pinPlaylist(playlistId) {
+    const url = `/playlists/pin/${playlistId}`;
+    return await fetchHandler(url, "PUT");
+}
+
+/**
+ * Unpins a playlist
+ *
+ * @param {number} playlistId - The ID of the playlist to unpin.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing:
+ *  - `success` (boolean): Indicates if the unpinning operation was successful (`true` for success).
+ *  - `message` (string): A success message if the playlist was unpinned successfully.
+ *  - `error` (string): An error message if the unpinning operation fails.
+ *
+ * Resolves to an error message if the request fails.
+ * @throws {Error} - Throws an error if the request fails.
+ *
+ * @example
+ * const playlistId = 123;
+ *
+ * unpinPlaylist(playlistId)
+ *   .then(response => {
+ *     if (response.success) {
+ *       console.log("Playlist unpinned successfully:", response.message);
+ *     } else {
+ *       console.error("Error:", response.error);
+ *     }
+ *   })
+ *   .catch(error => {
+ *     console.error("Error unpinning playlist:", error);
+ *   });
+ */
+export async function unpinPlaylist(playlistId) {
+    const url = `/playlists/unpin/${playlistId}`;
+    return await fetchHandler(url, "PUT");
+}
+
+/**
+ * Fetches the list of pinned playlists for the authenticated user.
+ *
+ * @param {string} brand - The brand associated with the playlists to fetch.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing:
+ *  - `success` (boolean): Indicates if the fetching operation was successful (`true` for success).
+ *  - `data` (Array): An array of pinned playlists.
+ *  - `error` (string): An error message if the fetching operation fails.
+ *
+ * Resolves to an error message if the request fails.
+ * @throws {Error} - Throws an error if the request fails.
+ *
+ * @example
+ * const brand = "drumeo";
+ *
+ * fetchPinnedPlaylists(brand)
+ *   .then(response => {
+ *     if (response.success) {
+ *       console.log("Pinned playlists:", response.data);
+ *     } else {
+ *       console.error("Error:", response.error);
+ *     }
+ *   })
+ *   .catch(error => {
+ *     console.error("Error fetching pinned playlists:", error);
+ *   });
+ */
+export async function fetchPinnedPlaylists(brand) {
+    const url = `/playlists/my-pinned-playlists?brand=${brand}`;
+    return await fetchHandler(url, "GET");
+}
 
 function fetchAbsolute(url, params) {
     if (globalConfig.railcontentConfig.baseUrl) {
