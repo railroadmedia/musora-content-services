@@ -2,6 +2,7 @@ import {getFieldsForContentType} from "../src/contentTypeConfig";
 import {fetchAssignments, fetchCommentModContentData, fetchSanity} from "../src/services/sanity";
 import {log} from './log.js';
 import {initializeTestService} from "./initializeTests";
+import {dataContext} from "../src/services/contentProgress";
 
 const {
     fetchSongById,
@@ -157,6 +158,35 @@ describe('Sanity Queries', function () {
         expect(response.entity[0].artist_name).toBeDefined();
         expect(response.entity[0].instrumentless).toBeDefined();
     });
+
+    test('fetchAllSongsInProgress', async () => {
+       var mock = jest.spyOn(dataContext, 'fetchData');
+        var json = JSON.parse(`{"version":1,"config":{"key":1,"enabled":1,"checkInterval":1,"refreshInterval":2},"data":{"232979":{"s":"started","p":6,"t":20,"u":1731108082}}}`);
+        mock.mockImplementation(() =>
+            json);
+        const response = await fetchAll('drumeo', 'song',{progress:"in progress"});
+        expect(response.entity[0].id).toBe(232979);
+        expect(response.entity.length).toBe(1);
+    });
+
+    // test('fetchAllSongsCompleted', async () => {
+    //     var mock = jest.spyOn(dataContext, 'fetchData');
+    //     var json = JSON.parse(`{"version":1,"config":{"key":1,"enabled":1,"checkInterval":1,"refreshInterval":2},"data":{"232979":{"s":"completed","p":100,"t":20,"u":1731108082}}}`);
+    //     mock.mockImplementation(() =>
+    //         json);
+    //     const response = await fetchAll('drumeo', 'song', {progress:"completed"});
+    //     expect(response.entity[0].id).toBe(232979);
+    //     expect(response.entity.length).toBe(1);
+    // });
+    //
+    // test('fetchAllSongsNotStarted', async () => {
+    //     var mock = jest.spyOn(dataContext, 'fetchData');
+    //     var json = JSON.parse(`{"version":1,"config":{"key":1,"enabled":1,"checkInterval":1,"refreshInterval":2},"data":{"198122":{"s":"started","p":100,"t":20,"u":1731108082},"231622":{"s":"completed","p":100,"t":20,"u":1731108082}}}`);
+    //     mock.mockImplementation(() =>
+    //         json);  const response = await fetchAll('drumeo', 'song', {progress:"not started"});
+    //     expect(response.entity[0].id).not.toBe(198122);
+    //     expect(response.entity[0].id).not.toBe(231622);
+    // });
 
     test('fetchSongFilterOptions', async () => {
         const response = await fetchSongFilterOptions('drumeo', {});

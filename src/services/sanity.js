@@ -26,6 +26,7 @@ import {globalConfig} from "./config";
 import {fetchAllCompletedStates, fetchCurrentSongComplete} from './railcontent.js';
 import {arrayToStringRepresentation, FilterBuilder} from "../filterBuilder";
 import {fetchUserPermissions} from "./userPermissions";
+import {getAllCompleted, getAllStarted, getAllStartedOrCompleted} from "./contentProgress";
 
 /**
  * Exported functions that are excluded from index generation.
@@ -453,6 +454,7 @@ export async function fetchByRailContentIds(ids, contentType = undefined) {
  * @param {Array<string>} [params.progressIds=undefined] - An array of railcontent IDs to filter the results by. Used for filtering by progress.
  * @param {boolean} [params.useDefaultFields=true] - use the default sanity fields for content Type
  * @param {Array<string>} [params.customFields=[]] - An array of sanity fields to include in the request
+ * @param {string} [params.progress="all"] - An string representing which progress filter to use ("all", "in progress", "complete", "not started").
  * @returns {Promise<Object|null>} - The fetched content data or null if not found.
  *
  * @example
@@ -480,6 +482,7 @@ export async function fetchAll(brand, type, {
     progressIds = undefined,
     useDefaultFields = true,
     customFields = [],
+    progress = "all"
 } = {}) {
     let config = contentTypeConfig[type] ?? {};
     let additionalFields = config?.fields ?? [];
@@ -504,8 +507,7 @@ export async function fetchAll(brand, type, {
         : "";
 
     // limits the results to supplied progressIds for started & completed filters
-    const progressFilter = progressIds !== undefined ?
-        `&& railcontent_id in [${progressIds.join(',')}]` : "";
+    const progressFilter = await getProgressFilter(progress, progressIds);
 
     // Determine the sort order
     const sortOrder = getSortOrder(sort);
@@ -562,6 +564,28 @@ export async function fetchAll(brand, type, {
         });
 
     return fetchSanity(query, true);
+}
+
+async function getProgressFilter(progress, progressIds) {
+    switch (progress) {
+        case "all":
+            return progressIds !== undefined ?
+                `&& railcontent_id in [${progressIds.join(',')}]` : "";
+        case "in progress": {
+            const ids = await getAllStarted();
+            return `&& railcontent_id in [${ids.join(',')}]`;
+        }
+        case "completed": {
+            const ids = await getAllCompleted();
+            return `&& railcontent_id in [${ids.join(',')}]`;
+        }
+        case "not started": {
+            const ids = await getAllStartedOrCompleted();
+            return `&& !(railcontent_id in [${ids.join(',')}])`;
+        }
+        default:
+            throw new Error(`'${progress}' progress option not implemented`);
+    }
 }
 
 export function getSortOrder(sort = '-published_on', groupBy) {
