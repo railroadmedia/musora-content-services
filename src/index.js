@@ -45,6 +45,7 @@ import {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchHandler,
+	fetchPinnedPlaylists,
 	fetchPlaylist,
 	fetchPlaylistItem,
 	fetchPlaylistItems,
@@ -56,6 +57,7 @@ import {
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
 	likePlaylist,
+	pinPlaylist,
 	postChallengesCommunityNotification,
 	postChallengesCompleteLesson,
 	postChallengesEnroll,
@@ -68,6 +70,7 @@ import {
 	postContentReset,
 	postContentUnliked,
 	postRecordWatchSession,
+	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem
 } from './services/railcontent.js';
@@ -187,6 +190,7 @@ export {
 	fetchPackData,
 	fetchParentByRailContentId,
 	fetchParentForDownload,
+	fetchPinnedPlaylists,
 	fetchPlaylist,
 	fetchPlaylistItem,
 	fetchPlaylistItems,
@@ -224,6 +228,7 @@ export {
 	isContentLiked,
 	likeContent,
 	likePlaylist,
+	pinPlaylist,
 	postChallengesCommunityNotification,
 	postChallengesCompleteLesson,
 	postChallengesEnroll,
@@ -239,6 +244,7 @@ export {
 	recordWatchSession,
 	reset,
 	unlikeContent,
+	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem,
 };

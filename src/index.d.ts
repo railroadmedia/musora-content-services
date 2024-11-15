@@ -45,6 +45,7 @@ import {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchHandler,
+	fetchPinnedPlaylists,
 	fetchPlaylist,
 	fetchPlaylistItem,
 	fetchPlaylistItems,
@@ -56,6 +57,7 @@ import {
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
 	likePlaylist,
+	pinPlaylist,
 	postChallengesCommunityNotification,
 	postChallengesCompleteLesson,
 	postChallengesEnroll,
@@ -68,6 +70,7 @@ import {
 	postContentReset,
 	postContentUnliked,
 	postRecordWatchSession,
+	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem
 } from './services/railcontent.js';
@@ -188,6 +191,7 @@ declare module 'musora-content-services' {
 		fetchPackData,
 		fetchParentByRailContentId,
 		fetchParentForDownload,
+		fetchPinnedPlaylists,
 		fetchPlaylist,
 		fetchPlaylistItem,
 		fetchPlaylistItems,
@@ -225,6 +229,7 @@ declare module 'musora-content-services' {
 		isContentLiked,
 		likeContent,
 		likePlaylist,
+		pinPlaylist,
 		postChallengesCommunityNotification,
 		postChallengesCompleteLesson,
 		postChallengesEnroll,
@@ -240,6 +245,7 @@ declare module 'musora-content-services' {
 		recordWatchSession,
 		reset,
 		unlikeContent,
+		unpinPlaylist,
 		updatePlaylist,
 		updatePlaylistItem,
 	}
