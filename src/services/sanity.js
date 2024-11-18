@@ -619,7 +619,6 @@ async function handleCustomFetchAll(brand, type, {
         if (groupBy === 'completed') {
             return fetchCompletedChallenges(brand, page, limit);
         } else if(groupBy === 'owned') {
-            console.log('owned');
             return fetchOwnedChallenges(brand, page, limit);
         }
     }
