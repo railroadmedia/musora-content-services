@@ -23,7 +23,12 @@ import {
 
 import {globalConfig} from "./config";
 
-import {fetchAllCompletedStates, fetchCurrentSongComplete} from './railcontent.js';
+import {
+    fetchAllCompletedStates,
+    fetchCompletedChallenges,
+    fetchCurrentSongComplete,
+    fetchOwnedChallenges
+} from './railcontent.js';
 import {arrayToStringRepresentation, FilterBuilder} from "../filterBuilder";
 import {fetchUserPermissions} from "./userPermissions";
 import {getAllCompleted, getAllStarted, getAllStartedOrCompleted} from "./contentProgress";
@@ -33,7 +38,7 @@ import {getAllCompleted, getAllStarted, getAllStartedOrCompleted} from "./conten
  *
  * @type {string[]}
  */
-const excludeFromGeneratedIndex = [];
+const excludeFromGeneratedIndex = ['handleCustomFetchAll'];
 
 /**
  * Fetch a song by its document ID from Sanity.
@@ -484,6 +489,21 @@ export async function fetchAll(brand, type, {
     customFields = [],
     progress = "all"
 } = {}) {
+    let customResults = await handleCustomFetchAll(brand, type, {
+        page,
+        limit,
+        searchTerm,
+        sort,
+        includedFields,
+        groupBy,
+        progressIds,
+        useDefaultFields,
+        customFields,
+        progress});
+    if (customResults) {
+        return customResults;
+    }
+
     let config = contentTypeConfig[type] ?? {};
     let additionalFields = config?.fields ?? [];
     let isGroupByOneToOne = (groupBy ? config?.relationships?.[groupBy]?.isOneToOne : false) ?? false;
@@ -564,6 +584,45 @@ export async function fetchAll(brand, type, {
         });
 
     return fetchSanity(query, true);
+}
+
+/**
+ * Fetch all content that requires custom handling or a distinct external call
+ * @param {string} brand - The brand for which to fetch content.
+ * @param {string} type - The content type to fetch (e.g., 'song', 'artist').
+ * @param {Object} params - Parameters for pagination, filtering, sorting, and grouping.
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {number} [params.limit=10] - The number of items per page.
+ * @param {string} [params.searchTerm=""] - The search term to filter content by title or artist.
+ * @param {string} [params.sort="-published_on"] - The field to sort the content by.
+ * @param {Array<string>} [params.includedFields=[]] - The fields to include in the query.
+ * @param {string} [params.groupBy=""] - The field to group the results by (e.g., 'artist', 'genre').
+ * @param {Array<string>} [params.progressIds=undefined] - An array of railcontent IDs to filter the results by. Used for filtering by progress.
+ * @param {boolean} [params.useDefaultFields=true] - use the default sanity fields for content Type
+ * @param {Array<string>} [params.customFields=[]] - An array of sanity fields to include in the request
+ * @param {string} [params.progress="all"] - An string representing which progress filter to use ("all", "in progress", "complete", "not started").
+ * @returns {Promise<Object|null>} - The fetched content data or null if not found.
+ */
+async function handleCustomFetchAll(brand, type, {
+    page = 1,
+    limit = 10,
+    searchTerm = "",
+    sort = "-published_on",
+    includedFields = [],
+    groupBy = "",
+    progressIds = undefined,
+    useDefaultFields = true,
+    customFields = [],
+    progress = "all"
+} = {}) {
+    if (type === 'challenge') {
+        if (groupBy === 'completed') {
+            return fetchCompletedChallenges(brand, page, limit);
+        } else if(groupBy === 'owned') {
+            return fetchOwnedChallenges(brand, page, limit);
+        }
+    }
+    return null;
 }
 
 async function getProgressFilter(progress, progressIds) {

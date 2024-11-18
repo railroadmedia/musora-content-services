@@ -336,6 +336,36 @@ export async function fetchChallengeLessonData(contentId) {
     return await fetchHandler(url, 'get');
 }
 
+
+/**
+ * Fetch all owned brand challenges for user
+ * @param {string|null} brand - brand
+ * @param {int} page - page of data to pull
+ * @param {int} limit - number of elements to pull
+ * @returns {Promise<any|null>}
+ */
+export async function fetchOwnedChallenges(brand = null, page, limit) {
+    let brandParam = brand ? `&brand=${brand}` : '';
+    let pageAndLimit = `?page=${page}&limit=${limit}`;
+    let url = `/challenges/tab_owned/get${pageAndLimit}${brandParam}`;
+    return await fetchHandler(url, 'get');
+}
+
+/**
+ * Fetch all completed brand challenges for user
+ * @param {string|null} brand - brand
+ * @param {int} page - page of data to pull
+ * @param {int} limit - number of elements to pull
+ * @returns {Promise<any|null>}
+ */
+export async function fetchCompletedChallenges(brand = null, page, limit) {
+    let brandParam = brand ? `&brand=${brand}` : '';
+    let pageAndLimit = `?page=${page}&limit=${limit}`;
+    let url = `/challenges/tab_completed/get${pageAndLimit}${brandParam}`;
+    return await fetchHandler(url, 'get');
+}
+
+
 /**
  * Fetch challenge, lesson, and user metadata for a given challenge
  *
