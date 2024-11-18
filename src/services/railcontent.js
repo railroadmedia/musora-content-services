@@ -347,7 +347,7 @@ export async function fetchChallengeLessonData(contentId) {
 export async function fetchOwnedChallenges(brand = null, page, limit) {
     let brandParam = brand ? `&brand=${brand}` : '';
     let pageAndLimit = `?page=${page}&limit=${limit}`;
-    let url = `/challenges/tab_owned/ge${pageAndLimit}${brandParam}`;
+    let url = `/challenges/tab_owned/get${pageAndLimit}${brandParam}`;
     return await fetchHandler(url, 'get');
 }
 
@@ -361,7 +361,7 @@ export async function fetchOwnedChallenges(brand = null, page, limit) {
 export async function fetchCompletedChallenges(brand = null, page, limit) {
     let brandParam = brand ? `&brand=${brand}` : '';
     let pageAndLimit = `?page=${page}&limit=${limit}`;
-    let url = `/challenges/tab_completed/get${brandParam}`;
+    let url = `/challenges/tab_completed/get${pageAndLimit}${brandParam}}`;
     return await fetchHandler(url, 'get');
 }
 
