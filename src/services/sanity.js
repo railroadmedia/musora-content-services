@@ -489,8 +489,11 @@ export async function fetchAll(brand, type, {
     customFields = [],
     progress = "all"
 } = {}) {
-
-    let customResults = await handleCustomFetchAll(brand, type, page, limit);
+    console.log('groupBy:', groupBy);
+    console.log('page:', page);
+    console.log('type:', type);
+    console.log('limit', limit);
+    let customResults = await handleCustomFetchAll(brand, type, page, limit, groupBy);
     if (customResults) {
         return customResults;
     }
@@ -606,10 +609,17 @@ async function handleCustomFetchAll(brand, type, {
     customFields = [],
     progress = "all"
 } = {}) {
+    console.log('in custome');
+    console.log('groupBy:', groupBy);
+    console.log('page:', page);
+    console.log('type:', type);
+    console.log('limit', limit);
     if (type === 'challenge') {
         if (groupBy === 'completed') {
+            console.log('completed');
             return fetchCompletedChallenges(brand, page, limit);
         } else if(groupBy === 'owned') {
+            console.log('owned');
             return fetchOwnedChallenges(brand, page, limit);
         }
     }
