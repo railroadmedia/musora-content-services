@@ -1,6 +1,7 @@
 /**
  * @module Railcontent-Services
  */
+import {contentStatusCompleted} from "./contentProgress";
 
 const {globalConfig} = require('./config');
 
@@ -472,6 +473,7 @@ export async function postChallengesCommunityNotification(contentId) {
  */
 export async function postChallengesCompleteLesson(contentId) {
     let url = `/challenges/complete_lesson/${contentId}`;
+    await contentStatusCompleted(contentId);
     return await fetchHandler(url, 'post');
 }
 
