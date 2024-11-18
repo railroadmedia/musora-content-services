@@ -493,7 +493,17 @@ export async function fetchAll(brand, type, {
     console.log('page:', page);
     console.log('type:', type);
     console.log('limit', limit);
-    let customResults = await handleCustomFetchAll(brand, type, page, limit, groupBy);
+    let customResults = await handleCustomFetchAll(brand, type, {
+        page,
+        limit,
+        searchTerm,
+        sort,
+        includedFields,
+        groupBy,
+        progressIds,
+        useDefaultFields,
+        customFields,
+        progress});
     if (customResults) {
         return customResults;
     }
