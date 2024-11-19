@@ -510,6 +510,7 @@ export async function fetchAll(brand, type, {
     let webUrlPathType = config?.slug ?? type;
     const start = (page - 1) * limit;
     const end = start + limit;
+    let bypassStatusAndPublishedValidation = (type == 'instructor');
 
     // Construct the type filter
     const typeFilter = type ? `&& _type == '${type}'` : "";
@@ -574,8 +575,10 @@ export async function fetchAll(brand, type, {
         filter = `brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}`
         entityFieldsString = fieldsString;
     }
+
+    const filterWithRestrictions = await new FilterBuilder(filter,{bypassStatuses:bypassStatusAndPublishedValidation, bypassPermissions: bypassStatusAndPublishedValidation, bypassPublishedDateRestriction: bypassStatusAndPublishedValidation} ).buildFilter();
     query = buildEntityAndTotalQuery(
-        filter,
+        filterWithRestrictions,
         entityFieldsString,
         {
             sortOrder: sortOrder,
@@ -990,7 +993,7 @@ export async function fetchNextPreviousLesson(railcontentId) {
  *   .catch(error => console.error(error));
  */
 export async function fetchLessonContent(railContentId) {
-    const filterParams = {};
+    const filterParams = {isSingle:true};
     // Format changes made to the `fields` object may also need to be reflected in Musora-web-platform SanityGateway.php $fields object
     // Currently only for challenges and challenge lessons
     // If you're unsure, message Adrian, or just add them.
