@@ -4,6 +4,10 @@ import {fetchUserPermissions} from "./services/userPermissions";
 export class FilterBuilder {
 
     STATUS_SCHEDULED = 'scheduled';
+    STATUS_PUBLISHED = 'published';
+    STATUS_DRAFT = 'draft';
+    STATUS_ARCHIVED = 'archived';
+    STATUS_UNLISTED = 'unlisted';
 
     constructor(
         filter = '',
@@ -13,13 +17,18 @@ export class FilterBuilder {
             pullFutureContent = false,
             getFutureContentOnly = false,
             getFutureScheduledContentsOnly = false,
-
+            bypassStatuses = false,
+            bypassPublishedDateRestriction = false,
+            isSingle = false
         } = {}) {
         this.availableContentStatuses = availableContentStatuses;
         this.bypassPermissions = bypassPermissions;
+        this.bypassStatuses = bypassStatuses;
+        this.bypassPublishedDateRestriction = bypassPublishedDateRestriction;
         this.pullFutureContent = pullFutureContent;
         this.getFutureContentOnly = getFutureContentOnly;
         this.getFutureScheduledContentsOnly = getFutureScheduledContentsOnly;
+        this.isSingle = isSingle;
         this.filter = filter;
         // this.debug = process.env.DEBUG === 'true' || false;
         this.debug = false;
@@ -48,7 +57,17 @@ export class FilterBuilder {
 
     _applyContentStatuses() {
         // This must be run before _applyPublishDateRestrictions()
-        if (this.availableContentStatuses.length === 0) return this;
+        if(this.bypassStatuses) return this;
+        if (this.availableContentStatuses.length === 0) {
+            if (this.userData.isAdmin) {
+                this.availableContentStatuses = [this.STATUS_DRAFT, this.STATUS_SCHEDULED, this.STATUS_PUBLISHED, this.STATUS_ARCHIVED, this.STATUS_UNLISTED];
+            } else if(this.isSingle){
+                this.availableContentStatuses = [this.STATUS_SCHEDULED, this.STATUS_PUBLISHED, this.STATUS_UNLISTED, this.STATUS_ARCHIVED];
+            } else{
+                this.availableContentStatuses = [this.STATUS_SCHEDULED, this.STATUS_PUBLISHED];
+            }
+        }
+
         // I'm not sure if I'm 100% on this logic, but this is my intepretation of the ContentRepository logic
         if (this.getFutureScheduledContentsOnly && this.availableContentStatuses.includes(this.STATUS_SCHEDULED)) {
             // we must pull in future content here, otherwise we'll restrict on content this is published in the past and remove any scheduled content
@@ -77,6 +96,7 @@ export class FilterBuilder {
     }
 
     _applyPublishingDateRestrictions() {
+        if(this.bypassPublishedDateRestriction) return this;
         const now = new Date().toISOString();
         if (this.getFutureContentOnly) {
             this._andWhere(`published_on >= '${now}'`);
