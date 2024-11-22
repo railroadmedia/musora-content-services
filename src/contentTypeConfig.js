@@ -10,6 +10,7 @@ const DEFAULT_FIELDS = [
     "difficulty",
     "difficulty_string",
     "web_url_path",
+    "'url': web_url_path",
     "published_on",
     "'type': _type",
     "progress_percent",
@@ -196,7 +197,6 @@ let contentTypeConfig = {
             'title',
             'total_xp',
             '"type": _type',
-            '"url": web_url_path',
             'xp',
         ]
     },
@@ -316,7 +316,6 @@ let contentTypeConfig = {
                 title,
                 "type": _type,
                 "description": ${descriptionField},
-                "url": web_url_path,
                 xp,
             }`
         ]
