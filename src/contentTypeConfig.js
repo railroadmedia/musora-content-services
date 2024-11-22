@@ -345,7 +345,7 @@ let contentTypeConfig = {
             '"coach_card_image": coach_card_image.asset->url',
             '"coach_featured_image": coach_featured_image.asset->url',
             '"coach_top_banner_image": coach_top_banner_image.asset->url',
-            'focus',
+            '"focus": focus[]->name',
             'focus_text',
             'forum_thread_id',
             'long_bio',
