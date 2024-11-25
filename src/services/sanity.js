@@ -1643,6 +1643,7 @@ export async function fetchSanity(query,
         ]);
         const response = promisesResult[0];
         const userPermissions = promisesResult[1]?.permissions;
+        const isAdmin = promisesResult[1]?.isAdmin;
 
         if (!response.ok) {
             throw new Error(`Sanity API error: ${response.status} - ${response.statusText}`);
@@ -1653,7 +1654,7 @@ export async function fetchSanity(query,
                 console.log("fetchSanity Results:", result);
             }
             let results = isList ? result.result : result.result[0];
-            results = processNeedAccess ? await needsAccessDecorator(results, userPermissions) : results;
+            results = processNeedAccess ? await needsAccessDecorator(results, userPermissions, isAdmin) : results;
             return customPostProcess ? customPostProcess(results) : results;
         } else {
             throw new Error('No results found');
@@ -1664,38 +1665,41 @@ export async function fetchSanity(query,
     }
 }
 
-function needsAccessDecorator(results, userPermissions) {
+function needsAccessDecorator(results, userPermissions, isAdmin) {
     if (globalConfig.sanityConfig.useDummyRailContentMethods) return results;
 
     userPermissions = new Set(userPermissions);
 
     if (Array.isArray(results)) {
         results.forEach((result) => {
-            result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+            result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin);
         });
     } else if (results.entity && Array.isArray(results.entity)) {
         // Group By
         results.entity.forEach((result) => {
             if (result.lessons) {
                 result.lessons.forEach((lesson) => {
-                    lesson['need_access'] = doesUserNeedAccessToContent(lesson, userPermissions); // Updated to check lesson access
+                    lesson['need_access'] = doesUserNeedAccessToContent(lesson, userPermissions, isAdmin); // Updated to check lesson access
                 });
             } else {
-                result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+                result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin);
             }
         });
     } else if (results.related_lessons && Array.isArray(results.related_lessons)) {
         results.related_lessons.forEach((result) => {
-            result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+            result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin);
         })
     } else {
-        results['need_access'] = doesUserNeedAccessToContent(results, userPermissions);
+        results['need_access'] = doesUserNeedAccessToContent(results, userPermissions, isAdmin);
     }
 
     return results;
 }
 
-function doesUserNeedAccessToContent(result, userPermissions) {
+function doesUserNeedAccessToContent(result, userPermissions, isAdmin) {
+    if (isAdmin ?? false) {
+        return false;
+    }
     const permissions = new Set(result?.permission_id ?? []);
     if (permissions.size === 0) {
         return false;
