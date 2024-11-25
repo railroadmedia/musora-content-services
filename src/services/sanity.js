@@ -510,7 +510,7 @@ export async function fetchAll(brand, type, {
     let webUrlPathType = config?.slug ?? type;
     const start = (page - 1) * limit;
     const end = start + limit;
-    let bypassStatusAndPublishedValidation = (type == 'instructor');
+    let bypassStatusAndPublishedValidation = (type == 'instructor' || groupBy == 'artist' || groupBy == 'genre');
 
     // Construct the type filter
     const typeFilter = type ? `&& _type == '${type}'` : "";
@@ -543,14 +543,15 @@ export async function fetchAll(brand, type, {
     if (groupBy !== "" && isGroupByOneToOne) {
         const webUrlPath = 'artists';
         const lessonsFilter = `_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
+        const lessonsFilterWithRestrictions = await new FilterBuilder(lessonsFilter).buildFilter();
         entityFieldsString = `
                 'id': railcontent_id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': '/${brand}/${webUrlPath}/'+name+'?included_fieds[]=type,${type}',
-                'all_lessons_count': count(*[${lessonsFilter}]._id),
-                'lessons': *[${lessonsFilter}]{
+                'all_lessons_count': count(*[${lessonsFilterWithRestrictions}]._id),
+                'lessons': *[${lessonsFilterWithRestrictions}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...20]
@@ -559,14 +560,16 @@ export async function fetchAll(brand, type, {
     } else if (groupBy !== "") {
         const webUrlPath = (groupBy == 'genre') ? '/genres' : '';
         const lessonsFilter = `brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
+        const lessonsFilterWithRestrictions = await new FilterBuilder(lessonsFilter).buildFilter();
+
         entityFieldsString = `
                 'id': railcontent_id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': select(defined(web_url_path)=> web_url_path +'?included_fieds[]=type,${type}',!defined(web_url_path)=> '/${brand}${webUrlPath}/'+name+'/${webUrlPathType}'),
-                'all_lessons_count': count(*[${lessonsFilter}]._id),
-                'lessons': *[${lessonsFilter}]{
+                'all_lessons_count': count(*[${lessonsFilterWithRestrictions}]._id),
+                'lessons': *[${lessonsFilterWithRestrictions}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...20]`;
