@@ -15,6 +15,7 @@ let cache = null;
 
 export class DataContext {
     context = null;
+    dataPromise = null;
 
     constructor(dataVersionKey, fetchDataFunction) {
         this.dataVersionKey = dataVersionKey;
@@ -24,6 +25,13 @@ export class DataContext {
     }
 
     async getData() {
+        if (!this.dataPromise) {
+            this.dataPromise = this.getDataPromise();
+        }
+        return this.dataPromise;
+    }
+
+    async getDataPromise() {
         await this.ensureLocalContextLoaded();
         const shouldVerify = await this.shouldVerifyServerVerions();
 
@@ -36,6 +44,7 @@ export class DataContext {
             }
             cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime()?.toString());
         }
+        this.dataPromise = null;
         return this.context.data;
     }
 
