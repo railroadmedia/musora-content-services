@@ -511,6 +511,7 @@ export async function fetchAll(brand, type, {
     const start = (page - 1) * limit;
     const end = start + limit;
     let bypassStatusAndPublishedValidation = (type == 'instructor');
+    let allowsPullSongsContent = (type == 'song');
 
     // Construct the type filter
     const typeFilter = type ? `&& _type == '${type}'` : "";
@@ -576,7 +577,7 @@ export async function fetchAll(brand, type, {
         entityFieldsString = fieldsString;
     }
 
-    const filterWithRestrictions = await new FilterBuilder(filter,{bypassStatuses:bypassStatusAndPublishedValidation, bypassPermissions: bypassStatusAndPublishedValidation, bypassPublishedDateRestriction: bypassStatusAndPublishedValidation} ).buildFilter();
+    const filterWithRestrictions = await new FilterBuilder(filter,{bypassStatuses:bypassStatusAndPublishedValidation, bypassPermissions: bypassStatusAndPublishedValidation, bypassPublishedDateRestriction: bypassStatusAndPublishedValidation, allowsPullSongsContent:allowsPullSongsContent} ).buildFilter();
     query = buildEntityAndTotalQuery(
         filterWithRestrictions,
         entityFieldsString,

@@ -19,7 +19,8 @@ export class FilterBuilder {
             getFutureScheduledContentsOnly = false,
             bypassStatuses = false,
             bypassPublishedDateRestriction = false,
-            isSingle = false
+            isSingle = false,
+            allowsPullSongsContent = false
         } = {}) {
         this.availableContentStatuses = availableContentStatuses;
         this.bypassPermissions = bypassPermissions;
@@ -29,6 +30,7 @@ export class FilterBuilder {
         this.getFutureContentOnly = getFutureContentOnly;
         this.getFutureScheduledContentsOnly = getFutureScheduledContentsOnly;
         this.isSingle = isSingle;
+        this.allowsPullSongsContent = allowsPullSongsContent;
         this.filter = filter;
         // this.debug = process.env.DEBUG === 'true' || false;
         this.debug = false;
@@ -85,7 +87,11 @@ export class FilterBuilder {
 
     _applyPermissions() {
         if (this.bypassPermissions || this.userData.isAdmin) return this;
-        const requiredPermissions = this._getUserPermissions();
+
+        let requiredPermissions = this._getUserPermissions();
+        if(this.userData.isABasicMember && this.allowsPullSongsContent){
+            requiredPermissions = [...requiredPermissions, 94];
+        }
         if (requiredPermissions.length === 0) return this;
         this._andWhere(`references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id)`);
         return this;
