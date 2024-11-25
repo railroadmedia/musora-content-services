@@ -499,7 +499,8 @@ export async function fetchAll(brand, type, {
         progressIds,
         useDefaultFields,
         customFields,
-        progress});
+        progress
+    });
     if (customResults) {
         return customResults;
     }
@@ -579,7 +580,11 @@ export async function fetchAll(brand, type, {
         entityFieldsString = fieldsString;
     }
 
-    const filterWithRestrictions = await new FilterBuilder(filter,{bypassStatuses:bypassStatusAndPublishedValidation, bypassPermissions: bypassStatusAndPublishedValidation, bypassPublishedDateRestriction: bypassStatusAndPublishedValidation} ).buildFilter();
+    const filterWithRestrictions = await new FilterBuilder(filter, {
+        bypassStatuses: bypassStatusAndPublishedValidation,
+        bypassPermissions: bypassStatusAndPublishedValidation,
+        bypassPublishedDateRestriction: bypassStatusAndPublishedValidation
+    }).buildFilter();
     query = buildEntityAndTotalQuery(
         filterWithRestrictions,
         entityFieldsString,
@@ -624,7 +629,7 @@ async function handleCustomFetchAll(brand, type, {
     if (type === 'challenge') {
         if (groupBy === 'completed') {
             return fetchCompletedChallenges(brand, page, limit);
-        } else if(groupBy === 'owned') {
+        } else if (groupBy === 'owned') {
             return fetchOwnedChallenges(brand, page, limit);
         }
     }
@@ -909,7 +914,10 @@ export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
     const index = sortedChildren.indexOf(Number(railcontentId));
     let nextId = sortedChildren[index + 1];
     let previousId = sortedChildren[index - 1];
-    let nextPrev = await fetchByRailContentIds([nextId, previousId]);
+    let ids = [];
+    if (nextId) ids.push(nextId);
+    if (previousId) ids.push(previousId);
+    let nextPrev = await fetchByRailContentIds(ids);
     const nextLesson = nextPrev.find((elem) => {
         return elem['id'] === nextId
     });
@@ -996,7 +1004,7 @@ export async function fetchNextPreviousLesson(railcontentId) {
  *   .catch(error => console.error(error));
  */
 export async function fetchLessonContent(railContentId) {
-    const filterParams = {isSingle:true};
+    const filterParams = {isSingle: true};
     // Format changes made to the `fields` object may also need to be reflected in Musora-web-platform SanityGateway.php $fields object
     // Currently only for challenges and challenge lessons
     // If you're unsure, message Adrian, or just add them.

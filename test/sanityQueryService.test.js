@@ -1,5 +1,10 @@
 import {getFieldsForContentType} from "../src/contentTypeConfig";
-import {fetchAssignments, fetchCommentModContentData, fetchSanity} from "../src/services/sanity";
+import {
+    fetchAssignments,
+    fetchCommentModContentData,
+    fetchMethodPreviousNextLesson,
+    fetchSanity
+} from "../src/services/sanity";
 import {log} from './log.js';
 import {initializeTestService} from "./initializeTests";
 import {dataContext} from "../src/services/contentProgress";
@@ -553,6 +558,17 @@ describe('Sanity Queries', function () {
         expect(response.prevLesson.sort).toBeLessThanOrEqual(document.sort);
         expect(response.nextLesson).toBeDefined();
         expect(response.nextLesson.sort).toBeGreaterThanOrEqual(document.sort);
+    });
+
+    test('fetchMethodNextPreviousLesson-Last', async () => {
+        const id = 396234;
+        const methodId = 396229;
+        const response = await fetchMethodPreviousNextLesson(id, methodId);
+        log(response);
+        expect(response.prevLesson).toBeDefined();
+        expect(response.prevLesson.id).toBe(396233);
+        expect(response.prevLesson.type).toBe('course-part');
+        expect(response.nextLesson).not.toBeDefined();
     });
 
     test('fetchNextPreviousLesson-Method-Lesson', async () => {
