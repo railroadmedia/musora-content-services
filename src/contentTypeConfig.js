@@ -347,7 +347,7 @@ let contentTypeConfig = {
             '"focus": focus[]->name',
             'focus_text',
             'forum_thread_id',
-            '"long_bio": long_bio[0].children[0].text,',
+            '"long_bio": long_bio[0].children[0].text',
             'name',
             '"short_bio" : short_bio[0].children[0].text',
             'bands',

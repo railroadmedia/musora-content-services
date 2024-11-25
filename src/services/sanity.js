@@ -510,7 +510,7 @@ export async function fetchAll(brand, type, {
     let webUrlPathType = config?.slug ?? type;
     const start = (page - 1) * limit;
     const end = start + limit;
-    let bypassStatusAndPublishedValidation = (type == 'instructor' || groupBy == 'artist' || groupBy == 'genre');
+    let bypassStatusAndPublishedValidation = (type == 'instructor' || groupBy == 'artist' || groupBy == 'genre' || groupBy == 'instructor');
 
     // Construct the type filter
     const typeFilter = type ? `&& _type == '${type}'` : "";

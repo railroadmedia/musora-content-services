@@ -361,13 +361,13 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchAll-WithProgress', async () => {
-        const ids = [410213, 305649];
+        const ids = [410213, 410215];
         let response = await fetchAll('drumeo', 'song', {
             sort: 'slug',
             progressIds: ids,
         });
         expect(response.entity.length).toBe(2);
-        expect(response.entity[0].id = 305649);
+        expect(response.entity[0].id = 410215);
         expect(response.entity[1].id = 410213);
         // change the type and we expect no results
         response = await fetchAll('drumeo', 'quick-tip', {
