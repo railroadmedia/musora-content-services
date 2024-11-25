@@ -66,7 +66,7 @@ describe('Sanity Queries', function () {
     test('fetchArtists', async () => {
         const response = await fetchArtists('drumeo');
         const artistNames = response.map((x) => x.name);
-        expect(artistNames).toContain("Arctic Monkeys");
+        expect(artistNames).toContain("Audioslave");
 
     }, 10000);
 
@@ -161,11 +161,11 @@ describe('Sanity Queries', function () {
 
     test('fetchAllSongsInProgress', async () => {
        var mock = jest.spyOn(dataContext, 'fetchData');
-        var json = JSON.parse(`{"version":1,"config":{"key":1,"enabled":1,"checkInterval":1,"refreshInterval":2},"data":{"232979":{"s":"started","p":6,"t":20,"u":1731108082}}}`);
+        var json = JSON.parse(`{"version":1,"config":{"key":1,"enabled":1,"checkInterval":1,"refreshInterval":2},"data":{"412941":{"s":"started","p":6,"t":20,"u":1731108082}}}`);
         mock.mockImplementation(() =>
             json);
         const response = await fetchAll('drumeo', 'song',{progress:"in progress"});
-        expect(response.entity[0].id).toBe(232979);
+        expect(response.entity[0].id).toBe(412941);
         expect(response.entity.length).toBe(1);
     });
 
