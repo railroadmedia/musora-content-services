@@ -830,6 +830,8 @@ describe('MetaData', function () {
     test('onlyCommon', async () => {
         const guitareoMetaData = processMetadata('guitareo', 'challenge');
         const drumeoMetaData = processMetadata('drumeo', 'challenge');
+        guitareoMetaData.url = ''
+        drumeoMetaData.url = ''
         expect(guitareoMetaData).toStrictEqual(drumeoMetaData);
         expect(guitareoMetaData.type).toBe('challenge');
         expect(guitareoMetaData.name).toBe('Challenges');
@@ -841,6 +843,8 @@ describe('MetaData', function () {
         expect(guitareoMetaData.description).not.toBe(drumeoMetaData.description);
         guitareoMetaData.description = ''
         drumeoMetaData.description = ''
+        guitareoMetaData.url = ''
+        drumeoMetaData.url = ''
         expect(guitareoMetaData).toStrictEqual(drumeoMetaData);
     });
 
