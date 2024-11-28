@@ -413,6 +413,16 @@ export async function fetchChallengeUserActiveChallenges(brand = null) {
 }
 
 /**
+ * Fetch All Carousel Card Data
+ *
+ * @returns {Promise<any|null>}
+ */
+export async function fetchCarouselCardData() {
+    let url = `/api/v1/content/carousel`;
+    return await fetchHandler(url, 'get');
+}
+
+/**
  * Fetch all completed badges for the user ordered by completion date descending
  *
  * @param {string|null} brand -
@@ -504,6 +514,17 @@ export async function postChallengesCommunityNotification(contentId) {
 export async function postChallengesCompleteLesson(contentId) {
     let url = `/challenges/complete_lesson/${contentId}`;
     await contentStatusCompleted(contentId);
+    return await fetchHandler(url, 'post');
+}
+
+/**
+ * Hide challenge completed award bannare
+ *
+ * @param {int|string} contentId - railcontent id of the challenge
+ * @returns {Promise<any|null>}
+ */
+export async function postChallengesHideCompletedBanner(contentId) {
+    let url = `/challenges/hide_completed_banner/${contentId}`;
     return await fetchHandler(url, 'post');
 }
 
