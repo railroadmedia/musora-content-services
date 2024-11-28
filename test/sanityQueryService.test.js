@@ -269,6 +269,13 @@ describe('Sanity Queries', function () {
         expect(response.entity[0].lessons.length).toBeGreaterThan(0)
     });
 
+    test('fetchAllChallengesByDifficulty', async () => {
+        const response = await fetchAll('drumeo', 'challenge', {groupBy:'difficulty_string'});
+        expect(response.entity[0].name).toBeDefined();
+        expect(response.entity[0].lessons).toBeDefined();
+        expect(response.entity[0].lessons.length).toBeGreaterThan(0)
+    });
+
     test('fetchAll-CustomFields', async () => {
         let response = await fetchAll('drumeo', 'challenge', {customFields: ['garbage']});
         log(response);

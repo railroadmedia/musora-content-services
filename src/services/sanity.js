@@ -632,9 +632,35 @@ async function handleCustomFetchAll(brand, type, {
 } = {}) {
     if (type === 'challenge') {
         if (groupBy === 'completed') {
-            return fetchCompletedChallenges(brand, page, limit);
+            const completedIds = fetchCompletedChallenges(brand, page, limit);
+            return fetchAll(brand, type,
+                {
+                    page,
+                    limit,
+                    searchTerm,
+                    sort,
+                    includedFields,
+                    groupBy,
+                    completedIds,
+                    useDefaultFields,
+                    customFields,
+                    progress
+                });
         } else if (groupBy === 'owned') {
-            return fetchOwnedChallenges(brand, page, limit);
+            const ownedIds = fetchOwnedChallenges(brand, page, limit);
+            return fetchAll(brand, type,
+                {
+                    page,
+                    limit,
+                    searchTerm,
+                    sort,
+                    includedFields,
+                    groupBy,
+                    ownedIds,
+                    useDefaultFields,
+                    customFields,
+                    progress
+                });
         } else if (groupBy === 'difficulty_string') {
             return fetchChallengesByDifficulty(brand, type, page, limit, searchTerm, sort, includedFields, groupBy, progressIds, useDefaultFields, customFields, progress);
         }
@@ -688,7 +714,7 @@ async function fetchChallengesByDifficulty(brand, type, page, limit, searchTerm,
           "total": 0
         }`;
     let data = await fetchSanity(query, true);
-    data.entity = data.entity.filter(function(difficulty){
+    data.entity = data.entity.filter(function (difficulty) {
         return difficulty.lessons.length > 0;
     });
     return data;
