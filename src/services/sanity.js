@@ -537,13 +537,17 @@ export async function fetchAll(brand, type, {
     let fields = useDefaultFields ? customFields.concat(DEFAULT_FIELDS, additionalFields) : customFields;
     let fieldsString = fields.join(',');
 
+    let customFilter = '';
+    if (type == 'instructor') {
+        customFilter = '&& coach_card_image != null'
+    }
     // Determine the group by clause
     let query = "";
     let entityFieldsString = "";
     let filter = "";
     if (groupBy !== "" && isGroupByOneToOne) {
         const webUrlPath = 'artists';
-        const lessonsFilter = `_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
+        const lessonsFilter = `_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter} ${customFilter}`;
         const lessonsFilterWithRestrictions = await new FilterBuilder(lessonsFilter).buildFilter();
         entityFieldsString = `
                 'id': railcontent_id,
@@ -560,7 +564,7 @@ export async function fetchAll(brand, type, {
         filter = `_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id == ${groupBy}._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0`;
     } else if (groupBy !== "") {
         const webUrlPath = (groupBy == 'genre') ? '/genres' : '';
-        const lessonsFilter = `brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
+        const lessonsFilter = `brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter} ${customFilter}`;
         const lessonsFilterWithRestrictions = await new FilterBuilder(lessonsFilter).buildFilter();
 
         entityFieldsString = `
@@ -576,7 +580,7 @@ export async function fetchAll(brand, type, {
                 }[0...20]`;
         filter = `_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0`;
     } else {
-        filter = `brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}`
+        filter = `brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter} ${customFilter}`
         entityFieldsString = fieldsString;
     }
 

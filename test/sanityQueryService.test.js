@@ -227,6 +227,13 @@ describe('Sanity Queries', function () {
         expect(response.entity[0].instructors).toBeTruthy();
     });
 
+    test('fetchAllInstructors', async () => {
+        const response = await fetchAll('drumeo', 'instructor');
+        log(response);
+        expect(response.entity[0].name).toBeDefined();
+        expect(response.entity[0].coach_card_image).toBeTruthy();
+    });
+
     test('fetchAllSortField', async () => {
         const response = await fetchAll('drumeo', 'rhythmic-adventures-of-captain-carson', {});
         log(response);
