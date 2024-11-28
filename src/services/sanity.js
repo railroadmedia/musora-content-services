@@ -635,9 +635,63 @@ async function handleCustomFetchAll(brand, type, {
             return fetchCompletedChallenges(brand, page, limit);
         } else if (groupBy === 'owned') {
             return fetchOwnedChallenges(brand, page, limit);
+        } else if (groupBy === 'difficulty_string') {
+            return fetchChallengesByDifficulty(brand, type, page, limit, searchTerm, sort, includedFields, groupBy, progressIds, useDefaultFields, customFields, progress);
         }
     }
     return null;
+}
+
+async function fetchChallengesByDifficulty(brand, type, page, limit, searchTerm, sort, includedFields, groupBy, progressIds, useDefaultFields, customFields, progress) {
+    let config = contentTypeConfig['challenge'] ?? {};
+    let additionalFields = config?.fields ?? [];
+
+    // Construct the search filter
+    const searchFilter = searchTerm
+        ? groupBy !== "" ?
+            `&& (^.name match "${searchTerm}*" || title match "${searchTerm}*")`
+            : `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*" || name match "${searchTerm}*")`
+        : "";
+
+    // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
+    const includedFieldsFilter = includedFields.length > 0
+        ? filtersToGroq(includedFields)
+        : "";
+
+    // limits the results to supplied progressIds for started & completed filters
+    const progressFilter = await getProgressFilter(progress, progressIds);
+
+    let fields = useDefaultFields ? customFields.concat(DEFAULT_FIELDS, additionalFields) : customFields;
+    let fieldsString = fields.join(',');
+
+
+    const lessonsFilter = `_type == 'challenge' && brand == '${brand}' && ^.name == difficulty_string ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
+    const lessonsFilterWithRestrictions = await new FilterBuilder(lessonsFilter).buildFilter();
+
+    const query = `{
+      "entity": [
+        {"name": "All"},
+        {"name": "Novice"},
+        {"name": "Beginner"},
+        {"name": "Intermediate"},
+        {"name": "Advanced"},
+        {"name": "Expert"}]
+          {
+            'id': 0,
+            name,
+            'all_lessons_count': count(*[${lessonsFilterWithRestrictions}]._id),
+            'lessons': *[${lessonsFilterWithRestrictions}]{
+                ${fieldsString},
+                name
+            }[0...20]
+          },
+          "total": 0
+        }`;
+    let data = await fetchSanity(query, true);
+    data.entity = data.entity.filter(function(difficulty){
+        return difficulty.lessons.length > 0;
+    });
+    return data;
 }
 
 async function getProgressFilter(progress, progressIds) {
