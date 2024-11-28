@@ -632,7 +632,7 @@ async function handleCustomFetchAll(brand, type, {
 } = {}) {
     if (type === 'challenge') {
         if (groupBy === 'completed') {
-            const completedIds = fetchCompletedChallenges(brand, page, limit);
+            const completedIds = await fetchCompletedChallenges(brand, page, limit);
             return fetchAll(brand, type,
                 {
                     page,
@@ -647,7 +647,7 @@ async function handleCustomFetchAll(brand, type, {
                     progress
                 });
         } else if (groupBy === 'owned') {
-            const ownedIds = fetchOwnedChallenges(brand, page, limit);
+            const ownedIds = await fetchOwnedChallenges(brand, page, limit);
             return fetchAll(brand, type,
                 {
                     page,
