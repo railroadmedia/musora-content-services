@@ -532,7 +532,7 @@ export async function fetchAll(brand, type, {
     const progressFilter = await getProgressFilter(progress, progressIds);
 
     // Determine the sort order
-    const sortOrder = getSortOrder(sort);
+    const sortOrder = getSortOrder(sort, groupBy);
 
     let fields = useDefaultFields ? customFields.concat(DEFAULT_FIELDS, additionalFields) : customFields;
     let fieldsString = fields.join(',');
