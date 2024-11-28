@@ -1347,9 +1347,11 @@ export async function fetchByReference(brand, {
     const includedFieldsFilter = includedFields.length > 0
         ? includedFields.join(' && ')
         : "";
+
     const filter = `brand == '${brand}' ${searchFilter} && references(*[${includedFieldsFilter}]._id)`;
+    const filterWithRestrictions = await new FilterBuilder(filter).buildFilter();
     const query = buildEntityAndTotalQuery(
-        filter,
+        filterWithRestrictions,
         fieldsString,
         {
             sortOrder: getSortOrder(sortOrder),
