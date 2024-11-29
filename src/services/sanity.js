@@ -752,8 +752,10 @@ export function getSortOrder(sort = '-published_on', groupBy) {
             sortOrder = groupBy ? 'name' : "title";
             break;
         case "name":
-        case "popularity":
             sortOrder = sort;
+            break;
+        case "popularity":
+            sortOrder = isDesc ? "coalesce(popularity, -1)" : "popularity";
             break;
         case "published_on":
         default:
