@@ -30,7 +30,7 @@ const assignmentsField = `"assignments":assignment[]{
         "title": assignment_title,
         "sheet_music_image_url": assignment_sheet_music_image,
         "timecode": assignment_timecode,
-        "description": assignment_description
+        "description": assignment_description[0].children[0].text,
 },`
 
 const contentWithInstructorsField = {
@@ -45,8 +45,8 @@ const contentWithSortField = {
     ]
 }
 const showsTypes = {
-    'drumeo': ['odd-times','drum-fest-international-2022', 'spotlight', 'the-history-of-electronic-drums', 'backstage-secret', 'quick-tips', 'question-and-answer', 'student-collaboration',
-         'live', 'podcast', 'solo', 'boot-camp', 'gear-guide', 'performance', 'in-rhythm', 'challenges', 'on-the-road', 'diy-drum-experiment', 'rhythmic-adventures-of-captain-carson',
+    'drumeo': ['odd-times', 'drum-fest-international-2022', 'spotlight', 'the-history-of-electronic-drums', 'backstage-secret', 'quick-tips', 'question-and-answer', 'student-collaboration',
+        'live', 'podcast', 'solo', 'boot-camp', 'gear-guide', 'performance', 'in-rhythm', 'challenges', 'on-the-road', 'diy-drum-experiment', 'rhythmic-adventures-of-captain-carson',
         'study-the-greats', 'rhythms-from-another-planet', 'tama', 'paiste-cymbals', 'behind-the-scenes', 'exploring-beats', 'sonor'
     ],
     'pianote': ['student-review', 'question-and-answer'],
@@ -69,7 +69,7 @@ let contentTypeConfig = {
                 isOneToOne: true
             }
         },
-        'slug':'songs',
+        'slug': 'songs',
     },
     'song-tutorial': {
         'fields': [
@@ -83,7 +83,7 @@ let contentTypeConfig = {
             }`,
         ]
     },
-    'challenge':{
+    'challenge': {
         'fields': [
             'enrollment_start_time',
             'enrollment_end_time',
@@ -135,7 +135,7 @@ let contentTypeConfig = {
                 length_in_seconds,
             }`,
         ],
-        'slug':'courses',
+        'slug': 'courses',
     },
     'parent-download': {
         'fields': [
@@ -154,8 +154,8 @@ let contentTypeConfig = {
                 "image": thumbnail.asset->url,
                 "instructors": instructor[]->name,
                 length_in_seconds,
-                "resources": resource, 
-                difficulty, 
+                "resources": resource,
+                difficulty,
                 difficulty_string,
                 artist->,
                 "thumbnail_url":thumbnail.asset->url,
@@ -170,7 +170,7 @@ let contentTypeConfig = {
                     "id":railcontent_id,
                     name,
                     short_bio,
-                    "biography": short_bio[0].children[0].text, 
+                    "biography": short_bio[0].children[0].text,
                     web_url_path,
                     "coach_card_image": coach_card_image.asset->url,
                     "coach_profile_image":thumbnail_url.asset->url
@@ -238,7 +238,7 @@ let contentTypeConfig = {
         'fields': [
             artistOrInstructorNameAsArray(),
         ],
-        'slug':'workouts',
+        'slug': 'workouts',
     },
     'play-along': {
         'fields': [
@@ -249,7 +249,7 @@ let contentTypeConfig = {
             'mp3_yes_drums_no_click_url',
             'bpm',
         ],
-        'slug':'play-alongs',
+        'slug': 'play-alongs',
     },
     'pack': {
         'fields': [
@@ -275,15 +275,15 @@ let contentTypeConfig = {
         'fields': [
             'sheet_music_thumbnail_url',
         ],
-        'slug':'rudiments',
+        'slug': 'rudiments',
     },
-    'routine':{
+    'routine': {
         'fields': [
             `"description": ${descriptionField}`,
             'high_soundslice_slug',
             'low_soundslice_slug'
         ],
-        'slug':'routines',
+        'slug': 'routines',
     },
     'pack-children': {
         'fields': [
@@ -385,22 +385,22 @@ let contentTypeConfig = {
 
 function getNewReleasesTypes(brand) {
     const baseNewTypes = ["student-review", "student-review", "student-focus", "coach-stream", "live", "question-and-answer", "boot-camps", "quick-tips", "workout", "challenge", "challenge-part", "podcasts", "pack", "song", "learning-path-level", "play-along", "course", "unit"];
-    switch(brand) {        
+    switch (brand) {
         case 'drumeo':
             return [...baseNewTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "student-collaborations", "live", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor"];
-        case 'guitareo': 
+        case 'guitareo':
             return [...baseNewTypes, "archives", "recording", "chords-and-scales"];
-        case 'pianote':    
+        case 'pianote':
         case 'singeo':
         default:
             return baseNewTypes
-        }
+    }
 }
 
 function getUpcomingEventsTypes(brand) {
     const baseLiveTypes = ["student-review", "student-review", "student-focus", "coach-stream", "live", "question-and-answer", "boot-camps", "quick-tips", "recording", "pack-bundle-lesson"];
-    switch(brand) {
-        case 'drumeo': 
+    switch (brand) {
+        case 'drumeo':
             return [...baseLiveTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "student-collaborations", "live", "podcasts", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor"];
         case 'guitareo':
             return [...baseLiveTypes, "archives"];
@@ -408,18 +408,18 @@ function getUpcomingEventsTypes(brand) {
         case 'singeo':
         default:
             return baseLiveTypes;
-  }
+    }
 }
 
-function artistOrInstructorName(key='artist_name') {
+function artistOrInstructorName(key = 'artist_name') {
     return `'${key}': coalesce(artist->name, instructor[0]->name)`;
 }
 
-function artistOrInstructorNameAsArray(key='artists') {
+function artistOrInstructorNameAsArray(key = 'artists') {
     return `'${key}': select(artist->name != null => [artist->name], instructor[]->name)`;
 }
 
-function getFieldsForContentType(contentType, asQueryString=true) {
+function getFieldsForContentType(contentType, asQueryString = true) {
     const fields = contentType ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? []) : DEFAULT_FIELDS;
     return asQueryString ? fields.toString() + ',' : fields;
 }
