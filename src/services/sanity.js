@@ -641,7 +641,7 @@ async function handleCustomFetchAll(brand, type, {
                     sort,
                     includedFields,
                     groupBy: '',
-                    completedIds,
+                    progressIds: completedIds,
                     useDefaultFields,
                     customFields,
                     progress
@@ -656,7 +656,7 @@ async function handleCustomFetchAll(brand, type, {
                     sort,
                     includedFields,
                     groupBy: '',
-                    ownedIds,
+                    progressIds: ownedIds,
                     useDefaultFields,
                     customFields,
                     progress

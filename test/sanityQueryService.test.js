@@ -1,4 +1,6 @@
 import {getFieldsForContentType} from "../src/contentTypeConfig";
+const railContentModule = require('../src/services/railcontent.js')
+
 import {
     fetchAssignments,
     fetchCommentModContentData,
@@ -8,6 +10,7 @@ import {
 import {log} from './log.js';
 import {initializeTestService} from "./initializeTests";
 import {dataContext} from "../src/services/contentProgress";
+import {fetchOwnedChallenges} from "../src";
 
 const {
     fetchSongById,
@@ -266,14 +269,21 @@ describe('Sanity Queries', function () {
         const response = await fetchAll('drumeo', 'challenge', {groupBy:'difficulty_string'});
         expect(response.entity[0].name).toBeDefined();
         expect(response.entity[0].lessons).toBeDefined();
-        expect(response.entity[0].lessons.length).toBeGreaterThan(0)
+        expect(response.entity[0].lessons.length).toBeGreaterThan(0);
     });
 
-    test('fetchAllChallengesByDifficulty', async () => {
-        const response = await fetchAll('drumeo', 'challenge', {groupBy:'difficulty_string'});
-        expect(response.entity[0].name).toBeDefined();
-        expect(response.entity[0].lessons).toBeDefined();
-        expect(response.entity[0].lessons.length).toBeGreaterThan(0)
+    test('fetchAllChallengesByCompleted', async () => {
+        var mock = jest.spyOn(railContentModule, 'fetchCompletedChallenges');
+        mock.mockImplementation(() => [402204]);
+        const response = await fetchAll('drumeo', 'challenge', {groupBy:'completed'});
+        expect(response.entity.length).toBe(1);
+    });
+
+    test('fetchAllChallengesByOwned', async () => {
+        var mock = jest.spyOn(railContentModule, 'fetchOwnedChallenges');
+        mock.mockImplementation(() => [402204]);
+        const response = await fetchAll('drumeo', 'challenge', {groupBy:'owned'});
+        expect(response.entity.length).toBe(1);
     });
 
     test('fetchAll-CustomFields', async () => {
