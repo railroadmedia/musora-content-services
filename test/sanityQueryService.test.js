@@ -382,7 +382,7 @@ describe('Sanity Queries', function () {
         expect(sort).toBe('title asc');
         sort = getSortOrder('-slug')
         expect(sort).toBe('title desc');
-        sort = getSortOrder('-slug', true)
+        sort = getSortOrder('-slug', 'drumeo', true);
         expect(sort).toBe('name desc');
         sort = getSortOrder('published-on')
         expect(sort).toBe('published_on asc');

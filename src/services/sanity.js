@@ -284,7 +284,7 @@ export async function fetchNewReleases(brand, {page = 1, limit = 20, sort = "-pu
     const typesString = arrayToStringRepresentation(newTypes);
     const start = (page - 1) * limit;
     const end = start + limit;
-    const sortOrder = getSortOrder(sort);
+    const sortOrder = getSortOrder(sort, brand);
     const filter = `_type in ${typesString} && brand == '${brand}'`;
     const fields = `
      "id": railcontent_id,
@@ -532,7 +532,7 @@ export async function fetchAll(brand, type, {
     const progressFilter = await getProgressFilter(progress, progressIds);
 
     // Determine the sort order
-    const sortOrder = getSortOrder(sort, groupBy);
+    const sortOrder = getSortOrder(sort, brand, groupBy);
 
     let fields = useDefaultFields ? customFields.concat(DEFAULT_FIELDS, additionalFields) : customFields;
     let fieldsString = fields.join(',');
@@ -742,7 +742,7 @@ async function getProgressFilter(progress, progressIds) {
     }
 }
 
-export function getSortOrder(sort = '-published_on', groupBy) {
+export function getSortOrder(sort = '-published_on', brand, groupBy) {
     // Determine the sort order
     let sortOrder = '';
     const isDesc = sort.startsWith('-');
@@ -755,7 +755,11 @@ export function getSortOrder(sort = '-published_on', groupBy) {
             sortOrder = sort;
             break;
         case "popularity":
-            sortOrder = isDesc ? "coalesce(popularity, -1)" : "popularity";
+            if (groupBy == "artist" || groupBy == "") {
+                sortOrder = isDesc ? `coalesce(popularity.${brand}, -1)` : "popularity";
+            } else {
+                sortOrder = isDesc ? "coalesce(popularity, -1)" : "popularity";
+            }
             break;
         case "published_on":
         default:
@@ -1201,7 +1205,7 @@ export async function fetchRelatedMethodLessons(railContentId, brand) {
  * @returns {Promise<Array<Object>|null>} - The fetched pack content data or null if not found.
  */
 export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = "", page = 1, limit = 10) {
-    const sortOrder = getSortOrder(sort);
+    const sortOrder = getSortOrder(sort, brand);
     const filter = `_type == 'pack' && brand == '${brand}' && title match "${searchTerm}*"`
     const filterParams = {};
     const fields = getFieldsForContentType('pack');
@@ -1359,7 +1363,7 @@ export async function fetchCoachLessons(brand, id, {
         : "";
     const filter = `brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='instructor' && railcontent_id == ${id}]._id)`;
 
-    sortOrder = getSortOrder(sortOrder);
+    sortOrder = getSortOrder(sortOrder, brand);
     const query = buildEntityAndTotalQuery(
         filter,
         fieldsString,
@@ -1440,7 +1444,7 @@ export async function fetchByReference(brand, {
         filterWithRestrictions,
         fieldsString,
         {
-            sortOrder: getSortOrder(sortOrder),
+            sortOrder: getSortOrder(sortOrder, brand),
             start: start,
             end: end,
         },
@@ -1480,7 +1484,7 @@ export async function fetchArtistLessons(brand, name, contentType, {
     const start = (page - 1) * limit;
     const end = start + limit;
     const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
-    const sortOrder = getSortOrder(sort);
+    const sortOrder = getSortOrder(sort, brand);
     const addType = contentType && Array.isArray(contentType) ? `_type in ['${contentType.join("', '")}'] &&` : contentType ? `_type == '${contentType}' && ` : ''
     const includedFieldsFilter = includedFields.length > 0
         ? filtersToGroq(includedFields)
@@ -1531,7 +1535,7 @@ export async function fetchGenreLessons(brand, name, contentType, {
     const start = (page - 1) * limit;
     const end = start + limit;
     const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
-    const sortOrder = getSortOrder(sort);
+    const sortOrder = getSortOrder(sort, brand);
     const addType = contentType ? `_type == '${contentType}' && ` : ''
     const includedFieldsFilter = includedFields.length > 0
         ? filtersToGroq(includedFields)
