@@ -21,6 +21,7 @@ const excludeFromGeneratedIndex = [
     'fetchUserPermissionsData'
 ];
 
+let challengeIndexMetaDataPromise = null;
 
 /**
  * Fetches the completion status of a specific lesson for the current user.
@@ -396,10 +397,23 @@ export async function fetchUserAward(contentId) {
  * @returns {Promise<any|null>}
  */
 export async function fetchChallengeIndexMetadata(contentIds) {
-    let idsString = contentIds.toString();
-    let url = `/challenges/user_progress_for_index_page/get?content_ids=${idsString}`;
-    return await fetchHandler(url, 'get');
+    if (!challengeIndexMetaDataPromise) {
+        challengeIndexMetaDataPromise = getChallengeIndexMetadataPromise();
+    }
+    let results = await challengeIndexMetaDataPromise;
+    results = results.filter(function(challenge){
+       return contentIds.includes(challenge.content_id);
+    });
+    return results;
 }
+
+async function getChallengeIndexMetadataPromise() {
+    let url = `/challenges/user_progress_for_index_page/get`;
+    const result = await fetchHandler(url, 'get');
+    challengeIndexMetaDataPromise = null;
+    return result;
+}
+
 
 /**
  * Get active brand challenges for the authorized user
