@@ -1958,7 +1958,7 @@ function buildEntityAndTotalQuery(
       {
         ${fields}
       },
-      "total": count(*[${filter}])
+      "total": 0
     }`;
     return query;
 }
