@@ -795,8 +795,9 @@ export async function fetchPlaylist(playlistId) {
  *   .then(items => console.log(items))
  *   .catch(error => console.error('Error fetching playlist items:', error));
  */
-export async function fetchPlaylistItems(playlistId) {
-    const url = `/playlists/playlist-lessons?playlist_id=${playlistId}`;
+export async function fetchPlaylistItems(playlistId, {sort} = {}) {
+    const sortString = sort ? `&sort=${sort}` : '';
+    const url = `/playlists/playlist-lessons?playlist_id=${playlistId}${sortString}`;
     return await fetchHandler(url, "GET");
 }
 
