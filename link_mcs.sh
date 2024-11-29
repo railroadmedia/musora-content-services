@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# If this is giving you errors when trying to build on MWP after linking, try the more modern linking method of running
+# "yarn link ../musora-content-services/" from the MWP directory.
+
 # Define the paths (edit these paths according to your directory structure)
 MUSORA_CONTENT_SERVICES_DIR="../musora-content-services"
 MUSORA_WEB_PLATFORM_DIR="../musora-web-platform"
