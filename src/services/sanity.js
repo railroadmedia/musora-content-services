@@ -755,7 +755,7 @@ export function getSortOrder(sort = '-published_on', brand, groupBy) {
             sortOrder = sort;
             break;
         case "popularity":
-            if (groupBy == "artist" || groupBy == "") {
+            if (groupBy == "artist" || groupBy == "genre") {
                 sortOrder = isDesc ? `coalesce(popularity.${brand}, -1)` : "popularity";
             } else {
                 sortOrder = isDesc ? "coalesce(popularity, -1)" : "popularity";
