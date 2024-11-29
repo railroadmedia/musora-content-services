@@ -1261,7 +1261,7 @@ export async function fetchLiveEvent(brand) {
     // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
     // this has some +- on times
     // But this query just finds the first scheduled event (sorted by start_time) that ends after now()
-    const query = `*[status == 'scheduled' && defined(live_event_start_time) && published_on > '${getSanityDate(dateTemp)}' && live_event_end_time >= '${getSanityDate(new Date())}']{
+    const query = `*[status == 'scheduled' && defined(live_event_start_time) && published_on > '${getSanityDate(dateTemp, false)}' && live_event_end_time >= '${getSanityDate(new Date(), false)}']{
       'slug': slug.current,
       'id': railcontent_id,
       live_event_start_time,
@@ -1879,7 +1879,18 @@ function arrayJoinWithQuotes(array, delimiter = ',') {
     return wrapped.join(delimiter)
 }
 
-function getSanityDate(date) {
+function getSanityDate(date, roundToHourForCaching = true) {
+    if (roundToHourForCaching) {
+        // We need to set the published on filter date to be a round time so that it doesn't bypass the query cache
+        // with every request by changing the filter date every second. I've set it to one minute past the current hour
+        // because publishing usually publishes content on the hour exactly which means it should still skip the cache
+        // when the new content is available.
+        // Round to the start of the current hour
+        const roundedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours());
+
+        return roundedDate.toISOString();
+    }
+
     return date.toISOString();
 }
 
