@@ -951,6 +951,7 @@ export async function fetchMethod(brand, slug) {
         "url": web_url_path,
         web_url_path,
         xp,
+        total_xp
       }
   } | order(published_on asc)`
     return fetchSanity(query, false);
