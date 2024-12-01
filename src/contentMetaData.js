@@ -728,6 +728,7 @@ const contentMetadata = {
             ],
         },
         'pack': {
+            name: 'Packs',
             allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle'],
         },
         'odd-times': {
