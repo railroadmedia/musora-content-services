@@ -1094,7 +1094,7 @@ export async function fetchNextPreviousLesson(railcontentId) {
  *   .catch(error => console.error(error));
  */
 export async function fetchLessonContent(railContentId) {
-    const filterParams = {isSingle: true};
+    const filterParams = {isSingle: true, pullFutureContent: true};
     // Format changes made to the `fields` object may also need to be reflected in Musora-web-platform SanityGateway.php $fields object
     // Currently only for challenges and challenge lessons
     // If you're unsure, message Adrian, or just add them.
@@ -1943,7 +1943,7 @@ function buildRawQuery(
 
 async function buildQuery(
     baseFilter = '',
-    filterParams = {},
+    filterParams = {pullFutureContent: false},
     fields = '...',
     {
         sortOrder = 'published_on desc',
