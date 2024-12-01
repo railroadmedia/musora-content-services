@@ -113,9 +113,9 @@ export class FilterBuilder {
         } else if (!this.pullFutureContent) {
             this._andWhere(`published_on <= '${now}'`);
         } else {
-            const date = new Date();
-            const theFuture = new Date(date.setMonth(date.getMonth() + 18));
-            this._andWhere(`published_on <= '${theFuture}'`);
+            // const date = new Date();
+            // const theFuture = new Date(date.setMonth(date.getMonth() + 18));
+            // this._andWhere(`published_on <= '${theFuture}'`);
         }
         return this;
     }
