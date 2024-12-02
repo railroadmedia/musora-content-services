@@ -86,8 +86,7 @@ export class FilterBuilder {
     _applyPermissions() {
         if (this.bypassPermissions || this.userData.isAdmin) return this;
         const requiredPermissions = this._getUserPermissions();
-        if (requiredPermissions.length === 0) return this;
-        this._andWhere(`references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id)`);
+        this._andWhere(`(!defined(permission) || references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id))`);
         return this;
     }
 
