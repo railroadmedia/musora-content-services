@@ -514,7 +514,13 @@ export async function fetchAll(brand, type, {
     let bypassStatusAndPublishedValidation = (type == 'instructor' || groupBy == 'artist' || groupBy == 'genre' || groupBy == 'instructor');
 
     // Construct the type filter
-    const typeFilter = type ? `&& _type == '${type}'` : "";
+    let typeFilter;
+
+    if( type === 'archives' ) {
+        typeFilter = `&& status == "archived"`
+    } else {
+        typeFilter = type ? `&& _type == '${type}'` : "";
+    } 
 
     // Construct the search filter
     const searchFilter = searchTerm
@@ -597,7 +603,6 @@ export async function fetchAll(brand, type, {
             start: start,
             end: end,
         });
-
     return fetchSanity(query, true);
 }
 
