@@ -61,10 +61,12 @@ export class FilterBuilder {
         if (this.availableContentStatuses.length === 0) {
             if (this.userData.isAdmin) {
                 this.availableContentStatuses = [this.STATUS_DRAFT, this.STATUS_SCHEDULED, this.STATUS_PUBLISHED, this.STATUS_ARCHIVED, this.STATUS_UNLISTED];
+                this.getFutureScheduledContentsOnly = true;
             } else if(this.isSingle){
                 this.availableContentStatuses = [this.STATUS_SCHEDULED, this.STATUS_PUBLISHED, this.STATUS_UNLISTED, this.STATUS_ARCHIVED];
             } else{
                 this.availableContentStatuses = [this.STATUS_SCHEDULED, this.STATUS_PUBLISHED];
+                this.getFutureScheduledContentsOnly = true;
             }
         }
 
@@ -74,8 +76,8 @@ export class FilterBuilder {
             this.pullFutureContent = true;
             const now = new Date().toISOString();
             let statuses = [...this.availableContentStatuses];
-            statuses.splice(statuses.indexOf(this.STATUS_SCHEDULED));
-            this._andWhere(`(status in ${arrayToStringRepresentation(statuses)} || (status == '${this.STATUS_SCHEDULED}' && published_on >= '${now}'))`)
+            statuses.splice(statuses.indexOf(this.STATUS_SCHEDULED), 1);
+            this._andWhere(`(status in ${arrayToStringRepresentation(statuses)} || (status == '${this.STATUS_SCHEDULED}' && defined(published_on) && published_on >= '${now}'))`)
 
         } else {
             this._andWhere(`status in ${arrayToStringRepresentation(this.availableContentStatuses)}`);
