@@ -1090,6 +1090,19 @@ export async function fetchPinnedPlaylists(brand) {
     return await fetchHandler(url, "GET");
 }
 
+/**
+ * Report playlist endpoint
+ * 
+ * @param playlistId
+ * @param issue
+ * @returns {Promise<any|null>}
+ */
+export async function reportPlaylist(playlistId,  {issue} = {}) {
+    const issueString = issue ? `?issue=${issue}` : '';
+    const url = `/playlists/report/${playlistId}${issueString}`;
+    return await fetchHandler(url, "PUT");
+}
+
 function fetchAbsolute(url, params) {
     if (globalConfig.railcontentConfig.baseUrl) {
         if (url.startsWith('/')) {

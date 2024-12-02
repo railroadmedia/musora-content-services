@@ -75,6 +75,7 @@ import {
 	postContentReset,
 	postContentUnliked,
 	postRecordWatchSession,
+	reportPlaylist,
 	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem
@@ -253,6 +254,7 @@ declare module 'musora-content-services' {
 		postContentUnliked,
 		postRecordWatchSession,
 		recordWatchSession,
+		reportPlaylist,
 		reset,
 		unlikeContent,
 		unpinPlaylist,
