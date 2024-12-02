@@ -747,7 +747,8 @@ describe('Filter Builder', function () {
         const filter = 'railcontent_id = 111'
         const builder = new FilterBuilder(filter,
             {
-                bypassPermissions: true
+                bypassPermissions: true,
+                pullFutureContent: false
             });
         const finalFilter = await builder.buildFilter();
         const expected = "references(*[_type == 'permission' && railcontent_id in [78,91,92]]._id)"
