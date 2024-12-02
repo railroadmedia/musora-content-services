@@ -75,6 +75,7 @@ import {
 	postContentReset,
 	postContentUnliked,
 	postRecordWatchSession,
+	reportPlaylist,
 	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem
@@ -252,6 +253,7 @@ export {
 	postContentUnliked,
 	postRecordWatchSession,
 	recordWatchSession,
+	reportPlaylist,
 	reset,
 	unlikeContent,
 	unpinPlaylist,
