@@ -683,16 +683,16 @@ describe('Filter Builder', function () {
         let finalFilter = await builder.buildFilter(filter);
         let clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].phrase).toBe(filter);
-        expect(clauses[1].field).toBe('status');
-        expect(clauses[2].field).toBe('published_on');
+        expect(clauses[1].field).toBe('(status');
+        expect(clauses[3].field).toBe('published_on');
 
         builder = new FilterBuilder('', {bypassPermissions: true});
         finalFilter = await builder.buildFilter(filter);
         clauses = spliceFilterForAnds(finalFilter);
-        expect(clauses[0].field).toBe('status');
+        expect(clauses[0].field).toBe('(status');
         expect(clauses[0].operator).toBe('in');
-        expect(clauses[1].field).toBe('published_on');
-        expect(clauses[1].operator).toBe('<=');
+        expect(clauses[2].field).toBe('published_on');
+        expect(clauses[2].operator).toBe('>=');
     });
 
     test('withOnlyFilterAvailableStatuses', async () => {
@@ -720,7 +720,7 @@ describe('Filter Builder', function () {
         expect(clauses[1].field).toBe('(status'); // extra ( because it's a multi part filter
         expect(clauses[1].operator).toBe('in');
         // getFutureScheduledContentsOnly doesn't make a filter that's splicable, so we match on the more static string
-        const expected = "['published','unlisted'] || (status == 'scheduled' && published_on >=";
+        const expected = "['published','unlisted'] || (status == 'scheduled' && defined(published_on) && published_on >=";
         const isMatch = finalFilter.includes(expected);
         expect(isMatch).toBeTruthy();
     });
@@ -756,8 +756,8 @@ describe('Filter Builder', function () {
         expect(isMatch).toBeFalsy();
         const clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].field).toBe('railcontent_id');
-        expect(clauses[1].field).toBe('status');
-        expect(clauses[2].field).toBe('published_on');
+        expect(clauses[1].field).toBe('(status');
+        expect(clauses[3].field).toBe('published_on');
 
     });
 
@@ -774,13 +774,10 @@ describe('Filter Builder', function () {
         let finalFilter = await builder.buildFilter();
         let clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].phrase).toBe(filter);
-        expect(clauses[1].field).toBe('status');
+        expect(clauses[1].field).toBe('(status');
         expect(clauses[1].operator).toBe('in');
-//         expect(clauses[2].field).toBe('published_on');
-//         expect(clauses[2].operator).toBe('<=');
-//         const restrictionDate = new Date(clauses[2].condition)
-//         const now = new Date();
-//         expect(now.getTime()).toBeLessThan(restrictionDate.getTime());
+        expect(clauses[2].phrase).toBe('defined(published_on)');
+        expect(clauses[3].field).toBe('published_on');
 
         builder = new FilterBuilder(filter,
             {
@@ -790,8 +787,8 @@ describe('Filter Builder', function () {
         finalFilter = await builder.buildFilter();
         clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].phrase).toBe(filter);
-        expect(clauses[2].field).toBe('published_on');
-        expect(clauses[2].operator).toBe('>=');
+        expect(clauses[3].field).toBe('published_on');
+        expect(clauses[3].operator).toBe('>=');
     });
 
     function spliceFilterForAnds(filter) {
