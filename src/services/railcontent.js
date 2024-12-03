@@ -401,9 +401,11 @@ export async function fetchChallengeIndexMetadata(contentIds) {
         challengeIndexMetaDataPromise = getChallengeIndexMetadataPromise();
     }
     let results = await challengeIndexMetaDataPromise;
-    results = results.filter(function(challenge){
-       return contentIds.includes(challenge.content_id);
-    });
+    if(Array.isArray(contentIds)){
+        results = results.filter(function(challenge){
+            return contentIds.includes(challenge.content_id);
+         });
+    }
     return results;
 }
 
