@@ -82,7 +82,12 @@ let contentTypeConfig = {
                 "instructors": instructor[]->name,
                 length_in_seconds,
             }`,
-        ]
+        ],
+        'relationships': {
+            'artist': {
+                isOneToOne: true
+            }
+        },
     },
     'challenge':{
         'fields': [
