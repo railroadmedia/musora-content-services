@@ -245,6 +245,36 @@ export async function fetchContentPageUserData(contentId) {
     }
 }
 
+/**
+ * Fetches the ID and Type of the piece of content that would be the next one for the user
+ *
+ * @param {int} contentId - The id of the parent (method, level, or course) piece of content.
+ * @returns {Promise<Object|null>} - Returns and Object with the id and type of the next piece of content if found, otherwise null.
+ */
+export async function fetchNextContentDataForParent(contentId) {
+    let url = `/content/${contentId}/next/${globalConfig.railcontentConfig.userId}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
+    };
+
+    try {
+        const response = await fetchAbsolute(url, {headers});
+        const result = await response.json();
+        if (result) {
+            // console.log('fetchNextContentDataForParent', result);
+            return result.next;
+        } else {
+            console.log('fetchNextContentDataForParent result not json');
+            return null;
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
+
+
 export async function fetchUserPermissionsData() {
     let url = `/content/user/permissions`;
     // in the case of an unauthorized user, we return empty permissions

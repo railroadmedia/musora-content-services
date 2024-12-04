@@ -48,6 +48,7 @@ import {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchHandler,
+	fetchNextContentDataForParent,
 	fetchOwnedChallenges,
 	fetchPinnedPlaylists,
 	fetchPlaylist,
@@ -131,7 +132,8 @@ import {
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	fetchWorkouts,
-	getSortOrder
+	getSortOrder,
+	jumpToContinueContent
 } from './services/sanity.js';
 
 import {
@@ -193,6 +195,7 @@ export {
 	fetchMethodPreviousNextLesson,
 	fetchMethods,
 	fetchNewReleases,
+	fetchNextContentDataForParent,
 	fetchNextPreviousLesson,
 	fetchOwnedChallenges,
 	fetchPackAll,
@@ -238,6 +241,7 @@ export {
 	globalConfig,
 	initializeService,
 	isContentLiked,
+	jumpToContinueContent,
 	likeContent,
 	likePlaylist,
 	pinPlaylist,
