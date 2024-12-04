@@ -567,7 +567,7 @@ export async function fetchAll(brand, type, {
                     ${groupBy}
                 }[0...20]
         `;
-        filter = `_type == '${groupBy}' && count(*[${lessonsFilter}]._id) > 0`;
+        filter = `_type == '${groupBy}' && count(*[${lessonsFilterWithRestrictions}]._id) > 0`;
     } else if (groupBy !== "") {
         const webUrlPath = (groupBy == 'genre') ? '/genres' : '';
         const lessonsFilter = `brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter} ${customFilter}`;
@@ -584,7 +584,7 @@ export async function fetchAll(brand, type, {
                     ${fieldsString},
                     ${groupBy}
                 }[0...20]`;
-        filter = `_type == '${groupBy}' && count(*[${lessonsFilter}]._id) > 0`;
+        filter = `_type == '${groupBy}' && count(*[${lessonsFilterWithRestrictions}]._id) > 0`;
     } else {
         filter = `brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter} ${customFilter}`
         entityFieldsString = fieldsString;
