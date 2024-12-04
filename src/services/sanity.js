@@ -95,6 +95,11 @@ export async function fetchSongArtistCount(brand) {
     return fetchSanity(query, true, {processNeedAccess: false});
 }
 
+export async function fetchPlayAlongsCount(brand) {
+    const query = `count(*[brand == '${brand}' && _type == "play-along"]) `
+    return fetchSanity(query, true, {processNeedAccess: false});
+}
+
 /**
  * Fetch related songs for a specific brand and song ID.
  *
