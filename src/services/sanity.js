@@ -972,6 +972,7 @@ export async function fetchMethodChildren(railcontentId) {
     child_count,
     "id": railcontent_id,
     "description": ${descriptionField},
+    "thumbnail_url": thumbnail.asset->url,
     title,
     xp,
     total_xp,
