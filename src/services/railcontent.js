@@ -38,6 +38,7 @@ export async function fetchCompletedState(content_id) {
 
     const headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
 
@@ -72,6 +73,7 @@ export async function fetchAllCompletedStates(contentIds) {
 
     const headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
 
@@ -104,6 +106,7 @@ export async function fetchSongsInProgress(brand) {
 
     const headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
 
@@ -147,6 +150,7 @@ export async function fetchContentInProgress(type = "all", brand, {page, limit} 
     }
     const headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
     try {
@@ -189,6 +193,7 @@ export async function fetchCompletedContent(type = "all", brand, {page, limit} =
     }
     const headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
     try {
@@ -221,6 +226,7 @@ export async function fetchContentPageUserData(contentId) {
     let url = `/content/${contentId}/user_data/${globalConfig.railcontentConfig.userId}`;
     const headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
 
@@ -256,6 +262,7 @@ async function postDataHandler(url, data) {
 export async function fetchHandler(url, method = "get", dataVersion = null, body = null) {
     let headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
     };
 

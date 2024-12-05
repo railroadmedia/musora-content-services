@@ -142,6 +142,11 @@ export async function fetchSongArtistCount(brand) {
     return fetchSanity(query, true, {processNeedAccess: false});
 }
 
+export async function fetchPlayAlongsCount(brand) {
+    const query = `count(*[brand == '${brand}' &amp;&amp; _type == "play-along"]) `
+    return fetchSanity(query, true, {processNeedAccess: false});
+}
+
 /**
  * Fetch related songs for a specific brand and song ID.
  *
@@ -561,7 +566,13 @@ export async function fetchAll(brand, type, {
     let bypassStatusAndPublishedValidation = (type == 'instructor' || groupBy == 'artist' || groupBy == 'genre' || groupBy == 'instructor');
 
     // Construct the type filter
-    const typeFilter = type ? `&amp;&amp; _type == '${type}'` : "";
+    let typeFilter;
+
+    if( type === 'archives' ) {
+        typeFilter = `&amp;&amp; status == "archived"`
+    } else {
+        typeFilter = type ? `&amp;&amp; _type == '${type}'` : "";
+    } 
 
     // Construct the search filter
     const searchFilter = searchTerm
@@ -608,7 +619,7 @@ export async function fetchAll(brand, type, {
                     ${groupBy}
                 }[0...20]
         `;
-        filter = `_type == '${groupBy}' &amp;&amp; count(*[brand == '${brand}' &amp;&amp; ^._id == ${groupBy}._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0`;
+        filter = `_type == '${groupBy}' &amp;&amp; count(*[${lessonsFilterWithRestrictions}]._id) > 0`;
     } else if (groupBy !== "") {
         const webUrlPath = (groupBy == 'genre') ? '/genres' : '';
         const lessonsFilter = `brand == '${brand}' &amp;&amp; ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter} ${customFilter}`;
@@ -625,7 +636,7 @@ export async function fetchAll(brand, type, {
                     ${fieldsString},
                     ${groupBy}
                 }[0...20]`;
-        filter = `_type == '${groupBy}' &amp;&amp; count(*[brand == '${brand}' &amp;&amp; ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0`;
+        filter = `_type == '${groupBy}' &amp;&amp; count(*[${lessonsFilterWithRestrictions}]._id) > 0`;
     } else {
         filter = `brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter} ${customFilter}`
         entityFieldsString = fieldsString;
@@ -644,7 +655,6 @@ export async function fetchAll(brand, type, {
             start: start,
             end: end,
         });
-
     return fetchSanity(query, true);
 }
 
@@ -1014,6 +1024,7 @@ export async function fetchMethodChildren(railcontentId) {
     child_count,
     "id": railcontent_id,
     "description": ${descriptionField},
+    "thumbnail_url": thumbnail.asset->url,
     title,
     xp,
     total_xp,
@@ -1118,7 +1129,11 @@ export async function fetchNextPreviousLesson(railcontentId) {
     let sortBy = processedData?.sortBy ?? 'published_on';
     const isDesc = sortBy.startsWith('-');
     sortBy = isDesc ? sortBy.substring(1) : sortBy;
-    const sortValue = document[sortBy];
+    let sortValue = document[sortBy];
+    if (sortValue == null) {
+        sortBy = 'railcontent_id';
+        sortValue = document['railcontent_id'];
+    }
     const isNumeric = !isNaN(sortValue);
     let prevComparison = isNumeric ? `${sortBy} &lt;= ${sortValue}` : `${sortBy} &lt;= "${sortValue}"`;
     let nextComparison = isNumeric ? `${sortBy} >= ${sortValue}` : `${sortBy} >= "${sortValue}"`;
@@ -1207,14 +1222,21 @@ export async function fetchLessonContent(railContentId) {
  * @returns {Promise&lt;Array&lt;Object>|null>} - The fetched related lessons data or null if not found.
  */
 export async function fetchRelatedLessons(railContentId, brand) {
-    const query = `*[railcontent_id == ${railContentId} &amp;&amp; brand == "${brand}" &amp;&amp; references(*[_type=='permission']._id)]{
+    const filterSameTypeAndSortOrder = await new FilterBuilder(`_type==^._type &amp;&amp;  _type in ${JSON.stringify(typeWithSortOrder)} &amp;&amp; brand == "${brand}" &amp;&amp; railcontent_id !=${railContentId}`).buildFilter();
+    const filterSameType = await new FilterBuilder(`_type==^._type &amp;&amp; !(_type in ${JSON.stringify(typeWithSortOrder)}) &amp;&amp; !(defined(parent_type)) &amp;&amp; brand == "${brand}" &amp;&amp; railcontent_id !=${railContentId}`).buildFilter();
+    const filterSongSameArtist = await new FilterBuilder(`_type=="song" &amp;&amp; _type==^._type &amp;&amp; brand == "${brand}" &amp;&amp; references(^.artist->_id) &amp;&amp; railcontent_id !=${railContentId}`).buildFilter();
+    const filterSongSameGenre = await new FilterBuilder(`_type=="song" &amp;&amp; _type==^._type &amp;&amp; brand == "${brand}" &amp;&amp; references(^.genre[]->_id) &amp;&amp; railcontent_id !=${railContentId}`).buildFilter();
+    const filterNeighbouringSiblings = await new FilterBuilder(`references(^._id)`).buildFilter();
+
+    const query = `*[railcontent_id == ${railContentId} &amp;&amp; brand == "${brand}" &amp;&amp; (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
     "related_lessons" : array::unique([
-      ...(*[references(^._id)][0].child[]->{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}),
-      ...(*[_type=="song" &amp;&amp; _type==^._type &amp;&amp; brand == "${brand}" &amp;&amp; references(^.artist->_id) &amp;&amp; railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
-      ...(*[_type=="song" &amp;&amp; _type==^._type &amp;&amp; brand == "${brand}" &amp;&amp; references(^.genre[]->_id) &amp;&amp; railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
-      ...(*[_type==^._type &amp;&amp;  _type in ${JSON.stringify(typeWithSortOrder)} &amp;&amp; brand == "${brand}" &amp;&amp; railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, sort}|order(sort asc, title asc)[0...10]),
-      ...(*[_type==^._type &amp;&amp; !(_type in ${JSON.stringify(typeWithSortOrder)}) &amp;&amp; !(defined(parent_type)) &amp;&amp; brand == "${brand}" &amp;&amp; railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
+      ...(*[${filterNeighbouringSiblings}][0].child[]->{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}),
+      ...(*[${filterSongSameArtist}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
+      ...(*[${filterSongSameGenre}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
+      ...(*[${filterSameTypeAndSortOrder}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, sort}|order(sort asc, title asc)[0...10]),
+      ...(*[${filterSameType}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10])
+      ,
       ])[0...10]}`;
     return fetchSanity(query, false);
 }
@@ -2135,7 +2157,7 @@ function cleanUpGroq(query) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Mon Dec 02 2024 10:19:36 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Thu Dec 05 2024 14:47:33 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
