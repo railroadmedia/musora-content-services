@@ -207,6 +207,27 @@ const commonMetadata ={
     },
     'coach-lessons':{
         allowableFilters: ['difficulty', 'genre', 'essential','theory','lifestyle','type'],
+    },
+    'lesson-history': {
+        name: 'Lesson History',
+        shortname: 'Lesson History',
+        icon: 'bookmark',
+        allowableFilters: ['difficulty', 'type'],
+        sortBy: '-published_on',
+        tabs: [
+            {
+                name: 'In Progress',
+                short_name: 'IN PROGRESS',
+                is_group_by: false,
+                value: 'inProgress',
+            },
+            {
+                name: 'Completed',
+                short_name: 'COMPLETED',
+                is_group_by: false,
+                value: 'completed',
+            },
+        ]
     }
 }
 const contentMetadata = {
