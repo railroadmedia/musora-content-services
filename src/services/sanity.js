@@ -1082,7 +1082,11 @@ export async function fetchNextPreviousLesson(railcontentId) {
     let sortBy = processedData?.sortBy ?? 'published_on';
     const isDesc = sortBy.startsWith('-');
     sortBy = isDesc ? sortBy.substring(1) : sortBy;
-    const sortValue = document[sortBy];
+    let sortValue = document[sortBy];
+    if (sortValue == null) {
+        sortBy = 'railcontent_id';
+        sortValue = document['railcontent_id'];
+    }
     const isNumeric = !isNaN(sortValue);
     let prevComparison = isNumeric ? `${sortBy} <= ${sortValue}` : `${sortBy} <= "${sortValue}"`;
     let nextComparison = isNumeric ? `${sortBy} >= ${sortValue}` : `${sortBy} >= "${sortValue}"`;

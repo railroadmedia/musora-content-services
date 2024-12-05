@@ -633,6 +633,19 @@ describe('Sanity Queries', function () {
         expect(documentPublishedOn.getTime()).toBeLessThan(nextDocumentPublishedOn.getTime());
     });
 
+    test('fetchNextPreviousLesson-Song', async () => {
+        const id = 414041;
+        const response = await fetchNextPreviousLesson(id);
+        const document = await fetchByRailContentId(id, 'song');
+        const documentPublishedOn = new Date(document.published_on);
+        const prevDocumentPublishedOn = new Date(response.prevLesson.published_on);
+        const nextDocumentPublishedOn = new Date(response.nextLesson.published_on);
+        expect(response.prevLesson).toBeDefined();
+        expect(prevDocumentPublishedOn.getTime()).toBeLessThanOrEqual(documentPublishedOn.getTime());
+        expect(response.nextLesson).toBeDefined();
+        expect(documentPublishedOn.getTime()).toBeLessThanOrEqual(nextDocumentPublishedOn.getTime());
+    });
+
     test('fetchTopLevelParentId', async () => {
         let contentId = await fetchTopLevelParentId(241250);
         expect(contentId).toBe(241247);
