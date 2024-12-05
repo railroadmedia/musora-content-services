@@ -254,19 +254,21 @@ async function postDataHandler(url, data) {
 }
 
 export async function fetchHandler(url, method = "get", dataVersion = null, body = null) {
-    const params = new URLSearchParams(window.location.search);
+    if (!globalConfig.isMA){
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('testNow')) {
+            headers['testNow'] = params.get('testNow');
+        }
+        if (params.get('timezone')) {
+            headers['M-Client-Timezone'] = params.get('timezone');
+        }
+    }
     let headers = {
         'Content-Type': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
     };
     if (globalConfig.railcontentConfig.authToken) {
         headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`;
-    }
-    if (params.get('testNow')) {
-        headers['testNow'] = params.get('testNow');
-    }
-    if (params.get('timezone')) {
-        headers['M-Client-Timezone'] = params.get('timezone');
     }
     if (dataVersion) headers['Data-Version'] = dataVersion;
     const options = {
