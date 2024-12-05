@@ -219,7 +219,7 @@ const contentMetadata = {
             sortBy: '-published_on',
         },
         'song': {
-            sortBy: 'slug',
+            sortBy: '-published_on',
         },
         'student-review' : null,
         'student-focus': {
@@ -748,7 +748,7 @@ const contentMetadata = {
             shortname: 'songs',
             amountOfFutureLessonsToShow: 3,
             showFutureLessonAtTopOrBottom: 'bottom',
-            sortBy: 'slug',
+            sortBy: '-published_on',
         },
         'course': {
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/pianote/courses.jpg',
