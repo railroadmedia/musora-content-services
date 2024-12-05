@@ -1169,12 +1169,12 @@ export async function fetchRelatedLessons(railContentId, brand) {
     const filterSameType = await new FilterBuilder(`_type==^._type && !(_type in ${JSON.stringify(typeWithSortOrder)}) && !(defined(parent_type)) && brand == "${brand}" && railcontent_id !=${railContentId}`).buildFilter();
     const filterSongSameArtist = await new FilterBuilder(`_type=="song" && _type==^._type && brand == "${brand}" && references(^.artist->_id) && railcontent_id !=${railContentId}`).buildFilter();
     const filterSongSameGenre = await new FilterBuilder(`_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}`).buildFilter();
-    const filterChildrens = await new FilterBuilder(`references(^._id)`).buildFilter();
+    const filterNeighbouringSiblings = await new FilterBuilder(`references(^._id)`).buildFilter();
 
     const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
     "related_lessons" : array::unique([
-      ...(*[${filterChildrens}][0].child[]->{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}),
+      ...(*[${filterNeighbouringSiblings}][0].child[]->{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}),
       ...(*[${filterSongSameArtist}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
       ...(*[${filterSongSameGenre}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
       ...(*[${filterSameTypeAndSortOrder}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, sort}|order(sort asc, title asc)[0...10]),
