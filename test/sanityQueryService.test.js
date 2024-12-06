@@ -420,7 +420,7 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchAllFilterOptions-WithProgress', async () => {
-        const ids = [410213, 305649];
+        const ids = [410213, 413851];
         let response = await fetchAllFilterOptions('drumeo', '', '', '', 'song', '', ids);
         expect(response.meta.totalResults).toBe(2);
         // change the brand and we expect no results

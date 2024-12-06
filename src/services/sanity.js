@@ -831,9 +831,12 @@ export async function fetchAllFilterOptions(
 
     const constructCommonFilter = (excludeFilter) => {
         const filterWithoutOption = excludeFilter ? filtersToGroq(filters, excludeFilter) : includedFieldsFilter;
+        const statusFilter = ' && status == "published"';
+        const includeStatusFilter = !['instructor','artist','genre'].includes(contentType);
+
         return coachId
-            ? `brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${filterWithoutOption || ''}`
-            : `_type == '${contentType}' && brand == "${brand}"${style && excludeFilter !== "style" ? ` && '${style}' in genre[]->name` : ''}${artist && excludeFilter !== "artist" ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${filterWithoutOption || ''}`;
+            ? `brand == '${brand}' && status == "published" && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${filterWithoutOption || ''}`
+            : `_type == '${contentType}' && brand == "${brand}"${includeStatusFilter ? statusFilter : ''}${style && excludeFilter !== "style" ? ` && '${style}' in genre[]->name` : ''}${artist && excludeFilter !== "artist" ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${filterWithoutOption || ''}`;
     };
 
     const metaData = processMetadata(brand, contentType, true);
@@ -2018,10 +2021,8 @@ function getFilterOptions(option, commonFilter, contentType, brand) {
         ][count > 0],`;
             break;
         case "type":
-            const dynamicTypeOptions = types.map(filter => {
-                return `{"type": "${filter}", "count": count(*[${commonFilter} && _type == "${filter}"])}`
-            }).join(', ');
-            filterGroq = `"type": [${dynamicTypeOptions}][count > 0],`;
+            const typesString = types.map(t => {return `{"type": "${t}"}`}).join(', ');
+            filterGroq = `"type": [${typesString}]{type, 'count': count(*[_type == ^.type && ${commonFilter}])}[count > 0],`;
             break;
         case "genre":
         case "essential":
