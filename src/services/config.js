@@ -7,6 +7,7 @@ let globalConfig = {
     railcontentConfig: {},
     localStorage: null,
     isMA: false,
+    localTimezoneString: null, // In format: America/Vancouver
   };
 
 /**

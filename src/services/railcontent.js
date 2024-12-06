@@ -306,6 +306,10 @@ export async function fetchHandler(url, method = "get", dataVersion = null, body
         }
     }
 
+    if (globalConfig.localTimezoneString) {
+        headers['M-Client-Timezone'] = globalConfig.localTimezoneString;
+    }
+
     if (globalConfig.railcontentConfig.authToken) {
         headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`;
     }
