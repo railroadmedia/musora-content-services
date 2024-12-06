@@ -46,8 +46,8 @@ const contentWithSortField = {
     ]
 }
 const showsTypes = {
-    'drumeo': ['odd-times','drum-fest-international-2022', 'spotlight', 'the-history-of-electronic-drums', 'backstage-secret', 'quick-tips', 'question-and-answer', 'student-collaboration',
-         'live', 'podcast', 'solo', 'boot-camp', 'gear-guide', 'performance', 'in-rhythm', 'challenges', 'on-the-road', 'diy-drum-experiment', 'rhythmic-adventures-of-captain-carson',
+    'drumeo': ['odd-times', 'drum-fest-international-2022', 'spotlight', 'the-history-of-electronic-drums', 'backstage-secret', 'quick-tips', 'question-and-answer', 'student-collaboration',
+        'live', 'podcast', 'solo', 'boot-camp', 'gear-guide', 'performance', 'in-rhythm', 'challenges', 'on-the-road', 'diy-drum-experiment', 'rhythmic-adventures-of-captain-carson',
         'study-the-greats', 'rhythms-from-another-planet', 'tama', 'paiste-cymbals', 'behind-the-scenes', 'exploring-beats', 'sonor'
     ],
     'pianote': ['student-review', 'question-and-answer'],
@@ -70,7 +70,7 @@ let contentTypeConfig = {
                 isOneToOne: true
             }
         },
-        'slug':'songs',
+        'slug': 'songs',
     },
     'song-tutorial': {
         'fields': [
@@ -89,7 +89,7 @@ let contentTypeConfig = {
             }
         },
     },
-    'challenge':{
+    'challenge': {
         'fields': [
             'enrollment_start_time',
             'enrollment_end_time',
@@ -141,7 +141,7 @@ let contentTypeConfig = {
                 length_in_seconds,
             }`,
         ],
-        'slug':'courses',
+        'slug': 'courses',
     },
     'parent-download': {
         'fields': [
@@ -244,7 +244,7 @@ let contentTypeConfig = {
         'fields': [
             artistOrInstructorNameAsArray(),
         ],
-        'slug':'workouts',
+        'slug': 'workouts',
     },
     'play-along': {
         'fields': [
@@ -255,7 +255,7 @@ let contentTypeConfig = {
             'mp3_yes_drums_no_click_url',
             'bpm',
         ],
-        'slug':'play-alongs',
+        'slug': 'play-alongs',
     },
     'pack': {
         'fields': [
@@ -281,15 +281,15 @@ let contentTypeConfig = {
         'fields': [
             'sheet_music_thumbnail_url',
         ],
-        'slug':'rudiments',
+        'slug': 'rudiments',
     },
-    'routine':{
+    'routine': {
         'fields': [
             `"description": ${descriptionField}`,
             'high_soundslice_slug',
             'low_soundslice_slug'
         ],
-        'slug':'routines',
+        'slug': 'routines',
     },
     'pack-children': {
         'fields': [
@@ -369,8 +369,8 @@ let contentTypeConfig = {
     'backstage-secret': contentWithInstructorsField,
     'question-and-answer': contentWithInstructorsField,
     'student-collaboration': contentWithInstructorsField,
-    'live': { ...contentWithInstructorsField, 'slug': 'live-streams' },
-    'solo': { ...contentWithInstructorsField, 'slug': 'solos' },
+    'live': {...contentWithInstructorsField, 'slug': 'live-streams'},
+    'solo': {...contentWithInstructorsField, 'slug': 'solos'},
     'boot-camp': contentWithInstructorsField,
     'gear-guids': contentWithInstructorsField,
     'performance': contentWithInstructorsField,
@@ -391,22 +391,22 @@ let contentTypeConfig = {
 
 function getNewReleasesTypes(brand) {
     const baseNewTypes = ["student-review", "student-review", "student-focus", "coach-stream", "live", "question-and-answer", "boot-camps", "quick-tips", "workout", "challenge", "challenge-part", "podcasts", "pack", "song", "learning-path-level", "play-along", "course", "unit"];
-    switch(brand) {        
+    switch (brand) {
         case 'drumeo':
             return [...baseNewTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "student-collaborations", "live", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor"];
-        case 'guitareo': 
+        case 'guitareo':
             return [...baseNewTypes, "archives", "recording", "chords-and-scales"];
-        case 'pianote':    
+        case 'pianote':
         case 'singeo':
         default:
             return baseNewTypes
-        }
+    }
 }
 
 function getUpcomingEventsTypes(brand) {
     const baseLiveTypes = ["student-review", "student-review", "student-focus", "coach-stream", "live", "question-and-answer", "boot-camps", "quick-tips", "recording", "pack-bundle-lesson"];
-    switch(brand) {
-        case 'drumeo': 
+    switch (brand) {
+        case 'drumeo':
             return [...baseLiveTypes, "drum-fest-international-2022", "spotlight", "the-history-of-electronic-drums", "backstage-secrets", "student-collaborations", "live", "podcasts", "solos", "gear-guides", "performances", "in-rhythm", "challenges", "on-the-road", "diy-drum-experiments", "rhythmic-adventures-of-captain-carson", "study-the-greats", "rhythms-from-another-planet", "tama-drums", "paiste-cymbals", "behind-the-scenes", "exploring-beats", "sonor"];
         case 'guitareo':
             return [...baseLiveTypes, "archives"];
@@ -414,21 +414,22 @@ function getUpcomingEventsTypes(brand) {
         case 'singeo':
         default:
             return baseLiveTypes;
-  }
+    }
 }
 
-function artistOrInstructorName(key='artist_name') {
+function artistOrInstructorName(key = 'artist_name') {
     return `'${key}': coalesce(artist->name, instructor[0]->name)`;
 }
 
-function artistOrInstructorNameAsArray(key='artists') {
+function artistOrInstructorNameAsArray(key = 'artists') {
     return `'${key}': select(artist->name != null => [artist->name], instructor[]->name)`;
 }
 
-function getFieldsForContentType(contentType, asQueryString=true) {
+function getFieldsForContentType(contentType, asQueryString = true) {
     const fields = contentType ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? []) : DEFAULT_FIELDS;
     return asQueryString ? fields.toString() + ',' : fields;
 }
+
 /**
  * Takes the included fields array and returns a string that can be used in a groq query.
  * @param {Array<string>} filters - An array of strings that represent applied filters. This should be in the format of a key,value array. eg. ['difficulty,Intermediate',
@@ -459,7 +460,13 @@ function filtersToGroq(filters, selectedFilters = []) {
             } else if (key === 'gear' && !selectedFilters.includes('gear')) {
                 return `gear match "${value}"`;
             } else if (key === 'instrumentless' && !selectedFilters.includes(key)) {
-                return `instrumentless == ${value}`;
+                if (value === "Full Song Only") {
+                    return `(!instrumentless || instrumentless != null)`;
+                } else if (value === "Instrument Removed") {
+                    return `instrumentless`;
+                } else {
+                    return `instrumentless == ${value}`;
+                }
             } else if (key === 'difficulty' && !selectedFilters.includes(key)) {
                 return `difficulty_string == "${value}"`;
             } else if (key === 'type' && !selectedFilters.includes(key)) {
@@ -485,6 +492,7 @@ function filtersToGroq(filters, selectedFilters = []) {
 
     return filterClauses;
 }
+
 function groupFilters(filters) {
     if (filters.length === 0) return {};
 
