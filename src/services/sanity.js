@@ -27,7 +27,8 @@ import {
     fetchAllCompletedStates,
     fetchCompletedChallenges,
     fetchCurrentSongComplete,
-    fetchOwnedChallenges
+    fetchOwnedChallenges,
+    fetchNextContentDataForParent
 } from './railcontent.js';
 import {arrayToStringRepresentation, FilterBuilder} from "../filterBuilder";
 import {fetchUserPermissions} from "./userPermissions";
@@ -829,12 +830,16 @@ export async function fetchAllFilterOptions(
 
     const includedFieldsFilter = filters?.length ? filtersToGroq(filters) : undefined;
     const progressFilter = progressIds ? `&& railcontent_id in [${progressIds.join(',')}]` : "";
+    const isAdmin = (await fetchUserPermissions()).isAdmin;
 
     const constructCommonFilter = (excludeFilter) => {
         const filterWithoutOption = excludeFilter ? filtersToGroq(filters, excludeFilter) : includedFieldsFilter;
+        const statusFilter = ' && status == "published"';
+        const includeStatusFilter = !isAdmin && !['instructor','artist','genre'].includes(contentType);
+
         return coachId
-            ? `brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${filterWithoutOption || ''}`
-            : `_type == '${contentType}' && brand == "${brand}"${style && excludeFilter !== "style" ? ` && '${style}' in genre[]->name` : ''}${artist && excludeFilter !== "artist" ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${filterWithoutOption || ''}`;
+            ? `brand == '${brand}' && status == "published" && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${filterWithoutOption || ''}`
+            : `_type == '${contentType}' && brand == "${brand}"${includeStatusFilter ? statusFilter : ''}${style && excludeFilter !== "style" ? ` && '${style}' in genre[]->name` : ''}${artist && excludeFilter !== "artist" ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${filterWithoutOption || ''}`;
     };
     
     const metaData = processMetadata(brand, contentType, true);
@@ -1098,6 +1103,24 @@ export async function fetchNextPreviousLesson(railcontentId) {
     }`;
 
     return await fetchSanity(query, true);
+}
+
+/**
+ * Fetch the next piece of content under a parent by Railcontent ID
+ * @param {int} railcontentId - The Railcontent ID of the parent content
+ * @returns {Promise<{next: (Object|null)}|null>} - object with 'next' attribute
+ * @example
+ * jumpToContinueContent(296693)
+ *  then.(data => { console.log('next', data.next);})
+ *  .catch(error => console.error(error));
+ */
+export async function jumpToContinueContent(railcontentId) {
+    const nextContent = await fetchNextContentDataForParent(railcontentId);
+    if (!nextContent) {
+        return null;
+    }
+    let next = await fetchByRailContentId(nextContent.id, nextContent.type);
+    return {next};
 }
 
 /**
@@ -2019,10 +2042,8 @@ function getFilterOptions(option, commonFilter, contentType, brand) {
         ][count > 0],`;
             break;
         case "type":
-            const dynamicTypeOptions = types.map(filter => {
-                return `{"type": "${filter}", "count": count(*[${commonFilter} && _type == "${filter}"])}`
-            }).join(', ');
-            filterGroq = `"type": [${dynamicTypeOptions}][count > 0],`;
+            const typesString = types.map(t => {return `{"type": "${t}"}`}).join(', ');
+            filterGroq = `"type": [${typesString}]{type, 'count': count(*[_type == ^.type && ${commonFilter}])}[count > 0],`;
             break;
         case "genre":
         case "essential":

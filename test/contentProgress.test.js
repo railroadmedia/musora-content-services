@@ -131,6 +131,16 @@ describe('contentProgressDataContext', function () {
 
     });
 
+    // test('completedProgressNotOverwritten', async () => {
+    //     const contentId = 241262;
+    //     let progress = await getProgressPercentage(241250); //force load context
+    //     await contentStatusCompleted(contentId);
+    //     await recordWatchSession(contentId, "video", "vimeo", 100, 50, 50);
+    //     progress = await getProgressPercentage(contentId);
+    //     expect(progress).toBe(100);
+    // });
+
+
     test('assignmentCompleteBubbling', async () => {
         let assignmentId = 286048;
         let contentId = 286047;
