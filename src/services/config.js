@@ -37,6 +37,7 @@ const excludeFromGeneratedIndex = [];
  * @param {string} config.railcontentConfig.authToken - The bearer authorization token.
  * @param {Object} config.localStorage - Cache to use for localStorage
  * @param {boolean} config.isMA - Variable that tells if the library is used by MA or FEW
+ * @param {string} config.localTimezoneString - The local timezone string in format: America/Vancouver
 
  *
  * @example
@@ -64,6 +65,7 @@ function initializeService(config) {
     globalConfig.railcontentConfig = config.railcontentConfig;
     globalConfig.localStorage = config.localStorage;
     globalConfig.isMA = config.isMA || false;
+    globalConfig.localTimezoneString = config.localTimezoneString || null;
 }
 
 // Export both the initialization function and the config object
