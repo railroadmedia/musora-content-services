@@ -461,7 +461,7 @@ function filtersToGroq(filters, selectedFilters = []) {
                 return `gear match "${value}"`;
             } else if (key === 'instrumentless' && !selectedFilters.includes(key)) {
                 if (value === "Full Song Only") {
-                    return `(!instrumentless || instrumentless != null)`;
+                    return `(!instrumentless || instrumentless == null)`;
                 } else if (value === "Instrument Removed") {
                     return `instrumentless`;
                 } else {
