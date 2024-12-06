@@ -828,11 +828,12 @@ export async function fetchAllFilterOptions(
 
     const includedFieldsFilter = filters?.length ? filtersToGroq(filters) : undefined;
     const progressFilter = progressIds ? `&& railcontent_id in [${progressIds.join(',')}]` : "";
+    const isAdmin = (await fetchUserPermissions()).isAdmin;
 
     const constructCommonFilter = (excludeFilter) => {
         const filterWithoutOption = excludeFilter ? filtersToGroq(filters, excludeFilter) : includedFieldsFilter;
         const statusFilter = ' && status == "published"';
-        const includeStatusFilter = !['instructor','artist','genre'].includes(contentType);
+        const includeStatusFilter = !isAdmin && !['instructor','artist','genre'].includes(contentType);
 
         return coachId
             ? `brand == '${brand}' && status == "published" && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${filterWithoutOption || ''}`
