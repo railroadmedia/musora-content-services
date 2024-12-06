@@ -757,8 +757,22 @@ const contentMetadata = {
             shortname: 'Episodes',
             icon: 'icon-shows',
             allowableFilters: [],
-            sortBy: 'sort',
+            sortBy: 'sort', 
         },
+        'lesson-history': {
+            tabs: [
+                { 
+                    name: 'In Progress',
+                    short_name: 'inProgress',
+                    value: 'inProgress',
+                },
+                {
+                    name: 'Complete',
+                    short_name: 'complete',
+                    value: 'complete',
+                },
+            ],  
+        }
     },
     'pianote':{
         'instructor': {
@@ -913,6 +927,20 @@ const contentMetadata = {
                 },
             ],
         },
+        'lesson-history': {
+            tabs: [
+                { 
+                    name: 'In Progress',
+                    short_name: 'inProgress',
+                    value: 'inProgress',
+                },
+                {
+                    name: 'Complete',
+                    short_name: 'complete',
+                    value: 'complete',
+                },
+            ],  
+        },
     },
     'guitareo': {
         'instructor': {
@@ -998,6 +1026,20 @@ const contentMetadata = {
         'student-review': {
             thumbnailUrl: 'https://d1923uyy6spedc.cloudfront.net/student-reviews-singeo.png',
             description: "Want feedback on your playing? Submit a video for student review. We will watch your submission and then provide helpful encouragement and feedback. This is a great way to build accountability and benefit from the expertise of our teachers.",
+        },
+        'lesson-history': {
+            tabs: [
+                { 
+                    name: 'In Progress',
+                    short_name: 'inProgress',
+                    value: 'inProgress',
+                },
+                {
+                    name: 'Complete',
+                    short_name: 'complete',
+                    value: 'complete',
+                },
+            ],  
         },
     },
     'singeo':{
@@ -1143,6 +1185,20 @@ const contentMetadata = {
                     value: 'instructor',
                 },
             ],
+        },
+        'lesson-history': {
+            tabs: [
+                { 
+                    name: 'In Progress',
+                    short_name: 'inProgress',
+                    value: 'inProgress',
+                },
+                {
+                    name: 'Complete',
+                    short_name: 'complete',
+                    value: 'complete',
+                },
+            ],  
         },
     }
 };
