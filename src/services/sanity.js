@@ -608,6 +608,7 @@ export async function fetchAll(brand, type, {
             start: start,
             end: end,
         });
+    
     return fetchSanity(query, true);
 }
 
@@ -835,7 +836,7 @@ export async function fetchAllFilterOptions(
             ? `brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${filterWithoutOption || ''}`
             : `_type == '${contentType}' && brand == "${brand}"${style && excludeFilter !== "style" ? ` && '${style}' in genre[]->name` : ''}${artist && excludeFilter !== "artist" ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${filterWithoutOption || ''}`;
     };
-
+    
     const metaData = processMetadata(brand, contentType, true);
     const allowableFilters = metaData?.allowableFilters || [];
     const tabs = metaData?.tabs || [];
