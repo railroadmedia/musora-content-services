@@ -48,6 +48,7 @@ import {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchHandler,
+	fetchNextContentDataForParent,
 	fetchOwnedChallenges,
 	fetchPinnedPlaylists,
 	fetchPlaylist,
@@ -131,7 +132,8 @@ import {
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	fetchWorkouts,
-	getSortOrder
+	getSortOrder,
+	jumpToContinueContent
 } from './services/sanity.js';
 
 import {
@@ -194,6 +196,7 @@ declare module 'musora-content-services' {
 		fetchMethodPreviousNextLesson,
 		fetchMethods,
 		fetchNewReleases,
+		fetchNextContentDataForParent,
 		fetchNextPreviousLesson,
 		fetchOwnedChallenges,
 		fetchPackAll,
@@ -239,6 +242,7 @@ declare module 'musora-content-services' {
 		globalConfig,
 		initializeService,
 		isContentLiked,
+		jumpToContinueContent,
 		likeContent,
 		likePlaylist,
 		pinPlaylist,
