@@ -437,13 +437,16 @@ function getFieldsForContentType(contentType, asQueryString = true) {
  * @returns {string} - A string that can be used in a groq query
  */
 function filtersToGroq(filters, selectedFilters = []) {
+    if (!filters) {
+        filters = [];
+    }
 
     //Account for multiple railcontent id's
-    const multipleIdFilters = [];
+    let multipleIdFilters = '';
     filters.forEach(item => {
-        if(item.includes('railcontent_id in')) {
+        if (item.includes('railcontent_id in')) {
             filters.pop(item);
-            multipleIdFilters.push(item);
+            multipleIdFilters += ` && ${item} `;
         }
     })
 
@@ -504,12 +507,12 @@ function filtersToGroq(filters, selectedFilters = []) {
     }).filter(Boolean).join(' ');
 
     //Return
-    return `&& ${multipleIdFilters} ${filterClauses}`;
+    return `${multipleIdFilters} ${filterClauses}`;
 }
 
 function groupFilters(filters) {
     if (filters.length === 0) return {};
-    
+
     return filters.reduce((acc, filter) => {
         const [category, value] = filter.split(',');
         if (!acc[category]) acc[category] = [];
