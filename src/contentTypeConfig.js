@@ -31,7 +31,7 @@ const assignmentsField = `"assignments":assignment[]{
         "title": assignment_title,
         "sheet_music_image_url": assignment_sheet_music_image,
         "timecode": assignment_timecode,
-        "description": assignment_description
+        "description": assignment_description[0].children[0].text,
 },`
 
 const contentWithInstructorsField = {
@@ -160,8 +160,8 @@ let contentTypeConfig = {
                 "image": thumbnail.asset->url,
                 "instructors": instructor[]->name,
                 length_in_seconds,
-                "resources": resource, 
-                difficulty, 
+                "resources": resource,
+                difficulty,
                 difficulty_string,
                 artist->,
                 "thumbnail_url":thumbnail.asset->url,
@@ -176,7 +176,7 @@ let contentTypeConfig = {
                     "id":railcontent_id,
                     name,
                     short_bio,
-                    "biography": short_bio[0].children[0].text, 
+                    "biography": short_bio[0].children[0].text,
                     web_url_path,
                     "coach_card_image": coach_card_image.asset->url,
                     "coach_profile_image":thumbnail_url.asset->url
