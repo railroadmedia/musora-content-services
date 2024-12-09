@@ -20,7 +20,7 @@ export class FilterBuilder {
             bypassStatuses = false,
             bypassPublishedDateRestriction = false,
             isSingle = false,
-            allowsPullSongsContent = false
+            allowsPullSongsContent = true
         } = {}) {
         this.availableContentStatuses = availableContentStatuses;
         this.bypassPermissions = bypassPermissions;
