@@ -219,7 +219,7 @@ const commonMetadata ={
                 name: 'In Progress',
                 short_name: 'IN PROGRESS',
                 is_group_by: false,
-                value: 'inProgress',
+                value: 'in progress',
             },
             {
                 name: 'Completed',
