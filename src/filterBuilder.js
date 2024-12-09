@@ -1,5 +1,7 @@
 import {fetchUserPermissions} from "./services/userPermissions";
-
+import {
+    songAccessMembership
+} from "./contentTypeConfig";
 
 export class FilterBuilder {
 
@@ -91,7 +93,7 @@ export class FilterBuilder {
         if (this.bypassPermissions || this.userData.isAdmin) return this;
         let requiredPermissions = this._getUserPermissions();
         if(this.userData.isABasicMember && this.allowsPullSongsContent){
-            requiredPermissions = [...requiredPermissions, 94];
+            requiredPermissions = [...requiredPermissions, songAccessMembership];
         }
         this._andWhere(`(!defined(permission) || references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id))`);
         return this;
