@@ -259,7 +259,7 @@ let contentTypeConfig = {
     },
     'pack': {
         'fields': [
-            '"lesson_count": child_count',
+            '"lesson_count": coalesce(count(child[]->.child[]->), 0)',
             'xp',
             `"description": ${descriptionField}`,
             '"instructors": instructor[]->name',
