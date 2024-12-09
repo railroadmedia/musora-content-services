@@ -63,10 +63,12 @@ export class FilterBuilder {
         if (this.availableContentStatuses.length === 0) {
             if (this.userData.isAdmin) {
                 this.availableContentStatuses = [this.STATUS_DRAFT, this.STATUS_SCHEDULED, this.STATUS_PUBLISHED, this.STATUS_ARCHIVED, this.STATUS_UNLISTED];
+                this.getFutureScheduledContentsOnly = true;
             } else if(this.isSingle){
                 this.availableContentStatuses = [this.STATUS_SCHEDULED, this.STATUS_PUBLISHED, this.STATUS_UNLISTED, this.STATUS_ARCHIVED];
             } else{
                 this.availableContentStatuses = [this.STATUS_SCHEDULED, this.STATUS_PUBLISHED];
+                this.getFutureScheduledContentsOnly = true;
             }
         }
 
@@ -76,8 +78,8 @@ export class FilterBuilder {
             this.pullFutureContent = true;
             const now = new Date().toISOString();
             let statuses = [...this.availableContentStatuses];
-            statuses.splice(statuses.indexOf(this.STATUS_SCHEDULED));
-            this._andWhere(`(status in ${arrayToStringRepresentation(statuses)} || (status == '${this.STATUS_SCHEDULED}' && published_on >= '${now}'))`)
+            statuses.splice(statuses.indexOf(this.STATUS_SCHEDULED), 1);
+            this._andWhere(`(status in ${arrayToStringRepresentation(statuses)} || (status == '${this.STATUS_SCHEDULED}' && defined(published_on) && published_on >= '${now}'))`)
 
         } else {
             this._andWhere(`status in ${arrayToStringRepresentation(this.availableContentStatuses)}`);
@@ -87,13 +89,11 @@ export class FilterBuilder {
 
     _applyPermissions() {
         if (this.bypassPermissions || this.userData.isAdmin) return this;
-
         let requiredPermissions = this._getUserPermissions();
         if(this.userData.isABasicMember && this.allowsPullSongsContent){
             requiredPermissions = [...requiredPermissions, 94];
         }
-        if (requiredPermissions.length === 0) return this;
-        this._andWhere(`references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id)`);
+        this._andWhere(`(!defined(permission) || references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id))`);
         return this;
     }
 
@@ -103,15 +103,25 @@ export class FilterBuilder {
 
     _applyPublishingDateRestrictions() {
         if(this.bypassPublishedDateRestriction) return this;
-        const now = new Date().toISOString();
+        let now = new Date();
+
+        // We need to set the published on filter date to be a round time so that it doesn't bypass the query cache
+        // with every request by changing the filter date every second. I've set it to one minute past the current hour
+        // because publishing usually publishes content on the hour exactly which means it should still skip the cache
+        // when the new content is available.
+        // Round to the start of the current hour
+        const roundedDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
+
+        now = roundedDate.toISOString();
+
         if (this.getFutureContentOnly) {
             this._andWhere(`published_on >= '${now}'`);
         } else if (!this.pullFutureContent) {
             this._andWhere(`published_on <= '${now}'`);
         } else {
-            const date = new Date();
-            const theFuture = new Date(date.setMonth(date.getMonth() + 18));
-            this._andWhere(`published_on <= '${theFuture}'`);
+            // const date = new Date();
+            // const theFuture = new Date(date.setMonth(date.getMonth() + 18));
+            // this._andWhere(`published_on <= '${theFuture}'`);
         }
         return this;
     }

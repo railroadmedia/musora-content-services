@@ -207,6 +207,27 @@ const commonMetadata ={
     },
     'coach-lessons':{
         allowableFilters: ['difficulty', 'genre', 'essential','theory','lifestyle','type'],
+    },
+    'lesson-history': {
+        name: 'Lesson History',
+        shortname: 'Lesson History',
+        icon: 'bookmark',
+        allowableFilters: ['difficulty', 'type'],
+        sortBy: '-published_on',
+        tabs: [
+            {
+                name: 'In Progress',
+                short_name: 'IN PROGRESS',
+                is_group_by: false,
+                value: 'inProgress',
+            },
+            {
+                name: 'Completed',
+                short_name: 'COMPLETED',
+                is_group_by: false,
+                value: 'completed',
+            },
+        ]
     }
 }
 const contentMetadata = {
@@ -219,7 +240,7 @@ const contentMetadata = {
             sortBy: '-published_on',
         },
         'song': {
-            sortBy: 'slug',
+            sortBy: '-published_on',
         },
         'student-review' : null,
         'student-focus': {
@@ -290,6 +311,7 @@ const contentMetadata = {
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/gear.jpg',
             name: 'Gear Guides',
             icon: 'icon-shows',
+            url: '/gear-guides',
             description: "Drummers love their gear - and in here you will find videos on gear demos, reviews, maintenance, tuning tips and much more.",
             allowableFilters: ['difficulty', 'genre'],
             sortBy: '-published_on',
@@ -344,6 +366,7 @@ const contentMetadata = {
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/bootcamps.jpg',
             name: 'Boot Camps',
             icon: 'icon-shows',
+            url: '/boot-camps',
             description: "Grab your sticks and practice along while watching a lesson! These boot camps are designed like workout videos so you can follow along and push your drumming at the same time.",
             allowableFilters: ['difficulty', 'genre', 'essential'],
             sortBy: '-published_on',
@@ -378,6 +401,7 @@ const contentMetadata = {
             description: "Enjoy our official Drumeo Podcasts in video form! Whether it be discussions about drum topics or interviews with the greats you are looking for, these are an entertaining and educational way to pass the time.",
             allowableFilters: [],
             sortBy: '-sort',
+            url: '/podcasts',
         },
         'on-the-road': {
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/on-the-road.jpg',
@@ -409,6 +433,7 @@ const contentMetadata = {
         'live': {
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/show-live.jpg',
             name: 'Live',
+            url: '/live-streams',
             shortname: 'Live Lessons',
             icon: 'icon-shows',
             description: "Practice sessions, Q&A, celebrations, and more are available during Drumeo live lessons. Subscribe to an event or the whole calendar, so you don’t miss out!",
@@ -438,6 +463,7 @@ const contentMetadata = {
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/solos.jpg',
             name: 'Solos',
             icon: 'icon-shows',
+            url: '/solos',
             description: "Watch drum solos performed by the many different artists we have had out on Drumeo! A great way to be entertained, motivated, and to learn through amazing performances.",
             allowableFilters: ['difficulty', 'genre'],
             sortBy: '-published_on',
@@ -465,6 +491,7 @@ const contentMetadata = {
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/performances.jpg',
             name: 'Performances',
             icon: 'icon-shows',
+            url: '/performances',
             description: "Watch the world's best drummers perform songs, duets, and other inspirational pieces. Sit back, relax, and get ready to be inspired by these amazing performances!",
             allowableFilters: ['difficulty', 'genre'],
             sortBy: '-published_on',
@@ -504,6 +531,7 @@ const contentMetadata = {
             description: "Take a closer look at Sonor Drums with Jared as he explores the Sonor Factory in Bad Berleburg Germany and interviews the people behind the amazing brand.",
             allowableFilters: [],
             sortBy: 'published_on',
+            url: '/sonor-drums',
         },
         'paiste-cymbals': {
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/paiste-cymbals.jpg',
@@ -531,6 +559,7 @@ const contentMetadata = {
             description: "Take a closer look at Tama Drums with Jared as he explores the Tama factory in Japan, learns about Japanese Culture, experiments with traditional Taiko drummers, and interviews the people behind the amazing brand.",
             allowableFilters: [],
             sortBy: 'published_on',
+            url: '/tama-drums',
         },
         'question-and-answer': {
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/question-answer.jpg',
@@ -546,6 +575,7 @@ const contentMetadata = {
             description: "Collaborate with the community with Drumeo Monthly Collaborations! Each month a new Play-Along is chosen and members are tasked to submit their videos playing along to the song. At the end of each month, every video is joined together to create a single performance!",
             allowableFilters: [],
             sortBy: '-published_on',
+            url: '/student-collaborations',
             trailer1: {
                 vimeo_video_id: 448684113,
                 video_playback_endpoints: [
@@ -639,6 +669,7 @@ const contentMetadata = {
             description: "Step into David Raouf’s workshop where he will show you how to repurpose old and broken drum gear into usable and functional items! Whether you are a handyman or not, this show will give you unique and creative ideas and drum hacks that you have never seen before!",
             allowableFilters: [],
             sortBy: 'sort',
+            url: '/diy-drum-experiments',
         },
         'rhythmic-adventures-of-captain-carson': {
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/raocc-showcard.jpg',
@@ -666,6 +697,7 @@ const contentMetadata = {
             description: "Join the roadies of Rush and get a firsthand look at what it's like to be part of one of our favorite bands. You’re going on an exciting, behind-the-scenes journey to their 2008 Snakes & Arrows Concert Tour - an exclusive invitation to witness the reveal of all of the band’s backstage secrets. Roadies are the unsung heroes of any band - and being a roadie with a top-rated, world-famous rock and roll band is a highly coveted job. It may appear to be all glamour and adventure, but it can be a grueling marathon of 18-hour workdays!",
             allowableFilters: [],
             sortBy: 'sort',
+            url: '/backstage-secrets',
         },
         'the-history-of-electronic-drums': {
             thumbnailUrl: 'https://imagedelivery.net/0Hon__GSkIjm-B_W77SWCA/31847ba4-02d4-4c6a-4507-32b40284a000/width=500,height=500,quality=95,fit=cover',
@@ -737,7 +769,7 @@ const contentMetadata = {
             shortname: 'songs',
             amountOfFutureLessonsToShow: 3,
             showFutureLessonAtTopOrBottom: 'bottom',
-            sortBy: 'slug',
+            sortBy: '-published_on',
         },
         'course': {
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/pianote/courses.jpg',
@@ -795,6 +827,7 @@ const contentMetadata = {
             allowableFilters: ['difficulty', 'genre', 'essential'],
             sortBy: '-published_on',
             shortname: 'Bootcamps',
+            url: '/boot-camps',
             icon: 'icon-chords-scales-icon',
             description: "These bootcamps deliver results, but they also require commitment. Select a topic that you want to become an expert in, and get ready to learn!",
             amountOfFutureLessonsToShow: 3,
@@ -826,6 +859,7 @@ const contentMetadata = {
             sortBy: '-published_on',
             shortname: 'Podcast',
             icon: 'icon-podcast',
+            url: '/podcasts',
             description: "Join Lisa in her quest to unify piano players around the world, build community, and make playing the piano cool!",
             amountOfFutureLessonsToShow: 3,
             showFutureLessonAtTopOrBottom: 'bottom',
@@ -1131,7 +1165,8 @@ function processMetadata(brand, type, withFilters = false)
         type,
         thumbnailUrl: brandMetaData.thumbnailUrl || null,
         name: brandMetaData.name || null,
-        description: brandMetaData.description || null
+        description: brandMetaData.description || null,
+        url: brandMetaData.url ? (brand + brandMetaData.url): (brand +'/'+ type)
     };
 
     if (withFilters) {

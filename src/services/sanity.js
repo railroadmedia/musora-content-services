@@ -27,7 +27,8 @@ import {
     fetchAllCompletedStates,
     fetchCompletedChallenges,
     fetchCurrentSongComplete,
-    fetchOwnedChallenges
+    fetchOwnedChallenges,
+    fetchNextContentDataForParent
 } from './railcontent.js';
 import {arrayToStringRepresentation, FilterBuilder} from "../filterBuilder";
 import {fetchUserPermissions} from "./userPermissions";
@@ -92,6 +93,11 @@ export async function fetchArtists(brand) {
  */
 export async function fetchSongArtistCount(brand) {
     const query = `count(*[_type == 'artist']{'lessonsCount': count(*[_type == 'song' && brand == '${brand}' && references(^._id)]._id)}[lessonsCount > 0])`;
+    return fetchSanity(query, true, {processNeedAccess: false});
+}
+
+export async function fetchPlayAlongsCount(brand) {
+    const query = `count(*[brand == '${brand}' && _type == "play-along"]) `
     return fetchSanity(query, true, {processNeedAccess: false});
 }
 
@@ -284,7 +290,7 @@ export async function fetchNewReleases(brand, {page = 1, limit = 20, sort = "-pu
     const typesString = arrayToStringRepresentation(newTypes);
     const start = (page - 1) * limit;
     const end = start + limit;
-    const sortOrder = getSortOrder(sort);
+    const sortOrder = getSortOrder(sort, brand);
     const filter = `_type in ${typesString} && brand == '${brand}'`;
     const fields = `
      "id": railcontent_id,
@@ -499,7 +505,8 @@ export async function fetchAll(brand, type, {
         progressIds,
         useDefaultFields,
         customFields,
-        progress});
+        progress
+    });
     if (customResults) {
         return customResults;
     }
@@ -510,11 +517,16 @@ export async function fetchAll(brand, type, {
     let webUrlPathType = config?.slug ?? type;
     const start = (page - 1) * limit;
     const end = start + limit;
-    let bypassStatusAndPublishedValidation = (type == 'instructor');
-    let allowsPullSongsContent = (type == 'song');
+    let bypassStatusAndPublishedValidation = (type == 'instructor' || groupBy == 'artist' || groupBy == 'genre' || groupBy == 'instructor');
 
     // Construct the type filter
-    const typeFilter = type ? `&& _type == '${type}'` : "";
+    let typeFilter;
+
+    if( type === 'archives' ) {
+        typeFilter = `&& status == "archived"`
+    } else {
+        typeFilter = type ? `&& _type == '${type}'` : "";
+    } 
 
     // Construct the search filter
     const searchFilter = searchTerm
@@ -532,52 +544,63 @@ export async function fetchAll(brand, type, {
     const progressFilter = await getProgressFilter(progress, progressIds);
 
     // Determine the sort order
-    const sortOrder = getSortOrder(sort);
+    const sortOrder = getSortOrder(sort, brand, groupBy);
 
     let fields = useDefaultFields ? customFields.concat(DEFAULT_FIELDS, additionalFields) : customFields;
     let fieldsString = fields.join(',');
 
+    let customFilter = '';
+    if (type == 'instructor') {
+        customFilter = '&& coach_card_image != null'
+    }
     // Determine the group by clause
     let query = "";
     let entityFieldsString = "";
     let filter = "";
     if (groupBy !== "" && isGroupByOneToOne) {
         const webUrlPath = 'artists';
-        const lessonsFilter = `_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
+        const lessonsFilter = `_type == '${type}' && brand == '${brand}' && ^._id == ${groupBy}._ref ${searchFilter} ${includedFieldsFilter} ${progressFilter} ${customFilter}`;
+        const lessonsFilterWithRestrictions = await new FilterBuilder(lessonsFilter).buildFilter();
         entityFieldsString = `
                 'id': railcontent_id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': '/${brand}/${webUrlPath}/'+name+'?included_fieds[]=type,${type}',
-                'all_lessons_count': count(*[${lessonsFilter}]._id),
-                'lessons': *[${lessonsFilter}]{
+                'all_lessons_count': count(*[${lessonsFilterWithRestrictions}]._id),
+                'lessons': *[${lessonsFilterWithRestrictions}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...20]
         `;
-        filter = `_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id == ${groupBy}._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0`;
+        filter = `_type == '${groupBy}' && count(*[${lessonsFilterWithRestrictions}]._id) > 0`;
     } else if (groupBy !== "") {
         const webUrlPath = (groupBy == 'genre') ? '/genres' : '';
-        const lessonsFilter = `brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
+        const lessonsFilter = `brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter} ${customFilter}`;
+        const lessonsFilterWithRestrictions = await new FilterBuilder(lessonsFilter).buildFilter();
+
         entityFieldsString = `
                 'id': railcontent_id,
                 'type': _type,
                 name,
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': select(defined(web_url_path)=> web_url_path +'?included_fieds[]=type,${type}',!defined(web_url_path)=> '/${brand}${webUrlPath}/'+name+'/${webUrlPathType}'),
-                'all_lessons_count': count(*[${lessonsFilter}]._id),
-                'lessons': *[${lessonsFilter}]{
+                'all_lessons_count': count(*[${lessonsFilterWithRestrictions}]._id),
+                'lessons': *[${lessonsFilterWithRestrictions}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...20]`;
-        filter = `_type == '${groupBy}' && count(*[brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}]._id) > 0`;
+        filter = `_type == '${groupBy}' && count(*[${lessonsFilterWithRestrictions}]._id) > 0`;
     } else {
-        filter = `brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter}`
+        filter = `brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter} ${customFilter}`
         entityFieldsString = fieldsString;
     }
 
-    const filterWithRestrictions = await new FilterBuilder(filter,{bypassStatuses:bypassStatusAndPublishedValidation, bypassPermissions: bypassStatusAndPublishedValidation, bypassPublishedDateRestriction: bypassStatusAndPublishedValidation, allowsPullSongsContent:allowsPullSongsContent} ).buildFilter();
+    const filterWithRestrictions = await new FilterBuilder(filter, {
+        bypassStatuses: bypassStatusAndPublishedValidation,
+        bypassPermissions: bypassStatusAndPublishedValidation,
+        bypassPublishedDateRestriction: bypassStatusAndPublishedValidation
+    }).buildFilter();
     query = buildEntityAndTotalQuery(
         filterWithRestrictions,
         entityFieldsString,
@@ -586,7 +609,7 @@ export async function fetchAll(brand, type, {
             start: start,
             end: end,
         });
-
+    
     return fetchSanity(query, true);
 }
 
@@ -621,12 +644,92 @@ async function handleCustomFetchAll(brand, type, {
 } = {}) {
     if (type === 'challenge') {
         if (groupBy === 'completed') {
-            return fetchCompletedChallenges(brand, page, limit);
-        } else if(groupBy === 'owned') {
-            return fetchOwnedChallenges(brand, page, limit);
+            const completedIds = await fetchCompletedChallenges(brand, page, limit);
+            return fetchAll(brand, type,
+                {
+                    page,
+                    limit,
+                    searchTerm,
+                    sort,
+                    includedFields,
+                    groupBy: '',
+                    progressIds: completedIds,
+                    useDefaultFields,
+                    customFields,
+                    progress
+                });
+        } else if (groupBy === 'owned') {
+            const ownedIds = await fetchOwnedChallenges(brand, page, limit);
+            return fetchAll(brand, type,
+                {
+                    page,
+                    limit,
+                    searchTerm,
+                    sort,
+                    includedFields,
+                    groupBy: '',
+                    progressIds: ownedIds,
+                    useDefaultFields,
+                    customFields,
+                    progress
+                });
+        } else if (groupBy === 'difficulty_string') {
+            return fetchChallengesByDifficulty(brand, type, page, limit, searchTerm, sort, includedFields, groupBy, progressIds, useDefaultFields, customFields, progress);
         }
     }
     return null;
+}
+
+async function fetchChallengesByDifficulty(brand, type, page, limit, searchTerm, sort, includedFields, groupBy, progressIds, useDefaultFields, customFields, progress) {
+    let config = contentTypeConfig['challenge'] ?? {};
+    let additionalFields = config?.fields ?? [];
+
+    // Construct the search filter
+    const searchFilter = searchTerm
+        ? groupBy !== "" ?
+            `&& (^.name match "${searchTerm}*" || title match "${searchTerm}*")`
+            : `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*" || name match "${searchTerm}*")`
+        : "";
+
+    // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
+    const includedFieldsFilter = includedFields.length > 0
+        ? filtersToGroq(includedFields)
+        : "";
+
+    // limits the results to supplied progressIds for started & completed filters
+    const progressFilter = await getProgressFilter(progress, progressIds);
+
+    let fields = useDefaultFields ? customFields.concat(DEFAULT_FIELDS, additionalFields) : customFields;
+    let fieldsString = fields.join(',');
+
+
+    const lessonsFilter = `_type == 'challenge' && brand == '${brand}' && ^.name == difficulty_string ${searchFilter} ${includedFieldsFilter} ${progressFilter}`;
+    const lessonsFilterWithRestrictions = await new FilterBuilder(lessonsFilter).buildFilter();
+
+    const query = `{
+      "entity": [
+        {"name": "All"},
+        {"name": "Novice"},
+        {"name": "Beginner"},
+        {"name": "Intermediate"},
+        {"name": "Advanced"},
+        {"name": "Expert"}]
+          {
+            'id': 0,
+            name,
+            'all_lessons_count': count(*[${lessonsFilterWithRestrictions}]._id),
+            'lessons': *[${lessonsFilterWithRestrictions}]{
+                ${fieldsString},
+                name
+            }[0...20]
+          },
+          "total": 0
+        }`;
+    let data = await fetchSanity(query, true);
+    data.entity = data.entity.filter(function (difficulty) {
+        return difficulty.lessons.length > 0;
+    });
+    return data;
 }
 
 async function getProgressFilter(progress, progressIds) {
@@ -651,7 +754,7 @@ async function getProgressFilter(progress, progressIds) {
     }
 }
 
-export function getSortOrder(sort = '-published_on', groupBy) {
+export function getSortOrder(sort = '-published_on', brand, groupBy) {
     // Determine the sort order
     let sortOrder = '';
     const isDesc = sort.startsWith('-');
@@ -661,8 +764,14 @@ export function getSortOrder(sort = '-published_on', groupBy) {
             sortOrder = groupBy ? 'name' : "title";
             break;
         case "name":
-        case "popularity":
             sortOrder = sort;
+            break;
+        case "popularity":
+            if (groupBy == "artist" || groupBy == "genre") {
+                sortOrder = isDesc ? `coalesce(popularity.${brand}, -1)` : "popularity";
+            } else {
+                sortOrder = isDesc ? "coalesce(popularity, -1)" : "popularity";
+            }
             break;
         case "published_on":
         default:
@@ -721,14 +830,18 @@ export async function fetchAllFilterOptions(
 
     const includedFieldsFilter = filters?.length ? filtersToGroq(filters) : undefined;
     const progressFilter = progressIds ? `&& railcontent_id in [${progressIds.join(',')}]` : "";
+    const isAdmin = (await fetchUserPermissions()).isAdmin;
 
     const constructCommonFilter = (excludeFilter) => {
         const filterWithoutOption = excludeFilter ? filtersToGroq(filters, excludeFilter) : includedFieldsFilter;
-        return coachId
-            ? `brand == '${brand}' && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${filterWithoutOption || ''}`
-            : `_type == '${contentType}' && brand == "${brand}"${style && excludeFilter !== "style" ? ` && '${style}' in genre[]->name` : ''}${artist && excludeFilter !== "artist" ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${filterWithoutOption || ''}`;
-    };
+        const statusFilter = ' && status == "published"';
+        const includeStatusFilter = !isAdmin && !['instructor','artist','genre'].includes(contentType);
 
+        return coachId
+            ? `brand == '${brand}' && status == "published" && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${filterWithoutOption || ''}`
+            : `_type == '${contentType}' && brand == "${brand}"${includeStatusFilter ? statusFilter : ''}${style && excludeFilter !== "style" ? ` && '${style}' in genre[]->name` : ''}${artist && excludeFilter !== "artist" ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${filterWithoutOption || ''}`;
+    };
+    
     const metaData = processMetadata(brand, contentType, true);
     const allowableFilters = metaData?.allowableFilters || [];
     const tabs = metaData?.tabs || [];
@@ -854,6 +967,7 @@ export async function fetchMethod(brand, slug) {
         "url": web_url_path,
         web_url_path,
         xp,
+        total_xp
       }
   } | order(published_on asc)`
     return fetchSanity(query, false);
@@ -869,6 +983,7 @@ export async function fetchMethodChildren(railcontentId) {
     child_count,
     "id": railcontent_id,
     "description": ${descriptionField},
+    "thumbnail_url": thumbnail.asset->url,
     title,
     xp,
     total_xp,
@@ -907,7 +1022,10 @@ export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
     const index = sortedChildren.indexOf(Number(railcontentId));
     let nextId = sortedChildren[index + 1];
     let previousId = sortedChildren[index - 1];
-    let nextPrev = await fetchByRailContentIds([nextId, previousId]);
+    let ids = [];
+    if (nextId) ids.push(nextId);
+    if (previousId) ids.push(previousId);
+    let nextPrev = await fetchByRailContentIds(ids);
     const nextLesson = nextPrev.find((elem) => {
         return elem['id'] === nextId
     });
@@ -970,7 +1088,11 @@ export async function fetchNextPreviousLesson(railcontentId) {
     let sortBy = processedData?.sortBy ?? 'published_on';
     const isDesc = sortBy.startsWith('-');
     sortBy = isDesc ? sortBy.substring(1) : sortBy;
-    const sortValue = document[sortBy];
+    let sortValue = document[sortBy];
+    if (sortValue == null) {
+        sortBy = 'railcontent_id';
+        sortValue = document['railcontent_id'];
+    }
     const isNumeric = !isNaN(sortValue);
     let prevComparison = isNumeric ? `${sortBy} <= ${sortValue}` : `${sortBy} <= "${sortValue}"`;
     let nextComparison = isNumeric ? `${sortBy} >= ${sortValue}` : `${sortBy} >= "${sortValue}"`;
@@ -984,6 +1106,24 @@ export async function fetchNextPreviousLesson(railcontentId) {
 }
 
 /**
+ * Fetch the next piece of content under a parent by Railcontent ID
+ * @param {int} railcontentId - The Railcontent ID of the parent content
+ * @returns {Promise<{next: (Object|null)}|null>} - object with 'next' attribute
+ * @example
+ * jumpToContinueContent(296693)
+ *  then.(data => { console.log('next', data.next);})
+ *  .catch(error => console.error(error));
+ */
+export async function jumpToContinueContent(railcontentId) {
+    const nextContent = await fetchNextContentDataForParent(railcontentId);
+    if (!nextContent) {
+        return null;
+    }
+    let next = await fetchByRailContentId(nextContent.id, nextContent.type);
+    return {next};
+}
+
+/**
  * Fetch the page data for a specific lesson by Railcontent ID.
  * @param {string} railContentId - The Railcontent ID of the current lesson.
  * @returns {Promise<Object|null>} - The fetched page data or null if found.
@@ -994,7 +1134,7 @@ export async function fetchNextPreviousLesson(railcontentId) {
  *   .catch(error => console.error(error));
  */
 export async function fetchLessonContent(railContentId) {
-    const filterParams = {isSingle:true};
+    const filterParams = {isSingle: true, pullFutureContent: true};
     // Format changes made to the `fields` object may also need to be reflected in Musora-web-platform SanityGateway.php $fields object
     // Currently only for challenges and challenge lessons
     // If you're unsure, message Adrian, or just add them.
@@ -1059,14 +1199,21 @@ export async function fetchLessonContent(railContentId) {
  * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
  */
 export async function fetchRelatedLessons(railContentId, brand) {
-    const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && references(*[_type=='permission']._id)]{
+    const filterSameTypeAndSortOrder = await new FilterBuilder(`_type==^._type &&  _type in ${JSON.stringify(typeWithSortOrder)} && brand == "${brand}" && railcontent_id !=${railContentId}`).buildFilter();
+    const filterSameType = await new FilterBuilder(`_type==^._type && !(_type in ${JSON.stringify(typeWithSortOrder)}) && !(defined(parent_type)) && brand == "${brand}" && railcontent_id !=${railContentId}`).buildFilter();
+    const filterSongSameArtist = await new FilterBuilder(`_type=="song" && _type==^._type && brand == "${brand}" && references(^.artist->_id) && railcontent_id !=${railContentId}`).buildFilter();
+    const filterSongSameGenre = await new FilterBuilder(`_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}`).buildFilter();
+    const filterNeighbouringSiblings = await new FilterBuilder(`references(^._id)`).buildFilter();
+
+    const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
     "related_lessons" : array::unique([
-      ...(*[references(^._id)][0].child[]->{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}),
-      ...(*[_type=="song" && _type==^._type && brand == "${brand}" && references(^.artist->_id) && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
-      ...(*[_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
-      ...(*[_type==^._type &&  _type in ${JSON.stringify(typeWithSortOrder)} && brand == "${brand}" && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, sort}|order(sort asc, title asc)[0...10]),
-      ...(*[_type==^._type && !(_type in ${JSON.stringify(typeWithSortOrder)}) && !(defined(parent_type)) && brand == "${brand}" && railcontent_id !=${railContentId}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
+      ...(*[${filterNeighbouringSiblings}][0].child[]->{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}),
+      ...(*[${filterSongSameArtist}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
+      ...(*[${filterSongSameGenre}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
+      ...(*[${filterSameTypeAndSortOrder}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, sort}|order(sort asc, title asc)[0...10]),
+      ...(*[${filterSameType}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10])
+      ,
       ])[0...10]}`;
     return fetchSanity(query, false);
 }
@@ -1105,7 +1252,7 @@ export async function fetchRelatedMethodLessons(railContentId, brand) {
  * @returns {Promise<Array<Object>|null>} - The fetched pack content data or null if not found.
  */
 export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = "", page = 1, limit = 10) {
-    const sortOrder = getSortOrder(sort);
+    const sortOrder = getSortOrder(sort, brand);
     const filter = `_type == 'pack' && brand == '${brand}' && title match "${searchTerm}*"`
     const filterParams = {};
     const fields = getFieldsForContentType('pack');
@@ -1161,7 +1308,7 @@ export async function fetchLiveEvent(brand) {
     // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
     // this has some +- on times
     // But this query just finds the first scheduled event (sorted by start_time) that ends after now()
-    const query = `*[status == 'scheduled' && defined(live_event_start_time) && published_on > '${getSanityDate(dateTemp)}' && live_event_end_time >= '${getSanityDate(new Date())}']{
+    const query = `*[status == 'scheduled' && defined(live_event_start_time) && published_on > '${getSanityDate(dateTemp, false)}' && live_event_end_time >= '${getSanityDate(new Date(), false)}']{
       'slug': slug.current,
       'id': railcontent_id,
       live_event_start_time,
@@ -1263,7 +1410,7 @@ export async function fetchCoachLessons(brand, id, {
         : "";
     const filter = `brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='instructor' && railcontent_id == ${id}]._id)`;
 
-    sortOrder = getSortOrder(sortOrder);
+    sortOrder = getSortOrder(sortOrder, brand);
     const query = buildEntityAndTotalQuery(
         filter,
         fieldsString,
@@ -1337,12 +1484,14 @@ export async function fetchByReference(brand, {
     const includedFieldsFilter = includedFields.length > 0
         ? includedFields.join(' && ')
         : "";
+
     const filter = `brand == '${brand}' ${searchFilter} && references(*[${includedFieldsFilter}]._id)`;
+    const filterWithRestrictions = await new FilterBuilder(filter).buildFilter();
     const query = buildEntityAndTotalQuery(
-        filter,
+        filterWithRestrictions,
         fieldsString,
         {
-            sortOrder: getSortOrder(sortOrder),
+            sortOrder: getSortOrder(sortOrder, brand),
             start: start,
             end: end,
         },
@@ -1382,7 +1531,7 @@ export async function fetchArtistLessons(brand, name, contentType, {
     const start = (page - 1) * limit;
     const end = start + limit;
     const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
-    const sortOrder = getSortOrder(sort);
+    const sortOrder = getSortOrder(sort, brand);
     const addType = contentType && Array.isArray(contentType) ? `_type in ['${contentType.join("', '")}'] &&` : contentType ? `_type == '${contentType}' && ` : ''
     const includedFieldsFilter = includedFields.length > 0
         ? filtersToGroq(includedFields)
@@ -1433,7 +1582,7 @@ export async function fetchGenreLessons(brand, name, contentType, {
     const start = (page - 1) * limit;
     const end = start + limit;
     const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
-    const sortOrder = getSortOrder(sort);
+    const sortOrder = getSortOrder(sort, brand);
     const addType = contentType ? `_type == '${contentType}' && ` : ''
     const includedFieldsFilter = includedFields.length > 0
         ? filtersToGroq(includedFields)
@@ -1633,6 +1782,7 @@ export async function fetchSanity(query,
         ]);
         const response = promisesResult[0];
         const userPermissions = promisesResult[1]?.permissions;
+        const isAdmin = promisesResult[1]?.isAdmin;
 
         if (!response.ok) {
             throw new Error(`Sanity API error: ${response.status} - ${response.statusText}`);
@@ -1643,7 +1793,7 @@ export async function fetchSanity(query,
                 console.log("fetchSanity Results:", result);
             }
             let results = isList ? result.result : result.result[0];
-            results = processNeedAccess ? await needsAccessDecorator(results, userPermissions) : results;
+            results = processNeedAccess ? await needsAccessDecorator(results, userPermissions, isAdmin) : results;
             return customPostProcess ? customPostProcess(results) : results;
         } else {
             throw new Error('No results found');
@@ -1654,38 +1804,41 @@ export async function fetchSanity(query,
     }
 }
 
-function needsAccessDecorator(results, userPermissions) {
+function needsAccessDecorator(results, userPermissions, isAdmin) {
     if (globalConfig.sanityConfig.useDummyRailContentMethods) return results;
 
     userPermissions = new Set(userPermissions);
 
     if (Array.isArray(results)) {
         results.forEach((result) => {
-            result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+            result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin);
         });
     } else if (results.entity && Array.isArray(results.entity)) {
         // Group By
         results.entity.forEach((result) => {
             if (result.lessons) {
                 result.lessons.forEach((lesson) => {
-                    lesson['need_access'] = doesUserNeedAccessToContent(lesson, userPermissions); // Updated to check lesson access
+                    lesson['need_access'] = doesUserNeedAccessToContent(lesson, userPermissions, isAdmin); // Updated to check lesson access
                 });
             } else {
-                result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+                result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin);
             }
         });
     } else if (results.related_lessons && Array.isArray(results.related_lessons)) {
         results.related_lessons.forEach((result) => {
-            result['need_access'] = doesUserNeedAccessToContent(result, userPermissions);
+            result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin);
         })
     } else {
-        results['need_access'] = doesUserNeedAccessToContent(results, userPermissions);
+        results['need_access'] = doesUserNeedAccessToContent(results, userPermissions, isAdmin);
     }
 
     return results;
 }
 
-function doesUserNeedAccessToContent(result, userPermissions) {
+function doesUserNeedAccessToContent(result, userPermissions, isAdmin) {
+    if (isAdmin ?? false) {
+        return false;
+    }
     const permissions = new Set(result?.permission_id ?? []);
     if (permissions.size === 0) {
         return false;
@@ -1773,7 +1926,18 @@ function arrayJoinWithQuotes(array, delimiter = ',') {
     return wrapped.join(delimiter)
 }
 
-function getSanityDate(date) {
+function getSanityDate(date, roundToHourForCaching = true) {
+    if (roundToHourForCaching) {
+        // We need to set the published on filter date to be a round time so that it doesn't bypass the query cache
+        // with every request by changing the filter date every second. I've set it to one minute past the current hour
+        // because publishing usually publishes content on the hour exactly which means it should still skip the cache
+        // when the new content is available.
+        // Round to the start of the current hour
+        const roundedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours());
+
+        return roundedDate.toISOString();
+    }
+
     return date.toISOString();
 }
 
@@ -1826,7 +1990,7 @@ function buildRawQuery(
 
 async function buildQuery(
     baseFilter = '',
-    filterParams = {},
+    filterParams = {pullFutureContent: false},
     fields = '...',
     {
         sortOrder = 'published_on desc',
@@ -1856,7 +2020,7 @@ function buildEntityAndTotalQuery(
       {
         ${fields}
       },
-      "total": count(*[${filter}])
+      "total": 0
     }`;
     return query;
 }
@@ -1878,10 +2042,8 @@ function getFilterOptions(option, commonFilter, contentType, brand) {
         ][count > 0],`;
             break;
         case "type":
-            const dynamicTypeOptions = types.map(filter => {
-                return `{"type": "${filter}", "count": count(*[${commonFilter} && _type == "${filter}"])}`
-            }).join(', ');
-            filterGroq = `"type": [${dynamicTypeOptions}][count > 0],`;
+            const typesString = types.map(t => {return `{"type": "${t}"}`}).join(', ');
+            filterGroq = `"type": [${typesString}]{type, 'count': count(*[_type == ^.type && ${commonFilter}])}[count > 0],`;
             break;
         case "genre":
         case "essential":

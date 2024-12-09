@@ -109,7 +109,6 @@ describe('contentProgressDataContextLocal', function () {
 
     }, 100000);
 
-
     //
     // test('progressBubbling', async () => {
     //     let serverVersion = 2;
