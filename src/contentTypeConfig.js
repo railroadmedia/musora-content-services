@@ -323,6 +323,8 @@ let contentTypeConfig = {
                 "type": _type,
                 "description": ${descriptionField},
                 xp,
+                web_url_path,
+                "url": web_url_path,
             }`
         ]
     },
