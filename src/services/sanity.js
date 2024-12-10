@@ -1767,7 +1767,6 @@ export async function fetchSanity(query,
         console.log("fetchSanity Query:", query);
     }
     const perspective = globalConfig.sanityConfig.perspective ?? 'published';
-    const encodedQuery = encodeURIComponent(query);
     const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api';
     const url = `https://${globalConfig.sanityConfig.projectId}.${api}.sanity.io/v${globalConfig.sanityConfig.version}/data/query/${globalConfig.sanityConfig.dataset}?perspective=${perspective}`;
     const headers = {
