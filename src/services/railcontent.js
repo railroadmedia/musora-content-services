@@ -486,8 +486,9 @@ export async function fetchChallengeUserActiveChallenges(brand = null) {
  *
  * @returns {Promise<any|null>}
  */
-export async function fetchCarouselCardData() {
-    let url = `/api/v1/content/carousel`;
+export async function fetchCarouselCardData(brand = null) {
+    const brandParam = brand ? `?brand=${brand}` : '';
+    let url = `/api/v1/content/carousel${brandParam}`;
     return await fetchHandler(url, 'get');
 }
 
