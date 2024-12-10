@@ -291,7 +291,7 @@ export async function fetchNewReleases(brand, {page = 1, limit = 20, sort = "-pu
     const start = (page - 1) * limit;
     const end = start + limit;
     const sortOrder = getSortOrder(sort, brand);
-    const filter = `_type in ${typesString} && brand == '${brand}'`;
+    const filter = `_type in ${typesString} && brand == '${brand}' && show_in_new_feed == true`;
     const fields = `
      "id": railcontent_id,
       title,
@@ -306,7 +306,7 @@ export async function fetchNewReleases(brand, {page = 1, limit = 20, sort = "-pu
       web_url_path,
       "permission_id": permission[]->railcontent_id,
       `;
-    const filterParams = {};
+    const filterParams = {allowsPullSongsContent: false};
     const query = await buildQuery(
         filter,
         filterParams,
