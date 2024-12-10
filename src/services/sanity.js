@@ -1767,17 +1767,23 @@ export async function fetchSanity(query,
         console.log("fetchSanity Query:", query);
     }
     const perspective = globalConfig.sanityConfig.perspective ?? 'published';
-    const encodedQuery = encodeURIComponent(query);
     const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api';
-    const url = `https://${globalConfig.sanityConfig.projectId}.${api}.sanity.io/v${globalConfig.sanityConfig.version}/data/query/${globalConfig.sanityConfig.dataset}?perspective=${perspective}&query=${encodedQuery}`;
+    const url = `https://${globalConfig.sanityConfig.projectId}.${api}.sanity.io/v${globalConfig.sanityConfig.version}/data/query/${globalConfig.sanityConfig.dataset}?perspective=${perspective}`;
     const headers = {
         'Authorization': `Bearer ${globalConfig.sanityConfig.token}`,
         'Content-Type': 'application/json'
     };
 
     try {
+        const method = 'post';
+        const options = {
+            method,
+            headers,
+            body: JSON.stringify({'query': query})
+        };
+
         let promisesResult = await Promise.all([
-            fetch(url, {headers}),
+            fetch(url, options),
             processNeedAccess ? fetchUserPermissions() : null
         ]);
         const response = promisesResult[0];
