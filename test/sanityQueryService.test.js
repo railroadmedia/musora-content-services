@@ -509,7 +509,7 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchAll-IncludedFields-coaches-multiple-focus', async () => {
-        let response = await fetchAll('drumeo', 'instructor', {includedFields: ['focus,drumline', 'focus,recording']});
+        let response = await fetchAll('drumeo', 'instructor', {includedFields: ['focus,Drumline', 'focus,Recording']});
         log(response);
         expect(response.entity.length).toBeGreaterThan(0);
     });
