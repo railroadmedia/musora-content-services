@@ -1,5 +1,7 @@
 import {fetchUserPermissions} from "./services/userPermissions";
-
+import {
+    songAccessMembership
+} from "./contentTypeConfig";
 
 export class FilterBuilder {
 
@@ -19,7 +21,8 @@ export class FilterBuilder {
             getFutureScheduledContentsOnly = false,
             bypassStatuses = false,
             bypassPublishedDateRestriction = false,
-            isSingle = false
+            isSingle = false,
+            allowsPullSongsContent = true
         } = {}) {
         this.availableContentStatuses = availableContentStatuses;
         this.bypassPermissions = bypassPermissions;
@@ -29,6 +32,7 @@ export class FilterBuilder {
         this.getFutureContentOnly = getFutureContentOnly;
         this.getFutureScheduledContentsOnly = getFutureScheduledContentsOnly;
         this.isSingle = isSingle;
+        this.allowsPullSongsContent = allowsPullSongsContent;
         this.filter = filter;
         // this.debug = process.env.DEBUG === 'true' || false;
         this.debug = false;
@@ -87,7 +91,10 @@ export class FilterBuilder {
 
     _applyPermissions() {
         if (this.bypassPermissions || this.userData.isAdmin) return this;
-        const requiredPermissions = this._getUserPermissions();
+        let requiredPermissions = this._getUserPermissions();
+        if(this.userData.isABasicMember && this.allowsPullSongsContent){
+            requiredPermissions = [...requiredPermissions, songAccessMembership];
+        }
         this._andWhere(`(!defined(permission) || references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id))`);
         return this;
     }

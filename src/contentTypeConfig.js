@@ -391,6 +391,8 @@ let contentTypeConfig = {
     'sonor': contentWithSortField,
 }
 
+const songAccessMembership = 94;
+
 function getNewReleasesTypes(brand) {
     const baseNewTypes = ["student-review", "student-review", "student-focus", "coach-stream", "live", "question-and-answer", "boot-camps", "quick-tips", "workout", "challenge", "challenge-part", "podcasts", "pack", "song", "learning-path-level", "play-along", "course", "unit"];
     switch (brand) {
@@ -535,5 +537,6 @@ module.exports = {
     getNewReleasesTypes,
     getUpcomingEventsTypes,
     showsTypes,
-    coachLessonsTypes
+    coachLessonsTypes,
+    songAccessMembership
 }
