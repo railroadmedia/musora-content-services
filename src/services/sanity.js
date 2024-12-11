@@ -1116,7 +1116,7 @@ export async function fetchNextPreviousLesson(railcontentId) {
  */
 export async function jumpToContinueContent(railcontentId) {
     const nextContent = await fetchNextContentDataForParent(railcontentId);
-    if (!nextContent) {
+    if (!nextContent || !nextContent.id) {
         return null;
     }
     let next = await fetchByRailContentId(nextContent.id, nextContent.type);
