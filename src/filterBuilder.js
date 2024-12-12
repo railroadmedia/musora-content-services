@@ -1,5 +1,7 @@
 import {fetchUserPermissions} from "./services/userPermissions";
-
+import {
+    songAccessMembership
+} from "./contentTypeConfig";
 
 export class FilterBuilder {
 
@@ -19,7 +21,8 @@ export class FilterBuilder {
             getFutureScheduledContentsOnly = false,
             bypassStatuses = false,
             bypassPublishedDateRestriction = false,
-            isSingle = false
+            isSingle = false,
+            allowsPullSongsContent = true
         } = {}) {
         this.availableContentStatuses = availableContentStatuses;
         this.bypassPermissions = bypassPermissions;
@@ -29,6 +32,7 @@ export class FilterBuilder {
         this.getFutureContentOnly = getFutureContentOnly;
         this.getFutureScheduledContentsOnly = getFutureScheduledContentsOnly;
         this.isSingle = isSingle;
+        this.allowsPullSongsContent = allowsPullSongsContent;
         this.filter = filter;
         // this.debug = process.env.DEBUG === 'true' || false;
         this.debug = false;
@@ -61,10 +65,12 @@ export class FilterBuilder {
         if (this.availableContentStatuses.length === 0) {
             if (this.userData.isAdmin) {
                 this.availableContentStatuses = [this.STATUS_DRAFT, this.STATUS_SCHEDULED, this.STATUS_PUBLISHED, this.STATUS_ARCHIVED, this.STATUS_UNLISTED];
+                this.getFutureScheduledContentsOnly = true;
             } else if(this.isSingle){
                 this.availableContentStatuses = [this.STATUS_SCHEDULED, this.STATUS_PUBLISHED, this.STATUS_UNLISTED, this.STATUS_ARCHIVED];
             } else{
                 this.availableContentStatuses = [this.STATUS_SCHEDULED, this.STATUS_PUBLISHED];
+                this.getFutureScheduledContentsOnly = true;
             }
         }
 
@@ -74,8 +80,8 @@ export class FilterBuilder {
             this.pullFutureContent = true;
             const now = new Date().toISOString();
             let statuses = [...this.availableContentStatuses];
-            statuses.splice(statuses.indexOf(this.STATUS_SCHEDULED));
-            this._andWhere(`(status in ${arrayToStringRepresentation(statuses)} || (status == '${this.STATUS_SCHEDULED}' && published_on >= '${now}'))`)
+            statuses.splice(statuses.indexOf(this.STATUS_SCHEDULED), 1);
+            this._andWhere(`(status in ${arrayToStringRepresentation(statuses)} || (status == '${this.STATUS_SCHEDULED}' && defined(published_on) && published_on >= '${now}'))`)
 
         } else {
             this._andWhere(`status in ${arrayToStringRepresentation(this.availableContentStatuses)}`);
@@ -85,9 +91,11 @@ export class FilterBuilder {
 
     _applyPermissions() {
         if (this.bypassPermissions || this.userData.isAdmin) return this;
-        const requiredPermissions = this._getUserPermissions();
-        if (requiredPermissions.length === 0) return this;
-        this._andWhere(`references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id)`);
+        let requiredPermissions = this._getUserPermissions();
+        if(this.userData.isABasicMember && this.allowsPullSongsContent){
+            requiredPermissions = [...requiredPermissions, songAccessMembership];
+        }
+        this._andWhere(`(!defined(permission) || references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id))`);
         return this;
     }
 
@@ -113,9 +121,9 @@ export class FilterBuilder {
         } else if (!this.pullFutureContent) {
             this._andWhere(`published_on <= '${now}'`);
         } else {
-            const date = new Date();
-            const theFuture = new Date(date.setMonth(date.getMonth() + 18));
-            this._andWhere(`published_on <= '${theFuture}'`);
+            // const date = new Date();
+            // const theFuture = new Date(date.setMonth(date.getMonth() + 18));
+            // this._andWhere(`published_on <= '${theFuture}'`);
         }
         return this;
     }

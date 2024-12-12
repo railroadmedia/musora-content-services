@@ -420,7 +420,7 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchAllFilterOptions-WithProgress', async () => {
-        const ids = [410213, 305649];
+        const ids = [410213, 413851];
         let response = await fetchAllFilterOptions('drumeo', '', '', '', 'song', '', ids);
         expect(response.meta.totalResults).toBe(2);
         // change the brand and we expect no results
@@ -509,7 +509,7 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchAll-IncludedFields-coaches-multiple-focus', async () => {
-        let response = await fetchAll('drumeo', 'instructor', {includedFields: ['focus,drumline', 'focus,recording']});
+        let response = await fetchAll('drumeo', 'instructor', {includedFields: ['focus,Drumline', 'focus,Recording']});
         log(response);
         expect(response.entity.length).toBeGreaterThan(0);
     });
@@ -633,6 +633,19 @@ describe('Sanity Queries', function () {
         expect(documentPublishedOn.getTime()).toBeLessThan(nextDocumentPublishedOn.getTime());
     });
 
+    test('fetchNextPreviousLesson-Song', async () => {
+        const id = 414041;
+        const response = await fetchNextPreviousLesson(id);
+        const document = await fetchByRailContentId(id, 'song');
+        const documentPublishedOn = new Date(document.published_on);
+        const prevDocumentPublishedOn = new Date(response.prevLesson.published_on);
+        const nextDocumentPublishedOn = new Date(response.nextLesson.published_on);
+        expect(response.prevLesson).toBeDefined();
+        expect(prevDocumentPublishedOn.getTime()).toBeLessThanOrEqual(documentPublishedOn.getTime());
+        expect(response.nextLesson).toBeDefined();
+        expect(documentPublishedOn.getTime()).toBeLessThanOrEqual(nextDocumentPublishedOn.getTime());
+    });
+
     test('fetchTopLevelParentId', async () => {
         let contentId = await fetchTopLevelParentId(241250);
         expect(contentId).toBe(241247);
@@ -683,16 +696,16 @@ describe('Filter Builder', function () {
         let finalFilter = await builder.buildFilter(filter);
         let clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].phrase).toBe(filter);
-        expect(clauses[1].field).toBe('status');
-        expect(clauses[2].field).toBe('published_on');
+        expect(clauses[1].field).toBe('(status');
+        expect(clauses[3].field).toBe('published_on');
 
         builder = new FilterBuilder('', {bypassPermissions: true});
         finalFilter = await builder.buildFilter(filter);
         clauses = spliceFilterForAnds(finalFilter);
-        expect(clauses[0].field).toBe('status');
+        expect(clauses[0].field).toBe('(status');
         expect(clauses[0].operator).toBe('in');
-        expect(clauses[1].field).toBe('published_on');
-        expect(clauses[1].operator).toBe('<=');
+        expect(clauses[2].field).toBe('published_on');
+        expect(clauses[2].operator).toBe('>=');
     });
 
     test('withOnlyFilterAvailableStatuses', async () => {
@@ -720,7 +733,7 @@ describe('Filter Builder', function () {
         expect(clauses[1].field).toBe('(status'); // extra ( because it's a multi part filter
         expect(clauses[1].operator).toBe('in');
         // getFutureScheduledContentsOnly doesn't make a filter that's splicable, so we match on the more static string
-        const expected = "['published','unlisted'] || (status == 'scheduled' && published_on >=";
+        const expected = "['published','unlisted'] || (status == 'scheduled' && defined(published_on) && published_on >=";
         const isMatch = finalFilter.includes(expected);
         expect(isMatch).toBeTruthy();
     });
@@ -747,7 +760,8 @@ describe('Filter Builder', function () {
         const filter = 'railcontent_id = 111'
         const builder = new FilterBuilder(filter,
             {
-                bypassPermissions: true
+                bypassPermissions: true,
+                pullFutureContent: false
             });
         const finalFilter = await builder.buildFilter();
         const expected = "references(*[_type == 'permission' && railcontent_id in [78,91,92]]._id)"
@@ -755,8 +769,8 @@ describe('Filter Builder', function () {
         expect(isMatch).toBeFalsy();
         const clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].field).toBe('railcontent_id');
-        expect(clauses[1].field).toBe('status');
-        expect(clauses[2].field).toBe('published_on');
+        expect(clauses[1].field).toBe('(status');
+        expect(clauses[3].field).toBe('published_on');
 
     });
 
@@ -773,13 +787,10 @@ describe('Filter Builder', function () {
         let finalFilter = await builder.buildFilter();
         let clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].phrase).toBe(filter);
-        expect(clauses[1].field).toBe('status');
+        expect(clauses[1].field).toBe('(status');
         expect(clauses[1].operator).toBe('in');
-        expect(clauses[2].field).toBe('published_on');
-        expect(clauses[2].operator).toBe('<=');
-        const restrictionDate = new Date(clauses[2].condition)
-        const now = new Date();
-        expect(now.getTime()).toBeLessThan(restrictionDate.getTime());
+        expect(clauses[2].phrase).toBe('defined(published_on)');
+        expect(clauses[3].field).toBe('published_on');
 
         builder = new FilterBuilder(filter,
             {
@@ -789,8 +800,8 @@ describe('Filter Builder', function () {
         finalFilter = await builder.buildFilter();
         clauses = spliceFilterForAnds(finalFilter);
         expect(clauses[0].phrase).toBe(filter);
-        expect(clauses[2].field).toBe('published_on');
-        expect(clauses[2].operator).toBe('>=');
+        expect(clauses[3].field).toBe('published_on');
+        expect(clauses[3].operator).toBe('>=');
     });
 
     function spliceFilterForAnds(filter) {

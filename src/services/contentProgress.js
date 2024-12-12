@@ -135,8 +135,11 @@ function saveContentProgress(localContext, contentId, progress, currentSeconds, 
     }
 
     let data = localContext.data[contentId] ?? {};
-    data[DATA_KEY_PROGRESS] = progress;
-    data[DATA_KEY_STATUS] = STATE_STARTED;
+    const currentProgress = data[DATA_KEY_STATUS];
+    if (!currentProgress || currentProgress !== STATE_COMPLETED) {
+        data[DATA_KEY_PROGRESS] = progress;
+        data[DATA_KEY_STATUS] = STATE_STARTED;
+    }
     data[DATA_KEY_RESUME_TIME] = currentSeconds;
     data[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000);
     localContext.data[contentId] = data;

@@ -20,6 +20,7 @@ const DEFAULT_FIELDS = [
     'status',
     "'slug' : slug.current",
     "'permission_id': permission[]->railcontent_id",
+    "xp"
 ];
 
 const descriptionField = 'description';
@@ -81,7 +82,12 @@ let contentTypeConfig = {
                 "instructors": instructor[]->name,
                 length_in_seconds,
             }`,
-        ]
+        ],
+        'relationships': {
+            'artist': {
+                isOneToOne: true
+            }
+        },
     },
     'challenge': {
         'fields': [
@@ -253,7 +259,7 @@ let contentTypeConfig = {
     },
     'pack': {
         'fields': [
-            '"lesson_count": child_count',
+            '"lesson_count": coalesce(count(child[]->.child[]->), 0)',
             'xp',
             `"description": ${descriptionField}`,
             '"instructors": instructor[]->name',
@@ -317,6 +323,8 @@ let contentTypeConfig = {
                 "type": _type,
                 "description": ${descriptionField},
                 xp,
+                web_url_path,
+                "url": web_url_path,
             }`
         ]
     },
@@ -363,8 +371,8 @@ let contentTypeConfig = {
     'backstage-secret': contentWithInstructorsField,
     'question-and-answer': contentWithInstructorsField,
     'student-collaboration': contentWithInstructorsField,
-    'live': { ...contentWithInstructorsField, 'slug': 'live-streams' },
-    'solo': { ...contentWithInstructorsField, 'slug': 'solos' },
+    'live': {...contentWithInstructorsField, 'slug': 'live-streams'},
+    'solo': {...contentWithInstructorsField, 'slug': 'solos'},
     'boot-camp': contentWithInstructorsField,
     'gear-guids': contentWithInstructorsField,
     'performance': contentWithInstructorsField,
@@ -382,6 +390,8 @@ let contentTypeConfig = {
     'exploring-beats': contentWithSortField,
     'sonor': contentWithSortField,
 }
+
+const songAccessMembership = 94;
 
 function getNewReleasesTypes(brand) {
     const baseNewTypes = ["student-review", "student-review", "student-focus", "coach-stream", "live", "question-and-answer", "boot-camps", "quick-tips", "workout", "challenge", "challenge-part", "podcasts", "pack", "song", "learning-path-level", "play-along", "course", "unit"];
@@ -423,6 +433,7 @@ function getFieldsForContentType(contentType, asQueryString = true) {
     const fields = contentType ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? []) : DEFAULT_FIELDS;
     return asQueryString ? fields.toString() + ',' : fields;
 }
+
 /**
  * Takes the included fields array and returns a string that can be used in a groq query.
  * @param {Array<string>} filters - An array of strings that represent applied filters. This should be in the format of a key,value array. eg. ['difficulty,Intermediate',
@@ -430,7 +441,23 @@ function getFieldsForContentType(contentType, asQueryString = true) {
  * @returns {string} - A string that can be used in a groq query
  */
 function filtersToGroq(filters, selectedFilters = []) {
+    if (!filters) {
+        filters = [];
+    }
+
+    //Account for multiple railcontent id's
+    let multipleIdFilters = '';
+    filters.forEach(item => {
+        if (item.includes('railcontent_id in')) {
+            filters.pop(item);
+            multipleIdFilters += ` && ${item} `;
+        }
+    })
+
+    //Group All Other filters
     const groupedFilters = groupFilters(filters);
+
+    //Format groupFilter itemsss
     const filterClauses = Object.entries(groupedFilters).map(([key, values]) => {
         if (!key || values.length === 0) return '';
         if (key.startsWith('is_')) {
@@ -449,11 +476,17 @@ function filtersToGroq(filters, selectedFilters = []) {
                     return `bpm == ${value}`;
                 }
             } else if (['creativity', 'essential', 'focus', 'genre', 'lifestyle', 'theory', 'topic'].includes(key) && !selectedFilters.includes(key)) {
-                return `${key}[]->name match "${value}"`;
+                return `"${value}" in ${key}[]->name`;
             } else if (key === 'gear' && !selectedFilters.includes('gear')) {
                 return `gear match "${value}"`;
             } else if (key === 'instrumentless' && !selectedFilters.includes(key)) {
-                return `instrumentless == ${value}`;
+                if (value === "Full Song Only") {
+                    return `(!instrumentless || instrumentless == null)`;
+                } else if (value === "Instrument Removed") {
+                    return `instrumentless`;
+                } else {
+                    return `instrumentless == ${value}`;
+                }
             } else if (key === 'difficulty' && !selectedFilters.includes(key)) {
                 return `difficulty_string == "${value}"`;
             } else if (key === 'type' && !selectedFilters.includes(key)) {
@@ -477,8 +510,10 @@ function filtersToGroq(filters, selectedFilters = []) {
         return joinedValues.length > 0 ? `&& (${joinedValues})` : '';
     }).filter(Boolean).join(' ');
 
-    return filterClauses;
+    //Return
+    return `${multipleIdFilters} ${filterClauses}`;
 }
+
 function groupFilters(filters) {
     if (filters.length === 0) return {};
 
@@ -502,5 +537,6 @@ module.exports = {
     getNewReleasesTypes,
     getUpcomingEventsTypes,
     showsTypes,
-    coachLessonsTypes
+    coachLessonsTypes,
+    songAccessMembership
 }

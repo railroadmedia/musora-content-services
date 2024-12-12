@@ -38,6 +38,7 @@ export async function fetchCompletedState(content_id) {
 
     const headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
 
@@ -72,6 +73,7 @@ export async function fetchAllCompletedStates(contentIds) {
 
     const headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
 
@@ -104,6 +106,7 @@ export async function fetchSongsInProgress(brand) {
 
     const headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
 
@@ -147,6 +150,7 @@ export async function fetchContentInProgress(type = "all", brand, {page, limit} 
     }
     const headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
     try {
@@ -189,6 +193,7 @@ export async function fetchCompletedContent(type = "all", brand, {page, limit} =
     }
     const headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
     try {
@@ -221,6 +226,7 @@ export async function fetchContentPageUserData(contentId) {
     let url = `/content/${contentId}/user_data/${globalConfig.railcontentConfig.userId}`;
     const headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
     };
 
@@ -239,6 +245,36 @@ export async function fetchContentPageUserData(contentId) {
     }
 }
 
+/**
+ * Fetches the ID and Type of the piece of content that would be the next one for the user
+ *
+ * @param {int} contentId - The id of the parent (method, level, or course) piece of content.
+ * @returns {Promise<Object|null>} - Returns and Object with the id and type of the next piece of content if found, otherwise null.
+ */
+export async function fetchNextContentDataForParent(contentId) {
+    let url = `/content/${contentId}/next/${globalConfig.railcontentConfig.userId}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
+    };
+
+    try {
+        const response = await fetchAbsolute(url, {headers});
+        const result = await response.json();
+        if (result) {
+            // console.log('fetchNextContentDataForParent', result);
+            return result.next;
+        } else {
+            console.log('fetchNextContentDataForParent result not json');
+            return null;
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
+
+
 export async function fetchUserPermissionsData() {
     let url = `/content/user/permissions`;
     // in the case of an unauthorized user, we return empty permissions
@@ -256,11 +292,28 @@ async function postDataHandler(url, data) {
 export async function fetchHandler(url, method = "get", dataVersion = null, body = null) {
     let headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
     };
+
+    if (!globalConfig.isMA) {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('testNow')) {
+            headers['testNow'] = params.get('testNow');
+        }
+        if (params.get('timezone')) {
+            headers['M-Client-Timezone'] = params.get('timezone');
+        }
+    }
+
+    if (globalConfig.localTimezoneString) {
+        headers['M-Client-Timezone'] = globalConfig.localTimezoneString;
+    }
+
     if (globalConfig.railcontentConfig.authToken) {
         headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`;
     }
+
     if (dataVersion) headers['Data-Version'] = dataVersion;
     const options = {
         method,
@@ -401,9 +454,11 @@ export async function fetchChallengeIndexMetadata(contentIds) {
         challengeIndexMetaDataPromise = getChallengeIndexMetadataPromise();
     }
     let results = await challengeIndexMetaDataPromise;
-    results = results.filter(function(challenge){
-       return contentIds.includes(challenge.content_id);
-    });
+    if(Array.isArray(contentIds)){
+        results = results.filter(function(challenge){
+            return contentIds.includes(challenge.content_id);
+         });
+    }
     return results;
 }
 
@@ -431,8 +486,9 @@ export async function fetchChallengeUserActiveChallenges(brand = null) {
  *
  * @returns {Promise<any|null>}
  */
-export async function fetchCarouselCardData() {
-    let url = `/api/v1/content/carousel`;
+export async function fetchCarouselCardData(brand = null) {
+    const brandParam = brand ? `?brand=${brand}` : '';
+    let url = `/api/v1/content/carousel${brandParam}`;
     return await fetchHandler(url, 'get');
 }
 
@@ -1088,6 +1144,19 @@ export async function unpinPlaylist(playlistId) {
 export async function fetchPinnedPlaylists(brand) {
     const url = `/playlists/my-pinned-playlists?brand=${brand}`;
     return await fetchHandler(url, "GET");
+}
+
+/**
+ * Report playlist endpoint
+ * 
+ * @param playlistId
+ * @param issue
+ * @returns {Promise<any|null>}
+ */
+export async function reportPlaylist(playlistId,  {issue} = {}) {
+    const issueString = issue ? `?issue=${issue}` : '';
+    const url = `/playlists/report/${playlistId}${issueString}`;
+    return await fetchHandler(url, "PUT");
 }
 
 function fetchAbsolute(url, params) {

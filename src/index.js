@@ -48,6 +48,7 @@ import {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchHandler,
+	fetchNextContentDataForParent,
 	fetchOwnedChallenges,
 	fetchPinnedPlaylists,
 	fetchPlaylist,
@@ -75,6 +76,7 @@ import {
 	postContentReset,
 	postContentUnliked,
 	postRecordWatchSession,
+	reportPlaylist,
 	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem
@@ -116,6 +118,7 @@ import {
 	fetchPackData,
 	fetchParentByRailContentId,
 	fetchParentForDownload,
+	fetchPlayAlongsCount,
 	fetchRelatedLessons,
 	fetchRelatedMethodLessons,
 	fetchRelatedSongs,
@@ -129,7 +132,8 @@ import {
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	fetchWorkouts,
-	getSortOrder
+	getSortOrder,
+	jumpToContinueContent
 } from './services/sanity.js';
 
 import {
@@ -191,6 +195,7 @@ export {
 	fetchMethodPreviousNextLesson,
 	fetchMethods,
 	fetchNewReleases,
+	fetchNextContentDataForParent,
 	fetchNextPreviousLesson,
 	fetchOwnedChallenges,
 	fetchPackAll,
@@ -199,6 +204,7 @@ export {
 	fetchParentByRailContentId,
 	fetchParentForDownload,
 	fetchPinnedPlaylists,
+	fetchPlayAlongsCount,
 	fetchPlaylist,
 	fetchPlaylistItem,
 	fetchPlaylistItems,
@@ -235,6 +241,7 @@ export {
 	globalConfig,
 	initializeService,
 	isContentLiked,
+	jumpToContinueContent,
 	likeContent,
 	likePlaylist,
 	pinPlaylist,
@@ -252,6 +259,7 @@ export {
 	postContentUnliked,
 	postRecordWatchSession,
 	recordWatchSession,
+	reportPlaylist,
 	reset,
 	unlikeContent,
 	unpinPlaylist,

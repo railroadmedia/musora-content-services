@@ -207,6 +207,27 @@ const commonMetadata ={
     },
     'coach-lessons':{
         allowableFilters: ['difficulty', 'genre', 'essential','theory','lifestyle','type'],
+    },
+    'lesson-history': {
+        name: 'Lesson History',
+        shortname: 'Lesson History',
+        icon: 'bookmark',
+        allowableFilters: ['difficulty', 'type'],
+        sortBy: '-published_on',
+        tabs: [
+            {
+                name: 'In Progress',
+                short_name: 'IN PROGRESS',
+                is_group_by: false,
+                value: 'in progress',
+            },
+            {
+                name: 'Completed',
+                short_name: 'COMPLETED',
+                is_group_by: false,
+                value: 'completed',
+            },
+        ]
     }
 }
 const contentMetadata = {
@@ -219,7 +240,7 @@ const contentMetadata = {
             sortBy: '-published_on',
         },
         'song': {
-            sortBy: 'slug',
+            sortBy: '-published_on',
         },
         'student-review' : null,
         'student-focus': {
@@ -748,7 +769,7 @@ const contentMetadata = {
             shortname: 'songs',
             amountOfFutureLessonsToShow: 3,
             showFutureLessonAtTopOrBottom: 'bottom',
-            sortBy: 'slug',
+            sortBy: '-published_on',
         },
         'course': {
             thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/pianote/courses.jpg',
