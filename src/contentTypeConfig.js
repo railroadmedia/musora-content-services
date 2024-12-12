@@ -476,7 +476,7 @@ function filtersToGroq(filters, selectedFilters = []) {
                     return `bpm == ${value}`;
                 }
             } else if (['creativity', 'essential', 'focus', 'genre', 'lifestyle', 'theory', 'topic'].includes(key) && !selectedFilters.includes(key)) {
-                return `${key}[]->name match "${value}"`;
+                return `"${value}" in ${key}[]->name`;
             } else if (key === 'gear' && !selectedFilters.includes('gear')) {
                 return `gear match "${value}"`;
             } else if (key === 'instrumentless' && !selectedFilters.includes(key)) {
