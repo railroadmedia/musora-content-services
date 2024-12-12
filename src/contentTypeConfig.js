@@ -25,6 +25,11 @@ const DEFAULT_FIELDS = [
 
 const descriptionField = 'description[0].children[0].text';
 
+/*
+ *  NOTE: TP-366 - Arrays can be either arrays of different objects or arrays of different primitives, not both
+ *  updated query so assignment_sheet_music_image can be either an image or a URL
+ *  see: https://www.sanity.io/docs/array-type#fNBIr84P
+ */
 const assignmentsField = `"assignments":assignment[]{
     "id": railcontent_id,
         "soundslice_slug": assignment_soundslice,
