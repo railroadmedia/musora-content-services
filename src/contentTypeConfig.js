@@ -22,7 +22,7 @@ const DEFAULT_FIELDS = [
     "'permission_id': permission[]->railcontent_id",
 ];
 
-const descriptionField = 'description[0].children[0].text';
+const descriptionField = 'description';
 
 const assignmentsField = `"assignments":assignment[]{
     "id": railcontent_id,
@@ -30,7 +30,7 @@ const assignmentsField = `"assignments":assignment[]{
         "title": assignment_title,
         "sheet_music_image_url": assignment_sheet_music_image,
         "timecode": assignment_timecode,
-        "description": assignment_description[0].children[0].text,
+        "description": assignment_description,
 },`
 
 const contentWithInstructorsField = {
