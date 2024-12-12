@@ -29,7 +29,14 @@ const assignmentsField = `"assignments":assignment[]{
     "id": railcontent_id,
         "soundslice_slug": assignment_soundslice,
         "title": assignment_title,
-        "sheet_music_image_url": assignment_sheet_music_image,
+        "sheet_music_image_url": assignment_sheet_music_image[]{
+            _type == 'Image' => {
+              'url': asset->url
+            },
+            _type == 'URL' => {
+              url
+            }
+        }.url,
         "timecode": assignment_timecode,
         "description": assignment_description
 },`
@@ -160,8 +167,8 @@ let contentTypeConfig = {
                 "image": thumbnail.asset->url,
                 "instructors": instructor[]->name,
                 length_in_seconds,
-                "resources": resource, 
-                difficulty, 
+                "resources": resource,
+                difficulty,
                 difficulty_string,
                 artist->,
                 "thumbnail_url":thumbnail.asset->url,
@@ -176,7 +183,7 @@ let contentTypeConfig = {
                     "id":railcontent_id,
                     name,
                     short_bio,
-                    "biography": short_bio[0].children[0].text, 
+                    "biography": short_bio[0].children[0].text,
                     web_url_path,
                     "coach_card_image": coach_card_image.asset->url,
                     "coach_profile_image":thumbnail_url.asset->url
@@ -371,8 +378,8 @@ let contentTypeConfig = {
     'backstage-secret': contentWithInstructorsField,
     'question-and-answer': contentWithInstructorsField,
     'student-collaboration': contentWithInstructorsField,
-    'live': {...contentWithInstructorsField, 'slug': 'live-streams'},
-    'solo': {...contentWithInstructorsField, 'slug': 'solos'},
+    'live': { ...contentWithInstructorsField, 'slug': 'live-streams' },
+    'solo': { ...contentWithInstructorsField, 'slug': 'solos' },
     'boot-camp': contentWithInstructorsField,
     'gear-guids': contentWithInstructorsField,
     'performance': contentWithInstructorsField,
