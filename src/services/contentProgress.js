@@ -230,7 +230,7 @@ export async function recordWatchSession(contentId, mediaType, mediaCategory, me
                 if (mediaLengthSeconds <= 0) {
                     return;
                 }
-                let progress = Math.min(99, Math.round(currentSeconds ?? 0 / Math.max(1, mediaLengthSeconds ?? 0) * 100));
+                let progress = Math.min(99, Math.round((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds ?? 0) * 100));
                 let hierarchy = await fetchHierarchy(contentId);
                 saveContentProgress(localContext, contentId, progress, currentSeconds, hierarchy);
             }
