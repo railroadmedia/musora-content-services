@@ -518,12 +518,13 @@ export async function fetchAll(brand, type, {
     const start = (page - 1) * limit;
     const end = start + limit;
     let bypassStatusAndPublishedValidation = (type == 'instructor' || groupBy == 'artist' || groupBy == 'genre' || groupBy == 'instructor');
-
+    let bypassPermissions = bypassStatusAndPublishedValidation;
     // Construct the type filter
     let typeFilter;
 
     if( type === 'archives' ) {
-        typeFilter = `&& status == "archived"`
+        typeFilter = `&& status == "archived"`;
+        bypassStatusAndPublishedValidation = true;
     } else {
         typeFilter = type ? `&& _type == '${type}'` : "";
     } 
@@ -598,7 +599,7 @@ export async function fetchAll(brand, type, {
 
     const filterWithRestrictions = await new FilterBuilder(filter, {
         bypassStatuses: bypassStatusAndPublishedValidation,
-        bypassPermissions: bypassStatusAndPublishedValidation,
+        bypassPermissions: bypassPermissions,
         bypassPublishedDateRestriction: bypassStatusAndPublishedValidation
     }).buildFilter();
     query = buildEntityAndTotalQuery(
