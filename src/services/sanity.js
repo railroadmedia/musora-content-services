@@ -1328,7 +1328,7 @@ export async function fetchLiveEvent(brand) {
           },
       'videoId': coalesce(live_event_youtube_id, video.external_id),
     } | order(live_event_start_time)[0...1]`;
-    return await fetchSanity(query, false);
+    return await fetchSanity(query, false, {processNeedAccess: false});
 }
 
 /**
@@ -1930,7 +1930,7 @@ export async function fetchMetadata(brand, type) {
 
 export async function fetchChatAndLiveEnvent(brand, forcedId = null) {
     const liveEvent = (forcedId !== null) ? await fetchByRailContentIds([forcedId]): [await fetchLiveEvent(brand)];
-    if (liveEvent.length === 0) {
+    if (liveEvent.length === 0 || (liveEvent.length === 1 && liveEvent[0] === undefined)) {
         return null;
     }
     let url = `/content/live-chat?brand=${brand}`;
