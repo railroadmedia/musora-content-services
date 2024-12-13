@@ -1304,8 +1304,8 @@ export async function fetchLiveEvent(brand) {
     }
     let startDateTemp = new Date();
     let endDateTemp = startDateTemp;
-    startDateTemp.setMinutes(startDateTemp.getMinutes() + 15);
-    endDateTemp.setMinutes(endDateTemp.getMinutes() - 15);
+    startDateTemp=  new Date (startDateTemp.setMinutes(startDateTemp.getMinutes() + 15));
+    endDateTemp = new Date(endDateTemp.setMinutes(endDateTemp.getMinutes() - 15));
 
     // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
     // this has some +- on times
