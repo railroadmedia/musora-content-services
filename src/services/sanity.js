@@ -522,12 +522,12 @@ export async function fetchAll(brand, type, {
     // Construct the type filter
     let typeFilter;
 
-    if( type === 'archives' ) {
+    if (type === 'archives') {
         typeFilter = `&& status == "archived"`;
         bypassStatusAndPublishedValidation = true;
     } else {
         typeFilter = type ? `&& _type == '${type}'` : "";
-    } 
+    }
 
     // Construct the search filter
     const searchFilter = searchTerm
@@ -836,13 +836,13 @@ export async function fetchAllFilterOptions(
     const constructCommonFilter = (excludeFilter) => {
         const filterWithoutOption = excludeFilter ? filtersToGroq(filters, excludeFilter) : includedFieldsFilter;
         const statusFilter = ' && status == "published"';
-        const includeStatusFilter = !isAdmin && !['instructor','artist','genre'].includes(contentType);
+        const includeStatusFilter = !isAdmin && !['instructor', 'artist', 'genre'].includes(contentType);
 
         return coachId
             ? `brand == '${brand}' && status == "published" && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${filterWithoutOption || ''} ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}`
             : `_type == '${contentType}' && brand == "${brand}"${includeStatusFilter ? statusFilter : ''}${style && excludeFilter !== "style" ? ` && '${style}' in genre[]->name` : ''}${artist && excludeFilter !== "artist" ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${filterWithoutOption || ''} ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}`;
     };
-    
+
     const metaData = processMetadata(brand, contentType, true);
     const allowableFilters = metaData?.allowableFilters || [];
     const tabs = metaData?.tabs || [];
@@ -1604,15 +1604,17 @@ export async function fetchGenreLessons(brand, name, contentType, {
 }
 
 export async function fetchTopLevelParentId(railcontentId) {
+    const statusFilter = "&& status in ['scheduled', 'published', 'archived', 'unlisted']";
+
     const query = `*[railcontent_id == ${railcontentId}]{
       railcontent_id,
-      'parents': *[^._id in child[]._ref && !(_id in path('drafts.**'))]{
+      'parents': *[^._id in child[]._ref ${statusFilter}]{
         railcontent_id,
-          'parents': *[^._id in child[]._ref && !(_id in path('drafts.**'))]{
+          'parents': *[^._id in child[]._ref ${statusFilter}]{
             railcontent_id,
-            'parents': *[^._id in child[]._ref && !(_id in path('drafts.**'))]{
+            'parents': *[^._id in child[]._ref ${statusFilter}]{
               railcontent_id,
-               'parents': *[^._id in child[]._ref && !(_id in path('drafts.**'))]{
+               'parents': *[^._id in child[]._ref ${statusFilter}]{
                   railcontent_id,               
             } 
           }
@@ -1656,6 +1658,7 @@ export async function fetchHierarchy(railcontentId) {
     let response = await fetchSanity(query, false, {processNeedAccess: false});
     if (!response) return null;
     let data = {
+        topLevelId: topLevelId,
         parents: {},
         children: {}
     };
@@ -2049,7 +2052,9 @@ function getFilterOptions(option, commonFilter, contentType, brand) {
         ][count > 0],`;
             break;
         case "type":
-            const typesString = types.map(t => {return `{"type": "${t}"}`}).join(', ');
+            const typesString = types.map(t => {
+                return `{"type": "${t}"}`
+            }).join(', ');
             filterGroq = `"type": [${typesString}]{type, 'count': count(*[_type == ^.type && ${commonFilter}])}[count > 0],`;
             break;
         case "genre":
