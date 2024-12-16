@@ -617,14 +617,17 @@ export async function postChallengesHideCompletedBanner(contentId) {
  *   .then(playlists => console.log(playlists))
  *   .catch(error => console.error(error));
  */
-export async function fetchUserPlaylists(brand, {page, limit, sort, searchTerm, content_id} = {}) {
+export async function fetchUserPlaylists(brand, {page, limit, sort, searchTerm, content_id, categories} = {}) {
     let url;
     const limitString = limit ? `&limit=${limit}` : '';
     const pageString = page ? `&page=${page}` : '';
     const sortString = sort ? `&sort=${sort}` : '';
     const searchFilter = searchTerm ? `&term=${searchTerm}` : '';
     const content = content_id ? `&content_id=${content_id}` : '';
-    url = `/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}`;
+    const categoryString = categories && categories.length
+        ? categories.map(cat => `categories[]=${cat}`).join('&')
+        : '';
+    url = `/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`;
     return await fetchHandler(url);
 }
 
