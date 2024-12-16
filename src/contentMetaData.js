@@ -162,12 +162,19 @@ const commonMetadata ={
             allowableFilters: ['difficulty', 'genre', 'essential', 'theory'],
             sortBy: '-published_on',
     },
+    'recommendation': {
+        tabs: [
+            { name: 'All', is_group_by: true, value: ['group_by,Recommended']},
+            { name: 'Songs', value: ['filter,song'] },
+            { name: 'Lessons', value: ['filter,lesson']},
+        ],
+    },
     'workout': {
         name: "Workouts",
         shortname: 'Workouts',
         allowableFilters: ['difficulty', 'genre', 'topic'],
         tabs: [
-            {
+            {    
                 name: 'All',
                 short_name: 'ALL',
                 value: '',
