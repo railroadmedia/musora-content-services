@@ -1162,6 +1162,11 @@ export async function reportPlaylist(playlistId,  {issue} = {}) {
     return await fetchHandler(url, "PUT");
 }
 
+export async function playback(playlistId) {
+    const url = `/playlists/play/${playlistId}`;
+    return await fetchHandler(url, "GET");
+}
+
 function fetchAbsolute(url, params) {
     if (globalConfig.railcontentConfig.baseUrl) {
         if (url.startsWith('/')) {
