@@ -1305,7 +1305,7 @@ export async function fetchLiveEvent(brand) {
             break;
     }
     let startDateTemp = new Date();
-    let endDateTemp = startDateTemp;
+    let endDateTemp = new Date();
     startDateTemp=  new Date (startDateTemp.setMinutes(startDateTemp.getMinutes() + 15));
     endDateTemp = new Date(endDateTemp.setMinutes(endDateTemp.getMinutes() - 15));
 
@@ -2059,6 +2059,7 @@ function getFilterOptions(option, commonFilter, contentType, brand) {
         case "difficulty":
             filterGroq = ` 
                 "difficulty": [
+        {"type": "All", "count": count(*[${commonFilter} && difficulty_string == "All"])},
         {"type": "Introductory", "count": count(*[${commonFilter} && difficulty_string == "Introductory"])},
         {"type": "Beginner", "count": count(*[${commonFilter} && difficulty_string == "Beginner"])},
         {"type": "Intermediate", "count": count(*[${commonFilter} && difficulty_string == "Intermediate" ])},
