@@ -28,7 +28,8 @@ import {
     fetchCompletedChallenges,
     fetchCurrentSongComplete,
     fetchOwnedChallenges,
-    fetchNextContentDataForParent
+    fetchNextContentDataForParent,
+    fetchHandler,
 } from './railcontent.js';
 import {arrayToStringRepresentation, FilterBuilder} from "../filterBuilder";
 import {fetchUserPermissions} from "./userPermissions";
@@ -1303,17 +1304,20 @@ export async function fetchLiveEvent(brand) {
         default:
             break;
     }
-    let dateTemp = new Date();
-    dateTemp.setDate(dateTemp.getDate() - 1);
+    let startDateTemp = new Date();
+    let endDateTemp = startDateTemp;
+    startDateTemp=  new Date (startDateTemp.setMinutes(startDateTemp.getMinutes() + 15));
+    endDateTemp = new Date(endDateTemp.setMinutes(endDateTemp.getMinutes() - 15));
 
     // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
     // this has some +- on times
     // But this query just finds the first scheduled event (sorted by start_time) that ends after now()
-    const query = `*[status == 'scheduled' && defined(live_event_start_time) && published_on > '${getSanityDate(dateTemp, false)}' && live_event_end_time >= '${getSanityDate(new Date(), false)}']{
+    const query = `*[status == 'scheduled' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}']{
       'slug': slug.current,
       'id': railcontent_id,
       live_event_start_time,
       live_event_end_time,
+      live_event_youtube_id,
       railcontent_id,
       published_on,
       'event_coach_url' : instructor[0]->web_url_path,
@@ -1326,7 +1330,7 @@ export async function fetchLiveEvent(brand) {
           },
       'videoId': coalesce(live_event_youtube_id, video.external_id),
     } | order(live_event_start_time)[0...1]`;
-    return await fetchSanity(query, false);
+    return await fetchSanity(query, false, {processNeedAccess: false});
 }
 
 /**
@@ -1927,6 +1931,17 @@ export async function fetchShowsData(brand) {
 export async function fetchMetadata(brand, type) {
     const processedData = processMetadata(brand, type, true);
     return processedData ? processedData : {};
+}
+
+export async function fetchChatAndLiveEnvent(brand, forcedId = null) {
+    const liveEvent = (forcedId !== null) ? await fetchByRailContentIds([forcedId]): [await fetchLiveEvent(brand)];
+    if (liveEvent.length === 0 || (liveEvent.length === 1 && liveEvent[0] === undefined)) {
+        return null;
+    }
+    let url = `/content/live-chat?brand=${brand}`;
+    const chatData = await fetchHandler(url);
+    const mergedData = { ...chatData, ...liveEvent[0] };
+    return mergedData;
 }
 
 
