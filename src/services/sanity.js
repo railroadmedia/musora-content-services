@@ -28,7 +28,8 @@ import {
     fetchCompletedChallenges,
     fetchCurrentSongComplete,
     fetchOwnedChallenges,
-    fetchNextContentDataForParent, fetchHandler
+    fetchNextContentDataForParent,
+    fetchHandler,
 } from './railcontent.js';
 import {arrayToStringRepresentation, FilterBuilder} from "../filterBuilder";
 import {fetchUserPermissions} from "./userPermissions";
