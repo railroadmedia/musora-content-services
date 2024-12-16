@@ -449,7 +449,20 @@ export async function fetchByRailContentIds(ids, contentType = undefined) {
     const query = `*[railcontent_id in [${idsString}]]{
         ${getFieldsForContentType(contentType)}
       }`
-    return fetchSanity(query, true);
+    const results = await fetchSanity(query, true);
+
+   const sortFuction = function compare(a,b){
+       const indexA = ids.indexOf(a['id']);
+       const indexB = ids.indexOf(b['id'])
+        if(indexA === indexB) return 0;
+        if(indexA > indexB) return 1;
+        return -1;
+    }
+
+    // Sort results to match the order of the input IDs
+    const sortedResults = results.sort(sortFuction);
+
+    return sortedResults;
 }
 
 /**

@@ -123,10 +123,19 @@ describe('Sanity Queries', function () {
         const id2 = 402204;
         const response = await fetchByRailContentIds([id, id2]);
         const returnedIds = response.map((x) => x.id);
-        expect(returnedIds).toContain(id);
-        expect(returnedIds).toContain(id2);
+        expect(returnedIds[0]).toBe(id);
+        expect(returnedIds[1]).toBe(id2);
         expect(returnedIds.length).toBe(2);
+    });
 
+    test('fetchByRailContentIds_Order', async () => {
+        const id = 380094;
+        const id2 = 402204;
+        const response = await fetchByRailContentIds([id2, id]);
+        const returnedIds = response.map((x) => x.id);
+        expect(returnedIds[0]).toBe(id2);
+        expect(returnedIds[1]).toBe(id);
+        expect(returnedIds.length).toBe(2);
     });
 
     test('fetchUpcomingEvents', async () => {
