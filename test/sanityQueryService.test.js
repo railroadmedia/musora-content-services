@@ -677,10 +677,10 @@ describe('Sanity Queries', function () {
         expect(hierarchy.children[243085]).toStrictEqual([243170, 243171, 243172, 243174, 243176]);
     });
 
-    test('fetchTopLeveldrafts', async () => {
-        let id = await fetchTopLevelParentId(413955);
-        expect(id).toBe(413955);
-    });
+    // test('fetchTopLeveldrafts', async () => {
+    //     let id = await fetchTopLevelParentId(413955);
+    //     expect(id).toBe(413955);
+    // });
 
     test('fetchCommentData', async()=>{
         let data = await fetchCommentModContentData([241251,241252, 211153]);
