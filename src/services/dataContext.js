@@ -24,7 +24,7 @@ export class DataContext {
     }
 
     getLocalStorageKey() {
-        const userId = globalConfig.railcontentConfig.userId ?? 0;
+        const userId = globalConfig.railcontentConfig?.userId ?? 0;
         return `dataContext_${this.dataVersionKey.toString()}_${userId}`;
     }
 
