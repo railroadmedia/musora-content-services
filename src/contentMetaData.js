@@ -239,7 +239,9 @@ const commonMetadata ={
     'new-release': {
         name: 'New Releases',
         description: 'Here\'s a list of all lessons recently added to Drumeo. Browse on your own or use search to find whatever it is you\'d like to learn!',
-        tabs: [],
+        allowableFilters: ['type'],
+        sortBy: '-published_on',
+        shortname: 'Lessons',
     }
 }
 const contentMetadata = {
