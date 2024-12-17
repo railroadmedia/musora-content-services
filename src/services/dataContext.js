@@ -1,4 +1,5 @@
 import {globalConfig} from "./config";
+import {config} from "dotenv";
 
 /**
  * Exported functions that are excluded from index generation.
@@ -20,8 +21,16 @@ export class DataContext {
     constructor(dataVersionKey, fetchDataFunction) {
         this.dataVersionKey = dataVersionKey;
         this.fetchDataFunction = fetchDataFunction;
-        this.localStorageKey = `dataContext_${this.dataVersionKey.toString()}`;
-        this.localStorageLastUpdatedKey = `dataContext_${this.dataVersionKey.toString()}_lastUpdated`;
+    }
+
+    getLocalStorageKey() {
+        const userId = globalConfig.railcontentConfig.userId ?? 0;
+        return `dataContext_${this.dataVersionKey.toString()}_${userId}`;
+    }
+
+    getLocalStorageLastUpdatedKey() {
+        const baseKey = this.getLocalStorageKey();
+        return `${baseKey}_lastUpdated`;
     }
 
     async getData() {
@@ -40,9 +49,9 @@ export class DataContext {
             let data = await this.fetchData(version);
             if (data.version !== "No Change") {
                 this.context = data;
-                cache.setItem(this.localStorageKey, JSON.stringify(data));
+                cache.setItem(this.getLocalStorageKey(), JSON.stringify(data));
             }
-            cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime()?.toString());
+            cache.setItem(this.getLocalStorageLastUpdatedKey(), new Date().getTime()?.toString());
         }
         this.dataPromise = null;
         return this.context.data;
@@ -55,7 +64,7 @@ export class DataContext {
     async ensureLocalContextLoaded() {
         if (this.context) return;
         this.verifyConfig();
-        let localData = globalConfig.isMA ? await cache.getItem(this.localStorageKey) : cache.getItem(this.localStorageKey);
+        let localData = globalConfig.isMA ? await cache.getItem(this.getLocalStorageKey()) : cache.getItem(this.getLocalStorageKey());
         if (localData) {
             this.context = JSON.parse(localData);
         }
@@ -69,7 +78,7 @@ export class DataContext {
     }
 
     async shouldVerifyServerVerions() {
-        let lastUpdated = globalConfig.isMA ? await cache.getItem(this.localStorageLastUpdatedKey) : cache.getItem(this.localStorageLastUpdatedKey);
+        let lastUpdated = globalConfig.isMA ? await cache.getItem(this.getLocalStorageLastUpdatedKey()) : cache.getItem(this.getLocalStorageLastUpdatedKey());
         if (!lastUpdated) return false;
         const verifyServerTime = 10000; //10 s
         return (new Date().getTime() - lastUpdated) > verifyServerTime;
@@ -77,8 +86,8 @@ export class DataContext {
 
     clearCache() {
         this.clearContext();
-        cache.removeItem(this.localStorageKey);
-        cache.removeItem(this.localStorageLastUpdatedKey);
+        cache.removeItem(this.getLocalStorageKey());
+        cache.removeItem(this.getLocalStorageLastUpdatedKey());
     }
 
     clearContext() {
@@ -91,8 +100,8 @@ export class DataContext {
             await localUpdateFunction(this.context);
             this.context.version++;
             let data = JSON.stringify(this.context);
-            cache.setItem(this.localStorageKey, data);
-            cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime().toString());
+            cache.setItem(this.getLocalStorageKey(), data);
+            cache.setItem(this.getLocalStorageLastUpdatedKey(), new Date().getTime().toString());
         }
         const updatePromise = serverUpdateFunction();
         updatePromise.then((response) => {
