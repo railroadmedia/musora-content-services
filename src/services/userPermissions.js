@@ -2,6 +2,7 @@ import {
     fetchUserPermissionsData
 } from "./railcontent";
 import {setLastUpdatedTime, wasLastUpdateOlderThanXSeconds} from "./lastUpdated";
+import {globalConfig} from "./config";
 
 /**
  * Exported functions that are excluded from index generation.
@@ -13,9 +14,11 @@ let userPermissionsPromise = null;
 let lastUpdatedKey = `userPermissions_lastUpdated`;
 
 export async function fetchUserPermissions() {
-    if (!userPermissionsPromise || wasLastUpdateOlderThanXSeconds(10, lastUpdatedKey)) {
+    const userId = globalConfig.railcontentConfig?.userId ?? 0;
+    const key = `${lastUpdatedKey}_${userId}`;
+    if (!userPermissionsPromise || wasLastUpdateOlderThanXSeconds(10, key)) {
         userPermissionsPromise = fetchUserPermissionsData();
-        setLastUpdatedTime(lastUpdatedKey);
+        setLastUpdatedTime(key);
     }
 
     return await userPermissionsPromise;

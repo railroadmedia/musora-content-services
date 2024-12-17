@@ -10,6 +10,8 @@ export async function initializeTestService(useLive = false) {
         let data = await fetchLoginToken(process.env.RAILCONTENT_EMAIL, process.env.RAILCONTENT_PASSWORD);
         token = data['token'];
         userId = data['userId'];
+    } else {
+        userId = 1;
     }
     const config = {
         sanityConfig: {
