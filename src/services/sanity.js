@@ -539,6 +539,8 @@ export async function fetchAll(brand, type, {
     if (type === 'archives') {
         typeFilter = `&& status == "archived"`;
         bypassStatusAndPublishedValidation = true;
+    } else if(type === 'pack') {
+        typeFilter = `&& (_type == "semester-pack" || _type == '${type}')`;
     } else {
         typeFilter = type ? `&& _type == '${type}'` : "";
     }
