@@ -1268,7 +1268,7 @@ export async function fetchRelatedMethodLessons(railContentId, brand) {
  */
 export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = "", page = 1, limit = 10) {
     const sortOrder = getSortOrder(sort, brand);
-    const filter = `_type == 'pack' && brand == '${brand}' && title match "${searchTerm}*"`
+    const filter = `(_type == 'pack' || _type == 'semester-pack') && brand == '${brand}' && title match "${searchTerm}*"`
     const filterParams = {};
     const fields = getFieldsForContentType('pack');
     const start = (page - 1) * limit;
@@ -1293,8 +1293,8 @@ export async function fetchAllPacks(brand, sort = "-published_on", searchTerm = 
  * @param {string} railcontentId - The Railcontent ID of the pack.
  * @returns {Promise<Array<Object>|null>} - The fetched pack content data or null if not found.
  */
-export async function fetchPackAll(railcontentId) {
-    return fetchByRailContentId(railcontentId, 'pack');
+export async function fetchPackAll(railcontentId, type = 'pack') {
+    return fetchByRailContentId(railcontentId, type);
 }
 
 export async function fetchLiveEvent(brand) {
