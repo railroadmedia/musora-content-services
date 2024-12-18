@@ -89,7 +89,7 @@ export class DataContext {
         await this.ensureLocalContextLoaded();
         if (this.context) {
             await localUpdateFunction(this.context);
-            this.context?.version++;
+            if (this.context) this.context.version++;
             let data = JSON.stringify(this.context);
             cache.setItem(this.localStorageKey, data);
             cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime().toString());
