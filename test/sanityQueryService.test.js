@@ -678,8 +678,8 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchTopLeveldrafts', async () => {
-        let id = await fetchTopLevelParentId(413955);
-        expect(id).toBe(413955);
+        let id = await fetchTopLevelParentId(401999);
+        expect(id).toBe(401999);
     });
 
     test('fetchCommentData', async()=>{
