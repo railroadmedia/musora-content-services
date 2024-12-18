@@ -242,6 +242,13 @@ const commonMetadata ={
         allowableFilters: ['type'],
         sortBy: '-published_on',
         shortname: 'Lessons',
+        tabs: [
+            {
+                name: 'Lessons',
+                short_name: 'LESSONS',
+                value: '',
+            }
+        ]
     }
 }
 const contentMetadata = {
