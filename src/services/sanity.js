@@ -1325,7 +1325,7 @@ export async function fetchLiveEvent(brand) {
     // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
     // this has some +- on times
     // But this query just finds the first scheduled event (sorted by start_time) that ends after now()
-    const query = `*[status == 'scheduled' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}']{
+    const query = `*[status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}']{
       'slug': slug.current,
       'id': railcontent_id,
       live_event_start_time,
