@@ -294,7 +294,7 @@ const contentMetadata = {
             icon: 'icon-drums',
             description: "The 40 drum rudiments are essential for any drummer, no matter the style, genre, or scenario. You can use the videos below to help you learn, practice, and perfect every single one.",
             allowableFilters: ['difficulty', 'genre', 'gear', 'topic'],
-            tabs: [
+            tabs: [  
                 {
                     name: 'All',
                     short_name: 'ALL',
@@ -304,25 +304,25 @@ const contentMetadata = {
                     name: 'Drags',
                     short_name: 'DRAGS',
                     is_required_field: true,
-                    value: 'topic,drags',
+                    value: 'topic,Drags',
                 },
                 {
                     name: 'Flams',
                     short_name: 'FLAMS',
                     is_required_field: true,
-                    value: 'topic,flams',
+                    value: 'topic,Flams',
                 },
                 {
                     name: 'Paradiddles',
                     short_name: 'PARADIDDLES',
                     is_required_field: true,
-                    value: 'topic,paradiddles',
+                    value: 'topic,Paradiddles',
                 },
                 {
                     name: 'Rolls',
                     short_name: 'ROLLS',
                     is_required_field: true,
-                    value: 'topic,rolls',
+                    value: 'topic,Rolls',
                 },
             ],
             sortBy: 'sort',
