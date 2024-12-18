@@ -1156,7 +1156,7 @@ export async function fetchLessonContent(railContentId) {
     const fields = `title, 
           published_on,
           "type":_type, 
-          "resources": resource, 
+          "resources": resource[]{resource_name, _key, "resource_url": coalesce(resource_url, resource_url.asset->fileURL)},
           difficulty, 
           difficulty_string, 
           brand, 
