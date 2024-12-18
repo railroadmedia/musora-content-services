@@ -38,7 +38,7 @@ export class DataContext {
         if ((!this.context) || shouldVerify) {
             let version = this.version();
             let data = await this.fetchData(version);
-            if (data.version !== "No Change") {
+            if (data?.version !== "No Change") {
                 this.context = data;
                 cache.setItem(this.localStorageKey, JSON.stringify(data));
             }
@@ -89,7 +89,7 @@ export class DataContext {
         await this.ensureLocalContextLoaded();
         if (this.context) {
             await localUpdateFunction(this.context);
-            this.context.version++;
+            this.context?.version++;
             let data = JSON.stringify(this.context);
             cache.setItem(this.localStorageKey, data);
             cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime().toString());
