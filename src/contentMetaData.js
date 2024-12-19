@@ -2,21 +2,21 @@
 
 // Metadata is taken from the 'common' element and then merged with the <brand> metadata.
 // Brand values are prioritized and will override the same property in the 'common' element.
-const commonMetadata ={
+const commonMetadata = {
     'instructor': {
         name: 'Coaches',
-            icon: 'icon-coach',
-            allowableFilters: ['genre', 'focus'],
-            sortBy: '-published_on',
+        icon: 'icon-coach',
+        allowableFilters: ['genre', 'focus'],
+        sortBy: '-published_on',
     },
     'challenge': {
         name: 'Challenges',
-            icon: 'icon-courses',
-            description: "... ",
-            allowableFilters: ['difficulty', 'topic', 'genre'],
-            sortBy: '-published_on',
-            modalText: 'Challenges are a series of guided lessons designed to build your skills day-by-day.',
-            tabs: [
+        icon: 'icon-courses',
+        description: "... ",
+        allowableFilters: ['difficulty', 'topic', 'genre'],
+        sortBy: '-published_on',
+        modalText: 'Challenges are a series of guided lessons designed to build your skills day-by-day.',
+        tabs: [
             {
                 name: 'All',
                 short_name: 'All',
@@ -48,10 +48,10 @@ const commonMetadata ={
     },
     'challenge-part': {
         name: 'Challenge Part',
-            icon: 'icon-courses',
-            description: "... ",
-            allowableFilters: ['difficulty', 'genre', 'topic'],
-            sortBy: '-published_on',
+        icon: 'icon-courses',
+        description: "... ",
+        allowableFilters: ['difficulty', 'genre', 'topic'],
+        sortBy: '-published_on',
     },
     'course': {
         name: "Courses",
@@ -82,10 +82,10 @@ const commonMetadata ={
     },
     'student-review': {
         name: "Student Reviews",
-            icon: "icon-student-focus",
-            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
-            sortBy: '-published_on',
-            tabs: [
+        icon: "icon-student-focus",
+        allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
+        sortBy: '-published_on',
+        tabs: [
             {
                 name: 'Lessons',
                 short_name: 'LESSONS',
@@ -107,10 +107,10 @@ const commonMetadata ={
     },
     'song': {
         name: "Songs",
-            icon: "icon-songs",
-            description: "Play the songs you love with note-for-note transcriptions and handy practice tools.",
-            allowableFilters: ['difficulty', 'genre', 'lifestyle', 'instrumentless'],
-            tabs: [
+        icon: "icon-songs",
+        description: "Play the songs you love with note-for-note transcriptions and handy practice tools.",
+        allowableFilters: ['difficulty', 'genre', 'lifestyle', 'instrumentless'],
+        tabs: [
             {
                 name: 'Songs',
                 short_name: 'Songs',
@@ -132,11 +132,11 @@ const commonMetadata ={
     },
     'quick-tips': {
         name: 'Quick Tips',
-            icon: 'icon-shows',
-            description: "Only have 10 minutes? These short lessons are designed to inspire you with quick tips and exercises, even if you don’t have lots of time to practice.",
-            allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle', 'creativity'],
-            sortBy: '-published_on',
-            tabs: [
+        icon: 'icon-shows',
+        description: "Only have 10 minutes? These short lessons are designed to inspire you with quick tips and exercises, even if you don’t have lots of time to practice.",
+        allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle', 'creativity'],
+        sortBy: '-published_on',
+        tabs: [
             {
                 name: 'Lessons',
                 short_name: 'LESSONS',
@@ -158,15 +158,16 @@ const commonMetadata ={
     },
     'question-and-answer': {
         name: 'Q&A',
-            description: "Each week we go live to answer your questions. Submit your questions in advance using the button below, in the Q&A thread in the forums, or live in the community chat.",
-            allowableFilters: ['difficulty', 'genre', 'essential', 'theory'],
-            sortBy: '-published_on',
+        description: "Each week we go live to answer your questions. Submit your questions in advance using the button below, in the Q&A thread in the forums, or live in the community chat.",
+        allowableFilters: ['difficulty', 'genre', 'essential', 'theory'],
+        sortBy: '-published_on',
     },
     'recommendation': {
         tabs: [
-            { name: 'All', is_group_by: true, value: ['group_by,Recommended']},
+            { name: 'All', is_group_by: true, value: ['group_by,Recommended'] },
             { name: 'Songs', value: ['filter,song'] },
-            { name: 'Lessons', value: ['filter,lesson']},
+            { name: 'Lessons', value: ['filter,lesson'] },
+            { name: 'Workouts', value: ['filter,workout'] },
         ],
     },
     'workout': {
@@ -174,7 +175,7 @@ const commonMetadata ={
         shortname: 'Workouts',
         allowableFilters: ['difficulty', 'genre', 'topic'],
         tabs: [
-            {    
+            {
                 name: 'All',
                 short_name: 'ALL',
                 value: '',
@@ -191,7 +192,7 @@ const commonMetadata ={
                 short_name: '10 MINS',
                 is_required_field: true,
                 value: 'length_in_seconds,450-750',
-                value_web:  [
+                value_web: [
                     "length_in_seconds > 451",
                     "length_in_seconds < 751"
                 ]
@@ -210,10 +211,10 @@ const commonMetadata ={
                 value: 'instructor',
             },
         ],
-            modalText: 'Workouts are fun play-along lessons that help hone your musical skills. They cover various topics, and have multiple difficulty and duration options — so there’s always a perfect Workout for you. Just pick one, press start, and play along!',
+        modalText: 'Workouts are fun play-along lessons that help hone your musical skills. They cover various topics, and have multiple difficulty and duration options — so there’s always a perfect Workout for you. Just pick one, press start, and play along!',
     },
-    'coach-lessons':{
-        allowableFilters: ['difficulty', 'genre', 'essential','theory','lifestyle','type'],
+    'coach-lessons': {
+        allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle', 'type'],
     },
     'lesson-history': {
         name: 'Lesson History',
@@ -262,7 +263,7 @@ const contentMetadata = {
         'song': {
             sortBy: '-published_on',
         },
-        'student-review' : null,
+        'student-review': null,
         'student-focus': {
             name: 'Student Focus',
             icon: 'icon-student-focus',
@@ -294,7 +295,7 @@ const contentMetadata = {
             icon: 'icon-drums',
             description: "The 40 drum rudiments are essential for any drummer, no matter the style, genre, or scenario. You can use the videos below to help you learn, practice, and perfect every single one.",
             allowableFilters: ['difficulty', 'genre', 'gear', 'topic'],
-            tabs: [  
+            tabs: [
                 {
                     name: 'All',
                     short_name: 'ALL',
@@ -780,7 +781,7 @@ const contentMetadata = {
             sortBy: 'sort',
         },
     },
-    'pianote':{
+    'pianote': {
         'instructor': {
             description: "Your piano journey is unique. You need personalized coaching that helps you reach your goals. Learn from some of the best pianists in the world!",
         },
@@ -1020,7 +1021,7 @@ const contentMetadata = {
             description: "Want feedback on your playing? Submit a video for student review. We will watch your submission and then provide helpful encouragement and feedback. This is a great way to build accountability and benefit from the expertise of our teachers.",
         },
     },
-    'singeo':{
+    'singeo': {
         'instructor': {
             description: "Your singing journey is unique. You need personalized coaching that helps you reach your goals. Learn from some of the best singers and vocal coaches in the world!",
         },
@@ -1151,7 +1152,7 @@ const contentMetadata = {
                     short_name: '10 MINS',
                     is_required_field: true,
                     value: 'length_in_seconds,450-750',
-                    value_web:  [
+                    value_web: [
                         "length_in_seconds > 451",
                         "length_in_seconds < 751"
                     ]
@@ -1168,8 +1169,7 @@ const contentMetadata = {
 };
 
 const typeWithSortOrder = ['in-rhythm', 'diy-drum-experiments', 'rhythmic-adventures-of-captain-carson'];
-function processMetadata(brand, type, withFilters = false)
-{
+function processMetadata(brand, type, withFilters = false) {
     let brandMetaData = contentMetadata[brand]?.[type];
     // If the type is explicitly defined as null or the brand doesn't exist return null
     // Specifically this is for drumeo.student-review
@@ -1177,7 +1177,7 @@ function processMetadata(brand, type, withFilters = false)
         return null;
     }
     let commonMetaData = commonMetadata[type];
-    brandMetaData = {...commonMetaData, ...brandMetaData};
+    brandMetaData = { ...commonMetaData, ...brandMetaData };
     if (Object.keys(brandMetaData).length === 0) {
         return null;
     }
@@ -1186,7 +1186,7 @@ function processMetadata(brand, type, withFilters = false)
         thumbnailUrl: brandMetaData.thumbnailUrl || null,
         name: brandMetaData.name || null,
         description: brandMetaData.description || null,
-        url: brandMetaData.url ? (brand + brandMetaData.url): (brand +'/'+ type)
+        url: brandMetaData.url ? (brand + brandMetaData.url) : (brand + '/' + type)
     };
 
     if (withFilters) {
