@@ -115,10 +115,12 @@ export async function fetchPlayAlongsCount(brand) {
  *   .catch(error => console.error(error));
  */
 export async function fetchRelatedSongs(brand, songId) {
+    const now = getSanityDate(new Date());
     const query = `
       *[_type == "song" && railcontent_id == ${songId}]{
         "entity": array::unique([
-            ...(*[_type == "song" && brand == "${brand}" && railcontent_id != ${songId} && references(^.artist->_id)]{
+            ...(*[_type == "song" && brand == "${brand}" && railcontent_id != ${songId} && references(^.artist->_id)
+            && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}'))]{
             "type": _type,
             "id": railcontent_id,
             "url": web_url_path,
@@ -144,7 +146,8 @@ export async function fetchRelatedSongs(brand, songId) {
               }
             ],
           }[0...10]),
-            ...(*[_type == "song" && brand == "${brand}" && railcontent_id != ${songId} && references(^.genre[]->_id)]{
+            ...(*[_type == "song" && brand == "${brand}" && railcontent_id != ${songId} && references(^.genre[]->_id)
+            && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}'))]{
             "type": _type,
             "id": railcontent_id,
             "url": web_url_path,
