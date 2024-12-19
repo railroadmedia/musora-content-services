@@ -265,10 +265,10 @@ function uuidv4() {
 }
 
 function bubbleProgress(hierarchy, contentId, localContext) {
-    let parentId = hierarchy.parents[contentId];
+    let parentId = hierarchy?.parents?.[contentId];
     if (!parentId) return;
     let data = localContext.data[parentId] ?? {};
-    let childProgress = hierarchy.children[parentId].map(function (childId) {
+    let childProgress = hierarchy?.children?.[parentId]?.map(function (childId) {
         return localContext.data[childId]?.[DATA_KEY_PROGRESS] ?? 0;
     });
     let progress = Math.round(childProgress.reduce((a, b) => a + b, 0) / childProgress.length);
