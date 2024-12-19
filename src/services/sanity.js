@@ -540,7 +540,7 @@ export async function fetchAll(brand, type, {
         typeFilter = `&& status == "archived"`;
         bypassStatusAndPublishedValidation = true;
     } else {
-        typeFilter = type ? `&& _type == '${type}'` : "";
+        typeFilter = type ? `&& _type == '${type}'` : progress === 'in progress' || progress === 'completed' ? " && (_type != 'challenge-part' && _type != 'challenge')" : "";  
     }
 
     // Construct the search filter
