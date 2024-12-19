@@ -1560,13 +1560,13 @@ export async function fetchArtistLessons(brand, name, contentType, {
 
     // limits the results to supplied progressIds for started & completed filters
     const progressFilter = progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : "";
-
+    const now = getSanityDate(new Date());
     const query = `{
     "entity": 
       *[_type == 'artist' && name == '${name}']
         {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
         'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]), 
-        'lessons': *[${addType} brand == '${brand}' && references(^._id) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
+        'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
       [${start}...${end}]}
       |order(${sortOrder})
   }`;
@@ -1610,13 +1610,13 @@ export async function fetchGenreLessons(brand, name, contentType, {
         : "";
     // limits the results to supplied progressIds for started & completed filters
     const progressFilter = progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : "";
-
+    const now = getSanityDate(new Date());
     const query = `{
     "entity": 
       *[_type == 'genre' && name == '${name}']
         {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
         'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]), 
-        'lessons': *[${addType} brand == '${brand}' && references(^._id) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
+        'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
       [${start}...${end}]}
       |order(${sortOrder})
   }`;
