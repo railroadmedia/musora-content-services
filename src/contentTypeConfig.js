@@ -24,7 +24,7 @@ const DEFAULT_FIELDS = [
 ];
 
 const descriptionField = 'description[0].children[0].text';
-const resourcesField = 'resource[]{resource_name, _key, "resource_url": coalesce(resource_url, resource_url.asset->fileURL)}';
+const resourcesField = 'resource[]{resource_name, _key, "resource_url": coalesce(resource_aws.asset->fileURL, resource_url)}';
 
 const assignmentsField = `"assignments":assignment[]{
     "id": railcontent_id,
