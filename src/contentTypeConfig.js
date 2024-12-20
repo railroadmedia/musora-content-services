@@ -24,7 +24,7 @@ const DEFAULT_FIELDS = [
 ];
 
 const descriptionField = 'description[0].children[0].text';
-const resourcesField = 'resource[]{resource_name, _key, "resource_url": coalesce(resource_aws.asset->fileURL, resource_url)}';
+const resourcesField = 'resource[]{resource_name, _key, "resource_url": coalesce(\'https://d3fzm1tzeyr5n3.cloudfront.net\'+string::split(resource_aws.asset->fileURL,\'https://s3.us-east-1.amazonaws.com/musora-web-platform\')[1], resource_url )}';
 
 const assignmentsField = `"assignments":assignment[]{
     "id": railcontent_id,
