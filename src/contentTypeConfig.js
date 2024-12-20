@@ -24,6 +24,7 @@ const DEFAULT_FIELDS = [
 ];
 
 const descriptionField = 'description[0].children[0].text';
+const resourcesField = 'resource[]{resource_name, _key, "resource_url": coalesce(\'https://d3fzm1tzeyr5n3.cloudfront.net\'+string::split(resource_aws.asset->fileURL,\'https://s3.us-east-1.amazonaws.com/musora-web-platform\')[1], resource_url )}';
 
 const assignmentsField = `"assignments":assignment[]{
     "id": railcontent_id,
@@ -63,7 +64,7 @@ let contentTypeConfig = {
             'album',
             'soundslice',
             'instrumentless',
-            '"resources": resource',
+            `"resources": ${resourcesField}`,
         ],
         'relationships': {
             'artist': {
@@ -130,7 +131,7 @@ let contentTypeConfig = {
             '"lesson_count": child_count',
             '"instructors": instructor[]->name',
             `"description": ${descriptionField}`,
-            'resource',
+            `"resource": ${resourcesField}`,
             'xp',
             'total_xp',
             `"lessons": child[]->{
@@ -148,7 +149,7 @@ let contentTypeConfig = {
             '"lesson_count": child_count',
             '"instructors": instructor[]->name',
             `"description": ${descriptionField}`,
-            'resource',
+            `"resource": ${resourcesField}`,
             'xp',
             'total_xp',
             '"thumbnail_url":thumbnail.asset->url',
@@ -160,7 +161,7 @@ let contentTypeConfig = {
                 "image": thumbnail.asset->url,
                 "instructors": instructor[]->name,
                 length_in_seconds,
-                "resources": resource, 
+                "resources": ${resourcesField},
                 difficulty, 
                 difficulty_string,
                 artist->,
@@ -211,7 +212,7 @@ let contentTypeConfig = {
             '"lesson_count": child_count',
             '"instructors": instructor[]->name',
             `"description": ${descriptionField}`,
-            'resource',
+            `"resource": ${resourcesField}`,
             'xp',
             'total_xp',
             `"lessons": child[]->{
@@ -228,7 +229,7 @@ let contentTypeConfig = {
             '"lesson_count": child_count',
             '"instructors": instructor[]->name',
             `"description": ${descriptionField}`,
-            'resource',
+            `"resource": ${resourcesField}`,
             'xp',
             'total_xp',
             `"lessons": child[]->{
@@ -270,7 +271,7 @@ let contentTypeConfig = {
                 "lesson_count": child_count,
                 ${getFieldsForContentType()}
             }`,
-            '"resources": resource',
+            `"resources": ${resourcesField}`,
             '"thumbnail": thumbnail.asset->url',
             '"light_logo": light_mode_logo_url.asset->url',
             '"dark_logo": dark_mode_logo_url.asset->url',
@@ -298,7 +299,7 @@ let contentTypeConfig = {
                 "description": ${descriptionField},
                 ${getFieldsForContentType()}
             }`,
-            '"resources": resource',
+            `"resources": ${resourcesField}`,
             '"image": logo_image_url.asset->url',
             '"thumbnail": thumbnail.asset->url',
             '"light_logo": light_mode_logo_url.asset->url',
@@ -333,7 +334,7 @@ let contentTypeConfig = {
             '"lesson_count": child_count',
             '"instructors": instructor[]->name',
             `"description": ${descriptionField}`,
-            'resource',
+            `"resource": ${resourcesField}`,
             'xp',
             'total_xp',
             `"lessons": child[]->{
