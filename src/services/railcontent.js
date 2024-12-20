@@ -1168,6 +1168,10 @@ export async function playback(playlistId) {
 }
 
 function fetchAbsolute(url, params) {
+    if (globalConfig.railcontentConfig.authToken) {
+        params.headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`;
+    }
+
     if (globalConfig.railcontentConfig.baseUrl) {
         if (url.startsWith('/')) {
             return fetch(globalConfig.railcontentConfig.baseUrl + url, params)
