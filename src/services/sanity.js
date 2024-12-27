@@ -928,6 +928,12 @@ export async function fetchParentByRailContentId(railcontentId) {
  */
 export async function fetchMethods(brand) {
     const query = `*[_type == 'learning-path' && brand == '${brand}'] {
+    parent_content_data,
+    "breadcrumbs_data": parent_content_data[] {
+        "id": id,
+        "title": *[railcontent_id == ^.id][0].title,
+        "url": *[railcontent_id == ^.id][0].web_url_path
+    } | order(length(url)),
       ${getFieldsForContentType()}
     } | order(published_on asc)`
     return fetchSanity(query, true);
@@ -970,6 +976,12 @@ export async function fetchMethod(brand, slug) {
     title,
     video,
     length_in_seconds,
+    parent_content_data,
+    "breadcrumbs_data": parent_content_data[] {
+        "id": id,
+        "title": *[railcontent_id == ^.id][0].title,
+        "url": *[railcontent_id == ^.id][0].web_url_path
+    } | order(length(url)),
     "type": _type,
     "permission_id": permission[]->railcontent_id,
     "levels": child[]->
@@ -1007,6 +1019,12 @@ export async function fetchMethodChildren(railcontentId) {
     title,
     xp,
     total_xp,
+    parent_content_data,
+    "breadcrumbs_data": parent_content_data[] {
+        "id": id,
+        "title": *[railcontent_id == ^.id][0].title,
+        "url": *[railcontent_id == ^.id][0].web_url_path
+    } | order(length(url)),
     'children': child[]->{
         ${getFieldsForContentType('method')}
     },
