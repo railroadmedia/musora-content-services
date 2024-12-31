@@ -93,6 +93,7 @@ let contentTypeConfig = {
     'song-tutorial-children': {
         'fields': [
             `"resources":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourcesField}`,
+            `"resource":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourcesField}`,
         ],
     },
     'challenge': {
@@ -304,7 +305,9 @@ let contentTypeConfig = {
                 "description": ${descriptionField},
                 ${getFieldsForContentType()}
             }`,
-            `"resources": ${resourcesField}`,
+            `"resources_old": ${resourcesField}`,
+            `"resources":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourcesField}`,
+            `"resource":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourcesField}`,
             '"image": logo_image_url.asset->url',
             '"thumbnail": thumbnail.asset->url',
             '"light_logo": light_mode_logo_url.asset->url',
@@ -316,6 +319,7 @@ let contentTypeConfig = {
     'pack-bundle-lesson': {
         'fields': [
             `"resources":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourcesField}`,
+            `"resource":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourcesField}`,
         ],
     },
     'foundation': {
