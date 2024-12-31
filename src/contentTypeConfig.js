@@ -92,7 +92,7 @@ let contentTypeConfig = {
     },
     'song-tutorial-children': {
         'fields': [
-            `"resource":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourceField}`,
+            `"resources":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourceField}`,
         ],
     },
     'challenge': {
@@ -315,7 +315,7 @@ let contentTypeConfig = {
     },
     'pack-bundle-lesson': {
         'fields': [
-            `"resource":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourceField}`,
+            `"resources":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourceField}`,
         ],
     },
     'foundation': {
