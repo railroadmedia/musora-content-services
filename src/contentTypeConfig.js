@@ -90,6 +90,11 @@ let contentTypeConfig = {
             }
         },
     },
+    'song-tutorial-children': {
+        'fields': [
+            `"resource":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourceField}`,
+        ],
+    },
     'challenge': {
         'fields': [
             'enrollment_start_time',
@@ -307,6 +312,11 @@ let contentTypeConfig = {
             `"description": ${descriptionField}`,
             'total_xp',
         ]
+    },
+    'pack-bundle-lesson': {
+        'fields': [
+            `"resource":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourceField}`,
+        ],
     },
     'foundation': {
         'fields': [
