@@ -1189,7 +1189,7 @@ export async function fetchLessonContent(railContentId) {
           brand, 
           status,
           soundslice, 
-          instrumentless, 
+          instrumentless,    
           railcontent_id, 
           "id":railcontent_id, 
           slug, artist->,
@@ -1199,7 +1199,7 @@ export async function fetchLessonContent(railContentId) {
           "description": description[0].children[0].text,
           "chapters": chapter[]{
             chapter_description,
-            chapter_timecode,
+            chapter_timecode, 
             "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
           },
           "instructors":instructor[]->name,
@@ -1220,7 +1220,13 @@ export async function fetchLessonContent(railContentId) {
           mp3_yes_drums_no_click_url,
           mp3_yes_drums_yes_click_url,
           "permission_id": permission[]->railcontent_id,
-          parent_content_data,
+          "parent_content_data": parent_content_data[]{
+            "id": id,
+            "title": *[railcontent_id == ^.id][0].title,
+            "web_url_path": *[railcontent_id == ^.id][0].web_url_path,
+            "slug":*[railcontent_id == ^.id][0].slug,
+            "type": *[railcontent_id == ^.id][0]._type,
+          },
           sort,
           xp`;
     const query = await buildQuery(
