@@ -24,7 +24,12 @@ const DEFAULT_FIELDS = [
 ];
 
 const descriptionField = 'description[0].children[0].text';
-const resourcesField = 'resource[]{resource_name, _key, "resource_url": coalesce(\'https://d3fzm1tzeyr5n3.cloudfront.net\'+string::split(resource_aws.asset->fileURL,\'https://s3.us-east-1.amazonaws.com/musora-web-platform\')[1], resource_url )}';
+// this pulls both any defined resources for the document as well as any resources in the parent document
+const resourcesField = `[
+          ... resource[]{resource_name, _key, "resource_url": coalesce('https://d3fzm1tzeyr5n3.cloudfront.net'+string::split(resource_aws.asset->fileURL,'https://s3.us-east-1.amazonaws.com/musora-web-platform')[1], resource_url )},
+          ... *[railcontent_id == ^.parent_content_data[0].id] [0].resource[]{resource_name, _key, "resource_url": coalesce('https://d3fzm1tzeyr5n3.cloudfront.net'+string::split(resource_aws.asset->fileURL,'https://s3.us-east-1.amazonaws.com/musora-web-platform')[1], resource_url )},
+          ]`;
+
 
 const assignmentsField = `"assignments":assignment[]{
     "id": railcontent_id,
@@ -92,8 +97,7 @@ let contentTypeConfig = {
     },
     'song-tutorial-children': {
         'fields': [
-            `"resources":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourcesField}`,
-            `"resource":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourcesField}`,
+            `"resources": ${resourcesField}`,
         ],
     },
     'challenge': {
@@ -218,7 +222,7 @@ let contentTypeConfig = {
             '"lesson_count": child_count',
             '"instructors": instructor[]->name',
             `"description": ${descriptionField}`,
-            `"resource": ${resourcesField}`,
+            `"resources": ${resourcesField}`,
             'xp',
             'total_xp',
             `"lessons": child[]->{
@@ -305,9 +309,7 @@ let contentTypeConfig = {
                 "description": ${descriptionField},
                 ${getFieldsForContentType()}
             }`,
-            `"resources_old": ${resourcesField}`,
-            `"resources":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourcesField}`,
-            `"resource":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourcesField}`,
+            `"resources": ${resourcesField}`,
             '"image": logo_image_url.asset->url',
             '"thumbnail": thumbnail.asset->url',
             '"light_logo": light_mode_logo_url.asset->url',
@@ -318,8 +320,7 @@ let contentTypeConfig = {
     },
     'pack-bundle-lesson': {
         'fields': [
-            `"resources":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourcesField}`,
-            `"resource":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourcesField}`,
+            `"resources": ${resourcesField}`,
         ],
     },
     'foundation': {
@@ -348,7 +349,7 @@ let contentTypeConfig = {
             '"lesson_count": child_count',
             '"instructors": instructor[]->name',
             `"description": ${descriptionField}`,
-            `"resource": ${resourcesField}`,
+            `"resources": ${resourcesField}`,
             'xp',
             'total_xp',
             `"lessons": child[]->{

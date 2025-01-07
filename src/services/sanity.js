@@ -41,7 +41,7 @@ import {getAllCompleted, getAllStarted, getAllStartedOrCompleted} from "./conten
  *
  * @type {string[]}
  */
-const excludeFromGeneratedIndex = ['handleCustomFetchAll', 'processParentResourcesForLessonData'];
+const excludeFromGeneratedIndex = ['handleCustomFetchAll'];
 
 /**
  * Fetch a song by its document ID from Sanity.
@@ -1163,7 +1163,6 @@ export async function fetchLessonContent(railContentId) {
           published_on,
           "type":_type, 
           "resources": ${resourcesField},
-          "parent_resources":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourcesField},
           difficulty, 
           difficulty_string, 
           brand, 
@@ -1211,19 +1210,7 @@ export async function fetchLessonContent(railContentId) {
             isSingle: true,
         }
     );
-    return fetchSanity(query, false,
-        {customPostProcess: processParentResourcesForLessonData});
-}
-
-function processParentResourcesForLessonData(lessonDocument)
-{
-    console.log('lessonDocument', lessonDocument);
-    let childResources = lessonDocument['resources'] ?? [];
-    console.log('childResources', childResources);
-    let allResources = childResources.concat(lessonDocument['parent_resources'] ?? []);
-    console.log('allResources', allResources);
-    lessonDocument['resources'] = allResources;
-    return lessonDocument;
+    return fetchSanity(query, false);
 }
 
 /**
