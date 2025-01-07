@@ -1,3 +1,6 @@
+//import {AWSUrl, CloudFrontURl} from "./services/config";
+const AWSUrl = 'https://s3.us-east-1.amazonaws.com/musora-web-platform';
+const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net';
 const DEFAULT_FIELDS = [
     "'sanity_id' : _id",
     "'id': railcontent_id",
@@ -24,7 +27,12 @@ const DEFAULT_FIELDS = [
 ];
 
 const descriptionField = 'description[0].children[0].text';
-const resourcesField = 'resource[]{resource_name, _key, "resource_url": coalesce(\'https://d3fzm1tzeyr5n3.cloudfront.net\'+string::split(resource_aws.asset->fileURL,\'https://s3.us-east-1.amazonaws.com/musora-web-platform\')[1], resource_url )}';
+// this pulls both any defined resources for the document as well as any resources in the parent document
+const resourcesField = `[
+          ... resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
+          ... *[railcontent_id == ^.parent_content_data[0].id] [0].resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
+          ]`;
+
 
 const assignmentsField = `"assignments":assignment[]{
     "id": railcontent_id,
@@ -89,6 +97,11 @@ let contentTypeConfig = {
                 isOneToOne: true
             }
         },
+    },
+    'song-tutorial-children': {
+        'fields': [
+            `"resources": ${resourcesField}`,
+        ],
     },
     'challenge': {
         'fields': [
@@ -307,6 +320,11 @@ let contentTypeConfig = {
             `"description": ${descriptionField}`,
             'total_xp',
         ]
+    },
+    'pack-bundle-lesson': {
+        'fields': [
+            `"resources": ${resourcesField}`,
+        ],
     },
     'foundation': {
         'fields': [
@@ -529,6 +547,7 @@ function groupFilters(filters) {
 module.exports = {
     contentTypeConfig,
     descriptionField,
+    resourcesField,
     artistOrInstructorName,
     artistOrInstructorNameAsArray,
     getFieldsForContentType,

@@ -17,6 +17,7 @@ let globalConfig = {
  */
 const excludeFromGeneratedIndex = [];
 
+
 /**
  * Initializes the service with the given configuration.
  * This function must be called before using any other functions in this library.
@@ -71,5 +72,5 @@ function initializeService(config) {
 // Export both the initialization function and the config object
 module.exports = {
     initializeService,
-    globalConfig
+    globalConfig,
 };
