@@ -6,6 +6,7 @@ import {
     artistOrInstructorNameAsArray,
     assignmentsField,
     descriptionField,
+    resourcesField,
     contentTypeConfig,
     DEFAULT_FIELDS,
     getFieldsForContentType,
@@ -13,7 +14,7 @@ import {
     getUpcomingEventsTypes,
     showsTypes,
     getNewReleasesTypes,
-    coachLessonsTypes
+    coachLessonsTypes,
 } from "../contentTypeConfig";
 
 import {
