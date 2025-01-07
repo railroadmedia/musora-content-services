@@ -222,7 +222,7 @@ let contentTypeConfig = {
             '"lesson_count": child_count',
             '"instructors": instructor[]->name',
             `"description": ${descriptionField}`,
-            `"resources": ${resourcesField}`,
+            `"resource": ${resourcesField}`,
             'xp',
             'total_xp',
             `"lessons": child[]->{
@@ -349,7 +349,7 @@ let contentTypeConfig = {
             '"lesson_count": child_count',
             '"instructors": instructor[]->name',
             `"description": ${descriptionField}`,
-            `"resources": ${resourcesField}`,
+            `"resource": ${resourcesField}`,
             'xp',
             'total_xp',
             `"lessons": child[]->{
