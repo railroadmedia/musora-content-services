@@ -543,6 +543,7 @@ function groupFilters(filters) {
 module.exports = {
     contentTypeConfig,
     descriptionField,
+    resourcesField,
     artistOrInstructorName,
     artistOrInstructorNameAsArray,
     getFieldsForContentType,
