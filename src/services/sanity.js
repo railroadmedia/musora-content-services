@@ -40,7 +40,7 @@ import {getAllCompleted, getAllStarted, getAllStartedOrCompleted} from "./conten
  *
  * @type {string[]}
  */
-const excludeFromGeneratedIndex = ['handleCustomFetchAll'];
+const excludeFromGeneratedIndex = ['handleCustomFetchAll', 'processParentResourcesForLessonData'];
 
 /**
  * Fetch a song by its document ID from Sanity.
@@ -1161,11 +1161,8 @@ export async function fetchLessonContent(railContentId) {
     const fields = `title, 
           published_on,
           "type":_type, 
-          "resources": resource[]{resource_name, _key, 
-           "resource_url": coalesce(
-            'https://d3fzm1tzeyr5n3.cloudfront.net'+string::split(resource_aws.asset->fileURL,'https://s3.us-east-1.amazonaws.com/musora-web-platform')[1], 
-            resource_url
-          )},
+          "resources": ${resourcesField},
+          "parent_resources":  *[railcontent_id == ^.parent_content_data[0].id] [0].${resourcesField},
           difficulty, 
           difficulty_string, 
           brand, 
@@ -1213,7 +1210,18 @@ export async function fetchLessonContent(railContentId) {
             isSingle: true,
         }
     );
-    return fetchSanity(query, false);
+    return fetchSanity(query, false,
+        {customPostProcess: processParentResourcesForLessonData});
+}
+
+function processParentResourcesForLessonData(lessonDocument)
+{
+    let childResources = lessonDocument['resources'] ?? [];
+    console.log('childResources', childResources);
+    let allResources = childResources.concat(lessonDocument['parent_resources'] ?? []);
+    console.log('allResources', allResources);
+    lessonDocument['resources'] = allResources;
+    return lessonDocument;
 }
 
 /**
