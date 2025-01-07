@@ -1217,7 +1217,7 @@ export async function fetchLessonContent(railContentId) {
 
 function processParentResourcesForLessonData(lessonDocument)
 {
-    console.log('lessonDocument', lesonDocument);
+    console.log('lessonDocument', lessonDocument);
     let childResources = lessonDocument['resources'] ?? [];
     console.log('childResources', childResources);
     let allResources = childResources.concat(lessonDocument['parent_resources'] ?? []);
