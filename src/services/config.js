@@ -2,13 +2,13 @@
  * @module Config
  */
 
-let globalConfig = {
+export let globalConfig = {
     sanityConfig: {},
     railcontentConfig: {},
     localStorage: null,
     isMA: false,
     localTimezoneString: null, // In format: America/Vancouver
-  };
+};
 
 /**
  * Exported functions that are excluded from index generation.
@@ -60,7 +60,7 @@ const excludeFromGeneratedIndex = [];
  *   isMA: false
  * });
  */
-function initializeService(config) {
+export function initializeService(config) {
     globalConfig.sanityConfig = config.sanityConfig;
     globalConfig.railcontentConfig = config.railcontentConfig;
     globalConfig.localStorage = config.localStorage;
@@ -69,15 +69,7 @@ function initializeService(config) {
 }
 
 // Export both the initialization function and the config object
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        initializeService,
-        globalConfig,
-        excludeFromGeneratedIndex
-    };
-}
-
-export{
+module.exports = {
     initializeService,
     globalConfig
 };
