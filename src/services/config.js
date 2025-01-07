@@ -67,9 +67,3 @@ export function initializeService(config) {
     globalConfig.isMA = config.isMA || false;
     globalConfig.localTimezoneString = config.localTimezoneString || null;
 }
-
-// Export both the initialization function and the config object
-module.exports = {
-    initializeService,
-    globalConfig
-};

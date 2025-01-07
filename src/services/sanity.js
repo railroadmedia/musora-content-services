@@ -26,7 +26,6 @@ import {globalConfig} from "./config";
 import {
     fetchAllCompletedStates,
     fetchCompletedChallenges,
-    fetchCurrentSongComplete,
     fetchOwnedChallenges,
     fetchNextContentDataForParent,
     fetchHandler,

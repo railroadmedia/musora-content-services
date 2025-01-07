@@ -1199,8 +1199,3 @@ export function processMetadata(brand, type, withFilters = false) {
 
     return processedData;
 }
-
-module.exports = {
-    processMetadata,
-    typeWithSortOrder
-}

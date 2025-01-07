@@ -525,19 +525,3 @@ function groupFilters(filters) {
         return acc;
     }, {});
 }
-
-module.exports = {
-    contentTypeConfig,
-    descriptionField,
-    artistOrInstructorName,
-    artistOrInstructorNameAsArray,
-    getFieldsForContentType,
-    DEFAULT_FIELDS,
-    assignmentsField,
-    filtersToGroq,
-    getNewReleasesTypes,
-    getUpcomingEventsTypes,
-    showsTypes,
-    coachLessonsTypes,
-    songAccessMembership
-}
