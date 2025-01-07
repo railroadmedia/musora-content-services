@@ -526,7 +526,25 @@ function groupFilters(filters) {
     }, {});
 }
 
-module.exports = {
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        contentTypeConfig,
+        descriptionField,
+        artistOrInstructorName,
+        artistOrInstructorNameAsArray,
+        getFieldsForContentType,
+        DEFAULT_FIELDS,
+        assignmentsField,
+        filtersToGroq,
+        getNewReleasesTypes,
+        getUpcomingEventsTypes,
+        showsTypes,
+        coachLessonsTypes,
+        songAccessMembership
+    }
+}
+
+export {
     contentTypeConfig,
     descriptionField,
     artistOrInstructorName,

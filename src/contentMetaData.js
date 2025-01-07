@@ -1200,7 +1200,14 @@ function processMetadata(brand, type, withFilters = false) {
     return processedData;
 }
 
-module.exports = {
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        processMetadata,
+        typeWithSortOrder
+    }
+}
+
+export {
     processMetadata,
     typeWithSortOrder
 }

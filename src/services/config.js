@@ -69,7 +69,15 @@ function initializeService(config) {
 }
 
 // Export both the initialization function and the config object
-module.exports = {
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        initializeService,
+        globalConfig,
+        excludeFromGeneratedIndex
+    };
+}
+
+export{
     initializeService,
     globalConfig
 };
