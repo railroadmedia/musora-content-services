@@ -1021,6 +1021,7 @@ export async function fetchMethodChildren(railcontentId) {
     xp,
     total_xp,
     parent_content_data,
+     "resources": ${resourcesField},
     "breadcrumbs_data": parent_content_data[] {
         "id": id,
         "title": *[railcontent_id == ^.id][0].title,
