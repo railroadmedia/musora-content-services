@@ -3,6 +3,7 @@
   "version": "1.0.258",
   "description": "A package for Musoras content services ",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "build-index": "node tools/generate-index.js",
     "release": "standard-version",

@@ -1,5 +1,5 @@
-import {fetchUserLikes, postContentLiked, postContentUnliked} from "./railcontent";
-import {DataContext, ContentLikesVersionKey} from "./dataContext";
+import {fetchUserLikes, postContentLiked, postContentUnliked} from "./railcontent.js";
+import {DataContext, ContentLikesVersionKey} from "./dataContext.js";
 
 /**
  * Exported functions that are excluded from index generation.
