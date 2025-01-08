@@ -576,6 +576,17 @@ export async function postChallengesCommunityNotification(contentId) {
 }
 
 /**
+ * Enable solo notifications for the provided challenge
+ *
+ * @param {int|string} contentId - railcontent id of the challenge
+ * @returns {Promise<any|null>}
+ */
+export async function postChallengesSoloNotification(contentId) {
+    let url = `/challenges/notifications/solo_reminders/${contentId}`;
+    return await fetchHandler(url, 'post');
+}
+
+/**
  * Complete the challenge lesson and update challenge progress
  *
  * @param {int|string} contentId - railcontent id of the challenge
@@ -1168,6 +1179,10 @@ export async function playback(playlistId) {
 }
 
 function fetchAbsolute(url, params) {
+    if (globalConfig.railcontentConfig.authToken) {
+        params.headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`;
+    }
+
     if (globalConfig.railcontentConfig.baseUrl) {
         if (url.startsWith('/')) {
             return fetch(globalConfig.railcontentConfig.baseUrl + url, params)

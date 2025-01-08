@@ -6,6 +6,7 @@ import {
     artistOrInstructorNameAsArray,
     assignmentsField,
     descriptionField,
+    resourcesField,
     contentTypeConfig,
     DEFAULT_FIELDS,
     getFieldsForContentType,
@@ -13,7 +14,7 @@ import {
     getUpcomingEventsTypes,
     showsTypes,
     getNewReleasesTypes,
-    coachLessonsTypes
+    coachLessonsTypes,
 } from "../contentTypeConfig";
 
 import {
@@ -115,10 +116,12 @@ export async function fetchPlayAlongsCount(brand) {
  *   .catch(error => console.error(error));
  */
 export async function fetchRelatedSongs(brand, songId) {
+    const now = getSanityDate(new Date());
     const query = `
       *[_type == "song" && railcontent_id == ${songId}]{
         "entity": array::unique([
-            ...(*[_type == "song" && brand == "${brand}" && railcontent_id != ${songId} && references(^.artist->_id)]{
+            ...(*[_type == "song" && brand == "${brand}" && railcontent_id != ${songId} && references(^.artist->_id)
+            && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}'))]{
             "type": _type,
             "id": railcontent_id,
             "url": web_url_path,
@@ -144,7 +147,8 @@ export async function fetchRelatedSongs(brand, songId) {
               }
             ],
           }[0...10]),
-            ...(*[_type == "song" && brand == "${brand}" && railcontent_id != ${songId} && references(^.genre[]->_id)]{
+            ...(*[_type == "song" && brand == "${brand}" && railcontent_id != ${songId} && references(^.genre[]->_id)
+            && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}'))]{
             "type": _type,
             "id": railcontent_id,
             "url": web_url_path,
@@ -539,6 +543,8 @@ export async function fetchAll(brand, type, {
     if (type === 'archives') {
         typeFilter = `&& status == "archived"`;
         bypassStatusAndPublishedValidation = true;
+    } else if(type === 'pack'){
+        typeFilter = `&& (_type == 'pack' || _type == 'semester-pack')`;
     } else {
         typeFilter = type ? `&& _type == '${type}'` : "";
     }
@@ -923,6 +929,12 @@ export async function fetchParentByRailContentId(railcontentId) {
  */
 export async function fetchMethods(brand) {
     const query = `*[_type == 'learning-path' && brand == '${brand}'] {
+    parent_content_data,
+    "breadcrumbs_data": parent_content_data[] {
+        "id": id,
+        "title": *[railcontent_id == ^.id][0].title,
+        "url": *[railcontent_id == ^.id][0].web_url_path
+    } | order(length(url)),
       ${getFieldsForContentType()}
     } | order(published_on asc)`
     return fetchSanity(query, true);
@@ -965,6 +977,12 @@ export async function fetchMethod(brand, slug) {
     title,
     video,
     length_in_seconds,
+    parent_content_data,
+    "breadcrumbs_data": parent_content_data[] {
+        "id": id,
+        "title": *[railcontent_id == ^.id][0].title,
+        "url": *[railcontent_id == ^.id][0].web_url_path
+    } | order(length(url)),
     "type": _type,
     "permission_id": permission[]->railcontent_id,
     "levels": child[]->
@@ -1002,6 +1020,12 @@ export async function fetchMethodChildren(railcontentId) {
     title,
     xp,
     total_xp,
+    parent_content_data,
+    "breadcrumbs_data": parent_content_data[] {
+        "id": id,
+        "title": *[railcontent_id == ^.id][0].title,
+        "url": *[railcontent_id == ^.id][0].web_url_path
+    } | order(length(url)),
     'children': child[]->{
         ${getFieldsForContentType('method')}
     },
@@ -1156,13 +1180,13 @@ export async function fetchLessonContent(railContentId) {
     const fields = `title, 
           published_on,
           "type":_type, 
-          "resources": resource, 
+          "resources": ${resourcesField},
           difficulty, 
           difficulty_string, 
           brand, 
           status,
           soundslice, 
-          instrumentless, 
+          instrumentless,    
           railcontent_id, 
           "id":railcontent_id, 
           slug, artist->,
@@ -1172,7 +1196,7 @@ export async function fetchLessonContent(railContentId) {
           "description": description[0].children[0].text,
           "chapters": chapter[]{
             chapter_description,
-            chapter_timecode,
+            chapter_timecode, 
             "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
           },
           "instructors":instructor[]->name,
@@ -1193,7 +1217,13 @@ export async function fetchLessonContent(railContentId) {
           mp3_yes_drums_no_click_url,
           mp3_yes_drums_yes_click_url,
           "permission_id": permission[]->railcontent_id,
-          parent_content_data,
+          "parent_content_data": parent_content_data[]{
+            "id": id,
+            "title": *[railcontent_id == ^.id][0].title,
+            "web_url_path": *[railcontent_id == ^.id][0].web_url_path,
+            "slug":*[railcontent_id == ^.id][0].slug,
+            "type": *[railcontent_id == ^.id][0]._type,
+          },
           sort,
           xp`;
     const query = await buildQuery(
@@ -1557,13 +1587,13 @@ export async function fetchArtistLessons(brand, name, contentType, {
 
     // limits the results to supplied progressIds for started & completed filters
     const progressFilter = progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : "";
-
+    const now = getSanityDate(new Date());
     const query = `{
     "entity": 
       *[_type == 'artist' && name == '${name}']
         {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
         'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]), 
-        'lessons': *[${addType} brand == '${brand}' && references(^._id) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
+        'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
       [${start}...${end}]}
       |order(${sortOrder})
   }`;
@@ -1607,13 +1637,13 @@ export async function fetchGenreLessons(brand, name, contentType, {
         : "";
     // limits the results to supplied progressIds for started & completed filters
     const progressFilter = progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : "";
-
+    const now = getSanityDate(new Date());
     const query = `{
     "entity": 
       *[_type == 'genre' && name == '${name}']
         {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
         'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]), 
-        'lessons': *[${addType} brand == '${brand}' && references(^._id) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
+        'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
       [${start}...${end}]}
       |order(${sortOrder})
   }`;
