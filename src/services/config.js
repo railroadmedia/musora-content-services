@@ -71,7 +71,7 @@ function initializeService(config) {
 }
 
 // Export both the initialization function and the config object
-module.exports = {
+export {
     initializeService,
     globalConfig,
     AWSUrl,
