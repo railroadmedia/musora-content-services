@@ -23,7 +23,8 @@ const DEFAULT_FIELDS = [
     'status',
     "'slug' : slug.current",
     "'permission_id': permission[]->railcontent_id",
-    "xp"
+    "xp",
+    "child_count"
 ];
 
 const descriptionField = 'description[0].children[0].text';
