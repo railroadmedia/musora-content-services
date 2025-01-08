@@ -16,7 +16,8 @@ let globalConfig = {
  * @type {string[]}
  */
 const excludeFromGeneratedIndex = [];
-
+const AWSUrl = 'https://s3.us-east-1.amazonaws.com/musora-web-platform';
+const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net';
 
 /**
  * Initializes the service with the given configuration.
@@ -73,4 +74,6 @@ function initializeService(config) {
 module.exports = {
     initializeService,
     globalConfig,
+    AWSUrl,
+    CloudFrontURl,
 };

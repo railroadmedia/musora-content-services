@@ -1,6 +1,5 @@
-//import {AWSUrl, CloudFrontURl} from "./services/config";
-const AWSUrl = 'https://s3.us-east-1.amazonaws.com/musora-web-platform';
-const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net';
+import {AWSUrl, CloudFrontURl} from "./services/config";
+
 const DEFAULT_FIELDS = [
     "'sanity_id' : _id",
     "'id': railcontent_id",
