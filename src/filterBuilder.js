@@ -1,7 +1,7 @@
-import {fetchUserPermissions} from "./services/userPermissions";
+import {fetchUserPermissions} from "./services/userPermissions.js";
 import {
     songAccessMembership
-} from "./contentTypeConfig";
+} from "./contentTypeConfig.js";
 
 export class FilterBuilder {
 
