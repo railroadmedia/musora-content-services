@@ -2,6 +2,78 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.3](https://github.com/railroadmedia/musora-content-services/compare/v1.1.2...v1.1.3) (2025-01-08)
+
+### [1.1.2](https://github.com/railroadmedia/musora-content-services/compare/v1.1.1...v1.1.2) (2025-01-08)
+
+### [1.1.1](https://github.com/railroadmedia/musora-content-services/compare/v1.1.0...v1.1.1) (2025-01-08)
+
+## [1.1.0](https://github.com/railroadmedia/musora-content-services/compare/v1.0.258...v1.1.0) (2025-01-08)
+
+
+### Features
+
+* add es6 exports ([f16d26f](https://github.com/railroadmedia/musora-content-services/commit/f16d26ffd26cc0febdb4050b5fd33bcd06c78c54))
+
+
+### Bug Fixes
+
+* babel blocking tests ([b219af7](https://github.com/railroadmedia/musora-content-services/commit/b219af7097927bd6452af533f9ec0722cbba9c29))
+* jest esm support and security vulnerability ([1aa7f91](https://github.com/railroadmedia/musora-content-services/commit/1aa7f9181247e26f91f038edefd5b3e50b276661))
+* merge conflict ([c7714b9](https://github.com/railroadmedia/musora-content-services/commit/c7714b932585ae0a862370027be57f285878033c))
+
+### [1.0.258](https://github.com/railroadmedia/musora-content-services/compare/v1.0.257...v1.0.258) (2025-01-08)
+
+### [1.0.257](https://github.com/railroadmedia/musora-content-services/compare/v1.0.256...v1.0.257) (2025-01-03)
+
+### [1.0.256](https://github.com/railroadmedia/musora-content-services/compare/v1.0.255...v1.0.256) (2025-01-02)
+
+### [1.0.255](https://github.com/railroadmedia/musora-content-services/compare/v1.0.254...v1.0.255) (2025-01-02)
+
+### [1.0.254](https://github.com/railroadmedia/musora-content-services/compare/v1.0.253...v1.0.254) (2024-12-20)
+
+### [1.0.253](https://github.com/railroadmedia/musora-content-services/compare/v1.0.252...v1.0.253) (2024-12-20)
+
+### [1.0.252](https://github.com/railroadmedia/musora-content-services/compare/v1.0.251...v1.0.252) (2024-12-19)
+
+### [1.0.251](https://github.com/railroadmedia/musora-content-services/compare/v1.0.250...v1.0.251) (2024-12-19)
+
+### [1.0.250](https://github.com/railroadmedia/musora-content-services/compare/v1.0.249...v1.0.250) (2024-12-19)
+
+### [1.0.249](https://github.com/railroadmedia/musora-content-services/compare/v1.0.247...v1.0.249) (2024-12-19)
+
+### [1.0.248](https://github.com/railroadmedia/musora-content-services/compare/v1.0.247...v1.0.248) (2024-12-19)
+
+### [1.0.247](https://github.com/railroadmedia/musora-content-services/compare/v1.0.245...v1.0.247) (2024-12-18)
+
+### [1.0.246](https://github.com/railroadmedia/musora-content-services/compare/v1.0.244...v1.0.246) (2024-12-18)
+
+### [1.0.246](https://github.com/railroadmedia/musora-content-services/compare/v1.0.245...v1.0.246) (2024-12-18)
+
+### [1.0.245](https://github.com/railroadmedia/musora-content-services/compare/v1.0.244...v1.0.245) (2024-12-18)
+
+### [1.0.244](https://github.com/railroadmedia/musora-content-services/compare/v1.0.243...v1.0.244) (2024-12-18)
+
+### [1.0.243](https://github.com/railroadmedia/musora-content-services/compare/v1.0.242...v1.0.243) (2024-12-18)
+
+### [1.0.242](https://github.com/railroadmedia/musora-content-services/compare/v1.0.241...v1.0.242) (2024-12-17)
+
+### [1.0.241](https://github.com/railroadmedia/musora-content-services/compare/v1.0.240...v1.0.241) (2024-12-16)
+
+### [1.0.240](https://github.com/railroadmedia/musora-content-services/compare/v1.0.239...v1.0.240) (2024-12-16)
+
+### [1.0.239](https://github.com/railroadmedia/musora-content-services/compare/v1.0.238...v1.0.239) (2024-12-16)
+
+### [1.0.238](https://github.com/railroadmedia/musora-content-services/compare/v1.0.237...v1.0.238) (2024-12-16)
+
+### [1.0.237](https://github.com/railroadmedia/musora-content-services/compare/v1.0.236...v1.0.237) (2024-12-14)
+
+### [1.0.236](https://github.com/railroadmedia/musora-content-services/compare/v1.0.235...v1.0.236) (2024-12-13)
+
+### [1.0.235](https://github.com/railroadmedia/musora-content-services/compare/v1.0.234...v1.0.235) (2024-12-13)
+
+### [1.0.234](https://github.com/railroadmedia/musora-content-services/compare/v1.0.233...v1.0.234) (2024-12-13)
+
 ### [1.0.233](https://github.com/railroadmedia/musora-content-services/compare/v1.0.218...v1.0.233) (2024-12-12)
 
 ### [1.0.232](https://github.com/railroadmedia/musora-content-services/compare/v1.0.231...v1.0.232) (2024-12-11)

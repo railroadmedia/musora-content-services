@@ -123,10 +123,19 @@ describe('Sanity Queries', function () {
         const id2 = 402204;
         const response = await fetchByRailContentIds([id, id2]);
         const returnedIds = response.map((x) => x.id);
-        expect(returnedIds).toContain(id);
-        expect(returnedIds).toContain(id2);
+        expect(returnedIds[0]).toBe(id);
+        expect(returnedIds[1]).toBe(id2);
         expect(returnedIds.length).toBe(2);
+    });
 
+    test('fetchByRailContentIds_Order', async () => {
+        const id = 380094;
+        const id2 = 402204;
+        const response = await fetchByRailContentIds([id2, id]);
+        const returnedIds = response.map((x) => x.id);
+        expect(returnedIds[0]).toBe(id2);
+        expect(returnedIds[1]).toBe(id);
+        expect(returnedIds.length).toBe(2);
     });
 
     test('fetchUpcomingEvents', async () => {
@@ -666,6 +675,11 @@ describe('Sanity Queries', function () {
         expect(hierarchy.parents[241248]).toBe(241247);
         expect(hierarchy.children[241250]).toStrictEqual([241676]);
         expect(hierarchy.children[243085]).toStrictEqual([243170, 243171, 243172, 243174, 243176]);
+    });
+
+    test('fetchTopLeveldrafts', async () => {
+        let id = await fetchTopLevelParentId(401999);
+        expect(id).toBe(401999);
     });
 
     test('fetchCommentData', async()=>{

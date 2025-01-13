@@ -1,4 +1,7 @@
-const DEFAULT_FIELDS = [
+//import {AWSUrl, CloudFrontURl} from "./services/config";
+export const AWSUrl = 'https://s3.us-east-1.amazonaws.com/musora-web-platform';
+export const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net';
+export const DEFAULT_FIELDS = [
     "'sanity_id' : _id",
     "'id': railcontent_id",
     'railcontent_id',
@@ -20,17 +23,23 @@ const DEFAULT_FIELDS = [
     'status',
     "'slug' : slug.current",
     "'permission_id': permission[]->railcontent_id",
-    "xp"
+    "xp",
+    "child_count"
 ];
 
-const descriptionField = 'description[0].children[0].text';
+export const descriptionField = 'description[0].children[0].text';
+// this pulls both any defined resources for the document as well as any resources in the parent document
+export const resourcesField = `[
+          ... resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
+          ... *[railcontent_id == ^.parent_content_data[0].id] [0].resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
+          ]`;
 
 /*
  *  NOTE: TP-366 - Arrays can be either arrays of different objects or arrays of different primitives, not both
  *  updated query so assignment_sheet_music_image can be either an image or a URL
  *  see: https://www.sanity.io/docs/array-type#fNBIr84P
  */
-const assignmentsField = `"assignments":assignment[]{
+export const assignmentsField = `"assignments":assignment[]{
     "id": railcontent_id,
         "soundslice_slug": assignment_soundslice,
         "title": assignment_title,
@@ -57,7 +66,7 @@ const contentWithSortField = {
         'sort',
     ]
 }
-const showsTypes = {
+export const showsTypes = {
     'drumeo': ['odd-times', 'drum-fest-international-2022', 'spotlight', 'the-history-of-electronic-drums', 'backstage-secret', 'quick-tips', 'question-and-answer', 'student-collaboration',
         'live', 'podcast', 'solo', 'boot-camp', 'gear-guide', 'performance', 'in-rhythm', 'challenges', 'on-the-road', 'diy-drum-experiment', 'rhythmic-adventures-of-captain-carson',
         'study-the-greats', 'rhythms-from-another-planet', 'tama', 'paiste-cymbals', 'behind-the-scenes', 'exploring-beats', 'sonor'
@@ -67,15 +76,15 @@ const showsTypes = {
     'singeo': ['student-review', 'question-and-answer']
 }
 
-const coachLessonsTypes = ['course', 'course-part', 'coach-stream', 'student-focus', 'quick-tips', 'pack', 'semester-pack', 'question-and-answer', 'song-tutorial', 'song-tutorial-children', 'workout'];
+export const coachLessonsTypes = ['course', 'course-part', 'coach-stream', 'student-focus', 'quick-tips', 'pack', 'semester-pack', 'question-and-answer', 'song-tutorial', 'song-tutorial-children', 'workout'];
 
-let contentTypeConfig = {
+export let contentTypeConfig = {
     'song': {
         'fields': [
             'album',
             'soundslice',
             'instrumentless',
-            '"resources": resource',
+            `"resources": ${resourcesField}`,
         ],
         'relationships': {
             'artist': {
@@ -100,6 +109,11 @@ let contentTypeConfig = {
                 isOneToOne: true
             }
         },
+    },
+    'song-tutorial-children': {
+        'fields': [
+            `"resources": ${resourcesField}`,
+        ],
     },
     'challenge': {
         'fields': [
@@ -142,7 +156,7 @@ let contentTypeConfig = {
             '"lesson_count": child_count',
             '"instructors": instructor[]->name',
             `"description": ${descriptionField}`,
-            'resource',
+            `"resource": ${resourcesField}`,
             'xp',
             'total_xp',
             `"lessons": child[]->{
@@ -160,7 +174,7 @@ let contentTypeConfig = {
             '"lesson_count": child_count',
             '"instructors": instructor[]->name',
             `"description": ${descriptionField}`,
-            'resource',
+            `"resource": ${resourcesField}`,
             'xp',
             'total_xp',
             '"thumbnail_url":thumbnail.asset->url',
@@ -172,8 +186,8 @@ let contentTypeConfig = {
                 "image": thumbnail.asset->url,
                 "instructors": instructor[]->name,
                 length_in_seconds,
-                "resources": resource,
-                difficulty,
+                "resources": ${resourcesField},
+                difficulty, 
                 difficulty_string,
                 artist->,
                 "thumbnail_url":thumbnail.asset->url,
@@ -223,7 +237,7 @@ let contentTypeConfig = {
             '"lesson_count": child_count',
             '"instructors": instructor[]->name',
             `"description": ${descriptionField}`,
-            'resource',
+            `"resource": ${resourcesField}`,
             'xp',
             'total_xp',
             `"lessons": child[]->{
@@ -240,7 +254,7 @@ let contentTypeConfig = {
             '"lesson_count": child_count',
             '"instructors": instructor[]->name',
             `"description": ${descriptionField}`,
-            'resource',
+            `"resource": ${resourcesField}`,
             'xp',
             'total_xp',
             `"lessons": child[]->{
@@ -282,7 +296,7 @@ let contentTypeConfig = {
                 "lesson_count": child_count,
                 ${getFieldsForContentType()}
             }`,
-            '"resources": resource',
+            `"resources": ${resourcesField}`,
             '"thumbnail": thumbnail.asset->url',
             '"light_logo": light_mode_logo_url.asset->url',
             '"dark_logo": dark_mode_logo_url.asset->url',
@@ -310,7 +324,7 @@ let contentTypeConfig = {
                 "description": ${descriptionField},
                 ${getFieldsForContentType()}
             }`,
-            '"resources": resource',
+            `"resources": ${resourcesField}`,
             '"image": logo_image_url.asset->url',
             '"thumbnail": thumbnail.asset->url',
             '"light_logo": light_mode_logo_url.asset->url',
@@ -318,6 +332,11 @@ let contentTypeConfig = {
             `"description": ${descriptionField}`,
             'total_xp',
         ]
+    },
+    'pack-bundle-lesson': {
+        'fields': [
+            `"resources": ${resourcesField}`,
+        ],
     },
     'foundation': {
         'fields': [
@@ -345,7 +364,7 @@ let contentTypeConfig = {
             '"lesson_count": child_count',
             '"instructors": instructor[]->name',
             `"description": ${descriptionField}`,
-            'resource',
+            `"resource": ${resourcesField}`,
             'xp',
             'total_xp',
             `"lessons": child[]->{
@@ -403,9 +422,9 @@ let contentTypeConfig = {
     'sonor': contentWithSortField,
 }
 
-const songAccessMembership = 94;
+export const songAccessMembership = 94;
 
-function getNewReleasesTypes(brand) {
+export function getNewReleasesTypes(brand) {
     const baseNewTypes = ["student-review", "student-review", "student-focus", "coach-stream", "live", "question-and-answer", "boot-camps", "quick-tips", "workout", "challenge", "challenge-part", "podcasts", "pack", "song", "learning-path-level", "play-along", "course", "unit"];
     switch (brand) {
         case 'drumeo':
@@ -419,7 +438,7 @@ function getNewReleasesTypes(brand) {
     }
 }
 
-function getUpcomingEventsTypes(brand) {
+export function getUpcomingEventsTypes(brand) {
     const baseLiveTypes = ["student-review", "student-review", "student-focus", "coach-stream", "live", "question-and-answer", "boot-camps", "quick-tips", "recording", "pack-bundle-lesson"];
     switch (brand) {
         case 'drumeo':
@@ -433,15 +452,15 @@ function getUpcomingEventsTypes(brand) {
     }
 }
 
-function artistOrInstructorName(key = 'artist_name') {
+export function artistOrInstructorName(key = 'artist_name') {
     return `'${key}': coalesce(artist->name, instructor[0]->name)`;
 }
 
-function artistOrInstructorNameAsArray(key = 'artists') {
+export function artistOrInstructorNameAsArray(key = 'artists') {
     return `'${key}': select(artist->name != null => [artist->name], instructor[]->name)`;
 }
 
-function getFieldsForContentType(contentType, asQueryString = true) {
+export function getFieldsForContentType(contentType, asQueryString = true) {
     const fields = contentType ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? []) : DEFAULT_FIELDS;
     return asQueryString ? fields.toString() + ',' : fields;
 }
@@ -452,7 +471,7 @@ function getFieldsForContentType(contentType, asQueryString = true) {
  *     'genre,rock']
  * @returns {string} - A string that can be used in a groq query
  */
-function filtersToGroq(filters, selectedFilters = []) {
+export function filtersToGroq(filters, selectedFilters = []) {
     if (!filters) {
         filters = [];
     }
@@ -535,20 +554,4 @@ function groupFilters(filters) {
         acc[category].push(value);
         return acc;
     }, {});
-}
-
-module.exports = {
-    contentTypeConfig,
-    descriptionField,
-    artistOrInstructorName,
-    artistOrInstructorNameAsArray,
-    getFieldsForContentType,
-    DEFAULT_FIELDS,
-    assignmentsField,
-    filtersToGroq,
-    getNewReleasesTypes,
-    getUpcomingEventsTypes,
-    showsTypes,
-    coachLessonsTypes,
-    songAccessMembership
 }

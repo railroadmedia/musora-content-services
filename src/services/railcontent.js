@@ -1,9 +1,9 @@
 /**
  * @module Railcontent-Services
  */
-import {contentStatusCompleted} from "./contentProgress";
+import {contentStatusCompleted} from "./contentProgress.js";
 
-const {globalConfig} = require('./config');
+import { globalConfig } from "./config.js";
 
 /**
  * Exported functions that are excluded from index generation.
@@ -576,6 +576,17 @@ export async function postChallengesCommunityNotification(contentId) {
 }
 
 /**
+ * Enable solo notifications for the provided challenge
+ *
+ * @param {int|string} contentId - railcontent id of the challenge
+ * @returns {Promise<any|null>}
+ */
+export async function postChallengesSoloNotification(contentId) {
+    let url = `/challenges/notifications/solo_reminders/${contentId}`;
+    return await fetchHandler(url, 'post');
+}
+
+/**
  * Complete the challenge lesson and update challenge progress
  *
  * @param {int|string} contentId - railcontent id of the challenge
@@ -617,14 +628,17 @@ export async function postChallengesHideCompletedBanner(contentId) {
  *   .then(playlists => console.log(playlists))
  *   .catch(error => console.error(error));
  */
-export async function fetchUserPlaylists(brand, {page, limit, sort, searchTerm, content_id} = {}) {
+export async function fetchUserPlaylists(brand, {page, limit, sort, searchTerm, content_id, categories} = {}) {
     let url;
     const limitString = limit ? `&limit=${limit}` : '';
     const pageString = page ? `&page=${page}` : '';
     const sortString = sort ? `&sort=${sort}` : '';
     const searchFilter = searchTerm ? `&term=${searchTerm}` : '';
     const content = content_id ? `&content_id=${content_id}` : '';
-    url = `/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}`;
+    const categoryString = categories && categories.length
+        ? categories.map(cat => `categories[]=${cat}`).join('&')
+        : '';
+    url = `/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`;
     return await fetchHandler(url);
 }
 
@@ -1159,7 +1173,16 @@ export async function reportPlaylist(playlistId,  {issue} = {}) {
     return await fetchHandler(url, "PUT");
 }
 
+export async function playback(playlistId) {
+    const url = `/playlists/play/${playlistId}`;
+    return await fetchHandler(url, "GET");
+}
+
 function fetchAbsolute(url, params) {
+    if (globalConfig.railcontentConfig.authToken) {
+        params.headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`;
+    }
+
     if (globalConfig.railcontentConfig.baseUrl) {
         if (url.startsWith('/')) {
             return fetch(globalConfig.railcontentConfig.baseUrl + url, params)

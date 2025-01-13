@@ -3,9 +3,9 @@ import {
     postContentCompleted,
     postContentReset,
     postRecordWatchSession
-} from "./railcontent";
-import {DataContext, ContentProgressVersionKey} from "./dataContext";
-import {fetchAssignments, fetchHierarchy} from "./sanity";
+} from "./railcontent.js";
+import {DataContext, ContentProgressVersionKey} from "./dataContext.js";
+import {fetchAssignments, fetchHierarchy} from "./sanity.js";
 
 const STATE_STARTED = 'started';
 const STATE_COMPLETED = 'completed';
@@ -230,7 +230,7 @@ export async function recordWatchSession(contentId, mediaType, mediaCategory, me
                 if (mediaLengthSeconds <= 0) {
                     return;
                 }
-                let progress = Math.min(99, Math.round(currentSeconds ?? 0 / Math.max(1, mediaLengthSeconds ?? 0) * 100));
+                let progress = Math.min(99, Math.round((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds ?? 0) * 100));
                 let hierarchy = await fetchHierarchy(contentId);
                 saveContentProgress(localContext, contentId, progress, currentSeconds, hierarchy);
             }
@@ -265,10 +265,10 @@ function uuidv4() {
 }
 
 function bubbleProgress(hierarchy, contentId, localContext) {
-    let parentId = hierarchy.parents[contentId];
+    let parentId = hierarchy?.parents?.[contentId];
     if (!parentId) return;
     let data = localContext.data[parentId] ?? {};
-    let childProgress = hierarchy.children[parentId].map(function (childId) {
+    let childProgress = hierarchy?.children?.[parentId]?.map(function (childId) {
         return localContext.data[childId]?.[DATA_KEY_PROGRESS] ?? 0;
     });
     let progress = Math.round(childProgress.reduce((a, b) => a + b, 0) / childProgress.length);

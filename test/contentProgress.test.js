@@ -155,6 +155,16 @@ describe('contentProgressDataContext', function () {
         expect(state).toBe("started");
     });
 
+
+    // test('recordWatchSession', async () => {
+    //     const contentId = 241250;
+    //     let progress = await getProgressPercentage(contentId); //force load context
+    //
+    //     await recordWatchSession(contentId, 'video', 'vimeo', 1673, 554, 5);
+    //     progress = await getProgressPercentage(241250);
+    //
+    //     expect(progress).toBe(33);
+    // });
     // test('assignmentCompleteBubblingToCompleted', async () => {
     //     let assignmentId = 241685;
     //     let contentId = 241257;
