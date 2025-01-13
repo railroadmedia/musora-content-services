@@ -1,9 +1,9 @@
 /**
  * @module Railcontent-Services
  */
-import {contentStatusCompleted} from "./contentProgress";
+import {contentStatusCompleted} from "./contentProgress.js";
 
-const {globalConfig} = require('./config');
+import { globalConfig } from "./config.js";
 
 /**
  * Exported functions that are excluded from index generation.

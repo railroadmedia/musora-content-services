@@ -14,27 +14,26 @@ import {
     getUpcomingEventsTypes,
     showsTypes,
     getNewReleasesTypes,
-    coachLessonsTypes,
-} from "../contentTypeConfig";
+    coachLessonsTypes
+} from "../contentTypeConfig.js";
 
 import {
     processMetadata,
     typeWithSortOrder
-} from "../contentMetaData";
+} from "../contentMetaData.js";
 
-import {globalConfig} from "./config";
+import {globalConfig} from "./config.js";
 
 import {
     fetchAllCompletedStates,
     fetchCompletedChallenges,
-    fetchCurrentSongComplete,
     fetchOwnedChallenges,
     fetchNextContentDataForParent,
     fetchHandler,
 } from './railcontent.js';
-import {arrayToStringRepresentation, FilterBuilder} from "../filterBuilder";
-import {fetchUserPermissions} from "./userPermissions";
-import {getAllCompleted, getAllStarted, getAllStartedOrCompleted} from "./contentProgress";
+import {arrayToStringRepresentation, FilterBuilder} from "../filterBuilder.js";
+import {fetchUserPermissions} from "./userPermissions.js";
+import {getAllCompleted, getAllStarted, getAllStartedOrCompleted} from "./contentProgress.js";
 
 /**
  * Exported functions that are excluded from index generation.

@@ -2,13 +2,13 @@
  * @module Config
  */
 
-let globalConfig = {
+export let globalConfig = {
     sanityConfig: {},
     railcontentConfig: {},
     localStorage: null,
     isMA: false,
     localTimezoneString: null, // In format: America/Vancouver
-  };
+};
 
 /**
  * Exported functions that are excluded from index generation.
@@ -16,7 +16,6 @@ let globalConfig = {
  * @type {string[]}
  */
 const excludeFromGeneratedIndex = [];
-
 
 /**
  * Initializes the service with the given configuration.
@@ -61,16 +60,10 @@ const excludeFromGeneratedIndex = [];
  *   isMA: false
  * });
  */
-function initializeService(config) {
+export function initializeService(config) {
     globalConfig.sanityConfig = config.sanityConfig;
     globalConfig.railcontentConfig = config.railcontentConfig;
     globalConfig.localStorage = config.localStorage;
     globalConfig.isMA = config.isMA || false;
     globalConfig.localTimezoneString = config.localTimezoneString || null;
 }
-
-// Export both the initialization function and the config object
-module.exports = {
-    initializeService,
-    globalConfig,
-};

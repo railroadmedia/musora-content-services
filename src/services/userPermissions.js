@@ -1,7 +1,7 @@
 import {
     fetchUserPermissionsData
-} from "./railcontent";
-import {setLastUpdatedTime, wasLastUpdateOlderThanXSeconds} from "./lastUpdated";
+} from "./railcontent.js";
+import {setLastUpdatedTime, wasLastUpdateOlderThanXSeconds} from "./lastUpdated.js";
 
 /**
  * Exported functions that are excluded from index generation.

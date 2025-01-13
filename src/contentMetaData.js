@@ -1168,8 +1168,8 @@ const contentMetadata = {
     }
 };
 
-const typeWithSortOrder = ['in-rhythm', 'diy-drum-experiments', 'rhythmic-adventures-of-captain-carson'];
-function processMetadata(brand, type, withFilters = false) {
+export const typeWithSortOrder = ['in-rhythm', 'diy-drum-experiments', 'rhythmic-adventures-of-captain-carson'];
+export function processMetadata(brand, type, withFilters = false) {
     let brandMetaData = contentMetadata[brand]?.[type];
     // If the type is explicitly defined as null or the brand doesn't exist return null
     // Specifically this is for drumeo.student-review
@@ -1198,9 +1198,4 @@ function processMetadata(brand, type, withFilters = false) {
     }
 
     return processedData;
-}
-
-module.exports = {
-    processMetadata,
-    typeWithSortOrder
 }

@@ -1,4 +1,4 @@
-import {globalConfig} from "./config";
+import {globalConfig} from "./config.js";
 
 /**
  * Exported functions that are excluded from index generation.
