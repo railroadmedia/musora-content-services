@@ -52,7 +52,7 @@ export const assignmentsField = `"assignments":assignment[]{
             }
         }.url,
         "timecode": assignment_timecode,
-        "description": assignment_description
+        "description": coalesce(assignment_description,'')
 },`
 
 const contentWithInstructorsField = {
