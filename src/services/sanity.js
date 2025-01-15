@@ -422,10 +422,29 @@ export async function fetchScheduledReleases(brand, {page = 1, limit = 10}) {
  *   .catch(error => console.error(error));
  */
 export async function fetchByRailContentId(id, contentType) {
+    const fields = getFieldsForContentType(contentType);
+    const childrenFilter = await new FilterBuilder(``, {isChildrenFilter: true} ).buildFilter();
+    const entityFieldsString = ` ${fields}
+                                    'child_count': coalesce(count(child[${childrenFilter}]->), 0) ,
+                                    "lessons": child[${childrenFilter}]->{
+                                        "id": railcontent_id,
+                                        title,
+                                        "image": thumbnail.asset->url,
+                                        "instructors": instructor[]->name,
+                                        length_in_seconds,
+                                    },
+                                    'length_in_seconds': coalesce(
+      math::sum(
+        select(
+          child[${childrenFilter}]->length_in_seconds
+        )
+      ),
+      length_in_seconds
+    ),`;
 
     const query = buildRawQuery(
         `railcontent_id == ${id} && _type == '${contentType}'`,
-        getFieldsForContentType(contentType),
+        entityFieldsString,
         {
             isSingle: true,
         },
