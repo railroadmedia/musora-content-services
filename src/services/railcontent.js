@@ -289,6 +289,9 @@ async function postDataHandler(url, data) {
     return fetchHandler(url, 'post', null, data);
 }
 
+async function patchDataHandler(url, data) {
+    return fetchHandler(url, 'patch', null, data);}
+
 export async function fetchHandler(url, method = "get", dataVersion = null, body = null) {
     let headers = {
         'Content-Type': 'application/json',
@@ -1176,6 +1179,19 @@ export async function reportPlaylist(playlistId,  {issue} = {}) {
 export async function playback(playlistId) {
     const url = `/playlists/play/${playlistId}`;
     return await fetchHandler(url, "GET");
+}
+
+/**
+ * Set a user's StudentView Flag
+ *
+ * @param {int|string} userId - id of the user (must be currently authenticated)
+ * @param {bool} enable - truthsy value to enable student view
+ * @returns {Promise<any|null>}
+ */
+export async function setStudentViewForUser(userId, enable) {
+    let url = `/user-management-system/user/update/${userId}`;
+    let data = {'use_student_view' : enable ? 1 : 0};
+    return await patchDataHandler(url, data);
 }
 
 function fetchAbsolute(url, params) {

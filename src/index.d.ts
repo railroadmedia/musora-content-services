@@ -1,7 +1,6 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
-	globalConfig,
 	initializeService
 } from './services/config.js';
 
@@ -79,6 +78,7 @@ import {
 	postContentUnliked,
 	postRecordWatchSession,
 	reportPlaylist,
+	setStudentViewForUser,
 	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem
@@ -243,7 +243,6 @@ declare module 'musora-content-services' {
 		getProgressStateByIds,
 		getResumeTimeSeconds,
 		getSortOrder,
-		globalConfig,
 		initializeService,
 		isContentLiked,
 		jumpToContinueContent,
@@ -268,6 +267,7 @@ declare module 'musora-content-services' {
 		recordWatchSession,
 		reportPlaylist,
 		reset,
+		setStudentViewForUser,
 		unlikeContent,
 		unpinPlaylist,
 		updatePlaylist,
