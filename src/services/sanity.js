@@ -1723,19 +1723,20 @@ export async function fetchTopLevelParentId(railcontentId) {
 
 export async function fetchHierarchy(railcontentId) {
     let topLevelId = await fetchTopLevelParentId(railcontentId);
+    const childrenFilter = await new FilterBuilder(``, {isChildrenFilter: true} ).buildFilter();
     const query = `*[railcontent_id == ${topLevelId}]{
       railcontent_id,
       'assignments': assignment[]{railcontent_id},
-      'children': child[]->{
+      'children': child[${childrenFilter}]->{
         railcontent_id,
         'assignments': assignment[]{railcontent_id},
-        'children': child[]->{
+        'children': child[${childrenFilter}]->{
             railcontent_id,
             'assignments': assignment[]{railcontent_id},
-            'children': child[]->{
+            'children': child[${childrenFilter}]->{
                railcontent_id,
                'assignments': assignment[]{railcontent_id},
-               'children': child[]->{
+               'children': child[${childrenFilter}]->{
                   railcontent_id,                
             } 
           }
