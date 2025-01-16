@@ -184,107 +184,6 @@ export async function fetchRelatedSongs(brand, songId) {
 }
 
 /**
- * Fetch all songs for a specific brand with pagination and search options.
- * @param {string} brand - The brand for which to fetch songs.
- * @param {Object} params - Parameters for pagination, filtering, and sorting.
- * @param {number} [params.page=1] - The page number for pagination.
- * @param {number} [params.limit=10] - The number of songs per page.
- * @param {string} [params.searchTerm=""] - The search term to filter songs by title or artist.
- * @param {string} [params.sort="-published_on"] - The field to sort the songs by.
- * @param {Array<string>} [params.includedFields=[]] - The fields to include in the query.
- * @param {string} [params.groupBy=""] - The field to group the results by.
- * @returns {Promise<Object|null>} - The fetched song data or null if not found.
- *
- * @example
- * fetchAllSongs('drumeo', {
- *   page: 2,
- *   limit: 20,
- *   searchTerm: 'rock',
- *   sort: 'published_on',
- *   includedFields: ['difficulty', 'style'],
- *   groupBy: 'artist'
- * })
- *   .then(result => console.log(result))
- *   .catch(error => console.error(error));
- */
-export async function fetchAllSongs(brand, {
-    page = 1,
-    limit = 10,
-    searchTerm = "",
-    sort = "-published_on",
-    includedFields = [],
-    groupBy = ""
-}) {
-    return fetchAll(brand, 'song', {page, limit, searchTerm, sort, includedFields, groupBy});
-}
-
-/**
- * Fetch filter options for a specific brand.
- *
- * @param {string} brand - The brand for which to fetch filter options.
- * @returns {Promise<Object|null>} - A promise that resolves to an object containing filter options or null if not found.
- *
- * @example
- * fetchSongFilterOptions('drumeo')
- *   .then(options => console.log(options))
- *   .catch(error => console.error(error));
- */
-export async function fetchSongFilterOptions(brand) {
-    const query = `
-  {
-    "difficulty": [
-      {"type": "Introductory", "count": count(*[_type == 'song' && brand == '${brand}' && difficulty_string == "Introductory"]._id)},
-      {"type": "Beginner", "count": count(*[_type == 'song' && brand == '${brand}' && difficulty_string == "Beginner"]._id)},
-      {"type": "Intermediate", "count": count(*[_type == 'song' && brand == '${brand}' && difficulty_string == "Intermediate"]._id)},
-      {"type": "Advanced", "count": count(*[_type == 'song' && brand == '${brand}' && difficulty_string == "Advanced"]._id)},
-      {"type": "Expert", "count": count(*[_type == 'song' && brand == '${brand}' && difficulty_string == "Expert"]._id)}
-    ],
-    "genre": *[_type == 'genre' && 'song' in filter_types] {
-      "type": name,
-      "count": count(*[_type == 'song' && brand == '${brand}' && references(^._id)]._id)
-    },
-    "instrumentless": [
-      {"type": "Full Song Only", "count": count(*[_type == 'song' && brand == '${brand}' && instrumentless == false]._id)},
-      {"type": "Instrument Removed", "count": count(*[_type == 'song' && brand == '${brand}' && instrumentless == true]._id)}
-    ]
-  }`;
-
-    return fetchSanity(query, true);
-}
-
-/**
- * Fetch the total count of songs for a specific brand.
- * @param {string} brand - The brand for which to fetch the song count.
- * @returns {Promise<number|null>} - The total count of songs or null if an error occurs.
- */
-export async function fetchSongCount(brand) {
-    const query = `count(*[_type == 'song' && brand == "${brand}"])`;
-    return fetchSanity(query, true, {processNeedAccess: false});
-}
-
-/**
- * Fetch the latest workouts for a specific brand, including completion status and progress.
- * This function retrieves up to five of the latest workout content for a given brand, sorted in descending order by their publication date.
- * It also includes completion status and progress percentage for each workout by fetching additional data about user progress.
- *
- * @param {string} brand - The brand for which to fetch workouts (e.g., 'drumeo', 'pianote').
- * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of workout data objects with additional properties for completion status and progress percentage,
- *     or null if no workouts are found.
- *
- * @example
- * fetchWorkouts('drumeo')
- *   .then(workouts => console.log(workouts))
- *   .catch(error => console.error(error));
- */
-export async function fetchWorkouts(brand) {
-    const fields = getFieldsForContentType('workout');
-    const query = `*[_type == 'workout' && brand == '${brand}'] [0...5] {
-        ${fields.toString()}
-      } | order(published_on desc)[0...5]`
-    return fetchSanity(query, true);
-}
-
-/**
  * Fetch the latest new releases for a specific brand.
  * @param {string} brand - The brand for which to fetch new releases.
  * @returns {Promise<Object|null>} - The fetched new releases data or null if not found.
@@ -546,7 +445,7 @@ export async function fetchAll(brand, type, {
     if (customResults) {
         return customResults;
     }
-
+console.log('rox fetch all    ');
     let config = contentTypeConfig[type] ?? {};
     let additionalFields = config?.fields ?? [];
     let isGroupByOneToOne = (groupBy ? config?.relationships?.[groupBy]?.isOneToOne : false) ?? false;
@@ -917,60 +816,6 @@ export async function fetchAllFilterOptions(
     return includeTabs ? {...results, tabs, catalogName} : results;
 }
 
-
-/**
- * Fetch children content by Railcontent ID.
- * @param {string} railcontentId - The Railcontent ID of the parent content.
- * @param {string} [contentType] - The content type the IDs to add needed fields to the response.
- * @returns {Promise<Array<Object>|null>} - The fetched children content data or [] if not found.
- */
-export async function fetchChildren(railcontentId, contentType) {
-    const query = `*[railcontent_id == ${railcontentId}]{
-        title,
-
-        'children': child[]->{
-                           ${getFieldsForContentType(contentType)}
-                        },
-      }[0..1]`;
-    let parent = await fetchSanity(query, false);
-    return parent['children'] ?? [];
-}
-
-/**
- *
- * @param railcontentId - railcontent id of the child
- * @returns {Promise<Array<string>|null>} - The fetched parent content data or [] if not found
- */
-export async function fetchParentByRailContentId(railcontentId) {
-    const query = `*[railcontent_id == ${railcontentId}]{
-        'parents': array::unique([
-            ...(*[references(^._id)]{
-                ${getFieldsForContentType()}
-                })
-            ])
-        }[0...1]`;
-    let child = await fetchSanity(query, false);
-    return child['parents'][0] ?? [];
-}
-
-/**
- * Fetch the Methods (learning-paths) for a specific brand.
- * @param {string} brand - The brand for which to fetch methods.
- * @returns {Promise<Object|null>} - The fetched methods data or null if not found.
- */
-export async function fetchMethods(brand) {
-    const query = `*[_type == 'learning-path' && brand == '${brand}'] {
-    parent_content_data,
-    "breadcrumbs_data": parent_content_data[] {
-        "id": id,
-        "title": *[railcontent_id == ^.id][0].title,
-        "url": *[railcontent_id == ^.id][0].web_url_path
-    } | order(length(url)),
-      ${getFieldsForContentType()}
-    } | order(published_on asc)`
-    return fetchSanity(query, true);
-}
-
 /**
  * Fetch the Foundations 2019.
  * @param {string} slug - The slug of the method.
@@ -1067,19 +912,6 @@ export async function fetchMethodChildren(railcontentId) {
     },
   }[0..1]`;
     return fetchSanity(query, true);
-}
-
-/**
- * Fetch the next lesson for a specific method by Railcontent ID.
- * @param {string} railcontentId - The Railcontent ID of the current lesson.
- * @param {string} methodId - The RailcontentID of the method
- * @returns {Promise<Object|null>} - The fetched next lesson data or null if not found.
- */
-export async function fetchMethodNextLesson(railcontentId, methodId) {
-    const sortedChildren = await fetchMethodChildrenIds(methodId);
-    const index = sortedChildren.indexOf(railcontentId);
-    const childIndex = sortedChildren[index + 1];
-    return childIndex ? await fetchByRailContentId(childIndex) : null;
 }
 
 /**
@@ -1303,30 +1135,6 @@ export async function fetchRelatedLessons(railContentId, brand) {
 }
 
 /**
- * Fetch related method lessons for a specific lesson by RailContent ID and type.
- * @param {string} railContentId - The RailContent ID of the current lesson.
- * @param {string} brand - The current brand.
- * @returns {Promise<Array<Object>|null>} - The fetched related lessons
- */
-export async function fetchRelatedMethodLessons(railContentId, brand) {
-    const query = `*[railcontent_id == ${railContentId} && brand == "${brand}"]{
-      "id":_id,
-      "related_lessons": *[references(^._id)][0].child[]->{
-        "id": railcontent_id,
-        "type": _type,
-        title,
-        "description": description[0].children[0].text, // Extraer texto plano
-        "thumbnail_url": thumbnail.asset->url,
-        "url": web_url_path,
-        difficulty,
-        difficulty_string,
-      }
-    }
-  }`
-    return fetchSanity(query, false);
-}
-
-/**
  * Fetch all packs.
  * @param {string} brand - The brand for which to fetch packs.
  * @param {string} [searchTerm=""] - The search term to filter packs.
@@ -1416,20 +1224,6 @@ export async function fetchLiveEvent(brand) {
 }
 
 /**
- * Fetch all children of a specific pack by Railcontent ID.
- * @param {string} railcontentId - The Railcontent ID of the pack.
- * @returns {Promise<Array<Object>|null>} - The fetched pack children data or null if not found.
- *
- * @example
- * fetchPackChildren('pack123')
- *   .then(children => console.log(children))
- *   .catch(error => console.error(error));
- */
-export async function fetchPackChildren(railcontentId) {
-    return fetchChildren(railcontentId, 'pack-children');
-}
-
-/**
  * Fetch the data needed for the Pack Overview screen.
  * @param {number} id - The Railcontent ID of the pack
  * @returns {Promise<Object|null>} - The pack information and lessons or null if not found.
@@ -1442,24 +1236,6 @@ export async function fetchPackChildren(railcontentId) {
 export async function fetchPackData(id) {
     const query = `*[railcontent_id == ${id}]{
     ${getFieldsForContentType("pack")}
-  } [0...1]`;
-    return fetchSanity(query, false);
-}
-
-/**
- * Fetch the data needed for the Challenge Overview screen.
- * @param {string} id - The Railcontent ID of the course
- * @returns {Promise<Object|null>} - The challenge information and lessons or null if not found.
- *
- * @example
- * fetchChallengeOverview('challenge123')
- *   .then(challenge => console.log(challenge))
- *   .catch(error => console.error(error));
- */
-export async function fetchChallengeOverview(id) {
-    // WIP
-    const query = `*[railcontent_id == ${id}]{
-    ${getFieldsForContentType("challenge")}
   } [0...1]`;
     return fetchSanity(query, false);
 }
@@ -1509,20 +1285,6 @@ export async function fetchCoachLessons(brand, id, {
         },
     );
     return fetchSanity(query, true);
-}
-
-/**
- * Fetch the data needed for the Course Overview screen.
- * @param {string} id - The Railcontent ID of the course
- * @returns {Promise<Object|null>} - The course information and lessons or null if not found.
- *
- * @example
- * fetchCourseOverview('course123')
- *   .then(course => console.log(course))
- *   .catch(error => console.error(error));
- */
-export async function fetchCourseOverview(id) {
-    return fetchByRailContentId(id, 'course');
 }
 
 /**
@@ -1781,26 +1543,6 @@ function populateHierarchyLookups(currentLevel, data, parentId) {
 }
 
 /**
- * Fetch assignments for content
- *
- * @param {integer} contentId - List of ids get data for
- * @returns {Promise<array|null>} - A promise that resolves to an array containing the data
- */
-export async function fetchAssignments(contentId) {
-    const fields = `"id": railcontent_id,"assignments":assignment[]{"id": railcontent_id}`;
-    const query = await buildQuery(`railcontent_id == ${contentId}`,
-        {bypassPermissions: true},
-        fields,
-        {end: 100});
-    let data = await fetchSanity(query, false);
-    let mapped = [];
-    data.assignments.forEach(function (content) {
-        mapped.push(content.id);
-    });
-    return mapped;
-}
-
-/**
  * Fetch data for comment mod page
  *
  * @param {array} ids - List of ids get data for
@@ -1947,32 +1689,6 @@ function doesUserNeedAccessToContent(result, userPermissions, isAdmin) {
         }
     }
     return true;
-}
-
-/**
- * Fetch CatalogueMetadata from Sanity. This information may be duplicated in the contentTypeConfig.js.
- * It's an ongoing discussion (Aug 2024), but it's been included here if necessary
- *
- * @param {string} contentType - name of the contentype to pull
- * @returns {Promise<Object|null>} - A promise that resolves to the fetched data or null if an error occurs or no results are found.
- *
- * @example
- *
- * fetchCatalogMetadata('song')
- *   .then(data => console.log(data))
- *   .catch(error => console.error(error));
- */
-export async function fetchCatalogMetadata(contentType) {
-    const query = `*[_type == 'CatalogMetadata']{
-        catalog_type,
-        brand,
-        groq_results,
-        groq_search_fields,
-        meta_data_groq,
-        modal_text,
-        sort_by,
-      }`
-    return fetchSanity(query, false, {processNeedAccess: false});
 }
 
 /**

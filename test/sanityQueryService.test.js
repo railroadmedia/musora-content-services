@@ -2,7 +2,6 @@ import {getFieldsForContentType} from "../src/contentTypeConfig";
 const railContentModule = require('../src/services/railcontent.js')
 
 import {
-    fetchAssignments,
     fetchCommentModContentData,
     fetchMethodPreviousNextLesson,
     fetchSanity
@@ -17,9 +16,6 @@ const {
     fetchArtists,
     fetchSongArtistCount,
     fetchRelatedSongs,
-    fetchAllSongs,
-    fetchSongFilterOptions,
-    fetchSongCount,
     fetchNewReleases,
     fetchUpcomingEvents,
     fetchByRailContentId,
@@ -28,17 +24,12 @@ const {
     fetchAllOld,
     fetchAllFilterOptions,
     fetchFoundation,
-    fetchMethods,
     fetchMethod,
     fetchRelatedLessons,
     fetchAllPacks,
     fetchPackAll,
     fetchLessonContent,
-    fetchCourseOverview,
-    fetchChildren,
-    fetchParentByRailContentId,
     fetchLiveEvent,
-    fetchChallengeOverview,
     fetchCoachLessons,
     fetchByReference,
     fetchScheduledReleases,
@@ -110,14 +101,6 @@ describe('Sanity Queries', function () {
         expect(response.id).toBe(id);
     });
 
-    test('fetchChallengeOverview', async () => {
-        const id = 402197;
-        const response = await fetchChallengeOverview(id);
-        expect(response.lessons).toBeDefined();
-        expect(response.id).toBe(id);
-
-    });
-
     test('fetchByRailContentIds', async () => {
         const id = 380094;
         const id2 = 402204;
@@ -155,27 +138,6 @@ describe('Sanity Queries', function () {
         expect(response.id).toBe(id);
     });
 
-
-    test('fetchCourseOverview', async () => {
-        const id = 310414;
-        const response = await fetchCourseOverview(id);
-        expect(response.id).toBe(id);
-        expect(response.type).toBe('course');
-    });
-
-    test('fetchSongCount', async () => {
-        const response = await fetchSongCount('drumeo');
-        expect(response).toBeGreaterThan(1000);
-    });
-
-    test('fetchAllSongs', async () => {
-        const response = await fetchAllSongs('drumeo', {});
-        log(response);
-        expect(response.entity[0].soundslice).toBeDefined();
-        expect(response.entity[0].artist_name).toBeDefined();
-        expect(response.entity[0].instrumentless).toBeDefined();
-    });
-
     test('fetchAllSongsInProgress', async () => {
        var mock = jest.spyOn(dataContext, 'fetchData');
         var json = JSON.parse(`{"version":1,"config":{"key":1,"enabled":1,"checkInterval":1,"refreshInterval":2},"data":{"412941":{"s":"started","p":6,"t":20,"u":1731108082}}}`);
@@ -204,21 +166,6 @@ describe('Sanity Queries', function () {
     //     expect(response.entity[0].id).not.toBe(198122);
     //     expect(response.entity[0].id).not.toBe(231622);
     // });
-
-    test('fetchSongFilterOptions', async () => {
-        const response = await fetchSongFilterOptions('drumeo', {});
-        log(response);
-        expect(response.genre).toBeDefined();
-        expect(response.difficulty).toBeDefined();
-    });
-
-    test('fetchAllSongsGroupByArtist', async () => {
-        const response = await fetchAllSongs('drumeo', {groupBy: "artist"});
-        expect(response.entity[0].lessons[0].soundslice).toBeDefined();
-        expect(response.entity[0].lessons[0].artist_name).toBeDefined();
-        expect(response.entity[0].lessons[0].instrumentless).toBeDefined();
-    }, 100000);
-
 
     test('fetchNewReleases', async () => {
         const response = await fetchNewReleases('drumeo');
@@ -361,29 +308,6 @@ describe('Sanity Queries', function () {
         )).toBe(true);
     }, 10000);
 
-    test('fetchChildren', async () => {
-        // complement test to fetchParentByRailContentId
-        const id = 191338; ////https://web-staging-one.musora.com/admin/studio/publishing/structure/play-along;play-along_191338
-        const expectedChildID = 191492;
-        const response = await fetchChildren(id);
-        log('num children', response.length);
-        log(response);
-
-        expect(response.length > 0).toBeTruthy();
-        const foundExpectedChild = response.some((child) => {
-            return child['id'] = expectedChildID;
-        });
-        expect(foundExpectedChild).toBeTruthy();
-    });
-
-    test('fetchParentByRailContentId', async () => {
-        // complement test to fetchChildren
-        const childId = 191492; // child of https://web-staging-one.musora.com/admin/studio/publishing/structure/play-along;play-along_191338
-        const expectedParent = 191338;
-        const response = await fetchParentByRailContentId(childId);
-        expect(response['id']).toBe(expectedParent);
-    });
-
     test('getSortOrder', () => {
         let sort = getSortOrder()
         expect(sort).toBe('published_on desc');
@@ -402,13 +326,6 @@ describe('Sanity Queries', function () {
         log(response);
         expect(response).toBeDefined();
         expect(response.levels.length).toBeGreaterThan(0);
-    });
-
-    test('fetchMethods', async () => {
-        const response = await fetchMethods('drumeo');
-        log(response);
-        expect(response.length).toBeGreaterThan(0);
-        expect(response[0].type).toBe('learning-path');
     });
 
     test('fetchAll-WithProgress', async () => {
@@ -571,16 +488,6 @@ describe('Sanity Queries', function () {
         expect(response.tabs.length).toBeGreaterThan(0);
     });
 
-    test('fetchChallengesV2Fields', async () => {
-        const id = 402197;
-        const response = await fetchChallengeOverview(id);
-        log(response);
-        expect(response.award).toBeDefined();
-        expect(response.award_custom_text).toBeDefined();
-        expect(response.lessons[0].is_always_unlocked_for_challenge).toBeDefined();
-        expect(response.lessons[0].is_bonus_content_for_challenge).toBeDefined();
-    });
-
     test('fetchShowsData-OddTimes', async () => {
         const response = await fetchShowsData('drumeo');
         log(response);
@@ -690,12 +597,6 @@ describe('Sanity Queries', function () {
         expect(data[241251].parentTitle).toBe("Gear");
         expect(data[241252].title).toBe("Setting Up Your Pedals & Throne");
     });
-
-    test('fetchAssignments', async()=>{
-        let data = await fetchAssignments(241250);
-        expect(data).toContain(241676);
-    });
-
 });
 
 describe('Filter Builder', function () {

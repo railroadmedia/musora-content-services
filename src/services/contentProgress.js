@@ -5,7 +5,7 @@ import {
     postRecordWatchSession
 } from "./railcontent.js";
 import {DataContext, ContentProgressVersionKey} from "./dataContext.js";
-import {fetchAssignments, fetchHierarchy} from "./sanity.js";
+import {fetchHierarchy} from "./sanity.js";
 
 const STATE_STARTED = 'started';
 const STATE_COMPLETED = 'completed';
