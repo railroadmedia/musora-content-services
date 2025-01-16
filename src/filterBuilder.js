@@ -22,7 +22,8 @@ export class FilterBuilder {
             bypassStatuses = false,
             bypassPublishedDateRestriction = false,
             isSingle = false,
-            allowsPullSongsContent = true
+            allowsPullSongsContent = true,
+            isChildrenFilter = false
         } = {}) {
         this.availableContentStatuses = availableContentStatuses;
         this.bypassPermissions = bypassPermissions;
@@ -36,6 +37,7 @@ export class FilterBuilder {
         this.filter = filter;
         // this.debug = process.env.DEBUG === 'true' || false;
         this.debug = false;
+        this.prefix =  isChildrenFilter ? '@->' : '';
     }
 
 
@@ -81,10 +83,10 @@ export class FilterBuilder {
             const now = new Date().toISOString();
             let statuses = [...this.availableContentStatuses];
             statuses.splice(statuses.indexOf(this.STATUS_SCHEDULED), 1);
-            this._andWhere(`(status in ${arrayToStringRepresentation(statuses)} || (status == '${this.STATUS_SCHEDULED}' && defined(published_on) && published_on >= '${now}'))`)
+            this._andWhere(`(${this.prefix}status in ${arrayToStringRepresentation(statuses)} || (${this.prefix}status == '${this.STATUS_SCHEDULED}' && defined(${this.prefix}published_on) && ${this.prefix}published_on >= '${now}'))`)
 
         } else {
-            this._andWhere(`status in ${arrayToStringRepresentation(this.availableContentStatuses)}`);
+            this._andWhere(`${this.prefix}status in ${arrayToStringRepresentation(this.availableContentStatuses)}`);
         }
         return this;
     }
@@ -117,9 +119,9 @@ export class FilterBuilder {
         now = roundedDate.toISOString();
 
         if (this.getFutureContentOnly) {
-            this._andWhere(`published_on >= '${now}'`);
+            this._andWhere(`${this.prefix}published_on >= '${now}'`);
         } else if (!this.pullFutureContent) {
-            this._andWhere(`published_on <= '${now}'`);
+            this._andWhere(`${this.prefix}published_on <= '${now}'`);
         } else {
             // const date = new Date();
             // const theFuture = new Date(date.setMonth(date.getMonth() + 18));
