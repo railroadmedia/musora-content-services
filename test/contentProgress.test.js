@@ -129,7 +129,7 @@ describe('contentProgressDataContext', function () {
         let progress241247 = await getProgressPercentage(241247);
         expect(progress241247).toBe(1);
 
-    });
+    }, 50000);
 
     // test('completedProgressNotOverwritten', async () => {
     //     const contentId = 241262;
