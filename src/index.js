@@ -1,7 +1,6 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
-	globalConfig,
 	initializeService
 } from './services/config.js';
 
@@ -79,6 +78,7 @@ import {
 	postContentUnliked,
 	postRecordWatchSession,
 	reportPlaylist,
+	setStudentViewForUser,
 	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem
@@ -242,7 +242,6 @@ export {
 	getProgressStateByIds,
 	getResumeTimeSeconds,
 	getSortOrder,
-	globalConfig,
 	initializeService,
 	isContentLiked,
 	jumpToContinueContent,
@@ -267,6 +266,7 @@ export {
 	recordWatchSession,
 	reportPlaylist,
 	reset,
+	setStudentViewForUser,
 	unlikeContent,
 	unpinPlaylist,
 	updatePlaylist,

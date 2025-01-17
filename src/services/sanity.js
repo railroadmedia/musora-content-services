@@ -422,10 +422,29 @@ export async function fetchScheduledReleases(brand, {page = 1, limit = 10}) {
  *   .catch(error => console.error(error));
  */
 export async function fetchByRailContentId(id, contentType) {
+    const fields = getFieldsForContentType(contentType);
+    const childrenFilter = await new FilterBuilder(``, {isChildrenFilter: true} ).buildFilter();
+    const entityFieldsString = ` ${fields}
+                                    'child_count': coalesce(count(child[${childrenFilter}]->), 0) ,
+                                    "lessons": child[${childrenFilter}]->{
+                                        "id": railcontent_id,
+                                        title,
+                                        "image": thumbnail.asset->url,
+                                        "instructors": instructor[]->name,
+                                        length_in_seconds,
+                                    },
+                                    'length_in_seconds': coalesce(
+      math::sum(
+        select(
+          child[${childrenFilter}]->length_in_seconds
+        )
+      ),
+      length_in_seconds
+    ),`;
 
     const query = buildRawQuery(
         `railcontent_id == ${id} && _type == '${contentType}'`,
-        getFieldsForContentType(contentType),
+        entityFieldsString,
         {
             isSingle: true,
         },
@@ -595,6 +614,8 @@ export async function fetchAll(brand, type, {
         `;
         filter = `_type == '${groupBy}' && count(*[${lessonsFilterWithRestrictions}]._id) > 0`;
     } else if (groupBy !== "") {
+        const childrenFilter = await new FilterBuilder(``, {isChildrenFilter: true} ).buildFilter();
+
         const webUrlPath = (groupBy == 'genre') ? '/genres' : '';
         const lessonsFilter = `brand == '${brand}' && ^._id in ${groupBy}[]._ref ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter} ${customFilter}`;
         const lessonsFilterWithRestrictions = await new FilterBuilder(lessonsFilter).buildFilter();
@@ -608,12 +629,23 @@ export async function fetchAll(brand, type, {
                 'all_lessons_count': count(*[${lessonsFilterWithRestrictions}]._id),
                 'lessons': *[${lessonsFilterWithRestrictions}]{
                     ${fieldsString},
+                     'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
                     ${groupBy}
                 }[0...20]`;
         filter = `_type == '${groupBy}' && count(*[${lessonsFilterWithRestrictions}]._id) > 0`;
     } else {
         filter = `brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter} ${customFilter}`
-        entityFieldsString = fieldsString;
+        const childrenFilter = await new FilterBuilder(``, {isChildrenFilter: true} ).buildFilter();
+        entityFieldsString = ` ${fieldsString},
+                                    'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
+                                    'length_in_seconds': coalesce(
+      math::sum(
+        select(
+          child[${childrenFilter}]->length_in_seconds
+        )
+      ),
+      length_in_seconds
+    ),`;
     }
 
     const filterWithRestrictions = await new FilterBuilder(filter, {
@@ -965,6 +997,8 @@ export async function fetchFoundation(slug) {
  * @returns {Promise<Object|null>} - The fetched methods data or null if not found.
  */
 export async function fetchMethod(brand, slug) {
+    const childrenFilter = await new FilterBuilder(``, {isChildrenFilter: true} ).buildFilter();
+
     const query = `*[_type == 'learning-path' && brand == "${brand}" && slug.current == "${slug}"] {
     "description": ${descriptionField},
     "instructors":instructor[]->name,
@@ -984,7 +1018,7 @@ export async function fetchMethod(brand, slug) {
     } | order(length(url)),
     "type": _type,
     "permission_id": permission[]->railcontent_id,
-    "levels": child[]->
+    "levels": child[${childrenFilter}]->
       {
         "id": railcontent_id,
         published_on,
@@ -1011,8 +1045,10 @@ export async function fetchMethod(brand, slug) {
  * @returns {Promise<Object|null>} - The fetched next lesson data or null if not found.
  */
 export async function fetchMethodChildren(railcontentId) {
+    const childrenFilter = await new FilterBuilder(``, {isChildrenFilter: true} ).buildFilter();
+
     const query = `*[railcontent_id == ${railcontentId}]{
-    child_count,
+    "child_count":coalesce(count(child[${childrenFilter}]->), 0),
     "id": railcontent_id,
     "description": ${descriptionField},
     "thumbnail_url": thumbnail.asset->url,
@@ -1020,12 +1056,13 @@ export async function fetchMethodChildren(railcontentId) {
     xp,
     total_xp,
     parent_content_data,
+     "resources": ${resourcesField},
     "breadcrumbs_data": parent_content_data[] {
         "id": id,
         "title": *[railcontent_id == ^.id][0].title,
         "url": *[railcontent_id == ^.id][0].web_url_path
     } | order(length(url)),
-    'children': child[]->{
+    'children': child[(${childrenFilter})]->{
         ${getFieldsForContentType('method')}
     },
   }[0..1]`;
@@ -1079,14 +1116,16 @@ export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
  * @returns {Promise<Array<Object>|null>} - The fetched children data or null if not found.
  */
 export async function fetchMethodChildrenIds(railcontentId) {
+    const childrenFilter = await new FilterBuilder(``, {isChildrenFilter: true} ).buildFilter();
+
     const query = `*[ railcontent_id == ${railcontentId}]{
-    'children': child[]-> {
+    'children': child[${childrenFilter}]-> {
         'id': railcontent_id,
         'type' : _type,
-            'children': child[]-> {
+            'children': child[${childrenFilter}]-> {
                 'id': railcontent_id,
                 'type' : _type,
-                    'children': child[]-> {
+                    'children': child[${childrenFilter}]-> {
                         'id': railcontent_id,
                         'type' : _type,
             }
@@ -1248,11 +1287,12 @@ export async function fetchRelatedLessons(railContentId, brand) {
     const filterSongSameArtist = await new FilterBuilder(`_type=="song" && _type==^._type && brand == "${brand}" && references(^.artist->_id) && railcontent_id !=${railContentId}`).buildFilter();
     const filterSongSameGenre = await new FilterBuilder(`_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}`).buildFilter();
     const filterNeighbouringSiblings = await new FilterBuilder(`references(^._id)`).buildFilter();
+    const childrenFilter = await new FilterBuilder(``, {isChildrenFilter: true} ).buildFilter();
 
     const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
     "related_lessons" : array::unique([
-      ...(*[${filterNeighbouringSiblings}][0].child[]->{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}),
+      ...(*[${filterNeighbouringSiblings}][0].child[${childrenFilter}]->{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}),
       ...(*[${filterSongSameArtist}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
       ...(*[${filterSongSameGenre}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
       ...(*[${filterSameTypeAndSortOrder}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, sort}|order(sort asc, title asc)[0...10]),
@@ -1456,10 +1496,11 @@ export async function fetchCoachLessons(brand, id, {
         ? filtersToGroq(includedFields)
         : "";
     const filter = `brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='instructor' && railcontent_id == ${id}]._id)`;
+    const filterWithRestrictions = await new FilterBuilder(filter).buildFilter();
 
     sortOrder = getSortOrder(sortOrder, brand);
     const query = buildEntityAndTotalQuery(
-        filter,
+        filterWithRestrictions,
         fieldsString,
         {
             sortOrder: sortOrder,
@@ -1682,19 +1723,20 @@ export async function fetchTopLevelParentId(railcontentId) {
 
 export async function fetchHierarchy(railcontentId) {
     let topLevelId = await fetchTopLevelParentId(railcontentId);
+    const childrenFilter = await new FilterBuilder(``, {isChildrenFilter: true} ).buildFilter();
     const query = `*[railcontent_id == ${topLevelId}]{
       railcontent_id,
       'assignments': assignment[]{railcontent_id},
-      'children': child[]->{
+      'children': child[${childrenFilter}]->{
         railcontent_id,
         'assignments': assignment[]{railcontent_id},
-        'children': child[]->{
+        'children': child[${childrenFilter}]->{
             railcontent_id,
             'assignments': assignment[]{railcontent_id},
-            'children': child[]->{
+            'children': child[${childrenFilter}]->{
                railcontent_id,
                'assignments': assignment[]{railcontent_id},
-               'children': child[]->{
+               'children': child[${childrenFilter}]->{
                   railcontent_id,                
             } 
           }

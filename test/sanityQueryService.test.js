@@ -607,12 +607,12 @@ describe('Sanity Queries', function () {
     });
 
     test('fetchMethodNextPreviousLesson-Last', async () => {
-        const id = 396234;
-        const methodId = 396229;
+        const id = 260171;
+        const methodId = 259060;
         const response = await fetchMethodPreviousNextLesson(id, methodId);
         log(response);
         expect(response.prevLesson).toBeDefined();
-        expect(response.prevLesson.id).toBe(396233);
+        expect(response.prevLesson.id).toBe(260170);
         expect(response.prevLesson.type).toBe('course-part');
         expect(response.nextLesson).not.toBeDefined();
     });
