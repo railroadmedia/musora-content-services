@@ -18,7 +18,7 @@ function extractExportedFunctions(filePath) {
     const fileContent = fs.readFileSync(filePath, 'utf-8');
 
     const exportFunctionRegex = /export\s+(async\s+)?function\s+(\w+)/g;
-    const exportVariableRegex = /export\s+(let|const|var)\s+(globalConfig)\s+/g;  // Corrected regex
+    const exportVariableRegex = /export\s+(let|const|var)\s+(globalConfig)\s+/g;
     const moduleExportsRegex = /module\.exports\s*=\s*{\s*([\s\S]+?)\s*};/g;
 
     let matches = [...fileContent.matchAll(exportFunctionRegex)].map(match => match[2]);
