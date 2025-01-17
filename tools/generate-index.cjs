@@ -17,10 +17,16 @@ const fileExports = {};
 function extractExportedFunctions(filePath) {
     const fileContent = fs.readFileSync(filePath, 'utf-8');
 
-    const exportRegex = /export\s+(async\s+)?function\s+(\w+)/g;
+    const exportFunctionRegex = /export\s+(async\s+)?function\s+(\w+)/g;
+    const exportVariableRegex = /export\s+(let|const|var)\s+(globalConfig)\s+/g;  // Corrected regex
     const moduleExportsRegex = /module\.exports\s*=\s*{\s*([\s\S]+?)\s*};/g;
 
-    let matches = [...fileContent.matchAll(exportRegex)].map(match => match[2]);
+    let matches = [...fileContent.matchAll(exportFunctionRegex)].map(match => match[2]);
+
+    // Match `globalConfig` variable
+    const variableMatches = [...fileContent.matchAll(exportVariableRegex)].map(match => match[2]);
+    matches = matches.concat(variableMatches);
+
 
     const moduleExportsMatch = moduleExportsRegex.exec(fileContent);
     if (moduleExportsMatch) {

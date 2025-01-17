@@ -1,6 +1,7 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
+	globalConfig,
 	initializeService
 } from './services/config.js';
 
@@ -242,6 +243,7 @@ export {
 	getProgressStateByIds,
 	getResumeTimeSeconds,
 	getSortOrder,
+	globalConfig,
 	initializeService,
 	isContentLiked,
 	jumpToContinueContent,
