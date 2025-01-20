@@ -1,6 +1,7 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
+	globalConfig,
 	initializeService
 } from './services/config.js';
 
@@ -215,6 +216,7 @@ declare module 'musora-content-services' {
 		getProgressStateByIds,
 		getResumeTimeSeconds,
 		getSortOrder,
+		globalConfig,
 		initializeService,
 		isContentLiked,
 		jumpToContinueContent,
