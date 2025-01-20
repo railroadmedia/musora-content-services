@@ -1012,6 +1012,7 @@ const contentMetadata = {
             allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle'],
         },
         'question-and-answer': {
+            thumbnailUrl: 'https://d1923uyy6spedc.cloudfront.net/question-answer-singeo.png',
             icon: "fas fa-question-circle",
             description: "Each week we go live to answer your questions. Submit your questions in advance using the button below, in the Q&A thread in the forums, or live in the community chat.",
             allowableFilters: ['difficulty', 'genre', 'essential', 'theory'],

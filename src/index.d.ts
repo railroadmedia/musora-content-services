@@ -78,6 +78,7 @@ import {
 	postContentUnliked,
 	postRecordWatchSession,
 	reportPlaylist,
+	setStudentViewForUser,
 	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem
@@ -238,6 +239,7 @@ declare module 'musora-content-services' {
 		recordWatchSession,
 		reportPlaylist,
 		reset,
+		setStudentViewForUser,
 		unlikeContent,
 		unpinPlaylist,
 		updatePlaylist,

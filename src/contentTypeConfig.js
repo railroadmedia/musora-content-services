@@ -34,14 +34,26 @@ export const resourcesField = `[
           ... *[railcontent_id == ^.parent_content_data[0].id] [0].resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
           ]`;
 
-
+/*
+ *  NOTE: TP-366 - Arrays can be either arrays of different objects or arrays of different primitives, not both
+ *  updated query so assignment_sheet_music_image can be either an image or a URL
+ *  see: https://www.sanity.io/docs/array-type#fNBIr84P
+ */
 export const assignmentsField = `"assignments":assignment[]{
     "id": railcontent_id,
         "soundslice_slug": assignment_soundslice,
         "title": assignment_title,
-        "sheet_music_image_url": assignment_sheet_music_image,
+        "sheet_music_image_url": 
+          coalesce(assignment_sheet_music_image_new[]{
+              _type == 'Image' => {
+                'url': asset->url
+              },
+              _type == 'URL' => {
+                url
+              }
+            }.url,  assignment_sheet_music_image),
         "timecode": assignment_timecode,
-        "description": assignment_description
+        "description": coalesce(assignment_description,'')
 },`
 
 const contentWithInstructorsField = {
@@ -191,7 +203,7 @@ export let contentTypeConfig = {
                     "id":railcontent_id,
                     name,
                     short_bio,
-                    "biography": short_bio[0].children[0].text, 
+                    "biography": short_bio[0].children[0].text,
                     web_url_path,
                     "coach_card_image": coach_card_image.asset->url,
                     "coach_profile_image":thumbnail_url.asset->url
@@ -391,8 +403,8 @@ export let contentTypeConfig = {
     'backstage-secret': contentWithInstructorsField,
     'question-and-answer': contentWithInstructorsField,
     'student-collaboration': contentWithInstructorsField,
-    'live': {...contentWithInstructorsField, 'slug': 'live-streams'},
-    'solo': {...contentWithInstructorsField, 'slug': 'solos'},
+    'live': { ...contentWithInstructorsField, 'slug': 'live-streams' },
+    'solo': { ...contentWithInstructorsField, 'slug': 'solos' },
     'boot-camp': contentWithInstructorsField,
     'gear-guids': contentWithInstructorsField,
     'performance': contentWithInstructorsField,

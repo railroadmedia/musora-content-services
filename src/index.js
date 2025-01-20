@@ -78,6 +78,7 @@ import {
 	postContentUnliked,
 	postRecordWatchSession,
 	reportPlaylist,
+	setStudentViewForUser,
 	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem
@@ -237,6 +238,7 @@ export {
 	recordWatchSession,
 	reportPlaylist,
 	reset,
+	setStudentViewForUser,
 	unlikeContent,
 	unpinPlaylist,
 	updatePlaylist,
