@@ -44,17 +44,14 @@ export const assignmentsField = `"assignments":assignment[]{
         "soundslice_slug": assignment_soundslice,
         "title": assignment_title,
         "sheet_music_image_url": 
-          [
-            ...assignment_sheet_music_image_new[]{
+          coalesce(assignment_sheet_music_image_new[]{
               _type == 'Image' => {
                 'url': asset->url
               },
               _type == 'URL' => {
                 url
               }
-            }.url,
-  	  assignment_sheet_music_image
-          ],
+            }.url,  assignment_sheet_music_image),
         "timecode": assignment_timecode,
         "description": coalesce(assignment_description,'')
 },`
