@@ -445,7 +445,6 @@ export async function fetchAll(brand, type, {
     if (customResults) {
         return customResults;
     }
-console.log('rox fetch all    ');
     let config = contentTypeConfig[type] ?? {};
     let additionalFields = config?.fields ?? [];
     let isGroupByOneToOne = (groupBy ? config?.relationships?.[groupBy]?.isOneToOne : false) ?? false;
