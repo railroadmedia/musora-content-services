@@ -1,9 +1,9 @@
 /**
  * @module Railcontent-Services
  */
-import {contentStatusCompleted} from "./contentProgress.js";
+import { contentStatusCompleted } from './contentProgress.js'
 
-import { globalConfig } from "./config.js";
+import { globalConfig } from './config.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -11,17 +11,17 @@ import { globalConfig } from "./config.js";
  * @type {string[]}
  */
 const excludeFromGeneratedIndex = [
-    'fetchUserLikes',
-    'postContentLiked',
-    'postContentUnliked',
-    'postRecordWatchSession',
-    'postContentStarted',
-    'postContentCompleted',
-    'postContentReset',
-    'fetchUserPermissionsData'
-];
+  'fetchUserLikes',
+  'postContentLiked',
+  'postContentUnliked',
+  'postRecordWatchSession',
+  'postContentStarted',
+  'postContentCompleted',
+  'postContentReset',
+  'fetchUserPermissionsData',
+]
 
-let challengeIndexMetaDataPromise = null;
+let challengeIndexMetaDataPromise = null
 
 /**
  * Fetches the completion status of a specific lesson for the current user.
@@ -34,29 +34,28 @@ let challengeIndexMetaDataPromise = null;
  *   .catch(error => console.error(error));
  */
 export async function fetchCompletedState(content_id) {
-    const url = `/content/user_progress/${globalConfig.railcontentConfig.userId}?content_ids[]=${content_id}`;
+  const url = `/content/user_progress/${globalConfig.railcontentConfig.userId}?content_ids[]=${content_id}`
 
-    const headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
-    };
+  const headers = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+  }
 
-    try {
-        const response = await fetchAbsolute(url, {headers});
-        const result = await response.json();
+  try {
+    const response = await fetchAbsolute(url, { headers })
+    const result = await response.json()
 
-        if (result && result[content_id]) {
-            return result[content_id];  // Return the correct object
-        } else {
-            return null;  // Handle unexpected structure
-        }
-    } catch (error) {
-        console.error('Fetch error:', error);
-        return null;
+    if (result && result[content_id]) {
+      return result[content_id] // Return the correct object
+    } else {
+      return null // Handle unexpected structure
     }
+  } catch (error) {
+    console.error('Fetch error:', error)
+    return null
+  }
 }
-
 
 /**
  * Fetches the completion status for multiple songs for the current user.
@@ -69,26 +68,26 @@ export async function fetchCompletedState(content_id) {
  *   .catch(error => console.error(error));
  */
 export async function fetchAllCompletedStates(contentIds) {
-    const url = `/content/user_progress/${globalConfig.railcontentConfig.userId}?${contentIds.map(id => `content_ids[]=${id}`).join('&')}`;
+  const url = `/content/user_progress/${globalConfig.railcontentConfig.userId}?${contentIds.map((id) => `content_ids[]=${id}`).join('&')}`
 
-    const headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
-    };
+  const headers = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+  }
 
-    try {
-        const response = await fetchAbsolute(url, {headers});
-        const result = await response.json();
-        if (result) {
-            return result;
-        } else {
-            console.log('result not json');
-        }
-    } catch (error) {
-        console.error('Fetch error:', error);
-        return null;
+  try {
+    const response = await fetchAbsolute(url, { headers })
+    const result = await response.json()
+    if (result) {
+      return result
+    } else {
+      console.log('result not json')
     }
+  } catch (error) {
+    console.error('Fetch error:', error)
+    return null
+  }
 }
 
 /**
@@ -102,27 +101,27 @@ export async function fetchAllCompletedStates(contentIds) {
  *   .catch(error => console.error(error));
  */
 export async function fetchSongsInProgress(brand) {
-    const url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=song&brand=${brand}`;
+  const url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=song&brand=${brand}`
 
-    const headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
-    };
+  const headers = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+  }
 
-    try {
-        const response = await fetchAbsolute(url, {headers});
-        const result = await response.json();
-        if (result) {
-            //console.log('fetchSongsInProgress', result);
-            return result;
-        } else {
-            console.log('result not json');
-        }
-    } catch (error) {
-        console.error('Fetch error:', error);
-        return null;
+  try {
+    const response = await fetchAbsolute(url, { headers })
+    const result = await response.json()
+    if (result) {
+      //console.log('fetchSongsInProgress', result);
+      return result
+    } else {
+      console.log('result not json')
     }
+  } catch (error) {
+    console.error('Fetch error:', error)
+    return null
+  }
 }
 
 /**
@@ -138,34 +137,34 @@ export async function fetchSongsInProgress(brand) {
  *   .then(songs => console.log(songs))
  *   .catch(error => console.error(error));
  */
-export async function fetchContentInProgress(type = "all", brand, {page, limit} = {}) {
-    let url;
-    const limitString = limit ? `&limit=${limit}` : '';
-    const pageString = page ? `&page=${page}` : '';
+export async function fetchContentInProgress(type = 'all', brand, { page, limit } = {}) {
+  let url
+  const limitString = limit ? `&limit=${limit}` : ''
+  const pageString = page ? `&page=${page}` : ''
 
-    if (type === "all") {
-        url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?brand=${brand}${limitString}${pageString}`;
+  if (type === 'all') {
+    url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?brand=${brand}${limitString}${pageString}`
+  } else {
+    url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}${limitString}${pageString}`
+  }
+  const headers = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+  }
+  try {
+    const response = await fetchAbsolute(url, { headers })
+    const result = await response.json()
+    if (result) {
+      //console.log('contentInProgress', result);
+      return result
     } else {
-        url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}${limitString}${pageString}`;
+      console.log('result not json')
     }
-    const headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
-    };
-    try {
-        const response = await fetchAbsolute(url, {headers});
-        const result = await response.json();
-        if (result) {
-            //console.log('contentInProgress', result);
-            return result;
-        } else {
-            console.log('result not json');
-        }
-    } catch (error) {
-        console.error('Fetch error:', error);
-        return null;
-    }
+  } catch (error) {
+    console.error('Fetch error:', error)
+    return null
+  }
 }
 
 /**
@@ -181,36 +180,35 @@ export async function fetchContentInProgress(type = "all", brand, {page, limit} 
  *   .then(songs => console.log(songs))
  *   .catch(error => console.error(error));
  */
-export async function fetchCompletedContent(type = "all", brand, {page, limit} = {}) {
-    let url;
-    const limitString = limit ? `&limit=${limit}` : '';
-    const pageString = page ? `&page=${page}` : '';
+export async function fetchCompletedContent(type = 'all', brand, { page, limit } = {}) {
+  let url
+  const limitString = limit ? `&limit=${limit}` : ''
+  const pageString = page ? `&page=${page}` : ''
 
-    if (type === "all") {
-        url = `/content/completed/${globalConfig.railcontentConfig.userId}?brand=${brand}${limitString}${pageString}`;
+  if (type === 'all') {
+    url = `/content/completed/${globalConfig.railcontentConfig.userId}?brand=${brand}${limitString}${pageString}`
+  } else {
+    url = `/content/completed/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}${limitString}${pageString}`
+  }
+  const headers = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+  }
+  try {
+    const response = await fetchAbsolute(url, { headers })
+    const result = await response.json()
+    if (result) {
+      //console.log('completed content', result);
+      return result
     } else {
-        url = `/content/completed/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}${limitString}${pageString}`;
+      console.log('result not json')
     }
-    const headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
-    };
-    try {
-        const response = await fetchAbsolute(url, {headers});
-        const result = await response.json();
-        if (result) {
-            //console.log('completed content', result);
-            return result;
-        } else {
-            console.log('result not json');
-        }
-    } catch (error) {
-        console.error('Fetch error:', error);
-        return null;
-    }
+  } catch (error) {
+    console.error('Fetch error:', error)
+    return null
+  }
 }
-
 
 /**
  * Fetches user context data for a specific piece of content.
@@ -223,26 +221,26 @@ export async function fetchCompletedContent(type = "all", brand, {page, limit} =
  *   .catch(error => console.error(error));
  */
 export async function fetchContentPageUserData(contentId) {
-    let url = `/content/${contentId}/user_data/${globalConfig.railcontentConfig.userId}`;
-    const headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
-    };
+  let url = `/content/${contentId}/user_data/${globalConfig.railcontentConfig.userId}`
+  const headers = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+  }
 
-    try {
-        const response = await fetchAbsolute(url, {headers});
-        const result = await response.json();
-        if (result) {
-            console.log('fetchContentPageUserData', result);
-            return result;
-        } else {
-            console.log('result not json');
-        }
-    } catch (error) {
-        console.error('Fetch error:', error);
-        return null;
+  try {
+    const response = await fetchAbsolute(url, { headers })
+    const result = await response.json()
+    if (result) {
+      console.log('fetchContentPageUserData', result)
+      return result
+    } else {
+      console.log('result not json')
     }
+  } catch (error) {
+    console.error('Fetch error:', error)
+    return null
+  }
 }
 
 /**
@@ -252,123 +250,130 @@ export async function fetchContentPageUserData(contentId) {
  * @returns {Promise<Object|null>} - Returns and Object with the id and type of the next piece of content if found, otherwise null.
  */
 export async function fetchNextContentDataForParent(contentId) {
-    let url = `/content/${contentId}/next/${globalConfig.railcontentConfig.userId}`;
-    const headers = {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token
-    };
+  let url = `/content/${contentId}/next/${globalConfig.railcontentConfig.userId}`
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+  }
 
-    try {
-        const response = await fetchAbsolute(url, {headers});
-        const result = await response.json();
-        if (result) {
-            // console.log('fetchNextContentDataForParent', result);
-            return result.next;
-        } else {
-            console.log('fetchNextContentDataForParent result not json');
-            return null;
-        }
-    } catch (error) {
-        console.error('Fetch error:', error);
-        return null;
+  try {
+    const response = await fetchAbsolute(url, { headers })
+    const result = await response.json()
+    if (result) {
+      // console.log('fetchNextContentDataForParent', result);
+      return result.next
+    } else {
+      console.log('fetchNextContentDataForParent result not json')
+      return null
     }
+  } catch (error) {
+    console.error('Fetch error:', error)
+    return null
+  }
 }
-
 
 export async function fetchUserPermissionsData() {
-    let url = `/content/user/permissions`;
-    // in the case of an unauthorized user, we return empty permissions
-    return await fetchHandler(url, 'get') ?? [];
+  let url = `/content/user/permissions`
+  // in the case of an unauthorized user, we return empty permissions
+  return (await fetchHandler(url, 'get')) ?? []
 }
 
-async function fetchDataHandler(url, dataVersion, method = "get") {
-    return fetchHandler(url, method, dataVersion);
+async function fetchDataHandler(url, dataVersion, method = 'get') {
+  return fetchHandler(url, method, dataVersion)
 }
 
 async function postDataHandler(url, data) {
-    return fetchHandler(url, 'post', null, data);
+  return fetchHandler(url, 'post', null, data)
 }
 
 async function patchDataHandler(url, data) {
-    return fetchHandler(url, 'patch', null, data);}
+  return fetchHandler(url, 'patch', null, data)
+}
 
-export async function fetchHandler(url, method = "get", dataVersion = null, body = null) {
-    let headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
-    };
+export async function fetchHandler(url, method = 'get', dataVersion = null, body = null) {
+  let headers = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+  }
 
-    if (!globalConfig.isMA) {
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('testNow')) {
-            headers['testNow'] = params.get('testNow');
-        }
-        if (params.get('timezone')) {
-            headers['M-Client-Timezone'] = params.get('timezone');
-        }
+  if (!globalConfig.isMA) {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('testNow')) {
+      headers['testNow'] = params.get('testNow')
     }
+    if (params.get('timezone')) {
+      headers['M-Client-Timezone'] = params.get('timezone')
+    }
+  }
 
-    if (globalConfig.localTimezoneString) {
-        headers['M-Client-Timezone'] = globalConfig.localTimezoneString;
-    }
+  if (globalConfig.localTimezoneString) {
+    headers['M-Client-Timezone'] = globalConfig.localTimezoneString
+  }
 
-    if (globalConfig.railcontentConfig.authToken) {
-        headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`;
-    }
+  if (globalConfig.railcontentConfig.authToken) {
+    headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`
+  }
 
-    if (dataVersion) headers['Data-Version'] = dataVersion;
-    const options = {
-        method,
-        headers,
-    };
-    if (body) {
-        options.body = JSON.stringify(body);
+  if (dataVersion) headers['Data-Version'] = dataVersion
+  const options = {
+    method,
+    headers,
+  }
+  if (body) {
+    options.body = JSON.stringify(body)
+  }
+  try {
+    const response = await fetchAbsolute(url, options)
+    if (response.ok) {
+      return await response.json()
+    } else {
+      console.error(`Fetch error: ${method} ${url} ${response.status} ${response.statusText}`)
+      console.log(response)
     }
-    try {
-        const response = await fetchAbsolute(url, options);
-        if (response.ok) {
-            return await response.json();
-        } else {
-            console.error(`Fetch error: ${method} ${url} ${response.status} ${response.statusText}`);
-            console.log(response);
-        }
-    } catch (error) {
-        console.error('Fetch error:', error);
-    }
-    return null;
+  } catch (error) {
+    console.error('Fetch error:', error)
+  }
+  return null
 }
 
 export async function fetchUserLikes(currentVersion) {
-    let url = `/content/user/likes/all`;
-    return fetchDataHandler(url, currentVersion);
+  let url = `/content/user/likes/all`
+  return fetchDataHandler(url, currentVersion)
 }
 
 export async function postContentLiked(contentId) {
-    let url = `/content/user/likes/like/${contentId}`;
-    return await postDataHandler(url);
+  let url = `/content/user/likes/like/${contentId}`
+  return await postDataHandler(url)
 }
 
 export async function postContentUnliked(contentId) {
-    let url = `/content/user/likes/unlike/${contentId}`;
-    return await postDataHandler(url);
+  let url = `/content/user/likes/unlike/${contentId}`
+  return await postDataHandler(url)
 }
 
 export async function fetchContentProgress(currentVersion) {
-    let url = `/content/user/progress/all`;
-    return fetchDataHandler(url, currentVersion);
+  let url = `/content/user/progress/all`
+  return fetchDataHandler(url, currentVersion)
 }
 
-export async function postRecordWatchSession(contentId, mediaTypeId, mediaLengthSeconds, currentSeconds, secondsPlayed, sessionId) {
-    let url = `/railtracker/v2/media-playback-session`;
-    return postDataHandler(url, {
-        "content_id": contentId,
-        "media_type_id": mediaTypeId,
-        "media_length_seconds": mediaLengthSeconds,
-        "current_second": currentSeconds,
-        "seconds_played": secondsPlayed,
-        "session_id": sessionId
-    });
+export async function postRecordWatchSession(
+  contentId,
+  mediaTypeId,
+  mediaLengthSeconds,
+  currentSeconds,
+  secondsPlayed,
+  sessionId
+) {
+  let url = `/railtracker/v2/media-playback-session`
+  return postDataHandler(url, {
+    content_id: contentId,
+    media_type_id: mediaTypeId,
+    media_length_seconds: mediaLengthSeconds,
+    current_second: currentSeconds,
+    seconds_played: secondsPlayed,
+    session_id: sessionId,
+  })
 }
 
 /**
@@ -378,8 +383,8 @@ export async function postRecordWatchSession(contentId, mediaTypeId, mediaLength
  * @returns {Promise<any|null>}
  */
 export async function fetchChallengeMetadata(contentId) {
-    let url = `/challenges/${contentId}`;
-    return await fetchHandler(url, 'get');
+  let url = `/challenges/${contentId}`
+  return await fetchHandler(url, 'get')
 }
 
 /**
@@ -389,10 +394,9 @@ export async function fetchChallengeMetadata(contentId) {
  * @returns {Promise<any|null>}
  */
 export async function fetchChallengeLessonData(contentId) {
-    let url = `/challenges/lessons/${contentId}`;
-    return await fetchHandler(url, 'get');
+  let url = `/challenges/lessons/${contentId}`
+  return await fetchHandler(url, 'get')
 }
-
 
 /**
  * Fetch all owned brand challenges for user
@@ -402,10 +406,10 @@ export async function fetchChallengeLessonData(contentId) {
  * @returns {Promise<any|null>}
  */
 export async function fetchOwnedChallenges(brand = null, page, limit) {
-    let brandParam = brand ? `&brand=${brand}` : '';
-    let pageAndLimit = `?page=${page}&limit=${limit}`;
-    let url = `/challenges/tab_owned/get${pageAndLimit}${brandParam}`;
-    return await fetchHandler(url, 'get');
+  let brandParam = brand ? `&brand=${brand}` : ''
+  let pageAndLimit = `?page=${page}&limit=${limit}`
+  let url = `/challenges/tab_owned/get${pageAndLimit}${brandParam}`
+  return await fetchHandler(url, 'get')
 }
 
 /**
@@ -416,12 +420,11 @@ export async function fetchOwnedChallenges(brand = null, page, limit) {
  * @returns {Promise<any|null>}
  */
 export async function fetchCompletedChallenges(brand = null, page, limit) {
-    let brandParam = brand ? `&brand=${brand}` : '';
-    let pageAndLimit = `?page=${page}&limit=${limit}`;
-    let url = `/challenges/tab_completed/get${pageAndLimit}${brandParam}`;
-    return await fetchHandler(url, 'get');
+  let brandParam = brand ? `&brand=${brand}` : ''
+  let pageAndLimit = `?page=${page}&limit=${limit}`
+  let url = `/challenges/tab_completed/get${pageAndLimit}${brandParam}`
+  return await fetchHandler(url, 'get')
 }
-
 
 /**
  * Fetch challenge, lesson, and user metadata for a given challenge
@@ -430,8 +433,8 @@ export async function fetchCompletedChallenges(brand = null, page, limit) {
  * @returns {Promise<any|null>}
  */
 export async function fetchUserChallengeProgress(contentId) {
-    let url = `/challenges/user_data/${contentId}`;
-    return await fetchHandler(url, 'get');
+  let url = `/challenges/user_data/${contentId}`
+  return await fetchHandler(url, 'get')
 }
 
 /**
@@ -441,8 +444,8 @@ export async function fetchUserChallengeProgress(contentId) {
  * @returns {Promise<any|null>} - streamed PDF
  */
 export async function fetchUserAward(contentId) {
-    let url = `/challenges/download_award/${contentId}`;
-    return await fetchHandler(url, 'get');
+  let url = `/challenges/download_award/${contentId}`
+  return await fetchHandler(url, 'get')
 }
 
 /**
@@ -453,25 +456,24 @@ export async function fetchUserAward(contentId) {
  * @returns {Promise<any|null>}
  */
 export async function fetchChallengeIndexMetadata(contentIds) {
-    if (!challengeIndexMetaDataPromise) {
-        challengeIndexMetaDataPromise = getChallengeIndexMetadataPromise();
-    }
-    let results = await challengeIndexMetaDataPromise;
-    if(Array.isArray(contentIds)){
-        results = results.filter(function(challenge){
-            return contentIds.includes(challenge.content_id);
-         });
-    }
-    return results;
+  if (!challengeIndexMetaDataPromise) {
+    challengeIndexMetaDataPromise = getChallengeIndexMetadataPromise()
+  }
+  let results = await challengeIndexMetaDataPromise
+  if (Array.isArray(contentIds)) {
+    results = results.filter(function (challenge) {
+      return contentIds.includes(challenge.content_id)
+    })
+  }
+  return results
 }
 
 async function getChallengeIndexMetadataPromise() {
-    let url = `/challenges/user_progress_for_index_page/get`;
-    const result = await fetchHandler(url, 'get');
-    challengeIndexMetaDataPromise = null;
-    return result;
+  let url = `/challenges/user_progress_for_index_page/get`
+  const result = await fetchHandler(url, 'get')
+  challengeIndexMetaDataPromise = null
+  return result
 }
-
 
 /**
  * Get active brand challenges for the authorized user
@@ -479,9 +481,9 @@ async function getChallengeIndexMetadataPromise() {
  * @returns {Promise<any|null>}
  */
 export async function fetchChallengeUserActiveChallenges(brand = null) {
-    let brandParam = brand ? `?brand=${brand}` : '';
-    let url = `/challenges/user_active_challenges/get${brandParam}`;
-    return await fetchHandler(url, 'get');
+  let brandParam = brand ? `?brand=${brand}` : ''
+  let url = `/challenges/user_active_challenges/get${brandParam}`
+  return await fetchHandler(url, 'get')
 }
 
 /**
@@ -490,9 +492,9 @@ export async function fetchChallengeUserActiveChallenges(brand = null) {
  * @returns {Promise<any|null>}
  */
 export async function fetchCarouselCardData(brand = null) {
-    const brandParam = brand ? `?brand=${brand}` : '';
-    let url = `/api/v1/content/carousel${brandParam}`;
-    return await fetchHandler(url, 'get');
+  const brandParam = brand ? `?brand=${brand}` : ''
+  let url = `/api/v1/content/carousel${brandParam}`
+  return await fetchHandler(url, 'get')
 }
 
 /**
@@ -502,9 +504,9 @@ export async function fetchCarouselCardData(brand = null) {
  * @returns {Promise<any|null>}
  */
 export async function fetchUserBadges(brand = null) {
-    let brandParam = brand ? `?brand=${brand}` : '';
-    let url = `/challenges/user_badges/get${brandParam}`;
-    return await fetchHandler(url, 'get');
+  let brandParam = brand ? `?brand=${brand}` : ''
+  let url = `/challenges/user_badges/get${brandParam}`
+  return await fetchHandler(url, 'get')
 }
 
 /**
@@ -516,8 +518,8 @@ export async function fetchUserBadges(brand = null) {
  * @returns {Promise<any|null>}
  */
 export async function postChallengesSetStartDate(contentId, startDate) {
-    let url = `/challenges/set_start_date/${contentId}?start_date=${startDate}`;
-    return await fetchHandler(url, 'post');
+  let url = `/challenges/set_start_date/${contentId}?start_date=${startDate}`
+  return await fetchHandler(url, 'post')
 }
 
 /**
@@ -528,8 +530,8 @@ export async function postChallengesSetStartDate(contentId, startDate) {
  * @returns {Promise<any|null>}
  */
 export async function postChallengesUnlock(contentId) {
-    let url = `/challenges/unlock/${contentId}`;
-    return await fetchHandler(url, 'post');
+  let url = `/challenges/unlock/${contentId}`
+  return await fetchHandler(url, 'post')
 }
 
 /**
@@ -540,8 +542,8 @@ export async function postChallengesUnlock(contentId) {
  * @returns {Promise<any|null>}
  */
 export async function postChallengesEnroll(contentId) {
-    let url = `/challenges/enroll/${contentId}`;
-    return await fetchHandler(url, 'post');
+  let url = `/challenges/enroll/${contentId}`
+  return await fetchHandler(url, 'post')
 }
 
 /**
@@ -552,8 +554,8 @@ export async function postChallengesEnroll(contentId) {
  * @returns {Promise<any|null>}
  */
 export async function postChallengesLeave(contentId) {
-    let url = `/challenges/leave/${contentId}`;
-    return await fetchHandler(url, 'post');
+  let url = `/challenges/leave/${contentId}`
+  return await fetchHandler(url, 'post')
 }
 
 /**
@@ -563,8 +565,8 @@ export async function postChallengesLeave(contentId) {
  * @returns {Promise<any|null>}
  */
 export async function postChallengesEnrollmentNotification(contentId) {
-    let url = `/challenges/notifications/enrollment_open/${contentId}`;
-    return await fetchHandler(url, 'post');
+  let url = `/challenges/notifications/enrollment_open/${contentId}`
+  return await fetchHandler(url, 'post')
 }
 
 /**
@@ -574,8 +576,8 @@ export async function postChallengesEnrollmentNotification(contentId) {
  * @returns {Promise<any|null>}
  */
 export async function postChallengesCommunityNotification(contentId) {
-    let url = `/challenges/notifications/community_reminders/${contentId}`;
-    return await fetchHandler(url, 'post');
+  let url = `/challenges/notifications/community_reminders/${contentId}`
+  return await fetchHandler(url, 'post')
 }
 
 /**
@@ -585,8 +587,8 @@ export async function postChallengesCommunityNotification(contentId) {
  * @returns {Promise<any|null>}
  */
 export async function postChallengesSoloNotification(contentId) {
-    let url = `/challenges/notifications/solo_reminders/${contentId}`;
-    return await fetchHandler(url, 'post');
+  let url = `/challenges/notifications/solo_reminders/${contentId}`
+  return await fetchHandler(url, 'post')
 }
 
 /**
@@ -596,9 +598,9 @@ export async function postChallengesSoloNotification(contentId) {
  * @returns {Promise<any|null>} - Modal data to display
  */
 export async function postChallengesCompleteLesson(contentId) {
-    let url = `/challenges/complete_lesson/${contentId}`;
-    await contentStatusCompleted(contentId);
-    return await fetchHandler(url, 'post');
+  let url = `/challenges/complete_lesson/${contentId}`
+  await contentStatusCompleted(contentId)
+  return await fetchHandler(url, 'post')
 }
 
 /**
@@ -608,8 +610,8 @@ export async function postChallengesCompleteLesson(contentId) {
  * @returns {Promise<any|null>}
  */
 export async function postChallengesHideCompletedBanner(contentId) {
-    let url = `/challenges/hide_completed_banner/${contentId}`;
-    return await fetchHandler(url, 'post');
+  let url = `/challenges/hide_completed_banner/${contentId}`
+  return await fetchHandler(url, 'post')
 }
 
 /**
@@ -631,18 +633,20 @@ export async function postChallengesHideCompletedBanner(contentId) {
  *   .then(playlists => console.log(playlists))
  *   .catch(error => console.error(error));
  */
-export async function fetchUserPlaylists(brand, {page, limit, sort, searchTerm, content_id, categories} = {}) {
-    let url;
-    const limitString = limit ? `&limit=${limit}` : '';
-    const pageString = page ? `&page=${page}` : '';
-    const sortString = sort ? `&sort=${sort}` : '';
-    const searchFilter = searchTerm ? `&term=${searchTerm}` : '';
-    const content = content_id ? `&content_id=${content_id}` : '';
-    const categoryString = categories && categories.length
-        ? categories.map(cat => `categories[]=${cat}`).join('&')
-        : '';
-    url = `/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`;
-    return await fetchHandler(url);
+export async function fetchUserPlaylists(
+  brand,
+  { page, limit, sort, searchTerm, content_id, categories } = {}
+) {
+  let url
+  const limitString = limit ? `&limit=${limit}` : ''
+  const pageString = page ? `&page=${page}` : ''
+  const sortString = sort ? `&sort=${sort}` : ''
+  const searchFilter = searchTerm ? `&term=${searchTerm}` : ''
+  const content = content_id ? `&content_id=${content_id}` : ''
+  const categoryString =
+    categories && categories.length ? categories.map((cat) => `categories[]=${cat}`).join('&') : ''
+  url = `/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`
+  return await fetchHandler(url)
 }
 
 /**
@@ -674,8 +678,8 @@ export async function fetchUserPlaylists(brand, {page, limit, sort, searchTerm, 
  *   .catch(error => console.error('Error duplicating playlist:', error));
  */
 export async function duplicatePlaylist(playlistId, playlistData) {
-    let url = `/playlists/duplicate/${playlistId}`;
-    return await fetchHandler(url, "post", null, playlistData);
+  let url = `/playlists/duplicate/${playlistId}`
+  return await fetchHandler(url, 'post', null, playlistData)
 }
 
 /**
@@ -702,8 +706,8 @@ export async function duplicatePlaylist(playlistId, playlistData) {
  *   .catch(error => console.error('Error deleting playlist:', error));
  */
 export async function deletePlaylist(playlistId) {
-    let url = `/playlists/playlist/${playlistId}`;
-    return await fetchHandler(url, "delete");
+  let url = `/playlists/playlist/${playlistId}`
+  return await fetchHandler(url, 'delete')
 }
 
 /**
@@ -737,8 +741,8 @@ export async function deletePlaylist(playlistId) {
  *   .catch(error => console.error('Error updating playlist:', error));
  */
 export async function updatePlaylist(playlistId, updatedData) {
-    const url = `/playlists/playlist/${playlistId}`;
-    return await fetchHandler(url, "PUT", null, updatedData);
+  const url = `/playlists/playlist/${playlistId}`
+  return await fetchHandler(url, 'PUT', null, updatedData)
 }
 
 /**
@@ -767,8 +771,8 @@ export async function updatePlaylist(playlistId, updatedData) {
  *   .catch(error => console.error('Error creating playlist:', error));
  */
 export async function createPlaylist(playlistData) {
-    const url = `/playlists/playlist`;
-    return await fetchHandler(url, "POST", null, playlistData);
+  const url = `/playlists/playlist`
+  return await fetchHandler(url, 'POST', null, playlistData)
 }
 
 /**
@@ -800,9 +804,9 @@ export async function createPlaylist(playlistData) {
  *   .catch(error => console.error('Error liking playlist:', error));
  */
 export async function likePlaylist(playlistId) {
-    const url = `/playlists/like`;
-    const payload = {playlist_id: playlistId};
-    return await fetchHandler(url, "PUT", null, payload);
+  const url = `/playlists/like`
+  const payload = { playlist_id: playlistId }
+  return await fetchHandler(url, 'PUT', null, payload)
 }
 
 /**
@@ -827,9 +831,9 @@ export async function likePlaylist(playlistId) {
  *   .catch(error => console.error('Error removing playlist like:', error));
  */
 export async function deletePlaylistLike(playlistId) {
-    const url = `/playlists/like`;
-    const payload = {playlist_id: playlistId};
-    return await fetchHandler(url, "DELETE", null, payload);
+  const url = `/playlists/like`
+  const payload = { playlist_id: playlistId }
+  return await fetchHandler(url, 'DELETE', null, payload)
 }
 
 /**
@@ -849,8 +853,8 @@ export async function deletePlaylistLike(playlistId) {
  *   .catch(error => console.error('Error fetching playlist:', error));
  */
 export async function fetchPlaylist(playlistId) {
-    const url = `/playlists/playlist/${playlistId}`;
-    return await fetchHandler(url, "GET");
+  const url = `/playlists/playlist/${playlistId}`
+  return await fetchHandler(url, 'GET')
 }
 
 /**
@@ -868,10 +872,10 @@ export async function fetchPlaylist(playlistId) {
  *   .then(items => console.log(items))
  *   .catch(error => console.error('Error fetching playlist items:', error));
  */
-export async function fetchPlaylistItems(playlistId, {sort} = {}) {
-    const sortString = sort ? `&sort=${sort}` : '';
-    const url = `/playlists/playlist-lessons?playlist_id=${playlistId}${sortString}`;
-    return await fetchHandler(url, "GET");
+export async function fetchPlaylistItems(playlistId, { sort } = {}) {
+  const sortString = sort ? `&sort=${sort}` : ''
+  const url = `/playlists/playlist-lessons?playlist_id=${playlistId}${sortString}`
+  return await fetchHandler(url, 'GET')
 }
 
 /**
@@ -910,8 +914,8 @@ export async function fetchPlaylistItems(playlistId, {sort} = {}) {
  *   });
  */
 export async function updatePlaylistItem(updatedData) {
-    const url = `/playlists/item`;
-    return await fetchHandler(url, "POST", null, updatedData);
+  const url = `/playlists/item`
+  return await fetchHandler(url, 'POST', null, updatedData)
 }
 
 /**
@@ -945,8 +949,8 @@ export async function updatePlaylistItem(updatedData) {
  *   });
  */
 export async function deletePlaylistItem(payload) {
-    const url = `/playlists/item`;
-    return await fetchHandler(url, "DELETE", null, payload);
+  const url = `/playlists/item`
+  return await fetchHandler(url, 'DELETE', null, payload)
 }
 
 /**
@@ -977,19 +981,19 @@ export async function deletePlaylistItem(payload) {
  *   });
  */
 export async function fetchPlaylistItem(payload) {
-    const playlistItemId = payload.user_playlist_item_id;
-    const url = `/playlists/item/${playlistItemId}`;
-    return await fetchHandler(url);
+  const playlistItemId = payload.user_playlist_item_id
+  const url = `/playlists/item/${playlistItemId}`
+  return await fetchHandler(url)
 }
 
 export async function postContentCompleted(contentId) {
-    let url = `/content/user/progress/complete`;
-    return postDataHandler(url, {"contentId": contentId});
+  let url = `/content/user/progress/complete`
+  return postDataHandler(url, { contentId: contentId })
 }
 
 export async function postContentReset(contentId) {
-    let url = `/content/user/progress/reset`;
-    return postDataHandler(url, {"contentId": contentId});
+  let url = `/content/user/progress/reset`
+  return postDataHandler(url, { contentId: contentId })
 }
 
 /**
@@ -1033,8 +1037,8 @@ export async function postContentReset(contentId) {
  *   });
  */
 export async function addItemToPlaylist(payload) {
-    const url = `/playlists/add-item`;
-    return await fetchHandler(url, "POST", null, payload);
+  const url = `/playlists/add-item`
+  return await fetchHandler(url, 'POST', null, payload)
 }
 
 /**
@@ -1063,8 +1067,8 @@ export async function addItemToPlaylist(payload) {
  *   });
  */
 export async function countAssignmentsAndLessons(contentId) {
-    const url = `/playlists/count-lessons-and-assignments/${contentId}`;
-    return await fetchHandler(url);
+  const url = `/playlists/count-lessons-and-assignments/${contentId}`
+  return await fetchHandler(url)
 }
 
 /**
@@ -1095,8 +1099,8 @@ export async function countAssignmentsAndLessons(contentId) {
  *   });
  */
 export async function pinPlaylist(playlistId) {
-    const url = `/playlists/pin/${playlistId}`;
-    return await fetchHandler(url, "PUT");
+  const url = `/playlists/pin/${playlistId}`
+  return await fetchHandler(url, 'PUT')
 }
 
 /**
@@ -1127,8 +1131,8 @@ export async function pinPlaylist(playlistId) {
  *   });
  */
 export async function unpinPlaylist(playlistId) {
-    const url = `/playlists/unpin/${playlistId}`;
-    return await fetchHandler(url, "PUT");
+  const url = `/playlists/unpin/${playlistId}`
+  return await fetchHandler(url, 'PUT')
 }
 
 /**
@@ -1159,26 +1163,26 @@ export async function unpinPlaylist(playlistId) {
  *   });
  */
 export async function fetchPinnedPlaylists(brand) {
-    const url = `/playlists/my-pinned-playlists?brand=${brand}`;
-    return await fetchHandler(url, "GET");
+  const url = `/playlists/my-pinned-playlists?brand=${brand}`
+  return await fetchHandler(url, 'GET')
 }
 
 /**
  * Report playlist endpoint
- * 
+ *
  * @param playlistId
  * @param issue
  * @returns {Promise<any|null>}
  */
-export async function reportPlaylist(playlistId,  {issue} = {}) {
-    const issueString = issue ? `?issue=${issue}` : '';
-    const url = `/playlists/report/${playlistId}${issueString}`;
-    return await fetchHandler(url, "PUT");
+export async function reportPlaylist(playlistId, { issue } = {}) {
+  const issueString = issue ? `?issue=${issue}` : ''
+  const url = `/playlists/report/${playlistId}${issueString}`
+  return await fetchHandler(url, 'PUT')
 }
 
 export async function playback(playlistId) {
-    const url = `/playlists/play/${playlistId}`;
-    return await fetchHandler(url, "GET");
+  const url = `/playlists/play/${playlistId}`
+  return await fetchHandler(url, 'GET')
 }
 
 /**
@@ -1189,20 +1193,20 @@ export async function playback(playlistId) {
  * @returns {Promise<any|null>}
  */
 export async function setStudentViewForUser(userId, enable) {
-    let url = `/user-management-system/user/update/${userId}`;
-    let data = {'use_student_view' : enable ? 1 : 0};
-    return await patchDataHandler(url, data);
+  let url = `/user-management-system/user/update/${userId}`
+  let data = { use_student_view: enable ? 1 : 0 }
+  return await patchDataHandler(url, data)
 }
 
 function fetchAbsolute(url, params) {
-    if (globalConfig.railcontentConfig.authToken) {
-        params.headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`;
-    }
+  if (globalConfig.railcontentConfig.authToken) {
+    params.headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`
+  }
 
-    if (globalConfig.railcontentConfig.baseUrl) {
-        if (url.startsWith('/')) {
-            return fetch(globalConfig.railcontentConfig.baseUrl + url, params)
-        }
+  if (globalConfig.railcontentConfig.baseUrl) {
+    if (url.startsWith('/')) {
+      return fetch(globalConfig.railcontentConfig.baseUrl + url, params)
     }
-    return fetch(url, params);
+  }
+  return fetch(url, params)
 }

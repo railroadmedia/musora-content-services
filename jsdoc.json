@@ -1,13 +1,18 @@
 {
-    "source": {
-      "include": ["src/services/config.js", "src/services/sanity.js", "src/services/railcontent.js", "src/index.js"],
-      "includePattern": ".js$",
-      "excludePattern": "(node_modules/|docs)"
-    },
-    "opts": {
-      "destination": "./docs",
-      "recurse": true,
-      "template": "node_modules/docdash",
-      "readme": "./README.md"
-    }
+  "source": {
+    "include": [
+      "src/services/config.js",
+      "src/services/sanity.js",
+      "src/services/railcontent.js",
+      "src/index.js"
+    ],
+    "includePattern": ".js$",
+    "excludePattern": "(node_modules/|docs)"
+  },
+  "opts": {
+    "destination": "./docs",
+    "recurse": true,
+    "template": "node_modules/docdash",
+    "readme": "./README.md"
   }
+}

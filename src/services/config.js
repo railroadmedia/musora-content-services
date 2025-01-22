@@ -3,19 +3,19 @@
  */
 
 export let globalConfig = {
-    sanityConfig: {},
-    railcontentConfig: {},
-    localStorage: null,
-    isMA: false,
-    localTimezoneString: null, // In format: America/Vancouver
-};
+  sanityConfig: {},
+  railcontentConfig: {},
+  localStorage: null,
+  isMA: false,
+  localTimezoneString: null, // In format: America/Vancouver
+}
 
 /**
  * Exported functions that are excluded from index generation.
  *
  * @type {string[]}
  */
-const excludeFromGeneratedIndex = [];
+const excludeFromGeneratedIndex = []
 
 /**
  * Initializes the service with the given configuration.
@@ -61,9 +61,9 @@ const excludeFromGeneratedIndex = [];
  * });
  */
 export function initializeService(config) {
-    globalConfig.sanityConfig = config.sanityConfig;
-    globalConfig.railcontentConfig = config.railcontentConfig;
-    globalConfig.localStorage = config.localStorage;
-    globalConfig.isMA = config.isMA || false;
-    globalConfig.localTimezoneString = config.localTimezoneString || null;
+  globalConfig.sanityConfig = config.sanityConfig
+  globalConfig.railcontentConfig = config.railcontentConfig
+  globalConfig.localStorage = config.localStorage
+  globalConfig.isMA = config.isMA || false
+  globalConfig.localTimezoneString = config.localTimezoneString || null
 }

@@ -12,17 +12,15 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.2.0](https://github.com/railroadmedia/musora-content-services/compare/v1.0.233...v1.2.0) (2025-01-14)
 
-
 ### Features
 
-* add es6 exports ([f16d26f](https://github.com/railroadmedia/musora-content-services/commit/f16d26ffd26cc0febdb4050b5fd33bcd06c78c54))
-
+- add es6 exports ([f16d26f](https://github.com/railroadmedia/musora-content-services/commit/f16d26ffd26cc0febdb4050b5fd33bcd06c78c54))
 
 ### Bug Fixes
 
-* babel blocking tests ([b219af7](https://github.com/railroadmedia/musora-content-services/commit/b219af7097927bd6452af533f9ec0722cbba9c29))
-* jest esm support and security vulnerability ([1aa7f91](https://github.com/railroadmedia/musora-content-services/commit/1aa7f9181247e26f91f038edefd5b3e50b276661))
-* merge conflict ([c7714b9](https://github.com/railroadmedia/musora-content-services/commit/c7714b932585ae0a862370027be57f285878033c))
+- babel blocking tests ([b219af7](https://github.com/railroadmedia/musora-content-services/commit/b219af7097927bd6452af533f9ec0722cbba9c29))
+- jest esm support and security vulnerability ([1aa7f91](https://github.com/railroadmedia/musora-content-services/commit/1aa7f9181247e26f91f038edefd5b3e50b276661))
+- merge conflict ([c7714b9](https://github.com/railroadmedia/musora-content-services/commit/c7714b932585ae0a862370027be57f285878033c))
 
 ### [1.1.3](https://github.com/railroadmedia/musora-content-services/compare/v1.1.2...v1.1.3) (2025-01-08)
 
@@ -32,17 +30,15 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.1.0](https://github.com/railroadmedia/musora-content-services/compare/v1.0.258...v1.1.0) (2025-01-08)
 
-
 ### Features
 
-* add es6 exports ([f16d26f](https://github.com/railroadmedia/musora-content-services/commit/f16d26ffd26cc0febdb4050b5fd33bcd06c78c54))
-
+- add es6 exports ([f16d26f](https://github.com/railroadmedia/musora-content-services/commit/f16d26ffd26cc0febdb4050b5fd33bcd06c78c54))
 
 ### Bug Fixes
 
-* babel blocking tests ([b219af7](https://github.com/railroadmedia/musora-content-services/commit/b219af7097927bd6452af533f9ec0722cbba9c29))
-* jest esm support and security vulnerability ([1aa7f91](https://github.com/railroadmedia/musora-content-services/commit/1aa7f9181247e26f91f038edefd5b3e50b276661))
-* merge conflict ([c7714b9](https://github.com/railroadmedia/musora-content-services/commit/c7714b932585ae0a862370027be57f285878033c))
+- babel blocking tests ([b219af7](https://github.com/railroadmedia/musora-content-services/commit/b219af7097927bd6452af533f9ec0722cbba9c29))
+- jest esm support and security vulnerability ([1aa7f91](https://github.com/railroadmedia/musora-content-services/commit/1aa7f9181247e26f91f038edefd5b3e50b276661))
+- merge conflict ([c7714b9](https://github.com/railroadmedia/musora-content-services/commit/c7714b932585ae0a862370027be57f285878033c))
 
 ### [1.0.258](https://github.com/railroadmedia/musora-content-services/compare/v1.0.257...v1.0.258) (2025-01-08)
 
