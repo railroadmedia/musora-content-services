@@ -462,7 +462,7 @@ export async function fetchAll(brand, type, {
     } else if(type === 'pack'){
         typeFilter = `&& (_type == 'pack' || _type == 'semester-pack')`;
     } else {
-        typeFilter = type ? `&& _type == '${type}'` : "";
+        typeFilter = type ? `&& _type == '${type}'` : progress === 'in progress' || progress === 'completed' ? " && (_type != 'challenge-part' && _type != 'challenge')" : "";  
     }
 
     // Construct the search filter
