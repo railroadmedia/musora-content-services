@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/railroadmedia/musora-content-services/compare/v1.2.5...v1.3.0) (2025-01-29)
+
+
+### Features
+
+* implement prettier ([91a9b8d](https://github.com/railroadmedia/musora-content-services/commit/91a9b8d6af3b844821e408caeb9192c94d1bea91))
+
 ### [1.2.5](https://github.com/railroadmedia/musora-content-services/compare/v1.2.4...v1.2.5) (2025-01-27)
 
 ### [1.2.4](https://github.com/railroadmedia/musora-content-services/compare/v1.2.3...v1.2.4) (2025-01-20)
