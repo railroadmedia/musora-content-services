@@ -1,4 +1,4 @@
-# Musora Content Services
+# Musora Content Services - TEST
 
 Welcome to the **musora-content-services** repository. This package provides a collection of utility functions designed 
 to fetch and manage content from our Sanity Studio. These functions are tailored to interact with our Sanity backend, 
