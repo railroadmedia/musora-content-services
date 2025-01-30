@@ -99,10 +99,10 @@ export async function fetchSongArtistCount(brand) {
       { bypassPermissions: true }
   ).buildFilter()
   const query = `
-  *[_type == "artist"]{
+  count(*[_type == "artist"]{
     name,
     "lessonsCount": count(*[${filter}])
-  }[lessonsCount > 0]`
+  }[lessonsCount > 0])`
   return fetchSanity(query, true, { processNeedAccess: false })
 }
 
