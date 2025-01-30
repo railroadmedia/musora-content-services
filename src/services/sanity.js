@@ -463,6 +463,8 @@ export async function fetchAll(
   if (type === 'archives') {
     typeFilter = `&& status == "archived"`
     bypassStatusAndPublishedValidation = true
+  } else if(type === 'lessons'){
+    typeFilter = ``;
   } else if (type === 'pack') {
     typeFilter = `&& (_type == 'pack' || _type == 'semester-pack')`
   } else {
@@ -805,6 +807,13 @@ export async function fetchAllFilterOptions(
   coachId,
   includeTabs = false
 ) {
+  if(contentType == 'lessons') {
+    const metaData = processMetadata(brand, contentType, true);
+    return {
+      meta: metaData
+    };
+  }
+
   if (coachId && contentType !== 'coach-lessons') {
     throw new Error(
       `Invalid contentType: '${contentType}' for coachId. It must be 'coach-lessons'.`

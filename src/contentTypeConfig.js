@@ -111,6 +111,10 @@ export const coachLessonsTypes = [
   'workout',
 ]
 
+export const singleLessonTypes = ['quick-tips', 'workout'];
+
+export const courseLessonTypes = ['course', 'pack','semester-pack','song-tutorial'];
+
 export let contentTypeConfig = {
   song: {
     fields: ['album', 'soundslice', 'instrumentless', `"resources": ${resourcesField}`],
@@ -623,6 +627,13 @@ export function filtersToGroq(filters, selectedFilters = []) {
           } else if (key === 'difficulty' && !selectedFilters.includes(key)) {
             return `difficulty_string == "${value}"`
           } else if (key === 'type' && !selectedFilters.includes(key)) {
+            if(value === 'singles'){
+              const conditions = singleLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              return ` (${conditions})`;
+            } else if(value === 'courses'){
+              const conditions = courseLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              return ` (${conditions})`;
+            }
             return `_type == "${value}"`
           } else if (key === 'length_in_seconds') {
             if (value.includes('-')) {
