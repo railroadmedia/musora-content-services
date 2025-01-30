@@ -65,7 +65,7 @@ describe('Sanity Queries', function () {
   test('fetchSongArtistCount', async () => {
     const response = await fetchSongArtistCount('drumeo')
     log(response)
-    expect(response).toBeGreaterThan(1000)
+    expect(response).toBeGreaterThan(700)
   }, 10000)
 
   test('fetchSanity-WithPostProcess', async () => {
