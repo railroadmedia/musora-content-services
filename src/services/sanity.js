@@ -84,7 +84,7 @@ export async function fetchArtists(brand) {
   *[_type == "artist"]{
     name,
     "lessonsCount": count(*[${filter}])
-  }[lessonsCount > 0]`
+  }[lessonsCount > 0] |order(lower(name)) `
   return fetchSanity(query, true, { processNeedAccess: false })
 }
 
@@ -94,7 +94,15 @@ export async function fetchArtists(brand) {
  * @returns {Promise<int|null>} - The fetched count of artists.
  */
 export async function fetchSongArtistCount(brand) {
-  const query = `count(*[_type == 'artist']{'lessonsCount': count(*[_type == 'song' && brand == '${brand}' && references(^._id)]._id)}[lessonsCount > 0])`
+  const filter = await new FilterBuilder(
+      `_type == "song" && brand == "${brand}" && references(^._id)`,
+      { bypassPermissions: true }
+  ).buildFilter()
+  const query = `
+  *[_type == "artist"]{
+    name,
+    "lessonsCount": count(*[${filter}])
+  }[lessonsCount > 0]`
   return fetchSanity(query, true, { processNeedAccess: false })
 }
 
