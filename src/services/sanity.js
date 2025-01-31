@@ -106,8 +106,20 @@ export async function fetchSongArtistCount(brand) {
   return fetchSanity(query, true, { processNeedAccess: false })
 }
 
-export async function fetchPlayAlongsCount(brand) {
-  const query = `count(*[brand == '${brand}' && _type == "play-along"]) `
+export async function fetchPlayAlongsCount(brand, {
+  searchTerm,
+  includedFields,
+  progressIds,
+  progress,
+}) {
+  const searchFilter = searchTerm ? `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*" || name match "${searchTerm}*")` :'';
+
+  // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
+  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
+
+  // limits the results to supplied progressIds for started & completed filters
+  const progressFilter = await getProgressFilter(progress, progressIds)
+  const query = `count(*[brand == '${brand}' && _type == "play-along" ${searchFilter} ${includedFieldsFilter} ${progressFilter} ]) `
   return fetchSanity(query, true, { processNeedAccess: false })
 }
 
