@@ -1889,7 +1889,7 @@ function getFilterOptions(option, commonFilter, contentType, brand) {
       filterGroq = ` 
                 "difficulty": [
         {"type": "All", "count": count(*[${commonFilter} && difficulty_string == "All"])},
-        {"type": "Introductory", "count": count(*[${commonFilter} && difficulty_string == "Introductory"])},
+        {"type": "Introductory", "count": count(*[${commonFilter} && (difficulty_string == "Novice" || difficulty_string == "Introductory")])},
         {"type": "Beginner", "count": count(*[${commonFilter} && difficulty_string == "Beginner"])},
         {"type": "Intermediate", "count": count(*[${commonFilter} && difficulty_string == "Intermediate" ])},
         {"type": "Advanced", "count": count(*[${commonFilter} && difficulty_string == "Advanced" ])},

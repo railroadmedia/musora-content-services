@@ -621,6 +621,9 @@ export function filtersToGroq(filters, selectedFilters = []) {
               return `instrumentless == ${value}`
             }
           } else if (key === 'difficulty' && !selectedFilters.includes(key)) {
+            if(value === 'Introductory'){
+              return `(difficulty_string == "Novice" || difficulty_string == "Introductory" )`
+            }
             return `difficulty_string == "${value}"`
           } else if (key === 'type' && !selectedFilters.includes(key)) {
             return `_type == "${value}"`
