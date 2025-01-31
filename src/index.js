@@ -113,6 +113,8 @@ import {
 	fetchPackData,
 	fetchParentForDownload,
 	fetchPlayAlongsCount,
+	fetchQuarterPublished,
+	fetchQuarterRemoved,
 	fetchRelatedLessons,
 	fetchRelatedSongs,
 	fetchSanity,
@@ -122,6 +124,7 @@ import {
 	fetchSongById,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
+	getNextAndPreviousQuarterDates,
 	getSortOrder,
 	jumpToContinueContent
 } from './services/sanity.js';
@@ -189,6 +192,8 @@ export {
 	fetchPlaylist,
 	fetchPlaylistItem,
 	fetchPlaylistItems,
+	fetchQuarterPublished,
+	fetchQuarterRemoved,
 	fetchRelatedLessons,
 	fetchRelatedSongs,
 	fetchSanity,
@@ -209,6 +214,7 @@ export {
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
+	getNextAndPreviousQuarterDates,
 	getProgressPercentage,
 	getProgressPercentageByIds,
 	getProgressState,

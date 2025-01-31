@@ -113,6 +113,8 @@ import {
 	fetchPackData,
 	fetchParentForDownload,
 	fetchPlayAlongsCount,
+	fetchQuarterPublished,
+	fetchQuarterRemoved,
 	fetchRelatedLessons,
 	fetchRelatedSongs,
 	fetchSanity,
@@ -122,6 +124,7 @@ import {
 	fetchSongById,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
+	getNextAndPreviousQuarterDates,
 	getSortOrder,
 	jumpToContinueContent
 } from './services/sanity.js';
@@ -190,6 +193,8 @@ declare module 'musora-content-services' {
 		fetchPlaylist,
 		fetchPlaylistItem,
 		fetchPlaylistItems,
+		fetchQuarterPublished,
+		fetchQuarterRemoved,
 		fetchRelatedLessons,
 		fetchRelatedSongs,
 		fetchSanity,
@@ -210,6 +215,7 @@ declare module 'musora-content-services' {
 		getAllCompleted,
 		getAllStarted,
 		getAllStartedOrCompleted,
+		getNextAndPreviousQuarterDates,
 		getProgressPercentage,
 		getProgressPercentageByIds,
 		getProgressState,
