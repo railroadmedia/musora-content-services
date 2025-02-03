@@ -14,6 +14,8 @@ import {fetchOwnedChallenges} from "../src";
 const {
     fetchSongById,
     fetchArtists,
+    fetchQuarterPublished,
+    fetchQuarterRemoved,
     fetchSongArtistCount,
     fetchRelatedSongs,
     fetchNewReleases,
@@ -61,13 +63,22 @@ describe('Sanity Queries', function () {
 
     });
 
-
     test('fetchArtists', async () => {
         const response = await fetchArtists('drumeo');
         const artistNames = response.map((x) => x.name);
         expect(artistNames).toContain("Audioslave");
 
     }, 10000);
+
+    test('fetchQuarterPublished', async () => {
+        const brand = 'guitareo';
+        const response = await fetchQuarterPublished(brand);
+    });
+
+    test('fetchQuarterRemoved', async () => {
+        const brand = 'guitareo';
+        const response = await fetchQuarterRemoved(brand);
+    });
 
     test('fetchSongArtistCount', async () => {
         const response = await fetchSongArtistCount('drumeo');

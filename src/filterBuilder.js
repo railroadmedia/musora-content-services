@@ -23,7 +23,8 @@ export class FilterBuilder {
             bypassPublishedDateRestriction = false,
             isSingle = false,
             allowsPullSongsContent = true,
-            isChildrenFilter = false
+            isChildrenFilter = false,
+            checkNullPublished = false
         } = {}) {
         this.availableContentStatuses = availableContentStatuses;
         this.bypassPermissions = bypassPermissions;
@@ -38,6 +39,7 @@ export class FilterBuilder {
         // this.debug = process.env.DEBUG === 'true' || false;
         this.debug = false;
         this.prefix =  isChildrenFilter ? '@->' : '';
+        this.checkNullPublished = checkNullPublished;
     }
 
 
@@ -118,7 +120,10 @@ export class FilterBuilder {
 
         now = roundedDate.toISOString();
 
-        if (this.getFutureContentOnly) {
+        if (this.checkNullPublished) {
+            this._andWhere(`(published_on >='${now}'`);
+            this._orWhere(`published_on == null)`);
+        } else if (this.getFutureContentOnly) {
             this._andWhere(`${this.prefix}published_on >= '${now}'`);
         } else if (!this.pullFutureContent) {
             this._andWhere(`${this.prefix}published_on <= '${now}'`);
@@ -127,8 +132,11 @@ export class FilterBuilder {
             // const theFuture = new Date(date.setMonth(date.getMonth() + 18));
             // this._andWhere(`published_on <= '${theFuture}'`);
         }
+
         return this;
     }
+    //if
+
 
     _andWhere(query) {
         const leadingAmpersand = this.filter ? ' && ' : '';
