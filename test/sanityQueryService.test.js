@@ -1,4 +1,4 @@
-import { getFieldsForContentType } from '../src/contentTypeConfig'
+import { getFieldsForContentType, singleLessonTypes,  courseLessonTypes} from '../src/contentTypeConfig'
 const railContentModule = require('../src/services/railcontent.js')
 
 import {
@@ -866,5 +866,66 @@ describe('MetaData', function () {
     expect(metaData).toBeNull()
     metaData = processMetadata('singeo', 'student-review')
     expect(metaData).not.toBeNull()
+  })
+})
+
+describe('v2', function () {
+  test('metaDataForLessons', async () => {
+    const metaData = await fetchMetadata('drumeo', 'lessons')
+    log(metaData)
+    expect(metaData.filterOptions).toBeDefined()
+    expect(metaData.sortingOptions).toBeDefined()
+    expect(metaData.tabs).toBeDefined()
+  })
+
+  test('metaDataForSongs', async () => {
+    const metaData = await fetchMetadata('drumeo', 'songs')
+    expect(metaData.filterOptions).toBeDefined()
+    expect(metaData.sortingOptions).toBeDefined()
+    expect(metaData.tabs).toBeDefined()
+  })
+
+  test('fetchAllForLessonsSinglesTab', async () => {
+    let response = await fetchAll('drumeo', 'lessons', {
+      includedFields: ['type,singles'],
+    })
+    log(response)
+    expect(response.entity.length).toBeGreaterThan(0)
+    expect(singleLessonTypes).toContain(response.entity[0].type);
+  })
+
+  test('fetchAllForLessonsCoursesTab', async () => {
+    let response = await fetchAll('drumeo', 'lessons', {
+      includedFields: ['type,courses'],
+    })
+    log(response)
+    expect(response.entity.length).toBeGreaterThan(0)
+    expect(courseLessonTypes).toContain(response.entity[0].type);
+  })
+
+  test('fetchAllFilterOptionsLessons', async () => {
+    const response = await fetchAllFilterOptions(
+        'pianote',
+[],null,null,'lessons'
+    )
+    log(response)
+    expect(response.meta.filterOptions.difficulty).toBeDefined()
+    expect(response.meta.filterOptions.genre).toBeDefined()
+    expect(response.meta.filterOptions.topic).toBeDefined()
+    expect(response.meta.filterOptions.type).toBeDefined()
+    expect(response.meta.filterOptions.progress).toBeDefined()
+  })
+
+  test('fetchAllFilterOptionsSongs', async () => {
+    const response = await fetchAllFilterOptions(
+        'pianote',
+        [],null,null,'songs'
+    )
+    log(response)
+    expect(response.meta.filterOptions.difficulty).toBeDefined()
+    expect(response.meta.filterOptions.genre).toBeDefined()
+    expect(response.meta.filterOptions.topic).toBeDefined()
+    expect(response.meta.filterOptions.type).toBeDefined()
+    expect(response.meta.filterOptions.progress).toBeDefined()
   })
 })
