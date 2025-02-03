@@ -65,6 +65,33 @@ export async function fetchSongById(documentId) {
 }
 
 /**
+* fetches from Sanity all content marked for removal next quarter
+*
+* @string brand
+* @returns {Promise<Object|null>}
+*/
+export async function fetchQuarterRemoved(brand) {
+  const nextQuarter = getNextAndPreviousQuarterDates()['next'];
+  const filterString = `brand == '${brand}' && quarter_removed == '${nextQuarter}'`
+  const query = await buildQuery(filterString, {pullFutureContent: false, bypassPermissions: true, availableContentStatuses: ["published"]}, getFieldsForContentType(), {SortOrder: "published_on desc, id desc", end: 20});
+  return fetchSanity(query, false);
+}
+
+/**
+ * fetches from Sanity all content marked for publish next quarter
+ *
+ * @string brand
+ * @returns {Promise<Object|null>}
+ */
+export async function fetchQuarterPublished(brand) {
+  const nextQuarter = getNextAndPreviousQuarterDates()['next'];
+  const filterString = `brand == '${brand}' && quarter_published == '${nextQuarter}'`;
+  const query = await buildQuery(filterString, {pullFutureContent: true, bypassPermissions: true, checkNullPublished: true}, getFieldsForContentType(), {SortOrder: "published_on desc, id desc", end: 20});
+
+  return fetchSanity(query, false);
+}
+
+/**
  * Fetch all artists with lessons available for a specific brand.
  *
  * @param {string} brand - The brand for which to fetch artists.
