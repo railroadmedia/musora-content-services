@@ -1780,6 +1780,7 @@ export async function fetchShowsData(brand) {
 
 /**
  * Fetch metadata from the contentMetaData.js based on brand and type.
+ * For v2 you need to provide page type('lessons' or 'songs') in type parameter
  *
  * @param {string} brand - The brand for which to fetch metadata.
  * @param {string} type - The type for which to fetch metadata.
