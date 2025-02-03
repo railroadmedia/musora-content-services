@@ -1,15 +1,15 @@
-import {getFieldsForContentType} from "../src/contentTypeConfig";
+import { getFieldsForContentType } from '../src/contentTypeConfig'
 const railContentModule = require('../src/services/railcontent.js')
 
 import {
-    fetchCommentModContentData,
-    fetchMethodPreviousNextLesson,
-    fetchSanity
-} from "../src/services/sanity";
-import {log} from './log.js';
-import {initializeTestService} from "./initializeTests";
-import {dataContext} from "../src/services/contentProgress";
-import {fetchOwnedChallenges} from "../src";
+  fetchCommentModContentData,
+  fetchMethodPreviousNextLesson,
+  fetchSanity,
+} from '../src/services/sanity'
+import { log } from './log.js'
+import { initializeTestService } from './initializeTests'
+import { dataContext } from '../src/services/contentProgress'
+import { fetchOwnedChallenges } from '../src'
 
 const {
     fetchSongById,
@@ -40,8 +40,8 @@ const {
     fetchMetadata,
     fetchNextPreviousLesson,
     fetchHierarchy,
-    fetchTopLevelParentId
-} = require('../src/services/sanity.js');
+    fetchTopLevelParentId,
+} = require('../src/services/sanity.js')
 
 const {
     FilterBuilder,
@@ -56,35 +56,33 @@ describe('Sanity Queries', function () {
         initializeTestService();
     });
 
-    test('fetchSongById', async () => {
-        const id = 380094;
-        const response = await fetchSongById(id);
-        expect(response.id).toBe(id);
+  test('fetchSongById', async () => {
+    const id = 380094
+    const response = await fetchSongById(id)
+    expect(response.id).toBe(id)
+  })
 
-    });
-
-    test('fetchArtists', async () => {
-        const response = await fetchArtists('drumeo');
-        const artistNames = response.map((x) => x.name);
-        expect(artistNames).toContain("Audioslave");
-
-    }, 10000);
+  test('fetchArtists', async () => {
+    const response = await fetchArtists('drumeo')
+    const artistNames = response.map((x) => x.name)
+    expect(artistNames).toContain('Audioslave')
+  }, 10000)
 
     test('fetchQuarterPublished', async () => {
-        const brand = 'guitareo';
-        const response = await fetchQuarterPublished(brand);
+        const brand = 'guitareo'
+        const response = await fetchQuarterPublished(brand)
     });
 
     test('fetchQuarterRemoved', async () => {
-        const brand = 'guitareo';
-        const response = await fetchQuarterRemoved(brand);
+        const brand = 'guitareo'
+        const response = await fetchQuarterRemoved(brand)
     });
 
     test('fetchSongArtistCount', async () => {
-        const response = await fetchSongArtistCount('drumeo');
-        log(response);
-        expect(response).toBeGreaterThan(1000);
-    }, 10000);
+        const response = await fetchSongArtistCount('drumeo')
+        log(response)
+        expect(response).toBeGreaterThan(1000)
+    }, 10000)
 
     test('fetchSanity-WithPostProcess', async () => {
         const id = 380094;
