@@ -1,8 +1,19 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
-import { globalConfig, initializeService } from './services/config.js'
+import {
+  globalConfig,
+  initializeService
+} from './services/config.js'
 
-import { isContentLiked, likeContent, unlikeContent } from './services/contentLikes.js'
+import {
+  getLessonContentRows
+} from './services/content.js'
+
+import {
+  isContentLiked,
+  likeContent,
+  unlikeContent
+} from './services/contentLikes.js'
 
 import {
   assignmentStatusCompleted,
@@ -17,8 +28,13 @@ import {
   getProgressState,
   getProgressStateByIds,
   getResumeTimeSeconds,
-  recordWatchSession,
+  recordWatchSession
 } from './services/contentProgress.js'
+
+import {
+  setLastUpdatedTime,
+  wasLastUpdateOlderThanXSeconds
+} from './services/lastUpdated.js'
 
 import {
   addItemToPlaylist,
@@ -75,7 +91,7 @@ import {
   setStudentViewForUser,
   unpinPlaylist,
   updatePlaylist,
-  updatePlaylistItem,
+  updatePlaylistItem
 } from './services/railcontent.js'
 
 import {
@@ -116,10 +132,13 @@ import {
   fetchTopLevelParentId,
   fetchUpcomingEvents,
   getSortOrder,
-  jumpToContinueContent,
+  jumpToContinueContent
 } from './services/sanity.js'
 
-import { fetchUserPermissions, reset } from './services/userPermissions.js'
+import {
+  fetchUserPermissions,
+  reset
+} from './services/userPermissions.js'
 
 export {
   addItemToPlaylist,
@@ -199,6 +218,7 @@ export {
   getAllCompleted,
   getAllStarted,
   getAllStartedOrCompleted,
+  getLessonContentRows,
   getProgressPercentage,
   getProgressPercentageByIds,
   getProgressState,
@@ -230,9 +250,11 @@ export {
   recordWatchSession,
   reportPlaylist,
   reset,
+  setLastUpdatedTime,
   setStudentViewForUser,
   unlikeContent,
   unpinPlaylist,
   updatePlaylist,
   updatePlaylistItem,
+  wasLastUpdateOlderThanXSeconds,
 }

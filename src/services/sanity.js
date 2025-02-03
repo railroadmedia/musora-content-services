@@ -84,7 +84,7 @@ export async function fetchArtists(brand) {
   *[_type == "artist"]{
     name,
     "lessonsCount": count(*[${filter}])
-  }[lessonsCount > 0]`
+  }[lessonsCount > 0] |order(lower(name)) `
   return fetchSanity(query, true, { processNeedAccess: false })
 }
 
@@ -94,12 +94,32 @@ export async function fetchArtists(brand) {
  * @returns {Promise<int|null>} - The fetched count of artists.
  */
 export async function fetchSongArtistCount(brand) {
-  const query = `count(*[_type == 'artist']{'lessonsCount': count(*[_type == 'song' && brand == '${brand}' && references(^._id)]._id)}[lessonsCount > 0])`
+  const filter = await new FilterBuilder(
+      `_type == "song" && brand == "${brand}" && references(^._id)`,
+      { bypassPermissions: true }
+  ).buildFilter()
+  const query = `
+  count(*[_type == "artist"]{
+    name,
+    "lessonsCount": count(*[${filter}])
+  }[lessonsCount > 0])`
   return fetchSanity(query, true, { processNeedAccess: false })
 }
 
-export async function fetchPlayAlongsCount(brand) {
-  const query = `count(*[brand == '${brand}' && _type == "play-along"]) `
+export async function fetchPlayAlongsCount(brand, {
+  searchTerm,
+  includedFields,
+  progressIds,
+  progress,
+}) {
+  const searchFilter = searchTerm ? `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*" || name match "${searchTerm}*")` :'';
+
+  // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
+  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
+
+  // limits the results to supplied progressIds for started & completed filters
+  const progressFilter = await getProgressFilter(progress, progressIds)
+  const query = `count(*[brand == '${brand}' && _type == "play-along" ${searchFilter} ${includedFieldsFilter} ${progressFilter} ]) `
   return fetchSanity(query, true, { processNeedAccess: false })
 }
 
@@ -1890,7 +1910,7 @@ function getFilterOptions(option, commonFilter, contentType, brand) {
       filterGroq = ` 
                 "difficulty": [
         {"type": "All", "count": count(*[${commonFilter} && difficulty_string == "All"])},
-        {"type": "Introductory", "count": count(*[${commonFilter} && difficulty_string == "Introductory"])},
+        {"type": "Introductory", "count": count(*[${commonFilter} && (difficulty_string == "Novice" || difficulty_string == "Introductory")])},
         {"type": "Beginner", "count": count(*[${commonFilter} && difficulty_string == "Beginner"])},
         {"type": "Intermediate", "count": count(*[${commonFilter} && difficulty_string == "Intermediate" ])},
         {"type": "Advanced", "count": count(*[${commonFilter} && difficulty_string == "Advanced" ])},
