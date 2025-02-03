@@ -253,8 +253,6 @@ const commonMetadata = {
   },
   'lessons': {
     name: "Lessons",
-    icon: "icon-songs",
-    description: "Play the songs you love with note-for-note transcriptions and handy practice tools.",
     filterOptions: {
       difficulty:             ['All', 'Beginner','Intermediate','Advanced','Expert'],
       genre:        ['Blues','Classical','Funk','Jazz','Pop','R&B/Soul','Soundtrack'],
@@ -284,6 +282,45 @@ const commonMetadata = {
         name: 'Courses',
         short_name: 'Courses',
         value: 'type,courses',
+      },
+    ],
+  },
+  'songs': {
+    name: "Songs",
+    filterOptions: {
+      difficulty:             ['All', 'Beginner','Intermediate','Advanced','Expert'],
+      genre:        ['Blues','Classical','Funk','Jazz','Pop','R&B/Soul','Soundtrack'],
+      topic:            ['Arpeggios','Chord Inversion', 'Chording','Scales','Styles','Techniques','Instrument Removed'],
+      type: ['Lessons','Workouts','Performances','Live','Documentaries','Packs','Courses'],
+      progress: ['All','In progress', 'Complete','Not Started'],
+    },
+    sortingOptions:[
+      { value: '-popularity', name: 'Recommended'},
+      { value: '-popularity', name: 'Most Popular'},
+      { value: '-published_on', name: 'Newest First'},
+      { value: 'published_on', name: 'Oldest First'},
+      { value: 'slug', name: 'Name: A to Z'},
+      { value: '-slug', name: 'Name: Z to A'}
+    ],
+    tabs: [
+      {
+        name: 'For You',
+        short_name: 'For You',
+      },
+      {
+        name: 'Tutorials',
+        short_name: 'Tutorials',
+        value: 'type,song-tutorial',
+      },
+      {
+        name: 'Transcriptions',
+        short_name: 'Transcriptions',
+        value: 'type,course',
+      },
+      {
+        name: 'Play-Alongs',
+        short_name: 'Play-Alongs',
+        value: 'type,play-along',
       },
     ],
   },

@@ -483,7 +483,7 @@ export async function fetchAll(
   if (type === 'archives') {
     typeFilter = `&& status == "archived"`
     bypassStatusAndPublishedValidation = true
-  } else if(type === 'lessons'){
+  } else if(type === 'lessons' || type === 'songs'){
     typeFilter = ``;
   } else if (type === 'pack') {
     typeFilter = `&& (_type == 'pack' || _type == 'semester-pack')`
@@ -827,7 +827,7 @@ export async function fetchAllFilterOptions(
   coachId,
   includeTabs = false
 ) {
-  if(contentType == 'lessons') {
+  if(contentType == 'lessons' || contentType == 'songs') {
     const metaData = processMetadata(brand, contentType, true);
     return {
       meta: metaData
