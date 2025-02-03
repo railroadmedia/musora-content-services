@@ -1066,8 +1066,9 @@ export async function addItemToPlaylist(payload) {
  *     console.error("Error fetching assignments and lessons count:", error);
  *   });
  */
-export async function countAssignmentsAndLessons(contentId) {
-  const url = `/playlists/count-lessons-and-assignments/${contentId}`
+export async function countAssignmentsAndLessons(contentId, lessonId = null) {
+  const lesson = lessonId ? `?lessonId=${lessonId}` : ''
+  const url = `/playlists/count-lessons-and-assignments/${contentId}${lesson}`
   return await fetchHandler(url)
 }
 
