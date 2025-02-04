@@ -282,7 +282,7 @@ async function fetchDataHandler(url, dataVersion, method = 'get') {
   return fetchHandler(url, method, dataVersion)
 }
 
-async function postDataHandler(url, data) {
+export async function postDataHandler(url, data) {
   return fetchHandler(url, 'post', null, data)
 }
 
