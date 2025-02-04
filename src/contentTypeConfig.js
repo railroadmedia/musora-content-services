@@ -130,6 +130,7 @@ export let contentTypeConfig = {
                 "image": thumbnail.asset->url,
                 "instructors": instructor[]->name,
                 length_in_seconds,
+                web_url_path,
             }`,
     ],
     relationships: {
