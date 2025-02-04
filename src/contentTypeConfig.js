@@ -131,6 +131,7 @@ export let contentTypeConfig = {
                 "instructors": instructor[]->name,
                 length_in_seconds,
             }`,
+      '"instructors": instructor[]->name',
     ],
     relationships: {
       artist: {
