@@ -266,6 +266,36 @@ const contentMetadata = {
     song: {
       sortBy: '-published_on',
     },
+    'song-tutorial': {
+      name: 'Song Tutorials',
+      thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/pianote/songs.jpg',
+      allowableFilters: ['difficulty', 'genre'],
+      sortBy: '-published_on',
+      shortname: 'song tutorials',
+      icon: 'play-progress',
+      description: '',
+      amountOfFutureLessonsToShow: 3,
+      showFutureLessonAtTopOrBottom: 'bottom',
+      tabs: [
+        {
+          name: 'Lessons',
+          short_name: 'Lessons',
+          value: '',
+        },
+        {
+          name: 'Artists',
+          short_name: 'ARTISTS',
+          is_group_by: true,
+          value: 'artist',
+        },
+        {
+          name: 'Genres',
+          short_name: 'Genres',
+          is_group_by: true,
+          value: 'genre',
+        },
+      ],
+    },
     'student-review': null,
     'student-focus': {
       name: 'Student Focus',
@@ -1013,6 +1043,36 @@ const contentMetadata = {
     song: {
       allowableFilters: ['difficulty', 'genre', 'lifestyle', 'instrumentless'],
     },
+    'song-tutorial': {
+      name: 'Song Tutorials',
+      thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/pianote/songs.jpg',
+      allowableFilters: ['difficulty', 'genre'],
+      sortBy: '-published_on',
+      shortname: 'song tutorials',
+      icon: 'play-progress',
+      description: '',
+      amountOfFutureLessonsToShow: 3,
+      showFutureLessonAtTopOrBottom: 'bottom',
+      tabs: [
+        {
+          name: 'Lessons',
+          short_name: 'Lessons',
+          value: '',
+        },
+        {
+          name: 'Artists',
+          short_name: 'ARTISTS',
+          is_group_by: true,
+          value: 'artist',
+        },
+        {
+          name: 'Genres',
+          short_name: 'Genres',
+          is_group_by: true,
+          value: 'genre',
+        },
+      ],
+    },
     'play-along': {
       name: 'Play Alongs',
       icon: 'icon-play-alongs',
@@ -1137,6 +1197,36 @@ const contentMetadata = {
       icon: 'icon-student-focus',
       description:
         'Want feedback on your singing? Submit a video for student review. We will watch your submission and then provide helpful encouragement and feedback. This is a great way to build accountability and benefit from the expertise of our teachers.',
+    },
+    'song-tutorial': {
+      name: 'Song Tutorials',
+      thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/pianote/songs.jpg',
+      allowableFilters: ['difficulty', 'genre'],
+      sortBy: '-published_on',
+      shortname: 'song tutorials',
+      icon: 'play-progress',
+      description: '',
+      amountOfFutureLessonsToShow: 3,
+      showFutureLessonAtTopOrBottom: 'bottom',
+      tabs: [
+        {
+          name: 'Lessons',
+          short_name: 'Lessons',
+          value: '',
+        },
+        {
+          name: 'Artists',
+          short_name: 'ARTISTS',
+          is_group_by: true,
+          value: 'artist',
+        },
+        {
+          name: 'Genres',
+          short_name: 'Genres',
+          is_group_by: true,
+          value: 'genre',
+        },
+      ],
     },
     routine: {
       name: 'Routines',
