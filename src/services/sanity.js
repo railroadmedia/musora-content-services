@@ -342,7 +342,7 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
 export async function fetchByRailContentId(id, contentType) {
   const fields = getFieldsForContentType(contentType)
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-  const entityFieldsString = ` ${fields}
+  const entityFieldsString = `
                                     'child_count': coalesce(count(child[${childrenFilter}]->), 0) ,
                                     "lessons": child[${childrenFilter}]->{
                                         "id": railcontent_id,
@@ -358,7 +358,8 @@ export async function fetchByRailContentId(id, contentType) {
         )
       ),
       length_in_seconds
-    ),`
+    ),
+    ${fields}`
 
   const query = buildRawQuery(
     `railcontent_id == ${id} && _type == '${contentType}'`,
