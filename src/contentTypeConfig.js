@@ -26,6 +26,13 @@ export const DEFAULT_FIELDS = [
   'xp',
   'child_count',
 ]
+export const DEFAULT_CHILD_FIELDS = [
+  `"id": railcontent_id`,
+  `title`,
+  `"image": thumbnail.asset->url`,
+  `"instructors": instructor[]->name`,
+  `length_in_seconds`,
+]
 
 export const descriptionField = 'description[0].children[0].text'
 // this pulls both any defined resources for the document as well as any resources in the parent document
@@ -111,6 +118,19 @@ export const coachLessonsTypes = [
   'workout',
 ]
 
+export const childContentTypeConfig = {
+  'song-tutorial': [
+    `"id": railcontent_id`,
+    `title`,
+    `"image": thumbnail.asset->url`,
+    `"instructors": instructor[]->name`,
+    `length_in_seconds`,
+    `"genre": genre[]->name`,
+    `difficulty_string`,
+    `"type": _type`,
+  ]
+}
+
 export let contentTypeConfig = {
   song: {
     fields: ['album', 'soundslice', 'instrumentless', `"resources": ${resourcesField}`],
@@ -124,16 +144,6 @@ export let contentTypeConfig = {
   'song-tutorial': {
     fields: [
       '"lesson_count": child_count',
-      `"lessons": child[]->{
-                "id": railcontent_id,
-                title,
-                "image": thumbnail.asset->url,
-                "instructors": instructor[]->name,
-                length_in_seconds,
-                "genre": genre[]->name,
-                difficulty_string,
-                "type": _type,
-            }`,
       '"instructors": instructor[]->name',
     ],
     relationships: {
@@ -561,6 +571,13 @@ export function getFieldsForContentType(contentType, asQueryString = true) {
   const fields = contentType
     ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? [])
     : DEFAULT_FIELDS
+  return asQueryString ? fields.toString() + ',' : fields
+}
+
+export function getChildFieldsForContentType(contentType, asQueryString = true) {
+  const fields = contentType
+    ? DEFAULT_CHILD_FIELDS.concat(childContentTypeConfig?.[contentType] ?? [])
+    : DEFAULT_CHILD_FIELDS
   return asQueryString ? fields.toString() + ',' : fields
 }
 
