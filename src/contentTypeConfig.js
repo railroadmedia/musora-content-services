@@ -120,11 +120,6 @@ export const coachLessonsTypes = [
 
 export const childContentTypeConfig = {
   'song-tutorial': [
-    `"id": railcontent_id`,
-    `title`,
-    `"image": thumbnail.asset->url`,
-    `"instructors": instructor[]->name`,
-    `length_in_seconds`,
     `"genre": genre[]->name`,
     `difficulty_string`,
     `"type": _type`,
