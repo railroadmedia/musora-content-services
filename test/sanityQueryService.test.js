@@ -873,15 +873,15 @@ describe('v2', function () {
   test('metaDataForLessons', async () => {
     const metaData = await fetchMetadata('drumeo', 'lessons')
     log(metaData)
-    expect(metaData.filterOptions).toBeDefined()
-    expect(metaData.sortingOptions).toBeDefined()
+    expect(metaData.filters).toBeDefined()
+    expect(metaData.sort).toBeDefined()
     expect(metaData.tabs).toBeDefined()
   })
 
   test('metaDataForSongs', async () => {
     const metaData = await fetchMetadata('drumeo', 'songs')
-    expect(metaData.filterOptions).toBeDefined()
-    expect(metaData.sortingOptions).toBeDefined()
+    expect(metaData.filters).toBeDefined()
+    expect(metaData.sort).toBeDefined()
     expect(metaData.tabs).toBeDefined()
   })
 
@@ -909,11 +909,7 @@ describe('v2', function () {
 [],null,null,'lessons'
     )
     log(response)
-    expect(response.meta.filterOptions.difficulty).toBeDefined()
-    expect(response.meta.filterOptions.genre).toBeDefined()
-    expect(response.meta.filterOptions.topic).toBeDefined()
-    expect(response.meta.filterOptions.type).toBeDefined()
-    expect(response.meta.filterOptions.progress).toBeDefined()
+    expect(response.meta.filters).toBeDefined()
   })
 
   test('fetchAllFilterOptionsSongs', async () => {
@@ -922,10 +918,6 @@ describe('v2', function () {
         [],null,null,'songs'
     )
     log(response)
-    expect(response.meta.filterOptions.difficulty).toBeDefined()
-    expect(response.meta.filterOptions.genre).toBeDefined()
-    expect(response.meta.filterOptions.topic).toBeDefined()
-    expect(response.meta.filterOptions.type).toBeDefined()
-    expect(response.meta.filterOptions.progress).toBeDefined()
+     expect(response.meta.filters).toBeDefined()
   })
 })

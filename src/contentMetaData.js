@@ -253,21 +253,25 @@ const commonMetadata = {
   },
   'lessons': {
     name: "Lessons",
-    filterOptions: {
+    filterOptions:    {
       difficulty:             ['All', 'Beginner','Intermediate','Advanced','Expert'],
       genre:        ['Blues','Classical','Funk','Jazz','Pop','R&B/Soul','Soundtrack'],
       topic:            ['Arpeggios','Chord Inversion', 'Chording','Scales','Styles','Techniques','Instrument Removed'],
       type: ['Lessons','Workouts','Performances','Live','Documentaries','Packs','Courses'],
-      progress: ['All','In progress', 'Complete','Not Started'],
+      progress: ['All','In progress', 'Completed','Not Started'],
     },
-    sortingOptions:[
+    sortingOptions:{
+      title: 'Sort By',
+      type: 'radio',
+      items: [
       { value: '-popularity', name: 'Recommended'},
       { value: '-popularity', name: 'Most Popular'},
       { value: '-published_on', name: 'Newest First'},
       { value: 'published_on', name: 'Oldest First'},
       { value: 'slug', name: 'Name: A to Z'},
       { value: '-slug', name: 'Name: Z to A'}
-    ],
+          ]
+    },
     tabs: [
       {
         name: 'For You',
@@ -294,14 +298,18 @@ const commonMetadata = {
       type: ['Lessons','Workouts','Performances','Live','Documentaries','Packs','Courses'],
       progress: ['All','In progress', 'Complete','Not Started'],
     },
-    sortingOptions:[
-      { value: '-popularity', name: 'Recommended'},
-      { value: '-popularity', name: 'Most Popular'},
-      { value: '-published_on', name: 'Newest First'},
-      { value: 'published_on', name: 'Oldest First'},
-      { value: 'slug', name: 'Name: A to Z'},
-      { value: '-slug', name: 'Name: Z to A'}
-    ],
+    sortingOptions:{
+      title: 'Sort By',
+      type: 'radio',
+      items: [
+        { value: '-popularity', name: 'Recommended'},
+        { value: '-popularity', name: 'Most Popular'},
+        { value: '-published_on', name: 'Newest First'},
+        { value: 'published_on', name: 'Oldest First'},
+        { value: 'slug', name: 'Name: A to Z'},
+        { value: '-slug', name: 'Name: Z to A'}
+      ]
+    },
     tabs: [
       {
         name: 'For You',
@@ -1345,15 +1353,50 @@ export function processMetadata(brand, type, withFilters = false) {
     name: brandMetaData.name || null,
     description: brandMetaData.description || null,
     url: brandMetaData.url ? brand + brandMetaData.url : brand + '/' + type,
+    sort: brandMetaData.sortingOptions || null,
+    tabs: brandMetaData.tabs || [],
   }
 
-  if (withFilters) {
-    Object.keys(brandMetaData).forEach((key) => {
-      if (!['thumbnailUrl', 'name', 'description'].includes(key)) {
-        processedData[key] = brandMetaData[key]
-      }
-    })
+  if (withFilters && brandMetaData.filterOptions) {
+    processedData.filters = transformFilters(brandMetaData.filterOptions);
   }
 
   return processedData
+}
+
+/**
+ * Defines the filter types for each key
+ */
+const filterTypes = {
+  difficulty: "checkbox",
+  genre: "checkbox",
+  topic: "checkbox",
+  type: "checkbox",
+  progress: "radio",
+};
+/**
+ * Transforms filterOptions into the required format
+ */
+function transformFilters(filterOptions) {
+  return Object.entries(filterOptions).map(([key, values]) => {
+    if (key === 'progress') {
+      values = values.map(value => value.toLowerCase());
+    }
+
+    return {
+      title: capitalizeFirstLetter(key),
+      type: filterTypes[key] || "checkbox",
+      items: values.map(value => ({
+        name: value,
+        value: `${key.toLowerCase()},${value}`,
+      })),
+    };
+  });
+}
+
+/**
+ * Capitalizes the first letter of a string
+ */
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
