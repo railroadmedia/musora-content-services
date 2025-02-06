@@ -21,7 +21,6 @@ export class FilterBuilder {
       isSingle = false,
       allowsPullSongsContent = true,
       isChildrenFilter = false,
-      checkNullPublished = false,
     } = {}
   ) {
     this.availableContentStatuses = availableContentStatuses
@@ -37,7 +36,6 @@ export class FilterBuilder {
     // this.debug = process.env.DEBUG === 'true' || false;
     this.debug = false
     this.prefix = isChildrenFilter ? '@->' : ''
-    this.checkNullPublished = checkNullPublished
   }
 
   static withOnlyFilterAvailableStatuses(filter, availableContentStatuses, bypassPermissions) {
@@ -134,10 +132,7 @@ export class FilterBuilder {
 
     now = roundedDate.toISOString()
 
-    if (this.checkNullPublished) {
-      this._andWhere(`(published_on >='${now}'`)
-      this._orWhere(`published_on == null)`)
-    } else if (this.getFutureContentOnly) {
+    if (this.getFutureContentOnly) {
       this._andWhere(`${this.prefix}published_on >= '${now}'`)
     } else if (!this.pullFutureContent) {
       this._andWhere(`${this.prefix}published_on <= '${now}'`)
