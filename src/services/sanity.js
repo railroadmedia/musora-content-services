@@ -73,7 +73,7 @@ export async function fetchSongById(documentId) {
 export async function fetchQuarterRemoved(brand) {
   const nextQuarter = getNextAndPreviousQuarterDates()['next'];
   const filterString = `brand == '${brand}' && quarter_removed == '${nextQuarter}'`
-  const query = await buildQuery(filterString, {pullFutureContent: false, bypassPermissions: true, availableContentStatuses: ["published"]}, getFieldsForContentType(), {SortOrder: "published_on desc, id desc", end: 20});
+  const query = await buildQuery(filterString, {pullFutureContent: false, availableContentStatuses: ["published"]}, getFieldsForContentType(), {SortOrder: "published_on desc, id desc", end: 20});
   return fetchSanity(query, false);
 }
 
@@ -86,7 +86,7 @@ export async function fetchQuarterRemoved(brand) {
 export async function fetchQuarterPublished(brand) {
   const nextQuarter = getNextAndPreviousQuarterDates()['next'];
   const filterString = `brand == '${brand}' && quarter_published == '${nextQuarter}'`;
-  const query = await buildQuery(filterString, {pullFutureContent: true, bypassPermissions: true, checkNullPublished: true}, getFieldsForContentType(), {SortOrder: "published_on desc, id desc", end: 20});
+  const query = await buildQuery(filterString, {pullFutureContent: true, availableContentStatuses: ["draft"]}, getFieldsForContentType(), {SortOrder: "published_on desc, id desc", end: 20});
 
   return fetchSanity(query, false);
 }
