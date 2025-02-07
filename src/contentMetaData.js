@@ -1,35 +1,36 @@
 // Metadata is taken from the 'common' element and then merged with the <brand> metadata.
 // Brand values are prioritized and will override the same property in the 'common' element.
 
-const PROGRESS_NAMES = ['All','In Progress', 'Complete','Not Started']
-const DIFFICULTY_STRINGS = ['All', 'Beginner','Intermediate','Advanced','Expert']
+const PROGRESS_NAMES = ['All', 'In Progress', 'Complete', 'Not Started']
+const DIFFICULTY_STRINGS = ['All', 'Beginner', 'Intermediate', 'Advanced', 'Expert']
+
 class SortingOptions {
-  static Popularity = { value: '-popularity', name: 'Most Popular'}
-  static PopularityDesc = { value: '-popularity', name: 'Recommended'}
-  static PublishedOn = { value: '-published_on', name: 'Newest First'}
-  static PublishedOnDesc = { value: 'published_on', name: 'Oldest First'}
-  static Slug = { value: 'slug', name: 'Name: A to Z'}
-  static SlugDesc = { value: '-slug', name: 'Name: Z to A'}
+  static Popularity = { value: '-popularity', name: 'Most Popular' }
+  static PopularityDesc = { value: '-popularity', name: 'Recommended' }
+  static PublishedOn = { value: '-published_on', name: 'Newest First' }
+  static PublishedOnDesc = { value: 'published_on', name: 'Oldest First' }
+  static Slug = { value: 'slug', name: 'Name: A to Z' }
+  static SlugDesc = { value: '-slug', name: 'Name: Z to A' }
   static AllSortingOptions = [
-      this.Popularity,
-      this.PopularityDesc,
-      this.PublishedOn,
-      this.PublishedOnDesc,
-      this.Slug,
-      this.SlugDesc,
+    this.Popularity,
+    this.PopularityDesc,
+    this.PublishedOn,
+    this.PublishedOnDesc,
+    this.Slug,
+    this.SlugDesc,
   ]
 }
 
 class Tabs {
-  static ForYou = {name: 'For You', short_name: 'For You' }
+  static ForYou = { name: 'For You', short_name: 'For You' }
   static Singles = { name: 'Singles', short_name: 'Singles', value: 'type,singles' }
   static Courses = { name: 'Courses', short_name: 'Courses', value: 'type,courses' }
-  static All =       { name: 'All', short_name: 'All', value: '' }
+  static All = { name: 'All', short_name: 'All', value: '' }
   static SkillLevel = { name: 'Skill Level', short_name: 'SKILL LEVEL', is_group_by: true, value: 'difficulty_string' }
-  static Genres =       { name: 'Genres', short_name: 'Genres', is_group_by: true, value: 'genre' }
-  static Completed =       { name: 'Completed', short_name: 'COMPLETED', is_group_by: false, value: 'completed' }
+  static Genres = { name: 'Genres', short_name: 'Genres', is_group_by: true, value: 'genre' }
+  static Completed = { name: 'Completed', short_name: 'COMPLETED', is_group_by: false, value: 'completed' }
   static InProgress = { name: 'In Progress', short_name: 'IN PROGRESS', is_group_by: false, value: 'in progress' }
-  static OwnedChallenges =       { name: 'Owned Challenges', short_name: 'OWNED CHALLENGES', value: 'owned' }
+  static OwnedChallenges = { name: 'Owned Challenges!!', short_name: 'OWNED CHALLENGES!!', value: 'owned' }
   static Instructors = { name: 'Instructors', short_name: 'INSTRUCTORS', is_group_by: true, value: 'instructor' }
   static Lessons = { name: 'Lessons', short_name: 'LESSONS', value: '' }
   static Artists = { name: 'Artists', short_name: 'ARTISTS', is_group_by: true, value: 'artist' }
@@ -56,11 +57,11 @@ const commonMetadata = {
     modalText:
       'Challenges are a series of guided lessons designed to build your skills day-by-day.',
     tabs: [
-        Tabs.All,
-        Tabs.SkillLevel,
-        Tabs.Genres,
-        Tabs.Completed,
-        Tabs.OwnedChallenges,
+      Tabs.All,
+      Tabs.SkillLevel,
+      Tabs.Genres,
+      Tabs.Completed,
+      Tabs.OwnedChallenges,
     ],
   },
   'challenge-part': {
@@ -75,9 +76,9 @@ const commonMetadata = {
     allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
     icon: 'icon-courses',
     tabs: [
-        Tabs.Courses,
-        Tabs.Instructors,
-        Tabs.Genres,
+      Tabs.Courses,
+      Tabs.Instructors,
+      Tabs.Genres,
     ],
   },
   pack: {
@@ -89,9 +90,9 @@ const commonMetadata = {
     allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
     sortBy: '-published_on',
     tabs: [
-        Tabs.Lessons,
-        Tabs.Instructors,
-        Tabs.Genres,
+      Tabs.Lessons,
+      Tabs.Instructors,
+      Tabs.Genres,
     ],
   },
   song: {
@@ -101,9 +102,9 @@ const commonMetadata = {
       'Play the songs you love with note-for-note transcriptions and handy practice tools.',
     allowableFilters: ['difficulty', 'genre', 'lifestyle', 'instrumentless'],
     tabs: [
-        Tabs.Songs,
-        Tabs.Artists,
-        Tabs.Genres,
+      Tabs.Songs,
+      Tabs.Artists,
+      Tabs.Genres,
     ],
   },
   'quick-tips': {
@@ -114,9 +115,9 @@ const commonMetadata = {
     allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle', 'creativity'],
     sortBy: '-published_on',
     tabs: [
-        Tabs.Lessons,
-        Tabs.Instructors,
-        Tabs.Genres,
+      Tabs.Lessons,
+      Tabs.Instructors,
+      Tabs.Genres,
     ],
   },
   'question-and-answer': {
@@ -176,14 +177,14 @@ const commonMetadata = {
     allowableFilters: ['difficulty', 'type'],
     sortBy: '-published_on',
     tabs: [
-        Tabs.InProgress,
-        Tabs.Completed,
+      Tabs.InProgress,
+      Tabs.Completed,
     ],
   },
   'new-release': {
     name: 'New Releases',
     description:
-      "Here's a list of all lessons recently added to Drumeo. Browse on your own or use search to find whatever it is you'd like to learn!",
+      'Here\'s a list of all lessons recently added to Drumeo. Browse on your own or use search to find whatever it is you\'d like to learn!',
     allowableFilters: ['type'],
     sortBy: '-published_on',
     tabs: [
@@ -192,44 +193,44 @@ const commonMetadata = {
   },
 
   'lessons': {
-    name: "Lessons",
-    filterOptions:    {
-      difficulty:    DIFFICULTY_STRINGS,
-      genre:        ['Blues','Classical','Funk','Jazz','Pop','R&B/Soul','Soundtrack'],
-      topic:            ['Arpeggios','Chord Inversion', 'Chording','Scales','Styles','Techniques','Instrument Removed'],
-      type: ['Lessons','Workouts','Performances','Live','Documentaries','Packs','Courses'],
+    name: 'Lessons',
+    filterOptions: {
+      difficulty: DIFFICULTY_STRINGS,
+      genre: ['Blues', 'Classical', 'Funk', 'Jazz', 'Pop', 'R&B/Soul', 'Soundtrack'],
+      topic: ['Arpeggios', 'Chord Inversion', 'Chording', 'Scales', 'Styles', 'Techniques', 'Instrument Removed'],
+      type: ['Lessons', 'Workouts', 'Performances', 'Live', 'Documentaries', 'Packs', 'Courses'],
       progress: PROGRESS_NAMES,
     },
-    sortingOptions:{
+    sortingOptions: {
       title: 'Sort By',
       type: 'radio',
       items: SortingOptions.AllSortingOptions,
     },
     tabs: [
-        Tabs.ForYou,
-        Tabs.Singles,
-        Tabs.Courses,
+      Tabs.ForYou,
+      Tabs.Singles,
+      Tabs.Courses,
     ],
   },
   'songs': {
-    name: "Songs",
+    name: 'Songs',
     filterOptions: {
-      difficulty:             DIFFICULTY_STRINGS,
-      genre:        ['Blues','Classical','Funk','Jazz','Pop','R&B/Soul','Soundtrack'],
-      topic:            ['Arpeggios','Chord Inversion', 'Chording','Scales','Styles','Techniques','Instrument Removed'],
-      type: ['Lessons','Workouts','Performances','Live','Documentaries','Packs','Courses'],
+      difficulty: DIFFICULTY_STRINGS,
+      genre: ['Blues', 'Classical', 'Funk', 'Jazz', 'Pop', 'R&B/Soul', 'Soundtrack'],
+      topic: ['Arpeggios', 'Chord Inversion', 'Chording', 'Scales', 'Styles', 'Techniques', 'Instrument Removed'],
+      type: ['Lessons', 'Workouts', 'Performances', 'Live', 'Documentaries', 'Packs', 'Courses'],
       progress: PROGRESS_NAMES,
     },
-    sortingOptions:{
+    sortingOptions: {
       title: 'Sort By',
       type: 'radio',
       items: SortingOptions.AllSortingOptions,
     },
     tabs: [
-        Tabs.ForYou,
-        Tabs.Tutorials,
-        Tabs.Transcriptions,
-        Tabs.PlayAlongs,
+      Tabs.ForYou,
+      Tabs.Tutorials,
+      Tabs.Transcriptions,
+      Tabs.PlayAlongs,
     ],
   },
 }
@@ -241,7 +242,7 @@ const contentMetadata = {
     },
     course: {
       description:
-        "Tackle your next drumming goal with bite-sized courses from many of the world's best drummers.",
+        'Tackle your next drumming goal with bite-sized courses from many of the world\'s best drummers.',
       sortBy: '-published_on',
     },
     song: {
@@ -256,9 +257,9 @@ const contentMetadata = {
       allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
       sortBy: '-published_on',
       tabs: [
-          Tabs.Lessons,
-          Tabs.Instructors,
-          Tabs.Genres,
+        Tabs.Lessons,
+        Tabs.Instructors,
+        Tabs.Genres,
       ],
     },
     rudiment: {
@@ -268,7 +269,7 @@ const contentMetadata = {
         'The 40 drum rudiments are essential for any drummer, no matter the style, genre, or scenario. You can use the videos below to help you learn, practice, and perfect every single one.',
       allowableFilters: ['difficulty', 'genre', 'gear', 'topic'],
       tabs: [
-          Tabs.All,
+        Tabs.All,
         {
           name: 'Drags',
           short_name: 'DRAGS',
@@ -306,9 +307,9 @@ const contentMetadata = {
       allowableFilters: ['difficulty', 'genre'],
       sortBy: '-published_on',
       tabs: [
-          Tabs.Lessons,
-          Tabs.Instructors,
-          Tabs.Genres,
+        Tabs.Lessons,
+        Tabs.Instructors,
+        Tabs.Genres,
       ],
     },
     challenges: {
@@ -320,9 +321,9 @@ const contentMetadata = {
       allowableFilters: ['difficulty', 'genre'],
       sortBy: '-published_on',
       tabs: [
-          Tabs.Lessons,
-          Tabs.Instructors,
-          Tabs.Genres,
+        Tabs.Lessons,
+        Tabs.Instructors,
+        Tabs.Genres,
       ],
     },
     'boot-camp': {
@@ -335,9 +336,9 @@ const contentMetadata = {
       allowableFilters: ['difficulty', 'genre', 'essential'],
       sortBy: '-published_on',
       tabs: [
-          Tabs.Lessons,
-          Tabs.Instructors,
-          Tabs.Genres,
+        Tabs.Lessons,
+        Tabs.Instructors,
+        Tabs.Genres,
       ],
     },
     'quick-tips': {
@@ -396,9 +397,9 @@ const contentMetadata = {
       allowableFilters: ['difficulty', 'genre', 'essential', 'theory'],
       sortBy: '-published_on',
       tabs: [
-          Tabs.Lessons,
-          Tabs.Instructors,
-          Tabs.Genres,
+        Tabs.Lessons,
+        Tabs.Instructors,
+        Tabs.Genres,
       ],
     },
     solo: {
@@ -411,9 +412,9 @@ const contentMetadata = {
       allowableFilters: ['difficulty', 'genre'],
       sortBy: '-published_on',
       tabs: [
-          Tabs.Lessons,
-          Tabs.Instructors,
-          Tabs.Genres,
+        Tabs.Lessons,
+        Tabs.Instructors,
+        Tabs.Genres,
       ],
     },
     performance: {
@@ -422,13 +423,13 @@ const contentMetadata = {
       icon: 'icon-shows',
       url: '/performances',
       description:
-        "Watch the world's best drummers perform songs, duets, and other inspirational pieces. Sit back, relax, and get ready to be inspired by these amazing performances!",
+        'Watch the world\'s best drummers perform songs, duets, and other inspirational pieces. Sit back, relax, and get ready to be inspired by these amazing performances!',
       allowableFilters: ['difficulty', 'genre'],
       sortBy: '-published_on',
       tabs: [
-          Tabs.Lessons,
-          Tabs.Instructors,
-          Tabs.Genres,
+        Tabs.Lessons,
+        Tabs.Instructors,
+        Tabs.Genres,
       ],
     },
     'exploring-beats': {
@@ -436,7 +437,7 @@ const contentMetadata = {
       name: 'Exploring Beats',
       icon: 'icon-shows',
       description:
-        "Join Carson and his extraterrestrial roommate Gary as they travel through time and space exploring some of earth's greatest hip-hop beats and delicious snacks.",
+        'Join Carson and his extraterrestrial roommate Gary as they travel through time and space exploring some of earth\'s greatest hip-hop beats and delicious snacks.',
       allowableFilters: [],
       sortBy: 'sort',
     },
@@ -624,7 +625,7 @@ const contentMetadata = {
       shortname: 'Episodes',
       icon: 'icon-shows',
       description:
-        "Join the roadies of Rush and get a firsthand look at what it's like to be part of one of our favorite bands. You’re going on an exciting, behind-the-scenes journey to their 2008 Snakes & Arrows Concert Tour - an exclusive invitation to witness the reveal of all of the band’s backstage secrets. Roadies are the unsung heroes of any band - and being a roadie with a top-rated, world-famous rock and roll band is a highly coveted job. It may appear to be all glamour and adventure, but it can be a grueling marathon of 18-hour workdays!",
+        'Join the roadies of Rush and get a firsthand look at what it\'s like to be part of one of our favorite bands. You’re going on an exciting, behind-the-scenes journey to their 2008 Snakes & Arrows Concert Tour - an exclusive invitation to witness the reveal of all of the band’s backstage secrets. Roadies are the unsung heroes of any band - and being a roadie with a top-rated, world-famous rock and roll band is a highly coveted job. It may appear to be all glamour and adventure, but it can be a grueling marathon of 18-hour workdays!',
       allowableFilters: [],
       sortBy: 'sort',
       url: '/backstage-secrets',
@@ -660,7 +661,7 @@ const contentMetadata = {
       shortname: 'Spotlight',
       icon: 'icon-shows',
       description:
-        "We're standing on the shoulders of giants. Those who came before us paved the way for everyone who came after by developing most of what we take for granted today, in the world of drum-set playing. Learning about these giants and their contributions to our craft is essential to fully appreciate and understand what we do as musicians. This is the journey Todd Sucherman is inviting you to take on with him, as he navigates the incredible world of Spotlight.",
+        'We\'re standing on the shoulders of giants. Those who came before us paved the way for everyone who came after by developing most of what we take for granted today, in the world of drum-set playing. Learning about these giants and their contributions to our craft is essential to fully appreciate and understand what we do as musicians. This is the journey Todd Sucherman is inviting you to take on with him, as he navigates the incredible world of Spotlight.',
       allowableFilters: [],
       sortBy: 'sort',
       tabs: [
@@ -698,16 +699,16 @@ const contentMetadata = {
       sortBy: 'sort',
     },
     'lessons': {
-      name: "Lessons",
+      name: 'Lessons',
       filterOptions: {
         difficulty: DIFFICULTY_STRINGS,
-        type: ['Lessons','Workouts','Performances','Live','Documentaries','Packs','Courses'],
+        type: ['Lessons', 'Workouts', 'Performances', 'Live', 'Documentaries', 'Packs', 'Courses'],
         progress: PROGRESS_NAMES,
       },
       tabs: [
-          Tabs.ForYou,
-          Tabs.Singles,
-          Tabs.Courses,
+        Tabs.ForYou,
+        Tabs.Singles,
+        Tabs.Courses,
       ],
     },
   },
@@ -729,7 +730,7 @@ const contentMetadata = {
       shortname: 'Courses',
       icon: 'icon-courses',
       description:
-        "Tackle your next piano goal with bite-sized courses from many of the world's best pianists.",
+        'Tackle your next piano goal with bite-sized courses from many of the world\'s best pianists.',
       amountOfFutureLessonsToShow: 3,
       showFutureLessonAtTopOrBottom: 'bottom',
     },
@@ -758,9 +759,9 @@ const contentMetadata = {
       amountOfFutureLessonsToShow: 3,
       showFutureLessonAtTopOrBottom: 'bottom',
       tabs: [
-          Tabs.Lessons,
-          Tabs.Instructors,
-          Tabs.Genres,
+        Tabs.Lessons,
+        Tabs.Instructors,
+        Tabs.Genres,
       ],
     },
     'boot-camp': {
@@ -776,9 +777,9 @@ const contentMetadata = {
       amountOfFutureLessonsToShow: 3,
       showFutureLessonAtTopOrBottom: 'bottom',
       tabs: [
-          Tabs.Lessons,
-          Tabs.Instructors,
-          Tabs.Genres,
+        Tabs.Lessons,
+        Tabs.Instructors,
+        Tabs.Genres,
       ],
     },
     podcast: {
@@ -794,9 +795,9 @@ const contentMetadata = {
       amountOfFutureLessonsToShow: 3,
       showFutureLessonAtTopOrBottom: 'bottom',
       tabs: [
-          Tabs.Lessons,
-          Tabs.Instructors,
-          Tabs.Genres,
+        Tabs.Lessons,
+        Tabs.Instructors,
+        Tabs.Genres,
       ],
     },
     'song-tutorial': {
@@ -810,16 +811,16 @@ const contentMetadata = {
       amountOfFutureLessonsToShow: 3,
       showFutureLessonAtTopOrBottom: 'bottom',
       tabs: [
-          Tabs.Lessons,
-          Tabs.Artists,
-          Tabs.Genres,
+        Tabs.Lessons,
+        Tabs.Artists,
+        Tabs.Genres,
       ],
     },
   },
   guitareo: {
     instructor: {
       description:
-        "Tackle your next guitar goal with bite-sized courses from many of the world's best guitarists.",
+        'Tackle your next guitar goal with bite-sized courses from many of the world\'s best guitarists.',
     },
     course: {
       description:
@@ -827,9 +828,9 @@ const contentMetadata = {
     },
     challenge: {
       tabs: [
-          Tabs.All,
-          Tabs.Completed,
-          Tabs.OwnedChallenges,
+        Tabs.All,
+        Tabs.Completed,
+        Tabs.OwnedChallenges,
       ],
     },
     song: {
@@ -857,9 +858,9 @@ const contentMetadata = {
         'Miss a live event or just want to watch a particular episode again? This is the place to do it. All of the Guitareo live broadcasts are archived here for you to watch at your leisure. If you have any questions or want to discuss the topics mentioned in the videos you can always post in the forum.',
       allowableFilters: ['difficulty', 'genre'],
       tabs: [
-          Tabs.Lessons,
-          Tabs.Instructors,
-          Tabs.Genres,
+        Tabs.Lessons,
+        Tabs.Instructors,
+        Tabs.Genres,
       ],
     },
     'quick-tips': {
@@ -889,7 +890,7 @@ const contentMetadata = {
     },
     course: {
       description:
-        "Tackle your next singing goal with bite-sized courses from many of the world's best vocalists.",
+        'Tackle your next singing goal with bite-sized courses from many of the world\'s best vocalists.',
     },
     'quick-tips': {
       thumbnailUrl:
@@ -898,18 +899,18 @@ const contentMetadata = {
     },
     challenge: {
       tabs: [
-          Tabs.All,
-          Tabs.Completed,
-          Tabs.OwnedChallenges,
+        Tabs.All,
+        Tabs.Completed,
+        Tabs.OwnedChallenges,
       ],
     },
     'question-and-answer': {
       thumbnailUrl: 'https://d1923uyy6spedc.cloudfront.net/question-answer.png',
       icon: 'fas fa-question-circle',
       tabs: [
-          Tabs.Lessons,
-          Tabs.Instructors,
-          Tabs.Genres,
+        Tabs.Lessons,
+        Tabs.Instructors,
+        Tabs.Genres,
       ],
     },
     'student-review': {
@@ -1000,6 +1001,7 @@ export const typeWithSortOrder = [
   'diy-drum-experiments',
   'rhythmic-adventures-of-captain-carson',
 ]
+
 export function processMetadata(brand, type, withFilters = false) {
   let brandMetaData = contentMetadata[brand]?.[type]
   // If the type is explicitly defined as null or the brand doesn't exist return null
@@ -1023,7 +1025,7 @@ export function processMetadata(brand, type, withFilters = false) {
   }
 
   if (withFilters && brandMetaData.filterOptions) {
-    processedData.filters = transformFilters(brandMetaData.filterOptions);
+    processedData.filters = transformFilters(brandMetaData.filterOptions)
   }
 
   return processedData
@@ -1033,30 +1035,31 @@ export function processMetadata(brand, type, withFilters = false) {
  * Defines the filter types for each key
  */
 const filterTypes = {
-  difficulty: "checkbox",
-  genre: "checkbox",
-  topic: "checkbox",
-  type: "checkbox",
-  progress: "radio",
-};
+  difficulty: 'checkbox',
+  genre: 'checkbox',
+  topic: 'checkbox',
+  type: 'checkbox',
+  progress: 'radio',
+}
+
 /**
  * Transforms filterOptions into the required format
  */
 function transformFilters(filterOptions) {
   return Object.entries(filterOptions).map(([key, values]) => ({
     title: capitalizeFirstLetter(key),
-    type: filterTypes[key] || "checkbox",
+    type: filterTypes[key] || 'checkbox',
     key,
     items: values.map(value => ({
       name: value,
       value: `${key},${key === 'progress' ? value.toLowerCase() : value}`,
     })),
-  }));
+  }))
 }
 
 /**
  * Capitalizes the first letter of a string
  */
 function capitalizeFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
+  return string.charAt(0).toUpperCase() + string.slice(1)
 }
