@@ -64,27 +64,43 @@ export async function getLessonContentRows () {
   return results
 }
 
-export async function getTabResults(brand, pageName, tabName, { page = 1, limit = 10, sort = '-published_on', includedFields = [] } = {}) {
-  const mergedIncludedFields = [...(includedFields || []), `type,${tabName.toLowerCase()}`];
+export async function getTabResults(brand, pageName, tabName, {
+  page = 1,
+  limit = 10,
+  sort = '-published_on',
+  selectedFilters = []
+} = {}) {
 
-  // Fetch data based on tabName
+  // Extract and handle 'progress' filter separately
+  const progressFilter = selectedFilters.find(f => f.startsWith('progress,')) || 'progress,all';
+  const progressValue = progressFilter.split(',')[1].toLowerCase();
+  const filteredSelectedFilters = selectedFilters.filter(f => !f.startsWith('progress,'));
+
+  // Prepare included fields
+  const mergedIncludedFields = [...filteredSelectedFilters, `type,${tabName.toLowerCase()}`];
+
+  // Fetch data
   const results = tabName === 'For You'
       ? { entity: await getLessonContentRows() }
-      : await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields });
+      : await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
 
-  // Fetch metadata and prepare filters
+  // Fetch metadata
   const metaData = await fetchMetadata(brand, pageName);
+
+  // Process filters
   const filters = (metaData.filters ?? []).map(filter => ({
     ...filter,
-    items: filter.items.map(item => ({
-      ...item,
-      selected: includedFields.some(field => {
-        const [key, value] = field.split(',');
-        return key === filter.key && value === item.value.split(',')[1];
-      })
-    }))
+    items: filter.items.map(item => {
+      const value = item.value.split(',')[1];
+      return {
+        ...item,
+        selected: selectedFilters.includes(`${filter.key},${value}`) ||
+                      (filter.key === 'progress' && value === 'all' && !selectedFilters.some(f => f.startsWith('progress,')))
+      };
+    })
   }));
 
+  // Process sort options
   const sortOptions = {
     title: metaData.sort?.title ?? 'Sort By',
     type: metaData.sort?.type ?? 'radio',
