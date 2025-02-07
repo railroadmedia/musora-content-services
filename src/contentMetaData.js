@@ -1386,9 +1386,10 @@ function transformFilters(filterOptions) {
     return {
       title: capitalizeFirstLetter(key),
       type: filterTypes[key] || "checkbox",
+      key: key,
       items: values.map(value => ({
-        name: value,
-        value: `${key.toLowerCase()},${value}`,
+          name: value,
+          value: `${key},${value}`,
       })),
     };
   });
