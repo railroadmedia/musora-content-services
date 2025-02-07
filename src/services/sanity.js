@@ -76,7 +76,7 @@ export async function fetchLeaving(brand, page) {
   const startEndOrder = getQueryFromPage(page);
   const sortOrder = {sortOrder: "published_on desc, id desc", start: startEndOrder['start'], end: startEndOrder['end']};
   const query = await buildQuery(filterString, {pullFutureContent: false, availableContentStatuses: ["published"]}, getFieldsForContentType(), sortOrder);
-  return fetchSanity(query, false);
+  return fetchSanity(query, true);
 }
 
 /**
@@ -92,7 +92,7 @@ export async function fetchReturning(brand, page) {
   const sortOrder = {sortOrder: "published_on desc, id desc", start: startEndOrder['start'], end: startEndOrder['end']};
   const query = await buildQuery(filterString, {pullFutureContent: true, availableContentStatuses: ["draft"]}, getFieldsForContentType(), sortOrder);
 
-  return fetchSanity(query, false);
+  return fetchSanity(query, true);
 }
 
 /**
@@ -106,7 +106,7 @@ export async function fetchComingSoon(brand, page) {
   const startEndOrder = getQueryFromPage(page);
   const sortOrder = {sortOrder: "published_on desc, id desc", start: startEndOrder['start'], end: startEndOrder['end']};
   const query = await buildQuery(filterString, {getFutureContentOnly: true}, getFieldsForContentType(), sortOrder);
-  return fetchSanity(query, false);
+  return fetchSanity(query, true);
 }
 
 /**

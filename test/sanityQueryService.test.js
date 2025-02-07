@@ -63,21 +63,21 @@ describe('Sanity Queries', function () {
     const brand = 'guitareo'
     const page = 1
     const response = await fetchReturning(brand, page)
-    expect(response.status).toBe('draft')
+    expect(response.length).toBeGreaterThan(0)
   });
 
   test('fetchLeaving', async () => {
     const brand = 'guitareo'
     const page = 1
     const response = await fetchLeaving(brand, page)
-    expect(response.status).toBe('published')
+    expect(response.length).toBeGreaterThan(0)
   });
 
   test('fetchComingSoon', async () => {
     const brand = 'guitareo'
     const page = 1
     const response = await fetchComingSoon(brand, page)
-    //expect(response.type).toBe('song')
+    expect(response.length).toBeGreaterThan(0)
   });
 
 
