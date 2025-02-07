@@ -1370,21 +1370,15 @@ const filterTypes = {
  * Transforms filterOptions into the required format
  */
 function transformFilters(filterOptions) {
-  return Object.entries(filterOptions).map(([key, values]) => {
-    if (key === 'progress') {
-      values = values.map(value => value.toLowerCase());
-    }
-
-    return {
-      title: capitalizeFirstLetter(key),
-      type: filterTypes[key] || "checkbox",
-      key: key,
-      items: values.map(value => ({
-          name: value,
-          value: `${key},${value}`,
-      })),
-    };
-  });
+  return Object.entries(filterOptions).map(([key, values]) => ({
+    title: capitalizeFirstLetter(key),
+    type: filterTypes[key] || "checkbox",
+    key,
+    items: values.map(value => ({
+      name: value,
+      value: `${key},${key === 'progress' ? value.toLowerCase() : value}`,
+    })),
+  }));
 }
 
 /**
