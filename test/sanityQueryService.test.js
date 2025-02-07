@@ -16,6 +16,7 @@ const {
   fetchArtists,
   fetchReturning,
   fetchLeaving,
+  fetchComingSoon,
   fetchSongArtistCount,
   fetchRelatedSongs,
   fetchNewReleases,
@@ -60,12 +61,23 @@ describe('Sanity Queries', function () {
 
   test('fetchReturning', async () => {
     const brand = 'guitareo'
-    const response = await fetchReturning(brand)
+    const page = 1
+    const response = await fetchReturning(brand, page)
+    expect(response.status).toBe('draft')
   });
 
   test('fetchLeaving', async () => {
     const brand = 'guitareo'
-    const response = await fetchLeaving(brand)
+    const page = 1
+    const response = await fetchLeaving(brand, page)
+    expect(response.status).toBe('published')
+  });
+
+  test('fetchComingSoon', async () => {
+    const brand = 'guitareo'
+    const page = 1
+    const response = await fetchComingSoon(brand, page)
+    //expect(response.type).toBe('song')
   });
 
 
