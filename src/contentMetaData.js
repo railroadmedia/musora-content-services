@@ -1,5 +1,43 @@
 // Metadata is taken from the 'common' element and then merged with the <brand> metadata.
 // Brand values are prioritized and will override the same property in the 'common' element.
+
+const progressNames = ['All','In Progress', 'Complete','Not Started']
+const DifficultyStrings =
+class SortingOptions {
+  static Populatity = { value: '-popularity', name: 'Most Popular'}
+  static PopulatityDesc = { value: '-popularity', name: 'Recommended'}
+  static PublishedOn = { value: '-published_on', name: 'Newest First'}
+  static PublishedOnDesc = { value: 'published_on', name: 'Oldest First'}
+  static Slug = { value: 'slug', name: 'Name: A to Z'}
+  static SlugDesc = { value: '-slug', name: 'Name: Z to A'}
+  static AllSortingOptions = [
+      Popularity,
+      PouplarityDesc,
+      PublishedOn,
+      PublishedOnDesc,
+      Slug,
+      SlugDesc,
+  ]
+}
+
+class Tabs {
+  static ForYou = {name: 'For You', short_name: 'For You' }
+  static Singles = { name: 'Singles', short_name: 'Singles', value: 'type,singles' }
+  static Courses = { name: 'Courses', short_name: 'Courses', value: 'type,courses' }
+  static All =       { name: 'All', short_name: 'All', value: '' }
+  static SkillLevel = { name: 'Skill Level', short_name: 'SKILL LEVEL', is_group_by: true, value: 'difficulty_string' }
+  static Genres =       { name: 'Genres', short_name: 'Genres', is_group_by: true, value: 'genre' }
+  static Completed =       { name: 'Completed', short_name: 'COMPLETED', is_group_by: false, value: 'completed' }
+  static InProgress = { name: 'In Progress', short_name: 'IN PROGRESS', is_group_by: false, value: 'in progress' }
+  static OwnedChallenges =       { name: 'Owned Challenges', short_name: 'OWNED CHALLENGES', value: 'owned' }
+  static Instructors = { name: 'Instructors', short_name: 'INSTRUCTORS', is_group_by: true, value: 'instructor' }
+  static Lessons = { name: 'Lessons', short_name: 'LESSONS', value: '' }
+  static Artists = { name: 'Artists', short_name: 'ARTISTS', is_group_by: true, value: 'artist' }
+  static Songs = { name: 'Songs', short_name: 'Songs', value: '' }
+
+}
+
+
 const commonMetadata = {
   instructor: {
     name: 'Coaches',
@@ -16,33 +54,11 @@ const commonMetadata = {
     modalText:
       'Challenges are a series of guided lessons designed to build your skills day-by-day.',
     tabs: [
-      {
-        name: 'All',
-        short_name: 'All',
-        value: '',
-      },
-      {
-        name: 'Skill Level',
-        short_name: 'SKILL LEVEL',
-        is_group_by: true,
-        value: 'difficulty_string',
-      },
-      {
-        name: 'Genres',
-        short_name: 'Genres',
-        is_group_by: true,
-        value: 'genre',
-      },
-      {
-        name: 'Completed',
-        short_name: 'COMPLETED',
-        value: 'completed',
-      },
-      {
-        name: 'Owned Challenges',
-        short_name: 'OWNED CHALLENGES',
-        value: 'owned',
-      },
+        Tabs.All,
+        Tabs.SkillLevel,
+        Tabs.Genres,
+        Tabs.Completed,
+        Tabs.OwnedChallenges,
     ],
   },
   'challenge-part': {
@@ -57,23 +73,9 @@ const commonMetadata = {
     allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
     icon: 'icon-courses',
     tabs: [
-      {
-        name: 'Courses',
-        short_name: 'COURSES',
-        value: '',
-      },
-      {
-        name: 'Instructors',
-        short_name: 'INSTRUCTORS',
-        is_group_by: true,
-        value: 'instructor',
-      },
-      {
-        name: 'Genres',
-        short_name: 'Genres',
-        is_group_by: true,
-        value: 'genre',
-      },
+        Tabs.Courses,
+        Tabs.Instructors,
+        Tabs.Genres,
     ],
   },
   pack: {
@@ -85,23 +87,9 @@ const commonMetadata = {
     allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
     sortBy: '-published_on',
     tabs: [
-      {
-        name: 'Lessons',
-        short_name: 'LESSONS',
-        value: '',
-      },
-      {
-        name: 'Instructors',
-        short_name: 'INSTRUCTORS',
-        is_group_by: true,
-        value: 'instructor',
-      },
-      {
-        name: 'Genres',
-        short_name: 'Genres',
-        is_group_by: true,
-        value: 'genre',
-      },
+        Tabs.Lessons,
+        Tabs.Instructors,
+        Tabs.Genres,
     ],
   },
   song: {
@@ -111,23 +99,9 @@ const commonMetadata = {
       'Play the songs you love with note-for-note transcriptions and handy practice tools.',
     allowableFilters: ['difficulty', 'genre', 'lifestyle', 'instrumentless'],
     tabs: [
-      {
-        name: 'Songs',
-        short_name: 'Songs',
-        value: '',
-      },
-      {
-        name: 'Artists',
-        short_name: 'ARTISTS',
-        is_group_by: true,
-        value: 'artist',
-      },
-      {
-        name: 'Genres',
-        short_name: 'Genres',
-        is_group_by: true,
-        value: 'genre',
-      },
+        Tabs.Songs,
+        Tabs.Artists,
+        Tabs.Genres,
     ],
   },
   'quick-tips': {
@@ -138,23 +112,9 @@ const commonMetadata = {
     allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle', 'creativity'],
     sortBy: '-published_on',
     tabs: [
-      {
-        name: 'Lessons',
-        short_name: 'LESSONS',
-        value: '',
-      },
-      {
-        name: 'Instructors',
-        short_name: 'INSTRUCTORS',
-        is_group_by: true,
-        value: 'instructor',
-      },
-      {
-        name: 'Genres',
-        short_name: 'Genres',
-        is_group_by: true,
-        value: 'genre',
-      },
+        Tabs.Lessons,
+        Tabs.Instructors,
+        Tabs.Genres,
     ],
   },
   'question-and-answer': {
@@ -177,11 +137,7 @@ const commonMetadata = {
     shortname: 'Workouts',
     allowableFilters: ['difficulty', 'genre', 'topic'],
     tabs: [
-      {
-        name: 'All',
-        short_name: 'ALL',
-        value: '',
-      },
+      Tabs.All,
       {
         name: '5 Minutes',
         short_name: '5 MINS',
@@ -203,12 +159,7 @@ const commonMetadata = {
         value: 'length_in_seconds,750+',
         value_web: ['length_in_seconds > 750'],
       },
-      {
-        name: 'Instructors',
-        short_name: 'INSTRUCTORS',
-        is_group_by: true,
-        value: 'instructor',
-      },
+      Tabs.Instructors,
     ],
     modalText:
       'Workouts are fun play-along lessons that help hone your musical skills. They cover various topics, and have multiple difficulty and duration options — so there’s always a perfect Workout for you. Just pick one, press start, and play along!',
@@ -223,18 +174,8 @@ const commonMetadata = {
     allowableFilters: ['difficulty', 'type'],
     sortBy: '-published_on',
     tabs: [
-      {
-        name: 'In Progress',
-        short_name: 'IN PROGRESS',
-        is_group_by: false,
-        value: 'in progress',
-      },
-      {
-        name: 'Completed',
-        short_name: 'COMPLETED',
-        is_group_by: false,
-        value: 'completed',
-      },
+        Tabs.InProgress,
+        Tabs.Completed,
     ],
   },
   'new-release': {
@@ -244,11 +185,7 @@ const commonMetadata = {
     allowableFilters: ['type'],
     sortBy: '-published_on',
     tabs: [
-      {
-        name: 'Lessons',
-        short_name: 'LESSONS',
-        value: '',
-      },
+      Tabs.Lessons,
     ],
   },
   'lessons': {
@@ -260,31 +197,13 @@ const commonMetadata = {
       genre:        ['Blues','Classical','Funk','Jazz','Pop','R&B/Soul','Soundtrack'],
       topic:            ['Arpeggios','Chord Inversion', 'Chording','Scales','Styles','Techniques','Instrument Removed'],
       type: ['Lessons','Workouts','Performances','Live','Documentaries','Packs','Courses'],
-      progress: ['All','In progress', 'Complete','Not Started'],
+      progress: progressNames,
     },
-    sortingOptions:[
-      { value: '-popularity', name: 'Recommended'},
-      { value: '-popularity', name: 'Most Popular'},
-      { value: '-published_on', name: 'Newest First'},
-      { value: 'published_on', name: 'Oldest First'},
-      { value: 'slug', name: 'Name: A to Z'},
-      { value: '-slug', name: 'Name: Z to A'}
-    ],
+    sortingOptions: SortingOptions.AllSortingOptions,
     tabs: [
-      {
-        name: 'For You',
-        short_name: 'For You',
-      },
-      {
-        name: 'Singles',
-        short_name: 'Singles',
-        value: 'type,singles',
-      },
-      {
-        name: 'Courses',
-        short_name: 'Courses',
-        value: 'type,courses',
-      },
+        Tabs.ForYou,
+        Tabs.Singles,
+        Tabs.Courses,
     ],
   },
 }
