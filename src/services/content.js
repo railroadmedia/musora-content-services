@@ -85,10 +85,14 @@ export async function getTabResults(brand, pageName, tabName, { page = 1, limit 
     }))
   }));
 
-  const sortOptions = (metaData.sort.items ?? []).map(option => ({
-    ...option,
-    selected: option.value === sort
-  }));
+  const sortOptions = {
+    title: metaData.sort?.title ?? 'Sort By',
+    type: metaData.sort?.type ?? 'radio',
+    items: (metaData.sort?.items ?? []).map(option => ({
+      ...option,
+      selected: option.value === sort
+    }))
+  };
 
   return {
     type: tabName === 'For You' ? 'sections' : 'catalog',
