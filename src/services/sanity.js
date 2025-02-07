@@ -84,7 +84,7 @@ export async function fetchArtists(brand) {
   *[_type == "artist"]{
     name,
     "lessonsCount": count(*[${filter}])
-  }[lessonsCount > 0]`
+  }[lessonsCount > 0] |order(lower(name)) `
   return fetchSanity(query, true, { processNeedAccess: false })
 }
 
@@ -94,12 +94,32 @@ export async function fetchArtists(brand) {
  * @returns {Promise<int|null>} - The fetched count of artists.
  */
 export async function fetchSongArtistCount(brand) {
-  const query = `count(*[_type == 'artist']{'lessonsCount': count(*[_type == 'song' && brand == '${brand}' && references(^._id)]._id)}[lessonsCount > 0])`
+  const filter = await new FilterBuilder(
+      `_type == "song" && brand == "${brand}" && references(^._id)`,
+      { bypassPermissions: true }
+  ).buildFilter()
+  const query = `
+  count(*[_type == "artist"]{
+    name,
+    "lessonsCount": count(*[${filter}])
+  }[lessonsCount > 0])`
   return fetchSanity(query, true, { processNeedAccess: false })
 }
 
-export async function fetchPlayAlongsCount(brand) {
-  const query = `count(*[brand == '${brand}' && _type == "play-along"]) `
+export async function fetchPlayAlongsCount(brand, {
+  searchTerm,
+  includedFields,
+  progressIds,
+  progress,
+}) {
+  const searchFilter = searchTerm ? `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*" || name match "${searchTerm}*")` :'';
+
+  // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
+  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
+
+  // limits the results to supplied progressIds for started & completed filters
+  const progressFilter = await getProgressFilter(progress, progressIds)
+  const query = `count(*[brand == '${brand}' && _type == "play-along" ${searchFilter} ${includedFieldsFilter} ${progressFilter} ]) `
   return fetchSanity(query, true, { processNeedAccess: false })
 }
 
@@ -463,7 +483,7 @@ export async function fetchAll(
   if (type === 'archives') {
     typeFilter = `&& status == "archived"`
     bypassStatusAndPublishedValidation = true
-  } else if(type === 'lessons'){
+  } else if(type === 'lessons' || type === 'songs'){
     typeFilter = ``;
   } else if (type === 'pack') {
     typeFilter = `&& (_type == 'pack' || _type == 'semester-pack')`
@@ -807,7 +827,7 @@ export async function fetchAllFilterOptions(
   coachId,
   includeTabs = false
 ) {
-  if(contentType == 'lessons') {
+  if(contentType == 'lessons' || contentType == 'songs') {
     const metaData = processMetadata(brand, contentType, true);
     return {
       meta: metaData
@@ -1760,6 +1780,7 @@ export async function fetchShowsData(brand) {
 
 /**
  * Fetch metadata from the contentMetaData.js based on brand and type.
+ * For v2 you need to provide page type('lessons' or 'songs') in type parameter
  *
  * @param {string} brand - The brand for which to fetch metadata.
  * @param {string} type - The type for which to fetch metadata.
@@ -1890,7 +1911,7 @@ function getFilterOptions(option, commonFilter, contentType, brand) {
       filterGroq = ` 
                 "difficulty": [
         {"type": "All", "count": count(*[${commonFilter} && difficulty_string == "All"])},
-        {"type": "Introductory", "count": count(*[${commonFilter} && difficulty_string == "Introductory"])},
+        {"type": "Introductory", "count": count(*[${commonFilter} && (difficulty_string == "Novice" || difficulty_string == "Introductory")])},
         {"type": "Beginner", "count": count(*[${commonFilter} && difficulty_string == "Beginner"])},
         {"type": "Intermediate", "count": count(*[${commonFilter} && difficulty_string == "Intermediate" ])},
         {"type": "Advanced", "count": count(*[${commonFilter} && difficulty_string == "Advanced" ])},
@@ -1973,4 +1994,65 @@ function cleanUpGroq(query) {
     .trim()
 
   return cleanedQuery
+}
+
+// V2 methods
+
+export async function fetchTabData(
+    brand,
+    pageName,
+    {
+      page = 1,
+      limit = 10,
+      sort = '-published_on',
+      includedFields = [],
+      progressIds = undefined,
+      progress = 'all',
+    } = {}
+) {
+
+  const start = (page - 1) * limit
+  const end = start + limit
+
+  // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
+  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
+
+  // limits the results to supplied progressIds for started & completed filters
+  const progressFilter = await getProgressFilter(progress, progressIds)
+
+  // Determine the sort order
+  const sortOrder = sort
+
+  let fields = DEFAULT_FIELDS
+  let fieldsString = fields.join(',')
+
+
+  // Determine the group by clause
+  let query = ''
+  let entityFieldsString = ''
+  let filter = ''
+
+    filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
+    const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+    entityFieldsString = ` ${fieldsString},
+                                    'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
+                                    'length_in_seconds': coalesce(
+      math::sum(
+        select(
+          child[${childrenFilter}]->length_in_seconds
+        )
+      ),
+      length_in_seconds
+    ),`
+
+
+  const filterWithRestrictions = await new FilterBuilder(filter, {
+  }).buildFilter()
+  query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
+    sortOrder: sortOrder,
+    start: start,
+    end: end,
+  })
+
+  return fetchSanity(query, true)
 }

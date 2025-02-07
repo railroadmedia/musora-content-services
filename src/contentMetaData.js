@@ -1,8 +1,8 @@
 // Metadata is taken from the 'common' element and then merged with the <brand> metadata.
 // Brand values are prioritized and will override the same property in the 'common' element.
 
-const progressNames = ['All','In Progress', 'Complete','Not Started']
-const DifficultyStrings =
+const PROGRESS_NAMES = ['All','In Progress', 'Complete','Not Started']
+const DIFFICULTY_STRINGS = ['All', 'Beginner','Intermediate','Advanced','Expert']
 class SortingOptions {
   static Populatity = { value: '-popularity', name: 'Most Popular'}
   static PopulatityDesc = { value: '-popularity', name: 'Recommended'}
@@ -34,7 +34,9 @@ class Tabs {
   static Lessons = { name: 'Lessons', short_name: 'LESSONS', value: '' }
   static Artists = { name: 'Artists', short_name: 'ARTISTS', is_group_by: true, value: 'artist' }
   static Songs = { name: 'Songs', short_name: 'Songs', value: '' }
-
+  static Tutorials = { name: 'Tutorials', short_name: 'Tutorials' }
+  static Transcriptions = { name: 'Transcriptions', short_name: 'Transcriptions' }
+  static PlayAlongs = { name: 'Play-Alongs', short_name: 'Play-Alongs' }
 }
 
 
@@ -188,22 +190,46 @@ const commonMetadata = {
       Tabs.Lessons,
     ],
   },
+
   'lessons': {
     name: "Lessons",
-    icon: "icon-songs",
-    description: "Play the songs you love with note-for-note transcriptions and handy practice tools.",
-    filterOptions: {
-      difficulty:             ['All', 'Beginner','Intermediate','Advanced','Expert'],
+    filterOptions:    {
+      difficulty:    DIFFICULTY_STRINGS,
       genre:        ['Blues','Classical','Funk','Jazz','Pop','R&B/Soul','Soundtrack'],
       topic:            ['Arpeggios','Chord Inversion', 'Chording','Scales','Styles','Techniques','Instrument Removed'],
       type: ['Lessons','Workouts','Performances','Live','Documentaries','Packs','Courses'],
-      progress: progressNames,
+      progress: PROGRESS_NAMES,
     },
-    sortingOptions: SortingOptions.AllSortingOptions,
+    sortingOptions:{
+      title: 'Sort By',
+      type: 'radio',
+      items: SortingOptions.AllSortingOptions,
+    },
     tabs: [
         Tabs.ForYou,
         Tabs.Singles,
         Tabs.Courses,
+    ],
+  },
+  'songs': {
+    name: "Songs",
+    filterOptions: {
+      difficulty:             DIFFICULTY_STRINGS,
+      genre:        ['Blues','Classical','Funk','Jazz','Pop','R&B/Soul','Soundtrack'],
+      topic:            ['Arpeggios','Chord Inversion', 'Chording','Scales','Styles','Techniques','Instrument Removed'],
+      type: ['Lessons','Workouts','Performances','Live','Documentaries','Packs','Courses'],
+      progress: PROGRESS_NAMES,
+    },
+    sortingOptions:{
+      title: 'Sort By',
+      type: 'radio',
+      items: SortingOptions.AllSortingOptions,
+    },
+    tabs: [
+        Tabs.ForYou,
+        Tabs.Tutorials,
+        Tabs.Transcriptions,
+        Tabs.PlayAlongs,
     ],
   },
 }
@@ -230,23 +256,9 @@ const contentMetadata = {
       allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
       sortBy: '-published_on',
       tabs: [
-        {
-          name: 'Lessons',
-          short_name: 'LESSONS',
-          value: '',
-        },
-        {
-          name: 'Instructors',
-          short_name: 'INSTRUCTORS',
-          is_group_by: true,
-          value: 'instructor',
-        },
-        {
-          name: 'Genres',
-          short_name: 'Genres',
-          is_group_by: true,
-          value: 'genre',
-        },
+          Tabs.Lessons,
+          Tabs.Instructors,
+          Tabs.Genres,
       ],
     },
     rudiment: {
@@ -256,11 +268,7 @@ const contentMetadata = {
         'The 40 drum rudiments are essential for any drummer, no matter the style, genre, or scenario. You can use the videos below to help you learn, practice, and perfect every single one.',
       allowableFilters: ['difficulty', 'genre', 'gear', 'topic'],
       tabs: [
-        {
-          name: 'All',
-          short_name: 'ALL',
-          value: '',
-        },
+          Tabs.All,
         {
           name: 'Drags',
           short_name: 'DRAGS',
@@ -298,23 +306,9 @@ const contentMetadata = {
       allowableFilters: ['difficulty', 'genre'],
       sortBy: '-published_on',
       tabs: [
-        {
-          name: 'Lessons',
-          short_name: 'LESSONS',
-          value: '',
-        },
-        {
-          name: 'Instructors',
-          short_name: 'INSTRUCTORS',
-          is_group_by: true,
-          value: 'instructor',
-        },
-        {
-          name: 'Genres',
-          short_name: 'Genres',
-          is_group_by: true,
-          value: 'genre',
-        },
+          Tabs.Lessons,
+          Tabs.Instructors,
+          Tabs.Genres,
       ],
     },
     challenges: {
@@ -326,23 +320,9 @@ const contentMetadata = {
       allowableFilters: ['difficulty', 'genre'],
       sortBy: '-published_on',
       tabs: [
-        {
-          name: 'Lessons',
-          short_name: 'LESSONS',
-          value: '',
-        },
-        {
-          name: 'Instructors',
-          short_name: 'INSTRUCTORS',
-          is_group_by: true,
-          value: 'instructor',
-        },
-        {
-          name: 'Genres',
-          short_name: 'Genres',
-          is_group_by: true,
-          value: 'genre',
-        },
+          Tabs.Lessons,
+          Tabs.Instructors,
+          Tabs.Genres,
       ],
     },
     'boot-camp': {
@@ -355,23 +335,9 @@ const contentMetadata = {
       allowableFilters: ['difficulty', 'genre', 'essential'],
       sortBy: '-published_on',
       tabs: [
-        {
-          name: 'Lessons',
-          short_name: 'LESSONS',
-          value: '',
-        },
-        {
-          name: 'Instructors',
-          short_name: 'INSTRUCTORS',
-          is_group_by: true,
-          value: 'instructor',
-        },
-        {
-          name: 'Genres',
-          short_name: 'Genres',
-          is_group_by: true,
-          value: 'genre',
-        },
+          Tabs.Lessons,
+          Tabs.Instructors,
+          Tabs.Genres,
       ],
     },
     'quick-tips': {
@@ -430,23 +396,9 @@ const contentMetadata = {
       allowableFilters: ['difficulty', 'genre', 'essential', 'theory'],
       sortBy: '-published_on',
       tabs: [
-        {
-          name: 'Lessons',
-          short_name: 'LESSONS',
-          value: '',
-        },
-        {
-          name: 'Instructors',
-          short_name: 'INSTRUCTORS',
-          is_group_by: true,
-          value: 'instructor',
-        },
-        {
-          name: 'Genres',
-          short_name: 'Genres',
-          is_group_by: true,
-          value: 'genre',
-        },
+          Tabs.Lessons,
+          Tabs.Instructors,
+          Tabs.Genres,
       ],
     },
     solo: {
@@ -459,23 +411,9 @@ const contentMetadata = {
       allowableFilters: ['difficulty', 'genre'],
       sortBy: '-published_on',
       tabs: [
-        {
-          name: 'Lessons',
-          short_name: 'LESSONS',
-          value: '',
-        },
-        {
-          name: 'Instructors',
-          short_name: 'INSTRUCTORS',
-          is_group_by: true,
-          value: 'instructor',
-        },
-        {
-          name: 'Genres',
-          short_name: 'Genres',
-          is_group_by: true,
-          value: 'genre',
-        },
+          Tabs.Lessons,
+          Tabs.Instructors,
+          Tabs.Genres,
       ],
     },
     performance: {
@@ -488,23 +426,9 @@ const contentMetadata = {
       allowableFilters: ['difficulty', 'genre'],
       sortBy: '-published_on',
       tabs: [
-        {
-          name: 'Lessons',
-          short_name: 'LESSONS',
-          value: '',
-        },
-        {
-          name: 'Instructors',
-          short_name: 'INSTRUCTORS',
-          is_group_by: true,
-          value: 'instructor',
-        },
-        {
-          name: 'Genres',
-          short_name: 'Genres',
-          is_group_by: true,
-          value: 'genre',
-        },
+          Tabs.Lessons,
+          Tabs.Instructors,
+          Tabs.Genres,
       ],
     },
     'exploring-beats': {
@@ -776,26 +700,14 @@ const contentMetadata = {
     'lessons': {
       name: "Lessons",
       filterOptions: {
-        difficulty:             ['All', 'Beginner','Intermediate','Advanced','Expert'],
+        difficulty: DIFFICULTY_STRINGS,
         type: ['Lessons','Workouts','Performances','Live','Documentaries','Packs','Courses'],
-        progress: ['All','In progress', 'Complete','Not Started'],
+        progress: PROGRESS_NAMES,
       },
       tabs: [
-        {
-          name: 'For You',
-          short_name: 'For You',
-          value: 'type,workout',
-        },
-        {
-          name: 'Singles',
-          short_name: 'Singles',
-          value: 'type,singles',
-        },
-        {
-          name: 'Courses',
-          short_name: 'Courses',
-          value: 'type,courses',
-        },
+          Tabs.ForYou,
+          Tabs.Singles,
+          Tabs.Courses,
       ],
     },
   },
@@ -846,23 +758,9 @@ const contentMetadata = {
       amountOfFutureLessonsToShow: 3,
       showFutureLessonAtTopOrBottom: 'bottom',
       tabs: [
-        {
-          name: 'Lessons',
-          short_name: 'LESSONS',
-          value: '',
-        },
-        {
-          name: 'Instructors',
-          short_name: 'INSTRUCTORS',
-          is_group_by: true,
-          value: 'instructor',
-        },
-        {
-          name: 'Genres',
-          short_name: 'Genres',
-          is_group_by: true,
-          value: 'genre',
-        },
+          Tabs.Lessons,
+          Tabs.Instructors,
+          Tabs.Genres,
       ],
     },
     'boot-camp': {
@@ -878,23 +776,9 @@ const contentMetadata = {
       amountOfFutureLessonsToShow: 3,
       showFutureLessonAtTopOrBottom: 'bottom',
       tabs: [
-        {
-          name: 'Lessons',
-          short_name: 'LESSONS',
-          value: '',
-        },
-        {
-          name: 'Instructors',
-          short_name: 'INSTRUCTORS',
-          is_group_by: true,
-          value: 'instructor',
-        },
-        {
-          name: 'Genres',
-          short_name: 'Genres',
-          is_group_by: true,
-          value: 'genre',
-        },
+          Tabs.Lessons,
+          Tabs.Instructors,
+          Tabs.Genres,
       ],
     },
     podcast: {
@@ -910,23 +794,9 @@ const contentMetadata = {
       amountOfFutureLessonsToShow: 3,
       showFutureLessonAtTopOrBottom: 'bottom',
       tabs: [
-        {
-          name: 'Lessons',
-          short_name: 'LESSONS',
-          value: '',
-        },
-        {
-          name: 'Instructors',
-          short_name: 'INSTRUCTORS',
-          is_group_by: true,
-          value: 'instructor',
-        },
-        {
-          name: 'Genres',
-          short_name: 'Genres',
-          is_group_by: true,
-          value: 'genre',
-        },
+          Tabs.Lessons,
+          Tabs.Instructors,
+          Tabs.Genres,
       ],
     },
     'song-tutorial': {
@@ -940,23 +810,9 @@ const contentMetadata = {
       amountOfFutureLessonsToShow: 3,
       showFutureLessonAtTopOrBottom: 'bottom',
       tabs: [
-        {
-          name: 'Lessons',
-          short_name: 'Lessons',
-          value: '',
-        },
-        {
-          name: 'Artists',
-          short_name: 'ARTISTS',
-          is_group_by: true,
-          value: 'artist',
-        },
-        {
-          name: 'Genres',
-          short_name: 'Genres',
-          is_group_by: true,
-          value: 'genre',
-        },
+          Tabs.Lessons,
+          Tabs.Artists,
+          Tabs.Genres,
       ],
     },
   },
@@ -971,23 +827,9 @@ const contentMetadata = {
     },
     challenge: {
       tabs: [
-        {
-          name: 'All',
-          short_name: 'All',
-          value: '',
-        },
-        {
-          name: 'Completed',
-          short_name: 'COMPLETED',
-          is_group_by: true,
-          value: 'completed',
-        },
-        {
-          name: 'Owned Challenges',
-          short_name: 'OWNED CHALLENGES',
-          is_group_by: true,
-          value: 'owned',
-        },
+          Tabs.All,
+          Tabs.Completed,
+          Tabs.OwnedChallenges,
       ],
     },
     song: {
@@ -1015,23 +857,9 @@ const contentMetadata = {
         'Miss a live event or just want to watch a particular episode again? This is the place to do it. All of the Guitareo live broadcasts are archived here for you to watch at your leisure. If you have any questions or want to discuss the topics mentioned in the videos you can always post in the forum.',
       allowableFilters: ['difficulty', 'genre'],
       tabs: [
-        {
-          name: 'Lessons',
-          short_name: 'LESSONS',
-          value: '',
-        },
-        {
-          name: 'Instructors',
-          short_name: 'INSTRUCTORS',
-          is_group_by: true,
-          value: 'instructor',
-        },
-        {
-          name: 'Genres',
-          short_name: 'Genres',
-          is_group_by: true,
-          value: 'genre',
-        },
+          Tabs.Lessons,
+          Tabs.Instructors,
+          Tabs.Genres,
       ],
     },
     'quick-tips': {
@@ -1070,46 +898,18 @@ const contentMetadata = {
     },
     challenge: {
       tabs: [
-        {
-          name: 'All',
-          short_name: 'All',
-          value: '',
-        },
-        {
-          name: 'Completed',
-          short_name: 'COMPLETED',
-          is_group_by: true,
-          value: 'completed',
-        },
-        {
-          name: 'Owned Challenges',
-          short_name: 'OWNED CHALLENGES',
-          is_group_by: true,
-          value: 'owned',
-        },
+          Tabs.All,
+          Tabs.Completed,
+          Tabs.OwnedChallenges,
       ],
     },
     'question-and-answer': {
       thumbnailUrl: 'https://d1923uyy6spedc.cloudfront.net/question-answer.png',
       icon: 'fas fa-question-circle',
       tabs: [
-        {
-          name: 'Lessons',
-          short_name: 'LESSONS',
-          value: '',
-        },
-        {
-          name: 'Instructors',
-          short_name: 'INSTRUCTORS',
-          is_group_by: true,
-          value: 'instructor',
-        },
-        {
-          name: 'Genres',
-          short_name: 'Genres',
-          is_group_by: true,
-          value: 'genre',
-        },
+          Tabs.Lessons,
+          Tabs.Instructors,
+          Tabs.Genres,
       ],
     },
     'student-review': {
@@ -1174,11 +974,7 @@ const contentMetadata = {
       name: 'Workouts',
       shortname: 'Workouts',
       tabs: [
-        {
-          name: 'All',
-          short_name: 'ALL',
-          value: '',
-        },
+        Tabs.All,
         {
           name: '5 Minutes',
           short_name: '5 MINS',
@@ -1193,12 +989,7 @@ const contentMetadata = {
           value: 'length_in_seconds,450-750',
           value_web: ['length_in_seconds > 451', 'length_in_seconds < 751'],
         },
-        {
-          name: 'Instructors',
-          short_name: 'INSTRUCTORS',
-          is_group_by: true,
-          value: 'instructor',
-        },
+        Tabs.Instructors,
       ],
     },
   },
@@ -1227,15 +1018,45 @@ export function processMetadata(brand, type, withFilters = false) {
     name: brandMetaData.name || null,
     description: brandMetaData.description || null,
     url: brandMetaData.url ? brand + brandMetaData.url : brand + '/' + type,
+    sort: brandMetaData.sortingOptions || null,
+    tabs: brandMetaData.tabs || [],
   }
 
-  if (withFilters) {
-    Object.keys(brandMetaData).forEach((key) => {
-      if (!['thumbnailUrl', 'name', 'description'].includes(key)) {
-        processedData[key] = brandMetaData[key]
-      }
-    })
+  if (withFilters && brandMetaData.filterOptions) {
+    processedData.filters = transformFilters(brandMetaData.filterOptions);
   }
 
   return processedData
+}
+
+/**
+ * Defines the filter types for each key
+ */
+const filterTypes = {
+  difficulty: "checkbox",
+  genre: "checkbox",
+  topic: "checkbox",
+  type: "checkbox",
+  progress: "radio",
+};
+/**
+ * Transforms filterOptions into the required format
+ */
+function transformFilters(filterOptions) {
+  return Object.entries(filterOptions).map(([key, values]) => ({
+    title: capitalizeFirstLetter(key),
+    type: filterTypes[key] || "checkbox",
+    key,
+    items: values.map(value => ({
+      name: value,
+      value: `${key},${key === 'progress' ? value.toLowerCase() : value}`,
+    })),
+  }));
+}
+
+/**
+ * Capitalizes the first letter of a string
+ */
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
