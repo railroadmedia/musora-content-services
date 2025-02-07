@@ -88,6 +88,6 @@ export async function getTabResults(brand, pageName, tabName, { page = 1, limit 
   return {
     type: tabName === 'For You' ? 'sections' : 'catalog',
     data: results.entity,
-    meta: { filters }
+    meta: { filters, sort: {...metaData.sort} }
   };
 }
