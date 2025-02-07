@@ -1995,3 +1995,64 @@ function cleanUpGroq(query) {
 
   return cleanedQuery
 }
+
+// V2 methods
+
+export async function fetchTabData(
+    brand,
+    pageName,
+    {
+      page = 1,
+      limit = 10,
+      sort = '-published_on',
+      includedFields = [],
+      progressIds = undefined,
+      progress = 'all',
+    } = {}
+) {
+
+  const start = (page - 1) * limit
+  const end = start + limit
+
+  // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
+  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
+
+  // limits the results to supplied progressIds for started & completed filters
+  const progressFilter = await getProgressFilter(progress, progressIds)
+
+  // Determine the sort order
+  const sortOrder = sort
+
+  let fields = DEFAULT_FIELDS
+  let fieldsString = fields.join(',')
+
+
+  // Determine the group by clause
+  let query = ''
+  let entityFieldsString = ''
+  let filter = ''
+
+    filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
+    const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+    entityFieldsString = ` ${fieldsString},
+                                    'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
+                                    'length_in_seconds': coalesce(
+      math::sum(
+        select(
+          child[${childrenFilter}]->length_in_seconds
+        )
+      ),
+      length_in_seconds
+    ),`
+
+
+  const filterWithRestrictions = await new FilterBuilder(filter, {
+  }).buildFilter()
+  query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
+    sortOrder: sortOrder,
+    start: start,
+    end: end,
+  })
+
+  return fetchSanity(query, true)
+}

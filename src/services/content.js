@@ -1,4 +1,4 @@
-import {fetchAll, fetchByRailContentIds, fetchMetadata} from './sanity.js'
+import {fetchAll, fetchByRailContentIds, fetchMetadata, fetchTabData} from './sanity.js'
 
 export async function getLessonContentRows () {
   //TODO: this should come from backend
@@ -70,7 +70,7 @@ export async function getTabResults(brand, pageName, tabName, { page = 1, limit 
   // Fetch data based on tabName
   const results = tabName === 'For You'
       ? { entity: await getLessonContentRows() }
-      : await fetchAll(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields });
+      : await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields });
 
   // Fetch metadata and prepare filters
   const metaData = await fetchMetadata(brand, pageName);
