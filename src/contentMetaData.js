@@ -280,12 +280,10 @@ const commonMetadata = {
       {
         name: 'Singles',
         short_name: 'Singles',
-        value: 'type,singles',
       },
       {
         name: 'Courses',
         short_name: 'Courses',
-        value: 'type,courses',
       },
     ],
   },
@@ -318,17 +316,14 @@ const commonMetadata = {
       {
         name: 'Tutorials',
         short_name: 'Tutorials',
-        value: 'type,song-tutorial',
       },
       {
         name: 'Transcriptions',
         short_name: 'Transcriptions',
-        value: 'type,course',
       },
       {
         name: 'Play-Alongs',
         short_name: 'Play-Alongs',
-        value: 'type,play-along',
       },
     ],
   },
@@ -910,17 +905,14 @@ const contentMetadata = {
         {
           name: 'For You',
           short_name: 'For You',
-          value: 'type,workout',
         },
         {
           name: 'Singles',
           short_name: 'Singles',
-          value: 'type,singles',
         },
         {
           name: 'Courses',
           short_name: 'Courses',
-          value: 'type,courses',
         },
       ],
     },
