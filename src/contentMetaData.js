@@ -4,19 +4,19 @@
 const PROGRESS_NAMES = ['All','In Progress', 'Complete','Not Started']
 const DIFFICULTY_STRINGS = ['All', 'Beginner','Intermediate','Advanced','Expert']
 class SortingOptions {
-  static Populatity = { value: '-popularity', name: 'Most Popular'}
-  static PopulatityDesc = { value: '-popularity', name: 'Recommended'}
+  static Popularity = { value: '-popularity', name: 'Most Popular'}
+  static PopularityDesc = { value: '-popularity', name: 'Recommended'}
   static PublishedOn = { value: '-published_on', name: 'Newest First'}
   static PublishedOnDesc = { value: 'published_on', name: 'Oldest First'}
   static Slug = { value: 'slug', name: 'Name: A to Z'}
   static SlugDesc = { value: '-slug', name: 'Name: Z to A'}
   static AllSortingOptions = [
-      Popularity,
-      PouplarityDesc,
-      PublishedOn,
-      PublishedOnDesc,
-      Slug,
-      SlugDesc,
+      this.Popularity,
+      this.PopularityDesc,
+      this.PublishedOn,
+      this.PublishedOnDesc,
+      this.Slug,
+      this.SlugDesc,
   ]
 }
 
