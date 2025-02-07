@@ -1,3 +1,7 @@
+/**
+ * @module Content-Services-V2
+ */
+
 import {fetchAll, fetchByRailContentIds, fetchMetadata, fetchTabData} from './sanity.js'
 
 export async function getLessonContentRows () {
@@ -64,6 +68,28 @@ export async function getLessonContentRows () {
   return results
 }
 
+/**
+ * Get data that should be displayed for a specific tab with pagination
+ * @param {string} brand - The brand for which to fetch data.
+ * @param {string} pageName - The page name (e.g., 'lessons', 'songs','challenges).
+ * @param {string} tabName - The name for the selected tab. Should be same name received from fetchMetadata (e.g., 'Singles', 'Courses','For You').
+ * @param {Object} params - Parameters for pagination, sorting, and filter.
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {number} [params.limit=10] - The number of items per page.
+ * @param {string} [params.sort="-published_on"] - The field to sort the data by.
+ * @param {Array<string>} [params.selectedFilters=[]] - The selected filter.
+ * @returns {Promise<Object|null>} - The fetched content data or null if not found.
+ *
+ * @example
+ * getTabResults('drumeo', 'lessons','Singles', {
+ *   page: 2,
+ *   limit: 20,
+ *   sort: '-popularity',
+ *   includedFields: ['difficulty,Intermediate'],
+ * })
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ */
 export async function getTabResults(brand, pageName, tabName, {
   page = 1,
   limit = 10,

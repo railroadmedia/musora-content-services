@@ -3,6 +3,7 @@
     "include": [
       "src/services/config.js",
       "src/services/sanity.js",
+      "src/services/content.js",
       "src/services/railcontent.js",
       "src/index.js"
     ],
