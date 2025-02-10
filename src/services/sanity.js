@@ -2021,7 +2021,7 @@ export async function fetchTabData(
   const progressFilter = await getProgressFilter(progress, progressIds)
 
   // Determine the sort order
-  const sortOrder = sort
+  const sortOrder = getSortOrder(sort, brand, '')
 
   let fields = DEFAULT_FIELDS
   let fieldsString = fields.join(',')

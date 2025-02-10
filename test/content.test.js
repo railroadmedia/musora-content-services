@@ -17,12 +17,12 @@ describe('content', function () {
   })
 
   test('getTabResults-Singles', async () => {
-    const results = await getTabResults('drumeo','lessons','Singles', {includedFields:['difficulty,All','difficulty,Beginner']})
+    const results = await getTabResults('drumeo','lessons','Singles', {selectedFilters:['difficulty,All','difficulty,Beginner']})
     console.log(results)
   })
 
   test('getTabResults-Courses', async () => {
-    const results = await getTabResults('pianote','lessons','Courses', {includedFields:['difficulty,Expert'], sort:'-slug'})
-    console.log(results.meta)
+    const results = await getTabResults('pianote','lessons','Courses', {selectedFilters:['difficulty,Expert'], sort:'slug'})
+    console.log(results)
   })
 })
