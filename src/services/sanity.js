@@ -65,15 +65,19 @@ export async function fetchSongById(documentId) {
 }
 
 /**
-* fetches from Sanity all content marked for removal next quarter
-*
-* @string brand
-* @returns {Promise<Object|null>}
-*/
-export async function fetchLeaving(brand, page) {
+ * fetches from Sanity all content marked for removal next quarter
+ *
+ * @string brand
+ * @number pageNumber
+ * @number contentPerPage
+ * @returns {Promise<Object|null>}
+ */
+export async function fetchLeaving(
+    brand,
+    { pageNumber = 1, contentPerPage = 20 }) {
   const nextQuarter = getNextAndPreviousQuarterDates()['next'];
   const filterString = `brand == '${brand}' && quarter_removed == '${nextQuarter}'`
-  const startEndOrder = getQueryFromPage(page);
+  const startEndOrder = getQueryFromPage(pageNumber, contentPerPage);
   const sortOrder = {sortOrder: "published_on desc, id desc", start: startEndOrder['start'], end: startEndOrder['end']};
   const query = await buildQuery(filterString, {pullFutureContent: false, availableContentStatuses: ["published"]}, getFieldsForContentType(), sortOrder);
   return fetchSanity(query, true);
@@ -83,12 +87,16 @@ export async function fetchLeaving(brand, page) {
  * fetches from Sanity all content marked for return next quarter
  *
  * @string brand
+ * @number pageNumber
+ * @number contentPerPage
  * @returns {Promise<Object|null>}
  */
-export async function fetchReturning(brand, page) {
+export async function fetchReturning(
+    brand,
+    { pageNumber = 1, contentPerPage = 20 }) {
   const nextQuarter = getNextAndPreviousQuarterDates()['next'];
   const filterString = `brand == '${brand}' && quarter_published == '${nextQuarter}'`;
-  const startEndOrder = getQueryFromPage(page);
+  const startEndOrder = getQueryFromPage(pageNumber, contentPerPage);
   const sortOrder = {sortOrder: "published_on desc, id desc", start: startEndOrder['start'], end: startEndOrder['end']};
   const query = await buildQuery(filterString, {pullFutureContent: true, availableContentStatuses: ["draft"]}, getFieldsForContentType(), sortOrder);
 
@@ -99,11 +107,15 @@ export async function fetchReturning(brand, page) {
  * fetches from Sanity all songs coming soon (new) next quarter
  *
  * @string brand
+ * @number pageNumber
+ * @number contentPerPage
  * @returns {Promise<Object|null>}
  */
-export async function fetchComingSoon(brand, page) {
+export async function fetchComingSoon(
+    brand,
+    { pageNumber = 1, contentPerPage = 20 }) {
   const filterString = `brand == '${brand}' && _type == 'song'`;
-  const startEndOrder = getQueryFromPage(page);
+  const startEndOrder = getQueryFromPage(pageNumber, contentPerPage);
   const sortOrder = {sortOrder: "published_on desc, id desc", start: startEndOrder['start'], end: startEndOrder['end']};
   const query = await buildQuery(filterString, {getFutureContentOnly: true}, getFieldsForContentType(), sortOrder);
   return fetchSanity(query, true);
@@ -114,9 +126,9 @@ export async function fetchComingSoon(brand, page) {
  * @number page
  * @returns {number[]}
  */
-function getQueryFromPage(page) {
-  const start = 20*(page-1);
-  const end = 20*page;
+function getQueryFromPage(pageNumber, contentPerPage) {
+  const start = contentPerPage*(pageNumber-1);
+  const end = contentPerPage*pageNumber;
   let result = [];
   result['start'] = start;
   result['end'] = end;

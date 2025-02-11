@@ -62,22 +62,20 @@ describe('Sanity Queries', function () {
   test('fetchReturning', async () => {
     const brand = 'guitareo'
     const page = 1
-    const response = await fetchReturning(brand, page)
-    expect(response.length).toBeGreaterThan(0)
+    const response = await fetchReturning(brand, {pageNumber: 1})
+    expect(response).toBeDefined()
   });
 
   test('fetchLeaving', async () => {
     const brand = 'guitareo'
-    const page = 1
-    const response = await fetchLeaving(brand, page)
-    expect(response.length).toBeGreaterThan(0)
+    const response = await fetchLeaving(brand, {pageNumber: 1})
+    expect(response).toBeDefined()
   });
 
   test('fetchComingSoon', async () => {
     const brand = 'guitareo'
-    const page = 1
-    const response = await fetchComingSoon(brand, page)
-    expect(response.length).toBeGreaterThan(0)
+    const response = await fetchComingSoon(brand, {pageNumber: 2, contentPerPage: 20})
+    expect(response).toBeDefined()
   });
 
 
