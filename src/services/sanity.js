@@ -483,6 +483,8 @@ export async function fetchAll(
   if (type === 'archives') {
     typeFilter = `&& status == "archived"`
     bypassStatusAndPublishedValidation = true
+  } else if(type === 'lessons' || type === 'songs'){
+    typeFilter = ``;
   } else if (type === 'pack') {
     typeFilter = `&& (_type == 'pack' || _type == 'semester-pack')`
   } else {
@@ -825,6 +827,13 @@ export async function fetchAllFilterOptions(
   coachId,
   includeTabs = false
 ) {
+  if(contentType == 'lessons' || contentType == 'songs') {
+    const metaData = processMetadata(brand, contentType, true);
+    return {
+      meta: metaData
+    };
+  }
+
   if (coachId && contentType !== 'coach-lessons') {
     throw new Error(
       `Invalid contentType: '${contentType}' for coachId. It must be 'coach-lessons'.`
@@ -1771,6 +1780,7 @@ export async function fetchShowsData(brand) {
 
 /**
  * Fetch metadata from the contentMetaData.js based on brand and type.
+ * For v2 you need to provide page type('lessons' or 'songs') in type parameter
  *
  * @param {string} brand - The brand for which to fetch metadata.
  * @param {string} type - The type for which to fetch metadata.
@@ -1984,4 +1994,65 @@ function cleanUpGroq(query) {
     .trim()
 
   return cleanedQuery
+}
+
+// V2 methods
+
+export async function fetchTabData(
+    brand,
+    pageName,
+    {
+      page = 1,
+      limit = 10,
+      sort = '-published_on',
+      includedFields = [],
+      progressIds = undefined,
+      progress = 'all',
+    } = {}
+) {
+
+  const start = (page - 1) * limit
+  const end = start + limit
+
+  // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
+  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields, [], pageName ) : ''
+
+  // limits the results to supplied progressIds for started & completed filters
+  const progressFilter = await getProgressFilter(progress, progressIds)
+
+  // Determine the sort order
+  const sortOrder = getSortOrder(sort, brand, '')
+
+  let fields = DEFAULT_FIELDS
+  let fieldsString = fields.join(',')
+
+
+  // Determine the group by clause
+  let query = ''
+  let entityFieldsString = ''
+  let filter = ''
+
+    filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
+    const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+    entityFieldsString = ` ${fieldsString},
+                                    'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
+                                    'length_in_seconds': coalesce(
+      math::sum(
+        select(
+          child[${childrenFilter}]->length_in_seconds
+        )
+      ),
+      length_in_seconds
+    ),`
+
+
+  const filterWithRestrictions = await new FilterBuilder(filter, {
+  }).buildFilter()
+  query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
+    sortOrder: sortOrder,
+    start: start,
+    end: end,
+  })
+
+  return fetchSanity(query, true)
 }

@@ -111,6 +111,47 @@ export const coachLessonsTypes = [
   'workout',
 ]
 
+export const singleLessonTypes = ['quick-tips', 'rudiment', 'coach-lessons'];
+export const practiceAlongsLessonTypes = ['workout', 'boot-camp','challenges'];
+export const performancesLessonTypes = ['performance','solo','drum-fest-international-2022'];
+export const documentariesLessonTypes = ['tama','sonor','history-of-electronic-drums','paiste-cymbals'];
+export const liveArchivesLessonTypes = ['podcast', 'coach-stream', 'live-streams'];
+export const studentArchivesLessonTypes = ['student-review', 'question-and-answer', 'student-focus','student-collaborations'];
+
+export const individualLessonsTypes = [
+  ...singleLessonTypes,
+  ...practiceAlongsLessonTypes,
+  ...performancesLessonTypes,
+  ...documentariesLessonTypes,
+  ...liveArchivesLessonTypes,
+  ...studentArchivesLessonTypes
+];
+
+export const coursesLessonTypes = ['course', 'pack','spotlight'];
+export const showsLessonTypes = ['diy-drum-experiments','exploring-beats','in-rhythm',  'rhythmic-adventures-of-captain-carson','rhythms-from-another-planet','study-the-greats'];
+export const collectionLessonTypes = [
+    ...coursesLessonTypes,
+    ...showsLessonTypes
+];
+
+export const lessonTypesMapping = {
+  'single lessons': singleLessonTypes,
+  'practice alongs': practiceAlongsLessonTypes,
+  'live archives': liveArchivesLessonTypes,
+  'performances': performancesLessonTypes,
+  'student archives': studentArchivesLessonTypes,
+  'documentaries': documentariesLessonTypes,
+  'courses': coursesLessonTypes,
+  'shows': showsLessonTypes,
+  'collections': collectionLessonTypes,
+  'individuals': individualLessonsTypes,
+};
+
+export const filterTypes = {
+  lessons: [...individualLessonsTypes, ...collectionLessonTypes],
+  songs: []
+}
+
 export let contentTypeConfig = {
   song: {
     fields: ['album', 'soundslice', 'instrumentless', `"resources": ${resourcesField}`],
@@ -566,7 +607,7 @@ export function getFieldsForContentType(contentType, asQueryString = true) {
  *     'genre,rock']
  * @returns {string} - A string that can be used in a groq query
  */
-export function filtersToGroq(filters, selectedFilters = []) {
+export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
   if (!filters) {
     filters = []
   }
@@ -625,8 +666,30 @@ export function filtersToGroq(filters, selectedFilters = []) {
               return `(difficulty_string == "Novice" || difficulty_string == "Introductory" )`
             }
             return `difficulty_string == "${value}"`
-          } else if (key === 'type' && !selectedFilters.includes(key)) {
+          } else if (key === 'tab' && !selectedFilters.includes(key)) {
+            if(value.toLowerCase() === 'individuals'){
+              const conditions = individualLessonsTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              return ` (${conditions})`;
+            } else if(value.toLowerCase() === 'collections'){
+              const conditions = collectionLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              return ` (${conditions})`;
+            } else if(value.toLowerCase() === 'filters'){
+              var allLessons = filterTypes[pageName] || [];
+              const conditions = allLessons.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              if (conditions === "") return '';
+              return ` (${conditions})`;
+          }
             return `_type == "${value}"`
+          } else if (key === 'type' && !selectedFilters.includes(key)) {
+            const typeKey = value.toLowerCase();
+            const lessonTypes = lessonTypesMapping[typeKey];
+            if (lessonTypes) {
+              const conditions = lessonTypes.map(
+                  (lessonType) => `_type == '${lessonType}'`
+              ).join(' || ');
+              return ` (${conditions})`;
+            }
+            return `_type == "${value}"`;
           } else if (key === 'length_in_seconds') {
             if (value.includes('-')) {
               const [min, max] = value.split('-').map(Number)
@@ -637,6 +700,8 @@ export function filtersToGroq(filters, selectedFilters = []) {
             } else {
               return `${key} == ${value}`
             }
+          } else if (key === 'pageName') {
+            return ` `
           } else if (!selectedFilters.includes(key)) {
             return ` ${key} == ${/^\d+$/.test(value) ? value : `"$${value}"`}`
           }
