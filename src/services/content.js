@@ -3,6 +3,7 @@
  */
 
 import {fetchAll, fetchByRailContentIds, fetchMetadata, fetchTabData} from './sanity.js'
+import {TabResponseType, Tabs} from '../contentMetaData.js'
 
 export async function getLessonContentRows () {
   //TODO: this should come from backend
@@ -72,7 +73,7 @@ export async function getLessonContentRows () {
  * Get data that should be displayed for a specific tab with pagination
  * @param {string} brand - The brand for which to fetch data.
  * @param {string} pageName - The page name (e.g., 'lessons', 'songs','challenges).
- * @param {string} tabName - The name for the selected tab. Should be same name received from fetchMetadata (e.g., 'Singles', 'Courses','For You').
+ * @param {string} tabName - The name for the selected tab. Should be same name received from fetchMetadata (e.g., 'Individuals', 'Collections','For You').
  * @param {Object} params - Parameters for pagination, sorting, and filter.
  * @param {number} [params.page=1] - The page number for pagination.
  * @param {number} [params.limit=10] - The number of items per page.
@@ -106,7 +107,7 @@ export async function getTabResults(brand, pageName, tabName, {
   const mergedIncludedFields = [...filteredSelectedFilters, `type,${tabName.toLowerCase()}`];
 
   // Fetch data
-  const results = tabName === 'For You'
+  const results = tabName === Tabs.ForYou.name
       ? { entity: await getLessonContentRows() }
       : await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
 
@@ -137,7 +138,7 @@ export async function getTabResults(brand, pageName, tabName, {
   };
 
   return {
-    type: tabName === 'For You' ? 'sections' : 'catalog',
+    type: tabName === Tabs.ForYou.name ? TabResponseType.SECTIONS : TabResponseType.CATALOG,
     data: results.entity,
     meta: { filters, sort: sortOptions }
   };

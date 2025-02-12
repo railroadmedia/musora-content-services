@@ -115,6 +115,12 @@ export const singleLessonTypes = ['quick-tips', 'workout'];
 
 export const courseLessonTypes = ['course', 'pack','semester-pack','song-tutorial'];
 
+
+export const filterTypes = {
+  lessons: courseLessonTypes.concat(singleLessonTypes),
+  songs: []
+}
+
 export let contentTypeConfig = {
   song: {
     fields: ['album', 'soundslice', 'instrumentless', `"resources": ${resourcesField}`],
@@ -570,7 +576,7 @@ export function getFieldsForContentType(contentType, asQueryString = true) {
  *     'genre,rock']
  * @returns {string} - A string that can be used in a groq query
  */
-export function filtersToGroq(filters, selectedFilters = []) {
+export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
   if (!filters) {
     filters = []
   }
@@ -630,13 +636,18 @@ export function filtersToGroq(filters, selectedFilters = []) {
             }
             return `difficulty_string == "${value}"`
           } else if (key === 'type' && !selectedFilters.includes(key)) {
-            if(value === 'singles'){
+            if(value.toLowerCase() === 'individuals'){
               const conditions = singleLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
               return ` (${conditions})`;
-            } else if(value === 'courses'){
+            } else if(value.toLowerCase() === 'collections'){
               const conditions = courseLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
               return ` (${conditions})`;
-            }
+            }  else if(value.toLowerCase() === 'filters'){
+              var allLessons = filterTypes[pageName] || [];
+              const conditions = allLessons.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              if (conditions === "") return '';
+              return ` (${conditions})`;
+          }
             return `_type == "${value}"`
           } else if (key === 'length_in_seconds') {
             if (value.includes('-')) {
@@ -648,6 +659,8 @@ export function filtersToGroq(filters, selectedFilters = []) {
             } else {
               return `${key} == ${value}`
             }
+          } else if (key === 'pageName') {
+            return ` `
           } else if (!selectedFilters.includes(key)) {
             return ` ${key} == ${/^\d+$/.test(value) ? value : `"$${value}"`}`
           }

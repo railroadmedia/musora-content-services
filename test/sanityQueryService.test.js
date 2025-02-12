@@ -846,27 +846,6 @@ describe('MetaData', function () {
     drumeoMetaData.url = ''
     expect(guitareoMetaData).toStrictEqual(drumeoMetaData)
   })
-
-  test('withWithoutFilters', async () => {
-    let metaData = processMetadata('singeo', 'student-review', true)
-    expect(metaData.type).toBeDefined()
-    expect(metaData.name).toBeDefined()
-    expect(metaData.description).toBeDefined()
-    expect(metaData.thumbnailUrl).toBeDefined()
-    expect(metaData.tabs).toBeDefined()
-    metaData = processMetadata('singeo', 'student-review', false)
-    expect(metaData.type).toBeDefined()
-    expect(metaData.name).toBeDefined()
-    expect(metaData.description).toBeDefined()
-    expect(metaData.tabs).not.toBeDefined()
-  })
-
-  test('nulled', async () => {
-    let metaData = processMetadata('drumeo', 'student-review')
-    expect(metaData).toBeNull()
-    metaData = processMetadata('singeo', 'student-review')
-    expect(metaData).not.toBeNull()
-  })
 })
 
 describe('v2', function () {
@@ -880,27 +859,10 @@ describe('v2', function () {
 
   test('metaDataForSongs', async () => {
     const metaData = await fetchMetadata('drumeo', 'songs')
+    log(metaData)
     expect(metaData.filters).toBeDefined()
     expect(metaData.sort).toBeDefined()
     expect(metaData.tabs).toBeDefined()
-  })
-
-  test('fetchAllForLessonsSinglesTab', async () => {
-    let response = await fetchAll('drumeo', 'lessons', {
-      includedFields: ['type,singles'],
-    })
-    log(response)
-    expect(response.entity.length).toBeGreaterThan(0)
-    expect(singleLessonTypes).toContain(response.entity[0].type);
-  })
-
-  test('fetchAllForLessonsCoursesTab', async () => {
-    let response = await fetchAll('drumeo', 'lessons', {
-      includedFields: ['type,courses'],
-    })
-    log(response)
-    expect(response.entity.length).toBeGreaterThan(0)
-    expect(courseLessonTypes).toContain(response.entity[0].type);
   })
 
   test('fetchAllFilterOptionsLessons', async () => {

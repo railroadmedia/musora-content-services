@@ -2015,7 +2015,7 @@ export async function fetchTabData(
   const end = start + limit
 
   // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
-  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
+  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields, [], pageName ) : ''
 
   // limits the results to supplied progressIds for started & completed filters
   const progressFilter = await getProgressFilter(progress, progressIds)
