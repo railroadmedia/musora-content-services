@@ -1,4 +1,4 @@
-import { getFieldsForContentType, singleLessonTypes,  courseLessonTypes} from '../src/contentTypeConfig'
+import { getFieldsForContentType} from '../src/contentTypeConfig'
 const railContentModule = require('../src/services/railcontent.js')
 
 import {

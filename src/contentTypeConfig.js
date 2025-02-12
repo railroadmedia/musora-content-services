@@ -111,13 +111,29 @@ export const coachLessonsTypes = [
   'workout',
 ]
 
-export const singleLessonTypes = ['quick-tips', 'workout'];
+export const singleLessonTypes = ['quick-tips', 'rudiment', 'coach-lessons'];
+export const practiceAlongsLessonTypes = ['workout', 'boot-camps','challenges'];
+export const performancesLessonTypes = ['performances','solos','drum-fest-international-2022'];
+export const documentariesLessonTypes = ['tama-drums','sonor-drums','history-of-electronic-drums','paiste-cymbals'];
+export const liveArchivesLessonTypes = ['podcasts', 'coach-stream', 'live-streams'];
+export const studentArchivesLessonTypes = ['student-review', 'question-and-answer', 'student-focus','student-collaborations'];
 
-export const courseLessonTypes = ['course', 'pack','semester-pack','song-tutorial'];
+export const individualLessonsTypes = [
+  ...singleLessonTypes,
+  ...practiceAlongsLessonTypes,
+  ...performancesLessonTypes,
+  ...documentariesLessonTypes,
+  ...liveArchivesLessonTypes,
+  ...studentArchivesLessonTypes
+];
+
+export const collectionLessonTypes = ['course', 'pack','spotlight', 'diy-drum-experiments','exploring-beats','in-rhythm',
+  'rhythmic-adventures-of-captain-carson','rhythms-from-another-planet','study-the-greats'
+];
 
 
 export const filterTypes = {
-  lessons: courseLessonTypes.concat(singleLessonTypes),
+  lessons: [...individualLessonsTypes, ...collectionLessonTypes],
   songs: []
 }
 
@@ -637,10 +653,10 @@ export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
             return `difficulty_string == "${value}"`
           } else if (key === 'type' && !selectedFilters.includes(key)) {
             if(value.toLowerCase() === 'individuals'){
-              const conditions = singleLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              const conditions = individualLessonsTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
               return ` (${conditions})`;
             } else if(value.toLowerCase() === 'collections'){
-              const conditions = courseLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              const conditions = collectionLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
               return ` (${conditions})`;
             }  else if(value.toLowerCase() === 'filters'){
               var allLessons = filterTypes[pageName] || [];

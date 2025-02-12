@@ -1,7 +1,7 @@
 // Metadata is taken from the 'common' element and then merged with the <brand> metadata.
 // Brand values are prioritized and will override the same property in the 'common' element.
 
-const PROGRESS_NAMES = ['All', 'In Progress', 'Complete', 'Not Started']
+const PROGRESS_NAMES = ['All', 'In Progress', 'Completed', 'Not Started']
 const DIFFICULTY_STRINGS = ['All', 'Introductory', 'Beginner', 'Intermediate', 'Advanced', 'Expert']
 
 class SortingOptions {
@@ -200,9 +200,8 @@ const commonMetadata = {
     name: 'Lessons',
     filterOptions: {
       difficulty: DIFFICULTY_STRINGS,
-      genre: ['Blues', 'Classical', 'Funk', 'Jazz', 'Pop', 'R&B/Soul', 'Soundtrack'],
-      topic: ['Arpeggios', 'Chord Inversion', 'Chording', 'Scales', 'Styles', 'Techniques', 'Instrument Removed'],
-      type: ['Lessons', 'Workouts', 'Performances', 'Live', 'Documentaries', 'Packs', 'Courses'],
+      style: ['Classical', 'Funk', 'Jazz', 'Pop', 'R&B/Soul', 'Soundtrack', 'Blues'],
+      type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Live Archives', 'Student Archives',  'Documentaries', 'Courses', 'Shows'],
       progress: PROGRESS_NAMES,
     },
     sortingOptions: {
@@ -220,9 +219,9 @@ const commonMetadata = {
     name: 'Songs',
     filterOptions: {
       difficulty: DIFFICULTY_STRINGS,
-      genre: ['Blues', 'Classical', 'Funk', 'Jazz', 'Pop', 'R&B/Soul', 'Soundtrack'],
-      topic: ['Arpeggios', 'Chord Inversion', 'Chording', 'Scales', 'Styles', 'Techniques', 'Instrument Removed'],
-      type: ['Lessons', 'Workouts', 'Performances', 'Live', 'Documentaries', 'Packs', 'Courses'],
+      style: ['Blues','CCM/Worship','Christmas','Classical','Country','Disco','Electronic','Folk','Funk','Hip-Hop/Rap','Holiday','Jazz','Soundtrack',
+      'Traditional','Latin/World','Metal','Pop','R&B/Soul','Ragtime','Reggae','Rock'],
+      type: ['Tutorial', 'Transcription', 'Jam Track'],
       progress: PROGRESS_NAMES,
     },
     sortingOptions: {
@@ -322,7 +321,8 @@ const contentMetadata = {
       name: 'Lessons',
       filterOptions: {
         difficulty: DIFFICULTY_STRINGS,
-        type: ['Lessons', 'Workouts', 'Performances', 'Live', 'Documentaries', 'Packs', 'Courses'],
+        style: ['Classical', 'Funk', 'Jazz', 'Pop', 'R&B/Soul', 'Soundtrack', 'Blues'],
+        type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Live Archives', 'Student Archives',  'Documentaries', 'Courses', 'Shows'],
         progress: PROGRESS_NAMES,
       },
       tabs: [
