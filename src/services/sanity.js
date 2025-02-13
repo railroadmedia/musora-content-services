@@ -74,7 +74,7 @@ export async function fetchSongById(documentId) {
  */
 export async function fetchLeaving(
     brand,
-    { pageNumber = 1, contentPerPage = 20 }) {
+    { pageNumber = 1, contentPerPage = 20 } = {}) {
   const nextQuarter = getNextAndPreviousQuarterDates()['next'];
   const filterString = `brand == '${brand}' && quarter_removed == '${nextQuarter}'`
   const startEndOrder = getQueryFromPage(pageNumber, contentPerPage);
@@ -93,7 +93,7 @@ export async function fetchLeaving(
  */
 export async function fetchReturning(
     brand,
-    { pageNumber = 1, contentPerPage = 20 }) {
+    { pageNumber = 1, contentPerPage = 20 } = {}) {
   const nextQuarter = getNextAndPreviousQuarterDates()['next'];
   const filterString = `brand == '${brand}' && quarter_published == '${nextQuarter}'`;
   const startEndOrder = getQueryFromPage(pageNumber, contentPerPage);
@@ -113,7 +113,7 @@ export async function fetchReturning(
  */
 export async function fetchComingSoon(
     brand,
-    { pageNumber = 1, contentPerPage = 20 }) {
+    { pageNumber = 1, contentPerPage = 20 } = {}) {
   const filterString = `brand == '${brand}' && _type == 'song'`;
   const startEndOrder = getQueryFromPage(pageNumber, contentPerPage);
   const sortOrder = {sortOrder: "published_on desc, id desc", start: startEndOrder['start'], end: startEndOrder['end']};
