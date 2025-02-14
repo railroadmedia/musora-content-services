@@ -15,6 +15,7 @@ import {
   showsTypes,
   getNewReleasesTypes,
   coachLessonsTypes,
+  getChildFieldsForContentType,
 } from '../contentTypeConfig.js'
 
 import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
@@ -62,6 +63,68 @@ export async function fetchSongById(documentId) {
     }
   )
   return fetchSanity(query, false)
+}
+
+/**
+* fetches from Sanity all content marked for removal next quarter
+*
+* @string brand
+* @returns {Promise<Object|null>}
+*/
+export async function fetchQuarterRemoved(brand) {
+  const nextQuarter = getNextAndPreviousQuarterDates()['next'];
+  const filterString = `brand == '${brand}' && quarter_removed == '${nextQuarter}'`
+  const query = await buildQuery(filterString, {pullFutureContent: false, availableContentStatuses: ["published"]}, getFieldsForContentType(), {SortOrder: "published_on desc, id desc", end: 20});
+  return fetchSanity(query, false);
+}
+
+/**
+ * fetches from Sanity all content marked for publish next quarter
+ *
+ * @string brand
+ * @returns {Promise<Object|null>}
+ */
+export async function fetchQuarterPublished(brand) {
+  const nextQuarter = getNextAndPreviousQuarterDates()['next'];
+  const filterString = `brand == '${brand}' && quarter_published == '${nextQuarter}'`;
+  const query = await buildQuery(filterString, {pullFutureContent: true, availableContentStatuses: ["draft"]}, getFieldsForContentType(), {SortOrder: "published_on desc, id desc", end: 20});
+
+  return fetchSanity(query, false);
+}
+
+/**
+ * returns array of next and previous quarter dates as strings
+ *
+ * @returns {*[]}
+ */
+export function getNextAndPreviousQuarterDates() {
+  const january = 1;
+  const april = 4;
+  const july = 7;
+  const october = 10;
+  const month = new Date().getMonth();
+  let year = new Date().getFullYear();
+  let nextQuarter = '';
+  let prevQuarter = '';
+  if (month < april) {
+    nextQuarter = `${year}-0${april}-01`;
+    prevQuarter = `${year}-0${january}-01`;
+  } else if (month < july) {
+    nextQuarter = `${year}-0${july}-01`;
+    prevQuarter = `${year}-0${april}-01`;
+  } else if (month < october) {
+    nextQuarter = `${year}-${october}-01`;
+    prevQuarter = `${year}-0${july}-01`;
+  } else {
+    prevQuarter = `${year}-${october}-01`;
+    year++;
+    nextQuarter = `${year}-0${january}-01`;
+  }
+
+  let result = [];
+  result['next'] = nextQuarter;
+  result['previous'] = prevQuarter;
+  return result;
 }
 
 /**
@@ -341,16 +404,11 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
  */
 export async function fetchByRailContentId(id, contentType) {
   const fields = getFieldsForContentType(contentType)
+  const childFields = getChildFieldsForContentType(contentType)
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const entityFieldsString = ` ${fields}
                                     'child_count': coalesce(count(child[${childrenFilter}]->), 0) ,
-                                    "lessons": child[${childrenFilter}]->{
-                                        "id": railcontent_id,
-                                        title,
-                                        "image": thumbnail.asset->url,
-                                        "instructors": instructor[]->name,
-                                        length_in_seconds,
-                                    },
+                                    "lessons": child[${childrenFilter}]->{${childFields}},
                                     'length_in_seconds': coalesce(
       math::sum(
         select(
