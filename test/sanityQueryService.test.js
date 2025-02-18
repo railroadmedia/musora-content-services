@@ -14,8 +14,9 @@ import { fetchOwnedChallenges } from '../src'
 const {
   fetchSongById,
   fetchArtists,
-  fetchQuarterPublished,
-  fetchQuarterRemoved,
+  fetchReturning,
+  fetchLeaving,
+  fetchComingSoon,
   fetchSongArtistCount,
   fetchRelatedSongs,
   fetchNewReleases,
@@ -58,14 +59,23 @@ describe('Sanity Queries', function () {
     expect(response.id).toBe(id)
   })
 
-  test('fetchQuarterPublished', async () => {
+  test('fetchReturning', async () => {
     const brand = 'guitareo'
-    const response = await fetchQuarterPublished(brand)
+    const page = 1
+    const response = await fetchReturning(brand, {pageNumber: 1})
+    expect(response).toBeDefined()
   });
 
-  test('fetchQuarterRemoved', async () => {
+  test('fetchLeaving', async () => {
     const brand = 'guitareo'
-    const response = await fetchQuarterRemoved(brand)
+    const response = await fetchLeaving(brand, {pageNumber: 1})
+    expect(response).toBeDefined()
+  });
+
+  test('fetchComingSoon', async () => {
+    const brand = 'guitareo'
+    const response = await fetchComingSoon(brand, {pageNumber: 2, contentPerPage: 20})
+    expect(response).toBeDefined()
   });
 
 
