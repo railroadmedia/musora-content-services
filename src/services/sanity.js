@@ -66,30 +66,74 @@ export async function fetchSongById(documentId) {
 }
 
 /**
-* fetches from Sanity all content marked for removal next quarter
-*
-* @string brand
-* @returns {Promise<Object|null>}
-*/
-export async function fetchQuarterRemoved(brand) {
+ * fetches from Sanity all content marked for removal next quarter
+ *
+ * @string brand
+ * @number pageNumber
+ * @number contentPerPage
+ * @returns {Promise<Object|null>}
+ */
+export async function fetchLeaving(
+    brand,
+    { pageNumber = 1, contentPerPage = 20 } = {}) {
   const nextQuarter = getNextAndPreviousQuarterDates()['next'];
   const filterString = `brand == '${brand}' && quarter_removed == '${nextQuarter}'`
-  const query = await buildQuery(filterString, {pullFutureContent: false, availableContentStatuses: ["published"]}, getFieldsForContentType(), {SortOrder: "published_on desc, id desc", end: 20});
-  return fetchSanity(query, false);
+  const startEndOrder = getQueryFromPage(pageNumber, contentPerPage);
+  const sortOrder = {sortOrder: "published_on desc, id desc", start: startEndOrder['start'], end: startEndOrder['end']};
+  const query = await buildQuery(filterString, {pullFutureContent: false, availableContentStatuses: ["published"]}, getFieldsForContentType(), sortOrder);
+  return fetchSanity(query, true);
 }
 
 /**
- * fetches from Sanity all content marked for publish next quarter
+ * fetches from Sanity all content marked for return next quarter
  *
  * @string brand
+ * @number pageNumber
+ * @number contentPerPage
  * @returns {Promise<Object|null>}
  */
-export async function fetchQuarterPublished(brand) {
+export async function fetchReturning(
+    brand,
+    { pageNumber = 1, contentPerPage = 20 } = {}) {
   const nextQuarter = getNextAndPreviousQuarterDates()['next'];
   const filterString = `brand == '${brand}' && quarter_published == '${nextQuarter}'`;
-  const query = await buildQuery(filterString, {pullFutureContent: true, availableContentStatuses: ["draft"]}, getFieldsForContentType(), {SortOrder: "published_on desc, id desc", end: 20});
+  const startEndOrder = getQueryFromPage(pageNumber, contentPerPage);
+  const sortOrder = {sortOrder: "published_on desc, id desc", start: startEndOrder['start'], end: startEndOrder['end']};
+  const query = await buildQuery(filterString, {pullFutureContent: true, availableContentStatuses: ["draft"]}, getFieldsForContentType(), sortOrder);
 
-  return fetchSanity(query, false);
+  return fetchSanity(query, true);
+}
+
+/**
+ * fetches from Sanity all songs coming soon (new) next quarter
+ *
+ * @string brand
+ * @number pageNumber
+ * @number contentPerPage
+ * @returns {Promise<Object|null>}
+ */
+export async function fetchComingSoon(
+    brand,
+    { pageNumber = 1, contentPerPage = 20 } = {}) {
+  const filterString = `brand == '${brand}' && _type == 'song'`;
+  const startEndOrder = getQueryFromPage(pageNumber, contentPerPage);
+  const sortOrder = {sortOrder: "published_on desc, id desc", start: startEndOrder['start'], end: startEndOrder['end']};
+  const query = await buildQuery(filterString, {getFutureContentOnly: true}, getFieldsForContentType(), sortOrder);
+  return fetchSanity(query, true);
+}
+
+/**
+ *
+ * @number page
+ * @returns {number[]}
+ */
+function getQueryFromPage(pageNumber, contentPerPage) {
+  const start = contentPerPage*(pageNumber-1);
+  const end = contentPerPage*pageNumber;
+  let result = [];
+  result['start'] = start;
+  result['end'] = end;
+  return result;
 }
 
 /**
@@ -97,7 +141,7 @@ export async function fetchQuarterPublished(brand) {
  *
  * @returns {*[]}
  */
-export function getNextAndPreviousQuarterDates() {
+function getNextAndPreviousQuarterDates() {
   const january = 1;
   const april = 4;
   const july = 7;
@@ -1913,7 +1957,7 @@ function checkSanityConfig(config) {
 function buildRawQuery(
   filter = '',
   fields = '...',
-  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false }
+  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false}
 ) {
   const sortString = sortOrder ? `order(${sortOrder})` : ''
   const countString = isSingle ? '[0...1]' : `[${start}...${end}]`
@@ -1927,10 +1971,10 @@ async function buildQuery(
   baseFilter = '',
   filterParams = { pullFutureContent: false },
   fields = '...',
-  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false }
+  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false}
 ) {
   const filter = await new FilterBuilder(baseFilter, filterParams).buildFilter()
-  return buildRawQuery(filter, fields, { sortOrder, start, end, isSingle })
+  return buildRawQuery(filter, fields, { sortOrder, start, end, isSingle})
 }
 
 function buildEntityAndTotalQuery(

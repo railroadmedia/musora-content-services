@@ -139,6 +139,14 @@ export let contentTypeConfig = {
   'song-tutorial': {
     fields: [
       '"lesson_count": child_count',
+      `"lessons": child[]->{
+                "id": railcontent_id,
+                title,
+                "image": thumbnail.asset->url,
+                "instructors": instructor[]->name,
+                length_in_seconds,
+                web_url_path,
+            }`,
       '"instructors": instructor[]->name',
     ],
     relationships: {

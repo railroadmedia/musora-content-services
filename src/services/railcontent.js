@@ -493,7 +493,7 @@ export async function fetchChallengeUserActiveChallenges(brand = null) {
  */
 export async function fetchCarouselCardData(brand = null) {
   const brandParam = brand ? `?brand=${brand}` : ''
-  let url = `/api/v1/content/carousel${brandParam}`
+  let url = `/api/v2/content/carousel${brandParam}`
   return await fetchHandler(url, 'get')
 }
 
