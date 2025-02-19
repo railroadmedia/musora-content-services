@@ -68,6 +68,9 @@ export async function getLessonContentRows (brand='drumeo', pageName = 'lessons'
 
   const results = await Promise.all(
     rows.map(async (row) => {
+      if (row.content.length == 0){
+        return { id: row.id, title: row.title, items: [] }
+      }
       const data = await fetchByRailContentIds(row.content)
       return { id: row.id, title: row.title, items: data }
     })
