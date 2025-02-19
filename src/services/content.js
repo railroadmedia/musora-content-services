@@ -161,7 +161,8 @@ export async function getRecent(brand, pageName, tabName = 'recent', {
   sort = '-published_on',
   selectedFilters = []
 } = {}) {
-  const recentContentIds = await fetchRecent(brand, pageName, { progress: tabName });
+  const progress = tabName.toLowerCase() == 'all' ? 'recent':tabName.toLowerCase();
+  const recentContentIds = await fetchRecent(brand, pageName, { progress: progress });
   const metaData = await fetchMetadata(brand, 'recent');
   return {
     type: TabResponseType.CATALOG,

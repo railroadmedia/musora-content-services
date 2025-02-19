@@ -16,7 +16,7 @@ import {
 import { initializeTestService } from './initializeTests'
 import {getLessonContentRows, postContentCompleted} from '../src'
 import {fetchRecent} from "../src/services/sanity";
-import {getRecent} from "../src/services/content";
+import {getRecent, getTabResults} from "../src/services/content";
 
 const railContentModule = require('../src/services/railcontent.js')
 
@@ -29,7 +29,7 @@ describe('contentProgressDataContext', function () {
     initializeTestService()
     mock = jest.spyOn(dataContext, 'fetchData')
     var json = JSON.parse(
-      `{"version":${testVersion},"config":{"key":1,"enabled":1,"checkInterval":1,"refreshInterval":2},"data":{"234191":{"s":"started","p":6,"t":20,"u":1731108082},"233955":{"s":"started","p":1,"u":1731108083},"259426":{"s":"completed","p":100,"u":1731108085}}}`
+      `{"version":${testVersion},"config":{"key":1,"enabled":1,"checkInterval":1,"refreshInterval":2},"data":{"234191":{"s":"started","p":6,"t":20,"u":1731108082},"233955":{"s":"started","p":1,"u":1731108083},"259426":{"s":"completed","p":100,"u":1731108085}, "412986":{"s":"completed","p":100,"u":1731108085}}}`
     )
     mock.mockImplementation(() => json)
 
@@ -80,7 +80,7 @@ describe('contentProgressDataContext', function () {
 
   test('getAllStartedOrCompleted', async () => {
     let result = await getAllStartedOrCompleted()
-    expect(result).toStrictEqual([259426, 233955, 234191])
+    expect(result).toStrictEqual([259426, 412986, 233955, 234191])
   })
 
   // test('getAllStartedWithUpdate', async () => {
@@ -233,10 +233,47 @@ describe('contentProgressDataContext', function () {
   //     expect(state).toBe("");
   //
   // });
-  test('getRecent', async () => {
-    let result = await getRecent('drumeo','lessons')
+  test('getRecentLessons', async () => {
+    let result = await getRecent('drumeo','lessons', 'all')
+    console.log(result);
+    expect(result.data[0].id).toStrictEqual(412986)
+    expect(result.data[1].id).toStrictEqual(233955)
+  })
+
+  test('getRecentLessons-Incomplete', async () => {
+    let result = await getRecent('drumeo','lessons','Incomplete')
     console.log(result);
     expect(result.data[0].id).toStrictEqual(233955)
+  })
+
+  test('getRecentLessons-Completed', async () => {
+    let result = await getRecent('drumeo','lessons','Completed')
+    console.log(result);
+    expect(result.data[0].id).toStrictEqual(412986)
+  })
+
+  test('get-Songs-For-You', async () => {
+    let result = await getTabResults('drumeo','songs','For You')
+    console.log(result);
+   // expect(result.data[0].id).toStrictEqual(412986)
+  })
+
+  test('get-Songs-Tutorials', async () => {
+    let result = await getTabResults('pianote','songs','Tutorials')
+    console.log(result);
+    // expect(result.data[0].id).toStrictEqual(412986)
+  })
+
+  test('get-Songs-Transcriptions', async () => {
+    let result = await getTabResults('pianote','songs','Transcriptions')
+    console.log(result);
+    // expect(result.data[0].id).toStrictEqual(412986)
+  })
+
+  test('get-Songs-Play-Alongs', async () => {
+    let result = await getTabResults('drumeo','songs','Play-Alongs',{selectedFilters:['difficulty,Expert']})
+    console.log(result);
+    // expect(result.data[0].id).toStrictEqual(412986)
   })
 
 })
