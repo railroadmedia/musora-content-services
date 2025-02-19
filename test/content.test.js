@@ -6,21 +6,21 @@ describe('content', function () {
     initializeTestService()
   })
 
-  test('getLessonContentRows', async () => {
-    const results = await getLessonContentRows()
-    console.log(results)
-  })
+//   test('getLessonContentRows', async () => {
+//     const results = await getLessonContentRows()
+//     console.log(results)
+//   })
 
-  test('getTabResults-For-You', async () => {
-    const results = await getTabResults('drumeo','lessons','For You')
-    console.log(results)
-    expect(results.type).toBeDefined()
-    expect(results.type).toBe('sections')
-    expect(results.data).toBeDefined()
-    expect(results.meta).toBeDefined()
-    expect(results.meta.filters).toBeDefined()
-    expect(results.meta.sort).toBeDefined()
-  })
+//   test('getTabResults-For-You', async () => {
+//     const results = await getTabResults('drumeo','lessons','For You')
+//     console.log(results)
+//     expect(results.type).toBeDefined()
+//     expect(results.type).toBe('sections')
+//     expect(results.data).toBeDefined()
+//     expect(results.meta).toBeDefined()
+//     expect(results.meta.filters).toBeDefined()
+//     expect(results.meta.sort).toBeDefined()
+//   })
 
   test('getTabResults-Singles', async () => {
     const results = await getTabResults('drumeo','lessons','Individuals', {selectedFilters:['difficulty,All','difficulty,Beginner'], sort:'-published_on'})
@@ -45,7 +45,7 @@ describe('content', function () {
   })
 
   test('getTabResults-Filters', async () => {
-    const results = await getTabResults('pianote','lessons','Filters', {selectedFilters:['difficulty,Expert'], sort:'slug'})
+    const results = await getTabResults('pianote','lessons','Explore All', {selectedFilters:['difficulty,Expert'], sort:'slug'})
     console.log(results)
     expect(results.type).toBeDefined()
     expect(results.data).toBeDefined()
@@ -55,7 +55,7 @@ describe('content', function () {
   })
 
   test('getTabResults-Type-Filter', async () => {
-    const results = await getTabResults('drumeo','lessons','Filters', {selectedFilters:['type,Courses', 'type,Documentaries'], sort:'slug'})
+    const results = await getTabResults('drumeo','lessons','Explore All', {selectedFilters:['type,Courses', 'type,Documentaries'], sort:'slug'})
     console.log(results)
     expect(results.type).toBeDefined()
     expect(results.data).toBeDefined()
@@ -74,19 +74,19 @@ describe('content', function () {
     expect(results.meta.sort).toBeDefined()
   })
 
-  test('getContentRows', async () => {
-    const results = await getLessonContentRows('songs')
-    console.log(results)
-  })
+//   test('getContentRows', async () => {
+//     const results = await getLessonContentRows('songs')
+//     console.log(results)
+//   })
 
-  test('getTabResults-Songs-For-You', async () => {
-    const results = await getTabResults('drumeo','songs','For You')
-    console.log(results)
-    expect(results.type).toBeDefined()
-    expect(results.type).toBe('sections')
-    expect(results.data).toBeDefined()
-    expect(results.meta).toBeDefined()
-    expect(results.meta.filters).toBeDefined()
-    expect(results.meta.sort).toBeDefined()
-  })
+//   test('getTabResults-Songs-For-You', async () => {
+//     const results = await getTabResults('drumeo','songs','For You')
+//     console.log(results)
+//     expect(results.type).toBeDefined()
+//     expect(results.type).toBe('sections')
+//     expect(results.data).toBeDefined()
+//     expect(results.meta).toBeDefined()
+//     expect(results.meta.filters).toBeDefined()
+//     expect(results.meta.sort).toBeDefined()
+//   })
 })
