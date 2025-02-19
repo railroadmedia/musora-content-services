@@ -1,4 +1,6 @@
 //import {AWSUrl, CloudFrontURl} from "./services/config";
+import {Tabs} from "./contentMetaData.js";
+
 export const AWSUrl = 'https://s3.us-east-1.amazonaws.com/musora-web-platform'
 export const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net'
 export const DEFAULT_FIELDS = [
@@ -147,9 +149,12 @@ export const lessonTypesMapping = {
   'individuals': individualLessonsTypes,
 };
 
+export const tutorialsLessonTypes = ['song-tutorial'];
+export const transcriptionsLessonTypes = ['song'];
+export const playAlongLessonTypes = ['play-along'];
 export const filterTypes = {
   lessons: [...individualLessonsTypes, ...collectionLessonTypes],
-  songs: []
+  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes]
 }
 
 export let contentTypeConfig = {
@@ -667,11 +672,20 @@ export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
             }
             return `difficulty_string == "${value}"`
           } else if (key === 'tab' && !selectedFilters.includes(key)) {
-            if(value.toLowerCase() === 'individuals'){
+            if(value.toLowerCase() === Tabs.Individuals.name.toLowerCase()){
               const conditions = individualLessonsTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
               return ` (${conditions})`;
-            } else if(value.toLowerCase() === 'collections'){
+            } else if(value.toLowerCase() === Tabs.Collections.name.value){
               const conditions = collectionLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              return ` (${conditions})`;
+            } else if(value.toLowerCase() === Tabs.Tutorials.name.toLowerCase()){
+              const conditions = tutorialsLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              return ` (${conditions})`;
+            } else if(value.toLowerCase() === Tabs.Transcriptions.name.toLowerCase()){
+              const conditions = transcriptionsLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              return ` (${conditions})`;
+            } else if(value.toLowerCase() === Tabs.PlayAlongs.name.toLowerCase()){
+              const conditions = playAlongLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
               return ` (${conditions})`;
             } else if(value.toLowerCase() === 'filters'){
               var allLessons = filterTypes[pageName] || [];
