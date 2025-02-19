@@ -2072,12 +2072,13 @@ export async function fetchRecent(
     } = {}
 ) {
 
-const mergedIncludedFields = [...includedFields, `tab,recent`];
-return await fetchTabData(brand, pageName,{
+const mergedIncludedFields = [...includedFields, `tab,all`];
+const results = await fetchTabData(brand, pageName,{
   page,
   limit,
   sort,
   includedFields: mergedIncludedFields,
   progress: 'recent'
 })
+  return results.entity;
 }

@@ -7,6 +7,7 @@ import {
 
 import {
 	getLessonContentRows,
+	getRecent,
 	getTabResults
 } from './services/content.js';
 
@@ -229,6 +230,7 @@ declare module 'musora-content-services' {
 		getProgressPercentageByIds,
 		getProgressState,
 		getProgressStateByIds,
+		getRecent,
 		getResumeTimeSeconds,
 		getSortOrder,
 		getTabResults,

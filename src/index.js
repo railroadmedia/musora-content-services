@@ -7,6 +7,7 @@ import {
 
 import {
 	getLessonContentRows,
+	getRecent,
 	getTabResults
 } from './services/content.js';
 
@@ -228,6 +229,7 @@ export {
 	getProgressPercentageByIds,
 	getProgressState,
 	getProgressStateByIds,
+	getRecent,
 	getResumeTimeSeconds,
 	getSortOrder,
 	getTabResults,

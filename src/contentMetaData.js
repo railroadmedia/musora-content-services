@@ -40,7 +40,9 @@ export class Tabs {
   static Tutorials = { name: 'Tutorials', short_name: 'Tutorials', value: 'type,tutorials', cardType: 'big' }
   static Transcriptions = { name: 'Transcriptions', short_name: 'Transcriptions', value: 'type,trancription', cardType: 'small' }
   static PlayAlongs = { name: 'Play-Alongs', short_name: 'Play-Alongs', value:'type,play along', cardType: 'small' }
-  static Recent = { name: 'Recent', short_name: 'Recent' }
+  static RecentAll = { name: 'All', short_name: 'All' }
+  static RecentIncomplete = { name: 'Incomplete', short_name: 'Incomplete' }
+  static RecentCompleted = { name: 'Completed', short_name: 'Completed' }
 }
 
 export const TabResponseType = {
@@ -334,6 +336,14 @@ const contentMetadata = {
         Tabs.Individuals,
         Tabs.Collections,
         Tabs.ExploreAll
+      ],
+    },
+    'recent': {
+      name: 'Recent Lessons',
+      tabs: [
+        Tabs.RecentAll,
+        Tabs.RecentIncomplete,
+        Tabs.RecentCompleted
       ],
     },
   },

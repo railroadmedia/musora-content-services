@@ -17,7 +17,7 @@ export async function getLessonContentRows (brand='drumeo', pageName = 'lessons'
     {
       id: 'recent',
       title: 'Recent ' + capitalizeFirstLetter(pageName),
-      content: recentContentIds
+      content: recentContentIds || []
     },
     {
       id: 'recommended',
@@ -147,5 +147,20 @@ export async function getTabResults(brand, pageName, tabName, {
     type: tabName === Tabs.ForYou.name ? TabResponseType.SECTIONS : TabResponseType.CATALOG,
     data: results.entity,
     meta: { filters, sort: sortOptions }
+  };
+}
+
+export async function getRecent(brand, pageName, tabName = 'recent', {
+  page = 1,
+  limit = 10,
+  sort = '-published_on',
+  selectedFilters = []
+} = {}) {
+  const recentContentIds = await fetchRecent(brand, pageName, { progress: tabName });
+  const metaData = await fetchMetadata(brand, 'recent');
+  return {
+    type: TabResponseType.CATALOG,
+    data: recentContentIds,
+    meta:  { tabs: metaData.tabs }
   };
 }

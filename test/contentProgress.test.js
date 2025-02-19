@@ -16,6 +16,7 @@ import {
 import { initializeTestService } from './initializeTests'
 import {getLessonContentRows, postContentCompleted} from '../src'
 import {fetchRecent} from "../src/services/sanity";
+import {getRecent} from "../src/services/content";
 
 const railContentModule = require('../src/services/railcontent.js')
 
@@ -233,9 +234,9 @@ describe('contentProgressDataContext', function () {
   //
   // });
   test('getRecent', async () => {
-    let result = await fetchRecent('drumeo','lessons')
+    let result = await getRecent('drumeo','lessons')
     console.log(result);
-    expect(result.entity[0].id).toStrictEqual(233955)
+    expect(result.data[0].id).toStrictEqual(233955)
   })
 
 })
