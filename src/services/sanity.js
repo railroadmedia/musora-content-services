@@ -752,6 +752,10 @@ async function getProgressFilter(progress, progressIds) {
       const ids = await getAllStartedOrCompleted()
       return `&& !(railcontent_id in [${ids.join(',')}])`
     }
+    case 'recent': {
+      const ids = await getAllStartedOrCompleted()
+      return `&& (railcontent_id in [${ids.join(',')}])`
+    }
     default:
       throw new Error(`'${progress}' progress option not implemented`)
   }
@@ -2055,4 +2059,25 @@ export async function fetchTabData(
   })
 
   return fetchSanity(query, true)
+}
+
+export async function fetchRecent(
+    brand,
+    pageName,
+    {
+      page = 1,
+      limit = 10,
+      sort = '-published_on',
+      includedFields = [],
+    } = {}
+) {
+
+const mergedIncludedFields = [...includedFields, `tab,recent`];
+return await fetchTabData(brand, pageName,{
+  page,
+  limit,
+  sort,
+  includedFields: mergedIncludedFields,
+  progress: 'recent'
+})
 }

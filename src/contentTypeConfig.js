@@ -687,7 +687,7 @@ export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
             } else if(value.toLowerCase() === Tabs.PlayAlongs.name.toLowerCase()){
               const conditions = playAlongLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
               return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.ExploreAll.name.toLowerCase()){
+            } else if(value.toLowerCase() === Tabs.ExploreAll.name.toLowerCase() || value.toLowerCase() === Tabs.Recent.name.toLowerCase()){
               var allLessons = filterTypes[pageName] || [];
               const conditions = allLessons.map(lessonType => `_type == '${lessonType}'`).join(' || ');
               if (conditions === "") return '';

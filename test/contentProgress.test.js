@@ -14,7 +14,8 @@ import {
   getAllStartedOrCompleted,
 } from '../src/services/contentProgress'
 import { initializeTestService } from './initializeTests'
-import { postContentCompleted } from '../src'
+import {getLessonContentRows, postContentCompleted} from '../src'
+import {fetchRecent} from "../src/services/sanity";
 
 const railContentModule = require('../src/services/railcontent.js')
 
@@ -231,4 +232,10 @@ describe('contentProgressDataContext', function () {
   //     expect(state).toBe("");
   //
   // });
+  test('getRecent', async () => {
+    let result = await fetchRecent('drumeo','lessons')
+    console.log(result);
+    expect(result.entity[0].id).toStrictEqual(233955)
+  })
+
 })

@@ -73,4 +73,20 @@ describe('content', function () {
     expect(results.meta.filters).toBeDefined()
     expect(results.meta.sort).toBeDefined()
   })
+
+  test('getContentRows', async () => {
+    const results = await getLessonContentRows('songs')
+    console.log(results)
+  })
+
+  test('getTabResults-Songs-For-You', async () => {
+    const results = await getTabResults('drumeo','songs','For You')
+    console.log(results)
+    expect(results.type).toBeDefined()
+    expect(results.type).toBe('sections')
+    expect(results.data).toBeDefined()
+    expect(results.meta).toBeDefined()
+    expect(results.meta.filters).toBeDefined()
+    expect(results.meta.sort).toBeDefined()
+  })
 })

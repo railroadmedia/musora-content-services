@@ -2,61 +2,67 @@
  * @module Content-Services-V2
  */
 
-import {fetchAll, fetchByRailContentIds, fetchMetadata, fetchTabData} from './sanity.js'
-import {TabResponseType, Tabs} from '../contentMetaData.js'
+import {fetchAll, fetchByRailContentIds, fetchMetadata, fetchRecent, fetchTabData} from './sanity.js'
+import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
+import {getAllStartedOrCompleted} from "./contentProgress";
 
-export async function getLessonContentRows () {
+export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
   //TODO: this should come from backend
+  const recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent' });
+  let contentIds = [389313, 389314, 389315, 389316, 389317, 389318, 389319, 389320, 389321, 389322];
+  if(pageName == 'songs'){
+    contentIds = [415581, 415603, 416206, 416373, 416133, 415723];
+  }
   const rows = [
     {
       id: 'recent',
-      title: 'Recent Lessons',
-      content: [389313, 389314, 389315, 389316, 389317, 389318, 389319, 389320, 389321, 389322]
+      title: 'Recent ' + capitalizeFirstLetter(pageName),
+      content: recentContentIds
     },
     {
       id: 'recommended',
       title: 'Recommended For You',
-      content: [389313, 389314, 389315, 389316, 389317, 389318, 389319, 389320, 389321, 389322]
+      content: contentIds
     },
     {
       id: 'method-progress',
       title: 'Inspired By Your Method Progress',
-      content: [389313, 389314, 389315, 389316, 389317, 389318, 389319, 389320, 389321, 389322]
+      content: contentIds
     },
     {
       id: 'creativity',
       title: 'Unlock Your Creativity',
-      content: [389313, 389314, 389315, 389316, 389317, 389318, 389319, 389320, 389321, 389322]
+      content: contentIds
     },
     {
       id: 'essential-skills',
       title: 'Essential Skills',
-      content: [389313, 389314, 389315, 389316, 389317, 389318, 389319, 389320, 389321, 389322]
+      content: contentIds
     },
     {
       id: 'technique',
       title: 'Improve Your Technique',
-      content: [389313, 389314, 389315, 389316, 389317, 389318, 389319, 389320, 389321, 389322]
+      content: contentIds
     },
     {
       id: 'five-levels',
       title: '5 Levels of...',
-      content: [389313, 389314, 389315, 389316, 389317, 389318, 389319, 389320, 389321, 389322]
+      content: contentIds
     },
     {
       id: 'arpeggios',
       title: 'Get Started With Arpeggios',
-      content: [389313, 389314, 389315, 389316, 389317, 389318, 389319, 389320, 389321, 389322]
+      content: contentIds
     },
     {
       id: 'hears-first-time',
       title: 'Hears For The First Time',
-      content: [389313, 389314, 389315, 389316, 389317, 389318, 389319, 389320, 389321, 389322]
+      content: contentIds
     },
     {
       id: 'ten-minute',
       title: '10-Minute Workouts',
-      content: [389313, 389314, 389315, 389316, 389317, 389318, 389319, 389320, 389321, 389322]
+      content: contentIds
     }
   ]
 
@@ -108,7 +114,7 @@ export async function getTabResults(brand, pageName, tabName, {
 
   // Fetch data
   const results = tabName === Tabs.ForYou.name
-      ? { entity: await getLessonContentRows() }
+      ? { entity: await getLessonContentRows(brand, pageName) }
       : await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
 
   // Fetch metadata

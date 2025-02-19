@@ -40,6 +40,7 @@ export class Tabs {
   static Tutorials = { name: 'Tutorials', short_name: 'Tutorials', value: 'type,tutorials', cardType: 'big' }
   static Transcriptions = { name: 'Transcriptions', short_name: 'Transcriptions', value: 'type,trancription', cardType: 'small' }
   static PlayAlongs = { name: 'Play-Alongs', short_name: 'Play-Alongs', value:'type,play along', cardType: 'small' }
+  static Recent = { name: 'Recent', short_name: 'Recent' }
 }
 
 export const TabResponseType = {
@@ -437,6 +438,6 @@ function transformFilters(filterOptions) {
 /**
  * Capitalizes the first letter of a string
  */
-function capitalizeFirstLetter(string) {
+export function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1)
 }
