@@ -23,9 +23,9 @@ class SortingOptions {
 
 export class Tabs {
   static ForYou = { name: 'For You', short_name: 'For You' }
-  static Individuals = { name: 'Individuals', short_name: 'Individuals', value: 'type,individuals' }
-  static Collections = { name: 'Collections', short_name: 'Collections', value: 'type,collections' }
-  static ExploreAll = { name: 'Explore All', short_name: 'Explore All',  icon: 'icon-filters'}
+  static Individuals = { name: 'Individuals', short_name: 'Individuals', value: 'type,individuals', cardType: 'big' }
+  static Collections = { name: 'Collections', short_name: 'Collections', value: 'type,collections', cardType: 'big' }
+  static ExploreAll = { name: 'Explore All', short_name: 'Explore All',  icon: 'icon-filters', cardType: 'big'}
   static All = { name: 'All', short_name: 'All', value: '' }
   static Courses = { name: 'Courses', short_name: 'Courses', value: '' }
   static SkillLevel = { name: 'Skill Level', short_name: 'SKILL LEVEL', is_group_by: true, value: 'difficulty_string' }
@@ -37,9 +37,9 @@ export class Tabs {
   static Lessons = { name: 'Lessons', short_name: 'LESSONS', value: '' }
   static Artists = { name: 'Artists', short_name: 'ARTISTS', is_group_by: true, value: 'artist' }
   static Songs = { name: 'Songs', short_name: 'Songs', value: '' }
-  static Tutorials = { name: 'Tutorials', short_name: 'Tutorials', value: 'type,tutorials' }
-  static Transcriptions = { name: 'Transcriptions', short_name: 'Transcriptions', value: 'type,trancription' }
-  static PlayAlongs = { name: 'Play-Alongs', short_name: 'Play-Alongs', value:'type,play along' }
+  static Tutorials = { name: 'Tutorials', short_name: 'Tutorials', value: 'type,tutorials', cardType: 'big' }
+  static Transcriptions = { name: 'Transcriptions', short_name: 'Transcriptions', value: 'type,trancription', cardType: 'small' }
+  static PlayAlongs = { name: 'Play-Alongs', short_name: 'Play-Alongs', value:'type,play along', cardType: 'small' }
 }
 
 export const TabResponseType = {
