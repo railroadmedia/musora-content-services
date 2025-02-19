@@ -63,4 +63,14 @@ describe('content', function () {
     expect(results.meta.filters).toBeDefined()
     expect(results.meta.sort).toBeDefined()
   })
+
+  test('getTabResults-Type-Explore-All', async () => {
+    const results = await getTabResults('drumeo','lessons','Explore All', {selectedFilters:[], sort:'slug'})
+    console.log(results)
+    expect(results.type).toBeDefined()
+    expect(results.data).toBeDefined()
+    expect(results.meta).toBeDefined()
+    expect(results.meta.filters).toBeDefined()
+    expect(results.meta.sort).toBeDefined()
+  })
 })

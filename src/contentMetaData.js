@@ -25,7 +25,7 @@ export class Tabs {
   static ForYou = { name: 'For You', short_name: 'For You' }
   static Individuals = { name: 'Individuals', short_name: 'Individuals', value: 'type,individuals' }
   static Collections = { name: 'Collections', short_name: 'Collections', value: 'type,collections' }
-  static ExploreAll = { name: 'Explore All', short_name: 'Explore All', value: 'type,filters', icon: 'icon-filters'}
+  static ExploreAll = { name: 'Explore All', short_name: 'Explore All',  icon: 'icon-filters'}
   static All = { name: 'All', short_name: 'All', value: '' }
   static Courses = { name: 'Courses', short_name: 'Courses', value: '' }
   static SkillLevel = { name: 'Skill Level', short_name: 'SKILL LEVEL', is_group_by: true, value: 'difficulty_string' }
