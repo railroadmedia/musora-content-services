@@ -234,7 +234,7 @@ describe('contentProgressDataContext', function () {
   //
   // });
   test('getRecentLessons', async () => {
-    let result = await getRecent('drumeo','lessons', 'all')
+    let result = await getRecent('drumeo','lessons', 'all',{page:1, limit:10})
     console.log(result);
     expect(result.data[0].id).toStrictEqual(412986)
     expect(result.data[1].id).toStrictEqual(233955)
