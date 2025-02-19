@@ -8,7 +8,9 @@ import {getAllStartedOrCompleted} from "./contentProgress";
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
   //TODO: this should come from backend
-  const recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent' });
+  let recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent' });
+  recentContentIds = recentContentIds.map(item => item.id);
+
   let contentIds = [389313, 389314, 389315, 389316, 389317, 389318, 389319, 389320, 389321, 389322];
   if(pageName == 'songs'){
     contentIds = [415581, 415603, 416206, 416373, 416133, 415723];
