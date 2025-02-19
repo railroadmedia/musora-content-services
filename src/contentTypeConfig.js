@@ -675,7 +675,7 @@ export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
             if(value.toLowerCase() === Tabs.Individuals.name.toLowerCase()){
               const conditions = individualLessonsTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
               return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.Collections.name.value){
+            } else if(value.toLowerCase() === Tabs.Collections.name.toLowerCase()){
               const conditions = collectionLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
               return ` (${conditions})`;
             } else if(value.toLowerCase() === Tabs.Tutorials.name.toLowerCase()){
