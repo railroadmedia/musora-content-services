@@ -486,6 +486,9 @@ export async function fetchByRailContentId(id, contentType) {
  *   .catch(error => console.error(error));
  */
 export async function fetchByRailContentIds(ids, contentType = undefined) {
+  if (!ids) {
+    return [];
+  }
   const idsString = ids.join(',')
 
   const query = `*[railcontent_id in [${idsString}]]{

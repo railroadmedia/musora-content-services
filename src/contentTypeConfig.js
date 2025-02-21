@@ -455,7 +455,7 @@ export let contentTypeConfig = {
   sonor: contentWithSortField,
 }
 
-export const songAccessMembership = 94
+export const plusMembershipPermissions = 92
 
 export function getNewReleasesTypes(brand) {
   const baseNewTypes = [
