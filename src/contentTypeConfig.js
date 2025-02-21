@@ -157,6 +157,11 @@ export const filterTypes = {
   songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes]
 }
 
+export const recentTypes = {
+  lessons: [...individualLessonsTypes],
+  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes]
+}
+
 export let contentTypeConfig = {
   song: {
     fields: ['album', 'soundslice', 'instrumentless', `"resources": ${resourcesField}`],
@@ -687,12 +692,17 @@ export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
             } else if(value.toLowerCase() === Tabs.PlayAlongs.name.toLowerCase()){
               const conditions = playAlongLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
               return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.ExploreAll.name.toLowerCase() || value.toLowerCase() === Tabs.RecentAll.name.toLowerCase()){
+            } else if(value.toLowerCase() === Tabs.ExploreAll.name.toLowerCase()){
               var allLessons = filterTypes[pageName] || [];
               const conditions = allLessons.map(lessonType => `_type == '${lessonType}'`).join(' || ');
               if (conditions === "") return '';
               return ` (${conditions})`;
-          }
+          }else if(value.toLowerCase() === Tabs.RecentAll.name.toLowerCase()){
+              var allLessons = recentTypes[pageName] || [];
+              const conditions = allLessons.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              if (conditions === "") return '';
+              return ` (${conditions})`;
+            }
             return `_type == "${value}"`
           } else if (key === 'type' && !selectedFilters.includes(key)) {
             const typeKey = value.toLowerCase();

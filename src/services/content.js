@@ -155,7 +155,7 @@ export async function getTabResults(brand, pageName, tabName, {
   };
 }
 
-export async function getRecent(brand, pageName, tabName = 'recent', {
+export async function getRecent(brand, pageName, tabName = 'all', {
   page = 1,
   limit = 10,
   sort = '-published_on',
