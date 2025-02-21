@@ -56,6 +56,15 @@ export class FilterBuilder {
     return filter
   }
 
+  _getRoundedTime(){
+    // We need to set the published on filter date to be a round time so that it doesn't bypass the query cache
+    // with every request by changing the filter date every second. I've set it to one minute past the current hour
+    // because publishing usually publishes content on the hour exactly which means it should still skip the cache
+    // when the new content is available.
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 1);
+  }
+
   _applyContentStatuses() {
     // This must be run before _applyPublishDateRestrictions()
     if (this.bypassStatuses) return this
@@ -89,7 +98,7 @@ export class FilterBuilder {
     ) {
       // we must pull in future content here, otherwise we'll restrict on content this is published in the past and remove any scheduled content
       this.pullFutureContent = true
-      const now = new Date().toISOString()
+      const now = this._getRoundedTime().toISOString();
       let statuses = [...this.availableContentStatuses]
       statuses.splice(statuses.indexOf(this.STATUS_SCHEDULED), 1)
       this._andWhere(
@@ -121,16 +130,7 @@ export class FilterBuilder {
 
   _applyPublishingDateRestrictions() {
     if (this.bypassPublishedDateRestriction) return this
-    let now = new Date()
-
-    // We need to set the published on filter date to be a round time so that it doesn't bypass the query cache
-    // with every request by changing the filter date every second. I've set it to one minute past the current hour
-    // because publishing usually publishes content on the hour exactly which means it should still skip the cache
-    // when the new content is available.
-    // Round to the start of the current hour
-    const roundedDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours())
-
-    now = roundedDate.toISOString()
+    const now = this._getRoundedTime().toISOString();
 
     if (this.getFutureContentOnly) {
       this._andWhere(`${this.prefix}published_on >= '${now}'`)
