@@ -28,6 +28,10 @@ import {
 } from './services/contentProgress.js';
 
 import {
+	verifyLocalDataContext
+} from './services/dataContext.js';
+
+import {
 	setLastUpdatedTime,
 	wasLastUpdateOlderThanXSeconds
 } from './services/lastUpdated.js';
@@ -257,5 +261,6 @@ export {
 	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem,
+	verifyLocalDataContext,
 	wasLastUpdateOlderThanXSeconds,
 };

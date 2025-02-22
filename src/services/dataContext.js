@@ -13,26 +13,26 @@ export const ContentProgressVersionKey = 1
 
 let cache = null
 
+/**
+ * Verify current cached data is on the correct version
+ *
+ * @param {int} dataVersionKey - Data version key from the back end
+ * @param {int} currentVersion - Current version of the data on the back end
+ * */
+export async function verifyLocalDataContext(dataVersionKey, currentVersion) {
+  const tempContext = new DataContext(dataVersionKey, null)
+  await tempContext.ensureLocalContextLoaded()
+
+  if (currentVersion !== tempContext.version()) {
+    tempContext.clearCache()
+  } else {
+    tempContext.setLastUpdatedTime()
+  }
+}
+
 export class DataContext {
   context = null
   dataPromise = null
-
-  /**
-   * Verify current cached data is on the correct version
-   *
-   * @param {int} dataVersionKey - Data version key from the back end
-   * @param {int} currentVersion - Current version of the data on the back end
-   * */
-  static async verifyLocalData(dataVersionKey, currentVersion) {
-    const tempContext = new DataContext(dataVersionKey, null)
-    await tempContext.ensureLocalContextLoaded()
-
-    if (currentVersion !== tempContext.version()) {
-      tempContext.clearCache()
-    } else {
-      tempContext.setLastUpdatedTime()
-    }
-  }
 
   constructor(dataVersionKey, fetchDataFunction) {
     this.dataVersionKey = dataVersionKey

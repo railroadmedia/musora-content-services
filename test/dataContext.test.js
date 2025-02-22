@@ -1,5 +1,5 @@
 import { initializeTestService } from './initializeTests'
-import { DataContext } from '../src/services/dataContext.js'
+import { DataContext, verifyLocalDataContext } from '../src/services/dataContext.js'
 
 describe('dataContext', function () {
   let mock = null
@@ -26,12 +26,12 @@ describe('dataContext', function () {
     expect(dataContext.version()).toBe(1)
 
     //verifyLocalData with old source version and verify context still uses old version
-    await DataContext.verifyLocalData(1, 1)
+    await verifyLocalDataContext(1, 1)
     await dataContext.getData()
     expect(dataContext.version()).toBe(1)
 
     //verifyLocalData with new source version and verify context loads new version
-    await DataContext.verifyLocalData(1, 2)
+    await verifyLocalDataContext(1, 2)
     await dataContext.getData()
     expect(dataContext.version()).toBe(2)
   })

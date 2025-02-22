@@ -28,6 +28,10 @@ import {
 } from './services/contentProgress.js';
 
 import {
+	verifyLocalDataContext
+} from './services/dataContext.js';
+
+import {
 	setLastUpdatedTime,
 	wasLastUpdateOlderThanXSeconds
 } from './services/lastUpdated.js';
@@ -258,6 +262,7 @@ declare module 'musora-content-services' {
 		unpinPlaylist,
 		updatePlaylist,
 		updatePlaylistItem,
+		verifyLocalDataContext,
 		wasLastUpdateOlderThanXSeconds,
 	}
 }
