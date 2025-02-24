@@ -1253,11 +1253,22 @@ export async function fetchLessonContent(railContentId) {
             "type": *[railcontent_id == ^.id][0]._type,
           },
           sort,
-          xp`
+          xp,
+          stbs,ds2stbs, bdsStbs`
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
   })
-  return fetchSanity(query, false)
+  const chapterProcess = (result) => {
+    const chapters = result.chapters ?? [];
+    if(chapters.length == 0) return result
+    result.chapters = chapters.map((chapter, index) => ({
+      ...chapter,
+      chapter_thumbnail_url: `https://musora-web-platform.s3.amazonaws.com/chapters/${result.brand}/Chapter${index + 1}.jpg`
+    }));
+    return result
+  }
+
+  return fetchSanity(query, false, {customPostProcess:chapterProcess})
 }
 
 /**
