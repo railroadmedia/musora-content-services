@@ -119,6 +119,9 @@ export const performancesLessonTypes = ['performance','solo','drum-fest-internat
 export const documentariesLessonTypes = ['tama','sonor','history-of-electronic-drums','paiste-cymbals'];
 export const liveArchivesLessonTypes = ['podcast', 'coach-stream', 'live-streams'];
 export const studentArchivesLessonTypes = ['student-review', 'question-and-answer', 'student-focus','student-collaborations'];
+export const tutorialsLessonTypes = ['song-tutorial'];
+export const transcriptionsLessonTypes = ['song'];
+export const playAlongLessonTypes = ['play-along'];
 
 export const individualLessonsTypes = [
   ...singleLessonTypes,
@@ -154,9 +157,7 @@ export const lessonTypesMapping = {
   'play alongs': playAlongLessonTypes,
 };
 
-export const tutorialsLessonTypes = ['song-tutorial'];
-export const transcriptionsLessonTypes = ['song'];
-export const playAlongLessonTypes = ['play-along'];
+
 export const filterTypes = {
   lessons: [...individualLessonsTypes, ...collectionLessonTypes],
   songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes]
