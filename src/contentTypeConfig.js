@@ -147,6 +147,11 @@ export const lessonTypesMapping = {
   'shows': showsLessonTypes,
   'collections': collectionLessonTypes,
   'individuals': individualLessonsTypes,
+  'tutorials': tutorialsLessonTypes,
+  'transcriptions': transcriptionsLessonTypes,
+  'tabs': transcriptionsLessonTypes,
+  'sheet music': transcriptionsLessonTypes,
+  'play alongs': playAlongLessonTypes,
 };
 
 export const tutorialsLessonTypes = ['song-tutorial'];
