@@ -661,6 +661,13 @@ export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
             !selectedFilters.includes(key)
           ) {
             return `"${value}" in ${key}[]->name`
+          } else if (
+              ['style'].includes(
+                  key
+              ) &&
+              !selectedFilters.includes(key)
+          ) {
+            return `"${value}" in genre[]->name`
           } else if (key === 'gear' && !selectedFilters.includes('gear')) {
             return `gear match "${value}"`
           } else if (key === 'instrumentless' && !selectedFilters.includes(key)) {
