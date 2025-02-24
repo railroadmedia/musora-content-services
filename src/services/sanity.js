@@ -1253,7 +1253,8 @@ export async function fetchLessonContent(railContentId) {
             "type": *[railcontent_id == ^.id][0]._type,
           },
           sort,
-          xp`
+          xp,
+          stbs,ds2stbs, bdsStbs`
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
   })
