@@ -2,18 +2,18 @@
 // Brand values are prioritized and will override the same property in the 'common' element.
 
 const PROGRESS_NAMES = ['All', 'In Progress', 'Completed', 'Not Started']
-const DIFFICULTY_STRINGS = ['All', 'Introductory', 'Beginner', 'Intermediate', 'Advanced', 'Expert']
+const DIFFICULTY_STRINGS = ['Introductory', 'Beginner', 'Intermediate', 'Advanced', 'Expert']
 
 class SortingOptions {
   static Popularity = { value: '-popularity', name: 'Most Popular' }
-  static PopularityDesc = { value: '-popularity', name: 'Recommended' }
+  static PopularityDesc = { value: 'recommended', name: 'Recommended' }
   static PublishedOn = { value: '-published_on', name: 'Newest First' }
   static PublishedOnDesc = { value: 'published_on', name: 'Oldest First' }
   static Slug = { value: 'slug', name: 'Name: A to Z' }
   static SlugDesc = { value: '-slug', name: 'Name: Z to A' }
   static AllSortingOptions = [
+      this.PopularityDesc,
     this.Popularity,
-    this.PopularityDesc,
     this.PublishedOn,
     this.PublishedOnDesc,
     this.Slug,
@@ -204,8 +204,8 @@ const commonMetadata = {
     name: 'Lessons',
     filterOptions: {
       difficulty: DIFFICULTY_STRINGS,
-      style: ['Classical', 'Funk', 'Jazz', 'Pop', 'R&B/Soul', 'Soundtrack', 'Blues'],
-      type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Live Archives', 'Student Archives',  'Documentaries', 'Courses', 'Shows'],
+      style: ['Country/Folk', 'Funk/Disco', 'Hard Rock/Metal', 'Hip-Hop/Rap/EDM', 'Holiday/Soundtrack', 'Jazz/Blues', 'Latin/World', 'Pop/Rock', 'R&B/Soul', 'Worship/Gospel'],
+      type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Shows', 'Documentaries', 'Live Archives', 'Student Archives'],
       progress: PROGRESS_NAMES,
     },
     sortingOptions: {
@@ -224,9 +224,9 @@ const commonMetadata = {
     name: 'Songs',
     filterOptions: {
       difficulty: DIFFICULTY_STRINGS,
-      style: ['Blues','CCM/Worship','Christmas','Classical','Country','Disco','Electronic','Folk','Funk','Hip-Hop/Rap','Holiday','Jazz','Soundtrack',
-      'Traditional','Latin/World','Metal','Pop','R&B/Soul','Ragtime','Reggae','Rock'],
-      type: ['Tutorial', 'Transcription', 'Jam Track'],
+      style: ['Blues','Christian','Classical','Country','Disco','Electronic','Folk','Funk','Hip-Hop/Rap','Holiday','Jazz','Soundtrack',
+      'World','Metal','Pop','R&B/Soul','Rock'],
+      type: ['Tutorials', 'Transcriptions', 'Jam Tracks'],
       progress: PROGRESS_NAMES,
     },
     sortingOptions: {
@@ -327,8 +327,8 @@ const contentMetadata = {
       name: 'Lessons',
       filterOptions: {
         difficulty: DIFFICULTY_STRINGS,
-        style: ['Classical', 'Funk', 'Jazz', 'Pop', 'R&B/Soul', 'Soundtrack', 'Blues'],
-        type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Live Archives', 'Student Archives',  'Documentaries', 'Courses', 'Shows'],
+        style: ['Country/Folk', 'Funk/Disco', 'Hard Rock/Metal', 'Hip-Hop/Rap/EDM', 'Holiday/Soundtrack', 'Jazz/Blues', 'Latin/World', 'Pop/Rock', 'R&B/Soul', 'Worship/Gospel'],
+        type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Shows', 'Documentaries', 'Live Archives', 'Student Archives'],
         progress: PROGRESS_NAMES,
       },
       tabs: [
@@ -344,6 +344,71 @@ const contentMetadata = {
         Tabs.RecentAll,
         Tabs.RecentIncomplete,
         Tabs.RecentCompleted
+      ],
+    },
+    'songs': {
+      name:          'Songs',
+      filterOptions: {
+        difficulty: DIFFICULTY_STRINGS,
+        style:      [
+          'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
+          'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
+        ],
+        type:       ['Tutorials', 'Transcriptions', 'Play Alongs', 'Jam Tracks'],
+        progress:   PROGRESS_NAMES,
+      },
+      sortingOptions: {
+        title: 'Sort By',
+        type: 'radio',
+        items: SortingOptions.AllSortingOptions,
+      },
+      tabs: [
+        Tabs.ForYou,
+        Tabs.Tutorials,
+        Tabs.Transcriptions,
+        Tabs.PlayAlongs,
+        Tabs.ExploreAll
+      ],
+    },
+  },
+  pianote: {
+    'lessons': {
+      name: 'Lessons',
+      filterOptions: {
+        difficulty: DIFFICULTY_STRINGS,
+        style: ['Classical', 'Funk', 'Jazz', 'Pop', 'R&B/Soul', 'Soundtrack', 'Blues'],
+        type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Shows', 'Documentaries', 'Live Archives', 'Student Archives'],
+        progress: PROGRESS_NAMES,
+      },
+      tabs: [
+        Tabs.ForYou,
+        Tabs.Individuals,
+        Tabs.Collections,
+        Tabs.ExploreAll
+      ],
+    },
+    'songs': {
+      name:          'Songs',
+      filterOptions: {
+        difficulty: DIFFICULTY_STRINGS,
+        style:      [
+          'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
+          'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
+        ],
+        type:       ['Tutorials', 'Sheet Music', 'Play Alongs', 'Jam Tracks'],
+        progress:   PROGRESS_NAMES,
+      },
+      sortingOptions: {
+        title: 'Sort By',
+        type: 'radio',
+        items: SortingOptions.AllSortingOptions,
+      },
+      tabs: [
+        Tabs.ForYou,
+        Tabs.Tutorials,
+        Tabs.Transcriptions,
+        Tabs.PlayAlongs,
+        Tabs.ExploreAll
       ],
     },
   },
@@ -365,6 +430,30 @@ const contentMetadata = {
         Tabs.Genres,
       ],
     },
+    'songs': {
+      name:          'Songs',
+      filterOptions: {
+        difficulty: DIFFICULTY_STRINGS,
+        style:      [
+          'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
+          'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
+        ],
+        type:       ['Tutorials', 'Tabs', 'Play Alongs', 'Jam Tracks'],
+        progress:   PROGRESS_NAMES,
+      },
+      sortingOptions: {
+        title: 'Sort By',
+        type: 'radio',
+        items: SortingOptions.AllSortingOptions,
+      },
+      tabs: [
+        Tabs.ForYou,
+        Tabs.Tutorials,
+        Tabs.Transcriptions,
+        Tabs.PlayAlongs,
+        Tabs.ExploreAll
+      ],
+    },
   },
   singeo: {
     'student-review': {
@@ -372,6 +461,30 @@ const contentMetadata = {
       icon: 'icon-student-focus',
       description:
                     'Want feedback on your singing? Submit a video for student review. We will watch your submission and then provide helpful encouragement and feedback. This is a great way to build accountability and benefit from the expertise of our teachers.',
+    },
+    'songs': {
+      name:          'Songs',
+      filterOptions: {
+        difficulty: DIFFICULTY_STRINGS,
+        style:      [
+          'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
+          'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
+        ],
+        type:       ['Tutorials', 'Sheet Music', 'Play Alongs', 'Jam Tracks'],
+        progress:   PROGRESS_NAMES,
+      },
+      sortingOptions: {
+        title: 'Sort By',
+        type: 'radio',
+        items: SortingOptions.AllSortingOptions,
+      },
+      tabs: [
+        Tabs.ForYou,
+        Tabs.Tutorials,
+        Tabs.Transcriptions,
+        Tabs.PlayAlongs,
+        Tabs.ExploreAll
+      ],
     },
   }
 }

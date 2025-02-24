@@ -105,7 +105,7 @@ export async function getLessonContentRows (brand='drumeo', pageName = 'lessons'
 export async function getTabResults(brand, pageName, tabName, {
   page = 1,
   limit = 10,
-  sort = '-published_on',
+  sort = 'recommended',
   selectedFilters = []
 } = {}) {
 
