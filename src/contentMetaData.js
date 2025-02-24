@@ -376,7 +376,7 @@ const contentMetadata = {
       name: 'Lessons',
       filterOptions: {
         difficulty: DIFFICULTY_STRINGS,
-        style: ['Classical', 'Funk', 'Jazz', 'Pop', 'R&B/Soul', 'Soundtrack', 'Blues'],
+        style: ['Classical', 'Country/Folk', 'Funk/Disco', 'Hip-Hop/Rap/EDM', 'Holiday/Soundtrack', 'Jazz/Blues', 'Latin/World', 'Pop/Rock', 'R&B/Soul', 'Worship/Gospel'],
         type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Shows', 'Documentaries', 'Live Archives', 'Student Archives'],
         progress: PROGRESS_NAMES,
       },
