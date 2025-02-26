@@ -12,7 +12,7 @@ export async function getLessonContentRows (brand='drumeo', pageName = 'lessons'
   let recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent' });
   recentContentIds = recentContentIds.map(item => item.id);
 
-  const url = `/v1/content/contentRows?brand=${brand}&pageName=${pageName}`;
+  const url = `/api/v1/content/contentRows?brand=${brand}&pageName=${pageName}`;
   const rowss =  await fetchHandler(url, 'get', null);
   console.log('rox :::: ',rowss);
 
