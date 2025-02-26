@@ -5,11 +5,16 @@
 import {fetchAll, fetchByRailContentIds, fetchMetadata, fetchRecent, fetchTabData} from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {getAllStartedOrCompleted} from "./contentProgress";
+import {fetchAbsolute} from "./railcontent";
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
   //TODO: this should come from backend
   let recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent' });
   recentContentIds = recentContentIds.map(item => item.id);
+
+  const url = `/v1/content/contentRows?brand=${brand}&pageName=${pageName}`;
+  const rowss =  await fetchAbsolute(url);
+  console.log('rox :::: ',rowss);
 
   let contentIds = [389313, 389314, 389315, 389316, 389317, 389318, 389319, 389320, 389321, 389322];
   if(pageName == 'songs'){
@@ -69,7 +74,7 @@ export async function getLessonContentRows (brand='drumeo', pageName = 'lessons'
   ]
 
   const results = await Promise.all(
-    rows.map(async (row) => {
+    rowss.map(async (row) => {
       if (row.content.length == 0){
         return { id: row.id, title: row.title, items: [] }
       }

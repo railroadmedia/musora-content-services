@@ -27,6 +27,7 @@ export const DEFAULT_FIELDS = [
   "'permission_id': permission[]->railcontent_id",
   'xp',
   'child_count',
+  '"lesson_count": coalesce(count(child[]->.child[]->), child_count)',
 ]
 
 export const descriptionField = 'description[0].children[0].text'
