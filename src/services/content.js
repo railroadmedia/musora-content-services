@@ -5,15 +5,15 @@
 import {fetchAll, fetchByRailContentIds, fetchMetadata, fetchRecent, fetchTabData} from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {getAllStartedOrCompleted} from "./contentProgress";
-import {fetchAbsolute} from "./railcontent";
+import {fetchHandler} from "./railcontent";
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
   //TODO: this should come from backend
   let recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent' });
   recentContentIds = recentContentIds.map(item => item.id);
 
-  const url = `/v1/content/contentRows?brand=${brand}&pageName=${pageName}`;
-  const rowss =  await fetchAbsolute(url);
+  const url = `/v1/content/contentRows`;
+  const rowss =  await fetchHandler(url, 'get', null, { brand: brand, pageName: pageName });
   console.log('rox :::: ',rowss);
 
   let contentIds = [389313, 389314, 389315, 389316, 389317, 389318, 389319, 389320, 389321, 389322];
