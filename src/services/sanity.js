@@ -255,6 +255,7 @@ export async function fetchRelatedSongs(brand, songId) {
             "published_on": published_on,
             status,
             "image": thumbnail.asset->url,
+            "permission_id": permission[]->railcontent_id,
             "fields": [
               {
                 "key": "title",
@@ -280,6 +281,7 @@ export async function fetchRelatedSongs(brand, songId) {
             "id": railcontent_id,
             "url": web_url_path,
             "published_on": published_on,
+            "permission_id": permission[]->railcontent_id,
             status,
             "fields": [
               {
@@ -486,6 +488,9 @@ export async function fetchByRailContentId(id, contentType) {
  *   .catch(error => console.error(error));
  */
 export async function fetchByRailContentIds(ids, contentType = undefined) {
+  if (!ids) {
+    return [];
+  }
   const idsString = ids.join(',')
 
   const query = `*[railcontent_id in [${idsString}]]{

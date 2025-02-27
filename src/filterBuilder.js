@@ -1,5 +1,5 @@
 import { fetchUserPermissions } from './services/userPermissions.js'
-import { songAccessMembership } from './contentTypeConfig.js'
+import { plusMembershipPermissions } from './contentTypeConfig.js'
 
 export class FilterBuilder {
   STATUS_SCHEDULED = 'scheduled'
@@ -116,7 +116,7 @@ export class FilterBuilder {
     if (this.bypassPermissions || this.userData.isAdmin) return this
     let requiredPermissions = this._getUserPermissions()
     if (this.userData.isABasicMember && this.allowsPullSongsContent) {
-      requiredPermissions = [...requiredPermissions, songAccessMembership]
+      requiredPermissions = [...requiredPermissions, plusMembershipPermissions]
     }
     this._andWhere(
       `(!defined(permission) || references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id))`
