@@ -20,6 +20,7 @@ import {getRecent, getTabResults} from "../src/services/content";
 import {individualLessonsTypes, playAlongLessonTypes, transcriptionsLessonTypes, tutorialsLessonTypes} from "../src/contentTypeConfig";
 
 const railContentModule = require('../src/services/railcontent.js')
+const contentModule = require('../src/services/content.js')
 
 describe('contentProgressDataContext', function () {
   let mock = null
@@ -44,6 +45,26 @@ describe('contentProgressDataContext', function () {
 
     let mock4 = jest.spyOn(railContentModule, 'postContentReset')
     mock4.mockImplementation(() => JSON.parse(`{"version": ${serverVersion}}`))
+
+    let mock5 = jest.spyOn(contentModule, 'getContentRows')
+    let testData = [
+      {
+        id: 'recent',
+        title: 'Recent Lessons',
+        content: ['lesson1', 'lesson2', 'lesson3'],
+      },
+      {
+        id: 'popular',
+        title: 'Popular Lessons',
+        content: ['lesson4', 'lesson5', 'lesson6'],
+      },
+      {
+        id: 'new-arrivals',
+        title: 'New Arrivals',
+        content: ['lesson7', 'lesson8', 'lesson9'],
+      }
+    ];
+    mock5.mockImplementation(() => Promise.resolve(testData));
   })
 
   test('getProgressPercentage', async () => {
