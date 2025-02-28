@@ -24,11 +24,11 @@ export async function initializeTestService(useLive = false) {
       debug: process.env.DEBUG === 'true' || false,
       useDummyRailContentMethods: true,
     },
-    railcontentConfig: {
-      baseUrl: process.env.RAILCONTENT_BASE_URL,
+    sessionConfig: {
       userId: userId,
       authToken: token,
     },
+    baseUrl: process.env.RAILCONTENT_BASE_URL,
     localStorage: new LocalStorageMock(),
   }
   initializeService(config)

@@ -4,8 +4,9 @@
 
 export let globalConfig = {
   sanityConfig: {},
-  railcontentConfig: {},
+  sessionConfig: {},
   localStorage: null,
+  baseUrl: null,
   isMA: false,
   localTimezoneString: null, // In format: America/Vancouver
 }
@@ -30,11 +31,11 @@ const excludeFromGeneratedIndex = []
  * @param {boolean} [config.sanityConfig.debug=false] - Optional flag to enable debug mode.
  * @param {boolean} [config.sanityConfig.useCachedAPI=true] - Optional flag to enable or disable the use of the cached API.
  * @param {boolean} [config.sanityConfig.useDummyRailContentMethods=false] - Optional flag to use test harness for railcontent methods. Should only be used by jest tests.
- * @param {Object} config.railcontentConfig - Configuration for user services.
- * @param {string} config.railcontentConfig.token - The token for authenticating user-specific requests.
- * @param {string} config.railcontentConfig.userId - The user ID for fetching user-specific data.
- * @param {string} config.railcontentConfig.baseUrl - The url for the environment.
- * @param {string} config.railcontentConfig.authToken - The bearer authorization token.
+ * @param {Object} config.sessionConfig - Configuration for user services.
+ * @param {string} config.sessionConfig.token - The token for authenticating user-specific requests.
+ * @param {string} config.sessionConfig.userId - The user ID for fetching user-specific data.
+ * @param {string} config.sessionConfig.authToken - The bearer authorization token.
+ * @param {string} config.baseUrl - The url for the environment.
  * @param {Object} config.localStorage - Cache to use for localStorage
  * @param {boolean} config.isMA - Variable that tells if the library is used by MA or FEW
  * @param {string} config.localTimezoneString - The local timezone string in format: America/Vancouver
@@ -51,18 +52,19 @@ const excludeFromGeneratedIndex = []
  *     debug: true,
  *     useCachedAPI: false
  *   },
- *   railcontentConfig: {
+ *   sessionConfig: {
  *     token: 'your-user-api-token',
  *     userId: 'current-user-id',
- *     baseUrl: 'https://web-staging-one.musora.com'
  *   },
+ *   baseUrl: 'https://web-staging-one.musora.com'
  *   localStorage: localStorage,
  *   isMA: false
  * });
  */
 export function initializeService(config) {
   globalConfig.sanityConfig = config.sanityConfig
-  globalConfig.railcontentConfig = config.railcontentConfig
+  globalConfig.sessionConfig = config.sessionConfig
+  globalConfig.baseUrl = config.baseUrl
   globalConfig.localStorage = config.localStorage
   globalConfig.isMA = config.isMA || false
   globalConfig.localTimezoneString = config.localTimezoneString || null
