@@ -38,11 +38,6 @@ import {
 } from './services/dataContext.js';
 
 import {
-	setLastUpdatedTime,
-	wasLastUpdateOlderThanXSeconds
-} from './services/lastUpdated.js';
-
-import {
 	addItemToPlaylist,
 	countAssignmentsAndLessons,
 	createPlaylist,
@@ -149,7 +144,12 @@ import {
 import {
 	fetchUserPermissions,
 	reset
-} from './services/userPermissions.js';
+} from './services/user/permissions.js';
+
+import {
+	login,
+	logout
+} from './services/user/sessions.js';
 
 export {
 	addItemToPlaylist,
@@ -249,6 +249,8 @@ export {
 	jumpToContinueContent,
 	likeContent,
 	likePlaylist,
+	login,
+	logout,
 	pinPlaylist,
 	playback,
 	postChallengesCommunityNotification,
@@ -268,12 +270,10 @@ export {
 	recordWatchSession,
 	reportPlaylist,
 	reset,
-	setLastUpdatedTime,
 	setStudentViewForUser,
 	unlikeContent,
 	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem,
 	verifyLocalDataContext,
-	wasLastUpdateOlderThanXSeconds,
 };
