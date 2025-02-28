@@ -52,7 +52,7 @@ export const assignmentsField = `"assignments":assignment[]{
     "id": railcontent_id,
         "soundslice_slug": assignment_soundslice,
         "title": assignment_title,
-        "sheet_music_image_url": 
+        "sheet_music_image_url":
           coalesce(assignment_sheet_music_image_new[]{
               _type == 'Image' => {
                 'url': asset->url
@@ -180,7 +180,8 @@ export const filterTypes = {
 
 export const recentTypes = {
   lessons: [...individualLessonsTypes],
-  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes]
+  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes],
+  home: [...individualLessonsTypes, ...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes]
 }
 
 export let contentTypeConfig = {
@@ -287,7 +288,7 @@ export let contentTypeConfig = {
                 "instructors": instructor[]->name,
                 length_in_seconds,
                 "resources": ${resourcesField},
-                difficulty, 
+                difficulty,
                 difficulty_string,
                 artist->,
                 "thumbnail_url":thumbnail.asset->url,
