@@ -139,7 +139,7 @@ function getQueryFromPage(pageNumber, contentPerPage) {
 /**
  * returns array of next and previous quarter dates as strings
  *
- * @returns {*[]}
+ * @returns {string[]}
  */
 function getNextAndPreviousQuarterDates() {
   const january = 1;
@@ -1227,26 +1227,26 @@ export async function fetchLessonContent(railContentId) {
   // Format changes made to the `fields` object may also need to be reflected in Musora-web-platform SanityGateway.php $fields object
   // Currently only for challenges and challenge lessons
   // If you're unsure, message Adrian, or just add them.
-  const fields = `title, 
+  const fields = `title,
           published_on,
-          "type":_type, 
+          "type":_type,
           "resources": ${resourcesField},
-          difficulty, 
-          difficulty_string, 
-          brand, 
+          difficulty,
+          difficulty_string,
+          brand,
           status,
-          soundslice, 
-          instrumentless,    
-          railcontent_id, 
-          "id":railcontent_id, 
+          soundslice,
+          instrumentless,
+          railcontent_id,
+          "id":railcontent_id,
           slug, artist->,
-          "thumbnail_url":thumbnail.asset->url, 
-          "url": web_url_path, 
+          "thumbnail_url":thumbnail.asset->url,
+          "url": web_url_path,
           soundslice_slug,
           "description": description[0].children[0].text,
           "chapters": chapter[]{
             chapter_description,
-            chapter_timecode, 
+            chapter_timecode,
             "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
           },
           "instructors":instructor[]->name,
@@ -1254,7 +1254,7 @@ export async function fetchLessonContent(railContentId) {
             "id":railcontent_id,
             name,
             short_bio,
-            "biography": short_bio[0].children[0].text, 
+            "biography": short_bio[0].children[0].text,
             web_url_path,
             "coach_card_image": coach_card_image.asset->url,
             "coach_profile_image":thumbnail_url.asset->url
@@ -1577,10 +1577,10 @@ export async function fetchArtistLessons(
     progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
   const now = getSanityDate(new Date())
   const query = `{
-    "entity": 
+    "entity":
       *[_type == 'artist' && name == '${name}']
-        {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
-        'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]), 
+        {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url,
+        'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]),
         'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
       [${start}...${end}]}
       |order(${sortOrder})
@@ -1631,10 +1631,10 @@ export async function fetchGenreLessons(
     progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
   const now = getSanityDate(new Date())
   const query = `{
-    "entity": 
+    "entity":
       *[_type == 'genre' && name == '${name}']
-        {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
-        'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]), 
+        {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url,
+        'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]),
         'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
       [${start}...${end}]}
       |order(${sortOrder})
@@ -1654,8 +1654,8 @@ export async function fetchTopLevelParentId(railcontentId) {
             'parents': *[^._id in child[]._ref ${statusFilter}]{
               railcontent_id,
                'parents': *[^._id in child[]._ref ${statusFilter}]{
-                  railcontent_id,               
-            } 
+                  railcontent_id,
+            }
           }
         }
       }
@@ -1689,8 +1689,8 @@ export async function fetchHierarchy(railcontentId) {
                railcontent_id,
                'assignments': assignment[]{railcontent_id},
                'children': child[${childrenFilter}]->{
-                  railcontent_id,                
-            } 
+                  railcontent_id,
+            }
           }
         }
       },
@@ -2019,7 +2019,7 @@ function buildEntityAndTotalQuery(
   const sortString = sortOrder ? `order(${sortOrder})` : ''
   const countString = isSingle ? '[0...1]' : `[${start}...${end}]`
   const query = `{
-      "entity": *[${filter}] | ${sortString}${countString} 
+      "entity": *[${filter}] | ${sortString}${countString}
       {
         ${fields}
       },
@@ -2034,7 +2034,7 @@ function getFilterOptions(option, commonFilter, contentType, brand) {
 
   switch (option) {
     case 'difficulty':
-      filterGroq = ` 
+      filterGroq = `
                 "difficulty": [
         {"type": "All", "count": count(*[${commonFilter} && difficulty_string == "All"])},
         {"type": "Introductory", "count": count(*[${commonFilter} && (difficulty_string == "Novice" || difficulty_string == "Introductory")])},
