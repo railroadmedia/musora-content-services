@@ -57,34 +57,29 @@ function getExclusionList(fileContent) {
 
 // get all files in the services directory
 const servicesDir = path.join(__dirname, '../src/services')
-const files = fs.readdirSync(servicesDir)
+const treeElements = fs.readdirSync(servicesDir)
 
-files
-  .filter((f) => fs.lstatSync(path.join(servicesDir, f)).isFile())
-  .forEach((file) => {
-    const filePath = path.join(servicesDir, file)
-    const functionNames = extractExportedFunctions(filePath)
+function addFunctionsToFileExports(filePath, file) {
+  const functionNames = extractExportedFunctions(filePath)
 
-    if (functionNames.length > 0) {
-      fileExports[file] = functionNames
-    }
-  })
+  if (functionNames.length > 0) {
+    fileExports[file] = functionNames
+  }
+}
 
-// get files from subdirectories
-files
-  .filter((f) => fs.lstatSync(path.join(servicesDir, f)).isDirectory())
-  .forEach((dir) => {
-    const subDir = path.join(servicesDir, dir)
-    const files = fs.readdirSync(subDir)
-    files.forEach((file) => {
-      const filePath = path.join(subDir, file)
-      const functionNames = extractExportedFunctions(filePath)
+treeElements.forEach((treeNode) => {
+  const filePath = path.join(servicesDir, treeNode)
 
-      if (functionNames.length > 0) {
-        fileExports[dir + '/' + file] = functionNames
-      }
+  if (fs.lstatSync(filePath).isFile()) {
+    addFunctionsToFileExports(filePath, treeNode)
+  } else if (fs.lstatSync(filePath).isDirectory()) {
+    const subDir = fs.readdirSync(filePath)
+    subDir.forEach((subFile) => {
+      const filePath = path.join(servicesDir, treeNode, subFile)
+      addFunctionsToFileExports(filePath, treeNode + '/' + subFile)
     })
-  })
+  }
+})
 
 // populate the index.js content string with the import/export of all functions
 let content =
