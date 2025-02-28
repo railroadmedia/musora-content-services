@@ -13,6 +13,23 @@ export const ContentProgressVersionKey = 1
 
 let cache = null
 
+/**
+ * Verify current cached data is on the correct version
+ *
+ * @param {int} dataVersionKey - Data version key from the back end
+ * @param {int} currentVersion - Current version of the data on the back end
+ * */
+export async function verifyLocalDataContext(dataVersionKey, currentVersion) {
+  const tempContext = new DataContext(dataVersionKey, null)
+  await tempContext.ensureLocalContextLoaded()
+
+  if (currentVersion !== tempContext.version()) {
+    tempContext.clearCache()
+  } else {
+    tempContext.setLastUpdatedTime()
+  }
+}
+
 export class DataContext {
   context = null
   dataPromise = null
@@ -33,7 +50,7 @@ export class DataContext {
 
   async getDataPromise() {
     await this.ensureLocalContextLoaded()
-    const shouldVerify = await this.shouldVerifyServerVerions()
+    const shouldVerify = await this.shouldVerifyServerVersions()
 
     if (!this.context || shouldVerify) {
       let version = this.version()
@@ -42,7 +59,7 @@ export class DataContext {
         this.context = data
         cache.setItem(this.localStorageKey, JSON.stringify(data))
       }
-      cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime()?.toString())
+      this.setLastUpdatedTime()
     }
     this.dataPromise = null
     return this.context.data
@@ -73,11 +90,11 @@ export class DataContext {
     }
   }
 
-  async shouldVerifyServerVerions() {
+  async shouldVerifyServerVersions() {
     let lastUpdated = globalConfig.isMA
       ? await cache.getItem(this.localStorageLastUpdatedKey)
       : cache.getItem(this.localStorageLastUpdatedKey)
-    if (!lastUpdated) return false
+    if (!lastUpdated) return true
     const verifyServerTime = 10000 //10 s
     return new Date().getTime() - lastUpdated > verifyServerTime
   }
@@ -92,6 +109,10 @@ export class DataContext {
     this.context = null
   }
 
+  setLastUpdatedTime() {
+    cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime().toString())
+  }
+
   async update(localUpdateFunction, serverUpdateFunction) {
     await this.ensureLocalContextLoaded()
     if (this.context) {
@@ -99,7 +120,7 @@ export class DataContext {
       if (this.context) this.context.version++
       let data = JSON.stringify(this.context)
       cache.setItem(this.localStorageKey, data)
-      cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime().toString())
+      this.setLastUpdatedTime()
     }
     const updatePromise = serverUpdateFunction()
     updatePromise.then((response) => {
