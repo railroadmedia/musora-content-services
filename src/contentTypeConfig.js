@@ -1,4 +1,6 @@
 //import {AWSUrl, CloudFrontURl} from "./services/config";
+import {Tabs} from "./contentMetaData.js";
+
 export const AWSUrl = 'https://s3.us-east-1.amazonaws.com/musora-web-platform'
 export const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net'
 export const DEFAULT_FIELDS = [
@@ -124,6 +126,61 @@ export const childContentTypeConfig = {
     `difficulty_string`,
     `"type": _type`,
   ]
+}
+
+export const singleLessonTypes = ['quick-tips', 'rudiment', 'coach-lessons'];
+export const practiceAlongsLessonTypes = ['workout', 'boot-camp','challenges'];
+export const performancesLessonTypes = ['performance','solo','drum-fest-international-2022'];
+export const documentariesLessonTypes = ['tama','sonor','history-of-electronic-drums','paiste-cymbals'];
+export const liveArchivesLessonTypes = ['podcast', 'coach-stream', 'live-streams'];
+export const studentArchivesLessonTypes = ['student-review', 'question-and-answer', 'student-focus','student-collaborations'];
+export const tutorialsLessonTypes = ['song-tutorial'];
+export const transcriptionsLessonTypes = ['song'];
+export const playAlongLessonTypes = ['play-along'];
+
+export const individualLessonsTypes = [
+  ...singleLessonTypes,
+  ...practiceAlongsLessonTypes,
+  ...performancesLessonTypes,
+  ...documentariesLessonTypes,
+  ...liveArchivesLessonTypes,
+  ...studentArchivesLessonTypes
+];
+
+export const coursesLessonTypes = ['course', 'pack','spotlight'];
+export const showsLessonTypes = ['diy-drum-experiments','exploring-beats','in-rhythm',  'rhythmic-adventures-of-captain-carson','rhythms-from-another-planet','study-the-greats'];
+export const collectionLessonTypes = [
+    ...coursesLessonTypes,
+    ...showsLessonTypes
+];
+
+export const lessonTypesMapping = {
+  'single lessons': singleLessonTypes,
+  'practice alongs': practiceAlongsLessonTypes,
+  'live archives': liveArchivesLessonTypes,
+  'performances': performancesLessonTypes,
+  'student archives': studentArchivesLessonTypes,
+  'documentaries': documentariesLessonTypes,
+  'courses': coursesLessonTypes,
+  'shows': showsLessonTypes,
+  'collections': collectionLessonTypes,
+  'individuals': individualLessonsTypes,
+  'tutorials': tutorialsLessonTypes,
+  'transcriptions': transcriptionsLessonTypes,
+  'tabs': transcriptionsLessonTypes,
+  'sheet music': transcriptionsLessonTypes,
+  'play alongs': playAlongLessonTypes,
+};
+
+
+export const filterTypes = {
+  lessons: [...individualLessonsTypes, ...collectionLessonTypes],
+  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes]
+}
+
+export const recentTypes = {
+  lessons: [...individualLessonsTypes],
+  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes]
 }
 
 export let contentTypeConfig = {
@@ -590,7 +647,7 @@ export function getChildFieldsForContentType(contentType, asQueryString = true) 
  *     'genre,rock']
  * @returns {string} - A string that can be used in a groq query
  */
-export function filtersToGroq(filters, selectedFilters = []) {
+export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
   if (!filters) {
     filters = []
   }
@@ -634,6 +691,13 @@ export function filtersToGroq(filters, selectedFilters = []) {
             !selectedFilters.includes(key)
           ) {
             return `"${value}" in ${key}[]->name`
+          } else if (
+              ['style'].includes(
+                  key
+              ) &&
+              !selectedFilters.includes(key)
+          ) {
+            return `"${value}" in genre[]->name`
           } else if (key === 'gear' && !selectedFilters.includes('gear')) {
             return `gear match "${value}"`
           } else if (key === 'instrumentless' && !selectedFilters.includes(key)) {
@@ -649,8 +713,44 @@ export function filtersToGroq(filters, selectedFilters = []) {
               return `(difficulty_string == "Novice" || difficulty_string == "Introductory" )`
             }
             return `difficulty_string == "${value}"`
-          } else if (key === 'type' && !selectedFilters.includes(key)) {
+          } else if (key === 'tab' && !selectedFilters.includes(key)) {
+            if(value.toLowerCase() === Tabs.Individuals.name.toLowerCase()){
+              const conditions = individualLessonsTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              return ` (${conditions})`;
+            } else if(value.toLowerCase() === Tabs.Collections.name.toLowerCase()){
+              const conditions = collectionLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              return ` (${conditions})`;
+            } else if(value.toLowerCase() === Tabs.Tutorials.name.toLowerCase()){
+              const conditions = tutorialsLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              return ` (${conditions})`;
+            } else if(value.toLowerCase() === Tabs.Transcriptions.name.toLowerCase()){
+              const conditions = transcriptionsLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              return ` (${conditions})`;
+            } else if(value.toLowerCase() === Tabs.PlayAlongs.name.toLowerCase()){
+              const conditions = playAlongLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              return ` (${conditions})`;
+            } else if(value.toLowerCase() === Tabs.ExploreAll.name.toLowerCase()){
+              var allLessons = filterTypes[pageName] || [];
+              const conditions = allLessons.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              if (conditions === "") return '';
+              return ` (${conditions})`;
+          }else if(value.toLowerCase() === Tabs.RecentAll.name.toLowerCase()){
+              var allLessons = recentTypes[pageName] || [];
+              const conditions = allLessons.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              if (conditions === "") return '';
+              return ` (${conditions})`;
+            }
             return `_type == "${value}"`
+          } else if (key === 'type' && !selectedFilters.includes(key)) {
+            const typeKey = value.toLowerCase();
+            const lessonTypes = lessonTypesMapping[typeKey];
+            if (lessonTypes) {
+              const conditions = lessonTypes.map(
+                  (lessonType) => `_type == '${lessonType}'`
+              ).join(' || ');
+              return ` (${conditions})`;
+            }
+            return `_type == "${value}"`;
           } else if (key === 'length_in_seconds') {
             if (value.includes('-')) {
               const [min, max] = value.split('-').map(Number)
@@ -661,6 +761,8 @@ export function filtersToGroq(filters, selectedFilters = []) {
             } else {
               return `${key} == ${value}`
             }
+          } else if (key === 'pageName') {
+            return ` `
           } else if (!selectedFilters.includes(key)) {
             return ` ${key} == ${/^\d+$/.test(value) ? value : `"$${value}"`}`
           }

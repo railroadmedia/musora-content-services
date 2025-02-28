@@ -139,7 +139,7 @@ function getQueryFromPage(pageNumber, contentPerPage) {
 /**
  * returns array of next and previous quarter dates as strings
  *
- * @returns {*[]}
+ * @returns {string[]}
  */
 function getNextAndPreviousQuarterDates() {
   const january = 1;
@@ -590,6 +590,8 @@ export async function fetchAll(
   if (type === 'archives') {
     typeFilter = `&& status == "archived"`
     bypassStatusAndPublishedValidation = true
+  } else if(type === 'lessons' || type === 'songs'){
+    typeFilter = ``;
   } else if (type === 'pack') {
     typeFilter = `&& (_type == 'pack' || _type == 'semester-pack')`
   } else {
@@ -857,6 +859,14 @@ async function getProgressFilter(progress, progressIds) {
       const ids = await getAllStartedOrCompleted()
       return `&& !(railcontent_id in [${ids.join(',')}])`
     }
+    case 'recent': {
+      const ids = await getAllStartedOrCompleted()
+      return `&& (railcontent_id in [${ids.join(',')}])`
+    }
+    case 'incomplete': {
+      const ids = await getAllStarted()
+      return `&& railcontent_id in [${ids.join(',')}]`
+    }
     default:
       throw new Error(`'${progress}' progress option not implemented`)
   }
@@ -932,6 +942,13 @@ export async function fetchAllFilterOptions(
   coachId,
   includeTabs = false
 ) {
+  if(contentType == 'lessons' || contentType == 'songs') {
+    const metaData = processMetadata(brand, contentType, true);
+    return {
+      meta: metaData
+    };
+  }
+
   if (coachId && contentType !== 'coach-lessons') {
     throw new Error(
       `Invalid contentType: '${contentType}' for coachId. It must be 'coach-lessons'.`
@@ -1210,26 +1227,26 @@ export async function fetchLessonContent(railContentId) {
   // Format changes made to the `fields` object may also need to be reflected in Musora-web-platform SanityGateway.php $fields object
   // Currently only for challenges and challenge lessons
   // If you're unsure, message Adrian, or just add them.
-  const fields = `title, 
+  const fields = `title,
           published_on,
-          "type":_type, 
+          "type":_type,
           "resources": ${resourcesField},
-          difficulty, 
-          difficulty_string, 
-          brand, 
+          difficulty,
+          difficulty_string,
+          brand,
           status,
-          soundslice, 
-          instrumentless,    
-          railcontent_id, 
-          "id":railcontent_id, 
+          soundslice,
+          instrumentless,
+          railcontent_id,
+          "id":railcontent_id,
           slug, artist->,
-          "thumbnail_url":thumbnail.asset->url, 
-          "url": web_url_path, 
+          "thumbnail_url":thumbnail.asset->url,
+          "url": web_url_path,
           soundslice_slug,
           "description": description[0].children[0].text,
           "chapters": chapter[]{
             chapter_description,
-            chapter_timecode, 
+            chapter_timecode,
             "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
           },
           "instructors":instructor[]->name,
@@ -1237,7 +1254,7 @@ export async function fetchLessonContent(railContentId) {
             "id":railcontent_id,
             name,
             short_bio,
-            "biography": short_bio[0].children[0].text, 
+            "biography": short_bio[0].children[0].text,
             web_url_path,
             "coach_card_image": coach_card_image.asset->url,
             "coach_profile_image":thumbnail_url.asset->url
@@ -1560,10 +1577,10 @@ export async function fetchArtistLessons(
     progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
   const now = getSanityDate(new Date())
   const query = `{
-    "entity": 
+    "entity":
       *[_type == 'artist' && name == '${name}']
-        {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
-        'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]), 
+        {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url,
+        'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]),
         'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
       [${start}...${end}]}
       |order(${sortOrder})
@@ -1614,10 +1631,10 @@ export async function fetchGenreLessons(
     progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
   const now = getSanityDate(new Date())
   const query = `{
-    "entity": 
+    "entity":
       *[_type == 'genre' && name == '${name}']
-        {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
-        'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]), 
+        {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url,
+        'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]),
         'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
       [${start}...${end}]}
       |order(${sortOrder})
@@ -1637,8 +1654,8 @@ export async function fetchTopLevelParentId(railcontentId) {
             'parents': *[^._id in child[]._ref ${statusFilter}]{
               railcontent_id,
                'parents': *[^._id in child[]._ref ${statusFilter}]{
-                  railcontent_id,               
-            } 
+                  railcontent_id,
+            }
           }
         }
       }
@@ -1672,8 +1689,8 @@ export async function fetchHierarchy(railcontentId) {
                railcontent_id,
                'assignments': assignment[]{railcontent_id},
                'children': child[${childrenFilter}]->{
-                  railcontent_id,                
-            } 
+                  railcontent_id,
+            }
           }
         }
       },
@@ -1889,6 +1906,7 @@ export async function fetchShowsData(brand) {
 
 /**
  * Fetch metadata from the contentMetaData.js based on brand and type.
+ * For v2 you need to provide page type('lessons' or 'songs') in type parameter
  *
  * @param {string} brand - The brand for which to fetch metadata.
  * @param {string} type - The type for which to fetch metadata.
@@ -2001,7 +2019,7 @@ function buildEntityAndTotalQuery(
   const sortString = sortOrder ? `order(${sortOrder})` : ''
   const countString = isSingle ? '[0...1]' : `[${start}...${end}]`
   const query = `{
-      "entity": *[${filter}] | ${sortString}${countString} 
+      "entity": *[${filter}] | ${sortString}${countString}
       {
         ${fields}
       },
@@ -2016,7 +2034,7 @@ function getFilterOptions(option, commonFilter, contentType, brand) {
 
   switch (option) {
     case 'difficulty':
-      filterGroq = ` 
+      filterGroq = `
                 "difficulty": [
         {"type": "All", "count": count(*[${commonFilter} && difficulty_string == "All"])},
         {"type": "Introductory", "count": count(*[${commonFilter} && (difficulty_string == "Novice" || difficulty_string == "Introductory")])},
@@ -2102,4 +2120,88 @@ function cleanUpGroq(query) {
     .trim()
 
   return cleanedQuery
+}
+
+// V2 methods
+
+export async function fetchTabData(
+    brand,
+    pageName,
+    {
+      page = 1,
+      limit = 10,
+      sort = '-published_on',
+      includedFields = [],
+      progressIds = undefined,
+      progress = 'all',
+    } = {}
+) {
+
+  const start = (page - 1) * limit
+  const end = start + limit
+
+  // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
+  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields, [], pageName ) : ''
+
+  // limits the results to supplied progressIds for started & completed filters
+  const progressFilter = await getProgressFilter(progress, progressIds)
+
+  // Determine the sort order
+  const sortOrder = getSortOrder(sort, brand, '')
+
+  let fields = DEFAULT_FIELDS
+  let fieldsString = fields.join(',')
+
+
+  // Determine the group by clause
+  let query = ''
+  let entityFieldsString = ''
+  let filter = ''
+
+    filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
+    const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+    entityFieldsString = ` ${fieldsString},
+                                    'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
+                                    'length_in_seconds': coalesce(
+      math::sum(
+        select(
+          child[${childrenFilter}]->length_in_seconds
+        )
+      ),
+      length_in_seconds
+    ),`
+
+
+  const filterWithRestrictions = await new FilterBuilder(filter, {
+  }).buildFilter()
+  query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
+    sortOrder: sortOrder,
+    start: start,
+    end: end,
+  })
+
+  return fetchSanity(query, true)
+}
+
+export async function fetchRecent(
+    brand,
+    pageName,
+    {
+      page = 1,
+      limit = 10,
+      sort = '-published_on',
+      includedFields = [],
+      progress = 'recent',
+    } = {}
+) {
+
+const mergedIncludedFields = [...includedFields, `tab,all`];
+const results = await fetchTabData(brand, pageName,{
+  page,
+  limit,
+  sort,
+  includedFields: mergedIncludedFields,
+  progress: progress.toLowerCase()
+})
+  return results.entity;
 }

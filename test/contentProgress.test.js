@@ -14,7 +14,10 @@ import {
   getAllStartedOrCompleted,
 } from '../src/services/contentProgress'
 import { initializeTestService } from './initializeTests'
-import { postContentCompleted } from '../src'
+import {getLessonContentRows, postContentCompleted} from '../src'
+import {fetchRecent} from "../src/services/sanity";
+import {getRecent, getTabResults} from "../src/services/content";
+import {individualLessonsTypes, playAlongLessonTypes, transcriptionsLessonTypes, tutorialsLessonTypes} from "../src/contentTypeConfig";
 
 const railContentModule = require('../src/services/railcontent.js')
 
@@ -27,7 +30,9 @@ describe('contentProgressDataContext', function () {
     initializeTestService()
     mock = jest.spyOn(dataContext, 'fetchData')
     var json = JSON.parse(
-      `{"version":${testVersion},"config":{"key":1,"enabled":1,"checkInterval":1,"refreshInterval":2},"data":{"234191":{"s":"started","p":6,"t":20,"u":1731108082},"233955":{"s":"started","p":1,"u":1731108083},"259426":{"s":"completed","p":100,"u":1731108085}}}`
+      `{"version":${testVersion},"config":{"key":1,"enabled":1,"checkInterval":1,"refreshInterval":2},"data":{"234191":{"s":"started","p":6,"t":20,"u":1731108082},"233955":{"s":"started","p":1,"u":1731108083},
+      "259426":{"s":"completed","p":100,"u":1731108085},"190417":{"s":"started","p":6,"t":20,"u":1731108082},
+      "407665":{"s":"started","p":6,"t":20,"u":1740120139},"412986":{"s":"completed","p":100,"u":1731108085}}}`
     )
     mock.mockImplementation(() => json)
 
@@ -70,15 +75,15 @@ describe('contentProgressDataContext', function () {
 
   test('getAllStarted', async () => {
     let result = await getAllStarted()
-    expect(result).toStrictEqual([233955, 234191])
+    expect(result).toStrictEqual([407665, 233955,190417, 234191])
 
     result = await getAllStarted(1)
-    expect(result).toStrictEqual([233955])
+    expect(result).toStrictEqual([407665])
   })
 
   test('getAllStartedOrCompleted', async () => {
     let result = await getAllStartedOrCompleted()
-    expect(result).toStrictEqual([259426, 233955, 234191])
+    expect(result).toStrictEqual([407665, 259426, 412986, 233955, 190417,234191])
   })
 
   // test('getAllStartedWithUpdate', async () => {
@@ -231,4 +236,56 @@ describe('contentProgressDataContext', function () {
   //     expect(state).toBe("");
   //
   // });
+  test('getRecentLessons', async () => {
+    let result = await getRecent('drumeo','lessons', 'all',{page:1, limit:10})
+    console.log(result);
+    expect(result.data[0].id).toStrictEqual(412986)
+    expect(individualLessonsTypes).toContain(result.data[0].type)
+  })
+
+  test('getRecentLessons-Incomplete', async () => {
+    let result = await getRecent('drumeo','lessons','Incomplete')
+    console.log(result);
+    expect(result.data[0].id).toStrictEqual(407665)
+    expect(individualLessonsTypes).toContain(result.data[0].type)
+  })
+
+  test('getRecentLessons-Completed', async () => {
+    let result = await getRecent('drumeo','lessons','Completed')
+    console.log(result);
+    expect(result.data[0].id).toStrictEqual(412986)
+    expect(individualLessonsTypes).toContain(result.data[0].type)
+  })
+
+  test('get-Songs-For-You', async () => {
+    let result = await getTabResults('drumeo','songs','For You')
+    console.log(result);
+    expect(result.type).toStrictEqual('sections')
+    expect(result.data).toBeDefined()
+    expect(result.meta).toBeDefined()
+  })
+
+  test('get-Songs-Tutorials', async () => {
+    let result = await getTabResults('pianote','songs','Tutorials')
+    console.log(result);
+    expect(result.type).toStrictEqual('catalog')
+    expect(result.data).toBeDefined()
+    expect(tutorialsLessonTypes).toContain(result.data[0].type)
+  })
+
+  test('get-Songs-Transcriptions', async () => {
+    let result = await getTabResults('pianote','songs','Transcriptions')
+    console.log(result);
+    expect(result.type).toStrictEqual('catalog')
+    expect(result.data).toBeDefined()
+    expect(transcriptionsLessonTypes).toContain(result.data[0].type)
+  })
+
+  test('get-Songs-Play-Alongs', async () => {
+    let result = await getTabResults('drumeo','songs','Play-Alongs',{selectedFilters:['difficulty,Expert']})
+    console.log(result);
+    expect(playAlongLessonTypes).toContain(result.data[0].type)
+    expect(result.data[0].difficulty_string).toStrictEqual('Expert')
+  })
+
 })

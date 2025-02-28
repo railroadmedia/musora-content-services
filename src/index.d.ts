@@ -6,7 +6,9 @@ import {
 } from './services/config.js';
 
 import {
-	getLessonContentRows
+	getLessonContentRows,
+	getRecent,
+	getTabResults
 } from './services/content.js';
 
 import {
@@ -128,6 +130,7 @@ import {
 	fetchPackData,
 	fetchParentForDownload,
 	fetchPlayAlongsCount,
+	fetchRecent,
 	fetchRelatedLessons,
 	fetchRelatedSongs,
 	fetchReturning,
@@ -136,6 +139,7 @@ import {
 	fetchShowsData,
 	fetchSongArtistCount,
 	fetchSongById,
+	fetchTabData,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	getSortOrder,
@@ -208,6 +212,7 @@ declare module 'musora-content-services' {
 		fetchPlaylist,
 		fetchPlaylistItem,
 		fetchPlaylistItems,
+		fetchRecent,
 		fetchRelatedLessons,
 		fetchRelatedSongs,
 		fetchReturning,
@@ -217,6 +222,7 @@ declare module 'musora-content-services' {
 		fetchSongArtistCount,
 		fetchSongById,
 		fetchSongsInProgress,
+		fetchTabData,
 		fetchTopLevelParentId,
 		fetchUpcomingEvents,
 		fetchUserAward,
@@ -234,8 +240,10 @@ declare module 'musora-content-services' {
 		getProgressPercentageByIds,
 		getProgressState,
 		getProgressStateByIds,
+		getRecent,
 		getResumeTimeSeconds,
 		getSortOrder,
+		getTabResults,
 		globalConfig,
 		initializeService,
 		isContentLiked,

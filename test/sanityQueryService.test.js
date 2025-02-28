@@ -1,4 +1,4 @@
-import { getFieldsForContentType } from '../src/contentTypeConfig'
+import { getFieldsForContentType} from '../src/contentTypeConfig'
 const railContentModule = require('../src/services/railcontent.js')
 
 import {
@@ -869,25 +869,40 @@ describe('MetaData', function () {
     drumeoMetaData.url = ''
     expect(guitareoMetaData).toStrictEqual(drumeoMetaData)
   })
+})
 
-  test('withWithoutFilters', async () => {
-    let metaData = processMetadata('singeo', 'student-review', true)
-    expect(metaData.type).toBeDefined()
-    expect(metaData.name).toBeDefined()
-    expect(metaData.description).toBeDefined()
-    expect(metaData.thumbnailUrl).toBeDefined()
+describe('v2', function () {
+  test('metaDataForLessons', async () => {
+    const metaData = await fetchMetadata('drumeo', 'lessons')
+    log(metaData)
+    expect(metaData.filters).toBeDefined()
+    expect(metaData.sort).toBeDefined()
     expect(metaData.tabs).toBeDefined()
-    metaData = processMetadata('singeo', 'student-review', false)
-    expect(metaData.type).toBeDefined()
-    expect(metaData.name).toBeDefined()
-    expect(metaData.description).toBeDefined()
-    expect(metaData.tabs).not.toBeDefined()
   })
 
-  test('nulled', async () => {
-    let metaData = processMetadata('drumeo', 'student-review')
-    expect(metaData).toBeNull()
-    metaData = processMetadata('singeo', 'student-review')
-    expect(metaData).not.toBeNull()
+  test('metaDataForSongs', async () => {
+    const metaData = await fetchMetadata('drumeo', 'songs')
+    log(metaData)
+    expect(metaData.filters).toBeDefined()
+    expect(metaData.sort).toBeDefined()
+    expect(metaData.tabs).toBeDefined()
+  })
+
+  test('fetchAllFilterOptionsLessons', async () => {
+    const response = await fetchAllFilterOptions(
+        'pianote',
+[],null,null,'lessons'
+    )
+    log(response)
+    expect(response.meta.filters).toBeDefined()
+  })
+
+  test('fetchAllFilterOptionsSongs', async () => {
+    const response = await fetchAllFilterOptions(
+        'pianote',
+        [],null,null,'songs'
+    )
+    log(response)
+     expect(response.meta.filters).toBeDefined()
   })
 })

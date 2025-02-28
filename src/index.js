@@ -6,7 +6,9 @@ import {
 } from './services/config.js';
 
 import {
-	getLessonContentRows
+	getLessonContentRows,
+	getRecent,
+	getTabResults
 } from './services/content.js';
 
 import {
@@ -128,6 +130,7 @@ import {
 	fetchPackData,
 	fetchParentForDownload,
 	fetchPlayAlongsCount,
+	fetchRecent,
 	fetchRelatedLessons,
 	fetchRelatedSongs,
 	fetchReturning,
@@ -136,6 +139,7 @@ import {
 	fetchShowsData,
 	fetchSongArtistCount,
 	fetchSongById,
+	fetchTabData,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	getSortOrder,
@@ -207,6 +211,7 @@ export {
 	fetchPlaylist,
 	fetchPlaylistItem,
 	fetchPlaylistItems,
+	fetchRecent,
 	fetchRelatedLessons,
 	fetchRelatedSongs,
 	fetchReturning,
@@ -216,6 +221,7 @@ export {
 	fetchSongArtistCount,
 	fetchSongById,
 	fetchSongsInProgress,
+	fetchTabData,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	fetchUserAward,
@@ -233,8 +239,10 @@ export {
 	getProgressPercentageByIds,
 	getProgressState,
 	getProgressStateByIds,
+	getRecent,
 	getResumeTimeSeconds,
 	getSortOrder,
+	getTabResults,
 	globalConfig,
 	initializeService,
 	isContentLiked,
