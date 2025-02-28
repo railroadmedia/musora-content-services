@@ -1,3 +1,6 @@
+/**
+ * @module Session-Management
+ */
 import { globalConfig } from '../config'
 
 /**
