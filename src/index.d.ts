@@ -6,6 +6,7 @@ import {
 } from './services/config.js';
 
 import {
+	getContentRows,
 	getLessonContentRows,
 	getRecent,
 	getTabResults
@@ -225,6 +226,7 @@ declare module 'musora-content-services' {
 		getAllCompleted,
 		getAllStarted,
 		getAllStartedOrCompleted,
+		getContentRows,
 		getLessonContentRows,
 		getProgressPercentage,
 		getProgressPercentageByIds,

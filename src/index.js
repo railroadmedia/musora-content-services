@@ -6,6 +6,7 @@ import {
 } from './services/config.js';
 
 import {
+	getContentRows,
 	getLessonContentRows,
 	getRecent,
 	getTabResults
@@ -224,6 +225,7 @@ export {
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
+	getContentRows,
 	getLessonContentRows,
 	getProgressPercentage,
 	getProgressPercentageByIds,
