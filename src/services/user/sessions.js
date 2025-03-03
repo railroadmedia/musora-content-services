@@ -6,10 +6,8 @@ import { globalConfig } from '../config'
 /**
  * Exported functions that are excluded from index generation.
  *
- * @ts-ignore-unused-var
  * @type {string[]}
  */
-// @ts-ignore-unused-var
 const excludeFromGeneratedIndex = []
 
 const baseUrl = `${globalConfig.railcontentConfig.baseUrl}/api/user-management-system`
