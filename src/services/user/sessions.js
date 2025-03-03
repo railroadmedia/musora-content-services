@@ -3,6 +3,8 @@
  */
 import { globalConfig } from '../config'
 
+const baseUrl = `${globalConfig.railcontentConfig.baseUrl}/api/user-management-system`
+
 /**
  * Authenticates the User.
  *
@@ -47,7 +49,7 @@ export async function login(email, password, deviceName, deviceToken, platform) 
  *   .catch(error => console.error(error));
  */
 export async function logout() {
-  await fetch(`${this.basePath}/v1/sessions`, {
+  await fetch(`${baseUrl}/v1/sessions`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${globalConfig.railcontentConfig.authToken}`,
