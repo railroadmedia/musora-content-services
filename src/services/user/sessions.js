@@ -8,8 +8,9 @@ import { globalConfig } from '../config'
  *
  * @param {string} email - User's email
  * @param {string} password - User's password
- * @param {string} deviceName - Device name for the user
+ * @param {string|null} deviceName -  Device name for the user
  * @param {string|null} deviceToken - Firebase token for the device
+ * @param {string|null} platform - Device platform
  *
  * @returns {Promise<AuthResponse>} - User data and authentication token
  *
@@ -18,7 +19,7 @@ import { globalConfig } from '../config'
  *   .then(content => console.log(content))
  *   .catch(error => console.error(error));
  */
-export async function login(email, password, deviceName, deviceToken) {
+export async function login(email, password, deviceName, deviceToken, platform) {
   return fetch(`${baseUrl}/v1/sessions`, {
     method: 'POST',
     headers: {
@@ -30,7 +31,7 @@ export async function login(email, password, deviceName, deviceToken) {
       password: password,
       device_name: deviceName,
       device_token: deviceToken,
-      app: 'Drumeo',
+      platform: platform,
     }),
   })
 }
