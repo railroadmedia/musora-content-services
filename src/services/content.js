@@ -166,6 +166,6 @@ export async function getContentRows(brand, pageName, contentRowId , {
   limit = 10,
 } = {}) {
   const contentRow = contentRowId ? `&content_row_id=${contentRowId}` : ''
-  const url = `/api/content/v1/contentRows?brand=${brand}&page_name=${pageName}${contentRow}&page=${page}&limit=${limit}`;
+  const url = `/api/content/v1/rows?brand=${brand}&page_name=${pageName}${contentRow}&page=${page}&limit=${limit}`;
   return  await fetchHandler(url, 'get', null);
 }
