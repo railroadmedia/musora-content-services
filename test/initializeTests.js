@@ -30,6 +30,7 @@ export async function initializeTestService(useLive = false) {
       authToken: token,
     },
     localStorage: new LocalStorageMock(),
+    isMA: true
   }
   initializeService(config)
 
