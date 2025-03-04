@@ -2,7 +2,7 @@
  * @module Content-Services-V2
  */
 
-import {fetchAll, fetchByRailContentIds, fetchMetadata, fetchRecent, fetchTabData} from './sanity.js'
+import {fetchAll, fetchByRailContentIds, fetchMetadata, fetchRecent, fetchScheduledAndNewReleases, fetchTabData} from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {getAllStartedOrCompleted} from "./contentProgress";
 import {fetchHandler} from "./railcontent";
@@ -168,4 +168,15 @@ export async function getContentRows(brand, pageName, contentRowId , {
   const contentRow = contentRowId ? `&content_row_id=${contentRowId}` : ''
   const url = `/api/content/v1/rows?brand=${brand}&page_name=${pageName}${contentRow}&page=${page}&limit=${limit}`;
   return  await fetchHandler(url, 'get', null);
+}
+
+export async function getNewAndUpcoming(brand, {
+  page = 1,
+  limit = 10,
+} = {}) {
+
+  const data = await fetchScheduledAndNewReleases(brand, { page: page, limit: limit });
+  return {
+    data: data,
+  };
 }

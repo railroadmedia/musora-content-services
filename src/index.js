@@ -8,6 +8,7 @@ import {
 import {
 	getContentRows,
 	getLessonContentRows,
+	getNewAndUpcoming,
 	getRecent,
 	getTabResults
 } from './services/content.js';
@@ -136,6 +137,7 @@ import {
 	fetchRelatedSongs,
 	fetchReturning,
 	fetchSanity,
+	fetchScheduledAndNewReleases,
 	fetchScheduledReleases,
 	fetchShowsData,
 	fetchSongArtistCount,
@@ -217,6 +219,7 @@ export {
 	fetchRelatedSongs,
 	fetchReturning,
 	fetchSanity,
+	fetchScheduledAndNewReleases,
 	fetchScheduledReleases,
 	fetchShowsData,
 	fetchSongArtistCount,
@@ -237,6 +240,7 @@ export {
 	getAllStartedOrCompleted,
 	getContentRows,
 	getLessonContentRows,
+	getNewAndUpcoming,
 	getProgressPercentage,
 	getProgressPercentageByIds,
 	getProgressState,

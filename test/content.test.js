@@ -1,5 +1,5 @@
 import { initializeTestService } from './initializeTests.js'
-import { getLessonContentRows, getTabResults } from '../src/services/content.js'
+import {getLessonContentRows, getNewAndUpcoming, getTabResults} from '../src/services/content.js'
 
 describe('content', function () {
   beforeEach(() => {
@@ -89,4 +89,10 @@ describe('content', function () {
 //     expect(results.meta.filters).toBeDefined()
 //     expect(results.meta.sort).toBeDefined()
 //   })
+  test('getNewAndUpcoming', async () => {
+    const results = await getNewAndUpcoming('drumeo')
+    console.log(results)
+    //expect(results.data).toBeDefined()
+  })
+  //
 })
