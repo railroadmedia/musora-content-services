@@ -1206,7 +1206,7 @@ export async function setStudentViewForUser(userId, enable) {
  * @returns {Promise<Object|null>} - A promise that resolves to an comment object
  */
 export async function fetchTopComment(railcontentId) {
-  const url = `/comments/top/${railcontentId}`
+  const url = `/api/content/v1/comments/${railcontentId}/top`
   return await fetchHandler(url)
 }
 
@@ -1219,7 +1219,7 @@ export async function fetchTopComment(railcontentId) {
  * @returns {Promise<*|null>}
  */
 export async function fetchComments(railcontentId, page = 1, limit = 20) {
-  const url = `/comments/all/${railcontentId}?page=${page}&limit=${limit}`
+  const url = `/api/content/v1/comments/${railcontentId}/all?page=${page}&limit=${limit}`
   return await fetchHandler(url)
 }
 
@@ -1231,7 +1231,7 @@ export async function fetchComments(railcontentId, page = 1, limit = 20) {
  * @returns {Promise<*|null>}
  */
 export async function fetchCommentRelies(commentId, page = 1, limit = 20) {
-  const url = `/comments/replies/${commentId}?page=${page}&limit=${limit}`
+  const url = `/api/content/v1/comments/${commentId}/replies?page=${page}&limit=${limit}`
   return await fetchHandler(url)
 }
 
