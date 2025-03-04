@@ -645,7 +645,7 @@ export async function fetchUserPlaylists(
   const content = content_id ? `&content_id=${content_id}` : ''
   const categoryString =
     categories && categories.length ? categories.map((cat) => `categories[]=${cat}`).join('&') : ''
-  url = `/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`
+  url = `/api/playlists/v1/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`
   return await fetchHandler(url)
 }
 
