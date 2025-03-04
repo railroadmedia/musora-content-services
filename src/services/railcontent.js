@@ -1198,6 +1198,43 @@ export async function setStudentViewForUser(userId, enable) {
   return await patchDataHandler(url, data)
 }
 
+
+/**
+ * Fetch the top comment for a given content
+ *
+ * @param {int} railcontentId - The railcontent id to fetch.
+ * @returns {Promise<Object|null>} - A promise that resolves to an comment object
+ */
+export async function fetchTopComment(railcontentId) {
+  const url = `/api/content/v1/comments/${railcontentId}/top`
+  return await fetchHandler(url)
+}
+
+
+/**
+ *
+ * @param railcontentId
+ * @param page
+ * @param limit
+ * @returns {Promise<*|null>}
+ */
+export async function fetchComments(railcontentId, page = 1, limit = 20) {
+  const url = `/api/content/v1/comments/${railcontentId}/all?page=${page}&limit=${limit}`
+  return await fetchHandler(url)
+}
+
+/**
+ *
+ * @param commentId
+ * @param page
+ * @param limit
+ * @returns {Promise<*|null>}
+ */
+export async function fetchCommentRelies(commentId, page = 1, limit = 20) {
+  const url = `/api/content/v1/comments/${commentId}/replies?page=${page}&limit=${limit}`
+  return await fetchHandler(url)
+}
+
 function fetchAbsolute(url, params) {
   if (globalConfig.railcontentConfig.authToken) {
     params.headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`
