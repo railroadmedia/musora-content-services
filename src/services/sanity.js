@@ -327,7 +327,8 @@ export async function fetchNewReleases(
   const start = (page - 1) * limit
   const end = start + limit
   const sortOrder = getSortOrder(sort, brand)
-  const filter = `_type in ${typesString} && brand == '${brand}' && show_in_new_feed == true`
+  const nextQuarter = getNextAndPreviousQuarterDates()['next'];
+  const filter = `_type in ${typesString} && brand == '${brand}' && show_in_new_feed == true && (!defined(quarter_published) ||  quarter_published != '${nextQuarter}')`
   const fields = `
      "id": railcontent_id,
       title,
@@ -2205,3 +2206,41 @@ const results = await fetchTabData(brand, pageName,{
 })
   return results.entity;
 }
+
+export async function fetchScheduledAndNewReleases(
+  brand,
+  { page = 1, limit = 20, sort = '-published_on' } = {}
+) {
+  const upcomingTypes = getUpcomingEventsTypes(brand)
+  const newTypes = getNewReleasesTypes(brand)
+
+  const scheduledTypes = merge(upcomingTypes, newTypes)
+  const typesString = arrayJoinWithQuotes(scheduledTypes)
+  const now = getSanityDate(new Date())
+
+  const start = (page - 1) * limit
+  const end = start + limit
+  const sortOrder = getSortOrder(sort, brand)
+
+  const query = `
+    *[_type in [${typesString}] && brand == '${brand}' && ((status in ['published','scheduled'] && published_on > '${now}')||(show_in_new_feed == true)) ]
+    [${start}...${end}]
+   | order(published_on asc) {
+      "id": railcontent_id,
+      title,
+      "image": thumbnail.asset->url,
+      ${artistOrInstructorName()},
+      "artists": instructor[]->name,
+      difficulty,
+      difficulty_string,
+      length_in_seconds,
+      published_on,
+      "type": _type,
+      show_in_new_feed,
+      web_url_path,
+      "permission_id": permission[]->railcontent_id
+  }`
+
+ return fetchSanity(query, true)
+}
+
