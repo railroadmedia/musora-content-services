@@ -1,5 +1,5 @@
 import { initializeTestService } from './initializeTests.js'
-import {getLessonContentRows, getNewAndUpcoming, getTabResults} from '../src/services/content.js'
+import {getLessonContentRows, getNewAndUpcoming, getScheduleContentRows, getTabResults} from '../src/services/content.js'
 
 describe('content', function () {
   beforeEach(() => {
@@ -94,5 +94,23 @@ describe('content', function () {
     console.log(results)
     //expect(results.data).toBeDefined()
   })
-  //
+
+  test('getScheduleContentRows', async () => {
+    const results = await getScheduleContentRows('drumeo')
+    console.log(results.data[1])
+    expect(results.type).toBeDefined()
+    expect(results.type).toBe('sections')
+    expect(results.data).toBeDefined()
+    expect(results.meta).toBeDefined()
+  })
+
+  test('getSpecificScheduleContentRow', async () => {
+    const results = await getScheduleContentRows('drumeo', 'Leaving-Soon')
+    console.log(results)
+    expect(results.type).toBeDefined()
+    expect(results.type).toBe('catalog')
+    expect(results.data).toBeDefined()
+    expect(results.meta).toBeDefined()
+  })
+
 })

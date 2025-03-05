@@ -10,6 +10,7 @@ import {
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
+	getScheduleContentRows,
 	getTabResults
 } from './services/content.js';
 
@@ -248,6 +249,7 @@ declare module 'musora-content-services' {
 		getProgressStateByIds,
 		getRecent,
 		getResumeTimeSeconds,
+		getScheduleContentRows,
 		getSortOrder,
 		getTabResults,
 		globalConfig,

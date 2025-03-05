@@ -10,6 +10,7 @@ import {
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
+	getScheduleContentRows,
 	getTabResults
 } from './services/content.js';
 
@@ -247,6 +248,7 @@ export {
 	getProgressStateByIds,
 	getRecent,
 	getResumeTimeSeconds,
+	getScheduleContentRows,
 	getSortOrder,
 	getTabResults,
 	globalConfig,

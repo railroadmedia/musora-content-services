@@ -327,7 +327,8 @@ export async function fetchNewReleases(
   const start = (page - 1) * limit
   const end = start + limit
   const sortOrder = getSortOrder(sort, brand)
-  const filter = `_type in ${typesString} && brand == '${brand}' && show_in_new_feed == true`
+  const nextQuarter = getNextAndPreviousQuarterDates()['next'];
+  const filter = `_type in ${typesString} && brand == '${brand}' && show_in_new_feed == true && (!defined(quarter_published) ||  quarter_published != '${nextQuarter}')`
   const fields = `
      "id": railcontent_id,
       title,
@@ -2235,6 +2236,7 @@ export async function fetchScheduledAndNewReleases(
       length_in_seconds,
       published_on,
       "type": _type,
+      show_in_new_feed,
       web_url_path,
       "permission_id": permission[]->railcontent_id
   }`
