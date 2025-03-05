@@ -50,6 +50,8 @@ import {
 	fetchChallengeLessonData,
 	fetchChallengeMetadata,
 	fetchChallengeUserActiveChallenges,
+	fetchCommentRelies,
+	fetchComments,
 	fetchCompletedChallenges,
 	fetchCompletedContent,
 	fetchCompletedState,
@@ -64,6 +66,7 @@ import {
 	fetchPlaylistItem,
 	fetchPlaylistItems,
 	fetchSongsInProgress,
+	fetchTopComment,
 	fetchUserAward,
 	fetchUserBadges,
 	fetchUserChallengeProgress,
@@ -93,6 +96,10 @@ import {
 	updatePlaylist,
 	updatePlaylistItem
 } from './services/railcontent.js';
+
+import {
+	rankItems
+} from './services/recommendations.js';
 
 import {
 	fetchAll,
@@ -173,6 +180,8 @@ export {
 	fetchCoachLessons,
 	fetchComingSoon,
 	fetchCommentModContentData,
+	fetchCommentRelies,
+	fetchComments,
 	fetchCompletedChallenges,
 	fetchCompletedContent,
 	fetchCompletedState,
@@ -212,6 +221,7 @@ export {
 	fetchSongArtistCount,
 	fetchSongById,
 	fetchSongsInProgress,
+	fetchTopComment,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	fetchUserAward,
@@ -252,6 +262,7 @@ export {
 	postContentReset,
 	postContentUnliked,
 	postRecordWatchSession,
+	rankItems,
 	recordWatchSession,
 	reportPlaylist,
 	reset,
