@@ -3,6 +3,7 @@
  */
 import { setLastUpdatedTime, wasLastUpdateOlderThanXSeconds } from '../../lib/lastUpdated.js'
 import { fetchUserPermissionsData } from '../railcontent.js'
+import './types'
 
 /**
  * Exported functions that are excluded from index generation.

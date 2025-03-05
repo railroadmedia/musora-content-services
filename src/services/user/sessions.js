@@ -2,6 +2,7 @@
  * @module Session-Management
  */
 import { globalConfig } from '../config'
+import './types'
 
 /**
  * Exported functions that are excluded from index generation.
