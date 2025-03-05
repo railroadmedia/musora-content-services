@@ -1,5 +1,9 @@
-import { fetchUserPermissionsData } from './railcontent.js'
-import { setLastUpdatedTime, wasLastUpdateOlderThanXSeconds } from './lastUpdated.js'
+/**
+ * @module User-Permissions
+ */
+import { setLastUpdatedTime, wasLastUpdateOlderThanXSeconds } from '../../lib/lastUpdated.js'
+import { fetchUserPermissionsData } from '../railcontent.js'
+import './types'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -10,6 +14,11 @@ const excludeFromGeneratedIndex = []
 let userPermissionsPromise = null
 let lastUpdatedKey = `userPermissions_lastUpdated`
 
+/**
+ * Fetches the user permissions data.
+ *
+ * @returns {Promise<UserPermissions>} - The user permissions data.
+ */
 export async function fetchUserPermissions() {
   if (!userPermissionsPromise || wasLastUpdateOlderThanXSeconds(10, lastUpdatedKey)) {
     userPermissionsPromise = fetchUserPermissionsData()
@@ -19,6 +28,11 @@ export async function fetchUserPermissions() {
   return await userPermissionsPromise
 }
 
+/**
+ * Resets the user permissions data.
+ *
+ * @returns {Promise<void>}
+ */
 export async function reset() {
   userPermissionsPromise = null
 }

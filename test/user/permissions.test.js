@@ -1,7 +1,7 @@
-const { fetchUserPermissions } = require('../src/services/userPermissions')
-const { initializeTestService } = require('./initializeTests')
+const { fetchUserPermissions } = require('../../src/services/user/permissions')
+const { initializeTestService } = require('../initializeTests')
 
-describe('userPermissions', function () {
+describe('user.permissions', function () {
   beforeEach(() => {
     initializeTestService()
   })
