@@ -1,4 +1,4 @@
-import { globalConfig, initializeService } from '../src'
+import { initializeService } from '../src'
 import { LocalStorageMock } from './localStorageMock'
 
 const railContentModule = require('../src/services/railcontent.js')
@@ -25,10 +25,15 @@ export async function initializeTestService(useLive = false) {
       useDummyRailContentMethods: true,
     },
     railcontentConfig: {
+      userId: userId,
+      authToken: token,
       baseUrl: process.env.RAILCONTENT_BASE_URL,
+    },
+    sessionConfig: {
       userId: userId,
       authToken: token,
     },
+    baseUrl: process.env.RAILCONTENT_BASE_URL,
     localStorage: new LocalStorageMock(),
     isMA: true
   }
