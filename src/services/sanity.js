@@ -1297,17 +1297,39 @@ export async function fetchRelatedLessons(railContentId, brand) {
   ).buildFilter()
   const filterNeighbouringSiblings = await new FilterBuilder(`references(^._id)`).buildFilter()
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-
+  const defaultProjections = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type`
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
     "related_lessons" : array::unique([
-      ...(*[${filterNeighbouringSiblings}][0].child[${childrenFilter}]->{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}),
-      ...(*[${filterSongSameArtist}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
-      ...(*[${filterSongSameGenre}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10]),
-      ...(*[${filterSameTypeAndSortOrder}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, sort}|order(sort asc, title asc)[0...10]),
-      ...(*[${filterSameType}]{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type}|order(published_on desc, title asc)[0...10])
-      ,
+      ...(*[${filterNeighbouringSiblings}][0].child[${childrenFilter}]->{${defaultProjections}}),
+      ...(*[${filterSongSameArtist}]{${defaultProjections}}|order(published_on desc, title asc)[0...10]),
+      ...(*[${filterSongSameGenre}]{${defaultProjections}}|order(published_on desc, title asc)[0...10]),
+      ...(*[${filterSameTypeAndSortOrder}]{${defaultProjections}}|order(sort asc, title asc)[0...10]),
+      ...(*[${filterSameType}]{${defaultProjections}}|order(published_on desc, title asc)[0...10])
       ])[0...10]}`
+  console.log('>>> fetchLessons', query)
+  return fetchSanity(query, false)
+}
+
+/**
+ * cool stuff
+ * @param {string} railContentId
+ * @param {string} brand
+ * @returns {Promise<Array<Object>|null>}
+ */
+export async function fetchRelatedTutorials(railContentId, brand) {
+  //define filter
+  const filterTutorialSameGenre = await new FilterBuilder(
+      `_type == ^.parent_type && brand == "${brand}" && references(*[_type == ^.parent_type && brand == "${brand}" && railcontent_id == ^.parent_content_data[0].id].genre[]->_id) && railcontent_id !=${railContentId}`
+  ).buildFilter()
+  //projections
+  const defaultProjections = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type`
+  const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
+   _type, parent_type, railcontent_id,
+    "related_lessons" : array::unique([
+      ...(*[${filterTutorialSameGenre}]{${defaultProjections}}|order(published_on desc, title asc)[0...10])
+      ])[0...10]}`
+  console.log('>>> fetchTutorial', query)
   return fetchSanity(query, false)
 }
 
