@@ -98,7 +98,9 @@ import {
 } from './services/railcontent.js';
 
 import {
-	rankItems
+	rankCategories,
+	rankItems,
+	similarItems
 } from './services/recommendations.js';
 
 import {
@@ -263,12 +265,14 @@ declare module 'musora-content-services' {
 		postContentReset,
 		postContentUnliked,
 		postRecordWatchSession,
+		rankCategories,
 		rankItems,
 		recordWatchSession,
 		reportPlaylist,
 		reset,
 		setLastUpdatedTime,
 		setStudentViewForUser,
+		similarItems,
 		unlikeContent,
 		unpinPlaylist,
 		updatePlaylist,

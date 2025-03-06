@@ -98,7 +98,9 @@ import {
 } from './services/railcontent.js';
 
 import {
-	rankItems
+	rankCategories,
+	rankItems,
+	similarItems
 } from './services/recommendations.js';
 
 import {
@@ -262,12 +264,14 @@ export {
 	postContentReset,
 	postContentUnliked,
 	postRecordWatchSession,
+	rankCategories,
 	rankItems,
 	recordWatchSession,
 	reportPlaylist,
 	reset,
 	setLastUpdatedTime,
 	setStudentViewForUser,
+	similarItems,
 	unlikeContent,
 	unpinPlaylist,
 	updatePlaylist,
