@@ -1312,22 +1312,22 @@ export async function fetchRelatedLessons(railContentId, brand) {
 }
 
 /**
- * cool stuff
+ * fetch song tutorials related to a specific railcontentId & brand, by genre and difficulty.
  * @param {string} railContentId
  * @param {string} brand
  * @returns {Promise<Array<Object>|null>}
  */
 export async function fetchRelatedTutorials(railContentId, brand) {
   //define filter
-  const filterTutorialSameGenre = await new FilterBuilder(
-      `_type == ^.parent_type && brand == "${brand}" && references(*[_type == ^.parent_type && brand == "${brand}" && railcontent_id == ^.parent_content_data[0].id].genre[]->_id) && railcontent_id !=${railContentId}`
+  const filterTutorialSameGenreAndDifficulty = await new FilterBuilder(
+      `_type == ^._type && brand == ^.brand && references(*[_type == ^.parent_type && brand == ^.brand && railcontent_id == ^.parent_content_data[0].id].genre[]->_id) && railcontent_id != ^.railcontent_id`
   ).buildFilter()
   //projections
   const defaultProjections = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type`
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
     "related_lessons" : array::unique([
-      ...(*[${filterTutorialSameGenre}]{${defaultProjections}}|order(published_on desc, title asc)[0...10])
+      ...(*[${filterTutorialSameGenreAndDifficulty}]{${defaultProjections}}|order(published_on desc, title asc)[0...10])
       ])[0...10]}`
   console.log('>>> fetchTutorial', query)
   return fetchSanity(query, false)
