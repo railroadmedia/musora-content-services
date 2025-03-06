@@ -99,7 +99,7 @@ export async function fetchReturning(
   const filterString = `brand == '${brand}' && quarter_published == '${nextQuarter}'`;
   const startEndOrder = getQueryFromPage(pageNumber, contentPerPage);
   const sortOrder = {sortOrder: "published_on desc, id desc", start: startEndOrder['start'], end: startEndOrder['end']};
-  const query = await buildQuery(filterString, {pullFutureContent: true, availableContentStatuses: ["draft"]}, getFieldsForContentType(), sortOrder);
+  const query = await buildQuery(filterString, {pullFutureContent: true, availableContentStatuses: ["draft"]}, getFieldsForContentType('returning'), sortOrder);
 
   return fetchSanity(query, true);
 }
