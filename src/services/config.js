@@ -5,7 +5,7 @@
 export let globalConfig = {
   sanityConfig: {},
   railcontentConfig: {},
-  huggingFaceConfig: {},
+  recommendationsConfig: {},
   localStorage: null,
   isMA: false,
   localTimezoneString: null, // In format: America/Vancouver
