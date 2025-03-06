@@ -50,6 +50,8 @@ import {
 	fetchChallengeLessonData,
 	fetchChallengeMetadata,
 	fetchChallengeUserActiveChallenges,
+	fetchCommentRelies,
+	fetchComments,
 	fetchCompletedChallenges,
 	fetchCompletedContent,
 	fetchCompletedState,
@@ -64,6 +66,7 @@ import {
 	fetchPlaylistItem,
 	fetchPlaylistItems,
 	fetchSongsInProgress,
+	fetchTopComment,
 	fetchUserAward,
 	fetchUserBadges,
 	fetchUserChallengeProgress,
@@ -93,6 +96,12 @@ import {
 	updatePlaylist,
 	updatePlaylistItem
 } from './services/railcontent.js';
+
+import {
+	rankCategories,
+	rankItems,
+	similarItems
+} from './services/recommendations.js';
 
 import {
 	fetchAll,
@@ -174,6 +183,8 @@ declare module 'musora-content-services' {
 		fetchCoachLessons,
 		fetchComingSoon,
 		fetchCommentModContentData,
+		fetchCommentRelies,
+		fetchComments,
 		fetchCompletedChallenges,
 		fetchCompletedContent,
 		fetchCompletedState,
@@ -213,6 +224,7 @@ declare module 'musora-content-services' {
 		fetchSongArtistCount,
 		fetchSongById,
 		fetchSongsInProgress,
+		fetchTopComment,
 		fetchTopLevelParentId,
 		fetchUpcomingEvents,
 		fetchUserAward,
@@ -253,11 +265,14 @@ declare module 'musora-content-services' {
 		postContentReset,
 		postContentUnliked,
 		postRecordWatchSession,
+		rankCategories,
+		rankItems,
 		recordWatchSession,
 		reportPlaylist,
 		reset,
 		setLastUpdatedTime,
 		setStudentViewForUser,
+		similarItems,
 		unlikeContent,
 		unpinPlaylist,
 		updatePlaylist,
