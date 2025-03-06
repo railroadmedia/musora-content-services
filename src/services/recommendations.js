@@ -1,7 +1,6 @@
 /**
  * @module Railcontent-Services
  */
-import { contentStatusCompleted } from './contentProgress.js'
 
 import { globalConfig } from './config.js'
 
@@ -10,9 +9,7 @@ import { globalConfig } from './config.js'
  *
  * @type {string[]}
  */
-const excludeFromGeneratedIndex = [
-  'fetchHandler',
-]
+const excludeFromGeneratedIndex = []
 
 /**
  * Fetches similar content to the provided content id
@@ -58,7 +55,7 @@ export async function similarItems(brand, content_id, count = 10) {
  *                            1: [111222, 23120, 402199],
  *                            2: [2222, 33333, 44444]
  *                          }
-*                )
+ *                )
  *   .then(status => console.log(status))
  *   .catch(error => console.error(error));
  */
