@@ -41,6 +41,10 @@ import {
 } from './services/dataContext.js';
 
 import {
+	getActiveDiscussions
+} from './services/forum.js';
+
+import {
 	setLastUpdatedTime,
 	wasLastUpdateOlderThanXSeconds
 } from './services/lastUpdated.js';
@@ -236,6 +240,7 @@ export {
 	fetchUserPermissions,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
+	getActiveDiscussions,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,

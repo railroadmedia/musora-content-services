@@ -41,6 +41,10 @@ import {
 } from './services/dataContext.js';
 
 import {
+	getActiveDiscussions
+} from './services/forum.js';
+
+import {
 	setLastUpdatedTime,
 	wasLastUpdateOlderThanXSeconds
 } from './services/lastUpdated.js';
@@ -237,6 +241,7 @@ declare module 'musora-content-services' {
 		fetchUserPermissions,
 		fetchUserPermissionsData,
 		fetchUserPlaylists,
+		getActiveDiscussions,
 		getAllCompleted,
 		getAllStarted,
 		getAllStartedOrCompleted,
