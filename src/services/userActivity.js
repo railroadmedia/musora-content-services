@@ -3,8 +3,7 @@
  */
 
 import {fetchHandler} from "./railcontent";
-const dummyData = {
-  userActivityStats: {
+const userActivityStats = {
     user: {
       id: 1,
       fullName: 'John Doe',
@@ -19,14 +18,13 @@ const dummyData = {
       { label: 'S', isActive: true, inStreak: false,  type: 'active' },
       { label: 'S', isActive: false, inStreak: false, type: 'none' }
     ],
-  },
   currentDailyStreak: 3,
   currentWeeklyStreak: 2,
-  activityMessage: "That's 8 weeks in a row! Way to keep your streak going.",
+  streakMessage: "That's 8 weeks in a row! Way to keep your streak going.",
 };
 
 export async function getUserActivityStats(userId) {
-  return dummyData;
+  return userActivityStats;
   //return await fetchHandler(`/api/user-activity/v1/stats`);
 }
 
