@@ -645,7 +645,7 @@ export async function fetchUserPlaylists(
   const content = content_id ? `&content_id=${content_id}` : ''
   const categoryString =
     categories && categories.length ? categories.map((cat) => `categories[]=${cat}`).join('&') : ''
-  url = `/api/playlists/v1/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`
+  url = `/api/content/v1/user/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`
   return await fetchHandler(url)
 }
 
@@ -771,7 +771,7 @@ export async function updatePlaylist(playlistId, updatedData) {
  *   .catch(error => console.error('Error creating playlist:', error));
  */
 export async function createPlaylist(playlistData) {
-  const url = `/playlists/playlist`
+  const url = `/api/content/v1/user/playlists/playlist`
   return await fetchHandler(url, 'POST', null, playlistData)
 }
 
@@ -1037,7 +1037,7 @@ export async function postContentReset(contentId) {
  *   });
  */
 export async function addItemToPlaylist(payload) {
-  const url = `/playlists/add-item`
+  const url = `/api/content/v1/user/playlists/add-item`
   return await fetchHandler(url, 'POST', null, payload)
 }
 
