@@ -155,6 +155,10 @@ import {
 } from './services/sanity.js';
 
 import {
+	getUserActivityStats
+} from './services/userActivity.js';
+
+import {
 	fetchUserPermissions,
 	reset
 } from './services/userPermissions.js';
@@ -256,6 +260,7 @@ export {
 	getScheduleContentRows,
 	getSortOrder,
 	getTabResults,
+	getUserActivityStats,
 	globalConfig,
 	initializeService,
 	isContentLiked,
