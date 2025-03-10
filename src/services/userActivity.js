@@ -23,7 +23,7 @@ const userActivityStats = {
   streakMessage: "That's 8 weeks in a row! Way to keep your streak going.",
 };
 
-export async function getUserActivityStats(userId) {
+export async function getUserActivityStats(brand) {
   return userActivityStats;
   //return await fetchHandler(`/api/user-activity/v1/stats`);
 }
