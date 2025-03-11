@@ -3,7 +3,6 @@
  */
 import {
   artistOrInstructorName,
-  artistOrInstructorNameAsArray,
   assignmentsField,
   descriptionField,
   resourcesField,
@@ -23,7 +22,6 @@ import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
 import { globalConfig } from './config.js'
 
 import {
-  fetchAllCompletedStates,
   fetchCompletedChallenges,
   fetchOwnedChallenges,
   fetchNextContentDataForParent,
@@ -111,7 +109,7 @@ export async function fetchReturning(brand, { pageNumber = 1, contentPerPage = 2
   const query = await buildQuery(
     filterString,
     { pullFutureContent: true, availableContentStatuses: ['draft'] },
-    getFieldsForContentType(),
+    getFieldsForContentType('returning'),
     sortOrder
   )
 
@@ -348,7 +346,8 @@ export async function fetchNewReleases(
   const start = (page - 1) * limit
   const end = start + limit
   const sortOrder = getSortOrder(sort, brand)
-  const filter = `_type in ${typesString} && brand == '${brand}' && show_in_new_feed == true`
+  const nextQuarter = getNextAndPreviousQuarterDates()['next']
+  const filter = `_type in ${typesString} && brand == '${brand}' && show_in_new_feed == true && (!defined(quarter_published) ||  quarter_published != '${nextQuarter}')`
   const fields = `
      "id": railcontent_id,
       title,
@@ -1390,7 +1389,7 @@ export async function fetchPackAll(railcontentId, type = 'pack') {
   return fetchByRailContentId(railcontentId, type)
 }
 
-export async function fetchLiveEvent(brand) {
+export async function fetchLiveEvent(brand, forcedContentId = null) {
   //calendarIDs taken from addevent.php
   // TODO import instructor calendars to Sanity
   let defaultCalendarID = ''
@@ -1418,7 +1417,9 @@ export async function fetchLiveEvent(brand) {
   // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
   // this has some +- on times
   // But this query just finds the first scheduled event (sorted by start_time) that ends after now()
-  const query = `*[status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}']{
+  const query =
+    forcedContentId !== null
+      ? `*[railcontent_id == ${forcedContentId} ]{
       'slug': slug.current,
       'id': railcontent_id,
       live_event_start_time,
@@ -1429,13 +1430,36 @@ export async function fetchLiveEvent(brand) {
       'event_coach_url' : instructor[0]->web_url_path,
       'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
       title,
-      "image": thumbnail.asset->url,
+      "thumbnail": thumbnail.asset->url,
+      ${artistOrInstructorName()},
+      difficulty_string,
       "instructors": instructor[]->{
             name,
             web_url_path,
           },
       'videoId': coalesce(live_event_youtube_id, video.external_id),
     } | order(live_event_start_time)[0...1]`
+      : `*[status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}']{
+      'slug': slug.current,
+      'id': railcontent_id,
+      live_event_start_time,
+      live_event_end_time,
+      live_event_youtube_id,
+      railcontent_id,
+      published_on,
+      'event_coach_url' : instructor[0]->web_url_path,
+      'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
+      title,
+      "thumbnail": thumbnail.asset->url,
+      ${artistOrInstructorName()},
+      difficulty_string,
+      "instructors": instructor[]->{
+            name,
+            web_url_path,
+          },
+      'videoId': coalesce(live_event_youtube_id, video.external_id),
+    } | order(live_event_start_time)[0...1]`
+
   return await fetchSanity(query, false, { processNeedAccess: false })
 }
 
@@ -2215,4 +2239,41 @@ export async function fetchRecent(
     progress: progress.toLowerCase(),
   })
   return results.entity
+}
+
+export async function fetchScheduledAndNewReleases(
+  brand,
+  { page = 1, limit = 20, sort = '-published_on' } = {}
+) {
+  const upcomingTypes = getUpcomingEventsTypes(brand)
+  const newTypes = getNewReleasesTypes(brand)
+
+  const scheduledTypes = merge(upcomingTypes, newTypes)
+  const typesString = arrayJoinWithQuotes(scheduledTypes)
+  const now = getSanityDate(new Date())
+
+  const start = (page - 1) * limit
+  const end = start + limit
+  const sortOrder = getSortOrder(sort, brand)
+
+  const query = `
+    *[_type in [${typesString}] && brand == '${brand}' && ((status in ['published','scheduled'] && published_on > '${now}')||(show_in_new_feed == true)) ]
+    [${start}...${end}]
+   | order(published_on asc) {
+      "id": railcontent_id,
+      title,
+      "image": thumbnail.asset->url,
+      ${artistOrInstructorName()},
+      "artists": instructor[]->name,
+      difficulty,
+      difficulty_string,
+      length_in_seconds,
+      published_on,
+      "type": _type,
+      show_in_new_feed,
+      web_url_path,
+      "permission_id": permission[]->railcontent_id
+  }`
+
+  return fetchSanity(query, true)
 }

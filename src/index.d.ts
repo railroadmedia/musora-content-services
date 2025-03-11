@@ -6,8 +6,11 @@ import {
 } from './services/config.js';
 
 import {
+	getContentRows,
 	getLessonContentRows,
+	getNewAndUpcoming,
 	getRecent,
+	getScheduleContentRows,
 	getTabResults
 } from './services/content.js';
 
@@ -38,6 +41,10 @@ import {
 } from './services/dataContext.js';
 
 import {
+	getActiveDiscussions
+} from './services/forum.js';
+
+import {
 	addItemToPlaylist,
 	countAssignmentsAndLessons,
 	createPlaylist,
@@ -51,6 +58,8 @@ import {
 	fetchChallengeLessonData,
 	fetchChallengeMetadata,
 	fetchChallengeUserActiveChallenges,
+	fetchCommentRelies,
+	fetchComments,
 	fetchCompletedChallenges,
 	fetchCompletedContent,
 	fetchCompletedState,
@@ -65,6 +74,7 @@ import {
 	fetchPlaylistItem,
 	fetchPlaylistItems,
 	fetchSongsInProgress,
+	fetchTopComment,
 	fetchUserAward,
 	fetchUserBadges,
 	fetchUserChallengeProgress,
@@ -94,6 +104,12 @@ import {
 	updatePlaylist,
 	updatePlaylistItem
 } from './services/railcontent.js';
+
+import {
+	rankCategories,
+	rankItems,
+	similarItems
+} from './services/recommendations.js';
 
 import {
 	fetchAll,
@@ -130,6 +146,7 @@ import {
 	fetchRelatedSongs,
 	fetchReturning,
 	fetchSanity,
+	fetchScheduledAndNewReleases,
 	fetchScheduledReleases,
 	fetchShowsData,
 	fetchSongArtistCount,
@@ -182,6 +199,8 @@ declare module 'musora-content-services' {
 		fetchCoachLessons,
 		fetchComingSoon,
 		fetchCommentModContentData,
+		fetchCommentRelies,
+		fetchComments,
 		fetchCompletedChallenges,
 		fetchCompletedContent,
 		fetchCompletedState,
@@ -217,12 +236,14 @@ declare module 'musora-content-services' {
 		fetchRelatedSongs,
 		fetchReturning,
 		fetchSanity,
+		fetchScheduledAndNewReleases,
 		fetchScheduledReleases,
 		fetchShowsData,
 		fetchSongArtistCount,
 		fetchSongById,
 		fetchSongsInProgress,
 		fetchTabData,
+		fetchTopComment,
 		fetchTopLevelParentId,
 		fetchUpcomingEvents,
 		fetchUserAward,
@@ -232,16 +253,20 @@ declare module 'musora-content-services' {
 		fetchUserPermissions,
 		fetchUserPermissionsData,
 		fetchUserPlaylists,
+		getActiveDiscussions,
 		getAllCompleted,
 		getAllStarted,
 		getAllStartedOrCompleted,
+		getContentRows,
 		getLessonContentRows,
+		getNewAndUpcoming,
 		getProgressPercentage,
 		getProgressPercentageByIds,
 		getProgressState,
 		getProgressStateByIds,
 		getRecent,
 		getResumeTimeSeconds,
+		getScheduleContentRows,
 		getSortOrder,
 		getTabResults,
 		globalConfig,
@@ -268,10 +293,13 @@ declare module 'musora-content-services' {
 		postContentReset,
 		postContentUnliked,
 		postRecordWatchSession,
+		rankCategories,
+		rankItems,
 		recordWatchSession,
 		reportPlaylist,
 		reset,
 		setStudentViewForUser,
+		similarItems,
 		unlikeContent,
 		unpinPlaylist,
 		updatePlaylist,
