@@ -6,8 +6,11 @@ import {
 } from './services/config.js';
 
 import {
+	getContentRows,
 	getLessonContentRows,
+	getNewAndUpcoming,
 	getRecent,
+	getScheduleContentRows,
 	getTabResults
 } from './services/content.js';
 
@@ -38,9 +41,8 @@ import {
 } from './services/dataContext.js';
 
 import {
-	setLastUpdatedTime,
-	wasLastUpdateOlderThanXSeconds
-} from './services/lastUpdated.js';
+	getActiveDiscussions
+} from './services/forum.js';
 
 import {
 	addItemToPlaylist,
@@ -56,6 +58,8 @@ import {
 	fetchChallengeLessonData,
 	fetchChallengeMetadata,
 	fetchChallengeUserActiveChallenges,
+	fetchCommentRelies,
+	fetchComments,
 	fetchCompletedChallenges,
 	fetchCompletedContent,
 	fetchCompletedState,
@@ -70,6 +74,7 @@ import {
 	fetchPlaylistItem,
 	fetchPlaylistItems,
 	fetchSongsInProgress,
+	fetchTopComment,
 	fetchUserAward,
 	fetchUserBadges,
 	fetchUserChallengeProgress,
@@ -101,6 +106,12 @@ import {
 } from './services/railcontent.js';
 
 import {
+	rankCategories,
+	rankItems,
+	similarItems
+} from './services/recommendations.js';
+
+import {
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPacks,
@@ -135,6 +146,7 @@ import {
 	fetchRelatedSongs,
 	fetchReturning,
 	fetchSanity,
+	fetchScheduledAndNewReleases,
 	fetchScheduledReleases,
 	fetchShowsData,
 	fetchSongArtistCount,
@@ -149,7 +161,12 @@ import {
 import {
 	fetchUserPermissions,
 	reset
-} from './services/userPermissions.js';
+} from './services/user/permissions.js';
+
+import {
+	login,
+	logout
+} from './services/user/sessions.js';
 
 export {
 	addItemToPlaylist,
@@ -181,6 +198,8 @@ export {
 	fetchCoachLessons,
 	fetchComingSoon,
 	fetchCommentModContentData,
+	fetchCommentRelies,
+	fetchComments,
 	fetchCompletedChallenges,
 	fetchCompletedContent,
 	fetchCompletedState,
@@ -216,12 +235,14 @@ export {
 	fetchRelatedSongs,
 	fetchReturning,
 	fetchSanity,
+	fetchScheduledAndNewReleases,
 	fetchScheduledReleases,
 	fetchShowsData,
 	fetchSongArtistCount,
 	fetchSongById,
 	fetchSongsInProgress,
 	fetchTabData,
+	fetchTopComment,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	fetchUserAward,
@@ -231,16 +252,20 @@ export {
 	fetchUserPermissions,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
+	getActiveDiscussions,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
+	getContentRows,
 	getLessonContentRows,
+	getNewAndUpcoming,
 	getProgressPercentage,
 	getProgressPercentageByIds,
 	getProgressState,
 	getProgressStateByIds,
 	getRecent,
 	getResumeTimeSeconds,
+	getScheduleContentRows,
 	getSortOrder,
 	getTabResults,
 	globalConfig,
@@ -249,6 +274,8 @@ export {
 	jumpToContinueContent,
 	likeContent,
 	likePlaylist,
+	login,
+	logout,
 	pinPlaylist,
 	playback,
 	postChallengesCommunityNotification,
@@ -265,15 +292,16 @@ export {
 	postContentReset,
 	postContentUnliked,
 	postRecordWatchSession,
+	rankCategories,
+	rankItems,
 	recordWatchSession,
 	reportPlaylist,
 	reset,
-	setLastUpdatedTime,
 	setStudentViewForUser,
+	similarItems,
 	unlikeContent,
 	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem,
 	verifyLocalDataContext,
-	wasLastUpdateOlderThanXSeconds,
 };

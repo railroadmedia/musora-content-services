@@ -8,6 +8,7 @@ export let globalConfig = {
   sanityConfig: {},
   railcontentConfig: {},
   sessionConfig: {},
+  recommendationsConfig: {},
   localStorage: null,
   baseUrl: null,
   isMA: false,
@@ -24,7 +25,6 @@ const excludeFromGeneratedIndex = []
 /**
  * Initializes the service with the given configuration.
  * This function must be called before using any other functions in this library.
- *
  * @param {Config} config - Configuration object containing API settings.
  *
  * @example
@@ -36,12 +36,17 @@ const excludeFromGeneratedIndex = []
  *     dataset: 'your-dataset-name',
  *     version: '2021-06-07',
  *     debug: true,
- *     useCachedAPI: false
+ *     useCachedAPI: false,
  *   },
  *   railcontentConfig: {
  *     token: 'your-user-api-token',
  *     userId: 'current-user-id',
- *     baseUrl: 'https://web-staging-one.musora.com'
+ *     baseUrl: 'https://web-staging-one.musora.com',
+ *     authToken 'your-auth-token',
+ *   },
+ *   recommendationsConfig: {
+ *     token: 'your-user-api-token',
+ *     baseUrl: 'https://MusoraProductDepartment-PWGenerator.hf.space',
  *   },
  *   sessionConfig: {
  *     token: 'your-user-api-token',
@@ -49,7 +54,7 @@ const excludeFromGeneratedIndex = []
  *   },
  *   baseUrl: 'https://web-staging-one.musora.com'
  *   localStorage: localStorage,
- *   isMA: false
+ *   isMA: false,
  * });
  */
 export function initializeService(config) {
@@ -60,4 +65,5 @@ export function initializeService(config) {
   globalConfig.localStorage = config.localStorage
   globalConfig.isMA = config.isMA || false
   globalConfig.localTimezoneString = config.localTimezoneString || null
+  globalConfig.recommendationsConfig = config.recommendationsConfig
 }

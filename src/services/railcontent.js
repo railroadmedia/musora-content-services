@@ -645,7 +645,7 @@ export async function fetchUserPlaylists(
   const content = content_id ? `&content_id=${content_id}` : ''
   const categoryString =
     categories && categories.length ? categories.map((cat) => `categories[]=${cat}`).join('&') : ''
-  url = `/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`
+  url = `/api/content/v1/user/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`
   return await fetchHandler(url)
 }
 
@@ -771,7 +771,7 @@ export async function updatePlaylist(playlistId, updatedData) {
  *   .catch(error => console.error('Error creating playlist:', error));
  */
 export async function createPlaylist(playlistData) {
-  const url = `/playlists/playlist`
+  const url = `/api/content/v1/user/playlists/playlist`
   return await fetchHandler(url, 'POST', null, playlistData)
 }
 
@@ -1037,7 +1037,7 @@ export async function postContentReset(contentId) {
  *   });
  */
 export async function addItemToPlaylist(payload) {
-  const url = `/playlists/add-item`
+  const url = `/api/content/v1/user/playlists/add-item`
   return await fetchHandler(url, 'POST', null, payload)
 }
 
@@ -1196,6 +1196,43 @@ export async function setStudentViewForUser(userId, enable) {
   let url = `/user-management-system/user/update/${userId}`
   let data = { use_student_view: enable ? 1 : 0 }
   return await patchDataHandler(url, data)
+}
+
+
+/**
+ * Fetch the top comment for a given content
+ *
+ * @param {int} railcontentId - The railcontent id to fetch.
+ * @returns {Promise<Object|null>} - A promise that resolves to an comment object
+ */
+export async function fetchTopComment(railcontentId) {
+  const url = `/api/content/v1/comments/${railcontentId}/top`
+  return await fetchHandler(url)
+}
+
+
+/**
+ *
+ * @param railcontentId
+ * @param page
+ * @param limit
+ * @returns {Promise<*|null>}
+ */
+export async function fetchComments(railcontentId, page = 1, limit = 20) {
+  const url = `/api/content/v1/comments/${railcontentId}/all?page=${page}&limit=${limit}`
+  return await fetchHandler(url)
+}
+
+/**
+ *
+ * @param commentId
+ * @param page
+ * @param limit
+ * @returns {Promise<*|null>}
+ */
+export async function fetchCommentRelies(commentId, page = 1, limit = 20) {
+  const url = `/api/content/v1/comments/${commentId}/replies?page=${page}&limit=${limit}`
+  return await fetchHandler(url)
 }
 
 function fetchAbsolute(url, params) {

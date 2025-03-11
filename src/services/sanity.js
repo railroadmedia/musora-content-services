@@ -3,7 +3,6 @@
  */
 import {
   artistOrInstructorName,
-  artistOrInstructorNameAsArray,
   assignmentsField,
   descriptionField,
   resourcesField,
@@ -23,14 +22,13 @@ import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
 import { globalConfig } from './config.js'
 
 import {
-  fetchAllCompletedStates,
   fetchCompletedChallenges,
   fetchOwnedChallenges,
   fetchNextContentDataForParent,
   fetchHandler,
 } from './railcontent.js'
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
-import { fetchUserPermissions } from './userPermissions.js'
+import { fetchUserPermissions } from './user/permissions.js'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
 
 /**
@@ -73,15 +71,22 @@ export async function fetchSongById(documentId) {
  * @number contentPerPage
  * @returns {Promise<Object|null>}
  */
-export async function fetchLeaving(
-    brand,
-    { pageNumber = 1, contentPerPage = 20 } = {}) {
-  const nextQuarter = getNextAndPreviousQuarterDates()['next'];
+export async function fetchLeaving(brand, { pageNumber = 1, contentPerPage = 20 } = {}) {
+  const nextQuarter = getNextAndPreviousQuarterDates()['next']
   const filterString = `brand == '${brand}' && quarter_removed == '${nextQuarter}'`
-  const startEndOrder = getQueryFromPage(pageNumber, contentPerPage);
-  const sortOrder = {sortOrder: "published_on desc, id desc", start: startEndOrder['start'], end: startEndOrder['end']};
-  const query = await buildQuery(filterString, {pullFutureContent: false, availableContentStatuses: ["published"]}, getFieldsForContentType(), sortOrder);
-  return fetchSanity(query, true);
+  const startEndOrder = getQueryFromPage(pageNumber, contentPerPage)
+  const sortOrder = {
+    sortOrder: 'published_on desc, id desc',
+    start: startEndOrder['start'],
+    end: startEndOrder['end'],
+  }
+  const query = await buildQuery(
+    filterString,
+    { pullFutureContent: false, availableContentStatuses: ['published'] },
+    getFieldsForContentType(),
+    sortOrder
+  )
+  return fetchSanity(query, true)
 }
 
 /**
@@ -92,16 +97,23 @@ export async function fetchLeaving(
  * @number contentPerPage
  * @returns {Promise<Object|null>}
  */
-export async function fetchReturning(
-    brand,
-    { pageNumber = 1, contentPerPage = 20 } = {}) {
-  const nextQuarter = getNextAndPreviousQuarterDates()['next'];
-  const filterString = `brand == '${brand}' && quarter_published == '${nextQuarter}'`;
-  const startEndOrder = getQueryFromPage(pageNumber, contentPerPage);
-  const sortOrder = {sortOrder: "published_on desc, id desc", start: startEndOrder['start'], end: startEndOrder['end']};
-  const query = await buildQuery(filterString, {pullFutureContent: true, availableContentStatuses: ["draft"]}, getFieldsForContentType(), sortOrder);
+export async function fetchReturning(brand, { pageNumber = 1, contentPerPage = 20 } = {}) {
+  const nextQuarter = getNextAndPreviousQuarterDates()['next']
+  const filterString = `brand == '${brand}' && quarter_published == '${nextQuarter}'`
+  const startEndOrder = getQueryFromPage(pageNumber, contentPerPage)
+  const sortOrder = {
+    sortOrder: 'published_on desc, id desc',
+    start: startEndOrder['start'],
+    end: startEndOrder['end'],
+  }
+  const query = await buildQuery(
+    filterString,
+    { pullFutureContent: true, availableContentStatuses: ['draft'] },
+    getFieldsForContentType('returning'),
+    sortOrder
+  )
 
-  return fetchSanity(query, true);
+  return fetchSanity(query, true)
 }
 
 /**
@@ -112,14 +124,21 @@ export async function fetchReturning(
  * @number contentPerPage
  * @returns {Promise<Object|null>}
  */
-export async function fetchComingSoon(
-    brand,
-    { pageNumber = 1, contentPerPage = 20 } = {}) {
-  const filterString = `brand == '${brand}' && _type == 'song'`;
-  const startEndOrder = getQueryFromPage(pageNumber, contentPerPage);
-  const sortOrder = {sortOrder: "published_on desc, id desc", start: startEndOrder['start'], end: startEndOrder['end']};
-  const query = await buildQuery(filterString, {getFutureContentOnly: true}, getFieldsForContentType(), sortOrder);
-  return fetchSanity(query, true);
+export async function fetchComingSoon(brand, { pageNumber = 1, contentPerPage = 20 } = {}) {
+  const filterString = `brand == '${brand}' && _type == 'song'`
+  const startEndOrder = getQueryFromPage(pageNumber, contentPerPage)
+  const sortOrder = {
+    sortOrder: 'published_on desc, id desc',
+    start: startEndOrder['start'],
+    end: startEndOrder['end'],
+  }
+  const query = await buildQuery(
+    filterString,
+    { getFutureContentOnly: true },
+    getFieldsForContentType(),
+    sortOrder
+  )
+  return fetchSanity(query, true)
 }
 
 /**
@@ -128,12 +147,12 @@ export async function fetchComingSoon(
  * @returns {number[]}
  */
 function getQueryFromPage(pageNumber, contentPerPage) {
-  const start = contentPerPage*(pageNumber-1);
-  const end = contentPerPage*pageNumber;
-  let result = [];
-  result['start'] = start;
-  result['end'] = end;
-  return result;
+  const start = contentPerPage * (pageNumber - 1)
+  const end = contentPerPage * pageNumber
+  let result = []
+  result['start'] = start
+  result['end'] = end
+  return result
 }
 
 /**
@@ -142,33 +161,33 @@ function getQueryFromPage(pageNumber, contentPerPage) {
  * @returns {string[]}
  */
 function getNextAndPreviousQuarterDates() {
-  const january = 1;
-  const april = 4;
-  const july = 7;
-  const october = 10;
-  const month = new Date().getMonth();
-  let year = new Date().getFullYear();
-  let nextQuarter = '';
-  let prevQuarter = '';
+  const january = 1
+  const april = 4
+  const july = 7
+  const october = 10
+  const month = new Date().getMonth()
+  let year = new Date().getFullYear()
+  let nextQuarter = ''
+  let prevQuarter = ''
   if (month < april) {
-    nextQuarter = `${year}-0${april}-01`;
-    prevQuarter = `${year}-0${january}-01`;
+    nextQuarter = `${year}-0${april}-01`
+    prevQuarter = `${year}-0${january}-01`
   } else if (month < july) {
-    nextQuarter = `${year}-0${july}-01`;
-    prevQuarter = `${year}-0${april}-01`;
+    nextQuarter = `${year}-0${july}-01`
+    prevQuarter = `${year}-0${april}-01`
   } else if (month < october) {
-    nextQuarter = `${year}-${october}-01`;
-    prevQuarter = `${year}-0${july}-01`;
+    nextQuarter = `${year}-${october}-01`
+    prevQuarter = `${year}-0${july}-01`
   } else {
-    prevQuarter = `${year}-${october}-01`;
-    year++;
-    nextQuarter = `${year}-0${january}-01`;
+    prevQuarter = `${year}-${october}-01`
+    year++
+    nextQuarter = `${year}-0${january}-01`
   }
 
-  let result = [];
-  result['next'] = nextQuarter;
-  result['previous'] = prevQuarter;
-  return result;
+  let result = []
+  result['next'] = nextQuarter
+  result['previous'] = prevQuarter
+  return result
 }
 
 /**
@@ -202,8 +221,8 @@ export async function fetchArtists(brand) {
  */
 export async function fetchSongArtistCount(brand) {
   const filter = await new FilterBuilder(
-      `_type == "song" && brand == "${brand}" && references(^._id)`,
-      { bypassPermissions: true }
+    `_type == "song" && brand == "${brand}" && references(^._id)`,
+    { bypassPermissions: true }
   ).buildFilter()
   const query = `
   count(*[_type == "artist"]{
@@ -213,13 +232,13 @@ export async function fetchSongArtistCount(brand) {
   return fetchSanity(query, true, { processNeedAccess: false })
 }
 
-export async function fetchPlayAlongsCount(brand, {
-  searchTerm,
-  includedFields,
-  progressIds,
-  progress,
-}) {
-  const searchFilter = searchTerm ? `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*" || name match "${searchTerm}*")` :'';
+export async function fetchPlayAlongsCount(
+  brand,
+  { searchTerm, includedFields, progressIds, progress }
+) {
+  const searchFilter = searchTerm
+    ? `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*" || name match "${searchTerm}*")`
+    : ''
 
   // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
@@ -327,7 +346,8 @@ export async function fetchNewReleases(
   const start = (page - 1) * limit
   const end = start + limit
   const sortOrder = getSortOrder(sort, brand)
-  const filter = `_type in ${typesString} && brand == '${brand}' && show_in_new_feed == true`
+  const nextQuarter = getNextAndPreviousQuarterDates()['next']
+  const filter = `_type in ${typesString} && brand == '${brand}' && show_in_new_feed == true && (!defined(quarter_published) ||  quarter_published != '${nextQuarter}')`
   const fields = `
      "id": railcontent_id,
       title,
@@ -489,7 +509,7 @@ export async function fetchByRailContentId(id, contentType) {
  */
 export async function fetchByRailContentIds(ids, contentType = undefined) {
   if (!ids) {
-    return [];
+    return []
   }
   const idsString = ids.join(',')
 
@@ -590,8 +610,8 @@ export async function fetchAll(
   if (type === 'archives') {
     typeFilter = `&& status == "archived"`
     bypassStatusAndPublishedValidation = true
-  } else if(type === 'lessons' || type === 'songs'){
-    typeFilter = ``;
+  } else if (type === 'lessons' || type === 'songs') {
+    typeFilter = ``
   } else if (type === 'pack') {
     typeFilter = `&& (_type == 'pack' || _type == 'semester-pack')`
   } else {
@@ -942,11 +962,11 @@ export async function fetchAllFilterOptions(
   coachId,
   includeTabs = false
 ) {
-  if(contentType == 'lessons' || contentType == 'songs') {
-    const metaData = processMetadata(brand, contentType, true);
+  if (contentType == 'lessons' || contentType == 'songs') {
+    const metaData = processMetadata(brand, contentType, true)
     return {
-      meta: metaData
-    };
+      meta: metaData,
+    }
   }
 
   if (coachId && contentType !== 'coach-lessons') {
@@ -1281,16 +1301,16 @@ export async function fetchLessonContent(railContentId) {
     isSingle: true,
   })
   const chapterProcess = (result) => {
-    const chapters = result.chapters ?? [];
-    if(chapters.length == 0) return result
+    const chapters = result.chapters ?? []
+    if (chapters.length == 0) return result
     result.chapters = chapters.map((chapter, index) => ({
       ...chapter,
-      chapter_thumbnail_url: `https://musora-web-platform.s3.amazonaws.com/chapters/${result.brand}/Chapter${index + 1}.jpg`
-    }));
+      chapter_thumbnail_url: `https://musora-web-platform.s3.amazonaws.com/chapters/${result.brand}/Chapter${index + 1}.jpg`,
+    }))
     return result
   }
 
-  return fetchSanity(query, false, {customPostProcess:chapterProcess})
+  return fetchSanity(query, false, { customPostProcess: chapterProcess })
 }
 
 /**
@@ -1369,7 +1389,7 @@ export async function fetchPackAll(railcontentId, type = 'pack') {
   return fetchByRailContentId(railcontentId, type)
 }
 
-export async function fetchLiveEvent(brand) {
+export async function fetchLiveEvent(brand, forcedContentId = null) {
   //calendarIDs taken from addevent.php
   // TODO import instructor calendars to Sanity
   let defaultCalendarID = ''
@@ -1397,7 +1417,9 @@ export async function fetchLiveEvent(brand) {
   // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
   // this has some +- on times
   // But this query just finds the first scheduled event (sorted by start_time) that ends after now()
-  const query = `*[status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}']{
+  const query =
+    forcedContentId !== null
+      ? `*[railcontent_id == ${forcedContentId} ]{
       'slug': slug.current,
       'id': railcontent_id,
       live_event_start_time,
@@ -1408,13 +1430,36 @@ export async function fetchLiveEvent(brand) {
       'event_coach_url' : instructor[0]->web_url_path,
       'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
       title,
-      "image": thumbnail.asset->url,
+      "thumbnail": thumbnail.asset->url,
+      ${artistOrInstructorName()},
+      difficulty_string,
       "instructors": instructor[]->{
             name,
             web_url_path,
           },
       'videoId': coalesce(live_event_youtube_id, video.external_id),
     } | order(live_event_start_time)[0...1]`
+      : `*[status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}']{
+      'slug': slug.current,
+      'id': railcontent_id,
+      live_event_start_time,
+      live_event_end_time,
+      live_event_youtube_id,
+      railcontent_id,
+      published_on,
+      'event_coach_url' : instructor[0]->web_url_path,
+      'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
+      title,
+      "thumbnail": thumbnail.asset->url,
+      ${artistOrInstructorName()},
+      difficulty_string,
+      "instructors": instructor[]->{
+            name,
+            web_url_path,
+          },
+      'videoId': coalesce(live_event_youtube_id, video.external_id),
+    } | order(live_event_start_time)[0...1]`
+
   return await fetchSanity(query, false, { processNeedAccess: false })
 }
 
@@ -1991,7 +2036,7 @@ function checkSanityConfig(config) {
 function buildRawQuery(
   filter = '',
   fields = '...',
-  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false}
+  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false }
 ) {
   const sortString = sortOrder ? `order(${sortOrder})` : ''
   const countString = isSingle ? '[0...1]' : `[${start}...${end}]`
@@ -2005,10 +2050,10 @@ async function buildQuery(
   baseFilter = '',
   filterParams = { pullFutureContent: false },
   fields = '...',
-  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false}
+  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false }
 ) {
   const filter = await new FilterBuilder(baseFilter, filterParams).buildFilter()
-  return buildRawQuery(filter, fields, { sortOrder, start, end, isSingle})
+  return buildRawQuery(filter, fields, { sortOrder, start, end, isSingle })
 }
 
 function buildEntityAndTotalQuery(
@@ -2125,23 +2170,23 @@ function cleanUpGroq(query) {
 // V2 methods
 
 export async function fetchTabData(
-    brand,
-    pageName,
-    {
-      page = 1,
-      limit = 10,
-      sort = '-published_on',
-      includedFields = [],
-      progressIds = undefined,
-      progress = 'all',
-    } = {}
+  brand,
+  pageName,
+  {
+    page = 1,
+    limit = 10,
+    sort = '-published_on',
+    includedFields = [],
+    progressIds = undefined,
+    progress = 'all',
+  } = {}
 ) {
-
   const start = (page - 1) * limit
   const end = start + limit
 
   // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
-  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields, [], pageName ) : ''
+  const includedFieldsFilter =
+    includedFields.length > 0 ? filtersToGroq(includedFields, [], pageName) : ''
 
   // limits the results to supplied progressIds for started & completed filters
   const progressFilter = await getProgressFilter(progress, progressIds)
@@ -2152,15 +2197,14 @@ export async function fetchTabData(
   let fields = DEFAULT_FIELDS
   let fieldsString = fields.join(',')
 
-
   // Determine the group by clause
   let query = ''
   let entityFieldsString = ''
   let filter = ''
 
-    filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
-    const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-    entityFieldsString = ` ${fieldsString},
+  filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
+  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+  entityFieldsString = ` ${fieldsString},
                                     'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
                                     'length_in_seconds': coalesce(
       math::sum(
@@ -2171,9 +2215,7 @@ export async function fetchTabData(
       length_in_seconds
     ),`
 
-
-  const filterWithRestrictions = await new FilterBuilder(filter, {
-  }).buildFilter()
+  const filterWithRestrictions = await new FilterBuilder(filter, {}).buildFilter()
   query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
     sortOrder: sortOrder,
     start: start,
@@ -2184,24 +2226,54 @@ export async function fetchTabData(
 }
 
 export async function fetchRecent(
-    brand,
-    pageName,
-    {
-      page = 1,
-      limit = 10,
-      sort = '-published_on',
-      includedFields = [],
-      progress = 'recent',
-    } = {}
+  brand,
+  pageName,
+  { page = 1, limit = 10, sort = '-published_on', includedFields = [], progress = 'recent' } = {}
 ) {
+  const mergedIncludedFields = [...includedFields, `tab,all`]
+  const results = await fetchTabData(brand, pageName, {
+    page,
+    limit,
+    sort,
+    includedFields: mergedIncludedFields,
+    progress: progress.toLowerCase(),
+  })
+  return results.entity
+}
 
-const mergedIncludedFields = [...includedFields, `tab,all`];
-const results = await fetchTabData(brand, pageName,{
-  page,
-  limit,
-  sort,
-  includedFields: mergedIncludedFields,
-  progress: progress.toLowerCase()
-})
-  return results.entity;
+export async function fetchScheduledAndNewReleases(
+  brand,
+  { page = 1, limit = 20, sort = '-published_on' } = {}
+) {
+  const upcomingTypes = getUpcomingEventsTypes(brand)
+  const newTypes = getNewReleasesTypes(brand)
+
+  const scheduledTypes = merge(upcomingTypes, newTypes)
+  const typesString = arrayJoinWithQuotes(scheduledTypes)
+  const now = getSanityDate(new Date())
+
+  const start = (page - 1) * limit
+  const end = start + limit
+  const sortOrder = getSortOrder(sort, brand)
+
+  const query = `
+    *[_type in [${typesString}] && brand == '${brand}' && ((status in ['published','scheduled'] && published_on > '${now}')||(show_in_new_feed == true)) ]
+    [${start}...${end}]
+   | order(published_on asc) {
+      "id": railcontent_id,
+      title,
+      "image": thumbnail.asset->url,
+      ${artistOrInstructorName()},
+      "artists": instructor[]->name,
+      difficulty,
+      difficulty_string,
+      length_in_seconds,
+      published_on,
+      "type": _type,
+      show_in_new_feed,
+      web_url_path,
+      "permission_id": permission[]->railcontent_id
+  }`
+
+  return fetchSanity(query, true)
 }

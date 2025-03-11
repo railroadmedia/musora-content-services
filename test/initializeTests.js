@@ -35,6 +35,7 @@ export async function initializeTestService(useLive = false) {
     },
     baseUrl: process.env.RAILCONTENT_BASE_URL,
     localStorage: new LocalStorageMock(),
+    isMA: true
   }
   initializeService(config)
 
