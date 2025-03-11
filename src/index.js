@@ -241,11 +241,8 @@ export {
 	fetchSongArtistCount,
 	fetchSongById,
 	fetchSongsInProgress,
-<<<<<<< HEAD
 	fetchTabData,
-=======
 	fetchTopComment,
->>>>>>> main
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	fetchUserAward,

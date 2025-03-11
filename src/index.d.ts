@@ -242,11 +242,8 @@ declare module 'musora-content-services' {
 		fetchSongArtistCount,
 		fetchSongById,
 		fetchSongsInProgress,
-<<<<<<< HEAD
 		fetchTabData,
-=======
 		fetchTopComment,
->>>>>>> main
 		fetchTopLevelParentId,
 		fetchUpcomingEvents,
 		fetchUserAward,
