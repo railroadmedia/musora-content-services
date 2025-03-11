@@ -872,6 +872,9 @@ describe('MetaData', function () {
 })
 
 describe('v2', function () {
+  beforeEach(() => {
+    initializeTestService()
+  })
   test('metaDataForLessons', async () => {
     const metaData = await fetchMetadata('drumeo', 'lessons')
     log(metaData)
@@ -904,5 +907,11 @@ describe('v2', function () {
     )
     log(response)
      expect(response.meta.filters).toBeDefined()
+  })
+
+  test('fetchLiveEvent', async () => {
+    const liveEvent = await fetchLiveEvent('drumeo', 410881)
+    log(liveEvent)
+    //expect(metaData).toBeNull()
   })
 })

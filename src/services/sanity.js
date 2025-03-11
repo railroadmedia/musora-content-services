@@ -1370,7 +1370,7 @@ export async function fetchPackAll(railcontentId, type = 'pack') {
   return fetchByRailContentId(railcontentId, type)
 }
 
-export async function fetchLiveEvent(brand) {
+export async function fetchLiveEvent(brand, forcedContentId = null) {
   //calendarIDs taken from addevent.php
   // TODO import instructor calendars to Sanity
   let defaultCalendarID = ''
@@ -1398,7 +1398,9 @@ export async function fetchLiveEvent(brand) {
   // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
   // this has some +- on times
   // But this query just finds the first scheduled event (sorted by start_time) that ends after now()
-  const query = `*[status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}']{
+  const query =
+    (forcedContentId !== null) ?
+        `*[railcontent_id == ${forcedContentId} ]{
       'slug': slug.current,
       'id': railcontent_id,
       live_event_start_time,
@@ -1416,6 +1418,25 @@ export async function fetchLiveEvent(brand) {
           },
       'videoId': coalesce(live_event_youtube_id, video.external_id),
     } | order(live_event_start_time)[0...1]`
+      : `*[status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}']{
+      'slug': slug.current,
+      'id': railcontent_id,
+      live_event_start_time,
+      live_event_end_time,
+      live_event_youtube_id,
+      railcontent_id,
+      published_on,
+      'event_coach_url' : instructor[0]->web_url_path,
+      'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
+      title,
+      "image": thumbnail.asset->url,
+      "instructors": instructor[]->{
+            name,
+            web_url_path,
+          },
+      'videoId': coalesce(live_event_youtube_id, video.external_id),
+    } | order(live_event_start_time)[0...1]`;
+
   return await fetchSanity(query, false, { processNeedAccess: false })
 }
 
