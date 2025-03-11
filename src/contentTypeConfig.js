@@ -512,6 +512,11 @@ export let contentTypeConfig = {
   'behind-the-scenes': contentWithSortField,
   'exploring-beats': contentWithSortField,
   sonor: contentWithSortField,
+  returning: {
+    fields: [
+      `quarter_published`,
+    ]
+  }
 }
 
 export const plusMembershipPermissions = 92

@@ -5,6 +5,7 @@
 export let globalConfig = {
   sanityConfig: {},
   railcontentConfig: {},
+  recommendationsConfig: {},
   localStorage: null,
   isMA: false,
   localTimezoneString: null, // In format: America/Vancouver
@@ -35,6 +36,8 @@ const excludeFromGeneratedIndex = []
  * @param {string} config.railcontentConfig.userId - The user ID for fetching user-specific data.
  * @param {string} config.railcontentConfig.baseUrl - The url for the environment.
  * @param {string} config.railcontentConfig.authToken - The bearer authorization token.
+ * @param {string} config.recommendationsConfig.token - The token for authenticating recommendation requests.
+ * @param {string} config.recommendationsConfig.baseUrl - The url for the recommendation server.
  * @param {Object} config.localStorage - Cache to use for localStorage
  * @param {boolean} config.isMA - Variable that tells if the library is used by MA or FEW
  * @param {string} config.localTimezoneString - The local timezone string in format: America/Vancouver
@@ -49,15 +52,20 @@ const excludeFromGeneratedIndex = []
  *     dataset: 'your-dataset-name',
  *     version: '2021-06-07',
  *     debug: true,
- *     useCachedAPI: false
+ *     useCachedAPI: false,
  *   },
  *   railcontentConfig: {
  *     token: 'your-user-api-token',
  *     userId: 'current-user-id',
- *     baseUrl: 'https://web-staging-one.musora.com'
+ *     baseUrl: 'https://web-staging-one.musora.com',
+ *     authToken 'your-auth-token',
+ *   },
+ *   recommendationsConfig: {
+ *     token: 'your-user-api-token',
+ *     baseUrl: 'https://MusoraProductDepartment-PWGenerator.hf.space',
  *   },
  *   localStorage: localStorage,
- *   isMA: false
+ *   isMA: false,
  * });
  */
 export function initializeService(config) {
@@ -66,4 +74,5 @@ export function initializeService(config) {
   globalConfig.localStorage = config.localStorage
   globalConfig.isMA = config.isMA || false
   globalConfig.localTimezoneString = config.localTimezoneString || null
+  globalConfig.recommendationsConfig = config.recommendationsConfig
 }
