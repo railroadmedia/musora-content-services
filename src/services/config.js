@@ -1,7 +1,7 @@
 /**
  * @module Config
  */
-import './types.js'
+import './types'
 
 /** @type Config */
 export let globalConfig = {
