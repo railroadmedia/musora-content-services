@@ -57,14 +57,27 @@ function getExclusionList(fileContent) {
 
 // get all files in the services directory
 const servicesDir = path.join(__dirname, '../src/services')
-const files = fs.readdirSync(servicesDir)
+const treeElements = fs.readdirSync(servicesDir)
 
-files.forEach((file) => {
-  const filePath = path.join(servicesDir, file)
+function addFunctionsToFileExports(filePath, file) {
   const functionNames = extractExportedFunctions(filePath)
 
   if (functionNames.length > 0) {
     fileExports[file] = functionNames
+  }
+}
+
+treeElements.forEach((treeNode) => {
+  const filePath = path.join(servicesDir, treeNode)
+
+  if (fs.lstatSync(filePath).isFile()) {
+    addFunctionsToFileExports(filePath, treeNode)
+  } else if (fs.lstatSync(filePath).isDirectory()) {
+    const subDir = fs.readdirSync(filePath)
+    subDir.forEach((subFile) => {
+      const filePath = path.join(servicesDir, treeNode, subFile)
+      addFunctionsToFileExports(filePath, treeNode + '/' + subFile)
+    })
   }
 })
 

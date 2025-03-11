@@ -45,11 +45,6 @@ import {
 } from './services/forum.js';
 
 import {
-	setLastUpdatedTime,
-	wasLastUpdateOlderThanXSeconds
-} from './services/lastUpdated.js';
-
-import {
 	addItemToPlaylist,
 	countAssignmentsAndLessons,
 	createPlaylist,
@@ -166,7 +161,12 @@ import {
 import {
 	fetchUserPermissions,
 	reset
-} from './services/userPermissions.js';
+} from './services/user/permissions.js';
+
+import {
+	login,
+	logout
+} from './services/user/sessions.js';
 
 declare module 'musora-content-services' {
 	export {
@@ -275,6 +275,8 @@ declare module 'musora-content-services' {
 		jumpToContinueContent,
 		likeContent,
 		likePlaylist,
+		login,
+		logout,
 		pinPlaylist,
 		playback,
 		postChallengesCommunityNotification,
@@ -296,7 +298,6 @@ declare module 'musora-content-services' {
 		recordWatchSession,
 		reportPlaylist,
 		reset,
-		setLastUpdatedTime,
 		setStudentViewForUser,
 		similarItems,
 		unlikeContent,
@@ -304,6 +305,5 @@ declare module 'musora-content-services' {
 		updatePlaylist,
 		updatePlaylistItem,
 		verifyLocalDataContext,
-		wasLastUpdateOlderThanXSeconds,
 	}
 }

@@ -1,8 +1,5 @@
-const {
-  setLastUpdatedTime,
-  wasLastUpdateOlderThanXSeconds,
-} = require('../src/services/lastUpdated')
-const { initializeTestService } = require('./initializeTests')
+const { setLastUpdatedTime, wasLastUpdateOlderThanXSeconds } = require('../../src/lib/lastUpdated')
+const { initializeTestService } = require('../initializeTests')
 
 describe('lastUpdated', function () {
   beforeEach(() => {
