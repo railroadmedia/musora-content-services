@@ -1412,6 +1412,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
       'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
       title,
       "image": thumbnail.asset->url,
+      difficulty_string,
       "instructors": instructor[]->{
             name,
             web_url_path,
@@ -1430,6 +1431,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
       'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
       title,
       "image": thumbnail.asset->url,
+      difficulty_string,
       "instructors": instructor[]->{
             name,
             web_url_path,
