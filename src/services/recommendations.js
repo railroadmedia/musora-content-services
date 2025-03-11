@@ -48,8 +48,7 @@ export async function similarItems(brand, content_id, count = 10) {
  *
  * @param {brand} brand - brand of the content to filter
  * @param {Object} categories - Keyed arrays of content ids
- * @param {boolean} rankEachCategory - flag to sort each category by user's match
- * @returns {Promise<Object|null>} - Returns the content_ids sorted by rank (most significant first)
+ * @returns {Promise<Object|null>} - Returns the content_ids sorted by rank (most significant first), elements in each category are also ranked
  * @example
  * rankCategories('drumeo', {
  *                            1: [111222, 23120, 402199],
@@ -59,7 +58,7 @@ export async function similarItems(brand, content_id, count = 10) {
  *   .then(status => console.log(status))
  *   .catch(error => console.error(error));
  */
-export async function rankCategories(brand, categories, rankEachCategory = true) {
+export async function rankCategories(brand, categories) {
   if (categories.length === 0) {
     return []
   }
@@ -67,9 +66,8 @@ export async function rankCategories(brand, categories, rankEachCategory = true)
     'brand': brand,
     'user_id': globalConfig.railcontentConfig.userId,
     'playlists': categories,
-    'rank_each_list': Boolean(rankEachCategory),
   }
-  const url = `/rank_playlists/`
+  const url = `/rank_each_list/`
   try {
     const response = await fetchHandler(url, 'POST', data)
     let rankedCategories = {}
