@@ -11,7 +11,7 @@ import './types'
  */
 const excludeFromGeneratedIndex = []
 
-const baseUrl = `${globalConfig.railcontentConfig.baseUrl}/api/user-management-system`
+const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
 
 /**
  * Authenticates the User.
