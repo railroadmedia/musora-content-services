@@ -51,6 +51,7 @@ const excludeFromGeneratedIndex = []
  *   sessionConfig: {
  *     token: 'your-user-api-token',
  *     userId: 'current-user-id',
+ *     authToken 'your-auth-token',
  *   },
  *   baseUrl: 'https://web-staging-one.musora.com'
  *   localStorage: localStorage,
