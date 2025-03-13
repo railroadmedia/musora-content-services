@@ -290,6 +290,10 @@ async function patchDataHandler(url, data) {
   return fetchHandler(url, 'patch', null, data)
 }
 
+async function deleteDataHandler(url, data) {
+  return fetchHandler(url, 'delete')
+}
+
 export async function fetchHandler(url, method = 'get', dataVersion = null, body = null) {
   let headers = {
     'Content-Type': 'application/json',
@@ -1206,33 +1210,103 @@ export async function setStudentViewForUser(userId, enable) {
  * @returns {Promise<Object|null>} - A promise that resolves to an comment object
  */
 export async function fetchTopComment(railcontentId) {
-  const url = `/api/content/v1/comments/${railcontentId}/top`
+  const url = `/api/content/v1/comments/content/${railcontentId}/top`
   return await fetchHandler(url)
 }
 
 
 /**
  *
- * @param railcontentId
- * @param page
- * @param limit
+ * @param {int} railcontentId
+ * @param {int} page
+ * @param {int} limit
  * @returns {Promise<*|null>}
  */
 export async function fetchComments(railcontentId, page = 1, limit = 20) {
-  const url = `/api/content/v1/comments/${railcontentId}/all?page=${page}&limit=${limit}`
+  const url = `/api/content/v1/comments/content/${railcontentId}/all?page=${page}&limit=${limit}`
   return await fetchHandler(url)
 }
 
 /**
  *
- * @param commentId
- * @param page
- * @param limit
+ * @param {int} commentId
+ * @param {int} page
+ * @param {int} limit
  * @returns {Promise<*|null>}
  */
 export async function fetchCommentRelies(commentId, page = 1, limit = 20) {
   const url = `/api/content/v1/comments/${commentId}/replies?page=${page}&limit=${limit}`
   return await fetchHandler(url)
+}
+
+/**
+ * @param {int} commentId
+ * @returns {Promise<*|null>}
+ */
+export async function deleteComment(commentId) {
+  const url = `/api/content/v1/comments/${commentId}`
+  return await fetchHandler(url, "DELETE")
+}
+
+/**
+ * @param {int} commentId
+ * @param {string} comment
+ * @returns {Promise<*|null>}
+ */
+export async function replyToComment(commentId, comment) {
+  const data = {'comment' : comment}
+  const url = `/api/content/v1/comments/${commentId}/reply`
+  return await postDataHandler(url, data)
+}
+
+/**
+ * @param {int} railcontentId
+ * @param {string} comment
+ * @returns {Promise<*|null>}
+ */
+export async function createComment(railcontentId, comment) {
+  const data = {
+    'comment' : comment,
+    'content_id' : railcontentId
+  }
+  const url = `/api/content/v1/comments/store`
+  return await postDataHandler(url, data)
+}
+
+/**
+ * @param {int} commentId
+ * @returns {Promise<*|null>}
+ */
+export async function assignModeratorToComment(commentId) {
+  const url = `/api/content/v1/comments/${commentId}/assign_moderator`
+  return await postDataHandler(url)
+}
+
+/**
+ * @param {int} commentId
+ * @returns {Promise<*|null>}
+ */
+export async function unassignModeratorToComment(commentId) {
+  const url = `/api/content/v1/comments/${commentId}/unassign_moderator`
+  return await postDataHandler(url)
+}
+
+/**
+ * @param {int} commentId
+ * @returns {Promise<*|null>}
+ */
+export async function likeComment(commentId) {
+  const url = `/api/content/v1/comments/${commentId}/like`
+  return await postDataHandler(url)
+}
+
+/**
+ * @param {int} commentId
+ * @returns {Promise<*|null>}
+ */
+export async function unlikeComment(commentId) {
+  const url = `/api/content/v1/comments/${commentId}/like`
+  return await deleteDataHandler(url)
 }
 
 function fetchAbsolute(url, params) {
