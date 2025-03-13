@@ -1319,8 +1319,10 @@ export async function fetchRelatedLessons(railContentId, brand) {
 export async function fetchRelatedTutorials(railContentId, brand) {
 
   //parent query
+  const defaultProjections = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type,genre`
   const parentProjections = `railcontent_id, _type, parent_type, parent_content_data, difficulty`
-  const parentQuery = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{${parentProjections}}`
+  const parentQuery = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]
+    {${parentProjections}}`
   const parentQueryResult = await fetchSanity(parentQuery, false)
 
   //get fields from parent query
@@ -1335,13 +1337,34 @@ export async function fetchRelatedTutorials(railContentId, brand) {
   const genreString = JSON.stringify(genreResult['genre']).replace(/[\[\]]/g, '')
 
   //get the related_lessons field as an object
-  const defaultProjections = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type,genre`
-  const relatedLessonFilter = await new FilterBuilder(`_type == "${parentType}" && brand == "${brand}" && railcontent_id != ${parentId} && references([${genreString}]) && difficulty == ${difficulty}`).buildFilter()
-  const relatedTutorialQuery = `*[${relatedLessonFilter}]{${defaultProjections}}|order(published_on desc, title asc)[0...20]`
-  const relatedQueryResult = await fetchSanity(relatedTutorialQuery, true)
+  const tutorialFilter = await getSubQueryFilter(parentType, brand, parentId, difficulty, genreString)
+  const quickTipFilter = await getSubQueryFilter('quick-tips', brand, parentId, difficulty)
+  const songFilter = await getSubQueryFilter('song', brand, parentId, difficulty, genreString)
+  const relatedLessons = await fetchSanity(`array::unique([
+      ...*[${tutorialFilter}]{${defaultProjections}}|order(published_on desc, title asc)[0...10],
+      ...*[${quickTipFilter}]{${defaultProjections}}|order(published_on desc, title asc)[0...10],
+      ...*[${songFilter}]{${defaultProjections}}|order(published_on desc, title asc)[0...10],
+    ])`, true)
 
   //merge into one json object
-  return {...parentQueryResult, related_lessons: relatedQueryResult}
+  return {...parentQueryResult,
+    related_lessons: relatedLessons
+  }
+
+/*  async function fetchSubQueryByType(type, brand, id, genres, difficulty) {
+    const subFilter = await new FilterBuilder(`_type == "${type}" && brand == "${brand}" && railcontent_id != ${id} && references([${genres}]) && difficulty == ${difficulty}`).buildFilter()
+    const subQuery = `*[${subFilter}]{${defaultProjections}}|order(published_on desc, title asc)[0...10]`
+    return fetchSanity(subQuery, true)
+  }*/
+
+  async function getSubQueryFilter(type, brand, id, difficulty, genres = null){
+    if (genres) {
+      return new FilterBuilder(`_type == "${type}" && brand == "${brand}" && railcontent_id != ${id} && references([${genres}]) && difficulty == ${difficulty}`).buildFilter()
+    } else {
+      return new FilterBuilder(`_type == "${type}" && brand == "${brand}" && railcontent_id != ${id} && difficulty == ${difficulty}`).buildFilter()
+    }
+  }
+
 }
 
 /**
