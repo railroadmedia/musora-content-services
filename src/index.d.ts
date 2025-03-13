@@ -10,6 +10,7 @@ import {
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
+	getRecommendedForYou,
 	getScheduleContentRows,
 	getTabResults
 } from './services/content.js';
@@ -108,6 +109,7 @@ import {
 import {
 	rankCategories,
 	rankItems,
+	recommendations,
 	similarItems
 } from './services/recommendations.js';
 
@@ -265,6 +267,7 @@ declare module 'musora-content-services' {
 		getProgressState,
 		getProgressStateByIds,
 		getRecent,
+		getRecommendedForYou,
 		getResumeTimeSeconds,
 		getScheduleContentRows,
 		getSortOrder,
@@ -295,6 +298,7 @@ declare module 'musora-content-services' {
 		postRecordWatchSession,
 		rankCategories,
 		rankItems,
+		recommendations,
 		recordWatchSession,
 		reportPlaylist,
 		reset,

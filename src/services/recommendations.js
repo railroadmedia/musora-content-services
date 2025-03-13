@@ -111,6 +111,25 @@ export async function rankItems(brand, content_ids) {
   }
 }
 
+export async function recommendations(brand, {
+  page = 1,
+  limit = 10,
+} = {}) {
+  let data = {
+    'brand': brand,
+    'user_id': globalConfig.railcontentConfig.userId,
+    'num_recommendations': limit
+  }
+  const url = `/recommendations/`
+  try {
+    const response = await fetchHandler(url, 'POST', data)
+    return response['recommendations']
+  } catch (error) {
+    console.error('Fetch error:', error)
+    return null
+  }
+}
+
 async function fetchHandler(url, method = 'get', body = null) {
 
   let headers = {
