@@ -1307,30 +1307,41 @@ export async function fetchRelatedLessons(railContentId, brand) {
       ...(*[${filterSameTypeAndSortOrder}]{${defaultProjections}}|order(sort asc, title asc)[0...10]),
       ...(*[${filterSameType}]{${defaultProjections}}|order(published_on desc, title asc)[0...10])
       ])[0...10]}`
-  console.log('>>> fetchLessons', query)
   return fetchSanity(query, false)
 }
 
 /**
- * fetch song tutorials related to a specific railcontentId & brand, by genre and difficulty.
- * @param {string} railContentId
+ * fetch song tutorials related to a specific tutorial, by genre and difficulty.
+ * @param {number} railContentId
  * @param {string} brand
- * @returns {Promise<Array<Object>|null>}
+ * @returns {Promise<Object|null>}
  */
 export async function fetchRelatedTutorials(railContentId, brand) {
-  //define filter
-  const filterTutorialSameGenreAndDifficulty = await new FilterBuilder(
-      `_type == ^._type && brand == ^.brand && references(*[_type == ^.parent_type && brand == ^.brand && railcontent_id == ^.parent_content_data[0].id].genre[]->_id) && railcontent_id != ^.railcontent_id`
-  ).buildFilter()
-  //projections
-  const defaultProjections = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type`
-  const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
-   _type, parent_type, railcontent_id,
-    "related_lessons" : array::unique([
-      ...(*[${filterTutorialSameGenreAndDifficulty}]{${defaultProjections}}|order(published_on desc, title asc)[0...10])
-      ])[0...10]}`
-  console.log('>>> fetchTutorial', query)
-  return fetchSanity(query, false)
+
+  //parent query
+  const parentProjections = `railcontent_id, _type, parent_type, parent_content_data, difficulty`
+  const parentQuery = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{${parentProjections}}`
+  const parentQueryResult = await fetchSanity(parentQuery, false)
+
+  //get fields from parent query
+  const parentType = parentQueryResult.parent_type
+  const parentId = parentQueryResult.parent_content_data[0].id
+  const difficulty = parentQueryResult.difficulty
+
+  //genreQuery. all this to get a stringified array of genres
+  const genreQuery = `*[_type == "${parentType}" && brand == "${brand}" && railcontent_id == ${parentId} && _id != "drafts."+"${parentType}_${parentId}"][0]{"genre":genre[]->_id}`
+  const genreResult = await fetchSanity(genreQuery, true)
+  // const genreArray = Object.values(genreResult).map(obj => obj.name).join(', ') //this is giving me pain. I need to convert object -> string
+  const genreString = JSON.stringify(genreResult['genre']).replace(/[\[\]]/g, '')
+
+  //get the related_lessons field as an object
+  const defaultProjections = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type,genre`
+  const relatedLessonFilter = await new FilterBuilder(`_type == "${parentType}" && brand == "${brand}" && railcontent_id != ${parentId} && references([${genreString}]) && difficulty == ${difficulty}`).buildFilter()
+  const relatedTutorialQuery = `*[${relatedLessonFilter}]{${defaultProjections}}|order(published_on desc, title asc)[0...20]`
+  const relatedQueryResult = await fetchSanity(relatedTutorialQuery, true)
+
+  //merge into one json object
+  return {...parentQueryResult, related_lessons: relatedQueryResult}
 }
 
 /**
