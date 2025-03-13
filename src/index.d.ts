@@ -161,6 +161,10 @@ import {
 } from './services/sanity.js';
 
 import {
+	getUserActivityStats
+} from './services/userActivity.js';
+
+import {
 	fetchUserPermissions,
 	reset
 } from './services/user/permissions.js';
@@ -272,6 +276,7 @@ declare module 'musora-content-services' {
 		getScheduleContentRows,
 		getSortOrder,
 		getTabResults,
+		getUserActivityStats,
 		globalConfig,
 		initializeService,
 		isContentLiked,
