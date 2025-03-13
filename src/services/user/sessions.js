@@ -24,13 +24,15 @@ const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
  *
  * @returns {Promise<AuthResponse>} - User data and authentication token
  *
+ * @throws {Error} - If the request fails
+ *
  * @example
  * login('john@doe.com', 'music123')
  *   .then(content => console.log(content))
  *   .catch(error => console.error(error));
  */
 export async function login(email, password, deviceName, deviceToken, platform) {
-  return fetch(`${baseUrl}/v1/sessions`, {
+  const response = await fetch(`${baseUrl}/v1/sessions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -44,6 +46,15 @@ export async function login(email, password, deviceName, deviceToken, platform) 
       platform: platform,
     }),
   })
+
+  if (response.ok) {
+    return response.json()
+  } else {
+    console.error('Failed to login', response.status)
+    console.info(response)
+
+    throw new Error(`Failed to login: ${response.status} - ${response.statusText}`)
+  }
 }
 
 /**

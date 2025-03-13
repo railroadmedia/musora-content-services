@@ -1,4 +1,5 @@
 import { initializeService } from '../src'
+import { login } from '../src/services/user/sessions.js'
 import { LocalStorageMock } from './localStorageMock'
 
 const railContentModule = require('../src/services/railcontent.js')
@@ -38,8 +39,8 @@ export async function initializeTestService(useLive = false) {
     isMA: true,
     recommendationsConfig: {
       token: process.env.HUGGINGFACE_TOKEN,
-      baseUrl: process.env.HUGGINGFACE_URL
-    }
+      baseUrl: process.env.HUGGINGFACE_URL,
+    },
   }
   initializeService(config)
 
@@ -50,22 +51,8 @@ export async function initializeTestService(useLive = false) {
 
 async function fetchLoginToken(email, password) {
   try {
-    const url = `${process.env.RAILCONTENT_BASE_URL}/user-management-system/login/token`
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email: email, password: password, device_name: 'test' }),
-    })
-    if (response.ok) {
-      let data = await response.json()
-      return { token: data.token, userId: data.user.id }
-    } else {
-      console.log('fetch error:', response.status)
-      console.log(response)
-    }
+    const data = await login(email, password, 'test')
+    return { token: data.token, userId: data.user.id }
   } catch (error) {
     console.error('Fetch error:', error)
   }
