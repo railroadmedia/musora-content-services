@@ -17,6 +17,7 @@ import {
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {getAllStartedOrCompleted} from "./contentProgress";
 import {fetchHandler} from "./railcontent";
+import {recommendations} from "./recommendations";
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
   let recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent' });
@@ -308,6 +309,45 @@ export async function getScheduleContentRows(brand, contentRowId = null, { page 
     data: results,
     meta: {}
   };
+}
+
+/**
+ * Fetches recommended content for a given brand with pagination support.
+ *
+ * @param {string} brand - The brand for which to fetch recommended content.
+ * @param {Object} [params={}] - Pagination parameters.
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {number} [params.limit=10] - The maximum number of recommended content items per page.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing recommended content.
+ *
+ * @example
+ * // Fetch recommended content for a brand with default pagination
+ * getRecommendedForYou('drumeo')
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Fetch recommended content for a brand with custom pagination
+ * getRecommendedForYou('drumeo', { page: 2, limit: 5 })
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ */
+export async function getRecommendedForYou(brand, {
+  page = 1,
+  limit = 10,
+} = {}) {
+  const requiredItems = page * limit;
+  const data = await recommendations(brand, {limit: requiredItems});
+  if (!data || !data.length) {
+    return { id: 'recommended', title: 'Recommended For You', items: [] };
+  }
+
+  // Apply pagination before calling fetchByRailContentIds
+  const startIndex = (page - 1) * limit;
+  const paginatedData = data.slice(startIndex, startIndex + limit);
+
+  const contents = await fetchByRailContentIds(paginatedData);
+  return { id: 'recommended', title: 'Recommended For You', items: contents }
 }
 
 

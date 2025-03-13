@@ -3,7 +3,7 @@ import { LocalStorageMock } from './localStorageMock'
 
 const railContentModule = require('../src/services/railcontent.js')
 let token = null
-let userId = null
+let userId = process.env.RAILCONTENT_USER_ID ?? null
 
 export async function initializeTestService(useLive = false) {
   if (useLive && !token && process.env.RAILCONTENT_BASE_URL) {
@@ -30,7 +30,11 @@ export async function initializeTestService(useLive = false) {
       authToken: token,
     },
     localStorage: new LocalStorageMock(),
-    isMA: true
+    isMA: true,
+    recommendationsConfig: {
+      token: process.env.HUGGINGFACE_TOKEN,
+      baseUrl: process.env.HUGGINGFACE_URL
+    }
   }
   initializeService(config)
 

@@ -10,6 +10,7 @@ import {
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
+	getRecommendedForYou,
 	getScheduleContentRows,
 	getTabResults
 } from './services/content.js';
@@ -108,6 +109,7 @@ import {
 import {
 	rankCategories,
 	rankItems,
+	recommendations,
 	similarItems
 } from './services/recommendations.js';
 
@@ -264,6 +266,7 @@ export {
 	getProgressState,
 	getProgressStateByIds,
 	getRecent,
+	getRecommendedForYou,
 	getResumeTimeSeconds,
 	getScheduleContentRows,
 	getSortOrder,
@@ -294,6 +297,7 @@ export {
 	postRecordWatchSession,
 	rankCategories,
 	rankItems,
+	recommendations,
 	recordWatchSession,
 	reportPlaylist,
 	reset,
