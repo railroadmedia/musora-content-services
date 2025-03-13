@@ -28,10 +28,12 @@ export async function initializeTestService(useLive = false) {
     railcontentConfig: {
       userId: userId,
       authToken: token,
+      token: token,
       baseUrl: process.env.RAILCONTENT_BASE_URL,
     },
     sessionConfig: {
       userId: userId,
+      token: token,
       authToken: token,
     },
     baseUrl: process.env.RAILCONTENT_BASE_URL,
