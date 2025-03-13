@@ -1309,6 +1309,45 @@ export async function unlikeComment(commentId) {
   return await deleteDataHandler(url)
 }
 
+/**
+ * @param {int} commentId
+ * @returns {Promise<*|null>}
+ */
+export async function closeComment(commentId) {
+  const url = `/api/content/v1/comments/${commentId}`
+  const data = {
+    'conversation_status' : 'closed'
+  }
+  return await patchDataHandler(url, data)
+}
+
+/**
+ * @param {int} commentId
+ * @returns {Promise<*|null>}
+ */
+export async function openComment(commentId) {
+  const url = `/api/content/v1/comments/${commentId}`
+  const data = {
+    'conversation_status' : 'open'
+  }
+  return await patchDataHandler(url, data)
+}
+
+/**
+ * @param {int} commentId
+ * @param {string} comment
+ * @returns {Promise<*|null>}
+ */
+export async function editComment(commentId, comment) {
+  const url = `/api/content/v1/comments/${commentId}`
+  const data = {
+    'comment' : comment
+  }
+  return await patchDataHandler(url, data)
+}
+
+
+
 function fetchAbsolute(url, params) {
   if (globalConfig.railcontentConfig.authToken) {
     params.headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`
