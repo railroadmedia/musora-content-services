@@ -10,6 +10,7 @@ import {
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
+	getRecommendedForYou,
 	getScheduleContentRows,
 	getTabResults
 } from './services/content.js';
@@ -108,6 +109,7 @@ import {
 import {
 	rankCategories,
 	rankItems,
+	recommendations,
 	similarItems
 } from './services/recommendations.js';
 
@@ -167,6 +169,10 @@ import {
 	login,
 	logout
 } from './services/user/sessions.js';
+
+import {
+	getUserActivityStats
+} from './services/userActivity.js';
 
 export {
 	addItemToPlaylist,
@@ -264,10 +270,12 @@ export {
 	getProgressState,
 	getProgressStateByIds,
 	getRecent,
+	getRecommendedForYou,
 	getResumeTimeSeconds,
 	getScheduleContentRows,
 	getSortOrder,
 	getTabResults,
+	getUserActivityStats,
 	globalConfig,
 	initializeService,
 	isContentLiked,
@@ -294,6 +302,7 @@ export {
 	postRecordWatchSession,
 	rankCategories,
 	rankItems,
+	recommendations,
 	recordWatchSession,
 	reportPlaylist,
 	reset,

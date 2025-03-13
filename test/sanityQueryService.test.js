@@ -9,7 +9,7 @@ import {
 import { log } from './log.js'
 import { initializeTestService } from './initializeTests'
 import { dataContext } from '../src/services/contentProgress'
-import { fetchOwnedChallenges } from '../src'
+import {fetchOwnedChallenges, getRecommendedForYou, globalConfig, recommendations} from '../src'
 
 const {
   fetchSongById,
@@ -913,5 +913,20 @@ describe('v2', function () {
     const liveEvent = await fetchLiveEvent('drumeo', 410881)
     log(liveEvent)
     //expect(metaData).toBeNull()
+  })
+})
+
+describe('Recommended System', function () {
+  beforeEach(() => {
+    initializeTestService()
+  })
+
+  test('getRecommendedForYou', async () => {
+    const results = await getRecommendedForYou('drumeo',{page: 1, limit:10})
+    log(results)
+    expect(results.id).toBeDefined()
+    expect(results.title).toBeDefined()
+    expect(results.items).toBeDefined()
+    expect(results.items.length).toBeGreaterThanOrEqual(1)
   })
 })
