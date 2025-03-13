@@ -29,9 +29,9 @@ export async function similarItems(brand, content_id, count = 10) {
   }
 
   let data = {
-    'brand': brand,
-    'content_ids': content_id,
-    'num_similar': count,
+    brand: brand,
+    content_ids: content_id,
+    num_similar: count,
   }
   const url = `/similar_items/`
   try {
@@ -64,16 +64,19 @@ export async function rankCategories(brand, categories, rankEachCategory = true)
     return []
   }
   let data = {
-    'brand': brand,
-    'user_id': globalConfig.railcontentConfig.userId,
-    'playlists': categories,
-    'rank_each_list': Boolean(rankEachCategory),
+    brand: brand,
+    user_id: globalConfig.sessionConfig.userId,
+    playlists: categories,
+    rank_each_list: Boolean(rankEachCategory),
   }
   const url = `/rank_playlists/`
   try {
     const response = await fetchHandler(url, 'POST', data)
     let rankedCategories = {}
-    response['ranked_playlists'].forEach((category) => rankedCategories[category['playlist_id']] = categories[category['playlist_id']])
+    response['ranked_playlists'].forEach(
+      (category) =>
+        (rankedCategories[category['playlist_id']] = categories[category['playlist_id']])
+    )
     return rankedCategories
   } catch (error) {
     console.error('Fetch error:', error)
@@ -97,9 +100,9 @@ export async function rankItems(brand, content_ids) {
     return []
   }
   let data = {
-    'brand': brand,
-    'user_id': globalConfig.railcontentConfig.userId,
-    'content_ids': content_ids,
+    brand: brand,
+    user_id: globalConfig.sessionConfig.userId,
+    content_ids: content_ids,
   }
   const url = `/rank_items/`
   try {
@@ -111,14 +114,11 @@ export async function rankItems(brand, content_ids) {
   }
 }
 
-export async function recommendations(brand, {
-  page = 1,
-  limit = 10,
-} = {}) {
+export async function recommendations(brand, { page = 1, limit = 10 } = {}) {
   let data = {
-    'brand': brand,
-    'user_id': globalConfig.railcontentConfig.userId,
-    'num_recommendations': limit
+    brand: brand,
+    user_id: globalConfig.sessionConfig.userId,
+    num_recommendations: limit,
   }
   const url = `/recommendations/`
   try {
@@ -131,7 +131,6 @@ export async function recommendations(brand, {
 }
 
 async function fetchHandler(url, method = 'get', body = null) {
-
   let headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -159,7 +158,6 @@ async function fetchHandler(url, method = 'get', body = null) {
   }
   return null
 }
-
 
 function fetchAbsolute(url, params) {
   if (globalConfig.recommendationsConfig.token) {

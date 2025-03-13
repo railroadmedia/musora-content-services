@@ -161,10 +161,6 @@ import {
 } from './services/sanity.js';
 
 import {
-	getUserActivityStats
-} from './services/userActivity.js';
-
-import {
 	fetchUserPermissions,
 	reset
 } from './services/user/permissions.js';
@@ -173,6 +169,10 @@ import {
 	login,
 	logout
 } from './services/user/sessions.js';
+
+import {
+	getUserActivityStats
+} from './services/userActivity.js';
 
 declare module 'musora-content-services' {
 	export {

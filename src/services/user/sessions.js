@@ -11,7 +11,7 @@ import './types'
  */
 const excludeFromGeneratedIndex = []
 
-const baseUrl = `${globalConfig.railcontentConfig.baseUrl}/api/user-management-system`
+const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
 
 /**
  * Authenticates the User.
@@ -24,13 +24,15 @@ const baseUrl = `${globalConfig.railcontentConfig.baseUrl}/api/user-management-s
  *
  * @returns {Promise<AuthResponse>} - User data and authentication token
  *
+ * @throws {Error} - If the request fails
+ *
  * @example
  * login('john@doe.com', 'music123')
  *   .then(content => console.log(content))
  *   .catch(error => console.error(error));
  */
 export async function login(email, password, deviceName, deviceToken, platform) {
-  return fetch(`${baseUrl}/v1/sessions`, {
+  const response = await fetch(`${baseUrl}/v1/sessions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -44,6 +46,15 @@ export async function login(email, password, deviceName, deviceToken, platform) 
       platform: platform,
     }),
   })
+
+  if (response.ok) {
+    return response.json()
+  } else {
+    console.error('Failed to log in', response.status)
+    console.info(response)
+
+    throw new Error(`Failed to log in: ${response.status} - ${response.statusText}`)
+  }
 }
 
 /**
@@ -51,17 +62,25 @@ export async function login(email, password, deviceName, deviceToken, platform) 
  *
  * @returns {Promise<void>}
  *
+ * @throws {Error} - If the request fails
+ *
  * @example
  * logout()
  *   .then()
  *   .catch(error => console.error(error));
  */
 export async function logout() {
-  await fetch(`${baseUrl}/v1/sessions`, {
+  const response = await fetch(`${baseUrl}/v1/sessions`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${globalConfig.railcontentConfig.authToken}`,
       'Content-Type': 'application/json',
     },
   })
+  if (!response.ok) {
+    console.error('Failed to log out', response.status)
+    console.info(response)
+
+    throw new Error(`Failed to log out: ${response.status} - ${response.statusText}`)
+  }
 }

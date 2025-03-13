@@ -5,6 +5,7 @@
       "src/services/sanity.js",
       "src/services/content.js",
       "src/services/railcontent.js",
+      "src/services/types.js",
       "src/services/user",
       "src/index.js"
     ],

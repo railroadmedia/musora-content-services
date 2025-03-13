@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>user/permissions.js - Documentation</title>
+    <title>types.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">user/permissions.js</h1>
+    <h1 class="page-title">types.js</h1>
     
 
     
@@ -46,43 +46,55 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @module User-Permissions
+ * @typedef {object} SanityConfig - Configuration for Sanity API.
+ *
+ * @property {string} token - The API token for authenticating with Sanity.
+ * @property {string} projectId - The project ID in Sanity.
+ * @property {string} dataset - The dataset name in Sanity.
+ * @property {string} version - The API version to use.
+ * @property {boolean} [debug=false] - Optional flag to enable debug mode.
+ * @property {boolean} [useCachedAPI=true] - Optional flag to enable or disable the use of the cached API.
+ * @property {boolean} [useDummyRailContentMethods=false] - Optional flag to use test harness for railcontent methods. Should only be used by jest tests.
  */
-import { setLastUpdatedTime, wasLastUpdateOlderThanXSeconds } from '../../lib/lastUpdated.js'
-import { fetchUserPermissionsData } from '../railcontent.js'
-import './types'
 
 /**
- * Exported functions that are excluded from index generation.
+ * @deprecated use `config.session` and `config.baseUrl` instead. Will be removed in future versions.
  *
- * @type {string[]}
+ * @typedef {object} RailcontentConfig - Configuration for user services.
+ *
+ * @property {string} token - The token for authenticating user-specific requests.
+ * @property {string} userId - The user ID for fetching user-specific data.
+ * @property {string} authToken - The bearer authorization token.
+ * @property {string} baseUrl - The url for the environment.
  */
-const excludeFromGeneratedIndex = []
-let userPermissionsPromise = null
-let lastUpdatedKey = `userPermissions_lastUpdated`
 
 /**
- * Fetches the user permissions data.
+ * @typedef {object} SessionConfig - Configuration for user session.
  *
- * @returns {Promise&lt;UserPermissions>} - The user permissions data.
+ * @property {string} token - The token for authenticating user-specific requests.
+ * @property {string} userId - The user ID for fetching user-specific data.
+ * @property {string} authToken - The bearer authorization token.
  */
-export async function fetchUserPermissions() {
-  if (!userPermissionsPromise || wasLastUpdateOlderThanXSeconds(10, lastUpdatedKey)) {
-    userPermissionsPromise = fetchUserPermissionsData()
-    setLastUpdatedTime(lastUpdatedKey)
-  }
-
-  return await userPermissionsPromise
-}
 
 /**
- * Resets the user permissions data.
+ * @typedef {object} RecommendationsConfig - Configuration for recommendation services.
  *
- * @returns {Promise&lt;void>}
+ * @property {string} token - The token for authenticating recommendation requests.
+ * @property {string} baseUrl - The url for the recommendation server.
  */
-export async function reset() {
-  userPermissionsPromise = null
-}
+
+/**
+ * @typedef {object} Config
+ *
+ * @property {SanityConfig} sanityConfig
+ * @property {RailcontentConfig} railcontentConfig - DEPRECATED use sessionConfig and baseUrl instead.
+ * @property {SessionConfig} sessionConfig
+ * @property {RecommendationsConfig} recommendationsConfig
+ * @property {string} baseUrl - The url for the environment.
+ * @property {Object} localStorage - Cache to use for localStorage
+ * @property {boolean} isMA - Variable that tells if the library is used by MA or FEW
+ * @property {string} localTimezoneString - The local timezone string in format: America/Vancouver
+ */
 </code></pre>
         </article>
     </section>
