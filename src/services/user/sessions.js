@@ -50,10 +50,10 @@ export async function login(email, password, deviceName, deviceToken, platform) 
   if (response.ok) {
     return response.json()
   } else {
-    console.error('Failed to login', response.status)
+    console.error('Failed to log in', response.status)
     console.info(response)
 
-    throw new Error(`Failed to login: ${response.status} - ${response.statusText}`)
+    throw new Error(`Failed to log in: ${response.status} - ${response.statusText}`)
   }
 }
 
@@ -62,17 +62,25 @@ export async function login(email, password, deviceName, deviceToken, platform) 
  *
  * @returns {Promise<void>}
  *
+ * @throws {Error} - If the request fails
+ *
  * @example
  * logout()
  *   .then()
  *   .catch(error => console.error(error));
  */
 export async function logout() {
-  await fetch(`${baseUrl}/v1/sessions`, {
+  const response = await fetch(`${baseUrl}/v1/sessions`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${globalConfig.railcontentConfig.authToken}`,
       'Content-Type': 'application/json',
     },
   })
+  if (!response.ok) {
+    console.error('Failed to log out', response.status)
+    console.info(response)
+
+    throw new Error(`Failed to log out: ${response.status} - ${response.statusText}`)
+  }
 }
