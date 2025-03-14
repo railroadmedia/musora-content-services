@@ -360,7 +360,7 @@ export async function getRecommendedForYou(brand, rowId = null, {
   if (rowId) {
     return {
       type: TabResponseType.CATALOG,
-      data: result,
+      data: contents,
       meta: {}
     };
   }
