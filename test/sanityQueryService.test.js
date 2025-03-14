@@ -29,6 +29,7 @@ const {
   fetchFoundation,
   fetchMethod,
   fetchRelatedLessons,
+  fetchRelatedTutorials,
   fetchAllPacks,
   fetchPackAll,
   fetchLessonContent,
@@ -286,6 +287,13 @@ describe('Sanity Queries', function () {
         })
       })
     expect(isMatch).toBeTruthy()
+  })
+
+  test('fetchRelatedTutorials', async () => {
+    const railContentId = 387379
+    const brand = "pianote"
+    const queryResult = await fetchRelatedTutorials(railContentId, brand)
+    expect(queryResult.related_lessons.length).toBeGreaterThan(0)
   })
 
   test('fetchRelatedLessons-quick-tips', async () => {
