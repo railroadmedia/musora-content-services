@@ -275,11 +275,15 @@ export async function getScheduleContentRows(brand, contentRowId = null, { page 
       return null; // Return null if the requested section does not exist
     }
 
+    const items = await sections[contentRowId].fetchMethod(brand, { page, limit });
+
     // Fetch only the requested section
     const result = {
       id: contentRowId,
       title: sections[contentRowId].title,
-      content: await sections[contentRowId].fetchMethod(brand, { page, limit })
+      // TODO: Remove content after FE/MA updates the existing code to use items
+      content: items,
+      items: items
     };
 
     return {
@@ -332,7 +336,7 @@ export async function getScheduleContentRows(brand, contentRowId = null, { page 
  *   .then(content => console.log(content))
  *   .catch(error => console.error(error));
  */
-export async function getRecommendedForYou(brand, {
+export async function getRecommendedForYou(brand, rowId = null, {
   page = 1,
   limit = 10,
 } = {}) {
@@ -347,6 +351,20 @@ export async function getRecommendedForYou(brand, {
   const paginatedData = data.slice(startIndex, startIndex + limit);
 
   const contents = await fetchByRailContentIds(paginatedData);
+  const result = {
+    id: 'recommended',
+    title: 'Recommended For You',
+    items: contents
+  };
+
+  if (rowId) {
+    return {
+      type: TabResponseType.CATALOG,
+      data: result,
+      meta: {}
+    };
+  }
+
   return { id: 'recommended', title: 'Recommended For You', items: contents }
 }
 
