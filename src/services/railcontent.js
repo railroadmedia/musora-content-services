@@ -1235,6 +1235,29 @@ export async function fetchCommentRelies(commentId, page = 1, limit = 20) {
   return await fetchHandler(url)
 }
 
+export async function fetchUserPractices() {
+  const url = `/api/user/practices/v1/practices`
+  const userPractices =  await fetchHandler(url)
+
+  let formattedPractices = userPractices.reduce((acc, practice) => {
+    acc[practice.day] = { duration_seconds: practice.duration_seconds };
+    return acc;
+  }, {});
+
+  let json = {
+    data: {
+      practices: formattedPractices
+    }
+  };
+
+  return json;
+}
+
+export async function logUserPractice(practiceDetails) {
+  const url = `/api/user/practices/v1/practices`
+  return await fetchHandler(url, 'POST', null, practiceDetails)
+}
+
 function fetchAbsolute(url, params) {
   if (globalConfig.railcontentConfig.authToken) {
     params.headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`

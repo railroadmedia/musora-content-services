@@ -82,7 +82,9 @@ import {
 	fetchUserLikes,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
+	fetchUserPractices,
 	likePlaylist,
+	logUserPractice,
 	pinPlaylist,
 	playback,
 	postChallengesCommunityNotification,
@@ -161,10 +163,6 @@ import {
 } from './services/sanity.js';
 
 import {
-	getUserActivityStats
-} from './services/userActivity.js';
-
-import {
 	fetchUserPermissions,
 	reset
 } from './services/user/permissions.js';
@@ -173,6 +171,14 @@ import {
 	login,
 	logout
 } from './services/user/sessions.js';
+
+import {
+	getUserActivityStats,
+	getUserMonthlyStats,
+	getUserPractices,
+	getUserWeeklyStats,
+	recordUserPractice
+} from './services/userActivity.js';
 
 declare module 'musora-content-services' {
 	export {
@@ -259,6 +265,7 @@ declare module 'musora-content-services' {
 		fetchUserPermissions,
 		fetchUserPermissionsData,
 		fetchUserPlaylists,
+		fetchUserPractices,
 		getActiveDiscussions,
 		getAllCompleted,
 		getAllStarted,
@@ -277,12 +284,16 @@ declare module 'musora-content-services' {
 		getSortOrder,
 		getTabResults,
 		getUserActivityStats,
+		getUserMonthlyStats,
+		getUserPractices,
+		getUserWeeklyStats,
 		globalConfig,
 		initializeService,
 		isContentLiked,
 		jumpToContinueContent,
 		likeContent,
 		likePlaylist,
+		logUserPractice,
 		login,
 		logout,
 		pinPlaylist,
@@ -304,6 +315,7 @@ declare module 'musora-content-services' {
 		rankCategories,
 		rankItems,
 		recommendations,
+		recordUserPractice,
 		recordWatchSession,
 		reportPlaylist,
 		reset,
