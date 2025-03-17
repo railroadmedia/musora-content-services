@@ -99,7 +99,7 @@ export async function fetchReturning(
   const filterString = `brand == '${brand}' && quarter_published == '${nextQuarter}'`;
   const startEndOrder = getQueryFromPage(pageNumber, contentPerPage);
   const sortOrder = {sortOrder: "published_on desc, id desc", start: startEndOrder['start'], end: startEndOrder['end']};
-  const query = await buildQuery(filterString, {pullFutureContent: true, availableContentStatuses: ["draft"]}, getFieldsForContentType(), sortOrder);
+  const query = await buildQuery(filterString, {pullFutureContent: true, availableContentStatuses: ["draft"]}, getFieldsForContentType('returning'), sortOrder);
 
   return fetchSanity(query, true);
 }
@@ -1297,15 +1297,17 @@ export async function fetchRelatedLessons(railContentId, brand) {
   ).buildFilter()
   const filterNeighbouringSiblings = await new FilterBuilder(`references(^._id)`).buildFilter()
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-  const defaultProjections = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type`
+  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
+  const queryFieldsWithSort = queryFields + ', sort'
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
     "related_lessons" : array::unique([
-      ...(*[${filterNeighbouringSiblings}][0].child[${childrenFilter}]->{${defaultProjections}}),
-      ...(*[${filterSongSameArtist}]{${defaultProjections}}|order(published_on desc, title asc)[0...10]),
-      ...(*[${filterSongSameGenre}]{${defaultProjections}}|order(published_on desc, title asc)[0...10]),
-      ...(*[${filterSameTypeAndSortOrder}]{${defaultProjections}}|order(sort asc, title asc)[0...10]),
-      ...(*[${filterSameType}]{${defaultProjections}}|order(published_on desc, title asc)[0...10])
+      ...(*[${filterNeighbouringSiblings}][0].child[${childrenFilter}]->{${queryFields}}),
+      ...(*[${filterSongSameArtist}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
+      ...(*[${filterSongSameGenre}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
+      ...(*[${filterSameTypeAndSortOrder}]{${queryFieldsWithSort}}|order(sort asc, title asc)[0...10]),
+      ...(*[${filterSameType}]{${queryFields}}|order(published_on desc, title asc)[0...10])
+      ,
       ])[0...10]}`
   return fetchSanity(query, false)
 }
