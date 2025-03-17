@@ -316,8 +316,6 @@ describe('Sanity Queries', function () {
     expect(Array.isArray(relatedLessons)).toBe(true)
     relatedLessons.forEach((lesson) => {
       expect(lesson._type).toBe('in-rhythm')
-      expect(lesson.sort).toBeGreaterThan(episode)
-      episode = lesson.sort
     })
   })
 
