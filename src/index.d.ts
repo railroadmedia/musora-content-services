@@ -47,12 +47,17 @@ import {
 
 import {
 	addItemToPlaylist,
+	assignModeratorToComment,
+	closeComment,
 	countAssignmentsAndLessons,
+	createComment,
 	createPlaylist,
+	deleteComment,
 	deletePlaylist,
 	deletePlaylistItem,
 	deletePlaylistLike,
 	duplicatePlaylist,
+	editComment,
 	fetchAllCompletedStates,
 	fetchCarouselCardData,
 	fetchChallengeIndexMetadata,
@@ -82,7 +87,9 @@ import {
 	fetchUserLikes,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
+	likeComment,
 	likePlaylist,
+	openComment,
 	pinPlaylist,
 	playback,
 	postChallengesCommunityNotification,
@@ -99,8 +106,11 @@ import {
 	postContentReset,
 	postContentUnliked,
 	postRecordWatchSession,
+	replyToComment,
 	reportPlaylist,
 	setStudentViewForUser,
+	unassignModeratorToComment,
+	unlikeComment,
 	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem
@@ -161,10 +171,6 @@ import {
 } from './services/sanity.js';
 
 import {
-	getUserActivityStats
-} from './services/userActivity.js';
-
-import {
 	fetchUserPermissions,
 	reset
 } from './services/user/permissions.js';
@@ -174,19 +180,28 @@ import {
 	logout
 } from './services/user/sessions.js';
 
+import {
+	getUserActivityStats
+} from './services/userActivity.js';
+
 declare module 'musora-content-services' {
 	export {
 		addItemToPlaylist,
+		assignModeratorToComment,
 		assignmentStatusCompleted,
 		assignmentStatusReset,
+		closeComment,
 		contentStatusCompleted,
 		contentStatusReset,
 		countAssignmentsAndLessons,
+		createComment,
 		createPlaylist,
+		deleteComment,
 		deletePlaylist,
 		deletePlaylistItem,
 		deletePlaylistLike,
 		duplicatePlaylist,
+		editComment,
 		fetchAll,
 		fetchAllCompletedStates,
 		fetchAllFilterOptions,
@@ -281,10 +296,12 @@ declare module 'musora-content-services' {
 		initializeService,
 		isContentLiked,
 		jumpToContinueContent,
+		likeComment,
 		likeContent,
 		likePlaylist,
 		login,
 		logout,
+		openComment,
 		pinPlaylist,
 		playback,
 		postChallengesCommunityNotification,
@@ -305,10 +322,13 @@ declare module 'musora-content-services' {
 		rankItems,
 		recommendations,
 		recordWatchSession,
+		replyToComment,
 		reportPlaylist,
 		reset,
 		setStudentViewForUser,
 		similarItems,
+		unassignModeratorToComment,
+		unlikeComment,
 		unlikeContent,
 		unpinPlaylist,
 		updatePlaylist,
