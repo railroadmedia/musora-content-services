@@ -893,8 +893,8 @@ describe('v2', function () {
 
   test('fetchAllFilterOptionsLessons', async () => {
     const response = await fetchAllFilterOptions(
-        'pianote',
-[],null,null,'lessons'
+      'pianote',
+      [],null,null,'lessons'
     )
     log(response)
     expect(response.meta.filters).toBeDefined()
@@ -902,11 +902,11 @@ describe('v2', function () {
 
   test('fetchAllFilterOptionsSongs', async () => {
     const response = await fetchAllFilterOptions(
-        'pianote',
-        [],null,null,'songs'
+      'pianote',
+      [],null,null,'songs'
     )
     log(response)
-     expect(response.meta.filters).toBeDefined()
+    expect(response.meta.filters).toBeDefined()
   })
 
   test('fetchLiveEvent', async () => {
@@ -922,11 +922,20 @@ describe('Recommended System', function () {
   })
 
   test('getRecommendedForYou', async () => {
-    const results = await getRecommendedForYou('drumeo',{page: 1, limit:10})
+    const results = await getRecommendedForYou('drumeo')
     log(results)
     expect(results.id).toBeDefined()
     expect(results.title).toBeDefined()
     expect(results.items).toBeDefined()
     expect(results.items.length).toBeGreaterThanOrEqual(1)
+  })
+
+  test('getRecommendedForYou-SeeAll', async () => {
+    const results = await getRecommendedForYou('drumeo', 'recommended', {page: 1, limit:20})
+    log(results)
+    expect(results.type).toBeDefined()
+    expect(results.data).toBeDefined()
+    expect(results.meta).toBeDefined()
+    expect(results.data.length).toBeGreaterThanOrEqual(1)
   })
 })
