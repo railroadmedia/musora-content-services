@@ -13,7 +13,7 @@ fi
 npm run release
 
 # Push the changes and tags to the remote repository
-git push --follow-tags origin main
+git push --follow-tags origin project-v2
 
 # Publish the package to npm
 npm publish
