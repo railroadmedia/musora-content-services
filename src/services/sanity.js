@@ -1313,6 +1313,63 @@ export async function fetchRelatedLessons(railContentId, brand) {
 }
 
 /**
+ * fetch song tutorials related to a specific tutorial, by genre and difficulty.
+ * @param {number} railContentId
+ * @param {string} brand
+ * @returns {Promise<Object|null>}
+ */
+export async function fetchRelatedTutorials(railContentId, brand) {
+
+  //parent query
+  const defaultProjections = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type,genre`
+  const parentProjections = `railcontent_id, _type, parent_type, parent_content_data, difficulty`
+  const parentQuery = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]
+    {${parentProjections}}`
+  const parentQueryResult = await fetchSanity(parentQuery, false)
+
+  //get fields from parent query
+  const parentType = parentQueryResult.parent_type
+  const parentId = parentQueryResult.parent_content_data[0].id
+  const difficulty = parentQueryResult.difficulty
+
+  //genreQuery. all this to get a stringified array of genres
+  const genreQuery = `*[_type == "${parentType}" && brand == "${brand}" && railcontent_id == ${parentId} && _id != "drafts."+"${parentType}_${parentId}"][0]{"genre":genre[]->_id}`
+  const genreResult = await fetchSanity(genreQuery, true)
+  // const genreArray = Object.values(genreResult).map(obj => obj.name).join(', ') //this is giving me pain. I need to convert object -> string
+  const genreString = JSON.stringify(genreResult['genre']).replace(/[\[\]]/g, '')
+
+  //get the related_lessons field as an object
+  const tutorialFilter = await getSubQueryFilter(parentType, brand, parentId, difficulty, genreString)
+  const quickTipFilter = await getSubQueryFilter('quick-tips', brand, parentId, difficulty)
+  const songFilter = await getSubQueryFilter('song', brand, parentId, difficulty, genreString)
+  const relatedLessons = await fetchSanity(`array::unique([
+      ...*[${tutorialFilter}]{${defaultProjections}}|order(published_on desc, title asc)[0...10],
+      ...*[${quickTipFilter}]{${defaultProjections}}|order(published_on desc, title asc)[0...10],
+      ...*[${songFilter}]{${defaultProjections}}|order(published_on desc, title asc)[0...10],
+    ])`, true)
+
+  //merge into one json object
+  return {...parentQueryResult,
+    related_lessons: relatedLessons
+  }
+
+/*  async function fetchSubQueryByType(type, brand, id, genres, difficulty) {
+    const subFilter = await new FilterBuilder(`_type == "${type}" && brand == "${brand}" && railcontent_id != ${id} && references([${genres}]) && difficulty == ${difficulty}`).buildFilter()
+    const subQuery = `*[${subFilter}]{${defaultProjections}}|order(published_on desc, title asc)[0...10]`
+    return fetchSanity(subQuery, true)
+  }*/
+
+  async function getSubQueryFilter(type, brand, id, difficulty, genres = null){
+    if (genres) {
+      return new FilterBuilder(`_type == "${type}" && brand == "${brand}" && railcontent_id != ${id} && references([${genres}]) && difficulty == ${difficulty}`).buildFilter()
+    } else {
+      return new FilterBuilder(`_type == "${type}" && brand == "${brand}" && railcontent_id != ${id} && difficulty == ${difficulty}`).buildFilter()
+    }
+  }
+
+}
+
+/**
  * Fetch all packs.
  * @param {string} brand - The brand for which to fetch packs.
  * @param {string} [searchTerm=""] - The search term to filter packs.
