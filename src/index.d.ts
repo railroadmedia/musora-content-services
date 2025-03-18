@@ -47,12 +47,17 @@ import {
 
 import {
 	addItemToPlaylist,
+	assignModeratorToComment,
+	closeComment,
 	countAssignmentsAndLessons,
+	createComment,
 	createPlaylist,
+	deleteComment,
 	deletePlaylist,
 	deletePlaylistItem,
 	deletePlaylistLike,
 	duplicatePlaylist,
+	editComment,
 	fetchAllCompletedStates,
 	fetchCarouselCardData,
 	fetchChallengeIndexMetadata,
@@ -82,9 +87,15 @@ import {
 	fetchUserLikes,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
+<<<<<<< HEAD
 	fetchUserPractices,
 	likePlaylist,
 	logUserPractice,
+=======
+	likeComment,
+	likePlaylist,
+	openComment,
+>>>>>>> project-v2
 	pinPlaylist,
 	playback,
 	postChallengesCommunityNotification,
@@ -101,8 +112,11 @@ import {
 	postContentReset,
 	postContentUnliked,
 	postRecordWatchSession,
+	replyToComment,
 	reportPlaylist,
 	setStudentViewForUser,
+	unassignModeratorToComment,
+	unlikeComment,
 	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem
@@ -173,26 +187,35 @@ import {
 } from './services/user/sessions.js';
 
 import {
+<<<<<<< HEAD
 	getUserActivityStats,
 	getUserMonthlyStats,
 	getUserPractices,
 	getUserWeeklyStats,
 	recordUserPractice
+=======
+	getUserActivityStats
+>>>>>>> project-v2
 } from './services/userActivity.js';
 
 declare module 'musora-content-services' {
 	export {
 		addItemToPlaylist,
+		assignModeratorToComment,
 		assignmentStatusCompleted,
 		assignmentStatusReset,
+		closeComment,
 		contentStatusCompleted,
 		contentStatusReset,
 		countAssignmentsAndLessons,
+		createComment,
 		createPlaylist,
+		deleteComment,
 		deletePlaylist,
 		deletePlaylistItem,
 		deletePlaylistLike,
 		duplicatePlaylist,
+		editComment,
 		fetchAll,
 		fetchAllCompletedStates,
 		fetchAllFilterOptions,
@@ -291,11 +314,13 @@ declare module 'musora-content-services' {
 		initializeService,
 		isContentLiked,
 		jumpToContinueContent,
+		likeComment,
 		likeContent,
 		likePlaylist,
 		logUserPractice,
 		login,
 		logout,
+		openComment,
 		pinPlaylist,
 		playback,
 		postChallengesCommunityNotification,
@@ -317,10 +342,13 @@ declare module 'musora-content-services' {
 		recommendations,
 		recordUserPractice,
 		recordWatchSession,
+		replyToComment,
 		reportPlaylist,
 		reset,
 		setStudentViewForUser,
 		similarItems,
+		unassignModeratorToComment,
+		unlikeComment,
 		unlikeContent,
 		unpinPlaylist,
 		updatePlaylist,
