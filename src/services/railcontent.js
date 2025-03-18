@@ -649,7 +649,7 @@ export async function fetchUserPlaylists(
   const content = content_id ? `&content_id=${content_id}` : ''
   const categoryString =
     categories && categories.length ? categories.map((cat) => `categories[]=${cat}`).join('&') : ''
-  url = `/api/content/v1/user/playlists/all?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`
+  url = `/api/content-org/v1/user/playlists?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`
   return await fetchHandler(url)
 }
 
@@ -775,7 +775,7 @@ export async function updatePlaylist(playlistId, updatedData) {
  *   .catch(error => console.error('Error creating playlist:', error));
  */
 export async function createPlaylist(playlistData) {
-  const url = `/api/content/v1/user/playlists/playlist`
+  const url = `/api/content-org/v1/user/playlists`
   return await fetchHandler(url, 'POST', null, playlistData)
 }
 
@@ -1041,7 +1041,7 @@ export async function postContentReset(contentId) {
  *   });
  */
 export async function addItemToPlaylist(payload) {
-  const url = `/api/content/v1/user/playlists/add-item`
+  const url = `/api/content-org/v1/user/playlists/items`
   return await fetchHandler(url, 'POST', null, payload)
 }
 
@@ -1202,7 +1202,6 @@ export async function setStudentViewForUser(userId, enable) {
   return await patchDataHandler(url, data)
 }
 
-
 /**
  * Fetch the top comment for a given content
  *
@@ -1213,7 +1212,6 @@ export async function fetchTopComment(railcontentId) {
   const url = `/api/content/v1/comments/content/${railcontentId}/top`
   return await fetchHandler(url)
 }
-
 
 /**
  *
@@ -1245,7 +1243,7 @@ export async function fetchCommentRelies(commentId, page = 1, limit = 20) {
  */
 export async function deleteComment(commentId) {
   const url = `/api/content/v1/comments/${commentId}`
-  return await fetchHandler(url, "DELETE")
+  return await fetchHandler(url, 'DELETE')
 }
 
 /**
@@ -1254,7 +1252,7 @@ export async function deleteComment(commentId) {
  * @returns {Promise<*|null>}
  */
 export async function replyToComment(commentId, comment) {
-  const data = {'comment' : comment}
+  const data = { comment: comment }
   const url = `/api/content/v1/comments/${commentId}/reply`
   return await postDataHandler(url, data)
 }
@@ -1266,8 +1264,8 @@ export async function replyToComment(commentId, comment) {
  */
 export async function createComment(railcontentId, comment) {
   const data = {
-    'comment' : comment,
-    'content_id' : railcontentId
+    comment: comment,
+    content_id: railcontentId,
   }
   const url = `/api/content/v1/comments/store`
   return await postDataHandler(url, data)
@@ -1316,7 +1314,7 @@ export async function unlikeComment(commentId) {
 export async function closeComment(commentId) {
   const url = `/api/content/v1/comments/${commentId}`
   const data = {
-    'conversation_status' : 'closed'
+    conversation_status: 'closed',
   }
   return await patchDataHandler(url, data)
 }
@@ -1328,7 +1326,7 @@ export async function closeComment(commentId) {
 export async function openComment(commentId) {
   const url = `/api/content/v1/comments/${commentId}`
   const data = {
-    'conversation_status' : 'open'
+    conversation_status: 'open',
   }
   return await patchDataHandler(url, data)
 }
@@ -1341,12 +1339,10 @@ export async function openComment(commentId) {
 export async function editComment(commentId, comment) {
   const url = `/api/content/v1/comments/${commentId}`
   const data = {
-    'comment' : comment
+    comment: comment,
   }
   return await patchDataHandler(url, data)
 }
-
-
 
 function fetchAbsolute(url, params) {
   if (globalConfig.railcontentConfig.authToken) {
