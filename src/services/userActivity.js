@@ -30,19 +30,12 @@ export async function getUserActivityStats(brand) {
 
 export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUserPractices)
 
-// Helper: Convert timestamp to user's local date (YYYY-MM-DD)
-function getUserLocalDate(timestamp) {
-  let date = new Date(timestamp * 1000)
-  return date.toISOString().split('T')[0] // Format: YYYY-MM-DD
-}
-
 // Helper: Get start of the week (Monday)
-function getStartOfWeek(date) {
-  let d = new Date(date)
-  let day = d.getDay() || 7 // Make Sunday (0) become 7
-  d.setDate(d.getDate() - day + 1) // Move back to Monday
-  d.setHours(0, 0, 0, 0)
-  return d
+function getMonday(d) {
+  d = new Date(d);
+  var day = d.getDay(),
+  diff = d.getDate() - day + (day == 0 ? -6 : 1); // adjust when day is sunday
+  return new Date(d.setDate(diff));
 }
 
 // Helper: Get the week number
@@ -131,19 +124,21 @@ export async function getUserWeeklyStats() {
   let practices = data?.[DATA_KEY_PRACTICES] ?? {}
 
   let today = new Date()
-  let startOfWeek = getStartOfWeek(today) // Get last Monday
+  let startOfWeek = getMonday(today) // Get last Monday
   let dailyStats = []
 
   for (let i = 0; i < 7; i++) {
     let day = new Date(startOfWeek)
     day.setDate(startOfWeek.getDate() + i)
     let dayKey = day.toISOString().split('T')[0]
-    let isActive = !!practices[dayKey]
-    let type = isActive ? (practices[dayKey] > 0 ? 'tracked' : 'active') : 'none'
-    dailyStats.push({ key:i, label: DAYS[i], isActive, inStreak: isActive , type })
+
+    let dayActivity = practices[dayKey] ?? null;
+    let isActive = dayKey === today.toISOString().split('T')[0];
+    let type = (dayActivity !== null ? 'tracked' : ( isActive ? 'active' : 'none'));
+    dailyStats.push({ key:i, label: DAYS[i], isActive, inStreak: dayActivity !== null , type, myData: dayKey })
   }
 
-  let { currentDailyStreak, currentWeeklyStreak } = calculateStreaks(dailyStats)
+  let { currentDailyStreak, currentWeeklyStreak } = calculateStreaks(practices)
 
   let streakMessage = currentWeeklyStreak > 1 ? `That's ${currentWeeklyStreak} weeks in a row! Keep going!` : ''
 
@@ -155,26 +150,17 @@ export async function getUserWeeklyStats() {
   }
 }
 
-export async function getUserMonthlyStats(year = new Date().getFullYear(), month = new Date().getMonth()) {
+export async function getUserMonthlyStats(year = new Date().getFullYear(), month = new Date().getMonth(), day = 1) {
   let data = await userActivityContext.getData();
   let practices = data?.[DATA_KEY_PRACTICES] ?? {};
 
   // Get the first day of the specified month and the number of days in that month
+  let firstDayOfMonth = new Date(year, month, 1)
   let today = new Date()
-  let startOfMonth = new Date(year, month, 1);
+
+  let startOfMonth = getMonday(firstDayOfMonth);
   let endOfMonth = new Date(year, month + 1, 0);
-  let firstDayOfWeek = startOfMonth.getDay();  // Sunday = 0, Monday = 1, ..., Saturday = 6
-
-  // If the first day is not a Monday, move to the last Monday of the previous month
-  if (firstDayOfWeek !== 1) {
-    // Calculate the difference to Monday
-    let diffToMonday = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
-
-    // Move back to the previous Monday
-    startOfMonth.setDate(startOfMonth.getDate() - diffToMonday);
-  }
   let daysInMonth = new Date(year, month + 1, 0).getDate();
-
 
   let dailyStats = [];
   for (let i = 0; i < daysInMonth; i++) {

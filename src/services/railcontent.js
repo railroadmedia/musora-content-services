@@ -1240,7 +1240,14 @@ export async function fetchUserPractices() {
   const userPractices =  await fetchHandler(url)
 
   let formattedPractices = userPractices.reduce((acc, practice) => {
-    acc[practice.day] = { duration_seconds: practice.duration_seconds };
+    // Initialize the array if the day does not exist
+    if (!acc[practice.day]) {
+      acc[practice.day] = [];
+    }
+
+    // Push the practice entry into the array
+    acc[practice.day].push({ duration_seconds: practice.duration_seconds });
+
     return acc;
   }, {});
 
