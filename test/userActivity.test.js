@@ -1,9 +1,10 @@
 import { initializeTestService } from './initializeTests.js'
-import {getUserMonthlyStats, getUserPractices, getUserWeeklyStats, recordUserPractice, userActivityContext} from '../src/services/userActivity.js'
+import {getUserMonthlyStats, getUserWeeklyStats, userActivityContext} from '../src/services/userActivity.js'
 
 global.fetch = jest.fn()
 let mock = null
 const testVersion = 1
+const DEBUG = false
 
 describe('User Activity API Tests', function () {
   beforeEach(() => {
@@ -31,11 +32,12 @@ describe('User Activity API Tests', function () {
     }`
     )
     mock.mockImplementation(() => json)
+    userActivityContext.ensureLocalContextLoaded()
   })
 
   test('fetches user practices successfully', async () => {
+    userActivityContext.clearCache()
     const practices = await getUserMonthlyStats()
-    console.log(practices)
 
     // Assert that dailyActiveStats contains correct data
     const dailyStats = practices.dailyActiveStats
@@ -55,10 +57,9 @@ describe('User Activity API Tests', function () {
   })
 
   test('fetches user practices from past', async () => {
+    userActivityContext.clearCache()
     const practices = await getUserMonthlyStats( 2025, 1)
-
-    // Log the output for debugging
-    console.log(practices)
+    consoleLog(practices)
 
     // Assert that dailyActiveStats contains correct data
     const dailyStats = practices.dailyActiveStats
@@ -69,10 +70,9 @@ describe('User Activity API Tests', function () {
   })
 
   test('fetches user practices for current week', async () => {
+    userActivityContext.clearCache()
     const practices = await getUserWeeklyStats( )
-
-    // Log the output for debugging
-    console.log(practices)
+    consoleLog(practices)
 
     const dailyStats = practices.dailyActiveStats
     const monday = dailyStats.find(stat => stat.label === 'M')
@@ -81,4 +81,9 @@ describe('User Activity API Tests', function () {
     expect(tuesday).toBeDefined
   })
 
+  function consoleLog(message, object=null, debug=false) {
+    if (debug || DEBUG) {
+      console.log(message, object);
+    }
+  }
 })
