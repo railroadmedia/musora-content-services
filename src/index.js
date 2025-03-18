@@ -87,15 +87,11 @@ import {
 	fetchUserLikes,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
-<<<<<<< HEAD
 	fetchUserPractices,
-	likePlaylist,
-	logUserPractice,
-=======
 	likeComment,
 	likePlaylist,
+	logUserPractice,
 	openComment,
->>>>>>> project-v2
 	pinPlaylist,
 	playback,
 	postChallengesCommunityNotification,
@@ -187,15 +183,11 @@ import {
 } from './services/user/sessions.js';
 
 import {
-<<<<<<< HEAD
 	getUserActivityStats,
 	getUserMonthlyStats,
 	getUserPractices,
 	getUserWeeklyStats,
 	recordUserPractice
-=======
-	getUserActivityStats
->>>>>>> project-v2
 } from './services/userActivity.js';
 
 export {
