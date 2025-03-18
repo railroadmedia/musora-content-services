@@ -4,7 +4,7 @@ import {getUserMonthlyStats, getUserWeeklyStats, userActivityContext} from '../s
 global.fetch = jest.fn()
 let mock = null
 const testVersion = 1
-const DEBUG = false
+const DEBUG = true
 
 describe('User Activity API Tests', function () {
   beforeEach(() => {
@@ -38,7 +38,7 @@ describe('User Activity API Tests', function () {
   test('fetches user practices successfully', async () => {
     userActivityContext.clearCache()
     const practices = await getUserMonthlyStats()
-
+    consoleLog(practices)
     // Assert that dailyActiveStats contains correct data
     const dailyStats = practices.dailyActiveStats
     const currentDate = new Date()
