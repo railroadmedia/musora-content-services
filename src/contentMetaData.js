@@ -1029,13 +1029,11 @@ const contentMetadata = {
         {
           name: 'Completed',
           short_name: 'COMPLETED',
-          is_group_by: true,
           value: 'completed',
         },
         {
           name: 'Owned Challenges',
           short_name: 'OWNED CHALLENGES',
-          is_group_by: true,
           value: 'owned',
         },
       ],
@@ -1158,13 +1156,11 @@ const contentMetadata = {
         {
           name: 'Completed',
           short_name: 'COMPLETED',
-          is_group_by: true,
           value: 'completed',
         },
         {
           name: 'Owned Challenges',
           short_name: 'OWNED CHALLENGES',
-          is_group_by: true,
           value: 'owned',
         },
       ],
