@@ -138,7 +138,7 @@ export async function getUserWeeklyStats() {
     let dayActivity = practices[dayKey] ?? null
     let isActive = dayKey === todayKey
     let type = (dayActivity !== null ? 'tracked' : (isActive ? 'active' : 'none'))
-    dailyStats.push({ key: i, label: DAYS[i], isActive, inStreak: dayActivity !== null, type, myData: dayKey })
+    dailyStats.push({ key: i, label: DAYS[i], isActive, inStreak: dayActivity !== null, type })
   }
 
   return {
