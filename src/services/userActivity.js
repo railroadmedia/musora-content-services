@@ -5,6 +5,7 @@
 import { fetchUserPractices, logUserPractice } from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 
+//TODO: remove harcoded data when the PR is approved
 const userActivityStats = {
   dailyActiveStats: [
     { label: 'M', isActive: false, inStreak: false, type: 'none' },
@@ -25,6 +26,7 @@ const DATA_KEY_LAST_UPDATED_TIME = 'u'
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
+//TODO: remove the method when the PR is approved
 export async function getUserActivityStats(brand) {
   return userActivityStats
 }
@@ -80,7 +82,7 @@ function calculateStreaks(practices) {
     prevDay = dayKey
   })
 
-  currentDailyStreak = longestDailyStreak
+  currentDailyStreak = dailyStreak
 
   // Calculate weekly streaks
   let weeklyStreak = 0
@@ -158,6 +160,7 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
   let daysInMonth = new Date(year, month + 1, 0).getDate()
 
   let dailyStats = []
+  let practiceDuration = 0
   for (let i = 0; i < daysInMonth; i++) {
     let day = new Date(startOfMonth)
     day.setDate(startOfMonth.getDate() + i)
@@ -165,6 +168,9 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
 
     // Check if the user has activity for the day, default to 0 if undefined
     let dayActivity = practices[dayKey] ?? null
+    if (dayActivity) {
+      practiceDuration += dayActivity.reduce((sum, entry) => sum + entry.duration_seconds, 0)
+    }
     let isActive = dayKey === today.toISOString().split('T')[0]
     let type = (dayActivity !== null ? 'tracked' : (isActive ? 'active' : 'none'))
 
@@ -186,6 +192,8 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
 
   return {
     dailyActiveStats: dailyStats,
+    weeklyActiveStats: [],
+    practiceDuration,
     ...getStreaksAndMessage(filteredPractices)
   }
 }
@@ -215,7 +223,7 @@ function getStreaksAndMessage(practices)
 
   let streakMessage = currentWeeklyStreak > 1
     ? `That's ${currentWeeklyStreak} weeks in a row! Keep going!`
-    : ''
+    : `Nice! You have a ${currentDailyStreak} day streak! Way to keep it going!`
   return {
     currentDailyStreak,
     currentWeeklyStreak,
