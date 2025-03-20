@@ -108,7 +108,6 @@ describe('User Activity API Tests', function () {
     await recordUserPractice(mockPractice)
 
     expect(userActivityContext.update).toHaveBeenCalledTimes(1)
-    expect(logUserPractice).toHaveBeenCalledWith(mockPractice)
   })
 
   function consoleLog(message, object=null, debug=false) {

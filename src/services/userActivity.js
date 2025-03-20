@@ -227,11 +227,10 @@ export async function recordUserPractice(practiceDetails) {
       userData[DATA_KEY_PRACTICES][today].push({duration_seconds: practiceDetails.duration_seconds});
       userData[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000)
       localContext.data = userData
+    },
+    async function () {
+      return logUserPractice(practiceDetails)
     })
-
-    console.log("✅ Calling logUserPractice now...")
-    await logUserPractice(practiceDetails)
-
 }
 
 function getStreaksAndMessage(practices)
