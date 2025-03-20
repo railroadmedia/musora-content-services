@@ -4,6 +4,7 @@
 
 import { fetchUserPractices, logUserPractice } from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
+import {fetchByRailContentIds} from "./sanity";
 
 //TODO: remove harcoded data when the PR is approved
 const userActivityStats = {
@@ -204,17 +205,33 @@ export async function getUserPractices() {
 }
 
 export async function recordUserPractice(practiceDetails) {
+  practiceDetails.auto = 0
+  if (practiceDetails.content_id) {
+    const content = await fetchByRailContentIds([practiceDetails.content_id])
+    practiceDetails.auto = 1
+    practiceDetails.title = content[0].title
+    practiceDetails.thumbnail_url = content[0].thumbnail
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+
   await userActivityContext.update(
     async function(localContext) {
       let userData = localContext.data ?? { [DATA_KEY_PRACTICES]: [] }
-      userData[DATA_KEY_PRACTICES].push(practiceDetails)
+      if (!userData[DATA_KEY_PRACTICES]) {
+        userData[DATA_KEY_PRACTICES] = {};
+      }
+      if (!userData[DATA_KEY_PRACTICES][today]) {
+        userData[DATA_KEY_PRACTICES][today] = [];
+      }
+      userData[DATA_KEY_PRACTICES][today].push({duration_seconds: practiceDetails.duration_seconds});
       userData[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000)
       localContext.data = userData
-    },
-    async function() {
-      return logUserPractice(practiceDetails)
-    },
-  )
+    })
+
+    console.log("✅ Calling logUserPractice now...")
+    await logUserPractice(practiceDetails)
+
 }
 
 function getStreaksAndMessage(practices)

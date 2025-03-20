@@ -1,11 +1,24 @@
 import { initializeTestService } from './initializeTests.js'
-import {getUserMonthlyStats, getUserWeeklyStats, userActivityContext} from '../src/services/userActivity.js'
+import {getUserMonthlyStats, getUserWeeklyStats, userActivityContext, recordUserPractice, getUserPractices} from '../src/services/userActivity.js'
+import { logUserPractice } from '../src/services/railcontent.js'
+import {fetchByRailContentIds} from "../src";
+import mockData_fetchByRailContentIds_one_content from './mockData/mockData_fetchByRailContentIds_one_content.json';
 
 global.fetch = jest.fn()
 let mock = null
 const testVersion = 1
 const DEBUG = true
 
+jest.mock('../src/services/railcontent', () => ({
+  ...jest.requireActual('../src/services/railcontent'),
+  logUserPractice: jest.fn(() => Promise.resolve()),
+  fetchUserPermissionsData: jest.fn(() => ({ permissions: [78, 91, 92], isAdmin: false }))
+}))
+
+jest.mock('../src/services/sanity', () => ({
+  ...jest.requireActual('../src/services/sanity'),
+  fetchByRailContentIds: jest.fn(() => Promise.resolve(mockData_fetchByRailContentIds_one_content)),
+}))
 describe('User Activity API Tests', function () {
   beforeEach(() => {
     initializeTestService()
@@ -79,6 +92,23 @@ describe('User Activity API Tests', function () {
     expect(monday).toBeDefined
     const tuesday = dailyStats.find(stat => stat.label === 'T')
     expect(tuesday).toBeDefined
+  })
+
+  test('should add a new practice entry and call logUserPractice', async () => {
+    userActivityContext.clearCache()
+    const mockPractice = {
+      duration_seconds: 300,
+      content_id: 415183
+    }
+
+    jest.spyOn(userActivityContext, 'update').mockImplementation(async (callback) => {
+      await callback(userActivityContext)
+    })
+
+    await recordUserPractice(mockPractice)
+
+    expect(userActivityContext.update).toHaveBeenCalledTimes(1)
+    expect(logUserPractice).toHaveBeenCalledWith(mockPractice)
   })
 
   function consoleLog(message, object=null, debug=false) {
