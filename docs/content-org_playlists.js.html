@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>user/types.js - Documentation</title>
+    <title>content-org/playlists.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">user/types.js</h1>
+    <h1 class="page-title">content-org/playlists.js</h1>
     
 
     
@@ -46,121 +46,130 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @typedef {object} BrandMethodLevels
- * @property {string} drumeo
- * @property {string} pianote
- * @property {string} guitareo
- * @property {string} singeo
+ * @module Content-Organization
+ * @namespace Playlists
  */
+import { fetchHandler } from '../railcontent'
+import { globalConfig } from './config.js'
 
 /**
- * @typedef {object} BrandTotalXp
- * @property {string} drumeo
- * @property {string} pianote
- * @property {string} guitareo
- * @property {string} singeo
- */
-
-/**
- * @typedef {object} BrandTimePracticed
- * @property {number} drumeo
- * @property {number} pianote
- * @property {number} guitareo
- * @property {number} singeo
- */
-
-/**
- * @typedef {Object} User
- * @property {number} id
- * @property {string} email
- * @property {string} display_name
- * @property {string} first_name
- * @property {string} last_name
- * @property {string|null} gender
- * @property {string} country
- * @property {string|null} region
- * @property {string|null} city
- * @property {string} birthday
- * @property {string|null} phone_number
- * @property {string} profile_picture_url
- * @property {string} timezone
- * @property {string} permission_level
- * @property {string} last_used_brand
- * @property {string} membership_level
- * @property {string|null} membership_start_date
- * @property {string} membership_expiration_date
- * @property {number} is_lifetime_member
- * @property {string|null} revenuecat_origin_app_user_id
- * @property {number} is_drumeo_lifetime_member
- * @property {string} access_level
- * @property {number} total_xp
- * @property {BrandMethodLevels} brand_method_levels
- * @property {BrandTotalXp} brand_total_xp
- * @property {BrandTimePracticed} brand_minutes_practiced
- * @property {BrandTimePracticed} brand_seconds_practiced
- * @property {number|null} guitar_playing_since_year
- * @property {number} drumeo_onboarding_skip_setup
- * @property {number} pianote_onboarding_skip_setup
- * @property {number} guitareo_onboarding_skip_setup
- * @property {number} singeo_onboarding_skip_setup
- * @property {number} drumeo_trial_section_hide
- * @property {number} pianote_trial_section_hide
- * @property {number} guitareo_trial_section_hide
- * @property {number} singeo_trial_section_hide
- * @property {number} notify_on_lesson_comment_like
- * @property {number|null} notifications_summary_frequency_minutes
- * @property {number} notify_on_forum_post_reply
- * @property {number} notify_on_forum_followed_thread_reply
- * @property {number} notify_on_forum_post_like
- * @property {number} notify_weekly_update
- * @property {number} notify_on_lesson_comment_reply
- * @property {number|null} challenges_enrollment_notifications
- * @property {number|null} challenges_community_notifications
- * @property {number|null} challenges_solo_notifications
- * @property {number} send_mobile_app_push_notifications
- * @property {number} send_email_notifications
- * @property {number} use_legacy_video_player
- * @property {number} drumeo_ship_magazine
- * @property {string|null} magazine_shipping_address_id
- * @property {string|null} ios_latest_review_display_date
- * @property {number} ios_count_review_display
- * @property {string|null} google_latest_review_display_date
- * @property {number} google_count_review_display
- * @property {string|null} biography
- * @property {string|null} support_note
- * @property {string} created_at
- * @property {string} updated_at
- * @property {number} is_pack_owner
- * @property {number} has_recharge_subscription
- * @property {string|null} recharge_interval
- * @property {number} has_apple_subscription
- * @property {number} has_google_subscription
- * @property {number} requires_password_update
- * @property {number} cio_synced_workspaces
- * @property {string|null} recharge_renewal_date
- * @property {string|null} trial_expiration_date
- * @property {number} is_trial
- * @property {string|null} legacy_expiration_date
- * @property {boolean} needs_logout
- * @property {string} primary_brand
- * @property {string} first_access_at
- * @property {number} is_challenge_owner
- * @property {boolean} login_as_users
- */
-
-/**
- * @typedef {Object} AuthResponse
- * @property {string} token
- * @property {User} user
- */
-
-/**
- * @typedef {Object} UserPermissions
+ * Exported functions that are excluded from index generation.
  *
- * @property {string[]} permissions
- * @property {boolean} isAdmin
- * @property {boolean} isABasicMember
+ * @type {string[]}
  */
+const excludeFromGeneratedIndex = []
+
+const BASE_URL = `${globalConfig.railcontentConfig.baseUrl}/api/content-org`
+
+/**
+ * Fetches user playlists for a specific brand.
+ *
+ * Allows optional pagination, sorting, and search parameters to control the result set.
+ *
+ * @param {string} brand - The brand identifier for which playlists are being fetched.
+ * @param {number} [params.limit=10] - The maximum number of playlists to return per page (default is 10).
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {string} [params.sort='-created_at'] - The sorting order for the playlists (default is by created_at in descending order).
+ * @param {string} [params.searchTerm] - A search term to filter playlists by name.
+ * @param {int|string} [params.content_id] - If content_id exists, the endpoint checks in each playlist if we have the content in the items.
+ *
+ * @returns {Promise&lt;Object|null>} - A promise that resolves to the response from the API, containing the user playlists data.
+ *
+ * @example
+ * fetchUserPlaylists('drumeo', { page: 1, sort: 'name', searchTerm: 'rock' })
+ *   .then(playlists => console.log(playlists))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchUserPlaylists(
+  brand,
+  { page, limit, sort, searchTerm, content_id, categories } = {}
+) {
+  let url
+  const limitString = limit ? `&amp;limit=${limit}` : ''
+  const pageString = page ? `&amp;page=${page}` : ''
+  const sortString = sort ? `&amp;sort=${sort}` : ''
+  const searchFilter = searchTerm ? `&amp;term=${searchTerm}` : ''
+  const content = content_id ? `&amp;content_id=${content_id}` : ''
+  const categoryString =
+    categories &amp;&amp; categories.length ? categories.map((cat) => `categories[]=${cat}`).join('&amp;') : ''
+  url = `${BASE_URL}/v1/user/playlists?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&amp;${categoryString}` : ''}`
+  return await fetchHandler(url)
+}
+
+/**
+ * Creates a new user playlist by sending a POST request with playlist data to the API.
+ *
+ * This function calls the `/playlists/playlist` endpoint, where the server validates the incoming data and associates
+ * the new playlist with the authenticated user. The `name` field is required, while other fields are optional.
+ *
+ * @param {Object} playlistData - An object containing data to create the playlist. The fields include:
+ *  - `name` (string): The name of the new playlist (required, max 255 characters).
+ *  - `description` (string): A description of the playlist (optional, max 1000 characters).
+ *  - `category` (string): The category of the playlist.
+ *  - `thumbnail_url` (string): The URL of the playlist thumbnail (optional, must be a valid URL).
+ *  - `private` (boolean): Whether the playlist is private (optional, defaults to true).
+ *  - `brand` (string): Brand identifier for the playlist.
+ *
+ * @returns {Promise&lt;Object>} - A promise that resolves to the created playlist data if successful, or an error response if validation fails.
+ *
+ * The server response includes:
+ *  - `message`: Success message indicating playlist creation (e.g., "Playlist created successfully").
+ *  - `playlist`: The data for the created playlist, including the `user_id` of the authenticated user.
+ *
+ * @example
+ * createPlaylist({ name: "My Playlist", description: "A cool playlist", private: true })
+ *   .then(response => console.log(response.message))
+ *   .catch(error => console.error('Error creating playlist:', error));
+ */
+export async function createPlaylist(playlistData) {
+  const url = `${BASE_URL}/v1/user/playlists`
+  return await fetchHandler(url, 'POST', null, playlistData)
+}
+
+/**
+ * Adds an item to one or more playlists by making a POST request to the `/playlists/add-item` endpoint.
+ *
+ * @param {Object} payload - The request payload containing necessary parameters.
+ * @param {number} payload.content_id - The ID of the content to add to the playlist(s).
+ * @param {Array&lt;number>} payload.playlist_id - An array of playlist IDs where the content should be added.
+ * @param {boolean} [payload.import_full_soundslice_assignment=false] - Flag to include full Soundslice assignments.
+ * @param {boolean} [payload.import_instrumentless_soundslice_assignment=false] - Flag to include instrumentless Soundslice assignments.
+ * @param {boolean} [payload.import_high_routine=false] - Flag to include high routine content.
+ * @param {boolean} [payload.import_low_routine=false] - Flag to include low routine content.
+ * @param {boolean} [payload.import_all_assignments=false] - Flag to include all Soundslice assignments if true.
+ *
+ * @returns {Promise&lt;Object|null>} - A promise that resolves to an object with the response data, including:
+ *  - `success` (boolean): Indicates if the items were added successfully (`true` on success).
+ *  - `limit_excedeed` (Array): A list of playlists where the item limit was exceeded, if any.
+ *  - `successful` (Array): A list of successfully added items (empty if none).
+ *
+ * Resolves to `null` if the request fails.
+ * @throws {Error} - Throws an error if the request encounters issues during the operation.
+ *
+ * @example
+ * const payload = {
+ *     content_id: 123,
+ *     playlist_id: [1, 2, 3],
+ *     import_all_assignments: true
+ * };
+ *
+ * addItemToPlaylist(payload)
+ *   .then(response => {
+ *     if (response?.success) {
+ *       console.log("Item(s) added to playlist successfully");
+ *     }
+ *     if (response?.limit_excedeed) {
+ *       console.warn("Some playlists exceeded the item limit:", response.limit_excedeed);
+ *     }
+ *   })
+ *   .catch(error => {
+ *     console.error("Error adding item to playlist:", error);
+ *   });
+ */
+export async function addItemToPlaylist(payload) {
+  const url = `${BASE_URL}/v1/user/playlists/items`
+  return await fetchHandler(url, 'POST', null, payload)
+}
 </code></pre>
         </article>
     </section>
