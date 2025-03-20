@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>Config - Documentation</title>
+    <title>Playlists - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Config</h1>
+    <h1 class="page-title">Playlists</h1>
     
 
     
@@ -94,7 +94,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="config.js.html">config.js</a>, <a href="config.js.html#line19">line 19</a>
+        <a href="content-org_playlists.js.html">content-org/playlists.js</a>, <a href="content-org_playlists.js.html#line17">line 17</a>
     </li></ul></dd>
     
 
@@ -166,7 +166,7 @@
 
     
 
-    <h4 class="name" id=".initializeService"><span class="type-signature type-signature-static">(static) </span>initializeService<span class="signature">(config)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".addItemToPlaylist"><span class="type-signature type-signature-static">(static) </span>addItemToPlaylist<span class="signature">(payload)</span><span class="type-signature"> &rarr; {Promise.&lt;(Object|null)>}</span></h4>
 
     
 
@@ -176,14 +176,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li>Initializes the service with the given configuration.
-This function must be called before using any other functions in this library.</li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li>Adds an item to one or more playlists by making a POST request to the `/playlists/add-item` endpoint.</li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="config.js.html">config.js</a>, <a href="config.js.html#line71">line 71</a>
+        <a href="content-org_playlists.js.html">content-org/playlists.js</a>, <a href="content-org_playlists.js.html#line119">line 119</a>
     </li></ul></dd>
     
 
@@ -230,29 +229,24 @@ This function must be called before using any other functions in this library.</
 
     <h5 class="h5-examples">Example</h5>
     
-    <pre class="prettyprint"><code>// Initialize the service in your app.js
-initializeService({
-  sanityConfig: {
-    token: 'your-sanity-api-token',
-    projectId: 'your-sanity-project-id',
-    dataset: 'your-dataset-name',
-    version: '2021-06-07',
-    debug: true,
-    useCachedAPI: false,
-  },
-  railcontentConfig: {
-    token: 'your-user-api-token',
-    userId: 'current-user-id',
-    baseUrl: 'https://web-staging-one.musora.com',
-    authToken 'your-auth-token',
-  },
-  recommendationsConfig: {
-    token: 'your-user-api-token',
-    baseUrl: 'https://MusoraProductDepartment-PWGenerator.hf.space',
-  },
-  localStorage: localStorage,
-  isMA: false,
-});</code></pre>
+    <pre class="prettyprint"><code>const payload = {
+    content_id: 123,
+    playlist_id: [1, 2, 3],
+    import_all_assignments: true
+};
+
+addItemToPlaylist(payload)
+  .then(response => {
+    if (response?.success) {
+      console.log("Item(s) added to playlist successfully");
+    }
+    if (response?.limit_excedeed) {
+      console.warn("Some playlists exceeded the item limit:", response.limit_excedeed);
+    }
+  })
+  .catch(error => {
+    console.error("Error adding item to playlist:", error);
+  });</code></pre>
 
 
 
@@ -282,13 +276,13 @@ initializeService({
 
         <tr>
             
-                <td class="name"><code>config</code></td>
+                <td class="name"><code>payload</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type"><a href="global.html#AddItemToPlaylistDTO">AddItemToPlaylistDTO</a></span>
 
 
 
@@ -299,9 +293,169 @@ initializeService({
 
             
 
-            <td class="description last">Configuration object containing API settings.
-                <h6>Properties</h6>
+            <td class="description last">The request payload containing necessary parameters.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-throws">Throws:</h5>
+
+        
+
+<dl>
+    <dt>
+        <div class="param-desc usertext">
+        - Throws an error if the request encounters issues during the operation.
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl class="param-type">
+            <dt>
+                Type
+            </dt>
+            <dd>
                 
+<span class="param-type">Error</span>
+
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+
+    
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    - A promise that resolves to an object with the response data, including:
+ - `success` (boolean): Indicates if the items were added successfully (`true` on success).
+ - `limit_excedeed` (Array): A list of playlists where the item limit was exceeded, if any.
+ - `successful` (Array): A list of successfully added items (empty if none).
+
+Resolves to `null` if the request fails.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;(Object|null)></span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".createPlaylist"><span class="type-signature type-signature-static">(static) </span>createPlaylist<span class="signature">(playlistData)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="global.html#Playlist">Playlist</a>>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Creates a new user playlist by sending a POST request with playlist data to the API.
+
+This function calls the `/playlists/playlist` endpoint, where the server validates the incoming data and associates
+the new playlist with the authenticated user. The `name` field is required, while other fields are optional.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="content-org_playlists.js.html">content-org/playlists.js</a>, <a href="content-org_playlists.js.html#line81">line 81</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>createPlaylist({ name: "My Playlist", description: "A cool playlist", private: true })
+  .then(response => console.log(response.message))
+  .catch(error => console.error('Error creating playlist:', error));</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
 
 <table class="params">
     <thead>
@@ -325,13 +479,13 @@ initializeService({
 
         <tr>
             
-                <td class="name"><code>sanityConfig</code></td>
+                <td class="name"><code>playlistData</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type"><a href="global.html#CreatePlaylistDTO">CreatePlaylistDTO</a></span>
 
 
 
@@ -342,9 +496,143 @@ initializeService({
 
             
 
-            <td class="description last">Configuration for Sanity API.
-                <h6>Properties</h6>
-                
+            <td class="description last">An object containing data to create the playlist. The fields include:
+ - `name` (string): The name of the new playlist (required, max 255 characters).
+ - `description` (string): A description of the playlist (optional, max 1000 characters).
+ - `category` (string): The category of the playlist.
+ - `thumbnail_url` (string): The URL of the playlist thumbnail (optional, must be a valid URL).
+ - `private` (boolean): Whether the playlist is private (optional, defaults to true).
+ - `brand` (string): Brand identifier for the playlist.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    - A promise that resolves to the created playlist data if successful, or an error response if validation fails.
+
+The server response includes:
+ - `message`: Success message indicating playlist creation (e.g., "Playlist created successfully").
+ - `playlist`: The data for the created playlist, including the `user_id` of the authenticated user.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;<a href="global.html#Playlist">Playlist</a>></span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".fetchUserPlaylists"><span class="type-signature type-signature-static">(static) </span>fetchUserPlaylists<span class="signature">(brand)</span><span class="type-signature"> &rarr; {Promise.&lt;(Object|null)>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Fetches user playlists for a specific brand.
+
+Allows optional pagination, sorting, and search parameters to control the result set.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="content-org_playlists.js.html">content-org/playlists.js</a>, <a href="content-org_playlists.js.html#line40">line 40</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>fetchUserPlaylists('drumeo', { page: 1, sort: 'name', searchTerm: 'rock' })
+  .then(playlists => console.log(playlists))
+  .catch(error => console.error(error));</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
 
 <table class="params">
     <thead>
@@ -372,7 +660,7 @@ initializeService({
 
         <tr>
             
-                <td class="name"><code>token</code></td>
+                <td class="name"><code>brand</code></td>
             
 
             <td class="type">
@@ -401,128 +689,20 @@ initializeService({
                 </td>
             
 
-            <td class="description last">The API token for authenticating with Sanity.</td>
+            <td class="description last">The brand identifier for which playlists are being fetched.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>projectId</code></td>
+                <td class="name"><code>params.limit</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">The project ID in Sanity.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>dataset</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">The dataset name in Sanity.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>version</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">The API version to use.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>debug</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
+<span class="param-type">number</span>
 
 
 
@@ -544,25 +724,25 @@ initializeService({
             
                 <td class="default">
                 
-                    <code>false</code>
+                    <code>10</code>
                 
                 </td>
             
 
-            <td class="description last">Optional flag to enable debug mode.</td>
+            <td class="description last">The maximum number of playlists to return per page (default is 10).</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>useCachedAPI</code></td>
+                <td class="name"><code>params.page</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">boolean</span>
+<span class="param-type">number</span>
 
 
 
@@ -584,25 +764,25 @@ initializeService({
             
                 <td class="default">
                 
-                    <code>true</code>
+                    <code>1</code>
                 
                 </td>
             
 
-            <td class="description last">Optional flag to enable or disable the use of the cached API.</td>
+            <td class="description last">The page number for pagination.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>useDummyRailContentMethods</code></td>
+                <td class="name"><code>params.sort</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">boolean</span>
+<span class="param-type">string</span>
 
 
 
@@ -624,69 +804,19 @@ initializeService({
             
                 <td class="default">
                 
-                    <code>false</code>
+                    <code>'-created_at'</code>
                 
                 </td>
             
 
-            <td class="description last">Optional flag to use test harness for railcontent methods. Should only be used by jest tests.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
+            <td class="description last">The sorting order for the playlists (default is by created_at in descending order).</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>railcontentConfig</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Configuration for user services.
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>token</code></td>
+                <td class="name"><code>params.searchTerm</code></td>
             
 
             <td class="type">
@@ -700,22 +830,39 @@ initializeService({
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last">The token for authenticating user-specific requests.</td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">A search term to filter playlists by name.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>userId</code></td>
+                <td class="name"><code>params.content_id</code></td>
             
 
             <td class="type">
             
                 
+<span class="param-type">int</span>
+|
+
 <span class="param-type">string</span>
 
 
@@ -724,192 +871,24 @@ initializeService({
             </td>
 
             
-
-            
-
-            <td class="description last">The user ID for fetching user-specific data.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>baseUrl</code></td>
-            
-
-            <td class="type">
-            
+                <td class="attributes">
                 
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The url for the environment.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>authToken</code></td>
-            
-
-            <td class="type">
-            
+                    &lt;optional><br>
                 
-<span class="param-type">string</span>
 
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The bearer authorization token.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>recommendationsConfig.token</code></td>
-            
-
-            <td class="type">
-            
                 
-<span class="param-type">string</span>
 
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The token for authenticating recommendation requests.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>recommendationsConfig.baseUrl</code></td>
-            
-
-            <td class="type">
-            
                 
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
+                </td>
             
 
             
-
-            <td class="description last">The url for the recommendation server.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>localStorage</code></td>
-            
-
-            <td class="type">
-            
+                <td class="default">
                 
-<span class="param-type">Object</span>
-
-
-
-            
-            </td>
-
+                </td>
             
 
-            
-
-            <td class="description last">Cache to use for localStorage</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>isMA</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Variable that tells if the library is used by MA or FEW</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>localTimezoneString</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The local timezone string in format: America/Vancouver</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
+            <td class="description last">If content_id exists, the endpoint checks in each playlist if we have the content in the items.</td>
         </tr>
 
     
@@ -931,6 +910,29 @@ initializeService({
 
 
 
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    - A promise that resolves to the response from the API, containing the user playlists data.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;(Object|null)></span>
+
+
+
+    </dd>
+</dl>
+
+    
 
 
 

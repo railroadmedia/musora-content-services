@@ -1,9 +1,13 @@
 /**
- * @module Content-Organization
- * @namespace Playlists
+ * @namespace Content-Organization
+ * @property {module:Playlists} Playlists
+ */
+/**
+ * @module Playlists
  */
 import { fetchHandler } from '../railcontent'
 import { globalConfig } from './config.js'
+import './playlists-types'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -55,7 +59,7 @@ export async function fetchUserPlaylists(
  * This function calls the `/playlists/playlist` endpoint, where the server validates the incoming data and associates
  * the new playlist with the authenticated user. The `name` field is required, while other fields are optional.
  *
- * @param {Object} playlistData - An object containing data to create the playlist. The fields include:
+ * @param {CreatePlaylistDTO} playlistData - An object containing data to create the playlist. The fields include:
  *  - `name` (string): The name of the new playlist (required, max 255 characters).
  *  - `description` (string): A description of the playlist (optional, max 1000 characters).
  *  - `category` (string): The category of the playlist.
@@ -63,7 +67,7 @@ export async function fetchUserPlaylists(
  *  - `private` (boolean): Whether the playlist is private (optional, defaults to true).
  *  - `brand` (string): Brand identifier for the playlist.
  *
- * @returns {Promise<Object>} - A promise that resolves to the created playlist data if successful, or an error response if validation fails.
+ * @returns {Promise<Playlist>} - A promise that resolves to the created playlist data if successful, or an error response if validation fails.
  *
  * The server response includes:
  *  - `message`: Success message indicating playlist creation (e.g., "Playlist created successfully").
@@ -82,14 +86,7 @@ export async function createPlaylist(playlistData) {
 /**
  * Adds an item to one or more playlists by making a POST request to the `/playlists/add-item` endpoint.
  *
- * @param {Object} payload - The request payload containing necessary parameters.
- * @param {number} payload.content_id - The ID of the content to add to the playlist(s).
- * @param {Array<number>} payload.playlist_id - An array of playlist IDs where the content should be added.
- * @param {boolean} [payload.import_full_soundslice_assignment=false] - Flag to include full Soundslice assignments.
- * @param {boolean} [payload.import_instrumentless_soundslice_assignment=false] - Flag to include instrumentless Soundslice assignments.
- * @param {boolean} [payload.import_high_routine=false] - Flag to include high routine content.
- * @param {boolean} [payload.import_low_routine=false] - Flag to include low routine content.
- * @param {boolean} [payload.import_all_assignments=false] - Flag to include all Soundslice assignments if true.
+ * @param {AddItemToPlaylistDTO} payload - The request payload containing necessary parameters.
  *
  * @returns {Promise<Object|null>} - A promise that resolves to an object with the response data, including:
  *  - `success` (boolean): Indicates if the items were added successfully (`true` on success).
