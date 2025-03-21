@@ -160,6 +160,10 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
 
   let startOfMonth = getMonday(firstDayOfMonth)
   let endOfMonth = new Date(year, month + 1, 0)
+  while (endOfMonth.getDay() !== 0) {
+    endOfMonth.setDate(endOfMonth.getDate() + 1)
+  }
+
   let daysInMonth = Math.ceil((endOfMonth - startOfMonth) / (1000 * 60 * 60 * 24)) + 1;
 
   let dailyStats = []

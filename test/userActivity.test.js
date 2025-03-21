@@ -56,7 +56,7 @@ describe('User Activity API Tests', function () {
     const dailyStats = practices.dailyActiveStats
     const currentDate = new Date()
     const currentDateString = currentDate.toISOString().split('T')[0]
-    expect(dailyStats).toHaveLength(36)
+    expect(dailyStats).toHaveLength(42)
 
     // Verify current day's stats (e.g., March 17, 2025)
     const current = dailyStats.find(stat => stat.label === currentDateString)
