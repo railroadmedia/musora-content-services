@@ -1,5 +1,5 @@
 /**
- * @module Session-Management
+ * @module Sessions
  */
 import { globalConfig } from '../config.js'
 import './types.js'
@@ -10,8 +10,6 @@ import './types.js'
  * @type {string[]}
  */
 const excludeFromGeneratedIndex = []
-
-const baseUrl = `${globalConfig.railcontentConfig.baseUrl}/api/user-management-system`
 
 /**
  * Authenticates the User.
@@ -30,6 +28,7 @@ const baseUrl = `${globalConfig.railcontentConfig.baseUrl}/api/user-management-s
  *   .catch(error => console.error(error));
  */
 export async function login(email, password, deviceName, deviceToken, platform) {
+  const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
   return fetch(`${baseUrl}/v1/sessions`, {
     method: 'POST',
     headers: {
@@ -57,10 +56,11 @@ export async function login(email, password, deviceName, deviceToken, platform) 
  *   .catch(error => console.error(error));
  */
 export async function logout() {
+  const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
   await fetch(`${baseUrl}/v1/sessions`, {
     method: 'DELETE',
     headers: {
-      Authorization: `Bearer ${globalConfig.railcontentConfig.authToken}`,
+      Authorization: `Bearer ${globalConfig.sessionConfig.authToken}`,
       'Content-Type': 'application/json',
     },
   })

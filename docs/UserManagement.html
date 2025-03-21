@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>content-org/playlists-types.js - Documentation</title>
+    <title>UserManagement - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,54 +35,216 @@
 
 <div id="main">
     
-    <h1 class="page-title">content-org/playlists-types.js</h1>
+    <h1 class="page-title">UserManagement</h1>
     
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @typedef CreatePlaylistDTO
- * @property {string} name - The name of the new playlist. (required, max 255 characters)
- * @property {string} description - A description of the playlist. (optional, max 1000 characters)
- * @property {string} category - The category of the playlist.
- * @property {string} thumbnail_url - The URL of the playlist thumbnail. (optional, must be a valid URL)
- * @property {boolean} private - Whether the playlist is private. (optional, defaults to true)
- * @property {string} brand - Brand identifier for the playlist.
- */
+        <h2>
+        
+            Namespace
+        
+        </h2>
+        
+    
+</header>
 
-/**
- * @typedef Playlist
- * @property {number} id
- * @property {string} brand
- * @property {string} name
- * @property {string} description
- * @property {string|null} thumbnail_url
- * @property {string} duration_formated
- * @property {Array&lt;string>} first_4_items_thumbnail_url
- * @property {string|null} url
- * @property {string|null} playback_url
- * @property {number} total_items
- * @property {User} user
- */
+<article>
+    
+        <div class="container-overview">
+        
+            
 
-/**
- * @typedef AddItemToPlaylistDTO
- * @property {number} content_id - The ID of the content to add to the playlist(s).
- * @property {Array&lt;number>} playlist_id - An array of playlist IDs where the content should be added.
- * @property {boolean} import_full_soundslice_assignment - Flag to include full Soundslice assignments.
- * @property {boolean} import_instrumentless_soundslice_assignment - Flag to include instrumentless Soundslice assignments.
- * @property {boolean} import_high_routine - Flag to include high routine content.
- * @property {boolean} import_low_routine - Flag to include low routine content.
- * @property {boolean} import_all_assignments - Flag to include all Soundslice assignments if true.
- */
-</code></pre>
-        </article>
-    </section>
+
+    
+
+    <h4 class="name" id="UserManagement">UserManagement</h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="user_user-management.js.html">user/user-management.js</a>, <a href="user_user-management.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>Sessions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-Sessions.html">module:Sessions</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>Permissions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-Permissions.html">module:Permissions</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 

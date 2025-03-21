@@ -1,10 +1,7 @@
 /**
- * @namespace Content-Organization
- * @property {module:Playlists} Playlists
- */
-/**
  * @module Playlists
  */
+import { globalConfig } from '../config.js'
 import { fetchHandler } from '../railcontent.js'
 import './playlists-types.js'
 
@@ -41,6 +38,7 @@ export async function fetchUserPlaylists(
   { page, limit, sort, searchTerm, content_id, categories } = {}
 ) {
   let url
+  console.log({ config: globalConfig.baseUrl })
   const limitString = limit ? `&limit=${limit}` : ''
   const pageString = page ? `&page=${page}` : ''
   const sortString = sort ? `&sort=${sort}` : ''
