@@ -5,9 +5,9 @@
 /**
  * @module Playlists
  */
-import { fetchHandler } from '../railcontent'
-import { globalConfig } from '../config'
-import './playlists-types'
+import { fetchHandler } from '../railcontent.js'
+import { globalConfig } from '../config.js'
+import './playlists-types.js'
 
 /**
  * Exported functions that are excluded from index generation.
