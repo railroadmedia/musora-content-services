@@ -87,8 +87,10 @@ import {
 	fetchUserLikes,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
+	fetchUserPractices,
 	likeComment,
 	likePlaylist,
+	logUserPractice,
 	openComment,
 	pinPlaylist,
 	playback,
@@ -181,7 +183,11 @@ import {
 } from './services/user/sessions.js';
 
 import {
-	getUserActivityStats
+	getUserActivityStats,
+	getUserMonthlyStats,
+	getUserPractices,
+	getUserWeeklyStats,
+	recordUserPractice
 } from './services/userActivity.js';
 
 declare module 'musora-content-services' {
@@ -274,6 +280,7 @@ declare module 'musora-content-services' {
 		fetchUserPermissions,
 		fetchUserPermissionsData,
 		fetchUserPlaylists,
+		fetchUserPractices,
 		getActiveDiscussions,
 		getAllCompleted,
 		getAllStarted,
@@ -292,6 +299,9 @@ declare module 'musora-content-services' {
 		getSortOrder,
 		getTabResults,
 		getUserActivityStats,
+		getUserMonthlyStats,
+		getUserPractices,
+		getUserWeeklyStats,
 		globalConfig,
 		initializeService,
 		isContentLiked,
@@ -299,6 +309,7 @@ declare module 'musora-content-services' {
 		likeComment,
 		likeContent,
 		likePlaylist,
+		logUserPractice,
 		login,
 		logout,
 		openComment,
@@ -321,6 +332,7 @@ declare module 'musora-content-services' {
 		rankCategories,
 		rankItems,
 		recommendations,
+		recordUserPractice,
 		recordWatchSession,
 		replyToComment,
 		reportPlaylist,

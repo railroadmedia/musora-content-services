@@ -87,8 +87,10 @@ import {
 	fetchUserLikes,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
+	fetchUserPractices,
 	likeComment,
 	likePlaylist,
+	logUserPractice,
 	openComment,
 	pinPlaylist,
 	playback,
@@ -181,7 +183,11 @@ import {
 } from './services/user/sessions.js';
 
 import {
-	getUserActivityStats
+	getUserActivityStats,
+	getUserMonthlyStats,
+	getUserPractices,
+	getUserWeeklyStats,
+	recordUserPractice
 } from './services/userActivity.js';
 
 export {
@@ -273,6 +279,7 @@ export {
 	fetchUserPermissions,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
+	fetchUserPractices,
 	getActiveDiscussions,
 	getAllCompleted,
 	getAllStarted,
@@ -291,6 +298,9 @@ export {
 	getSortOrder,
 	getTabResults,
 	getUserActivityStats,
+	getUserMonthlyStats,
+	getUserPractices,
+	getUserWeeklyStats,
 	globalConfig,
 	initializeService,
 	isContentLiked,
@@ -298,6 +308,7 @@ export {
 	likeComment,
 	likeContent,
 	likePlaylist,
+	logUserPractice,
 	login,
 	logout,
 	openComment,
@@ -320,6 +331,7 @@ export {
 	rankCategories,
 	rankItems,
 	recommendations,
+	recordUserPractice,
 	recordWatchSession,
 	replyToComment,
 	reportPlaylist,

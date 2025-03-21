@@ -1346,7 +1346,35 @@ export async function editComment(commentId, comment) {
   return await patchDataHandler(url, data)
 }
 
+export async function fetchUserPractices() {
+  const url = `/api/user/practices/v1/practices`
+  const userPractices =  await fetchHandler(url)
 
+  let formattedPractices = userPractices.reduce((acc, practice) => {
+    // Initialize the array if the day does not exist
+    if (!acc[practice.day]) {
+      acc[practice.day] = [];
+    }
+
+    // Push the practice entry into the array
+    acc[practice.day].push({ duration_seconds: practice.duration_seconds });
+
+    return acc;
+  }, {});
+
+  let json = {
+    data: {
+      practices: formattedPractices
+    }
+  };
+
+  return json;
+}
+
+export async function logUserPractice(practiceDetails) {
+  const url = `/api/user/practices/v1/practices`
+  return await fetchHandler(url, 'POST', null, practiceDetails)
+}
 
 function fetchAbsolute(url, params) {
   if (globalConfig.railcontentConfig.authToken) {
