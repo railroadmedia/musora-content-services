@@ -494,7 +494,7 @@ export async function fetchChallengeUserActiveChallenges(brand = null) {
 export async function fetchCarouselCardData(brand = null) {
   const urlParams = []
   if (brand) urlParams.push(`brand=${brand}`)
-  if (globalConfig.sanityConfig.perspective === 'previewDrafts') urlParams.push(`previewSanity`)
+  if (globalConfig.sanityConfig.perspective === 'previewDrafts') urlParams.push(`sanityPreview`)
   const url = `/api/v2/content/carousel${urlParams.length ? `?${urlParams.join('&')}` : ''}`
   return await fetchHandler(url, 'get')
 }
