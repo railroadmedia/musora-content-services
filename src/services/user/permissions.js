@@ -11,16 +11,25 @@ import './types'
  * @type {string[]}
  */
 const excludeFromGeneratedIndex = []
+
+const DAY_IN_SECONDS = 86_400
+
 let userPermissionsPromise = null
 let lastUpdatedKey = `userPermissions_lastUpdated`
 
 /**
  * Fetches the user permissions data.
  *
+ * @param {boolean} [bypassCache=false]
+ *
  * @returns {Promise<UserPermissions>} - The user permissions data.
  */
-export async function fetchUserPermissions() {
-  if (!userPermissionsPromise || wasLastUpdateOlderThanXSeconds(10, lastUpdatedKey)) {
+export async function fetchUserPermissions(bypassCache = false) {
+  if (bypassCache) {
+    userPermissionsPromise = null
+  }
+
+  if (!userPermissionsPromise || wasLastUpdateOlderThanXSeconds(DAY_IN_SECONDS, lastUpdatedKey)) {
     userPermissionsPromise = fetchUserPermissionsData()
     setLastUpdatedTime(lastUpdatedKey)
   }
