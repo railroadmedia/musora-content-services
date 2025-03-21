@@ -11,7 +11,7 @@ import './types.js'
  */
 const excludeFromGeneratedIndex = []
 
-const baseUrl = `${globalConfig.railcontentConfig.baseUrl}/api/user-management-system`
+const baseUrl = `${globalConfig.sessionsConfig.baseUrl}/api/user-management-system`
 
 /**
  * Authenticates the User.
@@ -60,7 +60,7 @@ export async function logout() {
   await fetch(`${baseUrl}/v1/sessions`, {
     method: 'DELETE',
     headers: {
-      Authorization: `Bearer ${globalConfig.railcontentConfig.authToken}`,
+      Authorization: `Bearer ${globalConfig.sessionsConfig.authToken}`,
       'Content-Type': 'application/json',
     },
   })
