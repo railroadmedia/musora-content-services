@@ -142,9 +142,11 @@ export async function getUserWeeklyStats() {
     dailyStats.push({ key: i, label: DAYS[i], isActive, inStreak: dayActivity !== null, type })
   }
 
+  let { streakMessage } = getStreaksAndMessage(practices);
+
   return {
     dailyActiveStats: dailyStats,
-    ... getStreaksAndMessage(practices)
+    streakMessage
   }
 }
 
@@ -158,10 +160,13 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
 
   let startOfMonth = getMonday(firstDayOfMonth)
   let endOfMonth = new Date(year, month + 1, 0)
-  let daysInMonth = new Date(year, month + 1, 0).getDate()
+  let daysInMonth = Math.ceil((endOfMonth - startOfMonth) / (1000 * 60 * 60 * 24)) + 1;
 
   let dailyStats = []
   let practiceDuration = 0
+  let daysPracticed = 0
+  let weeklyStats = {}
+
   for (let i = 0; i < daysInMonth; i++) {
     let day = new Date(startOfMonth)
     day.setDate(startOfMonth.getDate() + i)
@@ -169,11 +174,23 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
 
     // Check if the user has activity for the day, default to 0 if undefined
     let dayActivity = practices[dayKey] ?? null
+    let weekKey = getWeekNumber(day)
+
+    if (!weeklyStats[weekKey]) {
+      weeklyStats[weekKey] = { key: weekKey, inStreak: false };
+    }
+
     if (dayActivity) {
       practiceDuration += dayActivity.reduce((sum, entry) => sum + entry.duration_seconds, 0)
+      daysPracticed++;
     }
     let isActive = dayKey === today.toISOString().split('T')[0]
     let type = (dayActivity !== null ? 'tracked' : (isActive ? 'active' : 'none'))
+
+    let isInStreak = dayActivity !== null;
+    if (isInStreak) {
+      weeklyStats[weekKey].inStreak = true;
+    }
 
     dailyStats.push({
       key: i,
@@ -191,11 +208,15 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
       return obj
     }, {})
 
+  let { currentDailyStreak, currentWeeklyStreak } = calculateStreaks(filteredPractices);
+
   return {
     dailyActiveStats: dailyStats,
-    weeklyActiveStats: [],
+    weeklyActiveStats: Object.values(weeklyStats),
     practiceDuration,
-    ...getStreaksAndMessage(filteredPractices)
+    currentDailyStreak,
+    currentWeeklyStreak,
+    daysPracticed,
   }
 }
 
