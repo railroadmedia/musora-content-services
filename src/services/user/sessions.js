@@ -1,8 +1,8 @@
 /**
  * @module Session-Management
  */
-import { globalConfig } from '../config'
-import './types'
+import { globalConfig } from '../config.js'
+import './types.js'
 
 /**
  * Exported functions that are excluded from index generation.

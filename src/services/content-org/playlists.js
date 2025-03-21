@@ -5,9 +5,8 @@
 /**
  * @module Playlists
  */
-import { fetchHandler } from '../railcontent'
-import { globalConfig } from '../config'
-import './playlists-types'
+import { fetchHandler } from '../railcontent.js'
+import './playlists-types.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -16,7 +15,7 @@ import './playlists-types'
  */
 const excludeFromGeneratedIndex = []
 
-const BASE_URL = `${globalConfig.railcontentConfig.baseUrl}/api/content-org`
+const BASE_PATH = `/api/content-org`
 
 /**
  * Fetches user playlists for a specific brand.
@@ -49,7 +48,7 @@ export async function fetchUserPlaylists(
   const content = content_id ? `&content_id=${content_id}` : ''
   const categoryString =
     categories && categories.length ? categories.map((cat) => `categories[]=${cat}`).join('&') : ''
-  url = `${BASE_URL}/v1/user/playlists?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`
+  url = `${BASE_PATH}/v1/user/playlists?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`
   return await fetchHandler(url)
 }
 
@@ -79,7 +78,7 @@ export async function fetchUserPlaylists(
  *   .catch(error => console.error('Error creating playlist:', error));
  */
 export async function createPlaylist(playlistData) {
-  const url = `${BASE_URL}/v1/user/playlists`
+  const url = `${BASE_PATH}/v1/user/playlists`
   return await fetchHandler(url, 'POST', null, playlistData)
 }
 
@@ -117,6 +116,6 @@ export async function createPlaylist(playlistData) {
  *   });
  */
 export async function addItemToPlaylist(payload) {
-  const url = `${BASE_URL}/v1/user/playlists/items`
+  const url = `${BASE_PATH}/v1/user/playlists/items`
   return await fetchHandler(url, 'POST', null, payload)
 }
