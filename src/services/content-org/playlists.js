@@ -1,8 +1,4 @@
 /**
- * @namespace Content-Organization
- * @property {module:Playlists} Playlists
- */
-/**
  * @module Playlists
  */
 import { fetchHandler } from '../railcontent'

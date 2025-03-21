@@ -1,5 +1,3 @@
-import '../user/types'
-
 /**
  * @typedef CreatePlaylistDTO
  * @property {string} name - The name of the new playlist. (required, max 255 characters)

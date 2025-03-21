@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>Home - Documentation</title>
+    <title>content-org/content-org.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,115 +35,23 @@
 
 <div id="main">
     
+    <h1 class="page-title">content-org/content-org.js</h1>
+    
 
     
 
 
 
     
-
-
-    <section class="package">
-        <h3> </h3>		
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @namespace ContentOrganization
+ * @property {module:Playlists} Playlists
+ */
+</code></pre>
+        </article>
     </section>
-
-
-
-
-
-
-
-
-
-    
-
-
-
-    <section class="readme usertext">
-        <article><h1>Musora Content Services</h1>
-<p>Welcome to the <strong>musora-content-services</strong> repository. This package provides a collection of utility functions designed
-to fetch and manage content from our Sanity Studio. These functions are tailored to interact with our Sanity backend,
-allowing you to easily retrieve, filter, and manipulate content for use in various applications.</p>
-<h2>Setup</h2>
-<p>To set up the Musora Content Services project for local development, follow these steps:</p>
-<ul>
-<li>Pull the latest railenvironment <code>php-8-3-upgrade</code> branch changes</li>
-<li>In the railenvironment directory, start up the container with the <code>./rrr.sh</code> command</li>
-<li>Run <code>r setup musora-content-services</code></li>
-<li>Run <code>npm install --save-dev jest</code></li>
-<li>Create a new <code>.env</code> file in the root of the project and copy the contents from 1Password &quot;musora-content-services .env&quot;</li>
-</ul>
-<p>You're now set for doing basic development and running tests through npm. To set up an even better developer experience,
-you can also do the following:</p>
-<ul>
-<li>Find the location of node within the container by running <code>which node</code> in your terminal (inside the rrr shell)
-<ul>
-<li>This should be something along the lines of <em>/home/.nvm/versions/node/v20.14.0/bin/node</em></li>
-</ul>
-</li>
-<li>Add the Node interpreter to your IDE. The following steps are for PHPStorm:
-<ul>
-<li>Go to File &gt; Settings</li>
-<li>Under Languages &amp; Frameworks, click on Node.js</li>
-<li>Under the Node interpreter dropdown, click &quot;Add...&quot; and select &quot;Add Remote...&quot;</li>
-<li>In the next window, choose the Docker option
-<ul>
-<li>Set the Server to Docker</li>
-<li>For the Image name, use the dropdown to select <em>railenvironment_docker-manager:latest</em> (this is the docker image
-that we're in when running the rrr shell)</li>
-<li>For the Node.js interpreter path, paste in the path from step 1 (e.g. /home/.nvm/versions/node/v20.14.0/bin/node)</li>
-</ul>
-</li>
-<li>Apply the changes and click OK</li>
-</ul>
-</li>
-<li>You now have a Node interpreter set up that will assist in linting, tests, etc.</li>
-</ul>
-<h2>Features</h2>
-<ul>
-<li><strong>Fetch Content by ID</strong>: Retrieve specific content items using their unique Railcontent ID.</li>
-<li><strong>Fetch All Songs</strong>: Get a list of all songs for a brand with pagination and search capabilities.</li>
-<li><strong>Filter Options</strong>: Generate filtering options based on difficulty, genre, and more.</li>
-<li><strong>Fetch Related Content</strong>: Easily fetch related lessons, songs, and content items.</li>
-<li><strong>Sanity Integration</strong>: Simplified interaction with the Sanity API using customizable configurations.</li>
-</ul>
-<h2>Installation</h2>
-<p>To install the package, use npm:</p>
-<pre class="prettyprint source lang-bash"><code>npm install musora-content-services
-</code></pre>
-<h2>Generating index.js and index.d.ts</h2>
-<p>The <code>index.js</code> and <code>index.d.ts</code> files provide all exported functions from this package, and are generated automatically.
-Simply run <code>npm run build-index</code> to build these files. It works by running the <code>tools/generate-index.js</code> file, which simply
-parses the files under the <code>src/services</code> directory and builds up the index files with any functions tagged with <code>export</code>.</p>
-<p>If you want to exclude any of your exported functions from the generated index files, be sure to add the function name to
-the <code>excludeFromGeneratedIndex</code> array inside the service file.</p>
-<h2>Publishing Package Updates</h2>
-<p>To publish a new version to NPM run,</p>
-<pre class="prettyprint source lang-bash"><code>./publish.sh
-</code></pre>
-<h2>Symlinking</h2>
-<p>To link this package to the MWP repo for local development run,</p>
-<pre class="prettyprint source lang-bash"><code>./link_mcs.sh
-</code></pre>
-<p>If either of these commands fail due to permissions,</p>
-<pre class="prettyprint source"><code>chmod +x &lt;command>
-</code></pre>
-<h2>Publish Documentation</h2>
-<p>This repo uses JSDoc to generate API documentation. To update the docs, run:</p>
-<pre class="prettyprint source lang-bash"><code>npm run doc
-</code></pre>
-<h2>GitHub Page Documentation</h2>
-<p>https://railroadmedia.github.io/musora-content-services/</p>
-<h2>Run tests</h2>
-<p>Ensure that the setup process has been completed, including copying .env file from 1Password &quot;musora-content-services .env&quot;
-and having jest installed (<code>npm install --save-dev jest</code>). To run the full test suite, simply run the following:</p>
-<pre class="prettyprint source"><code>npm test
-</code></pre>
-<p>You can also filter down to specific tests with the <code>-- -t=&quot;...&quot;</code> option. e.g. you can run the userContext test suite
-with <code>npm test -- -t=&quot;userContext&quot;</code> or just the contentLiked test with <code>npm test -- -t=&quot;contentLiked&quot;</code></p></article>
-    </section>
-
-
 
 
 

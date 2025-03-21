@@ -1,5 +1,5 @@
 /**
- * @module Session-Management
+ * @module Sessions
  */
 import { globalConfig } from '../config'
 import './types'
