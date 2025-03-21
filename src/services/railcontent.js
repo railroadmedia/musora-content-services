@@ -492,8 +492,10 @@ export async function fetchChallengeUserActiveChallenges(brand = null) {
  * @returns {Promise<any|null>}
  */
 export async function fetchCarouselCardData(brand = null) {
-  const brandParam = brand ? `?brand=${brand}` : ''
-  let url = `/api/v2/content/carousel${brandParam}`
+  const urlParams = []
+  if (brand) urlParams.push(`brand=${brand}`)
+  if (globalConfig.sanityConfig.perspective === 'previewDrafts') urlParams.push(`previewSanity`)
+  const url = `/api/v2/content/carousel${urlParams.length ? `?${urlParams.join('&')}` : ''}`
   return await fetchHandler(url, 'get')
 }
 
@@ -1198,7 +1200,6 @@ export async function setStudentViewForUser(userId, enable) {
   return await patchDataHandler(url, data)
 }
 
-
 /**
  * Fetch the top comment for a given content
  *
@@ -1209,7 +1210,6 @@ export async function fetchTopComment(railcontentId) {
   const url = `/api/content/v1/comments/${railcontentId}/top`
   return await fetchHandler(url)
 }
-
 
 /**
  *
