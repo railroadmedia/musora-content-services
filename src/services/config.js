@@ -2,49 +2,7 @@
  * @module Config
  */
 
-/**
- * @typedef {Object} SanityConfig
- * @property {string} token - The API token for authenticating with Sanity.
- * @property {string} projectId - The project ID in Sanity.
- * @property {string} dataset - The dataset name in Sanity.
- * @property {string} version - The API version to use.
- * @property {boolean} [debug=false] - Optional flag to enable debug mode.
- * @property {boolean} [useCachedAPI=true] - Optional flag to enable or disable the use of the cached API.
- * @property {boolean} [useDummyRailContentMethods=false] - Optional flag to use test harness for railcontent methods. Should only be used by jest tests.
- */
-
-/**
- * @typedef {Object} RailcontentConfig
- * @property {string} token - The token for authenticating user-specific requests.
- * @property {string} userId - The user ID for fetching user-specific data.
- * @property {string} baseUrl - The url for the environment.
- * @property {string} authToken - The bearer authorization token.
- */
-
-/**
- * @typedef {Object} RecommendationsConfig
- * @property {string} token - The token for authenticating recommendation requests.
- * @property {string} baseUrl - The url for the recommendation server.
- */
-
-/**
- * @typedef {Object} SessionConfig
- * @property {string} token - The token for authenticating user-specific requests.
- * @property {string} userId - The user ID for fetching user-specific data.
- * @property {string} authToken - The bearer authorization token.
- */
-
-/**
- * @typedef {Object} Config
- * @property {SanityConfig} sanityConfig - Configuration for Sanity API.
- * @property {RailcontentConfig} railcontentConfig - [DEPRECATED] Configuration for user services.
- * @property {RecommendationsConfig} recommendationsConfig - Configuration for recommendation services.
- * @property {SessionConfig} sessionConfig - Configuration for session management.
- * @property {Object} localStorage - Cache to use for localStorage
- * @property {boolean} isMA - Variable that tells if the library is used by MA or FEW
- * @property {string} localTimezoneString - The local timezone string in format: America/Vancouver
- * @property {string} baseUrl - The url for the environment.
- */
+import './types.js'
 
 /** @type {Config} */
 export let globalConfig = {
