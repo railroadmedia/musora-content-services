@@ -39,7 +39,7 @@
  * @property {SanityConfig} sanityConfig - Configuration for Sanity API.
  * @property {RailcontentConfig} railcontentConfig - [DEPRECATED] Configuration for user services.
  * @property {RecommendationsConfig} recommendationsConfig - Configuration for recommendation services.
- * @property {SessionConfig} sessionsConfig - Configuration for session management.
+ * @property {SessionConfig} sessionConfig - Configuration for session management.
  * @property {Object} localStorage - Cache to use for localStorage
  * @property {boolean} isMA - Variable that tells if the library is used by MA or FEW
  * @property {string} localTimezoneString - The local timezone string in format: America/Vancouver
@@ -51,7 +51,7 @@ export let globalConfig = {
   sanityConfig: {},
   railcontentConfig: {},
   recommendationsConfig: {},
-  sessionsConfig: {},
+  sessionConfig: {},
   localStorage: null,
   isMA: false,
   localTimezoneString: null, // In format: America/Vancouver
@@ -102,9 +102,10 @@ const excludeFromGeneratedIndex = []
  * });
  */
 export function initializeService(config) {
+  console.log({ baseUrl: config.baseUrl })
   globalConfig.sanityConfig = config.sanityConfig
   globalConfig.railcontentConfig = config.railcontentConfig
-  globalConfig.sessionsConfig = config.sessionsConfig || config.railcontentConfig
+  globalConfig.sessionConfig = config.sessionConfig || config.railcontentConfig
   globalConfig.baseUrl = config.baseUrl || config.railcontentConfig.baseUrl
   globalConfig.localStorage = config.localStorage
   globalConfig.isMA = config.isMA || false

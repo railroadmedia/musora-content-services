@@ -64,7 +64,7 @@ export async function rankCategories(brand, categories) {
   }
   let data = {
     brand: brand,
-    user_id: globalConfig.sessionsConfig.userId,
+    user_id: globalConfig.sessionConfig.userId,
     playlists: categories,
   }
   const url = `/rank_each_list/`
@@ -99,7 +99,7 @@ export async function rankItems(brand, content_ids) {
   }
   let data = {
     brand: brand,
-    user_id: globalConfig.sessionsConfig.userId,
+    user_id: globalConfig.sessionConfig.userId,
     content_ids: content_ids,
   }
   const url = `/rank_items/`
@@ -115,7 +115,7 @@ export async function rankItems(brand, content_ids) {
 export async function recommendations(brand, { page = 1, limit = 10 } = {}) {
   let data = {
     brand: brand,
-    user_id: globalConfig.sessionsConfig.userId,
+    user_id: globalConfig.sessionConfig.userId,
     num_recommendations: limit,
   }
   const url = `/recommendations/`
