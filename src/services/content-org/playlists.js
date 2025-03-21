@@ -6,7 +6,7 @@
  * @module Playlists
  */
 import { fetchHandler } from '../railcontent'
-import { globalConfig } from './config.js'
+import { globalConfig } from '../config'
 import './playlists-types'
 
 /**
