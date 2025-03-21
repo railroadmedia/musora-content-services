@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.7](https://github.com/railroadmedia/musora-content-services/compare/v2.0.6...v2.0.7) (2025-03-21)
+
+
+### Bug Fixes
+
+* **playlists:** config import ([#198](https://github.com/railroadmedia/musora-content-services/issues/198)) ([4965de4](https://github.com/railroadmedia/musora-content-services/commit/4965de4fc2d1cda8de022ff46a3e09caac9d351f))
+
 ### [2.0.6](https://github.com/railroadmedia/musora-content-services/compare/v2.0.5...v2.0.6) (2025-03-21)
 
 ### [2.0.5](https://github.com/railroadmedia/musora-content-services/compare/v2.0.4...v2.0.5) (2025-03-21)
