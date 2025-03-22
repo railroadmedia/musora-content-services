@@ -915,29 +915,6 @@ describe('api.v1', function() {
     log(liveEvent)
     //expect(metaData).toBeNull()
   })
-})
-
-describe('api.v1.admin', function() {
-  beforeEach(() => {
-    initializeTestService(false, true)
-  })
-
-  test('fetchOtherSongVersions', async () => {
-    // much of the licensed content is currently drafted, so this must be run in the admin test-suite
-    const railContentId = 386901
-    const licenseQuery = `*[railcontent_id == ${railContentId}]{
-      'content_ids': *[_type == 'license' && references(^._id)].content[]->railcontent_id
-    }[0]`
-    const otherReferencedContent = (await fetchSanity(licenseQuery, true))['content_ids']
-    log(otherReferencedContent)
-    const relatedSongsTypes = await fetchOtherSongVersions(railContentId, 'drumeo', 100)
-    log(relatedSongsTypes)
-    relatedSongsTypes.forEach(document => {
-      expect(SONG_TYPES).toContain(document.type)
-      expect(document.id).not.toStrictEqual(railContentId)
-      expect(otherReferencedContent).toContain(document.id)
-    })
-  })
 
   test('fetchLessonsFeaturingThisContent', async () => {
     // much of the licensed content is currently drafted, so this must be run in the admin test-suite
@@ -1023,6 +1000,29 @@ describe('api.v1.admin', function() {
       web_url_path.pop()
       web_url_path.pop()
       expect(web_url_path).toEqual(expectedPath)
+    })
+  })
+})
+
+describe('api.v1.admin', function() {
+  beforeEach(() => {
+    initializeTestService(false, true)
+  })
+
+  test('fetchOtherSongVersions', async () => {
+    // much of the licensed content is currently drafted, so this must be run in the admin test-suite
+    const railContentId = 386901
+    const licenseQuery = `*[railcontent_id == ${railContentId}]{
+      'content_ids': *[_type == 'license' && references(^._id)].content[]->railcontent_id
+    }[0]`
+    const otherReferencedContent = (await fetchSanity(licenseQuery, true))['content_ids']
+    log(otherReferencedContent)
+    const relatedSongsTypes = await fetchOtherSongVersions(railContentId, 'drumeo', 100)
+    log(relatedSongsTypes)
+    relatedSongsTypes.forEach(document => {
+      expect(SONG_TYPES).toContain(document.type)
+      expect(document.id).not.toStrictEqual(railContentId)
+      expect(otherReferencedContent).toContain(document.id)
     })
   })
 })
