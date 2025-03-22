@@ -1,15 +1,12 @@
-import { getFieldsForContentType} from '../src/contentTypeConfig'
+import { getFieldsForContentType, SONG_TYPES } from '../src/contentTypeConfig'
+
 const railContentModule = require('../src/services/railcontent.js')
 
-import {
-  fetchCommentModContentData,
-  fetchMethodPreviousNextLesson,
-  fetchSanity,
-} from '../src/services/sanity'
 import { log } from './log.js'
 import { initializeTestService } from './initializeTests'
 import { dataContext } from '../src/services/contentProgress'
-import {fetchOwnedChallenges, getRecommendedForYou, globalConfig, recommendations} from '../src'
+import { fetchOwnedChallenges, getRecommendedForYou, globalConfig, recommendations } from '../src'
+import { fetchLessonsFeaturingThisContent } from '../src/services/sanity.js'
 
 const {
   fetchSongById,
@@ -42,13 +39,17 @@ const {
   fetchNextPreviousLesson,
   fetchHierarchy,
   fetchTopLevelParentId,
+  fetchOtherSongVersions,
+  fetchCommentModContentData,
+  fetchMethodPreviousNextLesson,
+  fetchSanity,
 } = require('../src/services/sanity.js')
 
 const { FilterBuilder } = require('../src/filterBuilder.js')
 
 const { processMetadata } = require('../src/contentMetaData.js')
 
-describe('Sanity Queries', function () {
+describe('Sanity Queries', function() {
   beforeEach(() => {
     initializeTestService()
   })
@@ -62,21 +63,21 @@ describe('Sanity Queries', function () {
   test('fetchReturning', async () => {
     const brand = 'guitareo'
     const page = 1
-    const response = await fetchReturning(brand, {pageNumber: 1})
+    const response = await fetchReturning(brand, { pageNumber: 1 })
     expect(response).toBeDefined()
-  });
+  })
 
   test('fetchLeaving', async () => {
     const brand = 'guitareo'
-    const response = await fetchLeaving(brand, {pageNumber: 1})
+    const response = await fetchLeaving(brand, { pageNumber: 1 })
     expect(response).toBeDefined()
-  });
+  })
 
   test('fetchComingSoon', async () => {
     const brand = 'guitareo'
-    const response = await fetchComingSoon(brand, {pageNumber: 2, contentPerPage: 20})
+    const response = await fetchComingSoon(brand, { pageNumber: 2, contentPerPage: 20 })
     expect(response).toBeDefined()
-  });
+  })
 
 
   test('fetchArtists', async () => {
@@ -155,7 +156,7 @@ describe('Sanity Queries', function () {
   test('fetchAllSongsInProgress', async () => {
     var mock = jest.spyOn(dataContext, 'fetchData')
     var json = JSON.parse(
-      `{"version":1,"config":{"key":1,"enabled":1,"checkInterval":1,"refreshInterval":2},"data":{"412941":{"s":"started","p":6,"t":20,"u":1731108082}}}`
+      `{"version":1,"config":{"key":1,"enabled":1,"checkInterval":1,"refreshInterval":2},"data":{"412941":{"s":"started","p":6,"t":20,"u":1731108082}}}`,
     )
     mock.mockImplementation(() => json)
     const response = await fetchAll('drumeo', 'song', { progress: 'in progress' })
@@ -408,7 +409,7 @@ describe('Sanity Queries', function () {
       'coach-lessons',
       '',
       [],
-      31880
+      31880,
     )
     log(response)
     expect(response.meta.filterOptions.difficulty).toBeDefined()
@@ -431,9 +432,9 @@ describe('Sanity Queries', function () {
         invalidContentType,
         '',
         [],
-        coachId
-      )
-    ).rejects.toThrow("Invalid contentType: 'course' for coachId. It must be 'coach-lessons'.")
+        coachId,
+      ),
+    ).rejects.toThrow('Invalid contentType: \'course\' for coachId. It must be \'coach-lessons\'.')
   })
 
   test('fetchCoachLessons-IncludedFields', async () => {
@@ -638,14 +639,14 @@ describe('Sanity Queries', function () {
     expect(data[241251].title).toBe('Setting Up Your Space')
     expect(data[241251].type).toBe('learning-path-lesson')
     expect(data[241251].url).toBe(
-      '/drumeo/method/drumeo-method/241247/getting-started-on-the-drums/241248/gear/241249/setting-up-your-space/241251'
+      '/drumeo/method/drumeo-method/241247/getting-started-on-the-drums/241248/gear/241249/setting-up-your-space/241251',
     )
     expect(data[241251].parentTitle).toBe('Gear')
     expect(data[241252].title).toBe('Setting Up Your Pedals & Throne')
   })
 })
 
-describe('Filter Builder', function () {
+describe('Filter Builder', function() {
   beforeEach(() => {
     initializeTestService()
   })
@@ -673,7 +674,7 @@ describe('Filter Builder', function () {
     const builder = FilterBuilder.withOnlyFilterAvailableStatuses(
       filter,
       ['published', 'unlisted'],
-      true
+      true,
     )
     const finalFilter = await builder.buildFilter()
     const clauses = spliceFilterForAnds(finalFilter)
@@ -681,7 +682,7 @@ describe('Filter Builder', function () {
     expect(clauses[1].field).toBe('status')
     expect(clauses[1].operator).toBe('in')
     // not sure I like this
-    expect(clauses[1].condition).toBe("['published','unlisted']")
+    expect(clauses[1].condition).toBe('[\'published\',\'unlisted\']')
     expect(clauses[2].field).toBe('published_on')
   })
 
@@ -698,7 +699,7 @@ describe('Filter Builder', function () {
     expect(clauses[1].operator).toBe('in')
     // getFutureScheduledContentsOnly doesn't make a filter that's splicable, so we match on the more static string
     const expected =
-      "['published','unlisted'] || (status == 'scheduled' && defined(published_on) && published_on >="
+      '[\'published\',\'unlisted\'] || (status == \'scheduled\' && defined(published_on) && published_on >='
     const isMatch = finalFilter.includes(expected)
     expect(isMatch).toBeTruthy()
   })
@@ -707,7 +708,7 @@ describe('Filter Builder', function () {
     const filter = 'railcontent_id = 111'
     const builder = new FilterBuilder(filter)
     const finalFilter = await builder.buildFilter()
-    const expected = "references(*[_type == 'permission' && railcontent_id in [78,91,92]]._id)"
+    const expected = 'references(*[_type == \'permission\' && railcontent_id in [78,91,92]]._id)'
     const isMatch = finalFilter.includes(expected)
     expect(isMatch).toBeTruthy()
   })
@@ -716,7 +717,7 @@ describe('Filter Builder', function () {
     const filter = 'railcontent_id = 111'
     const builder = new FilterBuilder(filter)
     const finalFilter = await builder.buildFilter()
-    const expected = "references(*[_type == 'permission' && railcontent_id in [78,91,92]]._id)"
+    const expected = 'references(*[_type == \'permission\' && railcontent_id in [78,91,92]]._id)'
     const isMatch = finalFilter.includes(expected)
     expect(isMatch).toBeTruthy()
   })
@@ -728,7 +729,7 @@ describe('Filter Builder', function () {
       pullFutureContent: false,
     })
     const finalFilter = await builder.buildFilter()
-    const expected = "references(*[_type == 'permission' && railcontent_id in [78,91,92]]._id)"
+    const expected = 'references(*[_type == \'permission\' && railcontent_id in [78,91,92]]._id)'
     const isMatch = finalFilter.includes(expected)
     expect(isMatch).toBeFalsy()
     const clauses = spliceFilterForAnds(finalFilter)
@@ -829,14 +830,14 @@ describe('Filter Builder', function () {
       '',
       '',
       'course',
-      ''
+      '',
     )
     log(response)
     expect(response.meta.filterOptions).toBeDefined()
   })
 })
 
-describe('MetaData', function () {
+describe('MetaData', function() {
   test('customBrandTypeExists', async () => {
     const metaData = processMetadata('guitareo', 'recording')
     expect(metaData.type).toBe('recording')
@@ -871,7 +872,7 @@ describe('MetaData', function () {
   })
 })
 
-describe('v2', function () {
+describe('api.v1', function() {
   beforeEach(() => {
     initializeTestService()
   })
@@ -894,7 +895,7 @@ describe('v2', function () {
   test('fetchAllFilterOptionsLessons', async () => {
     const response = await fetchAllFilterOptions(
       'pianote',
-      [],null,null,'lessons'
+      [], null, null, 'lessons',
     )
     log(response)
     expect(response.meta.filters).toBeDefined()
@@ -903,7 +904,7 @@ describe('v2', function () {
   test('fetchAllFilterOptionsSongs', async () => {
     const response = await fetchAllFilterOptions(
       'pianote',
-      [],null,null,'songs'
+      [], null, null, 'songs',
     )
     log(response)
     expect(response.meta.filters).toBeDefined()
@@ -916,7 +917,117 @@ describe('v2', function () {
   })
 })
 
-describe('Recommended System', function () {
+describe('api.v1.admin', function() {
+  beforeEach(() => {
+    initializeTestService(false, true)
+  })
+
+  test('fetchOtherSongVersions', async () => {
+    // much of the licensed content is currently drafted, so this must be run in the admin test-suite
+    const railContentId = 386901
+    const licenseQuery = `*[railcontent_id == ${railContentId}]{
+      'content_ids': *[_type == 'license' && references(^._id)].content[]->railcontent_id
+    }[0]`
+    const otherReferencedContent = (await fetchSanity(licenseQuery, true))['content_ids']
+    log(otherReferencedContent)
+    const relatedSongsTypes = await fetchOtherSongVersions(railContentId, 'drumeo', 100)
+    log(relatedSongsTypes)
+    relatedSongsTypes.forEach(document => {
+      expect(SONG_TYPES).toContain(document.type)
+      expect(document.id).not.toStrictEqual(railContentId)
+      expect(otherReferencedContent).toContain(document.id)
+    })
+  })
+
+  test('fetchLessonsFeaturingThisContent', async () => {
+    // much of the licensed content is currently drafted, so this must be run in the admin test-suite
+    const railContentId = 386901
+    const licenseQuery = `*[railcontent_id == ${railContentId}]{
+      'content_ids': *[_type == 'license' && references(^._id)].content[]->railcontent_id
+    }[0]`
+    const otherReferencedContent = (await fetchSanity(licenseQuery, true))['content_ids']
+    const relatedNotSongs = await fetchLessonsFeaturingThisContent(railContentId, 'drumeo', 100)
+    log(relatedNotSongs)
+    relatedNotSongs.forEach(document => {
+      expect(SONG_TYPES).not.toContain(document.type)
+      expect(document.id).not.toStrictEqual(railContentId)
+      expect(otherReferencedContent).toContain(document.id)
+    })
+  })
+
+  test('fetchRelatedLessons-song-tutorial-children', async () => {
+    const railContentId = 222631
+    const relatedLessons = await fetchRelatedLessons(railContentId, 'pianote')
+    log(relatedLessons)
+    const expectedPath = [
+      '',
+      'pianote',
+      'song-tutorials',
+      'hallelujah',
+      '221831'
+    ]
+    relatedLessons['related_lessons'].forEach(document => {
+      expect('song-tutorial-children').toStrictEqual(document.type)
+      let web_url_path = document.web_url_path.split('/')
+      // remove id, slug
+      web_url_path.pop()
+      web_url_path.pop()
+      expect(web_url_path).toEqual(expectedPath)
+    })
+  })
+
+  297927
+
+  test('fetchRelatedLessons-pack-bundle-lessons', async () => {
+    //https://www.musora.com/singeo/packs/sing-harmony-in-30-days/410537/sing-harmony-in-30-days/410538/day-2/410541
+    const railContentId = 410541
+    const relatedLessons = await fetchRelatedLessons(railContentId, 'singeo')
+    log(relatedLessons)
+    const expectedPath = [
+      '',
+      'singeo',
+      'packs',
+      'sing-harmony-in-30-days',
+      '410537',
+      'sing-harmony-in-30-days',
+      '410538'
+    ]
+    relatedLessons['related_lessons'].forEach(document => {
+      expect('pack-bundle-lesson').toStrictEqual(document.type)
+      // there are other ways to check that these all have the same parent, but I don't want to write it
+      let web_url_path = document.web_url_path.split('/')
+      // remove id and slug
+      web_url_path.pop()
+      web_url_path.pop()
+      expect(web_url_path).toEqual(expectedPath)
+    })
+  })
+
+  test('fetchRelatedLessons-course-parts', async () => {
+    ///drumeo/courses/ultra-compact-drum-set-gear-guide/295177/gigpig-standard-and-extendable/297929
+    const railContentId = 297929
+    const relatedLessons = await fetchRelatedLessons(railContentId, 'drumeo')
+    log(relatedLessons)
+    const expectedPath = [
+      '',
+      'drumeo',
+      'courses',
+      'ultra-compact-drum-set-gear-guide',
+      '295177',
+    ]
+    relatedLessons['related_lessons'].forEach(document => {
+      expect('course-part').toStrictEqual(document.type)
+      // there are other ways to check that these all have the same parent, but I don't want to write it
+      let web_url_path = document.web_url_path.split('/')
+      // remove id and slug
+      web_url_path.pop()
+      web_url_path.pop()
+      expect(web_url_path).toEqual(expectedPath)
+    })
+  })
+})
+
+describe('Recommended System', function() {
   beforeEach(() => {
     initializeTestService()
   })
@@ -931,7 +1042,7 @@ describe('Recommended System', function () {
   })
 
   test('getRecommendedForYou-SeeAll', async () => {
-    const results = await getRecommendedForYou('drumeo', 'recommended', {page: 1, limit:20})
+    const results = await getRecommendedForYou('drumeo', 'recommended', { page: 1, limit: 20 })
     log(results)
     expect(results.type).toBeDefined()
     expect(results.data).toBeDefined()
@@ -939,3 +1050,5 @@ describe('Recommended System', function () {
     expect(results.data.length).toBeGreaterThanOrEqual(1)
   })
 })
+
+

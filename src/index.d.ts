@@ -120,10 +120,10 @@ import {
 } from './services/railcontent.js';
 
 import {
+	fetchSimilarItems,
 	rankCategories,
 	rankItems,
-	recommendations,
-	similarItems
+	recommendations
 } from './services/recommendations.js';
 
 import {
@@ -144,6 +144,7 @@ import {
 	fetchHierarchy,
 	fetchLeaving,
 	fetchLessonContent,
+	fetchLessonsFeaturingThisContent,
 	fetchLiveEvent,
 	fetchMetadata,
 	fetchMethod,
@@ -152,12 +153,14 @@ import {
 	fetchMethodPreviousNextLesson,
 	fetchNewReleases,
 	fetchNextPreviousLesson,
+	fetchOtherSongVersions,
 	fetchPackAll,
 	fetchPackData,
 	fetchParentForDownload,
 	fetchPlayAlongsCount,
 	fetchRecent,
 	fetchRelatedLessons,
+	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
 	fetchReturning,
 	fetchSanity,
@@ -237,6 +240,7 @@ declare module 'musora-content-services' {
 		fetchHierarchy,
 		fetchLeaving,
 		fetchLessonContent,
+		fetchLessonsFeaturingThisContent,
 		fetchLiveEvent,
 		fetchMetadata,
 		fetchMethod,
@@ -246,6 +250,7 @@ declare module 'musora-content-services' {
 		fetchNewReleases,
 		fetchNextContentDataForParent,
 		fetchNextPreviousLesson,
+		fetchOtherSongVersions,
 		fetchOwnedChallenges,
 		fetchPackAll,
 		fetchPackData,
@@ -257,12 +262,14 @@ declare module 'musora-content-services' {
 		fetchPlaylistItems,
 		fetchRecent,
 		fetchRelatedLessons,
+		fetchRelatedRecommendedContent,
 		fetchRelatedSongs,
 		fetchReturning,
 		fetchSanity,
 		fetchScheduledAndNewReleases,
 		fetchScheduledReleases,
 		fetchShowsData,
+		fetchSimilarItems,
 		fetchSongArtistCount,
 		fetchSongById,
 		fetchSongsInProgress,
@@ -329,7 +336,6 @@ declare module 'musora-content-services' {
 		reportPlaylist,
 		reset,
 		setStudentViewForUser,
-		similarItems,
 		unassignModeratorToComment,
 		unlikeComment,
 		unlikeContent,
