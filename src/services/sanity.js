@@ -15,8 +15,9 @@ import {
   getNewReleasesTypes,
   coachLessonsTypes,
   getChildFieldsForContentType,
+  SONG_TYPES
 } from '../contentTypeConfig.js'
-
+import { fetchSimilarItems } from './recommendations.js'
 import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
 
 import { globalConfig } from './config.js'
@@ -36,7 +37,7 @@ import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './cont
  *
  * @type {string[]}
  */
-const excludeFromGeneratedIndex = ['handleCustomFetchAll']
+const excludeFromGeneratedIndex = ['handleCustomFetchAll', 'fetchRelatedByLicense']
 
 /**
  * Fetch a song by its document ID from Sanity.
@@ -1314,6 +1315,78 @@ export async function fetchLessonContent(railContentId) {
 }
 
 /**
+ *
+ * @param railContentId
+ * @param brand
+ * @param count
+ * @returns {Promise<Array<Object>|null>}
+ */
+export async function fetchRelatedRecommendedContent(railContentId, brand, count=10) {
+  const recommendedItems = await fetchSimilarItems(railContentId, brand, count)
+  return fetchByRailContentIds(recommendedItems)
+}
+
+/**
+ * Get song type (transcriptions, jam packs, play alongs, tutorial children) content documents that share content information with the provided railcontent document.
+ * These are linked through content that shares a license with the provided railcontent document
+ *
+ * @param railcontentId
+ * @param brand
+ * @param count
+ * @returns {Promise<*>}
+ */
+export async function fetchOtherSongVersions(railcontentId, brand, count=3){
+  return fetchRelatedByLicense(railcontentId, brand, true, count)
+}
+
+/**
+ * Get non-song content documents that share content information with the provided railcontent document.
+ * These are linked through content that shares a license with the provided railcontent document
+ *
+ * @param {integer} railcontentId
+ * @param {string} brand
+ * @param {integer:3} count
+ * @returns {Promise<*>}
+ */
+export async function fetchLessonsFeaturingThisContent(railcontentId, brand, count=3){
+  return fetchRelatedByLicense(railcontentId, brand, false, count)
+}
+
+/**
+ * Get content documents that share license information with the provided railcontent id
+ *
+ * @param {integer} railcontentId
+ * @param {string} brand
+ * @param {boolean} onlyUseSongTypes - if true, only return the song type documents. If false, return everything except those
+ * @param {integer:3} count
+ * @returns {Promise<*[]>}
+ */
+async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, count) {
+  const typeCheck = `@->_type in [${arrayJoinWithQuotes(SONG_TYPES)}]`
+  const typeCheckString = onlyUseSongTypes ? `${typeCheck}` : `!(${typeCheck})`
+  const contentFromLicenseFilter =`_type == 'license' && references(^._id)].content[${typeCheckString} && @->railcontent_id != ${railcontentId}`
+  let filterSongTypesWithSameLicense = await new FilterBuilder(
+    contentFromLicenseFilter,
+    {isChildrenFilter: true},
+  ).buildFilter()
+  let queryFields = getFieldsForContentType()
+  const baseParentQuery = `railcontent_id == ${railcontentId}`
+  let parentQuery = await new FilterBuilder(baseParentQuery).buildFilter()
+
+  // queryFields = 'railcontent_id, title'
+  // parentQuery = baseParentQuery
+  // filterSongTypesWithSameLicense = contentFromLicenseFilter
+  const query = `*[${parentQuery}]{
+   _type, railcontent_id,
+      "related_by_license" :
+          *[${filterSongTypesWithSameLicense}]->{${queryFields}}|order(published_on desc, title asc)[0...${count}],
+      }[0...1]`
+
+  const results = await fetchSanity(query, false)
+  return results['related_by_license'] ?? [];
+}
+
+/**
  * Fetch related lessons for a specific lesson by RailContent ID and type.
  * @param {string} railContentId - The RailContent ID of the current lesson.
  * @param {string} brand - The current brand.
@@ -2272,9 +2345,9 @@ export async function fetchScheduledAndNewReleases(
       published_on,
       "type": _type,
       show_in_new_feed,
-      web_url_path,
       "permission_id": permission[]->railcontent_id
   }`
 
   return fetchSanity(query, true)
 }
+

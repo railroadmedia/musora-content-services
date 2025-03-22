@@ -3,6 +3,12 @@ import {Tabs} from "./contentMetaData.js";
 
 export const AWSUrl = 'https://s3.us-east-1.amazonaws.com/musora-web-platform'
 export const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net'
+
+export const SONG_TYPES = ['song', 'play-along', 'jam-track', 'song-tutorial-children']
+// Challenges are excluded for the moment as they're still in design flex
+// Single hierarchy refers to only one element in the hierarchy has video lessons, not that they have a single parent
+export const SINGLE_PARENT_TYPES = ['course-part', 'pack-bundle-lesson', 'song-tutorial-children']
+
 export const DEFAULT_FIELDS = [
   "'sanity_id' : _id",
   "'id': railcontent_id",

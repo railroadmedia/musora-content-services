@@ -5,7 +5,7 @@ const railContentModule = require('../src/services/railcontent.js')
 let token = null
 let userId = process.env.RAILCONTENT_USER_ID ?? null
 
-export async function initializeTestService(useLive = false) {
+export async function initializeTestService(useLive = false, isAdmin = false) {
   if (useLive && !token && process.env.RAILCONTENT_BASE_URL) {
     let data = await fetchLoginToken(
       process.env.RAILCONTENT_EMAIL,
@@ -39,7 +39,7 @@ export async function initializeTestService(useLive = false) {
   initializeService(config)
 
   let mock = jest.spyOn(railContentModule, 'fetchUserPermissionsData')
-  let testData = { permissions: [78, 91, 92], isAdmin: false }
+  let testData = { permissions: [78, 91, 92], isAdmin: isAdmin }
   mock.mockImplementation(() => testData)
 }
 
