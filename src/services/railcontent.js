@@ -343,17 +343,17 @@ export async function fetchHandler(url, method = 'get', dataVersion = null, body
 }
 
 export async function fetchUserLikes(currentVersion) {
-  let url = `/content/user/likes/all`
+  let url = `/content/v1/user/likes/all`
   return fetchDataHandler(url, currentVersion)
 }
 
 export async function postContentLiked(contentId) {
-  let url = `/content/user/likes/like/${contentId}`
+  let url = `/content/v1/user/likes/like/${contentId}`
   return await postDataHandler(url)
 }
 
 export async function postContentUnliked(contentId) {
-  let url = `/content/user/likes/unlike/${contentId}`
+  let url = `/content/v1/user/likes/unlike/${contentId}`
   return await postDataHandler(url)
 }
 
