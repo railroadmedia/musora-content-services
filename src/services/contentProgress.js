@@ -1,6 +1,6 @@
 import {
   fetchContentProgress,
-  postContentCompleted,
+  postContentComplete,
   postContentReset,
   postRecordWatchSession,
 } from './railcontent.js'
@@ -124,7 +124,7 @@ export async function assignmentStatusCompleted(assignmentId, parentContentId) {
       completeStatusInLocalContext(localContext, assignmentId, hierarchy)
     },
     async function () {
-      return postContentCompleted(assignmentId)
+      return postContentComplete(assignmentId)
     }
   )
 }
@@ -136,7 +136,7 @@ export async function contentStatusCompleted(contentId) {
       completeStatusInLocalContext(localContext, contentId, hierarchy)
     },
     async function () {
-      return postContentCompleted(contentId)
+      return postContentComplete(contentId)
     }
   )
 }
