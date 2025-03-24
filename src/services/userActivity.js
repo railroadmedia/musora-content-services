@@ -66,7 +66,7 @@ function calculateStreaks(practices) {
   let sortedPracticeDays = Object.keys(practices).sort() // Ensure dates are sorted in order
 
   if (sortedPracticeDays.length === 0) {
-    return { currentDailyStreak: 0, currentWeeklyStreak: 0 }
+    return { currentDailyStreak: 1, currentWeeklyStreak: 1 }
   }
 
   let dailyStreak = 0
