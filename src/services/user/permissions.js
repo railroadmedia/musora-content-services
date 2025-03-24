@@ -20,12 +20,12 @@ let lastUpdatedKey = `userPermissions_lastUpdated`
 /**
  * Fetches the user permissions data.
  *
- * @param {boolean} [bypassCache=false]
+ * @param {boolean} [resetCache=false]
  *
  * @returns {Promise<UserPermissions>} - The user permissions data.
  */
-export async function fetchUserPermissions(bypassCache = false) {
-  if (bypassCache) {
+export async function fetchUserPermissions(resetCache = false) {
+  if (resetCache) {
     userPermissionsPromise = null
   }
 
