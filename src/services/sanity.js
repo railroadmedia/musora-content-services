@@ -1299,7 +1299,7 @@ export async function fetchRelatedLessons(railContentId, brand) {
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
   const queryFieldsWithSort = queryFields + ', sort'
-  const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
+  const query = `*[railcontent_id == ${railContentId} && brand == "${brand}"]{
    _type, parent_type, railcontent_id,
     "related_lessons" : array::unique([
       ...(*[${filterNeighbouringSiblings}][0].child[${childrenFilter}]->{${queryFields}}),
@@ -1343,7 +1343,7 @@ async function fetchParentData(railContentId, brand) {
  */
 function buildQueryForFetch(railContentId, brand) {
   const projections = `railcontent_id, _type, parent_type, parent_content_data, difficulty_string, brand`
-  return `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{${projections}}`
+  return `*[railcontent_id == ${railContentId} && brand == "${brand}"]{${projections}}`
 }
 
 /**
