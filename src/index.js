@@ -6,6 +6,12 @@ import {
 } from './services/config.js';
 
 import {
+	addItemToPlaylist,
+	createPlaylist,
+	fetchUserPlaylists
+} from './services/content-org/playlists.js';
+
+import {
 	getContentRows,
 	getLessonContentRows,
 	getNewAndUpcoming,
@@ -46,12 +52,10 @@ import {
 } from './services/forum.js';
 
 import {
-	addItemToPlaylist,
 	assignModeratorToComment,
 	closeComment,
 	countAssignmentsAndLessons,
 	createComment,
-	createPlaylist,
 	deleteComment,
 	deletePlaylist,
 	deletePlaylistItem,
