@@ -155,8 +155,7 @@ import {
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	getSortOrder,
-	jumpToContinueContent,
-	oldFetchRelatedTutorials
+	jumpToContinueContent
 } from './services/sanity.js';
 
 import {
@@ -267,7 +266,6 @@ export {
 	likeComment,
 	likeContent,
 	likePlaylist,
-	oldFetchRelatedTutorials,
 	openComment,
 	pinPlaylist,
 	playback,
