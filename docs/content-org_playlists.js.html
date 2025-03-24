@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>content.js - Documentation</title>
+    <title>content-org/playlists.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">content.js</h1>
+    <h1 class="page-title">content-org/playlists.js</h1>
     
 
     
@@ -46,376 +46,126 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @module Content-Services-V2
+ * @namespace Content-Organization
+ * @property {module:Playlists} Playlists
  */
+/**
+ * @module Playlists
+ */
+import { fetchHandler } from '../railcontent.js'
+import './playlists-types.js'
 
-import {
-  fetchAll,
-  fetchByRailContentIds,
-  fetchMetadata,
-  fetchRecent,
-  fetchTabData,
-  fetchNewReleases,
-  fetchUpcomingEvents,
-  fetchScheduledReleases,
-  fetchReturning,
-  fetchLeaving, fetchScheduledAndNewReleases
-} from './sanity.js'
-import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
-import {getAllStartedOrCompleted} from "./contentProgress";
-import {fetchHandler} from "./railcontent";
-import {recommendations} from "./recommendations";
+/**
+ * Exported functions that are excluded from index generation.
+ *
+ * @type {string[]}
+ */
+const excludeFromGeneratedIndex = []
 
-export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
-  let recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent' });
-  recentContentIds = recentContentIds.map(item => item.id);
+const BASE_PATH = `/api/content-org`
 
-  let contentRows = await getContentRows(brand, pageName);
-  contentRows = Array.isArray(contentRows) ? contentRows : [];
-  contentRows.unshift({
-    id: 'recent',
-    title: 'Recent ' + capitalizeFirstLetter(pageName),
-    content: recentContentIds || []
-  });
-
-  const results = await Promise.all(
-      contentRows.map(async (row) => {
-        if (row.content.length == 0){
-          return { id: row.id, title: row.title, items: [] }
-        }
-        const data = await fetchByRailContentIds(row.content)
-        return { id: row.id, title: row.title, items: data }
-      })
-  )
-  return results
+/**
+ * Fetches user playlists for a specific brand.
+ *
+ * Allows optional pagination, sorting, and search parameters to control the result set.
+ *
+ * @param {string} brand - The brand identifier for which playlists are being fetched.
+ * @param {number} [params.limit=10] - The maximum number of playlists to return per page (default is 10).
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {string} [params.sort='-created_at'] - The sorting order for the playlists (default is by created_at in descending order).
+ * @param {string} [params.searchTerm] - A search term to filter playlists by name.
+ * @param {int|string} [params.content_id] - If content_id exists, the endpoint checks in each playlist if we have the content in the items.
+ *
+ * @returns {Promise&lt;Object|null>} - A promise that resolves to the response from the API, containing the user playlists data.
+ *
+ * @example
+ * fetchUserPlaylists('drumeo', { page: 1, sort: 'name', searchTerm: 'rock' })
+ *   .then(playlists => console.log(playlists))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchUserPlaylists(
+  brand,
+  { page, limit, sort, searchTerm, content_id, categories } = {}
+) {
+  let url
+  const limitString = limit ? `&amp;limit=${limit}` : ''
+  const pageString = page ? `&amp;page=${page}` : ''
+  const sortString = sort ? `&amp;sort=${sort}` : ''
+  const searchFilter = searchTerm ? `&amp;term=${searchTerm}` : ''
+  const content = content_id ? `&amp;content_id=${content_id}` : ''
+  const categoryString =
+    categories &amp;&amp; categories.length ? categories.map((cat) => `categories[]=${cat}`).join('&amp;') : ''
+  url = `${BASE_PATH}/v1/user/playlists?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&amp;${categoryString}` : ''}`
+  return await fetchHandler(url)
 }
 
 /**
- * Get data that should be displayed for a specific tab with pagination
- * @param {string} brand - The brand for which to fetch data.
- * @param {string} pageName - The page name (e.g., 'lessons', 'songs','challenges).
- * @param {string} tabName - The name for the selected tab. Should be same name received from fetchMetadata (e.g., 'Individuals', 'Collections','For You').
- * @param {Object} params - Parameters for pagination, sorting, and filter.
- * @param {number} [params.page=1] - The page number for pagination.
- * @param {number} [params.limit=10] - The number of items per page.
- * @param {string} [params.sort="-published_on"] - The field to sort the data by.
- * @param {Array&lt;string>} [params.selectedFilters=[]] - The selected filter.
- * @returns {Promise&lt;Object|null>} - The fetched content data or null if not found.
+ * Creates a new user playlist by sending a POST request with playlist data to the API.
+ *
+ * This function calls the `/playlists/playlist` endpoint, where the server validates the incoming data and associates
+ * the new playlist with the authenticated user. The `name` field is required, while other fields are optional.
+ *
+ * @param {CreatePlaylistDTO} playlistData - An object containing data to create the playlist. The fields include:
+ *  - `name` (string): The name of the new playlist (required, max 255 characters).
+ *  - `description` (string): A description of the playlist (optional, max 1000 characters).
+ *  - `category` (string): The category of the playlist.
+ *  - `thumbnail_url` (string): The URL of the playlist thumbnail (optional, must be a valid URL).
+ *  - `private` (boolean): Whether the playlist is private (optional, defaults to true).
+ *  - `brand` (string): Brand identifier for the playlist.
+ *
+ * @returns {Promise&lt;Playlist>} - A promise that resolves to the created playlist data if successful, or an error response if validation fails.
+ *
+ * The server response includes:
+ *  - `message`: Success message indicating playlist creation (e.g., "Playlist created successfully").
+ *  - `playlist`: The data for the created playlist, including the `user_id` of the authenticated user.
  *
  * @example
- * getTabResults('drumeo', 'lessons','Singles', {
- *   page: 2,
- *   limit: 20,
- *   sort: '-popularity',
- *   includedFields: ['difficulty,Intermediate'],
- * })
- *   .then(content => console.log(content))
- *   .catch(error => console.error(error));
+ * createPlaylist({ name: "My Playlist", description: "A cool playlist", private: true })
+ *   .then(response => console.log(response.message))
+ *   .catch(error => console.error('Error creating playlist:', error));
  */
-export async function getTabResults(brand, pageName, tabName, {
-  page = 1,
-  limit = 10,
-  sort = 'recommended',
-  selectedFilters = []
-} = {}) {
-
-  // Extract and handle 'progress' filter separately
-  const progressFilter = selectedFilters.find(f => f.startsWith('progress,')) || 'progress,all';
-  const progressValue = progressFilter.split(',')[1].toLowerCase();
-  const filteredSelectedFilters = selectedFilters.filter(f => !f.startsWith('progress,'));
-
-  // Prepare included fields
-  const mergedIncludedFields = [...filteredSelectedFilters, `tab,${tabName.toLowerCase()}`];
-
-  // Fetch data
-  const results = tabName === Tabs.ForYou.name
-      ? { entity: await getLessonContentRows(brand, pageName) }
-      : await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
-
-  // Fetch metadata
-  const metaData = await fetchMetadata(brand, pageName);
-
-  // Process filters
-  const filters = (metaData.filters ?? []).map(filter => ({
-    ...filter,
-    items: filter.items.map(item => {
-      const value = item.value.split(',')[1];
-      return {
-        ...item,
-        selected: selectedFilters.includes(`${filter.key},${value}`) ||
-                      (filter.key === 'progress' &amp;&amp; value === 'all' &amp;&amp; !selectedFilters.some(f => f.startsWith('progress,')))
-      };
-    })
-  }));
-
-  // Process sort options
-  const sortOptions = {
-    title: metaData.sort?.title ?? 'Sort By',
-    type: metaData.sort?.type ?? 'radio',
-    items: (metaData.sort?.items ?? []).map(option => ({
-      ...option,
-      selected: option.value === sort
-    }))
-  };
-
-  return {
-    type: tabName === Tabs.ForYou.name ? TabResponseType.SECTIONS : TabResponseType.CATALOG,
-    data: results.entity,
-    meta: { filters, sort: sortOptions }
-  };
+export async function createPlaylist(playlistData) {
+  const url = `${BASE_PATH}/v1/user/playlists`
+  return await fetchHandler(url, 'POST', null, playlistData)
 }
 
 /**
- * Fetches recent content for a given brand and page with pagination.
+ * Adds an item to one or more playlists by making a POST request to the `/playlists/add-item` endpoint.
  *
- * @param {string} brand - The brand for which to fetch data.
- * @param {string} pageName - The page name (e.g., 'all', 'incomplete', 'completed').
- * @param {string} [tabName='all'] - The tab name (defaults to 'all' for recent content).
- * @param {Object} params - Parameters for pagination and sorting.
- * @param {number} [params.page=1] - The page number for pagination.
- * @param {number} [params.limit=10] - The number of items per page.
- * @param {string} [params.sort="-published_on"] - The field to sort the data by.
- * @returns {Promise&lt;Object>} - The fetched content data.
+ * @param {AddItemToPlaylistDTO} payload - The request payload containing necessary parameters.
+ *
+ * @returns {Promise&lt;Object|null>} - A promise that resolves to an object with the response data, including:
+ *  - `success` (boolean): Indicates if the items were added successfully (`true` on success).
+ *  - `limit_excedeed` (Array): A list of playlists where the item limit was exceeded, if any.
+ *  - `successful` (Array): A list of successfully added items (empty if none).
+ *
+ * Resolves to `null` if the request fails.
+ * @throws {Error} - Throws an error if the request encounters issues during the operation.
  *
  * @example
- * getRecent('drumeo', 'lessons', 'all', {
- *   page: 2,
- *   limit: 15,
- *   sort: '-popularity'
- * })
- *   .then(content => console.log(content))
- *   .catch(error => console.error(error));
+ * const payload = {
+ *     content_id: 123,
+ *     playlist_id: [1, 2, 3],
+ *     import_all_assignments: true
+ * };
+ *
+ * addItemToPlaylist(payload)
+ *   .then(response => {
+ *     if (response?.success) {
+ *       console.log("Item(s) added to playlist successfully");
+ *     }
+ *     if (response?.limit_excedeed) {
+ *       console.warn("Some playlists exceeded the item limit:", response.limit_excedeed);
+ *     }
+ *   })
+ *   .catch(error => {
+ *     console.error("Error adding item to playlist:", error);
+ *   });
  */
-export async function getRecent(brand, pageName, tabName = 'all', {
-  page = 1,
-  limit = 10,
-  sort = '-published_on',
-} = {}) {
-  const progress = tabName.toLowerCase() == 'all' ? 'recent':tabName.toLowerCase();
-  const recentContentIds = await fetchRecent(brand, pageName, { page:page, limit:limit, progress: progress });
-  const metaData = await fetchMetadata(brand, 'recent');
-  return {
-    type: TabResponseType.CATALOG,
-    data: recentContentIds,
-    meta:  { tabs: metaData.tabs }
-  };
+export async function addItemToPlaylist(payload) {
+  const url = `${BASE_PATH}/v1/user/playlists/items`
+  return await fetchHandler(url, 'POST', null, payload)
 }
-
-/**
- * Fetches content rows for a given brand and page with optional filtering by content row id.
- *
- * @param {string} brand - The brand for which to fetch content rows.
- * @param {string} pageName - The page name (e.g., 'lessons', 'songs', 'challenges').
- * @param {string} [contentRowId] - The specific content row ID to fetch.
- * @param {Object} params - Parameters for pagination.
- * @param {number} [params.page=1] - The page number for pagination.
- * @param {number} [params.limit=10] - The maximum number of content items per row.
- * @returns {Promise&lt;Object>} - The fetched content rows.
- *
- * @example
- * getContentRows('drumeo', 'lessons', 'Your-Daily-Warmup', {
- *   page: 1,
- *   limit: 5
- * })
- *   .then(content => console.log(content))
- *   .catch(error => console.error(error));
- */
-export async function getContentRows(brand, pageName, contentRowId , {
-  page = 1,
-  limit = 10,
-} = {}) {
-  const contentRow = contentRowId ? `&amp;content_row_id=${contentRowId}` : ''
-  const url = `/api/content/v1/rows?brand=${brand}&amp;page_name=${pageName}${contentRow}&amp;page=${page}&amp;limit=${limit}`;
-  return  await fetchHandler(url, 'get', null);
-}
-
-/**
- * Fetches new and upcoming releases for a given brand with pagination options.
- *
- * @param {string} brand - The brand for which to fetch new and upcoming releases.
- * @param {Object} [params={}] - Pagination parameters.
- * @param {number} [params.page=1] - The page number for pagination.
- * @param {number} [params.limit=10] - The maximum number of content items to fetch.
- * @returns {Promise&lt;{ data: Object[] } | null>} - A promise that resolves to the fetched content data or `null` if no data is found.
- *
- * @example
- * // Fetch the first page with 10 results
- * getNewAndUpcoming('drumeo')
- *   .then(response => console.log(response))
- *   .catch(error => console.error(error));
- *
- * @example
- * // Fetch the second page with 20 results
- * getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
- *   .then(response => console.log(response))
- *   .catch(error => console.error(error));
- */
-export async function getNewAndUpcoming(brand, {
-  page = 1,
-  limit = 10,
-} = {}) {
-
-  const data = await fetchScheduledAndNewReleases(brand, {page: page, limit: limit});
-  if (!data) {
-    return null;
-  }
-
-  return {
-    data: data,
-  };
-}
-
-/**
- * Fetches scheduled content rows for a given brand with optional filtering by content row ID.
- *
- * @param {string} brand - The brand for which to fetch content rows.
- * @param {string} [contentRowId=null] - The specific content row ID to fetch (optional).
- * @param {Object} [params={}] - Pagination parameters.
- * @param {number} [params.page=1] - The page number for pagination.
- * @param {number} [params.limit=10] - The maximum number of content items per row.
- * @returns {Promise&lt;Object>} - A promise that resolves to the fetched content rows.
- *
- * @example
- * // Fetch all sections with default pagination
- * getScheduleContentRows('drumeo')
- *   .then(content => console.log(content))
- *   .catch(error => console.error(error));
- *
- * @example
- * // Fetch only the 'New-Releases' section with custom pagination
- * getScheduleContentRows('drumeo', 'New-Releases', { page: 1, limit: 30 })
- *   .then(content => console.log(content))
- *   .catch(error => console.error(error));
- *
- * @example
- * // Fetch only the 'Live-Streams' section with unlimited results
- * getScheduleContentRows('drumeo', 'Live-Streams')
- *   .then(content => console.log(content))
- *   .catch(error => console.error(error));
- */
-export async function getScheduleContentRows(brand, contentRowId = null, { page = 1, limit = 10 } = {}) {
-  const sections = {
-    'New-Releases': {
-      title: 'New Releases',
-      fetchMethod: fetchNewReleases
-    },
-    'Live-Streams': {
-      title: 'Live Streams',
-      fetchMethod: fetchUpcomingEvents
-    },
-    'Upcoming-Releases': {
-      title: 'Upcoming Releases',
-      fetchMethod: fetchScheduledReleases
-    },
-    'Returning-Soon': {
-      title: 'Returning Soon',
-      fetchMethod: fetchReturning
-    },
-    'Leaving-Soon': {
-      title: 'Leaving Soon',
-      fetchMethod: fetchLeaving
-    }
-  };
-
-  if (contentRowId) {
-    if (!sections[contentRowId]) {
-      return null; // Return null if the requested section does not exist
-    }
-
-    const items = await sections[contentRowId].fetchMethod(brand, { page, limit });
-
-    // Fetch only the requested section
-    const result = {
-      id: contentRowId,
-      title: sections[contentRowId].title,
-      // TODO: Remove content after FE/MA updates the existing code to use items
-      content: items,
-      items: items
-    };
-
-    return {
-      type: TabResponseType.CATALOG,
-      data: result,
-      meta: {}
-    };
-  }
-
-  // If no specific contentRowId, fetch all sections
-  const results = await Promise.all(
-    Object.entries(sections).map(async ([id, section]) => {
-      // Apply special pagination rules
-      const isNewReleases = id === 'New-Releases';
-      const pagination = isNewReleases ? { page: 1, limit: 30 } : { page: 1, limit: Number.MAX_SAFE_INTEGER };
-
-      return {
-        id,
-        title: section.title,
-        content: await section.fetchMethod(brand, pagination)
-      };
-    })
-  );
-
-  return {
-    type: TabResponseType.SECTIONS,
-    data: results,
-    meta: {}
-  };
-}
-
-/**
- * Fetches recommended content for a given brand with pagination support.
- *
- * @param {string} brand - The brand for which to fetch recommended content.
- * @param {Object} [params={}] - Pagination parameters.
- * @param {number} [params.page=1] - The page number for pagination.
- * @param {number} [params.limit=10] - The maximum number of recommended content items per page.
- * @returns {Promise&lt;Object>} - A promise that resolves to an object containing recommended content.
- *
- * @example
- * // Fetch recommended content for a brand with default pagination
- * getRecommendedForYou('drumeo')
- *   .then(content => console.log(content))
- *   .catch(error => console.error(error));
- *
- * @example
- * // Fetch recommended content for a brand with custom pagination
- * getRecommendedForYou('drumeo', { page: 2, limit: 5 })
- *   .then(content => console.log(content))
- *   .catch(error => console.error(error));
- */
-export async function getRecommendedForYou(brand, rowId = null, {
-  page = 1,
-  limit = 10,
-} = {}) {
-  const requiredItems = page * limit;
-  const data = await recommendations(brand, {limit: requiredItems});
-  if (!data || !data.length) {
-    return { id: 'recommended', title: 'Recommended For You', items: [] };
-  }
-
-  // Apply pagination before calling fetchByRailContentIds
-  const startIndex = (page - 1) * limit;
-  const paginatedData = data.slice(startIndex, startIndex + limit);
-
-  const contents = await fetchByRailContentIds(paginatedData);
-  const result = {
-    id: 'recommended',
-    title: 'Recommended For You',
-    items: contents
-  };
-
-  if (rowId) {
-    return {
-      type: TabResponseType.CATALOG,
-      data: contents,
-      meta: {}
-    };
-  }
-
-  return { id: 'recommended', title: 'Recommended For You', items: contents }
-}
-
-
 </code></pre>
         </article>
     </section>
