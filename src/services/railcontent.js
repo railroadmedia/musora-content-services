@@ -1246,7 +1246,7 @@ export async function fetchUserPractices() {
     }
 
     // Push the practice entry into the array
-    acc[practice.day].push({ id:practice.id, duration_seconds: practice.duration_seconds });
+    acc[practice.day].push({ duration_seconds: practice.duration_seconds });
 
     return acc;
   }, {});
