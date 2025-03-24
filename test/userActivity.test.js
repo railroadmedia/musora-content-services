@@ -29,17 +29,17 @@ describe('User Activity API Tests', function () {
       "config": { "key": 1, "enabled": 1, "checkInterval": 1, "refreshInterval": 2 },
       "data": {
           "practices": {
-           "2025-02-10": [{ "duration_seconds": 190 }],
-             "2025-02-11": [{ "duration_seconds": 340 }],
-             "2025-02-19": [{ "duration_seconds": 340 }],
-             "2025-03-01": [{ "duration_seconds": 360 }],
-             "2025-03-03": [{ "duration_seconds": 360 }],
-             "2025-03-05": [{ "duration_seconds": 100 }],
-             "2025-03-11": [{ "duration_seconds": 190 }],
-            "2025-03-14": [{ "duration_seconds": 456 }],
-            "2025-03-15": [{ "duration_seconds": 124 }],
-            "2025-03-16": [{ "duration_seconds": 452 }, { "duration_seconds": 456 }],
-            "2025-03-17": [{ "duration_seconds": 122 }]
+           "2025-02-10": [{ "id":1, "duration_seconds": 190 }],
+             "2025-02-11": [{ "id":2,"duration_seconds": 340 }],
+             "2025-02-19": [{ "id":3,"duration_seconds": 340 }],
+             "2025-03-01": [{ "id":1,"duration_seconds": 360 }],
+             "2025-03-03": [{ "id":4,"duration_seconds": 360 }],
+             "2025-03-05": [{ "id":5,"duration_seconds": 100 }],
+             "2025-03-11": [{ "id":6,"duration_seconds": 190 }],
+            "2025-03-14": [{ "id":7,"duration_seconds": 456 }],
+            "2025-03-15": [{ "id":8,"duration_seconds": 124 }],
+            "2025-03-16": [{ "id":9,"duration_seconds": 452 }, { "id":10,"duration_seconds": 456 }],
+            "2025-03-17": [{ "id":11,"duration_seconds": 122 }]
           }
         }
     }`

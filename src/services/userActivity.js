@@ -153,7 +153,7 @@ export async function getUserWeeklyStats() {
 export async function getUserMonthlyStats(year = new Date().getFullYear(), month = new Date().getMonth(), day = 1) {
   let data = await userActivityContext.getData()
   let practices = data?.[DATA_KEY_PRACTICES] ?? {}
-
+  console.log('user practices from local storage', practices)
   // Get the first day of the specified month and the number of days in that month
   let firstDayOfMonth = new Date(year, month, 1)
   let today = new Date()
@@ -240,6 +240,12 @@ export async function recordUserPractice(practiceDetails) {
 
   const today = new Date().toISOString().split('T')[0];
 
+  const response = await logUserPractice(practiceDetails);
+  if (!response ) {
+    console.error('Failed to log user practice');
+    return;
+  }
+console.log('recordUserPractice response', response)
   await userActivityContext.update(
     async function(localContext) {
       let userData = localContext.data ?? { [DATA_KEY_PRACTICES]: [] }
@@ -252,9 +258,6 @@ export async function recordUserPractice(practiceDetails) {
       userData[DATA_KEY_PRACTICES][today].push({duration_seconds: practiceDetails.duration_seconds});
       userData[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000)
       localContext.data = userData
-    },
-    async function () {
-      return logUserPractice(practiceDetails)
     })
 }
 
