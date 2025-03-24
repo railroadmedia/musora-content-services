@@ -90,7 +90,6 @@ import {
 	fetchUserChallengeProgress,
 	fetchUserLikes,
 	fetchUserPermissionsData,
-	fetchUserPlaylists,
 	fetchUserPractices,
 	likeComment,
 	likePlaylist,
