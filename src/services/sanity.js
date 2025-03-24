@@ -1318,7 +1318,7 @@ export async function fetchRelatedLessons(railContentId, brand) {
  * @param {string} brand
  * @returns {Promise<Object|null>}
  */
-export async function fetchRelatedTutorials(railContentId, brand) {
+export async function oldFetchRelatedTutorials(railContentId, brand) {
 
   //define projections
   const defaultProjections = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type,genre`
@@ -1383,8 +1383,8 @@ function groupCurrentContentData(currentContent) {
   return {
     parentType: currentContent.parent_type,
     parentId: currentContent.parent_content_data[0].id,
-    difficulty: currentContent.difficulty,
-    brand: currentContent.brand//TODO include subquery fields in here
+    difficulty_string: currentContent.difficulty_string,
+    brand: currentContent.brand
   }
 }
 
@@ -1418,15 +1418,15 @@ async function getCurrentContentDataForQuery(currentContent) {
  */
 async function buildSubQueryForFetch(type, brand, id, difficulty, genres = null) {
   const genreString = genres ? `&& references([${genres}])` : ``
-  return new FilterBuilder(`_type == "${type}" && brand == "${brand}" && railcontent_id != ${id} && difficulty == ${difficulty} ${genreString}`).buildFilter()
+  return new FilterBuilder(`_type == "${type}" && brand == "${brand}" && railcontent_id != ${id} && difficulty_string == "${difficulty}" ${genreString}`).buildFilter()
 }
 
 async function buildRelatedLessonsQuery(currentContent) {
   const defaultProjectionsAndSorting = `{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type,genre}|order(published_on desc, title asc)[0...10]`
   const currentContentData = await getCurrentContentDataForQuery(currentContent)
-  const tutorialQuery = await buildSubQueryForFetch(currentContentData.parentType, currentContentData.brand, currentContentData.parentId, currentContentData.difficulty, currentContentData.genres)
-  const quickTipQuery = await buildSubQueryForFetch("quick-tips", currentContentData.brand, currentContentData.parentId, currentContentData.difficulty)
-  const songQuery = await buildSubQueryForFetch("song", currentContentData.brand, currentContentData.parentId, currentContentData.difficulty)
+  const tutorialQuery = await buildSubQueryForFetch(currentContentData.parentType, currentContentData.brand, currentContentData.parentId, currentContentData.difficulty_string, currentContentData.genres)
+  const quickTipQuery = await buildSubQueryForFetch("quick-tips", currentContentData.brand, currentContentData.parentId, currentContentData.difficulty_string)
+  const songQuery = await buildSubQueryForFetch("song", currentContentData.brand, currentContentData.parentId, currentContentData.difficulty_string)
   return `[...*[${tutorialQuery}]${defaultProjectionsAndSorting}, ...*[${quickTipQuery}]${defaultProjectionsAndSorting}, ...*[${songQuery}]${defaultProjectionsAndSorting}, ]`
 }
 
@@ -1459,7 +1459,7 @@ function formatForResponse(parentObject, relatedLessonObject) {
  * @param {string} brand
  * @returns {Promise<Object|null>}
  */
-export async function newFetchRelatedTutorials(railContentId, brand) {
+export async function fetchRelatedTutorials(railContentId, brand) {
 
   const parentObject = await fetchParentData(railContentId, brand)
   const relatedLessonObject = await fetchRelatedLessonsSectionData(parentObject)
@@ -1475,7 +1475,7 @@ export async function newFetchRelatedTutorials(railContentId, brand) {
  * @returns {string}
  */
 function buildQueryForFetch(railContentId, brand) {
-  const projections = `railcontent_id, _type, parent_type, parent_content_data, difficulty, brand`
+  const projections = `railcontent_id, _type, parent_type, parent_content_data, difficulty_string, brand`
   return `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{${projections}}`
 }
 

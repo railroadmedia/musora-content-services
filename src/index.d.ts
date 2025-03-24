@@ -156,7 +156,7 @@ import {
 	fetchUpcomingEvents,
 	getSortOrder,
 	jumpToContinueContent,
-	newFetchRelatedTutorials
+	oldFetchRelatedTutorials
 } from './services/sanity.js';
 
 import {
@@ -268,7 +268,7 @@ declare module 'musora-content-services' {
 		likeComment,
 		likeContent,
 		likePlaylist,
-		newFetchRelatedTutorials,
+		oldFetchRelatedTutorials,
 		openComment,
 		pinPlaylist,
 		playback,
