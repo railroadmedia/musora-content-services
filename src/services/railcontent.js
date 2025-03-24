@@ -915,8 +915,8 @@ export async function fetchPlaylistItem(payload) {
 }
 
 export async function postContentComplete(contentId) {
-  let url = `/content/v1/user/progress/complete`
-  return postDataHandler(url, { contentId: contentId })
+  let url = `/api/content/v1/user/progress/complete/${contentId}`
+  return postDataHandler(url)
 }
 
 export async function postContentReset(contentId) {
