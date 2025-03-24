@@ -857,38 +857,7 @@ describe('api.v1', function() {
     //expect(metaData).toBeNull()
   })
 
-  test('fetchLessonsFeaturingThisContent', async () => {
-    // much of the licensed content is currently drafted, so this must be run in the admin test-suite
-    const railContentId = 386901
-    const licenseQuery = `*[railcontent_id == ${railContentId}]{
-      'content_ids': *[_type == 'license' && references(^._id)].content[]->railcontent_id
-    }[0]`
-    const otherReferencedContent = (await fetchSanity(licenseQuery, true))['content_ids']
-    const relatedNotSongs = await fetchLessonsFeaturingThisContent(railContentId, 'drumeo', 100)
-    log(relatedNotSongs)
-    relatedNotSongs.forEach(document => {
-      expect(SONG_TYPES).not.toContain(document.type)
-      expect(document.id).not.toStrictEqual(railContentId)
-      expect(otherReferencedContent).toContain(document.id)
-    })
-  })
 
-  test('fetchRelatedLessons-song-tutorial-children', async () => {
-    const railContentId = 222631
-    const relatedLessons = await fetchRelatedLessons(railContentId, 'pianote')
-    log(relatedLessons)
-    const expectedPath = ['', 'pianote', 'song-tutorials', 'hallelujah', '221831']
-    relatedLessons['related_lessons'].forEach(document => {
-      expect('song-tutorial-children').toStrictEqual(document.type)
-      let web_url_path = document.web_url_path.split('/')
-      // remove id, slug
-      web_url_path.pop()
-      web_url_path.pop()
-      expect(web_url_path).toEqual(expectedPath)
-    })
-  })
-
-  297927
 
   test('fetchRelatedLessons-pack-bundle-lessons', async () => {
     //https://www.musora.com/singeo/packs/sing-harmony-in-30-days/410537/sing-harmony-in-30-days/410538/day-2/410541
@@ -896,6 +865,7 @@ describe('api.v1', function() {
     const relatedLessons = await fetchRelatedLessons(railContentId, 'singeo')
     log(relatedLessons)
     const expectedPath = ['', 'singeo', 'packs', 'sing-harmony-in-30-days', '410537', 'sing-harmony-in-30-days', '410538']
+    expect(relatedLessons['related_lessons'].length).toBeGreaterThanOrEqual(1)
     relatedLessons['related_lessons'].forEach(document => {
       expect('pack-bundle-lesson').toStrictEqual(document.type)
       // there are other ways to check that these all have the same parent, but I don't want to write it
@@ -913,6 +883,7 @@ describe('api.v1', function() {
     const relatedLessons = await fetchRelatedLessons(railContentId, 'drumeo')
     log(relatedLessons)
     const expectedPath = ['', 'drumeo', 'courses', 'ultra-compact-drum-set-gear-guide', '295177']
+    expect(relatedLessons['related_lessons'].length).toBeGreaterThanOrEqual(1)
     relatedLessons['related_lessons'].forEach(document => {
       expect('course-part').toStrictEqual(document.type)
       // there are other ways to check that these all have the same parent, but I don't want to write it
@@ -940,10 +911,45 @@ describe('api.v1.admin', function() {
     log(otherReferencedContent)
     const relatedSongsTypes = await fetchOtherSongVersions(railContentId, 'drumeo', 100)
     log(relatedSongsTypes)
+    expect(relatedSongsTypes.length).toBeGreaterThanOrEqual(1)
     relatedSongsTypes.forEach(document => {
       expect(SONG_TYPES).toContain(document.type)
       expect(document.id).not.toStrictEqual(railContentId)
       expect(otherReferencedContent).toContain(document.id)
+    })
+  })
+
+  test('fetchLessonsFeaturingThisContent', async () => {
+    // much of the licensed content is currently drafted, so this must be run in the admin test-suite
+    const railContentId = 386901
+    const licenseQuery = `*[railcontent_id == ${railContentId}]{
+      'content_ids': *[_type == 'license' && references(^._id)].content[]->railcontent_id
+    }[0]`
+    const otherReferencedContent = (await fetchSanity(licenseQuery, true))['content_ids']
+    const relatedNotSongs = await fetchLessonsFeaturingThisContent(railContentId, 'drumeo', 100)
+    log(relatedNotSongs)
+    expect(relatedNotSongs.length).toBeGreaterThanOrEqual(1)
+    relatedNotSongs.forEach(document => {
+      expect(SONG_TYPES).not.toContain(document.type)
+      expect(document.id).not.toStrictEqual(railContentId)
+      expect(otherReferencedContent).toContain(document.id)
+    })
+  })
+
+  test('fetchRelatedLessons-song-tutorial-children', async () => {
+    // When I wrote this it didn't need admin, but something changed. Shrug
+    const railContentId = 222633
+    const relatedLessons = await fetchRelatedLessons(railContentId, 'pianote')
+    log(relatedLessons)
+    const expectedPath = ['', 'pianote', 'song-tutorials', 'hallelujah', '221831']
+    expect(relatedLessons['related_lessons'].length).toBeGreaterThanOrEqual(1)
+    relatedLessons['related_lessons'].forEach(document => {
+      expect('song-tutorial-children').toStrictEqual(document.type)
+      let web_url_path = document.web_url_path.split('/')
+      // remove id, slug
+      web_url_path.pop()
+      web_url_path.pop()
+      expect(web_url_path).toEqual(expectedPath)
     })
   })
 })
