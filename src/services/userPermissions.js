@@ -1,5 +1,9 @@
 import { fetchUserPermissionsData } from './railcontent.js'
-import { setLastUpdatedTime, wasLastUpdateOlderThanXSeconds } from './lastUpdated.js'
+import {
+  clearLastUpdatedTime,
+  setLastUpdatedTime,
+  wasLastUpdateOlderThanXSeconds,
+} from './lastUpdated.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -21,4 +25,14 @@ export async function fetchUserPermissions() {
 
 export async function reset() {
   userPermissionsPromise = null
+}
+
+export function updatePermissionsData(permissionsData) {
+  userPermissionsPromise = permissionsData
+  setLastUpdatedTime(lastUpdatedKey)
+}
+
+export function clearPermissionsData() {
+  userPermissionsPromise = null
+  clearLastUpdatedTime(lastUpdatedKey)
 }

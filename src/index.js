@@ -2,7 +2,8 @@
 
 import {
 	globalConfig,
-	initializeService
+	initializeService,
+	setUserMetadata
 } from './services/config.js';
 
 import {
@@ -32,6 +33,7 @@ import {
 } from './services/dataContext.js';
 
 import {
+	clearLastUpdatedTime,
 	setLastUpdatedTime,
 	wasLastUpdateOlderThanXSeconds
 } from './services/lastUpdated.js';
@@ -149,14 +151,18 @@ import {
 } from './services/sanity.js';
 
 import {
+	clearPermissionsData,
 	fetchUserPermissions,
-	reset
+	reset,
+	updatePermissionsData
 } from './services/userPermissions.js';
 
 export {
 	addItemToPlaylist,
 	assignmentStatusCompleted,
 	assignmentStatusReset,
+	clearLastUpdatedTime,
+	clearPermissionsData,
 	contentStatusCompleted,
 	contentStatusReset,
 	countAssignmentsAndLessons,
@@ -273,9 +279,11 @@ export {
 	reset,
 	setLastUpdatedTime,
 	setStudentViewForUser,
+	setUserMetadata,
 	similarItems,
 	unlikeContent,
 	unpinPlaylist,
+	updatePermissionsData,
 	updatePlaylist,
 	updatePlaylistItem,
 	verifyLocalDataContext,

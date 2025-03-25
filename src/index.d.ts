@@ -2,7 +2,8 @@
 
 import {
 	globalConfig,
-	initializeService
+	initializeService,
+	setUserMetadata
 } from './services/config.js';
 
 import {
@@ -32,6 +33,7 @@ import {
 } from './services/dataContext.js';
 
 import {
+	clearLastUpdatedTime,
 	setLastUpdatedTime,
 	wasLastUpdateOlderThanXSeconds
 } from './services/lastUpdated.js';
@@ -149,8 +151,10 @@ import {
 } from './services/sanity.js';
 
 import {
+	clearPermissionsData,
 	fetchUserPermissions,
-	reset
+	reset,
+	updatePermissionsData
 } from './services/userPermissions.js';
 
 declare module 'musora-content-services' {
@@ -158,6 +162,8 @@ declare module 'musora-content-services' {
 		addItemToPlaylist,
 		assignmentStatusCompleted,
 		assignmentStatusReset,
+		clearLastUpdatedTime,
+		clearPermissionsData,
 		contentStatusCompleted,
 		contentStatusReset,
 		countAssignmentsAndLessons,
@@ -274,9 +280,11 @@ declare module 'musora-content-services' {
 		reset,
 		setLastUpdatedTime,
 		setStudentViewForUser,
+		setUserMetadata,
 		similarItems,
 		unlikeContent,
 		unpinPlaylist,
+		updatePermissionsData,
 		updatePlaylist,
 		updatePlaylistItem,
 		verifyLocalDataContext,

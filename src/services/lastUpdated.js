@@ -5,7 +5,12 @@ import { globalConfig } from './config.js'
  *
  * @type {string[]}
  */
-const excludeFromGeneratedIndex = ['wasLastUpdateOlderThanXSeconds', 'setLastUpdatedTime']
+const excludeFromGeneratedIndex = [
+  'wasLastUpdateOlderThanXSeconds',
+  'setLastUpdatedTime',
+  'clearLastUpdatedTime',
+]
+
 export function wasLastUpdateOlderThanXSeconds(seconds, key) {
   let lastUpdated = globalConfig.localStorage.getItem(key)
   if (!lastUpdated) return false
@@ -15,4 +20,8 @@ export function wasLastUpdateOlderThanXSeconds(seconds, key) {
 
 export function setLastUpdatedTime(key) {
   globalConfig.localStorage.setItem(key, new Date().getTime()?.toString())
+}
+
+export function clearLastUpdatedTime(key) {
+  globalConfig.localStorage.removeItem(key)
 }

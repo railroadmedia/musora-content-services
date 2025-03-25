@@ -1,5 +1,6 @@
 import { globalConfig, initializeService } from '../src'
 import { LocalStorageMock } from './localStorageMock'
+import { clearPermissionsData } from '../src/services/userPermissions.js'
 
 const railContentModule = require('../src/services/railcontent.js')
 let token = null
@@ -36,6 +37,7 @@ export async function initializeTestService(useLive = false) {
   let mock = jest.spyOn(railContentModule, 'fetchUserPermissionsData')
   let testData = { permissions: [78, 91, 92], isAdmin: false }
   mock.mockImplementation(() => testData)
+  clearPermissionsData()
 }
 
 async function fetchLoginToken(email, password) {

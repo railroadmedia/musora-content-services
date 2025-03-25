@@ -1,6 +1,8 @@
 /**
  * @module Config
  */
+import { verifyLocalDataContext } from './dataContext.js'
+import { updatePermissionsData } from './userPermissions.js'
 
 export let globalConfig = {
   sanityConfig: {},
@@ -75,4 +77,13 @@ export function initializeService(config) {
   globalConfig.isMA = config.isMA || false
   globalConfig.localTimezoneString = config.localTimezoneString || null
   globalConfig.recommendationsConfig = config.recommendationsConfig
+}
+
+export function setUserMetadata(userMetaData) {
+  updatePermissionsData(userMetaData.permissionsData)
+
+  const userDataVersions = userMetaData.userDataVersions
+  for (let i = 0; i < userDataVersions.length; i++) {
+    verifyLocalDataContext(userDataVersions[i].dataVersionKey, userDataVersions[i].currentVersion)
+  }
 }
