@@ -1084,7 +1084,7 @@ export async function playback(playlistId) {
  * Set a user's StudentView Flag
  *
  * @param {int|string} userId - id of the user (must be currently authenticated)
- * @param {bool} enable - truthsy value to enable student view
+ * @param {bool} enable - truthy value to enable student view
  * @returns {Promise<any|null>}
  */
 export async function setStudentViewForUser(userId, enable) {
@@ -1100,19 +1100,18 @@ export async function setStudentViewForUser(userId, enable) {
  * @returns {Promise<Object|null>} - A promise that resolves to an comment object
  */
 export async function fetchTopComment(railcontentId) {
-  const url = `/api/content/v1/comments/content/${railcontentId}/top`
+  const url = `/api/content/v1/${railcontentId}/comments?filter=top`
   return await fetchHandler(url)
 }
 
 /**
  *
  * @param {int} railcontentId
- * @param {int} page
  * @param {int} limit
  * @returns {Promise<*|null>}
  */
-export async function fetchComments(railcontentId, page = 1, limit = 20) {
-  const url = `/api/content/v1/comments/content/${railcontentId}/all?page=${page}&limit=${limit}`
+export async function fetchAllComments(railcontentId, limit = 20) {
+  const url = `/api/content/v1/${railcontentId}/comments?filter=all&limit=${limit}`
   return await fetchHandler(url)
 }
 
