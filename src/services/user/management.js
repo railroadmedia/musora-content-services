@@ -20,7 +20,7 @@ globalConfig = {
  */
 const excludeFromGeneratedIndex = []
 
-const baseUrl = `${globalConfig.railcontentConfig.baseUrl}/api/user-management-system/v1`
+const baseUrl = `/api/user-management-system/v1`
 
 export async function blockUser(userId) {
   const url = `${baseUrl}/block/${userId}`
