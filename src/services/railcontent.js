@@ -1111,7 +1111,7 @@ export async function fetchTopComment(railcontentId) {
  * @returns {Promise<*|null>}
  */
 export async function fetchAllComments(railcontentId, limit = 20) {
-  const url = `/api/content/v1/${railcontentId}/comments?filter=all&limit=${limit}`
+  const url = `/api/content/v1/${railcontentId}/comments?limit=${limit}`
   return await fetchHandler(url)
 }
 
