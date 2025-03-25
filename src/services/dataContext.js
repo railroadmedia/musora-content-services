@@ -137,4 +137,14 @@ export class DataContext {
   version() {
     return this.context?.version ?? -1
   }
+  async updateLocal(localUpdateFunction) {
+    await this.ensureLocalContextLoaded()
+    if (this.context) {
+      const res = await localUpdateFunction(this.context)
+      if (this.context) this.context.version++
+      let data = JSON.stringify(this.context)
+      cache.setItem(this.localStorageKey, data)
+      this.setLastUpdatedTime()
+    }
+  }
 }

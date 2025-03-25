@@ -1246,7 +1246,7 @@ export async function fetchUserPractices() {
     }
 
     // Push the practice entry into the array
-    acc[practice.day].push({ duration_seconds: practice.duration_seconds });
+    acc[practice.day].push({ id:practice.id, duration_seconds: practice.duration_seconds });
 
     return acc;
   }, {});
@@ -1263,6 +1263,21 @@ export async function fetchUserPractices() {
 export async function logUserPractice(practiceDetails) {
   const url = `/api/user/practices/v1/practices`
   return await fetchHandler(url, 'POST', null, practiceDetails)
+}
+export async function fetchUserPracticeMeta(practiceIds) {
+  if(practiceIds.length == 0)
+  {
+    return [];
+  }
+  let idsString = '';
+  if (practiceIds && practiceIds.length > 0) {
+    idsString = '?';
+    practiceIds.forEach((id, index) => {
+      idsString += `practice_ids[]=${id}${index < practiceIds.length - 1 ? '&' : ''}`;
+    });
+  }
+  const url = `/api/user/practices/v1/practices${idsString}`
+  return await fetchHandler(url, 'GET', null)
 }
 
 function fetchAbsolute(url, params) {

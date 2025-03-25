@@ -2,9 +2,10 @@
  * @module User-Activity
  */
 
-import { fetchUserPractices, logUserPractice } from './railcontent'
+import {fetchUserPractices, logUserPractice, fetchUserPracticeMeta, fetchHandler} from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import {fetchByRailContentIds} from "./sanity";
+import {TabResponseType} from "../contentMetaData";
 
 //TODO: remove harcoded data when the PR is approved
 const userActivityStats = {
@@ -20,6 +21,15 @@ const userActivityStats = {
   currentDailyStreak: 3,
   currentWeeklyStreak: 2,
   streakMessage: 'That\'s 8 weeks in a row! Way to keep your streak going.',
+}
+const recentActivity = {
+  data: [
+    { id: 5,title: '3 Easy Classical Songs For Beginners', action: 'Comment', thumbnail: 'https://s3-alpha-sig.figma.com/img/22c3/1eb9/d819a2c6727b78deb2fcf051349a0667?Expires=1743984000&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=RGusttOtnWP80iL68~l4XqFrQNe-kOTnUSLtMXQwGJNLfWNze6~fMZ15LsH4IYpz85mJKgILgCegi1sEPF6loBJpKYF9AH5HC2Zz1fenM1T3V387dgb4FifujKtR-DJuBpknPNFvZ9wC9ebCfoXhc1HLe7BJUDSr8gJssiqsimQPU-9TanAOJAFTaxOfvQ0-WEW1VIdCWLX0OOjn1qs~jZTeOGcxy3b~OD1CxiUmwp5tA3lBgqya18Mf8kmcfHjByNmYysd2FwV5tS19dCnmzbE9hwvLwMOnQ38SYOKhxCLsteDRBIxLNjTGJFDUm4wF~089Kkd1zA8pn8-kVfYtwg__', summary: 'Just completed the advanced groove lesson! I’m finally feeling more confident with my fills. Thanks for the clear explanations and practice tips! ', date: '2025-03-25 10:09:48' },
+    { id:4, title: 'Piano Man by Billy Joel', action: 'Play', thumbnail:'https://s3-alpha-sig.figma.com/img/fab0/fffe/3cb08e0256a02a18ac37b2db1c2b4a1f?Expires=1743984000&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=smjF95zM9b469lFJ8F6mmjpRs4jPlDcBnflDXc9G~Go1ab87fnWpmg-megUoLmSkqu-Rf3s8P5buzqNP-YnqQl413g3grqNURTIwHRaI2HplN1OXL~OBLU9jHjgQxZmMI6VfSLs301W~cU9NHmMLYRr38r9mVQM6ippSMawj7MFSywiPhvHSvAIXt65o6HlNszhq1n5eZmxVdiL7tjifSja~fGVtHDsX0wuD3L-KAN5TIqywAgRzzFFMHw3yYxiOHajbRSi0s0LJNIHRF4iBJFFZWVXY5vdNX5YKmAmblnbfYIK3GrwJiaVEv6rGzOo~nN4Zh-FKJWvjyPd2oBmfbg__', date: '2025-03-25 10:04:48'  },
+    { id:3, title: 'General Piano Discussion', action: 'Post', thumbnail: 'https://s3-alpha-sig.figma.com/img/22c3/1eb9/d819a2c6727b78deb2fcf051349a0667?Expires=1743984000&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=RGusttOtnWP80iL68~l4XqFrQNe-kOTnUSLtMXQwGJNLfWNze6~fMZ15LsH4IYpz85mJKgILgCegi1sEPF6loBJpKYF9AH5HC2Zz1fenM1T3V387dgb4FifujKtR-DJuBpknPNFvZ9wC9ebCfoXhc1HLe7BJUDSr8gJssiqsimQPU-9TanAOJAFTaxOfvQ0-WEW1VIdCWLX0OOjn1qs~jZTeOGcxy3b~OD1CxiUmwp5tA3lBgqya18Mf8kmcfHjByNmYysd2FwV5tS19dCnmzbE9hwvLwMOnQ38SYOKhxCLsteDRBIxLNjTGJFDUm4wF~089Kkd1zA8pn8-kVfYtwg__', summary: 'Just completed the advanced groove lesson! I’m finally feeling more confident with my fills. Thanks for the clear explanations and practice tips! ', date: '2025-03-25 09:49:48' },
+    { id:2, title: 'Welcome To Guitareo', action: 'Complete', thumbnail: 'https://s3-alpha-sig.figma.com/img/22c3/1eb9/d819a2c6727b78deb2fcf051349a0667?Expires=1743984000&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=RGusttOtnWP80iL68~l4XqFrQNe-kOTnUSLtMXQwGJNLfWNze6~fMZ15LsH4IYpz85mJKgILgCegi1sEPF6loBJpKYF9AH5HC2Zz1fenM1T3V387dgb4FifujKtR-DJuBpknPNFvZ9wC9ebCfoXhc1HLe7BJUDSr8gJssiqsimQPU-9TanAOJAFTaxOfvQ0-WEW1VIdCWLX0OOjn1qs~jZTeOGcxy3b~OD1CxiUmwp5tA3lBgqya18Mf8kmcfHjByNmYysd2FwV5tS19dCnmzbE9hwvLwMOnQ38SYOKhxCLsteDRBIxLNjTGJFDUm4wF~089Kkd1zA8pn8-kVfYtwg__',date: '2025-03-25 09:34:48'  },
+    { id:1, title: 'Welcome To Guitareo', action: 'Start', thumbnail: 'https://s3-alpha-sig.figma.com/img/22c3/1eb9/d819a2c6727b78deb2fcf051349a0667?Expires=1743984000&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=RGusttOtnWP80iL68~l4XqFrQNe-kOTnUSLtMXQwGJNLfWNze6~fMZ15LsH4IYpz85mJKgILgCegi1sEPF6loBJpKYF9AH5HC2Zz1fenM1T3V387dgb4FifujKtR-DJuBpknPNFvZ9wC9ebCfoXhc1HLe7BJUDSr8gJssiqsimQPU-9TanAOJAFTaxOfvQ0-WEW1VIdCWLX0OOjn1qs~jZTeOGcxy3b~OD1CxiUmwp5tA3lBgqya18Mf8kmcfHjByNmYysd2FwV5tS19dCnmzbE9hwvLwMOnQ38SYOKhxCLsteDRBIxLNjTGJFDUm4wF~089Kkd1zA8pn8-kVfYtwg__',date: '2025-03-25 09:04:48'  },
+  ],
 }
 
 const DATA_KEY_PRACTICES = 'practices'
@@ -153,7 +163,7 @@ export async function getUserWeeklyStats() {
 export async function getUserMonthlyStats(year = new Date().getFullYear(), month = new Date().getMonth(), day = 1) {
   let data = await userActivityContext.getData()
   let practices = data?.[DATA_KEY_PRACTICES] ?? {}
-console.log('user practices from local storage', practices)
+
   // Get the first day of the specified month and the number of days in that month
   let firstDayOfMonth = new Date(year, month, 1)
   let today = new Date()
@@ -230,32 +240,101 @@ export async function getUserPractices() {
 }
 
 export async function recordUserPractice(practiceDetails) {
-  practiceDetails.auto = 0
+  practiceDetails.auto = 0;
   if (practiceDetails.content_id) {
-    const content = await fetchByRailContentIds([practiceDetails.content_id])
-    practiceDetails.auto = 1
-    practiceDetails.title = content[0].title
-    practiceDetails.thumbnail_url = content[0].thumbnail
+    const content = await fetchByRailContentIds([practiceDetails.content_id]);
+    practiceDetails.auto = 1;
+    practiceDetails.title = content[0].title;
+    practiceDetails.thumbnail_url = content[0].thumbnail;
   }
 
-  const today = new Date().toISOString().split('T')[0];
-
+  const today = new Date().toISOString().split("T")[0];
   await userActivityContext.update(
-    async function(localContext) {
-      let userData = localContext.data ?? { [DATA_KEY_PRACTICES]: [] }
-      if (!userData[DATA_KEY_PRACTICES]) {
-        userData[DATA_KEY_PRACTICES] = {};
-      }
+    async function (localContext) {
+      let userData = localContext.data ?? { [DATA_KEY_PRACTICES]: {} };
+
       if (!userData[DATA_KEY_PRACTICES][today]) {
         userData[DATA_KEY_PRACTICES][today] = [];
       }
-      userData[DATA_KEY_PRACTICES][today].push({duration_seconds: practiceDetails.duration_seconds});
-      userData[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000)
-      localContext.data = userData
+      localContext.data = userData;
     },
     async function () {
-      return logUserPractice(practiceDetails)
-    })
+      const response = await logUserPractice(practiceDetails);
+      if (response) {
+        await userActivityContext.updateLocal(async function (localContext) {
+          const newPractices = response.data ?? []
+          newPractices.forEach(newPractice => {
+            const { date } = newPractice;
+            if (localContext.data[DATA_KEY_PRACTICES][date]) {
+              console.log('rox data exists before push ::::: ', localContext.data[DATA_KEY_PRACTICES][date], newPractice, date)
+              localContext.data[DATA_KEY_PRACTICES][date].push({
+                id: newPractice.id,
+                duration_seconds: newPractice.duration_seconds  // Add the new practice for this date
+              });
+              console.log('rox data exists after push ::::: ', localContext.data, newPractice)
+            } else {
+              console.log('rox data not exists before push ::::: ',  newPractice)
+              localContext.data[DATA_KEY_PRACTICES][date].push({
+                id: newPractice.id,
+                duration_seconds: newPractice.duration_seconds  // Add the new practice for this date
+              });
+            }
+          });
+        });
+      }
+      return response;
+    }
+  );
+}
+
+export async function updateUserPractice(id, practiceDetails) {
+  const url = `/api/user/practices/v1/practices/${id}`
+  return await fetchHandler(url, 'PUT', null, practiceDetails)
+}
+
+export async function removeUserPractice(id) {
+  let url = `/api/user/practices/v1/practices/${id}`
+  return await fetchHandler(url, 'delete')
+}
+
+export async function getPracticeSessions(day = new Date().toISOString().split('T')[0]) {
+  let data = await userActivityContext.getData();
+  let practices = data?.[DATA_KEY_PRACTICES] ?? {};
+
+  let userPracticesIds = [];
+  Object.keys(practices).forEach(date => {
+    console.log('rox compare date day ::::: ', date, day  )
+    if (date === day) {
+      practices[date].forEach(practice => {
+        userPracticesIds.push(practice.id);
+      });
+    }
+  });
+
+  const meta =  await fetchUserPracticeMeta(userPracticesIds);
+  let practiceDuration = meta.reduce((total, practice) => total + (practice.duration_seconds || 0), 0);
+
+  const formattedMeta = meta.map(practice => ({
+    auto: practice.auto,
+    thumbnail: practice.thumbnail_url || '',
+    duration: practice.duration_seconds || 0,
+    url: practice.url || '',
+    title: practice.title || '',
+    category_id: practice.category_id || null,
+    instrument: practice.instrument || 'Pianote',
+    type: practice.type || 'Single',
+  }));
+  console.log('rox getPracticeSessions ::::: ', {
+    data: {practices:formattedMeta, practiceDuration}
+  })
+  return {
+    data: {practices:formattedMeta,
+      practiceDuration}
+  };
+}
+
+export async function getRecentActivity() {
+  return recentActivity;
 }
 
 function getStreaksAndMessage(practices)

@@ -90,6 +90,7 @@ import {
 	fetchUserChallengeProgress,
 	fetchUserLikes,
 	fetchUserPermissionsData,
+	fetchUserPracticeMeta,
 	fetchUserPractices,
 	likeComment,
 	likePlaylist,
@@ -186,11 +187,15 @@ import {
 } from './services/user/sessions.js';
 
 import {
+	getPracticeSessions,
+	getRecentActivity,
 	getUserActivityStats,
 	getUserMonthlyStats,
 	getUserPractices,
 	getUserWeeklyStats,
-	recordUserPractice
+	recordUserPractice,
+	removeUserPractice,
+	updateUserPractice
 } from './services/userActivity.js';
 
 declare module 'musora-content-services' {
@@ -283,6 +288,7 @@ declare module 'musora-content-services' {
 		fetchUserPermissions,
 		fetchUserPermissionsData,
 		fetchUserPlaylists,
+		fetchUserPracticeMeta,
 		fetchUserPractices,
 		getActiveDiscussions,
 		getAllCompleted,
@@ -291,11 +297,13 @@ declare module 'musora-content-services' {
 		getContentRows,
 		getLessonContentRows,
 		getNewAndUpcoming,
+		getPracticeSessions,
 		getProgressPercentage,
 		getProgressPercentageByIds,
 		getProgressState,
 		getProgressStateByIds,
 		getRecent,
+		getRecentActivity,
 		getRecommendedForYou,
 		getResumeTimeSeconds,
 		getScheduleContentRows,
@@ -337,6 +345,7 @@ declare module 'musora-content-services' {
 		recommendations,
 		recordUserPractice,
 		recordWatchSession,
+		removeUserPractice,
 		replyToComment,
 		reportPlaylist,
 		reset,
@@ -348,6 +357,7 @@ declare module 'musora-content-services' {
 		unpinPlaylist,
 		updatePlaylist,
 		updatePlaylistItem,
+		updateUserPractice,
 		verifyLocalDataContext,
 	}
 }

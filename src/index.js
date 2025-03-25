@@ -90,6 +90,7 @@ import {
 	fetchUserChallengeProgress,
 	fetchUserLikes,
 	fetchUserPermissionsData,
+	fetchUserPracticeMeta,
 	fetchUserPractices,
 	likeComment,
 	likePlaylist,
@@ -186,11 +187,15 @@ import {
 } from './services/user/sessions.js';
 
 import {
+	getPracticeSessions,
+	getRecentActivity,
 	getUserActivityStats,
 	getUserMonthlyStats,
 	getUserPractices,
 	getUserWeeklyStats,
-	recordUserPractice
+	recordUserPractice,
+	removeUserPractice,
+	updateUserPractice
 } from './services/userActivity.js';
 
 export {
@@ -282,6 +287,7 @@ export {
 	fetchUserPermissions,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
+	fetchUserPracticeMeta,
 	fetchUserPractices,
 	getActiveDiscussions,
 	getAllCompleted,
@@ -290,11 +296,13 @@ export {
 	getContentRows,
 	getLessonContentRows,
 	getNewAndUpcoming,
+	getPracticeSessions,
 	getProgressPercentage,
 	getProgressPercentageByIds,
 	getProgressState,
 	getProgressStateByIds,
 	getRecent,
+	getRecentActivity,
 	getRecommendedForYou,
 	getResumeTimeSeconds,
 	getScheduleContentRows,
@@ -336,6 +344,7 @@ export {
 	recommendations,
 	recordUserPractice,
 	recordWatchSession,
+	removeUserPractice,
 	replyToComment,
 	reportPlaylist,
 	reset,
@@ -347,5 +356,6 @@ export {
 	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem,
+	updateUserPractice,
 	verifyLocalDataContext,
 };
