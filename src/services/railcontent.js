@@ -16,7 +16,7 @@ const excludeFromGeneratedIndex = [
   'postContentUnliked',
   'postRecordWatchSession',
   'postContentStarted',
-  'postContentCompleted',
+  'postContentComplete',
   'postContentReset',
   'fetchUserPermissionsData',
 ]
@@ -597,18 +597,6 @@ export async function postChallengesSoloNotification(contentId) {
 }
 
 /**
- * Complete the challenge lesson and update challenge progress
- *
- * @param {int|string} contentId - railcontent id of the challenge
- * @returns {Promise<any|null>} - Modal data to display
- */
-export async function postChallengesCompleteLesson(contentId) {
-  let url = `/challenges/complete_lesson/${contentId}`
-  await contentStatusCompleted(contentId)
-  return await fetchHandler(url, 'post')
-}
-
-/**
  * Hide challenge completed award bannare
  *
  * @param {int|string} contentId - railcontent id of the challenge
@@ -926,9 +914,9 @@ export async function fetchPlaylistItem(payload) {
   return await fetchHandler(url)
 }
 
-export async function postContentCompleted(contentId) {
-  let url = `/content/user/progress/complete`
-  return postDataHandler(url, { contentId: contentId })
+export async function postContentComplete(contentId) {
+  let url = `/api/content/v1/user/progress/complete/${contentId}`
+  return postDataHandler(url)
 }
 
 export async function postContentReset(contentId) {

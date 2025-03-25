@@ -14,7 +14,7 @@ import {
   getAllStartedOrCompleted,
 } from '../src/services/contentProgress'
 import { initializeTestService } from './initializeTests'
-import {getLessonContentRows, postContentCompleted} from '../src'
+import {getLessonContentRows, postContentComplete} from '../src'
 import {fetchRecent} from "../src/services/sanity";
 import {getRecent, getTabResults} from "../src/services/content";
 import {individualLessonsTypes, playAlongLessonTypes, transcriptionsLessonTypes, tutorialsLessonTypes} from "../src/contentTypeConfig";
@@ -40,7 +40,7 @@ describe('contentProgressDataContext', function () {
     let mock2 = jest.spyOn(railContentModule, 'postRecordWatchSession')
     mock2.mockImplementation(() => JSON.parse(`{"version": ${serverVersion}}`))
 
-    let mock3 = jest.spyOn(railContentModule, 'postContentCompleted')
+    let mock3 = jest.spyOn(railContentModule, 'postContentComplete')
     mock3.mockImplementation(() => JSON.parse(`{"version": ${serverVersion}}`))
 
     let mock4 = jest.spyOn(railContentModule, 'postContentReset')
@@ -120,7 +120,7 @@ describe('contentProgressDataContext', function () {
   // });
 
   // test('getAllCompletedWithUpdate', async () => {
-  //     let mock2 = jest.spyOn(railContentModule, 'postContentCompleted');
+  //     let mock2 = jest.spyOn(railContentModule, 'postContentComplete');
   //     let serverVersion = 2;
   //     mock2.mockImplementation(() => JSON.parse(`{"version": ${serverVersion}}`));
   //
