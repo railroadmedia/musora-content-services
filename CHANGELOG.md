@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.1.0](https://github.com/railroadmedia/musora-content-services/compare/v2.0.8...v2.1.0) (2025-03-26)
+
+
+### Features
+
+* **BEH-326:** update routing for top/all comment endpoints ([#203](https://github.com/railroadmedia/musora-content-services/issues/203)) ([1f4807f](https://github.com/railroadmedia/musora-content-services/commit/1f4807fcef3cb7ce0b03202519b4ccb4fbd6232f))
+
 ### [2.0.8](https://github.com/railroadmedia/musora-content-services/compare/v2.0.7...v2.0.8) (2025-03-25)
 
 ### [2.0.7](https://github.com/railroadmedia/musora-content-services/compare/v2.0.6...v2.0.7) (2025-03-21)
