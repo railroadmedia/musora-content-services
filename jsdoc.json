@@ -7,6 +7,7 @@
       "src/services/railcontent.js",
       "src/services/user",
       "src/services/content-org",
+      "src/services/gamification",
       "src/index.js"
     ],
     "includePattern": ".js$",
