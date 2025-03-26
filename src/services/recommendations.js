@@ -14,8 +14,8 @@ const excludeFromGeneratedIndex = []
 /**
  * Fetches similar content to the provided content id
  *
- * @param {brand} brand - brand of the content to filter
  * @param {integer} content_id - The ID of the content to find similar items for
+ * @param {brand} brand - brand of the content to filter
  * @param {integer} count - number of items to return
  * @returns {Promise<Object|null>} - Returns the content_ids sorted by rank (most significant first)
  * @example
@@ -23,7 +23,7 @@ const excludeFromGeneratedIndex = []
  *   .then(status => console.log(status))
  *   .catch(error => console.error(error));
  */
-export async function similarItems(brand, content_id, count = 10) {
+export async function fetchSimilarItems(content_id, brand, count = 10) {
   if (!content_id) {
     return []
   }
