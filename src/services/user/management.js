@@ -12,7 +12,7 @@ import { fetchHandler } from '../railcontent.js'
  */
 const excludeFromGeneratedIndex = []
 
-const baseUrl = `/api/user-management-system/v1`
+const baseUrl = `/api/user-management-system`
 
 /**
  * Block the provided user
@@ -20,7 +20,7 @@ const baseUrl = `/api/user-management-system/v1`
  * @returns {Promise<any|string|null>}
  */
 export async function blockUser(userId) {
-  const url = `${baseUrl}/block/${userId}`
+  const url = `${baseUrl}/v1/block/${userId}`
   return fetchHandler(url, 'post')
 }
 
@@ -30,6 +30,6 @@ export async function blockUser(userId) {
  * @returns {Promise<any|string|null>}
  */
 export async function unblockUser(userId) {
-  const url = `${baseUrl}/unblock/${userId}`
+  const url = `${baseUrl}/v1/unblock/${userId}`
   return fetchHandler(url, 'post')
 }
