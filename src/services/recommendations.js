@@ -3,6 +3,7 @@
  */
 
 import { globalConfig } from './config.js'
+import { fetchJSONHandler} from '../lib/httpHelper.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -129,44 +130,12 @@ export async function recommendations(brand, {
 }
 
 async function fetchHandler(url, method = 'get', body = null) {
-
-  let headers = {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.recommendationsConfig.token,
-  }
-
-  const options = {
+  return fetchJSONHandler(
+    url,
+    globalConfig.recommendationsConfig.token,
+    globalConfig.recommendationsConfig.baseUrl,
     method,
-    headers,
-  }
-
-  if (body) {
-    options.body = JSON.stringify(body)
-  }
-  try {
-    const response = await fetchAbsolute(url, options)
-    if (response.ok) {
-      return await response.json()
-    } else {
-      console.error(`Fetch error: ${method} ${url} ${response.status} ${response.statusText}`)
-      console.log(response)
-    }
-  } catch (error) {
-    console.error('Fetch error:', error)
-  }
-  return null
-}
-
-
-function fetchAbsolute(url, params) {
-  if (globalConfig.recommendationsConfig.token) {
-    params.headers['Authorization'] = `Bearer ${globalConfig.recommendationsConfig.token}`
-  }
-  if (globalConfig.recommendationsConfig.baseUrl) {
-    if (url.startsWith('/')) {
-      return fetch(globalConfig.recommendationsConfig.baseUrl + url, params)
-    }
-  }
-  return fetch(url, params)
+    null,
+    body
+    )
 }

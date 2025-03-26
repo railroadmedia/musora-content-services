@@ -4,6 +4,7 @@
 import { contentStatusCompleted } from './contentProgress.js'
 
 import { globalConfig } from './config.js'
+import { fetchJSONHandler } from '../lib/httpHelper.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -292,54 +293,6 @@ async function patchDataHandler(url, data) {
 
 async function deleteDataHandler(url, data) {
   return fetchHandler(url, 'delete')
-}
-
-// TODO: this should be extracted to a utility file
-export async function fetchHandler(url, method = 'get', dataVersion = null, body = null) {
-  let headers = {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
-  }
-
-  if (!globalConfig.isMA) {
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('testNow')) {
-      headers['testNow'] = params.get('testNow')
-    }
-    if (params.get('timezone')) {
-      headers['M-Client-Timezone'] = params.get('timezone')
-    }
-  }
-
-  if (globalConfig.localTimezoneString) {
-    headers['M-Client-Timezone'] = globalConfig.localTimezoneString
-  }
-
-  if (globalConfig.railcontentConfig.authToken) {
-    headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`
-  }
-
-  if (dataVersion) headers['Data-Version'] = dataVersion
-  const options = {
-    method,
-    headers,
-  }
-  if (body) {
-    options.body = JSON.stringify(body)
-  }
-  try {
-    const response = await fetchAbsolute(url, options)
-    if (response.ok) {
-      return await response.json()
-    } else {
-      console.error(`Fetch error: ${method} ${url} ${response.status} ${response.statusText}`)
-      console.log(response)
-    }
-  } catch (error) {
-    console.error('Fetch error:', error)
-  }
-  return null
 }
 
 export async function fetchUserLikes(currentVersion) {
@@ -1223,15 +1176,12 @@ export async function editComment(commentId, comment) {
   return await patchDataHandler(url, data)
 }
 
-function fetchAbsolute(url, params) {
-  if (globalConfig.railcontentConfig.authToken) {
-    params.headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`
-  }
-
-  if (globalConfig.railcontentConfig.baseUrl) {
-    if (url.startsWith('/')) {
-      return fetch(globalConfig.railcontentConfig.baseUrl + url, params)
-    }
-  }
-  return fetch(url, params)
+export async function fetchHandler(url, method = 'get', dataVersion = null, body = null) {
+  return fetchJSONHandler(
+    url,
+    globalConfig.railcontentConfig.token,
+    globalConfig.railcontentConfig.baseUrl,
+    method,
+    dataVersion,
+    body)
 }
