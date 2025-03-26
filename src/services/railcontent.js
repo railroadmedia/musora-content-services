@@ -1107,11 +1107,12 @@ export async function fetchTopComment(railcontentId) {
 /**
  *
  * @param {int} railcontentId
+ * @param {int} page
  * @param {int} limit
  * @returns {Promise<*|null>}
  */
-export async function fetchAllComments(railcontentId, limit = 20) {
-  const url = `/api/content/v1/${railcontentId}/comments?limit=${limit}`
+export async function fetchComments(railcontentId, page = 1, limit = 20) {
+  const url = `/api/content/v1/${railcontentId}/comments?page=${page}&limit=${limit}`
   return await fetchHandler(url)
 }
 
