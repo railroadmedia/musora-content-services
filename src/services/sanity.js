@@ -15,7 +15,7 @@ import {
   getNewReleasesTypes,
   coachLessonsTypes,
   getChildFieldsForContentType,
-  SONG_TYPES
+  SONG_TYPES,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems } from './recommendations.js'
 import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
@@ -1321,7 +1321,7 @@ export async function fetchLessonContent(railContentId) {
  * @param count
  * @returns {Promise<Array<Object>|null>}
  */
-export async function fetchRelatedRecommendedContent(railContentId, brand, count=10) {
+export async function fetchRelatedRecommendedContent(railContentId, brand, count = 10) {
   const recommendedItems = await fetchSimilarItems(railContentId, brand, count)
   return fetchByRailContentIds(recommendedItems)
 }
@@ -1333,9 +1333,9 @@ export async function fetchRelatedRecommendedContent(railContentId, brand, count
  * @param railcontentId
  * @param brand
  * @param count
- * @returns {Promise<*>}
+ * @returns {Promise<Array<Object>>}
  */
-export async function fetchOtherSongVersions(railcontentId, brand, count=3){
+export async function fetchOtherSongVersions(railcontentId, brand, count = 3) {
   return fetchRelatedByLicense(railcontentId, brand, true, count)
 }
 
@@ -1346,9 +1346,9 @@ export async function fetchOtherSongVersions(railcontentId, brand, count=3){
  * @param {integer} railcontentId
  * @param {string} brand
  * @param {integer:3} count
- * @returns {Promise<*>}
+ * @returns {Promise<Array<Object>>}
  */
-export async function fetchLessonsFeaturingThisContent(railcontentId, brand, count=3){
+export async function fetchLessonsFeaturingThisContent(railcontentId, brand, count = 3) {
   return fetchRelatedByLicense(railcontentId, brand, false, count)
 }
 
@@ -1359,16 +1359,15 @@ export async function fetchLessonsFeaturingThisContent(railcontentId, brand, cou
  * @param {string} brand
  * @param {boolean} onlyUseSongTypes - if true, only return the song type documents. If false, return everything except those
  * @param {integer:3} count
- * @returns {Promise<*[]>}
+ * @returns {Promise<Array<Object>>}
  */
 async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, count) {
   const typeCheck = `@->_type in [${arrayJoinWithQuotes(SONG_TYPES)}]`
   const typeCheckString = onlyUseSongTypes ? `${typeCheck}` : `!(${typeCheck})`
-  const contentFromLicenseFilter =`_type == 'license' && references(^._id)].content[${typeCheckString} && @->railcontent_id != ${railcontentId}`
-  let filterSongTypesWithSameLicense = await new FilterBuilder(
-    contentFromLicenseFilter,
-    {isChildrenFilter: true},
-  ).buildFilter()
+  const contentFromLicenseFilter = `_type == 'license' && references(^._id)].content[${typeCheckString} && @->railcontent_id != ${railcontentId}`
+  let filterSongTypesWithSameLicense = await new FilterBuilder(contentFromLicenseFilter, {
+    isChildrenFilter: true,
+  }).buildFilter()
   let queryFields = getFieldsForContentType()
   const baseParentQuery = `railcontent_id == ${railcontentId}`
   let parentQuery = await new FilterBuilder(baseParentQuery).buildFilter()
@@ -1383,7 +1382,7 @@ async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, cou
       }[0...1]`
 
   const results = await fetchSanity(query, false)
-  return results['related_by_license'] ?? [];
+  return results['related_by_license'] ?? []
 }
 
 /**
@@ -2350,4 +2349,3 @@ export async function fetchScheduledAndNewReleases(
 
   return fetchSanity(query, true)
 }
-
