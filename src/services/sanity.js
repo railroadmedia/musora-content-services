@@ -31,7 +31,6 @@ import {
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { fetchUserPermissions } from './user/permissions.js'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
-import { isContentLiked } from './contentLikes.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -1420,7 +1419,6 @@ export async function fetchRelatedLessons(railContentId, brand) {
       ...(*[${filterSameType}]{${queryFields}}|order(published_on desc, title asc)[0...10])
       ,
       ])[0...10]}`
-  const postProcess = (document) => document['is_completed'] = isContentLiked(document['id'])
   return fetchSanity(query, false)
 }
 
