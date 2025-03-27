@@ -52,6 +52,10 @@ import {
 } from './services/forum.js';
 
 import {
+	fetchAwardsForUser
+} from './services/gamification/awards.js';
+
+import {
 	assignModeratorToComment,
 	closeComment,
 	countAssignmentsAndLessons,
@@ -213,6 +217,7 @@ declare module 'musora-content-services' {
 		fetchAllPacks,
 		fetchArtistLessons,
 		fetchArtists,
+		fetchAwardsForUser,
 		fetchByRailContentId,
 		fetchByRailContentIds,
 		fetchByReference,
@@ -314,7 +319,6 @@ declare module 'musora-content-services' {
 		pinPlaylist,
 		playback,
 		postChallengesCommunityNotification,
-
 		postChallengesEnroll,
 		postChallengesEnrollmentNotification,
 		postChallengesHideCompletedBanner,

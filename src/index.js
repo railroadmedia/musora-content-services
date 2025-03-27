@@ -52,6 +52,10 @@ import {
 } from './services/forum.js';
 
 import {
+	fetchAwardsForUser
+} from './services/gamification/awards.js';
+
+import {
 	assignModeratorToComment,
 	closeComment,
 	countAssignmentsAndLessons,
@@ -212,6 +216,7 @@ export {
 	fetchAllPacks,
 	fetchArtistLessons,
 	fetchArtists,
+	fetchAwardsForUser,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
