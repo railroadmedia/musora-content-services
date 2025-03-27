@@ -6,6 +6,7 @@ import {fetchUserPractices, logUserPractice, fetchUserPracticeMeta, fetchHandler
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import {fetchByRailContentIds} from "./sanity";
 import {TabResponseType} from "../contentMetaData";
+import {lessonTypesMapping} from "../contentTypeConfig";
 
 //TODO: remove harcoded data when the PR is approved
 const userActivityStats = {
@@ -242,20 +243,12 @@ export async function getUserPractices() {
 export async function recordUserPractice(practiceDetails) {
   practiceDetails.auto = 0;
   if (practiceDetails.content_id) {
-    const content = await fetchByRailContentIds([practiceDetails.content_id]);
     practiceDetails.auto = 1;
-    practiceDetails.title = content[0].title;
-    practiceDetails.thumbnail_url = content[0].thumbnail;
   }
 
-  const today = new Date().toISOString().split("T")[0];
   await userActivityContext.update(
     async function (localContext) {
       let userData = localContext.data ?? { [DATA_KEY_PRACTICES]: {} };
-
-      if (!userData[DATA_KEY_PRACTICES][today]) {
-        userData[DATA_KEY_PRACTICES][today] = [];
-      }
       localContext.data = userData;
     },
     async function () {
@@ -265,20 +258,13 @@ export async function recordUserPractice(practiceDetails) {
           const newPractices = response.data ?? []
           newPractices.forEach(newPractice => {
             const { date } = newPractice;
-            if (localContext.data[DATA_KEY_PRACTICES][date]) {
-              console.log('rox data exists before push ::::: ', localContext.data[DATA_KEY_PRACTICES][date], newPractice, date)
-              localContext.data[DATA_KEY_PRACTICES][date].push({
-                id: newPractice.id,
-                duration_seconds: newPractice.duration_seconds  // Add the new practice for this date
-              });
-              console.log('rox data exists after push ::::: ', localContext.data, newPractice)
-            } else {
-              console.log('rox data not exists before push ::::: ',  newPractice)
-              localContext.data[DATA_KEY_PRACTICES][date].push({
-                id: newPractice.id,
-                duration_seconds: newPractice.duration_seconds  // Add the new practice for this date
-              });
+            if (!localContext.data[DATA_KEY_PRACTICES][date]) {
+              localContext.data[DATA_KEY_PRACTICES][date] = [];
             }
+              localContext.data[DATA_KEY_PRACTICES][date].push({
+                id: newPractice.id,
+                duration_seconds: newPractice.duration_seconds  // Add the new practice for this date
+              });
           });
         });
       }
@@ -293,45 +279,83 @@ export async function updateUserPractice(id, practiceDetails) {
 }
 
 export async function removeUserPractice(id) {
-  let url = `/api/user/practices/v1/practices/${id}`
+  let url = `/api/user/practices/v1/practices${buildQueryString([id])}`
   return await fetchHandler(url, 'delete')
 }
 
-export async function getPracticeSessions(day = new Date().toISOString().split('T')[0]) {
+export async function restoreUserPractice(id) {
+  let url = `/api/user/practices/v1/practices/restore${buildQueryString([id])}`
+  return await fetchHandler(url, 'put')
+}
+
+async function getUserPracticeIds(day = new Date().toISOString().split('T')[0]) {
   let data = await userActivityContext.getData();
   let practices = data?.[DATA_KEY_PRACTICES] ?? {};
-
   let userPracticesIds = [];
   Object.keys(practices).forEach(date => {
-    console.log('rox compare date day ::::: ', date, day  )
     if (date === day) {
-      practices[date].forEach(practice => {
-        userPracticesIds.push(practice.id);
-      });
+      practices[date].forEach(practice => userPracticesIds.push(practice.id));
     }
   });
 
-  const meta =  await fetchUserPracticeMeta(userPracticesIds);
-  let practiceDuration = meta.reduce((total, practice) => total + (practice.duration_seconds || 0), 0);
-
-  const formattedMeta = meta.map(practice => ({
-    auto: practice.auto,
-    thumbnail: practice.thumbnail_url || '',
-    duration: practice.duration_seconds || 0,
-    url: practice.url || '',
-    title: practice.title || '',
-    category_id: practice.category_id || null,
-    instrument: practice.instrument || 'Pianote',
-    type: practice.type || 'Single',
-  }));
-  console.log('rox getPracticeSessions ::::: ', {
-    data: {practices:formattedMeta, practiceDuration}
-  })
-  return {
-    data: {practices:formattedMeta,
-      practiceDuration}
-  };
+  return userPracticesIds;
 }
+
+function buildQueryString(ids, paramName = 'practice_ids') {
+  if (!ids.length) return '';
+  return '?' + ids.map(id => `${paramName}[]=${id}`).join('&');
+}
+
+export async function deletePracticeSession(day) {
+  const userPracticesIds = await getUserPracticeIds(day);
+  if (!userPracticesIds.length) return [];
+
+  const url = `/api/user/practices/v1/practices${buildQueryString(userPracticesIds)}`;
+  return await fetchHandler(url, 'delete', null);
+}
+
+export async function restorePracticeSession(date) {
+  const url = `/api/user/practices/v1/practices/restore?date=${date}`;
+  return await fetchHandler(url, 'put', null);
+}
+
+export async function getPracticeSessions(day) {
+  const userPracticesIds = await getUserPracticeIds(day);
+  if (!userPracticesIds.length) return { data: { practices: [], practiceDuration: 0 } };
+
+  const meta = await fetchUserPracticeMeta(userPracticesIds);
+  const practiceDuration = meta.reduce((total, practice) => total + (practice.duration_seconds || 0), 0);
+  const contentIds = meta.map(practice => practice.content_id).filter(id => id !== null);
+
+  const contents = await fetchByRailContentIds(contentIds);
+  const getFormattedType = (type) => {
+    for (const [key, values] of Object.entries(lessonTypesMapping)) {
+      if (values.includes(type)) {
+        return key.replace(/\b\w/g, char => char.toUpperCase());
+      }
+    }
+    return null;
+  };
+
+  const formattedMeta = meta.map(practice => {
+    const content = contents.find(c => c.id === practice.content_id) || {};
+    return {
+      id: practice.id,
+      auto: practice.auto,
+      thumbnail: (practice.content_id)? content.thumbnail : '',
+      duration: practice.duration_seconds || 0,
+      url: content.url || '',
+      title: (practice.content_id)? content.title : practice.title,
+      category_id: practice.category_id || null,
+      instrument_id: practice.instrument_id || null,
+      type: getFormattedType(content.type || ''),
+      content_id: practice.content_id || null,
+      brand: content.brand || null,
+    };
+  });
+  return { data: { practices: formattedMeta, practiceDuration } };
+}
+
 
 export async function getRecentActivity() {
   return recentActivity;

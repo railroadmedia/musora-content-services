@@ -187,6 +187,7 @@ import {
 } from './services/user/sessions.js';
 
 import {
+	deletePracticeSession,
 	getPracticeSessions,
 	getRecentActivity,
 	getUserActivityStats,
@@ -195,6 +196,8 @@ import {
 	getUserWeeklyStats,
 	recordUserPractice,
 	removeUserPractice,
+	restorePracticeSession,
+	restoreUserPractice,
 	updateUserPractice
 } from './services/userActivity.js';
 
@@ -214,6 +217,7 @@ declare module 'musora-content-services' {
 		deletePlaylist,
 		deletePlaylistItem,
 		deletePlaylistLike,
+		deletePracticeSession,
 		duplicatePlaylist,
 		editComment,
 		fetchAll,
@@ -349,6 +353,8 @@ declare module 'musora-content-services' {
 		replyToComment,
 		reportPlaylist,
 		reset,
+		restorePracticeSession,
+		restoreUserPractice,
 		setStudentViewForUser,
 		similarItems,
 		unassignModeratorToComment,

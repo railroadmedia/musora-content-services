@@ -187,6 +187,7 @@ import {
 } from './services/user/sessions.js';
 
 import {
+	deletePracticeSession,
 	getPracticeSessions,
 	getRecentActivity,
 	getUserActivityStats,
@@ -195,6 +196,8 @@ import {
 	getUserWeeklyStats,
 	recordUserPractice,
 	removeUserPractice,
+	restorePracticeSession,
+	restoreUserPractice,
 	updateUserPractice
 } from './services/userActivity.js';
 
@@ -213,6 +216,7 @@ export {
 	deletePlaylist,
 	deletePlaylistItem,
 	deletePlaylistLike,
+	deletePracticeSession,
 	duplicatePlaylist,
 	editComment,
 	fetchAll,
@@ -348,6 +352,8 @@ export {
 	replyToComment,
 	reportPlaylist,
 	reset,
+	restorePracticeSession,
+	restoreUserPractice,
 	setStudentViewForUser,
 	similarItems,
 	unassignModeratorToComment,
