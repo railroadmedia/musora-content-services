@@ -14,7 +14,10 @@ export const DEFAULT_FIELDS = [
   "'id': railcontent_id",
   'railcontent_id',
   artistOrInstructorName(),
-  'artist',
+  `'artist': artist->{
+    name,
+    'thumbnail': thumbnail_url.asset->url,
+  }`,
   'title',
   "'image': thumbnail.asset->url",
   "'thumbnail': thumbnail.asset->url",
