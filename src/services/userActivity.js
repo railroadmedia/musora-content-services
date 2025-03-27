@@ -344,13 +344,13 @@ export async function getPracticeSessions(day) {
       auto: practice.auto,
       thumbnail: (practice.content_id)? content.thumbnail : '',
       duration: practice.duration_seconds || 0,
-      url: content.url || '',
+      content_url: content.url || null,
       title: (practice.content_id)? content.title : practice.title,
       category_id: practice.category_id || null,
       instrument_id: practice.instrument_id || null,
-      type: getFormattedType(content.type || ''),
+      content_type: getFormattedType(content.type || ''),
       content_id: practice.content_id || null,
-      brand: content.brand || null,
+      content_brand: content.brand || null,
     };
   });
   return { data: { practices: formattedMeta, practiceDuration } };
