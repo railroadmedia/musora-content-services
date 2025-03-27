@@ -180,6 +180,11 @@ import {
 } from './services/sanity.js';
 
 import {
+	blockUser,
+	unblockUser
+} from './services/user/management.js';
+
+import {
 	fetchUserPermissions,
 	reset
 } from './services/user/permissions.js';
@@ -199,6 +204,7 @@ declare module 'musora-content-services' {
 		assignModeratorToComment,
 		assignmentStatusCompleted,
 		assignmentStatusReset,
+		blockUser,
 		closeComment,
 		contentStatusCompleted,
 		contentStatusReset,
@@ -340,6 +346,7 @@ declare module 'musora-content-services' {
 		reset,
 		setStudentViewForUser,
 		unassignModeratorToComment,
+		unblockUser,
 		unlikeComment,
 		unlikeContent,
 		unpinPlaylist,
