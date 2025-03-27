@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>gamification/types.js - Documentation</title>
+    <title>Sessions - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,45 +35,522 @@
 
 <div id="main">
     
-    <h1 class="page-title">gamification/types.js</h1>
+    <h1 class="page-title">Sessions</h1>
     
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @typedef {Object} Award
- * @property {string} username - The username of the user.
- * @property {number} streak - The name of the award.
- * @property {number} minutes_practiced - The name of the award.
- * @property {Date} date_completed - Date of completion
- * @property {string} challenge_title - The name of the challenge completed.
- * @property {string} award_text - Award description
- * @property {string} tier - Award tier [bronze, silver, gold]
- * @property {string} award - Award image URL
- * @property {string} award_64 - Award image in base64
- * @property {string} instructor_signature - Instructor signature image URL
- * @property {string} instructor_signature_64 - Instructor signature image in base64
- * @property {string} musora_logo - Musora logo image URL
- * @property {string} musora_logo_64 - Musora logo image in base64
- * @property {string} brand_logo - Brand logo image URL
- * @property {string} brand_logo_64 - Brand logo image in base64
- * @property {string} ribbon_image - Ribbon image URL
- * @property {string} ribbon_image_64 - Ribbon image in base64
- * @property {number} id - ID of the challenge completed
- * @property {string} artist_name - Name of the artist featured in the challenge
- * @property {string} dark_mode_logo_url - Dark mode logo image URL
- * @property {string} light_mode_logo_url - Light mode logo image URL
- * @property {string} logo_image_url - Name of the artist featured in the challenge
- * @property {string} web_url_path - URL path for the challenge
- */
-</code></pre>
-        </article>
-    </section>
+        
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+
+            
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="~excludeFromGeneratedIndex"><span class="type-signature type-signature-inner, constant">(inner, constant) </span>excludeFromGeneratedIndex<span class="type-signature"> :Array.&lt;string></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Exported functions that are excluded from index generation.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="user_sessions.js.html">user/sessions.js</a>, <a href="user_sessions.js.html#line12">line 12</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    Exported functions that are excluded from index generation.
+</div>
+
+
+
+    <h5 class="h5-types">Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Array.&lt;string></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id=".login"><span class="type-signature type-signature-static">(static) </span>login<span class="signature">(email, password, deviceName, deviceToken, platform)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="global.html#AuthResponse">AuthResponse</a>>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Authenticates the User.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="user_sessions.js.html">user/sessions.js</a>, <a href="user_sessions.js.html#line30">line 30</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>login('john@doe.com', 'music123')
+  .then(content => console.log(content))
+  .catch(error => console.error(error));</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>email</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">User's email</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>password</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">User's password</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>deviceName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">null</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Device name for the user</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>deviceToken</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">null</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Firebase token for the device</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>platform</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">null</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Device platform</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    - User data and authentication token
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;<a href="global.html#AuthResponse">AuthResponse</a>></span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".logout"><span class="type-signature type-signature-static">(static) </span>logout<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;void>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Logs the user out of the current session.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="user_sessions.js.html">user/sessions.js</a>, <a href="user_sessions.js.html#line58">line 58</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>logout()
+  .then()
+  .catch(error => console.error(error));</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;void></span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 

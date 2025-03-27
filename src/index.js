@@ -180,6 +180,11 @@ import {
 } from './services/sanity.js';
 
 import {
+	blockUser,
+	unblockUser
+} from './services/user/management.js';
+
+import {
 	fetchUserPermissions,
 	reset
 } from './services/user/permissions.js';
@@ -198,6 +203,7 @@ export {
 	assignModeratorToComment,
 	assignmentStatusCompleted,
 	assignmentStatusReset,
+	blockUser,
 	closeComment,
 	contentStatusCompleted,
 	contentStatusReset,
@@ -339,6 +345,7 @@ export {
 	reset,
 	setStudentViewForUser,
 	unassignModeratorToComment,
+	unblockUser,
 	unlikeComment,
 	unlikeContent,
 	unpinPlaylist,

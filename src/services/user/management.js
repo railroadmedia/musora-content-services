@@ -1,9 +1,7 @@
 /**
- * @module User-Management
+ * @module UserManagement
  */
 import { fetchHandler } from '../railcontent.js'
-
-
 
 /**
  * Exported functions that are excluded from index generation.

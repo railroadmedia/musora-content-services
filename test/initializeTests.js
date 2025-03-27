@@ -14,6 +14,7 @@ export async function initializeTestService(useLive = false, isAdmin = false) {
     token = data['token']
     userId = data['userId']
   }
+
   const config = {
     sanityConfig: {
       token: process.env.SANITY_API_TOKEN,
@@ -24,17 +25,18 @@ export async function initializeTestService(useLive = false, isAdmin = false) {
       debug: process.env.DEBUG === 'true' || false,
       useDummyRailContentMethods: true,
     },
-    railcontentConfig: {
-      baseUrl: process.env.RAILCONTENT_BASE_URL,
+    sessionConfig: {
+      token: token,
       userId: userId,
       authToken: token,
     },
+    baseUrl: process.env.RAILCONTENT_BASE_URL,
     localStorage: new LocalStorageMock(),
     isMA: true,
     recommendationsConfig: {
       token: process.env.HUGGINGFACE_TOKEN,
-      baseUrl: process.env.HUGGINGFACE_URL
-    }
+      baseUrl: process.env.HUGGINGFACE_URL,
+    },
   }
   initializeService(config)
 

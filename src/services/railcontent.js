@@ -35,12 +35,12 @@ let challengeIndexMetaDataPromise = null
  *   .catch(error => console.error(error));
  */
 export async function fetchCompletedState(content_id) {
-  const url = `/content/user_progress/${globalConfig.railcontentConfig.userId}?content_ids[]=${content_id}`
+  const url = `/content/user_progress/${globalConfig.sessionConfig.userId}?content_ids[]=${content_id}`
 
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+    'X-CSRF-TOKEN': globalConfig.sessionConfig.token,
   }
 
   try {
@@ -69,12 +69,12 @@ export async function fetchCompletedState(content_id) {
  *   .catch(error => console.error(error));
  */
 export async function fetchAllCompletedStates(contentIds) {
-  const url = `/content/user_progress/${globalConfig.railcontentConfig.userId}?${contentIds.map((id) => `content_ids[]=${id}`).join('&')}`
+  const url = `/content/user_progress/${globalConfig.sessionConfig.userId}?${contentIds.map((id) => `content_ids[]=${id}`).join('&')}`
 
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+    'X-CSRF-TOKEN': globalConfig.sessionConfig.token,
   }
 
   try {
@@ -102,12 +102,12 @@ export async function fetchAllCompletedStates(contentIds) {
  *   .catch(error => console.error(error));
  */
 export async function fetchSongsInProgress(brand) {
-  const url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=song&brand=${brand}`
+  const url = `/content/in_progress/${globalConfig.sessionConfig.userId}?content_type=song&brand=${brand}`
 
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+    'X-CSRF-TOKEN': globalConfig.sessionConfig.token,
   }
 
   try {
@@ -144,14 +144,14 @@ export async function fetchContentInProgress(type = 'all', brand, { page, limit 
   const pageString = page ? `&page=${page}` : ''
 
   if (type === 'all') {
-    url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?brand=${brand}${limitString}${pageString}`
+    url = `/content/in_progress/${globalConfig.sessionConfig.userId}?brand=${brand}${limitString}${pageString}`
   } else {
-    url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}${limitString}${pageString}`
+    url = `/content/in_progress/${globalConfig.sessionConfig.userId}?content_type=${type}&brand=${brand}${limitString}${pageString}`
   }
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+    'X-CSRF-TOKEN': globalConfig.sessionConfig.token,
   }
   try {
     const response = await fetchAbsolute(url, { headers })
@@ -187,14 +187,14 @@ export async function fetchCompletedContent(type = 'all', brand, { page, limit }
   const pageString = page ? `&page=${page}` : ''
 
   if (type === 'all') {
-    url = `/content/completed/${globalConfig.railcontentConfig.userId}?brand=${brand}${limitString}${pageString}`
+    url = `/content/completed/${globalConfig.sessionConfig.userId}?brand=${brand}${limitString}${pageString}`
   } else {
-    url = `/content/completed/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}${limitString}${pageString}`
+    url = `/content/completed/${globalConfig.sessionConfig.userId}?content_type=${type}&brand=${brand}${limitString}${pageString}`
   }
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+    'X-CSRF-TOKEN': globalConfig.sessionConfig.token,
   }
   try {
     const response = await fetchAbsolute(url, { headers })
@@ -222,11 +222,11 @@ export async function fetchCompletedContent(type = 'all', brand, { page, limit }
  *   .catch(error => console.error(error));
  */
 export async function fetchContentPageUserData(contentId) {
-  let url = `/content/${contentId}/user_data/${globalConfig.railcontentConfig.userId}`
+  let url = `/content/${contentId}/user_data/${globalConfig.sessionConfig.userId}`
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+    'X-CSRF-TOKEN': globalConfig.sessionConfig.token,
   }
 
   try {
@@ -251,10 +251,10 @@ export async function fetchContentPageUserData(contentId) {
  * @returns {Promise<Object|null>} - Returns and Object with the id and type of the next piece of content if found, otherwise null.
  */
 export async function fetchNextContentDataForParent(contentId) {
-  let url = `/content/${contentId}/next/${globalConfig.railcontentConfig.userId}`
+  let url = `/content/${contentId}/next/${globalConfig.sessionConfig.userId}`
   const headers = {
     'Content-Type': 'application/json',
-    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+    'X-CSRF-TOKEN': globalConfig.sessionConfig.token,
   }
 
   try {
@@ -1183,5 +1183,6 @@ export async function fetchHandler(url, method = 'get', dataVersion = null, body
     globalConfig.railcontentConfig.baseUrl,
     method,
     dataVersion,
-    body)
+    body
+  )
 }
