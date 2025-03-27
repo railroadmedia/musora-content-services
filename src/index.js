@@ -53,7 +53,7 @@ import {
 
 import {
 	fetchAwardsForUser
-} from './services/gamification/user-badges.js';
+} from './services/gamification/awards.js';
 
 import {
 	assignModeratorToComment,

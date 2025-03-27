@@ -1,13 +1,14 @@
 {
   "source": {
     "include": [
+      "src/services/user",
+      "src/services/content-org",
+      "src/services/gamification",
+      "src/services/api",
       "src/services/config.js",
       "src/services/sanity.js",
       "src/services/content.js",
       "src/services/railcontent.js",
-      "src/services/user",
-      "src/services/content-org",
-      "src/services/gamification",
       "src/index.js"
     ],
     "includePattern": ".js$",
