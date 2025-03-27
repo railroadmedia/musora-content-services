@@ -119,8 +119,9 @@ describe('Sanity Queries', function() {
 
   test('fetchByRailContentIds', async () => {
     const id = 380094
-    const id2 = 402204
+    const id2 = 415569
     const response = await fetchByRailContentIds([id, id2])
+    log(response)
     const returnedIds = response.map((x) => x.id)
     expect(returnedIds[0]).toBe(id)
     expect(returnedIds[1]).toBe(id2)
@@ -148,8 +149,9 @@ describe('Sanity Queries', function() {
   })
 
   test('fetchLessonContent', async () => {
-    const id = 380094
+    const id = 415569
     const response = await fetchLessonContent(id)
+    log(response)
     expect(response.id).toBe(id)
   })
 
