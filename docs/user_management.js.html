@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>content-org/content-org.js - Documentation</title>
+    <title>user/management.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">content-org/content-org.js</h1>
+    <h1 class="page-title">user/management.js</h1>
     
 
     
@@ -46,9 +46,40 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @namespace ContentOrganization
- * @property {module:Playlists} Playlists
+ * @module User-Management
  */
+import { fetchHandler } from '../railcontent.js'
+
+
+
+/**
+ * Exported functions that are excluded from index generation.
+ *
+ * @type {string[]}
+ */
+const excludeFromGeneratedIndex = []
+
+const baseUrl = `/api/user-management-system`
+
+/**
+ * Block the provided user
+ * @param userId
+ * @returns {Promise&lt;any|string|null>}
+ */
+export async function blockUser(userId) {
+  const url = `${baseUrl}/v1/block/${userId}`
+  return fetchHandler(url, 'post')
+}
+
+/**
+ * Unblock the provided user. Returns a 422 if the user wasn't blocked
+ * @param userId
+ * @returns {Promise&lt;any|string|null>}
+ */
+export async function unblockUser(userId) {
+  const url = `${baseUrl}/v1/unblock/${userId}`
+  return fetchHandler(url, 'post')
+}
 </code></pre>
         </article>
     </section>

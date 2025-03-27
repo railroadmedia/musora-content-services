@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>content-org/content-org.js - Documentation</title>
+    <title>api/types.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">content-org/content-org.js</h1>
+    <h1 class="page-title">api/types.js</h1>
     
 
     
@@ -46,8 +46,29 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @namespace ContentOrganization
- * @property {module:Playlists} Playlists
+ * @typedef {Object} PaginatedMeta
+ * @property {number} current_page - Total number of items
+ * @property {number} from - First index of returned data
+ * @property {number} to - Last index of returned data
+ * @property {number} per_page - Total number of items per page
+ * @property {number} last_page - Last page accessed
+ * @property {number} total - Total number of items
+ * @property {string} path - Url of the current page
+ */
+
+/**
+ * @typedef {Object} PaginatedLinks
+ * @property {string} first - URL of the first page
+ * @property {string} last - URL of the last page
+ * @property {string} next - URL of the next page
+ * @property {string} prev - URL of the previous page
+ */
+
+/**
+ * @typedef {Object&lt;T>} PaginatedResponse
+ * @property {PaginatedMeta} meta - Meta information
+ * @property {PaginatedLinks} links - Links information
+ * @property {Array&lt;T>} data - Data
  */
 </code></pre>
         </article>

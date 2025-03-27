@@ -3,6 +3,7 @@
  */
 
 import { globalConfig } from './config.js'
+import { fetchJSONHandler } from '../lib/httpHelper.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -14,8 +15,8 @@ const excludeFromGeneratedIndex = []
 /**
  * Fetches similar content to the provided content id
  *
- * @param {brand} brand - brand of the content to filter
  * @param {integer} content_id - The ID of the content to find similar items for
+ * @param {brand} brand - brand of the content to filter
  * @param {integer} count - number of items to return
  * @returns {Promise<Object|null>} - Returns the content_ids sorted by rank (most significant first)
  * @example
@@ -23,7 +24,7 @@ const excludeFromGeneratedIndex = []
  *   .then(status => console.log(status))
  *   .catch(error => console.error(error));
  */
-export async function similarItems(brand, content_id, count = 10) {
+export async function fetchSimilarItems(content_id, brand, count = 10) {
   if (!content_id) {
     return []
   }
@@ -129,42 +130,12 @@ export async function recommendations(brand, { page = 1, limit = 10 } = {}) {
 }
 
 async function fetchHandler(url, method = 'get', body = null) {
-  let headers = {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.recommendationsConfig.token,
-  }
-
-  const options = {
+  return fetchJSONHandler(
+    url,
+    globalConfig.recommendationsConfig.token,
+    globalConfig.recommendationsConfig.baseUrl,
     method,
-    headers,
-  }
-
-  if (body) {
-    options.body = JSON.stringify(body)
-  }
-  try {
-    const response = await fetchAbsolute(url, options)
-    if (response.ok) {
-      return await response.json()
-    } else {
-      console.error(`Fetch error: ${method} ${url} ${response.status} ${response.statusText}`)
-      console.log(response)
-    }
-  } catch (error) {
-    console.error('Fetch error:', error)
-  }
-  return null
-}
-
-function fetchAbsolute(url, params) {
-  if (globalConfig.recommendationsConfig.token) {
-    params.headers['Authorization'] = `Bearer ${globalConfig.recommendationsConfig.token}`
-  }
-  if (globalConfig.recommendationsConfig.baseUrl) {
-    if (url.startsWith('/')) {
-      return fetch(globalConfig.recommendationsConfig.baseUrl + url, params)
-    }
-  }
-  return fetch(url, params)
+    null,
+    body
+  )
 }
