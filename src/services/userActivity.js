@@ -223,8 +223,8 @@ export async function getPracticeSessions(day) {
   if (!userPracticesIds.length) return { data: { practices: [], practiceDuration: 0 } };
 
   const meta = await fetchUserPracticeMeta(userPracticesIds);
-  const practiceDuration = meta.reduce((total, practice) => total + (practice.duration_seconds || 0), 0);
-  const contentIds = meta.map(practice => practice.content_id).filter(id => id !== null);
+  const practiceDuration = meta.data.reduce((total, practice) => total + (practice.duration_seconds || 0), 0);
+  const contentIds = meta.data.map(practice => practice.content_id).filter(id => id !== null);
 
   const contents = await fetchByRailContentIds(contentIds);
   const getFormattedType = (type) => {
@@ -236,7 +236,7 @@ export async function getPracticeSessions(day) {
     return null;
   };
 
-  const formattedMeta = meta.map(practice => {
+  const formattedMeta = meta.data.map(practice => {
     const content = contents.find(c => c.id === practice.content_id) || {};
     return {
       id: practice.id,
