@@ -1235,9 +1235,11 @@ export async function editComment(commentId, comment) {
   return await patchDataHandler(url, data)
 }
 
-export async function fetchUserPractices() {
+export async function fetchUserPractices(currentVersion) {
   const url = `/api/user/practices/v1/practices`
-  const userPractices =  await fetchHandler(url)
+  const response =  await fetchDataHandler(url, currentVersion)
+  const { data, version } = response;
+  const userPractices = data;
 
   let formattedPractices = userPractices.reduce((acc, practice) => {
     // Initialize the array if the day does not exist
@@ -1254,7 +1256,8 @@ export async function fetchUserPractices() {
   let json = {
     data: {
       practices: formattedPractices
-    }
+    },
+    version: version
   };
 
   return json;
