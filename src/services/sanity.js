@@ -1074,7 +1074,7 @@ export async function fetchMethod(brand, slug) {
         child_count,
         difficulty,
         difficulty_string,
-        "thumbnail_url": thumbnail.asset->url,
+        "thumbnail": thumbnail.asset->url,
         "instructor": instructor[]->{name},
         title,
         "type": _type,
@@ -1100,7 +1100,7 @@ export async function fetchMethodChildren(railcontentId) {
     "child_count":coalesce(count(child[${childrenFilter}]->), 0),
     "id": railcontent_id,
     "description": ${descriptionField},
-    "thumbnail_url": thumbnail.asset->url,
+    "thumbnail": thumbnail.asset->url,
     title,
     xp,
     total_xp,
@@ -1264,7 +1264,7 @@ export async function fetchLessonContent(railContentId) {
           railcontent_id,
           "id":railcontent_id,
           slug, artist->,
-          "thumbnail_url":thumbnail.asset->url,
+          "thumbnail":thumbnail.asset->url,
           "url": web_url_path,
           soundslice_slug,
           "description": description[0].children[0].text,
@@ -1409,7 +1409,7 @@ export async function fetchRelatedLessons(railContentId, brand) {
   ).buildFilter()
   const filterNeighbouringSiblings = await new FilterBuilder(`references(^._id)`).buildFilter()
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
+  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
   const queryFieldsWithSort = queryFields + ', sort'
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
@@ -1700,11 +1700,11 @@ export async function fetchArtistLessons(
   const query = `{
     "entity":
       *[_type == 'artist' && name == '${name}']
-        {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url,
+        {'type': _type, name, 'thumbnail':thumbnail_url.asset->url,
         'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]),
         'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
       [${start}...${end}]}
-      |order(${sortOrder})
+      |order(${sortOrder})f
   }`
   return fetchSanity(query, true)
 }
@@ -1754,7 +1754,7 @@ export async function fetchGenreLessons(
   const query = `{
     "entity":
       *[_type == 'genre' && name == '${name}']
-        {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url,
+        {'type': _type, name, 'thumbnail':thumbnail_url.asset->url,
         'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]),
         'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
       [${start}...${end}]}
