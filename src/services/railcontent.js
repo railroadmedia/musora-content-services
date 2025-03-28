@@ -4,6 +4,7 @@
 import { contentStatusCompleted } from './contentProgress.js'
 
 import { globalConfig } from './config.js'
+import { fetchJSONHandler } from '../lib/httpHelper.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -16,7 +17,7 @@ const excludeFromGeneratedIndex = [
   'postContentUnliked',
   'postRecordWatchSession',
   'postContentStarted',
-  'postContentCompleted',
+  'postContentComplete',
   'postContentReset',
   'fetchUserPermissionsData',
 ]
@@ -294,67 +295,19 @@ async function deleteDataHandler(url, data) {
   return fetchHandler(url, 'delete')
 }
 
-// TODO: this should be extracted to a utility file
-export async function fetchHandler(url, method = 'get', dataVersion = null, body = null) {
-  let headers = {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
-  }
-
-  if (!globalConfig.isMA) {
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('testNow')) {
-      headers['testNow'] = params.get('testNow')
-    }
-    if (params.get('timezone')) {
-      headers['M-Client-Timezone'] = params.get('timezone')
-    }
-  }
-
-  if (globalConfig.localTimezoneString) {
-    headers['M-Client-Timezone'] = globalConfig.localTimezoneString
-  }
-
-  if (globalConfig.railcontentConfig.authToken) {
-    headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`
-  }
-
-  if (dataVersion) headers['Data-Version'] = dataVersion
-  const options = {
-    method,
-    headers,
-  }
-  if (body) {
-    options.body = JSON.stringify(body)
-  }
-  try {
-    const response = await fetchAbsolute(url, options)
-    if (response.ok) {
-      return await response.json()
-    } else {
-      console.error(`Fetch error: ${method} ${url} ${response.status} ${response.statusText}`)
-      console.log(response)
-    }
-  } catch (error) {
-    console.error('Fetch error:', error)
-  }
-  return null
-}
-
 export async function fetchUserLikes(currentVersion) {
-  let url = `/content/user/likes/all`
+  let url = `/api/content/v1/user/likes`
   return fetchDataHandler(url, currentVersion)
 }
 
 export async function postContentLiked(contentId) {
-  let url = `/content/user/likes/like/${contentId}`
+  let url = `/api/content/v1/user/likes/${contentId}`
   return await postDataHandler(url)
 }
 
 export async function postContentUnliked(contentId) {
-  let url = `/content/user/likes/unlike/${contentId}`
-  return await postDataHandler(url)
+  let url = `/api/content/v1/user/likes/${contentId}`
+  return await deleteDataHandler(url)
 }
 
 export async function fetchContentProgress(currentVersion) {
@@ -593,18 +546,6 @@ export async function postChallengesCommunityNotification(contentId) {
  */
 export async function postChallengesSoloNotification(contentId) {
   let url = `/challenges/notifications/solo_reminders/${contentId}`
-  return await fetchHandler(url, 'post')
-}
-
-/**
- * Complete the challenge lesson and update challenge progress
- *
- * @param {int|string} contentId - railcontent id of the challenge
- * @returns {Promise<any|null>} - Modal data to display
- */
-export async function postChallengesCompleteLesson(contentId) {
-  let url = `/challenges/complete_lesson/${contentId}`
-  await contentStatusCompleted(contentId)
   return await fetchHandler(url, 'post')
 }
 
@@ -926,9 +867,9 @@ export async function fetchPlaylistItem(payload) {
   return await fetchHandler(url)
 }
 
-export async function postContentCompleted(contentId) {
-  let url = `/content/user/progress/complete`
-  return postDataHandler(url, { contentId: contentId })
+export async function postContentComplete(contentId) {
+  let url = `/api/content/v1/user/progress/complete/${contentId}`
+  return postDataHandler(url)
 }
 
 export async function postContentReset(contentId) {
@@ -1084,7 +1025,7 @@ export async function playback(playlistId) {
  * Set a user's StudentView Flag
  *
  * @param {int|string} userId - id of the user (must be currently authenticated)
- * @param {bool} enable - truthsy value to enable student view
+ * @param {bool} enable - truthy value to enable student view
  * @returns {Promise<any|null>}
  */
 export async function setStudentViewForUser(userId, enable) {
@@ -1100,7 +1041,7 @@ export async function setStudentViewForUser(userId, enable) {
  * @returns {Promise<Object|null>} - A promise that resolves to an comment object
  */
 export async function fetchTopComment(railcontentId) {
-  const url = `/api/content/v1/comments/content/${railcontentId}/top`
+  const url = `/api/content/v1/${railcontentId}/comments?filter=top`
   return await fetchHandler(url)
 }
 
@@ -1112,7 +1053,7 @@ export async function fetchTopComment(railcontentId) {
  * @returns {Promise<*|null>}
  */
 export async function fetchComments(railcontentId, page = 1, limit = 20) {
-  const url = `/api/content/v1/comments/content/${railcontentId}/all?page=${page}&limit=${limit}`
+  const url = `/api/content/v1/${railcontentId}/comments?page=${page}&limit=${limit}`
   return await fetchHandler(url)
 }
 
@@ -1294,4 +1235,13 @@ function fetchAbsolute(url, params) {
     }
   }
   return fetch(url, params)
+}
+export async function fetchHandler(url, method = 'get', dataVersion = null, body = null) {
+  return fetchJSONHandler(
+    url,
+    globalConfig.railcontentConfig.token,
+    globalConfig.railcontentConfig.baseUrl,
+    method,
+    dataVersion,
+    body)
 }

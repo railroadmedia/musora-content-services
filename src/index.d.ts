@@ -52,6 +52,10 @@ import {
 } from './services/forum.js';
 
 import {
+	fetchAwardsForUser
+} from './services/gamification/awards.js';
+
+import {
 	assignModeratorToComment,
 	closeComment,
 	countAssignmentsAndLessons,
@@ -99,7 +103,6 @@ import {
 	pinPlaylist,
 	playback,
 	postChallengesCommunityNotification,
-	postChallengesCompleteLesson,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,
 	postChallengesHideCompletedBanner,
@@ -107,7 +110,7 @@ import {
 	postChallengesSetStartDate,
 	postChallengesSoloNotification,
 	postChallengesUnlock,
-	postContentCompleted,
+	postContentComplete,
 	postContentLiked,
 	postContentReset,
 	postContentUnliked,
@@ -123,10 +126,10 @@ import {
 } from './services/railcontent.js';
 
 import {
+	fetchSimilarItems,
 	rankCategories,
 	rankItems,
-	recommendations,
-	similarItems
+	recommendations
 } from './services/recommendations.js';
 
 import {
@@ -147,6 +150,7 @@ import {
 	fetchHierarchy,
 	fetchLeaving,
 	fetchLessonContent,
+	fetchLessonsFeaturingThisContent,
 	fetchLiveEvent,
 	fetchMetadata,
 	fetchMethod,
@@ -155,12 +159,14 @@ import {
 	fetchMethodPreviousNextLesson,
 	fetchNewReleases,
 	fetchNextPreviousLesson,
+	fetchOtherSongVersions,
 	fetchPackAll,
 	fetchPackData,
 	fetchParentForDownload,
 	fetchPlayAlongsCount,
 	fetchRecent,
 	fetchRelatedLessons,
+	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
 	fetchReturning,
 	fetchSanity,
@@ -225,6 +231,7 @@ declare module 'musora-content-services' {
 		fetchAllPacks,
 		fetchArtistLessons,
 		fetchArtists,
+		fetchAwardsForUser,
 		fetchByRailContentId,
 		fetchByRailContentIds,
 		fetchByReference,
@@ -251,6 +258,7 @@ declare module 'musora-content-services' {
 		fetchHierarchy,
 		fetchLeaving,
 		fetchLessonContent,
+		fetchLessonsFeaturingThisContent,
 		fetchLiveEvent,
 		fetchMetadata,
 		fetchMethod,
@@ -260,6 +268,7 @@ declare module 'musora-content-services' {
 		fetchNewReleases,
 		fetchNextContentDataForParent,
 		fetchNextPreviousLesson,
+		fetchOtherSongVersions,
 		fetchOwnedChallenges,
 		fetchPackAll,
 		fetchPackData,
@@ -271,12 +280,14 @@ declare module 'musora-content-services' {
 		fetchPlaylistItems,
 		fetchRecent,
 		fetchRelatedLessons,
+		fetchRelatedRecommendedContent,
 		fetchRelatedSongs,
 		fetchReturning,
 		fetchSanity,
 		fetchScheduledAndNewReleases,
 		fetchScheduledReleases,
 		fetchShowsData,
+		fetchSimilarItems,
 		fetchSongArtistCount,
 		fetchSongById,
 		fetchSongsInProgress,
@@ -329,7 +340,6 @@ declare module 'musora-content-services' {
 		pinPlaylist,
 		playback,
 		postChallengesCommunityNotification,
-		postChallengesCompleteLesson,
 		postChallengesEnroll,
 		postChallengesEnrollmentNotification,
 		postChallengesHideCompletedBanner,
@@ -337,7 +347,7 @@ declare module 'musora-content-services' {
 		postChallengesSetStartDate,
 		postChallengesSoloNotification,
 		postChallengesUnlock,
-		postContentCompleted,
+		postContentComplete,
 		postContentLiked,
 		postContentReset,
 		postContentUnliked,
@@ -354,7 +364,6 @@ declare module 'musora-content-services' {
 		restorePracticeSession,
 		restoreUserPractice,
 		setStudentViewForUser,
-		similarItems,
 		unassignModeratorToComment,
 		unlikeComment,
 		unlikeContent,

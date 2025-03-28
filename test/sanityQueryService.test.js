@@ -1,15 +1,12 @@
-import { getFieldsForContentType} from '../src/contentTypeConfig'
+import { getFieldsForContentType, SONG_TYPES } from '../src/contentTypeConfig'
+
 const railContentModule = require('../src/services/railcontent.js')
 
-import {
-  fetchCommentModContentData,
-  fetchMethodPreviousNextLesson,
-  fetchSanity,
-} from '../src/services/sanity'
 import { log } from './log.js'
 import { initializeTestService } from './initializeTests'
 import { dataContext } from '../src/services/contentProgress'
-import {fetchOwnedChallenges, getRecommendedForYou, globalConfig, recommendations} from '../src'
+import { fetchOwnedChallenges, getRecommendedForYou, globalConfig, recommendations } from '../src'
+import { fetchLessonsFeaturingThisContent } from '../src/services/sanity.js'
 
 const {
   fetchSongById,
@@ -42,13 +39,17 @@ const {
   fetchNextPreviousLesson,
   fetchHierarchy,
   fetchTopLevelParentId,
+  fetchOtherSongVersions,
+  fetchCommentModContentData,
+  fetchMethodPreviousNextLesson,
+  fetchSanity,
 } = require('../src/services/sanity.js')
 
 const { FilterBuilder } = require('../src/filterBuilder.js')
 
 const { processMetadata } = require('../src/contentMetaData.js')
 
-describe('Sanity Queries', function () {
+describe('Sanity Queries', function() {
   beforeEach(() => {
     initializeTestService()
   })
@@ -62,21 +63,21 @@ describe('Sanity Queries', function () {
   test('fetchReturning', async () => {
     const brand = 'guitareo'
     const page = 1
-    const response = await fetchReturning(brand, {pageNumber: 1})
+    const response = await fetchReturning(brand, { pageNumber: 1 })
     expect(response).toBeDefined()
-  });
+  })
 
   test('fetchLeaving', async () => {
     const brand = 'guitareo'
-    const response = await fetchLeaving(brand, {pageNumber: 1})
+    const response = await fetchLeaving(brand, { pageNumber: 1 })
     expect(response).toBeDefined()
-  });
+  })
 
   test('fetchComingSoon', async () => {
     const brand = 'guitareo'
-    const response = await fetchComingSoon(brand, {pageNumber: 2, contentPerPage: 20})
+    const response = await fetchComingSoon(brand, { pageNumber: 2, contentPerPage: 20 })
     expect(response).toBeDefined()
-  });
+  })
 
 
   test('fetchArtists', async () => {
@@ -154,9 +155,7 @@ describe('Sanity Queries', function () {
 
   test('fetchAllSongsInProgress', async () => {
     var mock = jest.spyOn(dataContext, 'fetchData')
-    var json = JSON.parse(
-      `{"version":1,"config":{"key":1,"enabled":1,"checkInterval":1,"refreshInterval":2},"data":{"412941":{"s":"started","p":6,"t":20,"u":1731108082}}}`
-    )
+    var json = JSON.parse(`{"version":1,"config":{"key":1,"enabled":1,"checkInterval":1,"refreshInterval":2},"data":{"412941":{"s":"started","p":6,"t":20,"u":1731108082}}}`)
     mock.mockImplementation(() => json)
     const response = await fetchAll('drumeo', 'song', { progress: 'in progress' })
     expect(response.entity[0].id).toBe(412941)
@@ -262,8 +261,7 @@ describe('Sanity Queries', function () {
     expect(response.entity[0].id).toBeDefined()
 
     response = await fetchAll('drumeo', 'challenge', {
-      useDefaultFields: false,
-      customFields: ['garbage'],
+      useDefaultFields: false, customFields: ['garbage'],
     })
     log(response)
     expect(response.entity[0].garbage).toBeDefined()
@@ -278,13 +276,11 @@ describe('Sanity Queries', function () {
     let relatedDoc = await fetchByRailContentId(response.related_lessons[0].id, 'song')
     // match on artist or any genre
     let isMatch = artist === relatedDoc.artist.name
-    isMatch =
-      isMatch ||
-      document.genre.some((genre) => {
-        return relatedDoc.genre.some((relatedGenre) => {
-          return genre._ref === relatedGenre._ref
-        })
+    isMatch = isMatch || document.genre.some((genre) => {
+      return relatedDoc.genre.some((relatedGenre) => {
+        return genre._ref === relatedGenre._ref
       })
+    })
     expect(isMatch).toBeTruthy()
   })
 
@@ -347,16 +343,14 @@ describe('Sanity Queries', function () {
   test('fetchAll-WithProgress', async () => {
     const ids = [410213, 410215]
     let response = await fetchAll('drumeo', 'song', {
-      sort: 'slug',
-      progressIds: ids,
+      sort: 'slug', progressIds: ids,
     })
     expect(response.entity.length).toBe(2)
     expect((response.entity[0].id = 410215))
     expect((response.entity[1].id = 410213))
     // change the type and we expect no results
     response = await fetchAll('drumeo', 'quick-tip', {
-      sort: 'slug',
-      progressIds: ids,
+      sort: 'slug', progressIds: ids,
     })
     expect(response.entity.length).toBe(0)
   })
@@ -400,16 +394,7 @@ describe('Sanity Queries', function () {
     expect(response.entity.length).toBeGreaterThan(0)
   })
   test('fetchCoachLessons-WithTypeFilters', async () => {
-    const response = await fetchAllFilterOptions(
-      'drumeo',
-      ['type,course', 'type,live'],
-      '',
-      '',
-      'coach-lessons',
-      '',
-      [],
-      31880
-    )
+    const response = await fetchAllFilterOptions('drumeo', ['type,course', 'type,live'], '', '', 'coach-lessons', '', [], 31880)
     log(response)
     expect(response.meta.filterOptions.difficulty).toBeDefined()
     expect(response.meta.filterOptions.type).toBeDefined()
@@ -422,18 +407,7 @@ describe('Sanity Queries', function () {
     const coachId = 31880
     const invalidContentType = 'course' // Not 'coach-lessons'
 
-    await expect(
-      fetchAllFilterOptions(
-        brand,
-        ['type,course', 'type,live'],
-        '',
-        '',
-        invalidContentType,
-        '',
-        [],
-        coachId
-      )
-    ).rejects.toThrow("Invalid contentType: 'course' for coachId. It must be 'coach-lessons'.")
+    await expect(fetchAllFilterOptions(brand, ['type,course', 'type,live'], '', '', invalidContentType, '', [], coachId)).rejects.toThrow(`Invalid contentType: 'course' for coachId. It must be 'coach-lessons'.`)
   })
 
   test('fetchCoachLessons-IncludedFields', async () => {
@@ -637,15 +611,13 @@ describe('Sanity Queries', function () {
     let data = await fetchCommentModContentData([241251, 241252, 211153])
     expect(data[241251].title).toBe('Setting Up Your Space')
     expect(data[241251].type).toBe('learning-path-lesson')
-    expect(data[241251].url).toBe(
-      '/drumeo/method/drumeo-method/241247/getting-started-on-the-drums/241248/gear/241249/setting-up-your-space/241251'
-    )
+    expect(data[241251].url).toBe('/drumeo/method/drumeo-method/241247/getting-started-on-the-drums/241248/gear/241249/setting-up-your-space/241251')
     expect(data[241251].parentTitle).toBe('Gear')
     expect(data[241252].title).toBe('Setting Up Your Pedals & Throne')
   })
 })
 
-describe('Filter Builder', function () {
+describe('Filter Builder', function() {
   beforeEach(() => {
     initializeTestService()
   })
@@ -670,26 +642,21 @@ describe('Filter Builder', function () {
 
   test('withOnlyFilterAvailableStatuses', async () => {
     const filter = 'railcontent_id = 111'
-    const builder = FilterBuilder.withOnlyFilterAvailableStatuses(
-      filter,
-      ['published', 'unlisted'],
-      true
-    )
+    const builder = FilterBuilder.withOnlyFilterAvailableStatuses(filter, ['published', 'unlisted'], true)
     const finalFilter = await builder.buildFilter()
     const clauses = spliceFilterForAnds(finalFilter)
     expect(clauses[0].phrase).toBe(filter)
     expect(clauses[1].field).toBe('status')
     expect(clauses[1].operator).toBe('in')
     // not sure I like this
-    expect(clauses[1].condition).toBe("['published','unlisted']")
+    expect(clauses[1].condition).toBe(`['published','unlisted']`)
     expect(clauses[2].field).toBe('published_on')
   })
 
   test('withContentStatusAndFutureScheduledContent', async () => {
     const filter = 'railcontent_id = 111'
     const builder = new FilterBuilder(filter, {
-      availableContentStatuses: ['published', 'unlisted', 'scheduled'],
-      getFutureScheduledContentsOnly: true,
+      availableContentStatuses: ['published', 'unlisted', 'scheduled'], getFutureScheduledContentsOnly: true,
     })
     const finalFilter = await builder.buildFilter()
     const clauses = spliceFilterForAnds(finalFilter)
@@ -697,8 +664,7 @@ describe('Filter Builder', function () {
     expect(clauses[1].field).toBe('(status') // extra ( because it's a multi part filter
     expect(clauses[1].operator).toBe('in')
     // getFutureScheduledContentsOnly doesn't make a filter that's splicable, so we match on the more static string
-    const expected =
-      "['published','unlisted'] || (status == 'scheduled' && defined(published_on) && published_on >="
+    const expected = `['published','unlisted'] || (status == 'scheduled' && defined(published_on) && published_on >=`
     const isMatch = finalFilter.includes(expected)
     expect(isMatch).toBeTruthy()
   })
@@ -707,7 +673,7 @@ describe('Filter Builder', function () {
     const filter = 'railcontent_id = 111'
     const builder = new FilterBuilder(filter)
     const finalFilter = await builder.buildFilter()
-    const expected = "references(*[_type == 'permission' && railcontent_id in [78,91,92]]._id)"
+    const expected = `references(*[_type == 'permission' && railcontent_id in [78,91,92]]._id)`
     const isMatch = finalFilter.includes(expected)
     expect(isMatch).toBeTruthy()
   })
@@ -716,7 +682,7 @@ describe('Filter Builder', function () {
     const filter = 'railcontent_id = 111'
     const builder = new FilterBuilder(filter)
     const finalFilter = await builder.buildFilter()
-    const expected = "references(*[_type == 'permission' && railcontent_id in [78,91,92]]._id)"
+    const expected = `references(*[_type == 'permission' && railcontent_id in [78,91,92]]._id)`
     const isMatch = finalFilter.includes(expected)
     expect(isMatch).toBeTruthy()
   })
@@ -724,11 +690,10 @@ describe('Filter Builder', function () {
   test('withPermissionBypass', async () => {
     const filter = 'railcontent_id = 111'
     const builder = new FilterBuilder(filter, {
-      bypassPermissions: true,
-      pullFutureContent: false,
+      bypassPermissions: true, pullFutureContent: false,
     })
     const finalFilter = await builder.buildFilter()
-    const expected = "references(*[_type == 'permission' && railcontent_id in [78,91,92]]._id)"
+    const expected = `references(*[_type == 'permission' && railcontent_id in [78,91,92]]._id)`
     const isMatch = finalFilter.includes(expected)
     expect(isMatch).toBeFalsy()
     const clauses = spliceFilterForAnds(finalFilter)
@@ -742,8 +707,7 @@ describe('Filter Builder', function () {
 
     const filter = 'railcontent_id = 111'
     let builder = new FilterBuilder(filter, {
-      pullFutureContent: true,
-      bypassPermissions: true,
+      pullFutureContent: true, bypassPermissions: true,
     })
 
     let finalFilter = await builder.buildFilter()
@@ -755,8 +719,7 @@ describe('Filter Builder', function () {
     expect(clauses[3].field).toBe('published_on')
 
     builder = new FilterBuilder(filter, {
-      getFutureContentOnly: true,
-      bypassPermissions: true,
+      getFutureContentOnly: true, bypassPermissions: true,
     })
     finalFilter = await builder.buildFilter()
     clauses = spliceFilterForAnds(finalFilter)
@@ -815,28 +778,13 @@ describe('Filter Builder', function () {
   })
 
   test('fetchAllFilterOptions-filter-selected', async () => {
-    let response = await fetchAllFilterOptions(
-      'drumeo',
-      [
-        'theory,notation',
-        'theory,time signatures',
-        'creativity,Grooves',
-        'creativity,Fills & Chops',
-        'difficulty,Beginner',
-        'difficulty,Intermediate',
-        'difficulty,Expert',
-      ],
-      '',
-      '',
-      'course',
-      ''
-    )
+    let response = await fetchAllFilterOptions('drumeo', ['theory,notation', 'theory,time signatures', 'creativity,Grooves', 'creativity,Fills & Chops', 'difficulty,Beginner', 'difficulty,Intermediate', 'difficulty,Expert'], '', '', 'course', '')
     log(response)
     expect(response.meta.filterOptions).toBeDefined()
   })
 })
 
-describe('MetaData', function () {
+describe('MetaData', function() {
   test('customBrandTypeExists', async () => {
     const metaData = processMetadata('guitareo', 'recording')
     expect(metaData.type).toBe('recording')
@@ -871,7 +819,7 @@ describe('MetaData', function () {
   })
 })
 
-describe('v2', function () {
+describe('api.v1', function() {
   beforeEach(() => {
     initializeTestService()
   })
@@ -892,19 +840,13 @@ describe('v2', function () {
   })
 
   test('fetchAllFilterOptionsLessons', async () => {
-    const response = await fetchAllFilterOptions(
-      'pianote',
-      [],null,null,'lessons'
-    )
+    const response = await fetchAllFilterOptions('pianote', [], null, null, 'lessons')
     log(response)
     expect(response.meta.filters).toBeDefined()
   })
 
   test('fetchAllFilterOptionsSongs', async () => {
-    const response = await fetchAllFilterOptions(
-      'pianote',
-      [],null,null,'songs'
-    )
+    const response = await fetchAllFilterOptions('pianote', [], null, null, 'songs')
     log(response)
     expect(response.meta.filters).toBeDefined()
   })
@@ -914,9 +856,105 @@ describe('v2', function () {
     log(liveEvent)
     //expect(metaData).toBeNull()
   })
+
+
+
+  test('fetchRelatedLessons-pack-bundle-lessons', async () => {
+    //https://www.musora.com/singeo/packs/sing-harmony-in-30-days/410537/sing-harmony-in-30-days/410538/day-2/410541
+    const railContentId = 410541
+    const relatedLessons = await fetchRelatedLessons(railContentId, 'singeo')
+    log(relatedLessons)
+    const expectedPath = ['', 'singeo', 'packs', 'sing-harmony-in-30-days', '410537', 'sing-harmony-in-30-days', '410538']
+    expect(relatedLessons['related_lessons'].length).toBeGreaterThanOrEqual(1)
+    relatedLessons['related_lessons'].forEach(document => {
+      expect('pack-bundle-lesson').toStrictEqual(document.type)
+      // there are other ways to check that these all have the same parent, but I don't want to write it
+      let web_url_path = document.web_url_path.split('/')
+      // remove id and slug
+      web_url_path.pop()
+      web_url_path.pop()
+      expect(web_url_path).toEqual(expectedPath)
+    })
+  })
+
+  test('fetchRelatedLessons-course-parts', async () => {
+    ///drumeo/courses/ultra-compact-drum-set-gear-guide/295177/gigpig-standard-and-extendable/297929
+    const railContentId = 297929
+    const relatedLessons = await fetchRelatedLessons(railContentId, 'drumeo')
+    log(relatedLessons)
+    const expectedPath = ['', 'drumeo', 'courses', 'ultra-compact-drum-set-gear-guide', '295177']
+    expect(relatedLessons['related_lessons'].length).toBeGreaterThanOrEqual(1)
+    relatedLessons['related_lessons'].forEach(document => {
+      expect('course-part').toStrictEqual(document.type)
+      // there are other ways to check that these all have the same parent, but I don't want to write it
+      let web_url_path = document.web_url_path.split('/')
+      // remove id and slug
+      web_url_path.pop()
+      web_url_path.pop()
+      expect(web_url_path).toEqual(expectedPath)
+    })
+  })
 })
 
-describe('Recommended System', function () {
+describe('api.v1.admin', function() {
+  beforeEach(() => {
+    initializeTestService(false, true)
+  })
+
+  test('fetchOtherSongVersions', async () => {
+    // much of the licensed content is currently drafted, so this must be run in the admin test-suite
+    const railContentId = 386901
+    const licenseQuery = `*[railcontent_id == ${railContentId}]{
+      'content_ids': *[_type == 'license' && references(^._id)].content[]->railcontent_id
+    }[0]`
+    const otherReferencedContent = (await fetchSanity(licenseQuery, true))['content_ids']
+    log(otherReferencedContent)
+    const relatedSongsTypes = await fetchOtherSongVersions(railContentId, 'drumeo', 100)
+    log(relatedSongsTypes)
+    expect(relatedSongsTypes.length).toBeGreaterThanOrEqual(1)
+    relatedSongsTypes.forEach(document => {
+      expect(SONG_TYPES).toContain(document.type)
+      expect(document.id).not.toStrictEqual(railContentId)
+      expect(otherReferencedContent).toContain(document.id)
+    })
+  })
+
+  test('fetchLessonsFeaturingThisContent', async () => {
+    // much of the licensed content is currently drafted, so this must be run in the admin test-suite
+    const railContentId = 386901
+    const licenseQuery = `*[railcontent_id == ${railContentId}]{
+      'content_ids': *[_type == 'license' && references(^._id)].content[]->railcontent_id
+    }[0]`
+    const otherReferencedContent = (await fetchSanity(licenseQuery, true))['content_ids']
+    const relatedNotSongs = await fetchLessonsFeaturingThisContent(railContentId, 'drumeo', 100)
+    log(relatedNotSongs)
+    expect(relatedNotSongs.length).toBeGreaterThanOrEqual(1)
+    relatedNotSongs.forEach(document => {
+      expect(SONG_TYPES).not.toContain(document.type)
+      expect(document.id).not.toStrictEqual(railContentId)
+      expect(otherReferencedContent).toContain(document.id)
+    })
+  })
+
+  test('fetchRelatedLessons-song-tutorial-children', async () => {
+    // When I wrote this it didn't need admin, but something changed. Shrug
+    const railContentId = 222633
+    const relatedLessons = await fetchRelatedLessons(railContentId, 'pianote')
+    log(relatedLessons)
+    const expectedPath = ['', 'pianote', 'song-tutorials', 'hallelujah', '221831']
+    expect(relatedLessons['related_lessons'].length).toBeGreaterThanOrEqual(1)
+    relatedLessons['related_lessons'].forEach(document => {
+      expect('song-tutorial-children').toStrictEqual(document.type)
+      let web_url_path = document.web_url_path.split('/')
+      // remove id, slug
+      web_url_path.pop()
+      web_url_path.pop()
+      expect(web_url_path).toEqual(expectedPath)
+    })
+  })
+})
+
+describe('Recommended System', function() {
   beforeEach(() => {
     initializeTestService()
   })
@@ -931,7 +969,7 @@ describe('Recommended System', function () {
   })
 
   test('getRecommendedForYou-SeeAll', async () => {
-    const results = await getRecommendedForYou('drumeo', 'recommended', {page: 1, limit:20})
+    const results = await getRecommendedForYou('drumeo', 'recommended', { page: 1, limit: 20 })
     log(results)
     expect(results.type).toBeDefined()
     expect(results.data).toBeDefined()
@@ -939,3 +977,5 @@ describe('Recommended System', function () {
     expect(results.data.length).toBeGreaterThanOrEqual(1)
   })
 })
+
+
