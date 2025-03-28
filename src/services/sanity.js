@@ -579,6 +579,7 @@ export async function fetchAll(
   let additionalFields = config?.fields ?? []
   let isGroupByOneToOne = (groupBy ? config?.relationships?.[groupBy]?.isOneToOne : false) ?? false
   let webUrlPathType = config?.slug ?? type
+  webUrlPathType = webUrlPathType == "song-tutorial" ? "song-tutorials" : "song-tutorial";
   const start = (page - 1) * limit
   const end = start + limit
   let bypassStatusAndPublishedValidation =
