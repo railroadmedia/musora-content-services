@@ -1243,7 +1243,7 @@ export async function fetchLessonContent(railContentId) {
             "coach_profile_image":thumbnail_url.asset->url
           },
           ${assignmentsField}
-          video,
+          'video': coalesce(video[0], video),
           length_in_seconds,
           mp3_no_drums_no_click_url,
           mp3_no_drums_yes_click_url,
