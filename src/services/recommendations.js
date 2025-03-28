@@ -110,19 +110,17 @@ export async function rankItems(brand, content_ids) {
   }
 }
 
-export async function recommendations(brand, {
-  page = 1,
-  limit = 10,
-} = {}) {
-  let data = {
-    'brand': brand,
-    'user_id': globalConfig.railcontentConfig.userId,
-    'num_recommendations': limit
-  }
-  const url = `/recommendations/`
+export async function recommendations(brand, { section = ''} = {}) {
+  section = section.toUpperCase().replace('-', '_')
+  const sectionString = section ? `&section=${section}` : '';
+  const url = `/api/content/v1/recommendations?brand=${brand}${sectionString}`
   try {
-    const response = await fetchHandler(url, 'POST', data)
-    return response['recommendations']
+    return fetchJSONHandler(
+      url,
+      globalConfig.railcontentConfig.token,
+      globalConfig.railcontentConfig.baseUrl,
+      'get'
+    )
   } catch (error) {
     console.error('Fetch error:', error)
     return null
