@@ -94,8 +94,11 @@ import {
 	fetchUserChallengeProgress,
 	fetchUserLikes,
 	fetchUserPermissionsData,
+	fetchUserPracticeMeta,
+	fetchUserPractices,
 	likeComment,
 	likePlaylist,
+	logUserPractice,
 	openComment,
 	pinPlaylist,
 	playback,
@@ -180,6 +183,11 @@ import {
 } from './services/sanity.js';
 
 import {
+	blockUser,
+	unblockUser
+} from './services/user/management.js';
+
+import {
 	fetchUserPermissions,
 	reset
 } from './services/user/permissions.js';
@@ -190,7 +198,17 @@ import {
 } from './services/user/sessions.js';
 
 import {
-	getUserActivityStats
+	deletePracticeSession,
+	getPracticeSessions,
+	getRecentActivity,
+	getUserMonthlyStats,
+	getUserPractices,
+	getUserWeeklyStats,
+	recordUserPractice,
+	removeUserPractice,
+	restorePracticeSession,
+	restoreUserPractice,
+	updateUserPractice
 } from './services/userActivity.js';
 
 export {
@@ -198,6 +216,7 @@ export {
 	assignModeratorToComment,
 	assignmentStatusCompleted,
 	assignmentStatusReset,
+	blockUser,
 	closeComment,
 	contentStatusCompleted,
 	contentStatusReset,
@@ -208,6 +227,7 @@ export {
 	deletePlaylist,
 	deletePlaylistItem,
 	deletePlaylistLike,
+	deletePracticeSession,
 	duplicatePlaylist,
 	editComment,
 	fetchAll,
@@ -287,6 +307,8 @@ export {
 	fetchUserPermissions,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
+	fetchUserPracticeMeta,
+	fetchUserPractices,
 	getActiveDiscussions,
 	getAllCompleted,
 	getAllStarted,
@@ -294,17 +316,21 @@ export {
 	getContentRows,
 	getLessonContentRows,
 	getNewAndUpcoming,
+	getPracticeSessions,
 	getProgressPercentage,
 	getProgressPercentageByIds,
 	getProgressState,
 	getProgressStateByIds,
 	getRecent,
+	getRecentActivity,
 	getRecommendedForYou,
 	getResumeTimeSeconds,
 	getScheduleContentRows,
 	getSortOrder,
 	getTabResults,
-	getUserActivityStats,
+	getUserMonthlyStats,
+	getUserPractices,
+	getUserWeeklyStats,
 	globalConfig,
 	initializeService,
 	isContentLiked,
@@ -312,6 +338,7 @@ export {
 	likeComment,
 	likeContent,
 	likePlaylist,
+	logUserPractice,
 	login,
 	logout,
 	openComment,
@@ -333,16 +360,22 @@ export {
 	rankCategories,
 	rankItems,
 	recommendations,
+	recordUserPractice,
 	recordWatchSession,
+	removeUserPractice,
 	replyToComment,
 	reportPlaylist,
 	reset,
+	restorePracticeSession,
+	restoreUserPractice,
 	setStudentViewForUser,
 	unassignModeratorToComment,
+	unblockUser,
 	unlikeComment,
 	unlikeContent,
 	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem,
+	updateUserPractice,
 	verifyLocalDataContext,
 };

@@ -1176,6 +1176,66 @@ export async function editComment(commentId, comment) {
   return await patchDataHandler(url, data)
 }
 
+export async function fetchUserPractices(currentVersion) {
+  const url = `/api/user/practices/v1/practices`
+  const response =  await fetchDataHandler(url, currentVersion)
+  const { data, version } = response;
+  const userPractices = data;
+
+  let formattedPractices = userPractices.reduce((acc, practice) => {
+    // Initialize the array if the day does not exist
+    if (!acc[practice.day]) {
+      acc[practice.day] = [];
+    }
+
+    // Push the practice entry into the array
+    acc[practice.day].push({ id:practice.id, duration_seconds: practice.duration_seconds });
+
+    return acc;
+  }, {});
+
+  let json = {
+    data: {
+      practices: formattedPractices
+    },
+    version: version
+  };
+
+  return json;
+}
+
+export async function logUserPractice(practiceDetails) {
+  const url = `/api/user/practices/v1/practices`
+  return await fetchHandler(url, 'POST', null, practiceDetails)
+}
+export async function fetchUserPracticeMeta(practiceIds) {
+  if(practiceIds.length == 0)
+  {
+    return [];
+  }
+  let idsString = '';
+  if (practiceIds && practiceIds.length > 0) {
+    idsString = '?';
+    practiceIds.forEach((id, index) => {
+      idsString += `practice_ids[]=${id}${index < practiceIds.length - 1 ? '&' : ''}`;
+    });
+  }
+  const url = `/api/user/practices/v1/practices${idsString}`
+  return await fetchHandler(url, 'GET', null)
+}
+
+function fetchAbsolute(url, params) {
+  if (globalConfig.railcontentConfig.authToken) {
+    params.headers['Authorization'] = `Bearer ${globalConfig.railcontentConfig.authToken}`
+  }
+
+  if (globalConfig.railcontentConfig.baseUrl) {
+    if (url.startsWith('/')) {
+      return fetch(globalConfig.railcontentConfig.baseUrl + url, params)
+    }
+  }
+  return fetch(url, params)
+}
 export async function fetchHandler(url, method = 'get', dataVersion = null, body = null) {
   return fetchJSONHandler(
     url,
