@@ -59,7 +59,7 @@ function warnAboutDirectS3Url(url) {
   // Only warn in development mode
   if (process.env.NODE_ENV !== 'production') {
     console.warn(`WARNING: Direct S3 bucket URL detected: ${url}
-    This is not recommended. Use Cloudflare or another CDN for better performance.`)
+    This is not recommended. Use Cloudfront or another CDN for better performance.`)
   }
 }
 
@@ -108,7 +108,7 @@ function verifySanityUrl(src) {
     // Only warn in development mode
     if (process.env.NODE_ENV !== 'production') {
       console.warn(`WARNING: Sanity CDN URL without parameters detected: ${src}
-    This may cause performance issues. Consider adding image transformations using the buildImageSRC utility.`)
+    This may cause performance issues. Consider adding image transformations using the buildImageSRC MCS service.`)
     }
   }
 }
