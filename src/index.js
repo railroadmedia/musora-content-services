@@ -33,6 +33,18 @@ import {
 } from './services/dataContext.js';
 
 import {
+	applyCloudflareWrapper,
+	applySanityTransformations,
+	buildImageSRC
+} from './services/imageSRCBuilder.js';
+
+import {
+	extractSanityUrl,
+	isBucketUrl,
+	verifyImageSRC
+} from './services/imageSRCVerify.js';
+
+import {
 	clearLastUpdatedTime,
 	setLastUpdatedTime,
 	wasLastUpdateOlderThanXSeconds
@@ -159,8 +171,11 @@ import {
 
 export {
 	addItemToPlaylist,
+	applyCloudflareWrapper,
+	applySanityTransformations,
 	assignmentStatusCompleted,
 	assignmentStatusReset,
+	buildImageSRC,
 	clearLastUpdatedTime,
 	clearPermissionsData,
 	contentStatusCompleted,
@@ -171,6 +186,7 @@ export {
 	deletePlaylistItem,
 	deletePlaylistLike,
 	duplicatePlaylist,
+	extractSanityUrl,
 	fetchAll,
 	fetchAllCompletedStates,
 	fetchAllFilterOptions,
@@ -252,6 +268,7 @@ export {
 	getSortOrder,
 	globalConfig,
 	initializeService,
+	isBucketUrl,
 	isContentLiked,
 	jumpToContinueContent,
 	likeContent,
@@ -286,6 +303,7 @@ export {
 	updatePermissionsData,
 	updatePlaylist,
 	updatePlaylistItem,
+	verifyImageSRC,
 	verifyLocalDataContext,
 	wasLastUpdateOlderThanXSeconds,
 };

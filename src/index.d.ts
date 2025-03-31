@@ -33,6 +33,18 @@ import {
 } from './services/dataContext.js';
 
 import {
+	applyCloudflareWrapper,
+	applySanityTransformations,
+	buildImageSRC
+} from './services/imageSRCBuilder.js';
+
+import {
+	extractSanityUrl,
+	isBucketUrl,
+	verifyImageSRC
+} from './services/imageSRCVerify.js';
+
+import {
 	clearLastUpdatedTime,
 	setLastUpdatedTime,
 	wasLastUpdateOlderThanXSeconds
@@ -160,8 +172,11 @@ import {
 declare module 'musora-content-services' {
 	export {
 		addItemToPlaylist,
+		applyCloudflareWrapper,
+		applySanityTransformations,
 		assignmentStatusCompleted,
 		assignmentStatusReset,
+		buildImageSRC,
 		clearLastUpdatedTime,
 		clearPermissionsData,
 		contentStatusCompleted,
@@ -172,6 +187,7 @@ declare module 'musora-content-services' {
 		deletePlaylistItem,
 		deletePlaylistLike,
 		duplicatePlaylist,
+		extractSanityUrl,
 		fetchAll,
 		fetchAllCompletedStates,
 		fetchAllFilterOptions,
@@ -253,6 +269,7 @@ declare module 'musora-content-services' {
 		getSortOrder,
 		globalConfig,
 		initializeService,
+		isBucketUrl,
 		isContentLiked,
 		jumpToContinueContent,
 		likeContent,
@@ -287,6 +304,7 @@ declare module 'musora-content-services' {
 		updatePermissionsData,
 		updatePlaylist,
 		updatePlaylistItem,
+		verifyImageSRC,
 		verifyLocalDataContext,
 		wasLastUpdateOlderThanXSeconds,
 	}
