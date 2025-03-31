@@ -299,11 +299,14 @@ export async function getScheduleContentRows(brand, contentRowId = null, { page 
       // Apply special pagination rules
       const isNewReleases = id === 'New-Releases';
       const pagination = isNewReleases ? { page: 1, limit: 30 } : { page: 1, limit: Number.MAX_SAFE_INTEGER };
+      const items = await section.fetchMethod(brand, pagination)
 
       return {
         id,
         title: section.title,
-        content: await section.fetchMethod(brand, pagination)
+        // TODO: Remove content after FE/MA updates the existing code to use items
+        content: items,
+        items: items
       };
     })
   );
