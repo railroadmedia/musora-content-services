@@ -24,7 +24,17 @@ const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUserPractices)
 
-// Get Weekly Stats
+/**
+ * Retrieves user activity statistics for the current week, including daily activity and streak messages.
+ *
+ * @returns {Promise<Object>} - A promise that resolves to an object containing weekly user activity statistics.
+ *
+ * @example
+ * // Retrieve user activity statistics for the current week
+ * getUserWeeklyStats()
+ *   .then(stats => console.log(stats))
+ *   .catch(error => console.error(error));
+ */
 export async function getUserWeeklyStats() {
   let data = await userActivityContext.getData()
 
@@ -50,6 +60,25 @@ export async function getUserWeeklyStats() {
   return { data: { dailyActiveStats: dailyStats, streakMessage } }
 }
 
+/**
+ * Retrieves user activity statistics for a specified month, including daily and weekly activity data.
+ *
+ * @param {number} [year=new Date().getFullYear()] - The year for which to retrieve the statistics.
+ * @param {number} [month=new Date().getMonth()] - The month (0-indexed) for which to retrieve the statistics.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing user activity statistics.
+ *
+ * @example
+ * // Retrieve user activity statistics for the current month
+ * getUserMonthlyStats()
+ *   .then(stats => console.log(stats))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Retrieve user activity statistics for March 2024
+ * getUserMonthlyStats(2024, 2)
+ *   .then(stats => console.log(stats))
+ *   .catch(error => console.error(error));
+ */
 export async function getUserMonthlyStats(year = new Date().getFullYear(), month = new Date().getMonth(), day = 1) {
   let data = await userActivityContext.getData()
   let practices = data?.[DATA_KEY_PRACTICES] ?? {}
@@ -128,7 +157,36 @@ export async function getUserPractices() {
   let data = await userActivityContext.getData()
   return data?.[DATA_KEY_PRACTICES] ?? []
 }
-
+/**
+ * Records user practice data and updates both the remote and local activity context.
+ *
+ * @param {Object} practiceDetails - The details of the practice session.
+ * @param {number} practiceDetails.duration_seconds - The duration of the practice session in seconds.
+ * @param {boolean} [practiceDetails.auto=true] - Whether the session was automatically logged.
+ * @param {number} [practiceDetails.content_id] - The ID of the practiced content (if available).
+ * @param {number} [practiceDetails.category_id] - The ID of the associated category (if available).
+ * @param {string} [practiceDetails.title] - The title of the practice session (max 64 characters).
+ * @param {string} [practiceDetails.thumbnail_url] - The URL of the session's thumbnail (max 255 characters).
+ * @returns {Promise<Object>} - A promise that resolves to the response from logging the user practice.
+ *
+ * @example
+ * // Record an auto practice session with content ID
+ * recordUserPractice({ content_id: 123, duration_seconds: 300 })
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Record a custom practice session with additional details
+ * recordUserPractice({
+ *   duration_seconds: 600,
+ *   auto: false,
+ *   category_id: 5,
+ *   title: "Guitar Warm-up",
+ *   thumbnail_url: "https://example.com/thumbnail.jpg"
+ * })
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
 export async function recordUserPractice(practiceDetails) {
   practiceDetails.auto = 0;
   if (practiceDetails.content_id) {
@@ -162,12 +220,46 @@ export async function recordUserPractice(practiceDetails) {
     }
   );
 }
-
+/**
+ * Updates a user's practice session with new details and syncs the changes remotely.
+ *
+ * @param {number} id - The unique identifier of the practice session to update.
+ * @param {Object} practiceDetails - The updated details of the practice session.
+ * @param {number} [practiceDetails.duration_seconds] - The duration of the practice session in seconds.
+ * @param {number} [practiceDetails.category_id] - The ID of the associated category (if available).
+ * @param {string} [practiceDetails.title] - The title of the practice session (max 64 characters).
+ * @param {string} [practiceDetails.thumbnail_url] - The URL of the session's thumbnail (max 255 characters).
+ * @returns {Promise<Object>} - A promise that resolves to the response from updating the user practice.
+ *
+ * @example
+ * // Update a practice session's duration
+ * updateUserPractice(123, { duration_seconds: 600 })
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Change a practice session to manual and update its category
+ * updateUserPractice(456, { auto: false, category_id: 8 })
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
 export async function updateUserPractice(id, practiceDetails) {
   const url = `/api/user/practices/v1/practices/${id}`
   return await fetchHandler(url, 'PUT', null, practiceDetails)
 }
 
+/**
+ * Removes a user's practice session by ID, updating both the local and remote activity context.
+ *
+ * @param {number} id - The unique identifier of the practice session to be removed.
+ * @returns {Promise<void>} - A promise that resolves once the practice session is removed.
+ *
+ * @example
+ * // Remove a practice session with ID 123
+ * removeUserPractice(123)
+ *   .then(() => console.log("Practice session removed successfully"))
+ *   .catch(error => console.error(error));
+ */
 export async function removeUserPractice(id) {
   let url = `/api/user/practices/v1/practices${buildQueryString([id])}`;
   await userActivityContext.update(
@@ -186,6 +278,18 @@ export async function removeUserPractice(id) {
   );
 }
 
+/**
+ * Restores a previously deleted user's practice session by ID, updating both the local and remote activity context.
+ *
+ * @param {number} id - The unique identifier of the practice session to be restored.
+ * @returns {Promise<Object>} - A promise that resolves to the response containing the restored practice session data.
+ *
+ * @example
+ * // Restore a deleted practice session with ID 123
+ * restoreUserPractice(123)
+ *   .then(response => console.log("Practice session restored:", response))
+ *   .catch(error => console.error(error));
+ */
 export async function restoreUserPractice(id) {
   let url = `/api/user/practices/v1/practices/restore${buildQueryString([id])}`;
   const response = await fetchHandler(url, 'put');
@@ -210,14 +314,51 @@ export async function deletePracticeSession(day) {
   if (!userPracticesIds.length) return [];
 
   const url = `/api/user/practices/v1/practices${buildQueryString(userPracticesIds)}`;
-  return await fetchHandler(url, 'delete', null);
+  await userActivityContext.update(async function (localContext) {
+    if (localContext.data?.[DATA_KEY_PRACTICES]?.[day]) {
+      localContext.data[DATA_KEY_PRACTICES][day] = localContext.data[DATA_KEY_PRACTICES][day].filter(
+        practice => !userPracticesIds.includes(practice.id)
+      );
+    }
+  });
+
+  return await fetchHandler(url, 'DELETE', null);
 }
 
 export async function restorePracticeSession(date) {
   const url = `/api/user/practices/v1/practices/restore?date=${date}`;
-  return await fetchHandler(url, 'put', null);
+  const response = await fetchHandler(url, 'PUT', null);
+
+  if (response?.data) {
+    await userActivityContext.updateLocal(async function (localContext) {
+      if (!localContext.data[DATA_KEY_PRACTICES][date]) {
+        localContext.data[DATA_KEY_PRACTICES][date] = [];
+      }
+
+      response.data.forEach(restoredPractice => {
+        localContext.data[DATA_KEY_PRACTICES][date].push({
+          id: restoredPractice.id,
+          duration_seconds: restoredPractice.duration_seconds,
+        });
+      });
+    });
+  }
+
+  return response;
 }
 
+/**
+ * Retrieves and formats a user's practice sessions for a specific day.
+ *
+ * @param {string} day - The date for which practice sessions should be retrieved (format: YYYY-MM-DD).
+ * @returns {Promise<Object>} - A promise that resolves to an object containing the practice sessions and total practice duration.
+ *
+ * @example
+ * // Get practice sessions for a specific day
+ * getPracticeSessions("2025-03-31")
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
 export async function getPracticeSessions(day) {
   const userPracticesIds = await getUserPracticeIds(day);
   if (!userPracticesIds.length) return { data: { practices: [], practiceDuration: 0 } };
@@ -261,19 +402,41 @@ export async function getRecentActivity() {
   return { data: recentActivity };
 }
 
-function getStreaksAndMessage(practices)
-{
-  let { currentDailyStreak, currentWeeklyStreak } = calculateStreaks(practices)
+function getStreaksAndMessage(practices) {
+  let { currentDailyStreak, currentWeeklyStreak, lastActiveDay } = calculateStreaks(practices);
 
-  let streakMessage = currentWeeklyStreak > 1
-    ? `That's ${currentWeeklyStreak} weeks in a row! Keep going!`
-    : `Nice! You have a ${currentDailyStreak} day streak! Way to keep it going!`
+  let streakMessage = "Start your streak by taking any lesson!";
+  const today = getToday(); // Function to get today's date
+  const yesterday = getYesterday(); // Function to get yesterday's date
+  const lastWeekStart = getLastWeekStart(); // Function to get the start of last week
+
+  if (lastActiveDay) {
+    if (lastActiveDay === today) {
+      if (lastActiveDay === yesterday) {
+        streakMessage = `Nice! You have a ${currentDailyStreak} day streak! Way to keep it going!`;
+      } else if (lastActiveDay >= lastWeekStart) {
+        streakMessage = `You have a ${currentWeeklyStreak} week streak! Keep up the momentum!`;
+      } else {
+        streakMessage = `Nice! You have a ${currentDailyStreak} day streak!`;
+      }
+    } else if (lastActiveDay === yesterday) {
+      if (currentDailyStreak > 1) {
+        streakMessage = `You have a ${currentDailyStreak} day streak! Keep it going with any lesson or song!`;
+      }
+    } else if (lastActiveDay >= lastWeekStart) {
+      streakMessage = `You have a ${currentWeeklyStreak} week streak! Keep up the momentum!`;
+    } else {
+      streakMessage = `Restart your streak by taking any lesson!`;
+    }
+  }
+
   return {
     currentDailyStreak,
     currentWeeklyStreak,
     streakMessage,
-  }
+  };
 }
+
 
 async function getUserPracticeIds(day = new Date().toISOString().split('T')[0]) {
   let data = await userActivityContext.getData();
