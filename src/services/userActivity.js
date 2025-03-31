@@ -223,6 +223,7 @@ export async function getPracticeSessions(day) {
   if (!userPracticesIds.length) return { data: { practices: [], practiceDuration: 0 } };
 
   const meta = await fetchUserPracticeMeta(userPracticesIds);
+  if (!meta.data.length) return { data: { practices: [], practiceDuration: 0 } };
   const practiceDuration = meta.data.reduce((total, practice) => total + (practice.duration_seconds || 0), 0);
   const contentIds = meta.data.map(practice => practice.content_id).filter(id => id !== null);
 
@@ -245,8 +246,8 @@ export async function getPracticeSessions(day) {
       duration: practice.duration_seconds || 0,
       content_url: content.url || null,
       title: (practice.content_id)? content.title : practice.title,
-      category_id: practice.category_id || null,
-      instrument_id: practice.instrument_id || null,
+      category_id: practice.category_id,
+      instrument_id: practice.instrument_id ,
       content_type: getFormattedType(content.type || ''),
       content_id: practice.content_id || null,
       content_brand: content.brand || null,
