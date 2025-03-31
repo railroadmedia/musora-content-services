@@ -222,7 +222,7 @@ export async function fetchCompletedContent(type = 'all', brand, { page, limit }
  *   .catch(error => console.error(error));
  */
 export async function fetchContentPageUserData(contentId) {
-  let url = `/content/${contentId}/user_data/${globalConfig.railcontentConfig.userId}`
+  let url = `/api/content/v1/${contentId}/user_data/${globalConfig.railcontentConfig.userId}`
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
