@@ -873,8 +873,8 @@ export async function postContentComplete(contentId) {
 }
 
 export async function postContentReset(contentId) {
-  let url = `/content/user/progress/reset`
-  return postDataHandler(url, { contentId: contentId })
+  let url = `/api/content/v1/user/progress/reset/${contentId}`
+  return postDataHandler(url)
 }
 
 /**
