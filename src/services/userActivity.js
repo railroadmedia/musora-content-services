@@ -39,25 +39,27 @@ export async function getUserWeeklyStats() {
   let data = await userActivityContext.getData()
 
   let practices = data?.[DATA_KEY_PRACTICES] ?? {}
+  let sortedPracticeDays = Object.keys(practices)
+    .map(date => new Date(date))
+    .sort((a, b) => b - a);
 
-  let today = new Date()
+  let today = new Date();
+  today.setHours(0, 0, 0, 0);
   let startOfWeek = getMonday(today) // Get last Monday
   let dailyStats = []
-  const todayKey = today.toISOString().split('T')[0]
+
   for (let i = 0; i < 7; i++) {
     let day = new Date(startOfWeek)
     day.setDate(startOfWeek.getDate() + i)
-    let dayKey = day.toISOString().split('T')[0]
-
-    let dayActivity = practices[dayKey] ?? null
-    let isActive = dayKey === todayKey
-    let type = (dayActivity !== null ? 'tracked' : (isActive ? 'active' : 'none'))
-    dailyStats.push({ key: i, label: DAYS[i], isActive, inStreak: dayActivity !== null, type })
+    let hasPractice = sortedPracticeDays.some(practiceDate => isSameDate(practiceDate, day));
+    let isActive = isSameDate(today, day)
+    let type = (hasPractice ? 'tracked' : (isActive ? 'active' : 'none'))
+    dailyStats.push({ key: i, label: DAYS[i], isActive, inStreak: hasPractice, type })
   }
 
   let { streakMessage } = getStreaksAndMessage(practices);
 
-  return { data: { dailyActiveStats: dailyStats, streakMessage } }
+  return { data: { dailyActiveStats: dailyStats, streakMessage, practices } }
 }
 
 /**
@@ -82,6 +84,10 @@ export async function getUserWeeklyStats() {
 export async function getUserMonthlyStats(year = new Date().getFullYear(), month = new Date().getMonth(), day = 1) {
   let data = await userActivityContext.getData()
   let practices = data?.[DATA_KEY_PRACTICES] ?? {}
+  let sortedPracticeDays = Object.keys(practices)
+    .map(date => new Date(date))
+    .sort((a, b) => b - a);
+
   // Get the first day of the specified month and the number of days in that month
   let firstDayOfMonth = new Date(year, month, 1)
   let today = new Date()
@@ -102,22 +108,23 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
   for (let i = 0; i < daysInMonth; i++) {
     let day = new Date(startOfMonth)
     day.setDate(startOfMonth.getDate() + i)
-    let dayKey = day.toISOString().split('T')[0]
+    let dayKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
 
-    // Check if the user has activity for the day, default to 0 if undefined
+    // Check if the user has activity for the day
     let dayActivity = practices[dayKey] ?? null
+    let hasPractice = sortedPracticeDays.some(practiceDate => isSameDate(practiceDate, day));
     let weekKey = getWeekNumber(day)
 
     if (!weeklyStats[weekKey]) {
       weeklyStats[weekKey] = { key: weekKey, inStreak: false };
     }
 
-    if (dayActivity) {
+    if (hasPractice) {
       practiceDuration += dayActivity.reduce((sum, entry) => sum + entry.duration_seconds, 0)
       daysPracticed++;
     }
-    let isActive = dayKey === today.toISOString().split('T')[0]
-    let type = (dayActivity !== null ? 'tracked' : (isActive ? 'active' : 'none'))
+    let isActive = isSameDate(today, day)
+    let type = (hasPractice ? 'tracked' : (isActive ? 'active' : 'none'))
 
     let isInStreak = dayActivity !== null;
     if (isInStreak) {
@@ -403,32 +410,7 @@ export async function getRecentActivity() {
 }
 
 function getStreaksAndMessage(practices) {
-  let { currentDailyStreak, currentWeeklyStreak, lastActiveDay } = calculateStreaks(practices);
-
-  let streakMessage = "Start your streak by taking any lesson!";
-  const today = getToday(); // Function to get today's date
-  const yesterday = getYesterday(); // Function to get yesterday's date
-  const lastWeekStart = getLastWeekStart(); // Function to get the start of last week
-
-  if (lastActiveDay) {
-    if (lastActiveDay === today) {
-      if (lastActiveDay === yesterday) {
-        streakMessage = `Nice! You have a ${currentDailyStreak} day streak! Way to keep it going!`;
-      } else if (lastActiveDay >= lastWeekStart) {
-        streakMessage = `You have a ${currentWeeklyStreak} week streak! Keep up the momentum!`;
-      } else {
-        streakMessage = `Nice! You have a ${currentDailyStreak} day streak!`;
-      }
-    } else if (lastActiveDay === yesterday) {
-      if (currentDailyStreak > 1) {
-        streakMessage = `You have a ${currentDailyStreak} day streak! Keep it going with any lesson or song!`;
-      }
-    } else if (lastActiveDay >= lastWeekStart) {
-      streakMessage = `You have a ${currentWeeklyStreak} week streak! Keep up the momentum!`;
-    } else {
-      streakMessage = `Restart your streak by taking any lesson!`;
-    }
-  }
+  let { currentDailyStreak, currentWeeklyStreak, streakMessage } = calculateStreaks(practices, true);
 
   return {
     currentDailyStreak,
@@ -466,83 +448,145 @@ function getMonday(d) {
 }
 
 // Helper: Get the week number
-function getWeekNumber(date) {
-  let startOfYear = new Date(date.getFullYear(), 0, 1)
-  let diff = date - startOfYear
-  let oneWeekMs = 7 * 24 * 60 * 60 * 1000
-  return Math.ceil((diff / oneWeekMs) + startOfYear.getDay() / 7)
+function getWeekNumber(d) {
+  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+  var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+  return  weekNo;
 }
 
 // Helper: function to check if two dates are consecutive days
-function isNextDay(prevDateStr, currentDateStr) {
-  let prevDate = new Date(prevDateStr)
-  let currentDate = new Date(currentDateStr)
-  let diff = (currentDate - prevDate) / (1000 * 60 * 60 * 24)
-  return diff === 1
+function isNextDay(prev, current) {
+  // Convert both dates to Date objects
+  prev = new Date(prev);
+  current = new Date(current);
+//   prev.setHours(0, 0, 0, 0);
+//   current.setHours(0, 0, 0, 0);
+  console.log('isNextDay prev - current 21   ', prev, current);
+  // Strip time parts to compare only the date (year, month, day)
+//   const prevDate = new Date(prev.getFullYear(), prev.getMonth(), prev.getDate());
+//   const currentDate = new Date(current.getFullYear(), current.getMonth(), current.getDate());
+
+  // Get the difference in time in milliseconds, then convert to days
+  const diffInMillis = current - prev;
+  const diffInDays = diffInMillis / (1000 * 60 * 60 * 24);
+
+  console.log('isNextDay prev - current ', prev, current, diffInDays);
+
+  // Check if the difference is exactly 1 day
+  return diffInDays === 1;
 }
+
 
 // Helper: Calculate streaks
-function calculateStreaks(practices) {
-  let currentDailyStreak = 0
-  let currentWeeklyStreak = 0
+function calculateStreaks(practices, includeStreakMessage = false) {
+  let currentDailyStreak = 0;
+  let currentWeeklyStreak = 0;
+  let lastActiveDay = null;
+  let streakMessage = '';
 
-  let sortedPracticeDays = Object.keys(practices).sort() // Ensure dates are sorted in order
+  let sortedPracticeDays = Object.keys(practices)
+    .map(date => new Date(date))
+    .sort((a, b) => a - b);
 
   if (sortedPracticeDays.length === 0) {
-    return { currentDailyStreak: 1, currentWeeklyStreak: 1 }
+    return { currentDailyStreak: 0, currentWeeklyStreak: 0, streakMessage: 'Start your streak by taking any lesson!' };
   }
 
-  let dailyStreak = 0
-  let longestDailyStreak = 0
-  let prevDay = null
+  lastActiveDay = sortedPracticeDays[sortedPracticeDays.length - 1];
 
-  sortedPracticeDays.forEach((dayKey) => {
-    if (prevDay === null || isNextDay(prevDay, dayKey)) {
-      dailyStreak++
-      longestDailyStreak = Math.max(longestDailyStreak, dailyStreak)
+  let dailyStreak = 0;
+  let prevDay = null;
+  let existGap = false;
+console.log('rox:: sortedPracticeDays from calculateStreaks ', practices, sortedPracticeDays)
+  sortedPracticeDays.forEach((currentDay) => {
+    if (prevDay === null || isNextDay(prevDay, currentDay)) {
+      dailyStreak++;
+      console.log('Daily streak incremented:::: ', prevDay, currentDay, dailyStreak)
     } else {
-      dailyStreak = 1 // Reset streak if there's a gap
+      dailyStreak = 1;
+      existGap = true;
+      console.log('Daily streak reset:::: ', prevDay, currentDay, dailyStreak, isNextDay(prevDay, currentDay))
     }
-    prevDay = dayKey
-  })
+    prevDay = currentDay;
+  });
 
-  currentDailyStreak = dailyStreak
+  currentDailyStreak = dailyStreak;
+console.log(currentDailyStreak, 'rox:: currentDailyStreak from calculateStreaks')
+  // Weekly streak calculation
+  let weekNumbers = new Set(sortedPracticeDays.map(date => getWeekNumber(date)));
+  let weeklyStreak = 0;
+  let lastWeek = null;
+  [...weekNumbers].sort((a, b) => b - a).forEach(week => {
+    if (lastWeek === null || week === lastWeek - 1) {
+      weeklyStreak++;
+    } else {
+      return;
+    }
+    lastWeek = week;
+  });
+  currentWeeklyStreak = weeklyStreak;
 
-  // Calculate weekly streaks
-  let weeklyStreak = 0
-  let prevWeek = null
-  let currentWeekActivity = false
+  // **Calculate streak message only if includeStreakMessage is true**
+  if (includeStreakMessage) {
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  sortedPracticeDays.forEach((dayKey) => {
-    let date = new Date(dayKey)
-    let weekNumber = getWeekNumber(date)
+    let yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
 
-    if (prevWeek === null) {
-      prevWeek = weekNumber
-      currentWeekActivity = true
-    } else if (weekNumber !== prevWeek) {
-      // A new week has started
-      if (currentWeekActivity) {
-        weeklyStreak++
-        currentWeekActivity = false
+    let currentWeekStart = getMonday(today);
+    let lastWeekStart = new Date(currentWeekStart);
+    lastWeekStart.setDate(currentWeekStart.getDate() - 7);
+
+    let hasYesterdayPractice = sortedPracticeDays.some(date =>
+      isSameDate(date, yesterday)
+    );
+    let hasCurrentWeekPractice = sortedPracticeDays.some(date => date >= currentWeekStart);
+    let hasCurrentWeekPreviousPractice = sortedPracticeDays.some(date => date >= currentWeekStart && date < today);
+    let hasLastWeekPractice = sortedPracticeDays.some(date => date >= lastWeekStart && date < currentWeekStart);
+   let hasRestartPractice = sortedPracticeDays.some(date => date < yesterday );
+
+    if (isSameDate(lastActiveDay, today)) {
+      if (hasYesterdayPractice) {
+        streakMessage = "Nice! You have a "+currentDailyStreak+" day streak. Way to keep it going!";
+      } else if (hasCurrentWeekPreviousPractice) {
+        streakMessage = "You have a "+currentWeeklyStreak+" week streak! Way to keep up the momentum!";
+      } else if (hasLastWeekPractice) {
+        streakMessage = "Great job! You have a "+currentWeeklyStreak+" week streak! Way to keep it going!";
+      } else {
+        streakMessage = "Nice! You have a "+currentDailyStreak+" day streak!";
       }
-      prevWeek = weekNumber
+    } else {
+      if ((hasYesterdayPractice && currentDailyStreak >= 2)  || (hasYesterdayPractice && sortedPracticeDays.length == 1)
+      || (hasYesterdayPractice && !hasLastWeekPractice)){
+        streakMessage = "You have a "+currentDailyStreak+" day streak! Keep it going with any lesson or song.";
+      } else if (hasCurrentWeekPractice) {
+        streakMessage = "You have a "+currentWeeklyStreak+" week streak! Keep up the momentum!";
+      } else if (hasLastWeekPractice) {
+        streakMessage = "You have a "+currentWeeklyStreak+" week streak! Keep it going with any lesson or song!";
+      } else {
+        streakMessage = "Restart your streak by taking any lesson!";
+      }
     }
-
-    if (practices[dayKey]) {
-      currentWeekActivity = true
-    }
-  })
-
-  // If the user has activity in the current week, count it
-  if (currentWeekActivity) {
-    weeklyStreak++
   }
 
-  currentWeeklyStreak = weeklyStreak
-
-  return { currentDailyStreak, currentWeeklyStreak }
+  return { currentDailyStreak, currentWeeklyStreak, streakMessage };
 }
+
+
+function isSameDate(date1, date2) {
+  // Normalize both dates to midnight to ignore time
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+  // Set both dates to 00:00:00 to compare only the date parts
+  d1.setHours(0, 0, 0, 0);
+  d2.setHours(0, 0, 0, 0);
+  return d1.getTime() === d2.getTime();  // Compare the time (should be midnight for both)
+}
+
+
 
 
 
