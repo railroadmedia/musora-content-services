@@ -56,6 +56,18 @@ import {
 } from './services/gamification/awards.js';
 
 import {
+	applyCloudflareWrapper,
+	applySanityTransformations,
+	buildImageSRC
+} from './services/imageSRCBuilder.js';
+
+import {
+	extractSanityUrl,
+	isBucketUrl,
+	verifyImageSRC
+} from './services/imageSRCVerify.js';
+
+import {
 	assignModeratorToComment,
 	closeComment,
 	countAssignmentsAndLessons,
@@ -94,8 +106,11 @@ import {
 	fetchUserChallengeProgress,
 	fetchUserLikes,
 	fetchUserPermissionsData,
+	fetchUserPracticeMeta,
+	fetchUserPractices,
 	likeComment,
 	likePlaylist,
+	logUserPractice,
 	openComment,
 	pinPlaylist,
 	playback,
@@ -195,15 +210,28 @@ import {
 } from './services/user/sessions.js';
 
 import {
-	getUserActivityStats
+	deletePracticeSession,
+	getPracticeSessions,
+	getRecentActivity,
+	getUserMonthlyStats,
+	getUserPractices,
+	getUserWeeklyStats,
+	recordUserPractice,
+	removeUserPractice,
+	restorePracticeSession,
+	restoreUserPractice,
+	updateUserPractice
 } from './services/userActivity.js';
 
 export {
 	addItemToPlaylist,
+	applyCloudflareWrapper,
+	applySanityTransformations,
 	assignModeratorToComment,
 	assignmentStatusCompleted,
 	assignmentStatusReset,
 	blockUser,
+	buildImageSRC,
 	closeComment,
 	contentStatusCompleted,
 	contentStatusReset,
@@ -214,8 +242,10 @@ export {
 	deletePlaylist,
 	deletePlaylistItem,
 	deletePlaylistLike,
+	deletePracticeSession,
 	duplicatePlaylist,
 	editComment,
+	extractSanityUrl,
 	fetchAll,
 	fetchAllCompletedStates,
 	fetchAllFilterOptions,
@@ -293,6 +323,8 @@ export {
 	fetchUserPermissions,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
+	fetchUserPracticeMeta,
+	fetchUserPractices,
 	getActiveDiscussions,
 	getAllCompleted,
 	getAllStarted,
@@ -300,24 +332,30 @@ export {
 	getContentRows,
 	getLessonContentRows,
 	getNewAndUpcoming,
+	getPracticeSessions,
 	getProgressPercentage,
 	getProgressPercentageByIds,
 	getProgressState,
 	getProgressStateByIds,
 	getRecent,
+	getRecentActivity,
 	getRecommendedForYou,
 	getResumeTimeSeconds,
 	getScheduleContentRows,
 	getSortOrder,
 	getTabResults,
-	getUserActivityStats,
+	getUserMonthlyStats,
+	getUserPractices,
+	getUserWeeklyStats,
 	globalConfig,
 	initializeService,
+	isBucketUrl,
 	isContentLiked,
 	jumpToContinueContent,
 	likeComment,
 	likeContent,
 	likePlaylist,
+	logUserPractice,
 	login,
 	logout,
 	openComment,
@@ -339,10 +377,14 @@ export {
 	rankCategories,
 	rankItems,
 	recommendations,
+	recordUserPractice,
 	recordWatchSession,
+	removeUserPractice,
 	replyToComment,
 	reportPlaylist,
 	reset,
+	restorePracticeSession,
+	restoreUserPractice,
 	setStudentViewForUser,
 	unassignModeratorToComment,
 	unblockUser,
@@ -351,5 +393,7 @@ export {
 	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem,
+	updateUserPractice,
+	verifyImageSRC,
 	verifyLocalDataContext,
 };

@@ -5,6 +5,7 @@ import {
   unlikeContent,
 } from '../src/services/contentLikes'
 import { initializeTestService } from './initializeTests'
+import { userActivityContext } from '../src/services/userActivity.js'
 
 const railContentModule = require('../src/services/railcontent.js')
 
@@ -17,6 +18,7 @@ describe('contentLikesDataContext', function () {
     mock = jest.spyOn(dataContext, 'fetchData')
     var json = JSON.parse(`{"version":${testVersion},"data":[308516,308515,308514,308518]}`)
     mock.mockImplementation(() => json)
+    dataContext.ensureLocalContextLoaded()
   })
 
   test('contentLiked', async () => {

@@ -1,8 +1,6 @@
 /**
  * @module Railcontent-Services
  */
-import { contentStatusCompleted } from './contentProgress.js'
-
 import { globalConfig } from './config.js'
 import { fetchJSONHandler } from '../lib/httpHelper.js'
 
@@ -222,7 +220,7 @@ export async function fetchCompletedContent(type = 'all', brand, { page, limit }
  *   .catch(error => console.error(error));
  */
 export async function fetchContentPageUserData(contentId) {
-  let url = `/content/${contentId}/user_data/${globalConfig.sessionConfig.userId}`
+  let url = `/api/content/v1/${contentId}/user_data/${globalConfig.sessionConfig.userId}`
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -873,8 +871,8 @@ export async function postContentComplete(contentId) {
 }
 
 export async function postContentReset(contentId) {
-  let url = `/content/user/progress/reset`
-  return postDataHandler(url, { contentId: contentId })
+  let url = `/api/content/v1/user/progress/reset/${contentId}`
+  return postDataHandler(url)
 }
 
 /**
@@ -1176,11 +1174,70 @@ export async function editComment(commentId, comment) {
   return await patchDataHandler(url, data)
 }
 
+export async function fetchUserPractices(currentVersion) {
+  const url = `/api/user/practices/v1/practices`
+  const response = await fetchDataHandler(url, currentVersion)
+  const { data, version } = response
+  const userPractices = data
+
+  let formattedPractices = userPractices.reduce((acc, practice) => {
+    // Initialize the array if the day does not exist
+    if (!acc[practice.day]) {
+      acc[practice.day] = []
+    }
+
+    // Push the practice entry into the array
+    acc[practice.day].push({ id: practice.id, duration_seconds: practice.duration_seconds })
+
+    return acc
+  }, {})
+
+  let json = {
+    data: {
+      practices: formattedPractices,
+    },
+    version: version,
+  }
+
+  return json
+}
+
+export async function logUserPractice(practiceDetails) {
+  const url = `/api/user/practices/v1/practices`
+  return await fetchHandler(url, 'POST', null, practiceDetails)
+}
+export async function fetchUserPracticeMeta(practiceIds) {
+  if (practiceIds.length == 0) {
+    return []
+  }
+  let idsString = ''
+  if (practiceIds && practiceIds.length > 0) {
+    idsString = '?'
+    practiceIds.forEach((id, index) => {
+      idsString += `practice_ids[]=${id}${index < practiceIds.length - 1 ? '&' : ''}`
+    })
+  }
+  const url = `/api/user/practices/v1/practices${idsString}`
+  return await fetchHandler(url, 'GET', null)
+}
+
+function fetchAbsolute(url, params) {
+  if (globalConfig.sessionConfig.authToken) {
+    params.headers['Authorization'] = `Bearer ${globalConfig.sessionConfig.authToken}`
+  }
+
+  if (globalConfig.baseUrl) {
+    if (url.startsWith('/')) {
+      return fetch(globalConfig.baseUrl + url, params)
+    }
+  }
+  return fetch(url, params)
+}
 export async function fetchHandler(url, method = 'get', dataVersion = null, body = null) {
   return fetchJSONHandler(
     url,
-    globalConfig.railcontentConfig.token,
-    globalConfig.railcontentConfig.baseUrl,
+    globalConfig.sessionConfig.token,
+    globalConfig.baseUrl,
     method,
     dataVersion,
     body
