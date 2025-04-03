@@ -546,7 +546,7 @@ console.log(currentDailyStreak, 'rox:: currentDailyStreak from calculateStreaks'
     let hasCurrentWeekPractice = sortedPracticeDays.some(date => date >= currentWeekStart);
     let hasCurrentWeekPreviousPractice = sortedPracticeDays.some(date => date >= currentWeekStart && date < today);
     let hasLastWeekPractice = sortedPracticeDays.some(date => date >= lastWeekStart && date < currentWeekStart);
-   let hasRestartPractice = sortedPracticeDays.some(date => date < yesterday );
+    let hasOlderPractice = sortedPracticeDays.some(date => date < lastWeekStart );
 
     if (isSameDate(lastActiveDay, today)) {
       if (hasYesterdayPractice) {
@@ -560,7 +560,7 @@ console.log(currentDailyStreak, 'rox:: currentDailyStreak from calculateStreaks'
       }
     } else {
       if ((hasYesterdayPractice && currentDailyStreak >= 2)  || (hasYesterdayPractice && sortedPracticeDays.length == 1)
-      || (hasYesterdayPractice && !hasLastWeekPractice)){
+      || (hasYesterdayPractice && !hasLastWeekPractice && hasOlderPractice)){
         streakMessage = "You have a "+currentDailyStreak+" day streak! Keep it going with any lesson or song.";
       } else if (hasCurrentWeekPractice) {
         streakMessage = "You have a "+currentWeeklyStreak+" week streak! Keep up the momentum!";
