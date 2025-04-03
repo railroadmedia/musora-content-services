@@ -154,6 +154,7 @@ export let contentTypeConfig = {
         isOneToOne: true,
       },
     },
+    slug: 'song-tutorials',
   },
   'song-tutorial-children': {
     fields: [`"resources": ${resourcesField}`],
