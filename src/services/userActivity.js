@@ -22,6 +22,23 @@ const DATA_KEY_LAST_UPDATED_TIME = 'u'
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
+const streakMessages = {
+  startStreak: "Start your streak by taking any lesson!",
+  restartStreak: "Restart your streak by taking any lesson!",
+
+  // Messages when last active day is today
+  dailyStreak: (streak) => `Nice! You have a ${streak} day streak. Way to keep it going!`,
+  dailyStreakShort: (streak) => `Nice! You have a ${streak} day streak!`,
+  weeklyStreak: (streak) => `You have a ${streak} week streak! Way to keep up the momentum!`,
+  greatJobWeeklyStreak: (streak) => `Great job! You have a ${streak} week streak! Way to keep it going!`,
+
+  // Messages when last active day is NOT today
+  dailyStreakReminder: (streak) => `You have a ${streak} day streak! Keep it going with any lesson or song.`,
+  weeklyStreakKeepUp: (streak) => `You have a ${streak} week streak! Keep up the momentum!`,
+  weeklyStreakReminder: (streak) => `You have a ${streak} week streak! Keep it going with any lesson or song!`,
+};
+
+
 export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUserPractices)
 
 /**
@@ -458,22 +475,10 @@ function getWeekNumber(d) {
 
 // Helper: function to check if two dates are consecutive days
 function isNextDay(prev, current) {
-  // Convert both dates to Date objects
   prev = new Date(prev);
   current = new Date(current);
-//   prev.setHours(0, 0, 0, 0);
-//   current.setHours(0, 0, 0, 0);
-  console.log('isNextDay prev - current 21   ', prev, current);
-  // Strip time parts to compare only the date (year, month, day)
-//   const prevDate = new Date(prev.getFullYear(), prev.getMonth(), prev.getDate());
-//   const currentDate = new Date(current.getFullYear(), current.getMonth(), current.getDate());
-
-  // Get the difference in time in milliseconds, then convert to days
   const diffInMillis = current - prev;
   const diffInDays = diffInMillis / (1000 * 60 * 60 * 24);
-
-  console.log('isNextDay prev - current ', prev, current, diffInDays);
-
   // Check if the difference is exactly 1 day
   return diffInDays === 1;
 }
@@ -491,29 +496,22 @@ function calculateStreaks(practices, includeStreakMessage = false) {
     .sort((a, b) => a - b);
 
   if (sortedPracticeDays.length === 0) {
-    return { currentDailyStreak: 0, currentWeeklyStreak: 0, streakMessage: 'Start your streak by taking any lesson!' };
+    return { currentDailyStreak: 0, currentWeeklyStreak: 0, streakMessage: streakMessages.startStreak };
   }
-
   lastActiveDay = sortedPracticeDays[sortedPracticeDays.length - 1];
 
   let dailyStreak = 0;
   let prevDay = null;
-  let existGap = false;
-console.log('rox:: sortedPracticeDays from calculateStreaks ', practices, sortedPracticeDays)
   sortedPracticeDays.forEach((currentDay) => {
     if (prevDay === null || isNextDay(prevDay, currentDay)) {
       dailyStreak++;
-      console.log('Daily streak incremented:::: ', prevDay, currentDay, dailyStreak)
     } else {
       dailyStreak = 1;
-      existGap = true;
-      console.log('Daily streak reset:::: ', prevDay, currentDay, dailyStreak, isNextDay(prevDay, currentDay))
     }
     prevDay = currentDay;
   });
-
   currentDailyStreak = dailyStreak;
-console.log(currentDailyStreak, 'rox:: currentDailyStreak from calculateStreaks')
+
   // Weekly streak calculation
   let weekNumbers = new Set(sortedPracticeDays.map(date => getWeekNumber(date)));
   let weeklyStreak = 0;
@@ -528,7 +526,7 @@ console.log(currentDailyStreak, 'rox:: currentDailyStreak from calculateStreaks'
   });
   currentWeeklyStreak = weeklyStreak;
 
-  // **Calculate streak message only if includeStreakMessage is true**
+  // Calculate streak message only if includeStreakMessage is true
   if (includeStreakMessage) {
     let today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -550,26 +548,27 @@ console.log(currentDailyStreak, 'rox:: currentDailyStreak from calculateStreaks'
 
     if (isSameDate(lastActiveDay, today)) {
       if (hasYesterdayPractice) {
-        streakMessage = "Nice! You have a "+currentDailyStreak+" day streak. Way to keep it going!";
+        streakMessage = streakMessages.dailyStreak(currentDailyStreak);
       } else if (hasCurrentWeekPreviousPractice) {
-        streakMessage = "You have a "+currentWeeklyStreak+" week streak! Way to keep up the momentum!";
+        streakMessage = streakMessages.weeklyStreak(currentWeeklyStreak);
       } else if (hasLastWeekPractice) {
-        streakMessage = "Great job! You have a "+currentWeeklyStreak+" week streak! Way to keep it going!";
+        streakMessage = streakMessages.greatJobWeeklyStreak(currentWeeklyStreak);
       } else {
-        streakMessage = "Nice! You have a "+currentDailyStreak+" day streak!";
+        streakMessage = streakMessages.dailyStreakShort(currentDailyStreak);
       }
     } else {
       if ((hasYesterdayPractice && currentDailyStreak >= 2)  || (hasYesterdayPractice && sortedPracticeDays.length == 1)
-      || (hasYesterdayPractice && !hasLastWeekPractice && hasOlderPractice)){
-        streakMessage = "You have a "+currentDailyStreak+" day streak! Keep it going with any lesson or song.";
+        || (hasYesterdayPractice && !hasLastWeekPractice && hasOlderPractice)){
+        streakMessage = streakMessages.dailyStreakReminder(currentDailyStreak);
       } else if (hasCurrentWeekPractice) {
-        streakMessage = "You have a "+currentWeeklyStreak+" week streak! Keep up the momentum!";
+        streakMessage = streakMessages.weeklyStreakKeepUp(currentWeeklyStreak);
       } else if (hasLastWeekPractice) {
-        streakMessage = "You have a "+currentWeeklyStreak+" week streak! Keep it going with any lesson or song!";
+        streakMessage = streakMessages.weeklyStreakReminder(currentWeeklyStreak);
       } else {
-        streakMessage = "Restart your streak by taking any lesson!";
+        streakMessage = streakMessages.restartStreak;
       }
     }
+
   }
 
   return { currentDailyStreak, currentWeeklyStreak, streakMessage };
