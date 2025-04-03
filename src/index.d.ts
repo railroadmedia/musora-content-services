@@ -2,7 +2,8 @@
 
 import {
 	globalConfig,
-	initializeService
+	initializeService,
+	setUserMetadata
 } from './services/config.js';
 
 import {
@@ -32,6 +33,19 @@ import {
 } from './services/dataContext.js';
 
 import {
+	applyCloudflareWrapper,
+	applySanityTransformations,
+	buildImageSRC
+} from './services/imageSRCBuilder.js';
+
+import {
+	extractSanityUrl,
+	isBucketUrl,
+	verifyImageSRC
+} from './services/imageSRCVerify.js';
+
+import {
+	clearLastUpdatedTime,
 	setLastUpdatedTime,
 	wasLastUpdateOlderThanXSeconds
 } from './services/lastUpdated.js';
@@ -135,6 +149,7 @@ import {
 	fetchPlayAlongsCount,
 	fetchRelatedLessons,
 	fetchRelatedSongs,
+	fetchRelatedTutorials,
 	fetchReturning,
 	fetchSanity,
 	fetchScheduledReleases,
@@ -148,15 +163,22 @@ import {
 } from './services/sanity.js';
 
 import {
+	clearPermissionsData,
 	fetchUserPermissions,
-	reset
+	reset,
+	updatePermissionsData
 } from './services/userPermissions.js';
 
 declare module 'musora-content-services' {
 	export {
 		addItemToPlaylist,
+		applyCloudflareWrapper,
+		applySanityTransformations,
 		assignmentStatusCompleted,
 		assignmentStatusReset,
+		buildImageSRC,
+		clearLastUpdatedTime,
+		clearPermissionsData,
 		contentStatusCompleted,
 		contentStatusReset,
 		countAssignmentsAndLessons,
@@ -165,6 +187,7 @@ declare module 'musora-content-services' {
 		deletePlaylistItem,
 		deletePlaylistLike,
 		duplicatePlaylist,
+		extractSanityUrl,
 		fetchAll,
 		fetchAllCompletedStates,
 		fetchAllFilterOptions,
@@ -217,6 +240,7 @@ declare module 'musora-content-services' {
 		fetchPlaylistItems,
 		fetchRelatedLessons,
 		fetchRelatedSongs,
+		fetchRelatedTutorials,
 		fetchReturning,
 		fetchSanity,
 		fetchScheduledReleases,
@@ -245,6 +269,7 @@ declare module 'musora-content-services' {
 		getSortOrder,
 		globalConfig,
 		initializeService,
+		isBucketUrl,
 		isContentLiked,
 		jumpToContinueContent,
 		likeContent,
@@ -272,11 +297,14 @@ declare module 'musora-content-services' {
 		reset,
 		setLastUpdatedTime,
 		setStudentViewForUser,
+		setUserMetadata,
 		similarItems,
 		unlikeContent,
 		unpinPlaylist,
+		updatePermissionsData,
 		updatePlaylist,
 		updatePlaylistItem,
+		verifyImageSRC,
 		verifyLocalDataContext,
 		wasLastUpdateOlderThanXSeconds,
 	}

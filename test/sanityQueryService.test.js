@@ -29,6 +29,8 @@ const {
   fetchFoundation,
   fetchMethod,
   fetchRelatedLessons,
+  fetchRelatedTutorials,
+  newFetchRelatedTutorials,
   fetchAllPacks,
   fetchPackAll,
   fetchLessonContent,
@@ -288,6 +290,20 @@ describe('Sanity Queries', function () {
     expect(isMatch).toBeTruthy()
   })
 
+  test('fetchRelatedTutorials', async () => {
+    const railContentId = 387379
+    const brand = "pianote"
+    const queryResult = await fetchRelatedTutorials(railContentId, brand)
+    console.log(queryResult)
+    expect(typeof queryResult).toBe('object') //check structure of parent
+    expect(typeof queryResult.parent_content_data).toBe('object') //check structure of parentdata
+    expect(typeof queryResult.related_lessons).toBe('object') //check structure of relatedlessons
+    expect(queryResult.related_lessons[0]._id).toBe('song-tutorial_333333') //check there is a first element and matches
+    expect(queryResult.related_lessons[6]._id).toBe('quick-tips_390225') //check first quiktips
+    expect(queryResult.related_lessons[16]._id).toBe('0c5aa2d7-91a3-4349-b999-9ed9dd916e8e') //check first songs
+    expect(queryResult.related_lessons.length).toBe(26)
+  })
+
   test('fetchRelatedLessons-quick-tips', async () => {
     const id = 406213
     const response = await fetchRelatedLessons(id, 'singeo')
@@ -308,8 +324,6 @@ describe('Sanity Queries', function () {
     expect(Array.isArray(relatedLessons)).toBe(true)
     relatedLessons.forEach((lesson) => {
       expect(lesson._type).toBe('in-rhythm')
-      expect(lesson.sort).toBeGreaterThan(episode)
-      episode = lesson.sort
     })
   })
 

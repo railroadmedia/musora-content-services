@@ -2,7 +2,8 @@
 
 import {
 	globalConfig,
-	initializeService
+	initializeService,
+	setUserMetadata
 } from './services/config.js';
 
 import {
@@ -32,6 +33,19 @@ import {
 } from './services/dataContext.js';
 
 import {
+	applyCloudflareWrapper,
+	applySanityTransformations,
+	buildImageSRC
+} from './services/imageSRCBuilder.js';
+
+import {
+	extractSanityUrl,
+	isBucketUrl,
+	verifyImageSRC
+} from './services/imageSRCVerify.js';
+
+import {
+	clearLastUpdatedTime,
 	setLastUpdatedTime,
 	wasLastUpdateOlderThanXSeconds
 } from './services/lastUpdated.js';
@@ -135,6 +149,7 @@ import {
 	fetchPlayAlongsCount,
 	fetchRelatedLessons,
 	fetchRelatedSongs,
+	fetchRelatedTutorials,
 	fetchReturning,
 	fetchSanity,
 	fetchScheduledReleases,
@@ -148,14 +163,21 @@ import {
 } from './services/sanity.js';
 
 import {
+	clearPermissionsData,
 	fetchUserPermissions,
-	reset
+	reset,
+	updatePermissionsData
 } from './services/userPermissions.js';
 
 export {
 	addItemToPlaylist,
+	applyCloudflareWrapper,
+	applySanityTransformations,
 	assignmentStatusCompleted,
 	assignmentStatusReset,
+	buildImageSRC,
+	clearLastUpdatedTime,
+	clearPermissionsData,
 	contentStatusCompleted,
 	contentStatusReset,
 	countAssignmentsAndLessons,
@@ -164,6 +186,7 @@ export {
 	deletePlaylistItem,
 	deletePlaylistLike,
 	duplicatePlaylist,
+	extractSanityUrl,
 	fetchAll,
 	fetchAllCompletedStates,
 	fetchAllFilterOptions,
@@ -216,6 +239,7 @@ export {
 	fetchPlaylistItems,
 	fetchRelatedLessons,
 	fetchRelatedSongs,
+	fetchRelatedTutorials,
 	fetchReturning,
 	fetchSanity,
 	fetchScheduledReleases,
@@ -244,6 +268,7 @@ export {
 	getSortOrder,
 	globalConfig,
 	initializeService,
+	isBucketUrl,
 	isContentLiked,
 	jumpToContinueContent,
 	likeContent,
@@ -271,11 +296,14 @@ export {
 	reset,
 	setLastUpdatedTime,
 	setStudentViewForUser,
+	setUserMetadata,
 	similarItems,
 	unlikeContent,
 	unpinPlaylist,
+	updatePermissionsData,
 	updatePlaylist,
 	updatePlaylistItem,
+	verifyImageSRC,
 	verifyLocalDataContext,
 	wasLastUpdateOlderThanXSeconds,
 };
