@@ -8,10 +8,16 @@ reviews:
   poem: true
   review_status: true
   collapse_walkthrough: false
+  related_prs: true
   auto_review:
     enabled: true
     drafts: false
     base_branches: ["project-v2"]
 chat:
   auto_reply: true
+knowledge_base:
+  learnings:
+    scope: "global"
+  pull_requests:
+    scope: "global"
 
