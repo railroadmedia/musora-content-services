@@ -1273,6 +1273,7 @@ export async function fetchLessonContent(railContentId) {
             chapter_timecode,
             "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
           },
+          artist->,
           "instructors":instructor[]->name,
           "instructor": instructor[]->{
             "id":railcontent_id,

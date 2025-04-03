@@ -148,9 +148,22 @@ describe('Sanity Queries', function() {
   })
 
   test('fetchLessonContent', async () => {
-    const id = 380094
+    const id = 392820
     const response = await fetchLessonContent(id)
     expect(response.id).toBe(id)
+    expect(response.video.type).toBeDefined()
+  })
+
+  test('fetchLessonContent-PlayAlong-containts-array-of-videos', async () => {
+    const id = 9184
+    const response = await fetchLessonContent(id)
+    expect(response.id).toBe(id)
+    log(response.video)
+    log(response.permissions_id)
+    log(response.instructors)
+    expect(response.video.length).toBeGreaterThanOrEqual(1)
+    const firstElement = response.video.find(() => true)
+    expect(firstElement.version_name).toBeDefined()
   })
 
   test('fetchAllSongsInProgress', async () => {
