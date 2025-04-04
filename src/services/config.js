@@ -60,7 +60,6 @@ const excludeFromGeneratedIndex = []
  * });
  */
 export function initializeService(config) {
-  console.log({ baseUrl: config.baseUrl })
   globalConfig.sanityConfig = config.sanityConfig
   globalConfig.railcontentConfig = config.railcontentConfig
   globalConfig.sessionConfig = config.sessionConfig || config.railcontentConfig
