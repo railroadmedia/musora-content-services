@@ -11,10 +11,10 @@ const DEBUG = true
 describe('Example 1', function () {
   beforeEach(() => {
     initializeTestService()
-
-    const fixedDate = new Date('2025-03-24T12:00:00.000Z'); // based on the example first day should be Monday
+    const userLocalMidnight = new Date();
+    userLocalMidnight.setFullYear(2025, 2, 24);
     jest.useFakeTimers();
-    jest.setSystemTime(fixedDate);
+    jest.setSystemTime(userLocalMidnight);
   })
 
   test('streak message - day 1 -not started content', async () => {
@@ -66,7 +66,7 @@ describe('Example 1', function () {
     expect(practices.data.streakMessage).toBe('You have a 1 day streak! Keep it going with any lesson or song.')
   })
 
-  test('streak message example 1 - day 2 - started content', async () => {
+  test('streak message - day 2 - started content', async () => {
     setFakeDate(2);
     mock = jest.spyOn(userActivityContext, 'fetchData')
     const activeDays = [
@@ -447,10 +447,10 @@ describe('Example 1', function () {
 describe('Example 2', function () {
   beforeEach(() => {
     initializeTestService()
-
-    const fixedDate = new Date('2025-03-24T12:00:00.000Z'); // based on the example first day should be Monday
+    const userLocalMidnight = new Date();
+    userLocalMidnight.setFullYear(2025, 2, 24);
     jest.useFakeTimers();
-    jest.setSystemTime(fixedDate);
+    jest.setSystemTime(userLocalMidnight);
   })
 
   test('streak message - day 1 -not started content', async () => {
@@ -913,10 +913,10 @@ describe('Example 2', function () {
 describe('Example 3', function () {
   beforeEach(() => {
     initializeTestService()
-
-    const fixedDate = new Date('2025-03-24T12:00:00.000Z'); // based on the example first day should be Monday
+    const userLocalMidnight = new Date();
+    userLocalMidnight.setFullYear(2025, 2, 24);
     jest.useFakeTimers();
-    jest.setSystemTime(fixedDate);
+    jest.setSystemTime(userLocalMidnight);
   })
 
   test('streak message - day 1 -not started content', async () => {
@@ -1480,9 +1480,8 @@ describe('Example 3', function () {
 })
 
 function setFakeDate(day = 1){
-  const fixedDate = new Date();
-  let today = new Date(fixedDate);
-  today.setDate(today.getDate() + day - 1);
+  let today = new Date();
+  today.setFullYear(today.getFullYear(), today.getMonth(), (today.getDate()+day -1));
   jest.useFakeTimers();
   jest.setSystemTime(today);
 }
@@ -1495,9 +1494,7 @@ function consoleLog(message, object=null, debug=false) {
 const loadMockDataForDays = (fileName, datesArray) => {
   const jsonPath = path.join(__dirname, 'mockData/', fileName);
   let json = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
-
   let practices = {};
-
   // Loop through the provided dates and durations
   datesArray.forEach(({ date, duration_seconds }) => {
     practices[date] = [{ "duration_seconds": duration_seconds }];
