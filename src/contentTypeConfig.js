@@ -60,7 +60,8 @@ export const assignmentsField = `"assignments":assignment[]{
               }
             }.url,  assignment_sheet_music_image),
         "timecode": assignment_timecode,
-        "description": coalesce(assignment_description,'')
+        "description": coalesce(assignment_description,''),
+        "description_portable": assignment_description_portable
 },`
 
 const contentWithInstructorsField = {
