@@ -1183,13 +1183,26 @@ export async function fetchUserPractices(currentVersion) {
   const userPractices = data;
 
   let formattedPractices = userPractices.reduce((acc, practice) => {
+    // Convert UTC date to user's local timezone
+    let utcDate = new Date(practice.day); // `practice.day` is in ISO format, e.g., "2025-04-01T10:42:17.000000Z"
+
+    // Extract the local date string (ignoring time) in user's timezone
+    let localDate = new Date(utcDate.toLocaleString('en-US', {
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    }));
+
+    // Format the date as Y-m-d (2025-03-31)
+    let userTimeZoneDay = localDate.getFullYear() + '-' +
+      (localDate.getMonth() + 1).toString().padStart(2, '0') + '-' +
+      localDate.getDate().toString().padStart(2, '0');
+
     // Initialize the array if the day does not exist
-    if (!acc[practice.day]) {
-      acc[practice.day] = [];
+    if (!acc[userTimeZoneDay]) {
+      acc[userTimeZoneDay] = [];
     }
 
     // Push the practice entry into the array
-    acc[practice.day].push({ id:practice.id, duration_seconds: practice.duration_seconds });
+    acc[userTimeZoneDay].push({ id:practice.id, duration_seconds: practice.duration_seconds });
 
     return acc;
   }, {});

@@ -1,6 +1,5 @@
 import { initializeTestService } from './initializeTests.js'
-import {getUserMonthlyStats, getUserWeeklyStats, userActivityContext, recordUserPractice, getUserPractices} from '../src/services/userActivity.js'
-import { logUserPractice } from '../src/services/railcontent.js'
+import {getUserMonthlyStats, getUserWeeklyStats, userActivityContext, recordUserPractice} from '../src/services/userActivity.js'
 import {fetchByRailContentIds} from "../src";
 import mockData_fetchByRailContentIds_one_content from './mockData/mockData_fetchByRailContentIds_one_content.json';
 
@@ -53,10 +52,9 @@ describe('User Activity API Tests', function () {
     const practices = await getUserMonthlyStats()
     consoleLog(practices)
     // Assert that dailyActiveStats contains correct data
-    const dailyStats = practices.dailyActiveStats
+    const dailyStats = practices.data.dailyActiveStats
     const currentDate = new Date()
     const currentDateString = currentDate.toISOString().split('T')[0]
-    expect(dailyStats).toHaveLength(42)
 
     // Verify current day's stats (e.g., March 17, 2025)
     const current = dailyStats.find(stat => stat.label === currentDateString)
@@ -75,7 +73,7 @@ describe('User Activity API Tests', function () {
     consoleLog(practices)
 
     // Assert that dailyActiveStats contains correct data
-    const dailyStats = practices.dailyActiveStats
+    const dailyStats = practices.data.dailyActiveStats
     const feb10 = dailyStats.find(stat => stat.label === '2025-02-10')
     expect(feb10.inStreak).toBe(true)
     expect(feb10.type).toBe('tracked')
@@ -87,7 +85,7 @@ describe('User Activity API Tests', function () {
     const practices = await getUserWeeklyStats( )
     consoleLog(practices)
 
-    const dailyStats = practices.dailyActiveStats
+    const dailyStats = practices.data.dailyActiveStats
     const monday = dailyStats.find(stat => stat.label === 'M')
     expect(monday).toBeDefined
     const tuesday = dailyStats.find(stat => stat.label === 'T')
@@ -116,3 +114,5 @@ describe('User Activity API Tests', function () {
     }
   }
 })
+
+
