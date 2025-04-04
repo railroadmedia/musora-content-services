@@ -33,7 +33,7 @@ const streakMessages = {
   greatJobWeeklyStreak: (streak) => `Great job! You have a ${streak} week streak! Way to keep it going!`,
 
   // Messages when last active day is NOT today
-  dailyStreakReminder: (streak) => `You have a ${streak} day streak! Keep it going with any lesson or song.`,
+  dailyStreakReminder: (streak) => `You have a ${streak} day streak! Keep it going with any lesson or song!`,
   weeklyStreakKeepUp: (streak) => `You have a ${streak} week streak! Keep up the momentum!`,
   weeklyStreakReminder: (streak) => `You have a ${streak} week streak! Keep it going with any lesson or song!`,
 };
@@ -54,7 +54,6 @@ export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUs
  */
 export async function getUserWeeklyStats() {
   let data = await userActivityContext.getData()
-
   let practices = data?.[DATA_KEY_PRACTICES] ?? {}
   let sortedPracticeDays = Object.keys(practices)
     .map(date => new Date(date))
