@@ -8,49 +8,9 @@ global.fetch = jest.fn()
 let mock = null
 const DEBUG = false
 
-function sliceExampleData(startDate, nDays, includeToday, activeDays)
-{
-  if (nDays === 0 && !includeToday) {
-    return []
-  }
-  nDays = includeToday ? nDays : nDays - 1
-  let target = new Date(startDate)
-  target.setDate(target.getDate() + nDays)
-  return activeDays.filter((obj) => {
-    let activeDate = new Date(obj.date)
-    return activeDate <= target
-  })
-}
 
-async function testExpectedMessageForDays(exampleData, expectedMessages, startDate, testDayN = null) {
-  const start = testDayN ?? 0;
-  const end = testDayN != null ? testDayN + 1 : expectedMessages.length
-
-  for (let i = start; i < end; i++) {
-    let target = new Date(startDate)
-    target.setDate(target.getDate() + i)
-    const setDataAndCheckStreakMessage = async function(includeToday)  {
-      let activeDays = sliceExampleData(startDate, i, includeToday, exampleData)
-      let json = loadMockDataForDays('mockData_user_practices.json', activeDays);
-      mock.mockImplementation(() => json);
-      userActivityContext.clearCache()
-      let practices = await getUserWeeklyStats()
-      const state = includeToday ? 'STARTED' :  'NOT-STARTED'
-      const expected = includeToday && !!expectedMessages[i].complete ? expectedMessages[i].complete :
-        expectedMessages[i].incomplete
-      const day = expectedMessages[i].day
-      consoleLog(`Running ${state} content tests for Day ${day} on ${target}`, null, true)
-      consoleLog(`Expecting ${expected}`, null, true)
-      expect(practices.data.streakMessage).toBeDefined()
-      expect(practices.data.streakMessage).toBe(expected)
-    }
-    await setDataAndCheckStreakMessage(false)
-    await setDataAndCheckStreakMessage(true)
-    incrementFakeDate(1)
-  }
-
-}
-
+// Test Examples are taken from this document
+// https://docs.google.com/spreadsheets/d/1pBmBTAODeRWI5uIO84lXjaQFW-lRPNh6gi7GV0lCwyc/edit?gid=0#gid=0
 describe('Streak Messages', function () {
   beforeEach(() => {
     initializeTestService()
@@ -113,6 +73,7 @@ describe('Streak Messages', function () {
       { date: '2025-03-31', duration_seconds: 120 },
       { date: '2025-04-02', duration_seconds: 120 },
       { date: '2025-04-03', duration_seconds: 120 },
+      { date: '2025-04-05', duration_seconds: 120 },
       { date: '2025-04-08', duration_seconds: 120 },
     ]
 
@@ -149,7 +110,7 @@ describe('Streak Messages', function () {
 
     mock = jest.spyOn(userActivityContext, 'fetchData')
     // you can test a specific day by setting this value to the correct date and the test will only run that day
-    // this is 0 indexed
+    // this is zero indexed so do 1 day below the day you want to test
     const testSpecificDay = null;
     await testExpectedMessageForDays(allData, expectedMessages, fixedDate, testSpecificDay)
   })
@@ -180,7 +141,7 @@ describe('Streak Messages', function () {
       {day: 9, incomplete: 'You have a 1 week streak! Keep it going with any lesson or song!', complete: 'Great job! You have a 2 week streak! Way to keep it going!'},
       {day: 10, incomplete: 'You have a 2 week streak! Keep up the momentum!', complete: ''},
       {day: 11, incomplete: 'You have a 2 week streak! Keep up the momentum!', complete: 'You have a 2 week streak! Way to keep up the momentum!'},
-      {day: 12, incomplete: 'You have a 2 week streak! Keep up the momentum!', complete: 'Nice! You have a 2 day streak! Way to keep id going!'},
+      {day: 12, incomplete: 'You have a 2 week streak! Keep up the momentum!', complete: 'Nice! You have a 2 day streak! Way to keep it going!'},
       {day: 13, incomplete: 'You have a 2 day streak! Keep it going with any lesson or song!', complete: ''},
       {day: 14, incomplete: 'You have a 2 week streak! Keep up the momentum!', complete: ''},
       {day: 15, incomplete: 'You have a 2 week streak! Keep it going with any lesson or song!', complete: ''},
@@ -198,7 +159,7 @@ describe('Streak Messages', function () {
     await testExpectedMessageForDays(allData, expectedMessages, fixedDate, testSpecificDay)
   })
 
-  test('streak message - example3', async () => {
+  test('streak message - example4', async () => {
     const fixedDate = new Date('2025-03-24T12:00:00.000Z');
     const allData = [
       {date: '2025-03-24', duration_seconds: 120},
@@ -213,75 +174,16 @@ describe('Streak Messages', function () {
 
     const expectedMessages = [
       {day: 1, incomplete: 'Start your streak by taking any lesson!', complete: 'Nice! You have a 1 day streak!'},
-      {
-        day: 2,
-        incomplete: 'You have a 1 day streak! Keep it going with any lesson or song!',
-        complete: 'Nice! You have a 2 day streak! Way to keep it going!'
-      },
-      {
-        day: 3,
-        incomplete: 'You have a 2 day streak! Keep it going with any lesson or song!',
-        complete: 'Nice! You have a 3 day streak! Way to keep it going!'
-      },
-      {
-        day: 4,
-        incomplete: 'You have a 3 day streak! Keep it going with any lesson or song!',
-        complete: 'Nice! You have a 4 day streak! Way to keep it going!'
-      },
-      {
-        day: 5,
-        incomplete: 'You have a 4 day streak! Keep it going with any lesson or song!',
-        complete: 'Nice! You have a 5 day streak! Way to keep it going!'
-      },
-      {
-        day: 6,
-        incomplete: 'You have a 5 day streak! Keep it going with any lesson or song!',
-        complete: 'Nice! You have a 6 day streak! Way to keep it going!'
-      },
-      {
-        day: 7,
-        incomplete: 'You have a 6 day streak! Keep it going with any lesson or song!',
-        complete: 'Nice! You have a 7 day streak! Way to keep it going!'
-      },
-      {
-        day: 8,
-        incomplete: 'You have a 7 day streak! Keep it going with any lesson or song!',
-        complete: 'Nice! You have an 8 day streak! Way to keep it going!'
-      },
-      {day: 9, incomplete: 'You have a 8 day streak! Keep it going with any lesson or song', complete: ''},
-      {
-        day: 10,
-        incomplete: 'You have a 1 week streak! Keep up the momentum!',
-        complete: 'You have a 1 week streak! Keep up the momentum!'
-      },
-      {
-        day: 11,
-        incomplete: 'You have a 1 week streak! Keep up the momentum!',
-        complete: 'You have a 1 week streak! Keep up the momentum!'
-      },
-      {
-        day: 12,
-        incomplete: 'You have a 1 week streak! Keep up the momentum!',
-        complete: 'You have a 1 week streak! Keep up the momentum!'
-      },
-      {
-        day: 13,
-        incomplete: 'You have a 1 week streak! Keep up the momentum!',
-        complete: 'You have a 1 week streak! Keep up the momentum!'
-      },
-      {
-        day: 14,
-        incomplete: 'You have a 1 week streak! Keep up the momentum!',
-        complete: 'You have a 1 week streak! Keep up the momentum!'
-      },
-      {day: 15, incomplete: 'You have a 1 week streak! Keep up the momentum!', complete: ''},
-      {
-        day: 16,
-        incomplete: 'Restart your streak by taking any lesson!',
-        complete: 'Restart your streak by taking any lesson!'
-      },
-      {day: 17, incomplete: 'Restart your streak by taking any lesson!', complete: 'Nice! You have a 1 day streak!'},
-      {day: 18, incomplete: 'You have a 1 day streak! Keep it going with any lesson or song!', complete: ''},
+      {day: 2, incomplete: 'You have a 1 day streak! Keep it going with any lesson or song!', complete: 'Nice! You have a 2 day streak! Way to keep it going!'},
+      {day: 3, incomplete: 'You have a 2 day streak! Keep it going with any lesson or song!', complete: 'Nice! You have a 3 day streak! Way to keep it going!'},
+      {day: 4, incomplete: 'You have a 3 day streak! Keep it going with any lesson or song!', complete: 'Nice! You have a 4 day streak! Way to keep it going!'},
+      {day: 5, incomplete: 'You have a 4 day streak! Keep it going with any lesson or song!', complete: 'Nice! You have a 5 day streak! Way to keep it going!'},
+      {day: 6, incomplete: 'You have a 5 day streak! Keep it going with any lesson or song!', complete: 'Nice! You have a 6 day streak! Way to keep it going!'},
+      {day: 7, incomplete: 'You have a 6 day streak! Keep it going with any lesson or song!', complete: 'Nice! You have a 7 day streak! Way to keep it going!'},
+      {day: 8, incomplete: 'You have a 7 day streak! Keep it going with any lesson or song!', complete: 'Nice! You have an 8 day streak! Way to keep it going!'},
+      {day: 9, incomplete: 'You have an 8 day streak! Keep it going with any lesson or song!', complete: ''},
+      {day: 10, incomplete: 'You have a 2 week streak! Keep up the momentum!', complete: 'You have a 2 week streak! Keep up the momentum!'},
+      {day: 11, incomplete: 'You have a 2 week streak! Keep up the momentum!', complete: 'You have a 2 week streak! Keep up the momentum!'},
     ]
 
     mock = jest.spyOn(userActivityContext, 'fetchData')
@@ -322,3 +224,45 @@ const loadMockDataForDays = (fileName, datesArray) => {
   json.data.practices = practices;
   return json;
 };
+
+function sliceExampleData(startDate, nDays, includeToday, activeDays)
+{
+  if (nDays === 0 && !includeToday) {
+    return []
+  }
+  nDays = includeToday ? nDays : nDays - 1
+  let target = new Date(startDate)
+  target.setDate(target.getDate() + nDays)
+  return activeDays.filter((obj) => {
+    let activeDate = new Date(obj.date)
+    return activeDate <= target
+  })
+}
+
+async function testExpectedMessageForDays(exampleData, expectedMessages, startDate, testDayN = null) {
+  const start = testDayN ?? 0;
+  const end = testDayN != null ? testDayN + 1 : expectedMessages.length
+  if (testDayN != null) incrementFakeDate(testDayN)
+  for (let i = start; i < end; i++) {
+    let target = new Date(startDate)
+    target.setDate(target.getDate() + i)
+    const setDataAndCheckStreakMessage = async function(includeToday)  {
+      let activeDays = sliceExampleData(startDate, i, includeToday, exampleData)
+      let json = loadMockDataForDays('mockData_user_practices.json', activeDays);
+      mock.mockImplementation(() => json);
+      userActivityContext.clearCache()
+      let practices = await getUserWeeklyStats()
+      const state = includeToday ? 'STARTED' :  'NOT-STARTED'
+      const expected = includeToday && !!expectedMessages[i].complete ? expectedMessages[i].complete :
+        expectedMessages[i].incomplete
+      const day = expectedMessages[i].day
+      consoleLog(`Running ${state} content tests for Day ${day} on ${target}`)
+      consoleLog(`Expecting ${expected}`)
+      expect(practices.data.streakMessage).toBeDefined()
+      expect(practices.data.streakMessage).toBe(expected)
+    }
+    await setDataAndCheckStreakMessage(false)
+    await setDataAndCheckStreakMessage(true)
+    incrementFakeDate(1)
+  }
+}
