@@ -23,13 +23,13 @@ describe('Streak Messages', function () {
   test('streak message - example1', async () => {
     const fixedDate = new Date('2025-03-24T12:00:00.000Z');
     const allData = [
-        { date: '2025-03-24', duration_seconds: 120 },
-        { date: '2025-03-25', duration_seconds: 120 },
-        { date: '2025-03-26', duration_seconds: 120 },
-        { date: '2025-03-30', duration_seconds: 120 },
-        { date: '2025-03-31', duration_seconds: 120 },
-        { date: '2025-04-14', duration_seconds: 120 },
-        { date: '2025-04-15', duration_seconds: 120 },
+        { day: 1, date: '2025-03-24', duration_seconds: 120 },
+        { day: 2, date: '2025-03-25', duration_seconds: 120 },
+        { day: 3, date: '2025-03-26', duration_seconds: 120 },
+        { day: 7, date: '2025-03-30', duration_seconds: 120 },
+        { day: 8, date: '2025-03-31', duration_seconds: 120 },
+        { day: 22, date: '2025-04-14', duration_seconds: 120 },
+        { day: 23, date: '2025-04-15', duration_seconds: 120 },
     ]
 
     const expectedMessages = [
@@ -69,12 +69,12 @@ describe('Streak Messages', function () {
   test('streak message - example2', async () => {
     const fixedDate = new Date('2025-03-24T12:00:00.000Z');
     const allData = [
-      { date: '2025-03-24', duration_seconds: 120 },
-      { date: '2025-03-31', duration_seconds: 120 },
-      { date: '2025-04-02', duration_seconds: 120 },
-      { date: '2025-04-03', duration_seconds: 120 },
-      { date: '2025-04-05', duration_seconds: 120 },
-      { date: '2025-04-08', duration_seconds: 120 },
+      { day: 1, date: '2025-03-24', duration_seconds: 120 },
+      { day: 8, date: '2025-03-31', duration_seconds: 120 },
+      { day: 10, date: '2025-04-02', duration_seconds: 120 },
+      { day: 11, date: '2025-04-03', duration_seconds: 120 },
+      { day: 13, date: '2025-04-05', duration_seconds: 120 },
+      { day: 16, date: '2025-04-08', duration_seconds: 120 },
     ]
 
     const expectedMessages = [
@@ -118,15 +118,15 @@ describe('Streak Messages', function () {
   test('streak message - example3', async () => {
     const fixedDate = new Date('2025-03-24T12:00:00.000Z');
     const allData = [
-      { date: '2025-03-25', duration_seconds: 120 },
-      { date: '2025-03-28', duration_seconds: 120 },
-      { date: '2025-03-29', duration_seconds: 120 },
-      { date: '2025-03-30', duration_seconds: 120 },
-      { date: '2025-04-01', duration_seconds: 120 },
-      { date: '2025-04-03', duration_seconds: 120 },
-      { date: '2025-04-04', duration_seconds: 120 },
-      { date: '2025-04-09', duration_seconds: 120 },
-      { date: '2025-04-11', duration_seconds: 120 },
+      { day: 2, date: '2025-03-25', duration_seconds: 120 },
+      { day: 5, date: '2025-03-28', duration_seconds: 120 },
+      { day: 6, date: '2025-03-29', duration_seconds: 120 },
+      { day: 7, date: '2025-03-30', duration_seconds: 120 },
+      { day: 9, date: '2025-04-01', duration_seconds: 120 },
+      { day: 11, date: '2025-04-03', duration_seconds: 120 },
+      { day: 12, date: '2025-04-04', duration_seconds: 120 },
+      { day: 17, date: '2025-04-09', duration_seconds: 120 },
+      { day: 19, date: '2025-04-11', duration_seconds: 120 },
     ]
 
     const expectedMessages = [
@@ -162,14 +162,14 @@ describe('Streak Messages', function () {
   test('streak message - example4', async () => {
     const fixedDate = new Date('2025-03-24T12:00:00.000Z');
     const allData = [
-      {date: '2025-03-24', duration_seconds: 120},
-      {date: '2025-03-25', duration_seconds: 120},
-      {date: '2025-03-26', duration_seconds: 120},
-      {date: '2025-03-27', duration_seconds: 120},
-      {date: '2025-03-28', duration_seconds: 120},
-      {date: '2025-03-29', duration_seconds: 120},
-      {date: '2025-03-30', duration_seconds: 120},
-      {date: '2025-03-31', duration_seconds: 120},
+      { day: 1, date: '2025-03-24', duration_seconds: 120},
+      { day: 2, date: '2025-03-25', duration_seconds: 120},
+      { day: 3, date: '2025-03-26', duration_seconds: 120},
+      { day: 4, date: '2025-03-27', duration_seconds: 120},
+      { day: 5, date: '2025-03-28', duration_seconds: 120},
+      { day: 6, date: '2025-03-29', duration_seconds: 120},
+      { day: 7, date: '2025-03-30', duration_seconds: 120},
+      { day: 8, date: '2025-03-31', duration_seconds: 120},
     ]
 
     const expectedMessages = [
