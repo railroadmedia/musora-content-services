@@ -1030,7 +1030,7 @@ export async function fetchMethod(brand, slug) {
 
   const query = `*[_type == 'learning-path' && brand == "${brand}" && slug.current == "${slug}"] {
     "description": ${descriptionField},
-    description_new,
+    description_portable,
     "instructors":instructor[]->name,
     published_on,
     "id": railcontent_id,
@@ -1060,7 +1060,7 @@ export async function fetchMethod(brand, slug) {
         title,
         "type": _type,
         "description": ${descriptionField},
-        description_new,
+        description_portable,
         "url": web_url_path,
         web_url_path,
         xp,
@@ -1082,7 +1082,7 @@ export async function fetchMethodChildren(railcontentId) {
     "child_count":coalesce(count(child[${childrenFilter}]->), 0),
     "id": railcontent_id,
     "description": ${descriptionField},
-    description_new,
+    description_portable,
     "thumbnail_url": thumbnail.asset->url,
     title,
     xp,
