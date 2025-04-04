@@ -1,5 +1,6 @@
 import { initializeTestService } from './initializeTests.js'
 import {getUserWeeklyStats, userActivityContext} from '../src/services/userActivity.js'
+import {log} from './log.js'
 
 import fs from 'fs';
 import path from 'path';
@@ -201,16 +202,6 @@ function incrementFakeDate(nDays = 1){
   jest.setSystemTime(today);
 }
 
-function consoleLog(message, object=null, debug=false) {
-  if (debug || DEBUG) {
-    if (object != null) {
-      console.log(message, object);
-    } else {
-      console.log(message);
-    }
-  }
-}
-
 const loadMockDataForDays = (fileName, datesArray) => {
   const jsonPath = path.join(__dirname, 'mockData/', fileName);
   let json = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
@@ -256,8 +247,8 @@ async function testExpectedMessageForDays(exampleData, expectedMessages, startDa
       const expected = includeToday && !!expectedMessages[i].complete ? expectedMessages[i].complete :
         expectedMessages[i].incomplete
       const day = expectedMessages[i].day
-      consoleLog(`Running ${state} content tests for Day ${day} on ${target}`)
-      consoleLog(`Expecting ${expected}`)
+      log(`Running ${state} content tests for Day ${day} on ${target}`)
+      log(`Expecting ${expected}`)
       expect(practices.data.streakMessage).toBeDefined()
       expect(practices.data.streakMessage).toBe(expected)
     }
