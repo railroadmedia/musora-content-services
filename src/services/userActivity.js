@@ -27,7 +27,7 @@ const streakMessages = {
   restartStreak: "Restart your streak by taking any lesson!",
 
   // Messages when last active day is today
-  dailyStreak: (streak) => `Nice! You have a ${streak} day streak. Way to keep it going!`,
+  dailyStreak: (streak) => `Nice! You have a ${streak} day streak! Way to keep it going!`,
   dailyStreakShort: (streak) => `Nice! You have a ${streak} day streak!`,
   weeklyStreak: (streak) => `You have a ${streak} week streak! Way to keep up the momentum!`,
   greatJobWeeklyStreak: (streak) => `Great job! You have a ${streak} week streak! Way to keep it going!`,
@@ -466,23 +466,25 @@ function getMonday(d) {
 
 // Helper: Get the week number
 function getWeekNumber(d) {
-  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-  var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+  let newDate = new Date(d.getTime());
+  newDate.setUTCDate(newDate.getUTCDate() + 4 - (newDate.getUTCDay()||7));
+  var yearStart = new Date(Date.UTC(newDate.getUTCFullYear(),0,1));
+  var weekNo = Math.ceil(( ( (newDate - yearStart) / 86400000) + 1)/7);
   return  weekNo;
 }
 
 // Helper: function to check if two dates are consecutive days
 function isNextDay(prev, current) {
-  prev = new Date(prev);
-  current = new Date(current);
-  const diffInMillis = current - prev;
-  const diffInDays = diffInMillis / (1000 * 60 * 60 * 24);
-  // Check if the difference is exactly 1 day
-  return diffInDays === 1;
-}
+  const prevDate = new Date(prev.getFullYear(), prev.getMonth(), prev.getDate());
+  const nextDate = new Date(prevDate);
+  nextDate.setDate(prevDate.getDate() + 1); // Add 1 day
 
+  return (
+    nextDate.getFullYear() === current.getFullYear() &&
+    nextDate.getMonth() === current.getMonth() &&
+    nextDate.getDate() === current.getDate()
+  );
+}
 
 // Helper: Calculate streaks
 function calculateStreaks(practices, includeStreakMessage = false) {
@@ -492,9 +494,13 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   let streakMessage = '';
 
   let sortedPracticeDays = Object.keys(practices)
-    .map(date => new Date(date))
+    .map(dateStr => {
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const newDate = new Date();
+      newDate.setFullYear(year, month - 1, day);
+      return newDate;
+    })
     .sort((a, b) => a - b);
-
   if (sortedPracticeDays.length === 0) {
     return { currentDailyStreak: 0, currentWeeklyStreak: 0, streakMessage: streakMessages.startStreak };
   }
@@ -529,8 +535,6 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   // Calculate streak message only if includeStreakMessage is true
   if (includeStreakMessage) {
     let today = new Date();
-    today.setHours(0, 0, 0, 0);
-
     let yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
 
@@ -574,15 +578,8 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   return { currentDailyStreak, currentWeeklyStreak, streakMessage };
 }
 
-
-function isSameDate(date1, date2) {
-  // Normalize both dates to midnight to ignore time
-  const d1 = new Date(date1);
-  const d2 = new Date(date2);
-  // Set both dates to 00:00:00 to compare only the date parts
-  d1.setHours(0, 0, 0, 0);
-  d2.setHours(0, 0, 0, 0);
-  return d1.getTime() === d2.getTime();  // Compare the time (should be midnight for both)
+function isSameDate(date1, date2, method = '') {
+  return date1.toISOString().split('T')[0] === date2.toISOString().split('T')[0];
 }
 
 

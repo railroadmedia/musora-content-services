@@ -6,7 +6,7 @@ import path from 'path';
 
 global.fetch = jest.fn()
 let mock = null
-const DEBUG = true
+const DEBUG = false
 
 function example1Data() {
   return [
@@ -58,13 +58,62 @@ function getExampleData(startDate, nDays, includeToday, activeDays)
   })
 }
 
+async function testExpectedMessageForDays(exampleData, expectedMessages, startDate, testDayN = null) {
+  const start = testDayN ?? 0;
+  const end = testDayN ? testDayN + 1 : expectedMessages.length
+  for (let i = start; i < end; i++) {
+    setFakeDate(i+1)
+    let target = new Date(startDate)
+    target.setDate(target.getDate() + i)
+    const test = async function(includeToday)  {
+      let activeDays = getExampleData(startDate, i, includeToday, exampleData)
+      let json = loadMockDataForDays('mockData_user_practices.json', activeDays);
+      mock.mockImplementation(() => json);
+      userActivityContext.clearCache()
+      let practices = await getUserWeeklyStats( )
+      const state = includeToday ? 'started content' :  'not-started content'
+      consoleLog(`Running ${state} tests for Day ${i} on ${target}`, null, true)
+      const expected = includeToday && !!expectedMessages[i].complete ? expectedMessages[i].complete :
+         expectedMessages[i].incomplete
+      expect(practices.data.streakMessage).toBeDefined()
+      expect(practices.data.streakMessage).toBe(expected)
+    }
+    await test(false)
+    await test(true)
+    // let activeDays = getExampleData(startDate, i, false, exampleData)
+    //
+    // let json = loadMockDataForDays('mockData_user_practices.json', activeDays);
+    //
+    // mock.mockImplementation(() => json);
+    // userActivityContext.clearCache()
+    // let practices = await getUserWeeklyStats( )
+    //
+    // consoleLog(`Running pre-content calculations for Day ${i} on ${target}`, null, true)
+    // expect(practices.data.streakMessage).toBeDefined()
+    // expect(practices.data.streakMessage).toBe(expectedMessages[i].incomplete)
+    //
+    // activeDays = getExampleData(startDate, i, true, exampleData)
+    // consoleLog('active days', activeDays)
+    // json = loadMockDataForDays('mockData_user_practices.json', activeDays);
+    // mock.mockImplementation(() => json);
+    // userActivityContext.clearCache()
+    // practices = await getUserWeeklyStats( )
+    // consoleLog(practices)
+    // const expected = expectedMessages[i].complete ? expectedMessages[i].complete : expectedMessages[i].incomplete
+    // consoleLog(`Running post-content calculations for Day ${i} on ${target}`, null, true)
+    // expect(practices.data.streakMessage).toBeDefined()
+    // expect(practices.data.streakMessage).toBe(expected)
+  }
+
+}
+
 describe('Example 1', function () {
   beforeEach(() => {
     initializeTestService()
-
-    const fixedDate = new Date('2025-03-24T12:00:00.000Z'); // based on the example first day should be Monday
+    const userLocalMidnight = new Date();
+    userLocalMidnight.setFullYear(2025, 2, 24);
     jest.useFakeTimers();
-    jest.setSystemTime(fixedDate);
+    jest.setSystemTime(userLocalMidnight);
   })
 
   test('streak message - example1', async () => {
@@ -99,41 +148,20 @@ describe('Example 1', function () {
     ]
 
     mock = jest.spyOn(userActivityContext, 'fetchData')
-    for (let i = 0; i < 22; i++) {
-      setFakeDate(i+1);
-      let activeDays = getExampleData(fixedDate, i, false, allData)
-      console.log('active days', activeDays)
-      let json = loadMockDataForDays('mockData_user_practices.json', activeDays);
-      console.log(`json for day ${i}`, json)
-      mock.mockImplementation(() => json);
-      userActivityContext.clearCache()
-      let practices = await getUserWeeklyStats( )
-      consoleLog(practices)
+    // you can test a specific day by setting this value to the correct date and the test will only run that day
+    const testSpecificDay = null;
+    await testExpectedMessageForDays(allData, expectedMessages, fixedDate, testSpecificDay)
 
-      expect(practices.data.streakMessage).toBeDefined()
-      expect(practices.data.streakMessage).toBe(expectedMessages[i].incomplete)
-
-      activeDays = getExampleData(fixedDate, i, true, allData)
-      console.log('active days', activeDays)
-      json = loadMockDataForDays('mockData_user_practices.json', activeDays);
-      mock.mockImplementation(() => json);
-      userActivityContext.clearCache()
-       practices = await getUserWeeklyStats( )
-      consoleLog(practices)
-      const expected = expectedMessages[i].complete ? expectedMessages[i].complete : expectedMessages[i].incomplete
-      expect(practices.data.streakMessage).toBeDefined()
-      expect(practices.data.streakMessage).toBe(expected)
-    }
   })
 })
 
 describe('Example 2', function () {
   beforeEach(() => {
     initializeTestService()
-
-    const fixedDate = new Date('2025-03-24T12:00:00.000Z'); // based on the example first day should be Monday
+    const userLocalMidnight = new Date();
+    userLocalMidnight.setFullYear(2025, 2, 24);
     jest.useFakeTimers();
-    jest.setSystemTime(fixedDate);
+    jest.setSystemTime(userLocalMidnight);
   })
 
   test('streak message - example2', async () => {
@@ -202,10 +230,10 @@ describe('Example 2', function () {
 describe('Example 3', function () {
   beforeEach(() => {
     initializeTestService()
-
-    const fixedDate = new Date('2025-03-24T12:00:00.000Z'); // based on the example first day should be Monday
+    const userLocalMidnight = new Date();
+    userLocalMidnight.setFullYear(2025, 2, 24);
     jest.useFakeTimers();
-    jest.setSystemTime(fixedDate);
+    jest.setSystemTime(userLocalMidnight);
   })
 
   test('streak message - example3', async () => {
@@ -263,9 +291,8 @@ describe('Example 3', function () {
 })
 
 function setFakeDate(day = 1){
-  const fixedDate = new Date();
-  let today = new Date(fixedDate);
-  today.setDate(today.getDate() + day - 1);
+  let today = new Date();
+  today.setFullYear(today.getFullYear(), today.getMonth(), (today.getDate()+day -1));
   jest.useFakeTimers();
   jest.setSystemTime(today);
 }
@@ -278,9 +305,7 @@ function consoleLog(message, object=null, debug=false) {
 const loadMockDataForDays = (fileName, datesArray) => {
   const jsonPath = path.join(__dirname, 'mockData/', fileName);
   let json = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
-
   let practices = {};
-
   // Loop through the provided dates and durations
   datesArray.forEach(({ date, duration_seconds }) => {
     practices[date] = [{ "duration_seconds": duration_seconds }];
