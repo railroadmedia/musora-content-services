@@ -27,16 +27,20 @@ const streakMessages = {
   restartStreak: "Restart your streak by taking any lesson!",
 
   // Messages when last active day is today
-  dailyStreak: (streak) => `Nice! You have a ${streak} day streak. Way to keep it going!`,
-  dailyStreakShort: (streak) => `Nice! You have a ${streak} day streak!`,
-  weeklyStreak: (streak) => `You have a ${streak} week streak! Way to keep up the momentum!`,
-  greatJobWeeklyStreak: (streak) => `Great job! You have a ${streak} week streak! Way to keep it going!`,
+  dailyStreak: (streak) => `Nice! You have ${getIndefiniteArticle(streak)} ${streak} day streak! Way to keep it going!`,
+  dailyStreakShort: (streak) => `Nice! You have ${getIndefiniteArticle(streak)} ${streak} day streak!`,
+  weeklyStreak: (streak) => `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Way to keep up the momentum!`,
+  greatJobWeeklyStreak: (streak) => `Great job! You have ${getIndefiniteArticle(streak)} ${streak} week streak! Way to keep it going!`,
 
   // Messages when last active day is NOT today
-  dailyStreakReminder: (streak) => `You have a ${streak} day streak! Keep it going with any lesson or song.`,
-  weeklyStreakKeepUp: (streak) => `You have a ${streak} week streak! Keep up the momentum!`,
-  weeklyStreakReminder: (streak) => `You have a ${streak} week streak! Keep it going with any lesson or song!`,
+  dailyStreakReminder: (streak) => `You have ${getIndefiniteArticle(streak)} ${streak} day streak! Keep it going with any lesson or song!`,
+  weeklyStreakKeepUp: (streak) => `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Keep up the momentum!`,
+  weeklyStreakReminder: (streak) => `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Keep it going with any lesson or song!`,
 };
+
+function getIndefiniteArticle(streak) {
+  return streak === 8 || (streak >= 80 && streak <= 89) || (streak >= 800  && streak <= 899) ? 'an' : 'a'
+}
 
 
 export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUserPractices)
@@ -54,7 +58,6 @@ export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUs
  */
 export async function getUserWeeklyStats() {
   let data = await userActivityContext.getData()
-
   let practices = data?.[DATA_KEY_PRACTICES] ?? {}
   let sortedPracticeDays = Object.keys(practices)
     .map(date => new Date(date))
