@@ -103,20 +103,26 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
   let data = await userActivityContext.getData()
   let practices = data?.[DATA_KEY_PRACTICES] ?? {}
   let sortedPracticeDays = Object.keys(practices)
-    .map(date => new Date(date))
-    .sort((a, b) => b - a);
+    .map(dateStr => {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const newDate = new Date();
+      newDate.setFullYear(y, m - 1, d);
+      return newDate;
+    })
+    .sort((a, b) => a - b);
 
   // Get the first day of the specified month and the number of days in that month
   let firstDayOfMonth = new Date(year, month, 1)
   let today = new Date()
+  today.setHours(0, 0, 0, 0);
 
-  let startOfMonth = getMonday(firstDayOfMonth)
+  let startOfGrid = getMonday(firstDayOfMonth)
   let endOfMonth = new Date(year, month + 1, 0)
   while (endOfMonth.getDay() !== 0) {
     endOfMonth.setDate(endOfMonth.getDate() + 1)
   }
 
-  let daysInMonth = Math.ceil((endOfMonth - startOfMonth) / (1000 * 60 * 60 * 24)) + 1;
+  let daysInMonth = Math.ceil((endOfMonth - startOfGrid) / (1000 * 60 * 60 * 24)) + 1;
 
   let dailyStats = []
   let practiceDuration = 0
@@ -124,26 +130,25 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
   let weeklyStats = {}
 
   for (let i = 0; i < daysInMonth; i++) {
-    let day = new Date(startOfMonth)
-    day.setDate(startOfMonth.getDate() + i)
+    let day = new Date(startOfGrid)
+    day.setDate(startOfGrid.getDate() + i)
     let dayKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
 
     // Check if the user has activity for the day
     let dayActivity = practices[dayKey] ?? null
-    let hasPractice = sortedPracticeDays.some(practiceDate => isSameDate(practiceDate, day));
     let weekKey = getWeekNumber(day)
 
     if (!weeklyStats[weekKey]) {
       weeklyStats[weekKey] = { key: weekKey, inStreak: false };
     }
 
-    if (hasPractice) {
+    if (dayActivity !== null) {
       practiceDuration += dayActivity.reduce((sum, entry) => sum + entry.duration_seconds, 0)
       daysPracticed++;
     }
-    let isActive = isSameDate(today, day)
-    let type = (hasPractice ? 'tracked' : (isActive ? 'active' : 'none'))
 
+    let isActive = isSameDate(today, day)
+    let type = ((dayActivity !== null) ? 'tracked' : (isActive ? 'active' : 'none'))
     let isInStreak = dayActivity !== null;
     if (isInStreak) {
       weeklyStats[weekKey].inStreak = true;
