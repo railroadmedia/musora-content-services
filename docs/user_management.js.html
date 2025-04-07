@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>Config - Documentation</title>
+    <title>user/management.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,381 +35,52 @@
 
 <div id="main">
     
-    <h1 class="page-title">Config</h1>
-    
-
-    
-
-
-
-
-<section>
-
-<header>
-    
-        
-    
-</header>
-
-<article>
-    
-        <div class="container-overview">
-        
-            
-
-            
-        
-        </div>
-    
-
-    
-
-    
-
-    
-    
-    
-
-     
-
-    
-
-    
-        <h3 class="subsection-title">Members</h3>
-
-        
-            
-<h4 class="name" id=".globalConfig"><span class="type-signature type-signature-static">(static) </span>globalConfig<span class="type-signature"> :Config</span></h4>
-
-
-
-
-
-<dl class="details">
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="config.js.html">config.js</a>, <a href="config.js.html#line8">line 8</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-    <h5 class="h5-types">Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">Config</span>
-
-
-
-        </li>
-    </ul>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="~excludeFromGeneratedIndex"><span class="type-signature type-signature-inner, constant">(inner, constant) </span>excludeFromGeneratedIndex<span class="type-signature"> :Array.&lt;string></span></h4>
-
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li>Exported functions that are excluded from index generation.</li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="config.js.html">config.js</a>, <a href="config.js.html#line23">line 23</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    Exported functions that are excluded from index generation.
-</div>
-
-
-
-    <h5 class="h5-types">Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">Array.&lt;string></span>
-
-
-
-        </li>
-    </ul>
-
-
-
-
-
-
-        
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    <h4 class="name" id=".initializeService"><span class="type-signature type-signature-static">(static) </span>initializeService<span class="signature">(config)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li>Initializes the service with the given configuration.
-This function must be called before using any other functions in this library.</li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="config.js.html">config.js</a>, <a href="config.js.html#line62">line 62</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-examples">Example</h5>
-    
-    <pre class="prettyprint"><code>// Initialize the service in your app.js
-initializeService({
-  sanityConfig: {
-    token: 'your-sanity-api-token',
-    projectId: 'your-sanity-project-id',
-    dataset: 'your-dataset-name',
-    version: '2021-06-07',
-    debug: true,
-    useCachedAPI: false,
-  },
-  railcontentConfig: {
-    token: 'your-user-api-token',
-    userId: 'current-user-id',
-    baseUrl: 'https://web-staging-one.musora.com',
-    authToken 'your-auth-token',
-  },
-  sessionConfig: {
-    token: 'your-user-api-token',
-    userId: 'current-user-id',
-    authToken 'your-auth-token',
-  },
-  recommendationsConfig: {
-    token: 'your-user-api-token',
-    baseUrl: 'https://MusoraProductDepartment-PWGenerator.hf.space',
-  },
-  baseUrl: 'https://web-staging-one.musora.com',
-  localStorage: localStorage,
-  isMA: false,
-});</code></pre>
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>config</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Config</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Configuration object containing API settings.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-    
-
-    
-
-    
-</article>
-
-</section>
+    <h1 class="page-title">user/management.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module UserManagement
+ */
+import { fetchHandler } from '../railcontent.js'
+
+/**
+ * Exported functions that are excluded from index generation.
+ *
+ * @type {string[]}
+ */
+const excludeFromGeneratedIndex = []
+
+const baseUrl = `/api/user-management-system`
+
+/**
+ * Block the provided user
+ * @param userId
+ * @returns {Promise&lt;any|string|null>}
+ */
+export async function blockUser(userId) {
+  const url = `${baseUrl}/v1/block/${userId}`
+  return fetchHandler(url, 'post')
+}
+
+/**
+ * Unblock the provided user. Returns a 422 if the user wasn't blocked
+ * @param userId
+ * @returns {Promise&lt;any|string|null>}
+ */
+export async function unblockUser(userId) {
+  const url = `${baseUrl}/v1/unblock/${userId}`
+  return fetchHandler(url, 'post')
+}
+</code></pre>
+        </article>
+    </section>
 
 
 

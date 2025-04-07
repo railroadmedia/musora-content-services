@@ -3,7 +3,7 @@
  */
 
 import { globalConfig } from './config.js'
-import { fetchJSONHandler} from '../lib/httpHelper.js'
+import { fetchJSONHandler } from '../lib/httpHelper.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -30,9 +30,9 @@ export async function fetchSimilarItems(content_id, brand, count = 10) {
   }
 
   let data = {
-    'brand': brand,
-    'content_ids': content_id,
-    'num_similar': count,
+    brand: brand,
+    content_ids: content_id,
+    num_similar: count,
   }
   const url = `/similar_items/`
   try {
@@ -64,15 +64,18 @@ export async function rankCategories(brand, categories) {
     return []
   }
   let data = {
-    'brand': brand,
-    'user_id': globalConfig.railcontentConfig.userId,
-    'playlists': categories,
+    brand: brand,
+    user_id: globalConfig.sessionConfig.userId,
+    playlists: categories,
   }
   const url = `/rank_each_list/`
   try {
     const response = await fetchHandler(url, 'POST', data)
     let rankedCategories = {}
-    response['ranked_playlists'].forEach((category) => rankedCategories[category['playlist_id']] = categories[category['playlist_id']])
+    response['ranked_playlists'].forEach(
+      (category) =>
+        (rankedCategories[category['playlist_id']] = categories[category['playlist_id']])
+    )
     return rankedCategories
   } catch (error) {
     console.error('Fetch error:', error)
@@ -96,9 +99,9 @@ export async function rankItems(brand, content_ids) {
     return []
   }
   let data = {
-    'brand': brand,
-    'user_id': globalConfig.railcontentConfig.userId,
-    'content_ids': content_ids,
+    brand: brand,
+    user_id: globalConfig.sessionConfig.userId,
+    content_ids: content_ids,
   }
   const url = `/rank_items/`
   try {
@@ -135,5 +138,5 @@ async function fetchHandler(url, method = 'get', body = null) {
     method,
     null,
     body
-    )
+  )
 }

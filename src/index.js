@@ -56,6 +56,18 @@ import {
 } from './services/gamification/awards.js';
 
 import {
+	applyCloudflareWrapper,
+	applySanityTransformations,
+	buildImageSRC
+} from './services/imageSRCBuilder.js';
+
+import {
+	extractSanityUrl,
+	isBucketUrl,
+	verifyImageSRC
+} from './services/imageSRCVerify.js';
+
+import {
 	assignModeratorToComment,
 	closeComment,
 	countAssignmentsAndLessons,
@@ -213,10 +225,13 @@ import {
 
 export {
 	addItemToPlaylist,
+	applyCloudflareWrapper,
+	applySanityTransformations,
 	assignModeratorToComment,
 	assignmentStatusCompleted,
 	assignmentStatusReset,
 	blockUser,
+	buildImageSRC,
 	closeComment,
 	contentStatusCompleted,
 	contentStatusReset,
@@ -230,6 +245,7 @@ export {
 	deletePracticeSession,
 	duplicatePlaylist,
 	editComment,
+	extractSanityUrl,
 	fetchAll,
 	fetchAllCompletedStates,
 	fetchAllFilterOptions,
@@ -333,6 +349,7 @@ export {
 	getUserWeeklyStats,
 	globalConfig,
 	initializeService,
+	isBucketUrl,
 	isContentLiked,
 	jumpToContinueContent,
 	likeComment,
@@ -377,5 +394,6 @@ export {
 	updatePlaylist,
 	updatePlaylistItem,
 	updateUserPractice,
+	verifyImageSRC,
 	verifyLocalDataContext,
 };

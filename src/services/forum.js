@@ -10,7 +10,8 @@ export async function getActiveDiscussions(brand, { page = 1, limit = 10 } = {})
       {
         id: 11,
         url: 'https://forum.example.com/post/11',
-        post: "<p><strong>Lorem ipsum</strong> dolor sit amet, <em>consectetur adipiscing elit</em>. <a href='#'>Click here</a> for more info.</p>",
+        title: 'My Journey with Pianote',
+        post: "Hey everyone, I thought I'd create this topic to detail my journey with Pianote. I started playing piano for the first time on Friday the 10th of March",
         author: {
           id: 123,
           name: 'John Doe',
@@ -20,7 +21,8 @@ export async function getActiveDiscussions(brand, { page = 1, limit = 10 } = {})
       {
         id: 12,
         url: 'https://forum.example.com/post/12',
-        post: "<p>This is a <span style='color: red;'>sample forum post</span> to <strong>test</strong> data structure. <ul><li>Point 1</li><li>Point 2</li></ul></p>",
+        title: 'Learning the Piano',
+        post: "I can't wait to share the ups and downs of learning the piano!",
         author: {
           id: 124,
           name: 'Jane Smith',
@@ -30,7 +32,8 @@ export async function getActiveDiscussions(brand, { page = 1, limit = 10 } = {})
       {
         id: 13,
         url: 'https://forum.example.com/post/13',
-        post: "<blockquote>Another test post with some <i>dummy text</i> content.</blockquote>",
+        title: 'Piano Inspirations',
+        post: "One video that got me so psyched to learn the piano was this guy on YouTube called chocotiger who played George winstons - variations on pachabel.",
         author: {
           id: 125,
           name: 'Alice Johnson',
@@ -40,7 +43,8 @@ export async function getActiveDiscussions(brand, { page = 1, limit = 10 } = {})
       {
         id: 14,
         url: 'https://forum.example.com/post/14',
-        post: "<h2>Final example post</h2><p>To complete the dataset, here is a <strong>bold</strong> statement and an image: <img src='https://example.com/image.jpg' alt='Example Image'></p>",
+        title: 'Feedback on Lessons',
+        post: "I appreciate the way the lessons are structured and how fun they are. To newbies like me (and maybe some others), would be great if there was a plug-in (like the one from flowkey) to plug your piano/keyboard and get realtime feedback. I'm also trying to learn how to read the sheet music, and it is sometimes hard to read what key is being played, so having the plug-in would help provide feedback asap instead of rewinding the video, (the fonts on the video are too small)",
         author: {
           id: 126,
           name: 'Bob Williams',
