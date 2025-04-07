@@ -250,7 +250,11 @@ async function testExpectedMessageForDays(exampleData, expectedMessages, startDa
       log(`Running ${state} content tests for Day ${day} on ${target}`)
       log(`Expecting ${expected}`)
       expect(practices.data.streakMessage).toBeDefined()
-      expect(practices.data.streakMessage).toBe(expected)
+      if (practices.data.streakMessage !== expected) {
+        throw new Error(`Mismatch on Day ${expectedMessages[i].day} [${target.toDateString()}]:
+          Expected: "${expected}"
+          Received: "${practices.data.streakMessage}"`);
+      }
     }
     await setDataAndCheckStreakMessage(false)
     await setDataAndCheckStreakMessage(true)
