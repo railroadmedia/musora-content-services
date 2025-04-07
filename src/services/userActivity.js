@@ -20,48 +20,109 @@ const DATA_KEY_LAST_UPDATED_TIME = 'u'
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
+const streakMessages = {
+  startStreak: "Start your streak by taking any lesson!",
+  restartStreak: "Restart your streak by taking any lesson!",
+
+  // Messages when last active day is today
+  dailyStreak: (streak) => `Nice! You have ${getIndefiniteArticle(streak)} ${streak} day streak! Way to keep it going!`,
+  dailyStreakShort: (streak) => `Nice! You have ${getIndefiniteArticle(streak)} ${streak} day streak!`,
+  weeklyStreak: (streak) => `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Way to keep up the momentum!`,
+  greatJobWeeklyStreak: (streak) => `Great job! You have ${getIndefiniteArticle(streak)} ${streak} week streak! Way to keep it going!`,
+
+  // Messages when last active day is NOT today
+  dailyStreakReminder: (streak) => `You have ${getIndefiniteArticle(streak)} ${streak} day streak! Keep it going with any lesson or song!`,
+  weeklyStreakKeepUp: (streak) => `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Keep up the momentum!`,
+  weeklyStreakReminder: (streak) => `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Keep it going with any lesson or song!`,
+};
+
+function getIndefiniteArticle(streak) {
+  return streak === 8 || (streak >= 80 && streak <= 89) || (streak >= 800  && streak <= 899) ? 'an' : 'a'
+}
+
+
 export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUserPractices)
 
-// Get Weekly Stats
+/**
+ * Retrieves user activity statistics for the current week, including daily activity and streak messages.
+ *
+ * @returns {Promise<Object>} - A promise that resolves to an object containing weekly user activity statistics.
+ *
+ * @example
+ * // Retrieve user activity statistics for the current week
+ * getUserWeeklyStats()
+ *   .then(stats => console.log(stats))
+ *   .catch(error => console.error(error));
+ */
 export async function getUserWeeklyStats() {
   let data = await userActivityContext.getData()
-
   let practices = data?.[DATA_KEY_PRACTICES] ?? {}
+  let sortedPracticeDays = Object.keys(practices)
+    .map(date => new Date(date))
+    .sort((a, b) => b - a);
 
-  let today = new Date()
+  let today = new Date();
+  today.setHours(0, 0, 0, 0);
   let startOfWeek = getMonday(today) // Get last Monday
   let dailyStats = []
-  const todayKey = today.toISOString().split('T')[0]
+
   for (let i = 0; i < 7; i++) {
     let day = new Date(startOfWeek)
     day.setDate(startOfWeek.getDate() + i)
-    let dayKey = day.toISOString().split('T')[0]
-
-    let dayActivity = practices[dayKey] ?? null
-    let isActive = dayKey === todayKey
-    let type = (dayActivity !== null ? 'tracked' : (isActive ? 'active' : 'none'))
-    dailyStats.push({ key: i, label: DAYS[i], isActive, inStreak: dayActivity !== null, type })
+    let hasPractice = sortedPracticeDays.some(practiceDate => isSameDate(practiceDate, day));
+    let isActive = isSameDate(today, day)
+    let type = (hasPractice ? 'tracked' : (isActive ? 'active' : 'none'))
+    dailyStats.push({ key: i, label: DAYS[i], isActive, inStreak: hasPractice, type })
   }
 
   let { streakMessage } = getStreaksAndMessage(practices);
 
-  return { data: { dailyActiveStats: dailyStats, streakMessage } }
+  return { data: { dailyActiveStats: dailyStats, streakMessage, practices } }
 }
 
+/**
+ * Retrieves user activity statistics for a specified month, including daily and weekly activity data.
+ *
+ * @param {number} [year=new Date().getFullYear()] - The year for which to retrieve the statistics.
+ * @param {number} [month=new Date().getMonth()] - The month (0-indexed) for which to retrieve the statistics.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing user activity statistics.
+ *
+ * @example
+ * // Retrieve user activity statistics for the current month
+ * getUserMonthlyStats()
+ *   .then(stats => console.log(stats))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Retrieve user activity statistics for March 2024
+ * getUserMonthlyStats(2024, 2)
+ *   .then(stats => console.log(stats))
+ *   .catch(error => console.error(error));
+ */
 export async function getUserMonthlyStats(year = new Date().getFullYear(), month = new Date().getMonth(), day = 1) {
   let data = await userActivityContext.getData()
   let practices = data?.[DATA_KEY_PRACTICES] ?? {}
+  let sortedPracticeDays = Object.keys(practices)
+    .map(dateStr => {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const newDate = new Date();
+      newDate.setFullYear(y, m - 1, d);
+      return newDate;
+    })
+    .sort((a, b) => a - b);
+
   // Get the first day of the specified month and the number of days in that month
   let firstDayOfMonth = new Date(year, month, 1)
   let today = new Date()
+  today.setHours(0, 0, 0, 0);
 
-  let startOfMonth = getMonday(firstDayOfMonth)
+  let startOfGrid = getMonday(firstDayOfMonth)
   let endOfMonth = new Date(year, month + 1, 0)
   while (endOfMonth.getDay() !== 0) {
     endOfMonth.setDate(endOfMonth.getDate() + 1)
   }
 
-  let daysInMonth = Math.ceil((endOfMonth - startOfMonth) / (1000 * 60 * 60 * 24)) + 1;
+  let daysInMonth = Math.ceil((endOfMonth - startOfGrid) / (1000 * 60 * 60 * 24)) + 1;
 
   let dailyStats = []
   let practiceDuration = 0
@@ -69,11 +130,11 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
   let weeklyStats = {}
 
   for (let i = 0; i < daysInMonth; i++) {
-    let day = new Date(startOfMonth)
-    day.setDate(startOfMonth.getDate() + i)
-    let dayKey = day.toISOString().split('T')[0]
+    let day = new Date(startOfGrid)
+    day.setDate(startOfGrid.getDate() + i)
+    let dayKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
 
-    // Check if the user has activity for the day, default to 0 if undefined
+    // Check if the user has activity for the day
     let dayActivity = practices[dayKey] ?? null
     let weekKey = getWeekNumber(day)
 
@@ -81,13 +142,13 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
       weeklyStats[weekKey] = { key: weekKey, inStreak: false };
     }
 
-    if (dayActivity) {
+    if (dayActivity !== null) {
       practiceDuration += dayActivity.reduce((sum, entry) => sum + entry.duration_seconds, 0)
       daysPracticed++;
     }
-    let isActive = dayKey === today.toISOString().split('T')[0]
-    let type = (dayActivity !== null ? 'tracked' : (isActive ? 'active' : 'none'))
 
+    let isActive = isSameDate(today, day)
+    let type = ((dayActivity !== null) ? 'tracked' : (isActive ? 'active' : 'none'))
     let isInStreak = dayActivity !== null;
     if (isInStreak) {
       weeklyStats[weekKey].inStreak = true;
@@ -126,7 +187,36 @@ export async function getUserPractices() {
   let data = await userActivityContext.getData()
   return data?.[DATA_KEY_PRACTICES] ?? []
 }
-
+/**
+ * Records user practice data and updates both the remote and local activity context.
+ *
+ * @param {Object} practiceDetails - The details of the practice session.
+ * @param {number} practiceDetails.duration_seconds - The duration of the practice session in seconds.
+ * @param {boolean} [practiceDetails.auto=true] - Whether the session was automatically logged.
+ * @param {number} [practiceDetails.content_id] - The ID of the practiced content (if available).
+ * @param {number} [practiceDetails.category_id] - The ID of the associated category (if available).
+ * @param {string} [practiceDetails.title] - The title of the practice session (max 64 characters).
+ * @param {string} [practiceDetails.thumbnail_url] - The URL of the session's thumbnail (max 255 characters).
+ * @returns {Promise<Object>} - A promise that resolves to the response from logging the user practice.
+ *
+ * @example
+ * // Record an auto practice session with content ID
+ * recordUserPractice({ content_id: 123, duration_seconds: 300 })
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Record a custom practice session with additional details
+ * recordUserPractice({
+ *   duration_seconds: 600,
+ *   auto: false,
+ *   category_id: 5,
+ *   title: "Guitar Warm-up",
+ *   thumbnail_url: "https://example.com/thumbnail.jpg"
+ * })
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
 export async function recordUserPractice(practiceDetails) {
   practiceDetails.auto = 0;
   if (practiceDetails.content_id) {
@@ -160,12 +250,46 @@ export async function recordUserPractice(practiceDetails) {
     }
   );
 }
-
+/**
+ * Updates a user's practice session with new details and syncs the changes remotely.
+ *
+ * @param {number} id - The unique identifier of the practice session to update.
+ * @param {Object} practiceDetails - The updated details of the practice session.
+ * @param {number} [practiceDetails.duration_seconds] - The duration of the practice session in seconds.
+ * @param {number} [practiceDetails.category_id] - The ID of the associated category (if available).
+ * @param {string} [practiceDetails.title] - The title of the practice session (max 64 characters).
+ * @param {string} [practiceDetails.thumbnail_url] - The URL of the session's thumbnail (max 255 characters).
+ * @returns {Promise<Object>} - A promise that resolves to the response from updating the user practice.
+ *
+ * @example
+ * // Update a practice session's duration
+ * updateUserPractice(123, { duration_seconds: 600 })
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Change a practice session to manual and update its category
+ * updateUserPractice(456, { auto: false, category_id: 8 })
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
 export async function updateUserPractice(id, practiceDetails) {
   const url = `/api/user/practices/v1/practices/${id}`
   return await fetchHandler(url, 'PUT', null, practiceDetails)
 }
 
+/**
+ * Removes a user's practice session by ID, updating both the local and remote activity context.
+ *
+ * @param {number} id - The unique identifier of the practice session to be removed.
+ * @returns {Promise<void>} - A promise that resolves once the practice session is removed.
+ *
+ * @example
+ * // Remove a practice session with ID 123
+ * removeUserPractice(123)
+ *   .then(() => console.log("Practice session removed successfully"))
+ *   .catch(error => console.error(error));
+ */
 export async function removeUserPractice(id) {
   let url = `/api/user/practices/v1/practices${buildQueryString([id])}`;
   await userActivityContext.update(
@@ -184,6 +308,18 @@ export async function removeUserPractice(id) {
   );
 }
 
+/**
+ * Restores a previously deleted user's practice session by ID, updating both the local and remote activity context.
+ *
+ * @param {number} id - The unique identifier of the practice session to be restored.
+ * @returns {Promise<Object>} - A promise that resolves to the response containing the restored practice session data.
+ *
+ * @example
+ * // Restore a deleted practice session with ID 123
+ * restoreUserPractice(123)
+ *   .then(response => console.log("Practice session restored:", response))
+ *   .catch(error => console.error(error));
+ */
 export async function restoreUserPractice(id) {
   let url = `/api/user/practices/v1/practices/restore${buildQueryString([id])}`;
   const response = await fetchHandler(url, 'put');
@@ -208,14 +344,51 @@ export async function deletePracticeSession(day) {
   if (!userPracticesIds.length) return [];
 
   const url = `/api/user/practices/v1/practices${buildQueryString(userPracticesIds)}`;
-  return await fetchHandler(url, 'delete', null);
+  await userActivityContext.update(async function (localContext) {
+    if (localContext.data?.[DATA_KEY_PRACTICES]?.[day]) {
+      localContext.data[DATA_KEY_PRACTICES][day] = localContext.data[DATA_KEY_PRACTICES][day].filter(
+        practice => !userPracticesIds.includes(practice.id)
+      );
+    }
+  });
+
+  return await fetchHandler(url, 'DELETE', null);
 }
 
 export async function restorePracticeSession(date) {
   const url = `/api/user/practices/v1/practices/restore?date=${date}`;
-  return await fetchHandler(url, 'put', null);
+  const response = await fetchHandler(url, 'PUT', null);
+
+  if (response?.data) {
+    await userActivityContext.updateLocal(async function (localContext) {
+      if (!localContext.data[DATA_KEY_PRACTICES][date]) {
+        localContext.data[DATA_KEY_PRACTICES][date] = [];
+      }
+
+      response.data.forEach(restoredPractice => {
+        localContext.data[DATA_KEY_PRACTICES][date].push({
+          id: restoredPractice.id,
+          duration_seconds: restoredPractice.duration_seconds,
+        });
+      });
+    });
+  }
+
+  return response;
 }
 
+/**
+ * Retrieves and formats a user's practice sessions for a specific day.
+ *
+ * @param {string} day - The date for which practice sessions should be retrieved (format: YYYY-MM-DD).
+ * @returns {Promise<Object>} - A promise that resolves to an object containing the practice sessions and total practice duration.
+ *
+ * @example
+ * // Get practice sessions for a specific day
+ * getPracticeSessions("2025-03-31")
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
 export async function getPracticeSessions(day) {
   const userPracticesIds = await getUserPracticeIds(day);
   if (!userPracticesIds.length) return { data: { practices: [], practiceDuration: 0 } };
@@ -259,19 +432,16 @@ export async function getRecentActivity() {
   return { data: recentActivity };
 }
 
-function getStreaksAndMessage(practices)
-{
-  let { currentDailyStreak, currentWeeklyStreak } = calculateStreaks(practices)
+function getStreaksAndMessage(practices) {
+  let { currentDailyStreak, currentWeeklyStreak, streakMessage } = calculateStreaks(practices, true);
 
-  let streakMessage = currentWeeklyStreak > 1
-    ? `That's ${currentWeeklyStreak} weeks in a row! Keep going!`
-    : `Nice! You have a ${currentDailyStreak} day streak! Way to keep it going!`
   return {
     currentDailyStreak,
     currentWeeklyStreak,
     streakMessage,
-  }
+  };
 }
+
 
 async function getUserPracticeIds(day = new Date().toISOString().split('T')[0]) {
   let data = await userActivityContext.getData();
@@ -301,83 +471,124 @@ function getMonday(d) {
 }
 
 // Helper: Get the week number
-function getWeekNumber(date) {
-  let startOfYear = new Date(date.getFullYear(), 0, 1)
-  let diff = date - startOfYear
-  let oneWeekMs = 7 * 24 * 60 * 60 * 1000
-  return Math.ceil((diff / oneWeekMs) + startOfYear.getDay() / 7)
+function getWeekNumber(d) {
+  let newDate = new Date(d.getTime());
+  newDate.setUTCDate(newDate.getUTCDate() + 4 - (newDate.getUTCDay()||7));
+  var yearStart = new Date(Date.UTC(newDate.getUTCFullYear(),0,1));
+  var weekNo = Math.ceil(( ( (newDate - yearStart) / 86400000) + 1)/7);
+  return  weekNo;
 }
 
 // Helper: function to check if two dates are consecutive days
-function isNextDay(prevDateStr, currentDateStr) {
-  let prevDate = new Date(prevDateStr)
-  let currentDate = new Date(currentDateStr)
-  let diff = (currentDate - prevDate) / (1000 * 60 * 60 * 24)
-  return diff === 1
+function isNextDay(prev, current) {
+  const prevDate = new Date(prev.getFullYear(), prev.getMonth(), prev.getDate());
+  const nextDate = new Date(prevDate);
+  nextDate.setDate(prevDate.getDate() + 1); // Add 1 day
+
+  return (
+    nextDate.getFullYear() === current.getFullYear() &&
+    nextDate.getMonth() === current.getMonth() &&
+    nextDate.getDate() === current.getDate()
+  );
 }
 
 // Helper: Calculate streaks
-function calculateStreaks(practices) {
-  let currentDailyStreak = 0
-  let currentWeeklyStreak = 0
+function calculateStreaks(practices, includeStreakMessage = false) {
+  let currentDailyStreak = 0;
+  let currentWeeklyStreak = 0;
+  let lastActiveDay = null;
+  let streakMessage = '';
 
-  let sortedPracticeDays = Object.keys(practices).sort() // Ensure dates are sorted in order
-
+  let sortedPracticeDays = Object.keys(practices)
+    .map(dateStr => {
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const newDate = new Date();
+      newDate.setFullYear(year, month - 1, day);
+      return newDate;
+    })
+    .sort((a, b) => a - b);
   if (sortedPracticeDays.length === 0) {
-    return { currentDailyStreak: 1, currentWeeklyStreak: 1 }
+    return { currentDailyStreak: 0, currentWeeklyStreak: 0, streakMessage: streakMessages.startStreak };
   }
+  lastActiveDay = sortedPracticeDays[sortedPracticeDays.length - 1];
 
-  let dailyStreak = 0
-  let longestDailyStreak = 0
-  let prevDay = null
-
-  sortedPracticeDays.forEach((dayKey) => {
-    if (prevDay === null || isNextDay(prevDay, dayKey)) {
-      dailyStreak++
-      longestDailyStreak = Math.max(longestDailyStreak, dailyStreak)
+  let dailyStreak = 0;
+  let prevDay = null;
+  sortedPracticeDays.forEach((currentDay) => {
+    if (prevDay === null || isNextDay(prevDay, currentDay)) {
+      dailyStreak++;
     } else {
-      dailyStreak = 1 // Reset streak if there's a gap
+      dailyStreak = 1;
     }
-    prevDay = dayKey
-  })
+    prevDay = currentDay;
+  });
+  currentDailyStreak = dailyStreak;
 
-  currentDailyStreak = dailyStreak
+  // Weekly streak calculation
+  let weekNumbers = new Set(sortedPracticeDays.map(date => getWeekNumber(date)));
+  let weeklyStreak = 0;
+  let lastWeek = null;
+  [...weekNumbers].sort((a, b) => b - a).forEach(week => {
+    if (lastWeek === null || week === lastWeek - 1) {
+      weeklyStreak++;
+    } else {
+      return;
+    }
+    lastWeek = week;
+  });
+  currentWeeklyStreak = weeklyStreak;
 
-  // Calculate weekly streaks
-  let weeklyStreak = 0
-  let prevWeek = null
-  let currentWeekActivity = false
+  // Calculate streak message only if includeStreakMessage is true
+  if (includeStreakMessage) {
+    let today = new Date();
+    let yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
 
-  sortedPracticeDays.forEach((dayKey) => {
-    let date = new Date(dayKey)
-    let weekNumber = getWeekNumber(date)
+    let currentWeekStart = getMonday(today);
+    let lastWeekStart = new Date(currentWeekStart);
+    lastWeekStart.setDate(currentWeekStart.getDate() - 7);
 
-    if (prevWeek === null) {
-      prevWeek = weekNumber
-      currentWeekActivity = true
-    } else if (weekNumber !== prevWeek) {
-      // A new week has started
-      if (currentWeekActivity) {
-        weeklyStreak++
-        currentWeekActivity = false
+    let hasYesterdayPractice = sortedPracticeDays.some(date =>
+      isSameDate(date, yesterday)
+    );
+    let hasCurrentWeekPractice = sortedPracticeDays.some(date => date >= currentWeekStart);
+    let hasCurrentWeekPreviousPractice = sortedPracticeDays.some(date => date >= currentWeekStart && date < today);
+    let hasLastWeekPractice = sortedPracticeDays.some(date => date >= lastWeekStart && date < currentWeekStart);
+    let hasOlderPractice = sortedPracticeDays.some(date => date < lastWeekStart );
+
+    if (isSameDate(lastActiveDay, today)) {
+      if (hasYesterdayPractice) {
+        streakMessage = streakMessages.dailyStreak(currentDailyStreak);
+      } else if (hasCurrentWeekPreviousPractice) {
+        streakMessage = streakMessages.weeklyStreak(currentWeeklyStreak);
+      } else if (hasLastWeekPractice) {
+        streakMessage = streakMessages.greatJobWeeklyStreak(currentWeeklyStreak);
+      } else {
+        streakMessage = streakMessages.dailyStreakShort(currentDailyStreak);
       }
-      prevWeek = weekNumber
+    } else {
+      if ((hasYesterdayPractice && currentDailyStreak >= 2)  || (hasYesterdayPractice && sortedPracticeDays.length == 1)
+        || (hasYesterdayPractice && !hasLastWeekPractice && hasOlderPractice)){
+        streakMessage = streakMessages.dailyStreakReminder(currentDailyStreak);
+      } else if (hasCurrentWeekPractice) {
+        streakMessage = streakMessages.weeklyStreakKeepUp(currentWeeklyStreak);
+      } else if (hasLastWeekPractice) {
+        streakMessage = streakMessages.weeklyStreakReminder(currentWeeklyStreak);
+      } else {
+        streakMessage = streakMessages.restartStreak;
+      }
     }
 
-    if (practices[dayKey]) {
-      currentWeekActivity = true
-    }
-  })
-
-  // If the user has activity in the current week, count it
-  if (currentWeekActivity) {
-    weeklyStreak++
   }
 
-  currentWeeklyStreak = weeklyStreak
-
-  return { currentDailyStreak, currentWeeklyStreak }
+  return { currentDailyStreak, currentWeeklyStreak, streakMessage };
 }
+
+function isSameDate(date1, date2, method = '') {
+  return date1.toISOString().split('T')[0] === date2.toISOString().split('T')[0];
+}
+
+
 
 
 
