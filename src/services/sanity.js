@@ -1852,13 +1852,16 @@ function populateHierarchyLookups(currentLevel, data, parentId) {
  * @returns {Promise<Object|null>} - A promise that resolves to an object containing the data
  */
 export async function fetchCommentModContentData(ids) {
+  if (!ids) {
+    return []
+  }
   const idsString = ids.join(',')
   const fields = `"id": railcontent_id, "type": _type, title, "url": web_url_path, "parent": *[^._id in child[]._ref]{"id": railcontent_id, title}`
   const query = await buildQuery(
     `railcontent_id in [${idsString}]`,
     { bypassPermissions: true },
     fields,
-    { end: 100 }
+    { end: ids.length }
   )
   let data = await fetchSanity(query, true)
   let mapped = {}
