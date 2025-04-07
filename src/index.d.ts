@@ -56,6 +56,18 @@ import {
 } from './services/gamification/awards.js';
 
 import {
+	applyCloudflareWrapper,
+	applySanityTransformations,
+	buildImageSRC
+} from './services/imageSRCBuilder.js';
+
+import {
+	extractSanityUrl,
+	isBucketUrl,
+	verifyImageSRC
+} from './services/imageSRCVerify.js';
+
+import {
 	assignModeratorToComment,
 	closeComment,
 	countAssignmentsAndLessons,
@@ -214,10 +226,13 @@ import {
 declare module 'musora-content-services' {
 	export {
 		addItemToPlaylist,
+		applyCloudflareWrapper,
+		applySanityTransformations,
 		assignModeratorToComment,
 		assignmentStatusCompleted,
 		assignmentStatusReset,
 		blockUser,
+		buildImageSRC,
 		closeComment,
 		contentStatusCompleted,
 		contentStatusReset,
@@ -231,6 +246,7 @@ declare module 'musora-content-services' {
 		deletePracticeSession,
 		duplicatePlaylist,
 		editComment,
+		extractSanityUrl,
 		fetchAll,
 		fetchAllCompletedStates,
 		fetchAllFilterOptions,
@@ -334,6 +350,7 @@ declare module 'musora-content-services' {
 		getUserWeeklyStats,
 		globalConfig,
 		initializeService,
+		isBucketUrl,
 		isContentLiked,
 		jumpToContinueContent,
 		likeComment,
@@ -378,6 +395,7 @@ declare module 'musora-content-services' {
 		updatePlaylist,
 		updatePlaylistItem,
 		updateUserPractice,
+		verifyImageSRC,
 		verifyLocalDataContext,
 	}
 }

@@ -1,5 +1,5 @@
 /**
- * @module User-Permissions
+ * @module Permissions
  */
 import { setLastUpdatedTime, wasLastUpdateOlderThanXSeconds } from '../../lib/lastUpdated.js'
 import { fetchUserPermissionsData } from '../railcontent.js'
