@@ -1858,7 +1858,7 @@ export async function fetchCommentModContentData(ids) {
     `railcontent_id in [${idsString}]`,
     { bypassPermissions: true },
     fields,
-    { end: 50 }
+    { end: 100 }
   )
   let data = await fetchSanity(query, true)
   let mapped = {}
