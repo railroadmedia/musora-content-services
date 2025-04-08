@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.3.8](https://github.com/railroadmedia/musora-content-services/compare/v2.3.7...v2.3.8) (2025-04-08)
+
+
+### Bug Fixes
+
+* **BEH-363:** Point homepage recommended endpoint to BE ([#208](https://github.com/railroadmedia/musora-content-services/issues/208)) ([16d3308](https://github.com/railroadmedia/musora-content-services/commit/16d3308a80c68d3fedfc75c42afa9cb2bb9ddfd5))
+
 ### [2.3.7](https://github.com/railroadmedia/musora-content-services/compare/v2.3.4...v2.3.7) (2025-04-07)
 
 ### [2.3.6](https://github.com/railroadmedia/musora-content-services/compare/v2.3.5...v2.3.6) (2025-04-04)
