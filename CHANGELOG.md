@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.6](https://github.com/railroadmedia/musora-content-services/compare/v1.4.4...v1.4.6) (2025-04-08)
+
+
+### Bug Fixes
+
+* **BR-178:** fix url routing to genres on song-tutorial page ([#209](https://github.com/railroadmedia/musora-content-services/issues/209)) ([d32e37a](https://github.com/railroadmedia/musora-content-services/commit/d32e37af4fe53c1d7c5c1fd4eb646df54e007f95))
+* **TP-833:** mod comments missing content ([#222](https://github.com/railroadmedia/musora-content-services/issues/222)) ([55e6e0c](https://github.com/railroadmedia/musora-content-services/commit/55e6e0c4f602d336b99c32f231265a94e35ace4f))
+
 ### [1.4.5](https://github.com/railroadmedia/musora-content-services/compare/v1.4.4...v1.4.5) (2025-04-08)
 
 
