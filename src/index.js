@@ -48,6 +48,14 @@ import {
 } from './services/dataContext.js';
 
 import {
+	convertToTimeZone,
+	getMonday,
+	getWeekNumber,
+	isNextDay,
+	isSameDate
+} from './services/dateUtils.js';
+
+import {
 	getActiveDiscussions
 } from './services/forum.js';
 
@@ -235,6 +243,7 @@ export {
 	closeComment,
 	contentStatusCompleted,
 	contentStatusReset,
+	convertToTimeZone,
 	countAssignmentsAndLessons,
 	createComment,
 	createPlaylist,
@@ -331,6 +340,7 @@ export {
 	getAllStartedOrCompleted,
 	getContentRows,
 	getLessonContentRows,
+	getMonday,
 	getNewAndUpcoming,
 	getPracticeSessions,
 	getProgressPercentage,
@@ -347,10 +357,13 @@ export {
 	getUserMonthlyStats,
 	getUserPractices,
 	getUserWeeklyStats,
+	getWeekNumber,
 	globalConfig,
 	initializeService,
 	isBucketUrl,
 	isContentLiked,
+	isNextDay,
+	isSameDate,
 	jumpToContinueContent,
 	likeComment,
 	likeContent,

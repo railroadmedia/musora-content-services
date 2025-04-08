@@ -3,6 +3,7 @@
  */
 import { globalConfig } from './config.js'
 import { fetchJSONHandler } from '../lib/httpHelper.js'
+import { convertToTimeZone } from './dateUtils.js';
 
 /**
  * Exported functions that are excluded from index generation.
@@ -1182,25 +1183,6 @@ export async function fetchUserPractices(currentVersion) {
 
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  function convertToTimeZone(date, timeZone) {
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      timeZone,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    });
-
-    const parts = formatter.formatToParts(date).reduce((acc, part) => {
-      if (part.type !== 'literal') acc[part.type] = part.value;
-      return acc;
-    }, {});
-
-    return new Date(`${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}`);
-  }
 
   const formattedPractices = userPractices.reduce((acc, practice) => {
     // Convert UTC date to user's local date (still a Date object)
