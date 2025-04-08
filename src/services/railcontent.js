@@ -3,6 +3,7 @@
  */
 import { globalConfig } from './config.js'
 import { fetchJSONHandler } from '../lib/httpHelper.js'
+import { convertToTimeZone } from './dateUtils.js';
 
 /**
  * Exported functions that are excluded from index generation.
@@ -1175,44 +1176,42 @@ export async function editComment(commentId, comment) {
 }
 
 export async function fetchUserPractices(currentVersion) {
-  const url = `/api/user/practices/v1/practices`
-  const response = await fetchDataHandler(url, currentVersion)
-  const { data, version } = response
-  const userPractices = data
+  const url = `/api/user/practices/v1/practices`;
+  const response = await fetchDataHandler(url, currentVersion);
+  const { data, version } = response;
+  const userPractices = data;
 
-  let formattedPractices = userPractices.reduce((acc, practice) => {
-    // Convert UTC date to user's local timezone
-    let utcDate = new Date(practice.day); // `practice.day` is in ISO format, e.g., "2025-04-01T10:42:17.000000Z"
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-    // Extract the local date string (ignoring time) in user's timezone
-    let localDate = new Date(utcDate.toLocaleString('en-US', {
-      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-    }));
 
-    // Format the date as Y-m-d (2025-03-31)
-    let userTimeZoneDay = localDate.getFullYear() + '-' +
-      (localDate.getMonth() + 1).toString().padStart(2, '0') + '-' +
-      localDate.getDate().toString().padStart(2, '0');
+  const formattedPractices = userPractices.reduce((acc, practice) => {
+    // Convert UTC date to user's local date (still a Date object)
+    const utcDate = new Date(practice.day);
+    const localDate = convertToTimeZone(utcDate, userTimeZone);
 
-    // Initialize the array if the day does not exist
+    const userTimeZoneDay =
+      localDate.getFullYear() + '-' +
+      String(localDate.getMonth() + 1).padStart(2, '0') + '-' +
+      String(localDate.getDate()).padStart(2, '0');
+
     if (!acc[userTimeZoneDay]) {
-      acc[userTimeZoneDay] = []
+      acc[userTimeZoneDay] = [];
     }
 
-    // Push the practice entry into the array
-    acc[userTimeZoneDay].push({ id:practice.id, duration_seconds: practice.duration_seconds })
+    acc[userTimeZoneDay].push({
+      id: practice.id,
+      duration_seconds: practice.duration_seconds,
+    });
 
-    return acc
-  }, {})
+    return acc;
+  }, {});
 
-  let json = {
+  return {
     data: {
       practices: formattedPractices,
     },
-    version: version,
-  }
-
-  return json
+    version,
+  };
 }
 
 export async function logUserPractice(practiceDetails) {

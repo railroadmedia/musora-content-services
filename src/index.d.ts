@@ -48,6 +48,14 @@ import {
 } from './services/dataContext.js';
 
 import {
+	convertToTimeZone,
+	getMonday,
+	getWeekNumber,
+	isNextDay,
+	isSameDate
+} from './services/dateUtils.js';
+
+import {
 	getActiveDiscussions
 } from './services/forum.js';
 
@@ -236,6 +244,7 @@ declare module 'musora-content-services' {
 		closeComment,
 		contentStatusCompleted,
 		contentStatusReset,
+		convertToTimeZone,
 		countAssignmentsAndLessons,
 		createComment,
 		createPlaylist,
@@ -332,6 +341,7 @@ declare module 'musora-content-services' {
 		getAllStartedOrCompleted,
 		getContentRows,
 		getLessonContentRows,
+		getMonday,
 		getNewAndUpcoming,
 		getPracticeSessions,
 		getProgressPercentage,
@@ -348,10 +358,13 @@ declare module 'musora-content-services' {
 		getUserMonthlyStats,
 		getUserPractices,
 		getUserWeeklyStats,
+		getWeekNumber,
 		globalConfig,
 		initializeService,
 		isBucketUrl,
 		isContentLiked,
+		isNextDay,
+		isSameDate,
 		jumpToContinueContent,
 		likeComment,
 		likeContent,

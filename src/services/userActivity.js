@@ -6,6 +6,7 @@ import {fetchUserPractices, logUserPractice, fetchUserPracticeMeta, fetchHandler
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import {fetchByRailContentIds} from "./sanity";
 import {lessonTypesMapping} from "../contentTypeConfig";
+import { convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js';
 
 const recentActivity =  [
     { id: 5,title: '3 Easy Classical Songs For Beginners', action: 'Comment', thumbnail: 'https://cdn.sanity.io/images/4032r8py/production/8a7fb4d7473306c5fa51ba2e8867e03d44342b18-1920x1080.jpg', summary: 'Just completed the advanced groove lesson! I’m finally feeling more confident with my fills. Thanks for the clear explanations and practice tips! ', date: '2025-03-25 10:09:48' },
@@ -408,7 +409,10 @@ export async function getPracticeSessions(day) {
     return null;
   };
 
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   const formattedMeta = meta.data.map(practice => {
+    const utcDate = new Date(practice.created_at);
     const content = contents.find(c => c.id === practice.content_id) || {};
     return {
       id: practice.id,
@@ -422,6 +426,7 @@ export async function getPracticeSessions(day) {
       content_type: getFormattedType(content.type || ''),
       content_id: practice.content_id || null,
       content_brand: content.brand || null,
+      created_at: convertToTimeZone(utcDate, userTimeZone)
     };
   });
   return { data: { practices: formattedMeta, practiceDuration } };
@@ -459,37 +464,6 @@ async function getUserPracticeIds(day = new Date().toISOString().split('T')[0]) 
 function buildQueryString(ids, paramName = 'practice_ids') {
   if (!ids.length) return '';
   return '?' + ids.map(id => `${paramName}[]=${id}`).join('&');
-}
-
-
-// Helper: Get start of the week (Monday)
-function getMonday(d) {
-  d = new Date(d)
-  var day = d.getDay(),
-    diff = d.getDate() - day + (day == 0 ? -6 : 1) // adjust when day is sunday
-  return new Date(d.setDate(diff))
-}
-
-// Helper: Get the week number
-function getWeekNumber(d) {
-  let newDate = new Date(d.getTime());
-  newDate.setUTCDate(newDate.getUTCDate() + 4 - (newDate.getUTCDay()||7));
-  var yearStart = new Date(Date.UTC(newDate.getUTCFullYear(),0,1));
-  var weekNo = Math.ceil(( ( (newDate - yearStart) / 86400000) + 1)/7);
-  return  weekNo;
-}
-
-// Helper: function to check if two dates are consecutive days
-function isNextDay(prev, current) {
-  const prevDate = new Date(prev.getFullYear(), prev.getMonth(), prev.getDate());
-  const nextDate = new Date(prevDate);
-  nextDate.setDate(prevDate.getDate() + 1); // Add 1 day
-
-  return (
-    nextDate.getFullYear() === current.getFullYear() &&
-    nextDate.getMonth() === current.getMonth() &&
-    nextDate.getDate() === current.getDate()
-  );
 }
 
 // Helper: Calculate streaks
@@ -584,9 +558,7 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   return { currentDailyStreak, currentWeeklyStreak, streakMessage };
 }
 
-function isSameDate(date1, date2, method = '') {
-  return date1.toISOString().split('T')[0] === date2.toISOString().split('T')[0];
-}
+
 
 
 
