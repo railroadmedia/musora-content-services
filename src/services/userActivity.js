@@ -345,15 +345,18 @@ export async function deletePracticeSession(day) {
   if (!userPracticesIds.length) return [];
 
   const url = `/api/user/practices/v1/practices${buildQueryString(userPracticesIds)}`;
-  await userActivityContext.update(async function (localContext) {
-    if (localContext.data?.[DATA_KEY_PRACTICES]?.[day]) {
-      localContext.data[DATA_KEY_PRACTICES][day] = localContext.data[DATA_KEY_PRACTICES][day].filter(
-        practice => !userPracticesIds.includes(practice.id)
-      );
+  await userActivityContext.update(
+    async function (localContext) {
+      if (localContext.data?.[DATA_KEY_PRACTICES]?.[day]) {
+        localContext.data[DATA_KEY_PRACTICES][day] = localContext.data[DATA_KEY_PRACTICES][day].filter(
+          practice => !userPracticesIds.includes(practice.id)
+        );
+      }
+    },
+    async function () {
+      return await fetchHandler(url, 'DELETE', null);
     }
-  });
-
-  return await fetchHandler(url, 'DELETE', null);
+  );
 }
 
 export async function restorePracticeSession(date) {
