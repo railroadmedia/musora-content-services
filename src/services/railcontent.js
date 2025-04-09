@@ -1233,6 +1233,11 @@ export async function fetchUserPracticeMeta(practiceIds) {
   return await fetchHandler(url, 'GET', null)
 }
 
+export async function fetchUserPracticeNotes(date) {
+  const url = `/api/user/practices/v1/notes?date=${date}`
+  return await fetchHandler(url, 'GET', null)
+}
+
 function fetchAbsolute(url, params) {
   if (globalConfig.sessionConfig.authToken) {
     params.headers['Authorization'] = `Bearer ${globalConfig.sessionConfig.authToken}`

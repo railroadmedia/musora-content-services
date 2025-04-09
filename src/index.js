@@ -115,6 +115,7 @@ import {
 	fetchUserLikes,
 	fetchUserPermissionsData,
 	fetchUserPracticeMeta,
+	fetchUserPracticeNotes,
 	fetchUserPractices,
 	likeComment,
 	likePlaylist,
@@ -218,6 +219,7 @@ import {
 } from './services/user/sessions.js';
 
 import {
+	createPracticeNotes,
 	deletePracticeSession,
 	getPracticeSessions,
 	getRecentActivity,
@@ -228,6 +230,7 @@ import {
 	removeUserPractice,
 	restorePracticeSession,
 	restoreUserPractice,
+	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
 
@@ -247,6 +250,7 @@ export {
 	countAssignmentsAndLessons,
 	createComment,
 	createPlaylist,
+	createPracticeNotes,
 	deleteComment,
 	deletePlaylist,
 	deletePlaylistItem,
@@ -333,6 +337,7 @@ export {
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
 	fetchUserPracticeMeta,
+	fetchUserPracticeNotes,
 	fetchUserPractices,
 	getActiveDiscussions,
 	getAllCompleted,
@@ -406,6 +411,7 @@ export {
 	unpinPlaylist,
 	updatePlaylist,
 	updatePlaylistItem,
+	updatePracticeNotes,
 	updateUserPractice,
 	verifyImageSRC,
 	verifyLocalDataContext,

@@ -115,6 +115,7 @@ import {
 	fetchUserLikes,
 	fetchUserPermissionsData,
 	fetchUserPracticeMeta,
+	fetchUserPracticeNotes,
 	fetchUserPractices,
 	likeComment,
 	likePlaylist,
@@ -218,6 +219,7 @@ import {
 } from './services/user/sessions.js';
 
 import {
+	createPracticeNotes,
 	deletePracticeSession,
 	getPracticeSessions,
 	getRecentActivity,
@@ -228,6 +230,7 @@ import {
 	removeUserPractice,
 	restorePracticeSession,
 	restoreUserPractice,
+	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
 
@@ -248,6 +251,7 @@ declare module 'musora-content-services' {
 		countAssignmentsAndLessons,
 		createComment,
 		createPlaylist,
+		createPracticeNotes,
 		deleteComment,
 		deletePlaylist,
 		deletePlaylistItem,
@@ -334,6 +338,7 @@ declare module 'musora-content-services' {
 		fetchUserPermissionsData,
 		fetchUserPlaylists,
 		fetchUserPracticeMeta,
+		fetchUserPracticeNotes,
 		fetchUserPractices,
 		getActiveDiscussions,
 		getAllCompleted,
@@ -407,6 +412,7 @@ declare module 'musora-content-services' {
 		unpinPlaylist,
 		updatePlaylist,
 		updatePlaylistItem,
+		updatePracticeNotes,
 		updateUserPractice,
 		verifyImageSRC,
 		verifyLocalDataContext,

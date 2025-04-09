@@ -2,7 +2,7 @@
  * @module User-Activity
  */
 
-import {fetchUserPractices, logUserPractice, fetchUserPracticeMeta, fetchHandler} from './railcontent'
+import {fetchUserPractices, logUserPractice, fetchUserPracticeMeta, fetchUserPracticeNotes, fetchHandler} from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import {fetchByRailContentIds} from "./sanity";
 import {lessonTypesMapping} from "../contentTypeConfig";
@@ -394,8 +394,9 @@ export async function restorePracticeSession(date) {
  *   .catch(error => console.error(error));
  */
 export async function getPracticeSessions(day) {
+  const notes = await fetchUserPracticeNotes(day);
   const userPracticesIds = await getUserPracticeIds(day);
-  if (!userPracticesIds.length) return { data: { practices: [], practiceDuration: 0 } };
+  if (!userPracticesIds.length) return { data: { practices: [], practiceDuration: 0, practiceNotes: notes?.notes || '' } };
 
   const meta = await fetchUserPracticeMeta(userPracticesIds);
   if (!meta.data.length) return { data: { practices: [], practiceDuration: 0 } };
@@ -432,12 +433,22 @@ export async function getPracticeSessions(day) {
       created_at: convertToTimeZone(utcDate, userTimeZone)
     };
   });
-  return { data: { practices: formattedMeta, practiceDuration } };
+  return { data: { practices: formattedMeta, practiceDuration,  practiceNotes: notes?.notes || ''} };
 }
 
 
 export async function getRecentActivity() {
   return { data: recentActivity };
+}
+
+export async function createPracticeNotes(payload) {
+  const url = `/api/user/practices/v1/notes`
+  return await fetchHandler(url, 'POST', null, payload)
+}
+
+export async function updatePracticeNotes(payload) {
+  const url = `/api/user/practices/v1/notes`
+  return await fetchHandler(url, 'PUT', null, payload)
 }
 
 function getStreaksAndMessage(practices) {
