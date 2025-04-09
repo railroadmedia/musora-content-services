@@ -348,9 +348,7 @@ export async function deletePracticeSession(day) {
   await userActivityContext.update(
     async function (localContext) {
       if (localContext.data?.[DATA_KEY_PRACTICES]?.[day]) {
-        localContext.data[DATA_KEY_PRACTICES][day] = localContext.data[DATA_KEY_PRACTICES][day].filter(
-          practice => !userPracticesIds.includes(practice.id)
-        );
+        delete localContext.data[DATA_KEY_PRACTICES][day];
       }
     },
     async function () {
