@@ -406,7 +406,8 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         published_on,
         "type": _type,
         web_url_path,
-        "permission_id": permission[]->railcontent_id,`
+        "permission_id": permission[]->railcontent_id,
+         "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}'`
   const query = buildRawQuery(
     `_type in ${typesString} && brand == '${brand}' && published_on > '${now}' && status == 'scheduled'`,
     fields,
@@ -2348,7 +2349,8 @@ export async function fetchScheduledAndNewReleases(
       published_on,
       "type": _type,
       show_in_new_feed,
-      "permission_id": permission[]->railcontent_id
+      "permission_id": permission[]->railcontent_id,
+      "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}',
   }`
 
   return fetchSanity(query, true)
