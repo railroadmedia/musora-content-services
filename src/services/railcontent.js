@@ -1233,6 +1233,16 @@ export async function fetchUserPracticeMeta(practiceIds) {
   return await fetchHandler(url, 'GET', null)
 }
 
+/**
+ * Fetches user practice notes for a specific date.
+ * @param {string} date - The date for which to fetch practice notes (format: YYYY-MM-DD).
+ * @returns {Promise<Object|null>} - A promise that resolves to an object containing the practice notes if found, otherwise null.
+ *
+ * @example
+ * fetchUserPracticeNotes('2025-04-10')
+ *   .then(notes => console.log(notes))
+ *   .catch(error => console.error(error));
+ */
 export async function fetchUserPracticeNotes(date) {
   const url = `/api/user/practices/v1/notes?date=${date}`
   return await fetchHandler(url, 'GET', null)

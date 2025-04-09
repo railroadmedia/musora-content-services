@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>Content-Services-V2 - Documentation</title>
+    <title>User-Activity - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Content-Services-V2</h1>
+    <h1 class="page-title">User-Activity</h1>
     
 
     
@@ -84,7 +84,7 @@
 
     
 
-    <h4 class="name" id=".getContentRows"><span class="type-signature type-signature-static">(static) </span>getContentRows<span class="signature">(brand, pageName, contentRowId<span class="signature-attributes">opt</span>, params)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
+    <h4 class="name" id=".createPracticeNotes"><span class="type-signature type-signature-static">(static) </span>createPracticeNotes<span class="signature">(payload)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
 
     
 
@@ -94,13 +94,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li>Fetches content rows for a given brand and page with optional filtering by content row id.</li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li>Creates practice notes for a specific date.</li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="content.js.html">content.js</a>, <a href="content.js.html#line176">line 176</a>
+        <a href="userActivity.js.html">userActivity.js</a>, <a href="userActivity.js.html#line457">line 457</a>
     </li></ul></dd>
     
 
@@ -147,399 +147,7 @@
 
     <h5 class="h5-examples">Example</h5>
     
-    <pre class="prettyprint"><code>getContentRows('drumeo', 'lessons', 'Your-Daily-Warmup', {
-  page: 1,
-  limit: 5
-})
-  .then(content => console.log(content))
-  .catch(error => console.error(error));</code></pre>
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>brand</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">The brand for which to fetch content rows.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>pageName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">The page name (e.g., 'lessons', 'songs', 'challenges').</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>contentRowId</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">The specific content row ID to fetch.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>params</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Parameters for pagination.
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>page</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>1</code>
-                
-                </td>
-            
-
-            <td class="description last">The page number for pagination.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>limit</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>10</code>
-                
-                </td>
-            
-
-            <td class="description last">The maximum number of content items per row.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5 class="h5-returns">Returns:</h5>
-
-        
-<div class="param-desc">
-    - The fetched content rows.
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;Object></span>
-
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".getNewAndUpcoming"><span class="type-signature type-signature-static">(static) </span>getNewAndUpcoming<span class="signature">(brand, params<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;({data: Array.&lt;Object>}|null)>}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li>Fetches new and upcoming releases for a given brand with pagination options.</li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="content.js.html">content.js</a>, <a href="content.js.html#line206">line 206</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-examples">Examples</h5>
-    
-    <pre class="prettyprint"><code>// Fetch the first page with 10 results
-getNewAndUpcoming('drumeo')
-  .then(response => console.log(response))
-  .catch(error => console.error(error));</code></pre>
-
-    <pre class="prettyprint"><code>// Fetch the second page with 20 results
-getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
+    <pre class="prettyprint"><code>createPracticeNotes({ date: '2025-04-10', notes: 'Worked on scales and arpeggios' })
   .then(response => console.log(response))
   .catch(error => console.error(error));</code></pre>
 
@@ -559,11 +167,7 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
-        
-        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -575,43 +179,7 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
 
         <tr>
             
-                <td class="name"><code>brand</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">The brand for which to fetch new and upcoming releases.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>params</code></td>
+                <td class="name"><code>payload</code></td>
             
 
             <td class="type">
@@ -625,26 +193,10 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
 
             
-                <td class="default">
-                
-                    <code>{}</code>
-                
-                </td>
-            
 
-            <td class="description last">Pagination parameters.
+            <td class="description last">The data required to create practice notes.
                 <h6>Properties</h6>
                 
 
@@ -658,11 +210,7 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
-        
-        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -674,13 +222,13 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
 
         <tr>
             
-                <td class="name"><code>page</code></td>
+                <td class="name"><code>date</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">string</span>
 
 
 
@@ -688,39 +236,23 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
 
             
-                <td class="default">
-                
-                    <code>1</code>
-                
-                </td>
-            
 
-            <td class="description last">The page number for pagination.</td>
+            <td class="description last">The date for which to create notes (format: YYYY-MM-DD).</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>limit</code></td>
+                <td class="name"><code>notes</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">string</span>
 
 
 
@@ -728,26 +260,10 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
 
             
-                <td class="default">
-                
-                    <code>10</code>
-                
-                </td>
-            
 
-            <td class="description last">The maximum number of content items to fetch.</td>
+            <td class="description last">The notes content to be saved.</td>
         </tr>
 
     
@@ -780,7 +296,7 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
 
         
 <div class="param-desc">
-    - A promise that resolves to the fetched content data or `null` if no data is found.
+    - A promise that resolves to the API response after creating the notes.
 </div>
 
 
@@ -791,7 +307,7 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;({data: Array.&lt;Object>}|null)></span>
+<span class="param-type">Promise.&lt;Object></span>
 
 
 
@@ -807,7 +323,7 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
 
     
 
-    <h4 class="name" id=".getRecent"><span class="type-signature type-signature-static">(static) </span>getRecent<span class="signature">(brand, pageName, tabName<span class="signature-attributes">opt</span>, params)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
+    <h4 class="name" id=".getPracticeSessions"><span class="type-signature type-signature-static">(static) </span>getPracticeSessions<span class="signature">(day)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
 
     
 
@@ -817,13 +333,13 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li>Fetches recent content for a given brand and page with pagination.</li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li>Retrieves and formats a user's practice sessions for a specific day.</li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="content.js.html">content.js</a>, <a href="content.js.html#line142">line 142</a>
+        <a href="userActivity.js.html">userActivity.js</a>, <a href="userActivity.js.html#line396">line 396</a>
     </li></ul></dd>
     
 
@@ -870,12 +386,9 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
 
     <h5 class="h5-examples">Example</h5>
     
-    <pre class="prettyprint"><code>getRecent('drumeo', 'lessons', 'all', {
-  page: 2,
-  limit: 15,
-  sort: '-popularity'
-})
-  .then(content => console.log(content))
+    <pre class="prettyprint"><code>// Get practice sessions for a specific day
+getPracticeSessions("2025-03-31")
+  .then(response => console.log(response))
   .catch(error => console.error(error));</code></pre>
 
 
@@ -894,11 +407,7 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
-        
-        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -910,7 +419,7 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
 
         <tr>
             
-                <td class="name"><code>brand</code></td>
+                <td class="name"><code>day</code></td>
             
 
             <td class="type">
@@ -924,284 +433,10 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
 
             
-                <td class="default">
-                
-                </td>
-            
 
-            <td class="description last">The brand for which to fetch data.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>pageName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">The page name (e.g., 'all', 'incomplete', 'completed').</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>tabName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>'all'</code>
-                
-                </td>
-            
-
-            <td class="description last">The tab name (defaults to 'all' for recent content).</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>params</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">Parameters for pagination and sorting.
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>page</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>1</code>
-                
-                </td>
-            
-
-            <td class="description last">The page number for pagination.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>limit</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>10</code>
-                
-                </td>
-            
-
-            <td class="description last">The number of items per page.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>sort</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>"-published_on"</code>
-                
-                </td>
-            
-
-            <td class="description last">The field to sort the data by.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
+            <td class="description last">The date for which practice sessions should be retrieved (format: YYYY-MM-DD).</td>
         </tr>
 
     
@@ -1227,7 +462,7 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
 
         
 <div class="param-desc">
-    - The fetched content data.
+    - A promise that resolves to an object containing the practice sessions and total practice duration.
 </div>
 
 
@@ -1254,7 +489,7 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
 
     
 
-    <h4 class="name" id=".getRecommendedForYou"><span class="type-signature type-signature-static">(static) </span>getRecommendedForYou<span class="signature">(brand, params<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
+    <h4 class="name" id=".getUserMonthlyStats"><span class="type-signature type-signature-static">(static) </span>getUserMonthlyStats<span class="signature">(year<span class="signature-attributes">opt</span>, month<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
 
     
 
@@ -1264,13 +499,13 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li>Fetches recommended content for a given brand with pagination support.</li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li>Retrieves user activity statistics for a specified month, including daily and weekly activity data.</li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="content.js.html">content.js</a>, <a href="content.js.html#line342">line 342</a>
+        <a href="userActivity.js.html">userActivity.js</a>, <a href="userActivity.js.html#line103">line 103</a>
     </li></ul></dd>
     
 
@@ -1317,356 +552,14 @@ getNewAndUpcoming('drumeo', { page: 2, limit: 20 })
 
     <h5 class="h5-examples">Examples</h5>
     
-    <pre class="prettyprint"><code>// Fetch recommended content for a brand with default pagination
-getRecommendedForYou('drumeo')
-  .then(content => console.log(content))
+    <pre class="prettyprint"><code>// Retrieve user activity statistics for the current month
+getUserMonthlyStats()
+  .then(stats => console.log(stats))
   .catch(error => console.error(error));</code></pre>
 
-    <pre class="prettyprint"><code>// Fetch recommended content for a brand with custom pagination
-getRecommendedForYou('drumeo', { page: 2, limit: 5 })
-  .then(content => console.log(content))
-  .catch(error => console.error(error));</code></pre>
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>brand</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">The brand for which to fetch recommended content.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>params</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>{}</code>
-                
-                </td>
-            
-
-            <td class="description last">Pagination parameters.
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>page</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>1</code>
-                
-                </td>
-            
-
-            <td class="description last">The page number for pagination.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>limit</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>10</code>
-                
-                </td>
-            
-
-            <td class="description last">The maximum number of recommended content items per page.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5 class="h5-returns">Returns:</h5>
-
-        
-<div class="param-desc">
-    - A promise that resolves to an object containing recommended content.
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;Object></span>
-
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".getScheduleContentRows"><span class="type-signature type-signature-static">(static) </span>getScheduleContentRows<span class="signature">(brand, contentRowId<span class="signature-attributes">opt</span>, params<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li>Fetches scheduled content rows for a given brand with optional filtering by content row ID.</li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="content.js.html">content.js</a>, <a href="content.js.html#line249">line 249</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-examples">Examples</h5>
-    
-    <pre class="prettyprint"><code>// Fetch all sections with default pagination
-getScheduleContentRows('drumeo')
-  .then(content => console.log(content))
-  .catch(error => console.error(error));</code></pre>
-
-    <pre class="prettyprint"><code>// Fetch only the 'New-Releases' section with custom pagination
-getScheduleContentRows('drumeo', 'New-Releases', { page: 1, limit: 30 })
-  .then(content => console.log(content))
-  .catch(error => console.error(error));</code></pre>
-
-    <pre class="prettyprint"><code>// Fetch only the 'Live-Streams' section with unlimited results
-getScheduleContentRows('drumeo', 'Live-Streams')
-  .then(content => console.log(content))
+    <pre class="prettyprint"><code>// Retrieve user activity statistics for March 2024
+getUserMonthlyStats(2024, 2)
+  .then(stats => console.log(stats))
   .catch(error => console.error(error));</code></pre>
 
 
@@ -1701,146 +594,7 @@ getScheduleContentRows('drumeo', 'Live-Streams')
 
         <tr>
             
-                <td class="name"><code>brand</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">The brand for which to fetch content rows.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>contentRowId</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>null</code>
-                
-                </td>
-            
-
-            <td class="description last">The specific content row ID to fetch (optional).</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>params</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>{}</code>
-                
-                </td>
-            
-
-            <td class="description last">Pagination parameters.
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>page</code></td>
+                <td class="name"><code>year</code></td>
             
 
             <td class="type">
@@ -1868,19 +622,19 @@ getScheduleContentRows('drumeo', 'Live-Streams')
             
                 <td class="default">
                 
-                    <code>1</code>
+                    <code>new Date().getFullYear()</code>
                 
                 </td>
             
 
-            <td class="description last">The page number for pagination.</td>
+            <td class="description last">The year for which to retrieve the statistics.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>limit</code></td>
+                <td class="name"><code>month</code></td>
             
 
             <td class="type">
@@ -1908,19 +662,12 @@ getScheduleContentRows('drumeo', 'Live-Streams')
             
                 <td class="default">
                 
-                    <code>10</code>
+                    <code>new Date().getMonth()</code>
                 
                 </td>
             
 
-            <td class="description last">The maximum number of content items per row.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
+            <td class="description last">The month (0-indexed) for which to retrieve the statistics.</td>
         </tr>
 
     
@@ -1946,7 +693,7 @@ getScheduleContentRows('drumeo', 'Live-Streams')
 
         
 <div class="param-desc">
-    - A promise that resolves to the fetched content rows.
+    - A promise that resolves to an object containing user activity statistics.
 </div>
 
 
@@ -1973,7 +720,7 @@ getScheduleContentRows('drumeo', 'Live-Streams')
 
     
 
-    <h4 class="name" id=".getTabResults"><span class="type-signature type-signature-static">(static) </span>getTabResults<span class="signature">(brand, pageName, tabName, params)</span><span class="type-signature"> &rarr; {Promise.&lt;(Object|null)>}</span></h4>
+    <h4 class="name" id=".getUserWeeklyStats"><span class="type-signature type-signature-static">(static) </span>getUserWeeklyStats<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
 
     
 
@@ -1983,13 +730,13 @@ getScheduleContentRows('drumeo', 'Live-Streams')
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li>Get data that should be displayed for a specific tab with pagination</li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li>Retrieves user activity statistics for the current week, including daily activity and streak messages.</li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="content.js.html">content.js</a>, <a href="content.js.html#line68">line 68</a>
+        <a href="userActivity.js.html">userActivity.js</a>, <a href="userActivity.js.html#line58">line 58</a>
     </li></ul></dd>
     
 
@@ -2036,13 +783,136 @@ getScheduleContentRows('drumeo', 'Live-Streams')
 
     <h5 class="h5-examples">Example</h5>
     
-    <pre class="prettyprint"><code>getTabResults('drumeo', 'lessons','Singles', {
-  page: 2,
-  limit: 20,
-  sort: '-popularity',
-  includedFields: ['difficulty,Intermediate'],
+    <pre class="prettyprint"><code>// Retrieve user activity statistics for the current week
+getUserWeeklyStats()
+  .then(stats => console.log(stats))
+  .catch(error => console.error(error));</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    - A promise that resolves to an object containing weekly user activity statistics.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;Object></span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".recordUserPractice"><span class="type-signature type-signature-static">(static) </span>recordUserPractice<span class="signature">(practiceDetails)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Records user practice data and updates both the remote and local activity context.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="userActivity.js.html">userActivity.js</a>, <a href="userActivity.js.html#line221">line 221</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Examples</h5>
+    
+    <pre class="prettyprint"><code>// Record an auto practice session with content ID
+recordUserPractice({ content_id: 123, duration_seconds: 300 })
+  .then(response => console.log(response))
+  .catch(error => console.error(error));</code></pre>
+
+    <pre class="prettyprint"><code>// Record a custom practice session with additional details
+recordUserPractice({
+  duration_seconds: 600,
+  auto: false,
+  category_id: 5,
+  title: "Guitar Warm-up",
+  thumbnail_url: "https://example.com/thumbnail.jpg"
 })
-  .then(content => console.log(content))
+  .then(response => console.log(response))
   .catch(error => console.error(error));</code></pre>
 
 
@@ -2073,79 +943,7 @@ getScheduleContentRows('drumeo', 'Live-Streams')
 
         <tr>
             
-                <td class="name"><code>brand</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The brand for which to fetch data.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>pageName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The page name (e.g., 'lessons', 'songs','challenges).</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>tabName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The name for the selected tab. Should be same name received from fetchMetadata (e.g., 'Individuals', 'Collections','For You').</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>params</code></td>
+                <td class="name"><code>practiceDetails</code></td>
             
 
             <td class="type">
@@ -2162,7 +960,7 @@ getScheduleContentRows('drumeo', 'Live-Streams')
 
             
 
-            <td class="description last">Parameters for pagination, sorting, and filter.
+            <td class="description last">The details of the practice session.
                 <h6>Properties</h6>
                 
 
@@ -2192,7 +990,83 @@ getScheduleContentRows('drumeo', 'Live-Streams')
 
         <tr>
             
-                <td class="name"><code>page</code></td>
+                <td class="name"><code>duration_seconds</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The duration of the practice session in seconds.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>auto</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>true</code>
+                
+                </td>
+            
+
+            <td class="description last">Whether the session was automatically logged.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>content_id</code></td>
             
 
             <td class="type">
@@ -2220,19 +1094,17 @@ getScheduleContentRows('drumeo', 'Live-Streams')
             
                 <td class="default">
                 
-                    <code>1</code>
-                
                 </td>
             
 
-            <td class="description last">The page number for pagination.</td>
+            <td class="description last">The ID of the practiced content (if available).</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>limit</code></td>
+                <td class="name"><code>category_id</code></td>
             
 
             <td class="type">
@@ -2260,19 +1132,17 @@ getScheduleContentRows('drumeo', 'Live-Streams')
             
                 <td class="default">
                 
-                    <code>10</code>
-                
                 </td>
             
 
-            <td class="description last">The number of items per page.</td>
+            <td class="description last">The ID of the associated category (if available).</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>sort</code></td>
+                <td class="name"><code>title</code></td>
             
 
             <td class="type">
@@ -2300,25 +1170,23 @@ getScheduleContentRows('drumeo', 'Live-Streams')
             
                 <td class="default">
                 
-                    <code>"-published_on"</code>
-                
                 </td>
             
 
-            <td class="description last">The field to sort the data by.</td>
+            <td class="description last">The title of the practice session (max 64 characters).</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>selectedFilters</code></td>
+                <td class="name"><code>thumbnail_url</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;string></span>
+<span class="param-type">string</span>
 
 
 
@@ -2340,12 +1208,10 @@ getScheduleContentRows('drumeo', 'Live-Streams')
             
                 <td class="default">
                 
-                    <code>[]</code>
-                
                 </td>
             
 
-            <td class="description last">The selected filter.</td>
+            <td class="description last">The URL of the session's thumbnail (max 255 characters).</td>
         </tr>
 
     
@@ -2378,7 +1244,7 @@ getScheduleContentRows('drumeo', 'Live-Streams')
 
         
 <div class="param-desc">
-    - The fetched content data or null if not found.
+    - A promise that resolves to the response from logging the user practice.
 </div>
 
 
@@ -2389,7 +1255,937 @@ getScheduleContentRows('drumeo', 'Live-Streams')
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;(Object|null)></span>
+<span class="param-type">Promise.&lt;Object></span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".removeUserPractice"><span class="type-signature type-signature-static">(static) </span>removeUserPractice<span class="signature">(id)</span><span class="type-signature"> &rarr; {Promise.&lt;void>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Removes a user's practice session by ID, updating both the local and remote activity context.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="userActivity.js.html">userActivity.js</a>, <a href="userActivity.js.html#line294">line 294</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>// Remove a practice session with ID 123
+removeUserPractice(123)
+  .then(() => console.log("Practice session removed successfully"))
+  .catch(error => console.error(error));</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The unique identifier of the practice session to be removed.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    - A promise that resolves once the practice session is removed.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;void></span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".restoreUserPractice"><span class="type-signature type-signature-static">(static) </span>restoreUserPractice<span class="signature">(id)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Restores a previously deleted user's practice session by ID, updating both the local and remote activity context.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="userActivity.js.html">userActivity.js</a>, <a href="userActivity.js.html#line324">line 324</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>// Restore a deleted practice session with ID 123
+restoreUserPractice(123)
+  .then(response => console.log("Practice session restored:", response))
+  .catch(error => console.error(error));</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The unique identifier of the practice session to be restored.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    - A promise that resolves to the response containing the restored practice session data.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;Object></span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".updatePracticeNotes"><span class="type-signature type-signature-static">(static) </span>updatePracticeNotes<span class="signature">(payload)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Updates existing practice notes for a specific date.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="userActivity.js.html">userActivity.js</a>, <a href="userActivity.js.html#line475">line 475</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>updatePracticeNotes({ date: '2025-04-10', notes: 'Updated: Focused on technique and timing' })
+  .then(response => console.log(response))
+  .catch(error => console.error(error));</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>payload</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The data required to update practice notes.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>date</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The date for which to update notes (format: YYYY-MM-DD).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>notes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The updated notes content.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    - A promise that resolves to the API response after updating the notes.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;Object></span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".updateUserPractice"><span class="type-signature type-signature-static">(static) </span>updateUserPractice<span class="signature">(id, practiceDetails)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Updates a user's practice session with new details and syncs the changes remotely.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="userActivity.js.html">userActivity.js</a>, <a href="userActivity.js.html#line277">line 277</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Examples</h5>
+    
+    <pre class="prettyprint"><code>// Update a practice session's duration
+updateUserPractice(123, { duration_seconds: 600 })
+  .then(response => console.log(response))
+  .catch(error => console.error(error));</code></pre>
+
+    <pre class="prettyprint"><code>// Change a practice session to manual and update its category
+updateUserPractice(456, { auto: false, category_id: 8 })
+  .then(response => console.log(response))
+  .catch(error => console.error(error));</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The unique identifier of the practice session to update.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>practiceDetails</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The updated details of the practice session.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>duration_seconds</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The duration of the practice session in seconds.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>category_id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The ID of the associated category (if available).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>title</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The title of the practice session (max 64 characters).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>thumbnail_url</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The URL of the session's thumbnail (max 255 characters).</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    - A promise that resolves to the response from updating the user practice.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;Object></span>
 
 
 
