@@ -120,8 +120,8 @@ export async function recommendations(brand, { section = ''} = {}) {
   try {
     return fetchJSONHandler(
       url,
-      globalConfig.railcontentConfig.token,
-      globalConfig.railcontentConfig.baseUrl,
+      globalConfig.sessionConfig.token,
+      globalConfig.baseUrl,
       'get'
     )
   } catch (error) {
@@ -133,8 +133,8 @@ export async function recommendations(brand, { section = ''} = {}) {
 async function fetchHandler(url, method = 'get', body = null) {
   return fetchJSONHandler(
     url,
-    globalConfig.recommendationsConfig.token,
-    globalConfig.recommendationsConfig.baseUrl,
+    globalConfig.sessionConfig.token,
+    globalConfig.baseUrl,
     method,
     null,
     body
