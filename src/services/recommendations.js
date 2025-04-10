@@ -2,8 +2,8 @@
  * @module Railcontent-Services
  */
 
-import { globalConfig } from './config.js'
-import { fetchJSONHandler } from '../lib/httpHelper.js'
+import {globalConfig} from './config.js'
+import {fetchJSONHandler} from '../lib/httpHelper.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -32,12 +32,13 @@ export async function fetchSimilarItems(content_id, brand, count = 10) {
   let data = {
     brand: brand,
     content_ids: content_id,
-    num_similar: count,
+    num_similar: count + 1, // because the content itself is sometimes returned
   }
   const url = `/similar_items/`
   try {
     const response = await fetchHandler(url, 'POST', data)
-    return response['similar_items']
+    // we requested count + 1 then filtered out the extra potential value, so we need slice to the correct size if necessary
+    return response['similar_items'].filter((item) => item !== content_id).slice(0, count)
   } catch (error) {
     console.error('Fetch error:', error)
     return null
@@ -113,11 +114,12 @@ export async function rankItems(brand, content_ids) {
   }
 }
 
-export async function recommendations(brand, { section = ''} = {}) {
+export async function recommendations(brand, {section = ''} = {}) {
   section = section.toUpperCase().replace('-', '_')
   const sectionString = section ? `&section=${section}` : '';
   const url = `/api/content/v1/recommendations?brand=${brand}${sectionString}`
   try {
+    // This goes through the MPB, not the recommendations api, so we use fetchJSONHandler instead of the local handler
     return fetchJSONHandler(
       url,
       globalConfig.sessionConfig.token,
@@ -133,8 +135,8 @@ export async function recommendations(brand, { section = ''} = {}) {
 async function fetchHandler(url, method = 'get', body = null) {
   return fetchJSONHandler(
     url,
-    globalConfig.sessionConfig.token,
-    globalConfig.baseUrl,
+    globalConfig.recommendationsConfig.token,
+    globalConfig.recommendationsConfig.baseUrl,
     method,
     null,
     body
