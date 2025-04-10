@@ -340,6 +340,22 @@ export async function restoreUserPractice(id) {
   return response;
 }
 
+/**
+ * Deletes all practice sessions for a specific day.
+ *
+ * This function retrieves all user practice session IDs for a given day and sends a DELETE request
+ * to remove them from the server. It also updates the local context to reflect the deletion.
+ *
+ * @async
+ * @param {string} day - The day (in `YYYY-MM-DD` format) for which practice sessions should be deleted.
+ * @returns {Promise<string[]>} - A promise that resolves once the practice session is removed.
+ *
+ *  * @example
+ * // Delete practice sessions for April 10, 2025
+ * deletePracticeSession("2025-04-10")
+ *   .then(deletedIds => console.log("Deleted sessions:", response))
+ *   .catch(error => console.error("Delete failed:", error));
+ */
 export async function deletePracticeSession(day) {
   const userPracticesIds = await getUserPracticeIds(day);
   if (!userPracticesIds.length) return [];
@@ -359,6 +375,22 @@ export async function deletePracticeSession(day) {
   );
 }
 
+/**
+ * Restores deleted practice sessions for a specific date.
+ *
+ * Sends a PUT request to restore any previously deleted practices for a given date.
+ * If restored practices are returned, they are added back into the local context.
+ *
+ * @async
+ * @param {string} date - The date (in `YYYY-MM-DD` format) for which deleted practice sessions should be restored.
+ * @returns {Promise<Object>} - The response object from the API, containing practices for selected date.
+ *
+ * @example
+ * // Restore practice sessions deleted on April 10, 2025
+ * restorePracticeSession("2025-04-10")
+ *   .then(response => console.log("Practice session restored:", response))
+ *   .catch(error => console.error("Restore failed:", error));
+ */
 export async function restorePracticeSession(date) {
   const url = `/api/user/practices/v1/practices/restore?date=${date}`;
   const response = await fetchHandler(url, 'PUT', null);
@@ -394,9 +426,8 @@ export async function restorePracticeSession(date) {
  *   .catch(error => console.error(error));
  */
 export async function getPracticeSessions(day) {
-  const notes = await fetchUserPracticeNotes(day);
   const userPracticesIds = await getUserPracticeIds(day);
-  if (!userPracticesIds.length) return { data: { practices: [], practiceDuration: 0, practiceNotes: notes?.notes || '' } };
+  if (!userPracticesIds.length) return { data: { practices: [], practiceDuration: 0} };
 
   const meta = await fetchUserPracticeMeta(userPracticesIds);
   if (!meta.data.length) return { data: { practices: [], practiceDuration: 0 } };
@@ -433,10 +464,41 @@ export async function getPracticeSessions(day) {
       created_at: convertToTimeZone(utcDate, userTimeZone)
     };
   });
-  return { data: { practices: formattedMeta, practiceDuration,  practiceNotes: notes?.notes || ''} };
+  return { data: { practices: formattedMeta, practiceDuration} };
 }
 
+/**
+ * Retrieves user practice notes for a specific day.
+ *
+ * @async
+ * @param {string} day - The day (in `YYYY-MM-DD` format) to fetch practice notes for.
+ * @returns {Promise<{ data: Object[] }>} - A promise that resolves to an object containing the practice notes.
+ *
+ * @example
+ * // Get notes for April 10, 2025
+ * getPracticeNotes("2025-04-10")
+ *   .then(({ data }) => console.log("Practice notes:", data))
+ *   .catch(error => console.error("Failed to get notes:", error));
+ */
+export async function getPracticeNotes(day) {
+  const notes = await fetchUserPracticeNotes(day);
+  return { data: notes };
+}
 
+/**
+ * Retrieves the user's recent activity.
+ *
+ * Returns an object containing recent practice activity.
+ *
+ * @async
+ * @returns {Promise<{ data: Object[] }>} - A promise that resolves to an object containing recent activity items.
+ *
+ * @example
+ * // Fetch recent practice activity
+ * getRecentActivity()
+ *   .then(({ data }) => console.log("Recent activity:", data))
+ *   .catch(error => console.error("Failed to get recent activity:", error));
+ */
 export async function getRecentActivity() {
   return { data: recentActivity };
 }

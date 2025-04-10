@@ -221,6 +221,7 @@ import {
 import {
 	createPracticeNotes,
 	deletePracticeSession,
+	getPracticeNotes,
 	getPracticeSessions,
 	getRecentActivity,
 	getUserMonthlyStats,
@@ -347,6 +348,7 @@ export {
 	getLessonContentRows,
 	getMonday,
 	getNewAndUpcoming,
+	getPracticeNotes,
 	getPracticeSessions,
 	getProgressPercentage,
 	getProgressPercentageByIds,

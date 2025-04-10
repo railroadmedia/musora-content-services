@@ -221,6 +221,7 @@ import {
 import {
 	createPracticeNotes,
 	deletePracticeSession,
+	getPracticeNotes,
 	getPracticeSessions,
 	getRecentActivity,
 	getUserMonthlyStats,
@@ -348,6 +349,7 @@ declare module 'musora-content-services' {
 		getLessonContentRows,
 		getMonday,
 		getNewAndUpcoming,
+		getPracticeNotes,
 		getPracticeSessions,
 		getProgressPercentage,
 		getProgressPercentageByIds,
