@@ -158,7 +158,8 @@ export async function getRecent(brand, pageName, tabName = 'all', {
  * @param {Object} params - Parameters for pagination.
  * @param {number} [params.page=1] - The page number for pagination.
  * @param {number} [params.limit=10] - The maximum number of content items per row.
- * @returns {Promise<Object>} - The fetched content rows.
+ * @returns {Promise<Object>} - The fetched content rows with complete Sanity data instead of just content IDs.
+ *                              When contentRowId is provided, returns an object with type, data, and meta properties.
  *
  * @example
  * getContentRows('drumeo', 'lessons', 'Your-Daily-Warmup', {
@@ -174,10 +175,10 @@ export async function getContentRows(brand, pageName, contentRowId , {
 } = {}) {
   const contentRow = contentRowId ? `&content_row_id=${contentRowId}` : ''
   const url = `/api/content/v1/rows?brand=${brand}&page_name=${pageName}${contentRow}&page=${page}&limit=${limit}`;
-  const contentRows =  await fetchHandler(url, 'get', null);
+  const contentRows =  await fetchHandler(url, 'get', null) || [];
   const results = await Promise.all(
     contentRows.map(async (row) => {
-      if (row.content.length == 0){
+      if (row.content.length === 0){
         return { id: row.id, title: row.title, items: [] }
       }
       const data = await fetchByRailContentIds(row.content)
