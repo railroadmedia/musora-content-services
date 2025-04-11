@@ -28,7 +28,7 @@ export async function fetchSimilarItems(content_id, brand, count = 10) {
   if (!content_id) {
     return []
   }
-
+  content_id = parseInt(content_id)
   let data = {
     brand: brand,
     content_ids: content_id,
