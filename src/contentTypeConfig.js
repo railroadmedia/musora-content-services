@@ -235,6 +235,7 @@ export let contentTypeConfig = {
                 artist->,
                 "thumbnail_url":thumbnail.asset->url,
                 "description": description[0].children[0].text,
+                description_portable,
                 "chapters": chapter[]{
                     chapter_description,
                     chapter_timecode,

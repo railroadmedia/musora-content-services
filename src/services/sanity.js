@@ -1251,6 +1251,7 @@ export async function fetchLessonContent(railContentId) {
           "url": web_url_path, 
           soundslice_slug,
           "description": description[0].children[0].text,
+          description_portable,
           "chapters": chapter[]{
             chapter_description,
             chapter_timecode, 
