@@ -1,5 +1,5 @@
-import { getProgressStateByIds, getProgressPercentageByIds, getResumeTimeSecondsByIds } from "./contentProgress" 
-import { isContentLikedByIds } from "./contentLikes"
+import { getProgressStateByIds, getProgressPercentageByIds, getResumeTimeSecondsByIds } from "./services/contentProgress" 
+import { isContentLikedByIds } from "./services/contentLikes"
 
 export const addContextToContent = async (dataPromise, options = {}) => {
   const {
