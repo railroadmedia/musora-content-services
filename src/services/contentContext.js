@@ -7,7 +7,7 @@ export const addContextToContent = async (dataPromise, options = {}) => {
     addIsLiked = false,
     addLikeCount = false,
     addStatus = false,
-    getResumeTimeSeconds = false
+    addResumeTimeSeconds = false
   } = options
 
   const data = await dataPromise()
@@ -17,7 +17,7 @@ export const addContextToContent = async (dataPromise, options = {}) => {
     addProgressPercentage ? getProgressPercentageByIds(ids) : Promise.resolve(null),
     addStatus ? getProgressStateByIds(ids) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
-    getResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
+    addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
   ])
 
 
@@ -27,7 +27,7 @@ export const addContextToContent = async (dataPromise, options = {}) => {
     ...(addStatus ? { status: statusData[item.id] } : {}),
     ...(addIsLiked ? { isLiked: isLikedData[item.id] } : {}),
     ...(addLikeCount ? { likeCount: item.like_count } : {}),
-    ...(getResumeTimeSeconds ? { resumeTime: resumeTimeData[item.id] } : {}),
+    ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData[item.id] } : {}),
   }))
 
   return newData

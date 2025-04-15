@@ -20,7 +20,7 @@ export async function isContentLikedByIds(contentIds) {
   const data = await dataContext.getData()
   const likes = {}
 
-  contentIds?.forEach((id) => (likes[id] = data[id]))
+  contentIds?.forEach((id) => (likes[id] = data.includes(id)))
 
   return likes
 }
