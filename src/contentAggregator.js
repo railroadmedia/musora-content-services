@@ -1,7 +1,10 @@
 import { getProgressStateByIds, getProgressPercentageByIds, getResumeTimeSecondsByIds } from "./services/contentProgress" 
 import { isContentLikedByIds } from "./services/contentLikes"
 
-export const addContextToContent = async (dataPromise, dataParam, options = {}) => {
+export const addContextToContent = async (dataPromise, ...dataArgs) => {
+  const lastArg = dataArgs[dataArgs.length - 1]
+  const options = typeof lastArg === 'object' && !Array.isArray(lastArg) ? lastArg : {}
+
   const {
     addProgressPercentage = false,
     addIsLiked = false,
@@ -9,6 +12,8 @@ export const addContextToContent = async (dataPromise, dataParam, options = {}) 
     addStatus = false,
     addResumeTimeSeconds = false
   } = options
+
+  const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs;
 
   const data = await dataPromise(dataParam)
   if(!data) return false
