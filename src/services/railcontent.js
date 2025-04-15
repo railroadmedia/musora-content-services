@@ -1175,6 +1175,19 @@ export async function editComment(commentId, comment) {
   return await patchDataHandler(url, data)
 }
 
+/**
+ * @param {int} commentId
+ * @param {string} issue
+ * @returns {Promise<*|null>}
+ */
+export async function reportComment(commentId, issue) {
+  const url = `/api/content/v1/comments/${commentId}/report`
+  const data = {
+    comment: issue,
+  }
+  return await postDataHandler(url, data)
+}
+
 export async function fetchUserPractices(currentVersion) {
   const url = `/api/user/practices/v1/practices`;
   const response = await fetchDataHandler(url, currentVersion);
