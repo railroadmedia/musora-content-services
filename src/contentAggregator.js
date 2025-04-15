@@ -15,7 +15,7 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
 
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs;
 
-  const data = await dataPromise(dataParam)
+  const data = await dataPromise(...dataParam)
   if(!data) return false
 
   const ids = Array.isArray(data)
