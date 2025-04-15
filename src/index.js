@@ -235,7 +235,10 @@ import {
 	updateUserPractice
 } from './services/userActivity.js';
 
+import { addContextToContent } from './contentAggregator.js';
+
 export {
+	addContextToContent,
 	addItemToPlaylist,
 	applyCloudflareWrapper,
 	applySanityTransformations,
