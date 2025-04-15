@@ -44,7 +44,7 @@ async function getById(contentId, dataKey, defaultValue) {
   return data[contentId]?.[dataKey] ?? defaultValue
 }
 
-export async function getByIds(contentIds, dataKey, defaultValue) {
+async function getByIds(contentIds, dataKey, defaultValue) {
   let data = await dataContext.getData()
   let progress = {}
   contentIds?.forEach((id) => (progress[id] = data[id]?.[dataKey] ?? defaultValue)
