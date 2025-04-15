@@ -11,7 +11,13 @@ export const addContextToContent = async (dataPromise, dataParam, options = {}) 
   } = options
 
   const data = await dataPromise(dataParam)
-  const ids = data.map(item => item.id)
+  if(!data) return false
+
+  const ids = Array.isArray(data)
+    ? data.map(item => item?.id).filter(Boolean)
+    : [data?.id].filter(Boolean)
+
+  if(ids.length === 0) return false
 
   const [progressPercentageData, statusData, isLikedData, resumeTimeData] = await Promise.all([
     addProgressPercentage ? getProgressPercentageByIds(ids) : Promise.resolve(null),
@@ -20,15 +26,18 @@ export const addContextToContent = async (dataPromise, dataParam, options = {}) 
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
   ])
 
-
-  const newData = data.map(item => ({
+  const addContext = (item) => ({
     ...item,
-    ...(addProgressPercentage ? { progressPercentage: progressPercentageData[item.id] } : {}),
-    ...(addStatus ? { status: statusData[item.id] } : {}),
-    ...(addIsLiked ? { isLiked: isLikedData[item.id] } : {}),
-    ...(addLikeCount ? { likeCount: item.like_count } : {}),
-    ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData[item.id] } : {}),
-  }))
+    ...(addProgressPercentage ? { progressPercentage: progressPercentageData?.[item.id] } : {}),
+    ...(addStatus ? { progressStatus: statusData?.[item.id] } : {}),
+    ...(addIsLiked ? { isLiked: isLikedData?.[item.id] } : {}),
+    ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
+  })
+  
+  const newData = Array.isArray(data)
+  ? data.map(addContext)
+  : addContext(data)
 
   return newData
 }
+
