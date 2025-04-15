@@ -117,6 +117,15 @@ export async function getResumeTimeSeconds(contentId) {
   return data[contentId]?.[DATA_KEY_RESUME_TIME] ?? 0
 }
 
+export async function getResumeTimeSecondsByIds(contentIds) {
+  let data = await dataContext.getData()
+  let times = {}
+
+  contentIds?.forEach((id) => (times[id] = data[id]?.[DATA_KEY_RESUME_TIME] ?? 0))
+
+  return times
+}
+
 export async function assignmentStatusCompleted(assignmentId, parentContentId) {
   await dataContext.update(
     async function (localContext) {
