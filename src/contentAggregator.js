@@ -1,7 +1,7 @@
 import { getProgressStateByIds, getProgressPercentageByIds, getResumeTimeSecondsByIds } from "./services/contentProgress" 
 import { isContentLikedByIds } from "./services/contentLikes"
 
-export const addContextToContent = async (dataPromise, options = {}) => {
+export const addContextToContent = async (dataPromise, dataParam, options = {}) => {
   const {
     addProgressPercentage = false,
     addIsLiked = false,
@@ -10,7 +10,7 @@ export const addContextToContent = async (dataPromise, options = {}) => {
     addResumeTimeSeconds = false
   } = options
 
-  const data = await dataPromise()
+  const data = await dataPromise(dataParam)
   const ids = data.map(item => item.id)
 
   const [progressPercentageData, statusData, isLikedData, resumeTimeData] = await Promise.all([
