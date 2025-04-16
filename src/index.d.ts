@@ -235,8 +235,11 @@ import {
 	updateUserPractice
 } from './services/userActivity.js';
 
+import { addContextToContent } from './contentAggregator.js';
+
 declare module 'musora-content-services' {
 	export {
+		addContextToContent,
 		addItemToPlaylist,
 		applyCloudflareWrapper,
 		applySanityTransformations,

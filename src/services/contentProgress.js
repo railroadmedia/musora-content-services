@@ -16,30 +16,38 @@ const DATA_KEY_LAST_UPDATED_TIME = 'u'
 export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress)
 
 export async function getProgressPercentage(contentId) {
-  let data = await dataContext.getData()
-  return data[contentId]?.[DATA_KEY_PROGRESS] ?? 0
+  return getById(contentIds, DATA_KEY_PROGRESS, 0)
 }
 
 export async function getProgressPercentageByIds(contentIds) {
-  const data = await dataContext.getData()
-  let progress = {}
-
-  contentIds?.forEach((id) => (progress[id] = data[id]?.[DATA_KEY_PROGRESS] ?? 0))
-
-  return progress
+  return getByIds(contentIds, DATA_KEY_PROGRESS, 0)
 }
 
 export async function getProgressState(contentId) {
-  let data = await dataContext.getData()
-  return data[contentId]?.[DATA_KEY_STATUS] ?? ''
+  return getById(contentId, DATA_KEY_STATUS, '')
 }
 
 export async function getProgressStateByIds(contentIds) {
-  const data = await dataContext.getData()
+  return getByIds(contentIds, DATA_KEY_STATUS, '')
+}
+
+export async function getResumeTimeSeconds(contentId) {
+  return getById(contentId, DATA_KEY_RESUME_TIME, 0)
+}
+
+export async function getResumeTimeSecondsByIds(contentIds) {
+  return getByIds(contentIds, DATA_KEY_RESUME_TIME, 0)
+}
+
+async function getById(contentId, dataKey, defaultValue) {
+  let data = await dataContext.getData()
+  return data[contentId]?.[dataKey] ?? defaultValue
+}
+
+async function getByIds(contentIds, dataKey, defaultValue) {
+  let data = await dataContext.getData()
   let progress = {}
-
-  contentIds?.forEach((id) => (progress[id] = data[id]?.[DATA_KEY_STATUS] ?? ''))
-
+  contentIds?.forEach((id) => (progress[id] = data[id]?.[dataKey] ?? defaultValue))
   return progress
 }
 
@@ -110,11 +118,6 @@ export async function getAllStartedOrCompleted(limit = null) {
     ids = ids.slice(0, limit)
   }
   return ids
-}
-
-export async function getResumeTimeSeconds(contentId) {
-  let data = await dataContext.getData()
-  return data[contentId]?.[DATA_KEY_RESUME_TIME] ?? 0
 }
 
 export async function assignmentStatusCompleted(assignmentId, parentContentId) {

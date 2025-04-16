@@ -16,6 +16,15 @@ export async function isContentLiked(contentId) {
   return data.includes(contentId)
 }
 
+export async function isContentLikedByIds(contentIds) {
+  const data = await dataContext.getData()
+  const likes = {}
+
+  contentIds?.forEach((id) => (likes[id] = data.includes(id)))
+
+  return likes
+}
+
 export async function likeContent(contentId) {
   contentId = parseInt(contentId)
   await dataContext.update(
