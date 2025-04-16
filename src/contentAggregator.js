@@ -1,5 +1,6 @@
 import { getProgressStateByIds, getProgressPercentageByIds, getResumeTimeSecondsByIds } from "./services/contentProgress" 
 import { isContentLikedByIds } from "./services/contentLikes"
+import { fetchLikeCount } from "./services/railcontent"
 
 export const addContextToContent = async (dataPromise, ...dataArgs) => {
   const lastArg = dataArgs[dataArgs.length - 1]
@@ -31,11 +32,12 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
   ])
 
-  const addContext = (item) => ({
+  const addContext = async (item) => ({
     ...item,
     ...(addProgressPercentage ? { progressPercentage: progressPercentageData?.[item.id] } : {}),
     ...(addStatus ? { progressStatus: statusData?.[item.id] } : {}),
     ...(addIsLiked ? { isLiked: isLikedData?.[item.id] } : {}),
+    ...(addLikeCount ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
   })
   
