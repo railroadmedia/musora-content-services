@@ -1183,7 +1183,7 @@ export async function editComment(commentId, comment) {
 export async function reportComment(commentId, issue) {
   const url = `/api/content/v1/comments/${commentId}/report`
   const data = {
-    comment: issue,
+    issue: issue,
   }
   return await postDataHandler(url, data)
 }
