@@ -42,8 +42,8 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
   })
   
   const newData = Array.isArray(data)
-  ? data.map(addContext)
-  : addContext(data)
+  ? await Promise.all(data.map(addContext))
+  : await addContext(data)
 
   return newData
 }
