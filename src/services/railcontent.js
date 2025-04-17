@@ -1261,6 +1261,43 @@ export async function fetchUserPracticeNotes(date) {
   return await fetchHandler(url, 'GET', null)
 }
 
+/**
+ * @typedef {Object} Activity
+ * @property {string} id - Unique identifier for the activity.
+ * @property {string} type - Type of activity (e.g., "lesson_completed").
+ * @property {string} timestamp - ISO 8601 string of when the activity occurred.
+ * @property {Object} meta - Additional metadata related to the activity.
+ */
+
+/**
+ * @typedef {Object} PaginatedActivities
+ * @property {number} currentPage
+ * @property {number} totalPages
+ * @property {Activity[]} data
+ */
+
+/**
+ * Fetches a paginated list of recent user activities.
+ * @param {Object} [params={}] - Optional parameters.
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {number} [params.limit=10] - The number of results per page.
+ * @param {string|null} [params.tabName=null] - Optional filter for activity type/tab.
+ * @returns {Promise<PaginatedActivities>} - A promise that resolves to a paginated object of user activities.
+ *
+ * @example
+ * fetchRecentUserActivities({ page: 2, limit: 5 })
+ *   .then(activities => console.log(activities))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchRecentUserActivities({
+  page = 1,
+  limit = 10,
+  tabName = null
+} = {}) {
+  const url = `/api/user/activities/v1/all`
+  return await fetchHandler(url, 'GET', null)
+}
+
 function fetchAbsolute(url, params) {
   if (globalConfig.sessionConfig.authToken) {
     params.headers['Authorization'] = `Bearer ${globalConfig.sessionConfig.authToken}`
