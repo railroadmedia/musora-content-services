@@ -19,6 +19,8 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
   const data = await dataPromise(...dataParam)
   if(!data) return 'data'
 
+  console.log('data', data)
+
   const ids = Array.isArray(data)
     ? data.map(item => item?.id).filter(Boolean)
     : [data?.id].filter(Boolean)
