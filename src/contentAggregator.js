@@ -18,7 +18,7 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
 
   const data = await dataPromise(...dataParam)
-  if(!data) return 'data'
+  if(!data) return false
 
   let ids = []
 
