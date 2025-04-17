@@ -118,6 +118,22 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
   today.setHours(0, 0, 0, 0);
 
   let startOfGrid = getMonday(firstDayOfMonth)
+
+  let previousWeekStart = new Date(startOfGrid)
+  previousWeekStart.setDate(previousWeekStart.getDate() - 7)
+
+  let previousWeekEnd = new Date(startOfGrid)
+  previousWeekEnd.setDate(previousWeekEnd.getDate() - 1)
+
+  let hadStreakBeforeMonth = false
+  for (let d = new Date(previousWeekStart); d <= previousWeekEnd; d.setDate(d.getDate() + 1)) {
+    let dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    if (practices[dayKey]) {
+      hadStreakBeforeMonth = true
+      break
+    }
+  }
+
   let endOfMonth = new Date(year, month + 1, 0)
   while (endOfMonth.getDay() !== 0) {
     endOfMonth.setDate(endOfMonth.getDate() + 1)
@@ -162,6 +178,13 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
       inStreak: dayActivity !== null,
       type,
     })
+  }
+
+  if (hadStreakBeforeMonth) {
+    const firstWeekKey = getWeekNumber(startOfGrid)
+    if (weeklyStats[firstWeekKey]) {
+      weeklyStats[firstWeekKey].continueStreak = true
+    }
   }
 
   let filteredPractices = Object.keys(practices)
