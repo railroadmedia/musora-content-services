@@ -7,6 +7,7 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
   const options = typeof lastArg === 'object' && !Array.isArray(lastArg) ? lastArg : {}
 
   const {
+    dataField = null,
     addProgressPercentage = false,
     addIsLiked = false,
     addLikeCount = false,
@@ -21,9 +22,15 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
 
   console.log('data', data)
 
-  const ids = Array.isArray(data)
-    ? data.map(item => item?.id).filter(Boolean)
-    : [data?.id].filter(Boolean)
+  let ids = [];
+
+  if (dataField && data?.[dataField]) {
+    ids = data[dataField].map(item => item?.id).filter(Boolean);
+  } else if (Array.isArray(data)) {
+    ids = data.map(item => item?.id).filter(Boolean);
+  } else if (data?.id) {
+    ids = [data.id];
+  }
 
   if(ids.length === 0) return 'ids'
 
