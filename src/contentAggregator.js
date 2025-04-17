@@ -17,13 +17,13 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs;
 
   const data = await dataPromise(...dataParam)
-  if(!data) return false
+  if(!data) return 'data'
 
   const ids = Array.isArray(data)
     ? data.map(item => item?.id).filter(Boolean)
     : [data?.id].filter(Boolean)
 
-  if(ids.length === 0) return false
+  if(ids.length === 0) return 'ids'
 
   const [progressPercentageData, statusData, isLikedData, resumeTimeData] = await Promise.all([
     addProgressPercentage ? getProgressPercentageByIds(ids) : Promise.resolve(null),
