@@ -44,7 +44,7 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
     ...(addProgressPercentage ? { progressPercentage: progressPercentageData?.[item.id] } : {}),
     ...(addStatus ? { progressStatus: statusData?.[item.id] } : {}),
     ...(addIsLiked ? { isLiked: isLikedData?.[item.id] } : {}),
-    ...(addLikeCount ? { likeCount: await fetchLikeCount(item.id) } : {}),
+    ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
   })
   
