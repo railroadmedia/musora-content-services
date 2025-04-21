@@ -45,7 +45,7 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
     ...(addStatus ? { progressStatus: statusData?.[item.id] } : {}),
     ...(addIsLiked ? { isLiked: isLikedData?.[item.id] } : {}),
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
-    ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
+    ...(addResumeTimeSeconds && ids.length === 1 ? { resumeTime: resumeTimeData?.[item.id] } : {}),
   })
   
   const newData = Array.isArray(data)
