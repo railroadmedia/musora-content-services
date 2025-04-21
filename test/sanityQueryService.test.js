@@ -153,6 +153,16 @@ describe('Sanity Queries', function() {
     const response = await fetchLessonContent(id)
     log(response)
     expect(response.id).toBe(id)
+    expect(response.video.type).toBeDefined()
+  })
+
+  test('fetchLessonContent-PlayAlong-containts-array-of-videos', async () => {
+    const id = 9184
+    const response = await fetchLessonContent(id)
+    expect(response.id).toBe(id)
+    expect(response.video.length).toBeGreaterThanOrEqual(1)
+    const firstElement = response.video.find(() => true)
+    expect(firstElement.version_name).toBeDefined()
   })
 
   test('fetchAllSongsInProgress', async () => {

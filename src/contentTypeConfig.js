@@ -524,6 +524,7 @@ export let contentTypeConfig = {
   returning: {
     fields: [
       `quarter_published`,
+      '"thumbnail": thumbnail.asset->url',
     ]
   }
 }

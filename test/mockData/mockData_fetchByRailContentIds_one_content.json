@@ -1,0 +1,35 @@
+[
+  {
+    "permission_id": [
+      78,
+      89,
+      91,
+      92,
+      88,
+      90
+    ],
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/5f15b20b428c06263fd39599fc310ab00eb05fee-1920x1080.jpg",
+    "difficulty_string": "Beginner",
+    "url": "/drumeo/quick-tips/how-to-play-drums/415183",
+    "lesson_count": null,
+    "id": 415183,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/5f15b20b428c06263fd39599fc310ab00eb05fee-1920x1080.jpg",
+    "web_url_path": "/drumeo/quick-tips/how-to-play-drums/415183",
+    "type": "quick-tips",
+    "brand": "drumeo",
+    "genre": null,
+    "status": "published",
+    "xp": 100,
+    "railcontent_id": 415183,
+    "artist": null,
+    "progress_percent": null,
+    "child_count": null,
+    "sanity_id": "quick-tips_415183",
+    "artist_name": "Brandon Toews",
+    "title": "How To Play Drums",
+    "difficulty": 3,
+    "published_on": "2024-12-13T12:00:00.000000Z",
+    "length_in_seconds": 576,
+    "slug": "how-to-play-drums"
+  }
+]

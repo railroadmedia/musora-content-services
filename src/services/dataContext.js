@@ -10,6 +10,7 @@ const excludeFromGeneratedIndex = []
 //These constants need to match MWP UserDataVersionKeyEnum enum
 export const ContentLikesVersionKey = 0
 export const ContentProgressVersionKey = 1
+export const UserActivityVersionKey = 2
 
 let cache = null
 
@@ -101,8 +102,10 @@ export class DataContext {
 
   clearCache() {
     this.clearContext()
-    cache.removeItem(this.localStorageKey)
-    cache.removeItem(this.localStorageLastUpdatedKey)
+    if (cache) {
+      cache.removeItem(this.localStorageKey)
+      cache.removeItem(this.localStorageLastUpdatedKey)
+    }
   }
 
   clearContext() {
@@ -133,5 +136,15 @@ export class DataContext {
 
   version() {
     return this.context?.version ?? -1
+  }
+  async updateLocal(localUpdateFunction) {
+    await this.ensureLocalContextLoaded()
+    if (this.context) {
+      const res = await localUpdateFunction(this.context)
+      if (this.context) this.context.version++
+      let data = JSON.stringify(this.context)
+      cache.setItem(this.localStorageKey, data)
+      this.setLastUpdatedTime()
+    }
   }
 }

@@ -2,6 +2,56 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.3.15](https://github.com/railroadmedia/musora-content-services/compare/v2.3.14...v2.3.15) (2025-04-11)
+
+### [2.3.14](https://github.com/railroadmedia/musora-content-services/compare/v2.3.13...v2.3.14) (2025-04-11)
+
+### [2.3.13](https://github.com/railroadmedia/musora-content-services/compare/v2.3.12...v2.3.13) (2025-04-10)
+
+### [2.3.12](https://github.com/railroadmedia/musora-content-services/compare/v2.3.11...v2.3.12) (2025-04-10)
+
+### [2.3.11](https://github.com/railroadmedia/musora-content-services/compare/v2.3.9...v2.3.11) (2025-04-09)
+
+### [2.3.10](https://github.com/railroadmedia/musora-content-services/compare/v2.3.9...v2.3.10) (2025-04-08)
+
+### [2.3.9](https://github.com/railroadmedia/musora-content-services/compare/v2.3.8...v2.3.9) (2025-04-08)
+
+### [2.3.8](https://github.com/railroadmedia/musora-content-services/compare/v2.3.7...v2.3.8) (2025-04-08)
+
+
+### Bug Fixes
+
+* **BEH-363:** Point homepage recommended endpoint to BE ([#208](https://github.com/railroadmedia/musora-content-services/issues/208)) ([16d3308](https://github.com/railroadmedia/musora-content-services/commit/16d3308a80c68d3fedfc75c42afa9cb2bb9ddfd5))
+
+### [2.3.7](https://github.com/railroadmedia/musora-content-services/compare/v2.3.4...v2.3.7) (2025-04-07)
+
+### [2.3.6](https://github.com/railroadmedia/musora-content-services/compare/v2.3.5...v2.3.6) (2025-04-04)
+
+### [2.3.5](https://github.com/railroadmedia/musora-content-services/compare/v2.3.4...v2.3.5) (2025-04-04)
+
+### [2.3.4](https://github.com/railroadmedia/musora-content-services/compare/v2.3.2...v2.3.4) (2025-04-03)
+
+### [2.3.3](https://github.com/railroadmedia/musora-content-services/compare/v2.3.2...v2.3.3) (2025-04-02)
+
+### [2.3.2](https://github.com/railroadmedia/musora-content-services/compare/v2.3.1...v2.3.2) (2025-03-31)
+
+### [2.3.1](https://github.com/railroadmedia/musora-content-services/compare/v2.3.0...v2.3.1) (2025-03-31)
+
+## [2.3.0](https://github.com/railroadmedia/musora-content-services/compare/v1.3.15...v2.3.0) (2025-03-31)
+
+
+### Features
+
+* **BEH-326:** update routing for top/all comment endpoints ([#203](https://github.com/railroadmedia/musora-content-services/issues/203)) ([1f4807f](https://github.com/railroadmedia/musora-content-services/commit/1f4807fcef3cb7ce0b03202519b4ccb4fbd6232f))
+* **MU2-357:** mock award data ([#204](https://github.com/railroadmedia/musora-content-services/issues/204)) ([008fea3](https://github.com/railroadmedia/musora-content-services/commit/008fea3e9aef75884fe0c3987bdbb42e9cb254da))
+
+
+### Bug Fixes
+
+* **playlists:** config import ([#198](https://github.com/railroadmedia/musora-content-services/issues/198)) ([4965de4](https://github.com/railroadmedia/musora-content-services/commit/4965de4fc2d1cda8de022ff46a3e09caac9d351f))
+
+### [2.2.1](https://github.com/railroadmedia/musora-content-services/compare/v2.2.0...v2.2.1) (2025-03-28)
+
 ## [2.2.0](https://github.com/railroadmedia/musora-content-services/compare/v2.1.1...v2.2.0) (2025-03-27)
 
 

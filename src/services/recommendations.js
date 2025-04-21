@@ -2,8 +2,8 @@
  * @module Railcontent-Services
  */
 
-import { globalConfig } from './config.js'
-import { fetchJSONHandler} from '../lib/httpHelper.js'
+import {globalConfig} from './config.js'
+import {fetchJSONHandler} from '../lib/httpHelper.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -28,16 +28,17 @@ export async function fetchSimilarItems(content_id, brand, count = 10) {
   if (!content_id) {
     return []
   }
-
+  content_id = parseInt(content_id)
   let data = {
-    'brand': brand,
-    'content_ids': content_id,
-    'num_similar': count,
+    brand: brand,
+    content_ids: content_id,
+    num_similar: count + 1, // because the content itself is sometimes returned
   }
   const url = `/similar_items/`
   try {
     const response = await fetchHandler(url, 'POST', data)
-    return response['similar_items']
+    // we requested count + 1 then filtered out the extra potential value, so we need slice to the correct size if necessary
+    return response['similar_items'].filter((item) => item !== content_id).slice(0, count)
   } catch (error) {
     console.error('Fetch error:', error)
     return null
@@ -64,15 +65,18 @@ export async function rankCategories(brand, categories) {
     return []
   }
   let data = {
-    'brand': brand,
-    'user_id': globalConfig.railcontentConfig.userId,
-    'playlists': categories,
+    brand: brand,
+    user_id: globalConfig.sessionConfig.userId,
+    playlists: categories,
   }
   const url = `/rank_each_list/`
   try {
     const response = await fetchHandler(url, 'POST', data)
     let rankedCategories = {}
-    response['ranked_playlists'].forEach((category) => rankedCategories[category['playlist_id']] = categories[category['playlist_id']])
+    response['ranked_playlists'].forEach(
+      (category) =>
+        (rankedCategories[category['playlist_id']] = categories[category['playlist_id']])
+    )
     return rankedCategories
   } catch (error) {
     console.error('Fetch error:', error)
@@ -96,9 +100,9 @@ export async function rankItems(brand, content_ids) {
     return []
   }
   let data = {
-    'brand': brand,
-    'user_id': globalConfig.railcontentConfig.userId,
-    'content_ids': content_ids,
+    brand: brand,
+    user_id: globalConfig.sessionConfig.userId,
+    content_ids: content_ids,
   }
   const url = `/rank_items/`
   try {
@@ -110,19 +114,18 @@ export async function rankItems(brand, content_ids) {
   }
 }
 
-export async function recommendations(brand, {
-  page = 1,
-  limit = 10,
-} = {}) {
-  let data = {
-    'brand': brand,
-    'user_id': globalConfig.railcontentConfig.userId,
-    'num_recommendations': limit
-  }
-  const url = `/recommendations/`
+export async function recommendations(brand, {section = ''} = {}) {
+  section = section.toUpperCase().replace('-', '_')
+  const sectionString = section ? `&section=${section}` : '';
+  const url = `/api/content/v1/recommendations?brand=${brand}${sectionString}`
   try {
-    const response = await fetchHandler(url, 'POST', data)
-    return response['recommendations']
+    // This goes through the MPB, not the recommendations api, so we use fetchJSONHandler instead of the local handler
+    return fetchJSONHandler(
+      url,
+      globalConfig.sessionConfig.token,
+      globalConfig.baseUrl,
+      'get'
+    )
   } catch (error) {
     console.error('Fetch error:', error)
     return null
@@ -137,5 +140,5 @@ async function fetchHandler(url, method = 'get', body = null) {
     method,
     null,
     body
-    )
+  )
 }

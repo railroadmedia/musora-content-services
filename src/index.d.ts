@@ -48,12 +48,32 @@ import {
 } from './services/dataContext.js';
 
 import {
+	convertToTimeZone,
+	getMonday,
+	getWeekNumber,
+	isNextDay,
+	isSameDate
+} from './services/dateUtils.js';
+
+import {
 	getActiveDiscussions
 } from './services/forum.js';
 
 import {
 	fetchAwardsForUser
 } from './services/gamification/awards.js';
+
+import {
+	applyCloudflareWrapper,
+	applySanityTransformations,
+	buildImageSRC
+} from './services/imageSRCBuilder.js';
+
+import {
+	extractSanityUrl,
+	isBucketUrl,
+	verifyImageSRC
+} from './services/imageSRCVerify.js';
 
 import {
 	assignModeratorToComment,
@@ -94,8 +114,12 @@ import {
 	fetchUserChallengeProgress,
 	fetchUserLikes,
 	fetchUserPermissionsData,
+	fetchUserPracticeMeta,
+	fetchUserPracticeNotes,
+	fetchUserPractices,
 	likeComment,
 	likePlaylist,
+	logUserPractice,
 	openComment,
 	pinPlaylist,
 	playback,
@@ -113,6 +137,7 @@ import {
 	postContentUnliked,
 	postRecordWatchSession,
 	replyToComment,
+	reportComment,
 	reportPlaylist,
 	setStudentViewForUser,
 	unassignModeratorToComment,
@@ -180,6 +205,11 @@ import {
 } from './services/sanity.js';
 
 import {
+	blockUser,
+	unblockUser
+} from './services/user/management.js';
+
+import {
 	fetchUserPermissions,
 	reset
 } from './services/user/permissions.js';
@@ -190,27 +220,51 @@ import {
 } from './services/user/sessions.js';
 
 import {
-	getUserActivityStats
+	createPracticeNotes,
+	deletePracticeSession,
+	getPracticeNotes,
+	getPracticeSessions,
+	getRecentActivity,
+	getUserMonthlyStats,
+	getUserPractices,
+	getUserWeeklyStats,
+	recordUserPractice,
+	removeUserPractice,
+	restorePracticeSession,
+	restoreUserPractice,
+	updatePracticeNotes,
+	updateUserPractice
 } from './services/userActivity.js';
+
+import { addContextToContent } from './contentAggregator.js';
 
 declare module 'musora-content-services' {
 	export {
+		addContextToContent,
 		addItemToPlaylist,
+		applyCloudflareWrapper,
+		applySanityTransformations,
 		assignModeratorToComment,
 		assignmentStatusCompleted,
 		assignmentStatusReset,
+		blockUser,
+		buildImageSRC,
 		closeComment,
 		contentStatusCompleted,
 		contentStatusReset,
+		convertToTimeZone,
 		countAssignmentsAndLessons,
 		createComment,
 		createPlaylist,
+		createPracticeNotes,
 		deleteComment,
 		deletePlaylist,
 		deletePlaylistItem,
 		deletePlaylistLike,
+		deletePracticeSession,
 		duplicatePlaylist,
 		editComment,
+		extractSanityUrl,
 		fetchAll,
 		fetchAllCompletedStates,
 		fetchAllFilterOptions,
@@ -288,31 +342,45 @@ declare module 'musora-content-services' {
 		fetchUserPermissions,
 		fetchUserPermissionsData,
 		fetchUserPlaylists,
+		fetchUserPracticeMeta,
+		fetchUserPracticeNotes,
+		fetchUserPractices,
 		getActiveDiscussions,
 		getAllCompleted,
 		getAllStarted,
 		getAllStartedOrCompleted,
 		getContentRows,
 		getLessonContentRows,
+		getMonday,
 		getNewAndUpcoming,
+		getPracticeNotes,
+		getPracticeSessions,
 		getProgressPercentage,
 		getProgressPercentageByIds,
 		getProgressState,
 		getProgressStateByIds,
 		getRecent,
+		getRecentActivity,
 		getRecommendedForYou,
 		getResumeTimeSeconds,
 		getScheduleContentRows,
 		getSortOrder,
 		getTabResults,
-		getUserActivityStats,
+		getUserMonthlyStats,
+		getUserPractices,
+		getUserWeeklyStats,
+		getWeekNumber,
 		globalConfig,
 		initializeService,
+		isBucketUrl,
 		isContentLiked,
+		isNextDay,
+		isSameDate,
 		jumpToContinueContent,
 		likeComment,
 		likeContent,
 		likePlaylist,
+		logUserPractice,
 		login,
 		logout,
 		openComment,
@@ -334,17 +402,26 @@ declare module 'musora-content-services' {
 		rankCategories,
 		rankItems,
 		recommendations,
+		recordUserPractice,
 		recordWatchSession,
+		removeUserPractice,
 		replyToComment,
+		reportComment,
 		reportPlaylist,
 		reset,
+		restorePracticeSession,
+		restoreUserPractice,
 		setStudentViewForUser,
 		unassignModeratorToComment,
+		unblockUser,
 		unlikeComment,
 		unlikeContent,
 		unpinPlaylist,
 		updatePlaylist,
 		updatePlaylistItem,
+		updatePracticeNotes,
+		updateUserPractice,
+		verifyImageSRC,
 		verifyLocalDataContext,
 	}
 }

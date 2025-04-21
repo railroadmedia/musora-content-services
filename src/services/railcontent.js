@@ -1,10 +1,9 @@
 /**
  * @module Railcontent-Services
  */
-import { contentStatusCompleted } from './contentProgress.js'
-
 import { globalConfig } from './config.js'
 import { fetchJSONHandler } from '../lib/httpHelper.js'
+import { convertToTimeZone } from './dateUtils.js';
 
 /**
  * Exported functions that are excluded from index generation.
@@ -35,12 +34,12 @@ let challengeIndexMetaDataPromise = null
  *   .catch(error => console.error(error));
  */
 export async function fetchCompletedState(content_id) {
-  const url = `/content/user_progress/${globalConfig.railcontentConfig.userId}?content_ids[]=${content_id}`
+  const url = `/content/user_progress/${globalConfig.sessionConfig.userId}?content_ids[]=${content_id}`
 
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+    'X-CSRF-TOKEN': globalConfig.sessionConfig.token,
   }
 
   try {
@@ -69,12 +68,12 @@ export async function fetchCompletedState(content_id) {
  *   .catch(error => console.error(error));
  */
 export async function fetchAllCompletedStates(contentIds) {
-  const url = `/content/user_progress/${globalConfig.railcontentConfig.userId}?${contentIds.map((id) => `content_ids[]=${id}`).join('&')}`
+  const url = `/content/user_progress/${globalConfig.sessionConfig.userId}?${contentIds.map((id) => `content_ids[]=${id}`).join('&')}`
 
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+    'X-CSRF-TOKEN': globalConfig.sessionConfig.token,
   }
 
   try {
@@ -102,12 +101,12 @@ export async function fetchAllCompletedStates(contentIds) {
  *   .catch(error => console.error(error));
  */
 export async function fetchSongsInProgress(brand) {
-  const url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=song&brand=${brand}`
+  const url = `/content/in_progress/${globalConfig.sessionConfig.userId}?content_type=song&brand=${brand}`
 
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+    'X-CSRF-TOKEN': globalConfig.sessionConfig.token,
   }
 
   try {
@@ -144,14 +143,14 @@ export async function fetchContentInProgress(type = 'all', brand, { page, limit 
   const pageString = page ? `&page=${page}` : ''
 
   if (type === 'all') {
-    url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?brand=${brand}${limitString}${pageString}`
+    url = `/content/in_progress/${globalConfig.sessionConfig.userId}?brand=${brand}${limitString}${pageString}`
   } else {
-    url = `/content/in_progress/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}${limitString}${pageString}`
+    url = `/content/in_progress/${globalConfig.sessionConfig.userId}?content_type=${type}&brand=${brand}${limitString}${pageString}`
   }
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+    'X-CSRF-TOKEN': globalConfig.sessionConfig.token,
   }
   try {
     const response = await fetchAbsolute(url, { headers })
@@ -187,14 +186,14 @@ export async function fetchCompletedContent(type = 'all', brand, { page, limit }
   const pageString = page ? `&page=${page}` : ''
 
   if (type === 'all') {
-    url = `/content/completed/${globalConfig.railcontentConfig.userId}?brand=${brand}${limitString}${pageString}`
+    url = `/content/completed/${globalConfig.sessionConfig.userId}?brand=${brand}${limitString}${pageString}`
   } else {
-    url = `/content/completed/${globalConfig.railcontentConfig.userId}?content_type=${type}&brand=${brand}${limitString}${pageString}`
+    url = `/content/completed/${globalConfig.sessionConfig.userId}?content_type=${type}&brand=${brand}${limitString}${pageString}`
   }
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+    'X-CSRF-TOKEN': globalConfig.sessionConfig.token,
   }
   try {
     const response = await fetchAbsolute(url, { headers })
@@ -222,11 +221,11 @@ export async function fetchCompletedContent(type = 'all', brand, { page, limit }
  *   .catch(error => console.error(error));
  */
 export async function fetchContentPageUserData(contentId) {
-  let url = `/content/${contentId}/user_data/${globalConfig.railcontentConfig.userId}`
+  let url = `/api/content/v1/${contentId}/user_data/${globalConfig.sessionConfig.userId}`
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+    'X-CSRF-TOKEN': globalConfig.sessionConfig.token,
   }
 
   try {
@@ -251,10 +250,10 @@ export async function fetchContentPageUserData(contentId) {
  * @returns {Promise<Object|null>} - Returns and Object with the id and type of the next piece of content if found, otherwise null.
  */
 export async function fetchNextContentDataForParent(contentId) {
-  let url = `/content/${contentId}/next/${globalConfig.railcontentConfig.userId}`
+  let url = `/content/${contentId}/next/${globalConfig.sessionConfig.userId}`
   const headers = {
     'Content-Type': 'application/json',
-    'X-CSRF-TOKEN': globalConfig.railcontentConfig.token,
+    'X-CSRF-TOKEN': globalConfig.sessionConfig.token,
   }
 
   try {
@@ -873,8 +872,8 @@ export async function postContentComplete(contentId) {
 }
 
 export async function postContentReset(contentId) {
-  let url = `/content/user/progress/reset`
-  return postDataHandler(url, { contentId: contentId })
+  let url = `/api/content/v1/user/progress/reset/${contentId}`
+  return postDataHandler(url)
 }
 
 /**
@@ -1176,12 +1175,111 @@ export async function editComment(commentId, comment) {
   return await patchDataHandler(url, data)
 }
 
+/**
+ * @param {int} commentId
+ * @param {string} issue
+ * @returns {Promise<*|null>}
+ */
+export async function reportComment(commentId, issue) {
+  const url = `/api/content/v1/comments/${commentId}/report`
+  const data = {
+    issue: issue,
+  }
+  return await postDataHandler(url, data)
+}
+
+export async function fetchUserPractices(currentVersion) {
+  const url = `/api/user/practices/v1/practices`;
+  const response = await fetchDataHandler(url, currentVersion);
+  const { data, version } = response;
+  const userPractices = data;
+
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+
+  const formattedPractices = userPractices.reduce((acc, practice) => {
+    // Convert UTC date to user's local date (still a Date object)
+    const utcDate = new Date(practice.day);
+    const localDate = convertToTimeZone(utcDate, userTimeZone);
+
+    const userTimeZoneDay =
+      localDate.getFullYear() + '-' +
+      String(localDate.getMonth() + 1).padStart(2, '0') + '-' +
+      String(localDate.getDate()).padStart(2, '0');
+
+    if (!acc[userTimeZoneDay]) {
+      acc[userTimeZoneDay] = [];
+    }
+
+    acc[userTimeZoneDay].push({
+      id: practice.id,
+      duration_seconds: practice.duration_seconds,
+    });
+
+    return acc;
+  }, {});
+
+  return {
+    data: {
+      practices: formattedPractices,
+    },
+    version,
+  };
+}
+
+export async function logUserPractice(practiceDetails) {
+  const url = `/api/user/practices/v1/practices`
+  return await fetchHandler(url, 'POST', null, practiceDetails)
+}
+export async function fetchUserPracticeMeta(practiceIds) {
+  if (practiceIds.length == 0) {
+    return []
+  }
+  let idsString = ''
+  if (practiceIds && practiceIds.length > 0) {
+    idsString = '?'
+    practiceIds.forEach((id, index) => {
+      idsString += `practice_ids[]=${id}${index < practiceIds.length - 1 ? '&' : ''}`
+    })
+  }
+  const url = `/api/user/practices/v1/practices${idsString}`
+  return await fetchHandler(url, 'GET', null)
+}
+
+/**
+ * Fetches user practice notes for a specific date.
+ * @param {string} date - The date for which to fetch practice notes (format: YYYY-MM-DD).
+ * @returns {Promise<Object|null>} - A promise that resolves to an object containing the practice notes if found, otherwise null.
+ *
+ * @example
+ * fetchUserPracticeNotes('2025-04-10')
+ *   .then(notes => console.log(notes))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchUserPracticeNotes(date) {
+  const url = `/api/user/practices/v1/notes?date=${date}`
+  return await fetchHandler(url, 'GET', null)
+}
+
+function fetchAbsolute(url, params) {
+  if (globalConfig.sessionConfig.authToken) {
+    params.headers['Authorization'] = `Bearer ${globalConfig.sessionConfig.authToken}`
+  }
+
+  if (globalConfig.baseUrl) {
+    if (url.startsWith('/')) {
+      return fetch(globalConfig.baseUrl + url, params)
+    }
+  }
+  return fetch(url, params)
+}
 export async function fetchHandler(url, method = 'get', dataVersion = null, body = null) {
   return fetchJSONHandler(
     url,
-    globalConfig.railcontentConfig.token,
-    globalConfig.railcontentConfig.baseUrl,
+    globalConfig.sessionConfig.token,
+    globalConfig.baseUrl,
     method,
     dataVersion,
-    body)
+    body
+  )
 }

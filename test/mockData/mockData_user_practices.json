@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "config": { "key": 1, "enabled": 1, "checkInterval": 1, "refreshInterval": 2 },
+  "data": {
+    "practices": {
+      "DATE_PLACEHOLDER": [{ "duration_seconds": "DURATION_PLACEHOLDER" }]
+    }
+  }
+}
