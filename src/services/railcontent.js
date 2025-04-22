@@ -294,6 +294,11 @@ async function deleteDataHandler(url, data) {
   return fetchHandler(url, 'delete')
 }
 
+export async function fetchLikeCount(contendId){
+  const url  = `/api/content/v1/content/like_count/${contendId}`
+  return await fetchDataHandler(url)
+}
+
 export async function fetchUserLikes(currentVersion) {
   let url = `/api/content/v1/user/likes`
   return fetchDataHandler(url, currentVersion)
