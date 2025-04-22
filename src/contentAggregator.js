@@ -11,7 +11,7 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
     addProgressPercentage = false,
     addIsLiked = false,
     addLikeCount = false,
-    addStatus = false,
+    addProgressStatus = false,
     addResumeTimeSeconds = false
   } = options
 
@@ -32,9 +32,9 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
 
   if(ids.length === 0) return false
 
-  const [progressPercentageData, statusData, isLikedData, resumeTimeData] = await Promise.all([
+  const [progressPercentageData, progressStatusData, isLikedData, resumeTimeData] = await Promise.all([
     addProgressPercentage ? getProgressPercentageByIds(ids) : Promise.resolve(null),
-    addStatus ? getProgressStateByIds(ids) : Promise.resolve(null),
+    addProgressStatus ? getProgressStateByIds(ids) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
   ])
@@ -42,7 +42,7 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
   const addContext = async (item) => ({
     ...item,
     ...(addProgressPercentage ? { progressPercentage: progressPercentageData?.[item.id] } : {}),
-    ...(addStatus ? { progressStatus: statusData?.[item.id] } : {}),
+    ...(addProgressStatus ? { progressStatus: progressStatusData?.[item.id] } : {}),
     ...(addIsLiked ? { isLiked: isLikedData?.[item.id] } : {}),
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
