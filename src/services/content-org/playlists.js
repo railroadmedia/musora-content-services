@@ -80,6 +80,17 @@ export async function createPlaylist(playlistData) {
   return await fetchHandler(url, 'POST', null, playlistData)
 }
 
+export async function deletePlaylist(playlistData) {
+  const url = `${BASE_PATH}/v1/user/playlists/delete`
+  return await fetchHandler(url, 'POST', null, playlistData)
+}
+
+export async function undeletePlaylist(playlistData) {
+  const url = `${BASE_PATH}/v1/user/playlists/undelete`
+  return await fetchHandler(url, 'POST', null, playlistData)
+}
+
+
 /**
  * Adds an item to one or more playlists by making a POST request to the `/playlists/add-item` endpoint.
  *
