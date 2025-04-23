@@ -665,9 +665,7 @@ function calculateStreaks(practices, includeStreakMessage = false) {
 export async function calculateLongestStreaks() {
   let data = await userActivityContext.getData()
   let practices = data?.[DATA_KEY_PRACTICES] ?? {}
-  console.log('rox:: practices', practices, Object.keys(practices) )
   let totalPracticeSeconds = 0;
-
   // Calculate total practice duration
   for (const date in practices) {
     for (const entry of practices[date]) {
@@ -700,7 +698,6 @@ export async function calculateLongestStreaks() {
   // ----- Daily Streak -----
   let longestDailyStreak = 1;
   let currentDailyStreak = 1;
-  console.log('rox:: calculateLongestStreaks practices dates', practiceDates, ' normalizedDates::::', normalizedDates);
   for (let i = 1; i < normalizedDates.length; i++) {
     const diffInDays = (normalizedDates[i] - normalizedDates[i - 1]) / (1000 * 60 * 60 * 24);
     if (diffInDays === 1) {
