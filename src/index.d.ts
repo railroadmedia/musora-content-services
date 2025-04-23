@@ -23,6 +23,7 @@ import {
 
 import {
 	isContentLiked,
+	isContentLikedByIds,
 	likeContent,
 	unlikeContent
 } from './services/contentLikes.js';
@@ -40,8 +41,13 @@ import {
 	getProgressState,
 	getProgressStateByIds,
 	getResumeTimeSeconds,
+	getResumeTimeSecondsByIds,
 	recordWatchSession
 } from './services/contentProgress.js';
+
+import {
+  addContextToContent
+} from './contentAggregator.js';
 
 import {
 	verifyLocalDataContext
@@ -101,6 +107,7 @@ import {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchHandler,
+	fetchLikeCount,
 	fetchNextContentDataForParent,
 	fetchOwnedChallenges,
 	fetchPinnedPlaylists,
@@ -220,6 +227,7 @@ import {
 } from './services/user/sessions.js';
 
 import {
+	calculateLongestStreaks,
 	createPracticeNotes,
 	deletePracticeSession,
 	getPracticeNotes,
@@ -236,12 +244,10 @@ import {
 	updateUserPractice
 } from './services/userActivity.js';
 
-import { addContextToContent } from './contentAggregator.js';
-
 declare module 'musora-content-services' {
 	export {
-		addContextToContent,
 		addItemToPlaylist,
+    addContextToContent,
 		applyCloudflareWrapper,
 		applySanityTransformations,
 		assignModeratorToComment,
@@ -249,6 +255,7 @@ declare module 'musora-content-services' {
 		assignmentStatusReset,
 		blockUser,
 		buildImageSRC,
+		calculateLongestStreaks,
 		closeComment,
 		contentStatusCompleted,
 		contentStatusReset,
@@ -299,6 +306,7 @@ declare module 'musora-content-services' {
 		fetchLeaving,
 		fetchLessonContent,
 		fetchLessonsFeaturingThisContent,
+		fetchLikeCount,
 		fetchLiveEvent,
 		fetchMetadata,
 		fetchMethod,
@@ -363,6 +371,7 @@ declare module 'musora-content-services' {
 		getRecentActivity,
 		getRecommendedForYou,
 		getResumeTimeSeconds,
+		getResumeTimeSecondsByIds,
 		getScheduleContentRows,
 		getSortOrder,
 		getTabResults,
@@ -374,6 +383,7 @@ declare module 'musora-content-services' {
 		initializeService,
 		isBucketUrl,
 		isContentLiked,
+		isContentLikedByIds,
 		isNextDay,
 		isSameDate,
 		jumpToContinueContent,

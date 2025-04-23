@@ -23,6 +23,7 @@ import {
 
 import {
 	isContentLiked,
+	isContentLikedByIds,
 	likeContent,
 	unlikeContent
 } from './services/contentLikes.js';
@@ -40,6 +41,7 @@ import {
 	getProgressState,
 	getProgressStateByIds,
 	getResumeTimeSeconds,
+	getResumeTimeSecondsByIds,
 	recordWatchSession
 } from './services/contentProgress.js';
 
@@ -74,6 +76,9 @@ import {
 	isBucketUrl,
 	verifyImageSRC
 } from './services/imageSRCVerify.js';
+import {
+  addContextToContent
+} from './contentAggregator.js';
 
 import {
 	assignModeratorToComment,
@@ -101,6 +106,7 @@ import {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchHandler,
+	fetchLikeCount,
 	fetchNextContentDataForParent,
 	fetchOwnedChallenges,
 	fetchPinnedPlaylists,
@@ -220,6 +226,7 @@ import {
 } from './services/user/sessions.js';
 
 import {
+	calculateLongestStreaks,
 	createPracticeNotes,
 	deletePracticeSession,
 	getPracticeNotes,
@@ -236,10 +243,7 @@ import {
 	updateUserPractice
 } from './services/userActivity.js';
 
-import { addContextToContent } from './contentAggregator.js';
-
 export {
-	addContextToContent,
 	addItemToPlaylist,
 	applyCloudflareWrapper,
 	applySanityTransformations,
@@ -248,6 +252,7 @@ export {
 	assignmentStatusReset,
 	blockUser,
 	buildImageSRC,
+	calculateLongestStreaks,
 	closeComment,
 	contentStatusCompleted,
 	contentStatusReset,
@@ -298,6 +303,7 @@ export {
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
+	fetchLikeCount,
 	fetchLiveEvent,
 	fetchMetadata,
 	fetchMethod,
@@ -362,6 +368,7 @@ export {
 	getRecentActivity,
 	getRecommendedForYou,
 	getResumeTimeSeconds,
+	getResumeTimeSecondsByIds,
 	getScheduleContentRows,
 	getSortOrder,
 	getTabResults,
@@ -373,6 +380,7 @@ export {
 	initializeService,
 	isBucketUrl,
 	isContentLiked,
+	isContentLikedByIds,
 	isNextDay,
 	isSameDate,
 	jumpToContinueContent,
@@ -422,4 +430,5 @@ export {
 	updateUserPractice,
 	verifyImageSRC,
 	verifyLocalDataContext,
+  addContextToContent
 };
