@@ -7,6 +7,7 @@ import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import {fetchByRailContentIds} from "./sanity";
 import {lessonTypesMapping} from "../contentTypeConfig";
 import { convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js';
+import {globalConfig} from "./config";
 
 const recentActivity =  [
     { id: 5,title: '3 Easy Classical Songs For Beginners', action: 'Comment', thumbnail: 'https://cdn.sanity.io/images/4032r8py/production/8a7fb4d7473306c5fa51ba2e8867e03d44342b18-1920x1080.jpg', summary: 'Just completed the advanced groove lesson! I’m finally feeling more confident with my fills. Thanks for the clear explanations and practice tips! ', date: '2025-03-25 10:09:48' },
@@ -82,35 +83,51 @@ export async function getUserWeeklyStats() {
 }
 
 /**
- * Retrieves user activity statistics for a specified month, including daily and weekly activity data.
+ * Retrieves user activity statistics for a specified month and user, including daily and weekly activity data.
+ * If no parameters are provided, defaults to the current year, current month, and the logged-in user.
  *
- * @param {number} [year=new Date().getFullYear()] - The year for which to retrieve the statistics.
- * @param {number} [month=new Date().getMonth()] - The month (0-indexed) for which to retrieve the statistics.
- * @returns {Promise<Object>} - A promise that resolves to an object containing user activity statistics.
+ * @param {Object} [params={}] - Parameters for fetching user statistics.
+ * @param {number} [params.year=new Date().getFullYear()] - The year for which to retrieve the statistics.
+ * @param {number} [params.month=new Date().getMonth()] - The 0-based month index (0 = January).
+ * @param {number} [params.day=1] - The starting day (not used for grid calc, but kept for flexibility).
+ * @param {number} [params.userId=globalConfig.sessionConfig.userId] - The user ID for whom to retrieve stats.
+ *
+ * @returns {Promise<Object>} A promise that resolves to an object containing:
+ * - `dailyActiveStats`: Array of daily activity data for the calendar grid.
+ * - `weeklyActiveStats`: Array of weekly streak summaries.
+ * - `practiceDuration`: Total number of seconds practiced in the month.
+ * - `currentDailyStreak`: Count of consecutive active days.
+ * - `currentWeeklyStreak`: Count of consecutive active weeks.
+ * - `daysPracticed`: Total number of active days in the month.
  *
  * @example
- * // Retrieve user activity statistics for the current month
- * getUserMonthlyStats()
- *   .then(stats => console.log(stats))
- *   .catch(error => console.error(error));
+ * // Get stats for current user and month
+ * getUserMonthlyStats().then(console.log);
  *
  * @example
- * // Retrieve user activity statistics for March 2024
- * getUserMonthlyStats(2024, 2)
- *   .then(stats => console.log(stats))
- *   .catch(error => console.error(error));
+ * // Get stats for March 2024
+ * getUserMonthlyStats({ year: 2024, month: 2 }).then(console.log);
+ *
+ * @example
+ * // Get stats for another user
+ * getUserMonthlyStats({ userId: 123 }).then(console.log);
  */
-export async function getUserMonthlyStats(year = new Date().getFullYear(), month = new Date().getMonth(), day = 1) {
-  let data = await userActivityContext.getData()
-  let practices = data?.[DATA_KEY_PRACTICES] ?? {}
-  let sortedPracticeDays = Object.keys(practices)
-    .map(dateStr => {
-      const [y, m, d] = dateStr.split('-').map(Number);
-      const newDate = new Date();
-      newDate.setFullYear(y, m - 1, d);
-      return newDate;
-    })
-    .sort((a, b) => a - b);
+export async function getUserMonthlyStats( params = {}) {
+  const now = new Date();
+  const {
+    year = now.getFullYear(),
+    month = now.getMonth(),
+    day = 1,
+    userId = globalConfig.sessionConfig.userId,
+  } = params;
+  let practices = {}
+  if(userId !== globalConfig.sessionConfig.userId) {
+    let data = await fetchUserPractices({userId});
+    practices = data?.["data"]?.[DATA_KEY_PRACTICES]?? {}
+  }else {
+    let data = await userActivityContext.getData()
+    practices = data?.[DATA_KEY_PRACTICES] ?? {}
+  }
 
   // Get the first day of the specified month and the number of days in that month
   let firstDayOfMonth = new Date(year, month, 1)
@@ -184,10 +201,6 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
   }
 }
 
-export async function getUserPractices() {
-  let data = await userActivityContext.getData()
-  return data?.[DATA_KEY_PRACTICES] ?? []
-}
 /**
  * Records user practice data and updates both the remote and local activity context.
  *
@@ -414,20 +427,34 @@ export async function restorePracticeSession(date) {
 /**
  * Retrieves and formats a user's practice sessions for a specific day.
  *
- * @param {string} day - The date for which practice sessions should be retrieved (format: YYYY-MM-DD).
- * @returns {Promise<Object>} - A promise that resolves to an object containing the practice sessions and total practice duration.
+ * @param {Object} params - Parameters for fetching practice sessions.
+ * @param {string} params.day - The date for which practice sessions should be retrieved (format: YYYY-MM-DD).
+ * @param {number} [params.userId=globalConfig.sessionConfig.userId] - Optional user ID to retrieve sessions for a specific user. Defaults to the logged-in user.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing:
+ *   - `practices`: An array of formatted practice session data.
+ *   - `practiceDuration`: Total practice duration (in seconds) for the given day.
  *
  * @example
- * // Get practice sessions for a specific day
- * getPracticeSessions("2025-03-31")
+ * // Get practice sessions for the current user on a specific day
+ * getPracticeSessions({ day: "2025-03-31" })
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Get practice sessions for another user
+ * getPracticeSessions({ day: "2025-03-31", userId: 456 })
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
-export async function getPracticeSessions(day) {
-  const userPracticesIds = await getUserPracticeIds(day);
+export async function getPracticeSessions(params ={}) {
+    const {
+      day,
+      userId = globalConfig.sessionConfig.userId,
+    } = params;
+  const userPracticesIds = await getUserPracticeIds(day, userId);
   if (!userPracticesIds.length) return { data: { practices: [], practiceDuration: 0} };
 
-  const meta = await fetchUserPracticeMeta(userPracticesIds);
+  const meta = await fetchUserPracticeMeta(userPracticesIds, userId);
   if (!meta.data.length) return { data: { practices: [], practiceDuration: 0 } };
   const practiceDuration = meta.data.reduce((total, practice) => total + (practice.duration_seconds || 0), 0);
   const contentIds = meta.data.map(practice => practice.content_id).filter(id => id !== null);
@@ -547,17 +574,21 @@ function getStreaksAndMessage(practices) {
   };
 }
 
-
-async function getUserPracticeIds(day = new Date().toISOString().split('T')[0]) {
-  let data = await userActivityContext.getData();
-  let practices = data?.[DATA_KEY_PRACTICES] ?? {};
+async function getUserPracticeIds(day = new Date().toISOString().split('T')[0], userId = null) {
+  let practices = {};
+  if(userId !== globalConfig.sessionConfig.userId) {
+    let data = await fetchUserPractices({userId});
+    practices = data?.["data"]?.[DATA_KEY_PRACTICES]?? {}
+  }else {
+    let data = await userActivityContext.getData()
+    practices = data?.[DATA_KEY_PRACTICES] ?? {}
+  }
   let userPracticesIds = [];
   Object.keys(practices).forEach(date => {
     if (date === day) {
       practices[date].forEach(practice => userPracticesIds.push(practice.id));
     }
   });
-
   return userPracticesIds;
 }
 
@@ -652,7 +683,6 @@ function calculateStreaks(practices, includeStreakMessage = false) {
         streakMessage = streakMessages.restartStreak;
       }
     }
-
   }
 
   return { currentDailyStreak, currentWeeklyStreak, streakMessage };
