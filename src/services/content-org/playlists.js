@@ -61,7 +61,7 @@ export async function fetchUserPlaylists(
  *  - `description` (string): A description of the playlist (optional, max 1000 characters).
  *  - `category` (string): The category of the playlist.
  *  - `thumbnail_url` (string): The URL of the playlist thumbnail (optional, must be a valid URL).
- *  - `private` (boolean): Whether the playlist is private (optional, defaults to true).
+ *  - `private` (boolean): Whether the playlist is private (optional, defaults to false).
  *  - `brand` (string): Brand identifier for the playlist.
  *
  * @returns {Promise<Playlist>} - A promise that resolves to the created playlist data if successful, or an error response if validation fails.
