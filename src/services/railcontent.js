@@ -1194,8 +1194,10 @@ export async function reportComment(commentId, issue) {
 }
 
 export async function fetchUserPractices({ currentVersion, userId } = {}) {
-  const userIdQuery = (userId)?'?user_id=' + userId:'';
-  const url = `/api/user/practices/v1/practices${userIdQuery}`;
+  const params = new URLSearchParams();
+  if (userId) params.append('user_id', userId);
+  const query = params.toString() ? `?${params.toString()}` : '';
+  const url = `/api/user/practices/v1/practices${query}`;
   const response = await fetchDataHandler(url, currentVersion);
   const { data, version } = response;
   const userPractices = data;
@@ -1246,13 +1248,6 @@ export async function fetchUserPracticeMeta(practiceIds, userId = null) {
 
   if (userId !== null) {
     params.append('user_id', userId);
-  }
-  let idsString = ''
-  if (practiceIds && practiceIds.length > 0) {
-    idsString = '?'
-    practiceIds.forEach((id, index) => {
-      idsString += `practice_ids[]=${id}${index < practiceIds.length - 1 ? '&' : ''}`
-    })
   }
   const url = `/api/user/practices/v1/practices?${params.toString()}`
   return await fetchHandler(url, 'GET', null)
