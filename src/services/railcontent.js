@@ -1193,8 +1193,11 @@ export async function reportComment(commentId, issue) {
   return await postDataHandler(url, data)
 }
 
-export async function fetchUserPractices(currentVersion) {
-  const url = `/api/user/practices/v1/practices`;
+export async function fetchUserPractices({ currentVersion, userId } = {}) {
+  const params = new URLSearchParams();
+  if (userId) params.append('user_id', userId);
+  const query = params.toString() ? `?${params.toString()}` : '';
+  const url = `/api/user/practices/v1/practices${query}`;
   const response = await fetchDataHandler(url, currentVersion);
   const { data, version } = response;
   const userPractices = data;
@@ -1236,18 +1239,17 @@ export async function logUserPractice(practiceDetails) {
   const url = `/api/user/practices/v1/practices`
   return await fetchHandler(url, 'POST', null, practiceDetails)
 }
-export async function fetchUserPracticeMeta(practiceIds) {
+export async function fetchUserPracticeMeta(practiceIds, userId = null) {
   if (practiceIds.length == 0) {
     return []
   }
-  let idsString = ''
-  if (practiceIds && practiceIds.length > 0) {
-    idsString = '?'
-    practiceIds.forEach((id, index) => {
-      idsString += `practice_ids[]=${id}${index < practiceIds.length - 1 ? '&' : ''}`
-    })
+  const params = new URLSearchParams();
+  practiceIds.forEach(id => params.append('practice_ids[]', id));
+
+  if (userId !== null) {
+    params.append('user_id', userId);
   }
-  const url = `/api/user/practices/v1/practices${idsString}`
+  const url = `/api/user/practices/v1/practices?${params.toString()}`
   return await fetchHandler(url, 'GET', null)
 }
 
