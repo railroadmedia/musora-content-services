@@ -117,3 +117,19 @@ export async function addItemToPlaylist(payload) {
   const url = `${BASE_PATH}/v1/user/playlists/items`
   return await fetchHandler(url, 'POST', null, payload)
 }
+
+
+export async function togglePrivate(playlist_id, is_private)
+{
+  const url = `${BASE_PATH}/v1/user/playlists/${playlist_id}`
+  const data = {
+    private: is_private,
+  }
+  return await fetchHandler(url, 'POST', null, data);
+}
+
+export async function updatePlaylist(playlist_id, payload)
+{
+  const url = `${BASE_PATH}/v1/user/playlists/${playlist_id}`
+  return await fetchHandler(url, 'POST', null, payload);
+}
