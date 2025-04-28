@@ -15,9 +15,10 @@ import {
   fetchLeaving, fetchScheduledAndNewReleases
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
-import {getAllStartedOrCompleted} from "./contentProgress";
+import {getAllStartedOrCompleted, getProgressStateByIds} from "./contentProgress";
 import {fetchHandler} from "./railcontent";
 import {recommendations} from "./recommendations";
+import {fetchUserPlaylists} from "./content-org/playlists";
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
   let recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent' });
@@ -370,5 +371,93 @@ export async function getRecommendedForYou(brand, rowId = null, {
 
   return { id: 'recommended', title: 'Recommended For You', items: contents }
 }
+
+export async function getProgressRows({brand = null} = {}) {
+
+  // Fetch recent contents with progress
+  let recentContents = await fetchRecent(brand, 'home', { page: 1, limit: 8, progress: 'recent' });
+ // console.log('rox::     🔁 Fetch Recent contents :', recentContents);
+// Extract their IDs to get progress timestamps
+  let recentContentIds = recentContents.map(item => item.id);
+//  console.log('rox::     🔁 Recent content IDs:', recentContentIds);
+// Fetch progress timestamps for those content IDs
+  const progressMap = await getProgressStateByIds(recentContentIds);
+
+// Fetch playlists with embedded progress
+  const recentPlaylists = await fetchUserPlaylists(brand);
+  console.log('rox::     🔁 Recent  playlists:::::', recentPlaylists);
+// Combine everything and get the latest 8 by progress timestamp
+  const combinedLatest = getCombinedLatestProgressItems(
+    recentContents,          // full content objects
+    progressMap,             // content progress as a map: { id: timestamp }
+    recentPlaylists.data     // full playlist objects
+  );
+
+// Output
+  console.log('rox::     🔁 Combined latest contents + playlists:', combinedLatest);
+
+  //const recentContentIds = await fetchRecent(brand, pageName, { page:page, limit:limit, progress: progress });
+  //const metaData = await fetchMetadata(brand, 'recent');
+  return {
+    type: TabResponseType.CATALOG,
+    data: combinedLatest,
+   // meta:  { tabs: metaData.tabs }
+  };
+}
+function getCombinedLatestProgressItems2(contents, progressMap, playlists, limit = 8) {
+  // Normalize contents with progress
+  const normalizedContents = contents
+    .filter(item => progressMap[item.id])
+    .map(item => ({
+      ...item,
+      type: 'content',
+      progressTimestamp: progressMap[item.id],
+    }));
+
+  // Normalize playlists with progress
+  const normalizedPlaylists = playlists
+    .filter(item => item.last_progress)
+    .map(item => ({
+     // item.id,
+    //  ...item,
+      type: 'playlist',
+      progressTimestamp: new Date(item.last_progress).getTime(),
+    }));
+
+  // Combine and sort by progressTimestamp (desc)
+  return [...normalizedContents, ...normalizedPlaylists]
+    .sort((a, b) => b.progressTimestamp - a.progressTimestamp)
+    .slice(0, limit);
+}
+
+function getCombinedLatestProgressItems(contents, progressMap, playlists, limit = 8) {
+  // Normalize contents: keep only those with progress and attach timestamp and formatted date
+
+  const normalizedContents = contents
+  //  .filter(item => progressMap[item.id])
+    .map(item => ({
+      ...item,
+      progressType: 'content',
+      progressTimestamp: progressMap[item.id],
+      formattedDate: new Date(progressMap[item.id]).toLocaleString()  // Formatted date
+    }));
+  console.log('rox:: getCombinedLatestProgressItems::: normalizedContents', normalizedContents);
+  // Normalize playlists: keep those with last_progress and parse the date
+  const normalizedPlaylists = playlists
+  //  .filter(item => item.last_progress)
+    .map(item => ({
+    //  ...item,
+      progressType: 'playlist',
+      progressTimestamp: new Date(item.last_progress).getTime(),
+      formattedDate: new Date(item.last_progress).toLocaleString()  // Formatted date
+    }));
+  console.log('rox:: getCombinedLatestProgressItems::: normalizedPlaylists', normalizedPlaylists);
+  // Combine, sort by latest, and limit
+  return [...normalizedContents, ...normalizedPlaylists]
+    .sort((a, b) => b.progressTimestamp - a.progressTimestamp)
+    .slice(0, 50);
+}
+
+
 
 
