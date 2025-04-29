@@ -15,7 +15,7 @@ import {
   fetchLeaving, fetchScheduledAndNewReleases
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
-import {getAllStartedOrCompleted, getProgressStateByIds} from "./contentProgress";
+import {getAllStartedOrCompleted, getProgressDateByIds, getProgressStateByIds} from "./contentProgress";
 import {fetchHandler} from "./railcontent";
 import {recommendations} from "./recommendations";
 import {fetchUserPlaylists} from "./content-org/playlists";
@@ -375,85 +375,81 @@ export async function getRecommendedForYou(brand, rowId = null, {
 export async function getProgressRows({brand = null} = {}) {
 
   // Fetch recent contents with progress
-  let recentContents = await fetchRecent(brand, 'home', { page: 1, limit: 8, progress: 'recent' });
- // console.log('rox::     🔁 Fetch Recent contents :', recentContents);
-// Extract their IDs to get progress timestamps
-  let recentContentIds = recentContents.map(item => item.id);
-//  console.log('rox::     🔁 Recent content IDs:', recentContentIds);
+  const trrr = await getAllStartedOrCompleted()
+  const contents = await fetchByRailContentIds(trrr);
+  const filtered = contents.filter(item => item.brand === brand).slice(0, 8);
+  let recentContentIds = filtered.map(item => item.id);
+ // console.log("🎹 Filtered Pianote Items:", filtered);
+  console.log('rox::     ⚠️ Progress State Started or Completed::::::::::::::::::::::::', recentContentIds);
 // Fetch progress timestamps for those content IDs
-  const progressMap = await getProgressStateByIds(recentContentIds);
-
+  const progressMap = await getProgressDateByIds(recentContentIds);
+  console.log("rox:: 🎹 progressMap Items:", progressMap, recentContentIds);
 // Fetch playlists with embedded progress
   const recentPlaylists = await fetchUserPlaylists(brand);
   console.log('rox::     🔁 Recent  playlists:::::', recentPlaylists);
-// Combine everything and get the latest 8 by progress timestamp
+
   const combinedLatest = getCombinedLatestProgressItems(
-    recentContents,          // full content objects
+    filtered,          // full content objects
     progressMap,             // content progress as a map: { id: timestamp }
     recentPlaylists.data     // full playlist objects
   );
-
-// Output
   console.log('rox::     🔁 Combined latest contents + playlists:', combinedLatest);
 
-  //const recentContentIds = await fetchRecent(brand, pageName, { page:page, limit:limit, progress: progress });
-  //const metaData = await fetchMetadata(brand, 'recent');
   return {
     type: TabResponseType.CATALOG,
     data: combinedLatest,
    // meta:  { tabs: metaData.tabs }
   };
 }
-function getCombinedLatestProgressItems2(contents, progressMap, playlists, limit = 8) {
-  // Normalize contents with progress
-  const normalizedContents = contents
-    .filter(item => progressMap[item.id])
-    .map(item => ({
-      ...item,
-      type: 'content',
-      progressTimestamp: progressMap[item.id],
-    }));
-
-  // Normalize playlists with progress
-  const normalizedPlaylists = playlists
-    .filter(item => item.last_progress)
-    .map(item => ({
-     // item.id,
-    //  ...item,
-      type: 'playlist',
-      progressTimestamp: new Date(item.last_progress).getTime(),
-    }));
-
-  // Combine and sort by progressTimestamp (desc)
-  return [...normalizedContents, ...normalizedPlaylists]
-    .sort((a, b) => b.progressTimestamp - a.progressTimestamp)
-    .slice(0, limit);
-}
 
 function getCombinedLatestProgressItems(contents, progressMap, playlists, limit = 8) {
   // Normalize contents: keep only those with progress and attach timestamp and formatted date
-
-  const normalizedContents = contents
-  //  .filter(item => progressMap[item.id])
+  const normalizedContents1 = contents
+    .filter(item => progressMap[item.id])
     .map(item => ({
       ...item,
       progressType: 'content',
       progressTimestamp: progressMap[item.id],
       formattedDate: new Date(progressMap[item.id]).toLocaleString()  // Formatted date
     }));
-  console.log('rox:: getCombinedLatestProgressItems::: normalizedContents', normalizedContents);
+
+  const normalizedContents = contents
+    .map(item => {
+      const contentId = item.id ?? item.railcontent_id;
+      const progressTimestampSeconds = progressMap[contentId];
+      const progressTimestamp = progressTimestampSeconds * 1000; //Convert to ms
+      if (!progressTimestamp) return null; // Skip if no progress
+      return {
+        ...item,
+        progressType: 'content',
+        progressTimestamp,
+        formattedDate: new Intl.DateTimeFormat('en-US', {
+          timeZone: 'America/Los_Angeles',
+          dateStyle: 'short',
+          timeStyle: 'medium'
+        }).format(new Date(progressTimestamp )), // Convert from seconds to ms
+      };
+    })
+    .filter(Boolean); // Remove nulls
+
+  console.log('rox:: getCombinedLatestProgressItems::: normalizedContents', normalizedContents, normalizedContents1);
   // Normalize playlists: keep those with last_progress and parse the date
   const normalizedPlaylists = playlists
-  //  .filter(item => item.last_progress)
-    .map(item => ({
-    //  ...item,
-      progressType: 'playlist',
-      progressTimestamp: new Date(item.last_progress).getTime(),
-      formattedDate: new Date(item.last_progress).toLocaleString()  // Formatted date
-    }));
+    .filter(item => item.last_progress) // ensure it's defined
+    .map(item => {
+      const date = new Date(item.last_progress); // Handles PST correctly
+      return {
+        ...item,
+        progressType: 'playlist',
+        progressTimestamp: date.getTime(), // Always in ms UTC
+        formattedDate: date.toLocaleString(),
+      };
+    });
+
   console.log('rox:: getCombinedLatestProgressItems::: normalizedPlaylists', normalizedPlaylists);
   // Combine, sort by latest, and limit
   return [...normalizedContents, ...normalizedPlaylists]
+    .filter(item => typeof item.progressTimestamp === 'number' && item.progressTimestamp > 0)
     .sort((a, b) => b.progressTimestamp - a.progressTimestamp)
     .slice(0, 50);
 }
