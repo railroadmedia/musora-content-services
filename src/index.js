@@ -15,6 +15,7 @@ import {
 	getContentRows,
 	getLessonContentRows,
 	getNewAndUpcoming,
+	getProgressRows,
 	getRecent,
 	getRecommendedForYou,
 	getScheduleContentRows,
@@ -23,6 +24,7 @@ import {
 
 import {
 	isContentLiked,
+	isContentLikedByIds,
 	likeContent,
 	unlikeContent
 } from './services/contentLikes.js';
@@ -35,11 +37,13 @@ import {
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
+	getProgressDateByIds,
 	getProgressPercentage,
 	getProgressPercentageByIds,
 	getProgressState,
 	getProgressStateByIds,
 	getResumeTimeSeconds,
+	getResumeTimeSecondsByIds,
 	recordWatchSession
 } from './services/contentProgress.js';
 
@@ -101,6 +105,7 @@ import {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchHandler,
+	fetchLikeCount,
 	fetchNextContentDataForParent,
 	fetchOwnedChallenges,
 	fetchPinnedPlaylists,
@@ -297,6 +302,7 @@ export {
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
+	fetchLikeCount,
 	fetchLiveEvent,
 	fetchMetadata,
 	fetchMethod,
@@ -353,14 +359,17 @@ export {
 	getNewAndUpcoming,
 	getPracticeNotes,
 	getPracticeSessions,
+	getProgressDateByIds,
 	getProgressPercentage,
 	getProgressPercentageByIds,
+	getProgressRows,
 	getProgressState,
 	getProgressStateByIds,
 	getRecent,
 	getRecentActivity,
 	getRecommendedForYou,
 	getResumeTimeSeconds,
+	getResumeTimeSecondsByIds,
 	getScheduleContentRows,
 	getSortOrder,
 	getTabResults,
@@ -371,6 +380,7 @@ export {
 	initializeService,
 	isBucketUrl,
 	isContentLiked,
+	isContentLikedByIds,
 	isNextDay,
 	isSameDate,
 	jumpToContinueContent,
