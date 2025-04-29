@@ -39,6 +39,10 @@ export async function getResumeTimeSecondsByIds(contentIds) {
   return getByIds(contentIds, DATA_KEY_RESUME_TIME, 0)
 }
 
+export async function getProgressDateByIds(contentIds) {
+  return getByIds(contentIds, DATA_KEY_LAST_UPDATED_TIME, '')
+}
+
 async function getById(contentId, dataKey, defaultValue) {
   let data = await dataContext.getData()
   return data[contentId]?.[dataKey] ?? defaultValue
