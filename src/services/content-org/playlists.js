@@ -254,6 +254,47 @@ export async function duplicatePlaylist(playlistId, playlistData) {
   return await fetchHandler(url, 'POST', null, playlistData)
 }
 
+/**
+ * Retrieves details of a specific playlist by its ID.
+ *
+ * This function sends a GET request to the `/playlists/playlist` endpoint with a specified playlist ID.
+ * The server validates the user's access to the playlist and returns playlist details if the user is authorized.
+ *
+ * @param {string|number} playlistId - The unique identifier of the playlist to retrieve.
+ *
+ * @returns {Promise<Object>} - A promise that resolves to the response from the API, containing:
+ *  - `data` (Object): The playlist details, or an error message if access is denied or the playlist is not found.
+ *
+ * @example
+ * fetchPlaylist(12345)
+ *   .then(response => console.log(response.data))
+ *   .catch(error => console.error('Error fetching playlist:', error));
+ */
+export async function fetchPlaylist(playlistId) {
+  const url = `${BASE_PATH}/v1/user/playlists/${playlistId}`
+  return await fetchHandler(url, 'GET')
+}
+
+/**
+ * Retrieves items within a specified playlist by playlist ID.
+ *
+ * This function sends a GET request to the `/playlists/playlist-lessons` endpoint to fetch items in the given playlist.
+ * The server combines data from the playlist and additional metadata from Sanity to enhance item details.
+ *
+ * @param {string|number} playlistId - The unique identifier of the playlist whose items are to be fetched.
+ *
+ * @returns {Promise<Array<Object>>} - A promise that resolves to an array of playlist items
+ *
+ * @example
+ * fetchPlaylistItems(12345)
+ *   .then(items => console.log(items))
+ *   .catch(error => console.error('Error fetching playlist items:', error));
+ */
+export async function fetchPlaylistItems(playlistId) {
+  const url = `${BASE_PATH}/v1/user/playlists/items/${playlistId}`
+  return await fetchHandler(url, 'GET')
+}
+
 // Unsupported playlist endpoints are here and will need to be implemented one by one
 //
 //
@@ -321,47 +362,6 @@ export async function duplicatePlaylist(playlistId, playlistData) {
 // }
 //
 //
-// /**
-//  * Retrieves details of a specific playlist by its ID.
-//  *
-//  * This function sends a GET request to the `/playlists/playlist` endpoint with a specified playlist ID.
-//  * The server validates the user's access to the playlist and returns playlist details if the user is authorized.
-//  *
-//  * @param {string|number} playlistId - The unique identifier of the playlist to retrieve.
-//  *
-//  * @returns {Promise<Object>} - A promise that resolves to the response from the API, containing:
-//  *  - `data` (Object): The playlist details, or an error message if access is denied or the playlist is not found.
-//  *
-//  * @example
-//  * fetchPlaylist(12345)
-//  *   .then(response => console.log(response.data))
-//  *   .catch(error => console.error('Error fetching playlist:', error));
-//  */
-// export async function fetchPlaylist(playlistId) {
-//   const url = `/playlists/playlist/${playlistId}`
-//   return await fetchHandler(url, 'GET')
-// }
-//
-// /**
-//  * Retrieves items within a specified playlist by playlist ID.
-//  *
-//  * This function sends a GET request to the `/playlists/playlist-lessons` endpoint to fetch items in the given playlist.
-//  * The server combines data from the playlist and additional metadata from Sanity to enhance item details.
-//  *
-//  * @param {string|number} playlistId - The unique identifier of the playlist whose items are to be fetched.
-//  *
-//  * @returns {Promise<Array<Object>>} - A promise that resolves to an array of playlist items
-//  *
-//  * @example
-//  * fetchPlaylistItems(12345)
-//  *   .then(items => console.log(items))
-//  *   .catch(error => console.error('Error fetching playlist items:', error));
-//  */
-// export async function fetchPlaylistItems(playlistId, { sort } = {}) {
-//   const sortString = sort ? `&sort=${sort}` : ''
-//   const url = `/playlists/playlist-lessons?playlist_id=${playlistId}${sortString}`
-//   return await fetchHandler(url, 'GET')
-// }
 //
 // /**
 //  * Updates a playlist item with the provided data.
