@@ -112,15 +112,12 @@ export async function addItemToPlaylist(payload) {
 
 /**
  * Updates a playlist's privacy setting by toggling its public/private status.
- *
- * This function sends a POST request to the playlist update endpoint to change
- * whether a playlist is publicly visible or private. The function internally inverts
- * the provided `is_public` parameter to set the `private` field in the payload.
+
  *
  * @async
  * @function togglePlaylistPrivate
  * @param {string|number} playlistId - The unique identifier of the playlist to update.
- * @param {boolean} [is_public=true] - is public flag
+ * @param {boolean} [is_private=true] - is public flag
  *
  * @returns {Promise<Object>}
  *
