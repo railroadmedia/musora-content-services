@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.3.18](https://github.com/railroadmedia/musora-content-services/compare/v2.3.16...v2.3.18) (2025-04-30)
+
+
+### Bug Fixes
+
+* artist field in fetchLessonContent ([#244](https://github.com/railroadmedia/musora-content-services/issues/244)) ([9cf685f](https://github.com/railroadmedia/musora-content-services/commit/9cf685fef544bfe72345a282850085104f536076))
+
 ### [2.3.17](https://github.com/railroadmedia/musora-content-services/compare/v2.3.16...v2.3.17) (2025-04-22)
 
 ### [2.3.16](https://github.com/railroadmedia/musora-content-services/compare/v2.3.15...v2.3.16) (2025-04-22)
