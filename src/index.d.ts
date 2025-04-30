@@ -8,20 +8,13 @@ import {
 import {
 	addItemToPlaylist,
 	createPlaylist,
-	deletePlaylist,
-	deletePlaylistItem,
 	duplicatePlaylist,
-	fetchPlaylist,
-	fetchPlaylistItem,
-	fetchPlaylistItems,
 	fetchUserPlaylists,
 	likePlaylist,
 	reorderPlaylistItems,
 	reportPlaylist,
 	togglePlaylistPrivate,
-	unlikePlaylist,
-	updatePlaylist,
-	updatePlaylistItem
+	unlikePlaylist
 } from './services/content-org/playlists.js';
 
 import {
@@ -253,8 +246,6 @@ declare module 'musora-content-services' {
 		createPlaylist,
 		createPracticeNotes,
 		deleteComment,
-		deletePlaylist,
-		deletePlaylistItem,
 		deletePracticeSession,
 		duplicatePlaylist,
 		editComment,
@@ -309,9 +300,6 @@ declare module 'musora-content-services' {
 		fetchPackData,
 		fetchParentForDownload,
 		fetchPlayAlongsCount,
-		fetchPlaylist,
-		fetchPlaylistItem,
-		fetchPlaylistItems,
 		fetchRecent,
 		fetchRelatedLessons,
 		fetchRelatedRecommendedContent,
@@ -412,8 +400,6 @@ declare module 'musora-content-services' {
 		unlikeComment,
 		unlikeContent,
 		unlikePlaylist,
-		updatePlaylist,
-		updatePlaylistItem,
 		updatePracticeNotes,
 		updateUserPractice,
 		verifyImageSRC,

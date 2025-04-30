@@ -8,20 +8,13 @@ import {
 import {
 	addItemToPlaylist,
 	createPlaylist,
-	deletePlaylist,
-	deletePlaylistItem,
 	duplicatePlaylist,
-	fetchPlaylist,
-	fetchPlaylistItem,
-	fetchPlaylistItems,
 	fetchUserPlaylists,
 	likePlaylist,
 	reorderPlaylistItems,
 	reportPlaylist,
 	togglePlaylistPrivate,
-	unlikePlaylist,
-	updatePlaylist,
-	updatePlaylistItem
+	unlikePlaylist
 } from './services/content-org/playlists.js';
 
 import {
@@ -252,8 +245,6 @@ export {
 	createPlaylist,
 	createPracticeNotes,
 	deleteComment,
-	deletePlaylist,
-	deletePlaylistItem,
 	deletePracticeSession,
 	duplicatePlaylist,
 	editComment,
@@ -308,9 +299,6 @@ export {
 	fetchPackData,
 	fetchParentForDownload,
 	fetchPlayAlongsCount,
-	fetchPlaylist,
-	fetchPlaylistItem,
-	fetchPlaylistItems,
 	fetchRecent,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
@@ -411,8 +399,6 @@ export {
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
-	updatePlaylist,
-	updatePlaylistItem,
 	updatePracticeNotes,
 	updateUserPractice,
 	verifyImageSRC,
