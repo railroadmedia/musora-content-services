@@ -23,7 +23,6 @@ const BASE_PATH = `/api/content-org`
  * @param {number} [params.limit=10] - The maximum number of playlists to return per page (default is 10).
  * @param {number} [params.page=1] - The page number for pagination.
  * @param {string} [params.sort='-created_at'] - The sorting order for the playlists (default is by created_at in descending order).
- * @param {string} [params.searchTerm] - A search term to filter playlists by name.
  * @param {int|string} [params.content_id] - If content_id exists, the endpoint checks in each playlist if we have the content in the items.
  *
  * @returns {Promise<Object|null>} - A promise that resolves to the response from the API, containing the user playlists data.
@@ -37,13 +36,12 @@ export async function fetchUserPlaylists(
   brand,
   { page, limit, sort, content_id } = {}
 ) {
-  let url
-  console.log({ config: globalConfig.baseUrl })
+  const pageString = page ? `?page=${page}` : '?page=1'
   const limitString = limit ? `&limit=${limit}` : ''
-  const pageString = page ? `&page=${page}` : ''
   const sortString = sort ? `&sort=${sort}` : ''
   const content = content_id ? `&content_id=${content_id}` : ''
-  url = `${BASE_PATH}/v1/user/playlists?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`
+  const brandString = brand ? `&brand=${brand}` : ''
+  const url = `${BASE_PATH}/v1/user/playlists${pageString}${brandString}${limitString}${sortString}${content}`
   return await fetchHandler(url)
 }
 
