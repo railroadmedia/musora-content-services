@@ -35,14 +35,13 @@ const BASE_PATH = `/api/content-org`
  */
 export async function fetchUserPlaylists(
   brand,
-  { page, limit, sort, searchTerm, content_id, categories } = {}
+  { page, limit, sort, content_id } = {}
 ) {
   let url
   console.log({ config: globalConfig.baseUrl })
   const limitString = limit ? `&limit=${limit}` : ''
   const pageString = page ? `&page=${page}` : ''
   const sortString = sort ? `&sort=${sort}` : ''
-  const searchFilter = searchTerm ? `&term=${searchTerm}` : ''
   const content = content_id ? `&content_id=${content_id}` : ''
   url = `${BASE_PATH}/v1/user/playlists?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`
   return await fetchHandler(url)

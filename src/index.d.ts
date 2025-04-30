@@ -8,7 +8,13 @@ import {
 import {
 	addItemToPlaylist,
 	createPlaylist,
-	fetchUserPlaylists
+	duplicatePlaylist,
+	fetchUserPlaylists,
+	likePlaylist,
+	reorderPlaylistItems,
+	reportPlaylist,
+	togglePlaylistPrivate,
+	unlikePlaylist
 } from './services/content-org/playlists.js';
 
 import {
@@ -23,6 +29,7 @@ import {
 
 import {
 	isContentLiked,
+	isContentLikedByIds,
 	likeContent,
 	unlikeContent
 } from './services/contentLikes.js';
@@ -40,6 +47,7 @@ import {
 	getProgressState,
 	getProgressStateByIds,
 	getResumeTimeSeconds,
+	getResumeTimeSecondsByIds,
 	recordWatchSession
 } from './services/contentProgress.js';
 
@@ -101,6 +109,7 @@ import {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchHandler,
+	fetchLikeCount,
 	fetchNextContentDataForParent,
 	fetchOwnedChallenges,
 	fetchPinnedPlaylists,
@@ -235,11 +244,8 @@ import {
 	updateUserPractice
 } from './services/userActivity.js';
 
-import { addContextToContent } from './contentAggregator.js';
-
 declare module 'musora-content-services' {
 	export {
-		addContextToContent,
 		addItemToPlaylist,
 		applyCloudflareWrapper,
 		applySanityTransformations,
@@ -261,6 +267,7 @@ declare module 'musora-content-services' {
 		deletePlaylistItem,
 		deletePlaylistLike,
 		deletePracticeSession,
+		duplicatePlaylist,
 		duplicatePlaylist,
 		editComment,
 		extractSanityUrl,
@@ -298,6 +305,7 @@ declare module 'musora-content-services' {
 		fetchLeaving,
 		fetchLessonContent,
 		fetchLessonsFeaturingThisContent,
+		fetchLikeCount,
 		fetchLiveEvent,
 		fetchMetadata,
 		fetchMethod,
@@ -362,6 +370,7 @@ declare module 'musora-content-services' {
 		getRecentActivity,
 		getRecommendedForYou,
 		getResumeTimeSeconds,
+		getResumeTimeSecondsByIds,
 		getScheduleContentRows,
 		getSortOrder,
 		getTabResults,
@@ -372,11 +381,13 @@ declare module 'musora-content-services' {
 		initializeService,
 		isBucketUrl,
 		isContentLiked,
+		isContentLikedByIds,
 		isNextDay,
 		isSameDate,
 		jumpToContinueContent,
 		likeComment,
 		likeContent,
+		likePlaylist,
 		likePlaylist,
 		logUserPractice,
 		login,
@@ -403,17 +414,21 @@ declare module 'musora-content-services' {
 		recordUserPractice,
 		recordWatchSession,
 		removeUserPractice,
+		reorderPlaylistItems,
 		replyToComment,
 		reportComment,
+		reportPlaylist,
 		reportPlaylist,
 		reset,
 		restorePracticeSession,
 		restoreUserPractice,
 		setStudentViewForUser,
+		togglePlaylistPrivate,
 		unassignModeratorToComment,
 		unblockUser,
 		unlikeComment,
 		unlikeContent,
+		unlikePlaylist,
 		unpinPlaylist,
 		updatePlaylist,
 		updatePlaylistItem,
