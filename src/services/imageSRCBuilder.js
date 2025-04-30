@@ -55,7 +55,7 @@ export function buildImageSRC(url, options = {}) {
 export function applySanityTransformations(url, options) {
   const { width, height, quality } = options
 
-  const sanityOptions = ['auto=format']
+  const sanityOptions = ['fm=webp']
 
   // Dimensions
   if (width) sanityOptions.push(`w=${width}`)
