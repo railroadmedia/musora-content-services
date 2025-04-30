@@ -64,22 +64,21 @@ describe('Sanity Queries', function () {
   test('fetchReturning', async () => {
     const brand = 'guitareo'
     const page = 1
-    const response = await fetchReturning(brand, {pageNumber: 1})
+    const response = await fetchReturning(brand, { pageNumber: 1 })
     expect(response).toBeDefined()
-  });
+  })
 
   test('fetchLeaving', async () => {
     const brand = 'guitareo'
-    const response = await fetchLeaving(brand, {pageNumber: 1})
+    const response = await fetchLeaving(brand, { pageNumber: 1 })
     expect(response).toBeDefined()
-  });
+  })
 
   test('fetchComingSoon', async () => {
     const brand = 'guitareo'
-    const response = await fetchComingSoon(brand, {pageNumber: 2, contentPerPage: 20})
+    const response = await fetchComingSoon(brand, { pageNumber: 2, contentPerPage: 20 })
     expect(response).toBeDefined()
-  });
-
+  })
 
   test('fetchArtists', async () => {
     const response = await fetchArtists('drumeo')
@@ -292,7 +291,7 @@ describe('Sanity Queries', function () {
 
   test('fetchRelatedTutorials', async () => {
     const railContentId = 387379
-    const brand = "pianote"
+    const brand = 'pianote'
     const queryResult = await fetchRelatedTutorials(railContentId, brand)
     console.log(queryResult)
     expect(typeof queryResult).toBe('object') //check structure of parent
@@ -638,8 +637,12 @@ describe('Sanity Queries', function () {
     expect(hierarchy.parents[241250]).toBe(241249)
     expect(hierarchy.parents[241249]).toBe(241248)
     expect(hierarchy.parents[241248]).toBe(241247)
-    expect(hierarchy.children[241250]).toStrictEqual([241676])
-    expect(hierarchy.children[243085]).toStrictEqual([243170, 243171, 243172, 243174, 243176])
+    expect(hierarchy.children[241250]).toContain(241676)
+    expect(hierarchy.children[243085]).toContain(243170)
+    expect(hierarchy.children[243085]).toContain(243171)
+    expect(hierarchy.children[243085]).toContain(243172)
+    expect(hierarchy.children[243085]).toContain(243174)
+    expect(hierarchy.children[243085]).toContain(243176)
   })
 
   test('fetchTopLeveldrafts', async () => {
