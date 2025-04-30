@@ -8,7 +8,13 @@ import {
 import {
 	addItemToPlaylist,
 	createPlaylist,
-	fetchUserPlaylists
+	duplicatePlaylist,
+	fetchUserPlaylists,
+	likePlaylist,
+	reorderPlaylistItems,
+	reportPlaylist,
+	togglePlaylistPrivate,
+	unlikePlaylist
 } from './services/content-org/playlists.js';
 
 import {
@@ -23,6 +29,7 @@ import {
 
 import {
 	isContentLiked,
+	isContentLikedByIds,
 	likeContent,
 	unlikeContent
 } from './services/contentLikes.js';
@@ -40,6 +47,7 @@ import {
 	getProgressState,
 	getProgressStateByIds,
 	getResumeTimeSeconds,
+	getResumeTimeSecondsByIds,
 	recordWatchSession
 } from './services/contentProgress.js';
 
@@ -78,13 +86,8 @@ import {
 import {
 	assignModeratorToComment,
 	closeComment,
-	countAssignmentsAndLessons,
 	createComment,
 	deleteComment,
-	deletePlaylist,
-	deletePlaylistItem,
-	deletePlaylistLike,
-	duplicatePlaylist,
 	editComment,
 	fetchAllCompletedStates,
 	fetchCarouselCardData,
@@ -101,12 +104,9 @@ import {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchHandler,
+	fetchLikeCount,
 	fetchNextContentDataForParent,
 	fetchOwnedChallenges,
-	fetchPinnedPlaylists,
-	fetchPlaylist,
-	fetchPlaylistItem,
-	fetchPlaylistItems,
 	fetchSongsInProgress,
 	fetchTopComment,
 	fetchUserAward,
@@ -118,11 +118,8 @@ import {
 	fetchUserPracticeNotes,
 	fetchUserPractices,
 	likeComment,
-	likePlaylist,
 	logUserPractice,
 	openComment,
-	pinPlaylist,
-	playback,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,
@@ -138,13 +135,9 @@ import {
 	postRecordWatchSession,
 	replyToComment,
 	reportComment,
-	reportPlaylist,
 	setStudentViewForUser,
 	unassignModeratorToComment,
-	unlikeComment,
-	unpinPlaylist,
-	updatePlaylist,
-	updatePlaylistItem
+	unlikeComment
 } from './services/railcontent.js';
 
 import {
@@ -235,10 +228,7 @@ import {
 	updateUserPractice
 } from './services/userActivity.js';
 
-import { addContextToContent } from './contentAggregator.js';
-
 export {
-	addContextToContent,
 	addItemToPlaylist,
 	applyCloudflareWrapper,
 	applySanityTransformations,
@@ -251,14 +241,10 @@ export {
 	contentStatusCompleted,
 	contentStatusReset,
 	convertToTimeZone,
-	countAssignmentsAndLessons,
 	createComment,
 	createPlaylist,
 	createPracticeNotes,
 	deleteComment,
-	deletePlaylist,
-	deletePlaylistItem,
-	deletePlaylistLike,
 	deletePracticeSession,
 	duplicatePlaylist,
 	editComment,
@@ -297,6 +283,7 @@ export {
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
+	fetchLikeCount,
 	fetchLiveEvent,
 	fetchMetadata,
 	fetchMethod,
@@ -311,11 +298,7 @@ export {
 	fetchPackAll,
 	fetchPackData,
 	fetchParentForDownload,
-	fetchPinnedPlaylists,
 	fetchPlayAlongsCount,
-	fetchPlaylist,
-	fetchPlaylistItem,
-	fetchPlaylistItems,
 	fetchRecent,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
@@ -361,6 +344,7 @@ export {
 	getRecentActivity,
 	getRecommendedForYou,
 	getResumeTimeSeconds,
+	getResumeTimeSecondsByIds,
 	getScheduleContentRows,
 	getSortOrder,
 	getTabResults,
@@ -371,6 +355,7 @@ export {
 	initializeService,
 	isBucketUrl,
 	isContentLiked,
+	isContentLikedByIds,
 	isNextDay,
 	isSameDate,
 	jumpToContinueContent,
@@ -381,8 +366,6 @@ export {
 	login,
 	logout,
 	openComment,
-	pinPlaylist,
-	playback,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,
@@ -402,6 +385,7 @@ export {
 	recordUserPractice,
 	recordWatchSession,
 	removeUserPractice,
+	reorderPlaylistItems,
 	replyToComment,
 	reportComment,
 	reportPlaylist,
@@ -409,13 +393,12 @@ export {
 	restorePracticeSession,
 	restoreUserPractice,
 	setStudentViewForUser,
+	togglePlaylistPrivate,
 	unassignModeratorToComment,
 	unblockUser,
 	unlikeComment,
 	unlikeContent,
-	unpinPlaylist,
-	updatePlaylist,
-	updatePlaylistItem,
+	unlikePlaylist,
 	updatePracticeNotes,
 	updateUserPractice,
 	verifyImageSRC,

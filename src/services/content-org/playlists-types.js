@@ -14,12 +14,12 @@
  * @property {string} brand
  * @property {string} name
  * @property {string} description
- * @property {string|null} thumbnail_url
  * @property {string} duration_formated
  * @property {Array<string>} first_4_items_thumbnail_url
- * @property {string|null} url
- * @property {string|null} playback_url
  * @property {number} total_items
+ * @property {number} likes
+ * @property {boolean} pinned
+ * @property {boolean} is_my_playlist
  * @property {User} user
  */
 
