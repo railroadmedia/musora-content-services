@@ -118,18 +118,65 @@ export async function addItemToPlaylist(payload) {
   return await fetchHandler(url, 'POST', null, payload)
 }
 
+/**
+ * Toggles a playlists public/private sstate
+ *
+ *
+ * @param {Boolean} is_private - private/publice value
 
+ * @returns {Promise<Playlist>} - A promise that resolves to the updated playlist data if successful, or an error response if validation fails.
+ *
+ * @example
+ * togglePrivate(11541, true)
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error('Error creating playlist:', error));
+ */
 export async function togglePrivate(playlist_id, is_private)
 {
   const url = `${BASE_PATH}/v1/user/playlists/${playlist_id}`
   const data = {
     private: is_private,
   }
-  return await fetchHandler(url, 'POST', null, data);
+  return await fetchHandler(url, 'PUT', null, data);
 }
 
-export async function updatePlaylist(playlist_id, payload)
+
+/**
+ * Updates a playlists values
+ *
+ *
+ * @param {CreatePlaylistDTO} playlistData - An object containing data to create the playlist. The fields include:
+ *  - `name` (string): The name of the new playlist (required, max 255 characters).
+ *  - `description` (string): A description of the playlist (optional, max 1000 characters).
+ *  - `category` (string): The category of the playlist.
+ *  - `private` (boolean): Whether the playlist is private (optional, defaults to false).
+ *  - `brand` (string): Brand identifier for the playlist.
+ *
+ * @returns {Promise<Playlist>} - A promise that resolves to the created playlist data if successful, or an error response if validation fails.
+ *
+ * The server response includes:
+ *  - `message`: Success message indicating playlist creation (e.g., "Playlist created successfully").
+ *  - `playlist`: The data for the created playlist, including the `user_id` of the authenticated user.
+ *
+ * @example
+ * createPlaylist({ name: "My Playlist", description: "A cool playlist", private: true })
+ *   .then(response => console.log(response.message))
+ *   .catch(error => console.error('Error creating playlist:', error));
+ */
+export async function updatePlaylist(playlist_id, {
+  name = null, description = null,  is_private = null, brand = null, category = null, deleted_items = null, item_order = null
+})
 {
+  const data = {
+    ...name && { name },
+    ...description && { description },
+    ...is_private !== null && { private: is_private},
+    ...brand && { brand },
+    ...category && { category},
+    ...deleted_items && { deleted_items },
+    ...item_order && { item_order },
+  }
+  return
   const url = `${BASE_PATH}/v1/user/playlists/${playlist_id}`
-  return await fetchHandler(url, 'POST', null, payload);
+  return await fetchHandler(url, 'POST', null, data);
 }
