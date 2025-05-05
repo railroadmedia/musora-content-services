@@ -54,10 +54,6 @@ import {
 } from './services/contentProgress.js';
 
 import {
-  addContextToContent
-} from './contentAggregator.js';
-
-import {
 	verifyLocalDataContext
 } from './services/dataContext.js';
 
@@ -214,6 +210,10 @@ import {
 } from './services/user/permissions.js';
 
 import {
+	otherStats
+} from './services/user/profile.js';
+
+import {
 	login,
 	logout
 } from './services/user/sessions.js';
@@ -238,7 +238,6 @@ import {
 declare module 'musora-content-services' {
 	export {
 		addItemToPlaylist,
-    addContextToContent,
 		applyCloudflareWrapper,
 		applySanityTransformations,
 		assignModeratorToComment,
@@ -378,6 +377,7 @@ declare module 'musora-content-services' {
 		login,
 		logout,
 		openComment,
+		otherStats,
 		postChallengesCommunityNotification,
 		postChallengesEnroll,
 		postChallengesEnrollmentNotification,

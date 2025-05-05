@@ -84,9 +84,6 @@ import {
 	isBucketUrl,
 	verifyImageSRC
 } from './services/imageSRCVerify.js';
-import {
-  addContextToContent
-} from './contentAggregator.js';
 
 import {
 	assignModeratorToComment,
@@ -211,6 +208,10 @@ import {
 	fetchUserPermissions,
 	reset
 } from './services/user/permissions.js';
+
+import {
+	otherStats
+} from './services/user/profile.js';
 
 import {
 	login,
@@ -375,6 +376,7 @@ export {
 	login,
 	logout,
 	openComment,
+	otherStats,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,
@@ -412,5 +414,4 @@ export {
 	updateUserPractice,
 	verifyImageSRC,
 	verifyLocalDataContext,
-  addContextToContent
 };
