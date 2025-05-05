@@ -84,6 +84,9 @@ import {
 	isBucketUrl,
 	verifyImageSRC
 } from './services/imageSRCVerify.js';
+import {
+  addContextToContent
+} from './contentAggregator.js';
 
 import {
 	assignModeratorToComment,
@@ -215,6 +218,7 @@ import {
 } from './services/user/sessions.js';
 
 import {
+	calculateLongestStreaks,
 	createPracticeNotes,
 	deletePracticeSession,
 	getPracticeNotes,
@@ -239,6 +243,7 @@ export {
 	assignmentStatusReset,
 	blockUser,
 	buildImageSRC,
+	calculateLongestStreaks,
 	closeComment,
 	contentStatusCompleted,
 	contentStatusReset,
@@ -407,4 +412,5 @@ export {
 	updateUserPractice,
 	verifyImageSRC,
 	verifyLocalDataContext,
+  addContextToContent
 };

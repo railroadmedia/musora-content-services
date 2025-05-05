@@ -54,6 +54,10 @@ import {
 } from './services/contentProgress.js';
 
 import {
+  addContextToContent
+} from './contentAggregator.js';
+
+import {
 	verifyLocalDataContext
 } from './services/dataContext.js';
 
@@ -215,6 +219,7 @@ import {
 } from './services/user/sessions.js';
 
 import {
+	calculateLongestStreaks,
 	createPracticeNotes,
 	deletePracticeSession,
 	getPracticeNotes,
@@ -233,6 +238,7 @@ import {
 declare module 'musora-content-services' {
 	export {
 		addItemToPlaylist,
+    addContextToContent,
 		applyCloudflareWrapper,
 		applySanityTransformations,
 		assignModeratorToComment,
@@ -240,6 +246,7 @@ declare module 'musora-content-services' {
 		assignmentStatusReset,
 		blockUser,
 		buildImageSRC,
+		calculateLongestStreaks,
 		closeComment,
 		contentStatusCompleted,
 		contentStatusReset,
