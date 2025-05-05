@@ -761,7 +761,7 @@ function calculateStreaks(practices, includeStreakMessage = false) {
  * Calculates the longest daily, weekly streaks and totalPracticeSeconds from user practice dates.
  *
  * @param {string} [userId=globalConfig.sessionConfig.userId] ID of the user to calculate streaks for.
- * @returns {{ longestDailyStreak: number, longestWeeklyStreak: number, totalPracticeSeconds:number }}
+ * @returns {Promise<{ longestDailyStreak: number, longestWeeklyStreak: number, totalPracticeSeconds:number }>}
  */
 export async function calculateLongestStreaks(userId = globalConfig.sessionConfig.userId) {
   let practices = await getUserActivityData(userId)
