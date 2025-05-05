@@ -114,3 +114,24 @@
  * @property {boolean} isAdmin
  * @property {boolean} isABasicMember
  */
+
+/**
+ * @typedef {Object} StreakDTO
+ * @property {string} type
+ * @property {int} streak
+ * @property {Date|null} start_date null in case there is no streak
+ * @property {Date|null} end_date null in case there is no streak
+ */
+
+/**
+ * @typedef {Object} OtherStats
+ * @property {StreakDTO|null} longest_day_streak longest daily streak calculated from the server
+ * @property {StreakDTO|null} longest_week_streak longest weekly streak calculated from the server
+ * @property {int|null} total_practice_time total practice time calculated from the server
+ * @property {int|null} comment_likes
+ * @property {int|null} forum_post_likes
+ * @property {int|null} experience_points
+ * @property {int} longestDailyStreak longest daily streak from local storage
+ * @property {int} longestWeeklyStreak longest weekly streak from local storage
+ * @property {int} totalPracticeTime total practice time from local storage
+ */
