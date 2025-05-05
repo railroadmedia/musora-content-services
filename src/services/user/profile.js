@@ -22,7 +22,8 @@ const excludeFromGeneratedIndex = []
  * @returns {Promise<OtherStats>} - The user permissions data.
  */
 export async function otherStats(userId) {
-  let otherStats = {}
+  /** @type {OtherStats} otherStats */
+  let otherStats = null
   try {
     otherStats = await fetchJSONHandler(
       `/user-management-system/v1/${userId}/statistics`,
@@ -36,8 +37,26 @@ export async function otherStats(userId) {
 
   const longestStreaks = await calculateLongestStreaks(userId)
 
-  return {
-    ...otherStats,
-    ...longestStreaks,
+  if (!otherStats) {
+    return {
+      longest_day_streak: {
+        type: 'day',
+        streak: longestStreaks.longestDailyStreak,
+      },
+      longest_week_streak: {
+        type: 'week',
+        streak: longestStreaks.longestWeeklyStreak,
+      },
+      total_practice_time: longestStreaks.totalPracticeTime,
+    }
+  } else {
+    otherStats.longest_day_streak = {
+      streak: longestStreaks.longestDailyStreak,
+    }
+    otherStats.longest_week_streak = {
+      streak: longestStreaks.longestWeeklyStreak,
+    }
   }
+
+  return otherStats
 }
