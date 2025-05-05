@@ -1,7 +1,6 @@
 /**
  * @module User-Activity
  */
-
 import {
   fetchUserPractices,
   logUserPractice,
@@ -96,6 +95,16 @@ function getIndefiniteArticle(streak) {
     : 'a'
 }
 
+async function getUserActivityData(userId = globalConfig.sessionConfig.userId) {
+  if (userId !== globalConfig.sessionConfig.userId) {
+    const data = await fetchUserPractices({ userId })
+    return data?.['data']?.[DATA_KEY_PRACTICES] ?? {}
+  } else {
+    const data = await userActivityContext.getData()
+    return data?.[DATA_KEY_PRACTICES] ?? {}
+  }
+}
+
 export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUserPractices)
 
 /**
@@ -173,14 +182,7 @@ export async function getUserMonthlyStats(params = {}) {
     day = 1,
     userId = globalConfig.sessionConfig.userId,
   } = params
-  let practices = {}
-  if (userId !== globalConfig.sessionConfig.userId) {
-    let data = await fetchUserPractices({ userId })
-    practices = data?.['data']?.[DATA_KEY_PRACTICES] ?? {}
-  } else {
-    let data = await userActivityContext.getData()
-    practices = data?.[DATA_KEY_PRACTICES] ?? {}
-  }
+  let practices = await getUserActivityData(userId)
 
   // Get the first day of the specified month and the number of days in that month
   let firstDayOfMonth = new Date(year, month, 1)
@@ -757,11 +759,12 @@ function calculateStreaks(practices, includeStreakMessage = false) {
 
 /**
  * Calculates the longest daily, weekly streaks and totalPracticeSeconds from user practice dates.
+ *
+ * @param {string} [userId=globalConfig.sessionConfig.userId] ID of the user to calculate streaks for.
  * @returns {{ longestDailyStreak: number, longestWeeklyStreak: number, totalPracticeSeconds:number }}
  */
-export async function calculateLongestStreaks() {
-  let data = await userActivityContext.getData()
-  let practices = data?.[DATA_KEY_PRACTICES] ?? {}
+export async function calculateLongestStreaks(userId = globalConfig.sessionConfig.userId) {
+  let practices = await getUserActivityData(userId)
   let totalPracticeSeconds = 0
   // Calculate total practice duration
   for (const date in practices) {
