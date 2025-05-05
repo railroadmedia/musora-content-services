@@ -290,6 +290,10 @@ async function patchDataHandler(url, data) {
   return fetchHandler(url, 'patch', null, data)
 }
 
+async function putDataHandler(url, data) {
+  return fetchHandler(url, 'put', null, data)
+}
+
 async function deleteDataHandler(url, data) {
   return fetchHandler(url, 'delete')
 }
@@ -726,7 +730,7 @@ export async function editComment(commentId, comment) {
   const data = {
     comment: comment,
   }
-  return await patchDataHandler(url, data)
+  return await putDataHandler(url, data)
 }
 
 /**
