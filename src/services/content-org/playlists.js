@@ -131,13 +131,9 @@ export async function addItemToPlaylist(payload) {
  *   .then(response => console.log(response))
  *   .catch(error => console.error('Error creating playlist:', error));
  */
-export async function togglePrivate(playlist_id, is_private)
+export async function togglePrivate(playlistId, is_private)
 {
-  const url = `${BASE_PATH}/v1/user/playlists/${playlist_id}`
-  const data = {
-    private: is_private,
-  }
-  return await fetchHandler(url, 'PUT', null, data);
+  return await updatePlaylist(playlistId, {is_private})
 }
 
 
@@ -163,7 +159,7 @@ export async function togglePrivate(playlist_id, is_private)
  *   .then(response => console.log(response.message))
  *   .catch(error => console.error('Error creating playlist:', error));
  */
-export async function updatePlaylist(playlist_id, {
+export async function updatePlaylist(playlistId, {
   name = null, description = null,  is_private = null, brand = null, category = null, deleted_items = null, item_order = null
 })
 {
@@ -176,7 +172,28 @@ export async function updatePlaylist(playlist_id, {
     ...deleted_items && { deleted_items },
     ...item_order && { item_order },
   }
-  return
-  const url = `${BASE_PATH}/v1/user/playlists/${playlist_id}`
+  const url = `${BASE_PATH}/v1/user/playlists/${playlistId}`
   return await fetchHandler(url, 'POST', null, data);
+}
+
+/**
+ * Delete Items from playlist
+ *
+ * @async
+ * @function togglePlaylistPrivate
+ * @param {string|number} playlistId - The unique identifier of the playlist to update.
+ * @param {array} deleted_items - list of playlist ids to delete (user_playlist_item_id, not the railcontent_id)
+ *
+ * @returns {Promise<Object>}
+ *
+ * @example
+ * // Delete items 8462221 and 8462222 from playlist 81111
+ * try {
+ *   const response = await deleteItemsFromPlaylist(81111, [8462221, 8462222]);
+ * } catch (error) {
+ *   console.error('Failed to delete playlist items:', error);
+ * }
+ */
+export async function deleteItemsFromPlaylist(playlistId, deleted_items) {
+  return await updatePlaylist(playlistId, {deleted_items})
 }
