@@ -1,6 +1,6 @@
-import { getProgressStateByIds, getProgressPercentageByIds, getResumeTimeSecondsByIds } from "./services/contentProgress"
-import { isContentLikedByIds } from "./services/contentLikes"
-import { fetchLikeCount } from "./services/railcontent"
+import { getProgressStateByIds, getProgressPercentageByIds, getResumeTimeSecondsByIds } from "./contentProgress"
+import { isContentLikedByIds } from "./contentLikes"
+import { fetchLikeCount } from "./railcontent"
 
 
 
