@@ -47,7 +47,8 @@ export class Tabs {
 
 export const TabResponseType = {
   SECTIONS: 'sections',
-  CATALOG: 'catalog'
+  CATALOG: 'catalog',
+  PROGRESS_ROWS: 'progress_rows',
 };
 
 const commonMetadata = {

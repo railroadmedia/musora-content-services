@@ -12,13 +12,14 @@ import {
   fetchUpcomingEvents,
   fetchScheduledReleases,
   fetchReturning,
-  fetchLeaving, fetchScheduledAndNewReleases
+  fetchLeaving, fetchScheduledAndNewReleases, fetchHierarchy, fetchMethodChildrenIds, jumpToContinueContent
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {getAllStartedOrCompleted, getProgressDateByIds, getProgressStateByIds} from "./contentProgress";
 import {fetchHandler} from "./railcontent";
 import {recommendations} from "./recommendations";
 import {fetchUserPlaylists} from "./content-org/playlists";
+import {lessonTypesMapping, progressTypesMapping} from "../contentTypeConfig";
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
   let recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent' });
@@ -372,87 +373,204 @@ export async function getRecommendedForYou(brand, rowId = null, {
   return { id: 'recommended', title: 'Recommended For You', items: contents }
 }
 
-export async function getProgressRows({brand = null} = {}) {
+export async function getProgressRows({ brand = null } = {}) {
+  const progressContentsIds = await getAllStartedOrCompleted();
+  const contents = await fetchByRailContentIds(progressContentsIds, 'progress-tracker');
 
-  // Fetch recent contents with progress
-  const trrr = await getAllStartedOrCompleted()
-  const contents = await fetchByRailContentIds(trrr);
-  const filtered = contents.filter(item => item.brand === brand).slice(0, 8);
-  let recentContentIds = filtered.map(item => item.id);
- // console.log("🎹 Filtered Pianote Items:", filtered);
-  console.log('rox::     ⚠️ Progress State Started or Completed::::::::::::::::::::::::', recentContentIds);
-// Fetch progress timestamps for those content IDs
+  const filtered = contents.filter(item => item.brand === brand).slice(0, 20);
+  const recentContentIds = filtered.map(item => item.id);
+
   const progressMap = await getProgressDateByIds(recentContentIds);
-  console.log("rox:: 🎹 progressMap Items:", progressMap, recentContentIds);
-// Fetch playlists with embedded progress
-  const recentPlaylists = await fetchUserPlaylists(brand);
-  console.log('rox::     🔁 Recent  playlists:::::', recentPlaylists);
+  const recentPlaylists = await fetchUserPlaylists(brand, {
+    sort: '-last_progress',
+    limit: 10
+  });
+  const playlists = recentPlaylists?.data || [];
 
-  const combinedLatest = getCombinedLatestProgressItems(
-    filtered,          // full content objects
-    progressMap,             // content progress as a map: { id: timestamp }
-    recentPlaylists.data     // full playlist objects
+  const combinedLatest = await getCombinedLatestProgressItems(
+    filtered,
+    progressMap,
+    playlists
   );
-  console.log('rox::     🔁 Combined latest contents + playlists:', combinedLatest);
 
   return {
-    type: TabResponseType.CATALOG,
-    data: combinedLatest,
-   // meta:  { tabs: metaData.tabs }
+    type: TabResponseType.PROGRESS_ROWS,
+    data: combinedLatest
   };
 }
 
-function getCombinedLatestProgressItems(contents, progressMap, playlists, limit = 8) {
-  // Normalize contents: keep only those with progress and attach timestamp and formatted date
-  const normalizedContents1 = contents
-    .filter(item => progressMap[item.id])
-    .map(item => ({
-      ...item,
+const getFormattedType = type => {
+  for (const [key, values] of Object.entries(progressTypesMapping)) {
+    if (values.includes(type)) {
+      return key.replace(/\b\w/g, char => char.toUpperCase());
+    }
+  }
+  return null;
+};
+
+async function getCombinedLatestProgressItems(contents, progressMap, playlists, limit = 8) {
+  const excludedTypes = [
+    'course-part',
+    'pack-bundle-lesson',
+    'song-tutorial-children',
+    'challenge-part',
+    'pack-bundle',
+    'semester-pack-lesson',
+    'learning-path-lesson',
+    'learning-path-course',
+    'learning-path-level'
+  ];
+
+  const playlistContentIds = new Set(
+    playlists.map(pl => pl.last_engaged_on).filter(Boolean)
+  );
+
+  const excludedParents = new Set();
+  const contentIdsWithChildren = contents
+    .filter(item => item.child_count > 0)
+    .map(item => item.id ?? item.railcontent_id);
+
+  const hierarchyMap = Object.fromEntries(
+    await Promise.all(contentIdsWithChildren.map(async (id) => {
+      const hierarchy = await fetchHierarchy(id);
+      return [id, hierarchy];
+    }))
+  );
+
+  const allChildIds = Object.values(hierarchyMap)
+    .flatMap(h => Object.keys(h.children || {}));
+  const childContentMap = Object.fromEntries(
+    (await fetchByRailContentIds(allChildIds)).map(child => [child.id, child])
+  );
+  const onlyLessons = Object.values(childContentMap)
+    .filter(child => child.child_count == null)
+    .map(child => child.id);
+  const progressOnChildren = await getProgressStateByIds(allChildIds);
+  const progressOnLessons = await getProgressStateByIds(onlyLessons);
+
+  contents.map(item => {
+    const contentId = item.id ?? item.railcontent_id;
+    const parentIds = item.parent_content_data || [];
+    if (playlistContentIds.has(contentId)) {
+      parentIds.forEach(id => excludedParents.add(id));
+    }
+    if (item.child_count > 0 && hierarchyMap[contentId]) {
+      const hierarchyChildren = hierarchyMap[contentId].children || {};
+      const childEntries = Object.entries(hierarchyChildren)
+        .map(([id]) => [id, progressOnChildren[id]])
+        .filter(([_, status]) => status != null).slice(1);
+
+      const itemsWithoutChildren = Object.keys(hierarchyChildren)
+        .filter(id => childContentMap[id]?.child_count == null);
+
+      const completedCount = itemsWithoutChildren.filter(id => progressOnLessons[id] === 'completed').length;
+
+      const firstIncompleteId = childEntries.find(([_, status]) => status !== 'completed')?.[0] || null;
+
+      item.completed_children = completedCount;
+      item.first_incomplete_child = childContentMap[firstIncompleteId] || null;
+
+      if (item.type === 'pack') {
+        const secondIncompleteId = childEntries
+          .filter(([id]) => id !== firstIncompleteId)
+          .find(([_, status]) => status !== 'completed')?.[0] || null;
+        item.second_incomplete_child = childContentMap[secondIncompleteId] || null;
+      }
+    }
+
+    return item;
+  });
+
+  const normalizedContents = contents.map(item => {
+    const contentId = item.id ?? item.railcontent_id;
+    const progress = progressMap[contentId];
+    if (!progress) return null;
+
+    const { last_update, status, progress: progressPercent } = progress;
+    const progressTimestamp = last_update * 1000;
+
+    const hasConflict =
+      playlistContentIds.has(contentId) ||
+      excludedParents.has(contentId) ||
+      excludedTypes.includes(item.type);
+
+    if (!progressTimestamp || hasConflict) return null;
+
+    const contentType = getFormattedType(item.type);
+    let ctaText = 'Continue';
+    if (contentType === 'Transcription') ctaText = 'Replay Song';
+    if (contentType === 'Lesson') ctaText = status === 'completed' ? 'Revisit Lesson' : 'Continue';
+    if (contentType === 'Pack' && status === 'completed') ctaText = 'View Lessons';
+
+    return {
+      id: item.id,
       progressType: 'content',
-      progressTimestamp: progressMap[item.id],
-      formattedDate: new Date(progressMap[item.id]).toLocaleString()  // Formatted date
-    }));
+      contentType,
+      thumbnail: item.thumbnail,
+      title: item.title,
+      subtitle:
+        !item.child_count || item.lesson_count === 1
+            ? `${item.difficulty_string} • ${item.artist_name}`
+            : `${item.completed_children} of ${item.lesson_count ?? item.child_count} Lessons Complete`,
+      cta: {
+        text: ctaText,
+        action: {
+          type: item.type,
+          brand: item.brand,
+          id: item.id,
+          slug: item.slug,
+          child: item.first_incomplete_child
+                  ? {
+              id: item.first_incomplete_child.id,
+              type: item.first_incomplete_child.type,
+              brand: item.first_incomplete_child.brand,
+              slug: item.first_incomplete_child.slug,
+              secondChild: item.second_incomplete_child
+                    ? {
+                  id: item.second_incomplete_child.id,
+                  type: item.second_incomplete_child.type,
+                  brand: item.second_incomplete_child.brand,
+                  slug: item.second_incomplete_child.slug
+                }
+                    : null
+            }
+                  : null
+        }
+      },
+      progressPercent,
+      progressTimestamp
+    };
+  }).filter(Boolean);
 
-  const normalizedContents = contents
-    .map(item => {
-      const contentId = item.id ?? item.railcontent_id;
-      const progressTimestampSeconds = progressMap[contentId];
-      const progressTimestamp = progressTimestampSeconds * 1000; //Convert to ms
-      if (!progressTimestamp) return null; // Skip if no progress
-      return {
-        ...item,
-        progressType: 'content',
-        progressTimestamp,
-        formattedDate: new Intl.DateTimeFormat('en-US', {
-          timeZone: 'America/Los_Angeles',
-          dateStyle: 'short',
-          timeStyle: 'medium'
-        }).format(new Date(progressTimestamp )), // Convert from seconds to ms
-      };
-    })
-    .filter(Boolean); // Remove nulls
+  const normalizedPlaylists = playlists.filter(p => p.last_progress).map(p => {
+    const date = new Date(p.last_progress);
+    return {
+      progressType: 'playlist',
+      contentType: 'Playlist',
+      first_items_thumbnail_url: p.first_items_thumbnail_url,
+      title: p.name,
+      subtitle: `${p.duration_formated} • ${p.total_items} items • 27 likes • ${p.user.display_name}`,
+      progressTimestamp: date.getTime(),
+      user: p.user,
+      cta: {
+        text: 'Continue',
+        action: {
+          type: 'playlist',
+          brand: p.brand,
+          id: p.id,
+          itemId: p.id
+        }
+      }
+    };
+  });
 
-  console.log('rox:: getCombinedLatestProgressItems::: normalizedContents', normalizedContents, normalizedContents1);
-  // Normalize playlists: keep those with last_progress and parse the date
-  const normalizedPlaylists = playlists
-    .filter(item => item.last_progress) // ensure it's defined
-    .map(item => {
-      const date = new Date(item.last_progress); // Handles PST correctly
-      return {
-        ...item,
-        progressType: 'playlist',
-        progressTimestamp: date.getTime(), // Always in ms UTC
-        formattedDate: date.toLocaleString(),
-      };
-    });
-
-  console.log('rox:: getCombinedLatestProgressItems::: normalizedPlaylists', normalizedPlaylists);
-  // Combine, sort by latest, and limit
   return [...normalizedContents, ...normalizedPlaylists]
     .filter(item => typeof item.progressTimestamp === 'number' && item.progressTimestamp > 0)
     .sort((a, b) => b.progressTimestamp - a.progressTimestamp)
-    .slice(0, 50);
+    .slice(0, limit);
 }
+
+
 
 
 
