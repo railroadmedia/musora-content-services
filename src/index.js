@@ -30,6 +30,10 @@ import {
 } from './services/content.js';
 
 import {
+	addContextToContent
+} from './services/contentAggregator.js';
+
+import {
 	isContentLiked,
 	isContentLikedByIds,
 	likeContent,
@@ -84,9 +88,6 @@ import {
 	isBucketUrl,
 	verifyImageSRC
 } from './services/imageSRCVerify.js';
-import {
-  addContextToContent
-} from './contentAggregator.js';
 
 import {
 	assignModeratorToComment,
@@ -235,6 +236,7 @@ import {
 } from './services/userActivity.js';
 
 export {
+	addContextToContent,
 	addItemToPlaylist,
 	applyCloudflareWrapper,
 	applySanityTransformations,
@@ -412,5 +414,4 @@ export {
 	updateUserPractice,
 	verifyImageSRC,
 	verifyLocalDataContext,
-  addContextToContent
 };

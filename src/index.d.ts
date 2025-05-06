@@ -30,6 +30,10 @@ import {
 } from './services/content.js';
 
 import {
+	addContextToContent
+} from './services/contentAggregator.js';
+
+import {
 	isContentLiked,
 	isContentLikedByIds,
 	likeContent,
@@ -52,10 +56,6 @@ import {
 	getResumeTimeSecondsByIds,
 	recordWatchSession
 } from './services/contentProgress.js';
-
-import {
-  addContextToContent
-} from './contentAggregator.js';
 
 import {
 	verifyLocalDataContext
@@ -237,8 +237,8 @@ import {
 
 declare module 'musora-content-services' {
 	export {
+		addContextToContent,
 		addItemToPlaylist,
-    addContextToContent,
 		applyCloudflareWrapper,
 		applySanityTransformations,
 		assignModeratorToComment,
