@@ -43,7 +43,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
   ])
-
+  console.log('lastInteractedChildData', lastInteractedChildData)
   const addContext = async (item) => ({
     ...item,
     ...(addProgressPercentage ? { progressPercentage: progressPercentageData?.[item.id] } : {}),
