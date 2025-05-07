@@ -289,7 +289,7 @@ function getMediaTypeId(mediaType, mediaCategory) {
     case 'practice_play-alongs':
       return 4
     default:
-      throw Error(`Unsupported media type: ${mediaType}_${mediaCategory}`)
+      return 5
   }
 }
 
