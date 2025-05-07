@@ -412,6 +412,14 @@ const contentMetadata = {
         Tabs.ExploreAll
       ],
     },
+    'recent': {
+      name: 'Recent Lessons',
+      tabs: [
+        Tabs.RecentAll,
+        Tabs.RecentIncomplete,
+        Tabs.RecentCompleted
+      ],
+    },
   },
   guitareo: {
     instructor: {
@@ -455,6 +463,14 @@ const contentMetadata = {
         Tabs.ExploreAll
       ],
     },
+    'recent': {
+      name: 'Recent Lessons',
+      tabs: [
+        Tabs.RecentAll,
+        Tabs.RecentIncomplete,
+        Tabs.RecentCompleted
+      ],
+    },
   },
   singeo: {
     'student-review': {
@@ -485,6 +501,14 @@ const contentMetadata = {
         Tabs.Transcriptions,
         Tabs.PlayAlongs,
         Tabs.ExploreAll
+      ],
+    },
+    'recent': {
+      name: 'Recent Lessons',
+      tabs: [
+        Tabs.RecentAll,
+        Tabs.RecentIncomplete,
+        Tabs.RecentCompleted
       ],
     },
   }

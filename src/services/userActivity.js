@@ -688,6 +688,87 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   return { currentDailyStreak, currentWeeklyStreak, streakMessage };
 }
 
+/**
+ * Calculates the longest daily, weekly streaks and totalPracticeSeconds from user practice dates.
+ * @returns {{ longestDailyStreak: number, longestWeeklyStreak: number, totalPracticeSeconds:number }}
+ */
+export async function calculateLongestStreaks() {
+  let data = await userActivityContext.getData()
+  let practices = data?.[DATA_KEY_PRACTICES] ?? {}
+  let totalPracticeSeconds = 0;
+  // Calculate total practice duration
+  for (const date in practices) {
+    for (const entry of practices[date]) {
+      totalPracticeSeconds += entry.duration_seconds;
+    }
+  }
+
+  let practiceDates = Object.keys(practices)
+    .map(dateStr => {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const newDate = new Date();
+      newDate.setFullYear(y, m - 1, d);
+      return newDate;
+    })
+    .sort((a, b) => a - b);
+
+  if (!practiceDates || practiceDates.length === 0) {
+    return {longestDailyStreak: 0, longestWeeklyStreak: 0, totalPracticeSeconds: 0};
+  }
+
+  // Normalize to Date objects
+  const normalizedDates = [
+    ...new Set(practiceDates.map(d => {
+      const date = new Date(d);
+      date.setHours(0, 0, 0, 0);
+      return date.getTime();
+    }))
+  ].sort((a, b) => a - b);
+
+  // ----- Daily Streak -----
+  let longestDailyStreak = 1;
+  let currentDailyStreak = 1;
+  for (let i = 1; i < normalizedDates.length; i++) {
+    const diffInDays = (normalizedDates[i] - normalizedDates[i - 1]) / (1000 * 60 * 60 * 24);
+    if (diffInDays === 1) {
+      currentDailyStreak++;
+      longestDailyStreak = Math.max(longestDailyStreak, currentDailyStreak);
+    } else {
+      currentDailyStreak = 1;
+    }
+  }
+
+  // ----- Weekly Streak -----
+  const weekStartDates = [
+    ...new Set(normalizedDates.map(ts => {
+      const d = new Date(ts);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust to Monday
+      d.setDate(diff);
+      return d.getTime(); // timestamp for Monday
+    }))
+  ].sort((a, b) => a - b);
+
+  let longestWeeklyStreak = 1;
+  let currentWeeklyStreak = 1;
+
+  for (let i = 1; i < weekStartDates.length; i++) {
+    const diffInWeeks = (weekStartDates[i] - weekStartDates[i - 1]) / (1000 * 60 * 60 * 24 * 7);
+    if (diffInWeeks === 1) {
+      currentWeeklyStreak++;
+      longestWeeklyStreak = Math.max(longestWeeklyStreak, currentWeeklyStreak);
+    } else {
+      currentWeeklyStreak = 1;
+    }
+  }
+
+  return {
+    longestDailyStreak,
+    longestWeeklyStreak,
+    totalPracticeSeconds
+  };
+}
+
 
 
 
