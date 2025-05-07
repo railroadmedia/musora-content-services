@@ -119,19 +119,19 @@ export async function addItemToPlaylist(payload) {
 }
 
 /**
- * Toggles a playlists public/private sstate
+ * Toggles a playlists public/private state
  *
- *
- * @param {Boolean} is_private - private/publice value
+ * @param {string|integer} playlistId
+ * @param {Boolean} is_private - flag for private/public
 
  * @returns {Promise<Playlist>} - A promise that resolves to the updated playlist data if successful, or an error response if validation fails.
  *
  * @example
- * togglePrivate(11541, true)
+ * togglePlaylistPrivate(11541, true)
  *   .then(response => console.log(response))
  *   .catch(error => console.error('Error creating playlist:', error));
  */
-export async function togglePrivate(playlistId, is_private)
+export async function togglePlaylistPrivate(playlistId, is_private)
 {
   return await updatePlaylist(playlistId, {is_private})
 }
@@ -140,24 +140,24 @@ export async function togglePrivate(playlistId, is_private)
 /**
  * Updates a playlists values
  *
- *
- * @param {CreatePlaylistDTO} playlistData - An object containing data to create the playlist. The fields include:
+ * @param {string|number} playlistId
+ * @param {Object} updateData - An object containing fields to update on the playlist:
  *  - `name` (string): The name of the new playlist (required, max 255 characters).
  *  - `description` (string): A description of the playlist (optional, max 1000 characters).
  *  - `category` (string): The category of the playlist.
- *  - `private` (boolean): Whether the playlist is private (optional, defaults to false).
- *  - `brand` (string): Brand identifier for the playlist.
+ * + *  - `deleted_items` (array): List of playlist item IDs to delete.
+ * + *  - `item_order` (array): Updated order of playlist items (ids, not railcontent_ids).
  *
- * @returns {Promise<Playlist>} - A promise that resolves to the created playlist data if successful, or an error response if validation fails.
+ * @returns {Promise<object>} - A promise that resolves to the created playlist data and lessons if successful, or an error response if validation fails.
  *
  * The server response includes:
- *  - `message`: Success message indicating playlist creation (e.g., "Playlist created successfully").
- *  - `playlist`: The data for the created playlist, including the `user_id` of the authenticated user.
+ *  - `playlist`: Playlist metadata (same as fetchPlaylist)
+ *  - `lessons`: Updated list of plalyist lessons  (same as fetchPlaylistItems)
  *
  * @example
- * createPlaylist({ name: "My Playlist", description: "A cool playlist", private: true })
- *   .then(response => console.log(response.message))
- *   .catch(error => console.error('Error creating playlist:', error));
+ * updatePlaylist(661113 { name: "My Playlist", description: "A cool playlist", is_private: true, deleted_items : [2189832, 221091] })
+ *   .then(response => console.log(response.playlist); console.log(response.lessons))
+ *   .catch(error => console.error('Error updating playlist:', error));
  */
 export async function updatePlaylist(playlistId, {
   name = null, description = null,  is_private = null, brand = null, category = null, deleted_items = null, item_order = null
