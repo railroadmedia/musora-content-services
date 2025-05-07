@@ -53,11 +53,15 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
     ...(addLastInteractedChild ? { lastInteractedChild: lastInteractedChildData?.[item.id] } : {}),
   })
-
-  const newData = Array.isArray(data)
-  ? await Promise.all(data.map(addContext))
-  : await addContext(data)
-
-  return newData
+  if (dataField) {
+    data[dataField] = Array.isArray(data[dataField])
+        ? await Promise.all(data[dataField].map(addContext))
+        : await addContext(data[dataField])
+    return data
+  } else {
+    return Array.isArray(data)
+        ? await Promise.all(data.map(addContext))
+        : await addContext(data)
+  }
 }
 
