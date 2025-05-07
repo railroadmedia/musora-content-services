@@ -403,7 +403,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
 const getFormattedType = type => {
   for (const [key, values] of Object.entries(progressTypesMapping)) {
     if (values.includes(type)) {
-      return key.replace(/\b\w/g, char => char);
+      return key;
     }
   }
   return null;
