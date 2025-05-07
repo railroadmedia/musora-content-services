@@ -125,8 +125,8 @@
 
 /**
  * @typedef {Object} OtherStats
- * @property {StreakDTO|null} longest_day_streak
- * @property {StreakDTO|null} longest_week_streak
+ * @property {StreakDTO} longest_day_streak
+ * @property {StreakDTO} longest_week_streak
  * @property {int|null} total_practice_time
  * @property {int|null} comment_likes
  * @property {int|null} forum_post_likes

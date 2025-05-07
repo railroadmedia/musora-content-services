@@ -37,26 +37,18 @@ export async function otherStats(userId) {
 
   const longestStreaks = await calculateLongestStreaks(userId)
 
-  if (!otherStats) {
-    return {
-      longest_day_streak: {
-        type: 'day',
-        streak: longestStreaks.longestDailyStreak,
-      },
-      longest_week_streak: {
-        type: 'week',
-        streak: longestStreaks.longestWeeklyStreak,
-      },
-      total_practice_time: longestStreaks.totalPracticeTime,
-    }
-  } else {
-    otherStats.longest_day_streak = {
+  return {
+    longest_day_streak: {
+      type: 'day',
       streak: longestStreaks.longestDailyStreak,
-    }
-    otherStats.longest_week_streak = {
+    },
+    longest_week_streak: {
+      type: 'week',
       streak: longestStreaks.longestWeeklyStreak,
-    }
+    },
+    total_practice_time: longestStreaks.totalPracticeTime,
+    comment_likes: otherStats?.comment_likes,
+    forum_post_likes: otherStats?.forum_post_likes,
+    experience_points: otherStats?.experience_points,
   }
-
-  return otherStats
 }
