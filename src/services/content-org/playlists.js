@@ -23,7 +23,6 @@ const BASE_PATH = `/api/content-org`
  * @param {number} [params.limit=10] - The maximum number of playlists to return per page (default is 10).
  * @param {number} [params.page=1] - The page number for pagination.
  * @param {string} [params.sort='-created_at'] - The sorting order for the playlists (default is by created_at in descending order).
- * @param {string} [params.searchTerm] - A search term to filter playlists by name.
  * @param {int|string} [params.content_id] - If content_id exists, the endpoint checks in each playlist if we have the content in the items.
  *
  * @returns {Promise<Object|null>} - A promise that resolves to the response from the API, containing the user playlists data.
@@ -35,18 +34,14 @@ const BASE_PATH = `/api/content-org`
  */
 export async function fetchUserPlaylists(
   brand,
-  { page, limit, sort, searchTerm, content_id, categories } = {}
+  { page, limit, sort, content_id } = {}
 ) {
-  let url
-  console.log({ config: globalConfig.baseUrl })
+  const pageString = page ? `?page=${page}` : '?page=1'
   const limitString = limit ? `&limit=${limit}` : ''
-  const pageString = page ? `&page=${page}` : ''
   const sortString = sort ? `&sort=${sort}` : ''
-  const searchFilter = searchTerm ? `&term=${searchTerm}` : ''
   const content = content_id ? `&content_id=${content_id}` : ''
-  const categoryString =
-    categories && categories.length ? categories.map((cat) => `categories[]=${cat}`).join('&') : ''
-  url = `${BASE_PATH}/v1/user/playlists?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`
+  const brandString = brand ? `&brand=${brand}` : ''
+  const url = `${BASE_PATH}/v1/user/playlists${pageString}${brandString}${limitString}${sortString}${content}`
   return await fetchHandler(url)
 }
 
@@ -60,19 +55,14 @@ export async function fetchUserPlaylists(
  *  - `name` (string): The name of the new playlist (required, max 255 characters).
  *  - `description` (string): A description of the playlist (optional, max 1000 characters).
  *  - `category` (string): The category of the playlist.
- *  - `thumbnail_url` (string): The URL of the playlist thumbnail (optional, must be a valid URL).
  *  - `private` (boolean): Whether the playlist is private (optional, defaults to false).
  *  - `brand` (string): Brand identifier for the playlist.
  *
  * @returns {Promise<Playlist>} - A promise that resolves to the created playlist data if successful, or an error response if validation fails.
  *
- * The server response includes:
- *  - `message`: Success message indicating playlist creation (e.g., "Playlist created successfully").
- *  - `playlist`: The data for the created playlist, including the `user_id` of the authenticated user.
- *
  * @example
  * createPlaylist({ name: "My Playlist", description: "A cool playlist", private: true })
- *   .then(response => console.log(response.message))
+ *   .then(response => console.log(response))
  *   .catch(error => console.error('Error creating playlist:', error));
  */
 export async function createPlaylist(playlistData) {

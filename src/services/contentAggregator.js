@@ -1,8 +1,11 @@
-import { getProgressStateByIds, getProgressPercentageByIds, getResumeTimeSecondsByIds } from "./services/contentProgress" 
-import { isContentLikedByIds } from "./services/contentLikes"
-import { fetchLikeCount } from "./services/railcontent"
+import { getProgressStateByIds, getProgressPercentageByIds, getResumeTimeSecondsByIds } from "./contentProgress"
+import { isContentLikedByIds } from "./contentLikes"
+import { fetchLikeCount } from "./railcontent"
 
-export const addContextToContent = async (dataPromise, ...dataArgs) => {
+
+
+export async function addContextToContent(dataPromise, ...dataArgs)
+{
   const lastArg = dataArgs[dataArgs.length - 1]
   const options = typeof lastArg === 'object' && !Array.isArray(lastArg) ? lastArg : {}
 
@@ -47,7 +50,7 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
   })
-  
+
   const newData = Array.isArray(data)
   ? await Promise.all(data.map(addContext))
   : await addContext(data)

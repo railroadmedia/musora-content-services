@@ -8,7 +8,15 @@ import {
 import {
 	addItemToPlaylist,
 	createPlaylist,
-	fetchUserPlaylists
+	duplicatePlaylist,
+	fetchPlaylist,
+	fetchPlaylistItems,
+	fetchUserPlaylists,
+	likePlaylist,
+	reorderPlaylistItems,
+	reportPlaylist,
+	togglePlaylistPrivate,
+	unlikePlaylist
 } from './services/content-org/playlists.js';
 
 import {
@@ -22,7 +30,12 @@ import {
 } from './services/content.js';
 
 import {
+	addContextToContent
+} from './services/contentAggregator.js';
+
+import {
 	isContentLiked,
+	isContentLikedByIds,
 	likeContent,
 	unlikeContent
 } from './services/contentLikes.js';
@@ -40,6 +53,7 @@ import {
 	getProgressState,
 	getProgressStateByIds,
 	getResumeTimeSeconds,
+	getResumeTimeSecondsByIds,
 	recordWatchSession
 } from './services/contentProgress.js';
 
@@ -78,13 +92,8 @@ import {
 import {
 	assignModeratorToComment,
 	closeComment,
-	countAssignmentsAndLessons,
 	createComment,
 	deleteComment,
-	deletePlaylist,
-	deletePlaylistItem,
-	deletePlaylistLike,
-	duplicatePlaylist,
 	editComment,
 	fetchAllCompletedStates,
 	fetchCarouselCardData,
@@ -101,12 +110,9 @@ import {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchHandler,
+	fetchLikeCount,
 	fetchNextContentDataForParent,
 	fetchOwnedChallenges,
-	fetchPinnedPlaylists,
-	fetchPlaylist,
-	fetchPlaylistItem,
-	fetchPlaylistItems,
 	fetchSongsInProgress,
 	fetchTopComment,
 	fetchUserAward,
@@ -118,11 +124,8 @@ import {
 	fetchUserPracticeNotes,
 	fetchUserPractices,
 	likeComment,
-	likePlaylist,
 	logUserPractice,
 	openComment,
-	pinPlaylist,
-	playback,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,
@@ -138,13 +141,9 @@ import {
 	postRecordWatchSession,
 	replyToComment,
 	reportComment,
-	reportPlaylist,
 	setStudentViewForUser,
 	unassignModeratorToComment,
-	unlikeComment,
-	unpinPlaylist,
-	updatePlaylist,
-	updatePlaylistItem
+	unlikeComment
 } from './services/railcontent.js';
 
 import {
@@ -220,6 +219,7 @@ import {
 } from './services/user/sessions.js';
 
 import {
+	calculateLongestStreaks,
 	createPracticeNotes,
 	deletePracticeSession,
 	getPracticeNotes,
@@ -235,8 +235,6 @@ import {
 	updateUserPractice
 } from './services/userActivity.js';
 
-import { addContextToContent } from './contentAggregator.js';
-
 declare module 'musora-content-services' {
 	export {
 		addContextToContent,
@@ -248,18 +246,15 @@ declare module 'musora-content-services' {
 		assignmentStatusReset,
 		blockUser,
 		buildImageSRC,
+		calculateLongestStreaks,
 		closeComment,
 		contentStatusCompleted,
 		contentStatusReset,
 		convertToTimeZone,
-		countAssignmentsAndLessons,
 		createComment,
 		createPlaylist,
 		createPracticeNotes,
 		deleteComment,
-		deletePlaylist,
-		deletePlaylistItem,
-		deletePlaylistLike,
 		deletePracticeSession,
 		duplicatePlaylist,
 		editComment,
@@ -298,6 +293,7 @@ declare module 'musora-content-services' {
 		fetchLeaving,
 		fetchLessonContent,
 		fetchLessonsFeaturingThisContent,
+		fetchLikeCount,
 		fetchLiveEvent,
 		fetchMetadata,
 		fetchMethod,
@@ -312,10 +308,8 @@ declare module 'musora-content-services' {
 		fetchPackAll,
 		fetchPackData,
 		fetchParentForDownload,
-		fetchPinnedPlaylists,
 		fetchPlayAlongsCount,
 		fetchPlaylist,
-		fetchPlaylistItem,
 		fetchPlaylistItems,
 		fetchRecent,
 		fetchRelatedLessons,
@@ -362,6 +356,7 @@ declare module 'musora-content-services' {
 		getRecentActivity,
 		getRecommendedForYou,
 		getResumeTimeSeconds,
+		getResumeTimeSecondsByIds,
 		getScheduleContentRows,
 		getSortOrder,
 		getTabResults,
@@ -372,6 +367,7 @@ declare module 'musora-content-services' {
 		initializeService,
 		isBucketUrl,
 		isContentLiked,
+		isContentLikedByIds,
 		isNextDay,
 		isSameDate,
 		jumpToContinueContent,
@@ -382,8 +378,6 @@ declare module 'musora-content-services' {
 		login,
 		logout,
 		openComment,
-		pinPlaylist,
-		playback,
 		postChallengesCommunityNotification,
 		postChallengesEnroll,
 		postChallengesEnrollmentNotification,
@@ -403,6 +397,7 @@ declare module 'musora-content-services' {
 		recordUserPractice,
 		recordWatchSession,
 		removeUserPractice,
+		reorderPlaylistItems,
 		replyToComment,
 		reportComment,
 		reportPlaylist,
@@ -410,13 +405,12 @@ declare module 'musora-content-services' {
 		restorePracticeSession,
 		restoreUserPractice,
 		setStudentViewForUser,
+		togglePlaylistPrivate,
 		unassignModeratorToComment,
 		unblockUser,
 		unlikeComment,
 		unlikeContent,
-		unpinPlaylist,
-		updatePlaylist,
-		updatePlaylistItem,
+		unlikePlaylist,
 		updatePracticeNotes,
 		updateUserPractice,
 		verifyImageSRC,
