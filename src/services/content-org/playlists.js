@@ -232,7 +232,7 @@ export async function updatePlaylist(playlistId, {
     ...item_order && { item_order },
   }
   const url = `${BASE_PATH}/v1/user/playlists/${playlistId}`
-  return await fetchHandler(url, 'POST', null, data);
+  return await fetchHandler(url, 'PUT', null, data);
 }
 
 /**
