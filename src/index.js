@@ -8,15 +8,16 @@ import {
 import {
 	addItemToPlaylist,
 	createPlaylist,
+	deleteItemsFromPlaylist,
 	duplicatePlaylist,
 	fetchPlaylist,
 	fetchPlaylistItems,
 	fetchUserPlaylists,
 	likePlaylist,
-	reorderPlaylistItems,
 	reportPlaylist,
 	togglePlaylistPrivate,
-	unlikePlaylist
+	unlikePlaylist,
+	updatePlaylist
 } from './services/content-org/playlists.js';
 
 import {
@@ -254,6 +255,7 @@ export {
 	createPlaylist,
 	createPracticeNotes,
 	deleteComment,
+	deleteItemsFromPlaylist,
 	deletePracticeSession,
 	duplicatePlaylist,
 	editComment,
@@ -396,7 +398,6 @@ export {
 	recordUserPractice,
 	recordWatchSession,
 	removeUserPractice,
-	reorderPlaylistItems,
 	replyToComment,
 	reportComment,
 	reportPlaylist,
@@ -410,6 +411,7 @@ export {
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
+	updatePlaylist,
 	updatePracticeNotes,
 	updateUserPractice,
 	verifyImageSRC,

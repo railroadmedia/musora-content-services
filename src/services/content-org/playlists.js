@@ -71,6 +71,75 @@ export async function createPlaylist(playlistData) {
 }
 
 /**
+ * Likes a playlist for the current user.
+ *
+ * @async
+ * @function likePlaylist
+ * @param {string|number} playlistId - The unique identifier of the playlist to like.
+ *
+ * @returns {Promise<Object>}
+ *
+ * @example
+ * // Like playlist with ID '123'
+ * try {
+ *   const response = await likePlaylist('123');
+ *   console.log('Playlist liked successfully:', response);
+ * } catch (error) {
+ *   console.error('Failed to like playlist:', error);
+ * }
+ */
+export async function likePlaylist(playlistId) {
+  const url = `${BASE_PATH}/v1/user/playlists/like/${playlistId}`
+  return await fetchHandler(url, 'PUT')
+}
+
+/**
+ * Unlikes a previously liked playlist.
+ * @async
+ * @function unlikePlaylist
+ * @param {string|number} playlistId - The unique identifier of the playlist to unlike.
+ *
+ * @returns {Promise<Object>}
+ *
+ *
+ * @example
+ * // Unlike playlist with ID '123'
+ * try {
+ *   const response = await unlikePlaylist('123');
+ *   console.log('Playlist unliked successfully:', response);
+ * } catch (error) {
+ *   console.error('Failed to unlike playlist:', error);
+ * }
+ */
+export async function unlikePlaylist(playlistId) {
+  const url = `${BASE_PATH}/v1/user/playlists/like/${playlistId}`
+  return await fetchHandler(url, 'DELETE')
+}
+
+/**
+ * Reports a playlist
+ *
+ * @async
+ * @function reportPlaylist
+ * @param {string|number} playlistId - The unique identifier of the playlist to report.
+ *
+ * @returns {Promise<Object>}
+ *
+ * @example
+ * // Report playlist with ID '123'
+ * try {
+ *   const response = await reportPlaylist('123');
+ *   console.log('Playlist reported successfully:', response);
+ * } catch (error) {
+ *   console.error('Failed to report playlist:', error);
+ * }
+ */
+export async function reportPlaylist(playlistId) {
+  const url = `${BASE_PATH}/v1/user/playlists/report/${playlistId}`
+  return await fetchHandler(url, 'POST')
+}
+
+/**
  * Adds an item to one or more playlists by making a POST request to the `/playlists/add-item` endpoint.
  *
  * @param {AddItemToPlaylistDTO} payload - The request payload containing necessary parameters.
@@ -111,7 +180,7 @@ export async function addItemToPlaylist(payload) {
 /**
  * Toggles a playlists public/private state
  *
- * @param {string|integer} playlistId
+ * @param {string|number} playlistId
  * @param {Boolean} is_private - flag for private/public
 
  * @returns {Promise<Playlist>} - A promise that resolves to the updated playlist data if successful, or an error response if validation fails.
@@ -186,4 +255,67 @@ export async function updatePlaylist(playlistId, {
  */
 export async function deleteItemsFromPlaylist(playlistId, deleted_items) {
   return await updatePlaylist(playlistId, {deleted_items})
+}
+
+/**
+ * Duplicates a playlist and playlist items for the provided playlistID for the authorized user
+ *
+ * @param {string|number} playlistId
+ * @param {CreatePlaylistDTO} playlistData - An object containing data to create the playlist. The fields include:
+ *  - `name` (string): The name of the new playlist (required, max 255 characters).
+ *  - `description` (string): A description of the playlist (optional, max 1000 characters).
+ *  - `category` (string): The category of the playlist.
+ *  - `private` (boolean): Whether the playlist is private (optional, defaults to false).
+ *  - `brand` (string): Brand identifier for the playlist.
+ *
+ * @returns {Promise<Playlist>}
+ * @example
+ * duplicatePlaylist(81167, { name: "My Playlist (Duplicate)", description: "A cool playlist", private: true })
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error('Error creating playlist:', error));
+ */
+export async function duplicatePlaylist(playlistId, playlistData) {
+  const url = `${BASE_PATH}/v1/user/playlists/duplicate/${playlistId}`
+  return await fetchHandler(url, 'POST', null, playlistData)
+}
+
+/**
+ * Retrieves details of a specific playlist by its ID.
+ *
+ * This function sends a GET request to the `/playlists/playlist` endpoint with a specified playlist ID.
+ * The server validates the user's access to the playlist and returns playlist details if the user is authorized.
+ *
+ * @param {string|number} playlistId - The unique identifier of the playlist to retrieve.
+ *
+ * @returns {Promise<Object>} - A promise that resolves to the response from the API, containing:
+ *  - `data` (Object): The playlist details, or an error message if access is denied or the playlist is not found.
+ *
+ * @example
+ * fetchPlaylist(12345)
+ *   .then(response => console.log(response.data))
+ *   .catch(error => console.error('Error fetching playlist:', error));
+ */
+export async function fetchPlaylist(playlistId) {
+  const url = `${BASE_PATH}/v1/user/playlists/${playlistId}`
+  return await fetchHandler(url, 'GET')
+}
+
+/**
+ * Retrieves items within a specified playlist by playlist ID.
+ *
+ * This function sends a GET request to the `/playlists/playlist-lessons` endpoint to fetch items in the given playlist.
+ * The server combines data from the playlist and additional metadata from Sanity to enhance item details.
+ *
+ * @param {string|number} playlistId - The unique identifier of the playlist whose items are to be fetched.
+ *
+ * @returns {Promise<Array<Object>>} - A promise that resolves to an array of playlist items
+ *
+ * @example
+ * fetchPlaylistItems(12345)
+ *   .then(items => console.log(items))
+ *   .catch(error => console.error('Error fetching playlist items:', error));
+ */
+export async function fetchPlaylistItems(playlistId) {
+  const url = `${BASE_PATH}/v1/user/playlists/items/${playlistId}`
+  return await fetchHandler(url, 'GET')
 }
