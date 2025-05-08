@@ -22,20 +22,15 @@ const excludeFromGeneratedIndex = []
  * @returns {Promise<OtherStats>} - The user permissions data.
  */
 export async function otherStats(userId) {
-  /** @type {OtherStats} otherStats */
-  let otherStats = null
-  try {
-    otherStats = await fetchJSONHandler(
+  const [otherStats, longestStreaks] = await Promise.all([
+    fetchJSONHandler(
       `/user-management-system/v1/${userId}/statistics`,
       globalConfig.sessionConfig.token,
       globalConfig.baseUrl,
       'get'
-    )
-  } catch (error) {
-    console.error('Error fetching other stats:', error)
-  }
-
-  const longestStreaks = await calculateLongestStreaks(userId)
+    ),
+    calculateLongestStreaks(userId),
+  ])
 
   return {
     longest_day_streak: {
