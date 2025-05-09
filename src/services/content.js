@@ -501,7 +501,7 @@ function filterEligibleContentItems(contents, progressMap, excludedTypes, playli
 async function getEligiblePlaylistItems(playlists) {
   return Promise.all(
     playlists
-      .filter(p => p.last_progress)
+      .filter(p => p.last_progress && p.last_engaged_on)
       .map(async p => ({
         type: 'playlist',
         progressTimestamp: new Date(p.last_progress).getTime(),
