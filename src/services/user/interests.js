@@ -17,14 +17,10 @@ export async function fetchInterests(userId = globalConfig.sessionConfig.userId)
 }
 
 /**
- * @param {number} [userId=globalConfig.sessionConfig.userId] - The user ID
  * @param {number} contentId
  * @returns {Promise<any>}
  */
-export async function markContentAsInterested(
-  userId = globalConfig.sessionConfig.userId,
-  contentId
-) {
+export async function markContentAsInterested(contentId) {
   if (!contentId) {
     throw new Error('contentId is required')
   }
@@ -34,14 +30,10 @@ export async function markContentAsInterested(
 }
 
 /**
- * @param {number} [userId=globalConfig.sessionConfig.userId] - The user ID
  * @param {number} contentId
  * @returns {Promise<any>}
  */
-export async function removeContentAsInterested(
-  userId = globalConfig.sessionConfig.userId,
-  contentId
-) {
+export async function removeContentAsInterested(contentId) {
   if (!contentId) {
     throw new Error('contentId is required')
   }
@@ -60,14 +52,10 @@ export async function fetchUninterests(userId = globalConfig.sessionConfig.userI
 }
 
 /**
- * @param {number} [userId=globalConfig.sessionConfig.userId] - The user ID
  * @param {number} contentId
  * @returns {Promise<any>}
  */
-export async function markContentAsNotInterested(
-  userId = globalConfig.sessionConfig.userId,
-  contentId
-) {
+export async function markContentAsNotInterested(contentId) {
   if (!contentId) {
     throw new Error('contentId is required')
   }
@@ -77,14 +65,10 @@ export async function markContentAsNotInterested(
 }
 
 /**
- * @param {number} [userId=globalConfig.sessionConfig.userId] - The user ID
  * @param {number} contentId
  * @returns {Promise<any>}
  */
-export async function removeContentAsNotInterested(
-  userId = globalConfig.sessionConfig.userId,
-  contentId
-) {
+export async function removeContentAsNotInterested(contentId) {
   if (!contentId) {
     throw new Error('contentId is required')
   }
