@@ -43,7 +43,7 @@ export async function removeContentAsInterested(contentId) {
 }
 
 /**
- * @param {string} [userId=globalConfig.sessionConfig.userId] - The user ID
+ * @param {number} [userId=globalConfig.sessionConfig.userId] - The user ID
  * @returns {Promise<Array<number>>} - The list of content the user is not interested in
  */
 export async function fetchUninterests(userId = globalConfig.sessionConfig.userId) {
