@@ -105,7 +105,55 @@ export async function getAllCompleted(limit = null) {
   return ids
 }
 
-export async function getAllStartedOrCompleted(limit = null) {
+export async function getAllStartedOrCompleted({ limit = null, onlyIds = true, brand = null, excludedIds = [] } = {}) {
+  const data = await dataContext.getData()
+  const oneMonthAgoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
+
+  const excludedSet = new Set(excludedIds.map(id => parseInt(id))) // ensure IDs are numbers
+
+  let filtered = Object.entries(data)
+    .filter(([key, item]) => {
+      const id = parseInt(key)
+      const isRelevantStatus =
+        item[DATA_KEY_STATUS] === STATE_STARTED || item[DATA_KEY_STATUS] === STATE_COMPLETED
+      const isRecent = item[DATA_KEY_LAST_UPDATED_TIME] >= oneMonthAgoInSeconds
+      const isCorrectBrand = !brand || item.b === brand
+      const isNotExcluded = !excludedSet.has(id)
+      return isRelevantStatus && isRecent && isCorrectBrand && isNotExcluded
+    })
+    .sort(([, a], [, b]) => {
+      const v1 = a[DATA_KEY_LAST_UPDATED_TIME]
+      const v2 = b[DATA_KEY_LAST_UPDATED_TIME]
+      if (v1 > v2) return -1
+      else if (v1 < v2) return 1
+      return 0
+    })
+
+  if (limit) {
+    filtered = filtered.slice(0, limit)
+  }
+
+  if (onlyIds) {
+    return filtered.map(([key]) => parseInt(key))
+  } else {
+    const progress = {}
+    filtered.forEach(([key, item]) => {
+      const id = parseInt(key)
+      progress[id] = {
+        last_update: item?.[DATA_KEY_LAST_UPDATED_TIME] ?? 0,
+        progress: item?.[DATA_KEY_PROGRESS] ?? 0,
+        status: item?.[DATA_KEY_STATUS] ?? '',
+        brand: item?.b ?? '',
+      }
+    })
+    return progress
+  }
+}
+
+
+
+
+export async function getAllStartedOrCompleted2(limit = null) {
   const data = await dataContext.getData()
   let ids = Object.keys(data)
     .filter(function (key) {

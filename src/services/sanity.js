@@ -512,15 +512,18 @@ export async function fetchByRailContentId(id, contentType) {
  *   .then(contents => console.log(contents))
  *   .catch(error => console.error(error));
  */
-export async function fetchByRailContentIds(ids, contentType = undefined) {
+export async function fetchByRailContentIds(ids, contentType = undefined, brand= undefined) {
   if (!ids) {
     return []
   }
   const idsString = ids.join(',')
+  const brandFilter = brand ? ` && brand == "${brand}"` : ''
+  const query = `*[
+    railcontent_id in [${idsString}]${brandFilter}
+  ]{
+    ${getFieldsForContentType(contentType)}
+  }`
 
-  const query = `*[railcontent_id in [${idsString}]]{
-        ${getFieldsForContentType(contentType)}
-      }`
   const results = await fetchSanity(query, true)
 
   const sortFuction = function compare(a, b) {

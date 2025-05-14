@@ -206,7 +206,7 @@ export const recentTypes = {
 
 export let contentTypeConfig = {
   'progress-tracker': {
-    fields: ['"parent_content_data": parent_content_data[].id'],
+    fields: ['"parent_content_data": parent_content_data[].id','"lessons": child[]->{"id": railcontent_id, "slug":slug.current, "brand":brand, "type": _type, "lessons": child[]->{"id":railcontent_id, "slug":slug.current,  "type": _type,"brand":brand}}'],
   },
   song: {
     fields: ['album', 'soundslice', 'instrumentless', `"resources": ${resourcesField}`],
