@@ -290,6 +290,10 @@ async function patchDataHandler(url, data) {
   return fetchHandler(url, 'patch', null, data)
 }
 
+async function putDataHandler(url, data) {
+  return fetchHandler(url, 'put', null, data)
+}
+
 async function deleteDataHandler(url, data) {
   return fetchHandler(url, 'delete')
 }
@@ -726,7 +730,7 @@ export async function editComment(commentId, comment) {
   const data = {
     comment: comment,
   }
-  return await patchDataHandler(url, data)
+  return await putDataHandler(url, data)
 }
 
 /**
@@ -816,6 +820,34 @@ export async function fetchUserPracticeNotes(date) {
   const url = `/api/user/practices/v1/notes?date=${date}`
   return await fetchHandler(url, 'GET', null)
 }
+
+
+/**
+ * Get the id and slug of last interacted child. Only valid for certain content types
+ *
+ * @async
+ * @function fetchLastInteractedChild
+ * @param {array} content_ids - Content ids of to get the last interacted child of
+ *
+ *
+ * @returns {Promise<Object>} - keyed object per valid content ids with the child
+ *
+ * @example
+ * try {
+ *   const response = await fetchLastInteractedChild([191369, 410427]);
+ *   console.log('child id', response[191369].content_id)
+ *   console.log('child slug', response[191369].slug)
+ * } catch (error) {
+ *   console.error('Failed to get children', error);
+ * }
+ */
+export async function fetchLastInteractedChild(content_ids) {
+  const params = new URLSearchParams();
+  content_ids.forEach(id => params.append('content_ids[]', id));
+  const url = `/api/content/v1/user/last_interacted_child?${params.toString()}`
+  return await fetchHandler(url, 'GET', null)
+}
+
 
 function fetchAbsolute(url, params) {
   if (globalConfig.sessionConfig.authToken) {

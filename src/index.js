@@ -8,15 +8,16 @@ import {
 import {
 	addItemToPlaylist,
 	createPlaylist,
+	deleteItemsFromPlaylist,
 	duplicatePlaylist,
 	fetchPlaylist,
 	fetchPlaylistItems,
 	fetchUserPlaylists,
 	likePlaylist,
-	reorderPlaylistItems,
 	reportPlaylist,
 	togglePlaylistPrivate,
-	unlikePlaylist
+	unlikePlaylist,
+	updatePlaylist
 } from './services/content-org/playlists.js';
 
 import {
@@ -28,6 +29,10 @@ import {
 	getScheduleContentRows,
 	getTabResults
 } from './services/content.js';
+
+import {
+	addContextToContent
+} from './services/contentAggregator.js';
 
 import {
 	isContentLiked,
@@ -106,6 +111,7 @@ import {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchHandler,
+	fetchLastInteractedChild,
 	fetchLikeCount,
 	fetchNextContentDataForParent,
 	fetchOwnedChallenges,
@@ -236,6 +242,7 @@ import {
 } from './services/userActivity.js';
 
 export {
+	addContextToContent,
 	addItemToPlaylist,
 	applyCloudflareWrapper,
 	applySanityTransformations,
@@ -253,6 +260,7 @@ export {
 	createPlaylist,
 	createPracticeNotes,
 	deleteComment,
+	deleteItemsFromPlaylist,
 	deletePracticeSession,
 	duplicatePlaylist,
 	editComment,
@@ -288,6 +296,7 @@ export {
 	fetchGenreLessons,
 	fetchHandler,
 	fetchHierarchy,
+	fetchLastInteractedChild,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
@@ -396,7 +405,6 @@ export {
 	recordUserPractice,
 	recordWatchSession,
 	removeUserPractice,
-	reorderPlaylistItems,
 	replyToComment,
 	reportComment,
 	reportPlaylist,
@@ -410,6 +418,7 @@ export {
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
+	updatePlaylist,
 	updatePracticeNotes,
 	updateUserPractice,
 	verifyImageSRC,

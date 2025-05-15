@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.4.0](https://github.com/railroadmedia/musora-content-services/compare/v2.3.26...v2.4.0) (2025-05-14)
+
+
+### Features
+
+* **http:** implement client ([#250](https://github.com/railroadmedia/musora-content-services/issues/250)) ([6eb026c](https://github.com/railroadmedia/musora-content-services/commit/6eb026ccef888f00e94de03269bcbb59c4a33fd4))
+
+### [2.3.26](https://github.com/railroadmedia/musora-content-services/compare/v2.3.25...v2.3.26) (2025-05-07)
+
+### [2.3.25](https://github.com/railroadmedia/musora-content-services/compare/v2.3.24...v2.3.25) (2025-05-07)
+
+### [2.3.24](https://github.com/railroadmedia/musora-content-services/compare/v2.3.23...v2.3.24) (2025-05-06)
+
+### [2.3.23](https://github.com/railroadmedia/musora-content-services/compare/v2.3.22...v2.3.23) (2025-05-06)
+
+### [2.3.22](https://github.com/railroadmedia/musora-content-services/compare/v2.3.21...v2.3.22) (2025-05-05)
+
 ### [2.3.21](https://github.com/railroadmedia/musora-content-services/compare/v2.3.20...v2.3.21) (2025-05-02)
 
 ### [2.3.20](https://github.com/railroadmedia/musora-content-services/compare/v2.3.19...v2.3.20) (2025-04-30)
