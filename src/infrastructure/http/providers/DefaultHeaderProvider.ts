@@ -13,12 +13,6 @@ export class DefaultHeaderProvider implements HeaderProvider {
       headers['M-Client-Timezone'] = globalConfig.localTimezoneString
     }
 
-    // Add CSRF token if present in document
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-    if (csrfToken) {
-      headers['X-CSRF-TOKEN'] = csrfToken
-    }
-
     return headers
   }
 }
