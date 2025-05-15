@@ -80,7 +80,7 @@ export async function createPlaylist(playlistData) {
   return await fetchHandler(url, 'POST', null, playlistData)
 }
 
-export async function deletePlaylist(playlist) {
+export async function deletePlaylists(playlist) {
   const url = `${BASE_PATH}/v1/user/playlists/delete/${playlist}`
   return await fetchHandler(url, 'POST', null, playlist)
 }
