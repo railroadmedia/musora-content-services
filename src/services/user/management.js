@@ -62,7 +62,7 @@ export async function uploadPicture(fieldKey, file) {
 }
 
 /**
- * Upload a picture to the server
+ * Saves a picture uploaded to S3
  * @param {string} fieldKey
  * @param {string} s3_bucket_path
  * @returns {Promise<any|string|null>}
