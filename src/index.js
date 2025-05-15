@@ -8,7 +8,9 @@ import {
 import {
 	addItemToPlaylist,
 	createPlaylist,
-	fetchUserPlaylists
+	deletePlaylist,
+	fetchUserPlaylists,
+	undeletePlaylist
 } from './services/content-org/playlists.js';
 
 import {
@@ -254,6 +256,7 @@ export {
 	createPracticeNotes,
 	deleteComment,
 	deletePlaylist,
+	deletePlaylist,
 	deletePlaylistItem,
 	deletePlaylistLike,
 	deletePracticeSession,
@@ -408,6 +411,7 @@ export {
 	setStudentViewForUser,
 	unassignModeratorToComment,
 	unblockUser,
+	undeletePlaylist,
 	unlikeComment,
 	unlikeContent,
 	unpinPlaylist,
