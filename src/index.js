@@ -216,7 +216,9 @@ import {
 
 import {
 	blockUser,
-	unblockUser
+	unblockUser,
+	uploadPicture,
+	uploadPictureFromS3
 } from './services/user/management.js';
 
 import {
@@ -431,6 +433,8 @@ export {
 	updatePlaylist,
 	updatePracticeNotes,
 	updateUserPractice,
+	uploadPicture,
+	uploadPictureFromS3,
 	verifyImageSRC,
 	verifyLocalDataContext,
 };
