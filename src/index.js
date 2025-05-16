@@ -225,6 +225,10 @@ import {
 } from './services/user/permissions.js';
 
 import {
+	otherStats
+} from './services/user/profile.js';
+
+import {
 	login,
 	logout
 } from './services/user/sessions.js';
@@ -394,6 +398,7 @@ export {
 	markContentAsInterested,
 	markContentAsNotInterested,
 	openComment,
+	otherStats,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,

@@ -225,6 +225,10 @@ import {
 } from './services/user/permissions.js';
 
 import {
+	otherStats
+} from './services/user/profile.js';
+
+import {
 	login,
 	logout
 } from './services/user/sessions.js';
@@ -395,6 +399,7 @@ declare module 'musora-content-services' {
 		markContentAsInterested,
 		markContentAsNotInterested,
 		openComment,
+		otherStats,
 		postChallengesCommunityNotification,
 		postChallengesEnroll,
 		postChallengesEnrollmentNotification,
