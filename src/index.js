@@ -207,6 +207,15 @@ import {
 } from './services/sanity.js';
 
 import {
+	fetchInterests,
+	fetchUninterests,
+	markContentAsInterested,
+	markContentAsNotInterested,
+	removeContentAsInterested,
+	removeContentAsNotInterested
+} from './services/user/interests.js';
+
+import {
 	blockUser,
 	unblockUser
 } from './services/user/management.js';
@@ -296,6 +305,7 @@ export {
 	fetchGenreLessons,
 	fetchHandler,
 	fetchHierarchy,
+	fetchInterests,
 	fetchLastInteractedChild,
 	fetchLeaving,
 	fetchLessonContent,
@@ -335,6 +345,7 @@ export {
 	fetchTabData,
 	fetchTopComment,
 	fetchTopLevelParentId,
+	fetchUninterests,
 	fetchUpcomingEvents,
 	fetchUserAward,
 	fetchUserBadges,
@@ -385,6 +396,8 @@ export {
 	logUserPractice,
 	login,
 	logout,
+	markContentAsInterested,
+	markContentAsNotInterested,
 	openComment,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
@@ -405,6 +418,8 @@ export {
 	recordUserActivity,
 	recordUserPractice,
 	recordWatchSession,
+	removeContentAsInterested,
+	removeContentAsNotInterested,
 	removeUserPractice,
 	replyToComment,
 	reportComment,

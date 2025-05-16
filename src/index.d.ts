@@ -207,6 +207,15 @@ import {
 } from './services/sanity.js';
 
 import {
+	fetchInterests,
+	fetchUninterests,
+	markContentAsInterested,
+	markContentAsNotInterested,
+	removeContentAsInterested,
+	removeContentAsNotInterested
+} from './services/user/interests.js';
+
+import {
 	blockUser,
 	unblockUser
 } from './services/user/management.js';
@@ -297,6 +306,7 @@ declare module 'musora-content-services' {
 		fetchGenreLessons,
 		fetchHandler,
 		fetchHierarchy,
+		fetchInterests,
 		fetchLastInteractedChild,
 		fetchLeaving,
 		fetchLessonContent,
@@ -336,6 +346,7 @@ declare module 'musora-content-services' {
 		fetchTabData,
 		fetchTopComment,
 		fetchTopLevelParentId,
+		fetchUninterests,
 		fetchUpcomingEvents,
 		fetchUserAward,
 		fetchUserBadges,
@@ -386,6 +397,8 @@ declare module 'musora-content-services' {
 		logUserPractice,
 		login,
 		logout,
+		markContentAsInterested,
+		markContentAsNotInterested,
 		openComment,
 		postChallengesCommunityNotification,
 		postChallengesEnroll,
@@ -406,6 +419,8 @@ declare module 'musora-content-services' {
 		recordUserActivity,
 		recordUserPractice,
 		recordWatchSession,
+		removeContentAsInterested,
+		removeContentAsNotInterested,
 		removeUserPractice,
 		replyToComment,
 		reportComment,
