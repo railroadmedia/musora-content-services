@@ -70,14 +70,14 @@ export async function createPlaylist(playlistData) {
   return await fetchHandler(url, 'POST', null, playlistData)
 }
 
-export async function deletePlaylist(playlistData) {
-  const url = `${BASE_PATH}/v1/user/playlists/delete`
-  return await fetchHandler(url, 'POST', null, playlistData)
+export async function deletePlaylist(playlist) {
+  const url = `${BASE_PATH}/v1/user/playlists/delete/${playlist}`
+  return await fetchHandler(url, 'POST', null, playlist)
 }
 
-export async function undeletePlaylist(playlistData) {
-  const url = `${BASE_PATH}/v1/user/playlists/undelete`
-  return await fetchHandler(url, 'POST', null, playlistData)
+export async function undeletePlaylist(playlist) {
+  const url = `${BASE_PATH}/v1/user/playlists/undelete/${playlist}`
+  return await fetchHandler(url, 'POST', null, playlist)
 }
 
 
