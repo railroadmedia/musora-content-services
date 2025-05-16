@@ -253,6 +253,11 @@ export async function recordWatchSession(
   }
 
   await recordUserPractice({ content_id: contentId, duration_seconds: secondsPlayed })
+    try {
+      await recordUserPractice({ content_id: contentId, duration_seconds: secondsPlayed })
+    } catch (error) {
+      console.error('Failed to record user practice:', error)
+    }
 
   await dataContext.update(
     async function (localContext) {
