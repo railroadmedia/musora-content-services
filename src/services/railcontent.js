@@ -878,10 +878,12 @@ export async function fetchLastInteractedChild(content_ids) {
  */
 export async function fetchRecentUserActivities({
   page = 1,
-  limit = 10,
+  limit = 5,
   tabName = null
 } = {}) {
-  const url = `/api/user/activities/v1/all`
+  let pageAndLimit = `?page=${page}&limit=${limit}`
+  let tabParam = tabName ? `&tabName=${tabName}` : ''
+  const url = `/api/user-management-system/v1/activities/all${pageAndLimit}${tabParam}`
   return await fetchHandler(url, 'GET', null)
 }
 

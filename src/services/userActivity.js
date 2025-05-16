@@ -549,12 +549,12 @@ export async function getPracticeNotes(day) {
  */
 export async function getRecentActivity({
   page = 1,
-  limit = 10,
+  limit = 5,
   tabName = null
 } = {}) {
   return await fetchRecentUserActivities({
     page = 1,
-    limit = 10,
+    limit = 5,
     tabName = null
   } = {});
 }
@@ -798,6 +798,16 @@ export async function calculateLongestStreaks() {
     longestWeeklyStreak,
     totalPracticeSeconds
   };
+}
+
+export async function recordUserActivity(payload) {
+  const url = `/api/user-management-system/v1/activities`
+  return await fetchHandler(url, 'POST', null, payload)
+}
+
+export async function deleteUserActivity(id) {
+  const url = `/api/user-management-system/v1/activities/${id}`
+  return await fetchHandler(url, 'DELETE')
 }
 
 
