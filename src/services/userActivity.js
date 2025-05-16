@@ -9,14 +9,6 @@ import {lessonTypesMapping} from "../contentTypeConfig";
 import { convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js';
 import {globalConfig} from "./config";
 
-const recentActivity =  [
-  { id: 5,title: '31 Easy Classical Songs For Beginners', action: 'Comment', thumbnail: 'https://cdn.sanity.io/images/4032r8py/production/8a7fb4d7473306c5fa51ba2e8867e03d44342b18-1920x1080.jpg', summary: 'Just completed the advanced groove lesson! I’m finally feeling more confident with my fills. Thanks for the clear explanations and practice tips! ', contentType: 'lesson',           date: '2025-04-15T21:32:55.000000Z'},
-  { id:4, title: 'Piano Man by Billy Joel', action: 'Play', thumbnail:'https://cdn.sanity.io/images/4032r8py/production/107c258114540170399dfd72a50dae51575552f4-1000x1000.jpg', contentType: 'song',date: '2025-03-25 10:04:48' },
-  { id:3, title: 'General Piano Discussion', action: 'Post', thumbnail: 'https://cdn.sanity.io/images/4032r8py/production/2331571d237b42dbf72f0cf35fdf163d996c5c5a-1920x1080.jpg', summary: 'Just completed the advanced groove lesson! I’m finally feeling more confident with my fills. Thanks for the clear explanations and practice tips! ', contentType: 'thread', date: '2025-03-25 09:49:48' },
-  { id:2, title: 'Welcome To Guitareo', action: 'Complete', thumbnail: 'https://cdn.sanity.io/images/4032r8py/production/2331571d237b42dbf72f0cf35fdf163d996c5c5a-1920x1080.jpg',contentType: 'lesson', date: '2025-03-25 09:34:48'  },
-  { id:1, title: 'Welcome To Guitareo', action: 'Start', thumbnail: 'https://cdn.sanity.io/images/4032r8py/production/2331571d237b42dbf72f0cf35fdf163d996c5c5a-1920x1080.jpg',contentType: 'lesson', date: '2025-03-25 09:04:48'  },
-]
-
 const DATA_KEY_PRACTICES = 'practices'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
 
