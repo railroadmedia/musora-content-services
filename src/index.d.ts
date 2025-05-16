@@ -9,6 +9,7 @@ import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
+	deletePlaylist,
 	duplicatePlaylist,
 	fetchPlaylist,
 	fetchPlaylistItems,
@@ -16,6 +17,7 @@ import {
 	likePlaylist,
 	reportPlaylist,
 	togglePlaylistPrivate,
+	undeletePlaylist,
 	unlikePlaylist,
 	updatePlaylist
 } from './services/content-org/playlists.js';
@@ -267,6 +269,7 @@ declare module 'musora-content-services' {
 		createPracticeNotes,
 		deleteComment,
 		deleteItemsFromPlaylist,
+		deletePlaylist,
 		deletePracticeSession,
 		duplicatePlaylist,
 		editComment,
@@ -426,6 +429,7 @@ declare module 'musora-content-services' {
 		togglePlaylistPrivate,
 		unassignModeratorToComment,
 		unblockUser,
+		undeletePlaylist,
 		unlikeComment,
 		unlikeContent,
 		unlikePlaylist,
