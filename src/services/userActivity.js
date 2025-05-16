@@ -373,7 +373,45 @@ export async function restoreUserPractice(id) {
       });
     });
   }
-  return response;
+
+  const contentIds = response.data.map(practice => practice.content_id).filter(id => id !== null);
+
+  const contents = await fetchByRailContentIds(contentIds);
+  const getFormattedType = (type) => {
+    for (const [key, values] of Object.entries(lessonTypesMapping)) {
+      if (values.includes(type)) {
+        return key.replace(/\b\w/g, char => char.toUpperCase());
+      }
+    }
+    return null;
+  };
+
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const formattedMeta = response.data.map(practice => {
+    const utcDate = new Date(practice.created_at);
+    const content = contents.find(c => c.id === practice.content_id) || {};
+    return {
+      id: practice.id,
+      auto: practice.auto,
+      thumbnail: (practice.content_id)? content.thumbnail : practice.thumbnail_url,
+      thumbnail_url: (practice.content_id)? content.thumbnail : practice.thumbnail_url,
+      duration: practice.duration_seconds || 0,
+      duration_seconds: practice.duration_seconds || 0,
+      content_url: content.url || null,
+      title: (practice.content_id)? content.title : practice.title,
+      category_id: practice.category_id,
+      instrument_id: practice.instrument_id ,
+      content_type: getFormattedType(content.type || ''),
+      content_id: practice.content_id || null,
+      content_brand: content.brand || null,
+      created_at: practice.created_at,
+      user_id:practice.user_id,
+      day:practice.day
+    };
+  });
+  console.log('rox:: restoreUserPractice --------------------> ', response, { data:  formattedMeta, message:response.message, version: response.version });
+  return { data: formattedMeta, message:response.message, version: response.version }
 }
 
 /**
