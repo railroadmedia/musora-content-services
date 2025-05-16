@@ -986,6 +986,12 @@ describe('Recommended System', function() {
     expect(results.meta).toBeDefined()
     expect(results.data.length).toBeGreaterThanOrEqual(1)
   })
+
+  test('fetchMetadata', async () => {
+    const response = await fetchMetadata('drumeo', 'recent-activities')
+    log(response)
+    expect(response.tabs.length).toBeGreaterThan(0)
+  })
 })
 
 

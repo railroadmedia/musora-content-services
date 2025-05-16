@@ -1,5 +1,8 @@
 import { initializeTestService } from './initializeTests.js'
-import {getLessonContentRows, getNewAndUpcoming, getScheduleContentRows, getTabResults} from '../src/services/content.js'
+import {getContentRows, getNewAndUpcoming, getScheduleContentRows, getTabResults} from '../src/services/content.js'
+
+
+const railContentModule = require('../src/services/railcontent.js')
 
 describe('content', function () {
   beforeEach(() => {
@@ -74,10 +77,10 @@ describe('content', function () {
     expect(results.meta.sort).toBeDefined()
   })
 
-//   test('getContentRows', async () => {
-//     const results = await getLessonContentRows('songs')
-//     console.log(results)
-//   })
+  test('getContentRows', async () => {
+    const results = await getContentRows('drumeo', 'lessons', 'Your-Daily-Warmup')
+    console.log(results)
+  })
 
 //   test('getTabResults-Songs-For-You', async () => {
 //     const results = await getTabResults('drumeo','songs','For You')
@@ -112,5 +115,4 @@ describe('content', function () {
     expect(results.data).toBeDefined()
     expect(results.meta).toBeDefined()
   })
-
 })
