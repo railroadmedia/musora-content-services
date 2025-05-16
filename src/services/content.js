@@ -3,7 +3,6 @@
  */
 
 import {
-  fetchAll,
   fetchByRailContentIds,
   fetchMetadata,
   fetchRecent,
@@ -15,10 +14,8 @@ import {
   fetchLeaving, fetchScheduledAndNewReleases
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
-import {getAllStartedOrCompleted} from "./contentProgress";
 import {fetchHandler} from "./railcontent";
 import {recommendations} from "./recommendations";
-import {getRecentActivity} from "./userActivity";
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
   let recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent' });
@@ -79,8 +76,6 @@ export async function getTabResults(brand, pageName, tabName, {
   // Fetch data
   const results = tabName === Tabs.ForYou.name
       ? { entity: await getLessonContentRows(brand, pageName) }
-      : tabName === Tabs.RecentActivityLessons.name
-        ? { entity: (await getRecentActivity(tabName)).data }
       : await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
 
   // Fetch metadata

@@ -800,11 +800,45 @@ export async function calculateLongestStreaks() {
   };
 }
 
+/**
+ * Records a new user activity in the system.
+ *
+ * @param {Object} payload - The data representing the user activity.
+ * @param {number} payload.user_id - The ID of the user.
+ * @param {string} payload.action - The type of action (e.g., 'start', 'complete', 'comment', etc.).
+ * @param {string} payload.brand - The brand associated with the activity.
+ * @param {string} payload.type - The content type (e.g., 'lesson', 'song', etc.).
+ * @param {number} payload.content_id - The ID of the related content.
+ * @param {string} payload.date - The date of the activity (ISO format).
+ * @returns {Promise<Object>} - A promise that resolves to the API response after recording the activity.
+ *
+ * @example
+ * recordUserActivity({
+ *   user_id: 123,
+ *   action: 'start',
+ *   brand: 'pianote',
+ *   type: 'lesson',
+ *   content_id: 4561,
+ *   date: '2025-05-15'
+ * }).then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
 export async function recordUserActivity(payload) {
   const url = `/api/user-management-system/v1/activities`
   return await fetchHandler(url, 'POST', null, payload)
 }
 
+/**
+ * Deletes a specific user activity by its ID.
+ *
+ * @param {number|string} id - The ID of the user activity to delete.
+ * @returns {Promise<Object>} - A promise that resolves to the API response after deletion.
+ *
+ * @example
+ * deleteUserActivity(789)
+ *   .then(response => console.log('Deleted:', response))
+ *   .catch(error => console.error(error));
+ */
 export async function deleteUserActivity(id) {
   const url = `/api/user-management-system/v1/activities/${id}`
   return await fetchHandler(url, 'DELETE')
