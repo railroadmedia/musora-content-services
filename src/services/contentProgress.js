@@ -40,6 +40,16 @@ export async function getResumeTimeSecondsByIds(contentIds) {
   return getByIds(contentIds, DATA_KEY_RESUME_TIME, 0)
 }
 
+export async function getProgressDateByIds(contentIds) {
+  let data = await dataContext.getData()
+  let progress = {}
+  contentIds?.forEach((id) => (progress[id] = {
+    'last_update': data[id]?.[DATA_KEY_LAST_UPDATED_TIME] ?? 0,
+    'progress': data[id]?.[DATA_KEY_PROGRESS] ?? 0,
+    'status': data[id]?.[DATA_KEY_STATUS] ?? ''}))
+  return progress
+}
+
 async function getById(contentId, dataKey, defaultValue) {
   let data = await dataContext.getData()
   return data[contentId]?.[dataKey] ?? defaultValue

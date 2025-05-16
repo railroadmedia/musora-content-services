@@ -12,12 +12,14 @@ import {
   fetchUpcomingEvents,
   fetchScheduledReleases,
   fetchReturning,
-  fetchLeaving, fetchScheduledAndNewReleases
+  fetchLeaving, fetchScheduledAndNewReleases, fetchHierarchy, fetchMethodChildrenIds, jumpToContinueContent
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
-import {getAllStartedOrCompleted} from "./contentProgress";
+import {getAllStartedOrCompleted, getProgressDateByIds, getProgressStateByIds} from "./contentProgress";
 import {fetchHandler} from "./railcontent";
 import {recommendations} from "./recommendations";
+import {fetchPlaylistItems, fetchUserPlaylists} from "./content-org/playlists";
+import {collectionLessonTypes, lessonTypesMapping, progressTypesMapping} from "../contentTypeConfig";
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
   let recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent' });
@@ -385,5 +387,321 @@ export async function getRecommendedForYou(brand, rowId = null, {
 
   return { id: 'recommended', title: 'Recommended For You', items: contents }
 }
+
+export async function getProgressRows({ brand = null, limit = 8 } = {}) {
+  const progressContentsIds = await getAllStartedOrCompleted();
+  const contents = await fetchByRailContentIds(progressContentsIds, 'progress-tracker');
+
+  const filtered = contents.filter(item => item.brand === brand);
+  const recentContentIds = filtered.map(item => item.id);
+
+  const progressMap = await getProgressDateByIds(recentContentIds);
+  const recentPlaylists = await fetchUserPlaylists(brand, {
+    sort: '-last_progress',
+    limit: limit,
+  });
+  const playlists = recentPlaylists?.data || [];
+
+  const combinedLatest = await getCombinedLatestProgressItems(
+    filtered,
+    progressMap,
+    playlists,
+    limit
+  );
+
+  return {
+    type: TabResponseType.PROGRESS_ROWS,
+    data: combinedLatest
+  };
+}
+
+const getFormattedType = type => {
+  for (const [key, values] of Object.entries(progressTypesMapping)) {
+    if (values.includes(type)) {
+      return key;
+    }
+  }
+  return null;
+};
+
+async function getCombinedLatestProgressItems(contents, progressMap, playlists, limit = 8) {
+  const excludedTypes = new Set([
+    'course-part',
+    'pack-bundle-lesson',
+    'song-tutorial-children',
+    'challenge-part',
+    'pack-bundle',
+    'semester-pack-lesson',
+    'learning-path-lesson',
+    'learning-path-course',
+    'learning-path-level'
+  ]);
+
+  const playlistContentIds = new Set(playlists.map(p => p.last_engaged_on).filter(Boolean));
+  const excludedParents = collectExcludedParents(contents, playlistContentIds);
+
+  const eligibleContentItems = filterEligibleContentItems(
+    contents,
+    progressMap,
+    excludedTypes,
+    playlistContentIds,
+    excludedParents
+  );
+
+  const eligiblePlaylistItems = await getEligiblePlaylistItems(playlists);
+
+  const combined = mergeAndSortItems([...eligibleContentItems, ...eligiblePlaylistItems], limit);
+
+  const hierarchyMap = await buildHierarchyMap(combined);
+  const childContentMap = await buildChildContentMap(hierarchyMap);
+  const onlyLessons = Object.values(childContentMap).filter(c => c.child_count == null).map(c => c.id);
+
+  const [progressOnChildren, progressOnLessons] = await Promise.all([
+    getProgressStateByIds(Object.keys(childContentMap)),
+    getProgressStateByIds(onlyLessons)
+  ]);
+
+  return Promise.all(
+    combined.slice(0, limit).map(item =>
+      item.type === 'playlist'
+        ? processPlaylistItem(item, progressMap)
+        : processContentItem(item, hierarchyMap, childContentMap, progressOnChildren, progressOnLessons)
+    )
+  );
+}
+
+function collectExcludedParents(contents, playlistContentIds) {
+  const excludedParents = new Set();
+  for (const item of contents) {
+    const contentId = item.id ?? item.railcontent_id;
+    const parentIds = item.parent_content_data || [];
+    if (playlistContentIds.has(contentId)) {
+      parentIds.forEach(id => excludedParents.add(id));
+    }
+  }
+  return excludedParents;
+}
+
+function filterEligibleContentItems(contents, progressMap, excludedTypes, playlistContentIds, excludedParents) {
+  const seenParent = new Set();
+  const eligible = [];
+
+  for (const item of contents) {
+    const contentId = item.id ?? item.railcontent_id;
+    const progress = progressMap[contentId];
+    if (!progress || !progress.last_update) continue;
+
+    const parentIds = item.parent_content_data || [];
+    if (
+      playlistContentIds.has(contentId) ||
+      excludedParents.has(contentId) ||
+      excludedTypes.has(item.type) ||
+      parentIds.some(id => seenParent.has(id))
+    ) continue;
+
+    parentIds.forEach(id => seenParent.add(id));
+
+    eligible.push({
+      type: 'content',
+      progressTimestamp: progress.last_update * 1000,
+      raw: item,
+      progress,
+      contentId
+    });
+  }
+
+  return eligible;
+}
+
+async function getEligiblePlaylistItems(playlists) {
+  return Promise.all(
+    playlists
+      .filter(p => p.last_progress && p.last_engaged_on)
+      .map(async p => ({
+        type: 'playlist',
+        progressTimestamp: new Date(p.last_progress).getTime(),
+        raw: p
+      }))
+  );
+}
+
+function mergeAndSortItems(items, limit) {
+  return items
+    .filter(item => typeof item.progressTimestamp === 'number' && item.progressTimestamp > 0)
+    .sort((a, b) => b.progressTimestamp - a.progressTimestamp)
+    .slice(0, limit + 5);
+}
+
+async function buildHierarchyMap(items) {
+  const contentIdsWithChildren = items
+    .filter(item => item.raw.child_count > 0)
+    .map(item => item.raw.id ?? item.raw.railcontent_id);
+
+  const entries = await Promise.all(
+    contentIdsWithChildren.map(async id => [id, await fetchHierarchy(id)])
+  );
+
+  return Object.fromEntries(entries);
+}
+
+async function buildChildContentMap(hierarchyMap) {
+  const allChildIds = Object.values(hierarchyMap).flatMap(h => Object.keys(h.children || {}));
+  const children = await fetchByRailContentIds(allChildIds);
+  return Object.fromEntries(children.map(child => [child.id, child]));
+}
+
+async function processPlaylistItem(item, progressMap) {
+  const playlist = item.raw;
+  const items = await fetchPlaylistItems(playlist.id);
+
+  const allItemsCompleted = items.every(i => {
+    const itemId = i.railcontent_id ?? i.id;
+    const progress = progressMap[itemId];
+    return progress && progress.status === 'completed';
+  });
+
+  if (allItemsCompleted) {
+    playlist.status = 'completed';
+    const firstItem = items[0];
+    if (firstItem) {
+      playlist.next = {
+        brand: playlist.brand,
+        id: playlist.id,
+        itemId: firstItem.id,
+        type: 'playlists',
+      };
+    }
+  } else {
+    const lastItemProgress = progressMap[playlist.last_engaged_on];
+
+    if (lastItemProgress?.status === 'completed') {
+      playlist.status = 'item_complete';
+      const index = items.findIndex(i => (i.railcontent_id ?? i.id) === playlist.last_engaged_on);
+      const nextItem = items[index + 1];
+      if (nextItem) {
+        playlist.next = {
+          brand: playlist.brand,
+          id: playlist.id,
+          itemId: nextItem.id,
+          type: 'playlists',
+        };
+      }
+    } else if (lastItemProgress?.status === 'started') {
+      playlist.status = 'item_started';
+      const currentItem = items.find(i => (i.railcontent_id ?? i.id) === playlist.last_engaged_on);
+      if (currentItem) {
+        playlist.next = {
+          brand: playlist.brand,
+          id: playlist.id,
+          itemId: currentItem.id,
+          type: 'playlists',
+        };
+      }
+    }
+  }
+
+  return {
+    id: playlist.id,
+    progressType: 'playlist',
+    header: 'playlist',
+    body: {
+      first_items_thumbnail_url: playlist.first_items_thumbnail_url,
+      title: playlist.name,
+      subtitle: `${playlist.duration_formated} • ${playlist.total_items} items • ${playlist.likes} likes • ${playlist.user.display_name}`
+    },
+    progressTimestamp: item.progressTimestamp,
+    cta: {
+      text: 'Continue',
+      action: playlist.next
+    }
+  };
+}
+
+function processContentItem(item, hierarchyMap, childContentMap, progressOnChildren, progressOnLessons) {
+  const data = item.raw;
+  const progress = item.progress;
+  const { status, progress: progressPercent } = progress;
+
+  let firstIncomplete = null;
+  let secondIncomplete = null;
+  let completedCount = 0;
+
+  if (data.child_count > 0 && hierarchyMap[item.contentId]) {
+    const children = hierarchyMap[item.contentId].children || {};
+    const childIds = Object.keys(children);
+
+    const childProgress = childIds.map(id => [id, progressOnChildren[id]])
+      .filter(([_, s]) => s != null).slice(1);
+
+    completedCount = childIds
+      .filter(id => childContentMap[id]?.child_count == null && progressOnLessons[id] === 'completed')
+      .length;
+
+    firstIncomplete = childProgress.find(([_, s]) => s !== 'completed')?.[0] || childProgress[0]?.[0];
+    if (firstIncomplete) {
+      secondIncomplete = childProgress
+        .filter(([id]) => id !== firstIncomplete)
+        .find(([_, s]) => s !== 'completed')?.[0] || null;
+    }
+
+    data.completed_children = completedCount;
+    data.first_incomplete_child = childContentMap[firstIncomplete] || null;
+    if (data.type === 'pack') {
+      data.second_incomplete_child = childContentMap[secondIncomplete] || null;
+    }
+  }
+
+  const contentType = getFormattedType(data.type);
+  let ctaText = 'Continue';
+  if (contentType === 'transcription') ctaText = 'Replay Song';
+  if (contentType === 'lesson') ctaText = status === 'completed' ? 'Revisit Lesson' : 'Continue';
+  if ((contentType === 'pack' || contentType === 'song tutorial' || collectionLessonTypes.includes(contentType)) && status === 'completed') {
+    ctaText = 'View Lessons';
+  }
+
+  return {
+    id: data.id,
+    progressType: 'content',
+    header: contentType,
+    body: {
+      progressPercent,
+      thumbnail: data.thumbnail,
+      title: data.title,
+      subtitle: !data.child_count || data.lesson_count === 1
+                   ? `${data.difficulty_string} • ${data.artist_name}`
+                   : `${data.completed_children} of ${data.lesson_count ?? data.child_count} Lessons Complete`
+    },
+    cta: {
+      text: ctaText,
+      action: {
+        type: data.type,
+        brand: data.brand,
+        id: data.id,
+        slug: data.slug,
+        child: data.first_incomplete_child
+                ? {
+            id: data.first_incomplete_child.id,
+            type: data.first_incomplete_child.type,
+            brand: data.first_incomplete_child.brand,
+            slug: data.first_incomplete_child.slug,
+            child: data.second_incomplete_child
+                  ? {
+                id: data.second_incomplete_child.id,
+                type: data.second_incomplete_child.type,
+                brand: data.second_incomplete_child.brand,
+                slug: data.second_incomplete_child.slug
+              }
+                  : null
+          }
+                : null
+      }
+    },
+    progressTimestamp: item.progressTimestamp
+  };
+}
+
+
+
+
 
 
