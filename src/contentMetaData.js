@@ -38,7 +38,7 @@ export class Tabs {
   static Artists = { name: 'Artists', short_name: 'ARTISTS', is_group_by: true, value: 'artist' }
   static Songs = { name: 'Songs', short_name: 'Songs', value: '' }
   static Tutorials = { name: 'Tutorials', short_name: 'Tutorials', value: 'type,tutorials', cardType: 'big' }
-  static Transcriptions = { name: 'Transcriptions', short_name: 'Transcriptions', value: 'type,trancription', cardType: 'small' }
+  static Transcriptions = { name: 'Transcriptions', short_name: 'Transcriptions', value: 'type,transcription', cardType: 'small' }
   static PlayAlongs = { name: 'Play-Alongs', short_name: 'Play-Alongs', value:'type,play along', cardType: 'small' }
   static RecentAll = { name: 'All', short_name: 'All' }
   static RecentIncomplete = { name: 'Incomplete', short_name: 'Incomplete' }
@@ -314,7 +314,7 @@ const contentMetadata = {
       sortBy: 'sort',
     },
     'play-along': {
-      name: 'Play Alongs',
+      name: 'Play-Alongs',
       icon: 'icon-play-alongs',
       description:
             'Add your drumming to high-quality drumless play-along tracks - with handy playback tools to help you create the perfect performance.',
@@ -358,7 +358,7 @@ const contentMetadata = {
           'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
           'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
         ],
-        type:       ['Tutorials', 'Transcriptions', 'Play Alongs', 'Jam Tracks'],
+        type:       ['Tutorials', 'Transcriptions', 'Play-Alongs', 'Jam Tracks'],
         progress:   PROGRESS_NAMES,
       },
       sortingOptions: {
@@ -409,7 +409,7 @@ const contentMetadata = {
           'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
           'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
         ],
-        type:       ['Tutorials', 'Sheet Music', 'Play Alongs', 'Jam Tracks'],
+        type:       ['Tutorials', 'Sheet Music', 'Play-Alongs', 'Jam Tracks'],
         progress:   PROGRESS_NAMES,
       },
       sortingOptions: {
@@ -423,6 +423,14 @@ const contentMetadata = {
         Tabs.Transcriptions,
         Tabs.PlayAlongs,
         Tabs.ExploreAll
+      ],
+    },
+    'recent': {
+      name: 'Recent Lessons',
+      tabs: [
+        Tabs.RecentAll,
+        Tabs.RecentIncomplete,
+        Tabs.RecentCompleted
       ],
     },
   },
@@ -452,7 +460,7 @@ const contentMetadata = {
           'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
           'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
         ],
-        type:       ['Tutorials', 'Tabs', 'Play Alongs', 'Jam Tracks'],
+        type:       ['Tutorials', 'Tabs', 'Play-Alongs', 'Jam Tracks'],
         progress:   PROGRESS_NAMES,
       },
       sortingOptions: {
@@ -466,6 +474,14 @@ const contentMetadata = {
         Tabs.Transcriptions,
         Tabs.PlayAlongs,
         Tabs.ExploreAll
+      ],
+    },
+    'recent': {
+      name: 'Recent Lessons',
+      tabs: [
+        Tabs.RecentAll,
+        Tabs.RecentIncomplete,
+        Tabs.RecentCompleted
       ],
     },
   },
@@ -484,7 +500,7 @@ const contentMetadata = {
           'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
           'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
         ],
-        type:       ['Tutorials', 'Sheet Music', 'Play Alongs', 'Jam Tracks'],
+        type:       ['Tutorials', 'Sheet Music', 'Play-Alongs', 'Jam Tracks'],
         progress:   PROGRESS_NAMES,
       },
       sortingOptions: {
@@ -498,6 +514,14 @@ const contentMetadata = {
         Tabs.Transcriptions,
         Tabs.PlayAlongs,
         Tabs.ExploreAll
+      ],
+    },
+    'recent': {
+      name: 'Recent Lessons',
+      tabs: [
+        Tabs.RecentAll,
+        Tabs.RecentIncomplete,
+        Tabs.RecentCompleted
       ],
     },
   }

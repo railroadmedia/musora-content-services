@@ -8,7 +8,16 @@ import {
 import {
 	addItemToPlaylist,
 	createPlaylist,
-	fetchUserPlaylists
+	deleteItemsFromPlaylist,
+	duplicatePlaylist,
+	fetchPlaylist,
+	fetchPlaylistItems,
+	fetchUserPlaylists,
+	likePlaylist,
+	reportPlaylist,
+	togglePlaylistPrivate,
+	unlikePlaylist,
+	updatePlaylist
 } from './services/content-org/playlists.js';
 
 import {
@@ -22,7 +31,12 @@ import {
 } from './services/content.js';
 
 import {
+	addContextToContent
+} from './services/contentAggregator.js';
+
+import {
 	isContentLiked,
+	isContentLikedByIds,
 	likeContent,
 	unlikeContent
 } from './services/contentLikes.js';
@@ -40,6 +54,7 @@ import {
 	getProgressState,
 	getProgressStateByIds,
 	getResumeTimeSeconds,
+	getResumeTimeSecondsByIds,
 	recordWatchSession
 } from './services/contentProgress.js';
 
@@ -78,13 +93,8 @@ import {
 import {
 	assignModeratorToComment,
 	closeComment,
-	countAssignmentsAndLessons,
 	createComment,
 	deleteComment,
-	deletePlaylist,
-	deletePlaylistItem,
-	deletePlaylistLike,
-	duplicatePlaylist,
 	editComment,
 	fetchAllCompletedStates,
 	fetchCarouselCardData,
@@ -101,12 +111,10 @@ import {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchHandler,
+	fetchLastInteractedChild,
+	fetchLikeCount,
 	fetchNextContentDataForParent,
 	fetchOwnedChallenges,
-	fetchPinnedPlaylists,
-	fetchPlaylist,
-	fetchPlaylistItem,
-	fetchPlaylistItems,
 	fetchSongsInProgress,
 	fetchTopComment,
 	fetchUserAward,
@@ -118,11 +126,8 @@ import {
 	fetchUserPracticeNotes,
 	fetchUserPractices,
 	likeComment,
-	likePlaylist,
 	logUserPractice,
 	openComment,
-	pinPlaylist,
-	playback,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,
@@ -138,13 +143,9 @@ import {
 	postRecordWatchSession,
 	replyToComment,
 	reportComment,
-	reportPlaylist,
 	setStudentViewForUser,
 	unassignModeratorToComment,
-	unlikeComment,
-	unpinPlaylist,
-	updatePlaylist,
-	updatePlaylistItem
+	unlikeComment
 } from './services/railcontent.js';
 
 import {
@@ -220,13 +221,13 @@ import {
 } from './services/user/sessions.js';
 
 import {
+	calculateLongestStreaks,
 	createPracticeNotes,
 	deletePracticeSession,
 	getPracticeNotes,
 	getPracticeSessions,
 	getRecentActivity,
 	getUserMonthlyStats,
-	getUserPractices,
 	getUserWeeklyStats,
 	recordUserPractice,
 	removeUserPractice,
@@ -235,8 +236,6 @@ import {
 	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
-
-import { addContextToContent } from './contentAggregator.js';
 
 export {
 	addContextToContent,
@@ -248,18 +247,16 @@ export {
 	assignmentStatusReset,
 	blockUser,
 	buildImageSRC,
+	calculateLongestStreaks,
 	closeComment,
 	contentStatusCompleted,
 	contentStatusReset,
 	convertToTimeZone,
-	countAssignmentsAndLessons,
 	createComment,
 	createPlaylist,
 	createPracticeNotes,
 	deleteComment,
-	deletePlaylist,
-	deletePlaylistItem,
-	deletePlaylistLike,
+	deleteItemsFromPlaylist,
 	deletePracticeSession,
 	duplicatePlaylist,
 	editComment,
@@ -295,9 +292,11 @@ export {
 	fetchGenreLessons,
 	fetchHandler,
 	fetchHierarchy,
+	fetchLastInteractedChild,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
+	fetchLikeCount,
 	fetchLiveEvent,
 	fetchMetadata,
 	fetchMethod,
@@ -312,10 +311,8 @@ export {
 	fetchPackAll,
 	fetchPackData,
 	fetchParentForDownload,
-	fetchPinnedPlaylists,
 	fetchPlayAlongsCount,
 	fetchPlaylist,
-	fetchPlaylistItem,
 	fetchPlaylistItems,
 	fetchRecent,
 	fetchRelatedLessons,
@@ -362,17 +359,18 @@ export {
 	getRecentActivity,
 	getRecommendedForYou,
 	getResumeTimeSeconds,
+	getResumeTimeSecondsByIds,
 	getScheduleContentRows,
 	getSortOrder,
 	getTabResults,
 	getUserMonthlyStats,
-	getUserPractices,
 	getUserWeeklyStats,
 	getWeekNumber,
 	globalConfig,
 	initializeService,
 	isBucketUrl,
 	isContentLiked,
+	isContentLikedByIds,
 	isNextDay,
 	isSameDate,
 	jumpToContinueContent,
@@ -383,8 +381,6 @@ export {
 	login,
 	logout,
 	openComment,
-	pinPlaylist,
-	playback,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,
@@ -411,13 +407,13 @@ export {
 	restorePracticeSession,
 	restoreUserPractice,
 	setStudentViewForUser,
+	togglePlaylistPrivate,
 	unassignModeratorToComment,
 	unblockUser,
 	unlikeComment,
 	unlikeContent,
-	unpinPlaylist,
+	unlikePlaylist,
 	updatePlaylist,
-	updatePlaylistItem,
 	updatePracticeNotes,
 	updateUserPractice,
 	verifyImageSRC,

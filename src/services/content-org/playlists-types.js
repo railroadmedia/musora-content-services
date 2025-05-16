@@ -4,7 +4,7 @@
  * @property {string} description - A description of the playlist. (optional, max 1000 characters)
  * @property {string} category - The category of the playlist.
  * @property {string} thumbnail_url - The URL of the playlist thumbnail. (optional, must be a valid URL)
- * @property {boolean} private - Whether the playlist is private. (optional, defaults to true)
+ * @property {boolean} private - Whether the playlist is private. (optional, defaults to false)
  * @property {string} brand - Brand identifier for the playlist.
  */
 
@@ -14,12 +14,12 @@
  * @property {string} brand
  * @property {string} name
  * @property {string} description
- * @property {string|null} thumbnail_url
  * @property {string} duration_formated
  * @property {Array<string>} first_4_items_thumbnail_url
- * @property {string|null} url
- * @property {string|null} playback_url
  * @property {number} total_items
+ * @property {number} likes
+ * @property {boolean} pinned
+ * @property {boolean} is_my_playlist
  * @property {User} user
  */
 

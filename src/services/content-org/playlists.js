@@ -23,7 +23,6 @@ const BASE_PATH = `/api/content-org`
  * @param {number} [params.limit=10] - The maximum number of playlists to return per page (default is 10).
  * @param {number} [params.page=1] - The page number for pagination.
  * @param {string} [params.sort='-created_at'] - The sorting order for the playlists (default is by created_at in descending order).
- * @param {string} [params.searchTerm] - A search term to filter playlists by name.
  * @param {int|string} [params.content_id] - If content_id exists, the endpoint checks in each playlist if we have the content in the items.
  *
  * @returns {Promise<Object|null>} - A promise that resolves to the response from the API, containing the user playlists data.
@@ -35,18 +34,14 @@ const BASE_PATH = `/api/content-org`
  */
 export async function fetchUserPlaylists(
   brand,
-  { page, limit, sort, searchTerm, content_id, categories } = {}
+  { page, limit, sort, content_id } = {}
 ) {
-  let url
-  console.log({ config: globalConfig.baseUrl })
+  const pageString = page ? `?page=${page}` : '?page=1'
   const limitString = limit ? `&limit=${limit}` : ''
-  const pageString = page ? `&page=${page}` : ''
   const sortString = sort ? `&sort=${sort}` : ''
-  const searchFilter = searchTerm ? `&term=${searchTerm}` : ''
   const content = content_id ? `&content_id=${content_id}` : ''
-  const categoryString =
-    categories && categories.length ? categories.map((cat) => `categories[]=${cat}`).join('&') : ''
-  url = `${BASE_PATH}/v1/user/playlists?brand=${brand}${limitString}${pageString}${sortString}${searchFilter}${content}${categoryString ? `&${categoryString}` : ''}`
+  const brandString = brand ? `&brand=${brand}` : ''
+  const url = `${BASE_PATH}/v1/user/playlists${pageString}${brandString}${limitString}${sortString}${content}`
   return await fetchHandler(url)
 }
 
@@ -60,24 +55,88 @@ export async function fetchUserPlaylists(
  *  - `name` (string): The name of the new playlist (required, max 255 characters).
  *  - `description` (string): A description of the playlist (optional, max 1000 characters).
  *  - `category` (string): The category of the playlist.
- *  - `thumbnail_url` (string): The URL of the playlist thumbnail (optional, must be a valid URL).
- *  - `private` (boolean): Whether the playlist is private (optional, defaults to true).
+ *  - `private` (boolean): Whether the playlist is private (optional, defaults to false).
  *  - `brand` (string): Brand identifier for the playlist.
  *
  * @returns {Promise<Playlist>} - A promise that resolves to the created playlist data if successful, or an error response if validation fails.
  *
- * The server response includes:
- *  - `message`: Success message indicating playlist creation (e.g., "Playlist created successfully").
- *  - `playlist`: The data for the created playlist, including the `user_id` of the authenticated user.
- *
  * @example
  * createPlaylist({ name: "My Playlist", description: "A cool playlist", private: true })
- *   .then(response => console.log(response.message))
+ *   .then(response => console.log(response))
  *   .catch(error => console.error('Error creating playlist:', error));
  */
 export async function createPlaylist(playlistData) {
   const url = `${BASE_PATH}/v1/user/playlists`
   return await fetchHandler(url, 'POST', null, playlistData)
+}
+
+/**
+ * Likes a playlist for the current user.
+ *
+ * @async
+ * @function likePlaylist
+ * @param {string|number} playlistId - The unique identifier of the playlist to like.
+ *
+ * @returns {Promise<Object>}
+ *
+ * @example
+ * // Like playlist with ID '123'
+ * try {
+ *   const response = await likePlaylist('123');
+ *   console.log('Playlist liked successfully:', response);
+ * } catch (error) {
+ *   console.error('Failed to like playlist:', error);
+ * }
+ */
+export async function likePlaylist(playlistId) {
+  const url = `${BASE_PATH}/v1/user/playlists/like/${playlistId}`
+  return await fetchHandler(url, 'PUT')
+}
+
+/**
+ * Unlikes a previously liked playlist.
+ * @async
+ * @function unlikePlaylist
+ * @param {string|number} playlistId - The unique identifier of the playlist to unlike.
+ *
+ * @returns {Promise<Object>}
+ *
+ *
+ * @example
+ * // Unlike playlist with ID '123'
+ * try {
+ *   const response = await unlikePlaylist('123');
+ *   console.log('Playlist unliked successfully:', response);
+ * } catch (error) {
+ *   console.error('Failed to unlike playlist:', error);
+ * }
+ */
+export async function unlikePlaylist(playlistId) {
+  const url = `${BASE_PATH}/v1/user/playlists/like/${playlistId}`
+  return await fetchHandler(url, 'DELETE')
+}
+
+/**
+ * Reports a playlist
+ *
+ * @async
+ * @function reportPlaylist
+ * @param {string|number} playlistId - The unique identifier of the playlist to report.
+ *
+ * @returns {Promise<Object>}
+ *
+ * @example
+ * // Report playlist with ID '123'
+ * try {
+ *   const response = await reportPlaylist('123');
+ *   console.log('Playlist reported successfully:', response);
+ * } catch (error) {
+ *   console.error('Failed to report playlist:', error);
+ * }
+ */
+export async function reportPlaylist(playlistId) {
+  const url = `${BASE_PATH}/v1/user/playlists/report/${playlistId}`
+  return await fetchHandler(url, 'POST')
 }
 
 /**
@@ -116,4 +175,147 @@ export async function createPlaylist(playlistData) {
 export async function addItemToPlaylist(payload) {
   const url = `${BASE_PATH}/v1/user/playlists/items`
   return await fetchHandler(url, 'POST', null, payload)
+}
+
+/**
+ * Toggles a playlists public/private state
+ *
+ * @param {string|number} playlistId
+ * @param {Boolean} is_private - flag for private/public
+
+ * @returns {Promise<Playlist>} - A promise that resolves to the updated playlist data if successful, or an error response if validation fails.
+ *
+ * @example
+ * togglePlaylistPrivate(11541, true)
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error('Error creating playlist:', error));
+ */
+export async function togglePlaylistPrivate(playlistId, is_private)
+{
+  return await updatePlaylist(playlistId, {is_private})
+}
+
+
+/**
+ * Updates a playlists values
+ *
+ * @param {string|number} playlistId
+ * @param {Object} updateData - An object containing fields to update on the playlist:
+ *  - `name` (string): The name of the new playlist (required, max 255 characters).
+ *  - `description` (string): A description of the playlist (optional, max 1000 characters).
+ *  - `category` (string): The category of the playlist.
+ * + *  - `deleted_items` (array): List of playlist item IDs to delete.
+ * + *  - `item_order` (array): Updated order of playlist items (ids, not railcontent_ids).
+ *
+ * @returns {Promise<object>} - A promise that resolves to the created playlist data and lessons if successful, or an error response if validation fails.
+ *
+ * The server response includes:
+ *  - `playlist`: Playlist metadata (same as fetchPlaylist)
+ *  - `lessons`: Updated list of plalyist lessons  (same as fetchPlaylistItems)
+ *
+ * @example
+ * updatePlaylist(661113 { name: "My Playlist", description: "A cool playlist", is_private: true, deleted_items : [2189832, 221091] })
+ *   .then(response => console.log(response.playlist); console.log(response.lessons))
+ *   .catch(error => console.error('Error updating playlist:', error));
+ */
+export async function updatePlaylist(playlistId, {
+  name = null, description = null,  is_private = null, brand = null, category = null, deleted_items = null, item_order = null
+})
+{
+  const data = {
+    ...name && { name },
+    ...description && { description },
+    ...is_private !== null && { private: is_private},
+    ...brand && { brand },
+    ...category && { category},
+    ...deleted_items && { deleted_items },
+    ...item_order && { item_order },
+  }
+  const url = `${BASE_PATH}/v1/user/playlists/${playlistId}`
+  return await fetchHandler(url, 'PUT', null, data);
+}
+
+/**
+ * Delete Items from playlist
+ *
+ * @async
+ * @function togglePlaylistPrivate
+ * @param {string|number} playlistId - The unique identifier of the playlist to update.
+ * @param {array} deleted_items - list of playlist ids to delete (user_playlist_item_id, not the railcontent_id)
+ *
+ * @returns {Promise<Object>}
+ *
+ * @example
+ * // Delete items 8462221 and 8462222 from playlist 81111
+ * try {
+ *   const response = await deleteItemsFromPlaylist(81111, [8462221, 8462222]);
+ * } catch (error) {
+ *   console.error('Failed to delete playlist items:', error);
+ * }
+ */
+export async function deleteItemsFromPlaylist(playlistId, deleted_items) {
+  return await updatePlaylist(playlistId, {deleted_items})
+}
+
+/**
+ * Duplicates a playlist and playlist items for the provided playlistID for the authorized user
+ *
+ * @param {string|number} playlistId
+ * @param {CreatePlaylistDTO} playlistData - An object containing data to create the playlist. The fields include:
+ *  - `name` (string): The name of the new playlist (required, max 255 characters).
+ *  - `description` (string): A description of the playlist (optional, max 1000 characters).
+ *  - `category` (string): The category of the playlist.
+ *  - `private` (boolean): Whether the playlist is private (optional, defaults to false).
+ *  - `brand` (string): Brand identifier for the playlist.
+ *
+ * @returns {Promise<Playlist>}
+ * @example
+ * duplicatePlaylist(81167, { name: "My Playlist (Duplicate)", description: "A cool playlist", private: true })
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error('Error creating playlist:', error));
+ */
+export async function duplicatePlaylist(playlistId, playlistData) {
+  const url = `${BASE_PATH}/v1/user/playlists/duplicate/${playlistId}`
+  return await fetchHandler(url, 'POST', null, playlistData)
+}
+
+/**
+ * Retrieves details of a specific playlist by its ID.
+ *
+ * This function sends a GET request to the `/playlists/playlist` endpoint with a specified playlist ID.
+ * The server validates the user's access to the playlist and returns playlist details if the user is authorized.
+ *
+ * @param {string|number} playlistId - The unique identifier of the playlist to retrieve.
+ *
+ * @returns {Promise<Object>} - A promise that resolves to the response from the API, containing:
+ *  - `data` (Object): The playlist details, or an error message if access is denied or the playlist is not found.
+ *
+ * @example
+ * fetchPlaylist(12345)
+ *   .then(response => console.log(response.data))
+ *   .catch(error => console.error('Error fetching playlist:', error));
+ */
+export async function fetchPlaylist(playlistId) {
+  const url = `${BASE_PATH}/v1/user/playlists/${playlistId}`
+  return await fetchHandler(url, 'GET')
+}
+
+/**
+ * Retrieves items within a specified playlist by playlist ID.
+ *
+ * This function sends a GET request to the `/playlists/playlist-lessons` endpoint to fetch items in the given playlist.
+ * The server combines data from the playlist and additional metadata from Sanity to enhance item details.
+ *
+ * @param {string|number} playlistId - The unique identifier of the playlist whose items are to be fetched.
+ *
+ * @returns {Promise<Array<Object>>} - A promise that resolves to an array of playlist items
+ *
+ * @example
+ * fetchPlaylistItems(12345)
+ *   .then(items => console.log(items))
+ *   .catch(error => console.error('Error fetching playlist items:', error));
+ */
+export async function fetchPlaylistItems(playlistId) {
+  const url = `${BASE_PATH}/v1/user/playlists/items/${playlistId}`
+  return await fetchHandler(url, 'GET')
 }
