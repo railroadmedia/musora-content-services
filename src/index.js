@@ -9,6 +9,7 @@ import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
+	deletePlaylist,
 	duplicatePlaylist,
 	fetchPlaylist,
 	fetchPlaylistItems,
@@ -16,6 +17,7 @@ import {
 	likePlaylist,
 	reportPlaylist,
 	togglePlaylistPrivate,
+	undeletePlaylist,
 	unlikePlaylist,
 	updatePlaylist
 } from './services/content-org/playlists.js';
@@ -266,6 +268,7 @@ export {
 	createPracticeNotes,
 	deleteComment,
 	deleteItemsFromPlaylist,
+	deletePlaylist,
 	deletePracticeSession,
 	duplicatePlaylist,
 	editComment,
@@ -425,6 +428,7 @@ export {
 	togglePlaylistPrivate,
 	unassignModeratorToComment,
 	unblockUser,
+	undeletePlaylist,
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
