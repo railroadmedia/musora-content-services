@@ -374,8 +374,8 @@ export async function restoreUserPractice(id) {
     });
   }
   const formattedMeta = await formatPracticeMeta(response.data);
-
-  return { data: formattedMeta, message: response.message, version: response.version };
+  const practiceDuration = formattedMeta.reduce((total, practice) => total + (practice.duration || 0), 0);
+  return { data: formattedMeta, message: response.message, version: response.version, practiceDuration };
 }
 
 /**
@@ -449,7 +449,7 @@ export async function restorePracticeSession(date) {
   const formattedMeta = await formatPracticeMeta(response?.data);
   const practiceDuration = formattedMeta.reduce((total, practice) => total + (practice.duration || 0), 0);
 
-  return { data: { practices: formattedMeta, practiceDuration} };
+  return { data: formattedMeta, practiceDuration};
 }
 
 /**
