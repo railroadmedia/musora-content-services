@@ -1225,7 +1225,10 @@ export async function fetchLessonContent(railContentId) {
           "id":railcontent_id, 
           slug, artist->,
           "thumbnail_url":thumbnail.asset->url, 
-          "url": web_url_path, 
+          "url": web_url_path,
+          "logo_image_url": logo_image_url.asset->url
+          "dark_logo": dark_mode_logo_url.asset->url,
+          "light_logo": light_mode_logo_url.asset->url,
           soundslice_slug,
           "description": description[0].children[0].text,
           "chapters": chapter[]{
