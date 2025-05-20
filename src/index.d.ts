@@ -8,15 +8,16 @@ import {
 import {
 	addItemToPlaylist,
 	createPlaylist,
+	deleteItemsFromPlaylist,
 	duplicatePlaylist,
 	fetchPlaylist,
 	fetchPlaylistItems,
 	fetchUserPlaylists,
 	likePlaylist,
-	reorderPlaylistItems,
 	reportPlaylist,
 	togglePlaylistPrivate,
-	unlikePlaylist
+	unlikePlaylist,
+	updatePlaylist
 } from './services/content-org/playlists.js';
 
 import {
@@ -111,6 +112,7 @@ import {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchHandler,
+	fetchLastInteractedChild,
 	fetchLikeCount,
 	fetchNextContentDataForParent,
 	fetchOwnedChallenges,
@@ -206,6 +208,15 @@ import {
 } from './services/sanity.js';
 
 import {
+	fetchInterests,
+	fetchUninterests,
+	markContentAsInterested,
+	markContentAsNotInterested,
+	removeContentAsInterested,
+	removeContentAsNotInterested
+} from './services/user/interests.js';
+
+import {
 	blockUser,
 	unblockUser
 } from './services/user/management.js';
@@ -258,6 +269,7 @@ declare module 'musora-content-services' {
 		createPlaylist,
 		createPracticeNotes,
 		deleteComment,
+		deleteItemsFromPlaylist,
 		deletePracticeSession,
 		duplicatePlaylist,
 		editComment,
@@ -293,6 +305,8 @@ declare module 'musora-content-services' {
 		fetchGenreLessons,
 		fetchHandler,
 		fetchHierarchy,
+		fetchInterests,
+		fetchLastInteractedChild,
 		fetchLeaving,
 		fetchLessonContent,
 		fetchLessonsFeaturingThisContent,
@@ -331,6 +345,7 @@ declare module 'musora-content-services' {
 		fetchTabData,
 		fetchTopComment,
 		fetchTopLevelParentId,
+		fetchUninterests,
 		fetchUpcomingEvents,
 		fetchUserAward,
 		fetchUserBadges,
@@ -383,6 +398,8 @@ declare module 'musora-content-services' {
 		logUserPractice,
 		login,
 		logout,
+		markContentAsInterested,
+		markContentAsNotInterested,
 		openComment,
 		postChallengesCommunityNotification,
 		postChallengesEnroll,
@@ -402,8 +419,9 @@ declare module 'musora-content-services' {
 		recommendations,
 		recordUserPractice,
 		recordWatchSession,
+		removeContentAsInterested,
+		removeContentAsNotInterested,
 		removeUserPractice,
-		reorderPlaylistItems,
 		replyToComment,
 		reportComment,
 		reportPlaylist,
@@ -417,6 +435,7 @@ declare module 'musora-content-services' {
 		unlikeComment,
 		unlikeContent,
 		unlikePlaylist,
+		updatePlaylist,
 		updatePracticeNotes,
 		updateUserPractice,
 		verifyImageSRC,

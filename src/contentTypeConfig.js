@@ -176,7 +176,8 @@ export const lessonTypesMapping = {
   'transcriptions': transcriptionsLessonTypes,
   'tabs': transcriptionsLessonTypes,
   'sheet music': transcriptionsLessonTypes,
-  'play alongs': playAlongLessonTypes,
+  'play-alongs': playAlongLessonTypes,
+  'jam tracks': ['jam-track'],
 };
 
 export const progressTypesMapping = {
@@ -195,7 +196,7 @@ export const progressTypesMapping = {
 
 export const filterTypes = {
   lessons: [...individualLessonsTypes, ...collectionLessonTypes],
-  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes]
+  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes, 'jam-track'],
 }
 
 export const recentTypes = {

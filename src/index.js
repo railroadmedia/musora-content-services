@@ -8,15 +8,16 @@ import {
 import {
 	addItemToPlaylist,
 	createPlaylist,
+	deleteItemsFromPlaylist,
 	duplicatePlaylist,
 	fetchPlaylist,
 	fetchPlaylistItems,
 	fetchUserPlaylists,
 	likePlaylist,
-	reorderPlaylistItems,
 	reportPlaylist,
 	togglePlaylistPrivate,
-	unlikePlaylist
+	unlikePlaylist,
+	updatePlaylist
 } from './services/content-org/playlists.js';
 
 import {
@@ -111,6 +112,7 @@ import {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchHandler,
+	fetchLastInteractedChild,
 	fetchLikeCount,
 	fetchNextContentDataForParent,
 	fetchOwnedChallenges,
@@ -206,6 +208,15 @@ import {
 } from './services/sanity.js';
 
 import {
+	fetchInterests,
+	fetchUninterests,
+	markContentAsInterested,
+	markContentAsNotInterested,
+	removeContentAsInterested,
+	removeContentAsNotInterested
+} from './services/user/interests.js';
+
+import {
 	blockUser,
 	unblockUser
 } from './services/user/management.js';
@@ -257,6 +268,7 @@ export {
 	createPlaylist,
 	createPracticeNotes,
 	deleteComment,
+	deleteItemsFromPlaylist,
 	deletePracticeSession,
 	duplicatePlaylist,
 	editComment,
@@ -292,6 +304,8 @@ export {
 	fetchGenreLessons,
 	fetchHandler,
 	fetchHierarchy,
+	fetchInterests,
+	fetchLastInteractedChild,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
@@ -330,6 +344,7 @@ export {
 	fetchTabData,
 	fetchTopComment,
 	fetchTopLevelParentId,
+	fetchUninterests,
 	fetchUpcomingEvents,
 	fetchUserAward,
 	fetchUserBadges,
@@ -382,6 +397,8 @@ export {
 	logUserPractice,
 	login,
 	logout,
+	markContentAsInterested,
+	markContentAsNotInterested,
 	openComment,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
@@ -401,8 +418,9 @@ export {
 	recommendations,
 	recordUserPractice,
 	recordWatchSession,
+	removeContentAsInterested,
+	removeContentAsNotInterested,
 	removeUserPractice,
-	reorderPlaylistItems,
 	replyToComment,
 	reportComment,
 	reportPlaylist,
@@ -416,6 +434,7 @@ export {
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
+	updatePlaylist,
 	updatePracticeNotes,
 	updateUserPractice,
 	verifyImageSRC,
