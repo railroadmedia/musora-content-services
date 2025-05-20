@@ -150,34 +150,6 @@ export async function getAllStartedOrCompleted({ limit = null, onlyIds = true, b
   }
 }
 
-
-
-
-export async function getAllStartedOrCompleted2(limit = null) {
-  const data = await dataContext.getData()
-  let ids = Object.keys(data)
-    .filter(function (key) {
-      return (
-        data[parseInt(key)][DATA_KEY_STATUS] === STATE_STARTED ||
-        data[parseInt(key)][DATA_KEY_STATUS] === STATE_COMPLETED
-      )
-    })
-    .map(function (key) {
-      return parseInt(key)
-    })
-    .sort(function (a, b) {
-      let v1 = data[a][DATA_KEY_LAST_UPDATED_TIME]
-      let v2 = data[b][DATA_KEY_LAST_UPDATED_TIME]
-      if (v1 > v2) return -1
-      else if (v1 < v2) return 1
-      return 0
-    })
-  if (limit) {
-    ids = ids.slice(0, limit)
-  }
-  return ids
-}
-
 export async function assignmentStatusCompleted(assignmentId, parentContentId) {
   await dataContext.update(
     async function (localContext) {
