@@ -18,9 +18,16 @@ export async function otherStats(userId = globalConfig.sessionConfig.userId) {
     calculateLongestStreaks(userId),
   ])
 
-  otherStats.longest_day_streak.length = longestStreaks.longestDailyStreak
-  otherStats.longest_week_streak.length = longestStreaks.longestWeeklyStreak
-  otherStats.total_practice_time = longestStreaks.totalPracticeSeconds
-
-  return otherStats
+  return {
+    ...otherStats,
+    longest_day_streak: {
+      type: 'day',
+      length: longestStreaks.longestDailyStreak,
+    },
+    longest_week_streak: {
+      type: 'week',
+      length: longestStreaks.longestWeeklyStreak,
+    },
+    total_practice_time: longestStreaks.totalPracticeSeconds,
+  }
 }
