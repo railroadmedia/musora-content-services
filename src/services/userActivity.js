@@ -4,10 +4,13 @@
 
 import {fetchUserPractices, logUserPractice, fetchUserPracticeMeta, fetchUserPracticeNotes, fetchHandler} from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
-import {fetchByRailContentIds} from "./sanity";
-import {lessonTypesMapping} from "../contentTypeConfig";
+import {fetchByRailContentIds, fetchShows} from "./sanity";
+import {collectionLessonTypes, lessonTypesMapping, progressTypesMapping} from "../contentTypeConfig";
 import { convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js';
 import {globalConfig} from "./config";
+import {fetchUserPlaylists} from "./content-org/playlists";
+import {getAllStartedOrCompleted, getProgressStateByIds} from "./contentProgress";
+import {TabResponseType} from "../contentMetaData";
 
 const recentActivity =  [
     { id: 5,title: '3 Easy Classical Songs For Beginners', action: 'Comment', thumbnail: 'https://cdn.sanity.io/images/4032r8py/production/8a7fb4d7473306c5fa51ba2e8867e03d44342b18-1920x1080.jpg', summary: 'Just completed the advanced groove lesson! I’m finally feeling more confident with my fills. Thanks for the clear explanations and practice tips! ', date: '2025-03-25 10:09:48' },
@@ -767,6 +770,312 @@ export async function calculateLongestStreaks() {
     longestWeeklyStreak,
     totalPracticeSeconds
   };
+}
+
+
+export async function getProgressRows({ brand = null, limit = 8 } = {}) {
+  const excludedTypes = new Set([
+    'pack-bundle',
+    'learning-path-course',
+    'learning-path-level'
+  ]);
+
+  const recentPlaylists = await fetchUserPlaylists(brand, {
+    sort: '-last_progress',
+    limit: limit,
+  });
+  const playlists = recentPlaylists?.data || [];
+  const eligiblePlaylistItems = await getEligiblePlaylistItems(playlists);
+  const playlistEngagedOnContents = eligiblePlaylistItems.map(item => item.last_engaged_on);
+  const playlistsContents = await fetchByRailContentIds(playlistEngagedOnContents, 'progress-tracker');
+  const excludedParents = new Set();
+  for (const item of playlistsContents) {
+    const contentId = item.id ?? item.railcontent_id;
+    excludedParents.add(contentId)
+    const parentIds = item.parent_content_data || [];
+    parentIds.forEach(id => excludedParents.add(id));
+  }
+
+  const progressContents = await getAllStartedOrCompleted({onlyIds: false, brand: brand, excludedIds: Array.from(excludedParents) });
+  const contents = await fetchByRailContentIds(Object.keys(progressContents), 'progress-tracker', brand);
+  const contentsMap = {};
+  contents.forEach(content => {
+    contentsMap[content.railcontent_id] = content;
+  });
+  const childToParentMap = {};
+  Object.values(contentsMap).forEach(content => {
+    if (Array.isArray(content.parent_content_data) && content.parent_content_data.length > 0) {
+      childToParentMap[content.id] = content.parent_content_data[content.parent_content_data.length - 1];
+    }
+  });
+  const progressMap = new Map();
+  for (const [idStr, progress] of Object.entries(progressContents)) {
+    const id = parseInt(idStr);
+    const content = contentsMap[id];
+    if (!content || excludedTypes.has(content.type)) continue;
+    const parentId = childToParentMap[id];
+    // Handle children with parents
+    if (parentId) {
+      const parentContent = contentsMap[parentId];
+      if (!parentContent || excludedTypes.has(parentContent.type)) continue;
+      const existing = progressMap.get(parentId);
+      if (existing) {
+        // If childIndex isn't already set, set it
+        if (existing.childIndex === undefined) {
+          existing.childIndex = id;
+        }
+      } else {
+        progressMap.set(parentId, {
+          id: parentId,
+          raw: parentContent,
+          state: progress.status,
+          percent: progress.progress,
+          progressTimestamp: progress.last_update * 1000,
+          childIndex: id
+        });
+      }
+      continue;
+    }
+    // Handle standalone parents
+    if (!progressMap.has(id)) {
+      progressMap.set(id, {
+        id,
+        raw: content,
+        state: progress.status,
+        percent: progress.progress,
+        progressTimestamp: progress.last_update * 1000
+      });
+    }
+  }
+  const progressList = Array.from(progressMap.values());
+
+  const combined = mergeAndSortItems([...progressList, ...eligiblePlaylistItems], limit);
+  const results = await Promise.all(
+    combined.slice(0, limit).map(item =>
+      item.type === 'playlist'
+        ? processPlaylistItem(item)
+        : processContentItem(item)
+    )
+  );
+
+  return {
+    type: TabResponseType.PROGRESS_ROWS,
+    data: results
+  };
+}
+
+async function processContentItem(item) {
+  let data = item.raw;
+  const contentType = getFormattedType(data.type);
+  const status = item.state;
+
+  let ctaText = 'Continue';
+  if (contentType === 'transcription' || contentType === 'play-along' || contentType === 'jam-track') ctaText = 'Replay Song';
+  if (contentType === 'lesson') ctaText = status === 'completed' ? 'Revisit Lesson' : 'Continue';
+  if ((contentType === 'pack' || contentType === 'song tutorial' || collectionLessonTypes.includes(contentType)) && status === 'completed') {
+    ctaText = 'View Lessons';
+  }
+
+  if (data.lesson_count > 0) {
+    if (item.childIndex) {
+      let nextId = item.childIndex
+      const lessonIds = extractLessonIds(item);
+      const progressOnItems = await getProgressStateByIds(lessonIds);
+      const nextByProgress = findIncompleteLesson(progressOnItems, item.childIndex, item.raw.type);
+      nextId = nextByProgress ? nextByProgress : nextId;
+
+      const nestedLessons = data.lessons
+        .filter(item => Array.isArray(item.lessons))
+        .flatMap(parent =>
+          parent.lessons.map(lesson => ({
+            ...lesson,
+            parent: {
+              id: parent.id,
+              slug: parent.slug,
+              title: parent.title,
+              type: parent.type
+            }
+          }))
+        );
+
+      const lessons = (nestedLessons.length === 0) ? data.lessons : nestedLessons;
+      const nextLsson = lessons.find(lesson => lesson.id === nextId);
+      data.first_incomplete_child = nextLsson?.parent ?? nextLsson;
+      data.second_incomplete_child = (nextLsson?.parent) ? nextLsson : null;
+    }
+  }
+
+  if(contentType == 'show' && status == 'completed'){
+    const shows = await fetchShows(data.brand, data.type)
+    const showIds = shows.map(item => item.id);
+    const progressOnItems = await getProgressStateByIds(showIds);
+    const nextByProgress = findIncompleteLesson(progressOnItems, data.id, data.type);
+    data = shows.find(lesson => lesson.id === nextByProgress);
+  }
+
+  return {
+    id:                item.id,
+    progressType:      'content',
+    header:            contentType,
+    body:              {
+      progressPercent: item.percent,
+      thumbnail:       data.thumbnail,
+      title:           data.title,
+      subtitle:        !data.child_count || data.lesson_count === 1
+                         ? `${data.difficulty_string} • ${data.artist_name}`
+                         : `${data.completed_children} of ${data.lesson_count ?? data.child_count} Lessons Complete`
+    },
+    cta:               {
+      text:   ctaText,
+      action: {
+        type:  data.type,
+        brand: data.brand,
+        id:    data.id,
+        slug:  data.slug,
+        child: data.first_incomplete_child
+                 ? {
+            id:    data.first_incomplete_child.id,
+            type:  data.first_incomplete_child.type,
+            brand: data.first_incomplete_child.brand,
+            slug:  data.first_incomplete_child.slug,
+            child: data.second_incomplete_child
+                     ? {
+                id:    data.second_incomplete_child.id,
+                type:  data.second_incomplete_child.type,
+                brand: data.second_incomplete_child.brand,
+                slug:  data.second_incomplete_child.slug
+              }
+                     : null
+          }
+                 : null
+      }
+    },
+    progressTimestamp: item.progressTimestamp
+  };
+}
+
+async function processPlaylistItem(item) {
+  const playlist = item.raw;
+  const progressOnItems = await getProgressStateByIds(playlist.items.map(a => a.content_id));
+  const allItemsCompleted = item.raw.items.every(i => {
+    const itemId = i.content_id;
+    const progress = progressOnItems[itemId];
+    return progress && progress === 'completed';
+  });
+  let nextItem = playlist.items[0] ?? null;
+  if (!allItemsCompleted) {
+    const lastItemProgress = progressOnItems[playlist.last_engaged_on];
+    const index = playlist.items.findIndex(i => i.content_id  === playlist.last_engaged_on);
+    if (lastItemProgress === 'completed') {
+      nextItem = playlist.items[index + 1] ?? nextItem;
+    } else {
+      nextItem = playlist.items[index] ?? nextItem;
+    }
+  }
+
+  return {
+    id:                playlist.id,
+    progressType:      'playlist',
+    header:            'playlist',
+    body:              {
+      first_items_thumbnail_url: playlist.first_items_thumbnail_url,
+      title:                     playlist.name,
+      subtitle:                  `${playlist.duration_formated} • ${playlist.total_items} items • ${playlist.likes} likes • ${playlist.user.display_name}`
+    },
+    progressTimestamp: item.progressTimestamp,
+    cta:               {
+      text:   'Continue',
+      action: {
+        brand:  playlist.brand,
+        id:     playlist.id,
+        itemId: nextItem.id,
+        type:   'playlists',
+      }
+    }
+  }
+}
+const getFormattedType = type => {
+  for (const [key, values] of Object.entries(progressTypesMapping)) {
+    if (values.includes(type)) {
+      return key;
+    }
+  }
+  return null;
+};
+
+function traverse(lessons) {
+  for (const item of lessons) {
+    if (item.id) {
+      ids.push(item.id);
+    }
+    if (item.lessons) {
+      traverse(item.lessons); // Recursively handle nested lessons
+    }
+  }
+}
+
+function extractLessonIds(data) {
+  const ids = [];
+  function traverse(lessons) {
+    for (const item of lessons) {
+      if (item.id) {
+        ids.push(item.id);
+      }
+      if (item.lessons) {
+        traverse(item.lessons); // Recursively handle nested lessons
+      }
+    }
+  }
+  if (data.raw && Array.isArray(data.raw.lessons)) {
+    traverse(data.raw.lessons);
+  }
+
+  return ids;
+}
+
+
+async function getEligiblePlaylistItems(playlists) {
+  const eligible = playlists.filter(p => p.last_progress && p.last_engaged_on);
+  return Promise.all(
+    eligible.map(async p => {
+      const utcDate = new Date(p.last_progress.replace(' ', 'T') + 'Z');
+      const timestamp = utcDate.getTime();
+      return {
+        type: 'playlist',
+        progressTimestamp: timestamp,
+        last_engaged_on: p.last_engaged_on,
+        raw: p
+      };
+    })
+  );
+}
+
+function mergeAndSortItems(items, limit) {
+  return items
+    .filter(item => typeof item.progressTimestamp === 'number' && item.progressTimestamp > 0)
+    .sort((a, b) => b.progressTimestamp - a.progressTimestamp)
+    .slice(0, limit + 5);
+}
+
+function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
+  const ids = Object.keys(progressOnItems).map(Number);
+  if (contentType === 'challenge') {
+    // Return first incomplete lesson
+    return ids.find(id => progressOnItems[id] !== 'completed') || null;
+  }
+
+  // For other types, find next incomplete after current
+  const currentIndex = ids.indexOf(Number(currentContentId));
+  if (currentIndex === -1) return null;
+
+  for (let i = currentIndex + 1; i < ids.length; i++) {
+    const id = ids[i];
+    if (progressOnItems[id] !== 'completed') {
+      return id;
+    }
+  }
+
+  return ids[0];
 }
 
 
