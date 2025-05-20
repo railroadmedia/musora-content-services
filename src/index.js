@@ -227,6 +227,10 @@ import {
 } from './services/user/permissions.js';
 
 import {
+	otherStats
+} from './services/user/profile.js';
+
+import {
 	login,
 	logout
 } from './services/user/sessions.js';
@@ -235,10 +239,12 @@ import {
 	calculateLongestStreaks,
 	createPracticeNotes,
 	deletePracticeSession,
+	getFormattedType,
 	getPracticeNotes,
 	getPracticeSessions,
 	getRecentActivity,
 	getUserMonthlyStats,
+	getUserPractices,
 	getUserWeeklyStats,
 	recordUserPractice,
 	removeUserPractice,
@@ -359,6 +365,7 @@ export {
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getContentRows,
+	getFormattedType,
 	getLessonContentRows,
 	getMonday,
 	getNewAndUpcoming,
@@ -377,6 +384,7 @@ export {
 	getSortOrder,
 	getTabResults,
 	getUserMonthlyStats,
+	getUserPractices,
 	getUserWeeklyStats,
 	getWeekNumber,
 	globalConfig,
@@ -396,6 +404,7 @@ export {
 	markContentAsInterested,
 	markContentAsNotInterested,
 	openComment,
+	otherStats,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,

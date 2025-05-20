@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.5.1](https://github.com/railroadmedia/musora-content-services/compare/v2.5.0...v2.5.1) (2025-05-16)
+
+## [2.5.0](https://github.com/railroadmedia/musora-content-services/compare/v2.4.0...v2.5.0) (2025-05-16)
+
+
+### Features
+
+* **MU2-434:** user interests functions ([#253](https://github.com/railroadmedia/musora-content-services/issues/253)) ([3596460](https://github.com/railroadmedia/musora-content-services/commit/35964605cdbb2ac5ca3edfb5e7c8660b0dda7ff1))
+
+
+### Bug Fixes
+
+* remove unnecessary headers ([c0a641c](https://github.com/railroadmedia/musora-content-services/commit/c0a641c354e4cffa93aa7ebe124d64e33a7e2485))
+
 ## [2.4.0](https://github.com/railroadmedia/musora-content-services/compare/v2.3.26...v2.4.0) (2025-05-14)
 
 
