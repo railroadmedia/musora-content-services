@@ -2358,3 +2358,18 @@ export async function fetchScheduledAndNewReleases(
 
   return fetchSanity(query, true)
 }
+
+export async function fetchShows(
+  brand,
+  type,
+  sort = 'sort'
+) {
+  const sortOrder = getSortOrder(sort, brand)
+  const filter = `_type == '${type}'  && brand == '${brand}'`
+  const filterParams = {}
+
+  const query = await buildQuery(filter, filterParams, getFieldsForContentType(type), {
+    sortOrder: sortOrder
+  })
+  return fetchSanity(query, true)
+}
