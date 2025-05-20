@@ -155,7 +155,7 @@ export const individualLessonsTypes = [
 ];
 
 export const coursesLessonTypes = ['course', 'pack','spotlight'];
-export const showsLessonTypes = ['diy-drum-experiments','exploring-beats','in-rhythm',  'rhythmic-adventures-of-captain-carson','rhythms-from-another-planet','study-the-greats'];
+export const showsLessonTypes = ['diy-drum-experiment','exploring-beats','in-rhythm',  'rhythmic-adventures-of-captain-carson','rhythms-from-another-planet','study-the-greats'];
 export const collectionLessonTypes = [
     ...coursesLessonTypes,
     ...showsLessonTypes
