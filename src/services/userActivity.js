@@ -373,7 +373,9 @@ export async function restoreUserPractice(id) {
       });
     });
   }
-  return response;
+  const formattedMeta = await formatPracticeMeta(response.data);
+  const practiceDuration = formattedMeta.reduce((total, practice) => total + (practice.duration || 0), 0);
+  return { data: formattedMeta, message: response.message, version: response.version, practiceDuration };
 }
 
 /**
@@ -444,7 +446,10 @@ export async function restorePracticeSession(date) {
     });
   }
 
-  return response;
+  const formattedMeta = await formatPracticeMeta(response?.data);
+  const practiceDuration = formattedMeta.reduce((total, practice) => total + (practice.duration || 0), 0);
+
+  return { data: formattedMeta, practiceDuration};
 }
 
 /**
@@ -479,39 +484,10 @@ export async function getPracticeSessions(params ={}) {
 
   const meta = await fetchUserPracticeMeta(userPracticesIds, userId);
   if (!meta.data.length) return { data: { practices: [], practiceDuration: 0 } };
-  const practiceDuration = meta.data.reduce((total, practice) => total + (practice.duration_seconds || 0), 0);
-  const contentIds = meta.data.map(practice => practice.content_id).filter(id => id !== null);
 
-  const contents = await fetchByRailContentIds(contentIds);
-  const getFormattedType = (type) => {
-    for (const [key, values] of Object.entries(lessonTypesMapping)) {
-      if (values.includes(type)) {
-        return key.replace(/\b\w/g, char => char.toUpperCase());
-      }
-    }
-    return null;
-  };
+  const formattedMeta = await formatPracticeMeta(meta.data);
+  const practiceDuration = formattedMeta.reduce((total, practice) => total + (practice.duration || 0), 0);
 
-  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-  const formattedMeta = meta.data.map(practice => {
-    const utcDate = new Date(practice.created_at);
-    const content = contents.find(c => c.id === practice.content_id) || {};
-    return {
-      id: practice.id,
-      auto: practice.auto,
-      thumbnail: (practice.content_id)? content.thumbnail : '',
-      duration: practice.duration_seconds || 0,
-      content_url: content.url || null,
-      title: (practice.content_id)? content.title : practice.title,
-      category_id: practice.category_id,
-      instrument_id: practice.instrument_id ,
-      content_type: getFormattedType(content.type || ''),
-      content_id: practice.content_id || null,
-      content_brand: content.brand || null,
-      created_at: convertToTimeZone(utcDate, userTimeZone)
-    };
-  });
   return { data: { practices: formattedMeta, practiceDuration} };
 }
 
@@ -790,6 +766,44 @@ export async function calculateLongestStreaks() {
     longestWeeklyStreak,
     totalPracticeSeconds
   };
+}
+
+async function formatPracticeMeta(practices) {
+  const contentIds = practices.map(p => p.content_id).filter(id => id !== null);
+  const contents = await fetchByRailContentIds(contentIds);
+
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  return practices.map(practice => {
+    const utcDate = new Date(practice.created_at);
+    const content = contents.find(c => c.id === practice.content_id) || {};
+
+    return {
+      id:               practice.id,
+      auto:             practice.auto,
+      thumbnail:        practice.content_id ? content.thumbnail : practice.thumbnail_url || '',
+      thumbnail_url:    practice.content_id ? content.thumbnail : practice.thumbnail_url || '',
+      duration:         practice.duration_seconds || 0,
+      duration_seconds: practice.duration_seconds || 0,
+      content_url:      content.url || null,
+      title:            practice.content_id ? content.title : practice.title,
+      category_id:      practice.category_id,
+      instrument_id:    practice.instrument_id,
+      content_type:     getFormattedType(content.type || ''),
+      content_id:       practice.content_id || null,
+      content_brand:    content.brand || null,
+      created_at:       convertToTimeZone(utcDate, userTimeZone),
+    };
+  });
+}
+
+export function getFormattedType(type) {
+  for (const [key, values] of Object.entries(lessonTypesMapping)) {
+    if (values.includes(type)) {
+      return key.replace(/\b\w/g, char => char.toUpperCase());
+    }
+  }
+  return null;
 }
 
 
