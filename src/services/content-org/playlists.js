@@ -174,7 +174,7 @@ export async function reportPlaylist(playlistId) {
  *   });
  */
 export async function addItemToPlaylist(payload) {
-  const url = `${BASE_PATH}/v1/items`
+  const url = `${BASE_PATH}/v1/user/playlists/items`
   return await fetchHandler(url, 'POST', null, payload)
 }
 
