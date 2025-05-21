@@ -544,11 +544,7 @@ export async function getRecentActivity({
   limit = 5,
   tabName = null
 } = {}) {
-  return await fetchRecentUserActivities({
-    page = 1,
-    limit = 5,
-    tabName = null
-  } = {});
+  return await fetchRecentUserActivities({ page, limit, tabName });
 }
 
 /**
