@@ -14,7 +14,7 @@ const baseUrl = `/api/user-management-system`
  */
 export async function otherStats(userId = globalConfig.sessionConfig.userId) {
   const [otherStats, longestStreaks] = await Promise.all([
-    fetchJSONHandler(`${baseUrl}/v1/users/${userId}/permissions`, 'delete'),
+    fetchJSONHandler(`${baseUrl}/v1/users/${userId}/statistics`, 'get'),
     calculateLongestStreaks(userId),
   ])
 
