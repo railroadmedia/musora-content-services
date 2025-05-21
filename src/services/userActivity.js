@@ -2,13 +2,19 @@
  * @module User-Activity
  */
 
-import {fetchUserPractices, logUserPractice, fetchUserPracticeMeta, fetchUserPracticeNotes, fetchHandler, fetchRecentUserActivities} from './railcontent'
+import {
+  fetchUserPractices,
+  logUserPractice,
+  fetchUserPracticeMeta,
+  fetchUserPracticeNotes,
+  fetchHandler,
+  fetchRecentUserActivities,
+} from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import { fetchByRailContentIds } from './sanity'
 import { lessonTypesMapping } from '../contentTypeConfig'
 import { convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js'
 import { globalConfig } from './config'
-
 
 const DATA_KEY_PRACTICES = 'practices'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
@@ -541,12 +547,8 @@ export async function getPracticeNotes(day) {
  *   .then(({ data }) => console.log("Recent activity:", data))
  *   .catch(error => console.error("Failed to get recent activity:", error));
  */
-export async function getRecentActivity({
-  page = 1,
-  limit = 5,
-  tabName = null
-} = {}) {
-  return await fetchRecentUserActivities({ page, limit, tabName });
+export async function getRecentActivity({ page = 1, limit = 5, tabName = null } = {}) {
+  return await fetchRecentUserActivities({ page, limit, tabName })
 }
 
 /**
