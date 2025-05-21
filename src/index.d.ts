@@ -226,6 +226,10 @@ import {
 } from './services/user/permissions.js';
 
 import {
+	otherStats
+} from './services/user/profile.js';
+
+import {
 	login,
 	logout
 } from './services/user/sessions.js';
@@ -234,11 +238,16 @@ import {
 	calculateLongestStreaks,
 	createPracticeNotes,
 	deletePracticeSession,
+<<<<<<< HEAD
 	deleteUserActivity,
+=======
+	getFormattedType,
+>>>>>>> project-v2
 	getPracticeNotes,
 	getPracticeSessions,
 	getRecentActivity,
 	getUserMonthlyStats,
+	getUserPractices,
 	getUserWeeklyStats,
 	recordUserActivity,
 	recordUserPractice,
@@ -363,6 +372,7 @@ declare module 'musora-content-services' {
 		getAllStarted,
 		getAllStartedOrCompleted,
 		getContentRows,
+		getFormattedType,
 		getLessonContentRows,
 		getMonday,
 		getNewAndUpcoming,
@@ -381,6 +391,7 @@ declare module 'musora-content-services' {
 		getSortOrder,
 		getTabResults,
 		getUserMonthlyStats,
+		getUserPractices,
 		getUserWeeklyStats,
 		getWeekNumber,
 		globalConfig,
@@ -400,6 +411,7 @@ declare module 'musora-content-services' {
 		markContentAsInterested,
 		markContentAsNotInterested,
 		openComment,
+		otherStats,
 		postChallengesCommunityNotification,
 		postChallengesEnroll,
 		postChallengesEnrollmentNotification,

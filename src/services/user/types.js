@@ -114,3 +114,23 @@
  * @property {boolean} isAdmin
  * @property {boolean} isABasicMember
  */
+
+/**
+ * @typedef {Object} StreakDTO
+ *
+ * @property {string} type - week or day
+ * @property {number} length
+ * @property {Date|null} start_date
+ * @property {Date|null} end_date
+ */
+
+/**
+ * @typedef {Object} OtherStatsDTO
+ *
+ * @property {StreakDTO} longest_day_streak
+ * @property {StreakDTO} longest_week_streak
+ * @property {number} total_practice_time
+ * @property {number} comment_likes
+ * @property {number} forum_post_likes
+ * @property {number} experience_points
+ */
