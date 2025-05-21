@@ -238,11 +238,8 @@ import {
 	calculateLongestStreaks,
 	createPracticeNotes,
 	deletePracticeSession,
-<<<<<<< HEAD
 	deleteUserActivity,
-=======
 	getFormattedType,
->>>>>>> project-v2
 	getPracticeNotes,
 	getPracticeSessions,
 	getRecentActivity,
