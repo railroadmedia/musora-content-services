@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.7.0](https://github.com/railroadmedia/musora-content-services/compare/v2.6.4...v2.7.0) (2025-05-21)
+
+
+### Features
+
+* **BEH-398:** delete & undelete playlist endpoints ([#260](https://github.com/railroadmedia/musora-content-services/issues/260)) ([338434e](https://github.com/railroadmedia/musora-content-services/commit/338434e42f200fd2a1f1379727c6d14315406676))
+
 ### [2.6.4](https://github.com/railroadmedia/musora-content-services/compare/v2.6.3...v2.6.4) (2025-05-21)
 
 ### [2.6.3](https://github.com/railroadmedia/musora-content-services/compare/v2.6.2...v2.6.3) (2025-05-21)
