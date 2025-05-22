@@ -46,7 +46,7 @@ export class Tabs {
   static RecentActivityLessons = { name: 'Lessons', short_name: 'Lessons' }
   static RecentActivitySongs = { name: 'Songs', short_name: 'Songs' }
   static RecentActivityPosts = { name: 'Posts', short_name: 'Posts' }
-  static RecentActivityComments = { name: 'Comment', short_name: 'Comments' }
+  static RecentActivityComments = { name: 'Comments', short_name: 'Comments' }
 }
 
 export const TabResponseType = {
@@ -246,6 +246,16 @@ const commonMetadata = {
       Tabs.ExploreAll
     ],
   },
+  'recent-activities': {
+    name: 'Recent Activity',
+    tabs: [
+      Tabs.RecentAll,
+      Tabs.RecentActivityLessons,
+      Tabs.RecentActivitySongs,
+      Tabs.RecentActivityPosts,
+      Tabs.RecentActivityComments,
+    ],
+  },
 }
 const contentMetadata = {
   drumeo: {
@@ -372,16 +382,6 @@ const contentMetadata = {
         Tabs.Transcriptions,
         Tabs.PlayAlongs,
         Tabs.ExploreAll
-      ],
-    },
-    'recent-activities': {
-      name: 'Recent Activity',
-      tabs: [
-        Tabs.RecentAll,
-        Tabs.RecentActivityLessons,
-        Tabs.RecentActivitySongs,
-        Tabs.RecentActivityPosts,
-        Tabs.RecentActivityComments,
       ],
     },
   },
