@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.12](https://github.com/railroadmedia/musora-content-services/compare/v1.4.11...v1.4.12) (2025-05-15)
+
+### [1.4.11](https://github.com/railroadmedia/musora-content-services/compare/v1.4.10...v1.4.11) (2025-04-30)
+
+### [1.4.10](https://github.com/railroadmedia/musora-content-services/compare/v1.4.9...v1.4.10) (2025-04-30)
+
+### [1.4.9](https://github.com/railroadmedia/musora-content-services/compare/v1.4.8...v1.4.9) (2025-04-30)
+
+### [1.4.8](https://github.com/railroadmedia/musora-content-services/compare/v1.4.7...v1.4.8) (2025-04-30)
+
+### [1.4.7](https://github.com/railroadmedia/musora-content-services/compare/v1.4.4...v1.4.7) (2025-04-08)
+
+
+### Bug Fixes
+
+* **BR-178:** fix url routing to genres on song-tutorial page ([#209](https://github.com/railroadmedia/musora-content-services/issues/209)) ([d32e37a](https://github.com/railroadmedia/musora-content-services/commit/d32e37af4fe53c1d7c5c1fd4eb646df54e007f95))
+* **TP-833:** mod comments missing content ([#222](https://github.com/railroadmedia/musora-content-services/issues/222)) ([55e6e0c](https://github.com/railroadmedia/musora-content-services/commit/55e6e0c4f602d336b99c32f231265a94e35ace4f))
+
+### [1.4.6](https://github.com/railroadmedia/musora-content-services/compare/v1.4.4...v1.4.6) (2025-04-08)
+
+
+### Bug Fixes
+
+* **BR-178:** fix url routing to genres on song-tutorial page ([#209](https://github.com/railroadmedia/musora-content-services/issues/209)) ([d32e37a](https://github.com/railroadmedia/musora-content-services/commit/d32e37af4fe53c1d7c5c1fd4eb646df54e007f95))
+* **TP-833:** mod comments missing content ([#222](https://github.com/railroadmedia/musora-content-services/issues/222)) ([55e6e0c](https://github.com/railroadmedia/musora-content-services/commit/55e6e0c4f602d336b99c32f231265a94e35ace4f))
+
+### [1.4.5](https://github.com/railroadmedia/musora-content-services/compare/v1.4.4...v1.4.5) (2025-04-08)
+
+
+### Bug Fixes
+
+* **BR-178:** fix url routing to genres on song-tutorial page ([#209](https://github.com/railroadmedia/musora-content-services/issues/209)) ([d32e37a](https://github.com/railroadmedia/musora-content-services/commit/d32e37af4fe53c1d7c5c1fd4eb646df54e007f95))
+* **TP-833:** mod comments missing content ([#222](https://github.com/railroadmedia/musora-content-services/issues/222)) ([55e6e0c](https://github.com/railroadmedia/musora-content-services/commit/55e6e0c4f602d336b99c32f231265a94e35ace4f))
+
 ### [1.4.4](https://github.com/railroadmedia/musora-content-services/compare/v1.4.3...v1.4.4) (2025-03-31)
 
 ### [1.4.3](https://github.com/railroadmedia/musora-content-services/compare/v1.4.2...v1.4.3) (2025-03-31)

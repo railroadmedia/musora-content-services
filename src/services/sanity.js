@@ -383,7 +383,8 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         published_on,
         "type": _type,
         web_url_path,
-        "permission_id": permission[]->railcontent_id,`
+        "permission_id": permission[]->railcontent_id,
+        event_calendar_unique_key`
   const query = buildRawQuery(
     `_type in ${typesString} && brand == '${brand}' && published_on > '${now}' && status == 'scheduled'`,
     fields,
@@ -1852,13 +1853,16 @@ function populateHierarchyLookups(currentLevel, data, parentId) {
  * @returns {Promise<Object|null>} - A promise that resolves to an object containing the data
  */
 export async function fetchCommentModContentData(ids) {
+  if (!ids) {
+    return []
+  }
   const idsString = ids.join(',')
   const fields = `"id": railcontent_id, "type": _type, title, "url": web_url_path, "parent": *[^._id in child[]._ref]{"id": railcontent_id, title}`
   const query = await buildQuery(
     `railcontent_id in [${idsString}]`,
     { bypassPermissions: true },
     fields,
-    { end: 50 }
+    { end: ids.length }
   )
   let data = await fetchSanity(query, true)
   let mapped = {}
