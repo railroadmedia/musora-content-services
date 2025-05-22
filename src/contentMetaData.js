@@ -46,7 +46,7 @@ export class Tabs {
   static RecentActivityLessons = { name: 'Lessons', short_name: 'Lessons' }
   static RecentActivitySongs = { name: 'Songs', short_name: 'Songs' }
   static RecentActivityPosts = { name: 'Posts', short_name: 'Posts' }
-  static RecentActivityComments = { name: 'Comment', short_name: 'Comments' }
+  static RecentActivityComments = { name: 'Comments', short_name: 'Comments' }
 }
 
 export const TabResponseType = {
