@@ -3,7 +3,6 @@
  */
 
 import {
-  fetchAll,
   fetchByRailContentIds,
   fetchMetadata,
   fetchRecent,
@@ -15,7 +14,6 @@ import {
   fetchLeaving, fetchScheduledAndNewReleases
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
-import {getAllStartedOrCompleted} from "./contentProgress";
 import {fetchHandler} from "./railcontent";
 import {recommendations} from "./recommendations";
 

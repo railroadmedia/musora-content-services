@@ -70,6 +70,17 @@ export async function createPlaylist(playlistData) {
   return await fetchHandler(url, 'POST', null, playlistData)
 }
 
+export async function deletePlaylist(playlist) {
+  const url = `${BASE_PATH}/v1/user/playlists/delete/${playlist}`
+  return await fetchHandler(url, 'POST', null, playlist)
+}
+
+export async function undeletePlaylist(playlist) {
+  const url = `${BASE_PATH}/v1/user/playlists/undelete/${playlist}`
+  return await fetchHandler(url, 'POST', null, playlist)
+}
+
+
 /**
  * Likes a playlist for the current user.
  *
@@ -140,14 +151,14 @@ export async function reportPlaylist(playlistId) {
 }
 
 /**
- * Adds an item to one or more playlists by making a POST request to the `/playlists/add-item` endpoint.
+ * Adds an item to one or more playlists
  *
  * @param {AddItemToPlaylistDTO} payload - The request payload containing necessary parameters.
  *
  * @returns {Promise<Object|null>} - A promise that resolves to an object with the response data, including:
- *  - `success` (boolean): Indicates if the items were added successfully (`true` on success).
- *  - `limit_excedeed` (Array): A list of playlists where the item limit was exceeded, if any.
- *  - `successful` (Array): A list of successfully added items (empty if none).
+ *  - `added` (Array): Playlist ids that we were success
+ *  - `limit_exceeded` (Array): A list of playlists where the item limit was exceeded, if any.
+ *  - `unauthorized` (Array): A list of successfully added items (empty if none).
  *
  * Resolves to `null` if the request fails.
  * @throws {Error} - Throws an error if the request encounters issues during the operation.
@@ -156,7 +167,8 @@ export async function reportPlaylist(playlistId) {
  * const payload = {
  *     content_id: 123,
  *     playlist_id: [1, 2, 3],
- *     import_all_assignments: true
+ *     position: 2,
+ *
  * };
  *
  * addItemToPlaylist(payload)
@@ -164,8 +176,8 @@ export async function reportPlaylist(playlistId) {
  *     if (response?.success) {
  *       console.log("Item(s) added to playlist successfully");
  *     }
- *     if (response?.limit_excedeed) {
- *       console.warn("Some playlists exceeded the item limit:", response.limit_excedeed);
+ *     if (response?.limit_exceeded) {
+ *       console.warn("Some playlists exceeded the item limit:", response.limit_exceeded);
  *     }
  *   })
  *   .catch(error => {
