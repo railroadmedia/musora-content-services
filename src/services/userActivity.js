@@ -1041,17 +1041,6 @@ const getFormattedType = type => {
   return null;
 };
 
-function traverse(lessons) {
-  for (const item of lessons) {
-    if (item.id) {
-      ids.push(item.id);
-    }
-    if (item.lessons) {
-      traverse(item.lessons); // Recursively handle nested lessons
-    }
-  }
-}
-
 function extractLessonIds(data) {
   const ids = [];
   function traverse(lessons) {
