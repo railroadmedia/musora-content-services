@@ -241,10 +241,12 @@ import {
 	getRecentActivity,
 	getUserMonthlyStats,
 	getUserWeeklyStats,
+	pinProgressRow,
 	recordUserPractice,
 	removeUserPractice,
 	restorePracticeSession,
 	restoreUserPractice,
+	unpinProgressRow,
 	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
@@ -401,6 +403,7 @@ declare module 'musora-content-services' {
 		markContentAsInterested,
 		markContentAsNotInterested,
 		openComment,
+		pinProgressRow,
 		postChallengesCommunityNotification,
 		postChallengesEnroll,
 		postChallengesEnrollmentNotification,
@@ -435,6 +438,7 @@ declare module 'musora-content-services' {
 		unlikeComment,
 		unlikeContent,
 		unlikePlaylist,
+		unpinProgressRow,
 		updatePlaylist,
 		updatePracticeNotes,
 		updateUserPractice,

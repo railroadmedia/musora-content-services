@@ -241,10 +241,12 @@ import {
 	getRecentActivity,
 	getUserMonthlyStats,
 	getUserWeeklyStats,
+	pinProgressRow,
 	recordUserPractice,
 	removeUserPractice,
 	restorePracticeSession,
 	restoreUserPractice,
+	unpinProgressRow,
 	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
@@ -400,6 +402,7 @@ export {
 	markContentAsInterested,
 	markContentAsNotInterested,
 	openComment,
+	pinProgressRow,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,
@@ -434,6 +437,7 @@ export {
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
+	unpinProgressRow,
 	updatePlaylist,
 	updatePracticeNotes,
 	updateUserPractice,

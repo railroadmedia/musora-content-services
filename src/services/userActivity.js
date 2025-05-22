@@ -795,7 +795,19 @@ export async function calculateLongestStreaks() {
   };
 }
 
-
+/**
+ * Fetches and combines recent user progress rows and playlists, excluding certain types and parents.
+ *
+ * @param {Object} [options={}] - Options for fetching progress rows.
+ * @param {string|null} [options.brand=null] - The brand context for progress data.
+ * @param {number} [options.limit=8] - Maximum number of progress rows to return.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing progress rows formatted for UI.
+ *
+ * @example
+ * getProgressRows({ brand: 'drumeo', limit: 10 })
+ *   .then(data => console.log(data))
+ *   .catch(error => console.error(error));
+ */
 export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   const excludedTypes = new Set([
     'pack-bundle',
@@ -904,6 +916,7 @@ async function processContentItem(item) {
       let nextId = item.childIndex
       const lessonIds = extractLessonIds(item);
       const progressOnItems = await getProgressStateByIds(lessonIds);
+      const completedCount = Object.values(progressOnItems).filter(value => value === 'completed').length;
       const nextByProgress = findIncompleteLesson(progressOnItems, item.childIndex, item.raw.type);
       nextId = nextByProgress ? nextByProgress : nextId;
 
@@ -925,6 +938,7 @@ async function processContentItem(item) {
       const nextLsson = lessons.find(lesson => lesson.id === nextId);
       data.first_incomplete_child = nextLsson?.parent ?? nextLsson;
       data.second_incomplete_child = (nextLsson?.parent) ? nextLsson : null;
+      data.completed_children = completedCount;
     }
   }
 
@@ -1017,6 +1031,7 @@ async function processPlaylistItem(item) {
     }
   }
 }
+
 const getFormattedType = type => {
   for (const [key, values] of Object.entries(progressTypesMapping)) {
     if (values.includes(type)) {
@@ -1101,6 +1116,38 @@ function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
   return ids[0];
 }
 
+/**
+ * Pins a specific progress row for a user, scoped by brand.
+ *
+ * @param {string} brand - The brand context for the pin action.
+ * @param {number|string} id - The ID of the progress item to pin.
+ * @param {string} progressType - The type of progress (e.g., 'content', 'playlist').
+ * @returns {Promise<Object>} - A promise resolving to the response from the pin API.
+ *
+ * @example
+ * pinProgressRow('drumeo', 12345, 'content')
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+export async function pinProgressRow(brand, id, progressType) {
+  const url = `/api/user-management-system/v1/progress/pin?brand=${brand}&id=${id}&progressType=${progressType}`;
+  return await fetchHandler(url, 'PUT', null)
+}
+/**
+ * Unpins the current pinned progress row for a user, scoped by brand.
+ *
+ * @param {string} brand - The brand context for the unpin action.
+ * @returns {Promise<Object>} - A promise resolving to the response from the unpin API.
+ *
+ * @example
+ * unpinProgressRow('drumeo')
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+export async function unpinProgressRow(brand) {
+  const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}`;
+  return await fetchHandler(url, 'PUT', null)
+}
 
 
 
