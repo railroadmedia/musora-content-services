@@ -935,9 +935,9 @@ async function processContentItem(item) {
         );
 
       const lessons = (nestedLessons.length === 0) ? data.lessons : nestedLessons;
-      const nextLsson = lessons.find(lesson => lesson.id === nextId);
-      data.first_incomplete_child = nextLsson?.parent ?? nextLsson;
-      data.second_incomplete_child = (nextLsson?.parent) ? nextLsson : null;
+      const nextLesson = lessons.find(lesson => lesson.id === nextId);
+      data.first_incomplete_child = nextLesson?.parent ?? nextLesson;
+      data.second_incomplete_child = (nextLesson?.parent) ? nextLesson : null;
       data.completed_children = completedCount;
     }
   }
