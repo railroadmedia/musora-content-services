@@ -1,15 +1,9 @@
 /**
  * @module UserManagement
  */
-import { fetchJSONHandler } from '../../lib/httpHelper.js'
-import { fetchHandler } from '../railcontent.js'
-
-/**
- * Exported functions that are excluded from index generation.
- *
- * @type {string[]}
- */
-const excludeFromGeneratedIndex = []
+import { fetchHandler as railcontentFetchHandler } from '../railcontent.js'
+import { fetchHandler, fetchJSONHandler } from '../../lib/httpHelper.js'
+import { globalConfig } from '../config.js'
 
 const baseUrl = `/api/user-management-system`
 
@@ -20,7 +14,7 @@ const baseUrl = `/api/user-management-system`
  */
 export async function blockUser(userId) {
   const url = `${baseUrl}/v1/block/${userId}`
-  return fetchHandler(url, 'post')
+  return railcontentFetchHandler(url, 'post')
 }
 
 /**
@@ -30,7 +24,7 @@ export async function blockUser(userId) {
  */
 export async function unblockUser(userId) {
   const url = `${baseUrl}/v1/unblock/${userId}`
-  return fetchHandler(url, 'post')
+  return railcontentFetchHandler(url, 'post')
 }
 
 /**
@@ -45,10 +39,17 @@ export async function uploadPicture(fieldKey, file) {
   formData.append('fieldKey', fieldKey)
   const apiUrl = `${baseUrl}/v1/picture`
 
-  const response = await fetchJSONHandler(apiUrl, {
-    method: 'POST',
-    body: formData,
-  })
+  const response = await fetchHandler(
+    apiUrl,
+    globalConfig.sessionConfig.token,
+    globalConfig.baseUrl,
+    'POST',
+    null,
+    null,
+    {
+      body: formData,
+    }
+  )
 
   if (!response.ok) {
     const errorText = await response.text()
@@ -70,13 +71,19 @@ export async function uploadPicture(fieldKey, file) {
 export async function uploadPictureFromS3(fieldKey, s3_bucket_path) {
   const apiUrl = `${baseUrl}/v1/picture/s3`
 
-  const response = await fetchJSONHandler(apiUrl, {
-    method: 'POST',
-    body: {
-      fieldKey,
-      s3_bucket_path,
-    },
-  })
+  const response = await fetchJSONHandler(
+    apiUrl,
+    globalConfig.sessionConfig.token,
+    globalConfig.baseUrl,
+    'POST',
+    null,
+    {
+      body: {
+        fieldKey,
+        s3_bucket_path,
+      },
+    }
+  )
 
   if (!response.ok) {
     const errorText = await response.text()

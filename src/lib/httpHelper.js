@@ -1,8 +1,33 @@
 import { globalConfig } from '../services/config.js'
 
-export async function fetchJSONHandler(url, token, baseUrl, method = 'get', dataVersion = null, body = null) {
-  let headers = {
+export async function fetchJSONHandler(
+  url,
+  token,
+  baseUrl,
+  method = 'get',
+  dataVersion = null,
+  body = null
+) {
+  const headers = {
     'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'X-CSRF-TOKEN': token,
+  }
+
+  return fetchHandler(url, token, baseUrl, method, headers, dataVersion, body)
+}
+
+export async function fetchHandler(
+  url,
+  token,
+  baseUrl,
+  method = 'get',
+  headers = {},
+  dataVersion = null,
+  body = null
+) {
+  let reqHeaders = {
+    ...headers,
     Accept: 'application/json',
     'X-CSRF-TOKEN': token,
   }
@@ -10,18 +35,19 @@ export async function fetchJSONHandler(url, token, baseUrl, method = 'get', data
   if (!globalConfig.isMA) {
     const params = new URLSearchParams(window.location.search)
     if (params.get('testNow')) {
-      headers['testNow'] = params.get('testNow')
+      reqHeaders['testNow'] = params.get('testNow')
     }
     if (params.get('timezone')) {
-      headers['M-Client-Timezone'] = params.get('timezone')
+      reqHeaders['M-Client-Timezone'] = params.get('timezone')
     }
   }
 
-  if (globalConfig.localTimezoneString) headers['M-Client-Timezone'] = globalConfig.localTimezoneString
-  if (dataVersion) headers['Data-Version'] = dataVersion
+  if (globalConfig.localTimezoneString)
+    reqHeaders['M-Client-Timezone'] = globalConfig.localTimezoneString
+  if (dataVersion) reqHeaders['Data-Version'] = dataVersion
   const options = {
     method,
-    headers,
+    headers: reqHeaders,
   }
   if (body) options.body = JSON.stringify(body)
   if (token) options.headers['Authorization'] = `Bearer ${token}`
@@ -29,8 +55,8 @@ export async function fetchJSONHandler(url, token, baseUrl, method = 'get', data
   try {
     const response = await fetch(url, options)
     if (response.ok) {
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.indexOf("application/json") !== -1) {
+      const contentType = response.headers.get('content-type')
+      if (contentType && contentType.indexOf('application/json') !== -1) {
         return await response.json()
       } else {
         return await response.text()
