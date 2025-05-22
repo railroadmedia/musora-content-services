@@ -60,7 +60,8 @@ export const assignmentsField = `"assignments":assignment[]{
               }
             }.url,  assignment_sheet_music_image),
         "timecode": assignment_timecode,
-        "description": coalesce(assignment_description,'')
+        "description": coalesce(assignment_description,''),
+        "description_portable": assignment_description_portable,
 },`
 
 const contentWithInstructorsField = {
@@ -119,11 +120,7 @@ export const coachLessonsTypes = [
 ]
 
 export const childContentTypeConfig = {
-  'song-tutorial': [
-    `"genre": genre[]->name`,
-    `difficulty_string`,
-    `"type": _type`,
-  ]
+  'song-tutorial': [`"genre": genre[]->name`, `difficulty_string`, `"type": _type`],
 }
 
 export let contentTypeConfig = {
@@ -455,10 +452,8 @@ export let contentTypeConfig = {
   'exploring-beats': contentWithSortField,
   sonor: contentWithSortField,
   returning: {
-    fields: [
-      `quarter_published`,
-    ]
-  }
+    fields: [`quarter_published`],
+  },
 }
 
 export const plusMembershipPermissions = 92
@@ -651,7 +646,7 @@ export function filtersToGroq(filters, selectedFilters = []) {
               return `instrumentless == ${value}`
             }
           } else if (key === 'difficulty' && !selectedFilters.includes(key)) {
-            if(value === 'Introductory'){
+            if (value === 'Introductory') {
               return `(difficulty_string == "Novice" || difficulty_string == "Introductory" )`
             }
             return `difficulty_string == "${value}"`
