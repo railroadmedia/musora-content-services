@@ -35,7 +35,7 @@ export async function unblockUser(userId) {
  */
 export async function uploadPicture(fieldKey, file) {
   const formData = new FormData()
-  formData.append('picture', file)
+  formData.append('file', file)
   formData.append('fieldKey', fieldKey)
   const apiUrl = `${baseUrl}/v1/picture`
 
@@ -46,18 +46,17 @@ export async function uploadPicture(fieldKey, file) {
     'POST',
     null,
     null,
-    {
-      body: formData,
-    }
+    formData
   )
 
   if (!response.ok) {
-    const errorText = await response.text()
-    console.log('Error uploading picture:', errorText)
-    throw new Error(`Upload failed: ${errorText}`)
+    const problemDetails = await response.json()
+    console.log('Error uploading picture:', problemDetails.detail)
+    throw new Error(`Upload failed: ${problemDetails.detail}`)
   }
 
   const { url } = await response.json()
+  console.log('Picture uploaded successfully:', url)
 
   return url
 }
@@ -78,20 +77,30 @@ export async function uploadPictureFromS3(fieldKey, s3_bucket_path) {
     'POST',
     null,
     {
-      body: {
-        fieldKey,
-        s3_bucket_path,
-      },
+      fieldKey,
+      s3_bucket_path,
     }
   )
 
   if (!response.ok) {
-    const errorText = await response.text()
-    console.log('Error uploading picture:', errorText)
-    throw new Error(`Upload failed: ${errorText}`)
+    const problemDetails = await response.json()
+    console.log('Error uploading picture:', problemDetails.detail)
+    throw new Error(`Upload failed: ${problemDetails.detail}`)
   }
 
   const { url } = await response.json()
 
   return url
+}
+
+/**
+ * @param {string} pictureUrl
+ * @returns {Promise<any>}
+ */
+export async function deletePicture(pictureUrl) {
+  const apiUrl = `${baseUrl}/v1/picture`
+
+  fetchJSONHandler(apiUrl, globalConfig.sessionConfig.token, globalConfig.baseUrl, 'DELETE', null, {
+    picture_url: pictureUrl,
+  })
 }

@@ -216,6 +216,7 @@ import {
 
 import {
 	blockUser,
+	deletePicture,
 	unblockUser,
 	uploadPicture,
 	uploadPictureFromS3
@@ -275,6 +276,7 @@ declare module 'musora-content-services' {
 		createPracticeNotes,
 		deleteComment,
 		deleteItemsFromPlaylist,
+		deletePicture,
 		deletePracticeSession,
 		duplicatePlaylist,
 		editComment,

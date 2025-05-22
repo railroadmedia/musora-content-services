@@ -14,7 +14,32 @@ export async function fetchJSONHandler(
     'X-CSRF-TOKEN': token,
   }
 
-  return fetchHandler(url, token, baseUrl, method, headers, dataVersion, body)
+  if (body) {
+    body = JSON.stringify(body)
+  }
+
+  try {
+    const response = await fetchHandler(url, token, baseUrl, method, headers, dataVersion, body)
+
+    if (response.ok) {
+      const contentType = response.headers.get('content-type')
+      if (
+        contentType &&
+        contentType.indexOf('application/json') !== -1 &&
+        response.status !== 204
+      ) {
+        return await response.json()
+      } else {
+        return await response.text()
+      }
+    } else {
+      console.error(`Fetch error: ${method} ${url} ${response.status} ${response.statusText}`)
+      console.log(response)
+    }
+  } catch (error) {
+    console.error('Fetch error:', error)
+  }
+  return null
 }
 
 export async function fetchHandler(
@@ -49,22 +74,11 @@ export async function fetchHandler(
     method,
     headers: reqHeaders,
   }
-  if (body) options.body = JSON.stringify(body)
+  if (body) options.body = body
   if (token) options.headers['Authorization'] = `Bearer ${token}`
   if (baseUrl && url.startsWith('/')) url = baseUrl + url
   try {
-    const response = await fetch(url, options)
-    if (response.ok) {
-      const contentType = response.headers.get('content-type')
-      if (contentType && contentType.indexOf('application/json') !== -1) {
-        return await response.json()
-      } else {
-        return await response.text()
-      }
-    } else {
-      console.error(`Fetch error: ${method} ${url} ${response.status} ${response.statusText}`)
-      console.log(response)
-    }
+    return fetch(url, options)
   } catch (error) {
     console.error('Fetch error:', error)
   }

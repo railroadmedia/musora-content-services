@@ -216,6 +216,7 @@ import {
 
 import {
 	blockUser,
+	deletePicture,
 	unblockUser,
 	uploadPicture,
 	uploadPictureFromS3
@@ -274,6 +275,7 @@ export {
 	createPracticeNotes,
 	deleteComment,
 	deleteItemsFromPlaylist,
+	deletePicture,
 	deletePracticeSession,
 	duplicatePlaylist,
 	editComment,
