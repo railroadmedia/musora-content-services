@@ -988,7 +988,7 @@ describe('Recommended System', function() {
   })
 
   test('fetchMetadata', async () => {
-    const response = await fetchMetadata('drumeo', 'recent-activities')
+    const response = await fetchMetadata('singeo', 'recent-activities')
     log(response)
     expect(response.tabs.length).toBeGreaterThan(0)
   })

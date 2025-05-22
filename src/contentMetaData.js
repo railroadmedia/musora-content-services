@@ -246,6 +246,16 @@ const commonMetadata = {
       Tabs.ExploreAll
     ],
   },
+  'recent-activities': {
+    name: 'Recent Activity',
+    tabs: [
+      Tabs.RecentAll,
+      Tabs.RecentActivityLessons,
+      Tabs.RecentActivitySongs,
+      Tabs.RecentActivityPosts,
+      Tabs.RecentActivityComments,
+    ],
+  },
 }
 const contentMetadata = {
   drumeo: {
@@ -372,16 +382,6 @@ const contentMetadata = {
         Tabs.Transcriptions,
         Tabs.PlayAlongs,
         Tabs.ExploreAll
-      ],
-    },
-    'recent-activities': {
-      name: 'Recent Activity',
-      tabs: [
-        Tabs.RecentAll,
-        Tabs.RecentActivityLessons,
-        Tabs.RecentActivitySongs,
-        Tabs.RecentActivityPosts,
-        Tabs.RecentActivityComments,
       ],
     },
   },
