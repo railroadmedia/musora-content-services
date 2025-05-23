@@ -978,12 +978,9 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   if (pinnedItem) {
     pinnedItem.pinned = true
   }
-
   const pinnedId = pinnedItem?.id
-  const pinnedType = pinnedItem?.type || (pinnedItem?.raw?.type === 'playlist' ? 'playlist' : 'content')
-
-  const filteredProgressList = progressList.filter(item => item.id !== pinnedId || pinnedType !== 'content')
-  const filteredPlaylists = eligiblePlaylistItems.filter(item => item.id !== pinnedId || pinnedType !== 'playlist')
+  const filteredProgressList = progressList.filter(item => item.id !== pinnedId)
+  const filteredPlaylists = eligiblePlaylistItems.filter(item => item.id !== pinnedId)
 
   const combinedBase = [...filteredProgressList, ...filteredPlaylists]
   const combined = pinnedItem ? [pinnedItem, ...combinedBase] : combinedBase
