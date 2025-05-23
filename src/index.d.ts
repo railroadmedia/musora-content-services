@@ -9,6 +9,7 @@ import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
+	deletePlaylist,
 	duplicatePlaylist,
 	fetchPlaylist,
 	fetchPlaylistItems,
@@ -16,6 +17,7 @@ import {
 	likePlaylist,
 	reportPlaylist,
 	togglePlaylistPrivate,
+	undeletePlaylist,
 	unlikePlaylist,
 	updatePlaylist
 } from './services/content-org/playlists.js';
@@ -116,6 +118,7 @@ import {
 	fetchLikeCount,
 	fetchNextContentDataForParent,
 	fetchOwnedChallenges,
+	fetchRecentUserActivities,
 	fetchSongsInProgress,
 	fetchTopComment,
 	fetchUserAward,
@@ -227,6 +230,10 @@ import {
 } from './services/user/permissions.js';
 
 import {
+	otherStats
+} from './services/user/profile.js';
+
+import {
 	login,
 	logout
 } from './services/user/sessions.js';
@@ -235,13 +242,20 @@ import {
 	calculateLongestStreaks,
 	createPracticeNotes,
 	deletePracticeSession,
+	deleteUserActivity,
+	getFormattedType,
 	getPracticeNotes,
 	getPracticeSessions,
 	getProgressRows,
 	getRecentActivity,
 	getUserMonthlyStats,
+	getUserPractices,
 	getUserWeeklyStats,
+<<<<<<< HEAD
 	pinProgressRow,
+=======
+	recordUserActivity,
+>>>>>>> project-v2
 	recordUserPractice,
 	removeUserPractice,
 	restorePracticeSession,
@@ -272,7 +286,9 @@ declare module 'musora-content-services' {
 		createPracticeNotes,
 		deleteComment,
 		deleteItemsFromPlaylist,
+		deletePlaylist,
 		deletePracticeSession,
+		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
 		extractSanityUrl,
@@ -331,6 +347,7 @@ declare module 'musora-content-services' {
 		fetchPlaylist,
 		fetchPlaylistItems,
 		fetchRecent,
+		fetchRecentUserActivities,
 		fetchRelatedLessons,
 		fetchRelatedRecommendedContent,
 		fetchRelatedSongs,
@@ -364,6 +381,7 @@ declare module 'musora-content-services' {
 		getAllStarted,
 		getAllStartedOrCompleted,
 		getContentRows,
+		getFormattedType,
 		getLessonContentRows,
 		getMonday,
 		getNewAndUpcoming,
@@ -384,6 +402,7 @@ declare module 'musora-content-services' {
 		getSortOrder,
 		getTabResults,
 		getUserMonthlyStats,
+		getUserPractices,
 		getUserWeeklyStats,
 		getWeekNumber,
 		globalConfig,
@@ -403,7 +422,11 @@ declare module 'musora-content-services' {
 		markContentAsInterested,
 		markContentAsNotInterested,
 		openComment,
+<<<<<<< HEAD
 		pinProgressRow,
+=======
+		otherStats,
+>>>>>>> project-v2
 		postChallengesCommunityNotification,
 		postChallengesEnroll,
 		postChallengesEnrollmentNotification,
@@ -420,6 +443,7 @@ declare module 'musora-content-services' {
 		rankCategories,
 		rankItems,
 		recommendations,
+		recordUserActivity,
 		recordUserPractice,
 		recordWatchSession,
 		removeContentAsInterested,
@@ -435,6 +459,7 @@ declare module 'musora-content-services' {
 		togglePlaylistPrivate,
 		unassignModeratorToComment,
 		unblockUser,
+		undeletePlaylist,
 		unlikeComment,
 		unlikeContent,
 		unlikePlaylist,

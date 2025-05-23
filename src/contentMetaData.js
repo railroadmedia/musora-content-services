@@ -43,6 +43,10 @@ export class Tabs {
   static RecentAll = { name: 'All', short_name: 'All' }
   static RecentIncomplete = { name: 'Incomplete', short_name: 'Incomplete' }
   static RecentCompleted = { name: 'Completed', short_name: 'Completed' }
+  static RecentActivityLessons = { name: 'Lessons', short_name: 'Lessons' }
+  static RecentActivitySongs = { name: 'Songs', short_name: 'Songs' }
+  static RecentActivityPosts = { name: 'Posts', short_name: 'Posts' }
+  static RecentActivityComments = { name: 'Comments', short_name: 'Comments' }
 }
 
 export const TabResponseType = {
@@ -241,6 +245,16 @@ const commonMetadata = {
       Tabs.Transcriptions,
       Tabs.PlayAlongs,
       Tabs.ExploreAll
+    ],
+  },
+  'recent-activities': {
+    name: 'Recent Activity',
+    tabs: [
+      Tabs.RecentAll,
+      Tabs.RecentActivityLessons,
+      Tabs.RecentActivitySongs,
+      Tabs.RecentActivityPosts,
+      Tabs.RecentActivityComments,
     ],
   },
 }

@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.7.1](https://github.com/railroadmedia/musora-content-services/compare/v2.7.0...v2.7.1) (2025-05-22)
+
+## [2.7.0](https://github.com/railroadmedia/musora-content-services/compare/v2.6.4...v2.7.0) (2025-05-21)
+
+
+### Features
+
+* **BEH-398:** delete & undelete playlist endpoints ([#260](https://github.com/railroadmedia/musora-content-services/issues/260)) ([338434e](https://github.com/railroadmedia/musora-content-services/commit/338434e42f200fd2a1f1379727c6d14315406676))
+
+### [2.6.4](https://github.com/railroadmedia/musora-content-services/compare/v2.6.3...v2.6.4) (2025-05-21)
+
+### [2.6.3](https://github.com/railroadmedia/musora-content-services/compare/v2.6.2...v2.6.3) (2025-05-21)
+
+### [2.6.2](https://github.com/railroadmedia/musora-content-services/compare/v2.6.1...v2.6.2) (2025-05-21)
+
+
+### Bug Fixes
+
+* **MU2-390:** other stats ([#264](https://github.com/railroadmedia/musora-content-services/issues/264)) ([35720cf](https://github.com/railroadmedia/musora-content-services/commit/35720cf82978da12edcd05b5c490904770292b40))
+
+### [2.6.1](https://github.com/railroadmedia/musora-content-services/compare/v2.6.0...v2.6.1) (2025-05-21)
+
+
+### Bug Fixes
+
+* **MU2-390:** other stats ([#263](https://github.com/railroadmedia/musora-content-services/issues/263)) ([6869f3a](https://github.com/railroadmedia/musora-content-services/commit/6869f3ab1e3b76beeff9301be94b1424b402a644))
+
+## [2.6.0](https://github.com/railroadmedia/musora-content-services/compare/v2.5.1...v2.6.0) (2025-05-21)
+
+
+### Features
+
+* **MU2-390:**  other stats ([#246](https://github.com/railroadmedia/musora-content-services/issues/246)) ([d370fd0](https://github.com/railroadmedia/musora-content-services/commit/d370fd0669ee12578210baeb2062c807c48b4565))
+
 ### [2.5.1](https://github.com/railroadmedia/musora-content-services/compare/v2.5.0...v2.5.1) (2025-05-16)
 
 ## [2.5.0](https://github.com/railroadmedia/musora-content-services/compare/v2.4.0...v2.5.0) (2025-05-16)

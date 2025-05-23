@@ -9,6 +9,7 @@ import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
+	deletePlaylist,
 	duplicatePlaylist,
 	fetchPlaylist,
 	fetchPlaylistItems,
@@ -16,6 +17,7 @@ import {
 	likePlaylist,
 	reportPlaylist,
 	togglePlaylistPrivate,
+	undeletePlaylist,
 	unlikePlaylist,
 	updatePlaylist
 } from './services/content-org/playlists.js';
@@ -116,6 +118,7 @@ import {
 	fetchLikeCount,
 	fetchNextContentDataForParent,
 	fetchOwnedChallenges,
+	fetchRecentUserActivities,
 	fetchSongsInProgress,
 	fetchTopComment,
 	fetchUserAward,
@@ -227,6 +230,10 @@ import {
 } from './services/user/permissions.js';
 
 import {
+	otherStats
+} from './services/user/profile.js';
+
+import {
 	login,
 	logout
 } from './services/user/sessions.js';
@@ -235,13 +242,20 @@ import {
 	calculateLongestStreaks,
 	createPracticeNotes,
 	deletePracticeSession,
+	deleteUserActivity,
+	getFormattedType,
 	getPracticeNotes,
 	getPracticeSessions,
 	getProgressRows,
 	getRecentActivity,
 	getUserMonthlyStats,
+	getUserPractices,
 	getUserWeeklyStats,
+<<<<<<< HEAD
 	pinProgressRow,
+=======
+	recordUserActivity,
+>>>>>>> project-v2
 	recordUserPractice,
 	removeUserPractice,
 	restorePracticeSession,
@@ -271,7 +285,9 @@ export {
 	createPracticeNotes,
 	deleteComment,
 	deleteItemsFromPlaylist,
+	deletePlaylist,
 	deletePracticeSession,
+	deleteUserActivity,
 	duplicatePlaylist,
 	editComment,
 	extractSanityUrl,
@@ -330,6 +346,7 @@ export {
 	fetchPlaylist,
 	fetchPlaylistItems,
 	fetchRecent,
+	fetchRecentUserActivities,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
@@ -363,6 +380,7 @@ export {
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getContentRows,
+	getFormattedType,
 	getLessonContentRows,
 	getMonday,
 	getNewAndUpcoming,
@@ -383,6 +401,7 @@ export {
 	getSortOrder,
 	getTabResults,
 	getUserMonthlyStats,
+	getUserPractices,
 	getUserWeeklyStats,
 	getWeekNumber,
 	globalConfig,
@@ -402,7 +421,11 @@ export {
 	markContentAsInterested,
 	markContentAsNotInterested,
 	openComment,
+<<<<<<< HEAD
 	pinProgressRow,
+=======
+	otherStats,
+>>>>>>> project-v2
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,
@@ -419,6 +442,7 @@ export {
 	rankCategories,
 	rankItems,
 	recommendations,
+	recordUserActivity,
 	recordUserPractice,
 	recordWatchSession,
 	removeContentAsInterested,
@@ -434,6 +458,7 @@ export {
 	togglePlaylistPrivate,
 	unassignModeratorToComment,
 	unblockUser,
+	undeletePlaylist,
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
