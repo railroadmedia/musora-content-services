@@ -1968,9 +1968,8 @@ function needsAccessDecorator(results, userPermissions, isAdmin) {
         result.lessons.forEach((lesson) => {
           lesson['need_access'] = doesUserNeedAccessToContent(lesson, userPermissions, isAdmin) // Updated to check lesson access
         })
-      } else {
-        result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin)
       }
+      result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin)
     })
   } else if (results.related_lessons && Array.isArray(results.related_lessons)) {
     results.related_lessons.forEach((result) => {
