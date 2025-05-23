@@ -243,7 +243,6 @@ import {
 	createPracticeNotes,
 	deletePracticeSession,
 	deleteUserActivity,
-	getFormattedType,
 	getPracticeNotes,
 	getPracticeSessions,
 	getProgressRows,
@@ -251,11 +250,8 @@ import {
 	getUserMonthlyStats,
 	getUserPractices,
 	getUserWeeklyStats,
-<<<<<<< HEAD
 	pinProgressRow,
-=======
 	recordUserActivity,
->>>>>>> project-v2
 	recordUserPractice,
 	removeUserPractice,
 	restorePracticeSession,
@@ -380,7 +376,6 @@ export {
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getContentRows,
-	getFormattedType,
 	getLessonContentRows,
 	getMonday,
 	getNewAndUpcoming,
@@ -421,11 +416,8 @@ export {
 	markContentAsInterested,
 	markContentAsNotInterested,
 	openComment,
-<<<<<<< HEAD
-	pinProgressRow,
-=======
 	otherStats,
->>>>>>> project-v2
+	pinProgressRow,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,

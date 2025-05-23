@@ -11,10 +11,13 @@ import {
   fetchRecentUserActivities,
 } from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
-import { fetchByRailContentIds } from './sanity'
-import { lessonTypesMapping } from '../contentTypeConfig'
+import { fetchByRailContentIds, fetchShows } from './sanity'
+import {fetchUserPlaylists} from "./content-org/playlists";
 import { convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js'
 import { globalConfig } from './config'
+import {collectionLessonTypes, lessonTypesMapping, progressTypesMapping} from "../contentTypeConfig";
+import {getAllStartedOrCompleted, getProgressStateByIds} from "./contentProgress";
+import {TabResponseType} from "../contentMetaData";
 
 const DATA_KEY_PRACTICES = 'practices'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
@@ -835,14 +838,6 @@ async function formatPracticeMeta(practices) {
   })
 }
 
-export function getFormattedType(type) {
-  for (const [key, values] of Object.entries(lessonTypesMapping)) {
-    if (values.includes(type)) {
-      return key.replace(/\b\w/g, (char) => char.toUpperCase())
-    }
-  }
-  return null
-}
 
 /**
  * Records a new user activity in the system.
