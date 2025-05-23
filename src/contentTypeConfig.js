@@ -140,7 +140,7 @@ export const practiceAlongsLessonTypes = ['workout', 'boot-camp','challenges'];
 export const performancesLessonTypes = ['performance','solo','drum-fest-international-2022'];
 export const documentariesLessonTypes = ['tama','sonor','history-of-electronic-drums','paiste-cymbals'];
 export const liveArchivesLessonTypes = ['podcast', 'coach-stream', 'live-streams'];
-export const studentArchivesLessonTypes = ['student-review', 'question-and-answer', 'student-focus','student-collaborations'];
+export const studentArchivesLessonTypes = ['student-review', 'question-and-answer', 'student-focus','student-collaboration'];
 export const tutorialsLessonTypes = ['song-tutorial'];
 export const transcriptionsLessonTypes = ['song'];
 export const playAlongLessonTypes = ['play-along'];
@@ -155,7 +155,7 @@ export const individualLessonsTypes = [
 ];
 
 export const coursesLessonTypes = ['course', 'pack','spotlight'];
-export const showsLessonTypes = ['diy-drum-experiments','exploring-beats','in-rhythm',  'rhythmic-adventures-of-captain-carson','rhythms-from-another-planet','study-the-greats'];
+export const showsLessonTypes = ['diy-drum-experiment','exploring-beats','in-rhythm',  'rhythmic-adventures-of-captain-carson','rhythms-from-another-planet','study-the-greats'];
 export const collectionLessonTypes = [
     ...coursesLessonTypes,
     ...showsLessonTypes
@@ -180,6 +180,19 @@ export const lessonTypesMapping = {
   'jam tracks': ['jam-track'],
 };
 
+export const progressTypesMapping = {
+  'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes],
+  'course': ['course'],
+  'show': showsLessonTypes,
+  'song tutorial': tutorialsLessonTypes,
+  'transcription': transcriptionsLessonTypes,
+  'tabs': transcriptionsLessonTypes,
+  'sheet music': transcriptionsLessonTypes,
+  'play-along': playAlongLessonTypes,
+  'guided course': ['challenge'],
+  'pack': ['pack', 'semester-pack'],
+  'method': ['learning-path']
+};
 
 export const filterTypes = {
   lessons: [...individualLessonsTypes, ...collectionLessonTypes],
@@ -193,6 +206,9 @@ export const recentTypes = {
 }
 
 export let contentTypeConfig = {
+  'progress-tracker': {
+    fields: ['"parent_content_data": parent_content_data[].id','"lessons": child[]->{"id": railcontent_id, "slug":slug.current, "brand":brand, "type": _type, "lessons": child[]->{"id":railcontent_id, "slug":slug.current,  "type": _type,"brand":brand}}'],
+  },
   song: {
     fields: ['album', 'soundslice', 'instrumentless', `"resources": ${resourcesField}`],
     relationships: {

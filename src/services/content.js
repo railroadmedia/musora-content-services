@@ -17,6 +17,7 @@ import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.j
 import {fetchHandler} from "./railcontent";
 import {recommendations} from "./recommendations";
 
+
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
   let recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent' });
 
@@ -383,5 +384,11 @@ export async function getRecommendedForYou(brand, rowId = null, {
 
   return { id: 'recommended', title: 'Recommended For You', items: contents }
 }
+
+
+
+
+
+
 
 
