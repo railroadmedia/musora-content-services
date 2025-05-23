@@ -5,19 +5,21 @@
 
 # Define the paths (edit these paths according to your directory structure)
 MUSORA_CONTENT_SERVICES_DIR="../musora-content-services"
-MUSORA_WEB_PLATFORM_DIR="../musora-web-platform"
+MUSORA_PLATFORM_FE_DIR="../musora-platform-frontend"
 
 # Navigate to the musora-content-services directory and create a symlink
 echo "Linking musora-content-services..."
 cd "$MUSORA_CONTENT_SERVICES_DIR" || { echo "Directory not found: $MUSORA_CONTENT_SERVICES_DIR"; exit 1; }
 npm link
 
-# Navigate to the musora-web-platform directory and link the package
-echo "Linking musora-content-services to musora-web-platform..."
-cd "$MUSORA_WEB_PLATFORM_DIR" || { echo "Directory not found: $MUSORA_WEB_PLATFORM_DIR"; exit 1; }
+# Navigate to the musora-platform-frontend directory and link the package
+echo "Linking musora-content-services to musora-platform-frontend ..."
+cd "$MUSORA_PLATFORM_FE_DIR" || { echo "Directory not found: $MUSORA_PLATFORM_FE_DIR"; exit 1; }
+npm rm -fr node-modules
+npm install
 npm link musora-content-services
 
 echo "Symlink created successfully. You can now test your changes locally."
 
-# Optional: List the linked packages to verify
-npm ls musora-content-services
+# Optional: If you want to run the frontend with the linked package
+#npm run dev
