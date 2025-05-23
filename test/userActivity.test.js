@@ -69,15 +69,15 @@ describe('User Activity API Tests', function () {
 
   test('fetches user practices from past', async () => {
     userActivityContext.clearCache()
-    const practices = await getUserMonthlyStats( 2025, 1)
-    consoleLog(practices)
+    const practices = await getUserMonthlyStats( {year:2025, month: 1} )
+    consoleLog(practices.data.dailyActiveStats)
 
     // Assert that dailyActiveStats contains correct data
     const dailyStats = practices.data.dailyActiveStats
     const feb10 = dailyStats.find(stat => stat.label === '2025-02-10')
     expect(feb10.inStreak).toBe(true)
-    expect(feb10.type).toBe('tracked')
-    expect(feb10.isActive).toBe(false)
+     expect(feb10.type).toBe('tracked')
+     expect(feb10.isActive).toBe(false)
   })
 
   test('fetches user practices for current week', async () => {
