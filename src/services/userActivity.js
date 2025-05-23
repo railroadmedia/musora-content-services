@@ -12,7 +12,7 @@ import {
 } from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import { fetchByRailContentIds, fetchShows } from './sanity'
-import {fetchUserPlaylists} from "./content-org/playlists";
+import {fetchPlaylist, fetchUserPlaylists} from "./content-org/playlists";
 import { convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js'
 import { globalConfig } from './config'
 import {collectionLessonTypes, lessonTypesMapping, progressTypesMapping} from "../contentTypeConfig";
@@ -969,11 +969,29 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
       });
     }
   }
-  const progressList = Array.from(progressMap.values());
+  const pinnedItem = await extractPinnedItem({
+    brand,
+    progressMap,
+    playlistItems: eligiblePlaylistItems,
+  })
+  const progressList = Array.from(progressMap.values())
+  if (pinnedItem) {
+    pinnedItem.pinned = true
+  }
 
-  const combined = mergeAndSortItems([...progressList, ...eligiblePlaylistItems], limit);
+  const pinnedId = pinnedItem?.id
+  const pinnedType = pinnedItem?.type || (pinnedItem?.raw?.type === 'playlist' ? 'playlist' : 'content')
+
+  const filteredProgressList = progressList.filter(item => item.id !== pinnedId || pinnedType !== 'content')
+  const filteredPlaylists = eligiblePlaylistItems.filter(item => item.id !== pinnedId || pinnedType !== 'playlist')
+
+  const combinedBase = [...filteredProgressList, ...filteredPlaylists]
+  const combined = pinnedItem ? [pinnedItem, ...combinedBase] : combinedBase
+
+  const finalCombined = mergeAndSortItems(combined, limit)
+
   const results = await Promise.all(
-    combined.slice(0, limit).map(item =>
+    finalCombined.slice(0, limit).map(item =>
       item.type === 'playlist'
         ? processPlaylistItem(item)
         : processContentItem(item)
@@ -1041,6 +1059,7 @@ async function processContentItem(item) {
     id:                item.id,
     progressType:      'content',
     header:            contentType,
+    pinned:            item.pinned ?? false,
     body:              {
       progressPercent: item.percent,
       thumbnail:       data.thumbnail,
@@ -1101,6 +1120,7 @@ async function processPlaylistItem(item) {
     id:                playlist.id,
     progressType:      'playlist',
     header:            'playlist',
+    pinned:            item.pinned ?? false,
     body:              {
       first_items_thumbnail_url: playlist.first_items_thumbnail_url,
       title:                     playlist.name,
@@ -1165,9 +1185,24 @@ async function getEligiblePlaylistItems(playlists) {
 }
 
 function mergeAndSortItems(items, limit) {
-  return items
+  const seen = new Set();
+  const deduped = [];
+
+  for (const item of items) {
+    const key = `${item.id}-${item.type || item.raw?.type}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      deduped.push(item);
+    }
+  }
+
+  return deduped
     .filter(item => typeof item.progressTimestamp === 'number' && item.progressTimestamp > 0)
-    .sort((a, b) => b.progressTimestamp - a.progressTimestamp)
+    .sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return b.progressTimestamp - a.progressTimestamp;
+    })
     .slice(0, limit + 5);
 }
 
@@ -1206,6 +1241,12 @@ function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
  *   .catch(error => console.error(error));
  */
 export async function pinProgressRow(brand, id, progressType) {
+  updatePinnedProgressRow(brand, {
+    id,
+    progressType,
+    pinnedAt: new Date().toISOString(),
+  });
+
   const url = `/api/user-management-system/v1/progress/pin?brand=${brand}&id=${id}&progressType=${progressType}`;
   return await fetchHandler(url, 'PUT', null)
 }
@@ -1221,7 +1262,79 @@ export async function pinProgressRow(brand, id, progressType) {
  *   .catch(error => console.error(error));
  */
 export async function unpinProgressRow(brand) {
-  const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}`;
+  updatePinnedProgressRow(brand, null)
+  const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}`
   return await fetchHandler(url, 'PUT', null)
 }
+
+function updatePinnedProgressRow(brand, pinnedData) {
+  const user = JSON.parse(globalConfig.localStorage.getItem('user')) || {}
+  user.brand_pinned_progress = user.brand_pinned_progress || {}
+  user.brand_pinned_progress[brand] = pinnedData
+  globalConfig.localStorage.setItem('user', JSON.stringify(user))
+}
+
+async function extractPinnedItem({brand, progressMap, playlistItems}) {
+  const user = JSON.parse(globalConfig.localStorage.getItem('user')) || {}
+  user.brand_pinned_progress = user.brand_pinned_progress || {}
+
+  const pinned = user.brand_pinned_progress[brand]
+  if (!pinned) return null
+
+  const {id, progressType, pinnedAt} = pinned
+
+  if (progressType === 'content') {
+    const pinnedId = parseInt(id)
+    if (progressMap.has(pinnedId)) {
+      const item = progressMap.get(pinnedId)
+      progressMap.delete(pinnedId)
+      return item
+    } else {
+      const content = await fetchByRailContentIds([`${pinnedId}`], 'progress-tracker')
+      const firstLessonId = getFirstLeafLessonId(content[0])
+      return {
+        id:      pinnedId,
+        state:   'started',
+        percent: 0,
+        raw:     content[0],
+        progressTimestamp: new Date(pinnedAt).getTime(),
+        childIndex: firstLessonId
+      }
+    }
+  }
+  if (progressType === 'playlist') {
+    const pinnedPlaylist = playlistItems.find(p => p.raw.id === id)
+    if (pinnedPlaylist) {
+      return pinnedPlaylist
+    }else{
+      const playlist = await fetchPlaylist(id)
+      return {
+        id:      id,
+        raw:     playlist,
+        progressTimestamp: new Date(pinnedAt).getTime(),
+        type: 'playlist',
+        last_engaged_on: playlist.items[0],
+      }
+    }
+  }
+
+  return null
+}
+
+function getFirstLeafLessonId(data) {
+  function findFirstLeaf(lessons) {
+    for (const item of lessons) {
+      if (!item.lessons || item.lessons.length === 0) {
+        return item.id || null
+      }
+      const found = findFirstLeaf(item.lessons)
+      if (found) return found
+    }
+    return null
+  }
+
+  return data.lessons ? findFirstLeaf(data.lessons) : null
+}
+
+
 
