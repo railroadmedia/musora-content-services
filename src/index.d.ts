@@ -221,7 +221,10 @@ import {
 
 import {
 	blockUser,
-	unblockUser
+	deletePicture,
+	unblockUser,
+	uploadPicture,
+	uploadPictureFromS3
 } from './services/user/management.js';
 
 import {
@@ -282,6 +285,7 @@ declare module 'musora-content-services' {
 		createPracticeNotes,
 		deleteComment,
 		deleteItemsFromPlaylist,
+		deletePicture,
 		deletePlaylist,
 		deletePracticeSession,
 		deleteUserActivity,
@@ -459,6 +463,8 @@ declare module 'musora-content-services' {
 		updatePlaylist,
 		updatePracticeNotes,
 		updateUserPractice,
+		uploadPicture,
+		uploadPictureFromS3,
 		verifyImageSRC,
 		verifyLocalDataContext,
 	}
