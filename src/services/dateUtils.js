@@ -55,15 +55,12 @@ export function isNextDay(prev, current) {
 
 export function getTimeRemainingUntilLocal(targetUtcIsoString) {
   const targetUTC = new Date(targetUtcIsoString);
-
-  // Convert UTC to local clock time
-  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const targetLocal = new Date(
-    targetUTC.toLocaleString("en-US", { timeZone: userTimeZone })
-  );
+  if (isNaN(targetUTC.getTime())) {
+    return "00:00:00";
+  }
 
   const now = new Date();
-  const diff = targetLocal - now;
+  const diff = targetUTC.getTime() - now.getTime();
 
   if (diff <= 0) {
     return "00:00:00";
