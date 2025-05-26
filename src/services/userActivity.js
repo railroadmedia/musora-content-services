@@ -8,12 +8,12 @@ import {
   fetchUserPracticeMeta,
   fetchUserPracticeNotes,
   fetchHandler,
-  fetchRecentUserActivities,
+  fetchRecentUserActivities, fetchChallengeLessonData
 } from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import { fetchByRailContentIds, fetchShows } from './sanity'
 import {fetchPlaylist, fetchUserPlaylists} from "./content-org/playlists";
-import { convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js'
+import {convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay, getTimeRemainingUntilLocal} from './dateUtils.js'
 import { globalConfig } from './config'
 import {collectionLessonTypes, lessonTypesMapping, progressTypesMapping} from "../contentTypeConfig";
 import {getAllStartedOrCompleted, getProgressStateByIds} from "./contentProgress";
@@ -1041,6 +1041,13 @@ async function processContentItem(item) {
       data.first_incomplete_child = nextLesson?.parent ?? nextLesson;
       data.second_incomplete_child = (nextLesson?.parent) ? nextLesson : null;
       data.completed_children = completedCount;
+      if(data.type === 'challenge' ) {
+        const challenge = await fetchChallengeLessonData(nextByProgress)
+        if(challenge.lesson.is_locked) {
+          data.is_locked = true;
+          ctaText =  'Next lesson in ' + getTimeRemainingUntilLocal(challenge.lesson.unlock_date);
+        }
+      }
     }
   }
 
@@ -1061,6 +1068,8 @@ async function processContentItem(item) {
       progressPercent: item.percent,
       thumbnail:       data.thumbnail,
       title:           data.title,
+      badge:           data.badge ?? null,
+      isLocked:        data.is_locked ?? false,
       subtitle:        !data.child_count || data.lesson_count === 1
                          ? `${data.difficulty_string} • ${data.artist_name}`
                          : `${data.completed_children} of ${data.lesson_count ?? data.child_count} Lessons Complete`
@@ -1238,14 +1247,16 @@ function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
  *   .catch(error => console.error(error));
  */
 export async function pinProgressRow(brand, id, progressType) {
-  updatePinnedProgressRow(brand, {
-    id,
-    progressType,
-    pinnedAt: new Date().toISOString(),
-  });
-
   const url = `/api/user-management-system/v1/progress/pin?brand=${brand}&id=${id}&progressType=${progressType}`;
-  return await fetchHandler(url, 'PUT', null)
+  const response = await fetchHandler(url, 'PUT', null)
+  if (response && !response.error) {
+    updatePinnedProgressRow(brand, {
+      id,
+      progressType,
+      pinnedAt: new Date().toISOString(),
+    });
+  }
+  return response;
 }
 /**
  * Unpins the current pinned progress row for a user, scoped by brand.
@@ -1259,9 +1270,12 @@ export async function pinProgressRow(brand, id, progressType) {
  *   .catch(error => console.error(error));
  */
 export async function unpinProgressRow(brand) {
-  updatePinnedProgressRow(brand, null)
   const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}`
-  return await fetchHandler(url, 'PUT', null)
+  const response = await fetchHandler(url, 'PUT', null)
+  if (response && !response.error) {
+    updatePinnedProgressRow(brand, null)
+  }
+  return response
 }
 
 function updatePinnedProgressRow(brand, pinnedData) {

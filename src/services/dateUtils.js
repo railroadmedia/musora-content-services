@@ -53,3 +53,29 @@ export function isNextDay(prev, current) {
   );
 }
 
+export function getTimeRemainingUntilLocal(targetUtcIsoString) {
+  const targetUTC = new Date(targetUtcIsoString);
+
+  // Convert UTC to local clock time
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const targetLocal = new Date(
+    targetUTC.toLocaleString("en-US", { timeZone: userTimeZone })
+  );
+
+  const now = new Date();
+  const diff = targetLocal - now;
+
+  if (diff <= 0) {
+    return "00:00:00";
+  }
+
+  const totalSeconds = Math.floor(diff / 1000);
+  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+  const seconds = String(totalSeconds % 60).padStart(2, '0');
+
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+
+
