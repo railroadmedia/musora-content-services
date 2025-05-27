@@ -14,7 +14,7 @@
  * @property {string} brand
  * @property {string} name
  * @property {string} description
- * @property {number} duplicate_count
+ * @property {number} duplicated_count
  * @property {string} duration_formated
  * @property {Array<string>} first_4_items_thumbnail_url
  * @property {number} total_items
