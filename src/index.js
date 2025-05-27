@@ -222,7 +222,10 @@ import {
 
 import {
 	blockUser,
-	unblockUser
+	deletePicture,
+	unblockUser,
+	uploadPicture,
+	uploadPictureFromS3
 } from './services/user/management.js';
 
 import {
@@ -282,6 +285,7 @@ export {
 	createPracticeNotes,
 	deleteComment,
 	deleteItemsFromPlaylist,
+	deletePicture,
 	deletePlaylist,
 	deletePracticeSession,
 	deleteUserActivity,
@@ -460,6 +464,8 @@ export {
 	updatePlaylist,
 	updatePracticeNotes,
 	updateUserPractice,
+	uploadPicture,
+	uploadPictureFromS3,
 	verifyImageSRC,
 	verifyLocalDataContext,
 };
