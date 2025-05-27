@@ -978,10 +978,14 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   if (pinnedItem) {
     pinnedItem.pinned = true
   }
-  const pinnedId = pinnedItem?.id
-  const filteredProgressList = progressList.filter(item => item.id !== pinnedId)
-  const filteredPlaylists = eligiblePlaylistItems.filter(item => item.id !== pinnedId)
 
+  const pinnedId = pinnedItem?.id
+  const filteredProgressList = pinnedId
+    ? progressList.filter(item => item.id !== pinnedId)
+    : progressList;
+  const filteredPlaylists = pinnedId
+    ? eligiblePlaylistItems.filter(item => item.id !== pinnedId)
+    : eligiblePlaylistItems;
   const combinedBase = [...filteredProgressList, ...filteredPlaylists]
   const combined = pinnedItem ? [pinnedItem, ...combinedBase] : combinedBase
 
@@ -1130,7 +1134,8 @@ async function processPlaylistItem(item) {
     body:              {
       first_items_thumbnail_url: playlist.first_items_thumbnail_url,
       title:                     playlist.name,
-      subtitle:                  `${playlist.duration_formated} • ${playlist.total_items} items • ${playlist.likes} likes • ${playlist.user.display_name}`
+      subtitle:                  `${playlist.duration_formated} • ${playlist.total_items} items • ${playlist.likes} likes • ${playlist.user.display_name}`,
+      total_items:             playlist.total_items,
     },
     progressTimestamp: item.progressTimestamp,
     cta:               {
