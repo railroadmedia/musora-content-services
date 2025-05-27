@@ -210,7 +210,7 @@ const commonMetadata = {
     filterOptions: {
       difficulty: DIFFICULTY_STRINGS,
       style: ['Country/Folk', 'Funk/Disco', 'Hard Rock/Metal', 'Hip-Hop/Rap/EDM', 'Holiday/Soundtrack', 'Jazz/Blues', 'Latin/World', 'Pop/Rock', 'R&B/Soul', 'Worship/Gospel'],
-      type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Shows', 'Documentaries', 'Live Archives', 'Student Archives'],
+      type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Live Archives', 'Student Archives'],
       progress: PROGRESS_NAMES,
     },
     sortingOptions: {
@@ -392,7 +392,7 @@ const contentMetadata = {
       filterOptions: {
         difficulty: DIFFICULTY_STRINGS,
         style: ['Classical', 'Country/Folk', 'Funk/Disco', 'Hip-Hop/Rap/EDM', 'Holiday/Soundtrack', 'Jazz/Blues', 'Latin/World', 'Pop/Rock', 'R&B/Soul', 'Worship/Gospel'],
-        type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Shows', 'Documentaries', 'Live Archives', 'Student Archives'],
+        type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Live Archives', 'Student Archives'],
         progress: PROGRESS_NAMES,
       },
       tabs: [
