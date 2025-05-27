@@ -14,6 +14,7 @@
  * @property {string} brand
  * @property {string} name
  * @property {string} description
+ * @property {number} duplicate_count
  * @property {string} duration_formated
  * @property {Array<string>} first_4_items_thumbnail_url
  * @property {number} total_items
@@ -27,6 +28,7 @@
  * @typedef AddItemToPlaylistDTO
  * @property {number} content_id - The ID of the content to add to the playlist(s).
  * @property {Array<number>} playlist_id - An array of playlist IDs where the content should be added.
+ * @property {Array<number>} skip_duplicates - An array of playlist IDs to skip duplicated content
  * @property {number} position - Optional playlist position requirement
  * @property {boolean} import_high_routine - Flag to include high routine content.
  * @property {boolean} import_low_routine - Flag to include low routine content.
