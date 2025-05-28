@@ -185,14 +185,19 @@ export const progressTypesMapping = {
   'course': ['course'],
   'show': showsLessonTypes,
   'song tutorial': tutorialsLessonTypes,
-  'transcription': transcriptionsLessonTypes,
-  'tabs': transcriptionsLessonTypes,
-  'sheet music': transcriptionsLessonTypes,
+  'songs': transcriptionsLessonTypes,
   'play-along': playAlongLessonTypes,
   'guided course': ['challenge'],
   'pack': ['pack', 'semester-pack'],
   'method': ['learning-path']
 };
+
+export const songs = {
+  drumeo: 'transcription',
+  guitareo: 'tab',
+  pianote: 'sheet music',
+  singeo: 'sheet music',
+}
 
 export const filterTypes = {
   lessons: [...individualLessonsTypes, ...collectionLessonTypes],

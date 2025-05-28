@@ -15,7 +15,7 @@ import { fetchByRailContentIds, fetchShows } from './sanity'
 import {fetchPlaylist, fetchUserPlaylists} from "./content-org/playlists";
 import {convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay, getTimeRemainingUntilLocal} from './dateUtils.js'
 import { globalConfig } from './config'
-import {collectionLessonTypes, lessonTypesMapping, progressTypesMapping} from "../contentTypeConfig";
+import {collectionLessonTypes, lessonTypesMapping, progressTypesMapping, showsLessonTypes, songs} from "../contentTypeConfig";
 import {getAllStartedOrCompleted, getProgressStateByIds} from "./contentProgress";
 import {TabResponseType} from "../contentMetaData";
 
@@ -830,7 +830,7 @@ async function formatPracticeMeta(practices) {
       title: practice.content_id ? content.title : practice.title,
       category_id: practice.category_id,
       instrument_id: practice.instrument_id,
-      content_type: getFormattedType(content.type || ''),
+      content_type: getFormattedType(content.type || '', content.brand),
       content_id: practice.content_id || null,
       content_brand: content.brand || null,
       created_at: convertToTimeZone(utcDate, userTimeZone),
@@ -911,6 +911,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   const playlistEngagedOnContents = eligiblePlaylistItems.map(item => item.last_engaged_on);
   const playlistsContents = await fetchByRailContentIds(playlistEngagedOnContents, 'progress-tracker');
   const excludedParents = new Set();
+  const existingShows = new Set();
   for (const item of playlistsContents) {
     const contentId = item.id ?? item.railcontent_id;
     excludedParents.add(contentId)
@@ -960,13 +961,18 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     }
     // Handle standalone parents
     if (!progressMap.has(id)) {
-      progressMap.set(id, {
-        id,
-        raw: content,
-        state: progress.status,
-        percent: progress.progress,
-        progressTimestamp: progress.last_update * 1000
-      });
+      if(!existingShows.has(content.type)){
+        progressMap.set(id, {
+          id,
+          raw: content,
+          state: progress.status,
+          percent: progress.progress,
+          progressTimestamp: progress.last_update * 1000
+        });
+      }
+      if(showsLessonTypes.includes(content.type)) {
+        existingShows.add(content.type)
+      }
     }
   }
   const pinnedItem = await extractPinnedItem({
@@ -1007,22 +1013,25 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
 
 async function processContentItem(item) {
   let data = item.raw;
-  const contentType = getFormattedType(data.type);
+  const contentType = getFormattedType(data.type, data.brand);
   const status = item.state;
 
   let ctaText = 'Continue';
   if (contentType === 'transcription' || contentType === 'play-along' || contentType === 'jam-track') ctaText = 'Replay Song';
   if (contentType === 'lesson') ctaText = status === 'completed' ? 'Revisit Lesson' : 'Continue';
-  if ((contentType === 'pack' || contentType === 'song tutorial' || collectionLessonTypes.includes(contentType)) && status === 'completed') {
+  if ((contentType === 'guided course' || contentType === 'song tutorial' || collectionLessonTypes.includes(contentType)) &&  status === 'completed') ctaText = 'Revisit Lessons' ;
+  if (contentType === 'pack' && status === 'completed') {
     ctaText = 'View Lessons';
   }
 
   if (data.lesson_count > 0) {
+    const lessonIds = extractLessonIds(item);
+    const progressOnItems = await getProgressStateByIds(lessonIds);
+    let completedCount = Object.values(progressOnItems).filter(value => value === 'completed').length;
+    data.completed_children = completedCount;
+
     if (item.childIndex) {
       let nextId = item.childIndex
-      const lessonIds = extractLessonIds(item);
-      const progressOnItems = await getProgressStateByIds(lessonIds);
-      const completedCount = Object.values(progressOnItems).filter(value => value === 'completed').length;
       const nextByProgress = findIncompleteLesson(progressOnItems, item.childIndex, item.raw.type);
       nextId = nextByProgress ? nextByProgress : nextId;
 
@@ -1044,8 +1053,7 @@ async function processContentItem(item) {
       const nextLesson = lessons.find(lesson => lesson.id === nextId);
       data.first_incomplete_child = nextLesson?.parent ?? nextLesson;
       data.second_incomplete_child = (nextLesson?.parent) ? nextLesson : null;
-      data.completed_children = completedCount;
-      if(data.type === 'challenge' ) {
+      if(data.type === 'challenge' && nextByProgress !== undefined ){
         const challenge = await fetchChallengeLessonData(nextByProgress)
         if(challenge.lesson.is_locked) {
           data.is_locked = true;
@@ -1055,12 +1063,21 @@ async function processContentItem(item) {
     }
   }
 
-  if(contentType == 'show' && status == 'completed'){
+  if(contentType == 'show'){
     const shows = await fetchShows(data.brand, data.type)
     const showIds = shows.map(item => item.id);
     const progressOnItems = await getProgressStateByIds(showIds);
-    const nextByProgress = findIncompleteLesson(progressOnItems, data.id, data.type);
-    data = shows.find(lesson => lesson.id === nextByProgress);
+    const completedCount = Object.values(progressOnItems).filter(value => value === 'completed').length;
+    if(status == 'completed') {
+      const nextByProgress = findIncompleteLesson(progressOnItems, data.id, data.type);
+      data = shows.find(lesson => lesson.id === nextByProgress);
+    }
+    data.completed_children = completedCount;
+    data.child_count = shows.length;
+    item.percent = Math.round((completedCount / shows.length) * 100);
+    if(completedCount == shows.length) {
+      ctaText = 'Revisit Lessons';
+    }
   }
 
   return {
@@ -1075,7 +1092,7 @@ async function processContentItem(item) {
       badge:           data.badge ?? null,
       isLocked:        data.is_locked ?? false,
       subtitle:        !data.child_count || data.lesson_count === 1
-                         ? `${data.difficulty_string} • ${data.artist_name}`
+                         ? (contentType === 'lesson') ? `${item.percent}% Complete`: `${data.difficulty_string} • ${data.artist_name}`
                          : `${data.completed_children} of ${data.lesson_count ?? data.child_count} Lessons Complete`
     },
     cta:               {
@@ -1150,12 +1167,13 @@ async function processPlaylistItem(item) {
   }
 }
 
-const getFormattedType = type => {
+const getFormattedType = (type, brand) => {
   for (const [key, values] of Object.entries(progressTypesMapping)) {
     if (values.includes(type)) {
-      return key;
+      return key === 'songs' ? songs[brand] : key;
     }
   }
+
   return null;
 };
 
@@ -1163,11 +1181,10 @@ function extractLessonIds(data) {
   const ids = [];
   function traverse(lessons) {
     for (const item of lessons) {
-      if (item.id) {
-        ids.push(item.id);
-      }
       if (item.lessons) {
         traverse(item.lessons); // Recursively handle nested lessons
+      }else if (item.id) {
+        ids.push(item.id);
       }
     }
   }
@@ -1221,7 +1238,7 @@ function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
   const ids = Object.keys(progressOnItems).map(Number);
   if (contentType === 'challenge') {
     // Return first incomplete lesson
-    return ids.find(id => progressOnItems[id] !== 'completed') || null;
+    return ids.find(id => progressOnItems[id] !== 'completed') || ids.at(0);
   }
 
   // For other types, find next incomplete after current
