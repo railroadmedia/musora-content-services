@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.8.0](https://github.com/railroadmedia/musora-content-services/compare/v2.7.3...v2.8.0) (2025-05-28)
+
+
+### Features
+
+* **MU2-523:** picture upload ([#256](https://github.com/railroadmedia/musora-content-services/issues/256)) ([296b2a7](https://github.com/railroadmedia/musora-content-services/commit/296b2a7a3fe67c01b909e21364c9177d7209a82a))
+
 ### [2.7.3](https://github.com/railroadmedia/musora-content-services/compare/v2.7.2...v2.7.3) (2025-05-26)
 
 ### [2.7.2](https://github.com/railroadmedia/musora-content-services/compare/v2.7.1...v2.7.2) (2025-05-23)
