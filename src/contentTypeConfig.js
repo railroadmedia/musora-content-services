@@ -185,14 +185,19 @@ export const progressTypesMapping = {
   'course': ['course'],
   'show': showsLessonTypes,
   'song tutorial': tutorialsLessonTypes,
-  'transcription': transcriptionsLessonTypes,
-  'tabs': transcriptionsLessonTypes,
-  'sheet music': transcriptionsLessonTypes,
+  'songs': transcriptionsLessonTypes,
   'play-along': playAlongLessonTypes,
   'guided course': ['challenge'],
   'pack': ['pack', 'semester-pack'],
   'method': ['learning-path']
 };
+
+export const songs = {
+  drumeo: 'transcription',
+  guitareo: 'tab',
+  pianote: 'sheet music',
+  singeo: 'sheet music',
+}
 
 export const filterTypes = {
   lessons: [...individualLessonsTypes, ...collectionLessonTypes],
@@ -207,7 +212,7 @@ export const recentTypes = {
 
 export let contentTypeConfig = {
   'progress-tracker': {
-    fields: ['"parent_content_data": parent_content_data[].id','"lessons": child[]->{"id": railcontent_id, "slug":slug.current, "brand":brand, "type": _type, "lessons": child[]->{"id":railcontent_id, "slug":slug.current,  "type": _type,"brand":brand}}'],
+    fields: ['"parent_content_data": parent_content_data[].id','"badge" : badge.asset->url','"lessons": child[]->{"id": railcontent_id, "slug":slug.current, "brand":brand, "type": _type, "lessons": child[]->{"id":railcontent_id, "slug":slug.current,  "type": _type,"brand":brand}}'],
   },
   song: {
     fields: ['album', 'soundslice', 'instrumentless', `"resources": ${resourcesField}`],

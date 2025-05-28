@@ -68,6 +68,7 @@ import {
 import {
 	convertToTimeZone,
 	getMonday,
+	getTimeRemainingUntilLocal,
 	getWeekNumber,
 	isNextDay,
 	isSameDate
@@ -399,6 +400,7 @@ export {
 	getScheduleContentRows,
 	getSortOrder,
 	getTabResults,
+	getTimeRemainingUntilLocal,
 	getUserMonthlyStats,
 	getUserPractices,
 	getUserWeeklyStats,

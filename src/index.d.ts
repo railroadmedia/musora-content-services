@@ -68,6 +68,7 @@ import {
 import {
 	convertToTimeZone,
 	getMonday,
+	getTimeRemainingUntilLocal,
 	getWeekNumber,
 	isNextDay,
 	isSameDate
@@ -400,6 +401,7 @@ declare module 'musora-content-services' {
 		getScheduleContentRows,
 		getSortOrder,
 		getTabResults,
+		getTimeRemainingUntilLocal,
 		getUserMonthlyStats,
 		getUserPractices,
 		getUserWeeklyStats,
