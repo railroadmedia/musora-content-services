@@ -53,7 +53,7 @@ export function isNextDay(prev, current) {
   );
 }
 
-export function getTimeRemainingUntilLocal(targetUtcIsoString) {
+export function getTimeRemainingUntilLocal(targetUtcIsoString, {withTotalSeconds} = {}) {
   const targetUTC = new Date(targetUtcIsoString);
   if (isNaN(targetUTC.getTime())) {
     return "00:00:00";
@@ -70,6 +70,12 @@ export function getTimeRemainingUntilLocal(targetUtcIsoString) {
   const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
   const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
   const seconds = String(totalSeconds % 60).padStart(2, '0');
+  if(withTotalSeconds) {
+    return {
+      totalSeconds,
+      formatted: `${hours}:${minutes}:${seconds}`
+    }
+  }
 
   return `${hours}:${minutes}:${seconds}`;
 }
