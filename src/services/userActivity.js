@@ -1032,8 +1032,8 @@ async function processContentItem(item) {
 
     if (item.childIndex) {
       let nextId = item.childIndex
-      const nextByProgress = findIncompleteLesson(progressOnItems, item.childIndex, item.raw.type);
-      nextId = nextByProgress ? nextByProgress : nextId;
+      const nextByProgress = findIncompleteLesson(progressOnItems, item.childIndex, item.raw.type)
+      nextId = nextByProgress ? nextByProgress : nextId
 
       const nestedLessons = data.lessons
         .filter(item => Array.isArray(item.lessons))
@@ -1049,15 +1049,17 @@ async function processContentItem(item) {
           }))
         );
 
-      const lessons = (nestedLessons.length === 0) ? data.lessons : nestedLessons;
-      const nextLesson = lessons.find(lesson => lesson.id === nextId);
-      data.first_incomplete_child = nextLesson?.parent ?? nextLesson;
-      data.second_incomplete_child = (nextLesson?.parent) ? nextLesson : null;
+      const lessons = (nestedLessons.length === 0) ? data.lessons : nestedLessons
+      const nextLesson = lessons.find(lesson => lesson.id === nextId)
+      data.first_incomplete_child = nextLesson?.parent ?? nextLesson
+      data.second_incomplete_child = (nextLesson?.parent) ? nextLesson : null
       if(data.type === 'challenge' && nextByProgress !== undefined ){
         const challenge = await fetchChallengeLessonData(nextByProgress)
         if(challenge.lesson.is_locked) {
-          data.is_locked = true;
-          ctaText =  'Next lesson in ' + getTimeRemainingUntilLocal(challenge.lesson.unlock_date);
+          const timeRemaining = getTimeRemainingUntilLocal(challenge.lesson.unlock_date, {withTotalSeconds:true})
+          data.is_locked = true
+          data.time_remaining_seconds = timeRemaining.totalSeconds
+          ctaText =  'Next lesson in ' + timeRemaining.formatted
         }
       }
     }
@@ -1097,6 +1099,7 @@ async function processContentItem(item) {
     },
     cta:               {
       text:   ctaText,
+      timeRemainingToUnlockSeconds: data.time_remaining_seconds ?? null,
       action: {
         type:  data.type,
         brand: data.brand,
@@ -1272,7 +1275,7 @@ export async function pinProgressRow(brand, id, progressType) {
   const url = `/api/user-management-system/v1/progress/pin?brand=${brand}&id=${id}&progressType=${progressType}`;
   const response = await fetchHandler(url, 'PUT', null)
   if (response && !response.error) {
-    updatePinnedProgressRow(brand, {
+    await updatePinnedProgressRow(brand, {
       id,
       progressType,
       pinnedAt: new Date().toISOString(),
@@ -1295,20 +1298,22 @@ export async function unpinProgressRow(brand) {
   const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}`
   const response = await fetchHandler(url, 'PUT', null)
   if (response && !response.error) {
-    updatePinnedProgressRow(brand, null)
+    await updatePinnedProgressRow(brand, null)
   }
   return response
 }
 
-function updatePinnedProgressRow(brand, pinnedData) {
-  const user = JSON.parse(globalConfig.localStorage.getItem('user')) || {}
+async function updatePinnedProgressRow(brand, pinnedData) {
+  const userRaw = await globalConfig.localStorage.getItem('user');
+  const user = userRaw ? JSON.parse(userRaw) : {};
   user.brand_pinned_progress = user.brand_pinned_progress || {}
   user.brand_pinned_progress[brand] = pinnedData
-  globalConfig.localStorage.setItem('user', JSON.stringify(user))
+  await globalConfig.localStorage.setItem('user', JSON.stringify(user))
 }
 
 async function extractPinnedItem({brand, progressMap, playlistItems}) {
-  const user = JSON.parse(globalConfig.localStorage.getItem('user')) || {}
+  const userRaw = await globalConfig.localStorage.getItem('user');
+  const user = userRaw ? JSON.parse(userRaw) : {};
   user.brand_pinned_progress = user.brand_pinned_progress || {}
 
   const pinned = user.brand_pinned_progress[brand]
