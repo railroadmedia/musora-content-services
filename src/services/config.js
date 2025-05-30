@@ -8,6 +8,7 @@ export let globalConfig = {
   sanityConfig: {},
   railcontentConfig: {},
   recommendationsConfig: {},
+  searchEngineConfig: {},
   localStorage: null,
   isMA: false,
   localTimezoneString: null, // In format: America/Vancouver
@@ -40,6 +41,8 @@ const excludeFromGeneratedIndex = []
  * @param {string} config.railcontentConfig.authToken - The bearer authorization token.
  * @param {string} config.recommendationsConfig.token - The token for authenticating recommendation requests.
  * @param {string} config.recommendationsConfig.baseUrl - The url for the recommendation server.
+ * @param {string} config.searchEngineConfig.applicationId - The application ID for the search engine (e.g., Algolia).
+ * @param {string} config.searchEngineConfig.apiKey - The API key for the search engine.
  * @param {Object} config.localStorage - Cache to use for localStorage
  * @param {boolean} config.isMA - Variable that tells if the library is used by MA or FEW
  * @param {string} config.localTimezoneString - The local timezone string in format: America/Vancouver
@@ -77,6 +80,7 @@ export function initializeService(config) {
   globalConfig.isMA = config.isMA || false
   globalConfig.localTimezoneString = config.localTimezoneString || null
   globalConfig.recommendationsConfig = config.recommendationsConfig
+  globalConfig.searchEngineConfig = config.searchEngineConfig
 }
 
 export function setUserMetadata(userMetaData) {

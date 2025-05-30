@@ -4,6 +4,7 @@
       "src/services/config.js",
       "src/services/sanity.js",
       "src/services/railcontent.js",
+      "src/services/algolia.js",
       "src/index.js"
     ],
     "includePattern": ".js$",
