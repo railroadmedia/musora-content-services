@@ -1,7 +1,7 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
-	sendSearchEvent
+	sendAlgoliaClickEvent
 } from './services/algolia.js';
 
 import {
@@ -299,7 +299,7 @@ declare module 'musora-content-services' {
 		recordWatchSession,
 		reportPlaylist,
 		reset,
-		sendSearchEvent,
+		sendAlgoliaClickEvent,
 		setLastUpdatedTime,
 		setStudentViewForUser,
 		setUserMetadata,

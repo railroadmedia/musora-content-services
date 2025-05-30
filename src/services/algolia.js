@@ -17,7 +17,7 @@ import { algoliasearch } from 'algoliasearch'
  *
  * @example
  * ```
- * sendSearchEvent(
+ * sendAlgoliaClickEvent(
  *   'production_sanity_all',
  *   '43b15df305339e827f0ac0bdc5ebcaa7',
  *   ['9780545139700', '9780439784542'],
@@ -25,7 +25,7 @@ import { algoliasearch } from 'algoliasearch'
  * );
  * ```
  */
-export async function sendSearchEvent(index, queryId, objectIDs, positions) {
+export async function sendAlgoliaClickEvent(index, queryId, objectIDs, positions) {
   console.log({ config: globalConfig.searchEngineConfig })
   if (!queryId || !objectIDs || !positions) {
     throw new Error('queryId, objectIDs, and positions are required parameters.')
