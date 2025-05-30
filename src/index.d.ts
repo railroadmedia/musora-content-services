@@ -1,6 +1,10 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
+	sendSearchEvent
+} from './services/algolia.js';
+
+import {
 	globalConfig,
 	initializeService,
 	setUserMetadata
@@ -295,6 +299,7 @@ declare module 'musora-content-services' {
 		recordWatchSession,
 		reportPlaylist,
 		reset,
+		sendSearchEvent,
 		setLastUpdatedTime,
 		setStudentViewForUser,
 		setUserMetadata,
