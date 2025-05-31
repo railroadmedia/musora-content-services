@@ -70,11 +70,23 @@ export async function createPlaylist(playlistData) {
   return await fetchHandler(url, 'POST', null, playlistData)
 }
 
+/**
+ * Soft deletes a playlist. Will cascade and also soft delete entries in other playlist tables (pinned, reported, liked,
+ * playlist content) and last engaged that have this playlist id
+ * @param {id} playlist - the id of the playlist you want to soft delete.
+ * @returns {Promise<any|string|null>}
+ */
 export async function deletePlaylist(playlist) {
   const url = `${BASE_PATH}/v1/user/playlists/delete/${playlist}`
   return await fetchHandler(url, 'POST', null, playlist)
 }
 
+/**
+ * Soft restores a playlist. Will cascade and also soft restore entries in other playlist tables (pinned, reported, liked,
+ * playlist content) and last engaged that have this playlist id
+ * @param {id} playlist - the id of the playlist you want to soft restore.
+ * @returns {Promise<any|string|null>}
+ */
 export async function undeletePlaylist(playlist) {
   const url = `${BASE_PATH}/v1/user/playlists/undelete/${playlist}`
   return await fetchHandler(url, 'POST', null, playlist)
