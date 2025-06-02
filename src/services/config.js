@@ -63,7 +63,7 @@ const excludeFromGeneratedIndex = []
  *     token: 'your-user-api-token',
  *     userId: 'current-user-id',
  *     baseUrl: 'https://web-staging-one.musora.com',
- *     authToken 'your-auth-token',
+ *     authToken: 'your-auth-token',
  *   },
  *   recommendationsConfig: {
  *     token: 'your-user-api-token',
