@@ -26,7 +26,6 @@ import { algoliasearch } from 'algoliasearch'
  * ```
  */
 export async function sendAlgoliaClickEvent(index, queryId, objectIDs, positions) {
-  console.log({ config: globalConfig.searchEngineConfig })
   if (!queryId || !objectIDs || !positions) {
     throw new Error('queryId, objectIDs, and positions are required parameters.')
   }
