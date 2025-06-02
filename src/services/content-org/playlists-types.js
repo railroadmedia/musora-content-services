@@ -9,6 +9,17 @@
  */
 
 /**
+ * @typedef DuplicatePlaylistDTO
+ * @property {string} name - The name of the new playlist. (required, max 255 characters)
+ * @property {string} description - A description of the playlist. (optional, max 1000 characters)
+ * @property {string} category - The category of the playlist.
+ * @property {string} thumbnail_url - The URL of the playlist thumbnail. (optional, must be a valid URL)
+ * @property {boolean} private - Whether the playlist is private. (optional, defaults to false)
+ * @property {string} brand - Brand identifier for the playlist.
+ * @property {array} items - Ids of playlist items to duplicate (in order)
+ */
+
+/**
  * @typedef Playlist
  * @property {number} id
  * @property {string} brand
