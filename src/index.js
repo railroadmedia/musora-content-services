@@ -229,6 +229,14 @@ import {
 } from './services/user/management.js';
 
 import {
+	deleteNotification,
+	fetchNotifications,
+	markAllNotificationsAsRead,
+	markNotificationAsRead,
+	markNotificationAsUnread
+} from './services/user/notifications.js';
+
+import {
 	fetchUserPermissions,
 	reset
 } from './services/user/permissions.js';
@@ -285,6 +293,7 @@ export {
 	createPracticeNotes,
 	deleteComment,
 	deleteItemsFromPlaylist,
+	deleteNotification,
 	deletePicture,
 	deletePlaylist,
 	deletePracticeSession,
@@ -338,6 +347,7 @@ export {
 	fetchNewReleases,
 	fetchNextContentDataForParent,
 	fetchNextPreviousLesson,
+	fetchNotifications,
 	fetchOtherSongVersions,
 	fetchOwnedChallenges,
 	fetchPackAll,
@@ -419,8 +429,11 @@ export {
 	logUserPractice,
 	login,
 	logout,
+	markAllNotificationsAsRead,
 	markContentAsInterested,
 	markContentAsNotInterested,
+	markNotificationAsRead,
+	markNotificationAsUnread,
 	openComment,
 	otherStats,
 	pinProgressRow,

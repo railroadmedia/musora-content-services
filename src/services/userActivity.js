@@ -1,5 +1,5 @@
 /**
- * @module User-Activity
+ * @module UserActivity
  */
 
 import {

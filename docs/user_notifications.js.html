@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>UserProfile - Documentation</title>
+    <title>user/notifications.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,213 +35,136 @@
 
 <div id="main">
     
-    <h1 class="page-title">UserProfile</h1>
+    <h1 class="page-title">user/notifications.js</h1>
     
 
     
 
 
 
-
-<section>
-
-<header>
     
-        
-    
-</header>
-
-<article>
-    
-        <div class="container-overview">
-        
-            
-
-            
-        
-        </div>
-    
-
-    
-
-    
-
-    
-    
-    
-
-     
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    <h4 class="name" id=".otherStats"><span class="type-signature type-signature-static">(static) </span>otherStats<span class="signature">(userId)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="global.html#OtherStatsDTO">OtherStatsDTO</a>>}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="user_profile.js.html">user/profile.js</a>, <a href="user_profile.js.html#line15">line 15</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>userId</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-|
-
-<span class="param-type">null</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The user ID to reset permissions for.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5 class="h5-returns">Returns:</h5>
-
-        
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;<a href="global.html#OtherStatsDTO">OtherStatsDTO</a>></span>
-
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-    
-
-    
-
-    
-</article>
-
-</section>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module UserNotifications
+ */
+import { fetchHandler } from '../railcontent.js'
+import './types.js'
+
+const baseUrl = `/api/notifications`
+
+/**
+ * Fetches unread notifications for a given brand with an optional limit.
+ *
+ * @param {Object} [options={}] - Options for fetching notifications.
+ * @param {string} options.brand - The brand to filter notifications by. (Required)
+ * @param {number} [options.limit=10] - The maximum number of notifications to fetch.
+ *
+ * @returns {Promise&lt;Array&lt;Object>>} - A promise that resolves to an array of unread notifications.
+ *
+ * @throws {Error} - Throws an error if the brand is not provided.
+ *
+ * @example
+ * fetchNotifications({ brand: 'drumeo', limit: 5 })
+ *   .then(notifications => console.log(notifications))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchNotifications({ brand = null, limit = 10 } = {}) {
+  if (!brand) {
+    throw new Error('brand is required')
+  }
+  const url = `${baseUrl}/v1?unread=1&amp;brand=${brand}&amp;limit=${limit}`
+  return fetchHandler(url, 'get')
+}
+
+/**
+ * Marks a specific notification as read.
+ *
+ * @param {number} notificationId - The ID of the notification to mark as read.
+ *
+ * @returns {Promise&lt;any>} - A promise that resolves when the notification is successfully marked as read.
+ *
+ * @throws {Error} - Throws an error if notificationId is not provided.
+ *
+ * @example
+ * markNotificationAsRead(123)
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+export async function markNotificationAsRead(notificationId) {
+  if (!notificationId) {
+    throw new Error('notificationId is required')
+  }
+
+  const url = `${baseUrl}/v1/read?id=${notificationId}`
+  return fetchHandler(url, 'put')
+}
+
+/**
+ * Marks all notifications as read for a specific brand.
+ *
+ * @param {string} brand - The brand to filter notifications by.
+ *
+ * @returns {Promise&lt;any>} - A promise that resolves when all notifications are marked as read.
+ *
+ * @example
+ * markAllNotificationsAsRead('drumeo')
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+export async function markAllNotificationsAsRead(brand) {
+  const url = `${baseUrl}/v1/read?brand=${brand}`
+  return fetchHandler(url, 'put')
+}
+
+/**
+ * Marks a specific notification as unread.
+ *
+ * @param {number} notificationId - The ID of the notification to mark as unread.
+ *
+ * @returns {Promise&lt;any>} - A promise that resolves when the notification is successfully marked as unread.
+ *
+ * @throws {Error} - Throws an error if notificationId is not provided.
+ *
+ * @example
+ * markNotificationAsUnread(123)
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+export async function markNotificationAsUnread(notificationId) {
+  if (!notificationId) {
+    throw new Error('notificationId is required')
+  }
+
+  const url = `${baseUrl}/v1/unread?id=${notificationId}`
+  return fetchHandler(url, 'put')
+}
+
+/**
+ * Deletes a specific notification.
+ *
+ * @param {number} notificationId - The ID of the notification to delete.
+ *
+ * @returns {Promise&lt;any>} - A promise that resolves when the notification is successfully deleted.
+ *
+ * @throws {Error} - Throws an error if notificationId is not provided.
+ *
+ * @example
+ * deleteNotification(123)
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+export async function deleteNotification(notificationId) {
+  if (!notificationId) {
+    throw new Error('notificationId is required')
+  }
+
+  const url = `${baseUrl}/v1/${notificationId}`
+  return fetchHandler(url, 'delete')
+}
+</code></pre>
+        </article>
+    </section>
 
 
 
