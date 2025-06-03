@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/railroadmedia/musora-content-services/compare/v1.4.13...v1.5.0) (2025-06-03)
+
+
+### Features
+
+* **BEH-459:** allow dark/light logos for courses ([#265](https://github.com/railroadmedia/musora-content-services/issues/265)) ([bfe95af](https://github.com/railroadmedia/musora-content-services/commit/bfe95af8c0e62d7927085fa25c9039dea98ae7e0))
+
 ### [1.4.13](https://github.com/railroadmedia/musora-content-services/compare/v1.4.12...v1.4.13) (2025-05-27)
 
 ### [1.4.12](https://github.com/railroadmedia/musora-content-services/compare/v1.4.11...v1.4.12) (2025-05-15)
