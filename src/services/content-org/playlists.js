@@ -285,12 +285,13 @@ export async function deleteItemsFromPlaylist(playlistId, deleted_items) {
  * Duplicates a playlist and playlist items for the provided playlistID for the authorized user
  *
  * @param {string|number} playlistId
- * @param {CreatePlaylistDTO} playlistData - An object containing data to create the playlist. The fields include:
+ * @param {DuplicatePlaylistDTO} playlistData - An object containing data to create the playlist. The fields include:
  *  - `name` (string): The name of the new playlist (required, max 255 characters).
  *  - `description` (string): A description of the playlist (optional, max 1000 characters).
  *  - `category` (string): The category of the playlist.
  *  - `private` (boolean): Whether the playlist is private (optional, defaults to false).
  *  - `brand` (string): Brand identifier for the playlist.
+ *  - 'items' (array): List of playlist items to duplicate in updated order
  *
  * @returns {Promise<Playlist>}
  * @example
