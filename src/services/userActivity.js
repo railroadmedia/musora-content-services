@@ -1007,6 +1007,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
 
   return {
     type: TabResponseType.PROGRESS_ROWS,
+    displayBrowseAll: combined.length > limit,
     data: results
   };
 }
