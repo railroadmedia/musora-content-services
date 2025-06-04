@@ -31,8 +31,10 @@
   "dependencies": {
     "@babel/preset-env": "^7.25.3",
     "@sanity/client": "^5.4.2",
+    "algoliasearch": "^5.25.0",
     "babel-jest": "^29.7.0",
     "docdash": "^2.0.2",
-    "groqd": "^0.15.12"
+    "groqd": "^0.15.12",
+    "instantsearch.js": "^4.78.3"
   }
 }
