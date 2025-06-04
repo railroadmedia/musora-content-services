@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/railroadmedia/musora-content-services/compare/v1.5.0...v1.6.0) (2025-06-04)
+
+
+### Features
+
+* **MU2-505:** algolia click events ([#277](https://github.com/railroadmedia/musora-content-services/issues/277)) ([87f2092](https://github.com/railroadmedia/musora-content-services/commit/87f2092aa621dcaaf6f280a71f8ae9b917ea19ba))
+
 ## [1.5.0](https://github.com/railroadmedia/musora-content-services/compare/v1.4.13...v1.5.0) (2025-06-03)
 
 
