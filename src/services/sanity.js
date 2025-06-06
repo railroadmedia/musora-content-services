@@ -1252,7 +1252,6 @@ export async function jumpToContinueContent(railcontentId) {
  */
 export async function fetchLessonContent(railContentId) {
   const filterParams = { isSingle: true, pullFutureContent: true }
-  const now = getSanityDate(new Date())
   // Format changes made to the `fields` object may also need to be reflected in Musora-web-platform SanityGateway.php $fields object
   // Currently only for challenges and challenge lessons
   // If you're unsure, message Adrian, or just add them.
@@ -1309,7 +1308,6 @@ export async function fetchLessonContent(railContentId) {
           stbs,ds2stbs, bdsStbs,
           ...select(
                 defined(live_event_start_time) && defined(live_event_end_time) => {
-                  "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}',
                   "live_event_start_time": live_event_start_time,
                   "live_event_end_time": live_event_end_time,
                   "live_event_youtube_id": live_event_youtube_id,
@@ -1320,6 +1318,10 @@ export async function fetchLessonContent(railContentId) {
     isSingle: true,
   })
   const chapterProcess = (result) => {
+    const now = getSanityDate(new Date(), false)
+    if(result.live_event_start_time && result.live_event_start_time){
+      result.isLive = result.live_event_start_time <= now && result.live_event_end_time >= now
+    }
     const chapters = result.chapters ?? []
     if (chapters.length == 0) return result
     result.chapters = chapters.map((chapter, index) => ({
