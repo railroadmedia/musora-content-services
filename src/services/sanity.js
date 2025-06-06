@@ -1305,11 +1305,23 @@ export async function fetchLessonContent(railContentId) {
           },
           sort,
           xp,
-          stbs,ds2stbs, bdsStbs`
+          stbs,ds2stbs, bdsStbs,
+          ...select(
+                defined(live_event_start_time) && defined(live_event_end_time) => {
+                  "live_event_start_time": live_event_start_time,
+                  "live_event_end_time": live_event_end_time,
+                  "live_event_youtube_id": live_event_youtube_id,
+                  "videoId": coalesce(live_event_youtube_id, video.external_id),
+                }
+              )`
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
   })
   const chapterProcess = (result) => {
+    const now = getSanityDate(new Date(), false)
+    if(result.live_event_start_time && result.live_event_start_time){
+      result.isLive = result.live_event_start_time <= now && result.live_event_end_time >= now
+    }
     const chapters = result.chapters ?? []
     if (chapters.length == 0) return result
     result.chapters = chapters.map((chapter, index) => ({
