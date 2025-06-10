@@ -189,7 +189,7 @@ export async function getUserMonthlyStats(params = {}) {
       weeklyStats[weekKey] = { key: weekKey, inStreak: false }
     }
 
-    if (dayActivity !== null) {
+    if (dayActivity !== null && firstDayOfMonth <= day && day <= endOfMonth) {
       practiceDuration += dayActivity.reduce((sum, entry) => sum + entry.duration_seconds, 0)
       daysPracticed++
     }
