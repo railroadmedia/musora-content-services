@@ -15,9 +15,10 @@ let userPermissionsPromise = null
 let lastUpdatedKey = `userPermissions_lastUpdated`
 
 export async function fetchUserPermissions() {
-  if (!userPermissionsPromise || wasLastUpdateOlderThanXSeconds(10, lastUpdatedKey)) {
+  const isCacheStale = await wasLastUpdateOlderThanXSeconds(10, lastUpdatedKey)
+  if (!userPermissionsPromise || isCacheStale) {
     userPermissionsPromise = fetchUserPermissionsData()
-    setLastUpdatedTime(lastUpdatedKey)
+    await setLastUpdatedTime(lastUpdatedKey)
   }
 
   return await userPermissionsPromise
@@ -27,12 +28,12 @@ export async function reset() {
   userPermissionsPromise = null
 }
 
-export function updatePermissionsData(permissionsData) {
+export async function updatePermissionsData(permissionsData) {
   userPermissionsPromise = permissionsData
-  setLastUpdatedTime(lastUpdatedKey)
+  await setLastUpdatedTime(lastUpdatedKey)
 }
 
-export function clearPermissionsData() {
+export async function clearPermissionsData() {
   userPermissionsPromise = null
-  clearLastUpdatedTime(lastUpdatedKey)
+  await clearLastUpdatedTime(lastUpdatedKey)
 }

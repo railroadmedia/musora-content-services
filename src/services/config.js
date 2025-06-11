@@ -74,6 +74,10 @@ const excludeFromGeneratedIndex = []
  * });
  */
 export function initializeService(config) {
+  if (config.localStorage === undefined || config.localStorage === null) {
+    throw new Error('localStorage is required in the config object.')
+  }
+
   globalConfig.sanityConfig = config.sanityConfig
   globalConfig.railcontentConfig = config.railcontentConfig
   globalConfig.localStorage = config.localStorage
