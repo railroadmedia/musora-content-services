@@ -1311,7 +1311,7 @@ export async function fetchLessonContent(railContentId) {
                   "live_event_start_time": live_event_start_time,
                   "live_event_end_time": live_event_end_time,
                   "live_event_youtube_id": live_event_youtube_id,
-                  "videoId": coalesce(live_event_youtube_id, video.external_id),
+                  "videoId": coalesce(live_event_brightcove_id, live_event_brightcove_player_id, live_event_youtube_id, video.external_id),
                 }
               )`
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
