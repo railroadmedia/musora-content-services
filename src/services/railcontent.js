@@ -637,6 +637,15 @@ export async function deleteComment(commentId) {
 
 /**
  * @param {int} commentId
+ * @returns {Promise<*|null>}
+ */
+export async function restoreComment(commentId) {
+  const url = `/api/content/v1/comments/restore/${commentId}`
+  return await fetchHandler(url, 'POST')
+}
+
+/**
+ * @param {int} commentId
  * @param {string} comment
  * @returns {Promise<*|null>}
  */
