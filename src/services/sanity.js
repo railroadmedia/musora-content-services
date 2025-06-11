@@ -1267,7 +1267,8 @@ export async function fetchLessonContent(railContentId) {
           instrumentless,
           railcontent_id,
           "id":railcontent_id,
-          slug, artist->,
+          slug,
+          artist->,
           "thumbnail":thumbnail.asset->url,
           "url": web_url_path,
           soundslice_slug,
@@ -1305,15 +1306,16 @@ export async function fetchLessonContent(railContentId) {
           },
           sort,
           xp,
-          stbs,ds2stbs, bdsStbs,
-          ...select(
-                defined(live_event_start_time) && defined(live_event_end_time) => {
-                  "live_event_start_time": live_event_start_time,
-                  "live_event_end_time": live_event_end_time,
-                  "live_event_youtube_id": live_event_youtube_id,
-                  "videoId": coalesce(live_event_brightcove_id, live_event_brightcove_player_id, live_event_youtube_id, video.external_id),
-                }
-              )`
+          live_event_start_time,
+          live_event_end_time,
+          live_event_youtube_id,
+          live_event_brightcove_id,
+          live_event_brightcove_player_id,
+          live_event_youtube_id,
+          stbs,
+          ds2stbs,
+          bdsStbs,
+          `
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
   })
