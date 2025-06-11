@@ -16,6 +16,7 @@ import {
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {fetchHandler} from "./railcontent";
 import {recommendations} from "./recommendations";
+import {addContextToContent} from "./contentAggregator";
 
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
@@ -180,7 +181,10 @@ export async function getContentRows(brand, pageName, contentRowId , {
       if (row.content.length === 0){
         return { id: row.id, title: row.title, items: [] }
       }
-      const data = await fetchByRailContentIds(row.content)
+      const data = await addContextToContent(fetchByRailContentIds, row.content, {
+        addProgressPercentage: true,
+        addProgressStatus: true
+      })
       return { id: row.id, title: row.title, items: data }
     })
   )

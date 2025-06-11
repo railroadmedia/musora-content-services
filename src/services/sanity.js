@@ -31,6 +31,7 @@ import {
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { fetchUserPermissions } from './user/permissions.js'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
+import {addContextToContent} from "./contentAggregator";
 
 /**
  * Exported functions that are excluded from index generation.
@@ -2324,12 +2325,16 @@ export async function fetchRecent(
   { page = 1, limit = 10, sort = '-published_on', includedFields = [], progress = 'recent' } = {}
 ) {
   const mergedIncludedFields = [...includedFields, `tab,all`]
-  const results = await fetchTabData(brand, pageName, {
+  const results = await addContextToContent(fetchTabData, brand, pageName, {
     page,
     limit,
     sort,
     includedFields: mergedIncludedFields,
     progress: progress.toLowerCase(),
+  },{
+    dataField: 'entity',
+    addProgressPercentage: true,
+    addProgressStatus: true
   })
   return results.entity
 }
