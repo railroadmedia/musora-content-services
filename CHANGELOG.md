@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.9.0](https://github.com/railroadmedia/musora-content-services/compare/v2.8.4...v2.9.0) (2025-06-11)
+
+
+### Features
+
+* **BEH-582:** comment undelete endpoint ([#283](https://github.com/railroadmedia/musora-content-services/issues/283)) ([da4f460](https://github.com/railroadmedia/musora-content-services/commit/da4f4602fdd6deb4362a50264a0f224ab5b5a432))
+
 ### [2.8.4](https://github.com/railroadmedia/musora-content-services/compare/v2.8.3...v2.8.4) (2025-06-10)
 
 ### [2.8.3](https://github.com/railroadmedia/musora-content-services/compare/v2.8.2...v2.8.3) (2025-06-06)
