@@ -49,7 +49,7 @@ export async function sendAlgoliaClickEvent(index, queryId, objectIDs, positions
           eventName: 'Content Clicked',
           index: index,
           userToken: globalConfig.railcontentConfig.userId.toString(),
-          authenticatedUserToken: globalConfig.railcontentConfig.authToken,
+          authenticatedUserToken: globalConfig.railcontentConfig.authToken.replace('|', '-'),
           timestamp: new Date().getTime(),
           objectIDs: objectIDs,
           queryID: queryId,
