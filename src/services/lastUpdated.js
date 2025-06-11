@@ -11,8 +11,10 @@ const excludeFromGeneratedIndex = [
   'clearLastUpdatedTime',
 ]
 
-export function wasLastUpdateOlderThanXSeconds(seconds, key) {
-  let lastUpdated = globalConfig.localStorage.getItem(key)
+export async function wasLastUpdateOlderThanXSeconds(seconds, key) {
+  let lastUpdated = globalConfig.isMA
+    ? await globalConfig.localStorage.getItem(key)
+    : globalConfig.localStorage.getItem(key)
   if (!lastUpdated) return false
   const verifyServerTime = seconds * 1000
   return new Date().getTime() - lastUpdated > verifyServerTime
