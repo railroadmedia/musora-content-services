@@ -2,7 +2,7 @@
  * @module Search-Engine-Services
  */
 
-import { globalConfig } from './config'
+import { globalConfig } from './config.js'
 import { algoliasearch } from 'algoliasearch'
 
 /**
@@ -41,6 +41,10 @@ export async function sendAlgoliaClickEvent(index, queryId, objectIDs, positions
     region: 'us',
   })
 
+  const token = globalConfig.railcontentConfig.authToken
+    ? globalConfig.railcontentConfig.authToken.replace('|', '-')
+    : globalConfig.railcontentConfig.token
+
   try {
     await searchEngine.pushEvents({
       events: [
@@ -49,7 +53,7 @@ export async function sendAlgoliaClickEvent(index, queryId, objectIDs, positions
           eventName: 'Content Clicked',
           index: index,
           userToken: globalConfig.railcontentConfig.userId.toString(),
-          authenticatedUserToken: globalConfig.railcontentConfig.authToken,
+          authenticatedUserToken: token,
           timestamp: new Date().getTime(),
           objectIDs: objectIDs,
           queryID: queryId,
