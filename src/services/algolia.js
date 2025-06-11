@@ -2,7 +2,7 @@
  * @module Search-Engine-Services
  */
 
-import { globalConfig } from './config'
+import { globalConfig } from './config.js'
 import { algoliasearch } from 'algoliasearch'
 
 /**
