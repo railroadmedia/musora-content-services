@@ -148,6 +148,7 @@ import {
 	postRecordWatchSession,
 	replyToComment,
 	reportComment,
+	restoreComment,
 	setStudentViewForUser,
 	unassignModeratorToComment,
 	unlikeComment
@@ -463,6 +464,7 @@ export {
 	reportComment,
 	reportPlaylist,
 	reset,
+	restoreComment,
 	restorePracticeSession,
 	restoreUserPractice,
 	setStudentViewForUser,

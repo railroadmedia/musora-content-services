@@ -148,6 +148,7 @@ import {
 	postRecordWatchSession,
 	replyToComment,
 	reportComment,
+	restoreComment,
 	setStudentViewForUser,
 	unassignModeratorToComment,
 	unlikeComment
@@ -464,6 +465,7 @@ declare module 'musora-content-services' {
 		reportComment,
 		reportPlaylist,
 		reset,
+		restoreComment,
 		restorePracticeSession,
 		restoreUserPractice,
 		setStudentViewForUser,
