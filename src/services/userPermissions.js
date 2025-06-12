@@ -15,7 +15,7 @@ let userPermissionsPromise = null
 let lastUpdatedKey = `userPermissions_lastUpdated`
 
 export async function fetchUserPermissions() {
-  if (!userPermissionsPromise || wasLastUpdateOlderThanXSeconds(10, lastUpdatedKey)) {
+  if (!userPermissionsPromise || (await wasLastUpdateOlderThanXSeconds(10, lastUpdatedKey))) {
     userPermissionsPromise = fetchUserPermissionsData()
     setLastUpdatedTime(lastUpdatedKey)
   }
