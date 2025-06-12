@@ -11,11 +11,11 @@ describe('lastUpdated', function () {
 
   test('lastUpdated', async () => {
     setLastUpdatedTime('testKey')
-    let test1 = wasLastUpdateOlderThanXSeconds(1, 'testKey')
+    let test1 = await wasLastUpdateOlderThanXSeconds(1, 'testKey')
     await new Promise((r) => setTimeout(r, 800))
-    let test2 = wasLastUpdateOlderThanXSeconds(1, 'testKey')
+    let test2 = await wasLastUpdateOlderThanXSeconds(1, 'testKey')
     await new Promise((r) => setTimeout(r, 500))
-    let test3 = wasLastUpdateOlderThanXSeconds(1, 'testKey')
+    let test3 = await wasLastUpdateOlderThanXSeconds(1, 'testKey')
 
     expect(test1).toEqual(false)
     expect(test2).toEqual(false)

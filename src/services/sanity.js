@@ -1979,6 +1979,11 @@ function needsAccessDecorator(results, userPermissions, isAdmin) {
       result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin)
     })
   } else {
+    if (results.lessons) {
+      results.lessons.forEach((lesson) => {
+        lesson['need_access'] = doesUserNeedAccessToContent(lesson, userPermissions, isAdmin) // Updated to check lesson access
+      })
+    }
     results['need_access'] = doesUserNeedAccessToContent(results, userPermissions, isAdmin)
   }
 
