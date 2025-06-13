@@ -285,7 +285,7 @@ export async function deleteItemsFromPlaylist(playlistId, deleted_items) {
  * Restore items
  *
  * @async
- * @function togglePlaylistPrivate
+ * @function restoreItemFromPlaylist
  * @param {string|number} playlistItemId - The unique identifier of the playlist ite to restore.
  *
  * @returns {Promise<Object>}
