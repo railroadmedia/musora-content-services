@@ -263,7 +263,7 @@ export async function updatePlaylist(playlistId, {
  * Delete Items from playlist
  *
  * @async
- * @function togglePlaylistPrivate
+ * @function deleteItemsFromPlaylist
  * @param {string|number} playlistId - The unique identifier of the playlist to update.
  * @param {array} deleted_items - list of playlist ids to delete (user_playlist_item_id, not the railcontent_id)
  *
@@ -279,6 +279,28 @@ export async function updatePlaylist(playlistId, {
  */
 export async function deleteItemsFromPlaylist(playlistId, deleted_items) {
   return await updatePlaylist(playlistId, {deleted_items})
+}
+
+/**
+ * Restore items
+ *
+ * @async
+ * @function restoreItemFromPlaylist
+ * @param {string|number} playlistItemId - The unique identifier of the playlist ite to restore.
+ *
+ * @returns {Promise<Object>}
+ *
+ * @example
+ * // Restore item 8462221
+ * try {
+ *   const response = await restoreItemFromPlaylist(8462221);
+ * } catch (error) {
+ *   console.error('Failed to restore playlist item:', error);
+ * }
+ */
+export async function restoreItemFromPlaylist(playlistItemId) {
+  const url = `${BASE_PATH}/v1/user/playlists/items/undelete/${playlistItemId}`
+  return await fetchHandler(url, 'POST')
 }
 
 /**
