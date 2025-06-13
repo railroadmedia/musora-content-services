@@ -23,7 +23,6 @@ export async function initializeTestService(useLive = false) {
       useCachedAPI: process.env.SANITY_USE_CACHED_API === 'true' || true,
       version: '2021-06-07',
       debug: process.env.DEBUG === 'true' || false,
-      useDummyRailContentMethods: true,
     },
     railcontentConfig: {
       baseUrl: process.env.RAILCONTENT_BASE_URL,

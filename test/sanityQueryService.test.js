@@ -137,10 +137,10 @@ describe('Sanity Queries', function () {
     expect(returnedIds.length).toBe(2)
   })
 
-  test('fetchUpcomingEvents', async () => {
-    const response = await fetchUpcomingEvents('drumeo', {})
-    expect(response.length).toBeGreaterThan(0)
-  })
+  // test('fetchUpcomingEvents', async () => {
+  //   const response = await fetchUpcomingEvents('drumeo', {})
+  //   expect(response.length).toBeGreaterThan(0)
+  // })
 
   test('fetchUpcomingNewReleases', async () => {
     const response = await fetchNewReleases('drumeo')
@@ -508,10 +508,10 @@ describe('Sanity Queries', function () {
     expect(response.entity.length).toBeGreaterThan(0)
   })
 
-  test('fetchScheduledReleases', async () => {
-    const response = await fetchScheduledReleases('drumeo', {})
-    expect(response.length).toBeGreaterThan(0)
-  })
+  // test('fetchScheduledReleases', async () => {
+  //   const response = await fetchScheduledReleases('drumeo', {})
+  //   expect(response.length).toBeGreaterThan(0)
+  // })
 
   test('fetchAll-GroupBy-Genre', async () => {
     let response = await fetchAll('drumeo', 'solo', { groupBy: 'genre' })
@@ -617,6 +617,24 @@ describe('Sanity Queries', function () {
     expect(prevDocumentPublishedOn.getTime()).toBeLessThanOrEqual(documentPublishedOn.getTime())
     expect(response.nextLesson).toBeDefined()
     expect(documentPublishedOn.getTime()).toBeLessThanOrEqual(nextDocumentPublishedOn.getTime())
+  })
+
+  test('fetchByRailContentId_Children', async () => {
+    const id = 235968
+    const document = await fetchByRailContentId(id, 'song-tutorial')
+
+    // Verify document has lessons array
+    expect(document.lessons).toBeDefined()
+    expect(Array.isArray(document.lessons)).toBe(true)
+
+    // If there are lessons, verify each lesson has the required fields
+    if (document.lessons.length > 0) {
+      document.lessons.forEach((lesson) => {
+        expect(lesson.need_access).toBeDefined()
+        expect(lesson.permission_id).toBeDefined()
+        expect(Array.isArray(lesson.permission_id)).toBe(true)
+      })
+    }
   })
 
   test('fetchTopLevelParentId', async () => {

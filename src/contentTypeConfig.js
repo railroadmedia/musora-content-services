@@ -32,6 +32,7 @@ export const DEFAULT_CHILD_FIELDS = [
   `"image": thumbnail.asset->url`,
   `"instructors": instructor[]->name`,
   `length_in_seconds`,
+  `'permission_id': permission[]->railcontent_id`,
 ]
 
 export const descriptionField = 'description[0].children[0].text'

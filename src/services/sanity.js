@@ -1956,8 +1956,6 @@ export async function fetchSanity(
 }
 
 function needsAccessDecorator(results, userPermissions, isAdmin) {
-  if (globalConfig.sanityConfig.useDummyRailContentMethods) return results
-
   userPermissions = new Set(userPermissions)
 
   if (Array.isArray(results)) {
