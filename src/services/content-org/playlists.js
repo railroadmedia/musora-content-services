@@ -299,7 +299,7 @@ export async function deleteItemsFromPlaylist(playlistId, deleted_items) {
  * }
  */
 export async function restoreItemFromPlaylist(playlistItemId) {
-  const url = `${BASE_PATH}/v1/user/playlists/items/restore/${playlistItemId}`
+  const url = `${BASE_PATH}/v1/user/playlists/items/undelete/${playlistItemId}`
   return await fetchHandler(url, 'POST')
 }
 
