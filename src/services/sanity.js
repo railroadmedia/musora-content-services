@@ -1429,7 +1429,11 @@ export async function fetchRelatedLessons(railContentId, brand) {
   const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
   const queryFieldsWithSort = queryFields + ', sort'
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
-   _type, parent_type, railcontent_id,
+   _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
+   'for-calculations': *[references(^._id)][0]{
+    'lessons-list': child[],
+    'courses-list': *[references(^._id)][0].child[]
+    },
     "related_lessons" : array::unique([
       ...(*[${filterNeighbouringSiblings}][0].child[${childrenFilter}]->{${queryFields}}),
       ...(*[${filterSongSameArtist}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
@@ -1438,8 +1442,24 @@ export async function fetchRelatedLessons(railContentId, brand) {
       ...(*[${filterSameType}]{${queryFields}}|order(published_on desc, title asc)[0...10])
       ,
       ])[0...10]}`
-  return fetchSanity(query, false)
+  let result = fetchSanity(query, false)
+
+  //there's no way in sanity to retrieve the index of an array, so we must calculate after fetch
+  if (result['for-calculations']['courses-list']) {
+    const calc = result['for-calculations']
+    const courseCount = calc['courses-count']
+    const currentCourse = calc['courses-list'].indexOf(result['parent_id']);
+    const lessonCount = calc['lessons-count']
+    const currentLesson = calc['lessons-list'].indexOf(result['railcontent_id']);
+    //append
+    return result = {...result, courseCount, currentCourse, lessonCount, currentLesson}
+  }
 }
+
+
+
+
+
 
 /**
  * Fetch all packs.
