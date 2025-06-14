@@ -61,7 +61,8 @@ export const assignmentsField = `"assignments":assignment[]{
               }
             }.url,  assignment_sheet_music_image),
         "timecode": assignment_timecode,
-        "description": coalesce(assignment_description,'')
+        "description": coalesce(assignment_description,''),
+        "description_portable": assignment_description_portable,
 },`
 
 const contentWithInstructorsField = {
@@ -120,11 +121,7 @@ export const coachLessonsTypes = [
 ]
 
 export const childContentTypeConfig = {
-  'song-tutorial': [
-    `"genre": genre[]->name`,
-    `difficulty_string`,
-    `"type": _type`,
-  ]
+  'song-tutorial': [`"genre": genre[]->name`, `difficulty_string`, `"type": _type`],
 }
 
 export let contentTypeConfig = {
@@ -170,6 +167,7 @@ export let contentTypeConfig = {
       'challenge_state',
       'challenge_state_text',
       `"description": ${descriptionField}`,
+      'description_portable',
       'total_xp',
       'xp',
       '"instructors": instructor[]->name',
@@ -201,6 +199,7 @@ export let contentTypeConfig = {
       '"lesson_count": child_count',
       '"instructors": instructor[]->name',
       `"description": ${descriptionField}`,
+      'description_portable',
       `"resource": ${resourcesField}`,
       'xp',
       'total_xp',
@@ -219,6 +218,7 @@ export let contentTypeConfig = {
       '"lesson_count": child_count',
       '"instructors": instructor[]->name',
       `"description": ${descriptionField}`,
+      'description_portable',
       `"resource": ${resourcesField}`,
       'xp',
       'total_xp',
@@ -237,6 +237,7 @@ export let contentTypeConfig = {
                 artist->,
                 "thumbnail_url":thumbnail.asset->url,
                 "description": description[0].children[0].text,
+                description_portable,
                 "chapters": chapter[]{
                     chapter_description,
                     chapter_timecode,
@@ -261,6 +262,7 @@ export let contentTypeConfig = {
   method: {
     fields: [
       `"description": ${descriptionField}`,
+      'description_portable',
       'hide_from_recsys',
       '"image": thumbnail.asset->url',
       '"instructors":instructor[]->name',
@@ -282,6 +284,7 @@ export let contentTypeConfig = {
       '"lesson_count": child_count',
       '"instructors": instructor[]->name',
       `"description": ${descriptionField}`,
+      'description_portable',
       `"resource": ${resourcesField}`,
       'xp',
       'total_xp',
@@ -299,6 +302,7 @@ export let contentTypeConfig = {
       '"lesson_count": child_count',
       '"instructors": instructor[]->name',
       `"description": ${descriptionField}`,
+      'description_portable',
       `"resource": ${resourcesField}`,
       'xp',
       'total_xp',
@@ -331,11 +335,13 @@ export let contentTypeConfig = {
       '"lesson_count": coalesce(count(child[]->.child[]->), 0)',
       'xp',
       `"description": ${descriptionField}`,
+      'description_portable',
       '"instructors": instructor[]->name',
       '"logo_image_url": logo_image_url.asset->url',
       'total_xp',
       `"children": child[]->{
                 "description": ${descriptionField},
+                "description_portable": description_portable,
                 "lesson_count": child_count,
                 ${getFieldsForContentType()}
             }`,
@@ -344,6 +350,7 @@ export let contentTypeConfig = {
       '"light_logo": light_mode_logo_url.asset->url',
       '"dark_logo": dark_mode_logo_url.asset->url',
       `"description": ${descriptionField}`,
+      'description_portable',
     ],
   },
   rudiment: {
@@ -351,7 +358,12 @@ export let contentTypeConfig = {
     slug: 'rudiments',
   },
   routine: {
-    fields: [`"description": ${descriptionField}`, 'high_soundslice_slug', 'low_soundslice_slug'],
+    fields: [
+      `"description": ${descriptionField}`,
+      'description_portable',
+      'high_soundslice_slug',
+      'low_soundslice_slug',
+    ],
     slug: 'routines',
   },
   'pack-children': {
@@ -359,6 +371,7 @@ export let contentTypeConfig = {
       'child_count',
       `"children": child[]->{
                 "description": ${descriptionField},
+                "description_portable": description_portable,
                 ${getFieldsForContentType()}
             }`,
       `"resources": ${resourcesField}`,
@@ -367,6 +380,7 @@ export let contentTypeConfig = {
       '"light_logo": light_mode_logo_url.asset->url',
       '"dark_logo": dark_mode_logo_url.asset->url',
       `"description": ${descriptionField}`,
+      'description_portable',
       'total_xp',
     ],
   },
@@ -376,6 +390,7 @@ export let contentTypeConfig = {
   foundation: {
     fields: [
       `"description": ${descriptionField}`,
+      'description_portable',
       `"instructors":instructor[]->name`,
       `"units": child[]->{
                 "id": railcontent_id,
@@ -388,6 +403,7 @@ export let contentTypeConfig = {
                 title,
                 "type": _type,
                 "description": ${descriptionField},
+                "description_portable": description_portable,
                 xp,
                 web_url_path,
                 "url": web_url_path,
@@ -399,6 +415,7 @@ export let contentTypeConfig = {
       '"lesson_count": child_count',
       '"instructors": instructor[]->name',
       `"description": ${descriptionField}`,
+      'description_portable',
       `"resource": ${resourcesField}`,
       'xp',
       'total_xp',
@@ -456,10 +473,8 @@ export let contentTypeConfig = {
   'exploring-beats': contentWithSortField,
   sonor: contentWithSortField,
   returning: {
-    fields: [
-      `quarter_published`,
-    ]
-  }
+    fields: [`quarter_published`],
+  },
 }
 
 export const plusMembershipPermissions = 92
@@ -652,7 +667,7 @@ export function filtersToGroq(filters, selectedFilters = []) {
               return `instrumentless == ${value}`
             }
           } else if (key === 'difficulty' && !selectedFilters.includes(key)) {
-            if(value === 'Introductory'){
+            if (value === 'Introductory') {
               return `(difficulty_string == "Novice" || difficulty_string == "Introductory" )`
             }
             return `difficulty_string == "${value}"`
