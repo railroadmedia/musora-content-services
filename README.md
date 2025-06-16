@@ -2,7 +2,8 @@
 
 Welcome to the **musora-content-services** repository. This package provides a collection of utility functions designed 
 to fetch and manage content from our Sanity Studio. These functions are tailored to interact with our Sanity backend, 
-allowing you to easily retrieve, filter, and manipulate content for use in various applications.
+allowing you to easily retrieve, filter, and manipulate content for use in various applications. Used on both web and 
+app front ends.
 
 ## Setup
 To set up the Musora Content Services project for local development, follow these steps:
