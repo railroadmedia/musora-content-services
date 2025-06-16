@@ -237,6 +237,7 @@ import {
 import {
 	deleteNotification,
 	fetchNotifications,
+	fetchUnreadCount,
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
 	markNotificationAsUnread
@@ -383,6 +384,7 @@ declare module 'musora-content-services' {
 		fetchTopComment,
 		fetchTopLevelParentId,
 		fetchUninterests,
+		fetchUnreadCount,
 		fetchUpcomingEvents,
 		fetchUserAward,
 		fetchUserBadges,

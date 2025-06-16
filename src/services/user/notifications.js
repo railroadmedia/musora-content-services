@@ -118,3 +118,25 @@ export async function deleteNotification(notificationId) {
   const url = `${baseUrl}/v1/${notificationId}`
   return fetchHandler(url, 'delete')
 }
+
+/**
+ * Fetches the count of unread notifications for the current user in a given brand context.
+ *
+ * @param {Object} [options={}] - Options for fetching unread count.
+ * @param {string} options.brand - The brand to filter unread notifications by (required).
+ * @returns {Promise<Object>} - A promise that resolves to an object with the unread count.
+ *
+ * @throws {Error} If the brand is not provided.
+ *
+ * @example
+ * fetchUnreadCount({ brand: 'drumeo' })
+ *   .then(data => console.log(data.unread_count))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchUnreadCount({ brand = null} = {}) {
+  if (!brand) {
+    throw new Error('brand is required')
+  }
+  const url = `${baseUrl}/v1/unread-count?brand=${brand}`
+  return fetchHandler(url, 'get')
+}

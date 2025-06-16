@@ -237,6 +237,7 @@ import {
 import {
 	deleteNotification,
 	fetchNotifications,
+	fetchUnreadCount,
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
 	markNotificationAsUnread
@@ -382,6 +383,7 @@ export {
 	fetchTopComment,
 	fetchTopLevelParentId,
 	fetchUninterests,
+	fetchUnreadCount,
 	fetchUpcomingEvents,
 	fetchUserAward,
 	fetchUserBadges,
