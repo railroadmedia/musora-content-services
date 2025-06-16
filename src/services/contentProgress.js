@@ -151,6 +151,40 @@ export async function getAllStartedOrCompleted({ limit = null, onlyIds = true, b
   }
 }
 
+/**
+ * Simplified version of `getAllStartedOrCompleted`.
+ *
+ * Fetches content IDs and progress percentages for items that were
+ * started or completed.
+ *
+ * @param {Object} [options={}] - Optional filtering options.
+ * @param {string|null} [options.brand=null] - Brand to filter by (e.g., 'drumeo').
+ * @returns {Promise<Object>} - A map of content ID to progress value:
+ *   {
+ *     [id]: progressPercentage
+ *   }
+ *
+ * @example
+ * const progressMap = await getStartedOrCompletedProgressOnly({ brand: 'drumeo' });
+ * console.log(progressMap[123]); // => 52
+ */
+export async function getStartedOrCompletedProgressOnly({ brand = null} = {}) {
+  const data = await dataContext.getData()
+  const result = {}
+
+  Object.entries(data).forEach(([key, item]) => {
+    const id = parseInt(key)
+    const isRelevantStatus = item[DATA_KEY_STATUS] === STATE_STARTED || item[DATA_KEY_STATUS] === STATE_COMPLETED
+    const isCorrectBrand = !brand || item.b === brand
+
+    if (isRelevantStatus && isCorrectBrand) {
+      result[id] = item?.[DATA_KEY_PROGRESS] ?? 0
+    }
+  })
+
+  return result
+}
+
 export async function assignmentStatusCompleted(assignmentId, parentContentId) {
   await dataContext.update(
     async function (localContext) {
