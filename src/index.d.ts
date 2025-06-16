@@ -214,6 +214,10 @@ import {
 } from './services/sanity.js';
 
 import {
+	fetchChatSettings
+} from './services/user/chat.js';
+
+import {
 	fetchInterests,
 	fetchUninterests,
 	markContentAsInterested,
@@ -320,6 +324,7 @@ declare module 'musora-content-services' {
 		fetchChallengeMetadata,
 		fetchChallengeUserActiveChallenges,
 		fetchChatAndLiveEnvent,
+		fetchChatSettings,
 		fetchCoachLessons,
 		fetchComingSoon,
 		fetchCommentModContentData,

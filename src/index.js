@@ -214,6 +214,10 @@ import {
 } from './services/sanity.js';
 
 import {
+	fetchChatSettings
+} from './services/user/chat.js';
+
+import {
 	fetchInterests,
 	fetchUninterests,
 	markContentAsInterested,
@@ -319,6 +323,7 @@ export {
 	fetchChallengeMetadata,
 	fetchChallengeUserActiveChallenges,
 	fetchChatAndLiveEnvent,
+	fetchChatSettings,
 	fetchCoachLessons,
 	fetchComingSoon,
 	fetchCommentModContentData,
