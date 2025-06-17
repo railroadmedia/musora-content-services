@@ -1431,8 +1431,8 @@ export async function fetchRelatedLessons(railContentId, brand) {
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
    'for-calculations': *[references(^._id)][0]{
-    'lessons-list': child[],
-    'courses-list': *[references(^._id)][0].child[]
+    'children-list': child[],
+    'parents-list': *[references(^._id)][0].child[]
     },
     "related_lessons" : array::unique([
       ...(*[${filterNeighbouringSiblings}][0].child[${childrenFilter}]->{${queryFields}}),
@@ -1445,14 +1445,15 @@ export async function fetchRelatedLessons(railContentId, brand) {
   let result = fetchSanity(query, false)
 
   //there's no way in sanity to retrieve the index of an array, so we must calculate after fetch
-  if (result['for-calculations']['courses-list']) {
+  if (result['for-calculations']['parents-list']) {
     const calc = result['for-calculations']
-    const courseCount = calc['courses-count']
-    const currentCourse = calc['courses-list'].indexOf(result['parent_id']);
-    const lessonCount = calc['lessons-count']
-    const currentLesson = calc['lessons-list'].indexOf(result['railcontent_id']);
-    //append
-    return result = {...result, courseCount, currentCourse, lessonCount, currentLesson}
+    const parentCount = calc['parents-count']
+    const currentParent = calc['parents-list'].indexOf(result['parent_id']);
+    const childCount = calc['children-count']
+    const currentChild = calc['children-list'].indexOf(result['railcontent_id']);
+
+    delete result['for-calculations']
+    return {...result, parentCount, currentParent, childCount, currentChild}
   }
 }
 
