@@ -1413,16 +1413,16 @@ async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, cou
  */
 export async function fetchRelatedLessons(railContentId, brand) {
   const filterSameTypeAndSortOrder = await new FilterBuilder(
-    `_type==^._type &&  _type in ${JSON.stringify(typeWithSortOrder)} && brand == "${brand}" && railcontent_id !=${railContentId}`, {pullFutureContent: true}
+    `_type==^._type &&  _type in ${JSON.stringify(typeWithSortOrder)} && brand == "${brand}" && railcontent_id !=${railContentId}`,
   ).buildFilter()
   const filterSameType = await new FilterBuilder(
-    `_type==^._type && !(_type in ${JSON.stringify(typeWithSortOrder)}) && !(defined(parent_type)) && brand == "${brand}" && railcontent_id !=${railContentId}`, {pullFutureContent: true}
+    `_type==^._type && !(_type in ${JSON.stringify(typeWithSortOrder)}) && !(defined(parent_type)) && brand == "${brand}" && railcontent_id !=${railContentId}`,
   ).buildFilter()
   const filterSongSameArtist = await new FilterBuilder(
-    `_type=="song" && _type==^._type && brand == "${brand}" && references(^.artist->_id) && railcontent_id !=${railContentId}`, {pullFutureContent: true}
+    `_type=="song" && _type==^._type && brand == "${brand}" && references(^.artist->_id) && railcontent_id !=${railContentId}`,
   ).buildFilter()
   const filterSongSameGenre = await new FilterBuilder(
-    `_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}`, {pullFutureContent: true}
+    `_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}`,
   ).buildFilter()
   const filterNeighbouringSiblings = await new FilterBuilder(`references(^._id)`, {pullFutureContent: true}).buildFilter()
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
