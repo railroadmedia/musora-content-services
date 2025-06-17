@@ -1431,7 +1431,7 @@ export async function fetchRelatedLessons(railContentId, brand) {
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
    'for-calculations': *[references(^._id)][0]{
-    'children-list': child[],
+    'siblings-list': child[],
     'parents-list': *[references(^._id)][0].child[]
     },
     "related_lessons" : array::unique([
@@ -1449,11 +1449,11 @@ export async function fetchRelatedLessons(railContentId, brand) {
     const calc = result['for-calculations']
     const parentCount = calc['parents-count']
     const currentParent = calc['parents-list'].indexOf(result['parent_id']);
-    const childCount = calc['children-count']
-    const currentChild = calc['children-list'].indexOf(result['railcontent_id']);
+    const siblingCount = calc['siblings-count']
+    const currentSibling = calc['siblings-list'].indexOf(result['railcontent_id']);
 
     delete result['for-calculations']
-    return {...result, parentCount, currentParent, childCount, currentChild}
+    return {...result, parentCount, currentParent, siblingCount, currentSibling}
   }
 }
 
