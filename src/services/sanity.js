@@ -1447,9 +1447,9 @@ export async function fetchRelatedLessons(railContentId, brand) {
   //there's no way in sanity to retrieve the index of an array, so we must calculate after fetch
   if (result['for-calculations']['parents-list']) {
     const calc = result['for-calculations']
-    const parentCount = calc['parents-count'].length
+    const parentCount = calc['parents-list'].length
     const currentParent = calc['parents-list'].indexOf(result['parent_id']);
-    const siblingCount = calc['siblings-count'].length
+    const siblingCount = calc['siblings-list'].length
     const currentSibling = calc['siblings-list'].indexOf(result['railcontent_id']);
 
     delete result['for-calculations']
