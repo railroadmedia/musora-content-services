@@ -1307,11 +1307,12 @@ export async function fetchLessonContent(railContentId) {
           xp,
           stbs,ds2stbs, bdsStbs,
           ...select(
-                defined(live_event_start_time) && defined(live_event_end_time) => {
+                defined(live_event_start_time) => {
                   "live_event_start_time": live_event_start_time,
                   "live_event_end_time": live_event_end_time,
                   "live_event_youtube_id": live_event_youtube_id,
                   "videoId": coalesce(live_event_youtube_id, video.external_id),
+                  "live_event_is_global": live_global_event == true
                 }
               )`
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
