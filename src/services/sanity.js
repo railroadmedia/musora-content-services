@@ -1453,7 +1453,8 @@ export async function fetchRelatedLessons(railContentId, brand) {
     const currentSibling = calc['siblings-list'].indexOf(result['railcontent_id']);
 
     delete result['for-calculations']
-    return {...result, parentCount, currentParent, siblingCount, currentSibling}
+    result = {...result, parentCount, currentParent, siblingCount, currentSibling}
+    return result
   }
 }
 
