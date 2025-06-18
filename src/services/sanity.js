@@ -1448,9 +1448,9 @@ export async function fetchRelatedLessons(railContentId, brand) {
   if (result['for-calculations']['parents-list']) {
     const calc = result['for-calculations']
     const parentCount = calc['parents-list'].length
-    const currentParent = calc['parents-list'].indexOf(result['parent_id']);
+    const currentParent = (calc['parents-list'].indexOf(result['parent_id']) + 1)
     const siblingCount = calc['siblings-list'].length
-    const currentSibling = calc['siblings-list'].indexOf(result['railcontent_id']);
+    const currentSibling = (calc['siblings-list'].indexOf(result['railcontent_id']) + 1)
 
     delete result['for-calculations']
     result = {...result, parentCount, currentParent, siblingCount, currentSibling}
