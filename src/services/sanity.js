@@ -1430,7 +1430,7 @@ export async function fetchRelatedLessons(railContentId, brand) {
   const queryFieldsWithSort = queryFields + ', sort'
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
-   'for-calculations': *[references(^._id)][0]{
+   'for-calculations': *[references(^._id) && !(_type in ['license'])][0]{
     'siblings-list': child[]->railcontent_id,
     'parents-list': *[references(^._id)][0].child[]->railcontent_id
     },
