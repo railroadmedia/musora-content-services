@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.9.6](https://github.com/railroadmedia/musora-content-services/compare/v2.9.5...v2.9.6) (2025-06-18)
+
+
+### Bug Fixes
+
+* **BEH-547:** collection modules updates ([#300](https://github.com/railroadmedia/musora-content-services/issues/300)) ([d07002b](https://github.com/railroadmedia/musora-content-services/commit/d07002b32946d3d03dc9b8f3469863a34d2696b5))
+* null check for buildImageSRC ([f841b46](https://github.com/railroadmedia/musora-content-services/commit/f841b460bd41e0405caf7f2c06dd0c057a5f9aa1))
+
 ### [2.9.5](https://github.com/railroadmedia/musora-content-services/compare/v2.9.4...v2.9.5) (2025-06-18)
 
 ### [2.9.4](https://github.com/railroadmedia/musora-content-services/compare/v2.9.3...v2.9.4) (2025-06-17)
