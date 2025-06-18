@@ -59,6 +59,7 @@ import {
 	getProgressStateByIds,
 	getResumeTimeSeconds,
 	getResumeTimeSecondsByIds,
+	getStartedOrCompletedProgressOnly,
 	recordWatchSession
 } from './services/contentProgress.js';
 
@@ -419,6 +420,7 @@ declare module 'musora-content-services' {
 		getResumeTimeSecondsByIds,
 		getScheduleContentRows,
 		getSortOrder,
+		getStartedOrCompletedProgressOnly,
 		getTabResults,
 		getTimeRemainingUntilLocal,
 		getUserMonthlyStats,
