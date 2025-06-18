@@ -1455,6 +1455,9 @@ export async function fetchRelatedLessons(railContentId, brand) {
     delete result['for-calculations']
     result = {...result, parentCount, currentParent, siblingCount, currentSibling}
     return result
+  } else {
+    delete result['for-calculations']
+    return result
   }
 }
 
