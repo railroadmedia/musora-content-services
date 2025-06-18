@@ -1461,11 +1461,6 @@ export async function fetchRelatedLessons(railContentId, brand) {
   }
 }
 
-
-
-
-
-
 /**
  * Fetch all packs.
  * @param {string} brand - The brand for which to fetch packs.
