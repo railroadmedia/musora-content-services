@@ -55,7 +55,7 @@ function getIndefiniteArticle(streak) {
 
 export async function getUserPractices(userId = globalConfig.sessionConfig.userId) {
   if (userId !== globalConfig.sessionConfig.userId) {
-    let data = await fetchUserPractices({ userId })
+    let data = await fetchUserPractices(0, { userId: userId })
     return data?.['data']?.[DATA_KEY_PRACTICES] ?? {}
   } else {
     let data = await userActivityContext.getData()
@@ -603,7 +603,7 @@ function getStreaksAndMessage(practices) {
 async function getUserPracticeIds(day = new Date().toISOString().split('T')[0], userId = null) {
   let practices = {}
   if (userId !== globalConfig.sessionConfig.userId) {
-    let data = await fetchUserPractices({ userId })
+    let data = await fetchUserPractices(0, { userId: userId })
     practices = data?.['data']?.[DATA_KEY_PRACTICES] ?? {}
   } else {
     let data = await userActivityContext.getData()
