@@ -388,8 +388,6 @@ export async function fetchNewReleases(
  *   .catch(error => console.error(error));
  */
 export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) {
-  const liveTypes = getUpcomingEventsTypes(brand)
-  const typesString = arrayToStringRepresentation(liveTypes)
   const now = getSanityDate(new Date())
   const start = (page - 1) * limit
   const end = start + limit
@@ -409,7 +407,7 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         "permission_id": permission[]->railcontent_id,
          "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}'`
   const query = buildRawQuery(
-    `_type in ${typesString} && brand == '${brand}' && published_on > '${now}' && status == 'scheduled'`,
+    `defined(live_event_start_time) && (!defined(live_event_end_time) || live_event_end_time >= '${now}' ) && brand == '${brand}' && published_on > '${now}' && status == 'scheduled'`,
     fields,
     {
       sortOrder: 'published_on asc',
@@ -443,7 +441,7 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
   const now = getSanityDate(new Date())
   const start = (page - 1) * limit
   const end = start + limit
-  const query = `*[_type in [${typesString}] && brand == '${brand}' && status in ['published','scheduled'] && published_on > '${now}']{
+  const query = `*[_type in [${typesString}] && brand == '${brand}' && status in ['published','scheduled'] && (!defined(live_event_end_time) || live_event_end_time < '${now}' ) && published_on > '${now}']{
       "id": railcontent_id,
       title,
       "image": thumbnail.asset->url,
