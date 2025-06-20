@@ -377,25 +377,27 @@ export async function restoreUserPractice(id) {
   let url = `/api/user/practices/v1/practices/restore${buildQueryString([id])}`
   const response = await fetchHandler(url, 'put')
   if (response?.data?.length) {
-    await userActivityContext.updateLocal(async function (localContext) {
-      const restoredPractice = response.data
-      const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-      const utcDate = new Date(restoredPractice[0].day)
-      const localDate = convertToTimeZone(utcDate, userTimeZone)
-      const date =
-        localDate.getFullYear() + '-' +
-        String(localDate.getMonth() + 1).padStart(2, '0') + '-' +
-        String(localDate.getDate()).padStart(2, '0')
-      if (!localContext.data[DATA_KEY_PRACTICES][date]) {
-        localContext.data[DATA_KEY_PRACTICES][date] = []
-      }
-      for (const practice of restoredPractice) {
-        localContext.data[DATA_KEY_PRACTICES][date].push({
-          id: practice.id,
-          duration_seconds: practice.duration_seconds,
+    const restoredPractice = response.data.find((p) => p.id === id)
+    if (restoredPractice) {
+      await userActivityContext.updateLocal(async function (localContext) {
+        const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+        const utcDate = new Date(restoredPractice.day)
+        const localDate = convertToTimeZone(utcDate, userTimeZone)
+        const date =
+          localDate.getFullYear() + '-' +
+          String(localDate.getMonth() + 1).padStart(2, '0') + '-' +
+          String(localDate.getDate()).padStart(2, '0')
+        if (localContext.data[DATA_KEY_PRACTICES][date]) {
+          localContext.data[DATA_KEY_PRACTICES][date] = []
+        }
+        response.data.forEach((restoredPractice) => {
+          localContext.data[DATA_KEY_PRACTICES][date].push({
+            id: restoredPractice.id,
+            duration_seconds: restoredPractice.duration_seconds,
+          })
         })
-      }
-    })
+      })
+    }
   }
   const formattedMeta = await formatPracticeMeta(response.data || [])
   const practiceDuration = formattedMeta.reduce(
