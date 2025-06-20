@@ -55,7 +55,7 @@ function getIndefiniteArticle(streak) {
 
 export async function getUserPractices(userId = globalConfig.sessionConfig.userId) {
   if (userId !== globalConfig.sessionConfig.userId) {
-    let data = await fetchUserPractices({ userId })
+    let data = await fetchUserPractices(0, { userId: userId })
     return data?.['data']?.[DATA_KEY_PRACTICES] ?? {}
   } else {
     let data = await userActivityContext.getData()
@@ -376,20 +376,30 @@ export async function removeUserPractice(id) {
 export async function restoreUserPractice(id) {
   let url = `/api/user/practices/v1/practices/restore${buildQueryString([id])}`
   const response = await fetchHandler(url, 'put')
-  if (response?.data) {
-    await userActivityContext.updateLocal(async function (localContext) {
-      const restoredPractice = response.data
-      const { date } = restoredPractice
-      if (!localContext.data[DATA_KEY_PRACTICES][date]) {
-        localContext.data[DATA_KEY_PRACTICES][date] = []
-      }
-      localContext.data[DATA_KEY_PRACTICES][date].push({
-        id: restoredPractice.id,
-        duration_seconds: restoredPractice.duration_seconds,
+  if (response?.data?.length) {
+    const restoredPractice = response.data.find((p) => p.id === id)
+    if (restoredPractice) {
+      await userActivityContext.updateLocal(async function (localContext) {
+        const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+        const utcDate = new Date(restoredPractice.day)
+        const localDate = convertToTimeZone(utcDate, userTimeZone)
+        const date =
+          localDate.getFullYear() + '-' +
+          String(localDate.getMonth() + 1).padStart(2, '0') + '-' +
+          String(localDate.getDate()).padStart(2, '0')
+        if (localContext.data[DATA_KEY_PRACTICES][date]) {
+          localContext.data[DATA_KEY_PRACTICES][date] = []
+        }
+        response.data.forEach((restoredPractice) => {
+          localContext.data[DATA_KEY_PRACTICES][date].push({
+            id: restoredPractice.id,
+            duration_seconds: restoredPractice.duration_seconds,
+          })
+        })
       })
-    })
+    }
   }
-  const formattedMeta = await formatPracticeMeta(response.data)
+  const formattedMeta = await formatPracticeMeta(response.data || [])
   const practiceDuration = formattedMeta.reduce(
     (total, practice) => total + (practice.duration || 0),
     0
@@ -603,7 +613,7 @@ function getStreaksAndMessage(practices) {
 async function getUserPracticeIds(day = new Date().toISOString().split('T')[0], userId = null) {
   let practices = {}
   if (userId !== globalConfig.sessionConfig.userId) {
-    let data = await fetchUserPractices({ userId })
+    let data = await fetchUserPractices(0, { userId: userId })
     practices = data?.['data']?.[DATA_KEY_PRACTICES] ?? {}
   } else {
     let data = await userActivityContext.getData()
