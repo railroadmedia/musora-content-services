@@ -1318,7 +1318,7 @@ export async function fetchLessonContent(railContentId) {
   })
   const chapterProcess = (result) => {
     const now = getSanityDate(new Date(), false)
-    if (result.live_event_start_time && result.live_event_start_time) {
+    if (result.live_event_start_time && result.live_event_end_time) {
       result.isLive = result.live_event_start_time <= now && result.live_event_end_time >= now
     }
     const chapters = result.chapters ?? []
