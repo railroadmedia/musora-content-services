@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.10.0](https://github.com/railroadmedia/musora-content-services/compare/v2.9.5...v2.10.0) (2025-06-23)
+
+
+### Features
+
+* add media type id ([2690e2c](https://github.com/railroadmedia/musora-content-services/commit/2690e2ccbe07474e51327bd6e5919da7fb96ad47))
+* Any content type should be displayed in “Live Streams” Section if marked as livestream ([285dde9](https://github.com/railroadmedia/musora-content-services/commit/285dde92e74ee606410ff1e1b6981ec81d3e524c))
+* MU2-712 Any content type should be displayed in “Live Streams” Section ([3229950](https://github.com/railroadmedia/musora-content-services/commit/3229950fdeea36e67fcdf8b352d0c3d53219821f))
+
+
+### Bug Fixes
+
+* **BEH-547:** collection modules updates ([#300](https://github.com/railroadmedia/musora-content-services/issues/300)) ([d07002b](https://github.com/railroadmedia/musora-content-services/commit/d07002b32946d3d03dc9b8f3469863a34d2696b5))
+* null check for buildImageSRC ([f841b46](https://github.com/railroadmedia/musora-content-services/commit/f841b460bd41e0405caf7f2c06dd0c057a5f9aa1))
+
 ### [2.9.6](https://github.com/railroadmedia/musora-content-services/compare/v2.9.5...v2.9.6) (2025-06-18)
 
 
