@@ -416,7 +416,7 @@ export let contentTypeConfig = {
       '"lesson_count": coalesce(count(child[]->.child[]->), 0)',
       'xp',
       `"description": ${descriptionField}`,
-      '"instructors": instructor[]->name',
+      '"instructors": instructor[]->{ "id": railcontent_id, name, "thumbnail_url": thumbnail_url.asset->url }',
       '"logo_image_url": logo_image_url.asset->url',
       'total_xp',
       `"children": child[]->{
