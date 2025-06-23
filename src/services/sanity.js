@@ -405,6 +405,8 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         "type": _type,
         web_url_path,
         "permission_id": permission[]->railcontent_id,
+        live_event_start_time,
+        live_event_end_time,
          "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}'`
   const query = buildRawQuery(
     `defined(live_event_start_time) && (!defined(live_event_end_time) || live_event_end_time >= '${now}' ) && brand == '${brand}' && published_on > '${now}' && status == 'scheduled'`,
