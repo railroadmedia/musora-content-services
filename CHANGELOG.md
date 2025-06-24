@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.11.0](https://github.com/railroadmedia/musora-content-services/compare/v2.10.0...v2.11.0) (2025-06-24)
+
+
+### Features
+
+* **MU2-698:** change extra minutes from 15 to 30 ([ccb1a96](https://github.com/railroadmedia/musora-content-services/commit/ccb1a9682c0d75a61743645434fb1ae5398ca509))
+* **MU2-712:** Add live_event_start_time and live_event_end_time on fetchUpcomingEvents ([0de3f8e](https://github.com/railroadmedia/musora-content-services/commit/0de3f8ea68a2a8d29d122f6adf2d893669d3bd25))
+
+
+### Bug Fixes
+
+* Duplicate practice per day in cache ([d44e0f6](https://github.com/railroadmedia/musora-content-services/commit/d44e0f6a384e78b5d515bcafc99cba30b24a535d))
+* **MU2-693:** Fix cache(data versioning) on user practices ([ddc0d3b](https://github.com/railroadmedia/musora-content-services/commit/ddc0d3b3bd180c0f51241112ce7ba2094ff71c8c))
+* User practice cache generation after one practice is restored ([dfb9e27](https://github.com/railroadmedia/musora-content-services/commit/dfb9e271e9efcb18b1d866935e0eb4acb7317b4b))
+
 ## [2.10.0](https://github.com/railroadmedia/musora-content-services/compare/v2.9.5...v2.10.0) (2025-06-23)
 
 
