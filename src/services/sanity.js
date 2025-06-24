@@ -384,7 +384,7 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         "type": _type,
         web_url_path,
         "permission_id": permission[]->railcontent_id,
-        event_calendar_unique_key`
+        addevent_unique_key`
   const query = buildRawQuery(
     `_type in ${typesString} && brand == '${brand}' && published_on > '${now}' && status == 'scheduled'`,
     fields,
