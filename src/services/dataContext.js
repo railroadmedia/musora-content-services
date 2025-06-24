@@ -31,9 +31,39 @@ export async function verifyLocalDataContext(dataVersionKey, currentVersion) {
   }
 }
 
+export async function clearAllDataContexts() {
+  return await DataContext.clearAll()
+}
+
 export class DataContext {
   context = null
   dataPromise = null
+
+  /**
+   * Static method to clear all DataContext instances from localStorage
+   */
+  static async clearAll() {
+    this.verifyConfig()
+
+    const keys = []
+    for (let i = 0; i < cache.length; i++) {
+      keys.push(cache.key(i))
+    }
+
+    const dataContextKeys = keys.filter(key => key.startsWith('dataContext_'))
+
+    if (globalConfig.isMA) {
+      for (const key of dataContextKeys) {
+        await cache.removeItem(key)
+        await cache.removeItem(key + '_lastUpdated')
+      }
+    } else {
+      dataContextKeys.forEach(key => {
+        cache.removeItem(key)
+        cache.removeItem(key + '_lastUpdated')
+      })
+    }
+  }
 
   constructor(dataVersionKey, fetchDataFunction) {
     this.dataVersionKey = dataVersionKey
@@ -72,7 +102,7 @@ export class DataContext {
 
   async ensureLocalContextLoaded() {
     if (this.context) return
-    this.verifyConfig()
+    this.constructor.verifyConfig()
     let localData = globalConfig.isMA
       ? await cache.getItem(this.localStorageKey)
       : cache.getItem(this.localStorageKey)
@@ -81,7 +111,7 @@ export class DataContext {
     }
   }
 
-  verifyConfig() {
+  static verifyConfig() {
     if (!cache) {
       cache = globalConfig.localStorage
       if (!cache)

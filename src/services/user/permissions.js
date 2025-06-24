@@ -1,7 +1,7 @@
 /**
  * @module Permissions
  */
-import { setLastUpdatedTime, wasLastUpdateOlderThanXSeconds } from '../../lib/lastUpdated.js'
+import { setLastUpdatedTime, clearLastUpdatedTime, wasLastUpdateOlderThanXSeconds } from '../../lib/lastUpdated.js'
 import { fetchUserPermissionsData } from '../railcontent.js'
 import './types.js'
 
@@ -33,6 +33,7 @@ export async function fetchUserPermissions() {
  *
  * @returns {Promise<void>}
  */
-export async function reset() {
+export async function resetUserPermissions() {
   userPermissionsPromise = null
+  clearLastUpdatedTime(lastUpdatedKey)
 }
