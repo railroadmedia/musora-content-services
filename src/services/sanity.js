@@ -1343,13 +1343,13 @@ export async function fetchLessonContent(railContentId) {
  * @returns {Promise<Array<Object>>}
  */
 export async function fetchRelatedRecommendedContent(railContentId, brand, count = 10) {
-  const recommendedItems = await fetchSimilarItems(railContentId, brand, count)
+  const recommendedItems = null // await fetchSimilarItems(railContentId, brand, count)
   if (recommendedItems && recommendedItems.length > 0) {
     return fetchByRailContentIds(recommendedItems)
   }
 
-  return await fetchRelatedLessons(railContentId, brand).then((relatedLessons) =>
-    relatedLessons.splice(0, count)
+  return await fetchRelatedLessons(railContentId, brand).then((result) =>
+    result.related_lessons?.splice(0, count)
   )
 }
 
@@ -1454,7 +1454,7 @@ export async function fetchRelatedLessons(railContentId, brand) {
   let result = await fetchSanity(query, false)
 
   //there's no way in sanity to retrieve the index of an array, so we must calculate after fetch
-  if (result['for-calculations']['parents-list']) {
+  if (result['for-calculations'] && result['for-calculations']['parents-list']) {
     const calc = result['for-calculations']
     const parentCount = calc['parents-list'].length
     const currentParent = calc['parents-list'].indexOf(result['parent_id']) + 1
