@@ -7,7 +7,6 @@ app front ends.
 
 ## Setup
 To set up the Musora Content Services project for local development, follow these steps:
-- Pull the latest railenvironment `php-8-3-upgrade` branch changes
 - In the railenvironment directory, start up the container with the `./rrr.sh` command
 - Run `r setup musora-content-services`
 - Run `npm install --save-dev jest`
