@@ -1504,6 +1504,7 @@ export async function fetchPackAll(railcontentId, type = 'pack') {
 }
 
 export async function fetchLiveEvent(brand, forcedContentId = null) {
+  const LIVE_EXTRA_MINUTES = 30;
   //calendarIDs taken from addevent.php
   // TODO import instructor calendars to Sanity
   let defaultCalendarID = ''
@@ -1525,8 +1526,9 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
   }
   let startDateTemp = new Date()
   let endDateTemp = new Date()
-  startDateTemp = new Date(startDateTemp.setMinutes(startDateTemp.getMinutes() + 15))
-  endDateTemp = new Date(endDateTemp.setMinutes(endDateTemp.getMinutes() - 15))
+ 
+  startDateTemp = new Date(startDateTemp.setMinutes(startDateTemp.getMinutes() + LIVE_EXTRA_MINUTES))
+  endDateTemp = new Date(endDateTemp.setMinutes(endDateTemp.getMinutes() - LIVE_EXTRA_MINUTES))
 
   // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
   // this has some +- on times
