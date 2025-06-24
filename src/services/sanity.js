@@ -888,11 +888,11 @@ async function getProgressFilter(progress, progressIds) {
       return `&& !(railcontent_id in [${ids.join(',')}])`
     }
     case 'recent': {
-      const ids = await getAllStartedOrCompleted()
+      const ids = progressIds !== undefined ? progressIds : await getAllStartedOrCompleted()
       return `&& (railcontent_id in [${ids.join(',')}])`
     }
     case 'incomplete': {
-      const ids = await getAllStarted()
+      const ids = progressIds !== undefined ? progressIds :await getAllStarted()
       return `&& railcontent_id in [${ids.join(',')}]`
     }
     default:
@@ -2187,12 +2187,12 @@ async function buildQuery(
 function buildEntityAndTotalQuery(
   filter = '',
   fields = '...',
-  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false }
+  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false, withoutPagination = false }
 ) {
-  const sortString = sortOrder ? `order(${sortOrder})` : ''
-  const countString = isSingle ? '[0...1]' : `[${start}...${end}]`
+  const sortString = sortOrder ? ` | order(${sortOrder})` : ''
+  const countString = isSingle ? '[0...1]' : (withoutPagination ? ``: `[${start}...${end}]`)
   const query = `{
-      "entity": *[${filter}] | ${sortString}${countString}
+      "entity": *[${filter}]  ${sortString}${countString}
       {
         ${fields}
       },
@@ -2311,16 +2311,31 @@ export async function fetchTabData(
 ) {
   const start = (page - 1) * limit
   const end = start + limit
-
+  let withoutPagination = false
   // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
   const includedFieldsFilter =
     includedFields.length > 0 ? filtersToGroq(includedFields, [], pageName) : ''
 
+  let sortOrder = getSortOrder(sort, brand, '')
+
+  switch (progress) {
+    case 'recent':
+      progressIds = await getAllStartedOrCompleted({ brand, onlyIds: true });
+      sortOrder = null;
+      withoutPagination = true;
+      break;
+    case 'incomplete':
+      progressIds = await getAllStarted();
+      sortOrder = null;
+      break;
+    case 'completed':
+      progressIds = await getAllCompleted();
+      sortOrder = null;
+      break;
+  }
+
   // limits the results to supplied progressIds for started & completed filters
   const progressFilter = await getProgressFilter(progress, progressIds)
-
-  // Determine the sort order
-  const sortOrder = getSortOrder(sort, brand, '')
 
   let fields = DEFAULT_FIELDS
   let fieldsString = fields.join(',')
@@ -2348,9 +2363,23 @@ export async function fetchTabData(
     sortOrder: sortOrder,
     start: start,
     end: end,
+    withoutPagination: withoutPagination,
   })
 
-  return fetchSanity(query, true)
+  let results = await fetchSanity(query, true);
+
+  if (['recent', 'incomplete', 'completed'].includes(progress) && results.entity.length > 1) {
+    const orderMap = new Map(progressIds.map((id, index) => [id, index]))
+    results.entity = results.entity
+      .sort((a, b) => {
+        const aIdx = orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+        const bIdx = orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+        return aIdx - bIdx || new Date(b.published_on) - new Date(a.published_on);
+      })
+      .slice(start, end);
+  }
+
+  return results;
 }
 
 export async function fetchRecent(

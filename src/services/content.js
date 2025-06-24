@@ -19,7 +19,7 @@ import {recommendations} from "./recommendations";
 
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
-  let recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent' });
+  let recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent', limit: 10 });
 
   let contentRows = await getContentRows(brand, pageName);
   contentRows = Array.isArray(contentRows) ? contentRows : [];
