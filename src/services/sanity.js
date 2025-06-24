@@ -512,7 +512,7 @@ export async function fetchByRailContentId(id, contentType) {
  *   .then(contents => console.log(contents))
  *   .catch(error => console.error(error));
  */
-export async function fetchByRailContentIds(ids, contentType = undefined, brand= undefined) {
+export async function fetchByRailContentIds(ids, contentType = undefined, brand = undefined) {
   if (!ids) {
     return []
   }
@@ -1320,7 +1320,7 @@ export async function fetchLessonContent(railContentId) {
   })
   const chapterProcess = (result) => {
     const now = getSanityDate(new Date(), false)
-    if(result.live_event_start_time && result.live_event_start_time){
+    if (result.live_event_start_time && result.live_event_end_time) {
       result.isLive = result.live_event_start_time <= now && result.live_event_end_time >= now
     }
     const chapters = result.chapters ?? []
@@ -1336,15 +1336,23 @@ export async function fetchLessonContent(railContentId) {
 }
 
 /**
+ * Returns a list of recommended content based on the provided railContentId.
+ * If no recommendations found in recsys, falls back to fetching related lessons.
  *
  * @param railContentId
  * @param brand
  * @param count
- * @returns {Promise<Array<Object>|null>}
+ * @returns {Promise<Array<Object>>}
  */
 export async function fetchRelatedRecommendedContent(railContentId, brand, count = 10) {
   const recommendedItems = await fetchSimilarItems(railContentId, brand, count)
-  return fetchByRailContentIds(recommendedItems)
+  if (recommendedItems && recommendedItems.length > 0) {
+    return fetchByRailContentIds(recommendedItems)
+  }
+
+  return await fetchRelatedLessons(railContentId, brand).then((result) =>
+    result.related_lessons?.splice(0, count)
+  )
 }
 
 /**
@@ -1414,18 +1422,20 @@ async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, cou
  */
 export async function fetchRelatedLessons(railContentId, brand) {
   const filterSameTypeAndSortOrder = await new FilterBuilder(
-    `_type==^._type &&  _type in ${JSON.stringify(typeWithSortOrder)} && brand == "${brand}" && railcontent_id !=${railContentId}`,
+    `_type==^._type &&  _type in ${JSON.stringify(typeWithSortOrder)} && brand == "${brand}" && railcontent_id !=${railContentId}`
   ).buildFilter()
   const filterSameType = await new FilterBuilder(
-    `_type==^._type && !(_type in ${JSON.stringify(typeWithSortOrder)}) && !(defined(parent_type)) && brand == "${brand}" && railcontent_id !=${railContentId}`,
+    `_type==^._type && !(_type in ${JSON.stringify(typeWithSortOrder)}) && !(defined(parent_type)) && brand == "${brand}" && railcontent_id !=${railContentId}`
   ).buildFilter()
   const filterSongSameArtist = await new FilterBuilder(
-    `_type=="song" && _type==^._type && brand == "${brand}" && references(^.artist->_id) && railcontent_id !=${railContentId}`,
+    `_type=="song" && _type==^._type && brand == "${brand}" && references(^.artist->_id) && railcontent_id !=${railContentId}`
   ).buildFilter()
   const filterSongSameGenre = await new FilterBuilder(
-    `_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}`,
+    `_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}`
   ).buildFilter()
-  const filterNeighbouringSiblings = await new FilterBuilder(`references(^._id)`, {pullFutureContent: true}).buildFilter()
+  const filterNeighbouringSiblings = await new FilterBuilder(`references(^._id)`, {
+    pullFutureContent: true,
+  }).buildFilter()
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
   const queryFieldsWithSort = queryFields + ', sort'
@@ -1446,15 +1456,15 @@ export async function fetchRelatedLessons(railContentId, brand) {
   let result = await fetchSanity(query, false)
 
   //there's no way in sanity to retrieve the index of an array, so we must calculate after fetch
-  if (result['for-calculations']['parents-list']) {
+  if (result['for-calculations'] && result['for-calculations']['parents-list']) {
     const calc = result['for-calculations']
     const parentCount = calc['parents-list'].length
-    const currentParent = (calc['parents-list'].indexOf(result['parent_id']) + 1)
+    const currentParent = calc['parents-list'].indexOf(result['parent_id']) + 1
     const siblingCount = calc['siblings-list'].length
-    const currentSibling = (calc['siblings-list'].indexOf(result['railcontent_id']) + 1)
+    const currentSibling = calc['siblings-list'].indexOf(result['railcontent_id']) + 1
 
     delete result['for-calculations']
-    result = {...result, parentCount, currentParent, siblingCount, currentSibling}
+    result = { ...result, parentCount, currentParent, siblingCount, currentSibling }
     return result
   } else {
     delete result['for-calculations']
@@ -1504,7 +1514,7 @@ export async function fetchPackAll(railcontentId, type = 'pack') {
 }
 
 export async function fetchLiveEvent(brand, forcedContentId = null) {
-  const LIVE_EXTRA_MINUTES = 30;
+  const LIVE_EXTRA_MINUTES = 30
   //calendarIDs taken from addevent.php
   // TODO import instructor calendars to Sanity
   let defaultCalendarID = ''
@@ -1526,8 +1536,10 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
   }
   let startDateTemp = new Date()
   let endDateTemp = new Date()
- 
-  startDateTemp = new Date(startDateTemp.setMinutes(startDateTemp.getMinutes() + LIVE_EXTRA_MINUTES))
+
+  startDateTemp = new Date(
+    startDateTemp.setMinutes(startDateTemp.getMinutes() + LIVE_EXTRA_MINUTES)
+  )
   endDateTemp = new Date(endDateTemp.setMinutes(endDateTemp.getMinutes() - LIVE_EXTRA_MINUTES))
 
   // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
@@ -2394,17 +2406,13 @@ export async function fetchScheduledAndNewReleases(
   return fetchSanity(query, true)
 }
 
-export async function fetchShows(
-  brand,
-  type,
-  sort = 'sort'
-) {
+export async function fetchShows(brand, type, sort = 'sort') {
   const sortOrder = getSortOrder(sort, brand)
   const filter = `_type == '${type}'  && brand == '${brand}'`
   const filterParams = {}
 
   const query = await buildQuery(filter, filterParams, getFieldsForContentType(type), {
-    sortOrder: sortOrder
+    sortOrder: sortOrder,
   })
   return fetchSanity(query, true)
 }
