@@ -755,7 +755,7 @@ export async function reportComment(commentId, issue) {
   return await postDataHandler(url, data)
 }
 
-export async function fetchUserPractices({ currentVersion, userId } = {}) {
+export async function fetchUserPractices(currentVersion = 0, { userId } = {}) {
   const params = new URLSearchParams();
   if (userId) params.append('user_id', userId);
   const query = params.toString() ? `?${params.toString()}` : '';
@@ -763,6 +763,9 @@ export async function fetchUserPractices({ currentVersion, userId } = {}) {
   const response = await fetchDataHandler(url, currentVersion);
   const { data, version } = response;
   const userPractices = data;
+  if(!userPractices ) {
+    return { data: { practices: {} }, version };
+  }
 
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
