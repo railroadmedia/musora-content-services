@@ -1345,7 +1345,7 @@ export async function fetchLessonContent(railContentId) {
  * @returns {Promise<Array<Object>>}
  */
 export async function fetchRelatedRecommendedContent(railContentId, brand, count = 10) {
-  const recommendedItems = null // await fetchSimilarItems(railContentId, brand, count)
+  const recommendedItems = await fetchSimilarItems(railContentId, brand, count)
   if (recommendedItems && recommendedItems.length > 0) {
     return fetchByRailContentIds(recommendedItems)
   }
@@ -1514,7 +1514,7 @@ export async function fetchPackAll(railcontentId, type = 'pack') {
 }
 
 export async function fetchLiveEvent(brand, forcedContentId = null) {
-  const LIVE_EXTRA_MINUTES = 30;
+  const LIVE_EXTRA_MINUTES = 30
   //calendarIDs taken from addevent.php
   // TODO import instructor calendars to Sanity
   let defaultCalendarID = ''
@@ -1536,8 +1536,10 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
   }
   let startDateTemp = new Date()
   let endDateTemp = new Date()
- 
-  startDateTemp = new Date(startDateTemp.setMinutes(startDateTemp.getMinutes() + LIVE_EXTRA_MINUTES))
+
+  startDateTemp = new Date(
+    startDateTemp.setMinutes(startDateTemp.getMinutes() + LIVE_EXTRA_MINUTES)
+  )
   endDateTemp = new Date(endDateTemp.setMinutes(endDateTemp.getMinutes() - LIVE_EXTRA_MINUTES))
 
   // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
