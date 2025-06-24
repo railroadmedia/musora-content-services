@@ -1,4 +1,4 @@
-import { globalConfig } from '../services/config'
+import LocalCache from '../infrastructure/local-cache'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -16,7 +16,7 @@ const excludeFromGeneratedIndex = ['wasLastUpdateOlderThanXSeconds', 'setLastUpd
  * @returns {boolean} - True if the last update was older than X seconds, false otherwise.
  */
 export function wasLastUpdateOlderThanXSeconds(seconds, key) {
-  let lastUpdated = globalConfig.localStorage.getItem(key)
+  let lastUpdated = new LocalCache().getItem(key)
   if (!lastUpdated) return false
   const verifyServerTime = seconds * 1000
   return new Date().getTime() - lastUpdated > verifyServerTime
@@ -30,7 +30,7 @@ export function wasLastUpdateOlderThanXSeconds(seconds, key) {
  * @returns {void}
  */
 export function setLastUpdatedTime(key) {
-  globalConfig.localStorage.setItem(key, new Date().getTime()?.toString())
+  new LocalCache().setItem(key, new Date().getTime()?.toString())
 }
 
 /**
@@ -41,5 +41,5 @@ export function setLastUpdatedTime(key) {
  * @returns {void}
  */
 export function clearLastUpdatedTime(key) {
-  globalConfig.localStorage.removeItem(key)
+  new LocalCache().removeItem(key)
 }

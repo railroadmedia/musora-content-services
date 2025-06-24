@@ -1,4 +1,4 @@
-import { globalConfig } from './config.js'
+import LocalCache from '../infrastructure/local-cache'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -11,8 +11,6 @@ const excludeFromGeneratedIndex = []
 export const ContentLikesVersionKey = 0
 export const ContentProgressVersionKey = 1
 export const UserActivityVersionKey = 2
-
-let cache = null
 
 /**
  * Verify current cached data is on the correct version
@@ -36,6 +34,8 @@ export async function clearAllDataContexts() {
 }
 
 export class DataContext {
+  static PREFIX = 'dataContext_'
+
   context = null
   dataPromise = null
 
@@ -43,33 +43,18 @@ export class DataContext {
    * Static method to clear all DataContext instances from localStorage
    */
   static async clearAll() {
-    this.verifyConfig()
-
-    const keys = []
-    for (let i = 0; i < cache.length; i++) {
-      keys.push(cache.key(i))
-    }
-
-    const dataContextKeys = keys.filter(key => key.startsWith('dataContext_'))
-
-    if (globalConfig.isMA) {
-      for (const key of dataContextKeys) {
-        await cache.removeItem(key)
-        await cache.removeItem(key + '_lastUpdated')
-      }
-    } else {
-      dataContextKeys.forEach(key => {
-        cache.removeItem(key)
-        cache.removeItem(key + '_lastUpdated')
-      })
-    }
+    const cache = new LocalCache()
+    cache.getKeys(this.PREFIX).then(keys => {
+      keys.forEach(key => cache.removeItem(key))
+    })
   }
 
   constructor(dataVersionKey, fetchDataFunction) {
     this.dataVersionKey = dataVersionKey
     this.fetchDataFunction = fetchDataFunction
-    this.localStorageKey = `dataContext_${this.dataVersionKey.toString()}`
-    this.localStorageLastUpdatedKey = `dataContext_${this.dataVersionKey.toString()}_lastUpdated`
+    this.localStorageKey = `${this.constructor.PREFIX}${this.dataVersionKey.toString()}`
+    this.localStorageLastUpdatedKey = `${this.constructor.PREFIX}${this.dataVersionKey.toString()}_lastUpdated`
+    this.cache = new LocalCache()
   }
 
   async getData() {
@@ -88,7 +73,7 @@ export class DataContext {
       let data = await this.fetchData(version)
       if (data?.version !== 'No Change') {
         this.context = data
-        cache.setItem(this.localStorageKey, JSON.stringify(data))
+        this.cache.setItem(this.localStorageKey, JSON.stringify(data))
       }
       this.setLastUpdatedTime()
     }
@@ -102,29 +87,14 @@ export class DataContext {
 
   async ensureLocalContextLoaded() {
     if (this.context) return
-    this.constructor.verifyConfig()
-    let localData = globalConfig.isMA
-      ? await cache.getItem(this.localStorageKey)
-      : cache.getItem(this.localStorageKey)
+    let localData = await this.cache.getItem(this.localStorageKey)
     if (localData) {
       this.context = JSON.parse(localData)
     }
   }
 
-  static verifyConfig() {
-    if (!cache) {
-      cache = globalConfig.localStorage
-      if (!cache)
-        throw new Error(
-          'dataContext: LocalStorage cache not configured in musora content services initializeService.'
-        )
-    }
-  }
-
   async shouldVerifyServerVersions() {
-    let lastUpdated = globalConfig.isMA
-      ? await cache.getItem(this.localStorageLastUpdatedKey)
-      : cache.getItem(this.localStorageLastUpdatedKey)
+    let lastUpdated = await this.cache.getItem(this.localStorageLastUpdatedKey)
     if (!lastUpdated) return true
     const verifyServerTime = 10000 //10 s
     return new Date().getTime() - lastUpdated > verifyServerTime
@@ -133,8 +103,8 @@ export class DataContext {
   clearCache() {
     this.clearContext()
     if (cache) {
-      cache.removeItem(this.localStorageKey)
-      cache.removeItem(this.localStorageLastUpdatedKey)
+      this.cache.removeItem(this.localStorageKey)
+      this.cache.removeItem(this.localStorageLastUpdatedKey)
     }
   }
 
@@ -143,7 +113,7 @@ export class DataContext {
   }
 
   setLastUpdatedTime() {
-    cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime().toString())
+    this.cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime().toString())
   }
 
   async update(localUpdateFunction, serverUpdateFunction) {
@@ -152,7 +122,7 @@ export class DataContext {
       await localUpdateFunction(this.context)
       if (this.context) this.context.version++
       let data = JSON.stringify(this.context)
-      cache.setItem(this.localStorageKey, data)
+      this.cache.setItem(this.localStorageKey, data)
       this.setLastUpdatedTime()
     }
     const updatePromise = serverUpdateFunction()
@@ -173,7 +143,7 @@ export class DataContext {
       const res = await localUpdateFunction(this.context)
       if (this.context) this.context.version++
       let data = JSON.stringify(this.context)
-      cache.setItem(this.localStorageKey, data)
+      this.cache.setItem(this.localStorageKey, data)
       this.setLastUpdatedTime()
     }
   }
