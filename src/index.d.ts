@@ -6,6 +6,12 @@ import {
 } from './services/config.js';
 
 import {
+	enrollUserInGuidedCourse,
+	fetchEnrollmentPageMetadata,
+	unEnrollUserInGuidedCourse
+} from './services/content-org/guided-courses.js';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -308,6 +314,7 @@ declare module 'musora-content-services' {
 		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
+		enrollUserInGuidedCourse,
 		extractSanityUrl,
 		fetchAll,
 		fetchAllCompletedStates,
@@ -337,6 +344,7 @@ declare module 'musora-content-services' {
 		fetchContentInProgress,
 		fetchContentPageUserData,
 		fetchContentProgress,
+		fetchEnrollmentPageMetadata,
 		fetchFoundation,
 		fetchGenreLessons,
 		fetchHandler,
@@ -479,6 +487,7 @@ declare module 'musora-content-services' {
 		restoreUserPractice,
 		setStudentViewForUser,
 		togglePlaylistPrivate,
+		unEnrollUserInGuidedCourse,
 		unassignModeratorToComment,
 		unblockUser,
 		undeletePlaylist,
