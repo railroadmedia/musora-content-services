@@ -63,6 +63,7 @@ import {
 } from './services/contentProgress.js';
 
 import {
+	clearAllDataContexts,
 	verifyLocalDataContext
 } from './services/dataContext.js';
 
@@ -245,7 +246,7 @@ import {
 
 import {
 	fetchUserPermissions,
-	reset
+	resetUserPermissions
 } from './services/user/permissions.js';
 
 import {
@@ -291,6 +292,7 @@ export {
 	blockUser,
 	buildImageSRC,
 	calculateLongestStreaks,
+	clearAllDataContexts,
 	closeComment,
 	contentStatusCompleted,
 	contentStatusReset,
@@ -471,7 +473,7 @@ export {
 	replyToComment,
 	reportComment,
 	reportPlaylist,
-	reset,
+	resetUserPermissions,
 	restoreComment,
 	restoreItemFromPlaylist,
 	restorePracticeSession,

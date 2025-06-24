@@ -32,3 +32,14 @@ export function wasLastUpdateOlderThanXSeconds(seconds, key) {
 export function setLastUpdatedTime(key) {
   globalConfig.localStorage.setItem(key, new Date().getTime()?.toString())
 }
+
+/**
+ * Clears the last updated time.
+ *
+ * @param {string} key - The key to clear the last updated time.
+ *
+ * @returns {void}
+ */
+export function clearLastUpdatedTime(key) {
+  globalConfig.localStorage.removeItem(key)
+}
