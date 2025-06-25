@@ -44,9 +44,8 @@ export class DataContext {
    */
   static async clearAll() {
     const cache = new LocalCache()
-    cache.getKeys(this.PREFIX).then(keys => {
-      keys.forEach(key => cache.removeItem(key))
-    })
+    const keys = await cache.getKeys(DataContext.PREFIX)
+    await Promise.all(keys.map(key => cache.removeItem(key)))
   }
 
   constructor(dataVersionKey, fetchDataFunction) {
