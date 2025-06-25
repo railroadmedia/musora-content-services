@@ -1,9 +1,9 @@
 import { ILocalCache } from './index'
 
 export default class MobileAppCache implements ILocalCache {
-  private storage: any;
+  private storage;
 
-  constructor(storage: any) {
+  constructor(storage) {
     this.storage = storage;
   }
 
