@@ -19,11 +19,11 @@ export default class WebCache implements ILocalCache {
     this.storage.removeItem(key);
   }
 
-  async getKeys(startsWith: string): Promise<string[]> {
+  async getKeys(startsWith?: string): Promise<string[]> {
     const keys: string[] = [];
     for (let i = 0; i < this.storage.length; i++) {
       const key = this.storage.key(i);
-      if (key && key.startsWith(startsWith)) {
+      if (key && (!startsWith || key.startsWith(startsWith))) {
         keys.push(key);
       }
     }

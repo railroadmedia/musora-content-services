@@ -29,8 +29,8 @@ export function wasLastUpdateOlderThanXSeconds(seconds, key) {
  *
  * @returns {void}
  */
-export function setLastUpdatedTime(key) {
-  new LocalCache().setItem(key, new Date().getTime()?.toString())
+export async function setLastUpdatedTime(key) {
+  await new LocalCache().setItem(key, new Date().getTime()?.toString())
 }
 
 /**
@@ -40,6 +40,6 @@ export function setLastUpdatedTime(key) {
  *
  * @returns {void}
  */
-export function clearLastUpdatedTime(key) {
-  new LocalCache().removeItem(key)
+export async function clearLastUpdatedTime(key) {
+  await new LocalCache().removeItem(key)
 }
