@@ -59,11 +59,3 @@ jobs:
             echo "ℹ️ No changes detected in docs"
             echo "changes=false" >> $GITHUB_OUTPUT
           fi
-
-      - name: Trigger Pages Build
-        if: steps.commit.outputs.changes == 'true'
-        run: |
-          curl -X POST \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ github.repository }}/pages/builds
