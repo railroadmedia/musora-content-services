@@ -7,22 +7,68 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout main branch
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-      
+          ref: main
+          path: main-content
+
+      - name: Checkout project-v2 branch
+        uses: actions/checkout@v4
+        with:
+          ref: project-v2
+          path: v2-content
+
       - name: Setup deployment structure
         run: |
           mkdir -p deploy/v1 deploy/v2
           
-          # Copy main branch content to v1
-          git checkout main
-          cp -r . deploy/v1/
+          # Copy main branch content to v1 (exclude .git)
+          # rsync -av --exclude='.git' main-content/ deploy/v1/
           
-          # Copy project-v2 branch content to v2  
-          git checkout project-v2
-          cp -r . deploy/v2/
+          # Copy project-v2 branch content to v2 (exclude .git)
+          # rsync -av --exclude='.git' v2-content/ deploy/v2/
           
+          # Create landing page
+          cat > deploy/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Project Versions</title>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 50px; text-align: center; }
+                  .container { max-width: 600px; margin: 0 auto; }
+                  .version-link { 
+                      display: inline-block; 
+                      margin: 20px; 
+                      padding: 20px 40px; 
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      color: white; 
+                      text-decoration: none; 
+                      border-radius: 10px; 
+                      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                      transition: transform 0.3s ease;
+                  }
+                  .version-link:hover { 
+                      transform: translateY(-5px);
+                      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+                  }
+                  h1 { color: #333; margin-bottom: 30px; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>🚀 Project Versions</h1>
+                  <p>Choose which version you'd like to explore:</p>
+                  <div>
+                      <a href="v1/" class="version-link">📦 Version 1<br><small>Stable Release</small></a>
+                      <a href="v2/" class="version-link">🔧 Version 2<br><small>Development</small></a>
+                  </div>
+              </div>
+          </body>
+          </html>
+          EOF
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
