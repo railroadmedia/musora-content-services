@@ -25,7 +25,7 @@ export async function verifyLocalDataContext(dataVersionKey, currentVersion) {
   if (currentVersion !== tempContext.version()) {
     tempContext.clearCache()
   } else {
-    tempContext.setLastUpdatedTime()
+    await tempContext.setLastUpdatedTime()
   }
 }
 
@@ -74,7 +74,7 @@ export class DataContext {
         this.context = data
         this.cache.setItem(this.localStorageKey, JSON.stringify(data))
       }
-      this.setLastUpdatedTime()
+      await this.setLastUpdatedTime()
     }
     this.dataPromise = null
     return this.context.data
@@ -99,11 +99,11 @@ export class DataContext {
     return new Date().getTime() - lastUpdated > verifyServerTime
   }
 
-  clearCache() {
+  async clearCache() {
     this.clearContext()
     if (this.cache) {
-      this.cache.removeItem(this.localStorageKey)
-      this.cache.removeItem(this.localStorageLastUpdatedKey)
+      await this.cache.removeItem(this.localStorageKey)
+      await this.cache.removeItem(this.localStorageLastUpdatedKey)
     }
   }
 
@@ -111,8 +111,8 @@ export class DataContext {
     this.context = null
   }
 
-  setLastUpdatedTime() {
-    this.cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime().toString())
+  async setLastUpdatedTime() {
+    await this.cache.setItem(this.localStorageLastUpdatedKey, new Date().getTime().toString())
   }
 
   async update(localUpdateFunction, serverUpdateFunction) {
@@ -122,12 +122,12 @@ export class DataContext {
       if (this.context) this.context.version++
       let data = JSON.stringify(this.context)
       this.cache.setItem(this.localStorageKey, data)
-      this.setLastUpdatedTime()
+      await this.setLastUpdatedTime()
     }
     const updatePromise = serverUpdateFunction()
     updatePromise.then((response) => {
       if (response?.version !== this.version()) {
-        this.clearCache()
+        return this.clearCache()
       }
     })
     return updatePromise
@@ -143,7 +143,7 @@ export class DataContext {
       if (this.context) this.context.version++
       let data = JSON.stringify(this.context)
       this.cache.setItem(this.localStorageKey, data)
-      this.setLastUpdatedTime()
+      await this.setLastUpdatedTime()
     }
   }
 }

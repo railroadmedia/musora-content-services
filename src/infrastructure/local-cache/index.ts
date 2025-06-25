@@ -39,7 +39,7 @@ export default class LocalCache implements ILocalCache {
     return this.createCacheImplementation().removeItem(key);
   }
 
-  async getKeys(startsWith: string) {
+  async getKeys(startsWith?: string) {
     return this.createCacheImplementation().getKeys(startsWith);
   }
 }
