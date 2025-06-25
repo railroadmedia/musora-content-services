@@ -110,6 +110,11 @@ import {
 } from './services/imageSRCVerify.js';
 
 import {
+	onSignInHandler,
+	onSignOutHandler
+} from './services/local-session.js';
+
+import {
 	assignModeratorToComment,
 	closeComment,
 	createComment,
@@ -490,6 +495,8 @@ declare module 'musora-content-services' {
 		markContentAsNotInterested,
 		markNotificationAsRead,
 		markNotificationAsUnread,
+		onSignInHandler,
+		onSignOutHandler,
 		openComment,
 		otherStats,
 		pauseLiveEventPolling,
