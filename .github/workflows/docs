@@ -1,0 +1,30 @@
+name: Deploy Both Versions
+on:
+  push:
+    branches: [main, project-v2]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Setup deployment structure
+        run: |
+          mkdir -p deploy/v1 deploy/v2
+          
+          # Copy main branch content to v1
+          git checkout main
+          cp -r . deploy/v1/
+          
+          # Copy project-v2 branch content to v2  
+          git checkout project-v2
+          cp -r . deploy/v2/
+          
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./deploy
