@@ -1,4 +1,4 @@
-name: Deploy Both Versions
+name: Deploy Pages
 on:
   push:
     branches: [main, project-v2]
