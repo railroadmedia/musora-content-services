@@ -66,7 +66,7 @@ To publish a new version to NPM run,
 To link this package to the MWP repo for local development run,  
 
 ```bash
-./link_mcs.sh 
+./link_mcs.sh
 ```
 
 If either of these commands fail due to permissions, 
