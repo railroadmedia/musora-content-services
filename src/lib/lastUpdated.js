@@ -15,8 +15,8 @@ const excludeFromGeneratedIndex = ['wasLastUpdateOlderThanXSeconds', 'setLastUpd
  *
  * @returns {boolean} - True if the last update was older than X seconds, false otherwise.
  */
-export function wasLastUpdateOlderThanXSeconds(seconds, key) {
-  let lastUpdated = new LocalCache().getItem(key)
+export async function wasLastUpdateOlderThanXSeconds(seconds, key) {
+  let lastUpdated = await new LocalCache().getItem(key)
   if (!lastUpdated) return false
   const verifyServerTime = seconds * 1000
   return new Date().getTime() - lastUpdated > verifyServerTime
