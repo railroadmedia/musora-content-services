@@ -59,6 +59,7 @@ import {
 	getProgressStateByIds,
 	getResumeTimeSeconds,
 	getResumeTimeSecondsByIds,
+	getStartedOrCompletedProgressOnly,
 	recordWatchSession
 } from './services/contentProgress.js';
 
@@ -418,6 +419,7 @@ export {
 	getResumeTimeSecondsByIds,
 	getScheduleContentRows,
 	getSortOrder,
+	getStartedOrCompletedProgressOnly,
 	getTabResults,
 	getTimeRemainingUntilLocal,
 	getUserMonthlyStats,
