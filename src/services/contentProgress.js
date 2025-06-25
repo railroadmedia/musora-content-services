@@ -164,7 +164,7 @@ export async function assignmentStatusCompleted(assignmentId, parentContentId) {
 }
 
 export async function contentStatusCompleted(contentId) {
-  await dataContext.update(
+  return await dataContext.update(
     async function (localContext) {
       let hierarchy = await fetchHierarchy(contentId)
       completeStatusInLocalContext(localContext, contentId, hierarchy)
@@ -327,7 +327,7 @@ function getMediaTypeId(mediaType, mediaCategory) {
     case 'practice_play-alongs':
       return 4
     case 'video_soundslice':
-      return 6  
+      return 6
     default:
       return 5
   }
