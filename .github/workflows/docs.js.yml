@@ -18,7 +18,7 @@ jobs:
         with:
           ref: main
           path: main-content
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PROJECT_V2_DOCS_TOKEN }}  #use separate token to trigger other actions
 
       - name: Copy docs from project-v2 to main
         run: |
