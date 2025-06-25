@@ -1,76 +1,59 @@
-name: Deploy Pages
+name: Sync V2 Docs to Main
 on:
   push:
-    branches: [main, project-v2]
+    branches: [project-v2]
+    paths: ['docs/**']  # Only run when docs folder changes
 
 jobs:
-  deploy:
+  sync-docs:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout project-v2 branch
+        uses: actions/checkout@v4
+        with:
+          ref: project-v2
+          path: project-v2-content
+
       - name: Checkout main branch
         uses: actions/checkout@v4
         with:
           ref: main
           path: main-content
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Checkout project-v2 branch
-        uses: actions/checkout@v4
-        with:
-          ref: project-v2
-          path: v2-content
-
-      - name: Setup deployment structure
+      - name: Copy docs from project-v2 to main
         run: |
-          mkdir -p deploy/v1 deploy/v2
+          # Create the target directory if it doesn't exist
+          mkdir -p main-content/docs/v2
           
-          # Copy main branch content to v1 (exclude .git)
-          # rsync -av --exclude='.git' main-content/ deploy/v1/
+          # Remove existing v2 docs to ensure clean copy
+          rm -rf main-content/docs/v2/*
           
-          # Copy project-v2 branch content to v2 (exclude .git)
-          # rsync -av --exclude='.git' v2-content/ deploy/v2/
-          
-          # Create landing page
-          cat > deploy/index.html << 'EOF'
-          <!DOCTYPE html>
-          <html>
-          <head>
-              <title>Project Versions</title>
-              <style>
-                  body { font-family: Arial, sans-serif; margin: 50px; text-align: center; }
-                  .container { max-width: 600px; margin: 0 auto; }
-                  .version-link { 
-                      display: inline-block; 
-                      margin: 20px; 
-                      padding: 20px 40px; 
-                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                      color: white; 
-                      text-decoration: none; 
-                      border-radius: 10px; 
-                      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                      transition: transform 0.3s ease;
-                  }
-                  .version-link:hover { 
-                      transform: translateY(-5px);
-                      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-                  }
-                  h1 { color: #333; margin-bottom: 30px; }
-              </style>
-          </head>
-          <body>
-              <div class="container">
-                  <h1>🚀 Project Versions</h1>
-                  <p>Choose which version you'd like to explore:</p>
-                  <div>
-                      <a href="v1/" class="version-link">📦 Version 1<br><small>Stable Release</small></a>
-                      <a href="v2/" class="version-link">🔧 Version 2<br><small>Development</small></a>
-                  </div>
-              </div>
-          </body>
-          </html>
-          EOF
+          # Copy docs from project-v2 to main/docs/v2
+          if [ -d "project-v2-content/docs" ]; then
+            cp -r project-v2-content/docs/* main-content/docs/v2/
+            echo "✅ Copied docs from project-v2 to main/docs/v2"
+          else
+            echo "⚠️ No docs folder found in project-v2 branch"
+            exit 1
+          fi
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./deploy
+      - name: Commit and push changes to main
+        run: |
+          cd main-content
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Check if there are any changes
+          if [ -n "$(git status --porcelain)" ]; then
+            git add docs/v2/
+            git commit -m "🔄 Auto-sync: Update v2 docs from project-v2 branch
+          
+            - Synced from project-v2/docs
+            - Triggered by commit: ${{ github.sha }}
+            - Date: $(date)"
+            git push
+            echo "✅ Successfully pushed updated docs to main branch"
+          else
+            echo "ℹ️ No changes detected in docs"
+          fi
