@@ -101,7 +101,7 @@ export class DataContext {
 
   clearCache() {
     this.clearContext()
-    if (cache) {
+    if (this.cache) {
       this.cache.removeItem(this.localStorageKey)
       this.cache.removeItem(this.localStorageLastUpdatedKey)
     }
