@@ -72,7 +72,7 @@ export class DataContext {
       let data = await this.fetchData(version)
       if (data?.version !== 'No Change') {
         this.context = data
-        this.cache.setItem(this.localStorageKey, JSON.stringify(data))
+        await this.cache.setItem(this.localStorageKey, JSON.stringify(data))
       }
       await this.setLastUpdatedTime()
     }
@@ -121,7 +121,7 @@ export class DataContext {
       await localUpdateFunction(this.context)
       if (this.context) this.context.version++
       let data = JSON.stringify(this.context)
-      this.cache.setItem(this.localStorageKey, data)
+      await this.cache.setItem(this.localStorageKey, data)
       await this.setLastUpdatedTime()
     }
     const updatePromise = serverUpdateFunction()
@@ -142,7 +142,7 @@ export class DataContext {
       const res = await localUpdateFunction(this.context)
       if (this.context) this.context.version++
       let data = JSON.stringify(this.context)
-      this.cache.setItem(this.localStorageKey, data)
+      await this.cache.setItem(this.localStorageKey, data)
       await this.setLastUpdatedTime()
     }
   }
