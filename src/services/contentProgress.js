@@ -118,7 +118,7 @@ export async function getAllStartedOrCompleted({ limit = null, onlyIds = true, b
       const isRelevantStatus =
         item[DATA_KEY_STATUS] === STATE_STARTED || item[DATA_KEY_STATUS] === STATE_COMPLETED
       const isRecent = item[DATA_KEY_LAST_UPDATED_TIME] >= oneMonthAgoInSeconds
-      const isCorrectBrand = !brand || item.b === brand
+      const isCorrectBrand = !brand || !item.b || item.b === brand
       const isNotExcluded = !excludedSet.has(id)
       return isRelevantStatus && isRecent && isCorrectBrand && isNotExcluded
     })
