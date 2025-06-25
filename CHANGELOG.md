@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.12.0](https://github.com/railroadmedia/musora-content-services/compare/v2.11.0...v2.12.0) (2025-06-25)
+
+
+### Features
+
+* **MU2-478:** simplified version of getAllStartedOrCompleted method ([b58b97b](https://github.com/railroadmedia/musora-content-services/commit/b58b97bcf95db7ad71019848dbf5e5b508adeeb8))
+
+
+### Bug Fixes
+
+* **MU2-608:** Sort recent lessons by user progress ([e966ffc](https://github.com/railroadmedia/musora-content-services/commit/e966ffcd87847ee6b72d35bed84967ee8fd1db44))
+* **MU2-730:** Pagination on fetchNotifications method ([37e95db](https://github.com/railroadmedia/musora-content-services/commit/37e95dbaacca06a1e408db8a5d6dead3dfb23550))
+* Pagination on fetchNotifications method ([9e613b9](https://github.com/railroadmedia/musora-content-services/commit/9e613b9227bb188814ebc2d8c084c18e115fbcc3))
+
 ### [2.11.1](https://github.com/railroadmedia/musora-content-services/compare/v2.11.0...v2.11.1) (2025-06-24)
 
 ## [2.11.0](https://github.com/railroadmedia/musora-content-services/compare/v2.10.0...v2.11.0) (2025-06-24)
