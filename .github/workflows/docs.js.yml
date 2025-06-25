@@ -2,6 +2,7 @@ name: Sync V2 Docs to Main
 on:
   push:
     branches: [project-v2]
+    paths: ['docs/**'] # Only run when docs folder changes
 
 jobs:
   sync-docs:
@@ -24,10 +25,10 @@ jobs:
         run: |
           # Create the target directory if it doesn't exist
           mkdir -p main-content/docs/v2
-          
+
           # Remove existing v2 docs to ensure clean copy
           rm -rf main-content/docs/v2/*
-          
+
           # Copy docs from project-v2 to main/docs/v2
           if [ -d "project-v2-content/docs" ]; then
             cp -r project-v2-content/docs/* main-content/docs/v2/
@@ -42,12 +43,12 @@ jobs:
           cd main-content
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          
+
           # Check if there are any changes
           if [ -n "$(git status --porcelain)" ]; then
             git add docs/v2/
             git commit -m "🔄 Auto-sync: Update v2 docs from project-v2 branch
-          
+
             - Synced from project-v2/docs
             - Triggered by commit: ${{ github.sha }}
             - Date: $(date)"
