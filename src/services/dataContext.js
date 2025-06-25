@@ -23,7 +23,7 @@ export async function verifyLocalDataContext(dataVersionKey, currentVersion) {
   await tempContext.ensureLocalContextLoaded()
 
   if (currentVersion !== tempContext.version()) {
-    tempContext.clearCache()
+    await tempContext.clearCache()
   } else {
     await tempContext.setLastUpdatedTime()
   }
