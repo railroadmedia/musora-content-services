@@ -23,13 +23,13 @@ const baseUrl = `/api/notifications`
  *   .then(notifications => console.log(notifications))
  *   .catch(error => console.error(error));
  */
-export async function fetchNotifications({ brand = null, limit = 10, onlyUnread = false } = {}) {
+export async function fetchNotifications({ brand = null, limit = 10, onlyUnread = false, page = 1 } = {}) {
   if (!brand) {
     throw new Error('brand is required')
   }
 
   const unreadParam = onlyUnread ? '&unread=1' : ''
-  const url = `${baseUrl}/v1?brand=${brand}${unreadParam}&limit=${limit}`
+  const url = `${baseUrl}/v1?brand=${brand}${unreadParam}&limit=${limit}&page=${page}`
   return fetchHandler(url, 'get')
 }
 
