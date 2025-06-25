@@ -98,6 +98,11 @@ import {
 } from './services/imageSRCVerify.js';
 
 import {
+	onSignInHandler,
+	onSignOutHandler
+} from './services/local-session.js';
+
+import {
 	assignModeratorToComment,
 	closeComment,
 	createComment,
@@ -447,6 +452,8 @@ export {
 	markContentAsNotInterested,
 	markNotificationAsRead,
 	markNotificationAsUnread,
+	onSignInHandler,
+	onSignOutHandler,
 	openComment,
 	otherStats,
 	pinProgressRow,
