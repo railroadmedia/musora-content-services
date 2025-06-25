@@ -20,6 +20,7 @@ export default class MobileAppCache implements ILocalCache {
   }
 
   async getKeys(startsWith?: string) {
-    return this.storage.getAllKeys().filter(key => !startsWith || key.startsWith(startsWith))
+    const allKeys = await this.storage.getAllKeys();
+    return allKeys.filter(key => !startsWith || key.startsWith(startsWith));
   }
 }
