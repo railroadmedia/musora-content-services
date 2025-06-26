@@ -70,6 +70,7 @@ import {
 } from './services/contentProgress.js';
 
 import {
+	clearAllDataContexts,
 	verifyLocalDataContext
 } from './services/dataContext.js';
 
@@ -101,6 +102,11 @@ import {
 	isBucketUrl,
 	verifyImageSRC
 } from './services/imageSRCVerify.js';
+
+import {
+	onSignInHandler,
+	onSignOutHandler
+} from './services/local-session.js';
 
 import {
 	assignModeratorToComment,
@@ -252,7 +258,7 @@ import {
 
 import {
 	fetchUserPermissions,
-	reset
+	resetUserPermissions
 } from './services/user/permissions.js';
 
 import {
@@ -299,6 +305,7 @@ declare module 'musora-content-services' {
 		blockUser,
 		buildImageSRC,
 		calculateLongestStreaks,
+		clearAllDataContexts,
 		closeComment,
 		contentStatusCompleted,
 		contentStatusReset,
@@ -454,6 +461,8 @@ declare module 'musora-content-services' {
 		markContentAsNotInterested,
 		markNotificationAsRead,
 		markNotificationAsUnread,
+		onSignInHandler,
+		onSignOutHandler,
 		openComment,
 		otherStats,
 		pinProgressRow,
@@ -482,7 +491,7 @@ declare module 'musora-content-services' {
 		replyToComment,
 		reportComment,
 		reportPlaylist,
-		reset,
+		resetUserPermissions,
 		restoreComment,
 		restoreItemFromPlaylist,
 		restorePracticeSession,
