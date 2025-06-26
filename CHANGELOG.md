@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.14.0](https://github.com/railroadmedia/musora-content-services/compare/v2.13.0...v2.14.0) (2025-06-26)
+
+
+### Features
+
+* **BEH-541:** guided course enrollment page endpoint ([#311](https://github.com/railroadmedia/musora-content-services/issues/311)) ([0e7aace](https://github.com/railroadmedia/musora-content-services/commit/0e7aacec67ea769f15d826ed9542d4af1bae228d))
+
 ## [2.13.0](https://github.com/railroadmedia/musora-content-services/compare/v2.12.0...v2.13.0) (2025-06-26)
 
 
