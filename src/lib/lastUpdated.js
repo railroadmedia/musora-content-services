@@ -38,7 +38,7 @@ export async function setLastUpdatedTime(key) {
  *
  * @param {string} key - The key to clear the last updated time.
  *
- * @returns {void}
+ * @returns {Promise<void>}
  */
 export async function clearLastUpdatedTime(key) {
   await new LocalCache().removeItem(key)
