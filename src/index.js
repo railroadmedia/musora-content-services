@@ -6,6 +6,12 @@ import {
 } from './services/config.js';
 
 import {
+	enrollUserInGuidedCourse,
+	fetchEnrollmentPageMetadata,
+	unEnrollUserInGuidedCourse
+} from './services/content-org/guided-courses.js';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -308,6 +314,7 @@ export {
 	deleteUserActivity,
 	duplicatePlaylist,
 	editComment,
+	enrollUserInGuidedCourse,
 	extractSanityUrl,
 	fetchAll,
 	fetchAllCompletedStates,
@@ -337,6 +344,7 @@ export {
 	fetchContentInProgress,
 	fetchContentPageUserData,
 	fetchContentProgress,
+	fetchEnrollmentPageMetadata,
 	fetchFoundation,
 	fetchGenreLessons,
 	fetchHandler,
@@ -480,6 +488,7 @@ export {
 	restoreUserPractice,
 	setStudentViewForUser,
 	togglePlaylistPrivate,
+	unEnrollUserInGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,
 	undeletePlaylist,
