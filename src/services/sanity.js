@@ -1269,7 +1269,6 @@ export async function fetchLessonContent(railContentId) {
           "id":railcontent_id,
           slug, artist->,
           "thumbnail":thumbnail.asset->url,
-          "url": web_url_path,
           soundslice_slug,
           "description": description[0].children[0].text,
           "chapters": chapter[]{
@@ -1299,9 +1298,11 @@ export async function fetchLessonContent(railContentId) {
           "parent_content_data": parent_content_data[]{
             "id": id,
             "title": *[railcontent_id == ^.id][0].title,
-            "web_url_path": *[railcontent_id == ^.id][0].web_url_path,
             "slug":*[railcontent_id == ^.id][0].slug,
             "type": *[railcontent_id == ^.id][0]._type,
+            "logo" : *[railcontent_id == ^.id][0].logo_image_url.asset->url,
+            "dark_logo": *[railcontent_id == ^.id][0].dark_mode_logo_url.asset->url,
+            "light_logo": *[railcontent_id == ^.id][0].light_mode_logo_url.asset->url,
           },
           sort,
           xp,
