@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.13.0](https://github.com/railroadmedia/musora-content-services/compare/v2.12.0...v2.13.0) (2025-06-26)
+
+
+### Features
+
+* add logo data to parent in fetchLessonContent ([5c924b6](https://github.com/railroadmedia/musora-content-services/commit/5c924b6ad770d9befc0d5a972d0333840e8c5c83))
+
 ## [2.12.0](https://github.com/railroadmedia/musora-content-services/compare/v2.11.0...v2.12.0) (2025-06-25)
 
 
