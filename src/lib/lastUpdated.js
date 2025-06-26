@@ -29,8 +29,10 @@ export async function wasLastUpdateOlderThanXSeconds(seconds, key) {
  *
  * @returns {void}
  */
+ * @returns {Promise<void>}
+ */
 export async function setLastUpdatedTime(key) {
-  await new LocalCache().setItem(key, new Date().getTime()?.toString())
+  await new LocalCache().setItem(key, new Date().getTime().toString())
 }
 
 /**
