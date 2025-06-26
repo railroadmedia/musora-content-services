@@ -39,6 +39,21 @@ import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './cont
  */
 const excludeFromGeneratedIndex = ['handleCustomFetchAll', 'fetchRelatedByLicense']
 
+const relatedLessonsQueryFields =
+  `_id,
+  "id":railcontent_id,
+  "type": _type,
+  published_on,
+  "instructor": instructor[0]->name,
+  title,
+  "thumbnail":thumbnail.asset->url,
+  length_in_seconds,
+  difficulty,
+  difficulty_string,
+  artist->name,
+  "permission_id": permission[]->railcontent_id,
+  "genre": genre[]->name`
+
 /**
  * Fetch a song by its document ID from Sanity.
  *
@@ -1351,7 +1366,7 @@ export async function fetchRelatedRecommendedContent(railContentId, brand, count
     return fetchByRailContentIds(recommendedItems)
   }
 
-  return await fetchRelatedLessons(railContentId, brand).then((result) =>
+  return await fetchCollectionModuleData(railContentId, brand).then((result) =>
     result.related_lessons?.splice(0, count)
   )
 }
@@ -1416,44 +1431,28 @@ async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, cou
 }
 
 /**
- * Fetch related lessons for a specific lesson by RailContent ID and type.
- * @param {string} railContentId - The RailContent ID of the current lesson.
- * @param {string} brand - The current brand.
- * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
+ * fetches lesson data and pack metadata for collection module
+ * @param {integer} railContentId
+ * @returns {Promise<Object>}
  */
-export async function fetchRelatedLessons(railContentId, brand) {
-  const filterSameTypeAndSortOrder = await new FilterBuilder(
-    `_type==^._type &&  _type in ${JSON.stringify(typeWithSortOrder)} && brand == "${brand}" && railcontent_id !=${railContentId}`
-  ).buildFilter()
-  const filterSameType = await new FilterBuilder(
-    `_type==^._type && !(_type in ${JSON.stringify(typeWithSortOrder)}) && !(defined(parent_type)) && brand == "${brand}" && railcontent_id !=${railContentId}`
-  ).buildFilter()
-  const filterSongSameArtist = await new FilterBuilder(
-    `_type=="song" && _type==^._type && brand == "${brand}" && references(^.artist->_id) && railcontent_id !=${railContentId}`
-  ).buildFilter()
-  const filterSongSameGenre = await new FilterBuilder(
-    `_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}`
-  ).buildFilter()
-  const filterNeighbouringSiblings = await new FilterBuilder(`references(^._id)`, {
+export async function fetchCollectionModuleData(railContentId) {
+  const parentFilter = await new FilterBuilder(`_id == ^.parent_id`, {
     pullFutureContent: true,
   }).buildFilter()
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
-  const queryFieldsWithSort = queryFields + ', sort'
-  const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
-   _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
-   'for-calculations': *[references(^._id) && !(_type in ['license'])][0]{
-    'siblings-list': child[]->railcontent_id,
-    'parents-list': *[references(^._id)][0].child[]->railcontent_id
-    },
-    "related_lessons" : array::unique([
-      ...(*[${filterNeighbouringSiblings}][0].child[${childrenFilter}]->{${queryFields}}),
-      ...(*[${filterSongSameArtist}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
-      ...(*[${filterSongSameGenre}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
-      ...(*[${filterSameTypeAndSortOrder}]{${queryFieldsWithSort}}|order(sort asc, title asc)[0...10]),
-      ...(*[${filterSameType}]{${queryFields}}|order(published_on desc, title asc)[0...10])
-      ,
-      ])[0...10]}`
+  const query =
+    `*[railcontent_id == ${railContentId}]
+    {
+      _type, "id": railcontent_id, parent_type, 'parent_id': parent_content_data[0].id,
+      'for-calculations':
+        *[references(^._id) && !(_type in ['license'])][0]
+          {
+            'siblings-list': child[]->railcontent_id,
+            'parents-list': *[references(^._id)][0].child[]->railcontent_id
+          },
+      "related_lessons":
+        *[${parentFilter}][0].child[${childrenFilter}]->{${relatedLessonsQueryFields}}
+    }`
   let result = await fetchSanity(query, false)
 
   //there's no way in sanity to retrieve the index of an array, so we must calculate after fetch
