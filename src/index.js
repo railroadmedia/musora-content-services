@@ -9,7 +9,7 @@ import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	unEnrollUserInGuidedCourse
-} from './services/content-org/guided-courses.js';
+} from './services/content-org/guided-courses.ts';
 
 import {
 	addItemToPlaylist,
@@ -58,6 +58,7 @@ import {
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
+	getNextLesson,
 	getProgressDateByIds,
 	getProgressPercentage,
 	getProgressPercentageByIds,
@@ -179,6 +180,7 @@ import {
 	fetchByRailContentIds,
 	fetchByReference,
 	fetchChatAndLiveEnvent,
+	fetchChildren,
 	fetchCoachLessons,
 	fetchComingSoon,
 	fetchCommentModContentData,
@@ -333,6 +335,7 @@ export {
 	fetchChallengeUserActiveChallenges,
 	fetchChatAndLiveEnvent,
 	fetchChatSettings,
+	fetchChildren,
 	fetchCoachLessons,
 	fetchComingSoon,
 	fetchCommentModContentData,
@@ -412,6 +415,7 @@ export {
 	getLessonContentRows,
 	getMonday,
 	getNewAndUpcoming,
+	getNextLesson,
 	getPracticeNotes,
 	getPracticeSessions,
 	getProgressDateByIds,

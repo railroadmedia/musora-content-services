@@ -5,7 +5,7 @@ import {
   postRecordWatchSession,
 } from './railcontent.js'
 import { DataContext, ContentProgressVersionKey } from './dataContext.js'
-import { fetchHierarchy } from './sanity.js'
+import {fetchChildren, fetchHierarchy} from './sanity.js'
 import {recordUserPractice} from "./userActivity";
 
 const STATE_STARTED = 'started'
@@ -14,10 +14,16 @@ const DATA_KEY_STATUS = 's'
 const DATA_KEY_PROGRESS = 'p'
 const DATA_KEY_RESUME_TIME = 't'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
+const DATA_KEY_NEXT_LESSON = 'n'
+
 export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress)
 
+export async function getNextLesson(ids) {
+  return getByIds(ids, DATA_KEY_NEXT_LESSON, 0)
+}
+
 export async function getProgressPercentage(contentId) {
-  return getById(contentIds, DATA_KEY_PROGRESS, 0)
+  return getById(contentId, DATA_KEY_PROGRESS, 0)
 }
 
 export async function getProgressPercentageByIds(contentIds) {
@@ -209,6 +215,67 @@ export async function contentStatusCompleted(contentId) {
   )
 }
 
+function updateNextLesson(localContext, lastInteracted, hierarchy) {
+  //get parent from hierarchy
+  let parentId = hierarchy['parents'][lastInteracted]
+  let siblings = hierarchy['children'][parentId]
+
+  //set contexts
+  const lastInteractedStatus = localContext.data[lastInteracted][DATA_KEY_STATUS]
+  const parentContext = localContext.data[parentId]
+
+  //get siblings as array of content_ids
+  let childrenStatuses = []
+  for (const sibling of siblings) {
+    childrenStatuses[sibling] = localContext.data[sibling][DATA_KEY_STATUS]
+  }
+
+  //check if all lessons of parent are complete
+  let parentComplete = true
+  for (const status of childrenStatuses) {
+    if (status !== STATE_COMPLETED) {
+      parentComplete = false;
+    }
+  }
+
+  //set nextLesson of parent context
+  if (parentComplete) {
+    parentContext[DATA_KEY_NEXT_LESSON] = siblings[0]
+  } else if (type === 'course') {
+    if (lastInteractedStatus === STATE_STARTED) {
+      parentContext[DATA_KEY_NEXT_LESSON] = lastInteracted
+    } else {
+      let lastInteractedPosition = siblings.indexOf(lastInteracted)
+      let position = lastInteractedPosition + 1
+      parentContext[DATA_KEY_NEXT_LESSON] = findFirstIncompleteLessonFrom(position)
+    }
+  } else if (type === 'guided-course') {
+    let position = 0
+    parentContext[DATA_KEY_NEXT_LESSON] = findFirstIncompleteLessonFrom(position)
+  } else if (type === 'playlist') {
+    //if lastInteracted = yellow ('started')
+    //nextLesson = lastInteracted
+    //else (therefore completed)
+    //nextLesson = lesson directly after lastInteracted
+  }
+
+  //this is my attempt at a private function, because I can't in this file??
+  function findFirstIncompleteLessonFrom(position) {
+    while (true) {
+      const sibling = siblings[position]
+      if (localContext.data[sibling][DATA_KEY_STATUS] !== STATE_COMPLETED) {
+        parentContext[DATA_KEY_NEXT_LESSON] = sibling
+        return sibling
+      }
+      position++
+    }
+  }
+
+}
+
+
+
+
 function saveContentProgress(localContext, contentId, progress, currentSeconds, hierarchy) {
   if (progress === 100) {
     completeStatusInLocalContext(localContext, contentId, hierarchy)
@@ -334,6 +401,7 @@ export async function recordWatchSession(
         )
         let hierarchy = await fetchHierarchy(contentId)
         saveContentProgress(localContext, contentId, progress, currentSeconds, hierarchy)
+        updateNextLesson(localContext, contentId, hierarchy)
       }
     },
     async function () {

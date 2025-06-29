@@ -1847,6 +1847,15 @@ export async function fetchTopLevelParentId(railcontentId) {
   return null
 }
 
+export async function fetchChildren(parentId) {
+  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+  const query = `*[railcontent_id == ${parentId}]{
+      railcontent_id,
+      'children': child[${childrenFilter}]->railcontent_id
+      }`
+  return await fetchSanity(query, false, { processNeedAccess: false })
+}
+
 export async function fetchHierarchy(railcontentId) {
   let topLevelId = await fetchTopLevelParentId(railcontentId)
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()

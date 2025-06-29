@@ -1,4 +1,9 @@
-import { getProgressStateByIds, getProgressPercentageByIds, getResumeTimeSecondsByIds } from "./contentProgress"
+import {
+  getProgressStateByIds,
+  getProgressPercentageByIds,
+  getResumeTimeSecondsByIds,
+  getNextLesson
+} from "./contentProgress"
 import { isContentLikedByIds } from "./contentLikes"
 import { fetchLikeCount, fetchLastInteractedChild } from "./railcontent"
 
@@ -17,6 +22,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addProgressStatus = false,
     addResumeTimeSeconds = false,
     addLastInteractedChild = false,
+    addNextLesson = false,
   } = options
 
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
@@ -26,6 +32,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
 
   let ids = []
 
+  //get each of dataField's sub-object's id's
   if (dataField && data?.[dataField]) {
     ids = data[dataField].map(item => item?.id).filter(Boolean);
   } else if (Array.isArray(data)) {
@@ -42,6 +49,8 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
+    //needs each id (ids) and each type  (types)
+    addNextLesson ? getNextLesson1(ids) : Promise.resolve(null),
   ])
   console.log('ids', ids)
   console.log('lastInteractedChildData', lastInteractedChildData)
