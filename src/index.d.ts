@@ -237,11 +237,13 @@ import {
 
 import {
 	deleteNotification,
+	fetchNotificationSettings,
 	fetchNotifications,
 	fetchUnreadCount,
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
-	markNotificationAsUnread
+	markNotificationAsUnread,
+	updateNotificationSetting
 } from './services/user/notifications.js';
 
 import {
@@ -357,6 +359,7 @@ declare module 'musora-content-services' {
 		fetchNewReleases,
 		fetchNextContentDataForParent,
 		fetchNextPreviousLesson,
+		fetchNotificationSettings,
 		fetchNotifications,
 		fetchOtherSongVersions,
 		fetchOwnedChallenges,
@@ -488,6 +491,7 @@ declare module 'musora-content-services' {
 		unlikeContent,
 		unlikePlaylist,
 		unpinProgressRow,
+		updateNotificationSetting,
 		updatePlaylist,
 		updatePracticeNotes,
 		updateUserPractice,
