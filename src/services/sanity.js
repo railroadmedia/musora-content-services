@@ -1293,7 +1293,7 @@ export async function fetchLessonContent(railContentId) {
     isSingle: true,
   })
   const chapterProcess = (result) => {
-    const chapters = result.chapters ?? []
+    const chapters = result?.chapters ?? []
     if (chapters.length == 0) return result
     result.chapters = chapters.map((chapter, index) => ({
       ...chapter,
@@ -1995,6 +1995,9 @@ export async function fetchSanity(
 }
 
 function needsAccessDecorator(results, userPermissions, isAdmin) {
+  if (!results || (Array.isArray(results) && results.length === 0)) {
+    return results; // nothing to decorate
+  }
   userPermissions = new Set(userPermissions)
 
   if (Array.isArray(results)) {
