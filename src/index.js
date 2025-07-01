@@ -9,7 +9,7 @@ import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	unEnrollUserInGuidedCourse
-} from './services/content-org/guided-courses.js';
+} from './services/content-org/guided-courses.ts';
 
 import {
 	addItemToPlaylist,
