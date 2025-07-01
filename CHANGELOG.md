@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.15.0](https://github.com/railroadmedia/musora-content-services/compare/v2.12.0...v2.15.0) (2025-07-01)
+
+
+### Features
+
+* (MU2-583) New methods for fetch notification settings & update ([db8acb4](https://github.com/railroadmedia/musora-content-services/commit/db8acb433d6450f916300520988bbdc659fa74c3))
+* add logo data to parent in fetchLessonContent ([5c924b6](https://github.com/railroadmedia/musora-content-services/commit/5c924b6ad770d9befc0d5a972d0333840e8c5c83))
+* add status to related_lessons ([0aee928](https://github.com/railroadmedia/musora-content-services/commit/0aee928e6cd88e4fcf1accd2b055f31804e3a6fa))
+* **BEH-541:** guided course enrollment page endpoint ([#311](https://github.com/railroadmedia/musora-content-services/issues/311)) ([0e7aace](https://github.com/railroadmedia/musora-content-services/commit/0e7aacec67ea769f15d826ed9542d4af1bae228d))
+
 ## [2.14.0](https://github.com/railroadmedia/musora-content-services/compare/v2.13.0...v2.14.0) (2025-06-26)
 
 
