@@ -243,11 +243,13 @@ import {
 
 import {
 	deleteNotification,
+	fetchNotificationSettings,
 	fetchNotifications,
 	fetchUnreadCount,
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
-	markNotificationAsUnread
+	markNotificationAsUnread,
+	updateNotificationSetting
 } from './services/user/notifications.js';
 
 import {
@@ -364,6 +366,7 @@ export {
 	fetchNewReleases,
 	fetchNextContentDataForParent,
 	fetchNextPreviousLesson,
+	fetchNotificationSettings,
 	fetchNotifications,
 	fetchOtherSongVersions,
 	fetchOwnedChallenges,
@@ -496,6 +499,7 @@ export {
 	unlikeContent,
 	unlikePlaylist,
 	unpinProgressRow,
+	updateNotificationSetting,
 	updatePlaylist,
 	updatePracticeNotes,
 	updateUserPractice,
