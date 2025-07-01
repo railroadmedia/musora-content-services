@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.7](https://github.com/railroadmedia/musora-content-services/compare/v1.6.3...v1.6.7) (2025-07-01)
+
+
+### Bug Fixes
+
+* (BR-286) fetchLessonContent for users without access ([74d8663](https://github.com/railroadmedia/musora-content-services/commit/74d8663bc1ae63dbbabb697f55b7f3ed63739f4f))
+
 ### [1.6.6](https://github.com/railroadmedia/musora-content-services/compare/v1.6.5...v1.6.6) (2025-06-26)
 
 ### [1.6.5](https://github.com/railroadmedia/musora-content-services/compare/v1.6.4...v1.6.5) (2025-06-17)
