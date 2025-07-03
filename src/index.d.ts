@@ -8,7 +8,11 @@ import {
 import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
-	unEnrollUserInGuidedCourse
+	guidedCourses,
+	pinGuidedCourse,
+	pinnedGuidedCourses,
+	unEnrollUserInGuidedCourse,
+	unPinGuidedCourse
 } from './services/content-org/guided-courses.ts';
 
 import {
@@ -439,6 +443,7 @@ declare module 'musora-content-services' {
 		getUserWeeklyStats,
 		getWeekNumber,
 		globalConfig,
+		guidedCourses,
 		initializeService,
 		isBucketUrl,
 		isContentLiked,
@@ -459,7 +464,9 @@ declare module 'musora-content-services' {
 		markNotificationAsUnread,
 		openComment,
 		otherStats,
+		pinGuidedCourse,
 		pinProgressRow,
+		pinnedGuidedCourses,
 		postChallengesCommunityNotification,
 		postChallengesEnroll,
 		postChallengesEnrollmentNotification,
@@ -493,6 +500,7 @@ declare module 'musora-content-services' {
 		setStudentViewForUser,
 		togglePlaylistPrivate,
 		unEnrollUserInGuidedCourse,
+		unPinGuidedCourse,
 		unassignModeratorToComment,
 		unblockUser,
 		undeletePlaylist,
