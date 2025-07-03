@@ -40,7 +40,7 @@ export async function guidedCourses() {
   return await fetchHandler(url, 'GET')
 }
 
-export async function pinned() {
+export async function pinnedGuidedCourses() {
   const url: string = `${BASE_PATH}/v1/user/guided-courses/pinned`
   return await fetchHandler(url, 'GET')
 }
