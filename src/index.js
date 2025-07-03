@@ -8,7 +8,11 @@ import {
 import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
-	unEnrollUserInGuidedCourse
+	guidedCourses,
+	pinGuidedCourse,
+	pinnedGuidedCourses,
+	unEnrollUserInGuidedCourse,
+	unPinGuidedCourse
 } from './services/content-org/guided-courses.ts';
 
 import {
@@ -438,6 +442,7 @@ export {
 	getUserWeeklyStats,
 	getWeekNumber,
 	globalConfig,
+	guidedCourses,
 	initializeService,
 	isBucketUrl,
 	isContentLiked,
@@ -458,7 +463,9 @@ export {
 	markNotificationAsUnread,
 	openComment,
 	otherStats,
+	pinGuidedCourse,
 	pinProgressRow,
+	pinnedGuidedCourses,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,
@@ -492,6 +499,7 @@ export {
 	setStudentViewForUser,
 	togglePlaylistPrivate,
 	unEnrollUserInGuidedCourse,
+	unPinGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,
 	undeletePlaylist,
