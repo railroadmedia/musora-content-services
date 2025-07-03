@@ -1023,7 +1023,6 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
 }
 
 async function processContentItem(item) {
-  console.log('processContentItem', item);
   let data = item.raw;
   const contentType = getFormattedType(data.type, data.brand);
   const status = item.state;
@@ -1031,7 +1030,7 @@ async function processContentItem(item) {
   let ctaText = 'Continue';
   if (contentType === 'transcription' || contentType === 'play-along' || contentType === 'jam-track') ctaText = 'Replay Song';
   if (contentType === 'lesson') ctaText = status === 'completed' ? 'Revisit Lesson' : 'Continue';
-  if ((contentType === 'guided-course' || contentType === 'song tutorial' || collectionLessonTypes.includes(contentType)) &&  status === 'completed') ctaText = 'Revisit Lessons' ;
+  if (collectionLessonTypes.includes(contentType) &&  status === 'completed') ctaText = 'Revisit Lessons' ;
   if (contentType === 'pack' && status === 'completed') {
     ctaText = 'View Lessons';
   }
@@ -1065,15 +1064,6 @@ async function processContentItem(item) {
       const nextLesson = lessons.find(lesson => lesson.id === nextId)
       data.first_incomplete_child = nextLesson?.parent ?? nextLesson
       data.second_incomplete_child = (nextLesson?.parent) ? nextLesson : null
-      if(data.type === 'guided-course' && nextByProgress !== undefined ){
-        const challenge = await fetchChallengeLessonData(nextByProgress)
-        if(challenge.lesson.is_locked) {
-          const timeRemaining = getTimeRemainingUntilLocal(challenge.lesson.unlock_date, {withTotalSeconds:true})
-          data.is_locked = true
-          data.time_remaining_seconds = timeRemaining.totalSeconds
-          ctaText =  'Next lesson in ' + timeRemaining.formatted
-        }
-      }
     }
   }
 
@@ -1299,6 +1289,7 @@ export async function pinProgressRow(brand, id, progressType) {
  * Unpins the current pinned progress row for a user, scoped by brand.
  *
  * @param {string} brand - The brand context for the unpin action.
+ * @param {string} brand - The content id to un pin.
  * @returns {Promise<Object>} - A promise resolving to the response from the unpin API.
  *
  * @example
