@@ -187,7 +187,7 @@ export const progressTypesMapping = {
   'song tutorial': tutorialsLessonTypes,
   'songs': transcriptionsLessonTypes,
   'play-along': playAlongLessonTypes,
-  'guided course': ['challenge'],
+  'guided-course': ['challenge'],
   'pack': ['pack', 'semester-pack'],
   'method': ['learning-path']
 };

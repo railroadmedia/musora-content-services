@@ -1030,7 +1030,7 @@ async function processContentItem(item) {
   let ctaText = 'Continue';
   if (contentType === 'transcription' || contentType === 'play-along' || contentType === 'jam-track') ctaText = 'Replay Song';
   if (contentType === 'lesson') ctaText = status === 'completed' ? 'Revisit Lesson' : 'Continue';
-  if ((contentType === 'guided course' || contentType === 'song tutorial' || collectionLessonTypes.includes(contentType)) &&  status === 'completed') ctaText = 'Revisit Lessons' ;
+  if ((contentType === 'guided-course' || contentType === 'song tutorial' || collectionLessonTypes.includes(contentType)) &&  status === 'completed') ctaText = 'Revisit Lessons' ;
   if (contentType === 'pack' && status === 'completed') {
     ctaText = 'View Lessons';
   }
@@ -1064,7 +1064,7 @@ async function processContentItem(item) {
       const nextLesson = lessons.find(lesson => lesson.id === nextId)
       data.first_incomplete_child = nextLesson?.parent ?? nextLesson
       data.second_incomplete_child = (nextLesson?.parent) ? nextLesson : null
-      if(data.type === 'challenge' && nextByProgress !== undefined ){
+      if(data.type === 'guided-course' && nextByProgress !== undefined ){
         const challenge = await fetchChallengeLessonData(nextByProgress)
         if(challenge.lesson.is_locked) {
           const timeRemaining = getTimeRemainingUntilLocal(challenge.lesson.unlock_date, {withTotalSeconds:true})
@@ -1250,7 +1250,7 @@ function mergeAndSortItems(items, limit) {
 
 function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
   const ids = Object.keys(progressOnItems).map(Number);
-  if (contentType === 'challenge') {
+  if (contentType === 'guided-course') {
     // Return first incomplete lesson
     return ids.find(id => progressOnItems[id] !== 'completed') || ids.at(0);
   }
