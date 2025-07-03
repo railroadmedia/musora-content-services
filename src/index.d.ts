@@ -10,7 +10,7 @@ import {
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
 	pinGuidedCourse,
-	pinnedGuidedCourses,
+	pinned,
 	unEnrollUserInGuidedCourse,
 	unPinGuidedCourse
 } from './services/content-org/guided-courses.ts';
@@ -466,7 +466,7 @@ declare module 'musora-content-services' {
 		otherStats,
 		pinGuidedCourse,
 		pinProgressRow,
-		pinnedGuidedCourses,
+		pinned,
 		postChallengesCommunityNotification,
 		postChallengesEnroll,
 		postChallengesEnrollmentNotification,
