@@ -54,14 +54,6 @@ export async function addContextToContent(dataPromise, ...dataArgs)
         }
       }
     })
-  } else {
-    items.forEach((item) => {
-      if (item?.id) {
-        dataMap[item.id] = {
-          'id': item.id,
-        }
-      }
-    })
   }
 
   if(ids.length === 0) return false

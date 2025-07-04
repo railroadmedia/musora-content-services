@@ -5,7 +5,7 @@ import {
   postRecordWatchSession,
 } from './railcontent.js'
 import { DataContext, ContentProgressVersionKey } from './dataContext.js'
-import {fetchChildren, fetchHierarchy} from './sanity.js'
+import {fetchHierarchy} from './sanity.js'
 import {recordUserPractice, findIncompleteLesson} from "./userActivity";
 
 const STATE_STARTED = 'started'
@@ -83,9 +83,12 @@ export async function getNextLesson(dataMap)
   return nextLessonData
 }
 
+/**
+ * filter through contents, only keeping the most recent
+ * @param {array} contentIds
+ * @returns {Promise<number>}
+ */
 export async function getLastInteractedOf(contentIds) {
-  //get dataContext of all children
-  //filter through, only keeping the highest one
   const data = await dataContext.getData()
   let lastInteracted = 0
   contentIds?.forEach((id) => {
@@ -95,9 +98,6 @@ export async function getLastInteractedOf(contentIds) {
   })
   return lastInteracted
 }
-
-
-
 
 export async function getProgressDateByIds(contentIds) {
   let data = await dataContext.getData()
@@ -393,7 +393,6 @@ export async function recordWatchSession(
         )
         let hierarchy = await fetchHierarchy(contentId)
         saveContentProgress(localContext, contentId, progress, currentSeconds, hierarchy)
-        updateNextLesson(localContext, contentId, hierarchy)
       }
     },
     async function () {
