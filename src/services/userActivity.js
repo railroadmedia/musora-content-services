@@ -8,7 +8,10 @@ import {
   fetchUserPracticeMeta,
   fetchUserPracticeNotes,
   fetchHandler,
-  fetchRecentUserActivities, fetchChallengeLessonData
+  fetchRecentUserActivities,
+  fetchChallengeLessonData,
+  fetchLastInteractedChild,
+  pinnedGuidedCourses,
 } from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import { fetchByRailContentIds, fetchShows } from './sanity'
@@ -16,8 +19,14 @@ import {fetchPlaylist, fetchUserPlaylists} from "./content-org/playlists";
 import {convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay, getTimeRemainingUntilLocal} from './dateUtils.js'
 import { globalConfig } from './config'
 import {collectionLessonTypes, lessonTypesMapping, progressTypesMapping, showsLessonTypes, songs} from "../contentTypeConfig";
-import {getAllStartedOrCompleted, getProgressStateByIds} from "./contentProgress";
+import {
+  getAllStartedOrCompleted,
+  getProgressPercentageByIds,
+  getProgressStateByIds,
+  getResumeTimeSecondsByIds
+} from "./contentProgress";
 import {TabResponseType} from "../contentMetaData";
+import {isContentLikedByIds} from "./contentLikes.js";
 
 const DATA_KEY_PRACTICES = 'practices'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
