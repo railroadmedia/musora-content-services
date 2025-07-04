@@ -6,7 +6,7 @@ import {
 } from './railcontent.js'
 import { DataContext, ContentProgressVersionKey } from './dataContext.js'
 import {fetchChildren, fetchHierarchy} from './sanity.js'
-import {recordUserPractice} from "./userActivity";
+import {recordUserPractice, findIncompleteLesson} from "./userActivity";
 
 const STATE_STARTED = 'started'
 const STATE_COMPLETED = 'completed'
@@ -14,13 +14,8 @@ const DATA_KEY_STATUS = 's'
 const DATA_KEY_PROGRESS = 'p'
 const DATA_KEY_RESUME_TIME = 't'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
-const DATA_KEY_NEXT_LESSON = 'n'
 
 export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress)
-
-export async function getNextLesson(ids) {
-  return getByIds(ids, DATA_KEY_NEXT_LESSON, 0)
-}
 
 export async function getProgressPercentage(contentId) {
   return getById(contentId, DATA_KEY_PROGRESS, 0)
@@ -45,6 +40,64 @@ export async function getResumeTimeSeconds(contentId) {
 export async function getResumeTimeSecondsByIds(contentIds) {
   return getByIds(contentIds, DATA_KEY_RESUME_TIME, 0)
 }
+
+export async function getNextLesson(dataMap)
+{
+  let nextLessonData = {}
+  const parentTypes = ['course', 'guided-course']
+
+  for (const content of Object.values(dataMap)) {
+    //only calculate nextLesson if needed
+    if (!parentTypes.includes(content.type)) {
+      nextLessonData[content.id] = null
+
+    } else {
+      //return first child if parent-content is complete
+      const contentState = await getProgressState(content)
+      if (contentState === STATE_COMPLETED) {
+        nextLessonData[content.id] = content.children[0]
+
+      } else {
+        const childrenStates = await getProgressStateByIds(content.children)
+
+        //calculate last_engaged
+        const lastInteracted = await getLastInteractedOf(content.children)
+        const lastInteractedStatus = childrenStates[lastInteracted]
+
+        //different nextLesson behaviour for different content types
+        if (content.type === 'course') {
+          if (lastInteractedStatus === STATE_STARTED) {
+            nextLessonData[content.id] = lastInteracted
+          } else {
+            //if the user completed the last lesson they interacted with
+            nextLessonData[content.id] = findIncompleteLesson(childrenStates, lastInteracted, content.type)
+          }
+
+        } else if (content.type === 'guided-course') {
+          nextLessonData[content.id] = findIncompleteLesson(childrenStates, lastInteracted, content.type)
+        }
+      }
+    }
+  }
+
+  return nextLessonData
+}
+
+export async function getLastInteractedOf(contentIds) {
+  //get dataContext of all children
+  //filter through, only keeping the highest one
+  const data = await dataContext.getData()
+  let lastInteracted = 0
+  contentIds?.forEach((id) => {
+    if (data[id]?.[DATA_KEY_LAST_UPDATED_TIME] > lastInteracted) {
+      lastInteracted = id
+    }
+  })
+  return lastInteracted
+}
+
+
+
 
 export async function getProgressDateByIds(contentIds) {
   let data = await dataContext.getData()
@@ -214,67 +267,6 @@ export async function contentStatusCompleted(contentId) {
     }
   )
 }
-
-function updateNextLesson(localContext, lastInteracted, hierarchy) {
-  //get parent from hierarchy
-  let parentId = hierarchy['parents'][lastInteracted]
-  let siblings = hierarchy['children'][parentId]
-
-  //set contexts
-  const lastInteractedStatus = localContext.data[lastInteracted][DATA_KEY_STATUS]
-  const parentContext = localContext.data[parentId]
-
-  //get siblings as array of content_ids
-  let childrenStatuses = []
-  for (const sibling of siblings) {
-    childrenStatuses[sibling] = localContext.data[sibling][DATA_KEY_STATUS]
-  }
-
-  //check if all lessons of parent are complete
-  let parentComplete = true
-  for (const status of childrenStatuses) {
-    if (status !== STATE_COMPLETED) {
-      parentComplete = false;
-    }
-  }
-
-  //set nextLesson of parent context
-  if (parentComplete) {
-    parentContext[DATA_KEY_NEXT_LESSON] = siblings[0]
-  } else if (type === 'course') {
-    if (lastInteractedStatus === STATE_STARTED) {
-      parentContext[DATA_KEY_NEXT_LESSON] = lastInteracted
-    } else {
-      let lastInteractedPosition = siblings.indexOf(lastInteracted)
-      let position = lastInteractedPosition + 1
-      parentContext[DATA_KEY_NEXT_LESSON] = findFirstIncompleteLessonFrom(position)
-    }
-  } else if (type === 'guided-course') {
-    let position = 0
-    parentContext[DATA_KEY_NEXT_LESSON] = findFirstIncompleteLessonFrom(position)
-  } else if (type === 'playlist') {
-    //if lastInteracted = yellow ('started')
-    //nextLesson = lastInteracted
-    //else (therefore completed)
-    //nextLesson = lesson directly after lastInteracted
-  }
-
-  //this is my attempt at a private function, because I can't in this file??
-  function findFirstIncompleteLessonFrom(position) {
-    while (true) {
-      const sibling = siblings[position]
-      if (localContext.data[sibling][DATA_KEY_STATUS] !== STATE_COMPLETED) {
-        parentContext[DATA_KEY_NEXT_LESSON] = sibling
-        return sibling
-      }
-      position++
-    }
-  }
-
-}
-
-
-
 
 function saveContentProgress(localContext, contentId, progress, currentSeconds, hierarchy) {
   if (progress === 100) {

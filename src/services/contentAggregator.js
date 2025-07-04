@@ -30,27 +30,49 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   const data = await dataPromise(...dataParam)
   if(!data) return false
 
-  let ids = []
+  let items = []
+  let dataMap = []
 
-  //get each of dataField's sub-object's id's
   if (dataField && data?.[dataField]) {
-    ids = data[dataField].map(item => item?.id).filter(Boolean);
+    items = data[dataField];
   } else if (Array.isArray(data)) {
-    ids = data.map(item => item?.id).filter(Boolean);
+    items = data;
   } else if (data?.id) {
-    ids = [data.id]
+    items = [data]
+  }
+
+  const ids = items.map(item => item?.id).filter(Boolean)
+
+  //create data structure for common use by functions
+  if (addNextLesson) {
+    items.forEach((item) => {
+      if (item?.id) {
+        dataMap[item.id] = {
+          'children': item.child.map(child => child.id),
+          'type': item.type,
+          'id': item.id,
+        }
+      }
+    })
+  } else {
+    items.forEach((item) => {
+      if (item?.id) {
+        dataMap[item.id] = {
+          'id': item.id,
+        }
+      }
+    })
   }
 
   if(ids.length === 0) return false
 
-  const [progressPercentageData, progressStatusData, isLikedData, resumeTimeData, lastInteractedChildData] = await Promise.all([
+  const [progressPercentageData, progressStatusData, isLikedData, resumeTimeData, lastInteractedChildData, nextLessonData] = await Promise.all([
     addProgressPercentage ? getProgressPercentageByIds(ids) : Promise.resolve(null),
     addProgressStatus ? getProgressStateByIds(ids) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
-    //needs each id (ids) and each type  (types)
-    addNextLesson ? getNextLesson1(ids) : Promise.resolve(null),
+    addNextLesson ? getNextLesson(dataMap) : Promise.resolve(null),
   ])
   console.log('ids', ids)
   console.log('lastInteractedChildData', lastInteractedChildData)
@@ -62,6 +84,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
     ...(addLastInteractedChild ? { lastInteractedChild: lastInteractedChildData?.[item.id] } : {}),
+    ...(addNextLesson ? { nextLesson: nextLessonData?.[item.id] } : {}),
   })
   if (dataField) {
     data[dataField] = Array.isArray(data[dataField])
