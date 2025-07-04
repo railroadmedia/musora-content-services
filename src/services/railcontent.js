@@ -755,6 +755,22 @@ export async function reportComment(commentId, issue) {
   return await postDataHandler(url, data)
 }
 
+/**
+ * Fetches a single comment by its ID.
+ *
+ * @param {number|string} commentId - The ID of the comment to fetch.
+ * @returns {Promise<Object|null>} - A promise that resolves to the comment object if found, otherwise null.
+ *
+ * @example
+ * fetchComment(123)
+ *   .then(comment => console.log(comment))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchComment(commentId) {
+  const url = `/api/content/v1/comments/${commentId}`
+  return await fetchHandler(url)
+}
+
 export async function fetchUserPractices(currentVersion = 0, { userId } = {}) {
   const params = new URLSearchParams();
   if (userId) params.append('user_id', userId);
