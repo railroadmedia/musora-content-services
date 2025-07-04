@@ -360,7 +360,7 @@ export async function removeUserPractice(id) {
         Object.keys(localContext.data[DATA_KEY_PRACTICES]).forEach((date) => {
           localContext.data[DATA_KEY_PRACTICES][date] = localContext.data[DATA_KEY_PRACTICES][
             date
-          ].filter((practice) => practice.id !== id)
+            ].filter((practice) => practice.id !== id)
         })
       }
     },
@@ -921,16 +921,37 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     'learning-path-level'
   ]);
 
-  const recentPlaylists = await fetchUserPlaylists(brand, {
-    sort: '-last_progress',
-    limit: limit,
-  });
+  // TODO slice progress to a reasonable number, say 100
+  const [recentPlaylists, progressContents, pinnedGuidedCourse, userPinnedItem ] = await Promise.all([
+    fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit}),
+    getAllStartedOrCompleted({onlyIds: false, brand: brand, excludedIds: Array.from(excludedParents) }),
+    pinnedGuidedCourses(brand)[0] ?? [],
+    getUserPinnedItem(brand),
+  ])
+
+  console.log("gc", pinnedGuidedCourse)
+  console.log('pinnedUserItem', userPinnedItem)
+
   const playlists = recentPlaylists?.data || [];
   const eligiblePlaylistItems = await getEligiblePlaylistItems(playlists);
   const playlistEngagedOnContents = eligiblePlaylistItems.map(item => item.last_engaged_on);
-  const playlistsContents = await fetchByRailContentIds(playlistEngagedOnContents, 'progress-tracker');
+
+  const nonPlaylistContentIds = Object.keys(progressContents)
+  if (pinnedGuidedCourse) {
+    nonPlaylistContentIds.push(pinnedGuidedCourse.id);
+  }
+  if (userPinnedItem?.progressType === 'content') {
+    nonPlaylistContentIds.push(userPinnedItem.id)
+  }
+  const [ playlistsContents, contents ] = Promise.all([
+    fetchByRailContentIds(playlistEngagedOnContents, 'progress-tracker'),
+    fetchByRailContentIds(nonPlaylistContentIds, 'progress-tracker', brand),
+  ]);
+
   const excludedParents = new Set();
   const existingShows = new Set();
+  // TODO this doesn't work for guided courses as the GC card takes precedence over the playlist card
+  // https://musora.atlassian.net/browse/BEH-812
   for (const item of playlistsContents) {
     const contentId = item.id ?? item.railcontent_id;
     excludedParents.add(contentId)
@@ -938,8 +959,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     parentIds.forEach(id => excludedParents.add(id));
   }
 
-  const progressContents = await getAllStartedOrCompleted({onlyIds: false, brand: brand, excludedIds: Array.from(excludedParents) });
-  const contents = await fetchByRailContentIds(Object.keys(progressContents), 'progress-tracker', brand);
+
   const contentsMap = {};
   contents.forEach(content => {
     contentsMap[content.railcontent_id] = content;
@@ -995,25 +1015,33 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     }
   }
   const pinnedItem = await extractPinnedItem({
-    brand,
+    userPinnedItem,
     progressMap,
     playlistItems: eligiblePlaylistItems,
   })
   const progressList = Array.from(progressMap.values())
-  if (pinnedItem) {
-    pinnedItem.pinned = true
-  }
 
+  // TODO handle 2x pins
   const pinnedId = pinnedItem?.id
+  const guidedCourseID = pinnedGuidedCourse?.id
   const filteredProgressList = pinnedId
-    ? progressList.filter(item => item.id !== pinnedId)
+    ? progressList.filter(item => !(item.id === pinnedId || item.id === guidedCourseID))
     : progressList;
   const filteredPlaylists = pinnedId
-    ? eligiblePlaylistItems.filter(item => item.id !== pinnedId)
+    ? (eligiblePlaylistItems.filter(item => !(item.id === pinnedId || item.id === guidedCourseID)))
     : eligiblePlaylistItems;
-  const combinedBase = [...filteredProgressList, ...filteredPlaylists]
-  const combined = pinnedItem ? [pinnedItem, ...combinedBase] : combinedBase
 
+  let combined = [];
+  if (pinnedGuidedCourse) {
+    pinnedGuidedCourse.pinned = true
+    pinnedGuidedCourse.progressTimeStamp = new Date().getTime() // TODO get correct timestamp
+    combined.push(pinnedGuidedCourse)
+  }
+  if (pinnedItem) {
+    pinnedItem.pinned = true
+    combined.push(pinnedItem)
+  }
+  combined = [...combined, ...filteredProgressList, ...filteredPlaylists]
   const finalCombined = mergeAndSortItems(combined, limit)
 
   const results = await Promise.all(
@@ -1029,6 +1057,13 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     displayBrowseAll: combined.length > limit,
     data: results
   };
+}
+
+async function getUserPinnedItem(brand) {
+  const userRaw = await globalConfig.localStorage.getItem('user');
+  const user = userRaw ? JSON.parse(userRaw) : {};
+  user.brand_pinned_progress = user.brand_pinned_progress || {}
+  return user.brand_pinned_progress[brand] ?? null
 }
 
 async function processContentItem(item) {
@@ -1073,6 +1108,16 @@ async function processContentItem(item) {
       const nextLesson = lessons.find(lesson => lesson.id === nextId)
       data.first_incomplete_child = nextLesson?.parent ?? nextLesson
       data.second_incomplete_child = (nextLesson?.parent) ? nextLesson : null
+      // TODO handle overlay or next lesson behaviour
+      if(data.type === 'guided-course' && nextByProgress !== undefined ){
+        const challenge = await fetchChallengeLessonData(nextByProgress)
+        if(challenge.lesson.is_locked) {
+          const timeRemaining = getTimeRemainingUntilLocal(challenge.lesson.unlock_date, {withTotalSeconds:true})
+          data.is_locked = true
+          data.time_remaining_seconds = timeRemaining.totalSeconds
+          ctaText =  'Next lesson in ' + timeRemaining.formatted
+        }
+      }
     }
   }
 
@@ -1105,8 +1150,8 @@ async function processContentItem(item) {
       badge:           data.badge ?? null,
       isLocked:        data.is_locked ?? false,
       subtitle:        !data.child_count || data.lesson_count === 1
-                         ? (contentType === 'lesson') ? `${item.percent}% Complete`: `${data.difficulty_string} • ${data.artist_name}`
-                         : `${data.completed_children} of ${data.lesson_count ?? data.child_count} Lessons Complete`
+        ? (contentType === 'lesson') ? `${item.percent}% Complete`: `${data.difficulty_string} • ${data.artist_name}`
+        : `${data.completed_children} of ${data.lesson_count ?? data.child_count} Lessons Complete`
     },
     cta:               {
       text:   ctaText,
@@ -1117,21 +1162,21 @@ async function processContentItem(item) {
         id:    data.id,
         slug:  data.slug,
         child: data.first_incomplete_child
-                 ? {
+          ? {
             id:    data.first_incomplete_child.id,
             type:  data.first_incomplete_child.type,
             brand: data.first_incomplete_child.brand,
             slug:  data.first_incomplete_child.slug,
             child: data.second_incomplete_child
-                     ? {
+              ? {
                 id:    data.second_incomplete_child.id,
                 type:  data.second_incomplete_child.type,
                 brand: data.second_incomplete_child.brand,
                 slug:  data.second_incomplete_child.slug
               }
-                     : null
+              : null
           }
-                 : null
+          : null
       }
     },
     progressTimestamp: item.progressTimestamp
@@ -1243,6 +1288,7 @@ function mergeAndSortItems(items, limit) {
     .sort((a, b) => {
       if (a.pinned && !b.pinned) return -1;
       if (!a.pinned && b.pinned) return 1;
+      // TODO guided course should always be before user pinned item
       return b.progressTimestamp - a.progressTimestamp;
     })
     .slice(0, limit + 5);
@@ -1283,11 +1329,10 @@ function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
  *   .catch(error => console.error(error));
  */
 export async function pinProgressRow(brand, id, progressType) {
-  if (!(brand && id && progressType)) throw new Error(`undefined parameter progressType: ${progressType} brand: ${brand} or id: ${id}`)
   const url = `/api/user-management-system/v1/progress/pin?brand=${brand}&id=${id}&progressType=${progressType}`;
   const response = await fetchHandler(url, 'PUT', null)
-  if (response && !response.error && response['action'] === 'update_user_pin') {
-    await updateUserPinnedProgressRow(brand, {
+  if (response && !response.error) {
+    await updatePinnedProgressRow(brand, {
       id,
       progressType,
       pinnedAt: new Date().toISOString(),
@@ -1299,25 +1344,23 @@ export async function pinProgressRow(brand, id, progressType) {
  * Unpins the current pinned progress row for a user, scoped by brand.
  *
  * @param {string} brand - The brand context for the unpin action.
- * @param {string} id - The content or playlist id to unpin.
  * @returns {Promise<Object>} - A promise resolving to the response from the unpin API.
  *
  * @example
- * unpinProgressRow('drumeo', 123456)
+ * unpinProgressRow('drumeo')
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
-export async function unpinProgressRow(brand, id) {
-  if (!(brand && id)) throw new Error(`undefined parameter brand: ${brand} or id: ${id}`)
-  const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}&id=${id}`
+export async function unpinProgressRow(brand) {
+  const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}`
   const response = await fetchHandler(url, 'PUT', null)
-  if (response && !response.error && response['action'] === 'clear_user_pin') {
-    await updateUserPinnedProgressRow(brand, null)
+  if (response && !response.error) {
+    await updatePinnedProgressRow(brand, null)
   }
   return response
 }
 
-async function updateUserPinnedProgressRow(brand, pinnedData) {
+async function updatePinnedProgressRow(brand, pinnedData) {
   const userRaw = await globalConfig.localStorage.getItem('user');
   const user = userRaw ? JSON.parse(userRaw) : {};
   user.brand_pinned_progress = user.brand_pinned_progress || {}
@@ -1325,14 +1368,7 @@ async function updateUserPinnedProgressRow(brand, pinnedData) {
   await globalConfig.localStorage.setItem('user', JSON.stringify(user))
 }
 
-async function extractPinnedItem({brand, progressMap, playlistItems}) {
-  const userRaw = await globalConfig.localStorage.getItem('user');
-  const user = userRaw ? JSON.parse(userRaw) : {};
-  user.brand_pinned_progress = user.brand_pinned_progress || {}
-
-  const pinned = user.brand_pinned_progress[brand]
-  if (!pinned) return null
-
+async function extractPinnedItem({pinned, progressMap, playlistItems}) {
   const {id, progressType, pinnedAt} = pinned
 
   if (progressType === 'content') {
@@ -1365,7 +1401,7 @@ async function extractPinnedItem({brand, progressMap, playlistItems}) {
         raw:     playlist,
         progressTimestamp: new Date(pinnedAt).getTime(),
         type: 'playlist',
-        last_engaged_on: playlist.items[0],
+        last_engaged_on: playlist.last_engaged_on,
       }
     }
   }
@@ -1387,6 +1423,5 @@ function getFirstLeafLessonId(data) {
 
   return data.lessons ? findFirstLeaf(data.lessons) : null
 }
-
 
 
