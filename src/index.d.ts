@@ -6,6 +6,16 @@ import {
 } from './services/config.js';
 
 import {
+	enrollUserInGuidedCourse,
+	fetchEnrollmentPageMetadata,
+	guidedCourses,
+	pinGuidedCourse,
+	pinnedGuidedCourses,
+	unEnrollUserInGuidedCourse,
+	unPinGuidedCourse
+} from './services/content-org/guided-courses.ts';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -59,6 +69,7 @@ import {
 	getProgressStateByIds,
 	getResumeTimeSeconds,
 	getResumeTimeSecondsByIds,
+	getStartedOrCompletedProgressOnly,
 	recordWatchSession
 } from './services/contentProgress.js';
 
@@ -236,11 +247,13 @@ import {
 
 import {
 	deleteNotification,
+	fetchNotificationSettings,
 	fetchNotifications,
 	fetchUnreadCount,
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
-	markNotificationAsUnread
+	markNotificationAsUnread,
+	updateNotificationSetting
 } from './services/user/notifications.js';
 
 import {
@@ -308,6 +321,7 @@ declare module 'musora-content-services' {
 		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
+		enrollUserInGuidedCourse,
 		extractSanityUrl,
 		fetchAll,
 		fetchAllCompletedStates,
@@ -337,6 +351,7 @@ declare module 'musora-content-services' {
 		fetchContentInProgress,
 		fetchContentPageUserData,
 		fetchContentProgress,
+		fetchEnrollmentPageMetadata,
 		fetchFoundation,
 		fetchGenreLessons,
 		fetchHandler,
@@ -356,6 +371,7 @@ declare module 'musora-content-services' {
 		fetchNewReleases,
 		fetchNextContentDataForParent,
 		fetchNextPreviousLesson,
+		fetchNotificationSettings,
 		fetchNotifications,
 		fetchOtherSongVersions,
 		fetchOwnedChallenges,
@@ -419,6 +435,7 @@ declare module 'musora-content-services' {
 		getResumeTimeSecondsByIds,
 		getScheduleContentRows,
 		getSortOrder,
+		getStartedOrCompletedProgressOnly,
 		getTabResults,
 		getTimeRemainingUntilLocal,
 		getUserMonthlyStats,
@@ -426,6 +443,7 @@ declare module 'musora-content-services' {
 		getUserWeeklyStats,
 		getWeekNumber,
 		globalConfig,
+		guidedCourses,
 		initializeService,
 		isBucketUrl,
 		isContentLiked,
@@ -446,7 +464,9 @@ declare module 'musora-content-services' {
 		markNotificationAsUnread,
 		openComment,
 		otherStats,
+		pinGuidedCourse,
 		pinProgressRow,
+		pinnedGuidedCourses,
 		postChallengesCommunityNotification,
 		postChallengesEnroll,
 		postChallengesEnrollmentNotification,
@@ -479,6 +499,8 @@ declare module 'musora-content-services' {
 		restoreUserPractice,
 		setStudentViewForUser,
 		togglePlaylistPrivate,
+		unEnrollUserInGuidedCourse,
+		unPinGuidedCourse,
 		unassignModeratorToComment,
 		unblockUser,
 		undeletePlaylist,
@@ -486,6 +508,7 @@ declare module 'musora-content-services' {
 		unlikeContent,
 		unlikePlaylist,
 		unpinProgressRow,
+		updateNotificationSetting,
 		updatePlaylist,
 		updatePracticeNotes,
 		updateUserPractice,

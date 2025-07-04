@@ -6,6 +6,16 @@ import {
 } from './services/config.js';
 
 import {
+	enrollUserInGuidedCourse,
+	fetchEnrollmentPageMetadata,
+	guidedCourses,
+	pinGuidedCourse,
+	pinnedGuidedCourses,
+	unEnrollUserInGuidedCourse,
+	unPinGuidedCourse
+} from './services/content-org/guided-courses.ts';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -59,6 +69,7 @@ import {
 	getProgressStateByIds,
 	getResumeTimeSeconds,
 	getResumeTimeSecondsByIds,
+	getStartedOrCompletedProgressOnly,
 	recordWatchSession
 } from './services/contentProgress.js';
 
@@ -236,11 +247,13 @@ import {
 
 import {
 	deleteNotification,
+	fetchNotificationSettings,
 	fetchNotifications,
 	fetchUnreadCount,
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
-	markNotificationAsUnread
+	markNotificationAsUnread,
+	updateNotificationSetting
 } from './services/user/notifications.js';
 
 import {
@@ -307,6 +320,7 @@ export {
 	deleteUserActivity,
 	duplicatePlaylist,
 	editComment,
+	enrollUserInGuidedCourse,
 	extractSanityUrl,
 	fetchAll,
 	fetchAllCompletedStates,
@@ -336,6 +350,7 @@ export {
 	fetchContentInProgress,
 	fetchContentPageUserData,
 	fetchContentProgress,
+	fetchEnrollmentPageMetadata,
 	fetchFoundation,
 	fetchGenreLessons,
 	fetchHandler,
@@ -355,6 +370,7 @@ export {
 	fetchNewReleases,
 	fetchNextContentDataForParent,
 	fetchNextPreviousLesson,
+	fetchNotificationSettings,
 	fetchNotifications,
 	fetchOtherSongVersions,
 	fetchOwnedChallenges,
@@ -418,6 +434,7 @@ export {
 	getResumeTimeSecondsByIds,
 	getScheduleContentRows,
 	getSortOrder,
+	getStartedOrCompletedProgressOnly,
 	getTabResults,
 	getTimeRemainingUntilLocal,
 	getUserMonthlyStats,
@@ -425,6 +442,7 @@ export {
 	getUserWeeklyStats,
 	getWeekNumber,
 	globalConfig,
+	guidedCourses,
 	initializeService,
 	isBucketUrl,
 	isContentLiked,
@@ -445,7 +463,9 @@ export {
 	markNotificationAsUnread,
 	openComment,
 	otherStats,
+	pinGuidedCourse,
 	pinProgressRow,
+	pinnedGuidedCourses,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,
@@ -478,6 +498,8 @@ export {
 	restoreUserPractice,
 	setStudentViewForUser,
 	togglePlaylistPrivate,
+	unEnrollUserInGuidedCourse,
+	unPinGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,
 	undeletePlaylist,
@@ -485,6 +507,7 @@ export {
 	unlikeContent,
 	unlikePlaylist,
 	unpinProgressRow,
+	updateNotificationSetting,
 	updatePlaylist,
 	updatePracticeNotes,
 	updateUserPractice,
