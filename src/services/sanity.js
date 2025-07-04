@@ -513,6 +513,7 @@ export async function fetchByRailContentId(id, contentType) {
  *   .catch(error => console.error(error));
  */
 export async function fetchByRailContentIds(ids, contentType = undefined, brand = undefined) {
+  console.log(ids)
   if (!ids) {
     return []
   }

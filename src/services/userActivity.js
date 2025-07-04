@@ -1070,7 +1070,7 @@ async function processContentItem(item) {
   let data = item.raw;
   const contentType = getFormattedType(data.type, data.brand);
   const status = item.state;
-
+  console.log('processItem', item)
   let ctaText = 'Continue';
   if (contentType === 'transcription' || contentType === 'play-along' || contentType === 'jam-track') ctaText = 'Replay Song';
   if (contentType === 'lesson') ctaText = status === 'completed' ? 'Revisit Lesson' : 'Continue';
@@ -1110,13 +1110,13 @@ async function processContentItem(item) {
       data.second_incomplete_child = (nextLesson?.parent) ? nextLesson : null
       // TODO handle overlay or next lesson behaviour
       if(data.type === 'guided-course' && nextByProgress !== undefined ){
-        const challenge = await fetchChallengeLessonData(nextByProgress)
-        if(challenge.lesson.is_locked) {
-          const timeRemaining = getTimeRemainingUntilLocal(challenge.lesson.unlock_date, {withTotalSeconds:true})
-          data.is_locked = true
-          data.time_remaining_seconds = timeRemaining.totalSeconds
-          ctaText =  'Next lesson in ' + timeRemaining.formatted
-        }
+        // const challenge = await fetchChallengeLessonData(nextByProgress)
+        // if(challenge.lesson.is_locked) {
+        //   const timeRemaining = getTimeRemainingUntilLocal(challenge.lesson.unlock_date, {withTotalSeconds:true})
+        //   data.is_locked = true
+        //   data.time_remaining_seconds = timeRemaining.totalSeconds
+        //   ctaText =  'Next lesson in ' + timeRemaining.formatted
+        // }
       }
     }
   }
@@ -1407,6 +1407,31 @@ async function extractPinnedItem({pinned, progressMap, playlistItems}) {
   }
 
   return null
+}
+
+async function extractGuidedCourseItem({guidedCourse, progressMap}) {
+  const children = guidedCourse.child.map(child => child.railcontent_id)
+  let lastChild = null
+  children.forEach(child => {
+    if (progressMap.has(child)) {
+      let childProgress = progressMap.get(child)
+      if (!lastChild && childProgress.state !== 'completed') {
+        lastChild = childProgress
+      }
+      progressMap.delete(child)
+    }
+  })
+  return lastChild
+  // if (lastChild) {
+  //   return {
+  //     id:      guidedCourse.id,
+  //     state:   'started',
+  //     percent: 0,
+  //     raw:     content[0],
+  //     progressTimestamp: new Date(pinnedAt).getTime(),
+  //     childIndex: firstLessonId
+  //   }
+  // }
 }
 
 function getFirstLeafLessonId(data) {
