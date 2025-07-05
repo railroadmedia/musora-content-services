@@ -44,7 +44,7 @@ export async function getResumeTimeSecondsByIds(contentIds) {
 export async function getNextLesson(dataMap)
 {
   let nextLessonData = {}
-  const parentTypes = ['course', 'guided-course']
+  const parentTypes = ['course', 'guided-course', 'pack-bundle']
 
   for (const content of Object.values(dataMap)) {
     //only calculate nextLesson if needed
@@ -65,7 +65,7 @@ export async function getNextLesson(dataMap)
         const lastInteractedStatus = childrenStates[lastInteracted]
 
         //different nextLesson behaviour for different content types
-        if (content.type === 'course') {
+        if (content.type === 'course' || content.type === 'pack-bundle') {
           if (lastInteractedStatus === STATE_STARTED) {
             nextLessonData[content.id] = lastInteracted
           } else {
