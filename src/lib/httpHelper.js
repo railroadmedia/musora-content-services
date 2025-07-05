@@ -69,7 +69,14 @@ export async function fetchHandler(
 
   if (globalConfig.localTimezoneString)
     reqHeaders['M-Client-Timezone'] = globalConfig.localTimezoneString
-  if (dataVersion) reqHeaders['Data-Version'] = dataVersion
+  if (dataVersion) {
+    if (typeof dataVersion === 'number' || typeof dataVersion === 'string') {
+      reqHeaders['Data-Version'] = dataVersion
+    } else if (typeof dataVersion === 'object' && dataVersion.version || dataVersion.schemaVersion) {
+      reqHeaders['Data-Version'] = dataVersion.version
+      reqHeaders['Schema-Version'] = dataVersion.schemaVersion
+    }
+  }
   const options = {
     method,
     headers: reqHeaders,

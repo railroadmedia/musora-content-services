@@ -81,7 +81,10 @@ export class DataContext {
   }
 
   async fetchData(version) {
-    return await this.fetchDataFunction(version)
+    return await this.fetchDataFunction({
+      version: this.version(),
+      schemaVersion: this.schemaVersion()
+    })
   }
 
   async ensureLocalContextLoaded() {
@@ -135,6 +138,9 @@ export class DataContext {
 
   version() {
     return this.context?.version ?? -1
+  }
+  schemaVersion() {
+    return this.context?.schemaVersion ?? -1
   }
   async updateLocal(localUpdateFunction) {
     await this.ensureLocalContextLoaded()
