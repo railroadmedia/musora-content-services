@@ -420,10 +420,14 @@ export let contentTypeConfig = {
       '"logo_image_url": logo_image_url.asset->url',
       'total_xp',
       `"children": child[]->{
-                "description": ${descriptionField},
-                "lesson_count": child_count,
-                ${getFieldsForContentType()}
-            }`,
+        "description": ${descriptionField},
+        "lesson_count": child_count,
+        "children": child[]->{
+          "description": ${descriptionField},
+          ${getFieldsForContentType()}
+        },
+        ${getFieldsForContentType()}
+      }`,
       `"resources": ${resourcesField}`,
       '"thumbnail": thumbnail.asset->url',
       '"light_mode_logo": light_mode_logo_url.asset->url',
