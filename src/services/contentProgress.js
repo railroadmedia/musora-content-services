@@ -48,7 +48,7 @@ export async function getNextLesson(dataMap)
 
   for (const content of Object.values(dataMap)) {
 
-    //only calculate nextLesson if needed
+    //only calculate nextLesson if needed, based on content type
     if (!parentTypes.includes(content.type)) {
       nextLessonData[content.id] = null
 
@@ -59,7 +59,7 @@ export async function getNextLesson(dataMap)
         nextLessonData[content.id] = content.children[0]
 
       } else {
-        //follow logic design
+        //if content in progress
 
         const childrenStates = await getProgressStateByIds(content.children)
 
@@ -72,7 +72,6 @@ export async function getNextLesson(dataMap)
           if (lastInteractedStatus === STATE_STARTED) {
             nextLessonData[content.id] = lastInteracted
           } else {
-            //if the user completed the last lesson they interacted with
             nextLessonData[content.id] = findIncompleteLesson(childrenStates, lastInteracted, content.type)
           }
 
