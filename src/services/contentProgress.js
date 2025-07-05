@@ -90,13 +90,14 @@ export async function getNextLesson(dataMap)
  */
 export async function getLastInteractedOf(contentIds) {
   const data = await dataContext.getData()
-  let lastInteracted = 0
+  console.log('data', data)
+  let tempId = 0
   contentIds?.forEach((id) => {
-    if (data[id]?.[DATA_KEY_LAST_UPDATED_TIME] > lastInteracted) {
-      lastInteracted = id
+    if (data[id]?.[DATA_KEY_LAST_UPDATED_TIME] > data[tempId]?.[DATA_KEY_LAST_UPDATED_TIME]) {
+      tempId = id
     }
   })
-  return lastInteracted
+  return tempId
 }
 
 export async function getProgressDateByIds(contentIds) {
