@@ -8,6 +8,7 @@ import { DataContext, ContentProgressVersionKey } from './dataContext.js'
 import {fetchHierarchy} from './sanity.js'
 import {recordUserPractice, findIncompleteLesson} from "./userActivity";
 
+const STATE_NOT_STARTED = 'not-started'
 const STATE_STARTED = 'started'
 const STATE_COMPLETED = 'completed'
 const DATA_KEY_STATUS = 's'
@@ -26,11 +27,11 @@ export async function getProgressPercentageByIds(contentIds) {
 }
 
 export async function getProgressState(contentId) {
-  return getById(contentId, DATA_KEY_STATUS, '')
+  return getById(contentId, DATA_KEY_STATUS, STATE_NOT_STARTED)
 }
 
 export async function getProgressStateByIds(contentIds) {
-  return getByIds(contentIds, DATA_KEY_STATUS, '')
+  return getByIds(contentIds, DATA_KEY_STATUS, STATE_NOT_STARTED)
 }
 
 export async function getResumeTimeSeconds(contentId) {
@@ -46,23 +47,37 @@ export async function getNextLesson(dataMap)
   let nextLessonData = {}
   const parentTypes = ['course', 'guided-course', 'pack-bundle']
 
+  console.log('dataMap', dataMap)
+
   for (const content of Object.values(dataMap)) {
+
+    console.log('child', content.children)
+
     //only calculate nextLesson if needed
     if (!parentTypes.includes(content.type)) {
       nextLessonData[content.id] = null
 
     } else {
       //return first child if parent-content is complete
-      const contentState = await getProgressState(content)
-      if (contentState === STATE_COMPLETED) {
+      // console.log('isType')
+
+      const contentState = await getProgressState(content.id)
+      console.log('contentState', contentState)
+      if (contentState !== STATE_STARTED) {
         nextLessonData[content.id] = content.children[0]
+
+        console.log('complete or not started')
 
       } else {
         const childrenStates = await getProgressStateByIds(content.children)
 
+        console.log('children', childrenStates)
+
         //calculate last_engaged
         const lastInteracted = await getLastInteractedOf(content.children)
         const lastInteractedStatus = childrenStates[lastInteracted]
+
+        console.log('last', [lastInteracted, lastInteractedStatus])
 
         //different nextLesson behaviour for different content types
         if (content.type === 'course' || content.type === 'pack-bundle') {
@@ -80,6 +95,7 @@ export async function getNextLesson(dataMap)
     }
   }
 
+  console.log('nextLessonData', nextLessonData)
   return nextLessonData
 }
 
@@ -89,15 +105,23 @@ export async function getNextLesson(dataMap)
  * @returns {Promise<number>}
  */
 export async function getLastInteractedOf(contentIds) {
-  const data = await dataContext.getData()
-  console.log('data', data)
-  let tempId = 0
-  contentIds?.forEach((id) => {
-    if (data[id]?.[DATA_KEY_LAST_UPDATED_TIME] > data[tempId]?.[DATA_KEY_LAST_UPDATED_TIME]) {
-      tempId = id
-    }
-  })
-  return tempId
+  const data = await getByIds(contentIds, DATA_KEY_LAST_UPDATED_TIME, 0)
+  const sorted = Object.keys(data)
+    .map(function (key) {
+      return parseInt(key)
+    })
+    .sort(function (a, b) {
+      let v1 = data[a]
+      let v2 = data[b]
+      // console.log('v', [v1 ,v2])
+      if (v1 > v2) return -1
+      else if (v1 < v2) return 1
+      return 0
+    })
+
+  console.log('sorted', sorted)
+
+  return sorted[0]
 }
 
 export async function getProgressDateByIds(contentIds) {
@@ -111,14 +135,19 @@ export async function getProgressDateByIds(contentIds) {
 }
 
 async function getById(contentId, dataKey, defaultValue) {
+  // console.log('preData', [contentId, dataKey, defaultValue])
   let data = await dataContext.getData()
+  // console.log('getByIdData', data)
   return data[contentId]?.[dataKey] ?? defaultValue
 }
 
 async function getByIds(contentIds, dataKey, defaultValue) {
+  console.log('preData', [contentIds, dataKey, defaultValue])
   let data = await dataContext.getData()
   let progress = {}
+  console.log('data', data)
   contentIds?.forEach((id) => (progress[id] = data[id]?.[dataKey] ?? defaultValue))
+  console.log('progress', progress)
   return progress
 }
 

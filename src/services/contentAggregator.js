@@ -66,8 +66,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
     addNextLesson ? getNextLesson(dataMap) : Promise.resolve(null),
   ])
-  console.log('ids', ids)
-  console.log('lastInteractedChildData', lastInteractedChildData)
+
   const addContext = async (item) => ({
     ...item,
     ...(addProgressPercentage ? { progressPercentage: progressPercentageData?.[item.id] } : {}),
