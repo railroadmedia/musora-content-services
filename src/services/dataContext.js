@@ -13,6 +13,17 @@ export const ContentProgressVersionKey = 1
 export const UserActivityVersionKey = 2
 
 /**
+ * Custom error class for DataContext related errors
+ */
+export class DataContextError extends Error {
+  constructor(message, options = {}) {
+    super(message)
+    this.name = 'DataContextError'
+    this.dataVersionKey = options.dataVersionKey
+  }
+}
+
+/**
  * Verify current cached data is on the correct version
  *
  * @param {int} dataVersionKey - Data version key from the back end
@@ -68,9 +79,19 @@ export class DataContext {
     const shouldVerify = await this.shouldVerifyServerVersions()
 
     if (!this.context || shouldVerify) {
-      let version = this.version()
-      let data = await this.fetchData(version)
-      if (data?.version !== 'No Change') {
+      let data;
+      try {
+        data = await this.fetchData()
+
+        if (!data) {
+          throw new Error('No data returned')
+        }
+      } catch (error) {
+        await this.setLastUpdatedTime();
+        throw new DataContextError('Error fetching data when no stale backup data exists', { dataVersionKey: this.dataVersionKey })
+      }
+
+      if (data.version !== 'No Change') {
         this.context = data
         await this.cache.setItem(this.localStorageKey, JSON.stringify(data))
       }
@@ -80,7 +101,7 @@ export class DataContext {
     return this.context.data
   }
 
-  async fetchData(version) {
+  async fetchData() {
     return await this.fetchDataFunction({
       version: this.version(),
       schemaVersion: this.schemaVersion()
