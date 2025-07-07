@@ -180,6 +180,8 @@ export const lessonTypesMapping = {
   'jam tracks': ['jam-track'],
 };
 
+export const getNextLessonLessonParentTypes = ['course', 'guided-course', 'pack-bundle'];
+
 export const progressTypesMapping = {
   'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes, 'live'],
   'course': ['course'],

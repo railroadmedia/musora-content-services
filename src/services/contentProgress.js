@@ -7,7 +7,7 @@ import {
 import { DataContext, ContentProgressVersionKey } from './dataContext.js'
 import {fetchHierarchy} from './sanity.js'
 import {recordUserPractice, findIncompleteLesson} from "./userActivity";
-
+import {getNextLessonLessonParentTypes} from "../contentTypeConfig.js";
 const STATE_STARTED = 'started'
 const STATE_COMPLETED = 'completed'
 const DATA_KEY_STATUS = 's'
@@ -44,12 +44,11 @@ export async function getResumeTimeSecondsByIds(contentIds) {
 export async function getNextLesson(dataMap)
 {
   let nextLessonData = {}
-  const parentTypes = ['course', 'guided-course', 'pack-bundle']
 
   for (const content of Object.values(dataMap)) {
 
     //only calculate nextLesson if needed, based on content type
-    if (!parentTypes.includes(content.type)) {
+    if (!getNextLessonLessonParentTypes.includes(content.type)) {
       nextLessonData[content.id] = null
 
     } else {
