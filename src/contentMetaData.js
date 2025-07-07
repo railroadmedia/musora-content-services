@@ -38,16 +38,21 @@ export class Tabs {
   static Artists = { name: 'Artists', short_name: 'ARTISTS', is_group_by: true, value: 'artist' }
   static Songs = { name: 'Songs', short_name: 'Songs', value: '' }
   static Tutorials = { name: 'Tutorials', short_name: 'Tutorials', value: 'type,tutorials', cardType: 'big' }
-  static Transcriptions = { name: 'Transcriptions', short_name: 'Transcriptions', value: 'type,trancription', cardType: 'small' }
+  static Transcriptions = { name: 'Transcriptions', short_name: 'Transcriptions', value: 'type,transcription', cardType: 'small' }
   static PlayAlongs = { name: 'Play-Alongs', short_name: 'Play-Alongs', value:'type,play along', cardType: 'small' }
   static RecentAll = { name: 'All', short_name: 'All' }
   static RecentIncomplete = { name: 'Incomplete', short_name: 'Incomplete' }
   static RecentCompleted = { name: 'Completed', short_name: 'Completed' }
+  static RecentActivityLessons = { name: 'Lessons', short_name: 'Lessons' }
+  static RecentActivitySongs = { name: 'Songs', short_name: 'Songs' }
+  static RecentActivityPosts = { name: 'Posts', short_name: 'Posts' }
+  static RecentActivityComments = { name: 'Comments', short_name: 'Comments' }
 }
 
 export const TabResponseType = {
   SECTIONS: 'sections',
-  CATALOG: 'catalog'
+  CATALOG: 'catalog',
+  PROGRESS_ROWS: 'progress_rows',
 };
 
 const commonMetadata = {
@@ -205,7 +210,7 @@ const commonMetadata = {
     filterOptions: {
       difficulty: DIFFICULTY_STRINGS,
       style: ['Country/Folk', 'Funk/Disco', 'Hard Rock/Metal', 'Hip-Hop/Rap/EDM', 'Holiday/Soundtrack', 'Jazz/Blues', 'Latin/World', 'Pop/Rock', 'R&B/Soul', 'Worship/Gospel'],
-      type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Shows', 'Documentaries', 'Live Archives', 'Student Archives'],
+      type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Live Archives', 'Student Archives'],
       progress: PROGRESS_NAMES,
     },
     sortingOptions: {
@@ -240,6 +245,16 @@ const commonMetadata = {
       Tabs.Transcriptions,
       Tabs.PlayAlongs,
       Tabs.ExploreAll
+    ],
+  },
+  'recent-activities': {
+    name: 'Recent Activity',
+    tabs: [
+      Tabs.RecentAll,
+      Tabs.RecentActivityLessons,
+      Tabs.RecentActivitySongs,
+      Tabs.RecentActivityPosts,
+      Tabs.RecentActivityComments,
     ],
   },
 }
@@ -310,7 +325,7 @@ const contentMetadata = {
       sortBy: 'sort',
     },
     'play-along': {
-      name: 'Play Alongs',
+      name: 'Play-Alongs',
       icon: 'icon-play-alongs',
       description:
             'Add your drumming to high-quality drumless play-along tracks - with handy playback tools to help you create the perfect performance.',
@@ -354,7 +369,7 @@ const contentMetadata = {
           'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
           'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
         ],
-        type:       ['Tutorials', 'Transcriptions', 'Play Alongs', 'Jam Tracks'],
+        type:       ['Tutorials', 'Transcriptions', 'Play-Alongs', 'Jam Tracks'],
         progress:   PROGRESS_NAMES,
       },
       sortingOptions: {
@@ -377,7 +392,7 @@ const contentMetadata = {
       filterOptions: {
         difficulty: DIFFICULTY_STRINGS,
         style: ['Classical', 'Country/Folk', 'Funk/Disco', 'Hip-Hop/Rap/EDM', 'Holiday/Soundtrack', 'Jazz/Blues', 'Latin/World', 'Pop/Rock', 'R&B/Soul', 'Worship/Gospel'],
-        type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Shows', 'Documentaries', 'Live Archives', 'Student Archives'],
+        type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Live Archives', 'Student Archives'],
         progress: PROGRESS_NAMES,
       },
       tabs: [
@@ -395,7 +410,7 @@ const contentMetadata = {
           'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
           'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
         ],
-        type:       ['Tutorials', 'Sheet Music', 'Play Alongs', 'Jam Tracks'],
+        type:       ['Tutorials', 'Sheet Music', 'Play-Alongs', 'Jam Tracks'],
         progress:   PROGRESS_NAMES,
       },
       sortingOptions: {
@@ -409,6 +424,14 @@ const contentMetadata = {
         Tabs.Transcriptions,
         Tabs.PlayAlongs,
         Tabs.ExploreAll
+      ],
+    },
+    'recent': {
+      name: 'Recent Lessons',
+      tabs: [
+        Tabs.RecentAll,
+        Tabs.RecentIncomplete,
+        Tabs.RecentCompleted
       ],
     },
   },
@@ -438,7 +461,7 @@ const contentMetadata = {
           'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
           'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
         ],
-        type:       ['Tutorials', 'Tabs', 'Play Alongs', 'Jam Tracks'],
+        type:       ['Tutorials', 'Tabs', 'Play-Alongs', 'Jam Tracks'],
         progress:   PROGRESS_NAMES,
       },
       sortingOptions: {
@@ -452,6 +475,14 @@ const contentMetadata = {
         Tabs.Transcriptions,
         Tabs.PlayAlongs,
         Tabs.ExploreAll
+      ],
+    },
+    'recent': {
+      name: 'Recent Lessons',
+      tabs: [
+        Tabs.RecentAll,
+        Tabs.RecentIncomplete,
+        Tabs.RecentCompleted
       ],
     },
   },
@@ -470,7 +501,7 @@ const contentMetadata = {
           'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
           'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
         ],
-        type:       ['Tutorials', 'Sheet Music', 'Play Alongs', 'Jam Tracks'],
+        type:       ['Tutorials', 'Sheet Music', 'Play-Alongs', 'Jam Tracks'],
         progress:   PROGRESS_NAMES,
       },
       sortingOptions: {
@@ -484,6 +515,14 @@ const contentMetadata = {
         Tabs.Transcriptions,
         Tabs.PlayAlongs,
         Tabs.ExploreAll
+      ],
+    },
+    'recent': {
+      name: 'Recent Lessons',
+      tabs: [
+        Tabs.RecentAll,
+        Tabs.RecentIncomplete,
+        Tabs.RecentCompleted
       ],
     },
   }

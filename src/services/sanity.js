@@ -17,7 +17,7 @@ import {
   getChildFieldsForContentType,
   SONG_TYPES,
 } from '../contentTypeConfig.js'
-import { fetchSimilarItems } from './recommendations.js'
+import {fetchSimilarItems, recommendations} from './recommendations.js'
 import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
 
 import { globalConfig } from './config.js'
@@ -388,8 +388,6 @@ export async function fetchNewReleases(
  *   .catch(error => console.error(error));
  */
 export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) {
-  const liveTypes = getUpcomingEventsTypes(brand)
-  const typesString = arrayToStringRepresentation(liveTypes)
   const now = getSanityDate(new Date())
   const start = (page - 1) * limit
   const end = start + limit
@@ -407,9 +405,11 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         "type": _type,
         web_url_path,
         "permission_id": permission[]->railcontent_id,
+        live_event_start_time,
+        live_event_end_time,
          "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}'`
   const query = buildRawQuery(
-    `_type in ${typesString} && brand == '${brand}' && published_on > '${now}' && status == 'scheduled'`,
+    `defined(live_event_start_time) && (!defined(live_event_end_time) || live_event_end_time >= '${now}' ) && brand == '${brand}' && published_on > '${now}' && status == 'scheduled'`,
     fields,
     {
       sortOrder: 'published_on asc',
@@ -443,7 +443,7 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
   const now = getSanityDate(new Date())
   const start = (page - 1) * limit
   const end = start + limit
-  const query = `*[_type in [${typesString}] && brand == '${brand}' && status in ['published','scheduled'] && published_on > '${now}']{
+  const query = `*[_type in [${typesString}] && brand == '${brand}' && status in ['published','scheduled'] && (!defined(live_event_end_time) || live_event_end_time < '${now}' ) && published_on > '${now}']{
       "id": railcontent_id,
       title,
       "image": thumbnail.asset->url,
@@ -512,15 +512,18 @@ export async function fetchByRailContentId(id, contentType) {
  *   .then(contents => console.log(contents))
  *   .catch(error => console.error(error));
  */
-export async function fetchByRailContentIds(ids, contentType = undefined) {
+export async function fetchByRailContentIds(ids, contentType = undefined, brand = undefined) {
   if (!ids) {
     return []
   }
   const idsString = ids.join(',')
+  const brandFilter = brand ? ` && brand == "${brand}"` : ''
+  const query = `*[
+    railcontent_id in [${idsString}]${brandFilter}
+  ]{
+    ${getFieldsForContentType(contentType)}
+  }`
 
-  const query = `*[railcontent_id in [${idsString}]]{
-        ${getFieldsForContentType(contentType)}
-      }`
   const results = await fetchSanity(query, true)
 
   const sortFuction = function compare(a, b) {
@@ -885,11 +888,11 @@ async function getProgressFilter(progress, progressIds) {
       return `&& !(railcontent_id in [${ids.join(',')}])`
     }
     case 'recent': {
-      const ids = await getAllStartedOrCompleted()
+      const ids = progressIds !== undefined ? progressIds : await getAllStartedOrCompleted()
       return `&& (railcontent_id in [${ids.join(',')}])`
     }
     case 'incomplete': {
-      const ids = await getAllStarted()
+      const ids = progressIds !== undefined ? progressIds :await getAllStarted()
       return `&& railcontent_id in [${ids.join(',')}]`
     }
     default:
@@ -900,7 +903,7 @@ async function getProgressFilter(progress, progressIds) {
 export function getSortOrder(sort = '-published_on', brand, groupBy) {
   // Determine the sort order
   let sortOrder = ''
-  const isDesc = sort.startsWith('-')
+  let isDesc = sort.startsWith('-')
   sort = isDesc ? sort.substring(1) : sort
   switch (sort) {
     case 'slug':
@@ -915,6 +918,10 @@ export function getSortOrder(sort = '-published_on', brand, groupBy) {
       } else {
         sortOrder = isDesc ? 'coalesce(popularity, -1)' : 'popularity'
       }
+      break
+    case 'recommended':
+      sortOrder = 'published_on'
+      isDesc = true
       break
     case 'published_on':
     default:
@@ -1266,7 +1273,6 @@ export async function fetchLessonContent(railContentId) {
           "id":railcontent_id,
           slug, artist->,
           "thumbnail":thumbnail.asset->url,
-          "url": web_url_path,
           soundslice_slug,
           "description": description[0].children[0].text,
           "chapters": chapter[]{
@@ -1274,7 +1280,7 @@ export async function fetchLessonContent(railContentId) {
             chapter_timecode,
             "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
           },
-          artist->,
+          'artist': { 'name': artist->name, 'thumbnail': artist->thumbnail_url.asset->url},
           "instructors":instructor[]->name,
           "instructor": instructor[]->{
             "id":railcontent_id,
@@ -1296,17 +1302,32 @@ export async function fetchLessonContent(railContentId) {
           "parent_content_data": parent_content_data[]{
             "id": id,
             "title": *[railcontent_id == ^.id][0].title,
-            "web_url_path": *[railcontent_id == ^.id][0].web_url_path,
             "slug":*[railcontent_id == ^.id][0].slug,
             "type": *[railcontent_id == ^.id][0]._type,
+            "logo" : *[railcontent_id == ^.id][0].logo_image_url.asset->url,
+            "dark_mode_logo": *[railcontent_id == ^.id][0].dark_mode_logo_url.asset->url,
+            "light_mode_logo": *[railcontent_id == ^.id][0].light_mode_logo_url.asset->url,
           },
           sort,
           xp,
-          stbs,ds2stbs, bdsStbs`
+          stbs,ds2stbs, bdsStbs,
+          ...select(
+                defined(live_event_start_time) => {
+                  "live_event_start_time": live_event_start_time,
+                  "live_event_end_time": live_event_end_time,
+                  "live_event_youtube_id": live_event_youtube_id,
+                  "videoId": coalesce(live_event_youtube_id, video.external_id),
+                  "live_event_is_global": live_global_event == true
+                }
+              )`
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
   })
   const chapterProcess = (result) => {
+    const now = getSanityDate(new Date(), false)
+    if (result.live_event_start_time && result.live_event_end_time) {
+      result.isLive = result.live_event_start_time <= now && result.live_event_end_time >= now
+    }
     const chapters = result.chapters ?? []
     if (chapters.length == 0) return result
     result.chapters = chapters.map((chapter, index) => ({
@@ -1320,15 +1341,23 @@ export async function fetchLessonContent(railContentId) {
 }
 
 /**
+ * Returns a list of recommended content based on the provided railContentId.
+ * If no recommendations found in recsys, falls back to fetching related lessons.
  *
  * @param railContentId
  * @param brand
  * @param count
- * @returns {Promise<Array<Object>|null>}
+ * @returns {Promise<Array<Object>>}
  */
 export async function fetchRelatedRecommendedContent(railContentId, brand, count = 10) {
   const recommendedItems = await fetchSimilarItems(railContentId, brand, count)
-  return fetchByRailContentIds(recommendedItems)
+  if (recommendedItems && recommendedItems.length > 0) {
+    return fetchByRailContentIds(recommendedItems)
+  }
+
+  return await fetchRelatedLessons(railContentId, brand).then((result) =>
+    result.related_lessons?.splice(0, count)
+  )
 }
 
 /**
@@ -1409,12 +1438,18 @@ export async function fetchRelatedLessons(railContentId, brand) {
   const filterSongSameGenre = await new FilterBuilder(
     `_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}`
   ).buildFilter()
-  const filterNeighbouringSiblings = await new FilterBuilder(`references(^._id)`).buildFilter()
+  const filterNeighbouringSiblings = await new FilterBuilder(`references(^._id)`, {
+    pullFutureContent: true,
+  }).buildFilter()
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
+  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
   const queryFieldsWithSort = queryFields + ', sort'
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
-   _type, parent_type, railcontent_id,
+   _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
+   'for-calculations': *[references(^._id) && !(_type in ['license'])][0]{
+    'siblings-list': child[]->railcontent_id,
+    'parents-list': *[references(^._id)][0].child[]->railcontent_id
+    },
     "related_lessons" : array::unique([
       ...(*[${filterNeighbouringSiblings}][0].child[${childrenFilter}]->{${queryFields}}),
       ...(*[${filterSongSameArtist}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
@@ -1423,7 +1458,23 @@ export async function fetchRelatedLessons(railContentId, brand) {
       ...(*[${filterSameType}]{${queryFields}}|order(published_on desc, title asc)[0...10])
       ,
       ])[0...10]}`
-  return fetchSanity(query, false)
+  let result = await fetchSanity(query, false)
+
+  //there's no way in sanity to retrieve the index of an array, so we must calculate after fetch
+  if (result['for-calculations'] && result['for-calculations']['parents-list']) {
+    const calc = result['for-calculations']
+    const parentCount = calc['parents-list'].length
+    const currentParent = calc['parents-list'].indexOf(result['parent_id']) + 1
+    const siblingCount = calc['siblings-list'].length
+    const currentSibling = calc['siblings-list'].indexOf(result['railcontent_id']) + 1
+
+    delete result['for-calculations']
+    result = { ...result, parentCount, currentParent, siblingCount, currentSibling }
+    return result
+  } else {
+    delete result['for-calculations']
+    return result
+  }
 }
 
 /**
@@ -1468,6 +1519,7 @@ export async function fetchPackAll(railcontentId, type = 'pack') {
 }
 
 export async function fetchLiveEvent(brand, forcedContentId = null) {
+  const LIVE_EXTRA_MINUTES = 30
   //calendarIDs taken from addevent.php
   // TODO import instructor calendars to Sanity
   let defaultCalendarID = ''
@@ -1489,8 +1541,11 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
   }
   let startDateTemp = new Date()
   let endDateTemp = new Date()
-  startDateTemp = new Date(startDateTemp.setMinutes(startDateTemp.getMinutes() + 15))
-  endDateTemp = new Date(endDateTemp.setMinutes(endDateTemp.getMinutes() - 15))
+
+  startDateTemp = new Date(
+    startDateTemp.setMinutes(startDateTemp.getMinutes() + LIVE_EXTRA_MINUTES)
+  )
+  endDateTemp = new Date(endDateTemp.setMinutes(endDateTemp.getMinutes() - LIVE_EXTRA_MINUTES))
 
   // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
   // this has some +- on times
@@ -2137,12 +2192,12 @@ async function buildQuery(
 function buildEntityAndTotalQuery(
   filter = '',
   fields = '...',
-  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false }
+  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false, withoutPagination = false }
 ) {
-  const sortString = sortOrder ? `order(${sortOrder})` : ''
-  const countString = isSingle ? '[0...1]' : `[${start}...${end}]`
+  const sortString = sortOrder ? ` | order(${sortOrder})` : ''
+  const countString = isSingle ? '[0...1]' : (withoutPagination ? ``: `[${start}...${end}]`)
   const query = `{
-      "entity": *[${filter}] | ${sortString}${countString}
+      "entity": *[${filter}]  ${sortString}${countString}
       {
         ${fields}
       },
@@ -2261,16 +2316,35 @@ export async function fetchTabData(
 ) {
   const start = (page - 1) * limit
   const end = start + limit
-
+  let withoutPagination = false
   // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
   const includedFieldsFilter =
     includedFields.length > 0 ? filtersToGroq(includedFields, [], pageName) : ''
 
+  let sortOrder = getSortOrder(sort, brand, '')
+
+  switch (progress) {
+    case 'recent':
+      progressIds = await getAllStartedOrCompleted({ brand, onlyIds: true });
+      sortOrder = null;
+      withoutPagination = true;
+      break;
+    case 'incomplete':
+      progressIds = await getAllStarted();
+      sortOrder = null;
+      break;
+    case 'completed':
+      progressIds = await getAllCompleted();
+      sortOrder = null;
+      break;
+  }
+
   // limits the results to supplied progressIds for started & completed filters
   const progressFilter = await getProgressFilter(progress, progressIds)
-
-  // Determine the sort order
-  const sortOrder = getSortOrder(sort, brand, '')
+  if(sort == "recommended"){
+    progressIds = await recommendations(brand);
+    withoutPagination = true;
+  }
 
   let fields = DEFAULT_FIELDS
   let fieldsString = fields.join(',')
@@ -2298,9 +2372,23 @@ export async function fetchTabData(
     sortOrder: sortOrder,
     start: start,
     end: end,
+    withoutPagination: withoutPagination,
   })
 
-  return fetchSanity(query, true)
+  let results = await fetchSanity(query, true);
+
+  if ((['recent', 'incomplete', 'completed'].includes(progress) || sort == "recommended" )&& results.entity.length > 1) {
+    const orderMap = new Map(progressIds.map((id, index) => [id, index]))
+    results.entity = results.entity
+      .sort((a, b) => {
+        const aIdx = orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+        const bIdx = orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+        return aIdx - bIdx || new Date(b.published_on) - new Date(a.published_on);
+      })
+      .slice(start, end);
+  }
+
+  return results;
 }
 
 export async function fetchRecent(
@@ -2353,5 +2441,16 @@ export async function fetchScheduledAndNewReleases(
       "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}',
   }`
 
+  return fetchSanity(query, true)
+}
+
+export async function fetchShows(brand, type, sort = 'sort') {
+  const sortOrder = getSortOrder(sort, brand)
+  const filter = `_type == '${type}'  && brand == '${brand}'`
+  const filterParams = {}
+
+  const query = await buildQuery(filter, filterParams, getFieldsForContentType(type), {
+    sortOrder: sortOrder,
+  })
   return fetchSanity(query, true)
 }

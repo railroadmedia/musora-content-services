@@ -1,0 +1,1451 @@
+[
+  {
+    "artist": null,
+    "artist_name": "Domino Santantonio",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 3,
+    "difficulty_string": "Beginner",
+    "genre": null,
+    "id": 410480,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/a1331acc11c72891d3078dbb000e566b56b95794-8000x4500.jpg",
+    "length_in_seconds": 302,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": [
+      410478
+    ],
+    "permission_id": [
+      1,
+      78,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2024-07-19T07:01:00.000000Z",
+    "railcontent_id": 410480,
+    "sanity_id": "challenge-part_410480",
+    "slug": "day-2-around-the-kit",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/a1331acc11c72891d3078dbb000e566b56b95794-8000x4500.jpg",
+    "title": "Day 2 — Around The Kit",
+    "type": "challenge-part",
+    "url": "/drumeo/challenge/sheet-music-101/410478/day-2-around-the-kit/410480",
+    "web_url_path": "/drumeo/challenge/sheet-music-101/410478/day-2-around-the-kit/410480",
+    "xp": 100,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Domino Santantonio",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 3,
+    "difficulty_string": "Beginner",
+    "genre": null,
+    "id": 410481,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/a7f46367bf84cd4425e9ebb26c3d411901a32adc-8000x4500.jpg",
+    "length_in_seconds": 288,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": [
+      410478
+    ],
+    "permission_id": [
+      1,
+      78,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2024-07-20T07:01:00.000000Z",
+    "railcontent_id": 410481,
+    "sanity_id": "challenge-part_410481",
+    "slug": "day-3-more-bass-drum",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/a7f46367bf84cd4425e9ebb26c3d411901a32adc-8000x4500.jpg",
+    "title": "Day 3 — More Bass Drum",
+    "type": "challenge-part",
+    "url": "/drumeo/challenge/sheet-music-101/410478/more-bass-drum/410481",
+    "web_url_path": "/drumeo/challenge/sheet-music-101/410478/more-bass-drum/410481",
+    "xp": 100,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Domino Santantonio",
+    "brand": "drumeo",
+    "child_count": 24,
+    "difficulty": 1,
+    "difficulty_string": "Novice",
+    "genre": null,
+    "id": 402199,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/94ffc60e09728dcb15f6443fd275fc5a67cb0dd6-8334x10417.png",
+    "length_in_seconds": 17451,
+    "lesson_count": 24,
+    "lessons": [
+      {
+        "brand": "drumeo",
+        "id": 402542,
+        "lessons": null,
+        "slug": "course-kick-off",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402314,
+        "lessons": null,
+        "slug": "acoustic-kit-setup",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402316,
+        "lessons": null,
+        "slug": "electronic-kit-setup",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402318,
+        "lessons": null,
+        "slug": "practice-pad-setup",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402320,
+        "lessons": null,
+        "slug": "day-1-your-first-drum-beat-lesson-workout-1",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402322,
+        "lessons": null,
+        "slug": "your-first-drum-beat-workout-2",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402324,
+        "lessons": null,
+        "slug": "your-first-drum-beat-workout-3",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402326,
+        "lessons": null,
+        "slug": "your-first-drum-beat-workout-4",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402328,
+        "lessons": null,
+        "slug": "your-first-drum-beat-workout-5",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402330,
+        "lessons": null,
+        "slug": "doubling-it-up-lesson-workout-1",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402332,
+        "lessons": null,
+        "slug": "doubling-it-up-workout-2",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402334,
+        "lessons": null,
+        "slug": "doubling-it-up-workout-3",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402336,
+        "lessons": null,
+        "slug": "doubling-it-up-workout-4",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402338,
+        "lessons": null,
+        "slug": "doubling-it-up-workout-5",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402340,
+        "lessons": null,
+        "slug": "adding-fills-crashes-lesson-workout-1",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402342,
+        "lessons": null,
+        "slug": "adding-fills-crashes-workout-2",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402344,
+        "lessons": null,
+        "slug": "adding-fills-crashes-workout-3",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402346,
+        "lessons": null,
+        "slug": "adding-fills-crashes-workout-4",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402348,
+        "lessons": null,
+        "slug": "adding-fills-crashes-workout-5",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402350,
+        "lessons": null,
+        "slug": "your-first-song-lesson-workout-1",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402352,
+        "lessons": null,
+        "slug": "your-first-song-workout-2",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402354,
+        "lessons": null,
+        "slug": "your-first-song-workout-3",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402356,
+        "lessons": null,
+        "slug": "your-first-song-workout-4",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 402358,
+        "lessons": null,
+        "slug": "your-first-song-workout-5",
+        "type": "challenge-part"
+      }
+    ],
+    "parent_content_data": null,
+    "permission_id": [
+      91,
+      92,
+      1,
+      78,
+      101,
+      102
+    ],
+    "progress_percent": null,
+    "published_on": "2023-12-28T08:02:00.000000Z",
+    "railcontent_id": 402199,
+    "sanity_id": "challenge_402199",
+    "slug": "30-day-drummer",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/94ffc60e09728dcb15f6443fd275fc5a67cb0dd6-8334x10417.png",
+    "title": "30-Day Drummer",
+    "type": "challenge",
+    "url": "/drumeo/challenge/30-day-drummer/402199",
+    "web_url_path": "/drumeo/challenge/30-day-drummer/402199",
+    "xp": 100,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Domino Santantonio",
+    "brand": "drumeo",
+    "child_count": 9,
+    "difficulty": 3,
+    "difficulty_string": "Beginner",
+    "genre": null,
+    "id": 410478,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/6f01890a7c09b7cc1600ca85b7c6feb56759e277-8334x10417.png",
+    "length_in_seconds": 2246,
+    "lesson_count": 9,
+    "lessons": [
+      {
+        "brand": "drumeo",
+        "id": 410479,
+        "lessons": null,
+        "slug": "day-1-the-money-beat",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 410480,
+        "lessons": null,
+        "slug": "day-2-around-the-kit",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 410481,
+        "lessons": null,
+        "slug": "day-3-more-bass-drum",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 410482,
+        "lessons": null,
+        "slug": "day-4-more-snare-drum",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 410484,
+        "lessons": null,
+        "slug": "day-5-adding-a-crash",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 410483,
+        "lessons": null,
+        "slug": "day-6-rests",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 410485,
+        "lessons": null,
+        "slug": "day-7-drum-fills",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 410486,
+        "lessons": null,
+        "slug": "day-8-flams-and-drags",
+        "type": "challenge-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 410487,
+        "lessons": null,
+        "slug": "day-9-what-s-next",
+        "type": "challenge-part"
+      }
+    ],
+    "parent_content_data": null,
+    "permission_id": [
+      1,
+      78,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2024-07-18T07:01:00.000000Z",
+    "railcontent_id": 410478,
+    "sanity_id": "challenge_410478",
+    "slug": "sheet-music-101",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/6f01890a7c09b7cc1600ca85b7c6feb56759e277-8334x10417.png",
+    "title": "Sheet Music 101",
+    "type": "challenge",
+    "url": "/drumeo/challenge/sheet-music-101/410478",
+    "web_url_path": "/drumeo/challenge/sheet-music-101/410478",
+    "xp": 100,
+    "need_access": false,
+    "first_incomplete_child": {
+      "brand": "drumeo",
+      "id": 410479,
+      "lessons": null,
+      "slug": "day-1-the-money-beat",
+      "type": "challenge-part"
+    },
+    "second_incomplete_child": null
+  },
+  {
+    "artist": null,
+    "artist_name": "Kyle Radomsky",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 0,
+    "difficulty_string": "All",
+    "genre": null,
+    "id": 274889,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/2263f9dc44a5c2c6e775513d4eebbaae92cabf20-1921x1080.png",
+    "length_in_seconds": 62,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": [
+      274368
+    ],
+    "permission_id": [
+      1,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2020-11-14T16:00:00.000000Z",
+    "railcontent_id": 274889,
+    "sanity_id": "course-part_274889",
+    "slug": "introduction",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/2263f9dc44a5c2c6e775513d4eebbaae92cabf20-1921x1080.png",
+    "title": "Introduction",
+    "type": "course-part",
+    "url": "/drumeo/courses/electronic-multi-pad-gear-guide/274368/introduction/274889",
+    "web_url_path": "/drumeo/courses/electronic-multi-pad-gear-guide/274368/introduction/274889",
+    "xp": 150,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Kyle Radomsky",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 0,
+    "difficulty_string": "All",
+    "genre": null,
+    "id": 287853,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/3fb1f385e41f351105ee8714ee2ef7cc1eafcfc1-3841x2160.png",
+    "length_in_seconds": 1043,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": [
+      280498
+    ],
+    "permission_id": [
+      1,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2021-02-06T16:00:00.000000Z",
+    "railcontent_id": 287853,
+    "sanity_id": "course-part_287853",
+    "slug": "introduction-unboxing",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/3fb1f385e41f351105ee8714ee2ef7cc1eafcfc1-3841x2160.png",
+    "title": "Introduction/Unboxing",
+    "type": "course-part",
+    "url": "/drumeo/courses/roland-td-07-gear-guide/280498/introduction-unboxing/287853",
+    "web_url_path": "/drumeo/courses/roland-td-07-gear-guide/280498/introduction-unboxing/287853",
+    "xp": 150,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Kyle Radomsky",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 0,
+    "difficulty_string": "All",
+    "genre": null,
+    "id": 287855,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/21431571d1d2b6db97ce104d1e44d57e280f8a4a-3840x2160.png",
+    "length_in_seconds": 834,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": [
+      280498
+    ],
+    "permission_id": [
+      1,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2021-02-06T16:00:00.000000Z",
+    "railcontent_id": 287855,
+    "sanity_id": "course-part_287855",
+    "slug": "creating-your-own-kits-and-advanced-features",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/21431571d1d2b6db97ce104d1e44d57e280f8a4a-3840x2160.png",
+    "title": "Creating Your Own Kits And Advanced Features",
+    "type": "course-part",
+    "url": "/drumeo/courses/roland-td-07-gear-guide/280498/creating-your-own-kits-and-advanced-features/287855",
+    "web_url_path": "/drumeo/courses/roland-td-07-gear-guide/280498/creating-your-own-kits-and-advanced-features/287855",
+    "xp": 150,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Kyle Radomsky",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 0,
+    "difficulty_string": "All",
+    "genre": null,
+    "id": 287858,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/e72d6b3e5517d329f035c7e17e680e5012c544f6-3840x2160.png",
+    "length_in_seconds": 652,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": [
+      280498
+    ],
+    "permission_id": [
+      1,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2021-02-06T16:00:00.000000Z",
+    "railcontent_id": 287858,
+    "sanity_id": "course-part_287858",
+    "slug": "coach-function-and-bluetooth",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/e72d6b3e5517d329f035c7e17e680e5012c544f6-3840x2160.png",
+    "title": "Coach Function And Bluetooth",
+    "type": "course-part",
+    "url": "/drumeo/courses/roland-td-07-gear-guide/280498/coach-function-and-bluetooth/287858",
+    "web_url_path": "/drumeo/courses/roland-td-07-gear-guide/280498/coach-function-and-bluetooth/287858",
+    "xp": 150,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Kyle Radomsky",
+    "brand": "drumeo",
+    "child_count": 5,
+    "difficulty": 1,
+    "difficulty_string": "Novice",
+    "genre": null,
+    "id": 274368,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/9dfbf11ccceadd68ceb6f41bf6d0dd42a562afa7-1921x1080.png",
+    "length_in_seconds": 2343,
+    "lesson_count": 5,
+    "lessons": [
+      {
+        "brand": "drumeo",
+        "id": 274889,
+        "lessons": null,
+        "slug": "introduction",
+        "type": "course-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 274890,
+        "lessons": null,
+        "slug": "yamaha-dtx-multi-12",
+        "type": "course-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 274891,
+        "lessons": null,
+        "slug": "roland-spd-sx-se",
+        "type": "course-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 274892,
+        "lessons": null,
+        "slug": "alesis-strike-pad",
+        "type": "course-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 274893,
+        "lessons": null,
+        "slug": "conclusion",
+        "type": "course-part"
+      }
+    ],
+    "parent_content_data": null,
+    "permission_id": [
+      1,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2020-11-14T16:00:00.000000Z",
+    "railcontent_id": 274368,
+    "sanity_id": "course_274368",
+    "slug": "electronic-multi-pad-gear-guide",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/9dfbf11ccceadd68ceb6f41bf6d0dd42a562afa7-1921x1080.png",
+    "title": "Electronic Multi-Pad Gear Guide",
+    "type": "course",
+    "url": "/drumeo/courses/electronic-multi-pad-gear-guide/274368",
+    "web_url_path": "/drumeo/courses/electronic-multi-pad-gear-guide/274368",
+    "xp": 150,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Kyle Radomsky",
+    "brand": "drumeo",
+    "child_count": 5,
+    "difficulty": 0,
+    "difficulty_string": "All",
+    "genre": null,
+    "id": 280498,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/ae9eebd6b11e17dc4dcbaea5b06668b4bc800aa2-3840x2160.png",
+    "length_in_seconds": 3159,
+    "lesson_count": 5,
+    "lessons": [
+      {
+        "brand": "drumeo",
+        "id": 287853,
+        "lessons": null,
+        "slug": "introduction-unboxing",
+        "type": "course-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 287854,
+        "lessons": null,
+        "slug": "basic-features-and-playing-examples",
+        "type": "course-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 287855,
+        "lessons": null,
+        "slug": "creating-your-own-kits-and-advanced-features",
+        "type": "course-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 287858,
+        "lessons": null,
+        "slug": "coach-function-and-bluetooth",
+        "type": "course-part"
+      },
+      {
+        "brand": "drumeo",
+        "id": 287859,
+        "lessons": null,
+        "slug": "conclusion",
+        "type": "course-part"
+      }
+    ],
+    "parent_content_data": null,
+    "permission_id": [
+      1,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2021-02-06T16:00:00.000000Z",
+    "railcontent_id": 280498,
+    "sanity_id": "course_280498",
+    "slug": "roland-td-07-gear-guide",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/ae9eebd6b11e17dc4dcbaea5b06668b4bc800aa2-3840x2160.png",
+    "title": "Roland TD-07 Gear Guide",
+    "type": "course",
+    "url": "/drumeo/courses/roland-td-07-gear-guide/280498",
+    "web_url_path": "/drumeo/courses/roland-td-07-gear-guide/280498",
+    "xp": 500,
+    "need_access": false,
+    "first_incomplete_child": {
+      "brand": "drumeo",
+      "id": 287854,
+      "lessons": null,
+      "slug": "basic-features-and-playing-examples",
+      "type": "course-part"
+    },
+    "second_incomplete_child": null
+  },
+  {
+    "artist": null,
+    "artist_name": "Domino Santantonio",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 0,
+    "difficulty_string": "All",
+    "genre": null,
+    "id": 415585,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/86f0094cd02a27b3efcab4fc23dc08d1bea3471e-1920x1080.jpg",
+    "length_in_seconds": 3770,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": null,
+    "permission_id": [
+      78,
+      89,
+      88,
+      90,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2025-02-01T19:17:42.354Z",
+    "railcontent_id": 415585,
+    "sanity_id": "f727e89d-d254-473c-9511-40ab237d30b4",
+    "slug": "30-day-drummer-level-ii-week-4-live-q-and-a",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/86f0094cd02a27b3efcab4fc23dc08d1bea3471e-1920x1080.jpg",
+    "title": "30-Day Drummer Level II: Week 4 — Live Q&A",
+    "type": "question-and-answer",
+    "url": "/drumeo/question-and-answer/30-day-drummer-level-ii-week-4-live-q-and-a/415585",
+    "web_url_path": "/drumeo/question-and-answer/30-day-drummer-level-ii-week-4-live-q-and-a/415585",
+    "xp": 150,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Aaron Graham",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 0,
+    "difficulty_string": "All",
+    "genre": [
+      "Pop/Rock"
+    ],
+    "id": 410255,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/0c3eab2d329c7794d1a5295cf15667bb09942ca6-1920x1080.jpg",
+    "length_in_seconds": 5894,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": null,
+    "permission_id": [
+      78,
+      91,
+      92,
+      89,
+      88,
+      90
+    ],
+    "progress_percent": null,
+    "published_on": "2024-08-29T00:00:00.000000Z",
+    "railcontent_id": 410255,
+    "sanity_id": "live_410255",
+    "slug": "the-police-groove-fills",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/0c3eab2d329c7794d1a5295cf15667bb09942ca6-1920x1080.jpg",
+    "title": "Live Premiere - The Police Grooves & Fills",
+    "type": "live",
+    "url": "/drumeo/live-streams/the-police-groove-fills/410255",
+    "web_url_path": "/drumeo/live-streams/the-police-groove-fills/410255",
+    "xp": 150,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Jared Falk",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 0,
+    "difficulty_string": "All",
+    "genre": null,
+    "id": 257245,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/d1f585c45eabed92b1ecc17d98e5c5a4c68663aa-3840x2160.png",
+    "length_in_seconds": 273,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": [
+      257243
+    ],
+    "permission_id": [
+      1,
+      65,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2020-06-09T15:00:00.000000Z",
+    "railcontent_id": 257245,
+    "sanity_id": "pack-bundle-lesson_257245",
+    "slug": "week-1---drum-fill-foundations",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/d1f585c45eabed92b1ecc17d98e5c5a4c68663aa-3840x2160.png",
+    "title": "What Is A Drum Fill?",
+    "type": "pack-bundle-lesson",
+    "url": "/drumeo/packs/4-weeks-to-better-drum-fills/257242/4-weeks-to-better-drum-fills/257243/week-1---drum-fill-foundations/257245",
+    "web_url_path": "/drumeo/packs/4-weeks-to-better-drum-fills/257242/4-weeks-to-better-drum-fills/257243/week-1---drum-fill-foundations/257245",
+    "xp": 150,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Jared Falk",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 0,
+    "difficulty_string": "All",
+    "genre": null,
+    "id": 257249,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/1400dad32e30c670c29e557ba4af467304188d88-3840x2160.png",
+    "length_in_seconds": 279,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": [
+      257243,
+      257242
+    ],
+    "permission_id": [
+      1,
+      65,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2020-06-09T15:00:00.000000Z",
+    "railcontent_id": 257249,
+    "sanity_id": "pack-bundle-lesson_257249",
+    "slug": "lengths-of-drum-fills",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/1400dad32e30c670c29e557ba4af467304188d88-3840x2160.png",
+    "title": "Lengths Of Drum Fills",
+    "type": "pack-bundle-lesson",
+    "url": "/drumeo/packs/4-weeks-to-better-drum-fills/257242/4-weeks-to-better-drum-fills/257243/lengths-of-drum-fills/257249",
+    "web_url_path": "/drumeo/packs/4-weeks-to-better-drum-fills/257242/4-weeks-to-better-drum-fills/257243/lengths-of-drum-fills/257249",
+    "xp": 150,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Jared Falk",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 0,
+    "difficulty_string": "All",
+    "genre": null,
+    "id": 257250,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/54d9510678088385d1d1ab002a00ed71ccc18a70-3840x2160.png",
+    "length_in_seconds": 417,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": [
+      257243,
+      257242
+    ],
+    "permission_id": [
+      1,
+      65,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2020-06-09T15:00:00.000000Z",
+    "railcontent_id": 257250,
+    "sanity_id": "pack-bundle-lesson_257250",
+    "slug": "practice-tips--practice-space",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/54d9510678088385d1d1ab002a00ed71ccc18a70-3840x2160.png",
+    "title": "Practice Tips & Practice Space",
+    "type": "pack-bundle-lesson",
+    "url": "/drumeo/packs/4-weeks-to-better-drum-fills/257242/4-weeks-to-better-drum-fills/257243/practice-tips--practice-space/257250",
+    "web_url_path": "/drumeo/packs/4-weeks-to-better-drum-fills/257242/4-weeks-to-better-drum-fills/257243/practice-tips--practice-space/257250",
+    "xp": 150,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": null,
+    "brand": "drumeo",
+    "child_count": 5,
+    "difficulty": 0,
+    "difficulty_string": "All",
+    "genre": null,
+    "id": 257243,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/7fc6edf19f68d80193a9718c25ece693c3475198-368x207.png",
+    "length_in_seconds": 2329,
+    "lesson_count": 5,
+    "lessons": [
+      {
+        "brand": "drumeo",
+        "id": 257245,
+        "lessons": null,
+        "slug": "week-1---drum-fill-foundations",
+        "type": "pack-bundle-lesson"
+      },
+      {
+        "brand": "drumeo",
+        "id": 257249,
+        "lessons": null,
+        "slug": "lengths-of-drum-fills",
+        "type": "pack-bundle-lesson"
+      },
+      {
+        "brand": "drumeo",
+        "id": 257250,
+        "lessons": null,
+        "slug": "practice-tips--practice-space",
+        "type": "pack-bundle-lesson"
+      },
+      {
+        "brand": "drumeo",
+        "id": 257251,
+        "lessons": null,
+        "slug": "the-note-value-tree",
+        "type": "pack-bundle-lesson"
+      },
+      {
+        "brand": "drumeo",
+        "id": 259235,
+        "lessons": null,
+        "slug": "the-motions",
+        "type": "pack-bundle-lesson"
+      }
+    ],
+    "parent_content_data": [
+      257242
+    ],
+    "permission_id": [
+      1,
+      65,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2020-06-09T15:00:00.000000Z",
+    "railcontent_id": 257243,
+    "sanity_id": "pack-bundle_257243",
+    "slug": "4-weeks-to-better-drum-fills",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/7fc6edf19f68d80193a9718c25ece693c3475198-368x207.png",
+    "title": "Week #1 - Drum Fill Foundations",
+    "type": "pack-bundle",
+    "url": "/drumeo/packs/4-weeks-to-better-drum-fills/257242/4-weeks-to-better-drum-fills/257243",
+    "web_url_path": "/drumeo/packs/4-weeks-to-better-drum-fills/257242/4-weeks-to-better-drum-fills/257243",
+    "xp": 0,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Jared Falk",
+    "brand": "drumeo",
+    "child_count": 4,
+    "difficulty": 0,
+    "difficulty_string": "All",
+    "genre": null,
+    "id": 257242,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/da4675ae1f67e84bf7bb8a494d83629367121a6c-1530x861.jpg",
+    "length_in_seconds": null,
+    "lesson_count": 15,
+    "lessons": [
+      {
+        "brand": "drumeo",
+        "id": 257243,
+        "lessons": [
+          {
+            "brand": "drumeo",
+            "id": 257245,
+            "slug": "week-1---drum-fill-foundations",
+            "type": "pack-bundle-lesson"
+          },
+          {
+            "brand": "drumeo",
+            "id": 257249,
+            "slug": "lengths-of-drum-fills",
+            "type": "pack-bundle-lesson"
+          },
+          {
+            "brand": "drumeo",
+            "id": 257250,
+            "slug": "practice-tips--practice-space",
+            "type": "pack-bundle-lesson"
+          },
+          {
+            "brand": "drumeo",
+            "id": 257251,
+            "slug": "the-note-value-tree",
+            "type": "pack-bundle-lesson"
+          },
+          {
+            "brand": "drumeo",
+            "id": 259235,
+            "slug": "the-motions",
+            "type": "pack-bundle-lesson"
+          }
+        ],
+        "slug": "4-weeks-to-better-drum-fills",
+        "type": "pack-bundle"
+      },
+      {
+        "brand": "drumeo",
+        "id": 257246,
+        "lessons": [
+          {
+            "brand": "drumeo",
+            "id": 257252,
+            "slug": "beginner",
+            "type": "pack-bundle-lesson"
+          },
+          {
+            "brand": "drumeo",
+            "id": 257253,
+            "slug": "intermediate",
+            "type": "pack-bundle-lesson"
+          },
+          {
+            "brand": "drumeo",
+            "id": 257254,
+            "slug": "advanced",
+            "type": "pack-bundle-lesson"
+          }
+        ],
+        "slug": "week-2---three-levels-of-drum-fills",
+        "type": "pack-bundle"
+      },
+      {
+        "brand": "drumeo",
+        "id": 257247,
+        "lessons": [
+          {
+            "brand": "drumeo",
+            "id": 257255,
+            "slug": "beginner",
+            "type": "pack-bundle-lesson"
+          },
+          {
+            "brand": "drumeo",
+            "id": 257256,
+            "slug": "intermediate",
+            "type": "pack-bundle-lesson"
+          },
+          {
+            "brand": "drumeo",
+            "id": 257257,
+            "slug": "advanced",
+            "type": "pack-bundle-lesson"
+          }
+        ],
+        "slug": "week-3---build-musical-tension-with-odd-groupings",
+        "type": "pack-bundle"
+      },
+      {
+        "brand": "drumeo",
+        "id": 257248,
+        "lessons": [
+          {
+            "brand": "drumeo",
+            "id": 257258,
+            "slug": "beginner",
+            "type": "pack-bundle-lesson"
+          },
+          {
+            "brand": "drumeo",
+            "id": 257259,
+            "slug": "intermediate",
+            "type": "pack-bundle-lesson"
+          },
+          {
+            "brand": "drumeo",
+            "id": 257260,
+            "slug": "advanced",
+            "type": "pack-bundle-lesson"
+          },
+          {
+            "brand": "drumeo",
+            "id": 259236,
+            "slug": "conclusion",
+            "type": "pack-bundle-lesson"
+          }
+        ],
+        "slug": "week-4---linear-drum-fill-explorations",
+        "type": "pack-bundle"
+      }
+    ],
+    "parent_content_data": null,
+    "permission_id": [
+      65,
+      1,
+      91,
+      92,
+      78
+    ],
+    "progress_percent": null,
+    "published_on": "2020-06-09T15:00:00.000000Z",
+    "railcontent_id": 257242,
+    "sanity_id": "pack_257242",
+    "slug": "4-weeks-to-better-drum-fills",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/da4675ae1f67e84bf7bb8a494d83629367121a6c-1530x861.jpg",
+    "title": "Four Weeks To Better Drum Fills",
+    "type": "pack",
+    "url": "/drumeo/packs/4-weeks-to-better-drum-fills/257242",
+    "web_url_path": "/drumeo/packs/4-weeks-to-better-drum-fills/257242",
+    "xp": 500,
+    "need_access": false,
+    "first_incomplete_child": {
+      "id": 257243,
+      "slug": "4-weeks-to-better-drum-fills",
+      "type": "pack-bundle"
+    },
+    "second_incomplete_child": {
+      "brand": "drumeo",
+      "id": 257251,
+      "slug": "the-note-value-tree",
+      "type": "pack-bundle-lesson",
+      "parent": {
+        "id": 257243,
+        "slug": "4-weeks-to-better-drum-fills",
+        "type": "pack-bundle"
+      }
+    }
+  },
+  {
+    "artist": null,
+    "artist_name": "Mike Michalkow",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 2,
+    "difficulty_string": "Beginner",
+    "genre": [
+      "Metal"
+    ],
+    "id": 316732,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/8fd09777a4a69e34ad2f24d95f7beeb93c60caf7-1920x1080.png",
+    "length_in_seconds": 169,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": null,
+    "permission_id": [
+      1,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2021-08-30T17:00:00.000000Z",
+    "railcontent_id": 316732,
+    "sanity_id": "play-along_316732",
+    "slug": "basic-metal",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/8fd09777a4a69e34ad2f24d95f7beeb93c60caf7-1920x1080.png",
+    "title": "Basic Metal",
+    "type": "play-along",
+    "url": "/drumeo/play-alongs/basic-metal/316732",
+    "web_url_path": "/drumeo/play-alongs/basic-metal/316732",
+    "xp": 100,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Mike Michalkow",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 4,
+    "difficulty_string": "Intermediate",
+    "genre": [
+      "Blues"
+    ],
+    "id": 316752,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/ca83b48c47ec89e672c9335f8e570f4f6a9d0202-1920x1080.png",
+    "length_in_seconds": 184,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": null,
+    "permission_id": [
+      1,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2021-08-30T17:00:00.000000Z",
+    "railcontent_id": 316752,
+    "sanity_id": "play-along_316752",
+    "slug": "intermediate-blues-shuffle",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/ca83b48c47ec89e672c9335f8e570f4f6a9d0202-1920x1080.png",
+    "title": "Intermediate Blues Shuffle",
+    "type": "play-along",
+    "url": "/drumeo/play-alongs/intermediate-blues-shuffle/316752",
+    "web_url_path": "/drumeo/play-alongs/intermediate-blues-shuffle/316752",
+    "xp": 150,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Mark Kelso",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 5,
+    "difficulty_string": "Intermediate",
+    "genre": [
+      "World"
+    ],
+    "id": 316772,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/71d486fb654edd0b719444b982ccd5f86adea1a4-1920x1080.png",
+    "length_in_seconds": 215,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": null,
+    "permission_id": [
+      1,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2021-08-30T17:00:00.000000Z",
+    "railcontent_id": 316772,
+    "sanity_id": "play-along_316772",
+    "slug": "bossa-nova",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/71d486fb654edd0b719444b982ccd5f86adea1a4-1920x1080.png",
+    "title": "Bossa Nova",
+    "type": "play-along",
+    "url": "/drumeo/play-alongs/bossa-nova/316772",
+    "web_url_path": "/drumeo/play-alongs/bossa-nova/316772",
+    "xp": 150,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Brandon Toews",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 8,
+    "difficulty_string": "Expert",
+    "genre": [
+      "Jazz",
+      "World"
+    ],
+    "id": 335025,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/52b3841879d31248d69ca5b811925f41c0767799-1920x1080.jpg",
+    "length_in_seconds": 322,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": null,
+    "permission_id": [
+      89,
+      94,
+      88,
+      90,
+      78,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2022-08-04T15:00:00.000000Z",
+    "railcontent_id": 335025,
+    "sanity_id": "play-along_335025",
+    "slug": "a-night-in-tunisia",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/52b3841879d31248d69ca5b811925f41c0767799-1920x1080.jpg",
+    "title": "A Night In Tunisia",
+    "type": "play-along",
+    "url": "/drumeo/play-alongs/a-night-in-tunisia/335025",
+    "web_url_path": "/drumeo/play-alongs/a-night-in-tunisia/335025",
+    "xp": 200,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Sharon Ransom",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 2,
+    "difficulty_string": "Beginner",
+    "genre": null,
+    "id": 325826,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/52e8e79926d2b7a88250daf24d8f394493ebacfa-1920x1080.jpg",
+    "length_in_seconds": 1079,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": null,
+    "permission_id": [
+      1,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2021-11-10T18:00:00.000000Z",
+    "railcontent_id": 325826,
+    "sanity_id": "quick-tips_325826",
+    "slug": "10-easy-fills-for-every-beginner-drummer",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/52e8e79926d2b7a88250daf24d8f394493ebacfa-1920x1080.jpg",
+    "title": "10 Easy Fills For Every Beginner Drummer",
+    "type": "quick-tips",
+    "url": "/drumeo/quick-tips/10-easy-fills-for-every-beginner-drummer/325826",
+    "web_url_path": "/drumeo/quick-tips/10-easy-fills-for-every-beginner-drummer/325826",
+    "xp": 100,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "John Wooton",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 2,
+    "difficulty_string": "Beginner",
+    "genre": null,
+    "id": 373171,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/8a5dbebf43bc3509b8a6f3dd794424324ecd251d-1920x1080.jpg",
+    "length_in_seconds": 68,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": null,
+    "permission_id": [
+      1,
+      91,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2022-10-03T13:40:00.000000Z",
+    "railcontent_id": 373171,
+    "sanity_id": "rudiment_373171",
+    "slug": "single-stroke-roll",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/8a5dbebf43bc3509b8a6f3dd794424324ecd251d-1920x1080.jpg",
+    "title": "Single Stroke Roll",
+    "type": "rudiment",
+    "url": "/drumeo/rudiments/single-stroke-roll/373171",
+    "web_url_path": "/drumeo/rudiments/single-stroke-roll/373171",
+    "xp": 100,
+    "need_access": false
+  },
+  {
+    "artist": {
+      "_ref": "artist_toto",
+      "_type": "reference"
+    },
+    "artist_name": "Toto",
+    "brand": "drumeo",
+    "child_count": 1,
+    "difficulty": 7,
+    "difficulty_string": "Advanced",
+    "genre": [
+      "Rock"
+    ],
+    "id": 260677,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/d16f12dd5f51020677e78b4abcf98c0aba00b17e-1500x1500.jpg",
+    "length_in_seconds": 330,
+    "lesson_count": 1,
+    "lessons": null,
+    "parent_content_data": null,
+    "permission_id": [
+      94,
+      78,
+      92
+    ],
+    "progress_percent": null,
+    "published_on": "2020-06-16T18:47:16.000000Z",
+    "railcontent_id": 260677,
+    "sanity_id": "song_260677",
+    "slug": "rosanna-toto",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/d16f12dd5f51020677e78b4abcf98c0aba00b17e-1500x1500.jpg",
+    "title": "Rosanna ",
+    "type": "song",
+    "url": "/drumeo/songs/rosanna-toto/260677",
+    "web_url_path": "/drumeo/songs/rosanna-toto/260677",
+    "xp": 0,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Emmanuelle Caplette",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 3,
+    "difficulty_string": "Beginner",
+    "genre": null,
+    "id": 402009,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/1c75d30bee7dacb3186966725fad31c62eff031f-1920x1080.jpg",
+    "length_in_seconds": 363,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": null,
+    "permission_id": [
+      91,
+      92,
+      1
+    ],
+    "progress_percent": null,
+    "published_on": "2023-12-28T00:01:00.000000Z",
+    "railcontent_id": 402009,
+    "sanity_id": "workout_402009",
+    "slug": "beginner-pad-warm-up",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/1c75d30bee7dacb3186966725fad31c62eff031f-1920x1080.jpg",
+    "title": "Beginner Pad Warm-Up",
+    "type": "workout",
+    "url": "/drumeo/workouts/beginner-pad-warm-up/402009",
+    "web_url_path": "/drumeo/workouts/beginner-pad-warm-up/402009",
+    "xp": 100,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Brandon Toews",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 2,
+    "difficulty_string": "Beginner",
+    "genre": null,
+    "id": 402021,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/adf501ca588e590529717d7049ea4d14ae478d7b-1920x1080.jpg",
+    "length_in_seconds": 653,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": null,
+    "permission_id": [
+      91,
+      92,
+      1
+    ],
+    "progress_percent": null,
+    "published_on": "2023-12-28T00:01:00.000000Z",
+    "railcontent_id": 402021,
+    "sanity_id": "workout_402021",
+    "slug": "weak-hand-warm-up",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/adf501ca588e590529717d7049ea4d14ae478d7b-1920x1080.jpg",
+    "title": "Weak Hand Warm-Up",
+    "type": "workout",
+    "url": "/drumeo/workouts/weak-hand-warm-up/402021",
+    "web_url_path": "/drumeo/workouts/weak-hand-warm-up/402021",
+    "xp": 100,
+    "need_access": false
+  },
+  {
+    "artist": null,
+    "artist_name": "Aaron Graham",
+    "brand": "drumeo",
+    "child_count": null,
+    "difficulty": 3,
+    "difficulty_string": "Beginner",
+    "genre": null,
+    "id": 411091,
+    "image": "https://cdn.sanity.io/images/4032r8py/staging/cde7b1acc790899ef3c33521973c7a8dbce07f9b-1920x1080.jpg",
+    "length_in_seconds": 589,
+    "lesson_count": null,
+    "lessons": null,
+    "parent_content_data": null,
+    "permission_id": [
+      78,
+      89,
+      91,
+      92,
+      88,
+      90
+    ],
+    "progress_percent": null,
+    "published_on": "2024-08-08T19:00:00.000000Z",
+    "railcontent_id": 411091,
+    "sanity_id": "workout_411091",
+    "slug": "2-handed-hi-hat-grooves",
+    "status": "published",
+    "thumbnail": "https://cdn.sanity.io/images/4032r8py/staging/cde7b1acc790899ef3c33521973c7a8dbce07f9b-1920x1080.jpg",
+    "title": "2-Handed Hi-Hat Grooves",
+    "type": "workout",
+    "url": "/drumeo/workouts/2-handed-hi-hat-grooves/411091",
+    "web_url_path": "/drumeo/workouts/2-handed-hi-hat-grooves/411091",
+    "xp": 100,
+    "need_access": false
+  }
+]

@@ -1,8 +1,11 @@
-import { getProgressStateByIds, getProgressPercentageByIds, getResumeTimeSecondsByIds } from "./services/contentProgress" 
-import { isContentLikedByIds } from "./services/contentLikes"
-import { fetchLikeCount } from "./services/railcontent"
+import { getProgressStateByIds, getProgressPercentageByIds, getResumeTimeSecondsByIds } from "./contentProgress"
+import { isContentLikedByIds } from "./contentLikes"
+import { fetchLikeCount, fetchLastInteractedChild } from "./railcontent"
 
-export const addContextToContent = async (dataPromise, ...dataArgs) => {
+
+
+export async function addContextToContent(dataPromise, ...dataArgs)
+{
   const lastArg = dataArgs[dataArgs.length - 1]
   const options = typeof lastArg === 'object' && !Array.isArray(lastArg) ? lastArg : {}
 
@@ -12,7 +15,8 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
     addIsLiked = false,
     addLikeCount = false,
     addProgressStatus = false,
-    addResumeTimeSeconds = false
+    addResumeTimeSeconds = false,
+    addLastInteractedChild = false,
   } = options
 
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
@@ -32,13 +36,14 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
 
   if(ids.length === 0) return false
 
-  const [progressPercentageData, progressStatusData, isLikedData, resumeTimeData] = await Promise.all([
+  const [progressPercentageData, progressStatusData, isLikedData, resumeTimeData, lastInteractedChildData] = await Promise.all([
     addProgressPercentage ? getProgressPercentageByIds(ids) : Promise.resolve(null),
     addProgressStatus ? getProgressStateByIds(ids) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
+    addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
   ])
-
+  
   const addContext = async (item) => ({
     ...item,
     ...(addProgressPercentage ? { progressPercentage: progressPercentageData?.[item.id] } : {}),
@@ -46,12 +51,18 @@ export const addContextToContent = async (dataPromise, ...dataArgs) => {
     ...(addIsLiked ? { isLiked: isLikedData?.[item.id] } : {}),
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
+    ...(addLastInteractedChild ? { lastInteractedChild: lastInteractedChildData?.[item.id] } : {}),
   })
   
-  const newData = Array.isArray(data)
-  ? await Promise.all(data.map(addContext))
-  : await addContext(data)
-
-  return newData
+  if (dataField) {
+    data[dataField] = Array.isArray(data[dataField])
+        ? await Promise.all(data[dataField].map(addContext))
+        : await addContext(data[dataField])
+    return data
+  } else {
+    return Array.isArray(data)
+        ? await Promise.all(data.map(addContext))
+        : await addContext(data)
+  }
 }
 

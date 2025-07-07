@@ -139,8 +139,8 @@ export const singleLessonTypes = ['quick-tips', 'rudiment', 'coach-lessons'];
 export const practiceAlongsLessonTypes = ['workout', 'boot-camp','challenges'];
 export const performancesLessonTypes = ['performance','solo','drum-fest-international-2022'];
 export const documentariesLessonTypes = ['tama','sonor','history-of-electronic-drums','paiste-cymbals'];
-export const liveArchivesLessonTypes = ['podcast', 'coach-stream', 'live-streams'];
-export const studentArchivesLessonTypes = ['student-review', 'question-and-answer', 'student-focus','student-collaborations'];
+export const liveArchivesLessonTypes = ['podcast', 'coach-stream', 'question-and-answer', 'live-streams'];
+export const studentArchivesLessonTypes = ['student-review', 'student-focus','student-collaboration'];
 export const tutorialsLessonTypes = ['song-tutorial'];
 export const transcriptionsLessonTypes = ['song'];
 export const playAlongLessonTypes = ['play-along'];
@@ -154,11 +154,12 @@ export const individualLessonsTypes = [
   ...studentArchivesLessonTypes
 ];
 
-export const coursesLessonTypes = ['course', 'pack','spotlight'];
-export const showsLessonTypes = ['diy-drum-experiments','exploring-beats','in-rhythm',  'rhythmic-adventures-of-captain-carson','rhythms-from-another-planet','study-the-greats'];
+export const coursesLessonTypes = ['course', 'pack','spotlight', 'guided-course'];
+export const showsLessonTypes = ['diy-drum-experiment','exploring-beats','in-rhythm',  'rhythmic-adventures-of-captain-carson','rhythms-from-another-planet','study-the-greats'];
 export const collectionLessonTypes = [
     ...coursesLessonTypes,
-    ...showsLessonTypes
+    ...showsLessonTypes,
+    'song-tutorial',
 ];
 
 export const lessonTypesMapping = {
@@ -176,13 +177,32 @@ export const lessonTypesMapping = {
   'transcriptions': transcriptionsLessonTypes,
   'tabs': transcriptionsLessonTypes,
   'sheet music': transcriptionsLessonTypes,
-  'play alongs': playAlongLessonTypes,
+  'play-alongs': playAlongLessonTypes,
+  'jam tracks': ['jam-track'],
 };
 
+export const progressTypesMapping = {
+  'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes, 'live'],
+  'course': ['course'],
+  'show': showsLessonTypes,
+  'song tutorial': tutorialsLessonTypes,
+  'songs': transcriptionsLessonTypes,
+  'play-along': playAlongLessonTypes,
+  'guided course': ['guided-course'],
+  'pack': ['pack', 'semester-pack'],
+  'method': ['learning-path']
+};
+
+export const songs = {
+  drumeo: 'transcription',
+  guitareo: 'tab',
+  pianote: 'sheet music',
+  singeo: 'sheet music',
+}
 
 export const filterTypes = {
   lessons: [...individualLessonsTypes, ...collectionLessonTypes],
-  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes]
+  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes, 'jam-track'],
 }
 
 export const recentTypes = {
@@ -192,6 +212,9 @@ export const recentTypes = {
 }
 
 export let contentTypeConfig = {
+  'progress-tracker': {
+    fields: ['"parent_content_data": parent_content_data[].id','"badge" : badge.asset->url','"lessons": child[]->{"id": railcontent_id, "slug":slug.current, "brand":brand, "type": _type, "lessons": child[]->{"id":railcontent_id, "slug":slug.current,  "type": _type,"brand":brand}}'],
+  },
   song: {
     fields: ['album', 'soundslice', 'instrumentless', `"resources": ${resourcesField}`],
     relationships: {
@@ -394,7 +417,7 @@ export let contentTypeConfig = {
       '"lesson_count": coalesce(count(child[]->.child[]->), 0)',
       'xp',
       `"description": ${descriptionField}`,
-      '"instructors": instructor[]->name',
+      '"instructors": instructor[]->{ "id": railcontent_id, name, "thumbnail_url": thumbnail_url.asset->url }',
       '"logo_image_url": logo_image_url.asset->url',
       'total_xp',
       `"children": child[]->{
@@ -404,8 +427,8 @@ export let contentTypeConfig = {
             }`,
       `"resources": ${resourcesField}`,
       '"thumbnail": thumbnail.asset->url',
-      '"light_logo": light_mode_logo_url.asset->url',
-      '"dark_logo": dark_mode_logo_url.asset->url',
+      '"light_mode_logo": light_mode_logo_url.asset->url',
+      '"dark_mode_logo": dark_mode_logo_url.asset->url',
       `"description": ${descriptionField}`,
     ],
   },
@@ -427,8 +450,8 @@ export let contentTypeConfig = {
       `"resources": ${resourcesField}`,
       '"image": logo_image_url.asset->url',
       '"thumbnail": thumbnail.asset->url',
-      '"light_logo": light_mode_logo_url.asset->url',
-      '"dark_logo": dark_mode_logo_url.asset->url',
+      '"light_mode_logo": light_mode_logo_url.asset->url',
+      '"dark_mode_logo": dark_mode_logo_url.asset->url',
       `"description": ${descriptionField}`,
       'total_xp',
     ],

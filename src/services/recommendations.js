@@ -2,8 +2,8 @@
  * @module Railcontent-Services
  */
 
-import {globalConfig} from './config.js'
-import {fetchJSONHandler} from '../lib/httpHelper.js'
+import { globalConfig } from './config.js'
+import { HttpClient } from '../infrastructure/http/HttpClient'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -38,7 +38,11 @@ export async function fetchSimilarItems(content_id, brand, limit = 10, page = 1)
   }
   const url = `/similar_items/`
   try {
-    const response = await fetchHandler(url, 'POST', data)
+    const httpClient = new HttpClient(
+      globalConfig.recommendationsConfig.baseUrl,
+      globalConfig.recommendationsConfig.token
+    )
+    const response = await httpClient.post(url, data)
     // we requested count + 1 then filtered out the extra potential value, so we need slice to the correct size if necessary
     return response['similar_items'].filter((item) => item !== content_id).slice(0, count)
   } catch (error) {
@@ -73,7 +77,11 @@ export async function rankCategories(brand, categories) {
   }
   const url = `/rank_each_list/`
   try {
-    const response = await fetchHandler(url, 'POST', data)
+    const httpClient = new HttpClient(
+      globalConfig.recommendationsConfig.baseUrl,
+      globalConfig.recommendationsConfig.token
+    )
+    const response = await httpClient.post(url, data)
     let rankedCategories = {}
     response['ranked_playlists'].forEach(
       (category) =>
@@ -108,7 +116,11 @@ export async function rankItems(brand, content_ids) {
   }
   const url = `/rank_items/`
   try {
-    const response = await fetchHandler(url, 'POST', data)
+    const httpClient = new HttpClient(
+      globalConfig.recommendationsConfig.baseUrl,
+      globalConfig.recommendationsConfig.token
+    )
+    const response = await httpClient.post(url, data)
     return response['ranked_content_ids']
   } catch (error) {
     console.error('Fetch error:', error)
@@ -116,31 +128,15 @@ export async function rankItems(brand, content_ids) {
   }
 }
 
-export async function recommendations(brand, {section = ''} = {}) {
+export async function recommendations(brand, { section = '' } = {}) {
   section = section.toUpperCase().replace('-', '_')
-  const sectionString = section ? `&section=${section}` : '';
+  const sectionString = section ? `&section=${section}` : ''
   const url = `/api/content/v1/recommendations?brand=${brand}${sectionString}`
   try {
-    // This goes through the MPB, not the recommendations api, so we use fetchJSONHandler instead of the local handler
-    return fetchJSONHandler(
-      url,
-      globalConfig.sessionConfig.token,
-      globalConfig.baseUrl,
-      'get'
-    )
+    const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+    return httpClient.get(url)
   } catch (error) {
     console.error('Fetch error:', error)
     return null
   }
-}
-
-async function fetchHandler(url, method = 'get', body = null) {
-  return fetchJSONHandler(
-    url,
-    globalConfig.recommendationsConfig.token,
-    globalConfig.recommendationsConfig.baseUrl,
-    method,
-    null,
-    body
-  )
 }

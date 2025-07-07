@@ -6,9 +6,31 @@ import {
 } from './services/config.js';
 
 import {
+	enrollUserInGuidedCourse,
+	fetchEnrollmentPageMetadata,
+	guidedCourses,
+	pinGuidedCourse,
+	pinnedGuidedCourses,
+	unEnrollUserInGuidedCourse,
+	unPinGuidedCourse
+} from './services/content-org/guided-courses.ts';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
-	fetchUserPlaylists
+	deleteItemsFromPlaylist,
+	deletePlaylist,
+	duplicatePlaylist,
+	fetchPlaylist,
+	fetchPlaylistItems,
+	fetchUserPlaylists,
+	likePlaylist,
+	reportPlaylist,
+	restoreItemFromPlaylist,
+	togglePlaylistPrivate,
+	undeletePlaylist,
+	unlikePlaylist,
+	updatePlaylist
 } from './services/content-org/playlists.js';
 
 import {
@@ -22,7 +44,12 @@ import {
 } from './services/content.js';
 
 import {
+	addContextToContent
+} from './services/contentAggregator.js';
+
+import {
 	isContentLiked,
+	isContentLikedByIds,
 	likeContent,
 	unlikeContent
 } from './services/contentLikes.js';
@@ -35,11 +62,14 @@ import {
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
+	getProgressDateByIds,
 	getProgressPercentage,
 	getProgressPercentageByIds,
 	getProgressState,
 	getProgressStateByIds,
 	getResumeTimeSeconds,
+	getResumeTimeSecondsByIds,
+	getStartedOrCompletedProgressOnly,
 	recordWatchSession
 } from './services/contentProgress.js';
 
@@ -50,6 +80,7 @@ import {
 import {
 	convertToTimeZone,
 	getMonday,
+	getTimeRemainingUntilLocal,
 	getWeekNumber,
 	isNextDay,
 	isSameDate
@@ -78,13 +109,8 @@ import {
 import {
 	assignModeratorToComment,
 	closeComment,
-	countAssignmentsAndLessons,
 	createComment,
 	deleteComment,
-	deletePlaylist,
-	deletePlaylistItem,
-	deletePlaylistLike,
-	duplicatePlaylist,
 	editComment,
 	fetchAllCompletedStates,
 	fetchCarouselCardData,
@@ -92,6 +118,7 @@ import {
 	fetchChallengeLessonData,
 	fetchChallengeMetadata,
 	fetchChallengeUserActiveChallenges,
+	fetchComment,
 	fetchCommentRelies,
 	fetchComments,
 	fetchCompletedChallenges,
@@ -101,12 +128,11 @@ import {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchHandler,
+	fetchLastInteractedChild,
+	fetchLikeCount,
 	fetchNextContentDataForParent,
 	fetchOwnedChallenges,
-	fetchPinnedPlaylists,
-	fetchPlaylist,
-	fetchPlaylistItem,
-	fetchPlaylistItems,
+	fetchRecentUserActivities,
 	fetchSongsInProgress,
 	fetchTopComment,
 	fetchUserAward,
@@ -118,11 +144,8 @@ import {
 	fetchUserPracticeNotes,
 	fetchUserPractices,
 	likeComment,
-	likePlaylist,
 	logUserPractice,
 	openComment,
-	pinPlaylist,
-	playback,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,
@@ -138,13 +161,10 @@ import {
 	postRecordWatchSession,
 	replyToComment,
 	reportComment,
-	reportPlaylist,
+	restoreComment,
 	setStudentViewForUser,
 	unassignModeratorToComment,
-	unlikeComment,
-	unpinPlaylist,
-	updatePlaylist,
-	updatePlaylistItem
+	unlikeComment
 } from './services/railcontent.js';
 
 import {
@@ -194,6 +214,7 @@ import {
 	fetchSanity,
 	fetchScheduledAndNewReleases,
 	fetchScheduledReleases,
+	fetchShows,
 	fetchShowsData,
 	fetchSongArtistCount,
 	fetchSongById,
@@ -205,9 +226,36 @@ import {
 } from './services/sanity.js';
 
 import {
+	fetchChatSettings
+} from './services/user/chat.js';
+
+import {
+	fetchInterests,
+	fetchUninterests,
+	markContentAsInterested,
+	markContentAsNotInterested,
+	removeContentAsInterested,
+	removeContentAsNotInterested
+} from './services/user/interests.js';
+
+import {
 	blockUser,
-	unblockUser
+	deletePicture,
+	unblockUser,
+	uploadPicture,
+	uploadPictureFromS3
 } from './services/user/management.js';
+
+import {
+	deleteNotification,
+	fetchNotificationSettings,
+	fetchNotifications,
+	fetchUnreadCount,
+	markAllNotificationsAsRead,
+	markNotificationAsRead,
+	markNotificationAsUnread,
+	updateNotificationSetting
+} from './services/user/notifications.js';
 
 import {
 	fetchUserPermissions,
@@ -215,28 +263,36 @@ import {
 } from './services/user/permissions.js';
 
 import {
+	otherStats
+} from './services/user/profile.js';
+
+import {
 	login,
 	logout
 } from './services/user/sessions.js';
 
 import {
+	calculateLongestStreaks,
 	createPracticeNotes,
 	deletePracticeSession,
+	deleteUserActivity,
 	getPracticeNotes,
 	getPracticeSessions,
+	getProgressRows,
 	getRecentActivity,
 	getUserMonthlyStats,
 	getUserPractices,
 	getUserWeeklyStats,
+	pinProgressRow,
+	recordUserActivity,
 	recordUserPractice,
 	removeUserPractice,
 	restorePracticeSession,
 	restoreUserPractice,
+	unpinProgressRow,
 	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
-
-import { addContextToContent } from './contentAggregator.js';
 
 declare module 'musora-content-services' {
 	export {
@@ -249,21 +305,24 @@ declare module 'musora-content-services' {
 		assignmentStatusReset,
 		blockUser,
 		buildImageSRC,
+		calculateLongestStreaks,
 		closeComment,
 		contentStatusCompleted,
 		contentStatusReset,
 		convertToTimeZone,
-		countAssignmentsAndLessons,
 		createComment,
 		createPlaylist,
 		createPracticeNotes,
 		deleteComment,
+		deleteItemsFromPlaylist,
+		deleteNotification,
+		deletePicture,
 		deletePlaylist,
-		deletePlaylistItem,
-		deletePlaylistLike,
 		deletePracticeSession,
+		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
+		enrollUserInGuidedCourse,
 		extractSanityUrl,
 		fetchAll,
 		fetchAllCompletedStates,
@@ -281,8 +340,10 @@ declare module 'musora-content-services' {
 		fetchChallengeMetadata,
 		fetchChallengeUserActiveChallenges,
 		fetchChatAndLiveEnvent,
+		fetchChatSettings,
 		fetchCoachLessons,
 		fetchComingSoon,
+		fetchComment,
 		fetchCommentModContentData,
 		fetchCommentRelies,
 		fetchComments,
@@ -292,13 +353,17 @@ declare module 'musora-content-services' {
 		fetchContentInProgress,
 		fetchContentPageUserData,
 		fetchContentProgress,
+		fetchEnrollmentPageMetadata,
 		fetchFoundation,
 		fetchGenreLessons,
 		fetchHandler,
 		fetchHierarchy,
+		fetchInterests,
+		fetchLastInteractedChild,
 		fetchLeaving,
 		fetchLessonContent,
 		fetchLessonsFeaturingThisContent,
+		fetchLikeCount,
 		fetchLiveEvent,
 		fetchMetadata,
 		fetchMethod,
@@ -308,17 +373,18 @@ declare module 'musora-content-services' {
 		fetchNewReleases,
 		fetchNextContentDataForParent,
 		fetchNextPreviousLesson,
+		fetchNotificationSettings,
+		fetchNotifications,
 		fetchOtherSongVersions,
 		fetchOwnedChallenges,
 		fetchPackAll,
 		fetchPackData,
 		fetchParentForDownload,
-		fetchPinnedPlaylists,
 		fetchPlayAlongsCount,
 		fetchPlaylist,
-		fetchPlaylistItem,
 		fetchPlaylistItems,
 		fetchRecent,
+		fetchRecentUserActivities,
 		fetchRelatedLessons,
 		fetchRelatedRecommendedContent,
 		fetchRelatedSongs,
@@ -326,6 +392,7 @@ declare module 'musora-content-services' {
 		fetchSanity,
 		fetchScheduledAndNewReleases,
 		fetchScheduledReleases,
+		fetchShows,
 		fetchShowsData,
 		fetchSimilarItems,
 		fetchSongArtistCount,
@@ -334,6 +401,8 @@ declare module 'musora-content-services' {
 		fetchTabData,
 		fetchTopComment,
 		fetchTopLevelParentId,
+		fetchUninterests,
+		fetchUnreadCount,
 		fetchUpcomingEvents,
 		fetchUserAward,
 		fetchUserBadges,
@@ -355,25 +424,32 @@ declare module 'musora-content-services' {
 		getNewAndUpcoming,
 		getPracticeNotes,
 		getPracticeSessions,
+		getProgressDateByIds,
 		getProgressPercentage,
 		getProgressPercentageByIds,
+		getProgressRows,
 		getProgressState,
 		getProgressStateByIds,
 		getRecent,
 		getRecentActivity,
 		getRecommendedForYou,
 		getResumeTimeSeconds,
+		getResumeTimeSecondsByIds,
 		getScheduleContentRows,
 		getSortOrder,
+		getStartedOrCompletedProgressOnly,
 		getTabResults,
+		getTimeRemainingUntilLocal,
 		getUserMonthlyStats,
 		getUserPractices,
 		getUserWeeklyStats,
 		getWeekNumber,
 		globalConfig,
+		guidedCourses,
 		initializeService,
 		isBucketUrl,
 		isContentLiked,
+		isContentLikedByIds,
 		isNextDay,
 		isSameDate,
 		jumpToContinueContent,
@@ -383,9 +459,16 @@ declare module 'musora-content-services' {
 		logUserPractice,
 		login,
 		logout,
+		markAllNotificationsAsRead,
+		markContentAsInterested,
+		markContentAsNotInterested,
+		markNotificationAsRead,
+		markNotificationAsUnread,
 		openComment,
-		pinPlaylist,
-		playback,
+		otherStats,
+		pinGuidedCourse,
+		pinProgressRow,
+		pinnedGuidedCourses,
 		postChallengesCommunityNotification,
 		postChallengesEnroll,
 		postChallengesEnrollmentNotification,
@@ -402,25 +485,37 @@ declare module 'musora-content-services' {
 		rankCategories,
 		rankItems,
 		recommendations,
+		recordUserActivity,
 		recordUserPractice,
 		recordWatchSession,
+		removeContentAsInterested,
+		removeContentAsNotInterested,
 		removeUserPractice,
 		replyToComment,
 		reportComment,
 		reportPlaylist,
 		reset,
+		restoreComment,
+		restoreItemFromPlaylist,
 		restorePracticeSession,
 		restoreUserPractice,
 		setStudentViewForUser,
+		togglePlaylistPrivate,
+		unEnrollUserInGuidedCourse,
+		unPinGuidedCourse,
 		unassignModeratorToComment,
 		unblockUser,
+		undeletePlaylist,
 		unlikeComment,
 		unlikeContent,
-		unpinPlaylist,
+		unlikePlaylist,
+		unpinProgressRow,
+		updateNotificationSetting,
 		updatePlaylist,
-		updatePlaylistItem,
 		updatePracticeNotes,
 		updateUserPractice,
+		uploadPicture,
+		uploadPictureFromS3,
 		verifyImageSRC,
 		verifyLocalDataContext,
 	}

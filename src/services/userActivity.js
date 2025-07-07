@@ -1,20 +1,23 @@
 /**
- * @module User-Activity
+ * @module UserActivity
  */
 
-import {fetchUserPractices, logUserPractice, fetchUserPracticeMeta, fetchUserPracticeNotes, fetchHandler} from './railcontent'
+import {
+  fetchUserPractices,
+  logUserPractice,
+  fetchUserPracticeMeta,
+  fetchUserPracticeNotes,
+  fetchHandler,
+  fetchRecentUserActivities, fetchChallengeLessonData
+} from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
-import {fetchByRailContentIds} from "./sanity";
-import {lessonTypesMapping} from "../contentTypeConfig";
-import { convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js';
-
-const recentActivity =  [
-    { id: 5,title: '3 Easy Classical Songs For Beginners', action: 'Comment', thumbnail: 'https://cdn.sanity.io/images/4032r8py/production/8a7fb4d7473306c5fa51ba2e8867e03d44342b18-1920x1080.jpg', summary: 'Just completed the advanced groove lesson! I’m finally feeling more confident with my fills. Thanks for the clear explanations and practice tips! ', date: '2025-03-25 10:09:48' },
-    { id:4, title: 'Piano Man by Billy Joel', action: 'Play', thumbnail:'https://cdn.sanity.io/images/4032r8py/production/107c258114540170399dfd72a50dae51575552f4-1000x1000.jpg', date: '2025-03-25 10:04:48'  },
-    { id:3, title: 'General Piano Discussion', action: 'Post', thumbnail: 'https://cdn.sanity.io/images/4032r8py/production/2331571d237b42dbf72f0cf35fdf163d996c5c5a-1920x1080.jpg', summary: 'Just completed the advanced groove lesson! I’m finally feeling more confident with my fills. Thanks for the clear explanations and practice tips! ', date: '2025-03-25 09:49:48' },
-    { id:2, title: 'Welcome To Guitareo', action: 'Complete', thumbnail: 'https://cdn.sanity.io/images/4032r8py/production/2331571d237b42dbf72f0cf35fdf163d996c5c5a-1920x1080.jpg',date: '2025-03-25 09:34:48'  },
-    { id:1, title: 'Welcome To Guitareo', action: 'Start', thumbnail: 'https://cdn.sanity.io/images/4032r8py/production/2331571d237b42dbf72f0cf35fdf163d996c5c5a-1920x1080.jpg',date: '2025-03-25 09:04:48'  },
-  ]
+import { fetchByRailContentIds, fetchShows } from './sanity'
+import {fetchPlaylist, fetchUserPlaylists} from "./content-org/playlists";
+import {convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay, getTimeRemainingUntilLocal} from './dateUtils.js'
+import { globalConfig } from './config'
+import {collectionLessonTypes, lessonTypesMapping, progressTypesMapping, showsLessonTypes, songs} from "../contentTypeConfig";
+import {getAllStartedOrCompleted, getProgressStateByIds} from "./contentProgress";
+import {TabResponseType} from "../contentMetaData";
 
 const DATA_KEY_PRACTICES = 'practices'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
@@ -22,25 +25,43 @@ const DATA_KEY_LAST_UPDATED_TIME = 'u'
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 const streakMessages = {
-  startStreak: "Start your streak by taking any lesson!",
-  restartStreak: "Restart your streak by taking any lesson!",
+  startStreak: 'Start your streak by taking any lesson!',
+  restartStreak: 'Restart your streak by taking any lesson!',
 
   // Messages when last active day is today
-  dailyStreak: (streak) => `Nice! You have ${getIndefiniteArticle(streak)} ${streak} day streak! Way to keep it going!`,
-  dailyStreakShort: (streak) => `Nice! You have ${getIndefiniteArticle(streak)} ${streak} day streak!`,
-  weeklyStreak: (streak) => `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Way to keep up the momentum!`,
-  greatJobWeeklyStreak: (streak) => `Great job! You have ${getIndefiniteArticle(streak)} ${streak} week streak! Way to keep it going!`,
+  dailyStreak: (streak) =>
+    `Nice! You have ${getIndefiniteArticle(streak)} ${streak} day streak! Way to keep it going!`,
+  dailyStreakShort: (streak) =>
+    `Nice! You have ${getIndefiniteArticle(streak)} ${streak} day streak!`,
+  weeklyStreak: (streak) =>
+    `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Way to keep up the momentum!`,
+  greatJobWeeklyStreak: (streak) =>
+    `Great job! You have ${getIndefiniteArticle(streak)} ${streak} week streak! Way to keep it going!`,
 
   // Messages when last active day is NOT today
-  dailyStreakReminder: (streak) => `You have ${getIndefiniteArticle(streak)} ${streak} day streak! Keep it going with any lesson or song!`,
-  weeklyStreakKeepUp: (streak) => `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Keep up the momentum!`,
-  weeklyStreakReminder: (streak) => `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Keep it going with any lesson or song!`,
-};
-
-function getIndefiniteArticle(streak) {
-  return streak === 8 || (streak >= 80 && streak <= 89) || (streak >= 800  && streak <= 899) ? 'an' : 'a'
+  dailyStreakReminder: (streak) =>
+    `You have ${getIndefiniteArticle(streak)} ${streak} day streak! Keep it going with any lesson or song!`,
+  weeklyStreakKeepUp: (streak) =>
+    `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Keep up the momentum!`,
+  weeklyStreakReminder: (streak) =>
+    `You have ${getIndefiniteArticle(streak)} ${streak} week streak! Keep it going with any lesson or song!`,
 }
 
+function getIndefiniteArticle(streak) {
+  return streak === 8 || (streak >= 80 && streak <= 89) || (streak >= 800 && streak <= 899)
+    ? 'an'
+    : 'a'
+}
+
+export async function getUserPractices(userId = globalConfig.sessionConfig.userId) {
+  if (userId !== globalConfig.sessionConfig.userId) {
+    let data = await fetchUserPractices(0, { userId: userId })
+    return data?.['data']?.[DATA_KEY_PRACTICES] ?? {}
+  } else {
+    let data = await userActivityContext.getData()
+    return data?.[DATA_KEY_PRACTICES] ?? {}
+  }
+}
 
 export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUserPractices)
 
@@ -59,71 +80,96 @@ export async function getUserWeeklyStats() {
   let data = await userActivityContext.getData()
   let practices = data?.[DATA_KEY_PRACTICES] ?? {}
   let sortedPracticeDays = Object.keys(practices)
-    .map(date => new Date(date))
-    .sort((a, b) => b - a);
+    .map((date) => new Date(date))
+    .sort((a, b) => b - a)
 
-  let today = new Date();
-  today.setHours(0, 0, 0, 0);
+  let today = new Date()
+  today.setHours(0, 0, 0, 0)
   let startOfWeek = getMonday(today) // Get last Monday
   let dailyStats = []
 
   for (let i = 0; i < 7; i++) {
     let day = new Date(startOfWeek)
     day.setDate(startOfWeek.getDate() + i)
-    let hasPractice = sortedPracticeDays.some(practiceDate => isSameDate(practiceDate, day));
+    let hasPractice = sortedPracticeDays.some((practiceDate) => isSameDate(practiceDate, day))
     let isActive = isSameDate(today, day)
-    let type = (hasPractice ? 'tracked' : (isActive ? 'active' : 'none'))
+    let type = hasPractice ? 'tracked' : isActive ? 'active' : 'none'
     dailyStats.push({ key: i, label: DAYS[i], isActive, inStreak: hasPractice, type })
   }
 
-  let { streakMessage } = getStreaksAndMessage(practices);
+  let { streakMessage } = getStreaksAndMessage(practices)
 
   return { data: { dailyActiveStats: dailyStats, streakMessage, practices } }
 }
 
 /**
- * Retrieves user activity statistics for a specified month, including daily and weekly activity data.
+ * Retrieves user activity statistics for a specified month and user, including daily and weekly activity data.
+ * If no parameters are provided, defaults to the current year, current month, and the logged-in user.
  *
- * @param {number} [year=new Date().getFullYear()] - The year for which to retrieve the statistics.
- * @param {number} [month=new Date().getMonth()] - The month (0-indexed) for which to retrieve the statistics.
- * @returns {Promise<Object>} - A promise that resolves to an object containing user activity statistics.
+ * @param {Object} [params={}] - Parameters for fetching user statistics.
+ * @param {number} [params.year=new Date().getFullYear()] - The year for which to retrieve the statistics.
+ * @param {number} [params.month=new Date().getMonth()] - The 0-based month index (0 = January).
+ * @param {number} [params.day=1] - The starting day (not used for grid calc, but kept for flexibility).
+ * @param {number} [params.userId=globalConfig.sessionConfig.userId] - The user ID for whom to retrieve stats.
+ *
+ * @returns {Promise<Object>} A promise that resolves to an object containing:
+ * - `dailyActiveStats`: Array of daily activity data for the calendar grid.
+ * - `weeklyActiveStats`: Array of weekly streak summaries.
+ * - `practiceDuration`: Total number of seconds practiced in the month.
+ * - `currentDailyStreak`: Count of consecutive active days.
+ * - `currentWeeklyStreak`: Count of consecutive active weeks.
+ * - `daysPracticed`: Total number of active days in the month.
  *
  * @example
- * // Retrieve user activity statistics for the current month
- * getUserMonthlyStats()
- *   .then(stats => console.log(stats))
- *   .catch(error => console.error(error));
+ * // Get stats for current user and month
+ * getUserMonthlyStats().then(console.log);
  *
  * @example
- * // Retrieve user activity statistics for March 2024
- * getUserMonthlyStats(2024, 2)
- *   .then(stats => console.log(stats))
- *   .catch(error => console.error(error));
+ * // Get stats for March 2024
+ * getUserMonthlyStats({ year: 2024, month: 2 }).then(console.log);
+ *
+ * @example
+ * // Get stats for another user
+ * getUserMonthlyStats({ userId: 123 }).then(console.log);
  */
-export async function getUserMonthlyStats(year = new Date().getFullYear(), month = new Date().getMonth(), day = 1) {
-  let data = await userActivityContext.getData()
-  let practices = data?.[DATA_KEY_PRACTICES] ?? {}
-  let sortedPracticeDays = Object.keys(practices)
-    .map(dateStr => {
-      const [y, m, d] = dateStr.split('-').map(Number);
-      const newDate = new Date();
-      newDate.setFullYear(y, m - 1, d);
-      return newDate;
-    })
-    .sort((a, b) => a - b);
+export async function getUserMonthlyStats(params = {}) {
+  const now = new Date()
+  const {
+    year = now.getFullYear(),
+    month = now.getMonth(),
+    day = 1,
+    userId = globalConfig.sessionConfig.userId,
+  } = params
+  let practices = await getUserPractices(userId)
 
   // Get the first day of the specified month and the number of days in that month
   let firstDayOfMonth = new Date(year, month, 1)
   let today = new Date()
-  today.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0)
 
   let startOfGrid = getMonday(firstDayOfMonth)
+
+  let previousWeekStart = new Date(startOfGrid)
+  previousWeekStart.setDate(previousWeekStart.getDate() - 7)
+
+  let previousWeekEnd = new Date(startOfGrid)
+  previousWeekEnd.setDate(previousWeekEnd.getDate() - 1)
+
+  let hadStreakBeforeMonth = false
+  for (let d = new Date(previousWeekStart); d <= previousWeekEnd; d.setDate(d.getDate() + 1)) {
+    let dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    if (practices[dayKey]) {
+      hadStreakBeforeMonth = true
+      break
+    }
+  }
+
   let endOfMonth = new Date(year, month + 1, 0)
   while (endOfMonth.getDay() !== 0) {
     endOfMonth.setDate(endOfMonth.getDate() + 1)
   }
 
-  let daysInMonth = Math.ceil((endOfMonth - startOfGrid) / (1000 * 60 * 60 * 24)) + 1;
+  let daysInMonth = Math.ceil((endOfMonth - startOfGrid) / (1000 * 60 * 60 * 24)) + 1
 
   let dailyStats = []
   let practiceDuration = 0
@@ -133,26 +179,26 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
   for (let i = 0; i < daysInMonth; i++) {
     let day = new Date(startOfGrid)
     day.setDate(startOfGrid.getDate() + i)
-    let dayKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+    let dayKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
 
     // Check if the user has activity for the day
     let dayActivity = practices[dayKey] ?? null
     let weekKey = getWeekNumber(day)
 
     if (!weeklyStats[weekKey]) {
-      weeklyStats[weekKey] = { key: weekKey, inStreak: false };
+      weeklyStats[weekKey] = { key: weekKey, inStreak: false }
     }
 
-    if (dayActivity !== null) {
+    if (dayActivity !== null && firstDayOfMonth <= day && day <= endOfMonth) {
       practiceDuration += dayActivity.reduce((sum, entry) => sum + entry.duration_seconds, 0)
-      daysPracticed++;
+      daysPracticed++
     }
 
     let isActive = isSameDate(today, day)
-    let type = ((dayActivity !== null) ? 'tracked' : (isActive ? 'active' : 'none'))
-    let isInStreak = dayActivity !== null;
+    let type = dayActivity !== null ? 'tracked' : isActive ? 'active' : 'none'
+    let isInStreak = dayActivity !== null
     if (isInStreak) {
-      weeklyStats[weekKey].inStreak = true;
+      weeklyStats[weekKey].inStreak = true
     }
 
     dailyStats.push({
@@ -164,6 +210,13 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
     })
   }
 
+  if (hadStreakBeforeMonth) {
+    const firstWeekKey = getWeekNumber(startOfGrid)
+    if (weeklyStats[firstWeekKey]) {
+      weeklyStats[firstWeekKey].continueStreak = true
+    }
+  }
+
   let filteredPractices = Object.keys(practices)
     .filter((date) => new Date(date) <= endOfMonth)
     .reduce((obj, key) => {
@@ -171,23 +224,20 @@ export async function getUserMonthlyStats(year = new Date().getFullYear(), month
       return obj
     }, {})
 
-  let { currentDailyStreak, currentWeeklyStreak } = calculateStreaks(filteredPractices);
+  let { currentDailyStreak, currentWeeklyStreak } = calculateStreaks(filteredPractices)
 
-  return { data: {
-      dailyActiveStats:  dailyStats,
+  return {
+    data: {
+      dailyActiveStats: dailyStats,
       weeklyActiveStats: Object.values(weeklyStats),
       practiceDuration,
       currentDailyStreak,
       currentWeeklyStreak,
       daysPracticed,
-    }
+    },
   }
 }
 
-export async function getUserPractices() {
-  let data = await userActivityContext.getData()
-  return data?.[DATA_KEY_PRACTICES] ?? []
-}
 /**
  * Records user practice data and updates both the remote and local activity context.
  *
@@ -219,37 +269,39 @@ export async function getUserPractices() {
  *   .catch(error => console.error(error));
  */
 export async function recordUserPractice(practiceDetails) {
-  practiceDetails.auto = 0;
+  practiceDetails.auto = 0
   if (practiceDetails.content_id) {
-    practiceDetails.auto = 1;
+    practiceDetails.auto = 1
   }
 
   await userActivityContext.update(
     async function (localContext) {
-      let userData = localContext.data ?? { [DATA_KEY_PRACTICES]: {} };
-      localContext.data = userData;
+      let userData = localContext.data ?? { [DATA_KEY_PRACTICES]: {} }
+      localContext.data = userData
     },
     async function () {
-      const response = await logUserPractice(practiceDetails);
+      const response = await logUserPractice(practiceDetails)
       if (response) {
         await userActivityContext.updateLocal(async function (localContext) {
           const newPractices = response.data ?? []
-          newPractices.forEach(newPractice => {
-            const { date } = newPractice;
+          newPractices.forEach((newPractice) => {
+            const { date } = newPractice
             if (!localContext.data[DATA_KEY_PRACTICES][date]) {
-              localContext.data[DATA_KEY_PRACTICES][date] = [];
+              localContext.data[DATA_KEY_PRACTICES][date] = []
             }
-              localContext.data[DATA_KEY_PRACTICES][date][DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000)
-              localContext.data[DATA_KEY_PRACTICES][date].push({
-                id: newPractice.id,
-                duration_seconds: newPractice.duration_seconds  // Add the new practice for this date
-              });
-          });
-        });
+            localContext.data[DATA_KEY_PRACTICES][date][DATA_KEY_LAST_UPDATED_TIME] = Math.round(
+              new Date().getTime() / 1000
+            )
+            localContext.data[DATA_KEY_PRACTICES][date].push({
+              id: newPractice.id,
+              duration_seconds: newPractice.duration_seconds, // Add the new practice for this date
+            })
+          })
+        })
       }
-      return response;
+      return response
     }
-  );
+  )
 }
 /**
  * Updates a user's practice session with new details and syncs the changes remotely.
@@ -292,21 +344,21 @@ export async function updateUserPractice(id, practiceDetails) {
  *   .catch(error => console.error(error));
  */
 export async function removeUserPractice(id) {
-  let url = `/api/user/practices/v1/practices${buildQueryString([id])}`;
+  let url = `/api/user/practices/v1/practices${buildQueryString([id])}`
   await userActivityContext.update(
     async function (localContext) {
       if (localContext.data?.[DATA_KEY_PRACTICES]) {
-        Object.keys(localContext.data[DATA_KEY_PRACTICES]).forEach(date => {
-          localContext.data[DATA_KEY_PRACTICES][date] = localContext.data[DATA_KEY_PRACTICES][date].filter(
-            practice => practice.id !== id
-          );
-        });
+        Object.keys(localContext.data[DATA_KEY_PRACTICES]).forEach((date) => {
+          localContext.data[DATA_KEY_PRACTICES][date] = localContext.data[DATA_KEY_PRACTICES][
+            date
+          ].filter((practice) => practice.id !== id)
+        })
       }
     },
     async function () {
-      return await fetchHandler(url, 'delete');
+      return await fetchHandler(url, 'delete')
     }
-  );
+  )
 }
 
 /**
@@ -322,22 +374,42 @@ export async function removeUserPractice(id) {
  *   .catch(error => console.error(error));
  */
 export async function restoreUserPractice(id) {
-  let url = `/api/user/practices/v1/practices/restore${buildQueryString([id])}`;
-  const response = await fetchHandler(url, 'put');
-  if (response?.data) {
-    await userActivityContext.updateLocal(async function (localContext) {
-      const restoredPractice = response.data;
-      const { date } = restoredPractice;
-      if (!localContext.data[DATA_KEY_PRACTICES][date]) {
-        localContext.data[DATA_KEY_PRACTICES][date] = [];
-      }
-      localContext.data[DATA_KEY_PRACTICES][date].push({
-        id: restoredPractice.id,
-        duration_seconds: restoredPractice.duration_seconds,
-      });
-    });
+  let url = `/api/user/practices/v1/practices/restore${buildQueryString([id])}`
+  const response = await fetchHandler(url, 'put')
+  if (response?.data?.length) {
+    const restoredPractice = response.data.find((p) => p.id === id)
+    if (restoredPractice) {
+      await userActivityContext.updateLocal(async function (localContext) {
+        const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+        const utcDate = new Date(restoredPractice.day)
+        const localDate = convertToTimeZone(utcDate, userTimeZone)
+        const date =
+          localDate.getFullYear() + '-' +
+          String(localDate.getMonth() + 1).padStart(2, '0') + '-' +
+          String(localDate.getDate()).padStart(2, '0')
+        if (localContext.data[DATA_KEY_PRACTICES][date]) {
+          localContext.data[DATA_KEY_PRACTICES][date] = []
+        }
+        response.data.forEach((restoredPractice) => {
+          localContext.data[DATA_KEY_PRACTICES][date].push({
+            id: restoredPractice.id,
+            duration_seconds: restoredPractice.duration_seconds,
+          })
+        })
+      })
+    }
   }
-  return response;
+  const formattedMeta = await formatPracticeMeta(response.data || [])
+  const practiceDuration = formattedMeta.reduce(
+    (total, practice) => total + (practice.duration || 0),
+    0
+  )
+  return {
+    data: formattedMeta,
+    message: response.message,
+    version: response.version,
+    practiceDuration,
+  }
 }
 
 /**
@@ -357,20 +429,20 @@ export async function restoreUserPractice(id) {
  *   .catch(error => console.error("Delete failed:", error));
  */
 export async function deletePracticeSession(day) {
-  const userPracticesIds = await getUserPracticeIds(day);
-  if (!userPracticesIds.length) return [];
+  const userPracticesIds = await getUserPracticeIds(day)
+  if (!userPracticesIds.length) return []
 
-  const url = `/api/user/practices/v1/practices${buildQueryString(userPracticesIds)}`;
+  const url = `/api/user/practices/v1/practices${buildQueryString(userPracticesIds)}`
   await userActivityContext.update(
     async function (localContext) {
       if (localContext.data?.[DATA_KEY_PRACTICES]?.[day]) {
-        delete localContext.data[DATA_KEY_PRACTICES][day];
+        delete localContext.data[DATA_KEY_PRACTICES][day]
       }
     },
     async function () {
-      return await fetchHandler(url, 'DELETE', null);
+      return await fetchHandler(url, 'DELETE', null)
     }
-  );
+  )
 }
 
 /**
@@ -390,79 +462,70 @@ export async function deletePracticeSession(day) {
  *   .catch(error => console.error("Restore failed:", error));
  */
 export async function restorePracticeSession(date) {
-  const url = `/api/user/practices/v1/practices/restore?date=${date}`;
-  const response = await fetchHandler(url, 'PUT', null);
+  const url = `/api/user/practices/v1/practices/restore?date=${date}`
+  const response = await fetchHandler(url, 'PUT', null)
 
   if (response?.data) {
     await userActivityContext.updateLocal(async function (localContext) {
       if (!localContext.data[DATA_KEY_PRACTICES][date]) {
-        localContext.data[DATA_KEY_PRACTICES][date] = [];
+        localContext.data[DATA_KEY_PRACTICES][date] = []
       }
 
-      response.data.forEach(restoredPractice => {
+      response.data.forEach((restoredPractice) => {
         localContext.data[DATA_KEY_PRACTICES][date].push({
           id: restoredPractice.id,
           duration_seconds: restoredPractice.duration_seconds,
-        });
-      });
-    });
+        })
+      })
+    })
   }
 
-  return response;
+  const formattedMeta = await formatPracticeMeta(response?.data)
+  const practiceDuration = formattedMeta.reduce(
+    (total, practice) => total + (practice.duration || 0),
+    0
+  )
+
+  return { data: formattedMeta, practiceDuration }
 }
 
 /**
  * Retrieves and formats a user's practice sessions for a specific day.
  *
- * @param {string} day - The date for which practice sessions should be retrieved (format: YYYY-MM-DD).
- * @returns {Promise<Object>} - A promise that resolves to an object containing the practice sessions and total practice duration.
+ * @param {Object} params - Parameters for fetching practice sessions.
+ * @param {string} params.day - The date for which practice sessions should be retrieved (format: YYYY-MM-DD).
+ * @param {number} [params.userId=globalConfig.sessionConfig.userId] - Optional user ID to retrieve sessions for a specific user. Defaults to the logged-in user.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing:
+ *   - `practices`: An array of formatted practice session data.
+ *   - `practiceDuration`: Total practice duration (in seconds) for the given day.
  *
  * @example
- * // Get practice sessions for a specific day
- * getPracticeSessions("2025-03-31")
+ * // Get practice sessions for the current user on a specific day
+ * getPracticeSessions({ day: "2025-03-31" })
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Get practice sessions for another user
+ * getPracticeSessions({ day: "2025-03-31", userId: 456 })
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
-export async function getPracticeSessions(day) {
-  const userPracticesIds = await getUserPracticeIds(day);
-  if (!userPracticesIds.length) return { data: { practices: [], practiceDuration: 0} };
+export async function getPracticeSessions(params = {}) {
+  const { day, userId = globalConfig.sessionConfig.userId } = params
+  const userPracticesIds = await getUserPracticeIds(day, userId)
+  if (!userPracticesIds.length) return { data: { practices: [], practiceDuration: 0 } }
 
-  const meta = await fetchUserPracticeMeta(userPracticesIds);
-  if (!meta.data.length) return { data: { practices: [], practiceDuration: 0 } };
-  const practiceDuration = meta.data.reduce((total, practice) => total + (practice.duration_seconds || 0), 0);
-  const contentIds = meta.data.map(practice => practice.content_id).filter(id => id !== null);
+  const meta = await fetchUserPracticeMeta(userPracticesIds, userId)
+  if (!meta.data.length) return { data: { practices: [], practiceDuration: 0 } }
 
-  const contents = await fetchByRailContentIds(contentIds);
-  const getFormattedType = (type) => {
-    for (const [key, values] of Object.entries(lessonTypesMapping)) {
-      if (values.includes(type)) {
-        return key.replace(/\b\w/g, char => char.toUpperCase());
-      }
-    }
-    return null;
-  };
+  const formattedMeta = await formatPracticeMeta(meta.data)
+  const practiceDuration = formattedMeta.reduce(
+    (total, practice) => total + (practice.duration || 0),
+    0
+  )
 
-  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-  const formattedMeta = meta.data.map(practice => {
-    const utcDate = new Date(practice.created_at);
-    const content = contents.find(c => c.id === practice.content_id) || {};
-    return {
-      id: practice.id,
-      auto: practice.auto,
-      thumbnail: (practice.content_id)? content.thumbnail : '',
-      duration: practice.duration_seconds || 0,
-      content_url: content.url || null,
-      title: (practice.content_id)? content.title : practice.title,
-      category_id: practice.category_id,
-      instrument_id: practice.instrument_id ,
-      content_type: getFormattedType(content.type || ''),
-      content_id: practice.content_id || null,
-      content_brand: content.brand || null,
-      created_at: convertToTimeZone(utcDate, userTimeZone)
-    };
-  });
-  return { data: { practices: formattedMeta, practiceDuration} };
+  return { data: { practices: formattedMeta, practiceDuration } }
 }
 
 /**
@@ -479,8 +542,8 @@ export async function getPracticeSessions(day) {
  *   .catch(error => console.error("Failed to get notes:", error));
  */
 export async function getPracticeNotes(day) {
-  const notes = await fetchUserPracticeNotes(day);
-  return { data: notes };
+  const notes = await fetchUserPracticeNotes(day)
+  return { data: notes }
 }
 
 /**
@@ -497,8 +560,8 @@ export async function getPracticeNotes(day) {
  *   .then(({ data }) => console.log("Recent activity:", data))
  *   .catch(error => console.error("Failed to get recent activity:", error));
  */
-export async function getRecentActivity() {
-  return { data: recentActivity };
+export async function getRecentActivity({ page = 1, limit = 5, tabName = null } = {}) {
+  return await fetchRecentUserActivities({ page, limit, tabName })
 }
 
 /**
@@ -538,131 +601,783 @@ export async function updatePracticeNotes(payload) {
 }
 
 function getStreaksAndMessage(practices) {
-  let { currentDailyStreak, currentWeeklyStreak, streakMessage } = calculateStreaks(practices, true);
+  let { currentDailyStreak, currentWeeklyStreak, streakMessage } = calculateStreaks(practices, true)
 
   return {
     currentDailyStreak,
     currentWeeklyStreak,
     streakMessage,
-  };
+  }
 }
 
-
-async function getUserPracticeIds(day = new Date().toISOString().split('T')[0]) {
-  let data = await userActivityContext.getData();
-  let practices = data?.[DATA_KEY_PRACTICES] ?? {};
-  let userPracticesIds = [];
-  Object.keys(practices).forEach(date => {
+async function getUserPracticeIds(day = new Date().toISOString().split('T')[0], userId = null) {
+  let practices = {}
+  if (userId !== globalConfig.sessionConfig.userId) {
+    let data = await fetchUserPractices(0, { userId: userId })
+    practices = data?.['data']?.[DATA_KEY_PRACTICES] ?? {}
+  } else {
+    let data = await userActivityContext.getData()
+    practices = data?.[DATA_KEY_PRACTICES] ?? {}
+  }
+  let userPracticesIds = []
+  Object.keys(practices).forEach((date) => {
     if (date === day) {
-      practices[date].forEach(practice => userPracticesIds.push(practice.id));
+      practices[date].forEach((practice) => userPracticesIds.push(practice.id))
     }
-  });
-
-  return userPracticesIds;
+  })
+  return userPracticesIds
 }
 
 function buildQueryString(ids, paramName = 'practice_ids') {
-  if (!ids.length) return '';
-  return '?' + ids.map(id => `${paramName}[]=${id}`).join('&');
+  if (!ids.length) return ''
+  return '?' + ids.map((id) => `${paramName}[]=${id}`).join('&')
 }
 
 // Helper: Calculate streaks
 function calculateStreaks(practices, includeStreakMessage = false) {
-  let currentDailyStreak = 0;
-  let currentWeeklyStreak = 0;
-  let lastActiveDay = null;
-  let streakMessage = '';
+  let currentDailyStreak = 0
+  let currentWeeklyStreak = 0
+  let lastActiveDay = null
+  let streakMessage = ''
 
   let sortedPracticeDays = Object.keys(practices)
-    .map(dateStr => {
-      const [year, month, day] = dateStr.split('-').map(Number);
-      const newDate = new Date();
-      newDate.setFullYear(year, month - 1, day);
-      return newDate;
+    .map((dateStr) => {
+      const [year, month, day] = dateStr.split('-').map(Number)
+      const newDate = new Date()
+      newDate.setFullYear(year, month - 1, day)
+      return newDate
     })
-    .sort((a, b) => a - b);
+    .sort((a, b) => a - b)
   if (sortedPracticeDays.length === 0) {
-    return { currentDailyStreak: 0, currentWeeklyStreak: 0, streakMessage: streakMessages.startStreak };
+    return {
+      currentDailyStreak: 0,
+      currentWeeklyStreak: 0,
+      streakMessage: streakMessages.startStreak,
+    }
   }
-  lastActiveDay = sortedPracticeDays[sortedPracticeDays.length - 1];
+  lastActiveDay = sortedPracticeDays[sortedPracticeDays.length - 1]
 
-  let dailyStreak = 0;
-  let prevDay = null;
+  let dailyStreak = 0
+  let prevDay = null
   sortedPracticeDays.forEach((currentDay) => {
     if (prevDay === null || isNextDay(prevDay, currentDay)) {
-      dailyStreak++;
+      dailyStreak++
     } else {
-      dailyStreak = 1;
+      dailyStreak = 1
     }
-    prevDay = currentDay;
-  });
-  currentDailyStreak = dailyStreak;
+    prevDay = currentDay
+  })
+  currentDailyStreak = dailyStreak
 
   // Weekly streak calculation
-  let weekNumbers = new Set(sortedPracticeDays.map(date => getWeekNumber(date)));
-  let weeklyStreak = 0;
-  let lastWeek = null;
-  [...weekNumbers].sort((a, b) => b - a).forEach(week => {
-    if (lastWeek === null || week === lastWeek - 1) {
-      weeklyStreak++;
-    } else {
-      return;
-    }
-    lastWeek = week;
-  });
-  currentWeeklyStreak = weeklyStreak;
+  let weekNumbers = new Set(sortedPracticeDays.map((date) => getWeekNumber(date)))
+  let weeklyStreak = 0
+  let lastWeek = null
+  ;[...weekNumbers]
+    .sort((a, b) => b - a)
+    .forEach((week) => {
+      if (lastWeek === null || week === lastWeek - 1) {
+        weeklyStreak++
+      } else {
+        return
+      }
+      lastWeek = week
+    })
+  currentWeeklyStreak = weeklyStreak
 
   // Calculate streak message only if includeStreakMessage is true
   if (includeStreakMessage) {
-    let today = new Date();
-    let yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
+    let today = new Date()
+    let yesterday = new Date(today)
+    yesterday.setDate(today.getDate() - 1)
 
-    let currentWeekStart = getMonday(today);
-    let lastWeekStart = new Date(currentWeekStart);
-    lastWeekStart.setDate(currentWeekStart.getDate() - 7);
+    let currentWeekStart = getMonday(today)
+    let lastWeekStart = new Date(currentWeekStart)
+    lastWeekStart.setDate(currentWeekStart.getDate() - 7)
 
-    let hasYesterdayPractice = sortedPracticeDays.some(date =>
-      isSameDate(date, yesterday)
-    );
-    let hasCurrentWeekPractice = sortedPracticeDays.some(date => date >= currentWeekStart);
-    let hasCurrentWeekPreviousPractice = sortedPracticeDays.some(date => date >= currentWeekStart && date < today);
-    let hasLastWeekPractice = sortedPracticeDays.some(date => date >= lastWeekStart && date < currentWeekStart);
-    let hasOlderPractice = sortedPracticeDays.some(date => date < lastWeekStart );
+    let hasYesterdayPractice = sortedPracticeDays.some((date) => isSameDate(date, yesterday))
+    let hasCurrentWeekPractice = sortedPracticeDays.some((date) => date >= currentWeekStart)
+    let hasCurrentWeekPreviousPractice = sortedPracticeDays.some(
+      (date) => date >= currentWeekStart && date < today
+    )
+    let hasLastWeekPractice = sortedPracticeDays.some(
+      (date) => date >= lastWeekStart && date < currentWeekStart
+    )
+    let hasOlderPractice = sortedPracticeDays.some((date) => date < lastWeekStart)
 
     if (isSameDate(lastActiveDay, today)) {
       if (hasYesterdayPractice) {
-        streakMessage = streakMessages.dailyStreak(currentDailyStreak);
+        streakMessage = streakMessages.dailyStreak(currentDailyStreak)
       } else if (hasCurrentWeekPreviousPractice) {
-        streakMessage = streakMessages.weeklyStreak(currentWeeklyStreak);
+        streakMessage = streakMessages.weeklyStreak(currentWeeklyStreak)
       } else if (hasLastWeekPractice) {
-        streakMessage = streakMessages.greatJobWeeklyStreak(currentWeeklyStreak);
+        streakMessage = streakMessages.greatJobWeeklyStreak(currentWeeklyStreak)
       } else {
-        streakMessage = streakMessages.dailyStreakShort(currentDailyStreak);
+        streakMessage = streakMessages.dailyStreakShort(currentDailyStreak)
       }
     } else {
-      if ((hasYesterdayPractice && currentDailyStreak >= 2)  || (hasYesterdayPractice && sortedPracticeDays.length == 1)
-        || (hasYesterdayPractice && !hasLastWeekPractice && hasOlderPractice)){
-        streakMessage = streakMessages.dailyStreakReminder(currentDailyStreak);
+      if (
+        (hasYesterdayPractice && currentDailyStreak >= 2) ||
+        (hasYesterdayPractice && sortedPracticeDays.length == 1) ||
+        (hasYesterdayPractice && !hasLastWeekPractice && hasOlderPractice)
+      ) {
+        streakMessage = streakMessages.dailyStreakReminder(currentDailyStreak)
       } else if (hasCurrentWeekPractice) {
-        streakMessage = streakMessages.weeklyStreakKeepUp(currentWeeklyStreak);
+        streakMessage = streakMessages.weeklyStreakKeepUp(currentWeeklyStreak)
       } else if (hasLastWeekPractice) {
-        streakMessage = streakMessages.weeklyStreakReminder(currentWeeklyStreak);
+        streakMessage = streakMessages.weeklyStreakReminder(currentWeeklyStreak)
       } else {
-        streakMessage = streakMessages.restartStreak;
+        streakMessage = streakMessages.restartStreak
       }
     }
-
   }
 
-  return { currentDailyStreak, currentWeeklyStreak, streakMessage };
+  return { currentDailyStreak, currentWeeklyStreak, streakMessage }
+}
+
+/**
+ * Calculates the longest daily, weekly streaks and totalPracticeSeconds from user practice dates.
+ * @returns {{ longestDailyStreak: number, longestWeeklyStreak: number, totalPracticeSeconds:number }}
+ */
+export async function calculateLongestStreaks(userId = globalConfig.sessionConfig.userId) {
+  let practices = await getUserPractices(userId)
+  let totalPracticeSeconds = 0
+  // Calculate total practice duration
+  for (const date in practices) {
+    for (const entry of practices[date]) {
+      totalPracticeSeconds += entry.duration_seconds
+    }
+  }
+
+  let practiceDates = Object.keys(practices)
+    .map((dateStr) => {
+      const [y, m, d] = dateStr.split('-').map(Number)
+      const newDate = new Date()
+      newDate.setFullYear(y, m - 1, d)
+      return newDate
+    })
+    .sort((a, b) => a - b)
+
+  if (!practiceDates || practiceDates.length === 0) {
+    return { longestDailyStreak: 0, longestWeeklyStreak: 0, totalPracticeSeconds: 0 }
+  }
+
+  // Normalize to Date objects
+  const normalizedDates = [
+    ...new Set(
+      practiceDates.map((d) => {
+        const date = new Date(d)
+        date.setHours(0, 0, 0, 0)
+        return date.getTime()
+      })
+    ),
+  ].sort((a, b) => a - b)
+
+  // ----- Daily Streak -----
+  let longestDailyStreak = 1
+  let currentDailyStreak = 1
+  for (let i = 1; i < normalizedDates.length; i++) {
+    const diffInDays = (normalizedDates[i] - normalizedDates[i - 1]) / (1000 * 60 * 60 * 24)
+    if (diffInDays === 1) {
+      currentDailyStreak++
+      longestDailyStreak = Math.max(longestDailyStreak, currentDailyStreak)
+    } else {
+      currentDailyStreak = 1
+    }
+  }
+
+  // ----- Weekly Streak -----
+  const weekStartDates = [
+    ...new Set(
+      normalizedDates.map((ts) => {
+        const d = new Date(ts)
+        const day = d.getDay()
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1) // adjust to Monday
+        d.setDate(diff)
+        return d.getTime() // timestamp for Monday
+      })
+    ),
+  ].sort((a, b) => a - b)
+
+  let longestWeeklyStreak = 1
+  let currentWeeklyStreak = 1
+
+  for (let i = 1; i < weekStartDates.length; i++) {
+    const diffInWeeks = (weekStartDates[i] - weekStartDates[i - 1]) / (1000 * 60 * 60 * 24 * 7)
+    if (diffInWeeks === 1) {
+      currentWeeklyStreak++
+      longestWeeklyStreak = Math.max(longestWeeklyStreak, currentWeeklyStreak)
+    } else {
+      currentWeeklyStreak = 1
+    }
+  }
+
+  return {
+    longestDailyStreak,
+    longestWeeklyStreak,
+    totalPracticeSeconds,
+  }
+}
+
+async function formatPracticeMeta(practices) {
+  const contentIds = practices.map((p) => p.content_id).filter((id) => id !== null)
+  const contents = await fetchByRailContentIds(contentIds)
+
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
+  return practices.map((practice) => {
+    const utcDate = new Date(practice.created_at)
+    const content = contents.find((c) => c.id === practice.content_id) || {}
+
+    return {
+      id: practice.id,
+      auto: practice.auto,
+      thumbnail: practice.content_id ? content.thumbnail : practice.thumbnail_url || '',
+      thumbnail_url: practice.content_id ? content.thumbnail : practice.thumbnail_url || '',
+      duration: practice.duration_seconds || 0,
+      duration_seconds: practice.duration_seconds || 0,
+      content_url: content.url || null,
+      title: practice.content_id ? content.title : practice.title,
+      category_id: practice.category_id,
+      instrument_id: practice.instrument_id,
+      content_type: getFormattedType(content.type || '', content.brand),
+      content_id: practice.content_id || null,
+      content_brand: content.brand || null,
+      created_at: convertToTimeZone(utcDate, userTimeZone),
+    }
+  })
 }
 
 
+/**
+ * Records a new user activity in the system.
+ *
+ * @param {Object} payload - The data representing the user activity.
+ * @param {number} payload.user_id - The ID of the user.
+ * @param {string} payload.action - The type of action (e.g., 'start', 'complete', 'comment', etc.).
+ * @param {string} payload.brand - The brand associated with the activity.
+ * @param {string} payload.type - The content type (e.g., 'lesson', 'song', etc.).
+ * @param {number} payload.content_id - The ID of the related content.
+ * @param {string} payload.date - The date of the activity (ISO format).
+ * @returns {Promise<Object>} - A promise that resolves to the API response after recording the activity.
+ *
+ * @example
+ * recordUserActivity({
+ *   user_id: 123,
+ *   action: 'start',
+ *   brand: 'pianote',
+ *   type: 'lesson',
+ *   content_id: 4561,
+ *   date: '2025-05-15'
+ * }).then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+export async function recordUserActivity(payload) {
+  const url = `/api/user-management-system/v1/activities`
+  return await fetchHandler(url, 'POST', null, payload)
+}
+
+/**
+ * Deletes a specific user activity by its ID.
+ *
+ * @param {number|string} id - The ID of the user activity to delete.
+ * @returns {Promise<Object>} - A promise that resolves to the API response after deletion.
+ *
+ * @example
+ * deleteUserActivity(789)
+ *   .then(response => console.log('Deleted:', response))
+ *   .catch(error => console.error(error));
+ */
+export async function deleteUserActivity(id) {
+  const url = `/api/user-management-system/v1/activities/${id}`
+  return await fetchHandler(url, 'DELETE')
+}
+/**
+ * Fetches and combines recent user progress rows and playlists, excluding certain types and parents.
+ *
+ * @param {Object} [options={}] - Options for fetching progress rows.
+ * @param {string|null} [options.brand=null] - The brand context for progress data.
+ * @param {number} [options.limit=8] - Maximum number of progress rows to return.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing progress rows formatted for UI.
+ *
+ * @example
+ * getProgressRows({ brand: 'drumeo', limit: 10 })
+ *   .then(data => console.log(data))
+ *   .catch(error => console.error(error));
+ */
+export async function getProgressRows({ brand = null, limit = 8 } = {}) {
+  const excludedTypes = new Set([
+    'pack-bundle',
+    'learning-path-course',
+    'learning-path-level'
+  ]);
+
+  const recentPlaylists = await fetchUserPlaylists(brand, {
+    sort: '-last_progress',
+    limit: limit,
+  });
+  const playlists = recentPlaylists?.data || [];
+  const eligiblePlaylistItems = await getEligiblePlaylistItems(playlists);
+  const playlistEngagedOnContents = eligiblePlaylistItems.map(item => item.last_engaged_on);
+  const playlistsContents = await fetchByRailContentIds(playlistEngagedOnContents, 'progress-tracker');
+  const excludedParents = new Set();
+  const existingShows = new Set();
+  for (const item of playlistsContents) {
+    const contentId = item.id ?? item.railcontent_id;
+    excludedParents.add(contentId)
+    const parentIds = item.parent_content_data || [];
+    parentIds.forEach(id => excludedParents.add(id));
+  }
+
+  const progressContents = await getAllStartedOrCompleted({onlyIds: false, brand: brand, excludedIds: Array.from(excludedParents) });
+  const contents = await fetchByRailContentIds(Object.keys(progressContents), 'progress-tracker', brand);
+  const contentsMap = {};
+  contents.forEach(content => {
+    contentsMap[content.railcontent_id] = content;
+  });
+  const childToParentMap = {};
+  Object.values(contentsMap).forEach(content => {
+    if (Array.isArray(content.parent_content_data) && content.parent_content_data.length > 0) {
+      childToParentMap[content.id] = content.parent_content_data[content.parent_content_data.length - 1];
+    }
+  });
+  const progressMap = new Map();
+  for (const [idStr, progress] of Object.entries(progressContents)) {
+    const id = parseInt(idStr);
+    const content = contentsMap[id];
+    if (!content || excludedTypes.has(content.type)) continue;
+    const parentId = childToParentMap[id];
+    // Handle children with parents
+    if (parentId) {
+      const parentContent = contentsMap[parentId];
+      if (!parentContent || excludedTypes.has(parentContent.type)) continue;
+      const existing = progressMap.get(parentId);
+      if (existing) {
+        // If childIndex isn't already set, set it
+        if (existing.childIndex === undefined) {
+          existing.childIndex = id;
+        }
+      } else {
+        progressMap.set(parentId, {
+          id: parentId,
+          raw: parentContent,
+          state: progress.status,
+          percent: progress.progress,
+          progressTimestamp: progress.last_update * 1000,
+          childIndex: id
+        });
+      }
+      continue;
+    }
+    // Handle standalone parents
+    if (!progressMap.has(id)) {
+      if(!existingShows.has(content.type)){
+        progressMap.set(id, {
+          id,
+          raw: content,
+          state: progress.status,
+          percent: progress.progress,
+          progressTimestamp: progress.last_update * 1000
+        });
+      }
+      if(showsLessonTypes.includes(content.type)) {
+        existingShows.add(content.type)
+      }
+    }
+  }
+  const pinnedItem = await extractPinnedItem({
+    brand,
+    progressMap,
+    playlistItems: eligiblePlaylistItems,
+  })
+  const progressList = Array.from(progressMap.values())
+  if (pinnedItem) {
+    pinnedItem.pinned = true
+  }
+
+  const pinnedId = pinnedItem?.id
+  const filteredProgressList = pinnedId
+    ? progressList.filter(item => item.id !== pinnedId)
+    : progressList;
+  const filteredPlaylists = pinnedId
+    ? eligiblePlaylistItems.filter(item => item.id !== pinnedId)
+    : eligiblePlaylistItems;
+  const combinedBase = [...filteredProgressList, ...filteredPlaylists]
+  const combined = pinnedItem ? [pinnedItem, ...combinedBase] : combinedBase
+
+  const finalCombined = mergeAndSortItems(combined, limit)
+
+  const results = await Promise.all(
+    finalCombined.slice(0, limit).map(item =>
+      item.type === 'playlist'
+        ? processPlaylistItem(item)
+        : processContentItem(item)
+    )
+  );
+
+  return {
+    type: TabResponseType.PROGRESS_ROWS,
+    displayBrowseAll: combined.length > limit,
+    data: results
+  };
+}
+
+async function processContentItem(item) {
+  let data = item.raw;
+  const contentType = getFormattedType(data.type, data.brand);
+  const status = item.state;
+
+  let ctaText = 'Continue';
+  if (contentType === 'transcription' || contentType === 'play-along' || contentType === 'jam-track') ctaText = 'Replay Song';
+  if (contentType === 'lesson') ctaText = status === 'completed' ? 'Revisit Lesson' : 'Continue';
+  if (collectionLessonTypes.includes(contentType) &&  status === 'completed') ctaText = 'Revisit Lessons' ;
+  if (contentType === 'pack' && status === 'completed') {
+    ctaText = 'View Lessons';
+  }
+
+  if (data.lesson_count > 0) {
+    const lessonIds = extractLessonIds(item);
+    const progressOnItems = await getProgressStateByIds(lessonIds);
+    let completedCount = Object.values(progressOnItems).filter(value => value === 'completed').length;
+    data.completed_children = completedCount;
+
+    if (item.childIndex) {
+      let nextId = item.childIndex
+      const nextByProgress = findIncompleteLesson(progressOnItems, item.childIndex, item.raw.type)
+      nextId = nextByProgress ? nextByProgress : nextId
+
+      const nestedLessons = data.lessons
+        .filter(item => Array.isArray(item.lessons))
+        .flatMap(parent =>
+          parent.lessons.map(lesson => ({
+            ...lesson,
+            parent: {
+              id: parent.id,
+              slug: parent.slug,
+              title: parent.title,
+              type: parent.type
+            }
+          }))
+        );
+
+      const lessons = (nestedLessons.length === 0) ? data.lessons : nestedLessons
+      const nextLesson = lessons.find(lesson => lesson.id === nextId)
+      data.first_incomplete_child = nextLesson?.parent ?? nextLesson
+      data.second_incomplete_child = (nextLesson?.parent) ? nextLesson : null
+    }
+  }
+
+  if(contentType == 'show'){
+    const shows = await fetchShows(data.brand, data.type)
+    const showIds = shows.map(item => item.id);
+    const progressOnItems = await getProgressStateByIds(showIds);
+    const completedCount = Object.values(progressOnItems).filter(value => value === 'completed').length;
+    if(status == 'completed') {
+      const nextByProgress = findIncompleteLesson(progressOnItems, data.id, data.type);
+      data = shows.find(lesson => lesson.id === nextByProgress);
+    }
+    data.completed_children = completedCount;
+    data.child_count = shows.length;
+    item.percent = Math.round((completedCount / shows.length) * 100);
+    if(completedCount == shows.length) {
+      ctaText = 'Revisit Lessons';
+    }
+  }
+
+  return {
+    id:                item.id,
+    progressType:      'content',
+    header:            contentType,
+    pinned:            item.pinned ?? false,
+    body:              {
+      progressPercent: item.percent,
+      thumbnail:       data.thumbnail,
+      title:           data.title,
+      badge:           data.badge ?? null,
+      isLocked:        data.is_locked ?? false,
+      subtitle:        !data.child_count || data.lesson_count === 1
+                         ? (contentType === 'lesson') ? `${item.percent}% Complete`: `${data.difficulty_string} • ${data.artist_name}`
+                         : `${data.completed_children} of ${data.lesson_count ?? data.child_count} Lessons Complete`
+    },
+    cta:               {
+      text:   ctaText,
+      timeRemainingToUnlockSeconds: data.time_remaining_seconds ?? null,
+      action: {
+        type:  data.type,
+        brand: data.brand,
+        id:    data.id,
+        slug:  data.slug,
+        child: data.first_incomplete_child
+                 ? {
+            id:    data.first_incomplete_child.id,
+            type:  data.first_incomplete_child.type,
+            brand: data.first_incomplete_child.brand,
+            slug:  data.first_incomplete_child.slug,
+            child: data.second_incomplete_child
+                     ? {
+                id:    data.second_incomplete_child.id,
+                type:  data.second_incomplete_child.type,
+                brand: data.second_incomplete_child.brand,
+                slug:  data.second_incomplete_child.slug
+              }
+                     : null
+          }
+                 : null
+      }
+    },
+    progressTimestamp: item.progressTimestamp
+  };
+}
+
+async function processPlaylistItem(item) {
+  const playlist = item.raw;
+  const progressOnItems = await getProgressStateByIds(playlist.items.map(a => a.content_id));
+  const allItemsCompleted = item.raw.items.every(i => {
+    const itemId = i.content_id;
+    const progress = progressOnItems[itemId];
+    return progress && progress === 'completed';
+  });
+  let nextItem = playlist.items[0] ?? null;
+  if (!allItemsCompleted) {
+    const lastItemProgress = progressOnItems[playlist.last_engaged_on];
+    const index = playlist.items.findIndex(i => i.content_id  === playlist.last_engaged_on);
+    if (lastItemProgress === 'completed') {
+      nextItem = playlist.items[index + 1] ?? nextItem;
+    } else {
+      nextItem = playlist.items[index] ?? nextItem;
+    }
+  }
+
+  return {
+    id:                playlist.id,
+    progressType:      'playlist',
+    header:            'playlist',
+    pinned:            item.pinned ?? false,
+    body:              {
+      first_items_thumbnail_url: playlist.first_items_thumbnail_url,
+      title:                     playlist.name,
+      subtitle:                  `${playlist.duration_formated} • ${playlist.total_items} items • ${playlist.likes} likes • ${playlist.user.display_name}`,
+      total_items:             playlist.total_items,
+    },
+    progressTimestamp: item.progressTimestamp,
+    cta:               {
+      text:   'Continue',
+      action: {
+        brand:  playlist.brand,
+        id:     playlist.id,
+        itemId: nextItem.id,
+        type:   'playlists',
+      }
+    }
+  }
+}
+
+const getFormattedType = (type, brand) => {
+  for (const [key, values] of Object.entries(progressTypesMapping)) {
+    if (values.includes(type)) {
+      return key === 'songs' ? songs[brand] : key;
+    }
+  }
+
+  return null;
+};
+
+function extractLessonIds(data) {
+  const ids = [];
+  function traverse(lessons) {
+    for (const item of lessons) {
+      if (item.lessons) {
+        traverse(item.lessons); // Recursively handle nested lessons
+      }else if (item.id) {
+        ids.push(item.id);
+      }
+    }
+  }
+  if (data.raw && Array.isArray(data.raw.lessons)) {
+    traverse(data.raw.lessons);
+  }
+
+  return ids;
+}
 
 
+async function getEligiblePlaylistItems(playlists) {
+  const eligible = playlists.filter(p => p.last_progress && p.last_engaged_on);
+  return Promise.all(
+    eligible.map(async p => {
+      const utcDate = new Date(p.last_progress.replace(' ', 'T') + 'Z');
+      const timestamp = utcDate.getTime();
+      return {
+        type: 'playlist',
+        progressTimestamp: timestamp,
+        last_engaged_on: p.last_engaged_on,
+        raw: p
+      };
+    })
+  );
+}
 
+function mergeAndSortItems(items, limit) {
+  const seen = new Set();
+  const deduped = [];
 
+  for (const item of items) {
+    const key = `${item.id}-${item.type || item.raw?.type}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      deduped.push(item);
+    }
+  }
+
+  return deduped
+    .filter(item => typeof item.progressTimestamp === 'number' && item.progressTimestamp > 0)
+    .sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return b.progressTimestamp - a.progressTimestamp;
+    })
+    .slice(0, limit + 5);
+}
+
+function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
+  const ids = Object.keys(progressOnItems).map(Number);
+  if (contentType === 'guided-course') {
+    // Return first incomplete lesson
+    return ids.find(id => progressOnItems[id] !== 'completed') || ids.at(0);
+  }
+
+  // For other types, find next incomplete after current
+  const currentIndex = ids.indexOf(Number(currentContentId));
+  if (currentIndex === -1) return null;
+
+  for (let i = currentIndex + 1; i < ids.length; i++) {
+    const id = ids[i];
+    if (progressOnItems[id] !== 'completed') {
+      return id;
+    }
+  }
+
+  return ids[0];
+}
+
+/**
+ * Pins a specific progress row for a user, scoped by brand.
+ *
+ * @param {string} brand - The brand context for the pin action.
+ * @param {number|string} id - The ID of the progress item to pin.
+ * @param {string} progressType - The type of progress (e.g., 'content', 'playlist').
+ * @returns {Promise<Object>} - A promise resolving to the response from the pin API.
+ *
+ * @example
+ * pinProgressRow('drumeo', 12345, 'content')
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+export async function pinProgressRow(brand, id, progressType) {
+  if (!(brand && id && progressType)) throw new Error(`undefined parameter progressType: ${progressType} brand: ${brand} or id: ${id}`)
+  const url = `/api/user-management-system/v1/progress/pin?brand=${brand}&id=${id}&progressType=${progressType}`;
+  const response = await fetchHandler(url, 'PUT', null)
+  if (response && !response.error && response['action'] === 'update_user_pin') {
+    await updateUserPinnedProgressRow(brand, {
+      id,
+      progressType,
+      pinnedAt: new Date().toISOString(),
+    });
+  }
+  return response;
+}
+/**
+ * Unpins the current pinned progress row for a user, scoped by brand.
+ *
+ * @param {string} brand - The brand context for the unpin action.
+ * @param {string} id - The content or playlist id to unpin.
+ * @returns {Promise<Object>} - A promise resolving to the response from the unpin API.
+ *
+ * @example
+ * unpinProgressRow('drumeo', 123456)
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+export async function unpinProgressRow(brand, id) {
+  if (!(brand && id)) throw new Error(`undefined parameter brand: ${brand} or id: ${id}`)
+  const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}&id=${id}`
+  const response = await fetchHandler(url, 'PUT', null)
+  if (response && !response.error && response['action'] === 'clear_user_pin') {
+    await updateUserPinnedProgressRow(brand, null)
+  }
+  return response
+}
+
+async function updateUserPinnedProgressRow(brand, pinnedData) {
+  const userRaw = await globalConfig.localStorage.getItem('user');
+  const user = userRaw ? JSON.parse(userRaw) : {};
+  user.brand_pinned_progress = user.brand_pinned_progress || {}
+  user.brand_pinned_progress[brand] = pinnedData
+  await globalConfig.localStorage.setItem('user', JSON.stringify(user))
+}
+
+async function extractPinnedItem({brand, progressMap, playlistItems}) {
+  const userRaw = await globalConfig.localStorage.getItem('user');
+  const user = userRaw ? JSON.parse(userRaw) : {};
+  user.brand_pinned_progress = user.brand_pinned_progress || {}
+
+  const pinned = user.brand_pinned_progress[brand]
+  if (!pinned) return null
+
+  const {id, progressType, pinnedAt} = pinned
+
+  if (progressType === 'content') {
+    const pinnedId = parseInt(id)
+    if (progressMap.has(pinnedId)) {
+      const item = progressMap.get(pinnedId)
+      progressMap.delete(pinnedId)
+      return item
+    } else {
+      const content = await fetchByRailContentIds([`${pinnedId}`], 'progress-tracker')
+      const firstLessonId = getFirstLeafLessonId(content[0])
+      return {
+        id:      pinnedId,
+        state:   'started',
+        percent: 0,
+        raw:     content[0],
+        progressTimestamp: new Date(pinnedAt).getTime(),
+        childIndex: firstLessonId
+      }
+    }
+  }
+  if (progressType === 'playlist') {
+    const pinnedPlaylist = playlistItems.find(p => p.raw.id === id)
+    if (pinnedPlaylist) {
+      return pinnedPlaylist
+    }else{
+      const playlist = await fetchPlaylist(id)
+      return {
+        id:      id,
+        raw:     playlist,
+        progressTimestamp: new Date(pinnedAt).getTime(),
+        type: 'playlist',
+        last_engaged_on: playlist.items[0],
+      }
+    }
+  }
+
+  return null
+}
+
+function getFirstLeafLessonId(data) {
+  function findFirstLeaf(lessons) {
+    for (const item of lessons) {
+      if (!item.lessons || item.lessons.length === 0) {
+        return item.id || null
+      }
+      const found = findFirstLeaf(item.lessons)
+      if (found) return found
+    }
+    return null
+  }
+
+  return data.lessons ? findFirstLeaf(data.lessons) : null
+}
 
 
 
