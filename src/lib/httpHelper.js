@@ -72,7 +72,7 @@ export async function fetchHandler(
   if (dataVersion) {
     if (typeof dataVersion === 'number' || typeof dataVersion === 'string') {
       reqHeaders['Data-Version'] = dataVersion
-    } else if (typeof dataVersion === 'object' && dataVersion.version || dataVersion.schemaVersion) {
+    } else if (typeof dataVersion === 'object' && (dataVersion.version || dataVersion.schemaVersion)) {
       reqHeaders['Data-Version'] = dataVersion.version
       reqHeaders['Schema-Version'] = dataVersion.schemaVersion
     }
