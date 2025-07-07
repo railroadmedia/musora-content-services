@@ -16,7 +16,6 @@ const NotificationChannels = {
  * Fetches notifications for a given brand with optional filters for unread status and limit.
  *
  * @param {Object} [options={}] - Options for fetching notifications.
- * @param {string} options.brand - The brand to filter notifications by. (Required)
  * @param {number} [options.limit=10] - The maximum number of notifications to fetch.
  * @param {number} [options.page=1] - The page number for pagination.
  * @param {boolean} [options.onlyUnread=false] - Whether to fetch only unread notifications. If true, adds `unread=1` to the query.
@@ -30,13 +29,9 @@ const NotificationChannels = {
  *   .then(notifications => console.log(notifications))
  *   .catch(error => console.error(error));
  */
-export async function fetchNotifications({ brand = null, limit = 10, onlyUnread = false, page = 1 } = {}) {
-  if (!brand) {
-    throw new Error('brand is required')
-  }
-
+export async function fetchNotifications({ limit = 10, onlyUnread = false, page = 1 } = {}) {
   const unreadParam = onlyUnread ? '&unread=1' : ''
-  const url = `${baseUrl}/v1?brand=${brand}${unreadParam}&limit=${limit}&page=${page}`
+  const url = `${baseUrl}/v1?limit=${limit}&page=${page}${unreadParam}`
   return fetchHandler(url, 'get')
 }
 
