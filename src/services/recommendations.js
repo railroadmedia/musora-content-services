@@ -33,8 +33,9 @@ export async function fetchSimilarItems(content_id, brand, limit = 10, page = 1)
   let data = {
     brand: brand,
     content_ids: content_id,
-    limit: limit,
-    page: page
+    limit: page * limit,
+    page: page,
+    num_similar: limit,
   }
   const url = `/similar_items/`
   try {
@@ -43,8 +44,8 @@ export async function fetchSimilarItems(content_id, brand, limit = 10, page = 1)
       globalConfig.recommendationsConfig.token
     )
     const response = await httpClient.post(url, data)
-    // we requested count + 1 then filtered out the extra potential value, so we need slice to the correct size if necessary
-    return response['similar_items'].filter((item) => item !== content_id).slice(0, count)
+    console.log(response)
+    return response['similar_items']
   } catch (error) {
     console.error('Fetch error:', error)
     return null
