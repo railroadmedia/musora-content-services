@@ -16,22 +16,17 @@ describe('UserNotifications module', function () {
   })
 
   describe('fetchNotifications', () => {
-    it('throws if brand not provided', async () => {
-      await expect(UserNotifications.fetchNotifications()).rejects.toThrow('brand is required')
-    })
-
     it('calls fetchHandler with correct url and method', async () => {
       fetchHandler.mockResolvedValueOnce([{ id: 1 }])
 
       const result = await UserNotifications.fetchNotifications({
-        brand: 'drumeo',
         limit: 5,
         onlyUnread: true,
         page: 2,
       })
 
       expect(fetchHandler).toHaveBeenCalledWith(
-        `${baseUrl}/v1?brand=drumeo&unread=1&limit=5&page=2`,
+        `${baseUrl}/v1?limit=5&page=2&unread=1`,
         'get'
       )
       expect(result).toEqual([{ id: 1 }])
@@ -91,15 +86,11 @@ describe('UserNotifications module', function () {
   })
 
   describe('fetchUnreadCount', () => {
-    it('throws if brand not provided', async () => {
-      await expect(UserNotifications.fetchUnreadCount()).rejects.toThrow('brand is required')
-    })
-
     it('calls fetchHandler with correct url and method', async () => {
       fetchHandler.mockResolvedValueOnce({ unread_count: 42 })
 
-      const result = await UserNotifications.fetchUnreadCount({ brand: 'drumeo' })
-      expect(fetchHandler).toHaveBeenCalledWith(`${baseUrl}/v1/unread-count?brand=drumeo`, 'get')
+      const result = await UserNotifications.fetchUnreadCount()
+      expect(fetchHandler).toHaveBeenCalledWith(`${baseUrl}/v1/unread-count`, 'get')
       expect(result).toEqual({ unread_count: 42 })
     })
   })

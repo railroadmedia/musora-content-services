@@ -136,10 +136,7 @@ export async function deleteNotification(notificationId) {
  *   .catch(error => console.error(error));
  */
 export async function fetchUnreadCount({ brand = null} = {}) {
-  if (!brand) {
-    throw new Error('brand is required')
-  }
-  const url = `${baseUrl}/v1/unread-count?brand=${brand}`
+  const url = `${baseUrl}/v1/unread-count`
   return fetchHandler(url, 'get')
 }
 
