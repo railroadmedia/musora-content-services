@@ -25,7 +25,7 @@ const NotificationChannels = {
  * @throws {Error} - Throws an error if the brand is not provided.
  *
  * @example
- * fetchNotifications({ brand: 'drumeo', limit: 5, onlyUnread: true,  page: 2  })
+ * fetchNotifications({ limit: 5, onlyUnread: true,  page: 2  })
  *   .then(notifications => console.log(notifications))
  *   .catch(error => console.error(error));
  */
@@ -61,8 +61,6 @@ export async function markNotificationAsRead(notificationId) {
 /**
  * Marks all notifications as read for a specific brand.
  *
- * @param {string} brand - The brand to filter notifications by.
- *
  * @returns {Promise<any>} - A promise that resolves when all notifications are marked as read.
  *
  * @example
@@ -70,8 +68,8 @@ export async function markNotificationAsRead(notificationId) {
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
-export async function markAllNotificationsAsRead(brand) {
-  const url = `${baseUrl}/v1/read?brand=${brand}`
+export async function markAllNotificationsAsRead() {
+  const url = `${baseUrl}/v1/read`
   return fetchHandler(url, 'put')
 }
 
