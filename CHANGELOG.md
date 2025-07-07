@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.17.0](https://github.com/railroadmedia/musora-content-services/compare/v2.15.1...v2.17.0) (2025-07-07)
+
+
+### Features
+
+* media type id updates ([d005e51](https://github.com/railroadmedia/musora-content-services/commit/d005e5190e384ae352c2011d18a1ae5eb0a8272a))
+* MU2-759 New method to fetch a single comment by its ID ([5399d07](https://github.com/railroadmedia/musora-content-services/commit/5399d07ab35f00c2ea5c9c6524defaab1aa5bd52))
+* MU2-761: Sort by 'recommended' ([60b168f](https://github.com/railroadmedia/musora-content-services/commit/60b168faa354a6c2239aa6279d88c800473b3ccf))
+* remove console in contentAggregator ([3e9bf97](https://github.com/railroadmedia/musora-content-services/commit/3e9bf97bfc45775a4c66e5be9714ec327ab1592b))
+
+
+### Bug Fixes
+
+* **MU2-762:** In-Platform Bell Notifications should be brand agnostic ([9296b0c](https://github.com/railroadmedia/musora-content-services/commit/9296b0c5012a210312ee81ea16d774ee07fa171e))
+
 ## [2.16.0](https://github.com/railroadmedia/musora-content-services/compare/v2.15.1...v2.16.0) (2025-07-04)
 
 
