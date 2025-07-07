@@ -10,9 +10,9 @@ const excludeFromGeneratedIndex: string[] = []
 
 const BASE_PATH: string = `/api/content-org`
 
-export async function enrollUserInGuidedCourse(guidedCourse) {
+export async function enrollUserInGuidedCourse(guidedCourse, { notifications_enabled = false }) {
   const url: string = `${BASE_PATH}/v1/user/guided-courses/enroll-user/${guidedCourse}`
-  return await fetchHandler(url, 'POST')
+  return await fetchHandler(url, 'POST', null, { notifications_enabled })
 }
 
 export async function unEnrollUserInGuidedCourse(guidedCourse) {
