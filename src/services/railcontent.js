@@ -768,7 +768,8 @@ export async function reportComment(commentId, issue) {
  */
 export async function fetchComment(commentId) {
   const url = `/api/content/v1/comments/${commentId}`
-  return await fetchHandler(url)
+  const comment = await fetchHandler(url)
+  return comment.parent ? comment.parent : comment
 }
 
 export async function fetchUserPractices(currentVersion = 0, { userId } = {}) {
