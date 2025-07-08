@@ -226,6 +226,11 @@ import {
 } from './services/sanity.js';
 
 import {
+	sendAccountSetupEmail,
+	status
+} from './services/user/account.ts';
+
+import {
 	fetchChatSettings
 } from './services/user/chat.js';
 
@@ -499,7 +504,9 @@ declare module 'musora-content-services' {
 		restoreItemFromPlaylist,
 		restorePracticeSession,
 		restoreUserPractice,
+		sendAccountSetupEmail,
 		setStudentViewForUser,
+		status,
 		togglePlaylistPrivate,
 		unEnrollUserInGuidedCourse,
 		unPinGuidedCourse,

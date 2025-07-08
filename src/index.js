@@ -226,6 +226,11 @@ import {
 } from './services/sanity.js';
 
 import {
+	sendAccountSetupEmail,
+	status
+} from './services/user/account.ts';
+
+import {
 	fetchChatSettings
 } from './services/user/chat.js';
 
@@ -498,7 +503,9 @@ export {
 	restoreItemFromPlaylist,
 	restorePracticeSession,
 	restoreUserPractice,
+	sendAccountSetupEmail,
 	setStudentViewForUser,
+	status,
 	togglePlaylistPrivate,
 	unEnrollUserInGuidedCourse,
 	unPinGuidedCourse,
