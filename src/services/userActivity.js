@@ -920,7 +920,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     'learning-path-course',
     'learning-path-level'
   ]);
-  console.log('I am once again asking for your support')
+  console.log('I am once again asking for your support', brand)
   // TODO slice progress to a reasonable number, say 100
   const [recentPlaylists, progressContents, allPinnedGuidedCourse, userPinnedItem ] = await Promise.all([
     fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit}),
@@ -1039,7 +1039,6 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     pinnedItem.pinned = true
     combined.push(pinnedItem)
   }
-
   const progressList = Array.from(progressMap.values())
 
   const filteredProgressList = pinnedId
@@ -1117,15 +1116,33 @@ async function processContentItem(item) {
       const nextLesson = lessons.find(lesson => lesson.id === nextId)
       data.first_incomplete_child = nextLesson?.parent ?? nextLesson
       data.second_incomplete_child = (nextLesson?.parent) ? nextLesson : null
-      // TODO handle overlay or next lesson behaviour
-      if(data.type === 'guided-course' && nextByProgress !== undefined ){
-        // const challenge = await fetchChallengeLessonData(nextByProgress)
-        // if(challenge.lesson.is_locked) {
-        //   const timeRemaining = getTimeRemainingUntilLocal(challenge.lesson.unlock_date, {withTotalSeconds:true})
-        //   data.is_locked = true
-        //   data.time_remaining_seconds = timeRemaining.totalSeconds
-        //   ctaText =  'Next lesson in ' + timeRemaining.formatted
-        // }
+      if(data.type === 'guided-course'){
+        // USHP-1 if lesson locked show unlock in X time
+        console.log('nextLesson', nextLesson)
+        console.log('date pu', new Date(nextLesson.published_on))
+        console.log('date n', new Date())
+        let isLocked = new Date(nextLesson.published_on) > new Date()
+        console.log('date locked', isLocked)
+        data.thumbnail = nextLesson.thumbnail
+        if (isLocked) {
+          data.is_locked = true
+          const timeRemaining = getTimeRemainingUntilLocal(nextLesson.published_on, {withTotalSeconds: true})
+          data.time_remaining_seconds = timeRemaining.totalSeconds
+          ctaText = 'Next lesson in ' + timeRemaining.formatted
+        }
+        // USHP-2 start course if not started
+        else if (status === 'not-started') {
+          ctaText = "Start Course"
+        }
+        // USHP-4 completed
+        else if (status === 'completed') {
+          // duplicated code to above, but here for clarity
+          ctaText = 'Revisit Lessons'
+        }
+        // USHP-3 in progress for lesson
+        else {
+          ctaText = "Continue"
+        }
       }
     }
   }
@@ -1420,6 +1437,9 @@ async function extractPinnedItem(pinned, progressMap, playlistItems) {
 
 async function extractPinnedGuidedCourseItem(guidedCourse, progressMap) {
   const children = guidedCourse.lessons.map(child => child.id)
+  if (progressMap.has(guidedCourse.id)) {
+    progressMap.delete(guidedCourse.id)
+  }
   let lastChild = null
   children.forEach(child => {
     if (progressMap.has(child)) {
@@ -1434,7 +1454,7 @@ async function extractPinnedGuidedCourseItem(guidedCourse, progressMap) {
   return progressMap.has(guidedCourse.id) ? progressMap.get(guidedCourse.id) :
     {
       id: guidedCourse.id,
-      state: 'started',
+      state: 'not-started',
       percent: 0,
       raw: guidedCourse,
       pinned: true,

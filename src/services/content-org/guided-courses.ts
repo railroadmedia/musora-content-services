@@ -42,5 +42,7 @@ export async function guidedCourses() {
 
 export async function pinnedGuidedCourses(brand) {
   const url: string = `${BASE_PATH}/v1/user/guided-courses/pinned?brand=${brand}`
-  return await fetchHandler(url, 'GET')
+  let a = await fetchHandler(url, 'GET')
+  console.log('oh no')
+  return a
 }
