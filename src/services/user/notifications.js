@@ -153,7 +153,7 @@ export async function fetchUnreadCount({ brand = null} = {}) {
  *   });
  */
 export async function fetchNotificationSettings() {
-  const url = `/api/notification-settings/v1`;
+  const url = `/api/notifications/v1/settings`;
   const settings = await fetchHandler(url, 'get');
 
   if (!settings || typeof settings !== 'object') return {};
@@ -219,7 +219,7 @@ export async function updateNotificationSetting({ brand, settingName, email, pus
   }
 
   const payload = { settings };
-  const url = '/api/notification-settings/v1';
+  const url = '/api/notifications/v1/settings';
 
   return fetchHandler(url, 'PUT', null, payload);
 }
