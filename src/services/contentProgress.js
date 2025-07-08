@@ -426,7 +426,7 @@ function getMediaTypeId(mediaType, mediaCategory) {
     case 'practice_play-alongs':
       return 4
     case 'video_soundslice':
-      return 6
+      return 3
     default:
       return 5
   }

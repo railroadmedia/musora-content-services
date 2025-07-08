@@ -2,6 +2,55 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.19.0](https://github.com/railroadmedia/musora-content-services/compare/v2.18.0...v2.19.0) (2025-07-08)
+
+
+### Features
+
+* MU2-583: Update notification settings routes ([014ba93](https://github.com/railroadmedia/musora-content-services/commit/014ba9370a58a374c048f4d02fd6130b2758c956))
+
+## [2.18.0](https://github.com/railroadmedia/musora-content-services/compare/v2.17.0...v2.18.0) (2025-07-08)
+
+
+### Features
+
+* GC enroll patch  ([c8dc053](https://github.com/railroadmedia/musora-content-services/commit/c8dc0530abd63d7354f9772f938c3769a401702b))
+
+## [2.17.0](https://github.com/railroadmedia/musora-content-services/compare/v2.15.1...v2.17.0) (2025-07-07)
+
+
+### Features
+
+* media type id updates ([d005e51](https://github.com/railroadmedia/musora-content-services/commit/d005e5190e384ae352c2011d18a1ae5eb0a8272a))
+* MU2-759 New method to fetch a single comment by its ID ([5399d07](https://github.com/railroadmedia/musora-content-services/commit/5399d07ab35f00c2ea5c9c6524defaab1aa5bd52))
+* MU2-761: Sort by 'recommended' ([60b168f](https://github.com/railroadmedia/musora-content-services/commit/60b168faa354a6c2239aa6279d88c800473b3ccf))
+* remove console in contentAggregator ([3e9bf97](https://github.com/railroadmedia/musora-content-services/commit/3e9bf97bfc45775a4c66e5be9714ec327ab1592b))
+
+
+### Bug Fixes
+
+* **MU2-762:** In-Platform Bell Notifications should be brand agnostic ([9296b0c](https://github.com/railroadmedia/musora-content-services/commit/9296b0c5012a210312ee81ea16d774ee07fa171e))
+
+## [2.16.0](https://github.com/railroadmedia/musora-content-services/compare/v2.15.1...v2.16.0) (2025-07-04)
+
+
+### Features
+
+* media type id updates ([d005e51](https://github.com/railroadmedia/musora-content-services/commit/d005e5190e384ae352c2011d18a1ae5eb0a8272a))
+* remove console in contentAggregator ([3e9bf97](https://github.com/railroadmedia/musora-content-services/commit/3e9bf97bfc45775a4c66e5be9714ec327ab1592b))
+
+### [2.15.1](https://github.com/railroadmedia/musora-content-services/compare/v2.15.0...v2.15.1) (2025-07-01)
+
+## [2.15.0](https://github.com/railroadmedia/musora-content-services/compare/v2.12.0...v2.15.0) (2025-07-01)
+
+
+### Features
+
+* (MU2-583) New methods for fetch notification settings & update ([db8acb4](https://github.com/railroadmedia/musora-content-services/commit/db8acb433d6450f916300520988bbdc659fa74c3))
+* add logo data to parent in fetchLessonContent ([5c924b6](https://github.com/railroadmedia/musora-content-services/commit/5c924b6ad770d9befc0d5a972d0333840e8c5c83))
+* add status to related_lessons ([0aee928](https://github.com/railroadmedia/musora-content-services/commit/0aee928e6cd88e4fcf1accd2b055f31804e3a6fa))
+* **BEH-541:** guided course enrollment page endpoint ([#311](https://github.com/railroadmedia/musora-content-services/issues/311)) ([0e7aace](https://github.com/railroadmedia/musora-content-services/commit/0e7aacec67ea769f15d826ed9542d4af1bae228d))
+
 ## [2.14.0](https://github.com/railroadmedia/musora-content-services/compare/v2.13.0...v2.14.0) (2025-06-26)
 
 

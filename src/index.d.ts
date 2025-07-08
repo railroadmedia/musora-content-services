@@ -8,7 +8,11 @@ import {
 import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
-	unEnrollUserInGuidedCourse
+	guidedCourses,
+	pinGuidedCourse,
+	pinnedGuidedCourses,
+	unEnrollUserInGuidedCourse,
+	unPinGuidedCourse
 } from './services/content-org/guided-courses.ts';
 
 import {
@@ -116,6 +120,7 @@ import {
 	fetchChallengeLessonData,
 	fetchChallengeMetadata,
 	fetchChallengeUserActiveChallenges,
+	fetchComment,
 	fetchCommentRelies,
 	fetchComments,
 	fetchCompletedChallenges,
@@ -245,11 +250,13 @@ import {
 
 import {
 	deleteNotification,
+	fetchNotificationSettings,
 	fetchNotifications,
 	fetchUnreadCount,
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
-	markNotificationAsUnread
+	markNotificationAsUnread,
+	updateNotificationSetting
 } from './services/user/notifications.js';
 
 import {
@@ -339,6 +346,7 @@ declare module 'musora-content-services' {
 		fetchChatSettings,
 		fetchCoachLessons,
 		fetchComingSoon,
+		fetchComment,
 		fetchCommentModContentData,
 		fetchCommentRelies,
 		fetchComments,
@@ -368,6 +376,7 @@ declare module 'musora-content-services' {
 		fetchNewReleases,
 		fetchNextContentDataForParent,
 		fetchNextPreviousLesson,
+		fetchNotificationSettings,
 		fetchNotifications,
 		fetchOtherSongVersions,
 		fetchOwnedChallenges,
@@ -442,6 +451,7 @@ declare module 'musora-content-services' {
 		getUserWeeklyStats,
 		getWeekNumber,
 		globalConfig,
+		guidedCourses,
 		initializeService,
 		isBucketUrl,
 		isContentLiked,
@@ -462,7 +472,9 @@ declare module 'musora-content-services' {
 		markNotificationAsUnread,
 		openComment,
 		otherStats,
+		pinGuidedCourse,
 		pinProgressRow,
+		pinnedGuidedCourses,
 		postChallengesCommunityNotification,
 		postChallengesEnroll,
 		postChallengesEnrollmentNotification,
@@ -496,6 +508,7 @@ declare module 'musora-content-services' {
 		setStudentViewForUser,
 		togglePlaylistPrivate,
 		unEnrollUserInGuidedCourse,
+		unPinGuidedCourse,
 		unassignModeratorToComment,
 		unblockUser,
 		undeletePlaylist,
@@ -503,6 +516,7 @@ declare module 'musora-content-services' {
 		unlikeContent,
 		unlikePlaylist,
 		unpinProgressRow,
+		updateNotificationSetting,
 		updatePlaylist,
 		updatePracticeNotes,
 		updateUserPractice,

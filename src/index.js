@@ -8,7 +8,11 @@ import {
 import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
-	unEnrollUserInGuidedCourse
+	guidedCourses,
+	pinGuidedCourse,
+	pinnedGuidedCourses,
+	unEnrollUserInGuidedCourse,
+	unPinGuidedCourse
 } from './services/content-org/guided-courses.ts';
 
 import {
@@ -116,6 +120,7 @@ import {
 	fetchChallengeLessonData,
 	fetchChallengeMetadata,
 	fetchChallengeUserActiveChallenges,
+	fetchComment,
 	fetchCommentRelies,
 	fetchComments,
 	fetchCompletedChallenges,
@@ -245,11 +250,13 @@ import {
 
 import {
 	deleteNotification,
+	fetchNotificationSettings,
 	fetchNotifications,
 	fetchUnreadCount,
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
-	markNotificationAsUnread
+	markNotificationAsUnread,
+	updateNotificationSetting
 } from './services/user/notifications.js';
 
 import {
@@ -338,6 +345,7 @@ export {
 	fetchChatSettings,
 	fetchCoachLessons,
 	fetchComingSoon,
+	fetchComment,
 	fetchCommentModContentData,
 	fetchCommentRelies,
 	fetchComments,
@@ -367,6 +375,7 @@ export {
 	fetchNewReleases,
 	fetchNextContentDataForParent,
 	fetchNextPreviousLesson,
+	fetchNotificationSettings,
 	fetchNotifications,
 	fetchOtherSongVersions,
 	fetchOwnedChallenges,
@@ -441,6 +450,7 @@ export {
 	getUserWeeklyStats,
 	getWeekNumber,
 	globalConfig,
+	guidedCourses,
 	initializeService,
 	isBucketUrl,
 	isContentLiked,
@@ -461,7 +471,9 @@ export {
 	markNotificationAsUnread,
 	openComment,
 	otherStats,
+	pinGuidedCourse,
 	pinProgressRow,
+	pinnedGuidedCourses,
 	postChallengesCommunityNotification,
 	postChallengesEnroll,
 	postChallengesEnrollmentNotification,
@@ -495,6 +507,7 @@ export {
 	setStudentViewForUser,
 	togglePlaylistPrivate,
 	unEnrollUserInGuidedCourse,
+	unPinGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,
 	undeletePlaylist,
@@ -502,6 +515,7 @@ export {
 	unlikeContent,
 	unlikePlaylist,
 	unpinProgressRow,
+	updateNotificationSetting,
 	updatePlaylist,
 	updatePracticeNotes,
 	updateUserPractice,

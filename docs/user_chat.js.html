@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>api/types.js - Documentation</title>
+    <title>user/chat.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">api/types.js</h1>
+    <h1 class="page-title">user/chat.js</h1>
     
 
     
@@ -45,31 +45,32 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @typedef {Object} PaginatedMeta
- * @property {number} current_page - Total number of items
- * @property {number} from - First index of returned data
- * @property {number} to - Last index of returned data
- * @property {number} per_page - Total number of items per page
- * @property {number} last_page - Last page accessed
- * @property {number} total - Total number of items
- * @property {string} path - Url of the current page
- */
+            <pre class="prettyprint source linenums"><code>import {fetchHandler} from "../railcontent";
 
 /**
- * @typedef {Object} PaginatedLinks
- * @property {string} first - URL of the first page
- * @property {string} last - URL of the last page
- * @property {string} next - URL of the next page
- * @property {string} prev - URL of the previous page
+ * @module UserChat
  */
 
+const baseUrl = `/api/user-management-system`
+
 /**
- * @typedef {Object&lt;T>} PaginatedResponse
- * @property {PaginatedMeta} meta - Meta information
- * @property {PaginatedLinks} links - Links information
- * @property {Array&lt;T>} data - Data
+ * Fetches chat settings for the current user, including token, API key, and channel names.
+ *
+ * @param {Object} [options={}] - Options for chat settings fetch.
+ * @param {string|null} [options.brand=null] - The brand context (e.g., "drumeo", "singeo").
+ * @param {boolean} [options.liveEventIsGlobal=false] - Whether the request is for a global live event.
+ * @returns {Promise&lt;Object>} - A promise that resolves to chat settings including token and channel names.
+ *
+ * @example
+ * fetchChatSettings({ brand: 'singeo', liveEventIsGlobal: true })
+ *   .then(data => console.log(data))
+ *   .catch(error => console.error(error));
  */
+export async function fetchChatSettings({ brand = null, liveEventIsGlobal = false } = {}) {
+  const isGlobalEvent = liveEventIsGlobal ? '&amp;is_global_event=1' : ''
+  const url = `${baseUrl}/v1/users/chat?brand=${brand}${isGlobalEvent}`
+  return fetchHandler(url, 'get')
+}
 </code></pre>
         </article>
     </section>

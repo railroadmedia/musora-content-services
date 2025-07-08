@@ -154,7 +154,7 @@ export const individualLessonsTypes = [
   ...studentArchivesLessonTypes
 ];
 
-export const coursesLessonTypes = ['course', 'pack','spotlight'];
+export const coursesLessonTypes = ['course', 'pack','spotlight', 'guided-course'];
 export const showsLessonTypes = ['diy-drum-experiment','exploring-beats','in-rhythm',  'rhythmic-adventures-of-captain-carson','rhythms-from-another-planet','study-the-greats'];
 export const collectionLessonTypes = [
     ...coursesLessonTypes,
@@ -189,7 +189,7 @@ export const progressTypesMapping = {
   'song tutorial': tutorialsLessonTypes,
   'songs': transcriptionsLessonTypes,
   'play-along': playAlongLessonTypes,
-  'guided course': ['challenge'],
+  'guided course': ['guided-course'],
   'pack': ['pack', 'semester-pack'],
   'method': ['learning-path']
 };

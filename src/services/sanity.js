@@ -17,7 +17,7 @@ import {
   getChildFieldsForContentType,
   SONG_TYPES,
 } from '../contentTypeConfig.js'
-import { fetchSimilarItems } from './recommendations.js'
+import {fetchSimilarItems, recommendations} from './recommendations.js'
 import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
 
 import { globalConfig } from './config.js'
@@ -903,7 +903,7 @@ async function getProgressFilter(progress, progressIds) {
 export function getSortOrder(sort = '-published_on', brand, groupBy) {
   // Determine the sort order
   let sortOrder = ''
-  const isDesc = sort.startsWith('-')
+  let isDesc = sort.startsWith('-')
   sort = isDesc ? sort.substring(1) : sort
   switch (sort) {
     case 'slug':
@@ -918,6 +918,10 @@ export function getSortOrder(sort = '-published_on', brand, groupBy) {
       } else {
         sortOrder = isDesc ? 'coalesce(popularity, -1)' : 'popularity'
       }
+      break
+    case 'recommended':
+      sortOrder = 'published_on'
+      isDesc = true
       break
     case 'published_on':
     default:
@@ -2337,6 +2341,10 @@ export async function fetchTabData(
 
   // limits the results to supplied progressIds for started & completed filters
   const progressFilter = await getProgressFilter(progress, progressIds)
+  if(sort == "recommended"){
+    progressIds = await recommendations(brand);
+    withoutPagination = true;
+  }
 
   let fields = DEFAULT_FIELDS
   let fieldsString = fields.join(',')
@@ -2369,7 +2377,7 @@ export async function fetchTabData(
 
   let results = await fetchSanity(query, true);
 
-  if (['recent', 'incomplete', 'completed'].includes(progress) && results.entity.length > 1) {
+  if ((['recent', 'incomplete', 'completed'].includes(progress) || sort == "recommended" )&& results.entity.length > 1) {
     const orderMap = new Map(progressIds.map((id, index) => [id, index]))
     results.entity = results.entity
       .sort((a, b) => {
