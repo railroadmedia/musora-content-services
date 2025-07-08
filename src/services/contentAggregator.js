@@ -1,4 +1,5 @@
 import {
+  getLastInteractedOf,
   getNextLesson,
   getProgressPercentageByIds,
   getProgressStateByIds,
@@ -22,7 +23,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addResumeTimeSeconds = false,
     addLastInteractedChild = false,
     addNextLesson = false,
-    lastInteractedParent = null,
+    lastInteractedParent = false,
   } = options
 
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
@@ -78,7 +79,11 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     ...(addNextLesson ? { nextLesson: nextLessonData?.[item.id] } : {}),
   })
 
-  data['nextLessonInPackBundle'] = nextLessonData[lastInteractedParent];
+  if (lastInteractedParent) {
+    const parentId = await getLastInteractedOf(data.children.map(content => content.id));
+
+  data['nextLessonInPackBundle'] = nextLessonData[parentId];
+  }
 
   if (dataField) {
     data[dataField] = Array.isArray(data[dataField])
