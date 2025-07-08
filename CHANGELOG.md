@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.18.0](https://github.com/railroadmedia/musora-content-services/compare/v2.17.0...v2.18.0) (2025-07-08)
+
+
+### Features
+
+* GC enroll patch  ([c8dc053](https://github.com/railroadmedia/musora-content-services/commit/c8dc0530abd63d7354f9772f938c3769a401702b))
+
 ## [2.17.0](https://github.com/railroadmedia/musora-content-services/compare/v2.15.1...v2.17.0) (2025-07-07)
 
 
