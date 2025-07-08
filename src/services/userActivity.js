@@ -1030,7 +1030,7 @@ async function processContentItem(item) {
   let ctaText = 'Continue';
   if (contentType === 'transcription' || contentType === 'play-along' || contentType === 'jam-track') ctaText = 'Replay Song';
   if (contentType === 'lesson') ctaText = status === 'completed' ? 'Revisit Lesson' : 'Continue';
-  if (collectionLessonTypes.includes(contentType) &&  status === 'completed') ctaText = 'Revisit Lessons' ;
+  if ((contentType === 'song tutorial' || collectionLessonTypes.includes(contentType)) &&  status === 'completed') ctaText = 'Revisit Lessons' ;
   if (contentType === 'pack' && status === 'completed') {
     ctaText = 'View Lessons';
   }
