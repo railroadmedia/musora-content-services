@@ -1017,6 +1017,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
       }
     }
   }
+  console.log('progr map - extract gc', progressMap)
   const pinnedItem = userPinnedItem ? await extractPinnedItem(
     userPinnedItem,
     progressMap,
@@ -1025,15 +1026,16 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
 
   const pinnedId = pinnedItem?.id
   const guidedCourseID = pinnedGuidedCourse?.content_id
-
+  console.log('progr map - extract gc', progressMap)
   let combined = [];
   if (pinnedGuidedCourse) {
     console.log('pinnedGcid', guidedCourseID)
     const guidedCourseContent = contentsMap[guidedCourseID]
     console.log('gc content', guidedCourseContent)
-    const o = await extractPinnedGuidedCourseItem(guidedCourseContent, progressMap)
-    console.log('0', o)
-    combined.push(o)
+    const temp = await extractPinnedGuidedCourseItem(guidedCourseContent, progressMap)
+    temp.pinned = true
+    console.log('extracted GC', temp)
+    combined.push(temp)
   }
   if (pinnedItem) {
     pinnedItem.pinned = true
@@ -1117,14 +1119,15 @@ async function processContentItem(item) {
       data.first_incomplete_child = nextLesson?.parent ?? nextLesson
       data.second_incomplete_child = (nextLesson?.parent) ? nextLesson : null
       if(data.type === 'guided-course'){
-        // USHP-1 if lesson locked show unlock in X time
         console.log('nextLesson', nextLesson)
-        console.log('date pu', new Date(nextLesson.published_on))
-        console.log('date n', new Date())
         let isLocked = new Date(nextLesson.published_on) > new Date()
-        console.log('date locked', isLocked)
         data.thumbnail = nextLesson.thumbnail
-        if (isLocked) {
+        // USHP-4 completed
+        if (status === 'completed') {
+          // duplicated code to above, but here for clarity
+          ctaText = 'Revisit Lessons'
+        // USHP-1 if lesson locked show unlock in X time
+        } else if (isLocked) {
           data.is_locked = true
           const timeRemaining = getTimeRemainingUntilLocal(nextLesson.published_on, {withTotalSeconds: true})
           data.time_remaining_seconds = timeRemaining.totalSeconds
@@ -1133,11 +1136,6 @@ async function processContentItem(item) {
         // USHP-2 start course if not started
         else if (status === 'not-started') {
           ctaText = "Start Course"
-        }
-        // USHP-4 completed
-        else if (status === 'completed') {
-          // duplicated code to above, but here for clarity
-          ctaText = 'Revisit Lessons'
         }
         // USHP-3 in progress for lesson
         else {
