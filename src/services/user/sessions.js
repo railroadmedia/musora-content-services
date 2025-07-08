@@ -29,7 +29,7 @@ const excludeFromGeneratedIndex = []
  */
 export async function login(email, password, deviceName, deviceToken, platform) {
   const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
-  const res = await fetch(`${baseUrl}/v1/sessions`, {
+  return fetch(`${baseUrl}/v1/sessions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -42,8 +42,7 @@ export async function login(email, password, deviceName, deviceToken, platform) 
       device_token: deviceToken,
       platform: platform,
     }),
-  });
-  return res.json();
+  })
 }
 
 /**
@@ -58,12 +57,11 @@ export async function login(email, password, deviceName, deviceToken, platform) 
  */
 export async function logout() {
   const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
-  const res = await fetch(`${baseUrl}/v1/sessions`, {
+  await fetch(`${baseUrl}/v1/sessions`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${globalConfig.sessionConfig.authToken}`,
       'Content-Type': 'application/json',
     },
   })
-  return res.json();
 }
