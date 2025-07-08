@@ -1,12 +1,11 @@
 import {
-  getProgressStateByIds,
+  getNextLesson,
   getProgressPercentageByIds,
-  getResumeTimeSecondsByIds,
-  getNextLesson
+  getProgressStateByIds,
+  getResumeTimeSecondsByIds
 } from "./contentProgress"
-import { isContentLikedByIds } from "./contentLikes"
-import { fetchLikeCount, fetchLastInteractedChild } from "./railcontent"
-
+import {isContentLikedByIds} from "./contentLikes"
+import {fetchLastInteractedChild, fetchLikeCount} from "./railcontent"
 
 
 export async function addContextToContent(dataPromise, ...dataArgs)
@@ -23,6 +22,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addResumeTimeSeconds = false,
     addLastInteractedChild = false,
     addNextLesson = false,
+    lastInteractedParent = null,
   } = options
 
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
@@ -77,6 +77,9 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     ...(addLastInteractedChild ? { lastInteractedChild: lastInteractedChildData?.[item.id] } : {}),
     ...(addNextLesson ? { nextLesson: nextLessonData?.[item.id] } : {}),
   })
+
+  data['nextLessonInPackBundle'] = nextLessonData[lastInteractedParent];
+
   if (dataField) {
     data[dataField] = Array.isArray(data[dataField])
         ? await Promise.all(data[dataField].map(addContext))

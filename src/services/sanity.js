@@ -1959,7 +1959,7 @@ export async function fetchSanity(
   }
 
   if (globalConfig.sanityConfig.debug) {
-    console.log('fetchSanity Query:', query)
+    // console.log('fetchSanity Query:', query)
   }
   const perspective = globalConfig.sanityConfig.perspective ?? 'published'
   const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api'
@@ -1991,7 +1991,7 @@ export async function fetchSanity(
     const result = await response.json()
     if (result.result) {
       if (globalConfig.sanityConfig.debug) {
-        console.log('fetchSanity Results:', result)
+        // console.log('fetchSanity Results:', result)
       }
       let results = isList ? result.result : result.result[0]
       results = processNeedAccess
