@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.19.0](https://github.com/railroadmedia/musora-content-services/compare/v2.18.0...v2.19.0) (2025-07-08)
+
+
+### Features
+
+* MU2-583: Update notification settings routes ([014ba93](https://github.com/railroadmedia/musora-content-services/commit/014ba9370a58a374c048f4d02fd6130b2758c956))
+
 ## [2.18.0](https://github.com/railroadmedia/musora-content-services/compare/v2.17.0...v2.18.0) (2025-07-08)
 
 
