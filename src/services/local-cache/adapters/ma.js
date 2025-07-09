@@ -1,4 +1,4 @@
-export default class WebCache {
+export default class MobileAppCache {
   constructor(storage) {
     this.storage = storage;
   }
