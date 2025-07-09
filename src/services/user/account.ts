@@ -23,7 +23,7 @@ export async function status(email: string): Promise<{ requires_setup: boolean }
 export async function sendAccountSetupEmail(email: string): Promise<void | HttpError> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<void>(
-    `/api/user-management-system/v1/accounts/${email}/send-setup-email`,
+    `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/send-setup-email`,
     {}
   )
 }
