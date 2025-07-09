@@ -540,6 +540,20 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   return sortedResults
 }
 
+export async function fetchContentRows(brand, pageName)
+{
+  return fetchSanity(`*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}']{
+    brand,
+    name,
+    'content': select(
+      type == 'lesson' => lesson_content[]->{ ${getFieldsForContentType()} },
+      type == 'song' => song_content[]->{ ${getFieldsForContentType()} },
+    )
+  }`, true)
+}
+
+
+
 /**
  * Fetch all content for a specific brand and type with pagination, search, and grouping options.
  * @param {string} brand - The brand for which to fetch content.

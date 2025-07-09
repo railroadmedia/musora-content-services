@@ -11,7 +11,7 @@ import {
   fetchUpcomingEvents,
   fetchScheduledReleases,
   fetchReturning,
-  fetchLeaving, fetchScheduledAndNewReleases
+  fetchLeaving, fetchScheduledAndNewReleases, fetchContentRows
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {fetchHandler} from "./railcontent";
@@ -168,30 +168,9 @@ export async function getRecent(brand, pageName, tabName = 'all', {
  *   .then(content => console.log(content))
  *   .catch(error => console.error(error));
  */
-export async function getContentRows(brand, pageName, contentRowId , {
-  page = 1,
-  limit = 10,
-} = {}) {
-  const contentRow = contentRowId ? `&content_row_id=${contentRowId}` : ''
-  const url = `/api/content/v1/rows?brand=${brand}&page_name=${pageName}${contentRow}&page=${page}&limit=${limit}`;
-  const contentRows =  await fetchHandler(url, 'get', null) || [];
-  const results = await Promise.all(
-    contentRows.map(async (row) => {
-      if (row.content.length === 0){
-        return { id: row.id, title: row.title, items: [] }
-      }
-      const data = await fetchByRailContentIds(row.content)
-      return { id: row.id, title: row.title, items: data }
-    })
-  )
+export async function getContentRows(brand, pageName) {
 
-  if (contentRowId) {
-    return {
-      type: TabResponseType.CATALOG,
-      data: results[0].items,
-      meta: {}
-    };
-  }
+  const results = await fetchContentRows(brand, pageName)
 
   return results
 }
