@@ -64,7 +64,17 @@ export class DataContext {
     this.fetchDataFunction = fetchDataFunction
     this.localStorageKey = `${this.constructor.PREFIX}${this.dataVersionKey.toString()}`
     this.localStorageLastUpdatedKey = `${this.constructor.PREFIX}${this.dataVersionKey.toString()}_lastUpdated`
-    this.cache = new LocalCache()
+
+    // Lazy initialize the cache when needed instead of during construction,
+    // avoids annoying circular dependency errors
+    this._cache = null
+  }
+
+  get cache() {
+    if (!this._cache) {
+      this._cache = new LocalCache()
+    }
+    return this._cache
   }
 
   async getData() {
