@@ -3,7 +3,6 @@
  */
 import { HttpClient } from '../../infrastructure/http/HttpClient.js'
 import { globalConfig } from '../config.js'
-import './types.js'
 
 export async function status(email: string): Promise<{ requires_setup: boolean }> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
