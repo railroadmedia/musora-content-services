@@ -229,6 +229,7 @@ import {
 	resetPassword,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
+	setupAccount,
 	status
 } from './services/user/account.ts';
 
@@ -509,6 +510,7 @@ export {
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	setStudentViewForUser,
+	setupAccount,
 	status,
 	togglePlaylistPrivate,
 	unEnrollUserInGuidedCourse,
