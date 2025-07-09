@@ -545,6 +545,7 @@ export async function fetchContentRows(brand, pageName)
   return fetchSanity(`*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}']{
     brand,
     name,
+    'slug': slug.current,
     'content': select(
       type == 'lesson' => lesson_content[]->{ ${getFieldsForContentType()} },
       type == 'song' => song_content[]->{ ${getFieldsForContentType()} },

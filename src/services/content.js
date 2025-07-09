@@ -15,7 +15,7 @@ import {
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {fetchHandler} from "./railcontent";
-import {recommendations} from "./recommendations";
+import {recommendations, rankCategories} from "./recommendations";
 
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
@@ -170,9 +170,26 @@ export async function getRecent(brand, pageName, tabName = 'all', {
  */
 export async function getContentRows(brand, pageName) {
 
-  const results = await fetchContentRows(brand, pageName)
-
-  return results
+  const sanityData = await fetchContentRows(brand, pageName)
+  let contentMap = {}
+  let recData = {}
+  let slugNameMap = {}
+  for (const category of sanityData) {
+    recData[category.slug] = category.content.map(item => item.railcontent_id)
+    for (const content of category.content) {
+      contentMap[content.railcontent_id] = content
+    }
+    slugNameMap[category.slug] = category.name
+  }
+  const sortedData = await rankCategories(brand, recData)
+    let finalData = []
+    for (const category of sortedData) {
+      finalData.push( {
+        id: category.slug,
+        title: slugNameMap[category.slug],
+        items: category.items.map(id => contentMap[id])})
+    }
+  return finalData
 }
 
 /**
