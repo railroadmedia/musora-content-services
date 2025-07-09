@@ -226,7 +226,9 @@ import {
 } from './services/sanity.js';
 
 import {
+	resetPassword,
 	sendAccountSetupEmail,
+	sendPasswordResetEmail,
 	status
 } from './services/user/account.ts';
 
@@ -499,11 +501,13 @@ export {
 	reportComment,
 	reportPlaylist,
 	reset,
+	resetPassword,
 	restoreComment,
 	restoreItemFromPlaylist,
 	restorePracticeSession,
 	restoreUserPractice,
 	sendAccountSetupEmail,
+	sendPasswordResetEmail,
 	setStudentViewForUser,
 	status,
 	togglePlaylistPrivate,

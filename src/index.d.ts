@@ -226,7 +226,9 @@ import {
 } from './services/sanity.js';
 
 import {
+	resetPassword,
 	sendAccountSetupEmail,
+	sendPasswordResetEmail,
 	status
 } from './services/user/account.ts';
 
@@ -500,11 +502,13 @@ declare module 'musora-content-services' {
 		reportComment,
 		reportPlaylist,
 		reset,
+		resetPassword,
 		restoreComment,
 		restoreItemFromPlaylist,
 		restorePracticeSession,
 		restoreUserPractice,
 		sendAccountSetupEmail,
+		sendPasswordResetEmail,
 		setStudentViewForUser,
 		status,
 		togglePlaylistPrivate,
