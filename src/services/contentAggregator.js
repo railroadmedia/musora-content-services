@@ -81,8 +81,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
 
   if (lastInteractedParent) {
     const parentId = await getLastInteractedOf(data.children.map(content => content.id));
-
-  data['nextLessonInPackBundle'] = nextLessonData[parentId];
+    data['nextLesson'] = nextLessonData[parentId];
   }
 
   if (dataField) {
