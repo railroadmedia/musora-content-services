@@ -15,7 +15,7 @@ export interface PasswordResetProps {
 export async function status(email: string): Promise<{ requires_setup: boolean } | HttpError> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   const response = await httpClient.get<{ requires_setup: boolean }>(
-    `/api/user-management-system/v1/accounts/${email}/status`
+    `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status`
   )
   return response
 }
