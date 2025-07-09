@@ -16,6 +16,7 @@ import {
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {fetchHandler} from "./railcontent";
 import {recommendations, rankCategories} from "./recommendations";
+import {addContextToContent} from "./contentAggregator.js";
 
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
@@ -170,7 +171,13 @@ export async function getRecent(brand, pageName, tabName = 'all', {
  */
 export async function getContentRows(brand, pageName) {
 
-  const sanityData = await fetchContentRows(brand, pageName)
+  const sanityData = await addContextToContent(fetchContentRows, brand, pageName, {
+    dataField: 'content',
+    addProgressStatus: true,
+    addProgressPercentage: true,
+    //TODO, add this in once 706 is merged
+    //addNextLesson: true
+  })
   let contentMap = {}
   let recData = {}
   let slugNameMap = {}
