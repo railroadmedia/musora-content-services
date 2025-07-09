@@ -83,11 +83,11 @@ export function initializeService(config) {
   globalConfig.searchEngineConfig = config.searchEngineConfig
 }
 
-export function setUserMetadata(userMetaData) {
-  updatePermissionsData(userMetaData.permissionsData)
+export async function setUserMetadata(userMetaData) {
+  await updatePermissionsData(userMetaData.permissionsData)
 
   const userDataVersions = userMetaData.userDataVersions
   for (let i = 0; i < userDataVersions.length; i++) {
-    verifyLocalDataContext(userDataVersions[i].dataVersionKey, userDataVersions[i].currentVersion)
+    await verifyLocalDataContext(userDataVersions[i].dataVersionKey, userDataVersions[i].currentVersion)
   }
 }

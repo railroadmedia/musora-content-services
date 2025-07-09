@@ -1,4 +1,4 @@
-import { globalConfig } from './config.js'
+import LocalCache from './local-cache/index.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -12,18 +12,16 @@ const excludeFromGeneratedIndex = [
 ]
 
 export async function wasLastUpdateOlderThanXSeconds(seconds, key) {
-  let lastUpdated = globalConfig.isMA
-    ? await globalConfig.localStorage.getItem(key)
-    : globalConfig.localStorage.getItem(key)
+  let lastUpdated = await new LocalCache().getItem(key)
   if (!lastUpdated) return false
   const verifyServerTime = seconds * 1000
   return new Date().getTime() - lastUpdated > verifyServerTime
 }
 
-export function setLastUpdatedTime(key) {
-  globalConfig.localStorage.setItem(key, new Date().getTime()?.toString())
+export async function setLastUpdatedTime(key) {
+  await new LocalCache().setItem(key, new Date().getTime()?.toString())
 }
 
-export function clearLastUpdatedTime(key) {
-  globalConfig.localStorage.removeItem(key)
+export async function clearLastUpdatedTime(key) {
+  await new LocalCache().removeItem(key)
 }

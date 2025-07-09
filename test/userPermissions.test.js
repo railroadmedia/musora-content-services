@@ -26,7 +26,7 @@ describe('userPermissions', function () {
     const isAdminUpdate = true
 
     // Call the function to update permissions
-    updatePermissionsData({
+    await updatePermissionsData({
       permissions: newPermissions,
       isAdmin: isAdminUpdate,
     })
@@ -35,7 +35,7 @@ describe('userPermissions', function () {
     expect(result.permissions).toStrictEqual(newPermissions)
     expect(result.isAdmin).toStrictEqual(isAdminUpdate)
 
-    clearPermissionsData()
+    await clearPermissionsData()
     result = await fetchUserPermissions()
 
     expect(result.permissions).toStrictEqual([78, 91, 92])

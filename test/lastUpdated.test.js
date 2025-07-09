@@ -10,7 +10,7 @@ describe('lastUpdated', function () {
   })
 
   test('lastUpdated', async () => {
-    setLastUpdatedTime('testKey')
+    await setLastUpdatedTime('testKey')
     let test1 = await wasLastUpdateOlderThanXSeconds(1, 'testKey')
     await new Promise((r) => setTimeout(r, 800))
     let test2 = await wasLastUpdateOlderThanXSeconds(1, 'testKey')

@@ -33,6 +33,7 @@ import {
 } from './services/contentProgress.js';
 
 import {
+	clearAllDataContexts,
 	verifyLocalDataContext
 } from './services/dataContext.js';
 
@@ -53,6 +54,11 @@ import {
 	setLastUpdatedTime,
 	wasLastUpdateOlderThanXSeconds
 } from './services/lastUpdated.js';
+
+import {
+	onSignInHandler,
+	onSignOutHandler
+} from './services/local-session.js';
 
 import {
 	addItemToPlaylist,
@@ -181,6 +187,7 @@ declare module 'musora-content-services' {
 		assignmentStatusCompleted,
 		assignmentStatusReset,
 		buildImageSRC,
+		clearAllDataContexts,
 		clearLastUpdatedTime,
 		clearPermissionsData,
 		contentStatusCompleted,
@@ -278,6 +285,8 @@ declare module 'musora-content-services' {
 		jumpToContinueContent,
 		likeContent,
 		likePlaylist,
+		onSignInHandler,
+		onSignOutHandler,
 		pinPlaylist,
 		playback,
 		postChallengesCommunityNotification,
