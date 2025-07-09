@@ -150,11 +150,11 @@ export async function getRecent(brand, pageName, tabName = 'all', {
 }
 
 /**
- * Fetches content rows for a given brand and page with optional filtering by content row id.
+ * Fetches content rows for a given brand and page with optional filtering by content row slug.
  *
  * @param {string} brand - The brand for which to fetch content rows.
  * @param {string} pageName - The page name (e.g., 'lessons', 'songs', 'challenges').
- * @param {string} [contentRowId] - The specific content row ID to fetch.
+ * @param {string|null} contentRowSlug - The specific content row ID to fetch.
  * @param {Object} params - Parameters for pagination.
  * @param {number} [params.page=1] - The page number for pagination.
  * @param {number} [params.limit=10] - The maximum number of content items per row.
@@ -169,9 +169,11 @@ export async function getRecent(brand, pageName, tabName = 'all', {
  *   .then(content => console.log(content))
  *   .catch(error => console.error(error));
  */
-export async function getContentRows(brand, pageName) {
-
-  const sanityData = await addContextToContent(fetchContentRows, brand, pageName, {
+export async function getContentRows(brand, pageName, contentRowSlug = null, {
+  page = 1,
+  limit = 10
+} = {}) {
+  const sanityData = await addContextToContent(fetchContentRows, brand, pageName, contentRowSlug, {
     dataField: 'content',
     addProgressStatus: true,
     addProgressPercentage: true,
