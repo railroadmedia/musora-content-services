@@ -4,15 +4,15 @@ export default class MobileAppCache {
   }
 
   async getItem(key) {
-    return this.storage.getItem(key);
+    return await this.storage.getItem(key);
   }
 
   async setItem(key, value) {
-    this.storage.setItem(key, value);
+    return await this.storage.setItem(key, value);
   }
 
   async removeItem(key) {
-    this.storage.removeItem(key);
+    return await this.storage.removeItem(key);
   }
 
   async getKeys(startsWith) {

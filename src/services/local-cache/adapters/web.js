@@ -8,11 +8,11 @@ export default class WebCache {
   }
 
   async setItem(key, value) {
-    this.storage.setItem(key, value);
+    return this.storage.setItem(key, value);
   }
 
   async removeItem(key) {
-    this.storage.removeItem(key);
+    return this.storage.removeItem(key);
   }
 
   async getKeys(startsWith) {
