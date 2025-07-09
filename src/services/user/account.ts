@@ -1,7 +1,7 @@
 /**
  * @module Accounts
  */
-import { HttpClient } from '../../infrastructure/http/HttpClient.js'
+import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
 
 export async function status(email: string): Promise<{ requires_setup: boolean }> {
