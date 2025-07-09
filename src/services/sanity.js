@@ -540,9 +540,10 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   return sortedResults
 }
 
-export async function fetchContentRows(brand, pageName)
+export async function fetchContentRows(brand, pageName, contentRowSlug)
 {
-  return fetchSanity(`*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}']{
+  const rowString = contentRowSlug ? ` && slug.current == "${contentRowSlug}"` : ''
+  return fetchSanity(`*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}'${rowString}]{
     brand,
     name,
     'content': select(
