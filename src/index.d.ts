@@ -229,6 +229,7 @@ import {
 	resetPassword,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
+	setupAccount,
 	status
 } from './services/user/account.ts';
 
@@ -510,6 +511,7 @@ declare module 'musora-content-services' {
 		sendAccountSetupEmail,
 		sendPasswordResetEmail,
 		setStudentViewForUser,
+		setupAccount,
 		status,
 		togglePlaylistPrivate,
 		unEnrollUserInGuidedCourse,
