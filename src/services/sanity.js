@@ -2366,7 +2366,7 @@ export async function fetchTabData(
         )
       ),
       length_in_seconds
-      length_in_seconds,
+      ),
     ),`
 
   const filterWithRestrictions = await new FilterBuilder(filter, {}).buildFilter()
