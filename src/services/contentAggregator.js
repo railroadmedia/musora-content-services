@@ -65,7 +65,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
-    addNextLesson ? getNextLesson(dataMap) : Promise.resolve(null),
+    (addNextLesson || addLastInteractedParent) ? getNextLesson(dataMap) : Promise.resolve(null),
   ])
 
   const addContext = async (item) => ({
