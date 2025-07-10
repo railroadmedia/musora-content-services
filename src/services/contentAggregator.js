@@ -48,12 +48,10 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   if (addNextLesson) {
     items.forEach((item) => {
       if (item?.id) {
-        dataMap[item.id] = {
         dataMap.push({
-          'children': item.children.map(child => child.id),
+          'children': item.children?.map(child => child.id) ?? [],
           'type': item.type,
           'id': item.id,
-        }
         })
       }
     })
@@ -80,7 +78,6 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     ...(addLastInteractedChild ? { lastInteractedChild: lastInteractedChildData?.[item.id] } : {}),
     ...(addNextLesson ? { nextLesson: nextLessonData?.[item.id] } : {}),
   })
-
   if (lastInteractedParent) {
     const parentId = await getLastInteractedOf(data.children.map(content => content.id));
     data['nextLesson'] = nextLessonData[parentId];
