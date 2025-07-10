@@ -194,15 +194,24 @@ export async function getContentRows(brand, pageName, contentRowSlug = null, {
     }
     slugNameMap[category.slug] = category.name
   }
+  const start = (page - 1) * limit
+  const end = start + limit
   const sortedData = await rankCategories(brand, recData)
-    let finalData = []
-    for (const category of sortedData) {
-      finalData.push( {
-        id: category.slug,
-        title: slugNameMap[category.slug],
-        items: category.items.map(id => contentMap[id])})
-    }
-  return finalData
+  let finalData = []
+  for (const category of sortedData) {
+    finalData.push( {
+      id: category.slug,
+      title: slugNameMap[category.slug],
+      items: category.items.slice(start, end).map(id => contentMap[id])})
+  }
+
+  return   contentRowSlug ?
+     {
+      type: TabResponseType.CATALOG,
+      data: finalData[0].items,
+      meta: {}
+      }
+      : finalData
 }
 
 /**
