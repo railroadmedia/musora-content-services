@@ -79,7 +79,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     ...(addNextLesson ? { nextLesson: nextLessonData?.[item.id] } : {}),
   })
 
-  if (lastInteractedParent) {
+  if (addLastInteractedParent) {
     const parentId = await getLastInteractedOf(data.children.map(content => content.id));
     data['nextLesson'] = nextLessonData[parentId];
   }
