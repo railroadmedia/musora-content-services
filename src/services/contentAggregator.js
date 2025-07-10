@@ -80,7 +80,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   })
 
   if (addLastInteractedParent) {
-    const parentId = await getLastInteractedOf(data.children.map(content => content.id));
+    const parentId = await getLastInteractedOf(ids);
     data['nextLesson'] = nextLessonData[parentId];
   }
 
