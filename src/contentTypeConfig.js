@@ -180,6 +180,8 @@ export const lessonTypesMapping = {
   'jam tracks': ['jam-track'],
 };
 
+export const getNextLessonLessonParentTypes = ['course', 'guided-course', 'pack-bundle'];
+
 export const progressTypesMapping = {
   'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes, 'live'],
   'course': ['course'],
@@ -420,10 +422,14 @@ export let contentTypeConfig = {
       '"logo_image_url": logo_image_url.asset->url',
       'total_xp',
       `"children": child[]->{
-                "description": ${descriptionField},
-                "lesson_count": child_count,
-                ${getFieldsForContentType()}
-            }`,
+        "description": ${descriptionField},
+        "lesson_count": child_count,
+        "children": child[]->{
+          "description": ${descriptionField},
+          ${getFieldsForContentType()}
+        },
+        ${getFieldsForContentType()}
+      }`,
       `"resources": ${resourcesField}`,
       '"thumbnail": thumbnail.asset->url',
       '"light_mode_logo": light_mode_logo_url.asset->url',

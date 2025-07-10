@@ -5,8 +5,9 @@ import {
   postRecordWatchSession,
 } from './railcontent.js'
 import { DataContext, ContentProgressVersionKey } from './dataContext.js'
-import { fetchHierarchy } from './sanity.js'
-import {recordUserPractice} from "./userActivity";
+import {fetchHierarchy} from './sanity.js'
+import {recordUserPractice, findIncompleteLesson} from "./userActivity";
+import {getNextLessonLessonParentTypes} from "../contentTypeConfig.js";
 
 const STATE_STARTED = 'started'
 const STATE_COMPLETED = 'completed'
@@ -14,10 +15,11 @@ const DATA_KEY_STATUS = 's'
 const DATA_KEY_PROGRESS = 'p'
 const DATA_KEY_RESUME_TIME = 't'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
+
 export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress)
 
 export async function getProgressPercentage(contentId) {
-  return getById(contentIds, DATA_KEY_PROGRESS, 0)
+  return getById(contentId, DATA_KEY_PROGRESS, 0)
 }
 
 export async function getProgressPercentageByIds(contentIds) {
@@ -38,6 +40,70 @@ export async function getResumeTimeSeconds(contentId) {
 
 export async function getResumeTimeSecondsByIds(contentIds) {
   return getByIds(contentIds, DATA_KEY_RESUME_TIME, 0)
+}
+
+export async function getNextLesson(dataMap)
+{
+  let nextLessonData = {}
+
+  for (const content of Object.values(dataMap)) {
+
+    //only calculate nextLesson if needed, based on content type
+    if (!getNextLessonLessonParentTypes.includes(content.type)) {
+      nextLessonData[content.id] = null
+
+    } else {
+      //return first child if parent-content is complete or no progress
+      const contentState = await getProgressState(content.id)
+      if (contentState !== STATE_STARTED) {
+        nextLessonData[content.id] = content.children[0]
+
+      } else {
+        //if content in progress
+
+        const childrenStates = await getProgressStateByIds(content.children)
+
+        //calculate last_engaged
+        const lastInteracted = await getLastInteractedOf(content.children)
+        const lastInteractedStatus = childrenStates[lastInteracted]
+
+        //different nextLesson behaviour for different content types
+        if (content.type === 'course' || content.type === 'pack-bundle') {
+          if (lastInteractedStatus === STATE_STARTED) {
+            nextLessonData[content.id] = lastInteracted
+          } else {
+            nextLessonData[content.id] = findIncompleteLesson(childrenStates, lastInteracted, content.type)
+          }
+
+        } else if (content.type === 'guided-course') {
+          nextLessonData[content.id] = findIncompleteLesson(childrenStates, lastInteracted, content.type)
+        }
+      }
+    }
+  }
+  return nextLessonData
+}
+
+/**
+ * filter through contents, only keeping the most recent
+ * @param {array} contentIds
+ * @returns {Promise<number>}
+ */
+export async function getLastInteractedOf(contentIds) {
+  const data = await getByIds(contentIds, DATA_KEY_LAST_UPDATED_TIME, 0)
+  const sorted = Object.keys(data)
+    .map(function (key) {
+      return parseInt(key)
+    })
+    .sort(function (a, b) {
+      let v1 = data[a]
+      let v2 = data[b]
+      if (v1 > v2) return -1
+      else if (v1 < v2) return 1
+      return 0
+    })
+
+  return sorted[0]
 }
 
 export async function getProgressDateByIds(contentIds) {
