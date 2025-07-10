@@ -1963,7 +1963,7 @@ export async function fetchSanity(
   }
 
   if (globalConfig.sanityConfig.debug) {
-    // console.log('fetchSanity Query:', query)
+    console.log('fetchSanity Query:', query)
   }
   const perspective = globalConfig.sanityConfig.perspective ?? 'published'
   const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api'
