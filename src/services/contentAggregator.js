@@ -23,7 +23,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addResumeTimeSeconds = false,
     addLastInteractedChild = false,
     addNextLesson = false,
-    lastInteractedParent = false,
+    addLastInteractedParent = false,
   } = options
 
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
@@ -65,7 +65,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
-    addNextLesson ? getNextLesson(dataMap) : Promise.resolve(null),
+    (addNextLesson || addLastInteractedParent) ? getNextLesson(dataMap) : Promise.resolve(null),
   ])
 
   const addContext = async (item) => ({
@@ -78,7 +78,8 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     ...(addLastInteractedChild ? { lastInteractedChild: lastInteractedChildData?.[item.id] } : {}),
     ...(addNextLesson ? { nextLesson: nextLessonData?.[item.id] } : {}),
   })
-  if (lastInteractedParent) {
+
+  if (addLastInteractedParent) {
     const parentId = await getLastInteractedOf(data.children.map(content => content.id));
     data['nextLesson'] = nextLessonData[parentId];
   }

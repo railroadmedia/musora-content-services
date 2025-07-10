@@ -8,6 +8,7 @@ import { DataContext, ContentProgressVersionKey } from './dataContext.js'
 import {fetchHierarchy} from './sanity.js'
 import {recordUserPractice, findIncompleteLesson} from "./userActivity";
 import {getNextLessonLessonParentTypes} from "../contentTypeConfig.js";
+
 const STATE_STARTED = 'started'
 const STATE_COMPLETED = 'completed'
 const DATA_KEY_STATUS = 's'
