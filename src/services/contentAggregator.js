@@ -11,6 +11,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
 
   const {
     dataField = null,
+    iterateDataFieldOnEachArrayElement = false,
     addProgressPercentage = false,
     addIsLiked = false,
     addLikeCount = false,
@@ -26,8 +27,14 @@ export async function addContextToContent(dataPromise, ...dataArgs)
 
   let ids = []
 
-  if (dataField && data?.[dataField]) {
-    ids = data[dataField].map(item => item?.id).filter(Boolean);
+  if (dataField && (data?.[dataField] || iterateDataFieldOnEachArrayElement)) {
+    if (iterateDataFieldOnEachArrayElement && Array.isArray(data)) {
+      for(const parent of data) {
+        ids = [...ids, ...parent[dataField].map(item => item?.id).filter(Boolean)]
+      }
+    } else {
+      ids = data[dataField].map(item => item?.id).filter(Boolean);
+    }
   } else if (Array.isArray(data)) {
     ids = data.map(item => item?.id).filter(Boolean);
   } else if (data?.id) {
@@ -43,7 +50,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
   ])
-  
+
   const addContext = async (item) => ({
     ...item,
     ...(addProgressPercentage ? { progressPercentage: progressPercentageData?.[item.id] } : {}),
@@ -53,11 +60,19 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
     ...(addLastInteractedChild ? { lastInteractedChild: lastInteractedChildData?.[item.id] } : {}),
   })
-  
+
   if (dataField) {
-    data[dataField] = Array.isArray(data[dataField])
+    if (iterateDataFieldOnEachArrayElement) {
+      for(let parent of data) {
+        parent[dataField] = Array.isArray(parent[dataField])
+          ? await Promise.all(parent[dataField].map(addContext))
+          : await addContext(parent[dataField])
+      }
+    } else {
+      data[dataField] = Array.isArray(data[dataField])
         ? await Promise.all(data[dataField].map(addContext))
         : await addContext(data[dataField])
+    }
     return data
   } else {
     return Array.isArray(data)

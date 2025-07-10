@@ -175,11 +175,15 @@ export async function getContentRows(brand, pageName, contentRowSlug = null, {
 } = {}) {
   const sanityData = await addContextToContent(fetchContentRows, brand, pageName, contentRowSlug, {
     dataField: 'content',
+    iterateDataFieldOnEachArrayElement: true,
     addProgressStatus: true,
     addProgressPercentage: true,
     //TODO, add this in once 706 is merged
     //addNextLesson: true
   })
+  if (!sanityData) {
+    return []
+  }
   let contentMap = {}
   let recData = {}
   let slugNameMap = {}
