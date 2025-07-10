@@ -178,8 +178,7 @@ export async function getContentRows(brand, pageName, contentRowSlug = null, {
     iterateDataFieldOnEachArrayElement: true,
     addProgressStatus: true,
     addProgressPercentage: true,
-    //TODO, add this in once 706 is merged
-    //addNextLesson: true
+    addNextLesson: true
   })
   if (!sanityData) {
     return []
@@ -205,13 +204,13 @@ export async function getContentRows(brand, pageName, contentRowSlug = null, {
       items: category.items.slice(start, end).map(id => contentMap[id])})
   }
 
-  return   contentRowSlug ?
-     {
+  return contentRowSlug ?
+    {
       type: TabResponseType.CATALOG,
       data: finalData[0].items,
       meta: {}
-      }
-      : finalData
+    }
+    : finalData
 }
 
 /**
