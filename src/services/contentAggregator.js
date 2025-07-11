@@ -48,11 +48,11 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   if (addNextLesson) {
     items.forEach((item) => {
       if (item?.id) {
-        dataMap[item.id] = {
-          'children': item.children.map(child => child.id),
+        dataMap.push({
+          'children': item.children?.map(child => child.id) ?? [],
           'type': item.type,
           'id': item.id,
-        }
+        })
       }
     })
   }

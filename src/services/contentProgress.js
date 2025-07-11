@@ -46,7 +46,7 @@ export async function getNextLesson(dataMap)
 {
   let nextLessonData = {}
 
-  for (const content of Object.values(dataMap)) {
+  for (const content of dataMap) {
 
     //only calculate nextLesson if needed, based on content type
     if (!getNextLessonLessonParentTypes.includes(content.type)) {
