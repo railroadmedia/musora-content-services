@@ -24,7 +24,6 @@ export const DEFAULT_FIELDS = [
   "'url': web_url_path",
   'published_on',
   "'type': _type",
-  'progress_percent',
   "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
   'brand',
   "'genre': genre[]->name",
@@ -139,7 +138,7 @@ export const singleLessonTypes = ['quick-tips', 'rudiment', 'coach-lessons'];
 export const practiceAlongsLessonTypes = ['workout', 'boot-camp','challenges'];
 export const performancesLessonTypes = ['performance','solo','drum-fest-international-2022'];
 export const documentariesLessonTypes = ['tama','sonor','history-of-electronic-drums','paiste-cymbals'];
-export const liveArchivesLessonTypes = ['podcast', 'coach-stream', 'question-and-answer', 'live-streams'];
+export const liveArchivesLessonTypes = ['podcast', 'coach-stream', 'question-and-answer', 'live-streams', 'live'];
 export const studentArchivesLessonTypes = ['student-review', 'student-focus','student-collaboration'];
 export const tutorialsLessonTypes = ['song-tutorial'];
 export const transcriptionsLessonTypes = ['song'];
@@ -207,7 +206,8 @@ export const filterTypes = {
 export const recentTypes = {
   lessons: [...individualLessonsTypes],
   songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes],
-  home: [...individualLessonsTypes, ...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes]
+  home: [...individualLessonsTypes, ...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes,
+  'guided-course', 'learning-path', 'live']
 }
 
 export let contentTypeConfig = {
