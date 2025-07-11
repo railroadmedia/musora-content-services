@@ -1457,7 +1457,7 @@ export async function fetchRelatedLessons(railContentId, brand) {
       ...(*[${filterSameTypeAndSortOrder}]{${queryFieldsWithSort}}|order(sort asc, title asc)[0...10]),
       ...(*[${filterSameType}]{${queryFields}}|order(published_on desc, title asc)[0...10])
       ,
-      ])[0...10]}`
+      ])}`
   let result = await fetchSanity(query, false)
 
   //there's no way in sanity to retrieve the index of an array, so we must calculate after fetch
