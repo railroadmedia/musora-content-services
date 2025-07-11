@@ -549,9 +549,7 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
     brand,
     name,
     'slug': slug.current,
-    'content': select(
-      type == 'lesson' => lesson_content[]->{ ${getFieldsForContentType()} },
-      type == 'song' => song_content[]->{ ${getFieldsForContentType()} },
+    'content': content[]->{ ${getFieldsForContentType()} },
     )
   }`, true)
 }
