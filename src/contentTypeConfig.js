@@ -214,7 +214,27 @@ export const recentTypes = {
 
 export let contentTypeConfig = {
   'progress-tracker': {
-    fields: ['"parent_content_data": parent_content_data[].id','"badge" : badge.asset->url','"lessons": child[]->{"id": railcontent_id, "slug":slug.current, "brand":brand, "type": _type, "lessons": child[]->{"id":railcontent_id, "slug":slug.current,  "type": _type,"brand":brand}}'],
+    fields: ['"parent_content_data": parent_content_data[].id',
+      '"badge" : badge.asset->url',
+      '"lessons": child[]->{' +
+        '"id": railcontent_id,' +
+        '"slug":slug.current,' +
+        '"brand":brand,' +
+        '"type": _type,' +
+        '"thumbnail": thumbnail.asset->url,' +
+        'published_on,' +
+        '"lessons": child[]->{' +
+          '"id":railcontent_id,' +
+          '"slug":slug.current,' +
+          '"type": _type,' +
+          '"brand":brand},' +
+          '"thumbnail": thumbnail.asset->url,' +
+          'published_on,' +
+        '}'
+    ],
+
+
+
   },
   song: {
     fields: ['album', 'soundslice', 'instrumentless', `"resources": ${resourcesField}`],

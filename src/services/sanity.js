@@ -513,7 +513,7 @@ export async function fetchByRailContentId(id, contentType) {
  *   .catch(error => console.error(error));
  */
 export async function fetchByRailContentIds(ids, contentType = undefined, brand = undefined) {
-  if (!ids) {
+  if (!ids?.length) {
     return []
   }
   const idsString = ids.join(',')
