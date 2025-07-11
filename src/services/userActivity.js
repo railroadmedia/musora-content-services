@@ -920,7 +920,6 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     'learning-path-course',
     'learning-path-level'
   ]);
-  console.log('I am once again asking for your support', brand)
   // TODO slice progress to a reasonable number, say 100
   const [recentPlaylists, progressContents, allPinnedGuidedCourse, userPinnedItem ] = await Promise.all([
     fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit}),
@@ -929,10 +928,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     getUserPinnedItem(brand),
   ])
 
-  console.log("gc", allPinnedGuidedCourse)
-  let pinnedGuidedCourse = allPinnedGuidedCourse[0]
-  console.log("1gc", pinnedGuidedCourse)
-  console.log('pinnedUserItem', userPinnedItem)
+  let pinnedGuidedCourse = allPinnedGuidedCourse?.[0] ?? null
 
   const playlists = recentPlaylists?.data || [];
   const eligiblePlaylistItems = await getEligiblePlaylistItems(playlists);
@@ -1017,7 +1013,6 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
       }
     }
   }
-  console.log('progr map - extract gc', progressMap)
   const pinnedItem = userPinnedItem ? await extractPinnedItem(
     userPinnedItem,
     progressMap,
@@ -1026,16 +1021,14 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
 
   const pinnedId = pinnedItem?.id
   const guidedCourseID = pinnedGuidedCourse?.content_id
-  console.log('progr map - extract gc', progressMap)
   let combined = [];
   if (pinnedGuidedCourse) {
-    console.log('pinnedGcid', guidedCourseID)
     const guidedCourseContent = contentsMap[guidedCourseID]
-    console.log('gc content', guidedCourseContent)
-    const temp = await extractPinnedGuidedCourseItem(guidedCourseContent, progressMap)
-    temp.pinned = true
-    console.log('extracted GC', temp)
-    combined.push(temp)
+    if (guidedCourseContent) {
+      const temp = await extractPinnedGuidedCourseItem(guidedCourseContent, progressMap)
+      temp.pinned = true
+      combined.push(temp)
+    }
   }
   if (pinnedItem) {
     pinnedItem.pinned = true
@@ -1051,9 +1044,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     : eligiblePlaylistItems;
 
   combined = [...combined, ...filteredProgressList, ...filteredPlaylists]
-  console.log('pre sort', combined)
   const finalCombined = mergeAndSortItems(combined, limit)
-  console.log('post sort', finalCombined)
   const results = await Promise.all(
     finalCombined.slice(0, limit).map(item =>
       item.type === 'playlist'
@@ -1080,7 +1071,6 @@ async function processContentItem(item) {
   let data = item.raw;
   const contentType = getFormattedType(data.type, data.brand);
   const status = item.state;
-  console.log('processItem', item)
   let ctaText = 'Continue';
   if (contentType === 'transcription' || contentType === 'play-along' || contentType === 'jam-track') ctaText = 'Replay Song';
   if (contentType === 'lesson') ctaText = status === 'completed' ? 'Revisit Lesson' : 'Continue';
@@ -1119,7 +1109,6 @@ async function processContentItem(item) {
       data.first_incomplete_child = nextLesson?.parent ?? nextLesson
       data.second_incomplete_child = (nextLesson?.parent) ? nextLesson : null
       if(data.type === 'guided-course'){
-        console.log('nextLesson', nextLesson)
         let isLocked = new Date(nextLesson.published_on) > new Date()
         data.thumbnail = nextLesson.thumbnail
         // USHP-4 completed
@@ -1435,7 +1424,9 @@ async function extractPinnedItem(pinned, progressMap, playlistItems) {
 
 async function extractPinnedGuidedCourseItem(guidedCourse, progressMap) {
   const children = guidedCourse.lessons.map(child => child.id)
+  let existingGuidedCourseProgress = null
   if (progressMap.has(guidedCourse.id)) {
+    existingGuidedCourseProgress = progressMap.get(guidedCourse.id)
     progressMap.delete(guidedCourse.id)
   }
   let lastChild = null
@@ -1449,16 +1440,15 @@ async function extractPinnedGuidedCourseItem(guidedCourse, progressMap) {
       progressMap.delete(child)
     }
   })
-  return progressMap.has(guidedCourse.id) ? progressMap.get(guidedCourse.id) :
-    {
-      id: guidedCourse.id,
-      state: 'not-started',
-      percent: 0,
-      raw: guidedCourse,
-      pinned: true,
-      progressTimestamp: new Date().getTime(),
-      childIndex: guidedCourse.id,
-    }
+  return existingGuidedCourseProgress ?? {
+    id: guidedCourse.id,
+    state: 'not-started',
+    percent: 0,
+    raw: guidedCourse,
+    pinned: true,
+    progressTimestamp: new Date().getTime(),
+    childIndex: guidedCourse.id,
+  }
 }
 
 function getFirstLeafLessonId(data) {
