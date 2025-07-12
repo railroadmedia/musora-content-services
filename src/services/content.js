@@ -11,11 +11,12 @@ import {
   fetchUpcomingEvents,
   fetchScheduledReleases,
   fetchReturning,
-  fetchLeaving, fetchScheduledAndNewReleases
+  fetchLeaving, fetchScheduledAndNewReleases, fetchContentRows
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {fetchHandler} from "./railcontent";
-import {recommendations} from "./recommendations";
+import {recommendations, rankCategories} from "./recommendations";
+import {addContextToContent} from "./contentAggregator.js";
 
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
@@ -149,11 +150,11 @@ export async function getRecent(brand, pageName, tabName = 'all', {
 }
 
 /**
- * Fetches content rows for a given brand and page with optional filtering by content row id.
+ * Fetches content rows for a given brand and page with optional filtering by content row slug.
  *
  * @param {string} brand - The brand for which to fetch content rows.
  * @param {string} pageName - The page name (e.g., 'lessons', 'songs', 'challenges').
- * @param {string} [contentRowId] - The specific content row ID to fetch.
+ * @param {string|null} contentRowSlug - The specific content row ID to fetch.
  * @param {Object} params - Parameters for pagination.
  * @param {number} [params.page=1] - The page number for pagination.
  * @param {number} [params.limit=10] - The maximum number of content items per row.
@@ -168,32 +169,48 @@ export async function getRecent(brand, pageName, tabName = 'all', {
  *   .then(content => console.log(content))
  *   .catch(error => console.error(error));
  */
-export async function getContentRows(brand, pageName, contentRowId , {
+export async function getContentRows(brand, pageName, contentRowSlug = null, {
   page = 1,
-  limit = 10,
+  limit = 10
 } = {}) {
-  const contentRow = contentRowId ? `&content_row_id=${contentRowId}` : ''
-  const url = `/api/content/v1/rows?brand=${brand}&page_name=${pageName}${contentRow}&page=${page}&limit=${limit}`;
-  const contentRows =  await fetchHandler(url, 'get', null) || [];
-  const results = await Promise.all(
-    contentRows.map(async (row) => {
-      if (row.content.length === 0){
-        return { id: row.id, title: row.title, items: [] }
-      }
-      const data = await fetchByRailContentIds(row.content)
-      return { id: row.id, title: row.title, items: data }
-    })
-  )
-
-  if (contentRowId) {
-    return {
-      type: TabResponseType.CATALOG,
-      data: results[0].items,
-      meta: {}
-    };
+  const sanityData = await addContextToContent(fetchContentRows, brand, pageName, contentRowSlug, {
+    dataField: 'content',
+    iterateDataFieldOnEachArrayElement: true,
+    addProgressStatus: true,
+    addProgressPercentage: true,
+    addNextLesson: true
+  })
+  if (!sanityData) {
+    return []
+  }
+  let contentMap = {}
+  let recData = {}
+  let slugNameMap = {}
+  for (const category of sanityData) {
+    recData[category.slug] = category.content.map(item => item.railcontent_id)
+    for (const content of category.content) {
+      contentMap[content.railcontent_id] = content
+    }
+    slugNameMap[category.slug] = category.name
+  }
+  const start = (page - 1) * limit
+  const end = start + limit
+  const sortedData = await rankCategories(brand, recData)
+  let finalData = []
+  for (const category of sortedData) {
+    finalData.push( {
+      id: category.slug,
+      title: slugNameMap[category.slug],
+      items: category.items.slice(start, end).map(id => contentMap[id])})
   }
 
-  return results
+  return contentRowSlug ?
+    {
+      type: TabResponseType.CATALOG,
+      data: finalData[0].items,
+      meta: {}
+    }
+    : finalData
 }
 
 /**

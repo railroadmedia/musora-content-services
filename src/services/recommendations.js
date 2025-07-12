@@ -80,11 +80,14 @@ export async function rankCategories(brand, categories) {
       globalConfig.recommendationsConfig.token
     )
     const response = await httpClient.post(url, data)
-    let rankedCategories = {}
-    response['ranked_playlists'].forEach(
-      (category) =>
-        (rankedCategories[category['playlist_id']] = categories[category['playlist_id']])
-    )
+    let rankedCategories = []
+
+    for (const rankedPlaylist of response['ranked_playlists']) {
+      rankedCategories.push({
+        'slug': rankedPlaylist.playlist_id,
+        'items': rankedPlaylist.ranked_items
+      })
+    }
     return rankedCategories
   } catch (error) {
     console.error('Fetch error:', error)
