@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.21.0](https://github.com/railroadmedia/musora-content-services/compare/v2.20.0...v2.21.0) (2025-07-12)
+
+
+### Features
+
+* **BEH-572:** ai recommender row categories ([#337](https://github.com/railroadmedia/musora-content-services/issues/337)) ([d1984d2](https://github.com/railroadmedia/musora-content-services/commit/d1984d28371fa2d4f22d8ddb50fdcfd952399b46))
+
 ## [2.20.0](https://github.com/railroadmedia/musora-content-services/compare/v2.19.2...v2.20.0) (2025-07-11)
 
 
