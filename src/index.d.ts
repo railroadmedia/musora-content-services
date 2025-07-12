@@ -62,6 +62,8 @@ import {
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
+	getLastInteractedOf,
+	getNextLesson,
 	getProgressDateByIds,
 	getProgressPercentage,
 	getProgressPercentageByIds,
@@ -227,6 +229,14 @@ import {
 } from './services/sanity.js';
 
 import {
+	resetPassword,
+	sendAccountSetupEmail,
+	sendPasswordResetEmail,
+	setupAccount,
+	status
+} from './services/user/account.ts';
+
+import {
 	fetchChatSettings
 } from './services/user/chat.js';
 
@@ -277,6 +287,7 @@ import {
 	createPracticeNotes,
 	deletePracticeSession,
 	deleteUserActivity,
+	findIncompleteLesson,
 	getPracticeNotes,
 	getPracticeSessions,
 	getProgressRows,
@@ -416,14 +427,17 @@ declare module 'musora-content-services' {
 		fetchUserPracticeMeta,
 		fetchUserPracticeNotes,
 		fetchUserPractices,
+		findIncompleteLesson,
 		getActiveDiscussions,
 		getAllCompleted,
 		getAllStarted,
 		getAllStartedOrCompleted,
 		getContentRows,
+		getLastInteractedOf,
 		getLessonContentRows,
 		getMonday,
 		getNewAndUpcoming,
+		getNextLesson,
 		getPracticeNotes,
 		getPracticeSessions,
 		getProgressDateByIds,
@@ -497,11 +511,16 @@ declare module 'musora-content-services' {
 		reportComment,
 		reportPlaylist,
 		reset,
+		resetPassword,
 		restoreComment,
 		restoreItemFromPlaylist,
 		restorePracticeSession,
 		restoreUserPractice,
+		sendAccountSetupEmail,
+		sendPasswordResetEmail,
 		setStudentViewForUser,
+		setupAccount,
+		status,
 		togglePlaylistPrivate,
 		unEnrollUserInGuidedCourse,
 		unPinGuidedCourse,

@@ -179,6 +179,8 @@ export const lessonTypesMapping = {
   'jam tracks': ['jam-track'],
 };
 
+export const getNextLessonLessonParentTypes = ['course', 'guided-course', 'pack-bundle'];
+
 export const progressTypesMapping = {
   'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes, 'live'],
   'course': ['course'],
@@ -212,7 +214,27 @@ export const recentTypes = {
 
 export let contentTypeConfig = {
   'progress-tracker': {
-    fields: ['"parent_content_data": parent_content_data[].id','"badge" : badge.asset->url','"lessons": child[]->{"id": railcontent_id, "slug":slug.current, "brand":brand, "type": _type, "lessons": child[]->{"id":railcontent_id, "slug":slug.current,  "type": _type,"brand":brand}}'],
+    fields: ['"parent_content_data": parent_content_data[].id',
+      '"badge" : badge.asset->url',
+      '"lessons": child[]->{' +
+        '"id": railcontent_id,' +
+        '"slug":slug.current,' +
+        '"brand":brand,' +
+        '"type": _type,' +
+        '"thumbnail": thumbnail.asset->url,' +
+        'published_on,' +
+        '"lessons": child[]->{' +
+          '"id":railcontent_id,' +
+          '"slug":slug.current,' +
+          '"type": _type,' +
+          '"brand":brand},' +
+          '"thumbnail": thumbnail.asset->url,' +
+          'published_on,' +
+        '}'
+    ],
+
+
+
   },
   song: {
     fields: ['album', 'soundslice', 'instrumentless', `"resources": ${resourcesField}`],
@@ -420,10 +442,14 @@ export let contentTypeConfig = {
       '"logo_image_url": logo_image_url.asset->url',
       'total_xp',
       `"children": child[]->{
-                "description": ${descriptionField},
-                "lesson_count": child_count,
-                ${getFieldsForContentType()}
-            }`,
+        "description": ${descriptionField},
+        "lesson_count": child_count,
+        "children": child[]->{
+          "description": ${descriptionField},
+          ${getFieldsForContentType()}
+        },
+        ${getFieldsForContentType()}
+      }`,
       `"resources": ${resourcesField}`,
       '"thumbnail": thumbnail.asset->url',
       '"light_mode_logo": light_mode_logo_url.asset->url',

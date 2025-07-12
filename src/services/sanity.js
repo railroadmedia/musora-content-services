@@ -513,7 +513,7 @@ export async function fetchByRailContentId(id, contentType) {
  *   .catch(error => console.error(error));
  */
 export async function fetchByRailContentIds(ids, contentType = undefined, brand = undefined) {
-  if (!ids) {
+  if (!ids?.length) {
     return []
   }
   const idsString = ids.join(',')
@@ -2371,9 +2371,11 @@ export async function fetchTabData(
 
   filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-  entityFieldsString = ` ${fieldsString},
-                                    'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
-                                    'length_in_seconds': coalesce(
+  entityFieldsString =
+    ` ${fieldsString},
+    'children': child[${childrenFilter}]->{'id': railcontent_id},
+    'lesson_count': coalesce(count(child[${childrenFilter}]->), 0),
+    'length_in_seconds': coalesce(
       math::sum(
         select(
           child[${childrenFilter}]->length_in_seconds

@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.20.0](https://github.com/railroadmedia/musora-content-services/compare/v2.19.2...v2.20.0) (2025-07-11)
+
+
+### Features
+
+* **BEH-662:** add pinned guided course to homepage ([#332](https://github.com/railroadmedia/musora-content-services/issues/332)) ([6a06612](https://github.com/railroadmedia/musora-content-services/commit/6a066121684cbab1610119906568e4320c4df08c))
+* **BEH-706:** add continue behaviour to lessons collection page and index page ([#326](https://github.com/railroadmedia/musora-content-services/issues/326)) ([6add054](https://github.com/railroadmedia/musora-content-services/commit/6add054841688ea0cd550f11ad21e047de63f235))
+
+### [2.19.2](https://github.com/railroadmedia/musora-content-services/compare/v2.19.1...v2.19.2) (2025-07-09)
+
+### [2.19.1](https://github.com/railroadmedia/musora-content-services/compare/v2.19.0...v2.19.1) (2025-07-09)
+
+
+### Bug Fixes
+
+* **MU2-766:** Song Tutorials should not be showing in lesson collections ([8ce6bcd](https://github.com/railroadmedia/musora-content-services/commit/8ce6bcda634efffb15871e8a07d8cdc8ea8c665e))
+* **sign-in:** add account status and setup email functions ([#331](https://github.com/railroadmedia/musora-content-services/issues/331)) ([fa94a22](https://github.com/railroadmedia/musora-content-services/commit/fa94a22f83f4c011ae152f6b5b5f00249c91c051))
+
 ## [2.19.0](https://github.com/railroadmedia/musora-content-services/compare/v2.18.0...v2.19.0) (2025-07-08)
 
 
