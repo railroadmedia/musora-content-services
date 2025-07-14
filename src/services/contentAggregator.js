@@ -33,15 +33,14 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   if(!data) return false
 
   let items = []
-  let dataMap = []
 
   if (dataField && (data?.[dataField] || iterateDataFieldOnEachArrayElement)) {
     if (iterateDataFieldOnEachArrayElement && Array.isArray(data)) {
       for(const parent of data) {
-        ids = [...ids, ...parent[dataField].map(item => item?.id).filter(Boolean)]
+        items = [...items, ...parent[dataField]]
       }
     } else {
-      ids = data[dataField].map(item => item?.id).filter(Boolean);
+      items = data[dataField]
     }
   } else if (Array.isArray(data)) {
     items = data;
@@ -51,19 +50,6 @@ export async function addContextToContent(dataPromise, ...dataArgs)
 
   const ids = items.map(item => item?.id).filter(Boolean)
 
-  //create data structure for common use by functions
-  if (addNextLesson) {
-    items.forEach((item) => {
-      if (item?.id) {
-        dataMap.push({
-          'children': item.children?.map(child => child.id) ?? [],
-          'type': item.type,
-          'id': item.id,
-        })
-      }
-    })
-  }
-
   if(ids.length === 0) return false
 
   const [progressPercentageData, progressStatusData, isLikedData, resumeTimeData, lastInteractedChildData, nextLessonData] = await Promise.all([
@@ -72,7 +58,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
-    (addNextLesson || addLastInteractedParent) ? getNextLesson(dataMap) : Promise.resolve(null),
+    (addNextLesson || addLastInteractedParent) ? getNextLesson(items) : Promise.resolve(null),
   ])
 
   const addContext = async (item) => ({
