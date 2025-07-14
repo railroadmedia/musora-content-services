@@ -320,13 +320,13 @@ export async function recordWatchSession(
 
   try {
     //TODO: Good enough for Alpha, Refine in reliability improvements
-    const secondsSinceLastUpdate = Math.ceil(secondsPlayed - (sessionData[sessionId] ?? 0))
-
+    sessionData[sessionId] = sessionData[sessionId] || {}
+    const secondsSinceLastUpdate = Math.ceil(secondsPlayed - (sessionData[sessionId][contentId] ?? 0))
     await recordUserPractice({ content_id: contentId, duration_seconds: secondsSinceLastUpdate })
   } catch (error) {
       console.error('Failed to record user practice:', error)
   }
-  sessionData[sessionId] = currentSeconds
+  sessionData[sessionId][contentId] = secondsPlayed
 
   await dataContext.update(
     async function (localContext) {
