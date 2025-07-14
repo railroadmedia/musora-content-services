@@ -187,13 +187,6 @@ export async function getContentRows(brand, pageName, contentRowSlug = null, {
   page = 1,
   limit = 10
 } = {}) {
-  // const sanityData = await addContextToContent(fetchContentRows, brand, pageName, contentRowSlug, {
-  //   dataField: 'content',
-  //   iterateDataFieldOnEachArrayElement: true,
-  //   addProgressStatus: true,
-  //   addProgressPercentage: true,
-  //   addNextLesson: true
-  // })
   const sanityData = await fetchContentRows(brand, pageName, contentRowSlug)
   if (!sanityData) {
     return []
