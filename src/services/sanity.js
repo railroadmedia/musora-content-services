@@ -73,11 +73,12 @@ export async function fetchSongById(documentId) {
  * @returns {Promise<Object|null>}
  */
 export async function fetchLeaving(brand, { pageNumber = 1, contentPerPage = 20 } = {}) {
-  const nextQuarter = getNextAndPreviousQuarterDates()['next']
-  const filterString = `brand == '${brand}' && quarter_removed == '${nextQuarter}'`
+  const today = new Date()
+  const isoDateOnly = today.toISOString().split('T')[0]
+  const filterString = `brand == '${brand}' && quarter_removed > '${isoDateOnly}'`
   const startEndOrder = getQueryFromPage(pageNumber, contentPerPage)
   const sortOrder = {
-    sortOrder: 'published_on desc, id desc',
+    sortOrder: 'quarter_removed asc, published_on desc, id desc',
     start: startEndOrder['start'],
     end: startEndOrder['end'],
   }
@@ -99,11 +100,12 @@ export async function fetchLeaving(brand, { pageNumber = 1, contentPerPage = 20 
  * @returns {Promise<Object|null>}
  */
 export async function fetchReturning(brand, { pageNumber = 1, contentPerPage = 20 } = {}) {
-  const nextQuarter = getNextAndPreviousQuarterDates()['next']
-  const filterString = `brand == '${brand}' && quarter_published == '${nextQuarter}'`
+  const today = new Date()
+  const isoDateOnly = today.toISOString().split('T')[0]
+  const filterString = `brand == '${brand}' && quarter_published >= '${isoDateOnly}'`
   const startEndOrder = getQueryFromPage(pageNumber, contentPerPage)
   const sortOrder = {
-    sortOrder: 'published_on desc, id desc',
+    sortOrder: 'quarter_published asc, published_on desc, id desc',
     start: startEndOrder['start'],
     end: startEndOrder['end'],
   }
