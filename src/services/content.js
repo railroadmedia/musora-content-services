@@ -175,7 +175,7 @@ export async function getContentRows(brand, pageName, contentRowSlug = null, {
 } = {}) {
   const sanityData = await addContextToContent(fetchContentRows, brand, pageName, contentRowSlug, {
     dataField: 'content',
-    iterateDataFieldOnEachArrayElement: true,
+    dataField_parentIsArray: true,
     addProgressStatus: true,
     addProgressPercentage: true,
     addNextLesson: true

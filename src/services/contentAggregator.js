@@ -8,6 +8,45 @@ import {
 import {isContentLikedByIds} from "./contentLikes"
 import {fetchLastInteractedChild, fetchLikeCount} from "./railcontent"
 
+/**
+ * Combine sanity data with BE contextual data.
+ *
+ *
+ * @param dataPromise - promise or method that provides sanity data
+ * @param dataArgs - Arguments to pass to the dataPramise. The final parameter is expected to take the form of the options object
+ * @param options - Options has two categories of flags. Three for defining the incoming data structure, and the rest of which data to add to the results. Unless otherwise specified the field flags use the format add<X> and add the <X> to the results
+ * @param options.dataField - the document field to process. (this is often 'children', 'entity', or 'lessons'
+ * @param options.dataField_parentIsArray - flag: if set with dataField, used to indicate the parent object is an array, not a single document.
+ * @param options.dataField_includeParent - flag: if set with dataField, used to process the same contextual data for the parent object/array as well as the children
+ * @param options.addProgressPercentage - add progressPerecentage field
+ * @param options.addIsLiked - add isLikedField
+ * @param options.addLikeCount - add likeCount field
+ * @param options.addProgressStatus - add progressStatus field
+ * @param options.addResumeTimeSeconds - add resumeTimeSeconds field
+ * @param options.addLastInteractedChild - add lastInteractedChild field. This may be different from nextLesson
+ * @param options.addNextLesson - add nextLesson field. For collection type content. each collection has different logic for calculating this data
+ *
+ * @returns {Promise<{ data: Object[] } | false>} - A promise that resolves to the fetched content data + added data or `false` if no data is found.
+ *
+ * @example
+ * // GetLesson
+ *    const response = await addContextToContent(fetchLessonContent, id, {
+ *       addIsLiked: true,
+ *       addProgressStatus: true,
+ *       addLikeCount: true,
+ *       addResumeTimeSeconds: true,
+ *     })
+ *
+ * @example - addContextToContent retuns [{id, title, content}], so must be unpacked with dataField, and indicate the dataField_isParentArray
+ * const sanityData = await addContextToContent(fetchContentRows, brand, pageName, contentRowSlug, {
+ *     dataField: 'content',
+ *     dataField_parentIsArray: true,
+ *     addProgressStatus: true,
+ *     addProgressPercentage: true,
+ *     addNextLesson: true
+ *   })
+ *
+ */
 
 export async function addContextToContent(dataPromise, ...dataArgs)
 {
@@ -16,7 +55,8 @@ export async function addContextToContent(dataPromise, ...dataArgs)
 
   const {
     dataField = null,
-    iterateDataFieldOnEachArrayElement = false,
+    dataField_parentIsArray = false,
+    dataField_includeParent = false,
     addProgressPercentage = false,
     addIsLiked = false,
     addLikeCount = false,
@@ -24,23 +64,33 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addResumeTimeSeconds = false,
     addLastInteractedChild = false,
     addNextLesson = false,
-    addLastInteractedParent = false,
   } = options
 
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
 
-  const data = await dataPromise(...dataParam)
+  let data = await dataPromise(...dataParam)
   if(!data) return false
 
   let items = []
 
-  if (dataField && (data?.[dataField] || iterateDataFieldOnEachArrayElement)) {
-    if (iterateDataFieldOnEachArrayElement && Array.isArray(data)) {
-      for(const parent of data) {
-        items = [...items, ...parent[dataField]]
+  if (dataField) {
+    if (dataField_parentIsArray) {
+      if (dataField_parentIsArray && Array.isArray(data)) {
+        for (const parent of data) {
+          items = [...items, ...parent[dataField]]
+        }
+      } else {
+        items = data[dataField]
       }
-    } else {
-      items = data[dataField]
+    }
+    if (dataField_includeParent) {
+      if (dataField_parentIsArray && Array.isArray(data)) {
+        for (const parent of data) {
+          items = [...items, ...parent]
+        }
+      } else {
+        items = [...items, data]
+      }
     }
   } else if (Array.isArray(data)) {
     items = data;
@@ -58,7 +108,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
-    (addNextLesson || addLastInteractedParent) ? getNextLesson(items) : Promise.resolve(null),
+    addNextLesson ? getNextLesson(items) : Promise.resolve(null),
   ])
 
   const addContext = async (item) => ({
@@ -72,13 +122,8 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     ...(addNextLesson ? { nextLesson: nextLessonData?.[item.id] } : {}),
   })
 
-  if (addLastInteractedParent) {
-    const parentId = await getLastInteractedOf(ids);
-    data['nextLesson'] = nextLessonData[parentId];
-  }
-
   if (dataField) {
-    if (iterateDataFieldOnEachArrayElement) {
+    if (dataField_parentIsArray) {
       for(let parent of data) {
         parent[dataField] = Array.isArray(parent[dataField])
           ? await Promise.all(parent[dataField].map(addContext))
@@ -88,6 +133,11 @@ export async function addContextToContent(dataPromise, ...dataArgs)
       data[dataField] = Array.isArray(data[dataField])
         ? await Promise.all(data[dataField].map(addContext))
         : await addContext(data[dataField])
+    }
+    if (dataField_includeParent) {
+      data = dataField_parentIsArray
+        ? await Promise.all(data.map(addContext))
+        : await addContext(data)
     }
     return data
   } else {

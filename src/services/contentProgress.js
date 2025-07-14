@@ -61,8 +61,6 @@ export async function getNextLesson(data)
         nextLessonData[content.id] = children[0]
 
       } else {
-        //if content in progress
-
         const childrenStates = await getProgressStateByIds(children)
 
         //calculate last_engaged
@@ -79,6 +77,8 @@ export async function getNextLesson(data)
 
         } else if (content.type === 'guided-course') {
           nextLessonData[content.id] = findIncompleteLesson(childrenStates, lastInteracted, content.type)
+        } else {
+          nextLessonData[content.id] = lastInteracted
         }
       }
     }
