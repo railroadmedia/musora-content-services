@@ -18,6 +18,8 @@ const DATA_KEY_LAST_UPDATED_TIME = 'u'
 
 export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress)
 
+let sessionData = []
+
 export async function getProgressPercentage(contentId) {
   return getById(contentId, DATA_KEY_PROGRESS, 0)
 }
@@ -383,10 +385,14 @@ export async function recordWatchSession(
   }
 
   try {
-      await recordUserPractice({ content_id: contentId, duration_seconds: Math.ceil(secondsPlayed)  })
+    //TODO: Good enough for Alpha, Refine in reliability improvements
+    sessionData[sessionId] = sessionData[sessionId] || {}
+    const secondsSinceLastUpdate = Math.ceil(secondsPlayed - (sessionData[sessionId][contentId] ?? 0))
+    await recordUserPractice({ content_id: contentId, duration_seconds: secondsSinceLastUpdate })
   } catch (error) {
       console.error('Failed to record user practice:', error)
   }
+  sessionData[sessionId][contentId] = secondsPlayed
 
   await dataContext.update(
     async function (localContext) {
