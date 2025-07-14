@@ -549,7 +549,6 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
     brand,
     name,
     'slug': slug.current,
-    'content': content[]->{ ${getFieldsForContentType()} }
     'content': content[]->{
         'children': child[]->{ 'id': railcontent_id, },
         ${getFieldsForContentType() }
