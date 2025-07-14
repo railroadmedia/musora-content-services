@@ -252,6 +252,7 @@ import {
 import {
 	blockUser,
 	deletePicture,
+	getUserData,
 	unblockUser,
 	uploadPicture,
 	uploadPictureFromS3
@@ -456,6 +457,7 @@ declare module 'musora-content-services' {
 		getStartedOrCompletedProgressOnly,
 		getTabResults,
 		getTimeRemainingUntilLocal,
+		getUserData,
 		getUserMonthlyStats,
 		getUserPractices,
 		getUserWeeklyStats,

@@ -104,3 +104,8 @@ export async function deletePicture(pictureUrl) {
     picture_url: pictureUrl,
   })
 }
+
+export async function getUserData(userId) {
+  const apiUrl = `${baseUrl}/v1/users/${userId}`
+  return fetchHandler(apiUrl, 'get')
+}
