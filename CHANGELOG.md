@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.21.1](https://github.com/railroadmedia/musora-content-services/compare/v2.21.0...v2.21.1) (2025-07-14)
+
+
+### Bug Fixes
+
+* track correct amount of video watch time ([07d31c8](https://github.com/railroadmedia/musora-content-services/commit/07d31c802164b0625b5e72ce78e618fc5d12ecaf))
+* track correct amount of video watch time ([41a0d0b](https://github.com/railroadmedia/musora-content-services/commit/41a0d0b82d73183c52db7b510d00bbf7838554d0))
+
 ## [2.21.0](https://github.com/railroadmedia/musora-content-services/compare/v2.20.0...v2.21.0) (2025-07-12)
 
 
