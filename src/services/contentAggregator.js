@@ -31,7 +31,6 @@ export async function addContextToContent(dataPromise, ...dataArgs)
 
   const data = await dataPromise(...dataParam)
   if(!data) return false
-
   let items = []
 
   if (dataField && (data?.[dataField] || iterateDataFieldOnEachArrayElement)) {
