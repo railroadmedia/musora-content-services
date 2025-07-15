@@ -44,12 +44,12 @@ export async function getResumeTimeSecondsByIds(contentIds) {
   return getByIds(contentIds, DATA_KEY_RESUME_TIME, 0)
 }
 
-export async function getNextLesson(dataMap)
+export async function getNextLesson(data)
 {
   let nextLessonData = {}
 
-  for (const content of dataMap) {
-
+  for (const content of data) {
+    const children = content.children?.map(child => child.id) ?? []
     //only calculate nextLesson if needed, based on content type
     if (!getNextLessonLessonParentTypes.includes(content.type)) {
       nextLessonData[content.id] = null
@@ -58,15 +58,15 @@ export async function getNextLesson(dataMap)
       //return first child if parent-content is complete or no progress
       const contentState = await getProgressState(content.id)
       if (contentState !== STATE_STARTED) {
-        nextLessonData[content.id] = content.children[0]
+        nextLessonData[content.id] = children[0]
 
       } else {
         //if content in progress
 
-        const childrenStates = await getProgressStateByIds(content.children)
+        const childrenStates = await getProgressStateByIds(children)
 
         //calculate last_engaged
-        const lastInteracted = await getLastInteractedOf(content.children)
+        const lastInteracted = await getLastInteractedOf(children)
         const lastInteractedStatus = childrenStates[lastInteracted]
 
         //different nextLesson behaviour for different content types
