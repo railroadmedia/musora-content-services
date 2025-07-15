@@ -94,7 +94,7 @@ import {
 
 import {
 	fetchAwardsForUser
-} from './services/gamification/awards.js';
+} from './services/gamification/awards.ts';
 
 import {
 	applyCloudflareWrapper,
