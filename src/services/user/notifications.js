@@ -2,6 +2,7 @@
  * @module UserNotifications
  */
 import { fetchHandler } from '../railcontent.js'
+import  eventsAPI from '../eventsAPI.js'
 import './types.js'
 
 const baseUrl = `/api/notifications`
@@ -69,6 +70,7 @@ export async function markNotificationAsRead(notificationId) {
  *   .catch(error => console.error(error));
  */
 export async function markAllNotificationsAsRead() {
+  await eventsAPI.pauseLiveEventCheck()
   const url = `${baseUrl}/v1/read`
   return fetchHandler(url, 'put')
 }

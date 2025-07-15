@@ -4,7 +4,7 @@ import {
 	globalConfig,
 	initializeService
 } from './services/config.js';
-
+import { default as EventsApi } from './services/eventsAPI.js';
 import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
@@ -538,4 +538,5 @@ export {
 	uploadPictureFromS3,
 	verifyImageSRC,
 	verifyLocalDataContext,
+  EventsApi
 };

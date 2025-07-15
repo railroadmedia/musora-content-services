@@ -11,6 +11,7 @@ const excludeFromGeneratedIndex = []
 export const ContentLikesVersionKey = 0
 export const ContentProgressVersionKey = 1
 export const UserActivityVersionKey = 2
+export const PollingStateVersionKey = 3
 
 let cache = null
 
