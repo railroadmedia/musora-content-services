@@ -209,7 +209,7 @@ export const recentTypes = {
   lessons: [...individualLessonsTypes],
   songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes],
   home: [...individualLessonsTypes, ...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes,
-  'guided-course', 'learning-path', 'live',]
+  'guided-course', 'learning-path', 'live']
 }
 
 export let contentTypeConfig = {
@@ -444,6 +444,10 @@ export let contentTypeConfig = {
       `"children": child[]->{
         "description": ${descriptionField},
         "lesson_count": child_count,
+        "instructors": select(
+          instructor != null => instructor[]->name,
+          ^.instructor[]->name
+        ),
         "children": child[]->{
           "description": ${descriptionField},
           ${getFieldsForContentType()}
@@ -569,6 +573,12 @@ export let contentTypeConfig = {
   returning: {
     fields: [
       `quarter_published`,
+      '"thumbnail": thumbnail.asset->url',
+    ]
+  },
+  leaving: {
+    fields: [
+      `quarter_removed`,
       '"thumbnail": thumbnail.asset->url',
     ]
   }

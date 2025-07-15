@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.21.3](https://github.com/railroadmedia/musora-content-services/compare/v2.21.1...v2.21.3) (2025-07-15)
+
+
+### Bug Fixes
+
+* MU2-787 Leaving Soon and Returning should only be set in the future ([4bb48c9](https://github.com/railroadmedia/musora-content-services/commit/4bb48c93afa7b2167d94c306830a4db3e7dab810))
+* **systest:** patch contentAggregator ([#342](https://github.com/railroadmedia/musora-content-services/issues/342)) ([4a1906e](https://github.com/railroadmedia/musora-content-services/commit/4a1906ed8e5cfc3cebf3e044d4eb35213d18ebe1))
+
+### [2.21.2](https://github.com/railroadmedia/musora-content-services/compare/v2.21.1...v2.21.2) (2025-07-14)
+
+
+### Bug Fixes
+
+* **systest:** patch contentAggregator ([#342](https://github.com/railroadmedia/musora-content-services/issues/342)) ([4a1906e](https://github.com/railroadmedia/musora-content-services/commit/4a1906ed8e5cfc3cebf3e044d4eb35213d18ebe1))
+
+### [2.21.1](https://github.com/railroadmedia/musora-content-services/compare/v2.21.0...v2.21.1) (2025-07-14)
+
+
+### Bug Fixes
+
+* track correct amount of video watch time ([07d31c8](https://github.com/railroadmedia/musora-content-services/commit/07d31c802164b0625b5e72ce78e618fc5d12ecaf))
+* track correct amount of video watch time ([41a0d0b](https://github.com/railroadmedia/musora-content-services/commit/41a0d0b82d73183c52db7b510d00bbf7838554d0))
+
+## [2.21.0](https://github.com/railroadmedia/musora-content-services/compare/v2.20.0...v2.21.0) (2025-07-12)
+
+
+### Features
+
+* **BEH-572:** ai recommender row categories ([#337](https://github.com/railroadmedia/musora-content-services/issues/337)) ([d1984d2](https://github.com/railroadmedia/musora-content-services/commit/d1984d28371fa2d4f22d8ddb50fdcfd952399b46))
+
 ## [2.20.0](https://github.com/railroadmedia/musora-content-services/compare/v2.19.2...v2.20.0) (2025-07-11)
 
 

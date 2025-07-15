@@ -1,6 +1,6 @@
 {
   "name": "musora-content-services",
-  "version": "2.20.0",
+  "version": "2.21.3",
   "description": "A package for Musoras content services ",
   "main": "src/index.js",
   "type": "module",

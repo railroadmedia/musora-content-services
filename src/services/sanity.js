@@ -73,18 +73,19 @@ export async function fetchSongById(documentId) {
  * @returns {Promise<Object|null>}
  */
 export async function fetchLeaving(brand, { pageNumber = 1, contentPerPage = 20 } = {}) {
-  const nextQuarter = getNextAndPreviousQuarterDates()['next']
-  const filterString = `brand == '${brand}' && quarter_removed == '${nextQuarter}'`
+  const today = new Date()
+  const isoDateOnly = today.toISOString().split('T')[0]
+  const filterString = `brand == '${brand}' && quarter_removed > '${isoDateOnly}'`
   const startEndOrder = getQueryFromPage(pageNumber, contentPerPage)
   const sortOrder = {
-    sortOrder: 'published_on desc, id desc',
+    sortOrder: 'quarter_removed asc, published_on desc, id desc',
     start: startEndOrder['start'],
     end: startEndOrder['end'],
   }
   const query = await buildQuery(
     filterString,
     { pullFutureContent: false, availableContentStatuses: ['published'] },
-    getFieldsForContentType(),
+    getFieldsForContentType('leaving'),
     sortOrder
   )
   return fetchSanity(query, true)
@@ -99,11 +100,12 @@ export async function fetchLeaving(brand, { pageNumber = 1, contentPerPage = 20 
  * @returns {Promise<Object|null>}
  */
 export async function fetchReturning(brand, { pageNumber = 1, contentPerPage = 20 } = {}) {
-  const nextQuarter = getNextAndPreviousQuarterDates()['next']
-  const filterString = `brand == '${brand}' && quarter_published == '${nextQuarter}'`
+  const today = new Date()
+  const isoDateOnly = today.toISOString().split('T')[0]
+  const filterString = `brand == '${brand}' && quarter_published >= '${isoDateOnly}'`
   const startEndOrder = getQueryFromPage(pageNumber, contentPerPage)
   const sortOrder = {
-    sortOrder: 'published_on desc, id desc',
+    sortOrder: 'quarter_published asc, published_on desc, id desc',
     start: startEndOrder['start'],
     end: startEndOrder['end'],
   }
@@ -539,6 +541,21 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
 
   return sortedResults
 }
+
+export async function fetchContentRows(brand, pageName, contentRowSlug)
+{
+  if (pageName === 'lessons') pageName = 'lesson'
+  if (pageName === 'songs') pageName = 'song'
+  const rowString = contentRowSlug ? ` && slug.current == "${contentRowSlug.toLowerCase()}"` : ''
+  return fetchSanity(`*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}'${rowString}]{
+    brand,
+    name,
+    'slug': slug.current,
+    'content': content[]->{ ${getFieldsForContentType()} }
+  }`, true)
+}
+
+
 
 /**
  * Fetch all content for a specific brand and type with pagination, search, and grouping options.

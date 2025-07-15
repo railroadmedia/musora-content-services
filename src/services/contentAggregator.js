@@ -16,6 +16,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
 
   const {
     dataField = null,
+    iterateDataFieldOnEachArrayElement = false,
     addProgressPercentage = false,
     addIsLiked = false,
     addLikeCount = false,
@@ -32,10 +33,15 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   if(!data) return false
 
   let items = []
-  let dataMap = []
 
-  if (dataField && data?.[dataField]) {
-    items = data[dataField];
+  if (dataField && (data?.[dataField] || iterateDataFieldOnEachArrayElement)) {
+    if (iterateDataFieldOnEachArrayElement && Array.isArray(data)) {
+      for(const parent of data) {
+        items = [...items, ...parent[dataField]]
+      }
+    } else {
+      items = data[dataField]
+    }
   } else if (Array.isArray(data)) {
     items = data;
   } else if (data?.id) {
@@ -43,19 +49,6 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   }
 
   const ids = items.map(item => item?.id).filter(Boolean)
-
-  //create data structure for common use by functions
-  if (addNextLesson) {
-    items.forEach((item) => {
-      if (item?.id) {
-        dataMap.push({
-          'children': item.children?.map(child => child.id) ?? [],
-          'type': item.type,
-          'id': item.id,
-        })
-      }
-    })
-  }
 
   if(ids.length === 0) return false
 
@@ -65,7 +58,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
-    (addNextLesson || addLastInteractedParent) ? getNextLesson(dataMap) : Promise.resolve(null),
+    (addNextLesson || addLastInteractedParent) ? getNextLesson(items) : Promise.resolve(null),
   ])
 
   const addContext = async (item) => ({
@@ -85,9 +78,17 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   }
 
   if (dataField) {
-    data[dataField] = Array.isArray(data[dataField])
+    if (iterateDataFieldOnEachArrayElement) {
+      for(let parent of data) {
+        parent[dataField] = Array.isArray(parent[dataField])
+          ? await Promise.all(parent[dataField].map(addContext))
+          : await addContext(parent[dataField])
+      }
+    } else {
+      data[dataField] = Array.isArray(data[dataField])
         ? await Promise.all(data[dataField].map(addContext))
         : await addContext(data[dataField])
+    }
     return data
   } else {
     return Array.isArray(data)
