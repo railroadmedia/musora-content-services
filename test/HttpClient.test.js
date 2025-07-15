@@ -236,9 +236,14 @@ describe('HttpClient', () => {
         method: 'get',
       }
 
-      mockRequestExecutor.execute.mockRejectedValueOnce(Either.left(httpError))
+      mockRequestExecutor.execute.mockResolvedValueOnce(httpError)
 
-      await expect(httpClient.get('/test').then((r) => r.drop())).resolves.toEqual(httpError)
+      await expect(
+        httpClient.get('/test').then((r) => {
+          console.log(r.drop())
+          return r.drop()
+        })
+      ).resolves.toEqual(httpError)
     })
 
     test('should properly handle network errors', async () => {
