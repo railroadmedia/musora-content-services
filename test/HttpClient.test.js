@@ -1,8 +1,10 @@
+import { Either } from '../src/core/types/ads/either'
 import { HttpClient } from '../src/infrastructure/http/HttpClient'
 import { HeaderProvider } from '../src/infrastructure/http/interfaces/HeaderProvider'
 import { RequestExecutor } from '../src/infrastructure/http/interfaces/RequestExecutor'
 
 describe('HttpClient', () => {
+  /** @var {HttpClient} httpClient */
   let httpClient
   let mockHeaderProvider
   let mockRequestExecutor
@@ -234,9 +236,9 @@ describe('HttpClient', () => {
         method: 'get',
       }
 
-      mockRequestExecutor.execute.mockRejectedValueOnce(httpError)
+      mockRequestExecutor.execute.mockRejectedValueOnce(Either.left(httpError))
 
-      await expect(httpClient.get('/test')).rejects.toEqual(httpError)
+      await expect(httpClient.get('/test').then((r) => r.drop())).resolves.toEqual(httpError)
     })
 
     test('should properly handle network errors', async () => {

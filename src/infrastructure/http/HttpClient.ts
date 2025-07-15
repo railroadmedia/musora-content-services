@@ -80,7 +80,7 @@ export class HttpClient {
 
       return Either.right(await this.requestExecutor.execute<T>(fullUrl, options))
     } catch (error: any) {
-      return Either.left(this.handleError(error, url, method))
+      return this.handleError(error, url, method)
     }
   }
 
@@ -122,10 +122,10 @@ export class HttpClient {
     return url.startsWith('/') ? this.baseUrl + url : url
   }
 
-  private handleError(error: any, url: string, method: string): never {
+  private handleError(error: any, url: string, method: string): Either<HttpError, never> {
     if ('status' in error) {
       // This is our formatted HTTP error from above
-      throw error as HttpError
+      return Either.left(error as HttpError)
     }
 
     // Network or other errors
