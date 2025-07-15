@@ -11,10 +11,17 @@ import {fetchLastInteractedChild, fetchLikeCount} from "./railcontent"
 /**
  * Combine sanity data with BE contextual data.
  *
+ * Supported dataStructures
+ *   [{}, {}, {}] <-  fetchRelatedLessons || on playback page (side bar)
+ *   {} <- fetchLessonContent || on playback page (main window)
+ *   in the examples below, dataField would be set to `children`
+ *   [{id, children}, {id, children,}] <- getTabData || catalog Page
+ *   {childen, } <- getPackData || pack index page
+ *
  *
  * @param dataPromise - promise or method that provides sanity data
  * @param dataArgs - Arguments to pass to the dataPramise. The final parameter is expected to take the form of the options object
- * @param options - Options has two categories of flags. Three for defining the incoming data structure, and the rest of which data to add to the results. Unless otherwise specified the field flags use the format add<X> and add the <X> to the results
+ * @param options - Options has two categories of flags. two for defining the incoming data structure, and the rest of which data to add to the results. Unless otherwise specified the field flags use the format add<X> and add the <X> to the results
  * @param options.dataField - the document field to process. (this is often 'children', 'entity', or 'lessons'
  * @param options.dataField_includeParent - flag: if set with dataField, used to process the same contextual data for the parent object/array as well as the children
  * @param options.addProgressPercentage - add progressPerecentage field
