@@ -10,6 +10,7 @@ const excludeFromGeneratedIndex = []
 //These constants need to match MWP UserDataVersionKeyEnum enum
 export const ContentProgressVersionKey = 1
 export const UserActivityVersionKey = 2
+export const PollingStateVersionKey = 3
 
 let cache = null
 
