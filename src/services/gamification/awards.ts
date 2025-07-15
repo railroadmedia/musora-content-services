@@ -6,6 +6,8 @@ import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { PaginatedResponse } from '../api/types'
 import { globalConfig } from '../config'
 
+const baseUrl = `/api/user-management-system`
+
 export interface Award {
   username: string
   date_completed: Date
@@ -51,7 +53,7 @@ export async function fetchAwardsForUser(
 ): Promise<PaginatedResponse<Award[]>> {
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   const response = await httpClient.get<PaginatedResponse<Award[]>>(
-    `/api/gamification/v1/users/${userId}/awards?limit=${limit}&page=${page}`
+    `${baseUrl}/v1/users/${userId}/awards?limit=${limit}&page=${page}`
   )
 
   return response
