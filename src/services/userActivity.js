@@ -1344,8 +1344,8 @@ export function findIncompleteLesson(progressOnItems, currentContentId, contentT
 export async function pinProgressRow(brand, id, progressType) {
   const url = `/api/user-management-system/v1/progress/pin?brand=${brand}&id=${id}&progressType=${progressType}`;
   const response = await fetchHandler(url, 'PUT', null)
-  if (response && !response.error) {
-    await updatePinnedProgressRow(brand, {
+  if (response && !response.error && response['action'] === 'update_user_pin') {
+    await updateUserPinnedProgressRow(brand, {
       id,
       progressType,
       pinnedAt: new Date().toISOString(),
@@ -1357,23 +1357,25 @@ export async function pinProgressRow(brand, id, progressType) {
  * Unpins the current pinned progress row for a user, scoped by brand.
  *
  * @param {string} brand - The brand context for the unpin action.
+ * @param {string} id - The content or playlist id to unpin.
  * @returns {Promise<Object>} - A promise resolving to the response from the unpin API.
  *
  * @example
- * unpinProgressRow('drumeo')
+ * unpinProgressRow('drumeo', 123456)
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
-export async function unpinProgressRow(brand) {
-  const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}`
+export async function unpinProgressRow(brand, id) {
+  if (!(brand && id)) throw new Error(`undefined parameter brand: ${brand} or id: ${id}`)
+  const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}&id=${id}`
   const response = await fetchHandler(url, 'PUT', null)
-  if (response && !response.error) {
-    await updatePinnedProgressRow(brand, null)
+  if (response && !response.error && response['action'] === 'clear_user_pin') {
+    await updateUserPinnedProgressRow(brand, null)
   }
   return response
 }
 
-async function updatePinnedProgressRow(brand, pinnedData) {
+async function updateUserPinnedProgressRow(brand, pinnedData) {
   const userRaw = await globalConfig.localStorage.getItem('user');
   const user = userRaw ? JSON.parse(userRaw) : {};
   user.brand_pinned_progress = user.brand_pinned_progress || {}
