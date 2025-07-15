@@ -16,7 +16,6 @@ import {fetchLastInteractedChild, fetchLikeCount} from "./railcontent"
  * @param dataArgs - Arguments to pass to the dataPramise. The final parameter is expected to take the form of the options object
  * @param options - Options has two categories of flags. Three for defining the incoming data structure, and the rest of which data to add to the results. Unless otherwise specified the field flags use the format add<X> and add the <X> to the results
  * @param options.dataField - the document field to process. (this is often 'children', 'entity', or 'lessons'
- * @param options.dataField_parentIsArray - flag: if set with dataField, used to indicate the parent object is an array, not a single document.
  * @param options.dataField_includeParent - flag: if set with dataField, used to process the same contextual data for the parent object/array as well as the children
  * @param options.addProgressPercentage - add progressPerecentage field
  * @param options.addIsLiked - add isLikedField
@@ -55,7 +54,6 @@ export async function addContextToContent(dataPromise, ...dataArgs)
 
   const {
     dataField = null,
-    dataField_parentIsArray = false,
     dataField_includeParent = false,
     addProgressPercentage = false,
     addIsLiked = false,
@@ -70,8 +68,8 @@ export async function addContextToContent(dataPromise, ...dataArgs)
 
   let data = await dataPromise(...dataParam)
   if(!data) return false
-
-  const items = extractItemsFromData(data, dataField, dataField_parentIsArray, dataField_includeParent)
+  const isDataAnArray = Array.isArray(data)
+  const items = extractItemsFromData(data, dataField, isDataAnArray, dataField_includeParent)
   const ids = items.map(item => item?.id).filter(Boolean)
 
   if(ids.length === 0) return false
@@ -96,7 +94,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     ...(addNextLesson ? { nextLesson: nextLessonData?.[item.id] } : {}),
   })
 
-  return await processItems(data, addContext, dataField, dataField_parentIsArray, dataField_includeParent)
+  return await processItems(data, addContext, dataField, isDataAnArray, dataField_includeParent)
 }
 
 function extractItemsFromData(data, dataField, isParentArray, includeParent)
