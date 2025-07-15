@@ -33,7 +33,7 @@ export abstract class Either<L, R>
 
   abstract tap(fn: (l: R) => void): this
   /** Same as tap but for the left value */
-  abstract ltap(fn: (l: L) => L): Either<L, R>
+  abstract ltap(fn: (l: L) => void): Either<L, R>
   abstract drop(): R | L
   abstract recover(defaultValue: R): R
 }
@@ -76,7 +76,7 @@ export class Left<L, R> extends Either<L, R> {
     return this
   }
 
-  ltap(fn: (l: L) => L): Either<L, R> {
+  ltap(fn: (l: L) => void): Either<L, R> {
     const valueToTap = this.value
     fn(valueToTap)
     return this
@@ -131,7 +131,7 @@ export class Right<L, R> extends Either<L, R> {
     return this
   }
 
-  ltap(_fn: (l: L) => L): Either<L, R> {
+  ltap(_fn: (l: L) => void): Either<L, R> {
     return this
   }
 
