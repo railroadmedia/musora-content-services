@@ -12,6 +12,11 @@ import { HttpClient } from '../infrastructure/http/HttpClient'
  */
 const excludeFromGeneratedIndex = []
 
+const handleError = (message, error) => {
+  console.error(message, error)
+  return error
+}
+
 /**
  * Fetches similar content to the provided content id
  *
@@ -35,18 +40,29 @@ export async function fetchSimilarItems(content_id, brand, count = 10) {
     num_similar: count + 1, // because the content itself is sometimes returned
   }
   const url = `/similar_items/`
-  try {
-    const httpClient = new HttpClient(
-      globalConfig.recommendationsConfig.baseUrl,
-      globalConfig.recommendationsConfig.token
+  const httpClient = new HttpClient(
+    globalConfig.recommendationsConfig.baseUrl,
+    globalConfig.recommendationsConfig.token
+  )
+  return httpClient.post(url, data).then((r) =>
+    r.fold(
+      (error) => handleError('Fetch similar items error:', error),
+      // we requested count + 1 then filtered out the extra potential value, so we need slice to the correct size if necessary
+      (data) => data['similar_items'].filter((item) => item !== content_id).slice(0, count)
     )
-    const response = await httpClient.post(url, data)
-    // we requested count + 1 then filtered out the extra potential value, so we need slice to the correct size if necessary
-    return response['similar_items'].filter((item) => item !== content_id).slice(0, count)
-  } catch (error) {
-    console.error('Fetch error:', error)
-    return null
+  )
+}
+
+const parseRankedCategories = (data) => {
+  let rankedCategories = []
+
+  for (const rankedPlaylist of data) {
+    rankedCategories.push({
+      slug: rankedPlaylist.playlist_id,
+      items: rankedPlaylist.ranked_items,
+    })
   }
+  return rankedCategories
 }
 
 /**
@@ -74,25 +90,18 @@ export async function rankCategories(brand, categories) {
     playlists: categories,
   }
   const url = `/rank_each_list/`
-  try {
-    const httpClient = new HttpClient(
-      globalConfig.recommendationsConfig.baseUrl,
-      globalConfig.recommendationsConfig.token
-    )
-    const response = await httpClient.post(url, data)
-    let rankedCategories = []
-
-    for (const rankedPlaylist of response['ranked_playlists']) {
-      rankedCategories.push({
-        'slug': rankedPlaylist.playlist_id,
-        'items': rankedPlaylist.ranked_items
-      })
-    }
-    return rankedCategories
-  } catch (error) {
-    console.error('Fetch error:', error)
-    return null
-  }
+  const httpClient = new HttpClient(
+    globalConfig.recommendationsConfig.baseUrl,
+    globalConfig.recommendationsConfig.token
+  )
+  return httpClient.post(url, data).then((r) =>
+    r
+      .map((response) => parseRankedCategories(response['ranked_playlists']))
+      .fold(
+        (error) => handleError('Rank categories fetch error:', error),
+        (data) => data
+      )
+  )
 }
 
 /**
@@ -116,28 +125,27 @@ export async function rankItems(brand, content_ids) {
     content_ids: content_ids,
   }
   const url = `/rank_items/`
-  try {
-    const httpClient = new HttpClient(
-      globalConfig.recommendationsConfig.baseUrl,
-      globalConfig.recommendationsConfig.token
+  const httpClient = new HttpClient(
+    globalConfig.recommendationsConfig.baseUrl,
+    globalConfig.recommendationsConfig.token
+  )
+  return httpClient.post(url, data).then((r) =>
+    r.fold(
+      (error) => handleError('Rank items fetch error:', error),
+      (data) => data['ranked_content_ids']
     )
-    const response = await httpClient.post(url, data)
-    return response['ranked_content_ids']
-  } catch (error) {
-    console.error('Fetch error:', error)
-    return null
-  }
+  )
 }
 
 export async function recommendations(brand, { section = '' } = {}) {
   section = section.toUpperCase().replace('-', '_')
   const sectionString = section ? `&section=${section}` : ''
   const url = `/api/content/v1/recommendations?brand=${brand}${sectionString}`
-  try {
-    const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-    return httpClient.get(url)
-  } catch (error) {
-    console.error('Fetch error:', error)
-    return null
-  }
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  return httpClient.get(url).then((r) =>
+    r.fold(
+      (error) => handleError('Recommendations fetch error:', error),
+      (data) => data
+    )
+  )
 }
