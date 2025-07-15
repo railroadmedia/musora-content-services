@@ -10,45 +10,67 @@ export async function getActiveDiscussions(brand, { page = 1, limit = 10 } = {})
       {
         id: 11,
         url: 'https://forum.example.com/post/11',
-        title: 'My Journey with Pianote',
-        post: "Hey everyone, I thought I'd create this topic to detail my journey with Pianote. I started playing piano for the first time on Friday the 10th of March",
+        title: 'How to Progress',
+        post: "I use the 20-80 formula. 20% of the time on rudiments, skill, technique. 80% of the time working on songs or just playing along to the radio. Since it's a percentage, it fits any amount of time whether it's ten minutes or two hours. My neighbors would be p*ssed if I played two hours a day broken up over the whole day. They prefer I get my practice done in one shot. An hour a day works well for me.",
         author: {
           id: 123,
-          name: 'John Doe',
-          avatar: 'https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/5f6abe99-f1ed-49ec-aff4-893c017ed1aa-1681577292-565638.jpg'
+          name: 'Zucconi',
+          avatar: 'https://www.musora.com/cdn-cgi/image/quality=75,width=250,height=250,metadata=none/https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/BE9F40FC-61C8-48FB-BC79-6E5A7100638F-1710514476-612136.jpg'
         }
       },
       {
         id: 12,
         url: 'https://forum.example.com/post/12',
-        title: 'Learning the Piano',
-        post: "I can't wait to share the ups and downs of learning the piano!",
+        title: 'Laptop Stand Suggestions?',
+        post: "I got a cheap one from Amazon (39.43 Australian Dollars), very simple but I have had no problems with it. This is how I'm watching my Drumeo lessons :) It has some little holes in 2 corners so you could mount a phone holder to it also.",
         author: {
           id: 124,
-          name: 'Jane Smith',
-          avatar: 'https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/5f6abe99-f1ed-49ec-aff4-893c017ed1aa-1681577292-565638.jpg'
+          name: 'Abyssic Wizard',
+          avatar: 'https://www.musora.com/cdn-cgi/image/quality=75,width=250,height=250,metadata=none/https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/32F50623-BC25-429A-B480-B4A6A0E037D7-1748730048-844311.jpg'
         }
       },
       {
         id: 13,
         url: 'https://forum.example.com/post/13',
-        title: 'Piano Inspirations',
-        post: "One video that got me so psyched to learn the piano was this guy on YouTube called chocotiger who played George winstons - variations on pachabel.",
+        title: 'Introduce yourself to the Drumeo Community',
+        post: "Hi drummer forum 1. I'm 67 and retired plus an adjunct professor at community college currently 2. Enjoying an Alesis with Nitro Max practice drum set and on 9th day going through Domino Santantonio's 30 day challenge. Domino is wonderful and energetic. 3. I like any kind of alt-rock, rock, old gaelic style drumming, and jazz drumming",
         author: {
           id: 125,
-          name: 'Alice Johnson',
-          avatar: 'https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/5f6abe99-f1ed-49ec-aff4-893c017ed1aa-1681577292-565638.jpg'
+          name: 'Rwogie',
+          avatar: 'https://www.musora.com/cdn-cgi/image/quality=75,width=250,height=250,metadata=none/https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/user-profile-picture-1752520294-843602.jpg'
         }
       },
       {
         id: 14,
         url: 'https://forum.example.com/post/14',
-        title: 'Feedback on Lessons',
-        post: "I appreciate the way the lessons are structured and how fun they are. To newbies like me (and maybe some others), would be great if there was a plug-in (like the one from flowkey) to plug your piano/keyboard and get realtime feedback. I'm also trying to learn how to read the sheet music, and it is sometimes hard to read what key is being played, so having the plug-in would help provide feedback asap instead of rewinding the video, (the fonts on the video are too small)",
+        title: 'Musora Cross Collaboration June 2025',
+        post: "Hey everyone! 🎉 Awesome news! We’ve officially extended the deadline to submit your “Hold The Line” video. You now have until July 1st, 2025 to send it in! We cannot wait to see you all crush this track. Seriously, this is going to be such a fun project, and we’re beyond stoked to showcase your playing. If you’ve got any questions (or just want to say hi), feel free to reach out at <a href=\"mailto:mentors@musora.com\">mentors@musora.com</a>. Let’s make this epic!",
         author: {
           id: 126,
-          name: 'Bob Williams',
-          avatar: 'https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/5f6abe99-f1ed-49ec-aff4-893c017ed1aa-1681577292-565638.jpg'
+          name: 'Ale',
+          avatar: 'https://www.musora.com/cdn-cgi/image/quality=75,width=250,height=250,metadata=none/https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/user-profile-picture-1728402676-577074.jpg'
+        }
+      },
+      {
+        id: 15,
+        url: 'https://forum.example.com/post/15',
+        title: 'Drum Recording & Mixing Questions',
+        post: "Hi, thanks for welcoming me to Drumeo! I've seen a lot of great acoustic drum performances in your videos – the sound quality is amazing. I'm curious: How do you record your drums to get such a professional sound?",
+        author: {
+          id: 127,
+          name: 'Peter Neumann',
+          avatar: 'https://www.musora.com/cdn-cgi/image/quality=75,width=250,height=250,metadata=none/https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/user-profile-picture-1725633212-597725.jpg'
+        }
+      },
+      {
+        id: 16,
+        url: 'https://forum.example.com/post/16',
+        title: 'Play Along or Background Music',
+        post: "Hey Aali, you can use the play along tracks (in the sidebar menu) or the songs in the song section to practice with. You can also use your own music via your phone etc to play along with. When I started playing we never had online lessons so I used to practice with CDs etc. Youtube is another option as others have said. From the lessons, many have tracks you can practice along to in the \"Resources\" tab to download",
+        author: {
+          id: 128,
+          name: 'Stidger (Musora Mod)',
+          avatar: 'https://www.musora.com/cdn-cgi/image/quality=75,width=250,height=250,metadata=none/https://dzryyo1we6bm3.cloudfront.net/avatars/6A09AFCB-B242-4278-A8B3-0013A650206A-1644690552-495979.jpg'
         }
       }
     ]
