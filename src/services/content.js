@@ -79,7 +79,6 @@ export async function getTabResults(brand, pageName, tabName, {
   if( tabName === Tabs.ForYou.name ) {
     results = await addContextToContent(getLessonContentRows, brand, pageName, {
       dataField: 'items',
-      iterateDataFieldOnEachArrayElement: true,
       addNextLesson: true,
       addProgressPercentage: true,
       addProgressStatus: true

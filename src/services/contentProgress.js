@@ -79,12 +79,8 @@ export async function getNextLesson(data)
           nextLessonData[content.id] = findIncompleteLesson(childrenStates, lastInteracted, content.type)
         } else if (content.type === 'pack') {
           const packBundles = content.children ?? []
-          console.log('pack', content)
-          console.log('bundles', packBundles)
           const packBundleProgressData = await getNextLesson(packBundles)
           const parentId = await getLastInteractedOf(packBundles.map(bundle => bundle.id));
-          console.log('parentId', parentId)
-          console.log('bundleprogressData', packBundleProgressData)
           nextLessonData[content.id] = packBundleProgressData[parentId];
         }
       }
