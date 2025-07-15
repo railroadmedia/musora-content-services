@@ -444,6 +444,10 @@ export let contentTypeConfig = {
       `"children": child[]->{
         "description": ${descriptionField},
         "lesson_count": child_count,
+        "instructors": select(
+          instructor != null => instructor[]->name,
+          ^.instructor[]->name
+        ),
         "children": child[]->{
           "description": ${descriptionField},
           ${getFieldsForContentType()}
