@@ -446,6 +446,7 @@ export let contentTypeConfig = {
         "lesson_count": child_count,
         "children": child[]->{
           "description": ${descriptionField},
+          "children": child[]->{"id": railcontent_id},
           ${getFieldsForContentType()}
         },
         ${getFieldsForContentType()}
