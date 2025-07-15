@@ -571,6 +571,12 @@ export let contentTypeConfig = {
       `quarter_published`,
       '"thumbnail": thumbnail.asset->url',
     ]
+  },
+  leaving: {
+    fields: [
+      `quarter_removed`,
+      '"thumbnail": thumbnail.asset->url',
+    ]
   }
 }
 
