@@ -85,7 +85,7 @@ export async function fetchLeaving(brand, { pageNumber = 1, contentPerPage = 20 
   const query = await buildQuery(
     filterString,
     { pullFutureContent: false, availableContentStatuses: ['published'] },
-    getFieldsForContentType(),
+    getFieldsForContentType('leaving'),
     sortOrder
   )
   return fetchSanity(query, true)
