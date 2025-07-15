@@ -8,20 +8,26 @@ import { calculateLongestStreaks } from '../userActivity.js'
 
 const baseUrl = `/api/user-management-system`
 
-type StreakDTO = {
+interface StreakDTO {
   type: string
   length: number
   start_date?: Date | null
   end_date?: Date | null
 }
 
-type OtherStatsDTO = {
+interface OtherStatsDTO {
   longest_day_streak: StreakDTO
   longest_week_streak: StreakDTO
   total_practice_time: number
   comment_likes: number
   forum_post_likes: number
   experience_points: number
+}
+
+interface LongestStreaksData {
+  longestDailyStreak: number
+  longestWeeklyStreak: number
+  totalPracticeSeconds: number
 }
 
 const defaultStats: OtherStatsDTO = {
@@ -33,11 +39,9 @@ const defaultStats: OtherStatsDTO = {
   experience_points: 0,
 }
 
-const mergeStats = (
-  stats: OtherStatsDTO,
-  longestStreaks: { longestDailyStreak: any; longestWeeklyStreak: any; totalPracticeSeconds: any }
-) =>
-  ({
+const mergeStats =
+  (longestStreaks: LongestStreaksData) =>
+  (stats: OtherStatsDTO): OtherStatsDTO => ({
     ...stats,
     longest_day_streak: {
       type: 'day',
@@ -48,7 +52,7 @@ const mergeStats = (
       length: longestStreaks.longestWeeklyStreak,
     },
     total_practice_time: longestStreaks.totalPracticeSeconds,
-  }) as OtherStatsDTO
+  })
 
 export async function otherStats(
   userId: string = globalConfig.sessionConfig.userId
@@ -59,11 +63,7 @@ export async function otherStats(
     calculateLongestStreaks(userId),
   ])
 
-  return otherStats.fold(
-    (error) => {
-      console.error('Failed to fetch other stats:', error)
-      return mergeStats(defaultStats, longestStreaks)
-    },
-    (stats) => mergeStats(stats, longestStreaks)
-  )
+  return otherStats
+    .map(mergeStats(longestStreaks))
+    .recover(mergeStats(longestStreaks)(defaultStats))
 }
