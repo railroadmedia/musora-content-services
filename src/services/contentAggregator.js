@@ -71,33 +71,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   let data = await dataPromise(...dataParam)
   if(!data) return false
 
-  let items = []
-
-  if (dataField) {
-    if (dataField_parentIsArray) {
-      if (dataField_parentIsArray && Array.isArray(data)) {
-        for (const parent of data) {
-          items = [...items, ...parent[dataField]]
-        }
-      } else {
-        items = data[dataField]
-      }
-    }
-    if (dataField_includeParent) {
-      if (dataField_parentIsArray && Array.isArray(data)) {
-        for (const parent of data) {
-          items = [...items, ...parent]
-        }
-      } else {
-        items = [...items, data]
-      }
-    }
-  } else if (Array.isArray(data)) {
-    items = data;
-  } else if (data?.id) {
-    items = [data]
-  }
-
+  const items = extractItemsFromData(data, dataField, dataField_parentIsArray, dataField_includeParent)
   const ids = items.map(item => item?.id).filter(Boolean)
 
   if(ids.length === 0) return false
@@ -122,8 +96,41 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     ...(addNextLesson ? { nextLesson: nextLessonData?.[item.id] } : {}),
   })
 
+  return await processItems(data, addContext, dataField, dataField_parentIsArray, dataField_includeParent)
+}
+
+function extractItemsFromData(data, dataField, isParentArray, includeParent)
+{
+  let items = []
   if (dataField) {
-    if (dataField_parentIsArray) {
+    if (isParentArray) {
+      for (const parent of data) {
+        items = [...items, ...parent[dataField]]
+      }
+    } else {
+      items = data[dataField]
+    }
+    if (includeParent) {
+      if (isParentArray) {
+        for (const parent of data) {
+          items = [...items, ...parent]
+        }
+      } else {
+        items = [...items, data]
+      }
+    }
+  } else if (Array.isArray(data)) {
+    items = data;
+  } else if (data?.id) {
+    items = [data]
+  }
+  return items
+}
+
+async function processItems(data, addContext, dataField, isParentArray, includeParent)
+{
+  if (dataField) {
+    if (isParentArray) {
       for(let parent of data) {
         parent[dataField] = Array.isArray(parent[dataField])
           ? await Promise.all(parent[dataField].map(addContext))
@@ -134,16 +141,16 @@ export async function addContextToContent(dataPromise, ...dataArgs)
         ? await Promise.all(data[dataField].map(addContext))
         : await addContext(data[dataField])
     }
-    if (dataField_includeParent) {
-      data = dataField_parentIsArray
+    if (includeParent) {
+      data = isParentArray
         ? await Promise.all(data.map(addContext))
         : await addContext(data)
     }
     return data
   } else {
     return Array.isArray(data)
-        ? await Promise.all(data.map(addContext))
-        : await addContext(data)
+      ? await Promise.all(data.map(addContext))
+      : await addContext(data)
   }
 }
 
