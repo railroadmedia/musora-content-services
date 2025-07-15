@@ -1982,9 +1982,9 @@ export async function fetchSanity(
     return null
   }
 
-  if (globalConfig.sanityConfig.debug) {
-    console.log('fetchSanity Query:', query)
-  }
+  // if (globalConfig.sanityConfig.debug) {
+  //   console.log('fetchSanity Query:', query)
+  // }
   const perspective = globalConfig.sanityConfig.perspective ?? 'published'
   const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api'
   const url = `https://${globalConfig.sanityConfig.projectId}.${api}.sanity.io/v${globalConfig.sanityConfig.version}/data/query/${globalConfig.sanityConfig.dataset}?perspective=${perspective}`

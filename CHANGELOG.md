@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.21.4](https://github.com/railroadmedia/musora-content-services/compare/v2.21.3...v2.21.4) (2025-07-15)
+
+
+### Bug Fixes
+
+* **gc-pin:** patch unpin and pin actions from merge conflict ([#345](https://github.com/railroadmedia/musora-content-services/issues/345)) ([a9ed0f1](https://github.com/railroadmedia/musora-content-services/commit/a9ed0f15bf2a61b259d250e24c5b6a74fcade404))
+
 ### [2.21.3](https://github.com/railroadmedia/musora-content-services/compare/v2.21.1...v2.21.3) (2025-07-15)
 
 
