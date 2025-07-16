@@ -1,29 +1,29 @@
-import {fetchUnreadCount} from "./user/notifications"
+import {fetchLiveEventPoolingState, fetchUnreadCount, pauseLiveEventPoolingUntil} from "./user/notifications"
 import {fetchLiveEvent} from "./sanity"
 import { DataContext, PollingStateVersionKey } from './dataContext'
+import {fetchHandler} from "./railcontent";
+import {globalConfig} from "./config";
+import {convertToTimeZone} from "./dateUtils";
 
-async function fetchPollingState(version) {
-  //TODO: Uncomment when backend is ready
-//   const result = await fetch(`/api/user/polling-state?version=${version}`)
-//   return await result
-  return {
-    "version": 1,
-    "data": {
-      "pauseLiveEventUntil": 3721180400000
-    }
-  }
-}
 
-const pollingStateContext = new DataContext(PollingStateVersionKey, fetchPollingState)
+const pollingStateContext = new DataContext(PollingStateVersionKey, fetchLiveEventPoolingState)
 
 class EventsAPI {
   constructor() {
+    this.brand = 'drumeo' // Default brand, can be overridden';
     this.onNotificationStateUpdated = []
     this.pollingInterval = null
     this.isPollingActive = true
     this.isLiveEventPollingActive = true
     this.resumeLiveEventTimeout = null
+
+    this.cachedLiveEvent = null
+    this.cachedLiveEventEndTime = 0
   }
+  setBrand(brand) {
+    this.brand = brand;
+  }
+
   async initPollingControl() {
     return pollingStateContext.getData();
   }
@@ -57,28 +57,30 @@ class EventsAPI {
   }
 
   async setupAutoEvents() {
-    console.log('rox:: Setting up auto events...')
+    console.log('rox:: Setting up auto events...');
     try {
       const pollingData = await this.initPollingControl();
       console.log('rox:: Polling data..', pollingData);
-      const now = Date.now();
 
-      console.log('rox:: check pauseLiveEventUntil vs now...', pollingData?.pauseLiveEventUntil, now, pollingData?.pauseLiveEventUntil > now)
-      if (pollingData?.pauseLiveEventUntil > now) {
-        const ttlMs = pollingData.pauseLiveEventUntil - now;
-        console.log('rox:: pauseLiveEventCheck..', ttlMs);
-        await this.pauseLiveEventCheck(600000);
-       // await this.pauseLiveEventCheck(Math.max(0, Math.floor(pollingData.pauseLiveEventUntil - now)));
+      const pauseUntil = Date.parse(pollingData?.pauseLiveEventUntil); // UTC ms
+      const now = Date.now(); // UTC ms
+
+      const isPaused = pauseUntil > now;
+      if (isPaused) {
+        const ttlMs = pauseUntil - now;
+        console.log('rox:: pauseLiveEventCheck (ttlMs):', ttlMs);
+        await this.pauseLiveEventCheck(ttlMs);
       }
 
       this.pollingInterval = setInterval(() => {
-          this.checkNotifications();
-      }, 30000); // 30 seconds
+        this.checkNotifications();
+      }, 60000);
     } catch (error) {
       console.error('rox:: EventsApi: Failed to setup auto events:', error);
-      this.checkNotifications(); // still run at least once even if setup fails
+      this.checkNotifications();
     }
   }
+
 
 
   async checkNotifications() {
@@ -86,20 +88,33 @@ class EventsAPI {
       const notificationRes = await fetchUnreadCount();
 
       let liveEvent = null;
-      console.log('rox:: Checking for notifications and live events... isLive checking ----', this.isLiveEventPollingActive);
+      const now = Date.now();
+
       if (this.isLiveEventPollingActive) {
-        try {
-          liveEvent = await fetchLiveEvent('drumeo');
-        } catch (err) {
-          console.error('rox:: Failed to fetch live event:', err);
+        if (this.cachedLiveEvent && this.cachedLiveEventEndTime > now) {
+          // Use cached live event
+          liveEvent = this.cachedLiveEvent;
+          console.log('rox:: Using cached live event');
+        } else {
+          try {
+            liveEvent = await fetchLiveEvent(this.brand);
+
+            if (liveEvent && liveEvent.live_event_end_time) {
+              this.cachedLiveEvent = liveEvent;
+              this.cachedLiveEventEndTime = new Date(liveEvent.live_event_end_time).getTime();
+              console.log('rox:: Fetched and cached new live event until:', liveEvent.live_event_end_time);
+            }
+          } catch (err) {
+            console.error('rox:: Failed to fetch live event:', err);
+          }
         }
       }
 
-      console.error('rox:: Check notifications from MCS:', notificationRes, liveEvent);
+   //   console.error('rox:: Check notifications from MCS:', notificationRes, liveEvent);
 
       this.triggerNotificationStateUpdated({
         unreadCount: notificationRes.data,
-        liveEvent: liveEvent,
+        liveEvent
       });
     } catch (error) {
       console.error('rox::   ..... Failed to check notifications:', error);
@@ -107,9 +122,9 @@ class EventsAPI {
   }
 
   async pauseLiveEventCheck(ttlMs) {
-    console.log('rox:: pauseLiveEventCheck() called with ttlMs =', ttlMs);
+   // console.log('rox:: pauseLiveEventCheck() called with ttlMs =', ttlMs);
     this.isLiveEventPollingActive = false;
-    console.log('rox:: isLiveEventPollingActive set to FALSE');
+  //  console.log('rox:: isLiveEventPollingActive set to FALSE');
 
     if (this.resumeLiveEventTimeout) {
       clearTimeout(this.resumeLiveEventTimeout);
@@ -120,6 +135,8 @@ class EventsAPI {
         const liveEvent = await fetchLiveEvent('drumeo');
         const now = Date.now();
         const endTime = new Date(liveEvent.live_event_end_time).getTime();
+        console.error('rox:: pauseLiveEventPoolingUntil :', liveEvent.live_event_end_time);
+        await pauseLiveEventPoolingUntil(liveEvent.live_event_end_time);
         ttlMs = endTime - now;
       } catch (err) {
         console.error('Failed to fetch live event for TTL fallback:', err);
@@ -128,7 +145,7 @@ class EventsAPI {
     }
 
     if (ttlMs > 0) {
-      console.log(`rox:: Pausing live event check for ${ttlMs / 1000}s`);
+   //   console.log(`rox:: Pausing live event check for ${ttlMs / 1000}s`);
       this.resumeLiveEventTimeout = setTimeout(() => {
         this.resumeLiveEventCheck();
       }, ttlMs);

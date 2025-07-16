@@ -4,7 +4,7 @@ import {
 	globalConfig,
 	initializeService
 } from './services/config.js';
-import { default as EventsApi } from './services/eventsAPI.js';
+
 import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
@@ -259,12 +259,14 @@ import {
 
 import {
 	deleteNotification,
+	fetchLiveEventPoolingState,
 	fetchNotificationSettings,
 	fetchNotifications,
 	fetchUnreadCount,
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
 	markNotificationAsUnread,
+	pauseLiveEventPoolingUntil,
 	updateNotificationSetting
 } from './services/user/notifications.js';
 
@@ -305,6 +307,8 @@ import {
 	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
+
+import { default as EventsApi } from './services/eventsAPI.js';
 
 export {
 	addContextToContent,
@@ -377,6 +381,7 @@ export {
 	fetchLessonsFeaturingThisContent,
 	fetchLikeCount,
 	fetchLiveEvent,
+	fetchLiveEventPoolingState,
 	fetchMetadata,
 	fetchMethod,
 	fetchMethodChildren,
@@ -481,6 +486,7 @@ export {
 	markNotificationAsUnread,
 	openComment,
 	otherStats,
+	pauseLiveEventPoolingUntil,
 	pinGuidedCourse,
 	pinProgressRow,
 	pinnedGuidedCourses,
