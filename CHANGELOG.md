@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.23.0](https://github.com/railroadmedia/musora-content-services/compare/v2.22.0...v2.23.0) (2025-07-16)
+
+
+### Features
+
+* **MU2-825:** user data function ([#343](https://github.com/railroadmedia/musora-content-services/issues/343)) ([5afcbc9](https://github.com/railroadmedia/musora-content-services/commit/5afcbc97b46082655bb73a7ce33c864d1b289898))
+
+
+### Bug Fixes
+
+* **MU2-645:** Add Sanity type and content slug to auto user practices ([#350](https://github.com/railroadmedia/musora-content-services/issues/350)) ([6f9bdea](https://github.com/railroadmedia/musora-content-services/commit/6f9bdea71bb8472f2dd5a305f4719b890336d165))
+
 ## [2.22.0](https://github.com/railroadmedia/musora-content-services/compare/v2.21.4...v2.22.0) (2025-07-16)
 
 
