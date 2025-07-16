@@ -236,8 +236,17 @@ export async function updateNotificationSetting({ brand, settingName, email, pus
   * @returns {Promise<Object>} - Promise resolving to the API response
  */
 export async function pauseLiveEventPollingUntil(until = null) {
-    const url = `/api/user-management-system/v1/users/polling${until ? `?until=${until}` : ''}`
+    const url = `/api/user-management-system/v1/users/pause-polling${until ? `?until=${until}` : ''}`
     return fetchHandler(url, 'PUT', null)
+}
+
+/**
+ * Start live event polling.
+ * @returns {Promise<Object>} - Promise resolving to the API response
+ */
+export async function startLiveEventPolling() {
+  const url = `/api/user-management-system/v1/users/start-polling`
+  return fetchHandler(url, 'PUT', null)
 }
 
 /**
