@@ -2,7 +2,9 @@
  * @module UserNotifications
  */
 import { fetchHandler } from '../railcontent.js'
+import  eventsAPI from '../eventsAPI.js'
 import './types.js'
+import {globalConfig} from "../config";
 
 const baseUrl = `/api/notifications`
 
@@ -69,6 +71,7 @@ export async function markNotificationAsRead(notificationId) {
  *   .catch(error => console.error(error));
  */
 export async function markAllNotificationsAsRead() {
+  await eventsAPI.pauseLiveEventCheck()
   const url = `${baseUrl}/v1/read`
   return fetchHandler(url, 'put')
 }
@@ -222,6 +225,19 @@ export async function updateNotificationSetting({ brand, settingName, email, pus
   const url = '/api/notifications/v1/settings';
 
   return fetchHandler(url, 'PUT', null, payload);
+}
+
+export async function pauseLiveEventPoolingUntil( until = null) {
+  const url = `/api/user-management-system/v1/users/polling?until=${until}`
+  const response = await fetchHandler(url, 'PUT', null)
+
+  return response
+}
+
+export async function fetchLiveEventPoolingState(version) {
+  const url = `/api/user-management-system/v1/users/polling`
+  const response = await fetchHandler(url, 'GET', null)
+  return response
 }
 
 

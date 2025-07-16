@@ -259,12 +259,14 @@ import {
 
 import {
 	deleteNotification,
+	fetchLiveEventPoolingState,
 	fetchNotificationSettings,
 	fetchNotifications,
 	fetchUnreadCount,
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
 	markNotificationAsUnread,
+	pauseLiveEventPoolingUntil,
 	updateNotificationSetting
 } from './services/user/notifications.js';
 
@@ -378,6 +380,7 @@ declare module 'musora-content-services' {
 		fetchLessonsFeaturingThisContent,
 		fetchLikeCount,
 		fetchLiveEvent,
+		fetchLiveEventPoolingState,
 		fetchMetadata,
 		fetchMethod,
 		fetchMethodChildren,
@@ -482,6 +485,7 @@ declare module 'musora-content-services' {
 		markNotificationAsUnread,
 		openComment,
 		otherStats,
+		pauseLiveEventPoolingUntil,
 		pinGuidedCourse,
 		pinProgressRow,
 		pinnedGuidedCourses,
