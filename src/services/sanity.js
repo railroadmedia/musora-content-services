@@ -551,7 +551,7 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
     brand,
     name,
     'slug': slug.current,
-    'content': content[]->{ ${getFieldsForContentType()} }
+    'content': content[]->{ ${getFieldsForContentType('tab-data')} }
   }`, true)
 }
 
@@ -2373,7 +2373,7 @@ export async function fetchTabData(
   filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   entityFieldsString =
-    ` ${fieldsString},
+    ` ${fieldsString}
     'children': child[${childrenFilter}]->{'id': railcontent_id},
     'lesson_count': coalesce(count(child[${childrenFilter}]->), 0),
     'length_in_seconds': coalesce(
@@ -2384,7 +2384,6 @@ export async function fetchTabData(
       ),
       length_in_seconds
     ),`
-
   const filterWithRestrictions = await new FilterBuilder(filter, {}).buildFilter()
   query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
     sortOrder: sortOrder,
