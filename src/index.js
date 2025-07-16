@@ -252,6 +252,7 @@ import {
 import {
 	blockUser,
 	deletePicture,
+	getUserData,
 	unblockUser,
 	uploadPicture,
 	uploadPictureFromS3
@@ -455,6 +456,7 @@ export {
 	getStartedOrCompletedProgressOnly,
 	getTabResults,
 	getTimeRemainingUntilLocal,
+	getUserData,
 	getUserMonthlyStats,
 	getUserPractices,
 	getUserWeeklyStats,
