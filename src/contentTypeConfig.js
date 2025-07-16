@@ -206,15 +206,22 @@ export const filterTypes = {
 }
 
 export const recentTypes = {
-  lessons: [...individualLessonsTypes],
+  lessons: [...individualLessonsTypes, 'course-part', 'pack-bundle-lesson', 'challenge-part', 'guided-course-part', 'quick-tips'],
   songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes],
   home: [...individualLessonsTypes, ...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes,
   'guided-course', 'learning-path', 'live']
 }
 
 export let contentTypeConfig = {
+  'tab-data': {
+    fields: [
+      'enrollment_start_time',
+      'enrollment_end_time',
+    ],
+  },
   'progress-tracker': {
-    fields: ['"parent_content_data": parent_content_data[].id',
+    fields: [
+      '"parent_content_data": parent_content_data[].id',
       '"badge" : badge.asset->url',
       '"lessons": child[]->{' +
         '"id": railcontent_id,' +
@@ -230,7 +237,7 @@ export let contentTypeConfig = {
           '"brand":brand},' +
           '"thumbnail": thumbnail.asset->url,' +
           'published_on,' +
-        '}'
+        '}',
     ],
 
 

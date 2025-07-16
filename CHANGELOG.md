@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.24.1](https://github.com/railroadmedia/musora-content-services/compare/v2.24.0...v2.24.1) (2025-07-16)
+
+## [2.24.0](https://github.com/railroadmedia/musora-content-services/compare/v2.21.3...v2.24.0) (2025-07-16)
+
+
+### Features
+
+* **BEH-837:** update contentAggregator to process parent + children ([#346](https://github.com/railroadmedia/musora-content-services/issues/346)) ([20ffef3](https://github.com/railroadmedia/musora-content-services/commit/20ffef3826a7e56bee4c950d77b2cd57eff1dc08))
+* **MU2-825:** user data function ([#343](https://github.com/railroadmedia/musora-content-services/issues/343)) ([5afcbc9](https://github.com/railroadmedia/musora-content-services/commit/5afcbc97b46082655bb73a7ce33c864d1b289898))
+
+
+### Bug Fixes
+
+* **gc-pin:** patch unpin and pin actions from merge conflict ([#345](https://github.com/railroadmedia/musora-content-services/issues/345)) ([a9ed0f1](https://github.com/railroadmedia/musora-content-services/commit/a9ed0f15bf2a61b259d250e24c5b6a74fcade404))
+* **MU2-645:** Add Sanity type and content slug to auto user practices ([#350](https://github.com/railroadmedia/musora-content-services/issues/350)) ([6f9bdea](https://github.com/railroadmedia/musora-content-services/commit/6f9bdea71bb8472f2dd5a305f4719b890336d165))
+* recent lessons do not display children lessons ([b6f0b33](https://github.com/railroadmedia/musora-content-services/commit/b6f0b3329ee80c78f75aab93c011dba89c73e06a))
+
+### [2.23.1](https://github.com/railroadmedia/musora-content-services/compare/v2.23.0...v2.23.1) (2025-07-16)
+
+## [2.23.0](https://github.com/railroadmedia/musora-content-services/compare/v2.22.0...v2.23.0) (2025-07-16)
+
+
+### Features
+
+* **MU2-825:** user data function ([#343](https://github.com/railroadmedia/musora-content-services/issues/343)) ([5afcbc9](https://github.com/railroadmedia/musora-content-services/commit/5afcbc97b46082655bb73a7ce33c864d1b289898))
+
+
+### Bug Fixes
+
+* **MU2-645:** Add Sanity type and content slug to auto user practices ([#350](https://github.com/railroadmedia/musora-content-services/issues/350)) ([6f9bdea](https://github.com/railroadmedia/musora-content-services/commit/6f9bdea71bb8472f2dd5a305f4719b890336d165))
+
+## [2.22.0](https://github.com/railroadmedia/musora-content-services/compare/v2.21.4...v2.22.0) (2025-07-16)
+
+
+### Features
+
+* **BEH-837:** update contentAggregator to process parent + children ([#346](https://github.com/railroadmedia/musora-content-services/issues/346)) ([20ffef3](https://github.com/railroadmedia/musora-content-services/commit/20ffef3826a7e56bee4c950d77b2cd57eff1dc08))
+
 ### [2.21.4](https://github.com/railroadmedia/musora-content-services/compare/v2.21.3...v2.21.4) (2025-07-15)
 
 
