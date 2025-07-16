@@ -3,6 +3,7 @@
  */
 import { fetchHandler } from '../railcontent.js'
 import './types.js'
+import {fetchLiveEvent} from "../sanity";
 
 const baseUrl = `/api/notifications`
 
@@ -68,7 +69,12 @@ export async function markNotificationAsRead(notificationId) {
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
-export async function markAllNotificationsAsRead() {
+export async function markAllNotificationsAsRead(brand = 'drumeo') {
+  const liveEvent = await fetchLiveEvent(brand)
+  if(liveEvent){
+    await pauseLiveEventPollingUntil(liveEvent.live_event_end_time)
+  }
+
   const url = `${baseUrl}/v1/read`
   return fetchHandler(url, 'put')
 }
@@ -223,6 +229,35 @@ export async function updateNotificationSetting({ brand, settingName, email, pus
 
   return fetchHandler(url, 'PUT', null, payload);
 }
+
+/**
+  * Pauses live event polling until the specified time.
+  * @param {string|null} [until=null] - ISO timestamp string or null to unpause
+  * @returns {Promise<Object>} - Promise resolving to the API response
+ */
+export async function pauseLiveEventPollingUntil(until = null) {
+    const url = `/api/user-management-system/v1/users/pause-polling${until ? `?until=${until}` : ''}`
+    return fetchHandler(url, 'PUT', null)
+}
+
+/**
+ * Start live event polling.
+ * @returns {Promise<Object>} - Promise resolving to the API response
+ */
+export async function startLiveEventPolling() {
+  const url = `/api/user-management-system/v1/users/start-polling`
+  return fetchHandler(url, 'PUT', null)
+}
+
+/**
+ * Fetches the current live event polling state.
+ + @returns {Promise<Object>} - Promise resolving to the polling state
+ */
+
+  export async function fetchLiveEventPollingState() {
+    const url = `/api/user-management-system/v1/users/polling`
+    return fetchHandler(url, 'GET', null)
+  }
 
 
 
