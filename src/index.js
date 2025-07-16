@@ -267,6 +267,8 @@ import {
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
 	markNotificationAsUnread,
+	pauseLiveEventPollingUntil,
+	startLiveEventPolling,
 	updateNotificationSetting
 } from './services/user/notifications.js';
 
@@ -485,6 +487,7 @@ export {
 	markNotificationAsUnread,
 	openComment,
 	otherStats,
+	pauseLiveEventPollingUntil,
 	pinGuidedCourse,
 	pinProgressRow,
 	pinnedGuidedCourses,
@@ -523,6 +526,7 @@ export {
 	sendPasswordResetEmail,
 	setStudentViewForUser,
 	setupAccount,
+	startLiveEventPolling,
 	status,
 	togglePlaylistPrivate,
 	unEnrollUserInGuidedCourse,
