@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.25.0](https://github.com/railroadmedia/musora-content-services/compare/v2.24.1...v2.25.0) (2025-07-16)
+
+
+### Features
+
+* **BEH-38:** add context data to tab results ([#344](https://github.com/railroadmedia/musora-content-services/issues/344)) ([02fe932](https://github.com/railroadmedia/musora-content-services/commit/02fe9321dfa56e74d7c73cb7a80e54f5818d1427))
+
 ### [2.24.1](https://github.com/railroadmedia/musora-content-services/compare/v2.24.0...v2.24.1) (2025-07-16)
 
 ## [2.24.0](https://github.com/railroadmedia/musora-content-services/compare/v2.21.3...v2.24.0) (2025-07-16)
