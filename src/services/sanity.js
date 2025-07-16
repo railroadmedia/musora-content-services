@@ -551,7 +551,10 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
     brand,
     name,
     'slug': slug.current,
-    'content': content[]->{ ${getFieldsForContentType('tab-data')} }
+    'content': content[]->{
+        'children': child[]->{ 'id': railcontent_id, 'children': child[]->{'id': railcontent_id}, },
+        ${getFieldsForContentType('tab-data')}
+    },
   }`, true)
 }
 
