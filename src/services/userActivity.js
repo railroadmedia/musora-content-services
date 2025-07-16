@@ -853,6 +853,8 @@ async function formatPracticeMeta(practices) {
       content_id: practice.content_id || null,
       content_brand: content.brand || null,
       created_at: convertToTimeZone(utcDate, userTimeZone),
+      sanity_type: content.type || null,
+      content_slug: content.slug || null,
     }
   })
 }
