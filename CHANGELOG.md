@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.26.0](https://github.com/railroadmedia/musora-content-services/compare/v2.25.1...v2.26.0) (2025-07-16)
+
+
+### Features
+
+* **MU2-805:** Set a pauseLiveEventPollingUntil field when user mark all notificatio… ([#351](https://github.com/railroadmedia/musora-content-services/issues/351)) ([bfe1010](https://github.com/railroadmedia/musora-content-services/commit/bfe10107c522ea725436e4a6338a869e852c08d5))
+
 ### [2.25.1](https://github.com/railroadmedia/musora-content-services/compare/v2.25.0...v2.25.1) (2025-07-16)
 
 
