@@ -10,7 +10,7 @@ export async function getActiveDiscussions(brand, { page = 1, limit = 10 } = {})
       {
         id: 11,
         url: 'https://forum.example.com/post/11',
-        title: 'How to Progress',
+        title: 'How to Progress.',
         post: "I use the 20-80 formula. 20% of the time on rudiments, skill, technique. 80% of the time working on songs or just playing along to the radio. Since it's a percentage, it fits any amount of time whether it's ten minutes or two hours. My neighbors would be p*ssed if I played two hours a day broken up over the whole day. They prefer I get my practice done in one shot. An hour a day works well for me.",
         author: {
           id: 123,
@@ -32,7 +32,7 @@ export async function getActiveDiscussions(brand, { page = 1, limit = 10 } = {})
       {
         id: 13,
         url: 'https://forum.example.com/post/13',
-        title: 'Introduce yourself to the Drumeo Community',
+        title: 'Introduce yourself to the Drumeo Community...',
         post: "Hi drummer forum 1. I'm 67 and retired plus an adjunct professor at community college currently 2. Enjoying an Alesis with Nitro Max practice drum set and on 9th day going through Domino Santantonio's 30 day challenge. Domino is wonderful and energetic. 3. I like any kind of alt-rock, rock, old gaelic style drumming, and jazz drumming",
         author: {
           id: 125,
