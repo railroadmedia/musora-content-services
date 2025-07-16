@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.22.0](https://github.com/railroadmedia/musora-content-services/compare/v2.21.4...v2.22.0) (2025-07-16)
+
+
+### Features
+
+* **BEH-837:** update contentAggregator to process parent + children ([#346](https://github.com/railroadmedia/musora-content-services/issues/346)) ([20ffef3](https://github.com/railroadmedia/musora-content-services/commit/20ffef3826a7e56bee4c950d77b2cd57eff1dc08))
+
 ### [2.21.4](https://github.com/railroadmedia/musora-content-services/compare/v2.21.3...v2.21.4) (2025-07-15)
 
 
