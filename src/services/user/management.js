@@ -5,7 +5,7 @@ import { fetchHandler as railcontentFetchHandler } from '../railcontent.js'
 import { fetchHandler, fetchJSONHandler } from '../../lib/httpHelper.js'
 import { globalConfig } from '../config.js'
 import './types.js'
-import { HttpClient } from '../../infrastructure/http/HttpClient.js'
+import { HttpClient } from '../../infrastructure/http/HttpClient'
 
 const baseUrl = `/api/user-management-system`
 
