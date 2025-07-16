@@ -49,6 +49,11 @@ export const resourcesField = `[
           ... *[railcontent_id == ^.parent_content_data[0].id] [0].resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
           ]`
 
+export const awardField = " *[_type == 'content-award' && references(^._id)] {\n" +
+  "    'badgeUrl': badge.asset->url,\n" +
+  "    'awardUrl': award.asset->url\n" +
+  "  }"
+
 /*
  *  NOTE: TP-366 - Arrays can be either arrays of different objects or arrays of different primitives, not both
  *  updated query so assignment_sheet_music_image can be either an image or a URL

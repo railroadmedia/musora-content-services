@@ -16,6 +16,7 @@ import {
   coachLessonsTypes,
   getChildFieldsForContentType,
   SONG_TYPES,
+  awardField,
 } from '../contentTypeConfig.js'
 import {fetchSimilarItems, recommendations} from './recommendations.js'
 import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
@@ -1283,6 +1284,7 @@ export async function fetchLessonContent(railContentId) {
           published_on,
           "type":_type,
           "resources": ${resourcesField},
+          "award": ${awardField}
           difficulty,
           difficulty_string,
           brand,
