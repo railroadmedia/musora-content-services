@@ -206,7 +206,7 @@ export const filterTypes = {
 }
 
 export const recentTypes = {
-  lessons: [...individualLessonsTypes],
+  lessons: [...individualLessonsTypes, 'guided-course-part', 'quick-tips'],
   songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes],
   home: [...individualLessonsTypes, ...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes,
   'guided-course', 'learning-path', 'live']
