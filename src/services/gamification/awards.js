@@ -21,7 +21,7 @@ export async function fetchAwardsForUser(userId, brand, page = 1, limit = 20) {
         username: 'Alexandre Severo',
         streak: 22,
         minutes_practiced: 350,
-        date_completed: 'Mar 26, 2025',
+        date_completed: 'Jul 27, 2025',
         challenge_title: '30-Day Drummer',
         award_text:
           'Through this challenge, you’ve sharpened your drumming skills, improved your timing, and built a solid practice routine.',
