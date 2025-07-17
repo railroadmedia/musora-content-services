@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.27.1](https://github.com/railroadmedia/musora-content-services/compare/v2.27.0...v2.27.1) (2025-07-17)
+
+
+### Bug Fixes
+
+* **Userpractice:** add category_id and instrument_id to userPractice ([2c92c6f](https://github.com/railroadmedia/musora-content-services/commit/2c92c6f6adcb7fac657c3b12e1c3f5e927cff214))
+
 ## [2.27.0](https://github.com/railroadmedia/musora-content-services/compare/v2.24.0...v2.27.0) (2025-07-17)
 
 
