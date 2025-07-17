@@ -6,6 +6,11 @@ export interface Foldable<A> {
   foldMap<T>(initial: T, fn: (acc: T, value: A) => T): T
 }
 
+/** FoldableProduct is a specialized Foldable for containers that hold two values, like a tuple. */
+export interface FoldableProduct<F, S> extends Foldable<F | S> {
+  fold(fn: (first: F, second: S) => F | S): F | S
+}
+
 /** DisjointFoldable is a specialized Foldable for containers that can hold either a single value or none, like Maybe. */
 export interface DisjointFoldable1<A> extends Foldable<A> {
   /** Folds the values in the container using the provided function. */
