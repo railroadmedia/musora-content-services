@@ -1,6 +1,7 @@
 /**
  * @module Accounts
  */
+import { Either } from '../../core/types/ads/either'
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from '../config.js'
@@ -12,33 +13,23 @@ export interface PasswordResetProps {
   token: string
 }
 
-export async function status(email: string): Promise<{ requires_setup: boolean } | HttpError> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient
-    .get<{
-      requires_setup: boolean
-    }>(`/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status`)
-    .then((r) =>
-      r.fold(
-        (error) => error,
-        (data) => data
-      )
-    )
+export interface AccountStatus {
+  requires_setup: boolean
 }
 
-export async function sendAccountSetupEmail(email: string): Promise<void | HttpError> {
+export async function status(email: string): Promise<Either<HttpError, AccountStatus>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient
-    .post<void>(
-      `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/send-setup-email`,
-      {}
-    )
-    .then((r) =>
-      r.fold(
-        (error) => error,
-        (data) => data
-      )
-    )
+  return httpClient.get<AccountStatus>(
+    `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status`
+  )
+}
+
+export async function sendAccountSetupEmail(email: string): Promise<Either<HttpError, never>> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post<never>(
+    `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/send-setup-email`,
+    {}
+  )
 }
 
 export async function setupAccount({
@@ -46,39 +37,21 @@ export async function setupAccount({
   password,
   passwordConfirmation,
   token,
-}: PasswordResetProps): Promise<void | HttpError> {
+}: PasswordResetProps): Promise<Either<HttpError, never>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient
-    .post(`/api/user-management-system/v1/accounts`, {
-      email,
-      password,
-      password_confirmation: passwordConfirmation,
-      token,
-    })
-    .then((r) =>
-      r.fold(
-        (error) => error,
-        (_data) => {
-          return
-        }
-      )
-    )
+  return httpClient.post<never>(`/api/user-management-system/v1/accounts`, {
+    email,
+    password,
+    password_confirmation: passwordConfirmation,
+    token,
+  })
 }
 
-export async function sendPasswordResetEmail(email: string): Promise<void | HttpError> {
+export async function sendPasswordResetEmail(email: string): Promise<Either<HttpError, never>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient
-    .post(`/api/user-management-system/v1/accounts/password/reset-email`, {
-      email,
-    })
-    .then((r) =>
-      r.fold(
-        (error) => error,
-        (_data) => {
-          return
-        }
-      )
-    )
+  return httpClient.post<never>(`/api/user-management-system/v1/accounts/password/reset-email`, {
+    email,
+  })
 }
 
 export async function resetPassword({
@@ -86,21 +59,12 @@ export async function resetPassword({
   password,
   passwordConfirmation,
   token,
-}: PasswordResetProps): Promise<void | HttpError> {
+}: PasswordResetProps): Promise<Either<HttpError, never>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient
-    .post(`/api/user-management-system/v1/accounts/password/reset`, {
-      email,
-      password,
-      password_confirmation: passwordConfirmation,
-      token,
-    })
-    .then((r) =>
-      r.fold(
-        (error) => error,
-        (_data) => {
-          return
-        }
-      )
-    )
+  return httpClient.post<never>(`/api/user-management-system/v1/accounts/password/reset`, {
+    email,
+    password,
+    password_confirmation: passwordConfirmation,
+    token,
+  })
 }
