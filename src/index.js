@@ -261,13 +261,14 @@ import {
 
 import {
 	deleteNotification,
+	fetchLiveEventPollingState,
 	fetchNotificationSettings,
 	fetchNotifications,
 	fetchUnreadCount,
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
 	markNotificationAsUnread,
-	pauseLiveEventPollingUntil,
+	pauseLiveEventPolling,
 	startLiveEventPolling,
 	updateNotificationSetting
 } from './services/user/notifications.js';
@@ -381,6 +382,7 @@ export {
 	fetchLessonsFeaturingThisContent,
 	fetchLikeCount,
 	fetchLiveEvent,
+	fetchLiveEventPollingState,
 	fetchMetadata,
 	fetchMethod,
 	fetchMethodChildren,
@@ -487,7 +489,7 @@ export {
 	markNotificationAsUnread,
 	openComment,
 	otherStats,
-	pauseLiveEventPollingUntil,
+	pauseLiveEventPolling,
 	pinGuidedCourse,
 	pinProgressRow,
 	pinnedGuidedCourses,
