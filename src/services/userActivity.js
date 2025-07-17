@@ -272,7 +272,9 @@ export async function getUserMonthlyStats(params = {}) {
  *   auto: false,
  *   category_id: 5,
  *   title: "Guitar Warm-up",
- *   thumbnail_url: "https://example.com/thumbnail.jpg"
+ *   thumbnail_url: "https://example.com/thumbnail.jpg",
+ *   instrument_id: 1,
+ *   instrument_id: 2,
  * })
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
