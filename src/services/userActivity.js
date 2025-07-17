@@ -174,11 +174,11 @@ export async function getUserMonthlyStats(params = {}) {
   }
 
   let endOfMonth = new Date(year, month + 1, 0)
-  while (endOfMonth.getDay() !== 0) {
-    endOfMonth.setDate(endOfMonth.getDate() + 1)
+  let endOfGrid = new Date(year, month + 1, 0)
+  while (endOfGrid.getDay() !== 0) {
+    endOfGrid.setDate(endOfGrid.getDate() + 1)
   }
-
-  let daysInMonth = Math.ceil((endOfMonth - startOfGrid) / (1000 * 60 * 60 * 24)) + 1
+  let daysInMonth = Math.ceil((endOfGrid - startOfGrid) / (1000 * 60 * 60 * 24)) + 1
 
   let dailyStats = []
   let practiceDuration = 0
