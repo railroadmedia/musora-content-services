@@ -1073,6 +1073,7 @@ async function processContentItem(item) {
   let data = item.raw;
   const contentType = getFormattedType(data.type, data.brand);
   const status = item.state;
+  const isLive = data.isLive ?? false
   let ctaText = 'Continue';
   if (contentType === 'transcription' || contentType === 'play-along' || contentType === 'jam-track') ctaText = 'Replay Song';
   if (contentType === 'lesson') ctaText = status === 'completed' ? 'Revisit Lesson' : 'Continue';
@@ -1159,13 +1160,14 @@ async function processContentItem(item) {
     header:            contentType,
     pinned:            item.pinned ?? false,
     body:              {
-      progressPercent: item.percent,
+      progressPercent: isLive ? undefined: item.percent,
       thumbnail:       data.thumbnail,
       title:           data.title,
+      isLive:          isLive,
       badge:           data.badge ?? null,
       isLocked:        data.is_locked ?? false,
       subtitle:        !data.child_count || data.lesson_count === 1
-        ? (contentType === 'lesson') ? `${item.percent}% Complete`: `${data.difficulty_string} • ${data.artist_name}`
+        ? (contentType === 'lesson' && isLive === false) ? `${item.percent}% Complete`: `${data.difficulty_string} • ${data.artist_name}`
         : `${data.completed_children} of ${data.lesson_count ?? data.child_count} Lessons Complete`
     },
     cta:               {
