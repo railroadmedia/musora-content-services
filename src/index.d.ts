@@ -528,7 +528,6 @@ declare module 'musora-content-services' {
 		replyToComment,
 		reportComment,
 		reportPlaylist,
-		reset,
 		resetPassword,
 		resetUserPermissions,
 		restoreComment,

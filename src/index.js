@@ -527,7 +527,6 @@ export {
 	replyToComment,
 	reportComment,
 	reportPlaylist,
-	reset,
 	resetPassword,
 	resetUserPermissions,
 	restoreComment,
