@@ -55,8 +55,6 @@ import {
 } from './services/contentLikes.js';
 
 import {
-	assignmentStatusCompleted,
-	assignmentStatusReset,
 	contentStatusCompleted,
 	contentStatusReset,
 	getAllCompleted,
@@ -160,6 +158,7 @@ import {
 	postContentLiked,
 	postContentReset,
 	postContentUnliked,
+	postPlaylistContentEngage,
 	postRecordWatchSession,
 	replyToComment,
 	reportComment,
@@ -318,8 +317,6 @@ declare module 'musora-content-services' {
 		applyCloudflareWrapper,
 		applySanityTransformations,
 		assignModeratorToComment,
-		assignmentStatusCompleted,
-		assignmentStatusReset,
 		blockUser,
 		buildImageSRC,
 		calculateLongestStreaks,
@@ -506,6 +503,7 @@ declare module 'musora-content-services' {
 		postContentLiked,
 		postContentReset,
 		postContentUnliked,
+		postPlaylistContentEngage,
 		postRecordWatchSession,
 		rankCategories,
 		rankItems,
