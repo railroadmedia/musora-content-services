@@ -2,7 +2,6 @@
  * @module UserProfile
  */
 import { HttpClient } from '../../infrastructure/http/HttpClient'
-import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from '../config.js'
 import { calculateLongestStreaks } from '../userActivity.js'
 
@@ -56,7 +55,7 @@ const mergeStats =
 
 export async function otherStats(
   userId: string = globalConfig.sessionConfig.userId
-): Promise<OtherStatsDTO | HttpError> {
+): Promise<OtherStatsDTO> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   const [otherStats, longestStreaks] = await Promise.all([
     httpClient.get<OtherStatsDTO>(`${baseUrl}/v1/users/${userId}/statistics`, 'get'),
