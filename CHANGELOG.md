@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.27.0](https://github.com/railroadmedia/musora-content-services/compare/v2.24.0...v2.27.0) (2025-07-17)
+
+
+### Features
+
+* **BEH-38:** add context data to tab results ([#344](https://github.com/railroadmedia/musora-content-services/issues/344)) ([02fe932](https://github.com/railroadmedia/musora-content-services/commit/02fe9321dfa56e74d7c73cb7a80e54f5818d1427))
+* **MU2-805:** Set a pauseLiveEventPollingUntil field when user mark all notificatio… ([#351](https://github.com/railroadmedia/musora-content-services/issues/351)) ([bfe1010](https://github.com/railroadmedia/musora-content-services/commit/bfe10107c522ea725436e4a6338a869e852c08d5))
+
+
+### Bug Fixes
+
+* Add live event fallback to unread notifications count ([61afc83](https://github.com/railroadmedia/musora-content-services/commit/61afc835a7f009ec5e12947b2bf2131b7ed7049a))
+* T3PS-21: Live Stream content cards in the Progress Row and Recent Lessons ([3736c48](https://github.com/railroadmedia/musora-content-services/commit/3736c4898d9db27869de079660474e6dd0233da4))
+* T3PS-259: Incorrect stats for past months ([b38ee32](https://github.com/railroadmedia/musora-content-services/commit/b38ee320488196115ff4ef97d4ea4ea661d1eb43))
+* user data endpoint ([#356](https://github.com/railroadmedia/musora-content-services/issues/356)) ([2a00bb8](https://github.com/railroadmedia/musora-content-services/commit/2a00bb859faa72ec22930919f4a636275b219772))
+
 ### [2.26.1](https://github.com/railroadmedia/musora-content-services/compare/v2.26.0...v2.26.1) (2025-07-16)
 
 ## [2.26.0](https://github.com/railroadmedia/musora-content-services/compare/v2.25.1...v2.26.0) (2025-07-16)
