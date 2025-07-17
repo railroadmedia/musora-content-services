@@ -525,10 +525,25 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
     railcontent_id in [${idsString}]${brandFilter}
   ]{
     ${getFieldsForContentType(contentType)}
-   'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
+    live_event_start_time,
+    live_event_end_time,
   }`
 
-  const results = await fetchSanity(query, true)
+  const customPostProcess = (results) => {
+    const now = getSanityDate(new Date(), false);
+    const liveProcess = (result) => {
+      if (result.live_event_start_time && result.live_event_end_time) {
+        result.isLive =
+          result.live_event_start_time <= now &&
+          result.live_event_end_time >= now;
+      } else {
+        result.isLive = false;
+      }
+      return result;
+    };
+    return results.map(liveProcess);
+  }
+  const results = await fetchSanity(query, true, { customPostProcess: customPostProcess })
 
   const sortFuction = function compare(a, b) {
     const indexA = ids.indexOf(a['id'])

@@ -1160,7 +1160,7 @@ async function processContentItem(item) {
     header:            contentType,
     pinned:            item.pinned ?? false,
     body:              {
-      progressPercent: item.percent,
+      progressPercent: isLive ? undefined: item.percent,
       thumbnail:       data.thumbnail,
       title:           data.title,
       isLive:          isLive,
