@@ -520,10 +520,12 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   }
   const idsString = ids.join(',')
   const brandFilter = brand ? ` && brand == "${brand}"` : ''
+  const now = getSanityDate(new Date())
   const query = `*[
     railcontent_id in [${idsString}]${brandFilter}
   ]{
     ${getFieldsForContentType(contentType)}
+   'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
   }`
 
   const results = await fetchSanity(query, true)
@@ -2385,6 +2387,7 @@ export async function fetchTabData(
   }
 
   const fieldsString = getFieldsForContentType('tab-data');
+  const now = getSanityDate(new Date())
 
   // Determine the group by clause
   let query = ''
@@ -2396,6 +2399,7 @@ export async function fetchTabData(
   entityFieldsString =
     ` ${fieldsString}
     'children': child[${childrenFilter}]->{'id': railcontent_id},
+    'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
     'lesson_count': coalesce(count(child[${childrenFilter}]->), 0),
     'length_in_seconds': coalesce(
       math::sum(
