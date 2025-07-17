@@ -128,20 +128,32 @@ export async function deleteNotification(notificationId) {
 /**
  * Fetches the count of unread notifications for the current user in a given brand context.
  *
- * @param {Object} [options={}] - Options for fetching unread count.
- * @param {string} options.brand - The brand to filter unread notifications by (required).
- * @returns {Promise<Object>} - A promise that resolves to an object with the unread count.
+ * This function first checks for standard unread notifications. If none are found,
+ * it checks if live event polling is active. If so, it will query for any ongoing live events.
+ * If a live event is active, it counts as an unread item.
  *
- * @throws {Error} If the brand is not provided.
+ * @param {Object} [options={}] - Options for fetching unread count.
+ * @param {string} options.brand - The brand to filter unread notifications by. Defaults to 'drumeo'.
+ * @returns {Promise<Object>} - A promise that resolves to an object with a `data` property indicating the unread count (0 or 1).
+ *
+ * @throws {Error} If the brand is not provided or if network requests fail.
  *
  * @example
  * fetchUnreadCount({ brand: 'drumeo' })
- *   .then(data => console.log(data.unread_count))
+ *   .then(data => console.log(data.data)) // 0 or 1
  *   .catch(error => console.error(error));
  */
-export async function fetchUnreadCount({ brand = null} = {}) {
-  const url = `${baseUrl}/v1/unread-count`
-  return fetchHandler(url, 'get')
+export async function fetchUnreadCount({ brand = 'drumeo'} = {}) {
+  const notifUnread =  await fetchHandler(url, 'get')
+  if (notifUnread.data > 0) {
+    return notifUnread// Return early if unread notifications exist
+  }
+  const liveEventPollingState = await fetchLiveEventPollingState()
+  if(liveEventPollingState.data?.read_state === true){
+    const liveEvent = await fetchLiveEvent(brand)
+    return { data: liveEvent ? 1 : 0}
+  }
+  return notifUnread
 }
 
 /**
