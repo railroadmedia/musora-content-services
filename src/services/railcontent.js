@@ -324,7 +324,7 @@ export async function fetchContentProgress(currentVersion) {
 }
 
 export async function postPlaylistContentEngaged(playlistItemId) {
-  let url = `/railtracker/v1/last-engaged/store/{playlistItemId}`
+  let url = `/railtracker/v1/last-engaged/${playlistItemId}`
   return postDataHandler(url)
 }
 
