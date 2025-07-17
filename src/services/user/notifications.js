@@ -138,6 +138,7 @@ export async function deleteNotification(notificationId) {
  *   .catch(error => console.error(error));
  */
 export async function fetchUnreadCount({ brand = 'drumeo'} = {}) {
+  const url = `${baseUrl}/v1/unread-count`
   const notifUnread =  await fetchHandler(url, 'get')
   if (notifUnread.data > 0) {
     return notifUnread// Return early if unread notifications exist
@@ -266,10 +267,10 @@ export async function startLiveEventPolling(brand = 'drumeo') {
  + @returns {Promise<Object>} - Promise resolving to the polling state
  */
 
-  export async function fetchLiveEventPollingState() {
+export async function fetchLiveEventPollingState() {
     const url = `/api/user-management-system/v1/users/polling`
     return fetchHandler(url, 'GET', null)
-  }
+}
 
 
 

@@ -261,6 +261,7 @@ import {
 
 import {
 	deleteNotification,
+	fetchLiveEventPollingState,
 	fetchNotificationSettings,
 	fetchNotifications,
 	fetchUnreadCount,
@@ -381,6 +382,7 @@ export {
 	fetchLessonsFeaturingThisContent,
 	fetchLikeCount,
 	fetchLiveEvent,
+	fetchLiveEventPollingState,
 	fetchMetadata,
 	fetchMethod,
 	fetchMethodChildren,

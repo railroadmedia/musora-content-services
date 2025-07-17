@@ -261,6 +261,7 @@ import {
 
 import {
 	deleteNotification,
+	fetchLiveEventPollingState,
 	fetchNotificationSettings,
 	fetchNotifications,
 	fetchUnreadCount,
@@ -382,6 +383,7 @@ declare module 'musora-content-services' {
 		fetchLessonsFeaturingThisContent,
 		fetchLikeCount,
 		fetchLiveEvent,
+		fetchLiveEventPollingState,
 		fetchMetadata,
 		fetchMethod,
 		fetchMethodChildren,
