@@ -55,8 +55,6 @@ import {
 } from './services/contentLikes.js';
 
 import {
-	assignmentStatusCompleted,
-	assignmentStatusReset,
 	contentStatusCompleted,
 	contentStatusReset,
 	getAllCompleted,
@@ -160,6 +158,7 @@ import {
 	postContentLiked,
 	postContentReset,
 	postContentUnliked,
+	postPlaylistContentEngaged,
 	postRecordWatchSession,
 	replyToComment,
 	reportComment,
@@ -317,8 +316,6 @@ export {
 	applyCloudflareWrapper,
 	applySanityTransformations,
 	assignModeratorToComment,
-	assignmentStatusCompleted,
-	assignmentStatusReset,
 	blockUser,
 	buildImageSRC,
 	calculateLongestStreaks,
@@ -505,6 +502,7 @@ export {
 	postContentLiked,
 	postContentReset,
 	postContentUnliked,
+	postPlaylistContentEngaged,
 	postRecordWatchSession,
 	rankCategories,
 	rankItems,

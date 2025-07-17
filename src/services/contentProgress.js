@@ -256,18 +256,6 @@ export async function getStartedOrCompletedProgressOnly({ brand = null} = {}) {
   return result
 }
 
-export async function assignmentStatusCompleted(assignmentId, parentContentId) {
-  await dataContext.update(
-    async function (localContext) {
-      let hierarchy = await fetchHierarchy(parentContentId)
-      completeStatusInLocalContext(localContext, assignmentId, hierarchy)
-    },
-    async function () {
-      return postContentComplete(assignmentId)
-    }
-  )
-}
-
 export async function contentStatusCompleted(contentId) {
   return await dataContext.update(
     async function (localContext) {
@@ -322,18 +310,6 @@ function getChildrenToDepth(parentId, hierarchy, depth = 1) {
     allChildrenIds = allChildrenIds.concat(getChildrenToDepth(id, hierarchy, depth - 1))
   })
   return allChildrenIds
-}
-
-export async function assignmentStatusReset(assignmentId, contentId) {
-  await dataContext.update(
-    async function (localContext) {
-      let hierarchy = await fetchHierarchy(contentId)
-      resetStatusInLocalContext(localContext, assignmentId, hierarchy)
-    },
-    async function () {
-      return postContentReset(contentId)
-    }
-  )
 }
 
 export async function contentStatusReset(contentId) {
