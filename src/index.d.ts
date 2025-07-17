@@ -267,7 +267,7 @@ import {
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
 	markNotificationAsUnread,
-	pauseLiveEventPollingUntil,
+	pauseLiveEventPolling,
 	startLiveEventPolling,
 	updateNotificationSetting
 } from './services/user/notifications.js';
@@ -488,7 +488,7 @@ declare module 'musora-content-services' {
 		markNotificationAsUnread,
 		openComment,
 		otherStats,
-		pauseLiveEventPollingUntil,
+		pauseLiveEventPolling,
 		pinGuidedCourse,
 		pinProgressRow,
 		pinnedGuidedCourses,
