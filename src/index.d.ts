@@ -110,7 +110,7 @@ import {
 } from './services/imageSRCVerify.js';
 
 import {
-	onSignInHandler,
+	clearLocalSessionData,
 	onSignOutHandler
 } from './services/local-session.js';
 
@@ -330,6 +330,7 @@ declare module 'musora-content-services' {
 		buildImageSRC,
 		calculateLongestStreaks,
 		clearAllDataContexts,
+		clearLocalSessionData,
 		closeComment,
 		contentStatusCompleted,
 		contentStatusReset,
@@ -495,7 +496,6 @@ declare module 'musora-content-services' {
 		markContentAsNotInterested,
 		markNotificationAsRead,
 		markNotificationAsUnread,
-		onSignInHandler,
 		onSignOutHandler,
 		openComment,
 		otherStats,

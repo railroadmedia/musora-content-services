@@ -3,6 +3,7 @@
  */
 
 import './types.js'
+import { clearLocalSessionData } from './local-session.js'
 
 /** @type {Config} */
 export let globalConfig = {
@@ -59,7 +60,7 @@ const excludeFromGeneratedIndex = []
  *   isMA: false,
  * });
  */
-export function initializeService(config) {
+export async function initializeService(config) {
   globalConfig.sanityConfig = config.sanityConfig
   globalConfig.railcontentConfig = config.railcontentConfig
   globalConfig.sessionConfig = config.sessionConfig || config.railcontentConfig
@@ -68,4 +69,15 @@ export function initializeService(config) {
   globalConfig.isMA = config.isMA || false
   globalConfig.localTimezoneString = config.localTimezoneString || null
   globalConfig.recommendationsConfig = config.recommendationsConfig
+
+  // DataContext in the past did not clear its cache on logout
+  // So in the extremely unlikely case that, e.g., User B logs in after User A logs out,
+  // we need to clear to ensure that User A's data is not shown to user B
+  // and this turned out to be the least disruptive place to do it at the time of writing
+
+  // This could be removed in the future if the DataContext storage namespace is changed,
+  // if you're okay with potentially sensitive user data remaining in localStorage of
+  // a non-signed in browser
+
+  await clearLocalSessionData()
 }

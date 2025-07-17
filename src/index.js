@@ -110,7 +110,7 @@ import {
 } from './services/imageSRCVerify.js';
 
 import {
-	onSignInHandler,
+	clearLocalSessionData,
 	onSignOutHandler
 } from './services/local-session.js';
 
@@ -329,6 +329,7 @@ export {
 	buildImageSRC,
 	calculateLongestStreaks,
 	clearAllDataContexts,
+	clearLocalSessionData,
 	closeComment,
 	contentStatusCompleted,
 	contentStatusReset,
@@ -494,7 +495,6 @@ export {
 	markContentAsNotInterested,
 	markNotificationAsRead,
 	markNotificationAsUnread,
-	onSignInHandler,
 	onSignOutHandler,
 	openComment,
 	otherStats,

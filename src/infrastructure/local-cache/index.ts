@@ -12,6 +12,9 @@ export default class LocalCache implements ILocalCache {
   /**
    * Creates the appropriate cache implementation based on current config
    * This is called lazily when a method is invoked, not at construction time
+   * (DataContexts, e.g., are created during top-level execution and user may be logged out),
+   * so we need to defer instantiating an actual cache implementation
+   * In the future, if cfg.localStorage and cfg.isMA are set once *early*, this can be optimized
    */
   private createCacheImplementation(): ILocalCache {
     if (!this.config.localStorage) {
