@@ -74,6 +74,7 @@ import {
 } from './services/contentProgress.js';
 
 import {
+	clearAllDataContexts,
 	verifyLocalDataContext
 } from './services/dataContext.js';
 
@@ -105,6 +106,11 @@ import {
 	isBucketUrl,
 	verifyImageSRC
 } from './services/imageSRCVerify.js';
+
+import {
+	clearLocalSessionData,
+	onSignOutHandler
+} from './services/local-session.js';
 
 import {
 	assignModeratorToComment,
@@ -274,7 +280,7 @@ import {
 
 import {
 	fetchUserPermissions,
-	reset
+	resetUserPermissions
 } from './services/user/permissions.js';
 
 import {
@@ -319,6 +325,8 @@ export {
 	blockUser,
 	buildImageSRC,
 	calculateLongestStreaks,
+	clearAllDataContexts,
+	clearLocalSessionData,
 	closeComment,
 	contentStatusCompleted,
 	contentStatusReset,
@@ -484,6 +492,7 @@ export {
 	markContentAsNotInterested,
 	markNotificationAsRead,
 	markNotificationAsUnread,
+	onSignOutHandler,
 	openComment,
 	otherStats,
 	pauseLiveEventPolling,
@@ -516,8 +525,8 @@ export {
 	replyToComment,
 	reportComment,
 	reportPlaylist,
-	reset,
 	resetPassword,
+	resetUserPermissions,
 	restoreComment,
 	restoreItemFromPlaylist,
 	restorePracticeSession,
