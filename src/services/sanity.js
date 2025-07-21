@@ -1477,24 +1477,25 @@ export async function fetchSiblingContent(railContentId, brand)
     'siblings-list': child[]->railcontent_id,
     'parents-list': *[${filterGetParent}][0].child[]->railcontent_id
     },
-    "related_lessons" : *[${filterGetParent}][0].child[${childrenFilter}]->{${queryFields}}
+    "related_lessons" : *[${filterGetParent}][0].child[${childrenFilter}]->{${queryFields}},
+
   }`
 
   let result = await fetchSanity(query, false)
-
+  console.log('result', result)
   //there's no way in sanity to retrieve the index of an array, so we must calculate after fetch
-  if (result['for-calculations'] && result['for-calculations']['parents-list']) {
+  if (result['for-calculations'] && result['for-calculations']['siblings-list']) {
     const calc = result['for-calculations']
-    const parentCount = calc['parents-list'].length
-    const currentParentIndex = calc['parents-list'].indexOf(result['parent_id']) + 1
+    const parentCount = calc['parents-list']?.length ?? 1
+    const currentParentIndex = (calc['parents-list']?.indexOf(result['parent_id']) ?? 0) + 1
     const siblingCount = calc['siblings-list'].length
     const currentSiblingIndex = calc['siblings-list'].indexOf(result['railcontent_id']) + 1
 
-    delete result['for-calculations']
+    //delete result['for-calculations']
     result = { ...result, parentCount, currentParentIndex, siblingCount, currentSiblingIndex }
     return result
   } else {
-    delete result['for-calculations']
+    //delete result['for-calculations']
     return result
   }
 }
