@@ -31,7 +31,7 @@ import {
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { fetchUserPermissions } from './user/permissions.js'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
-import {fetchRecentActivitiesActiveTabs} from "./userActivity";
+import {fetchRecentActivitiesActiveTabs} from "./userActivity.js";
 
 /**
  * Exported functions that are excluded from index generation.
