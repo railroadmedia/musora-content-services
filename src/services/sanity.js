@@ -23,8 +23,6 @@ import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
 import { globalConfig } from './config.js'
 
 import {
-  fetchCompletedChallenges,
-  fetchOwnedChallenges,
   fetchNextContentDataForParent,
   fetchHandler,
 } from './railcontent.js'
@@ -37,7 +35,7 @@ import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './cont
  *
  * @type {string[]}
  */
-const excludeFromGeneratedIndex = ['handleCustomFetchAll', 'fetchRelatedByLicense']
+const excludeFromGeneratedIndex = ['fetchRelatedByLicense']
 
 /**
  * Fetch a song by its document ID from Sanity.
@@ -625,21 +623,6 @@ export async function fetchAll(
     progress = 'all',
   } = {}
 ) {
-  let customResults = await handleCustomFetchAll(brand, type, {
-    page,
-    limit,
-    searchTerm,
-    sort,
-    includedFields,
-    groupBy,
-    progressIds,
-    useDefaultFields,
-    customFields,
-    progress,
-  })
-  if (customResults) {
-    return customResults
-  }
   let config = contentTypeConfig[type] ?? {}
   let additionalFields = config?.fields ?? []
   let isGroupByOneToOne = (groupBy ? config?.relationships?.[groupBy]?.isOneToOne : false) ?? false
@@ -760,152 +743,6 @@ export async function fetchAll(
   })
 
   return fetchSanity(query, true)
-}
-
-/**
- * Fetch all content that requires custom handling or a distinct external call
- * @param {string} brand - The brand for which to fetch content.
- * @param {string} type - The content type to fetch (e.g., 'song', 'artist').
- * @param {Object} params - Parameters for pagination, filtering, sorting, and grouping.
- * @param {number} [params.page=1] - The page number for pagination.
- * @param {number} [params.limit=10] - The number of items per page.
- * @param {string} [params.searchTerm=""] - The search term to filter content by title or artist.
- * @param {string} [params.sort="-published_on"] - The field to sort the content by.
- * @param {Array<string>} [params.includedFields=[]] - The fields to include in the query.
- * @param {string} [params.groupBy=""] - The field to group the results by (e.g., 'artist', 'genre').
- * @param {Array<string>} [params.progressIds=undefined] - An array of railcontent IDs to filter the results by. Used for filtering by progress.
- * @param {boolean} [params.useDefaultFields=true] - use the default sanity fields for content Type
- * @param {Array<string>} [params.customFields=[]] - An array of sanity fields to include in the request
- * @param {string} [params.progress="all"] - An string representing which progress filter to use ("all", "in progress", "complete", "not started").
- * @returns {Promise<Object|null>} - The fetched content data or null if not found.
- */
-async function handleCustomFetchAll(
-  brand,
-  type,
-  {
-    page = 1,
-    limit = 10,
-    searchTerm = '',
-    sort = '-published_on',
-    includedFields = [],
-    groupBy = '',
-    progressIds = undefined,
-    useDefaultFields = true,
-    customFields = [],
-    progress = 'all',
-  } = {}
-) {
-  if (type === 'challenge') {
-    if (groupBy === 'completed') {
-      const completedIds = await fetchCompletedChallenges(brand, page, limit)
-      return fetchAll(brand, type, {
-        page,
-        limit,
-        searchTerm,
-        sort,
-        includedFields,
-        groupBy: '',
-        progressIds: completedIds,
-        useDefaultFields,
-        customFields,
-        progress,
-      })
-    } else if (groupBy === 'owned') {
-      const ownedIds = await fetchOwnedChallenges(brand, page, limit)
-      return fetchAll(brand, type, {
-        page,
-        limit,
-        searchTerm,
-        sort,
-        includedFields,
-        groupBy: '',
-        progressIds: ownedIds,
-        useDefaultFields,
-        customFields,
-        progress,
-      })
-    } else if (groupBy === 'difficulty_string') {
-      return fetchChallengesByDifficulty(
-        brand,
-        type,
-        page,
-        limit,
-        searchTerm,
-        sort,
-        includedFields,
-        groupBy,
-        progressIds,
-        useDefaultFields,
-        customFields,
-        progress
-      )
-    }
-  }
-  return null
-}
-
-async function fetchChallengesByDifficulty(
-  brand,
-  type,
-  page,
-  limit,
-  searchTerm,
-  sort,
-  includedFields,
-  groupBy,
-  progressIds,
-  useDefaultFields,
-  customFields,
-  progress
-) {
-  let config = contentTypeConfig['challenge'] ?? {}
-  let additionalFields = config?.fields ?? []
-
-  // Construct the search filter
-  const searchFilter = searchTerm
-    ? groupBy !== ''
-      ? `&& (^.name match "${searchTerm}*" || title match "${searchTerm}*")`
-      : `&& (artist->name match "${searchTerm}*" || instructor[]->name match "${searchTerm}*" || title match "${searchTerm}*" || name match "${searchTerm}*")`
-    : ''
-
-  // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
-  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
-
-  // limits the results to supplied progressIds for started & completed filters
-  const progressFilter = await getProgressFilter(progress, progressIds)
-
-  let fields = useDefaultFields
-    ? customFields.concat(DEFAULT_FIELDS, additionalFields)
-    : customFields
-  let fieldsString = fields.join(',')
-
-  const lessonsFilter = `_type == 'challenge' && brand == '${brand}' && ^.name == difficulty_string ${searchFilter} ${includedFieldsFilter} ${progressFilter}`
-  const lessonsFilterWithRestrictions = await new FilterBuilder(lessonsFilter).buildFilter()
-
-  const query = `{
-      "entity": [
-        {"name": "All"},
-        {"name": "Novice"},
-        {"name": "Beginner"},
-        {"name": "Intermediate"},
-        {"name": "Advanced"},
-        {"name": "Expert"}]
-          {
-            'id': 0,
-            name,
-            'all_lessons_count': count(*[${lessonsFilterWithRestrictions}]._id),
-            'lessons': *[${lessonsFilterWithRestrictions}]{
-                ${fieldsString},
-                name
-            }[0...20]
-          },
-          "total": 0
-        }`
-  let data = await fetchSanity(query, true)
-  data.entity = data.entity.filter(function (difficulty) {
-    return difficulty.lessons.length > 0
-  })
-  return data
 }
 
 async function getProgressFilter(progress, progressIds) {
