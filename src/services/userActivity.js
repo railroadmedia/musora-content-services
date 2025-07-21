@@ -1481,7 +1481,7 @@ export async function fetchRecentActivitiesActiveTabs() {
     const activitiesTabs = [];
 
     tabs.forEach(tab => {
-      activitiesTabs.push({ name: tab.label });
+      activitiesTabs.push({ name: tab.label, short_name:tab.label });
     });
 
     return activitiesTabs;
