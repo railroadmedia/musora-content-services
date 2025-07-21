@@ -1474,4 +1474,21 @@ function getFirstLeafLessonId(data) {
   return data.lessons ? findFirstLeaf(data.lessons) : null
 }
 
+export async function fetchRecentActivitiesActiveTabs() {
+  const url = `/api/user-management-system/v1/activities/tabs`
+  try {
+    const tabs = await fetchHandler(url, 'GET');
+    const activitiesTabs = [];
+
+    tabs.forEach(tab => {
+      activitiesTabs.push({ name: tab.label });
+    });
+
+    return activitiesTabs;
+  } catch (error) {
+    console.error('Error fetching activity tabs:', error);
+    return [];
+  }
+}
+
 
