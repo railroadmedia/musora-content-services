@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.27.2](https://github.com/railroadmedia/musora-content-services/compare/v2.27.1...v2.27.2) (2025-07-21)
+
+
+### Bug Fixes
+
+* **last-engaged:** add playlist last engaged endpoint ([#361](https://github.com/railroadmedia/musora-content-services/issues/361)) ([3396207](https://github.com/railroadmedia/musora-content-services/commit/33962077500e47ff9cba93fb23fd28b63eb4112a))
+
 ### [2.27.1](https://github.com/railroadmedia/musora-content-services/compare/v2.27.0...v2.27.1) (2025-07-17)
 
 
