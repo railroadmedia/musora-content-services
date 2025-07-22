@@ -1,58 +1,44 @@
 // dateUtils.js
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
+import isoWeek from 'dayjs/plugin/isoWeek';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(isSameOrAfter)
+dayjs.extend(isoWeek)
+
+export function toDayjs(date, timeZone = 'UTC') {
+  return dayjs.tz(date, timeZone).startOf('day')
+}
 
 export function convertToTimeZone(date, timeZone) {
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  });
-
-  const parts = formatter.formatToParts(date).reduce((acc, part) => {
-    if (part.type !== 'literal') acc[part.type] = part.value;
-    return acc;
-  }, {});
-
-  return new Date(`${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}`);
-}
-// Get start of the week (Monday)
-export function getMonday(date) {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(d.setDate(diff));
+  return dayjs(date).tz(timeZone).format('YYYY-MM-DD');
 }
 
-// Get the week number
-export function getWeekNumber(d) {
-  let newDate = new Date(d.getTime());
-  newDate.setUTCDate(newDate.getUTCDate() + 4 - (newDate.getUTCDay()||7));
-  var yearStart = new Date(Date.UTC(newDate.getUTCFullYear(),0,1));
-  var weekNo = Math.ceil(( ( (newDate - yearStart) / 86400000) + 1)/7);
-  return  weekNo;
+export function getMonday(date, timeZone = 'UTC') {
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  // Use isoWeekday(1) - Monday is 1
+  return toDayjs(date, userTimeZone).isoWeekday(1)
+}
+
+// Get the ISO week number for a dayjs object
+export function getWeekNumber(date) {
+  return dayjs(date).isoWeek()
 }
 //Check if two dates are the same
-export function isSameDate(date1, date2, method = '') {
-  return date1.toISOString().split('T')[0] === date2.toISOString().split('T')[0];
+export function isSameDate(date1, date2) {
+  return dayjs(date1).isSame(dayjs(date2), 'day')
 }
 
 // Check if two dates are consecutive days
-export function isNextDay(prev, current) {
-  const prevDate = new Date(prev.getFullYear(), prev.getMonth(), prev.getDate());
-  const nextDate = new Date(prevDate);
-  nextDate.setDate(prevDate.getDate() + 1); // Add 1 day
-
-  return (
-    nextDate.getFullYear() === current.getFullYear() &&
-    nextDate.getMonth() === current.getMonth() &&
-    nextDate.getDate() === current.getDate()
-  );
+export function isNextDay(date1, date2) {
+  const d1 = dayjs(date1).startOf('day')
+  const d2 = dayjs(date2).startOf('day')
+  return d2.diff(d1, 'day') === 1
 }
-
 export function getTimeRemainingUntilLocal(targetUtcIsoString, {withTotalSeconds} = {}) {
   const targetUTC = new Date(targetUtcIsoString);
   if (isNaN(targetUTC.getTime())) {

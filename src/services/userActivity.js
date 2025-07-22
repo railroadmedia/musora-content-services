@@ -27,6 +27,9 @@ import {
 } from "./contentProgress";
 import {TabResponseType} from "../contentMetaData";
 import {isContentLikedByIds} from "./contentLikes.js";
+import dayjs from 'dayjs'
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
+import weekOfYear from 'dayjs/plugin/weekOfYear'
 
 const DATA_KEY_PRACTICES = 'practices'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
@@ -86,24 +89,21 @@ export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUs
  *   .catch(error => console.error(error));
  */
 export async function getUserWeeklyStats() {
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   let data = await userActivityContext.getData()
   let practices = data?.[DATA_KEY_PRACTICES] ?? {}
   let sortedPracticeDays = Object.keys(practices)
     .map((date) => new Date(date))
     .sort((a, b) => b - a)
-
-  let today = new Date()
-  today.setHours(0, 0, 0, 0)
-  let startOfWeek = getMonday(today) // Get last Monday
+  let today = dayjs()
+  let startOfWeek = getMonday(today, timeZone) // Get last Monday
   let dailyStats = []
-
   for (let i = 0; i < 7; i++) {
-    let day = new Date(startOfWeek)
-    day.setDate(startOfWeek.getDate() + i)
-    let hasPractice = sortedPracticeDays.some((practiceDate) => isSameDate(practiceDate, day))
+    const day = startOfWeek.add(i, 'day')
+    let hasPractice = sortedPracticeDays.some((practiceDate) => isSameDate(practiceDate, day.format('YYYY-MM-DD')))
     let isActive = isSameDate(today, day)
     let type = hasPractice ? 'tracked' : isActive ? 'active' : 'none'
-    dailyStats.push({ key: i, label: DAYS[i], isActive, inStreak: hasPractice, type })
+    dailyStats.push({ key: i, label: DAYS[i], isActive, inStreak: hasPractice, type, day: day.format('YYYY-MM-DD') })
   }
 
   let { streakMessage } = getStreaksAndMessage(practices)
@@ -186,8 +186,7 @@ export async function getUserMonthlyStats(params = {}) {
   let weeklyStats = {}
 
   for (let i = 0; i < daysInMonth; i++) {
-    let day = new Date(startOfGrid)
-    day.setDate(startOfGrid.getDate() + i)
+    let day = startOfGrid.add(i, 'day').toDate()
     let dayKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
 
     // Check if the user has activity for the day
@@ -392,12 +391,7 @@ export async function restoreUserPractice(id) {
     if (restoredPractice) {
       await userActivityContext.updateLocal(async function (localContext) {
         const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-        const utcDate = new Date(restoredPractice.day)
-        const localDate = convertToTimeZone(utcDate, userTimeZone)
-        const date =
-          localDate.getFullYear() + '-' +
-          String(localDate.getMonth() + 1).padStart(2, '0') + '-' +
-          String(localDate.getDate()).padStart(2, '0')
+        const date = convertToTimeZone(restoredPractice.day, userTimeZone)
         if (localContext.data[DATA_KEY_PRACTICES][date]) {
           localContext.data[DATA_KEY_PRACTICES][date] = []
         }
@@ -703,8 +697,7 @@ function calculateStreaks(practices, includeStreakMessage = false) {
     yesterday.setDate(today.getDate() - 1)
 
     let currentWeekStart = getMonday(today)
-    let lastWeekStart = new Date(currentWeekStart)
-    lastWeekStart.setDate(currentWeekStart.getDate() - 7)
+    let lastWeekStart = currentWeekStart.diff(7, 'days')
 
     let hasYesterdayPractice = sortedPracticeDays.some((date) => isSameDate(date, yesterday))
     let hasCurrentWeekPractice = sortedPracticeDays.some((date) => date >= currentWeekStart)
