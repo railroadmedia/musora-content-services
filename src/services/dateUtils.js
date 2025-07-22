@@ -20,10 +20,9 @@ export function convertToTimeZone(date, timeZone) {
   return dayjs(date).tz(timeZone).format('YYYY-MM-DD');
 }
 
-export function getMonday(date, timeZone = 'UTC') {
-  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+export function getMonday(date, timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone) {
   // Use isoWeekday(1) - Monday is 1
-  return toDayjs(date, userTimeZone).isoWeekday(1)
+  return toDayjs(date, timeZone).isoWeekday(1)
 }
 
 // Get the ISO week number for a dayjs object
