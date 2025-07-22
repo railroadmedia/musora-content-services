@@ -521,13 +521,30 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   }
   const idsString = ids.join(',')
   const brandFilter = brand ? ` && brand == "${brand}"` : ''
+  const now = getSanityDate(new Date())
   const query = `*[
     railcontent_id in [${idsString}]${brandFilter}
   ]{
     ${getFieldsForContentType(contentType)}
+    live_event_start_time,
+    live_event_end_time,
   }`
 
-  const results = await fetchSanity(query, true)
+  const customPostProcess = (results) => {
+    const now = getSanityDate(new Date(), false);
+    const liveProcess = (result) => {
+      if (result.live_event_start_time && result.live_event_end_time) {
+        result.isLive =
+          result.live_event_start_time <= now &&
+          result.live_event_end_time >= now;
+      } else {
+        result.isLive = false;
+      }
+      return result;
+    };
+    return results.map(liveProcess);
+  }
+  const results = await fetchSanity(query, true, { customPostProcess: customPostProcess })
 
   const sortFuction = function compare(a, b) {
     const indexA = ids.indexOf(a['id'])
@@ -2387,6 +2404,7 @@ export async function fetchTabData(
   }
 
   const fieldsString = getFieldsForContentType('tab-data');
+  const now = getSanityDate(new Date())
 
   // Determine the group by clause
   let query = ''
@@ -2398,6 +2416,7 @@ export async function fetchTabData(
   entityFieldsString =
     ` ${fieldsString}
     'children': child[${childrenFilter}]->{'id': railcontent_id},
+    'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
     'lesson_count': coalesce(count(child[${childrenFilter}]->), 0),
     'length_in_seconds': coalesce(
       math::sum(

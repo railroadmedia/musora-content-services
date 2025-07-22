@@ -174,11 +174,11 @@ export async function getUserMonthlyStats(params = {}) {
   }
 
   let endOfMonth = new Date(year, month + 1, 0)
-  while (endOfMonth.getDay() !== 0) {
-    endOfMonth.setDate(endOfMonth.getDate() + 1)
+  let endOfGrid = new Date(year, month + 1, 0)
+  while (endOfGrid.getDay() !== 0) {
+    endOfGrid.setDate(endOfGrid.getDate() + 1)
   }
-
-  let daysInMonth = Math.ceil((endOfMonth - startOfGrid) / (1000 * 60 * 60 * 24)) + 1
+  let daysInMonth = Math.ceil((endOfGrid - startOfGrid) / (1000 * 60 * 60 * 24)) + 1
 
   let dailyStats = []
   let practiceDuration = 0
@@ -272,7 +272,9 @@ export async function getUserMonthlyStats(params = {}) {
  *   auto: false,
  *   category_id: 5,
  *   title: "Guitar Warm-up",
- *   thumbnail_url: "https://example.com/thumbnail.jpg"
+ *   thumbnail_url: "https://example.com/thumbnail.jpg",
+ *   instrument_id: 1,
+ *   instrument_id: 2,
  * })
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
@@ -1073,6 +1075,7 @@ async function processContentItem(item) {
   let data = item.raw;
   const contentType = getFormattedType(data.type, data.brand);
   const status = item.state;
+  const isLive = data.isLive ?? false
   let ctaText = 'Continue';
   if (contentType === 'transcription' || contentType === 'play-along' || contentType === 'jam-track') ctaText = 'Replay Song';
   if (contentType === 'lesson') ctaText = status === 'completed' ? 'Revisit Lesson' : 'Continue';
@@ -1159,13 +1162,14 @@ async function processContentItem(item) {
     header:            contentType,
     pinned:            item.pinned ?? false,
     body:              {
-      progressPercent: item.percent,
+      progressPercent: isLive ? undefined: item.percent,
       thumbnail:       data.thumbnail,
       title:           data.title,
+      isLive:          isLive,
       badge:           data.badge ?? null,
       isLocked:        data.is_locked ?? false,
       subtitle:        !data.child_count || data.lesson_count === 1
-        ? (contentType === 'lesson') ? `${item.percent}% Complete`: `${data.difficulty_string} • ${data.artist_name}`
+        ? (contentType === 'lesson' && isLive === false) ? `${item.percent}% Complete`: `${data.difficulty_string} • ${data.artist_name}`
         : `${data.completed_children} of ${data.lesson_count ?? data.child_count} Lessons Complete`
     },
     cta:               {

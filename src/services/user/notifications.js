@@ -60,21 +60,15 @@ export async function markNotificationAsRead(notificationId) {
 }
 
 /**
- * Marks all notifications as read for a specific brand.
+ * Marks all notifications as read for the current user.
  *
- * @returns {Promise<any>} - A promise that resolves when all notifications are marked as read.
+ * This also pauses live event polling if there is an active event, to prevent immediate re-polling.
  *
- * @example
- * markAllNotificationsAsRead('drumeo')
- *   .then(response => console.log(response))
- *   .catch(error => console.error(error));
+ * @param {string} [brand='drumeo'] - The brand context for live event handling before marking notifications.
+ * @returns {Promise<Object>} - A promise resolving to the API response from the notifications read endpoint.
  */
 export async function markAllNotificationsAsRead(brand = 'drumeo') {
-  const liveEvent = await fetchLiveEvent(brand)
-  if(liveEvent){
-    await pauseLiveEventPollingUntil(liveEvent.live_event_end_time)
-  }
-
+  await pauseLiveEventPolling(brand)
   const url = `${baseUrl}/v1/read`
   return fetchHandler(url, 'put')
 }
@@ -128,20 +122,33 @@ export async function deleteNotification(notificationId) {
 /**
  * Fetches the count of unread notifications for the current user in a given brand context.
  *
- * @param {Object} [options={}] - Options for fetching unread count.
- * @param {string} options.brand - The brand to filter unread notifications by (required).
- * @returns {Promise<Object>} - A promise that resolves to an object with the unread count.
+ * This function first checks for standard unread notifications. If none are found,
+ * it checks if live event polling is active. If so, it will query for any ongoing live events.
+ * If a live event is active, it counts as an unread item.
  *
- * @throws {Error} If the brand is not provided.
+ * @param {Object} [options={}] - Options for fetching unread count.
+ * @param {string} options.brand - The brand to filter unread notifications by. Defaults to 'drumeo'.
+ * @returns {Promise<Object>} - A promise that resolves to an object with a `data` property indicating the unread count (0 or 1).
+ *
+ * @throws {Error} If the brand is not provided or if network requests fail.
  *
  * @example
  * fetchUnreadCount({ brand: 'drumeo' })
- *   .then(data => console.log(data.unread_count))
+ *   .then(data => console.log(data.data)) // 0 or 1
  *   .catch(error => console.error(error));
  */
-export async function fetchUnreadCount({ brand = null} = {}) {
+export async function fetchUnreadCount({ brand = 'drumeo'} = {}) {
   const url = `${baseUrl}/v1/unread-count`
-  return fetchHandler(url, 'get')
+  const notifUnread =  await fetchHandler(url, 'get')
+  if (notifUnread.data > 0) {
+    return notifUnread// Return early if unread notifications exist
+  }
+  const liveEventPollingState = await fetchLiveEventPollingState()
+  if(liveEventPollingState.data?.read_state === true){
+    const liveEvent = await fetchLiveEvent(brand)
+    return { data: liveEvent ? 1 : 0}
+  }
+  return notifUnread
 }
 
 /**
@@ -231,20 +238,26 @@ export async function updateNotificationSetting({ brand, settingName, email, pus
 }
 
 /**
-  * Pauses live event polling until the specified time.
-  * @param {string|null} [until=null] - ISO timestamp string or null to unpause
-  * @returns {Promise<Object>} - Promise resolving to the API response
+ * Pauses live event polling for the current user based on the live event end time.
+ *
+ * If a live event is active, polling will be paused until its end time. If no live event is found,
+ * polling is not paused.
+ *
+ * @param {string} [brand='drumeo'] - The brand context to fetch live event data for.
+ * @returns {Promise<Object>} - A promise resolving to the API response from the pause polling endpoint.
  */
-export async function pauseLiveEventPollingUntil(until = null) {
-    const url = `/api/user-management-system/v1/users/pause-polling${until ? `?until=${until}` : ''}`
-    return fetchHandler(url, 'PUT', null)
+export async function pauseLiveEventPolling(brand = 'drumeo') {
+  const liveEvent = await fetchLiveEvent(brand)
+  const until = liveEvent?.live_event_end_time || null
+  const url = `/api/user-management-system/v1/users/pause-polling${until ? `?until=${until}` : ''}`
+  return fetchHandler(url, 'PUT', null)
 }
 
 /**
  * Start live event polling.
  * @returns {Promise<Object>} - Promise resolving to the API response
  */
-export async function startLiveEventPolling() {
+export async function startLiveEventPolling(brand = 'drumeo') {
   const url = `/api/user-management-system/v1/users/start-polling`
   return fetchHandler(url, 'PUT', null)
 }
@@ -254,10 +267,10 @@ export async function startLiveEventPolling() {
  + @returns {Promise<Object>} - Promise resolving to the polling state
  */
 
-  export async function fetchLiveEventPollingState() {
+export async function fetchLiveEventPollingState() {
     const url = `/api/user-management-system/v1/users/polling`
     return fetchHandler(url, 'GET', null)
-  }
+}
 
 
 

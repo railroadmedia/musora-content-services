@@ -256,18 +256,6 @@ export async function getStartedOrCompletedProgressOnly({ brand = null} = {}) {
   return result
 }
 
-export async function assignmentStatusCompleted(assignmentId, parentContentId) {
-  await dataContext.update(
-    async function (localContext) {
-      let hierarchy = await fetchHierarchy(parentContentId)
-      completeStatusInLocalContext(localContext, assignmentId, hierarchy)
-    },
-    async function () {
-      return postContentComplete(assignmentId)
-    }
-  )
-}
-
 export async function contentStatusCompleted(contentId) {
   return await dataContext.update(
     async function (localContext) {
@@ -324,18 +312,6 @@ function getChildrenToDepth(parentId, hierarchy, depth = 1) {
   return allChildrenIds
 }
 
-export async function assignmentStatusReset(assignmentId, contentId) {
-  await dataContext.update(
-    async function (localContext) {
-      let hierarchy = await fetchHierarchy(contentId)
-      resetStatusInLocalContext(localContext, assignmentId, hierarchy)
-    },
-    async function () {
-      return postContentReset(contentId)
-    }
-  )
-}
-
 export async function contentStatusReset(contentId) {
   await dataContext.update(
     async function (localContext) {
@@ -371,6 +347,8 @@ function resetStatusInLocalContext(localContext, contentId, hierarchy) {
  * @param {int} currentSeconds
  * @param {int} secondsPlayed
  * @param {string} sessionId - This function records a sessionId to pass into future updates to progress on the same video
+ * @param {int} instrumentId - enum value of instrument id
+ * @param {int} categoryId - enum value of category id
  */
 export async function recordWatchSession(
   contentId,
@@ -379,7 +357,9 @@ export async function recordWatchSession(
   mediaLengthSeconds,
   currentSeconds,
   secondsPlayed,
-  sessionId = null
+  sessionId = null,
+  instrumentId = null,
+  categoryId = null,
 ) {
   let mediaTypeId = getMediaTypeId(mediaType, mediaCategory)
   let updateLocalProgress = mediaTypeId === 1 || mediaTypeId === 2 //only update for video playback
@@ -391,7 +371,7 @@ export async function recordWatchSession(
     //TODO: Good enough for Alpha, Refine in reliability improvements
     sessionData[sessionId] = sessionData[sessionId] || {}
     const secondsSinceLastUpdate = Math.ceil(secondsPlayed - (sessionData[sessionId][contentId] ?? 0))
-    await recordUserPractice({ content_id: contentId, duration_seconds: secondsSinceLastUpdate })
+    await recordUserPractice({ content_id: contentId, duration_seconds: secondsSinceLastUpdate, category_id: categoryId, instrument_id: instrumentId })
   } catch (error) {
       console.error('Failed to record user practice:', error)
   }

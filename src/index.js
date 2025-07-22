@@ -55,8 +55,6 @@ import {
 } from './services/contentLikes.js';
 
 import {
-	assignmentStatusCompleted,
-	assignmentStatusReset,
 	contentStatusCompleted,
 	contentStatusReset,
 	getAllCompleted,
@@ -160,6 +158,7 @@ import {
 	postContentLiked,
 	postContentReset,
 	postContentUnliked,
+	postPlaylistContentEngaged,
 	postRecordWatchSession,
 	replyToComment,
 	reportComment,
@@ -261,13 +260,14 @@ import {
 
 import {
 	deleteNotification,
+	fetchLiveEventPollingState,
 	fetchNotificationSettings,
 	fetchNotifications,
 	fetchUnreadCount,
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
 	markNotificationAsUnread,
-	pauseLiveEventPollingUntil,
+	pauseLiveEventPolling,
 	startLiveEventPolling,
 	updateNotificationSetting
 } from './services/user/notifications.js';
@@ -316,8 +316,6 @@ export {
 	applyCloudflareWrapper,
 	applySanityTransformations,
 	assignModeratorToComment,
-	assignmentStatusCompleted,
-	assignmentStatusReset,
 	blockUser,
 	buildImageSRC,
 	calculateLongestStreaks,
@@ -381,6 +379,7 @@ export {
 	fetchLessonsFeaturingThisContent,
 	fetchLikeCount,
 	fetchLiveEvent,
+	fetchLiveEventPollingState,
 	fetchMetadata,
 	fetchMethod,
 	fetchMethodChildren,
@@ -487,7 +486,7 @@ export {
 	markNotificationAsUnread,
 	openComment,
 	otherStats,
-	pauseLiveEventPollingUntil,
+	pauseLiveEventPolling,
 	pinGuidedCourse,
 	pinProgressRow,
 	pinnedGuidedCourses,
@@ -503,6 +502,7 @@ export {
 	postContentLiked,
 	postContentReset,
 	postContentUnliked,
+	postPlaylistContentEngaged,
 	postRecordWatchSession,
 	rankCategories,
 	rankItems,
