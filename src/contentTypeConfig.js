@@ -14,7 +14,7 @@ export const DEFAULT_FIELDS = [
   "'id': railcontent_id",
   'railcontent_id',
   artistOrInstructorName(),
-  'artist',
+  "'artist': select(artist != null => { 'name': artist->name, 'thumbnail': artist->thumbnail_url.asset->url}, null)",
   'title',
   "'image': thumbnail.asset->url",
   "'thumbnail': thumbnail.asset->url",
@@ -41,6 +41,15 @@ export const DEFAULT_CHILD_FIELDS = [
   `"instructors": instructor[]->name`,
   `length_in_seconds`,
 ]
+
+export const instructorField = `instructor[]->{
+            "id":railcontent_id,
+            name,
+            short_bio,
+            "biography": short_bio[0].children[0].text,
+            "coach_card_image": coach_card_image.asset->url,
+            "coach_profile_image":thumbnail_url.asset->url
+          }`
 
 export const descriptionField = 'description[0].children[0].text'
 // this pulls both any defined resources for the document as well as any resources in the parent document
@@ -343,7 +352,6 @@ export let contentTypeConfig = {
                 published_on,
                 "type":_type,
                 "image": thumbnail.asset->url,
-                "instructors": instructor[]->name,
                 length_in_seconds,
                 "resources": ${resourcesField},
                 difficulty,

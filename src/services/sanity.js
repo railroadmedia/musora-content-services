@@ -1297,41 +1297,24 @@ export async function fetchLessonContent(railContentId) {
   // Currently only for challenges and challenge lessons
   // If you're unsure, message Adrian, or just add them.
 
-  const fields = `title,
-          published_on,
-          "type":_type,
+  const fields = getFieldsForContentType()
+
+
+  const fields = `
           "resources": ${resourcesField},
-          difficulty,
-          difficulty_string,
-          brand,
-          status,
           soundslice,
           instrumentless,
           railcontent_id,
-          "id":railcontent_id,
           slug,
-          'artist': select(
-            artist != null => { 'name': artist->name, 'thumbnail': artist->thumbnail_url.asset->url},
-            null
-          ),
-          "thumbnail":thumbnail.asset->url,
           soundslice_slug,
-          "description": description[0].children[0].text,
+          "description": ${descriptionField},
           "chapters": chapter[]{
             chapter_description,
             chapter_timecode,
             "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
           },
           "instructors":instructor[]->name,
-          "instructor": instructor[]->{
-            "id":railcontent_id,
-            name,
-            short_bio,
-            "biography": short_bio[0].children[0].text,
-            web_url_path,
-            "coach_card_image": coach_card_image.asset->url,
-            "coach_profile_image":thumbnail_url.asset->url
-          },
+          "instructor": ${instructorField},
           ${assignmentsField}
           video,
           length_in_seconds,
@@ -1339,7 +1322,6 @@ export async function fetchLessonContent(railContentId) {
           mp3_no_drums_yes_click_url,
           mp3_yes_drums_no_click_url,
           mp3_yes_drums_yes_click_url,
-          "permission_id": permission[]->railcontent_id,
           "parent_content_data": parent_content_data[]{
             "id": id,
             "title": *[railcontent_id == ^.id][0].title,
@@ -1349,9 +1331,6 @@ export async function fetchLessonContent(railContentId) {
             "dark_mode_logo": *[railcontent_id == ^.id][0].dark_mode_logo_url.asset->url,
             "light_mode_logo": *[railcontent_id == ^.id][0].light_mode_logo_url.asset->url,
           },
-          sort,
-          xp,
-          stbs,ds2stbs, bdsStbs,
           ...select(
                 defined(live_event_start_time) => {
                   "live_event_start_time": live_event_start_time,
@@ -1627,10 +1606,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
       "thumbnail": thumbnail.asset->url,
       ${artistOrInstructorName()},
       difficulty_string,
-      "instructors": instructor[]->{
-            name,
-            web_url_path,
-          },
+      "instructors": ${instructorField},
       'videoId': coalesce(live_event_youtube_id, video.external_id),
     } | order(live_event_start_time)[0...1]`
       : `*[status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}']{
