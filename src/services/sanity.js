@@ -3,6 +3,8 @@
  */
 import {
   artistOrInstructorName,
+  instructorField,
+  chapterField,
   assignmentsField,
   descriptionField,
   resourcesField,
@@ -1293,26 +1295,14 @@ export async function jumpToContinueContent(railcontentId) {
  */
 export async function fetchLessonContent(railContentId) {
   const filterParams = { isSingle: true, pullFutureContent: true }
-  // Format changes made to the `fields` object may also need to be reflected in Musora-web-platform SanityGateway.php $fields object
-  // Currently only for challenges and challenge lessons
-  // If you're unsure, message Adrian, or just add them.
 
-  const fields = getFieldsForContentType()
-
-
-  const fields = `
+  const fields = `${getFieldsForContentType()},
           "resources": ${resourcesField},
           soundslice,
           instrumentless,
-          railcontent_id,
-          slug,
           soundslice_slug,
           "description": ${descriptionField},
-          "chapters": chapter[]{
-            chapter_description,
-            chapter_timecode,
-            "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
-          },
+          "chapters": ${chapterField},
           "instructors":instructor[]->name,
           "instructor": ${instructorField},
           ${assignmentsField}
