@@ -346,6 +346,17 @@ export async function postRecordWatchSession(
 }
 
 /**
+ * Fetch the user's best award for this challenge
+ *
+ * @param contentId - railcontent id of the challenge
+ * @returns {Promise<any|null>} - streamed PDF
+ */
+export async function fetchUserAward(contentId) {
+  let url = `/challenges/download_award/${contentId}`
+  return await fetchHandler(url, 'get')
+}
+
+/**
  * Fetch All Carousel Card Data
  *
  * @returns {Promise<any|null>}
@@ -353,6 +364,18 @@ export async function postRecordWatchSession(
 export async function fetchCarouselCardData(brand = null) {
   const brandParam = brand ? `?brand=${brand}` : ''
   let url = `/api/v2/content/carousel${brandParam}`
+  return await fetchHandler(url, 'get')
+}
+
+/**
+ * Fetch all completed badges for the user ordered by completion date descending
+ *
+ * @param {string|null} brand -
+ * @returns {Promise<any|null>}
+ */
+export async function fetchUserBadges(brand = null) {
+  let brandParam = brand ? `?brand=${brand}` : ''
+  let url = `/challenges/user_badges/get${brandParam}`
   return await fetchHandler(url, 'get')
 }
 
