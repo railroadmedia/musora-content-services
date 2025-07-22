@@ -973,6 +973,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
       childToParentMap[content.id] = content.parent_content_data[content.parent_content_data.length - 1];
     }
   });
+  const parentData = await fetchByRailContentIds(Object.entries(childToParentMap), 'progress-tracker', brand)
   const progressMap = new Map();
   for (const [idStr, progress] of Object.entries(progressContents)) {
     const id = parseInt(idStr);
@@ -981,7 +982,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     const parentId = childToParentMap[id];
     // Handle children with parents
     if (parentId) {
-      const parentContent = contentsMap[parentId];
+      const parentContent = contentsMap[parentId] ?? parentData.find(item => item.id === parentId);
       if (!parentContent || excludedTypes.has(parentContent.type)) continue;
       const existing = progressMap.get(parentId);
       if (existing) {
