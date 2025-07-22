@@ -1296,6 +1296,7 @@ export async function fetchLessonContent(railContentId) {
   // Format changes made to the `fields` object may also need to be reflected in Musora-web-platform SanityGateway.php $fields object
   // Currently only for challenges and challenge lessons
   // If you're unsure, message Adrian, or just add them.
+
   const fields = `title,
           published_on,
           "type":_type,
@@ -1308,7 +1309,11 @@ export async function fetchLessonContent(railContentId) {
           instrumentless,
           railcontent_id,
           "id":railcontent_id,
-          slug, artist->,
+          slug,
+          'artist': select(
+            artist != null => { 'name': artist->name, 'thumbnail': artist->thumbnail_url.asset->url},
+            null
+          ),
           "thumbnail":thumbnail.asset->url,
           soundslice_slug,
           "description": description[0].children[0].text,
@@ -1317,7 +1322,6 @@ export async function fetchLessonContent(railContentId) {
             chapter_timecode,
             "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
           },
-          'artist': { 'name': artist->name, 'thumbnail': artist->thumbnail_url.asset->url},
           "instructors":instructor[]->name,
           "instructor": instructor[]->{
             "id":railcontent_id,
@@ -1360,6 +1364,7 @@ export async function fetchLessonContent(railContentId) {
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
   })
+  console.log('query', query)
   const chapterProcess = (result) => {
     const now = getSanityDate(new Date(), false)
     if (result.live_event_start_time && result.live_event_end_time) {
@@ -1371,6 +1376,7 @@ export async function fetchLessonContent(railContentId) {
       ...chapter,
       chapter_thumbnail_url: `https://musora-web-platform.s3.amazonaws.com/chapters/${result.brand}/Chapter${index + 1}.jpg`,
     }))
+    console.log('result', result)
     return result
   }
 
