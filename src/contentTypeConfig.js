@@ -51,6 +51,12 @@ export const instructorField = `instructor[]->{
             "coach_profile_image":thumbnail_url.asset->url
           }`
 
+export const chapterField = `chapter[]{
+                    chapter_description,
+                    chapter_timecode,
+                    "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
+                }`
+
 export const descriptionField = 'description[0].children[0].text'
 // this pulls both any defined resources for the document as well as any resources in the parent document
 export const resourcesField = `[
@@ -359,11 +365,7 @@ export let contentTypeConfig = {
                 artist->,
                 "thumbnail_url":thumbnail.asset->url,
                 "description": description[0].children[0].text,
-                "chapters": chapter[]{
-                    chapter_description,
-                    chapter_timecode,
-                    "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
-                },
+                "chapters": ${chapterField},
                 "instructors":instructor[]->name,
                 "instructor": instructor[]->{
                     "id":railcontent_id,
