@@ -278,6 +278,7 @@ import {
 } from './services/user/permissions.js';
 
 import {
+	deleteProfilePicture,
 	otherStats
 } from './services/user/profile.js';
 
@@ -332,6 +333,7 @@ export {
 	deletePicture,
 	deletePlaylist,
 	deletePracticeSession,
+	deleteProfilePicture,
 	deleteUserActivity,
 	duplicatePlaylist,
 	editComment,
