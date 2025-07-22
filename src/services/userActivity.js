@@ -694,7 +694,7 @@ function calculateStreaks(practices, includeStreakMessage = false) {
     yesterday.setDate(today.getDate() - 1)
 
     let currentWeekStart = getMonday(today, timeZone)
-    let lastWeekStart = currentWeekStart.diff(7, 'days')
+    let lastWeekStart = currentWeekStart.subtract(7, 'days')
 
     let hasYesterdayPractice = sortedPracticeDays.some((date) => isSameDate(date, yesterday))
     let hasCurrentWeekPractice = sortedPracticeDays.some((date) => date >= currentWeekStart)
