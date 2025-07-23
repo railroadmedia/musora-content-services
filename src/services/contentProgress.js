@@ -372,7 +372,7 @@ export async function recordWatchSession(
     //TODO: Good enough for Alpha, Refine in reliability improvements
     sessionData[sessionId] = sessionData[sessionId] || {}
     const secondsSinceLastUpdate = Math.ceil(secondsPlayed - (sessionData[sessionId][contentId] ?? 0))
-    await recordUserPractice({ content_id: contentId, duration_seconds: secondsSinceLastUpdate, category_id: categoryId, instrument_id: instrumentId })
+    await recordUserPractice({ content_id: contentId, duration_seconds: secondsSinceLastUpdate,  instrument_id: instrumentId })
   } catch (error) {
       console.error('Failed to record user practice:', error)
   }

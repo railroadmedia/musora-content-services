@@ -182,15 +182,16 @@ export const lessonTypesMapping = {
 export const getNextLessonLessonParentTypes = ['course', 'guided-course', 'pack', 'pack-bundle', 'song-tutorial'];
 
 export const progressTypesMapping = {
-  'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes, 'live'],
+  'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes, 'live', 'pack-bundle-lesson', 'course-part'],
   'course': ['course'],
   'show': showsLessonTypes,
-  'song tutorial': tutorialsLessonTypes,
+  'song tutorial': [...tutorialsLessonTypes, 'song-tutorial-children'],
   'songs': transcriptionsLessonTypes,
   'play-along': playAlongLessonTypes,
   'guided course': ['guided-course'],
   'pack': ['pack', 'semester-pack'],
-  'method': ['learning-path']
+  'method': ['learning-path'],
+  'jam track': ['jam-track'],
 };
 
 export const songs = {
