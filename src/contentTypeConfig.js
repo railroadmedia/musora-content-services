@@ -179,18 +179,19 @@ export const lessonTypesMapping = {
   'jam tracks': ['jam-track'],
 };
 
-export const getNextLessonLessonParentTypes = ['course', 'guided-course', 'pack-bundle'];
+export const getNextLessonLessonParentTypes = ['course', 'guided-course', 'pack', 'pack-bundle', 'song-tutorial'];
 
 export const progressTypesMapping = {
-  'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes, 'live'],
+  'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes, 'live', 'pack-bundle-lesson', 'course-part'],
   'course': ['course'],
   'show': showsLessonTypes,
-  'song tutorial': tutorialsLessonTypes,
+  'song tutorial': [...tutorialsLessonTypes, 'song-tutorial-children'],
   'songs': transcriptionsLessonTypes,
   'play-along': playAlongLessonTypes,
   'guided course': ['guided-course'],
   'pack': ['pack', 'semester-pack'],
-  'method': ['learning-path']
+  'method': ['learning-path'],
+  'jam track': ['jam-track'],
 };
 
 export const songs = {
@@ -206,15 +207,22 @@ export const filterTypes = {
 }
 
 export const recentTypes = {
-  lessons: [...individualLessonsTypes],
-  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes],
+  lessons: [...individualLessonsTypes, 'course-part', 'pack-bundle-lesson', 'challenge-part', 'guided-course-part', 'quick-tips'],
+  songs: [...transcriptionsLessonTypes, ...playAlongLessonTypes, 'song-tutorial-children'],
   home: [...individualLessonsTypes, ...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes,
-  'guided-course', 'learning-path', 'live']
+  'guided-course', 'learning-path', 'live', 'course', 'pack']
 }
 
 export let contentTypeConfig = {
+  'tab-data': {
+    fields: [
+      'enrollment_start_time',
+      'enrollment_end_time',
+    ],
+  },
   'progress-tracker': {
-    fields: ['"parent_content_data": parent_content_data[].id',
+    fields: [
+      '"parent_content_data": parent_content_data[].id',
       '"badge" : badge.asset->url',
       '"lessons": child[]->{' +
         '"id": railcontent_id,' +
@@ -230,7 +238,7 @@ export let contentTypeConfig = {
           '"brand":brand},' +
           '"thumbnail": thumbnail.asset->url,' +
           'published_on,' +
-        '}'
+        '}',
     ],
 
 
@@ -450,6 +458,7 @@ export let contentTypeConfig = {
         ),
         "children": child[]->{
           "description": ${descriptionField},
+          "children": child[]->{"id": railcontent_id},
           ${getFieldsForContentType()}
         },
         ${getFieldsForContentType()}

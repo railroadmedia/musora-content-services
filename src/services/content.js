@@ -66,7 +66,6 @@ export async function getTabResults(brand, pageName, tabName, {
   sort = 'recommended',
   selectedFilters = []
 } = {}) {
-
   // Extract and handle 'progress' filter separately
   const progressFilter = selectedFilters.find(f => f.startsWith('progress,')) || 'progress,all';
   const progressValue = progressFilter.split(',')[1].toLowerCase();
@@ -76,9 +75,23 @@ export async function getTabResults(brand, pageName, tabName, {
   const mergedIncludedFields = [...filteredSelectedFilters, `tab,${tabName.toLowerCase()}`];
 
   // Fetch data
-  const results = tabName === Tabs.ForYou.name
-      ? { entity: await getLessonContentRows(brand, pageName) }
-      : await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
+  let results
+  if( tabName === Tabs.ForYou.name ) {
+    results = await addContextToContent(getLessonContentRows, brand, pageName, {
+      dataField: 'items',
+      addNextLesson: true,
+      addProgressPercentage: true,
+      addProgressStatus: true
+    })
+  } else {
+    let temp =  await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
+    results = await addContextToContent(() => temp.entity, {
+      addNextLesson: true,
+      addProgressPercentage: true,
+      addProgressStatus: true
+    })
+  }
+
 
   // Fetch metadata
   const metaData = await fetchMetadata(brand, pageName);
@@ -108,7 +121,7 @@ export async function getTabResults(brand, pageName, tabName, {
 
   return {
     type: tabName === Tabs.ForYou.name ? TabResponseType.SECTIONS : TabResponseType.CATALOG,
-    data: results.entity,
+    data: results,
     meta: { filters, sort: sortOptions }
   };
 }
@@ -173,13 +186,7 @@ export async function getContentRows(brand, pageName, contentRowSlug = null, {
   page = 1,
   limit = 10
 } = {}) {
-  const sanityData = await addContextToContent(fetchContentRows, brand, pageName, contentRowSlug, {
-    dataField: 'content',
-    iterateDataFieldOnEachArrayElement: true,
-    addProgressStatus: true,
-    addProgressPercentage: true,
-    addNextLesson: true
-  })
+  const sanityData = await fetchContentRows(brand, pageName, contentRowSlug)
   if (!sanityData) {
     return []
   }

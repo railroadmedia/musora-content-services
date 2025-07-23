@@ -1,6 +1,6 @@
 {
   "name": "musora-content-services",
-  "version": "2.21.3",
+  "version": "2.27.3",
   "description": "A package for Musoras content services ",
   "main": "src/index.js",
   "type": "module",
@@ -32,6 +32,7 @@
     "@babel/preset-env": "^7.25.3",
     "@sanity/client": "^5.4.2",
     "babel-jest": "^29.7.0",
+    "dayjs": "^1.11.13",
     "docdash": "^2.0.2",
     "groqd": "^0.15.12"
   }

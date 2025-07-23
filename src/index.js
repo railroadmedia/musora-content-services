@@ -55,8 +55,6 @@ import {
 } from './services/contentLikes.js';
 
 import {
-	assignmentStatusCompleted,
-	assignmentStatusReset,
 	contentStatusCompleted,
 	contentStatusReset,
 	getAllCompleted,
@@ -85,7 +83,8 @@ import {
 	getTimeRemainingUntilLocal,
 	getWeekNumber,
 	isNextDay,
-	isSameDate
+	isSameDate,
+	toDayjs
 } from './services/dateUtils.js';
 
 import {
@@ -160,6 +159,7 @@ import {
 	postContentLiked,
 	postContentReset,
 	postContentUnliked,
+	postPlaylistContentEngaged,
 	postRecordWatchSession,
 	replyToComment,
 	reportComment,
@@ -219,6 +219,7 @@ import {
 	fetchScheduledReleases,
 	fetchShows,
 	fetchShowsData,
+	fetchSiblingContent,
 	fetchSongArtistCount,
 	fetchSongById,
 	fetchTabData,
@@ -252,6 +253,7 @@ import {
 import {
 	blockUser,
 	deletePicture,
+	getUserData,
 	unblockUser,
 	uploadPicture,
 	uploadPictureFromS3
@@ -259,12 +261,15 @@ import {
 
 import {
 	deleteNotification,
+	fetchLiveEventPollingState,
 	fetchNotificationSettings,
 	fetchNotifications,
 	fetchUnreadCount,
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
 	markNotificationAsUnread,
+	pauseLiveEventPolling,
+	startLiveEventPolling,
 	updateNotificationSetting
 } from './services/user/notifications.js';
 
@@ -274,6 +279,7 @@ import {
 } from './services/user/permissions.js';
 
 import {
+	deleteProfilePicture,
 	otherStats
 } from './services/user/profile.js';
 
@@ -287,6 +293,7 @@ import {
 	createPracticeNotes,
 	deletePracticeSession,
 	deleteUserActivity,
+	fetchRecentActivitiesActiveTabs,
 	findIncompleteLesson,
 	getPracticeNotes,
 	getPracticeSessions,
@@ -312,8 +319,6 @@ export {
 	applyCloudflareWrapper,
 	applySanityTransformations,
 	assignModeratorToComment,
-	assignmentStatusCompleted,
-	assignmentStatusReset,
 	blockUser,
 	buildImageSRC,
 	calculateLongestStreaks,
@@ -330,6 +335,7 @@ export {
 	deletePicture,
 	deletePlaylist,
 	deletePracticeSession,
+	deleteProfilePicture,
 	deleteUserActivity,
 	duplicatePlaylist,
 	editComment,
@@ -377,6 +383,7 @@ export {
 	fetchLessonsFeaturingThisContent,
 	fetchLikeCount,
 	fetchLiveEvent,
+	fetchLiveEventPollingState,
 	fetchMetadata,
 	fetchMethod,
 	fetchMethodChildren,
@@ -396,6 +403,7 @@ export {
 	fetchPlaylist,
 	fetchPlaylistItems,
 	fetchRecent,
+	fetchRecentActivitiesActiveTabs,
 	fetchRecentUserActivities,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
@@ -406,6 +414,7 @@ export {
 	fetchScheduledReleases,
 	fetchShows,
 	fetchShowsData,
+	fetchSiblingContent,
 	fetchSimilarItems,
 	fetchSongArtistCount,
 	fetchSongById,
@@ -455,6 +464,7 @@ export {
 	getStartedOrCompletedProgressOnly,
 	getTabResults,
 	getTimeRemainingUntilLocal,
+	getUserData,
 	getUserMonthlyStats,
 	getUserPractices,
 	getUserWeeklyStats,
@@ -481,6 +491,7 @@ export {
 	markNotificationAsUnread,
 	openComment,
 	otherStats,
+	pauseLiveEventPolling,
 	pinGuidedCourse,
 	pinProgressRow,
 	pinnedGuidedCourses,
@@ -496,6 +507,7 @@ export {
 	postContentLiked,
 	postContentReset,
 	postContentUnliked,
+	postPlaylistContentEngaged,
 	postRecordWatchSession,
 	rankCategories,
 	rankItems,
@@ -519,7 +531,9 @@ export {
 	sendPasswordResetEmail,
 	setStudentViewForUser,
 	setupAccount,
+	startLiveEventPolling,
 	status,
+	toDayjs,
 	togglePlaylistPrivate,
 	unEnrollUserInGuidedCourse,
 	unPinGuidedCourse,
