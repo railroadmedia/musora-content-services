@@ -527,7 +527,6 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
     ${getFieldsForContentType(contentType)}
     live_event_start_time,
     live_event_end_time,
-    "parent_id": parent_content_data[0].id,
   }`
 
   const customPostProcess = (results) => {
