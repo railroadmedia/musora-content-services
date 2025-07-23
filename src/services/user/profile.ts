@@ -69,10 +69,10 @@ export async function otherStats(
     .recover(mergeStats(longestStreaks)(defaultStats))
 }
 
-export async function deleteProfilePicture(): Promise<Either<HttpError, never>> {
+export async function deleteProfilePicture(): Promise<Either<HttpError, void>> {
   const url = `${baseUrl}/v1/users/profile_picture`
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  const response = await httpClient.delete<never>(url, 'DELETE')
+  const response = await httpClient.delete<void>(url, 'DELETE')
 
   return response.ltap((response) =>
     console.error('Error deleting profile picture:', response.statusText)
