@@ -279,6 +279,7 @@ import {
 } from './services/user/permissions.js';
 
 import {
+	deleteProfilePicture,
 	otherStats
 } from './services/user/profile.js';
 
@@ -335,6 +336,7 @@ declare module 'musora-content-services' {
 		deletePicture,
 		deletePlaylist,
 		deletePracticeSession,
+		deleteProfilePicture,
 		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
