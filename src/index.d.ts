@@ -111,7 +111,7 @@ import {
 
 import {
 	clearLocalSessionData,
-	onSignOutHandler
+	onLogOutHandler
 } from './services/local-session.js';
 
 import {
@@ -496,7 +496,7 @@ declare module 'musora-content-services' {
 		markContentAsNotInterested,
 		markNotificationAsRead,
 		markNotificationAsUnread,
-		onSignOutHandler,
+		onLogOutHandler,
 		openComment,
 		otherStats,
 		pauseLiveEventPolling,

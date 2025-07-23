@@ -111,7 +111,7 @@ import {
 
 import {
 	clearLocalSessionData,
-	onSignOutHandler
+	onLogOutHandler
 } from './services/local-session.js';
 
 import {
@@ -495,7 +495,7 @@ export {
 	markContentAsNotInterested,
 	markNotificationAsRead,
 	markNotificationAsUnread,
-	onSignOutHandler,
+	onLogOutHandler,
 	openComment,
 	otherStats,
 	pauseLiveEventPolling,
