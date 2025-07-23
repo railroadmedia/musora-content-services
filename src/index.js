@@ -281,7 +281,7 @@ import {
 import {
 	deleteProfilePicture,
 	otherStats
-} from './services/user/profile.js';
+} from './services/user/profile.ts';
 
 import {
 	login,
