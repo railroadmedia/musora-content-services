@@ -963,11 +963,14 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     }
   });
 
+  const allRecentTypeSet = new Set(
+    Object.values(recentTypes).flat()
+  )
   const progressMap = new Map();
   for (const [idStr, progress] of Object.entries(progressContents)) {
     const id = parseInt(idStr);
     const content = contentsMap[id];
-    if (!content || excludedTypes.has(content.type)  || !recentTypes.has(content.type) ) continue;
+    if (!content || excludedTypes.has(content.type)  || !allRecentTypeSet.has(content.type) ) continue;
     const parentId = childToParentMap[id];
     // Handle children with parents
     if (parentId) {
