@@ -1,4 +1,4 @@
-import LocalCache from './local-cache/index.js'
+import LocalCache from './local-cache.js'
 
 /**
  * Exported functions that are excluded from index generation.
