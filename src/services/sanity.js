@@ -351,7 +351,7 @@ export async function fetchNewReleases(
   const end = start + limit
   const sortOrder = getSortOrder(sort, brand)
   const nextQuarter = getNextAndPreviousQuarterDates()['next']
-  const filter = `_type in ${typesString} && brand == '${brand}' && show_in_new_feed == true && (!defined(quarter_published) ||  quarter_published != '${nextQuarter}')`
+  const filter = `_type in ${typesString} && brand == '${brand}' && status == 'published' && show_in_new_feed == true && (!defined(quarter_published) ||  quarter_published != '${nextQuarter}')`
   const fields = `
      "id": railcontent_id,
       title,
