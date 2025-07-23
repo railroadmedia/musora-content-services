@@ -2,6 +2,117 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.27.4](https://github.com/railroadmedia/musora-content-services/compare/v2.27.3...v2.27.4) (2025-07-23)
+
+
+### Bug Fixes
+
+* **T3PS-306:** add custom method to delete profile picture ([#369](https://github.com/railroadmedia/musora-content-services/issues/369)) ([61634db](https://github.com/railroadmedia/musora-content-services/commit/61634db6923f9ca4fdde9a5c20f18e8b61dd78ec))
+
+### [2.27.3](https://github.com/railroadmedia/musora-content-services/compare/v2.27.0...v2.27.3) (2025-07-23)
+
+
+### Bug Fixes
+
+* **last-engaged:** add playlist last engaged endpoint ([#361](https://github.com/railroadmedia/musora-content-services/issues/361)) ([3396207](https://github.com/railroadmedia/musora-content-services/commit/33962077500e47ff9cba93fb23fd28b63eb4112a))
+* MU2-710 - Update MCS to use new endpoint to get recent activities tabs with data ([5cfcc27](https://github.com/railroadmedia/musora-content-services/commit/5cfcc27745072907e745a1015350249f6dbccb85))
+* Song Tutorials are showing up in Recent Songs as collections ([68d4559](https://github.com/railroadmedia/musora-content-services/commit/68d4559f8ee528441a8a4bff73796fbd48c8321b))
+* T3PS-266 - Practice tracker meta ([fa3c962](https://github.com/railroadmedia/musora-content-services/commit/fa3c962580978ce6aef4fdf5ad8023852bf92a6d))
+* T3PS-415: progress rows for courses/song tutorials/packs ([4ad26cc](https://github.com/railroadmedia/musora-content-services/commit/4ad26ccbfbf2eade11882ae246d102d72093c1c5))
+* Timezone issue - Migrate native Date to Dayjs ([c37def1](https://github.com/railroadmedia/musora-content-services/commit/c37def12b471fe570e15c7be220ab8d52e1dad88))
+* **Userpractice:** add category_id and instrument_id to userPractice ([2c92c6f](https://github.com/railroadmedia/musora-content-services/commit/2c92c6f6adcb7fac657c3b12e1c3f5e927cff214))
+
+### [2.27.2](https://github.com/railroadmedia/musora-content-services/compare/v2.27.1...v2.27.2) (2025-07-21)
+
+
+### Bug Fixes
+
+* **last-engaged:** add playlist last engaged endpoint ([#361](https://github.com/railroadmedia/musora-content-services/issues/361)) ([3396207](https://github.com/railroadmedia/musora-content-services/commit/33962077500e47ff9cba93fb23fd28b63eb4112a))
+
+### [2.27.1](https://github.com/railroadmedia/musora-content-services/compare/v2.27.0...v2.27.1) (2025-07-17)
+
+
+### Bug Fixes
+
+* **Userpractice:** add category_id and instrument_id to userPractice ([2c92c6f](https://github.com/railroadmedia/musora-content-services/commit/2c92c6f6adcb7fac657c3b12e1c3f5e927cff214))
+
+## [2.27.0](https://github.com/railroadmedia/musora-content-services/compare/v2.24.0...v2.27.0) (2025-07-17)
+
+
+### Features
+
+* **BEH-38:** add context data to tab results ([#344](https://github.com/railroadmedia/musora-content-services/issues/344)) ([02fe932](https://github.com/railroadmedia/musora-content-services/commit/02fe9321dfa56e74d7c73cb7a80e54f5818d1427))
+* **MU2-805:** Set a pauseLiveEventPollingUntil field when user mark all notificatio… ([#351](https://github.com/railroadmedia/musora-content-services/issues/351)) ([bfe1010](https://github.com/railroadmedia/musora-content-services/commit/bfe10107c522ea725436e4a6338a869e852c08d5))
+
+
+### Bug Fixes
+
+* Add live event fallback to unread notifications count ([61afc83](https://github.com/railroadmedia/musora-content-services/commit/61afc835a7f009ec5e12947b2bf2131b7ed7049a))
+* T3PS-21: Live Stream content cards in the Progress Row and Recent Lessons ([3736c48](https://github.com/railroadmedia/musora-content-services/commit/3736c4898d9db27869de079660474e6dd0233da4))
+* T3PS-259: Incorrect stats for past months ([b38ee32](https://github.com/railroadmedia/musora-content-services/commit/b38ee320488196115ff4ef97d4ea4ea661d1eb43))
+* user data endpoint ([#356](https://github.com/railroadmedia/musora-content-services/issues/356)) ([2a00bb8](https://github.com/railroadmedia/musora-content-services/commit/2a00bb859faa72ec22930919f4a636275b219772))
+
+### [2.26.1](https://github.com/railroadmedia/musora-content-services/compare/v2.26.0...v2.26.1) (2025-07-16)
+
+## [2.26.0](https://github.com/railroadmedia/musora-content-services/compare/v2.25.1...v2.26.0) (2025-07-16)
+
+
+### Features
+
+* **MU2-805:** Set a pauseLiveEventPollingUntil field when user mark all notificatio… ([#351](https://github.com/railroadmedia/musora-content-services/issues/351)) ([bfe1010](https://github.com/railroadmedia/musora-content-services/commit/bfe10107c522ea725436e4a6338a869e852c08d5))
+
+### [2.25.1](https://github.com/railroadmedia/musora-content-services/compare/v2.25.0...v2.25.1) (2025-07-16)
+
+
+### Bug Fixes
+
+* user data endpoint ([#356](https://github.com/railroadmedia/musora-content-services/issues/356)) ([2a00bb8](https://github.com/railroadmedia/musora-content-services/commit/2a00bb859faa72ec22930919f4a636275b219772))
+
+## [2.25.0](https://github.com/railroadmedia/musora-content-services/compare/v2.24.1...v2.25.0) (2025-07-16)
+
+
+### Features
+
+* **BEH-38:** add context data to tab results ([#344](https://github.com/railroadmedia/musora-content-services/issues/344)) ([02fe932](https://github.com/railroadmedia/musora-content-services/commit/02fe9321dfa56e74d7c73cb7a80e54f5818d1427))
+
+### [2.24.1](https://github.com/railroadmedia/musora-content-services/compare/v2.24.0...v2.24.1) (2025-07-16)
+
+## [2.24.0](https://github.com/railroadmedia/musora-content-services/compare/v2.21.3...v2.24.0) (2025-07-16)
+
+
+### Features
+
+* **BEH-837:** update contentAggregator to process parent + children ([#346](https://github.com/railroadmedia/musora-content-services/issues/346)) ([20ffef3](https://github.com/railroadmedia/musora-content-services/commit/20ffef3826a7e56bee4c950d77b2cd57eff1dc08))
+* **MU2-825:** user data function ([#343](https://github.com/railroadmedia/musora-content-services/issues/343)) ([5afcbc9](https://github.com/railroadmedia/musora-content-services/commit/5afcbc97b46082655bb73a7ce33c864d1b289898))
+
+
+### Bug Fixes
+
+* **gc-pin:** patch unpin and pin actions from merge conflict ([#345](https://github.com/railroadmedia/musora-content-services/issues/345)) ([a9ed0f1](https://github.com/railroadmedia/musora-content-services/commit/a9ed0f15bf2a61b259d250e24c5b6a74fcade404))
+* **MU2-645:** Add Sanity type and content slug to auto user practices ([#350](https://github.com/railroadmedia/musora-content-services/issues/350)) ([6f9bdea](https://github.com/railroadmedia/musora-content-services/commit/6f9bdea71bb8472f2dd5a305f4719b890336d165))
+* recent lessons do not display children lessons ([b6f0b33](https://github.com/railroadmedia/musora-content-services/commit/b6f0b3329ee80c78f75aab93c011dba89c73e06a))
+
+### [2.23.1](https://github.com/railroadmedia/musora-content-services/compare/v2.23.0...v2.23.1) (2025-07-16)
+
+## [2.23.0](https://github.com/railroadmedia/musora-content-services/compare/v2.22.0...v2.23.0) (2025-07-16)
+
+
+### Features
+
+* **MU2-825:** user data function ([#343](https://github.com/railroadmedia/musora-content-services/issues/343)) ([5afcbc9](https://github.com/railroadmedia/musora-content-services/commit/5afcbc97b46082655bb73a7ce33c864d1b289898))
+
+
+### Bug Fixes
+
+* **MU2-645:** Add Sanity type and content slug to auto user practices ([#350](https://github.com/railroadmedia/musora-content-services/issues/350)) ([6f9bdea](https://github.com/railroadmedia/musora-content-services/commit/6f9bdea71bb8472f2dd5a305f4719b890336d165))
+
+## [2.22.0](https://github.com/railroadmedia/musora-content-services/compare/v2.21.4...v2.22.0) (2025-07-16)
+
+
+### Features
+
+* **BEH-837:** update contentAggregator to process parent + children ([#346](https://github.com/railroadmedia/musora-content-services/issues/346)) ([20ffef3](https://github.com/railroadmedia/musora-content-services/commit/20ffef3826a7e56bee4c950d77b2cd57eff1dc08))
+
 ### [2.21.4](https://github.com/railroadmedia/musora-content-services/compare/v2.21.3...v2.21.4) (2025-07-15)
 
 

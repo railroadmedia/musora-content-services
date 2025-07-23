@@ -323,6 +323,11 @@ export async function fetchContentProgress(currentVersion) {
   return fetchDataHandler(url, currentVersion)
 }
 
+export async function postPlaylistContentEngaged(playlistItemId) {
+  let url = `/railtracker/v1/last-engaged/${playlistItemId}`
+  return postDataHandler(url)
+}
+
 export async function postRecordWatchSession(
   contentId,
   mediaTypeId,
@@ -786,17 +791,9 @@ export async function fetchUserPractices(currentVersion = 0, { userId } = {}) {
 
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-
   const formattedPractices = userPractices.reduce((acc, practice) => {
     // Convert UTC date to user's local date (still a Date object)
-    const utcDate = new Date(practice.day);
-    const localDate = convertToTimeZone(utcDate, userTimeZone);
-
-    const userTimeZoneDay =
-      localDate.getFullYear() + '-' +
-      String(localDate.getMonth() + 1).padStart(2, '0') + '-' +
-      String(localDate.getDate()).padStart(2, '0');
-
+    const userTimeZoneDay = convertToTimeZone(practice.day, userTimeZone);
     if (!acc[userTimeZoneDay]) {
       acc[userTimeZoneDay] = [];
     }

@@ -1,7 +1,9 @@
 /**
  * @module UserProfile
  */
+import { Either } from '../../core/types/ads/either'
 import { HttpClient } from '../../infrastructure/http/HttpClient'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from '../config.js'
 import { calculateLongestStreaks } from '../userActivity.js'
 
@@ -65,4 +67,14 @@ export async function otherStats(
   return otherStats
     .map(mergeStats(longestStreaks))
     .recover(mergeStats(longestStreaks)(defaultStats))
+}
+
+export async function deleteProfilePicture(): Promise<Either<HttpError, never>> {
+  const url = `${baseUrl}/v1/users/profile_picture`
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  const response = await httpClient.delete<never>(url, 'DELETE')
+
+  return response.ltap((response) =>
+    console.error('Error deleting profile picture:', response.statusText)
+  )
 }

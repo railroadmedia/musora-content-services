@@ -55,8 +55,6 @@ import {
 } from './services/contentLikes.js';
 
 import {
-	assignmentStatusCompleted,
-	assignmentStatusReset,
 	contentStatusCompleted,
 	contentStatusReset,
 	getAllCompleted,
@@ -85,7 +83,8 @@ import {
 	getTimeRemainingUntilLocal,
 	getWeekNumber,
 	isNextDay,
-	isSameDate
+	isSameDate,
+	toDayjs
 } from './services/dateUtils.js';
 
 import {
@@ -160,6 +159,7 @@ import {
 	postContentLiked,
 	postContentReset,
 	postContentUnliked,
+	postPlaylistContentEngaged,
 	postRecordWatchSession,
 	replyToComment,
 	reportComment,
@@ -219,6 +219,7 @@ import {
 	fetchScheduledReleases,
 	fetchShows,
 	fetchShowsData,
+	fetchSiblingContent,
 	fetchSongArtistCount,
 	fetchSongById,
 	fetchTabData,
@@ -252,6 +253,7 @@ import {
 import {
 	blockUser,
 	deletePicture,
+	getUserData,
 	unblockUser,
 	uploadPicture,
 	uploadPictureFromS3
@@ -259,12 +261,15 @@ import {
 
 import {
 	deleteNotification,
+	fetchLiveEventPollingState,
 	fetchNotificationSettings,
 	fetchNotifications,
 	fetchUnreadCount,
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
 	markNotificationAsUnread,
+	pauseLiveEventPolling,
+	startLiveEventPolling,
 	updateNotificationSetting
 } from './services/user/notifications.js';
 
@@ -274,6 +279,7 @@ import {
 } from './services/user/permissions.js';
 
 import {
+	deleteProfilePicture,
 	otherStats
 } from './services/user/profile.ts';
 
@@ -287,6 +293,7 @@ import {
 	createPracticeNotes,
 	deletePracticeSession,
 	deleteUserActivity,
+	fetchRecentActivitiesActiveTabs,
 	findIncompleteLesson,
 	getPracticeNotes,
 	getPracticeSessions,
@@ -313,8 +320,6 @@ declare module 'musora-content-services' {
 		applyCloudflareWrapper,
 		applySanityTransformations,
 		assignModeratorToComment,
-		assignmentStatusCompleted,
-		assignmentStatusReset,
 		blockUser,
 		buildImageSRC,
 		calculateLongestStreaks,
@@ -331,6 +336,7 @@ declare module 'musora-content-services' {
 		deletePicture,
 		deletePlaylist,
 		deletePracticeSession,
+		deleteProfilePicture,
 		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
@@ -378,6 +384,7 @@ declare module 'musora-content-services' {
 		fetchLessonsFeaturingThisContent,
 		fetchLikeCount,
 		fetchLiveEvent,
+		fetchLiveEventPollingState,
 		fetchMetadata,
 		fetchMethod,
 		fetchMethodChildren,
@@ -397,6 +404,7 @@ declare module 'musora-content-services' {
 		fetchPlaylist,
 		fetchPlaylistItems,
 		fetchRecent,
+		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
 		fetchRelatedLessons,
 		fetchRelatedRecommendedContent,
@@ -407,6 +415,7 @@ declare module 'musora-content-services' {
 		fetchScheduledReleases,
 		fetchShows,
 		fetchShowsData,
+		fetchSiblingContent,
 		fetchSimilarItems,
 		fetchSongArtistCount,
 		fetchSongById,
@@ -456,6 +465,7 @@ declare module 'musora-content-services' {
 		getStartedOrCompletedProgressOnly,
 		getTabResults,
 		getTimeRemainingUntilLocal,
+		getUserData,
 		getUserMonthlyStats,
 		getUserPractices,
 		getUserWeeklyStats,
@@ -482,6 +492,7 @@ declare module 'musora-content-services' {
 		markNotificationAsUnread,
 		openComment,
 		otherStats,
+		pauseLiveEventPolling,
 		pinGuidedCourse,
 		pinProgressRow,
 		pinnedGuidedCourses,
@@ -497,6 +508,7 @@ declare module 'musora-content-services' {
 		postContentLiked,
 		postContentReset,
 		postContentUnliked,
+		postPlaylistContentEngaged,
 		postRecordWatchSession,
 		rankCategories,
 		rankItems,
@@ -520,7 +532,9 @@ declare module 'musora-content-services' {
 		sendPasswordResetEmail,
 		setStudentViewForUser,
 		setupAccount,
+		startLiveEventPolling,
 		status,
+		toDayjs,
 		togglePlaylistPrivate,
 		unEnrollUserInGuidedCourse,
 		unPinGuidedCourse,

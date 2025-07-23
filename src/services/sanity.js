@@ -31,6 +31,7 @@ import {
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { fetchUserPermissions } from './user/permissions.js'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
+import {fetchRecentActivitiesActiveTabs} from "./userActivity.js";
 
 /**
  * Exported functions that are excluded from index generation.
@@ -520,13 +521,30 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   }
   const idsString = ids.join(',')
   const brandFilter = brand ? ` && brand == "${brand}"` : ''
+  const now = getSanityDate(new Date())
   const query = `*[
     railcontent_id in [${idsString}]${brandFilter}
   ]{
     ${getFieldsForContentType(contentType)}
+    live_event_start_time,
+    live_event_end_time,
   }`
 
-  const results = await fetchSanity(query, true)
+  const customPostProcess = (results) => {
+    const now = getSanityDate(new Date(), false);
+    const liveProcess = (result) => {
+      if (result.live_event_start_time && result.live_event_end_time) {
+        result.isLive =
+          result.live_event_start_time <= now &&
+          result.live_event_end_time >= now;
+      } else {
+        result.isLive = false;
+      }
+      return result;
+    };
+    return results.map(liveProcess);
+  }
+  const results = await fetchSanity(query, true, { customPostProcess: customPostProcess })
 
   const sortFuction = function compare(a, b) {
     const indexA = ids.indexOf(a['id'])
@@ -551,7 +569,10 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
     brand,
     name,
     'slug': slug.current,
-    'content': content[]->{ ${getFieldsForContentType()} }
+    'content': content[]->{
+        'children': child[]->{ 'id': railcontent_id, 'children': child[]->{'id': railcontent_id}, },
+        ${getFieldsForContentType('tab-data')}
+    },
   }`, true)
 }
 
@@ -1437,7 +1458,50 @@ async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, cou
 }
 
 /**
- * Fetch related lessons for a specific lesson by RailContent ID and type.
+ * Fetch sibling lessons to a specific lesson
+ * @param {string} railContentId - The RailContent ID of the current lesson.
+ * @param {string} brand - The current brand.
+ * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
+ */
+export async function fetchSiblingContent(railContentId, brand)
+{
+  const filterGetParent = await new FilterBuilder(`references(^._id) && _type == ^.parent_type`, {
+    pullFutureContent: true,
+  }).buildFilter()
+  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+
+  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission[]->railcontent_id, "genre": genre[]->name`
+
+  const query = `*[railcontent_id == ${railContentId} && brand == "${brand}"]{
+   _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
+   'for-calculations': *[${filterGetParent}][0]{
+    'siblings-list': child[]->railcontent_id,
+    'parents-list': *[${filterGetParent}][0].child[]->railcontent_id
+    },
+    "related_lessons" : *[${filterGetParent}][0].child[${childrenFilter}]->{${queryFields}}
+  }`
+
+  let result = await fetchSanity(query, false)
+
+  //there's no way in sanity to retrieve the index of an array, so we must calculate after fetch
+  if (result['for-calculations'] && result['for-calculations']['parents-list']) {
+    const calc = result['for-calculations']
+    const parentCount = calc['parents-list'].length
+    const currentParentIndex = calc['parents-list'].indexOf(result['parent_id']) + 1
+    const siblingCount = calc['siblings-list'].length
+    const currentSiblingIndex = calc['siblings-list'].indexOf(result['railcontent_id']) + 1
+
+    delete result['for-calculations']
+    result = { ...result, parentCount, currentParentIndex, siblingCount, currentSiblingIndex }
+    return result
+  } else {
+    delete result['for-calculations']
+    return result
+  }
+}
+
+/**
+ * Fetch lessons related to a specific lesson by RailContent ID and type.
  * @param {string} railContentId - The RailContent ID of the current lesson.
  * @param {string} brand - The current brand.
  * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
@@ -1455,43 +1519,18 @@ export async function fetchRelatedLessons(railContentId, brand) {
   const filterSongSameGenre = await new FilterBuilder(
     `_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}`
   ).buildFilter()
-  const filterNeighbouringSiblings = await new FilterBuilder(`references(^._id)`, {
-    pullFutureContent: true,
-  }).buildFilter()
-  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
   const queryFieldsWithSort = queryFields + ', sort'
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
-   _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
-   'for-calculations': *[references(^._id) && !(_type in ['license'])][0]{
-    'siblings-list': child[]->railcontent_id,
-    'parents-list': *[references(^._id)][0].child[]->railcontent_id
-    },
+   _type, parent_type, railcontent_id,
     "related_lessons" : array::unique([
-      ...(*[${filterNeighbouringSiblings}][0].child[${childrenFilter}]->{${queryFields}}),
       ...(*[${filterSongSameArtist}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
       ...(*[${filterSongSameGenre}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
       ...(*[${filterSameTypeAndSortOrder}]{${queryFieldsWithSort}}|order(sort asc, title asc)[0...10]),
       ...(*[${filterSameType}]{${queryFields}}|order(published_on desc, title asc)[0...10])
       ,
       ])[0...10]}`
-  let result = await fetchSanity(query, false)
-
-  //there's no way in sanity to retrieve the index of an array, so we must calculate after fetch
-  if (result['for-calculations'] && result['for-calculations']['parents-list']) {
-    const calc = result['for-calculations']
-    const parentCount = calc['parents-list'].length
-    const currentParent = calc['parents-list'].indexOf(result['parent_id']) + 1
-    const siblingCount = calc['siblings-list'].length
-    const currentSibling = calc['siblings-list'].indexOf(result['railcontent_id']) + 1
-
-    delete result['for-calculations']
-    result = { ...result, parentCount, currentParent, siblingCount, currentSibling }
-    return result
-  } else {
-    delete result['for-calculations']
-    return result
-  }
+  return await fetchSanity(query, false)
 }
 
 /**
@@ -1979,9 +2018,9 @@ export async function fetchSanity(
     return null
   }
 
-  if (globalConfig.sanityConfig.debug) {
-    console.log('fetchSanity Query:', query)
-  }
+  // if (globalConfig.sanityConfig.debug) {
+  //   console.log('fetchSanity Query:', query)
+  // }
   const perspective = globalConfig.sanityConfig.perspective ?? 'published'
   const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api'
   const url = `https://${globalConfig.sanityConfig.projectId}.${api}.sanity.io/v${globalConfig.sanityConfig.version}/data/query/${globalConfig.sanityConfig.dataset}?perspective=${perspective}`
@@ -2114,7 +2153,12 @@ export async function fetchShowsData(brand) {
  *   .catch(error => console.error(error));
  */
 export async function fetchMetadata(brand, type) {
-  const processedData = processMetadata(brand, type, true)
+  let processedData =  processMetadata(brand, type, true)
+  if(processedData?.onlyAvailableTabs === true) {
+    const activeTabs = await fetchRecentActivitiesActiveTabs()
+    processedData.tabs = activeTabs
+  }
+
   return processedData ? processedData : {}
 }
 
@@ -2358,13 +2402,13 @@ export async function fetchTabData(
 
   // limits the results to supplied progressIds for started & completed filters
   const progressFilter = await getProgressFilter(progress, progressIds)
-  if(sort == "recommended"){
+  if (sort === "recommended"){
     progressIds = await recommendations(brand);
     withoutPagination = true;
   }
 
-  let fields = DEFAULT_FIELDS
-  let fieldsString = fields.join(',')
+  const fieldsString = getFieldsForContentType('tab-data');
+  const now = getSanityDate(new Date())
 
   // Determine the group by clause
   let query = ''
@@ -2374,8 +2418,9 @@ export async function fetchTabData(
   filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   entityFieldsString =
-    ` ${fieldsString},
+    ` ${fieldsString}
     'children': child[${childrenFilter}]->{'id': railcontent_id},
+    'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
     'lesson_count': coalesce(count(child[${childrenFilter}]->), 0),
     'length_in_seconds': coalesce(
       math::sum(
@@ -2385,7 +2430,6 @@ export async function fetchTabData(
       ),
       length_in_seconds
     ),`
-
   const filterWithRestrictions = await new FilterBuilder(filter, {}).buildFilter()
   query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
     sortOrder: sortOrder,

@@ -4,6 +4,8 @@
 import { fetchHandler as railcontentFetchHandler } from '../railcontent.js'
 import { fetchHandler, fetchJSONHandler } from '../../lib/httpHelper.js'
 import { globalConfig } from '../config.js'
+import './types.js'
+import { HttpClient } from '../../infrastructure/http/HttpClient'
 
 const baseUrl = `/api/user-management-system`
 
@@ -103,4 +105,14 @@ export async function deletePicture(pictureUrl) {
   fetchJSONHandler(apiUrl, globalConfig.sessionConfig.token, globalConfig.baseUrl, 'DELETE', null, {
     picture_url: pictureUrl,
   })
+}
+
+/**
+ * @param {number} [userId=globalConfig.sessionConfig.userId]
+ * @returns {Promise<User|null>}
+ */
+export async function getUserData(userId = globalConfig.sessionConfig.userId) {
+  const apiUrl = `${baseUrl}/v1/users/${userId}`
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  return httpClient.get(apiUrl)
 }
