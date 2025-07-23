@@ -1,5 +1,5 @@
 //import {AWSUrl, CloudFrontURl} from "./services/config";
-import {Tabs} from "./contentMetaData.js";
+import { Tabs } from './contentMetaData.js'
 
 export const AWSUrl = 'https://s3.us-east-1.amazonaws.com/musora-web-platform'
 export const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net'
@@ -127,22 +127,33 @@ export const coachLessonsTypes = [
 ]
 
 export const childContentTypeConfig = {
-  'song-tutorial': [
-    `"genre": genre[]->name`,
-    `difficulty_string`,
-    `"type": _type`,
-  ]
+  'song-tutorial': [`"genre": genre[]->name`, `difficulty_string`, `"type": _type`],
 }
 
-export const singleLessonTypes = ['quick-tips', 'rudiment', 'coach-lessons'];
-export const practiceAlongsLessonTypes = ['workout', 'boot-camp','challenges'];
-export const performancesLessonTypes = ['performance','solo','drum-fest-international-2022'];
-export const documentariesLessonTypes = ['tama','sonor','history-of-electronic-drums','paiste-cymbals'];
-export const liveArchivesLessonTypes = ['podcast', 'coach-stream', 'question-and-answer', 'live-streams', 'live'];
-export const studentArchivesLessonTypes = ['student-review', 'student-focus','student-collaboration'];
-export const tutorialsLessonTypes = ['song-tutorial'];
-export const transcriptionsLessonTypes = ['song'];
-export const playAlongLessonTypes = ['play-along'];
+export const singleLessonTypes = ['quick-tips', 'rudiment', 'coach-lessons']
+export const practiceAlongsLessonTypes = ['workout', 'boot-camp', 'challenges']
+export const performancesLessonTypes = ['performance', 'solo', 'drum-fest-international-2022']
+export const documentariesLessonTypes = [
+  'tama',
+  'sonor',
+  'history-of-electronic-drums',
+  'paiste-cymbals',
+]
+export const liveArchivesLessonTypes = [
+  'podcast',
+  'coach-stream',
+  'question-and-answer',
+  'live-streams',
+  'live',
+]
+export const studentArchivesLessonTypes = [
+  'student-review',
+  'student-focus',
+  'student-collaboration',
+]
+export const tutorialsLessonTypes = ['song-tutorial']
+export const transcriptionsLessonTypes = ['song']
+export const playAlongLessonTypes = ['play-along']
 
 export const individualLessonsTypes = [
   ...singleLessonTypes,
@@ -150,49 +161,69 @@ export const individualLessonsTypes = [
   ...performancesLessonTypes,
   ...documentariesLessonTypes,
   ...liveArchivesLessonTypes,
-  ...studentArchivesLessonTypes
-];
+  ...studentArchivesLessonTypes,
+]
 
-export const coursesLessonTypes = ['course', 'pack','spotlight', 'guided-course'];
-export const showsLessonTypes = ['diy-drum-experiment','exploring-beats','in-rhythm',  'rhythmic-adventures-of-captain-carson','rhythms-from-another-planet','study-the-greats'];
-export const collectionLessonTypes = [
-    ...coursesLessonTypes,
-    ...showsLessonTypes
-];
+export const coursesLessonTypes = ['course', 'pack', 'spotlight', 'guided-course']
+export const showsLessonTypes = [
+  'diy-drum-experiment',
+  'exploring-beats',
+  'in-rhythm',
+  'rhythmic-adventures-of-captain-carson',
+  'rhythms-from-another-planet',
+  'study-the-greats',
+]
+export const collectionLessonTypes = [...coursesLessonTypes, ...showsLessonTypes]
 
 export const lessonTypesMapping = {
   'single lessons': singleLessonTypes,
   'practice alongs': practiceAlongsLessonTypes,
   'live archives': liveArchivesLessonTypes,
-  'performances': performancesLessonTypes,
+  performances: performancesLessonTypes,
   'student archives': studentArchivesLessonTypes,
-  'documentaries': documentariesLessonTypes,
-  'courses': coursesLessonTypes,
-  'shows': showsLessonTypes,
-  'collections': collectionLessonTypes,
-  'individuals': individualLessonsTypes,
-  'tutorials': tutorialsLessonTypes,
-  'transcriptions': transcriptionsLessonTypes,
-  'tabs': transcriptionsLessonTypes,
+  documentaries: documentariesLessonTypes,
+  courses: coursesLessonTypes,
+  shows: showsLessonTypes,
+  collections: collectionLessonTypes,
+  individuals: individualLessonsTypes,
+  tutorials: tutorialsLessonTypes,
+  transcriptions: transcriptionsLessonTypes,
+  tabs: transcriptionsLessonTypes,
   'sheet music': transcriptionsLessonTypes,
   'play-alongs': playAlongLessonTypes,
   'jam tracks': ['jam-track'],
-};
+}
 
-export const getNextLessonLessonParentTypes = ['course', 'guided-course', 'pack', 'pack-bundle', 'song-tutorial'];
+export const getNextLessonLessonParentTypes = [
+  'course',
+  'guided-course',
+  'pack',
+  'pack-bundle',
+  'song-tutorial',
+]
 
 export const progressTypesMapping = {
-  'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes, 'live', 'pack-bundle-lesson', 'course-part'],
-  'course': ['course'],
-  'show': showsLessonTypes,
+  lesson: [
+    ...singleLessonTypes,
+    ...practiceAlongsLessonTypes,
+    ...liveArchivesLessonTypes,
+    ...performancesLessonTypes,
+    ...studentArchivesLessonTypes,
+    ...documentariesLessonTypes,
+    'live',
+    'pack-bundle-lesson',
+    'course-part',
+  ],
+  course: ['course'],
+  show: showsLessonTypes,
   'song tutorial': [...tutorialsLessonTypes, 'song-tutorial-children'],
-  'songs': transcriptionsLessonTypes,
+  songs: transcriptionsLessonTypes,
   'play-along': playAlongLessonTypes,
   'guided course': ['guided-course'],
-  'pack': ['pack', 'semester-pack'],
-  'method': ['learning-path'],
+  pack: ['pack', 'semester-pack'],
+  method: ['learning-path'],
   'jam track': ['jam-track'],
-};
+}
 
 export const songs = {
   drumeo: 'transcription',
@@ -203,22 +234,40 @@ export const songs = {
 
 export const filterTypes = {
   lessons: [...individualLessonsTypes, ...collectionLessonTypes],
-  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes, 'jam-track'],
+  songs: [
+    ...tutorialsLessonTypes,
+    ...transcriptionsLessonTypes,
+    ...playAlongLessonTypes,
+    'jam-track',
+  ],
 }
 
 export const recentTypes = {
-  lessons: [...individualLessonsTypes, 'course-part', 'pack-bundle-lesson', 'challenge-part', 'guided-course-part', 'quick-tips'],
+  lessons: [
+    ...individualLessonsTypes,
+    'course-part',
+    'pack-bundle-lesson',
+    'challenge-part',
+    'guided-course-part',
+    'quick-tips',
+  ],
   songs: [...transcriptionsLessonTypes, ...playAlongLessonTypes, 'song-tutorial-children'],
-  home: [...individualLessonsTypes, ...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes,
-  'guided-course', 'learning-path', 'live', 'course', 'pack']
+  home: [
+    ...individualLessonsTypes,
+    ...tutorialsLessonTypes,
+    ...transcriptionsLessonTypes,
+    ...playAlongLessonTypes,
+    'guided-course',
+    'learning-path',
+    'live',
+    'course',
+    'pack',
+  ],
 }
 
 export let contentTypeConfig = {
   'tab-data': {
-    fields: [
-      'enrollment_start_time',
-      'enrollment_end_time',
-    ],
+    fields: ['enrollment_start_time', 'enrollment_end_time'],
   },
   'progress-tracker': {
     fields: [
@@ -232,17 +281,14 @@ export let contentTypeConfig = {
         '"thumbnail": thumbnail.asset->url,' +
         'published_on,' +
         '"lessons": child[]->{' +
-          '"id":railcontent_id,' +
-          '"slug":slug.current,' +
-          '"type": _type,' +
-          '"brand":brand},' +
-          '"thumbnail": thumbnail.asset->url,' +
-          'published_on,' +
+        '"id":railcontent_id,' +
+        '"slug":slug.current,' +
+        '"type": _type,' +
+        '"brand":brand},' +
+        '"thumbnail": thumbnail.asset->url,' +
+        'published_on,' +
         '}',
     ],
-
-
-
   },
   song: {
     fields: ['album', 'soundslice', 'instrumentless', `"resources": ${resourcesField}`],
@@ -580,17 +626,11 @@ export let contentTypeConfig = {
   'exploring-beats': contentWithSortField,
   sonor: contentWithSortField,
   returning: {
-    fields: [
-      `quarter_published`,
-      '"thumbnail": thumbnail.asset->url',
-    ]
+    fields: [`quarter_published`, '"thumbnail": thumbnail.asset->url'],
   },
   leaving: {
-    fields: [
-      `quarter_removed`,
-      '"thumbnail": thumbnail.asset->url',
-    ]
-  }
+    fields: [`quarter_removed`, '"thumbnail": thumbnail.asset->url'],
+  },
 }
 
 export const plusMembershipPermissions = 92
@@ -772,12 +812,7 @@ export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
             !selectedFilters.includes(key)
           ) {
             return `"${value}" in ${key}[]->name`
-          } else if (
-              ['style'].includes(
-                  key
-              ) &&
-              !selectedFilters.includes(key)
-          ) {
+          } else if (['style'].includes(key) && !selectedFilters.includes(key)) {
             return `"${value}" in genre[]->name`
           } else if (key === 'gear' && !selectedFilters.includes('gear')) {
             return `gear match "${value}"`
@@ -790,48 +825,62 @@ export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
               return `instrumentless == ${value}`
             }
           } else if (key === 'difficulty' && !selectedFilters.includes(key)) {
-            if(value === 'Introductory'){
+            if (value === 'Introductory') {
               return `(difficulty_string == "Novice" || difficulty_string == "Introductory" )`
             }
             return `difficulty_string == "${value}"`
           } else if (key === 'tab' && !selectedFilters.includes(key)) {
-            if(value.toLowerCase() === Tabs.Individuals.name.toLowerCase()){
-              const conditions = individualLessonsTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.Collections.name.toLowerCase()){
-              const conditions = collectionLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.Tutorials.name.toLowerCase()){
-              const conditions = tutorialsLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.Transcriptions.name.toLowerCase()){
-              const conditions = transcriptionsLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.PlayAlongs.name.toLowerCase()){
-              const conditions = playAlongLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.ExploreAll.name.toLowerCase()){
-              var allLessons = filterTypes[pageName] || [];
-              const conditions = allLessons.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              if (conditions === "") return '';
-              return ` (${conditions})`;
-          }else if(value.toLowerCase() === Tabs.RecentAll.name.toLowerCase()){
-              var allLessons = recentTypes[pageName] || [];
-              const conditions = allLessons.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              if (conditions === "") return '';
-              return ` (${conditions})`;
+            if (value.toLowerCase() === Tabs.Individuals.name.toLowerCase()) {
+              const conditions = individualLessonsTypes
+                .map((lessonType) => `_type == '${lessonType}'`)
+                .join(' || ')
+              return ` (${conditions})`
+            } else if (value.toLowerCase() === Tabs.Collections.name.toLowerCase()) {
+              const conditions = collectionLessonTypes
+                .map((lessonType) => `_type == '${lessonType}'`)
+                .join(' || ')
+              return ` (${conditions})`
+            } else if (value.toLowerCase() === Tabs.Tutorials.name.toLowerCase()) {
+              const conditions = tutorialsLessonTypes
+                .map((lessonType) => `_type == '${lessonType}'`)
+                .join(' || ')
+              return ` (${conditions})`
+            } else if (value.toLowerCase() === Tabs.Transcriptions.name.toLowerCase()) {
+              const conditions = transcriptionsLessonTypes
+                .map((lessonType) => `_type == '${lessonType}'`)
+                .join(' || ')
+              return ` (${conditions})`
+            } else if (value.toLowerCase() === Tabs.PlayAlongs.name.toLowerCase()) {
+              const conditions = playAlongLessonTypes
+                .map((lessonType) => `_type == '${lessonType}'`)
+                .join(' || ')
+              return ` (${conditions})`
+            } else if (value.toLowerCase() === Tabs.ExploreAll.name.toLowerCase()) {
+              var allLessons = filterTypes[pageName] || []
+              const conditions = allLessons
+                .map((lessonType) => `_type == '${lessonType}'`)
+                .join(' || ')
+              if (conditions === '') return ''
+              return ` (${conditions})`
+            } else if (value.toLowerCase() === Tabs.RecentAll.name.toLowerCase()) {
+              var allLessons = recentTypes[pageName] || []
+              const conditions = allLessons
+                .map((lessonType) => `_type == '${lessonType}'`)
+                .join(' || ')
+              if (conditions === '') return ''
+              return ` (${conditions})`
             }
             return `_type == "${value}"`
           } else if (key === 'type' && !selectedFilters.includes(key)) {
-            const typeKey = value.toLowerCase();
-            const lessonTypes = lessonTypesMapping[typeKey];
+            const typeKey = value.toLowerCase()
+            const lessonTypes = lessonTypesMapping[typeKey]
             if (lessonTypes) {
-              const conditions = lessonTypes.map(
-                  (lessonType) => `_type == '${lessonType}'`
-              ).join(' || ');
-              return ` (${conditions})`;
+              const conditions = lessonTypes
+                .map((lessonType) => `_type == '${lessonType}'`)
+                .join(' || ')
+              return ` (${conditions})`
             }
-            return `_type == "${value}"`;
+            return `_type == "${value}"`
           } else if (key === 'length_in_seconds') {
             if (value.includes('-')) {
               const [min, max] = value.split('-').map(Number)
