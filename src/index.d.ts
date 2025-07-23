@@ -83,7 +83,8 @@ import {
 	getTimeRemainingUntilLocal,
 	getWeekNumber,
 	isNextDay,
-	isSameDate
+	isSameDate,
+	toDayjs
 } from './services/dateUtils.js';
 
 import {
@@ -529,6 +530,7 @@ declare module 'musora-content-services' {
 		setupAccount,
 		startLiveEventPolling,
 		status,
+		toDayjs,
 		togglePlaylistPrivate,
 		unEnrollUserInGuidedCourse,
 		unPinGuidedCourse,

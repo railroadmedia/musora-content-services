@@ -83,7 +83,8 @@ import {
 	getTimeRemainingUntilLocal,
 	getWeekNumber,
 	isNextDay,
-	isSameDate
+	isSameDate,
+	toDayjs
 } from './services/dateUtils.js';
 
 import {
@@ -528,6 +529,7 @@ export {
 	setupAccount,
 	startLiveEventPolling,
 	status,
+	toDayjs,
 	togglePlaylistPrivate,
 	unEnrollUserInGuidedCourse,
 	unPinGuidedCourse,
