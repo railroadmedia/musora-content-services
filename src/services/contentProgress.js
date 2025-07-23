@@ -15,6 +15,7 @@ const DATA_KEY_STATUS = 's'
 const DATA_KEY_PROGRESS = 'p'
 const DATA_KEY_RESUME_TIME = 't'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
+const DATA_KEY_BRAND = 'b'
 
 export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress)
 
@@ -438,8 +439,11 @@ function bubbleProgress(hierarchy, contentId, localContext) {
     return localContext.data[childId]?.[DATA_KEY_PROGRESS] ?? 0
   })
   let progress = Math.round(childProgress.reduce((a, b) => a + b, 0) / childProgress.length)
+  const brand =localContext.data[contentId]?.[DATA_KEY_BRAND] ?? null
   data[DATA_KEY_PROGRESS] = progress
   data[DATA_KEY_STATUS] = progress === 100 ? STATE_COMPLETED : STATE_STARTED
+  data[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000)
+  data[DATA_KEY_BRAND] = brand
   localContext.data[parentId] = data
   bubbleProgress(hierarchy, parentId, localContext)
 }
