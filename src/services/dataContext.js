@@ -44,6 +44,8 @@ export async function clearAllDataContexts() {
   return await DataContext.clearAll()
 }
 
+const instances = []
+
 export class DataContext {
   static PREFIX = 'dataContext_'
 
@@ -57,6 +59,7 @@ export class DataContext {
     const cache = new LocalCache()
     const keys = await cache.getKeys(DataContext.PREFIX)
     await Promise.all(keys.map(key => cache.removeItem(key)))
+    instances.forEach(instance => instance.clearContext())
   }
 
   constructor(dataVersionKey, fetchDataFunction) {
@@ -65,6 +68,7 @@ export class DataContext {
     this.localStorageKey = `${this.constructor.PREFIX}${this.dataVersionKey.toString()}`
     this.localStorageLastUpdatedKey = `${this.constructor.PREFIX}${this.dataVersionKey.toString()}_lastUpdated`
     this.cache = new LocalCache()
+    instances.push(this)
   }
 
   async getData() {
