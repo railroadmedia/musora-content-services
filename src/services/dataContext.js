@@ -12,6 +12,8 @@ export const ContentLikesVersionKey = 0
 export const ContentProgressVersionKey = 1
 export const UserActivityVersionKey = 2
 
+const instances = []
+
 /**
  * Custom error class for DataContext related errors
  */
@@ -57,6 +59,7 @@ export class DataContext {
     const cache = new LocalCache()
     const keys = await cache.getKeys(DataContext.PREFIX)
     await Promise.all(keys.map(key => cache.removeItem(key)))
+    instances.forEach(instance => instance.clearContext())
   }
 
   constructor(dataVersionKey, fetchDataFunction) {
@@ -68,6 +71,8 @@ export class DataContext {
     // Lazy initialize the cache when needed instead of during construction,
     // avoids annoying circular dependency errors
     this._cache = null
+
+    instances.push(this);
   }
 
   get cache() {
