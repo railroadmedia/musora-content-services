@@ -5,12 +5,14 @@ import timezone from "dayjs/plugin/timezone";
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 import isoWeek from 'dayjs/plugin/isoWeek';
 import isBetween from 'dayjs/plugin/isBetween'
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(isSameOrAfter)
 dayjs.extend(isoWeek)
 dayjs.extend(isBetween)
+dayjs.extend(isSameOrBefore)
 
 export function toDayjs(date, timeZone = 'UTC') {
   return dayjs.tz(date, timeZone).startOf('day')

@@ -28,7 +28,7 @@ import {
 import {TabResponseType} from "../contentMetaData";
 import {isContentLikedByIds} from "./contentLikes.js";
 import dayjs from 'dayjs'
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 
 const DATA_KEY_PRACTICES = 'practices'
