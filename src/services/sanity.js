@@ -17,7 +17,7 @@ import {
   getChildFieldsForContentType,
   SONG_TYPES,
 } from '../contentTypeConfig.js'
-import {fetchSimilarItems, recommendations} from './recommendations.js'
+import { fetchSimilarItems, recommendations } from './recommendations.js'
 import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
 
 import { globalConfig } from './config.js'
@@ -31,7 +31,7 @@ import {
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { fetchUserPermissions } from './user/permissions.js'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
-import {fetchRecentActivitiesActiveTabs} from "./userActivity.js";
+import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -531,18 +531,16 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   }`
 
   const customPostProcess = (results) => {
-    const now = getSanityDate(new Date(), false);
+    const now = getSanityDate(new Date(), false)
     const liveProcess = (result) => {
       if (result.live_event_start_time && result.live_event_end_time) {
-        result.isLive =
-          result.live_event_start_time <= now &&
-          result.live_event_end_time >= now;
+        result.isLive = result.live_event_start_time <= now && result.live_event_end_time >= now
       } else {
-        result.isLive = false;
+        result.isLive = false
       }
-      return result;
-    };
-    return results.map(liveProcess);
+      return result
+    }
+    return results.map(liveProcess)
   }
   const results = await fetchSanity(query, true, { customPostProcess: customPostProcess })
 
@@ -560,12 +558,12 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   return sortedResults
 }
 
-export async function fetchContentRows(brand, pageName, contentRowSlug)
-{
+export async function fetchContentRows(brand, pageName, contentRowSlug) {
   if (pageName === 'lessons') pageName = 'lesson'
   if (pageName === 'songs') pageName = 'song'
   const rowString = contentRowSlug ? ` && slug.current == "${contentRowSlug.toLowerCase()}"` : ''
-  return fetchSanity(`*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}'${rowString}]{
+  return fetchSanity(
+    `*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}'${rowString}]{
     brand,
     name,
     'slug': slug.current,
@@ -573,10 +571,10 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
         'children': child[]->{ 'id': railcontent_id, 'children': child[]->{'id': railcontent_id}, },
         ${getFieldsForContentType('tab-data')}
     },
-  }`, true)
+  }`,
+    true
+  )
 }
-
-
 
 /**
  * Fetch all content for a specific brand and type with pagination, search, and grouping options.
@@ -930,7 +928,7 @@ async function getProgressFilter(progress, progressIds) {
       return `&& (railcontent_id in [${ids.join(',')}])`
     }
     case 'incomplete': {
-      const ids = progressIds !== undefined ? progressIds :await getAllStarted()
+      const ids = progressIds !== undefined ? progressIds : await getAllStarted()
       return `&& railcontent_id in [${ids.join(',')}]`
     }
     default:
@@ -1096,6 +1094,7 @@ export async function fetchMethod(brand, slug) {
 
   const query = `*[_type == 'learning-path' && brand == "${brand}" && slug.current == "${slug}"] {
     "description": ${descriptionField},
+    description_portable,
     "instructors":instructor[]->name,
     published_on,
     "id": railcontent_id,
@@ -1125,6 +1124,7 @@ export async function fetchMethod(brand, slug) {
         title,
         "type": _type,
         "description": ${descriptionField},
+        description_portable,
         "url": web_url_path,
         web_url_path,
         xp,
@@ -1146,6 +1146,7 @@ export async function fetchMethodChildren(railcontentId) {
     "child_count":coalesce(count(child[${childrenFilter}]->), 0),
     "id": railcontent_id,
     "description": ${descriptionField},
+    description_portable,
     "thumbnail": thumbnail.asset->url,
     title,
     xp,
@@ -1313,6 +1314,7 @@ export async function fetchLessonContent(railContentId) {
           "thumbnail":thumbnail.asset->url,
           soundslice_slug,
           "description": description[0].children[0].text,
+          description_portable,
           "chapters": chapter[]{
             chapter_description,
             chapter_timecode,
@@ -1463,8 +1465,7 @@ async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, cou
  * @param {string} brand - The current brand.
  * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
  */
-export async function fetchSiblingContent(railContentId, brand)
-{
+export async function fetchSiblingContent(railContentId, brand) {
   const filterGetParent = await new FilterBuilder(`references(^._id) && _type == ^.parent_type`, {
     pullFutureContent: true,
   }).buildFilter()
@@ -2153,8 +2154,8 @@ export async function fetchShowsData(brand) {
  *   .catch(error => console.error(error));
  */
 export async function fetchMetadata(brand, type) {
-  let processedData =  processMetadata(brand, type, true)
-  if(processedData?.onlyAvailableTabs === true) {
+  let processedData = processMetadata(brand, type, true)
+  if (processedData?.onlyAvailableTabs === true) {
     const activeTabs = await fetchRecentActivitiesActiveTabs()
     processedData.tabs = activeTabs
   }
@@ -2253,10 +2254,16 @@ async function buildQuery(
 function buildEntityAndTotalQuery(
   filter = '',
   fields = '...',
-  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false, withoutPagination = false }
+  {
+    sortOrder = 'published_on desc',
+    start = 0,
+    end = 10,
+    isSingle = false,
+    withoutPagination = false,
+  }
 ) {
   const sortString = sortOrder ? ` | order(${sortOrder})` : ''
-  const countString = isSingle ? '[0...1]' : (withoutPagination ? ``: `[${start}...${end}]`)
+  const countString = isSingle ? '[0...1]' : withoutPagination ? `` : `[${start}...${end}]`
   const query = `{
       "entity": *[${filter}]  ${sortString}${countString}
       {
@@ -2386,28 +2393,28 @@ export async function fetchTabData(
 
   switch (progress) {
     case 'recent':
-      progressIds = await getAllStartedOrCompleted({ brand, onlyIds: true });
-      sortOrder = null;
-      withoutPagination = true;
-      break;
+      progressIds = await getAllStartedOrCompleted({ brand, onlyIds: true })
+      sortOrder = null
+      withoutPagination = true
+      break
     case 'incomplete':
-      progressIds = await getAllStarted();
-      sortOrder = null;
-      break;
+      progressIds = await getAllStarted()
+      sortOrder = null
+      break
     case 'completed':
-      progressIds = await getAllCompleted();
-      sortOrder = null;
-      break;
+      progressIds = await getAllCompleted()
+      sortOrder = null
+      break
   }
 
   // limits the results to supplied progressIds for started & completed filters
   const progressFilter = await getProgressFilter(progress, progressIds)
-  if (sort === "recommended"){
-    progressIds = await recommendations(brand);
-    withoutPagination = true;
+  if (sort === 'recommended') {
+    progressIds = await recommendations(brand)
+    withoutPagination = true
   }
 
-  const fieldsString = getFieldsForContentType('tab-data');
+  const fieldsString = getFieldsForContentType('tab-data')
   const now = getSanityDate(new Date())
 
   // Determine the group by clause
@@ -2417,8 +2424,7 @@ export async function fetchTabData(
 
   filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-  entityFieldsString =
-    ` ${fieldsString}
+  entityFieldsString = ` ${fieldsString}
     'children': child[${childrenFilter}]->{'id': railcontent_id},
     'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
     'lesson_count': coalesce(count(child[${childrenFilter}]->), 0),
@@ -2438,20 +2444,23 @@ export async function fetchTabData(
     withoutPagination: withoutPagination,
   })
 
-  let results = await fetchSanity(query, true);
+  let results = await fetchSanity(query, true)
 
-  if ((['recent', 'incomplete', 'completed'].includes(progress) || sort == "recommended" )&& results.entity.length > 1) {
+  if (
+    (['recent', 'incomplete', 'completed'].includes(progress) || sort == 'recommended') &&
+    results.entity.length > 1
+  ) {
     const orderMap = new Map(progressIds.map((id, index) => [id, index]))
     results.entity = results.entity
       .sort((a, b) => {
-        const aIdx = orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER;
-        const bIdx = orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER;
-        return aIdx - bIdx || new Date(b.published_on) - new Date(a.published_on);
+        const aIdx = orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER
+        const bIdx = orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER
+        return aIdx - bIdx || new Date(b.published_on) - new Date(a.published_on)
       })
-      .slice(start, end);
+      .slice(start, end)
   }
 
-  return results;
+  return results
 }
 
 export async function fetchRecent(
