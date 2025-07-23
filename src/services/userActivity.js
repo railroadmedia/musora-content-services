@@ -355,9 +355,14 @@ export async function removeUserPractice(id) {
     async function (localContext) {
       if (localContext.data?.[DATA_KEY_PRACTICES]) {
         Object.keys(localContext.data[DATA_KEY_PRACTICES]).forEach((date) => {
-          localContext.data[DATA_KEY_PRACTICES][date] = localContext.data[DATA_KEY_PRACTICES][
-            date
-            ].filter((practice) => practice.id !== id)
+          const filtered = localContext.data[DATA_KEY_PRACTICES][date].filter(
+            (practice) => practice.id !== id
+          )
+          if (filtered.length > 0) {
+            localContext.data[DATA_KEY_PRACTICES][date] = filtered
+          } else {
+            delete localContext.data[DATA_KEY_PRACTICES][date]
+          }
         })
       }
     },
