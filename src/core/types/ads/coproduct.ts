@@ -23,8 +23,23 @@ export abstract class Coproduct<L, R>
 
   abstract isLeft(): this is Left<L, R>
   abstract isRight(): this is Right<L, R>
+
+  /**
+   * @extends Functor
+   * Maps the right value of the Coproduct to a new type.
+   */
   abstract map<T>(fn: (r: R) => T): Coproduct<L, T>
+  /**
+   * @extends Monad
+   * Applies a function to the right value of the Coproduct, returning a new Coproduct.
+   */
   abstract flatMap<T>(fn: (r: R) => Coproduct<L, T>): Coproduct<L, T>
+
+  /** Maps the left value of the Coproduct to a new type. */
+  abstract mapLeft<T>(fn: (l: L) => T): Coproduct<T, R>
+
+  /** Applies a function to the left value of the Coproduct, returning a new Coproduct. */
+  abstract flatMapLeft<T>(fn: (l: L) => Coproduct<T, R>): Coproduct<T, R>
 
   abstract fold<T, U>(onLeft: (l: L) => T, onRight: (r: R) => U): T | U
   foldMap<T>(initial: T, fn: (acc: T, value: L | R) => T): T {
@@ -34,10 +49,19 @@ export abstract class Coproduct<L, R>
     )
   }
 
-  abstract tap(fn: (l: R) => void): this
-  /** Same as tap but for the left value */
+  /**
+   * Visits the value inside the container if right and applies a function to it without modifying
+   * @implements Tappable
+   */
+  abstract tap(fn: (r: R) => void): this
+
+  /** Visits the value inside the container if left and applies a function to it without modifying */
   abstract ltap(fn: (l: L) => void): Coproduct<L, R>
   abstract drop(): R | L
+  /**
+   * Returns the right value if it exists, otherwise returns the provided default value.
+   * @implements Recoverable
+   */
   abstract recover(defaultValue: R): R
 }
 
@@ -115,11 +139,11 @@ export class Right<L, R> extends Coproduct<L, R> {
     return fn(this.value)
   }
 
-  mapLeft<T>(_fn: (l: R) => T): Coproduct<T, R> {
+  mapLeft<T>(_fn: (l: L) => T): Coproduct<T, R> {
     return new Right(this.value)
   }
 
-  flatMapLeft<T>(_fn: (l: R) => Coproduct<T, R>): Coproduct<T, R> {
+  flatMapLeft<T>(_fn: (l: L) => Coproduct<T, R>): Coproduct<T, R> {
     return new Right(this.value)
   }
 
@@ -127,7 +151,7 @@ export class Right<L, R> extends Coproduct<L, R> {
     return onRight(this.value)
   }
 
-  tap(fn: (l: R) => void): this {
+  tap(fn: (r: R) => void): this {
     const valueToTap = this.value
     fn(valueToTap)
     return this
@@ -142,7 +166,6 @@ export class Right<L, R> extends Coproduct<L, R> {
   }
 
   recover(_defaultValue: R): R {
-    // Since this is a Right, we can just return the value
     return this.drop() as R
   }
 }
