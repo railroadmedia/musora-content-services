@@ -36,7 +36,8 @@ export interface Award {
 /**
  * Get awards for a specific user.
  *
- * NOTE: needs error handling for the response from http client (Alexandre: I'm doing it in a different branch/PR)
+ * NOTE: needs error handling for the response from http client
+ * (Alexandre: I'm doing it in a different branch/PR: https://github.com/railroadmedia/musora-content-services/pull/349)
  * NOTE: This function still expects brand because FE passes the argument. It is ignored for now
  *
  * @param {number|null} userId - The user ID. If not provided, the authenticated user is used instead.
