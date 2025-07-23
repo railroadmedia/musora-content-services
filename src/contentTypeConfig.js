@@ -209,7 +209,7 @@ export const recentTypes = {
   lessons: [...individualLessonsTypes, 'course-part', 'pack-bundle-lesson', 'challenge-part', 'guided-course-part', 'quick-tips'],
   songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes],
   home: [...individualLessonsTypes, ...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes,
-  'guided-course', 'learning-path', 'live']
+  'guided-course', 'learning-path', 'live', 'course', 'pack']
 }
 
 export let contentTypeConfig = {
