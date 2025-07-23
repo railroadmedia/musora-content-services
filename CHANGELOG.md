@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.27.3](https://github.com/railroadmedia/musora-content-services/compare/v2.27.0...v2.27.3) (2025-07-23)
+
+
+### Bug Fixes
+
+* **last-engaged:** add playlist last engaged endpoint ([#361](https://github.com/railroadmedia/musora-content-services/issues/361)) ([3396207](https://github.com/railroadmedia/musora-content-services/commit/33962077500e47ff9cba93fb23fd28b63eb4112a))
+* MU2-710 - Update MCS to use new endpoint to get recent activities tabs with data ([5cfcc27](https://github.com/railroadmedia/musora-content-services/commit/5cfcc27745072907e745a1015350249f6dbccb85))
+* Song Tutorials are showing up in Recent Songs as collections ([68d4559](https://github.com/railroadmedia/musora-content-services/commit/68d4559f8ee528441a8a4bff73796fbd48c8321b))
+* T3PS-266 - Practice tracker meta ([fa3c962](https://github.com/railroadmedia/musora-content-services/commit/fa3c962580978ce6aef4fdf5ad8023852bf92a6d))
+* T3PS-415: progress rows for courses/song tutorials/packs ([4ad26cc](https://github.com/railroadmedia/musora-content-services/commit/4ad26ccbfbf2eade11882ae246d102d72093c1c5))
+* Timezone issue - Migrate native Date to Dayjs ([c37def1](https://github.com/railroadmedia/musora-content-services/commit/c37def12b471fe570e15c7be220ab8d52e1dad88))
+* **Userpractice:** add category_id and instrument_id to userPractice ([2c92c6f](https://github.com/railroadmedia/musora-content-services/commit/2c92c6f6adcb7fac657c3b12e1c3f5e927cff214))
+
 ### [2.27.2](https://github.com/railroadmedia/musora-content-services/compare/v2.27.1...v2.27.2) (2025-07-21)
 
 
