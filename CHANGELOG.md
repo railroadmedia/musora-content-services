@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.27.4](https://github.com/railroadmedia/musora-content-services/compare/v2.27.3...v2.27.4) (2025-07-23)
+
+
+### Bug Fixes
+
+* **T3PS-306:** add custom method to delete profile picture ([#369](https://github.com/railroadmedia/musora-content-services/issues/369)) ([61634db](https://github.com/railroadmedia/musora-content-services/commit/61634db6923f9ca4fdde9a5c20f18e8b61dd78ec))
+
 ### [2.27.3](https://github.com/railroadmedia/musora-content-services/compare/v2.27.0...v2.27.3) (2025-07-23)
 
 
