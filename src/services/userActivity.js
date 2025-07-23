@@ -973,6 +973,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
       childToParentMap[content.id] = content.parent_content_data[content.parent_content_data.length - 1];
     }
   });
+
   const progressMap = new Map();
   for (const [idStr, progress] of Object.entries(progressContents)) {
     const id = parseInt(idStr);
