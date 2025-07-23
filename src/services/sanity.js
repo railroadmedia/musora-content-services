@@ -31,6 +31,7 @@ import {
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { fetchUserPermissions } from './user/permissions.js'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
+import {fetchRecentActivitiesActiveTabs} from "./userActivity.js";
 
 /**
  * Exported functions that are excluded from index generation.
@@ -2152,7 +2153,12 @@ export async function fetchShowsData(brand) {
  *   .catch(error => console.error(error));
  */
 export async function fetchMetadata(brand, type) {
-  const processedData = processMetadata(brand, type, true)
+  let processedData =  processMetadata(brand, type, true)
+  if(processedData?.onlyAvailableTabs === true) {
+    const activeTabs = await fetchRecentActivitiesActiveTabs()
+    processedData.tabs = activeTabs
+  }
+
   return processedData ? processedData : {}
 }
 
