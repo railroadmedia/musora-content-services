@@ -18,7 +18,7 @@ import {fetchPlaylist, fetchUserPlaylists} from "./content-org/playlists"
 import {pinnedGuidedCourses} from "./content-org/guided-courses"
 import {convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay, getTimeRemainingUntilLocal, toDayjs} from './dateUtils.js'
 import { globalConfig } from './config'
-import {collectionLessonTypes, lessonTypesMapping, progressTypesMapping, showsLessonTypes, songs} from "../contentTypeConfig";
+import {collectionLessonTypes, lessonTypesMapping, progressTypesMapping, recentTypes, showsLessonTypes, songs} from "../contentTypeConfig";
 import {
   getAllStartedOrCompleted,
   getProgressPercentageByIds,
@@ -967,7 +967,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   for (const [idStr, progress] of Object.entries(progressContents)) {
     const id = parseInt(idStr);
     const content = contentsMap[id];
-    if (!content || excludedTypes.has(content.type)) continue;
+    if (!content || excludedTypes.has(content.type)  || !recentTypes.has(content.type) ) continue;
     const parentId = childToParentMap[id];
     // Handle children with parents
     if (parentId) {
