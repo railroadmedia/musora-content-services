@@ -1,7 +1,7 @@
 import { FoldableProduct } from '../interfaces/foldable'
 import { Tappable } from '../interfaces/tappable'
 
-/** A product type that combines two values of potentially different types. */
+/** Combines two values of potentially different types (e.g., Tuple). */
 export class Product<F, S> implements Tappable<F | S>, FoldableProduct<F, S> {
   constructor(
     private readonly firstValue: F,
