@@ -50,9 +50,9 @@ export async function fetchAwardsForUser(
   _brand: string,
   page: number = 1,
   limit: number = 5
-): Promise<PaginatedResponse<Award[]>> {
+): Promise<PaginatedResponse<Award>> {
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  const response = await httpClient.get<PaginatedResponse<Award[]>>(
+  const response = await httpClient.get<PaginatedResponse<Award>>(
     `${baseUrl}/v1/users/${userId}/awards?limit=${limit}&page=${page}`
   )
 
