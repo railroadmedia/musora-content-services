@@ -2,12 +2,12 @@ import { clearAllDataContexts } from "./dataContext.js";
 import { clearPermissionsData } from "./userPermissions.js";
 
 // clear possibly stale data on sign in
-export async function onSignInHandler() {
+export async function onLogInHandler() {
   await clearLocalSessionData()
 }
 
 // explicitly clear all data on sign out
-export async function onSignOutHandler() {
+export async function onLogOutHandler() {
   await clearLocalSessionData()
 }
 

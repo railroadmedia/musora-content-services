@@ -56,8 +56,8 @@ import {
 } from './services/lastUpdated.js';
 
 import {
-	onSignInHandler,
-	onSignOutHandler
+	onLogInHandler,
+	onLogOutHandler
 } from './services/local-session.js';
 
 import {
@@ -284,8 +284,8 @@ export {
 	jumpToContinueContent,
 	likeContent,
 	likePlaylist,
-	onSignInHandler,
-	onSignOutHandler,
+	onLogInHandler,
+	onLogOutHandler,
 	pinPlaylist,
 	playback,
 	postChallengesCommunityNotification,

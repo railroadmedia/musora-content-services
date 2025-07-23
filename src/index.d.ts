@@ -56,8 +56,8 @@ import {
 } from './services/lastUpdated.js';
 
 import {
-	onSignInHandler,
-	onSignOutHandler
+	onLogInHandler,
+	onLogOutHandler
 } from './services/local-session.js';
 
 import {
@@ -285,8 +285,8 @@ declare module 'musora-content-services' {
 		jumpToContinueContent,
 		likeContent,
 		likePlaylist,
-		onSignInHandler,
-		onSignOutHandler,
+		onLogInHandler,
+		onLogOutHandler,
 		pinPlaylist,
 		playback,
 		postChallengesCommunityNotification,
