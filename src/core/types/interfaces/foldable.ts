@@ -8,7 +8,7 @@ export interface Foldable<A> {
 
 /** FoldableProduct is a specialized Foldable for containers that hold two values, like a tuple. */
 export interface FoldableProduct<F, S> extends Foldable<F | S> {
-  fold(fn: (first: F, second: S) => F | S): F | S
+  fold<T>(fn: (first: F, second: S) => T): T
 }
 
 /** DisjointFoldable is a specialized Foldable for containers that can hold either a single value or none, like Maybe. */

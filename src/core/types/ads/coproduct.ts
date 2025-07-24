@@ -26,7 +26,7 @@ export abstract class Coproduct<L, R>
 
   /**
    * @extends Functor
-   * Maps the right value of the Coproduct to a new type.
+   * Maps the right value of the Coproduct.
    */
   abstract map<T>(fn: (r: R) => T): Coproduct<L, T>
   /**

@@ -1,5 +1,5 @@
 export abstract class Functor<T> {
-  /** Applies a function to the value inside the functor, returning a new functor. */
+  /** Applies a function to the value inside the functor */
   abstract map<U>(fn: (value: T) => U): Functor<U>
 
   /** Lifts a value into a Functor*/

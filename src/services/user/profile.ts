@@ -65,6 +65,7 @@ export async function otherStats(
   ])
 
   return otherStats
+    .ltap((e) => console.error('Error fetching other stats: ', e.statusText))
     .map(mergeStats(longestStreaks))
     .recover(mergeStats(longestStreaks)(defaultStats))
 }
@@ -72,9 +73,7 @@ export async function otherStats(
 export async function deleteProfilePicture(): Promise<Either<HttpError, void>> {
   const url = `${baseUrl}/v1/users/profile_picture`
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  const response = await httpClient.delete<void>(url, 'DELETE')
-
-  return response.ltap((response) =>
-    console.error('Error deleting profile picture:', response.statusText)
-  )
+  return httpClient.delete<void>(url, 'DELETE').then((res) => {
+    return res.ltap((error) => console.error('Error deleting profile picture:', error.statusText))
+  })
 }
