@@ -73,7 +73,7 @@ export async function otherStats(
 export async function deleteProfilePicture(): Promise<Either<HttpError, void>> {
   const url = `${baseUrl}/v1/users/profile_picture`
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.delete<void>(url, 'DELETE').then((res) => {
+  return httpClient.delete<void>(url).then((res) => {
     return res.ltap((error) => console.error('Error deleting profile picture:', error.statusText))
   })
 }
