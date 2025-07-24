@@ -33,6 +33,7 @@ export const DEFAULT_FIELDS = [
   'xp',
   'child_count',
   '"lesson_count": coalesce(count(child[]->.child[]->), child_count)',
+  '"parent_id": parent_content_data[0].id',
 ]
 export const DEFAULT_CHILD_FIELDS = [
   `"id": railcontent_id`,
