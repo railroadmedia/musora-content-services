@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.28.1](https://github.com/railroadmedia/musora-content-services/compare/v2.28.0...v2.28.1) (2025-07-24)
+
+
+### Bug Fixes
+
+* **T3PS-134:** playalong artist field fix ([#371](https://github.com/railroadmedia/musora-content-services/issues/371)) ([21da213](https://github.com/railroadmedia/musora-content-services/commit/21da2132abb7c2b008260277a73f9f17527e8aeb))
+
 ## [2.28.0](https://github.com/railroadmedia/musora-content-services/compare/v2.27.5...v2.28.0) (2025-07-24)
 
 
