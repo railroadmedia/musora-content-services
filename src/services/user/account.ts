@@ -24,9 +24,9 @@ export async function status(email: string): Promise<Either<HttpError, AccountSt
   )
 }
 
-export async function sendAccountSetupEmail(email: string): Promise<Either<HttpError, never>> {
+export async function sendAccountSetupEmail(email: string): Promise<Either<HttpError, void>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<never>(
+  return httpClient.post<void>(
     `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/send-setup-email`,
     {}
   )
@@ -37,9 +37,9 @@ export async function setupAccount({
   password,
   passwordConfirmation,
   token,
-}: PasswordResetProps): Promise<Either<HttpError, never>> {
+}: PasswordResetProps): Promise<Either<HttpError, void>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<never>(`/api/user-management-system/v1/accounts`, {
+  return httpClient.post<void>(`/api/user-management-system/v1/accounts`, {
     email,
     password,
     password_confirmation: passwordConfirmation,
@@ -47,9 +47,9 @@ export async function setupAccount({
   })
 }
 
-export async function sendPasswordResetEmail(email: string): Promise<Either<HttpError, never>> {
+export async function sendPasswordResetEmail(email: string): Promise<Either<HttpError, void>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<never>(`/api/user-management-system/v1/accounts/password/reset-email`, {
+  return httpClient.post<void>(`/api/user-management-system/v1/accounts/password/reset-email`, {
     email,
   })
 }
@@ -59,9 +59,9 @@ export async function resetPassword({
   password,
   passwordConfirmation,
   token,
-}: PasswordResetProps): Promise<Either<HttpError, never>> {
+}: PasswordResetProps): Promise<Either<HttpError, void>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<never>(`/api/user-management-system/v1/accounts/password/reset`, {
+  return httpClient.post<void>(`/api/user-management-system/v1/accounts/password/reset`, {
     email,
     password,
     password_confirmation: passwordConfirmation,
