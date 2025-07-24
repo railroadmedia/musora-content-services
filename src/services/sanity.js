@@ -1297,7 +1297,7 @@ export async function jumpToContinueContent(railcontentId) {
 export async function fetchLessonContent(railContentId) {
   const filterParams = { isSingle: true, pullFutureContent: true }
 
-  const fields = `${getFieldsForContentType()},
+  const fields = `${getFieldsForContentType()}
           "resources": ${resourcesField},
           soundslice,
           instrumentless,
