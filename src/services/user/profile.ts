@@ -58,9 +58,8 @@ const mergeStats =
 export async function otherStats(
   userId: string = globalConfig.sessionConfig.userId
 ): Promise<OtherStatsDTO> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
   const [otherStats, longestStreaks] = await Promise.all([
-    httpClient.get<OtherStatsDTO>(`${baseUrl}/v1/users/${userId}/statistics`, 'get'),
+    HttpClient.client().get<OtherStatsDTO>(`${baseUrl}/v1/users/${userId}/statistics`, 'get'),
     calculateLongestStreaks(userId),
   ])
 
@@ -70,10 +69,9 @@ export async function otherStats(
     .recover(mergeStats(longestStreaks)(defaultStats))
 }
 
-export async function deleteProfilePicture(): Promise<Either<HttpError, void>> {
-  const url = `${baseUrl}/v1/users/profile_picture`
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.delete<void>(url).then((res) => {
-    return res.ltap((error) => console.error('Error deleting profile picture:', error.statusText))
-  })
-}
+export const deleteProfilePicture = async (): Promise<Either<HttpError, void>> =>
+  HttpClient.client()
+    .delete<void>(`${baseUrl}/v1/users/profile_picture`)
+    .then((res) => {
+      return res.ltap((error) => console.error('Error deleting profile picture:', error.statusText))
+    })

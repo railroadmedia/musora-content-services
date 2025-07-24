@@ -6,12 +6,15 @@ import { NetworkError } from './interfaces/NetworkError'
 import { DefaultHeaderProvider } from './providers/DefaultHeaderProvider'
 import { FetchRequestExecutor } from './executors/FetchRequestExecutor'
 import { Either } from '../../core/types/ads/either'
+import { globalConfig } from '../../services/config'
 
 export class HttpClient {
   private baseUrl: string
   private token: string | null
   private headerProvider: HeaderProvider
   private requestExecutor: RequestExecutor
+
+  private static instance: HttpClient | null = null
 
   constructor(
     baseUrl: string,
@@ -23,6 +26,21 @@ export class HttpClient {
     this.token = token
     this.headerProvider = headerProvider
     this.requestExecutor = requestExecutor
+  }
+
+  public static client(
+    headerProvider: HeaderProvider = new DefaultHeaderProvider(),
+    requestExecutor: RequestExecutor = new FetchRequestExecutor()
+  ): HttpClient {
+    if (!HttpClient.instance) {
+      HttpClient.instance = new HttpClient(
+        globalConfig.baseUrl,
+        globalConfig.sessionConfig.token,
+        headerProvider,
+        requestExecutor
+      )
+    }
+    return HttpClient.instance
   }
 
   public setToken(token: string): void {

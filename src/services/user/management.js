@@ -112,7 +112,5 @@ export async function deletePicture(pictureUrl) {
  * @returns {Promise<User|null>}
  */
 export async function getUserData(userId = globalConfig.sessionConfig.userId) {
-  const apiUrl = `${baseUrl}/v1/users/${userId}`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.get(apiUrl)
+  return HttpClient.client().get(`${baseUrl}/v1/users/${userId}`)
 }
