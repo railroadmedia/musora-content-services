@@ -16,9 +16,9 @@ import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import { fetchByRailContentIds, fetchShows } from './sanity'
 import {fetchPlaylist, fetchUserPlaylists} from "./content-org/playlists"
 import {pinnedGuidedCourses} from "./content-org/guided-courses"
-import {convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay, getTimeRemainingUntilLocal} from './dateUtils.js'
+import {convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay, getTimeRemainingUntilLocal, toDayjs} from './dateUtils.js'
 import { globalConfig } from './config'
-import {collectionLessonTypes, lessonTypesMapping, progressTypesMapping, showsLessonTypes, songs} from "../contentTypeConfig";
+import {collectionLessonTypes, lessonTypesMapping, progressTypesMapping, recentTypes, showsLessonTypes, songs} from "../contentTypeConfig";
 import {
   getAllStartedOrCompleted,
   getProgressPercentageByIds,
@@ -27,6 +27,9 @@ import {
 } from "./contentProgress";
 import {TabResponseType} from "../contentMetaData";
 import {isContentLikedByIds} from "./contentLikes.js";
+import dayjs from 'dayjs'
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+import weekOfYear from 'dayjs/plugin/weekOfYear'
 
 const DATA_KEY_PRACTICES = 'practices'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
@@ -86,24 +89,21 @@ export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUs
  *   .catch(error => console.error(error));
  */
 export async function getUserWeeklyStats() {
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   let data = await userActivityContext.getData()
   let practices = data?.[DATA_KEY_PRACTICES] ?? {}
   let sortedPracticeDays = Object.keys(practices)
-    .map((date) => new Date(date))
-    .sort((a, b) => b - a)
-
-  let today = new Date()
-  today.setHours(0, 0, 0, 0)
-  let startOfWeek = getMonday(today) // Get last Monday
+    .map((date) => toDayjs(date)) // Convert to dayjs instance
+    .sort((a, b) => b.valueOf() - a.valueOf())
+  let today = dayjs()
+  let startOfWeek = getMonday(today, timeZone) // Get last Monday
   let dailyStats = []
-
   for (let i = 0; i < 7; i++) {
-    let day = new Date(startOfWeek)
-    day.setDate(startOfWeek.getDate() + i)
-    let hasPractice = sortedPracticeDays.some((practiceDate) => isSameDate(practiceDate, day))
+    const day = startOfWeek.add(i, 'day')
+    let hasPractice = sortedPracticeDays.some((practiceDate) => isSameDate(practiceDate, day.format('YYYY-MM-DD')))
     let isActive = isSameDate(today, day)
     let type = hasPractice ? 'tracked' : isActive ? 'active' : 'none'
-    dailyStats.push({ key: i, label: DAYS[i], isActive, inStreak: hasPractice, type })
+    dailyStats.push({ key: i, label: DAYS[i], isActive, inStreak: hasPractice, type, day: day.format('YYYY-MM-DD') })
   }
 
   let { streakMessage } = getStreaksAndMessage(practices)
@@ -142,83 +142,77 @@ export async function getUserWeeklyStats() {
  * getUserMonthlyStats({ userId: 123 }).then(console.log);
  */
 export async function getUserMonthlyStats(params = {}) {
-  const now = new Date()
+  const now = dayjs()
   const {
-    year = now.getFullYear(),
-    month = now.getMonth(),
-    day = 1,
+    year = now.year(),
+    month = now.month(), // 0-indexed
     userId = globalConfig.sessionConfig.userId,
   } = params
-  let practices = await getUserPractices(userId)
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const practices = await getUserPractices(userId)
 
-  // Get the first day of the specified month and the number of days in that month
-  let firstDayOfMonth = new Date(year, month, 1)
-  let today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const firstDayOfMonth = dayjs.tz(`${year}-${month + 1}-01`, timeZone).startOf('day')
+  const endOfMonth = firstDayOfMonth.endOf('month')
+  const today = dayjs().tz(timeZone).startOf('day')
 
-  let startOfGrid = getMonday(firstDayOfMonth)
+  let startOfGrid = getMonday(firstDayOfMonth, timeZone)
 
-  let previousWeekStart = new Date(startOfGrid)
-  previousWeekStart.setDate(previousWeekStart.getDate() - 7)
-
-  let previousWeekEnd = new Date(startOfGrid)
-  previousWeekEnd.setDate(previousWeekEnd.getDate() - 1)
+  // Previous week range
+  const previousWeekStart = startOfGrid.subtract(7, 'day')
+  const previousWeekEnd = startOfGrid.subtract(1, 'day')
 
   let hadStreakBeforeMonth = false
-  for (let d = new Date(previousWeekStart); d <= previousWeekEnd; d.setDate(d.getDate() + 1)) {
-    let dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-    if (practices[dayKey]) {
+  for (let d = previousWeekStart.clone(); d.isSameOrBefore(previousWeekEnd); d = d.add(1, 'day')) {
+    const key = d.format('YYYY-MM-DD')
+    if (practices[key]) {
       hadStreakBeforeMonth = true
       break
     }
   }
 
-  let endOfMonth = new Date(year, month + 1, 0)
-  let endOfGrid = new Date(year, month + 1, 0)
-  while (endOfGrid.getDay() !== 0) {
-    endOfGrid.setDate(endOfGrid.getDate() + 1)
+ // let endOfMonth = new Date(year, month + 1, 0)
+  let endOfGrid = endOfMonth.clone()
+  while (endOfGrid.day() !== 0) {
+    endOfGrid = endOfGrid.add(1, 'day')
   }
-  let daysInMonth = Math.ceil((endOfGrid - startOfGrid) / (1000 * 60 * 60 * 24)) + 1
-
+  const daysInMonth = endOfGrid.diff(startOfGrid, 'day') + 1
   let dailyStats = []
   let practiceDuration = 0
   let daysPracticed = 0
   let weeklyStats = {}
 
   for (let i = 0; i < daysInMonth; i++) {
-    let day = new Date(startOfGrid)
-    day.setDate(startOfGrid.getDate() + i)
-    let dayKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
-
-    // Check if the user has activity for the day
-    let dayActivity = practices[dayKey] ?? null
+    let day = startOfGrid.add(i, 'day')
+    let key = day.format('YYYY-MM-DD')
+    let activity = practices[key] ?? null
     let weekKey = getWeekNumber(day)
 
     if (!weeklyStats[weekKey]) {
       weeklyStats[weekKey] = { key: weekKey, inStreak: false }
     }
 
-    if (dayActivity !== null && firstDayOfMonth <= day && day <= endOfMonth) {
-      practiceDuration += dayActivity.reduce((sum, entry) => sum + entry.duration_seconds, 0)
+    if (activity && day.isBetween(firstDayOfMonth, endOfMonth, null, '[]')) {
+      practiceDuration += activity.reduce((sum, entry) => sum + entry.duration_seconds, 0)
       daysPracticed++
     }
 
-    let isActive = isSameDate(today, day)
-    let type = dayActivity !== null ? 'tracked' : isActive ? 'active' : 'none'
-    let isInStreak = dayActivity !== null
-    if (isInStreak) {
+    if (activity) {
       weeklyStats[weekKey].inStreak = true
     }
 
+    const isActive = day.isSame(today, 'day')
+    const type = activity ? 'tracked' : isActive ? 'active' : 'none'
+
     dailyStats.push({
       key: i,
-      label: dayKey,
+      label: key,
       isActive,
-      inStreak: dayActivity !== null,
+      inStreak: !!activity,
       type,
     })
   }
 
+  // Continue streak into month
   if (hadStreakBeforeMonth) {
     const firstWeekKey = getWeekNumber(startOfGrid)
     if (weeklyStats[firstWeekKey]) {
@@ -226,14 +220,15 @@ export async function getUserMonthlyStats(params = {}) {
     }
   }
 
-  let filteredPractices = Object.keys(practices)
-    .filter((date) => new Date(date) <= endOfMonth)
-    .reduce((obj, key) => {
-      obj[key] = practices[key]
-      return obj
+  // Filter past practices only
+  let filteredPractices = Object.entries(practices)
+    .filter(([date]) => dayjs.tz(date, timeZone).isSameOrBefore(endOfMonth))
+    .reduce((acc, [date, val]) => {
+      acc[date] = val
+      return acc
     }, {})
 
-  let { currentDailyStreak, currentWeeklyStreak } = calculateStreaks(filteredPractices)
+  const { currentDailyStreak, currentWeeklyStreak } = calculateStreaks(filteredPractices)
 
   return {
     data: {
@@ -360,9 +355,14 @@ export async function removeUserPractice(id) {
     async function (localContext) {
       if (localContext.data?.[DATA_KEY_PRACTICES]) {
         Object.keys(localContext.data[DATA_KEY_PRACTICES]).forEach((date) => {
-          localContext.data[DATA_KEY_PRACTICES][date] = localContext.data[DATA_KEY_PRACTICES][
-            date
-            ].filter((practice) => practice.id !== id)
+          const filtered = localContext.data[DATA_KEY_PRACTICES][date].filter(
+            (practice) => practice.id !== id
+          )
+          if (filtered.length > 0) {
+            localContext.data[DATA_KEY_PRACTICES][date] = filtered
+          } else {
+            delete localContext.data[DATA_KEY_PRACTICES][date]
+          }
         })
       }
     },
@@ -392,12 +392,7 @@ export async function restoreUserPractice(id) {
     if (restoredPractice) {
       await userActivityContext.updateLocal(async function (localContext) {
         const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-        const utcDate = new Date(restoredPractice.day)
-        const localDate = convertToTimeZone(utcDate, userTimeZone)
-        const date =
-          localDate.getFullYear() + '-' +
-          String(localDate.getMonth() + 1).padStart(2, '0') + '-' +
-          String(localDate.getDate()).padStart(2, '0')
+        const date = convertToTimeZone(restoredPractice.day, userTimeZone)
         if (localContext.data[DATA_KEY_PRACTICES][date]) {
           localContext.data[DATA_KEY_PRACTICES][date] = []
         }
@@ -621,7 +616,7 @@ function getStreaksAndMessage(practices) {
   }
 }
 
-async function getUserPracticeIds(day = new Date().toISOString().split('T')[0], userId = null) {
+async function getUserPracticeIds(day = dayjs().format('YYYY-MM-DD'), userId = null) {
   let practices = {}
   if (userId !== globalConfig.sessionConfig.userId) {
     let data = await fetchUserPractices(0, { userId: userId })
@@ -651,6 +646,7 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   let lastActiveDay = null
   let streakMessage = ''
 
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   let sortedPracticeDays = Object.keys(practices)
     .map((dateStr) => {
       const [year, month, day] = dateStr.split('-').map(Number)
@@ -702,9 +698,8 @@ function calculateStreaks(practices, includeStreakMessage = false) {
     let yesterday = new Date(today)
     yesterday.setDate(today.getDate() - 1)
 
-    let currentWeekStart = getMonday(today)
-    let lastWeekStart = new Date(currentWeekStart)
-    lastWeekStart.setDate(currentWeekStart.getDate() - 7)
+    let currentWeekStart = getMonday(today, timeZone)
+    let lastWeekStart = currentWeekStart.subtract(7, 'days')
 
     let hasYesterdayPractice = sortedPracticeDays.some((date) => isSameDate(date, yesterday))
     let hasCurrentWeekPractice = sortedPracticeDays.some((date) => date >= currentWeekStart)
@@ -837,7 +832,6 @@ async function formatPracticeMeta(practices) {
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
   return practices.map((practice) => {
-    const utcDate = new Date(practice.created_at)
     const content = contents.find((c) => c.id === practice.content_id) || {}
 
     return {
@@ -854,7 +848,7 @@ async function formatPracticeMeta(practices) {
       content_type: getFormattedType(content.type || '', content.brand),
       content_id: practice.content_id || null,
       content_brand: content.brand || null,
-      created_at: convertToTimeZone(utcDate, userTimeZone),
+      created_at: convertToTimeZone(dayjs(practice.created_at), userTimeZone),
       sanity_type: content.type || null,
       content_slug: content.slug || null,
     }
@@ -973,11 +967,15 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
       childToParentMap[content.id] = content.parent_content_data[content.parent_content_data.length - 1];
     }
   });
+
+  const allRecentTypeSet = new Set(
+    Object.values(recentTypes).flat()
+  )
   const progressMap = new Map();
   for (const [idStr, progress] of Object.entries(progressContents)) {
     const id = parseInt(idStr);
     const content = contentsMap[id];
-    if (!content || excludedTypes.has(content.type)) continue;
+    if (!content || excludedTypes.has(content.type)  || !allRecentTypeSet.has(content.type) ) continue;
     const parentId = childToParentMap[id];
     // Handle children with parents
     if (parentId) {
@@ -1472,6 +1470,23 @@ function getFirstLeafLessonId(data) {
   }
 
   return data.lessons ? findFirstLeaf(data.lessons) : null
+}
+
+export async function fetchRecentActivitiesActiveTabs() {
+  const url = `/api/user-management-system/v1/activities/tabs`
+  try {
+    const tabs = await fetchHandler(url, 'GET');
+    const activitiesTabs = [];
+
+    tabs.forEach(tab => {
+      activitiesTabs.push({ name: tab.label, short_name:tab.label });
+    });
+
+    return activitiesTabs;
+  } catch (error) {
+    console.error('Error fetching activity tabs:', error);
+    return [];
+  }
 }
 
 

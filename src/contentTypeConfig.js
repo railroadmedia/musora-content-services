@@ -197,15 +197,17 @@ export const lessonTypesMapping = {
 export const getNextLessonLessonParentTypes = ['course', 'guided-course', 'pack', 'pack-bundle', 'song-tutorial'];
 
 export const progressTypesMapping = {
-  'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes, 'live'],
+  'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes, 'live', 'pack-bundle-lesson'],
   'course': ['course'],
   'show': showsLessonTypes,
-  'song tutorial': tutorialsLessonTypes,
+  'song tutorial': [...tutorialsLessonTypes, 'song-tutorial-children'],
   'songs': transcriptionsLessonTypes,
   'play-along': playAlongLessonTypes,
   'guided course': ['guided-course'],
   'pack': ['pack', 'semester-pack'],
-  'method': ['learning-path']
+  'method': ['learning-path'],
+  'jam track': ['jam-track'],
+  'course video': ['course-part'],
 };
 
 export const songs = {
@@ -222,9 +224,9 @@ export const filterTypes = {
 
 export const recentTypes = {
   lessons: [...individualLessonsTypes, 'course-part', 'pack-bundle-lesson', 'challenge-part', 'guided-course-part', 'quick-tips'],
-  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes],
+  songs: [...transcriptionsLessonTypes, ...playAlongLessonTypes, 'song-tutorial-children'],
   home: [...individualLessonsTypes, ...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes,
-  'guided-course', 'learning-path', 'live']
+  'guided-course', 'learning-path', 'live', 'course', 'pack']
 }
 
 export let contentTypeConfig = {

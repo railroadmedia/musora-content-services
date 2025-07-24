@@ -33,6 +33,7 @@ import {
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { fetchUserPermissions } from './user/permissions.js'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
+import {fetchRecentActivitiesActiveTabs} from "./userActivity.js";
 
 /**
  * Exported functions that are excluded from index generation.
@@ -352,7 +353,7 @@ export async function fetchNewReleases(
   const end = start + limit
   const sortOrder = getSortOrder(sort, brand)
   const nextQuarter = getNextAndPreviousQuarterDates()['next']
-  const filter = `_type in ${typesString} && brand == '${brand}' && show_in_new_feed == true && (!defined(quarter_published) ||  quarter_published != '${nextQuarter}')`
+  const filter = `_type in ${typesString} && brand == '${brand}' && status == 'published' && show_in_new_feed == true && (!defined(quarter_published) ||  quarter_published != '${nextQuarter}')`
   const fields = `
      "id": railcontent_id,
       title,
@@ -2124,7 +2125,12 @@ export async function fetchShowsData(brand) {
  *   .catch(error => console.error(error));
  */
 export async function fetchMetadata(brand, type) {
-  const processedData = processMetadata(brand, type, true)
+  let processedData =  processMetadata(brand, type, true)
+  if(processedData?.onlyAvailableTabs === true) {
+    const activeTabs = await fetchRecentActivitiesActiveTabs()
+    processedData.tabs = activeTabs
+  }
+
   return processedData ? processedData : {}
 }
 
