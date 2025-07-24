@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.28.0](https://github.com/railroadmedia/musora-content-services/compare/v2.27.5...v2.28.0) (2025-07-24)
+
+
+### Features
+
+* added parent id for multi-level content ([#366](https://github.com/railroadmedia/musora-content-services/issues/366)) ([67f7847](https://github.com/railroadmedia/musora-content-services/commit/67f7847af2147095b5b7c91066a2f2756539c137))
+
+
+### Bug Fixes
+
+* **T3PS-306:** fix function return ([#378](https://github.com/railroadmedia/musora-content-services/issues/378)) ([c5abf09](https://github.com/railroadmedia/musora-content-services/commit/c5abf09cd7bd9ab7d1a298d7a1158d8162fa9cc7))
+
 ### [2.27.5](https://github.com/railroadmedia/musora-content-services/compare/v2.27.3...v2.27.5) (2025-07-23)
 
 
