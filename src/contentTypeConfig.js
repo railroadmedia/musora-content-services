@@ -14,7 +14,7 @@ export const DEFAULT_FIELDS = [
   "'id': railcontent_id",
   'railcontent_id',
   artistOrInstructorName(),
-  'artist',
+  "'artist': artist->{ 'name': name, 'thumbnail': thumbnail_url.asset->url}",
   'title',
   "'image': thumbnail.asset->url",
   "'thumbnail': thumbnail.asset->url",
@@ -42,6 +42,21 @@ export const DEFAULT_CHILD_FIELDS = [
   `"instructors": instructor[]->name`,
   `length_in_seconds`,
 ]
+
+export const instructorField = `instructor[]->{
+            "id": railcontent_id,
+            name,
+            short_bio,
+            "biography": short_bio[0].children[0].text,
+            "coach_card_image": coach_card_image.asset->url,
+            "coach_profile_image": thumbnail_url.asset->url
+          }`
+
+export const chapterField = `chapter[]{
+                    chapter_description,
+                    chapter_timecode,
+                    "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
+                }`
 
 export const descriptionField = 'description[0].children[0].text'
 // this pulls both any defined resources for the document as well as any resources in the parent document
@@ -346,7 +361,6 @@ export let contentTypeConfig = {
                 published_on,
                 "type":_type,
                 "image": thumbnail.asset->url,
-                "instructors": instructor[]->name,
                 length_in_seconds,
                 "resources": ${resourcesField},
                 difficulty,
@@ -354,11 +368,7 @@ export let contentTypeConfig = {
                 artist->,
                 "thumbnail_url":thumbnail.asset->url,
                 "description": description[0].children[0].text,
-                "chapters": chapter[]{
-                    chapter_description,
-                    chapter_timecode,
-                    "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
-                },
+                "chapters": ${chapterField},
                 "instructors":instructor[]->name,
                 "instructor": instructor[]->{
                     "id":railcontent_id,
