@@ -14,7 +14,7 @@ export const DEFAULT_FIELDS = [
   "'id': railcontent_id",
   'railcontent_id',
   artistOrInstructorName(),
-  "'artist': select(artist != null => { 'name': artist->name, 'thumbnail': artist->thumbnail_url.asset->url}, null)",
+  "'artist': artist->{ 'name': name, 'thumbnail': thumbnail_url.asset->url}",
   'title',
   "'image': thumbnail.asset->url",
   "'thumbnail': thumbnail.asset->url",
@@ -43,12 +43,12 @@ export const DEFAULT_CHILD_FIELDS = [
 ]
 
 export const instructorField = `instructor[]->{
-            "id":railcontent_id,
+            "id": railcontent_id,
             name,
             short_bio,
             "biography": short_bio[0].children[0].text,
             "coach_card_image": coach_card_image.asset->url,
-            "coach_profile_image":thumbnail_url.asset->url
+            "coach_profile_image": thumbnail_url.asset->url
           }`
 
 export const chapterField = `chapter[]{

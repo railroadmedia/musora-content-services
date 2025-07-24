@@ -1313,6 +1313,7 @@ export async function fetchLessonContent(railContentId) {
           mp3_no_drums_yes_click_url,
           mp3_yes_drums_no_click_url,
           mp3_yes_drums_yes_click_url,
+          "permission_id": permission[]->railcontent_id,
           "parent_content_data": parent_content_data[]{
             "id": id,
             "title": *[railcontent_id == ^.id][0].title,
