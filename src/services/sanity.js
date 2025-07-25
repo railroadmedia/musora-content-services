@@ -645,9 +645,7 @@ export async function fetchAll(
   } else {
     typeFilter = type
       ? `&& _type == '${type}'`
-      : progress === 'in progress' || progress === 'completed'
-        ? " && (_type != 'challenge-part' && _type != 'challenge')"
-        : ''
+      : ''
   }
 
   // Construct the search filter
@@ -1495,7 +1493,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
  *
  * @example
  * fetchPackData(404048)
- *   .then(challenge => console.log(challenge))
+ *   .then(pack => console.log(pack))
  *   .catch(error => console.error(error));
  */
 export async function fetchPackData(id) {

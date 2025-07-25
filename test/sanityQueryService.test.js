@@ -223,12 +223,12 @@ describe('Sanity Queries', function() {
   })
 
   test('fetchAll-CustomFields', async () => {
-    let response = await fetchAll('drumeo', 'challenge', { customFields: ['garbage'] })
+    let response = await fetchAll('drumeo', 'course', { customFields: ['garbage'] })
     log(response)
     expect(response.entity[0].garbage).toBeDefined()
     expect(response.entity[0].id).toBeDefined()
 
-    response = await fetchAll('drumeo', 'challenge', {
+    response = await fetchAll('drumeo', 'course', {
       useDefaultFields: false, customFields: ['garbage'],
     })
     log(response)
@@ -763,16 +763,6 @@ describe('MetaData', function() {
   test('invalidContentType', async () => {
     const metaData = processMetadata('guitareo', 'not a real type')
     expect(metaData).toBeNull()
-  })
-
-  test('onlyCommon', async () => {
-    const guitareoMetaData = processMetadata('guitareo', 'challenge')
-    const drumeoMetaData = processMetadata('drumeo', 'challenge')
-    guitareoMetaData.url = ''
-    drumeoMetaData.url = ''
-    expect(guitareoMetaData).toStrictEqual(drumeoMetaData)
-    expect(guitareoMetaData.type).toBe('challenge')
-    expect(guitareoMetaData.name).toBe('Challenges')
   })
 
   test('withCommon', async () => {
