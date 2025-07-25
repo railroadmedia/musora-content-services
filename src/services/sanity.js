@@ -2390,11 +2390,13 @@ export async function fetchTabData(
 
   filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
+  console.log('childddd', lessonCountFilter)
   entityFieldsString =
     ` ${fieldsString}
     'children': child[${childrenFilter}]->{'id': railcontent_id},
     'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
-    'lesson_count': coalesce(count(child[${childrenFilter}]->), 0),
+    'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     'length_in_seconds': coalesce(
       math::sum(
         select(
