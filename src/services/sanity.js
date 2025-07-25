@@ -569,6 +569,7 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
   if (pageName === 'lessons') pageName = 'lesson'
   if (pageName === 'songs') pageName = 'song'
   const rowString = contentRowSlug ? ` && slug.current == "${contentRowSlug.toLowerCase()}"` : ''
+  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
   return fetchSanity(`*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}'${rowString}]{
     brand,
     name,
@@ -576,6 +577,7 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
     'content': content[]->{
         'children': child[]->{ 'id': railcontent_id, 'children': child[]->{'id': railcontent_id}, },
         ${getFieldsForContentType('tab-data')}
+        'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     },
   }`, true)
 }
@@ -2391,7 +2393,6 @@ export async function fetchTabData(
   filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
-  console.log('childddd', lessonCountFilter)
   entityFieldsString =
     ` ${fieldsString}
     'children': child[${childrenFilter}]->{'id': railcontent_id},
