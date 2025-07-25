@@ -83,7 +83,8 @@ import {
 	getTimeRemainingUntilLocal,
 	getWeekNumber,
 	isNextDay,
-	isSameDate
+	isSameDate,
+	toDayjs
 } from './services/dateUtils.js';
 
 import {
@@ -263,6 +264,7 @@ import {
 } from './services/user/permissions.js';
 
 import {
+	deleteProfilePicture,
 	otherStats
 } from './services/user/profile.js';
 
@@ -276,6 +278,7 @@ import {
 	createPracticeNotes,
 	deletePracticeSession,
 	deleteUserActivity,
+	fetchRecentActivitiesActiveTabs,
 	findIncompleteLesson,
 	getPracticeNotes,
 	getPracticeSessions,
@@ -317,6 +320,7 @@ export {
 	deletePicture,
 	deletePlaylist,
 	deletePracticeSession,
+	deleteProfilePicture,
 	deleteUserActivity,
 	duplicatePlaylist,
 	editComment,
@@ -378,6 +382,7 @@ export {
 	fetchPlaylist,
 	fetchPlaylistItems,
 	fetchRecent,
+	fetchRecentActivitiesActiveTabs,
 	fetchRecentUserActivities,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
@@ -498,6 +503,7 @@ export {
 	setupAccount,
 	startLiveEventPolling,
 	status,
+	toDayjs,
 	togglePlaylistPrivate,
 	unEnrollUserInGuidedCourse,
 	unPinGuidedCourse,

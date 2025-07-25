@@ -225,6 +225,7 @@ const commonMetadata = {
   },
   'recent-activities': {
     name: 'Recent Activity',
+    onlyAvailableTabs: true,
     tabs: [
       Tabs.RecentAll,
       Tabs.RecentActivityLessons,

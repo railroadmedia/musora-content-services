@@ -3,6 +3,8 @@
  */
 import {
   artistOrInstructorName,
+  instructorField,
+  chapterField,
   assignmentsField,
   descriptionField,
   resourcesField,
@@ -29,6 +31,7 @@ import {
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { fetchUserPermissions } from './user/permissions.js'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
+import {fetchRecentActivitiesActiveTabs} from "./userActivity.js";
 
 /**
  * Exported functions that are excluded from index generation.
@@ -348,7 +351,7 @@ export async function fetchNewReleases(
   const end = start + limit
   const sortOrder = getSortOrder(sort, brand)
   const nextQuarter = getNextAndPreviousQuarterDates()['next']
-  const filter = `_type in ${typesString} && brand == '${brand}' && show_in_new_feed == true && (!defined(quarter_published) ||  quarter_published != '${nextQuarter}')`
+  const filter = `_type in ${typesString} && brand == '${brand}' && status == 'published' && show_in_new_feed == true && (!defined(quarter_published) ||  quarter_published != '${nextQuarter}')`
   const fields = `
      "id": railcontent_id,
       title,
@@ -1128,41 +1131,16 @@ export async function jumpToContinueContent(railcontentId) {
  */
 export async function fetchLessonContent(railContentId) {
   const filterParams = { isSingle: true, pullFutureContent: true }
-  // Format changes made to the `fields` object may also need to be reflected in Musora-web-platform SanityGateway.php $fields object
-  // Currently only for challenges and challenge lessons
-  // If you're unsure, message Adrian, or just add them.
-  const fields = `title,
-          published_on,
-          "type":_type,
+
+  const fields = `${getFieldsForContentType()}
           "resources": ${resourcesField},
-          difficulty,
-          difficulty_string,
-          brand,
-          status,
           soundslice,
           instrumentless,
-          railcontent_id,
-          "id":railcontent_id,
-          slug, artist->,
-          "thumbnail":thumbnail.asset->url,
           soundslice_slug,
-          "description": description[0].children[0].text,
-          "chapters": chapter[]{
-            chapter_description,
-            chapter_timecode,
-            "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
-          },
-          'artist': { 'name': artist->name, 'thumbnail': artist->thumbnail_url.asset->url},
+          "description": ${descriptionField},
+          "chapters": ${chapterField},
           "instructors":instructor[]->name,
-          "instructor": instructor[]->{
-            "id":railcontent_id,
-            name,
-            short_bio,
-            "biography": short_bio[0].children[0].text,
-            web_url_path,
-            "coach_card_image": coach_card_image.asset->url,
-            "coach_profile_image":thumbnail_url.asset->url
-          },
+          "instructor": ${instructorField},
           ${assignmentsField}
           video,
           length_in_seconds,
@@ -1180,9 +1158,6 @@ export async function fetchLessonContent(railContentId) {
             "dark_mode_logo": *[railcontent_id == ^.id][0].dark_mode_logo_url.asset->url,
             "light_mode_logo": *[railcontent_id == ^.id][0].light_mode_logo_url.asset->url,
           },
-          sort,
-          xp,
-          stbs,ds2stbs, bdsStbs,
           ...select(
                 defined(live_event_start_time) => {
                   "live_event_start_time": live_event_start_time,
@@ -1195,6 +1170,7 @@ export async function fetchLessonContent(railContentId) {
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
   })
+  console.log('query', query)
   const chapterProcess = (result) => {
     const now = getSanityDate(new Date(), false)
     if (result.live_event_start_time && result.live_event_end_time) {
@@ -1206,6 +1182,7 @@ export async function fetchLessonContent(railContentId) {
       ...chapter,
       chapter_thumbnail_url: `https://musora-web-platform.s3.amazonaws.com/chapters/${result.brand}/Chapter${index + 1}.jpg`,
     }))
+    console.log('result', result)
     return result
   }
 
@@ -1269,7 +1246,8 @@ export async function fetchLessonsFeaturingThisContent(railcontentId, brand, cou
  */
 async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, count) {
   const typeCheck = `@->_type in [${arrayJoinWithQuotes(SONG_TYPES)}]`
-  const typeCheckString = onlyUseSongTypes ? `${typeCheck}` : `!(${typeCheck})`
+  let typeCheckString = `@->brand == '${brand}' && `
+  typeCheckString += onlyUseSongTypes ? `${typeCheck}` : `!(${typeCheck})`
   const contentFromLicenseFilter = `_type == 'license' && references(^._id)].content[${typeCheckString} && @->railcontent_id != ${railcontentId}`
   let filterSongTypesWithSameLicense = await new FilterBuilder(contentFromLicenseFilter, {
     isChildrenFilter: true,
@@ -1286,7 +1264,6 @@ async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, cou
       "related_by_license" :
           *[${filterSongTypesWithSameLicense}]->{${queryFields}}|order(published_on desc, title asc)[0...${count}],
       }[0...1]`
-
   const results = await fetchSanity(query, false)
   return results['related_by_license'] ?? []
 }
@@ -1304,7 +1281,7 @@ export async function fetchSiblingContent(railContentId, brand)
   }).buildFilter()
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
 
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission[]->railcontent_id, "genre": genre[]->name`
+  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission[]->railcontent_id, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
 
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}"]{
    _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
@@ -1456,10 +1433,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
       "thumbnail": thumbnail.asset->url,
       ${artistOrInstructorName()},
       difficulty_string,
-      "instructors": instructor[]->{
-            name,
-            web_url_path,
-          },
+      "instructors": ${instructorField},
       'videoId': coalesce(live_event_youtube_id, video.external_id),
     } | order(live_event_start_time)[0...1]`
       : `*[status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}']{
@@ -1987,7 +1961,12 @@ export async function fetchShowsData(brand) {
  *   .catch(error => console.error(error));
  */
 export async function fetchMetadata(brand, type) {
-  const processedData = processMetadata(brand, type, true)
+  let processedData =  processMetadata(brand, type, true)
+  if(processedData?.onlyAvailableTabs === true) {
+    const activeTabs = await fetchRecentActivitiesActiveTabs()
+    processedData.tabs = activeTabs
+  }
+
   return processedData ? processedData : {}
 }
 

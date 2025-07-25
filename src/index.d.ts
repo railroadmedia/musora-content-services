@@ -83,7 +83,8 @@ import {
 	getTimeRemainingUntilLocal,
 	getWeekNumber,
 	isNextDay,
-	isSameDate
+	isSameDate,
+	toDayjs
 } from './services/dateUtils.js';
 
 import {
@@ -263,6 +264,7 @@ import {
 } from './services/user/permissions.js';
 
 import {
+	deleteProfilePicture,
 	otherStats
 } from './services/user/profile.js';
 
@@ -276,6 +278,7 @@ import {
 	createPracticeNotes,
 	deletePracticeSession,
 	deleteUserActivity,
+	fetchRecentActivitiesActiveTabs,
 	findIncompleteLesson,
 	getPracticeNotes,
 	getPracticeSessions,
@@ -318,6 +321,7 @@ declare module 'musora-content-services' {
 		deletePicture,
 		deletePlaylist,
 		deletePracticeSession,
+		deleteProfilePicture,
 		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
@@ -379,6 +383,7 @@ declare module 'musora-content-services' {
 		fetchPlaylist,
 		fetchPlaylistItems,
 		fetchRecent,
+		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
 		fetchRelatedLessons,
 		fetchRelatedRecommendedContent,
@@ -499,6 +504,7 @@ declare module 'musora-content-services' {
 		setupAccount,
 		startLiveEventPolling,
 		status,
+		toDayjs,
 		togglePlaylistPrivate,
 		unEnrollUserInGuidedCourse,
 		unPinGuidedCourse,

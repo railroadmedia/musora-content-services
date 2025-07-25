@@ -13,7 +13,7 @@ export const DEFAULT_FIELDS = [
   "'id': railcontent_id",
   'railcontent_id',
   artistOrInstructorName(),
-  'artist',
+  "'artist': artist->{ 'name': name, 'thumbnail': thumbnail_url.asset->url}",
   'title',
   "'image': thumbnail.asset->url",
   "'thumbnail': thumbnail.asset->url",
@@ -32,6 +32,7 @@ export const DEFAULT_FIELDS = [
   'xp',
   'child_count',
   '"lesson_count": coalesce(count(child[]->.child[]->), child_count)',
+  '"parent_id": parent_content_data[0].id',
 ]
 export const DEFAULT_CHILD_FIELDS = [
   `"id": railcontent_id`,
@@ -40,6 +41,21 @@ export const DEFAULT_CHILD_FIELDS = [
   `"instructors": instructor[]->name`,
   `length_in_seconds`,
 ]
+
+export const instructorField = `instructor[]->{
+            "id": railcontent_id,
+            name,
+            short_bio,
+            "biography": short_bio[0].children[0].text,
+            "coach_card_image": coach_card_image.asset->url,
+            "coach_profile_image": thumbnail_url.asset->url
+          }`
+
+export const chapterField = `chapter[]{
+                    chapter_description,
+                    chapter_timecode,
+                    "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
+                }`
 
 export const descriptionField = 'description[0].children[0].text'
 // this pulls both any defined resources for the document as well as any resources in the parent document
@@ -181,15 +197,17 @@ export const lessonTypesMapping = {
 export const getNextLessonLessonParentTypes = ['course', 'guided-course', 'pack', 'pack-bundle', 'song-tutorial'];
 
 export const progressTypesMapping = {
-  'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes, 'live'],
+  'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes, 'live', 'pack-bundle-lesson'],
   'course': ['course'],
   'show': showsLessonTypes,
-  'song tutorial': tutorialsLessonTypes,
+  'song tutorial': [...tutorialsLessonTypes, 'song-tutorial-children'],
   'songs': transcriptionsLessonTypes,
   'play-along': playAlongLessonTypes,
   'guided course': ['guided-course'],
   'pack': ['pack', 'semester-pack'],
-  'method': ['learning-path']
+  'method': ['learning-path'],
+  'jam track': ['jam-track'],
+  'course video': ['course-part'],
 };
 
 export const songs = {
@@ -208,7 +226,7 @@ export const recentTypes = {
   lessons: [...individualLessonsTypes, 'course-part', 'pack-bundle-lesson', 'guided-course-part', 'quick-tips'],
   songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes],
   home: [...individualLessonsTypes, ...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes,
-  'guided-course', 'learning-path', 'live']
+  'guided-course', 'learning-path', 'live', 'course', 'pack']
 }
 
 export let contentTypeConfig = {
@@ -306,7 +324,6 @@ export let contentTypeConfig = {
                 published_on,
                 "type":_type,
                 "image": thumbnail.asset->url,
-                "instructors": instructor[]->name,
                 length_in_seconds,
                 "resources": ${resourcesField},
                 difficulty,
@@ -314,11 +331,7 @@ export let contentTypeConfig = {
                 artist->,
                 "thumbnail_url":thumbnail.asset->url,
                 "description": description[0].children[0].text,
-                "chapters": chapter[]{
-                    chapter_description,
-                    chapter_timecode,
-                    "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
-                },
+                "chapters": ${chapterField},
                 "instructors":instructor[]->name,
                 "instructor": instructor[]->{
                     "id":railcontent_id,

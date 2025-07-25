@@ -15,6 +15,7 @@ const DATA_KEY_STATUS = 's'
 const DATA_KEY_PROGRESS = 'p'
 const DATA_KEY_RESUME_TIME = 't'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
+const DATA_KEY_BRAND = 'b'
 
 export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress)
 
@@ -191,7 +192,7 @@ export async function getAllStartedOrCompleted({ limit = null, onlyIds = true, b
       const isRecent = item[DATA_KEY_LAST_UPDATED_TIME] >= oneMonthAgoInSeconds
       const isCorrectBrand = !brand || !item.b || item.b === brand
       const isNotExcluded = !excludedSet.has(id)
-      return isRelevantStatus && isRecent && isCorrectBrand && isNotExcluded
+      return isRelevantStatus && isCorrectBrand && isNotExcluded
     })
     .sort(([, a], [, b]) => {
       const v1 = a[DATA_KEY_LAST_UPDATED_TIME]
@@ -371,7 +372,7 @@ export async function recordWatchSession(
     //TODO: Good enough for Alpha, Refine in reliability improvements
     sessionData[sessionId] = sessionData[sessionId] || {}
     const secondsSinceLastUpdate = Math.ceil(secondsPlayed - (sessionData[sessionId][contentId] ?? 0))
-    await recordUserPractice({ content_id: contentId, duration_seconds: secondsSinceLastUpdate, category_id: categoryId, instrument_id: instrumentId })
+    await recordUserPractice({ content_id: contentId, duration_seconds: secondsSinceLastUpdate,  instrument_id: instrumentId })
   } catch (error) {
       console.error('Failed to record user practice:', error)
   }
@@ -438,8 +439,11 @@ function bubbleProgress(hierarchy, contentId, localContext) {
     return localContext.data[childId]?.[DATA_KEY_PROGRESS] ?? 0
   })
   let progress = Math.round(childProgress.reduce((a, b) => a + b, 0) / childProgress.length)
+  const brand =localContext.data[contentId]?.[DATA_KEY_BRAND] ?? null
   data[DATA_KEY_PROGRESS] = progress
   data[DATA_KEY_STATUS] = progress === 100 ? STATE_COMPLETED : STATE_STARTED
+  data[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000)
+  data[DATA_KEY_BRAND] = brand
   localContext.data[parentId] = data
   bubbleProgress(hierarchy, parentId, localContext)
 }

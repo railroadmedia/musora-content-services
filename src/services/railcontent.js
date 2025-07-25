@@ -284,8 +284,8 @@ async function postDataHandler(url, data) {
   return fetchHandler(url, 'post', null, data)
 }
 
-async function patchDataHandler(url, data) {
-  return fetchHandler(url, 'patch', null, data)
+async function patchDataHandler_depreciated(url, data) {
+  throw Error("PATCH verb throws a CORS error on the FEW. Use PATCH instead")
 }
 
 async function putDataHandler(url, data) {
@@ -399,7 +399,7 @@ export async function postContentReset(contentId) {
 export async function setStudentViewForUser(userId, enable) {
   let url = `/user-management-system/user/update/${userId}`
   let data = { use_student_view: enable ? 1 : 0 }
-  return await patchDataHandler(url, data)
+  return await putDataHandler(url, data)
 }
 
 /**
@@ -525,7 +525,7 @@ export async function closeComment(commentId) {
   const data = {
     conversation_status: 'closed',
   }
-  return await patchDataHandler(url, data)
+  return await putDataHandler(url, data)
 }
 
 /**
@@ -537,7 +537,7 @@ export async function openComment(commentId) {
   const data = {
     conversation_status: 'open',
   }
-  return await patchDataHandler(url, data)
+  return await putDataHandler(url, data)
 }
 
 /**
@@ -597,17 +597,9 @@ export async function fetchUserPractices(currentVersion = 0, { userId } = {}) {
 
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-
   const formattedPractices = userPractices.reduce((acc, practice) => {
     // Convert UTC date to user's local date (still a Date object)
-    const utcDate = new Date(practice.day);
-    const localDate = convertToTimeZone(utcDate, userTimeZone);
-
-    const userTimeZoneDay =
-      localDate.getFullYear() + '-' +
-      String(localDate.getMonth() + 1).padStart(2, '0') + '-' +
-      String(localDate.getDate()).padStart(2, '0');
-
+    const userTimeZoneDay = convertToTimeZone(practice.day, userTimeZone);
     if (!acc[userTimeZoneDay]) {
       acc[userTimeZoneDay] = [];
     }
