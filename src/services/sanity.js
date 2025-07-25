@@ -1265,7 +1265,7 @@ async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, cou
           *[${filterSongTypesWithSameLicense}]->{${queryFields}}|order(published_on desc, title asc)[0...${count}],
       }[0...1]`
   const results = await fetchSanity(query, false)
-  return results['related_by_license'] ?? []
+  return results ? results['related_by_license'] ?? [] : []
 }
 
 /**
@@ -1862,6 +1862,9 @@ export async function fetchSanity(
         console.log('fetchSanity Results:', result)
       }
       let results = isList ? result.result : result.result[0]
+      if (!results) {
+        throw new Error('No results found')
+      }
       results = processNeedAccess
         ? await needsAccessDecorator(results, userPermissions, isAdmin)
         : results
