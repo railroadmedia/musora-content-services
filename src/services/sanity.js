@@ -565,15 +565,17 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
   if (pageName === 'lessons') pageName = 'lesson'
   if (pageName === 'songs') pageName = 'song'
   const rowString = contentRowSlug ? ` && slug.current == "${contentRowSlug.toLowerCase()}"` : ''
-  return fetchSanity(`*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}'${rowString}]{
+  const childFilter = await new FilterBuilder('', {isChildrenFilter: true}).buildFilter()
+  const query = `*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}'${rowString}]{
     brand,
     name,
     'slug': slug.current,
-    'content': content[]->{
-        'children': child[]->{ 'id': railcontent_id, 'children': child[]->{'id': railcontent_id}, },
+    'content': content[${childFilter}]->{
+        'children': child[${childFilter}]->{ 'id': railcontent_id, 'children': child[${childFilter}]->{'id': railcontent_id}, },
         ${getFieldsForContentType('tab-data')}
     },
-  }`, true)
+  }`
+  return fetchSanity(query, true)
 }
 
 
@@ -1265,7 +1267,7 @@ async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, cou
           *[${filterSongTypesWithSameLicense}]->{${queryFields}}|order(published_on desc, title asc)[0...${count}],
       }[0...1]`
   const results = await fetchSanity(query, false)
-  return results['related_by_license'] ?? []
+  return results ? results['related_by_license'] ?? [] : []
 }
 
 /**
@@ -1862,6 +1864,9 @@ export async function fetchSanity(
         console.log('fetchSanity Results:', result)
       }
       let results = isList ? result.result : result.result[0]
+      if (!results) {
+        throw new Error('No results found')
+      }
       results = processNeedAccess
         ? await needsAccessDecorator(results, userPermissions, isAdmin)
         : results
