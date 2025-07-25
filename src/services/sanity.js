@@ -523,11 +523,13 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   }
   const idsString = ids.join(',')
   const brandFilter = brand ? ` && brand == "${brand}"` : ''
+  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
   const now = getSanityDate(new Date())
   const query = `*[
     railcontent_id in [${idsString}]${brandFilter}
   ]{
     ${getFieldsForContentType(contentType)}
+    'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     live_event_start_time,
     live_event_end_time,
   }`
@@ -1335,7 +1337,6 @@ export async function fetchLessonContent(railContentId) {
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
   })
-  console.log('query', query)
   const chapterProcess = (result) => {
     const now = getSanityDate(new Date(), false)
     if (result.live_event_start_time && result.live_event_end_time) {
@@ -1347,7 +1348,6 @@ export async function fetchLessonContent(railContentId) {
       ...chapter,
       chapter_thumbnail_url: `https://musora-web-platform.s3.amazonaws.com/chapters/${result.brand}/Chapter${index + 1}.jpg`,
     }))
-    console.log('result', result)
     return result
   }
 
