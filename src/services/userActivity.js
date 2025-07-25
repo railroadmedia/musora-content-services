@@ -9,7 +9,6 @@ import {
   fetchUserPracticeNotes,
   fetchHandler,
   fetchRecentUserActivities,
-  fetchChallengeLessonData,
   fetchLastInteractedChild,
 } from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'

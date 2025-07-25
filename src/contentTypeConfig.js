@@ -5,7 +5,6 @@ export const AWSUrl = 'https://s3.us-east-1.amazonaws.com/musora-web-platform'
 export const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net'
 
 export const SONG_TYPES = ['song', 'play-along', 'jam-track', 'song-tutorial-children']
-// Challenges are excluded for the moment as they're still in design flex
 // Single hierarchy refers to only one element in the hierarchy has video lessons, not that they have a single parent
 export const SINGLE_PARENT_TYPES = ['course-part', 'pack-bundle-lesson', 'song-tutorial-children']
 
@@ -224,8 +223,8 @@ export const filterTypes = {
 }
 
 export const recentTypes = {
-  lessons: [...individualLessonsTypes, 'course-part', 'pack-bundle-lesson', 'challenge-part', 'guided-course-part', 'quick-tips'],
-  songs: [...transcriptionsLessonTypes, ...playAlongLessonTypes, 'song-tutorial-children'],
+  lessons: [...individualLessonsTypes, 'course-part', 'pack-bundle-lesson', 'guided-course-part', 'quick-tips'],
+  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes],
   home: [...individualLessonsTypes, ...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes,
   'guided-course', 'learning-path', 'live', 'course', 'pack']
 }
@@ -291,42 +290,6 @@ export let contentTypeConfig = {
   },
   'song-tutorial-children': {
     fields: [`"resources": ${resourcesField}`],
-  },
-  challenge: {
-    fields: [
-      'enrollment_start_time',
-      'enrollment_end_time',
-      "'registration_url': '/' + brand + '/enrollment/' + slug.current",
-      '"lesson_count": child_count',
-      '"primary_cta_text": select(dateTime(published_on) > dateTime(now()) && dateTime(enrollment_start_time) > dateTime(now()) => "Notify Me", "Start Challenge")',
-      'challenge_state',
-      'challenge_state_text',
-      `"description": ${descriptionField}`,
-      'total_xp',
-      'xp',
-      '"instructors": instructor[]->name',
-      '"instructor_signature": instructor[0]->signature.asset->url',
-      '"header_image_url": thumbnail.asset->url',
-      '"logo_image_url": logo_image_url.asset->url',
-      '"award": award.asset->url',
-      'award_custom_text',
-      '"gold_award": gold_award.asset->url',
-      '"silver_award": silver_award.asset->url',
-      '"bronze_award": bronze_award.asset->url',
-      'is_solo',
-      `"lessons": child[]->{
-                    "id": railcontent_id,
-                    title,
-                    "image": thumbnail.asset->url,
-                    "instructors": instructor[]->name,
-                    length_in_seconds,
-                    difficulty_string,
-                    difficulty,
-                    "type": _type,
-                    is_always_unlocked_for_challenge,
-                    is_bonus_content_for_challenge,
-                }`,
-    ],
   },
   course: {
     fields: [
@@ -618,8 +581,6 @@ export function getNewReleasesTypes(brand) {
     'boot-camps',
     'quick-tips',
     'workout',
-    'challenge',
-    'challenge-part',
     'podcasts',
     'pack',
     'song',
