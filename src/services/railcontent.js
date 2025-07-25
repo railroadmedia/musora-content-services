@@ -286,8 +286,8 @@ async function postDataHandler(url, data) {
   return fetchHandler(url, 'post', null, data)
 }
 
-async function patchDataHandler(url, data) {
-  return fetchHandler(url, 'patch', null, data)
+async function patchDataHandler_depreciated(url, data) {
+  throw Error("PATCH verb throws a CORS error on the FEW. Use PATCH instead")
 }
 
 async function putDataHandler(url, data) {
@@ -593,7 +593,7 @@ export async function postContentReset(contentId) {
 export async function setStudentViewForUser(userId, enable) {
   let url = `/user-management-system/user/update/${userId}`
   let data = { use_student_view: enable ? 1 : 0 }
-  return await patchDataHandler(url, data)
+  return await putDataHandler(url, data)
 }
 
 /**
@@ -719,7 +719,7 @@ export async function closeComment(commentId) {
   const data = {
     conversation_status: 'closed',
   }
-  return await patchDataHandler(url, data)
+  return await putDataHandler(url, data)
 }
 
 /**
@@ -731,7 +731,7 @@ export async function openComment(commentId) {
   const data = {
     conversation_status: 'open',
   }
-  return await patchDataHandler(url, data)
+  return await putDataHandler(url, data)
 }
 
 /**
