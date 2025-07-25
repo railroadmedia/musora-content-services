@@ -565,15 +565,17 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
   if (pageName === 'lessons') pageName = 'lesson'
   if (pageName === 'songs') pageName = 'song'
   const rowString = contentRowSlug ? ` && slug.current == "${contentRowSlug.toLowerCase()}"` : ''
-  return fetchSanity(`*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}'${rowString}]{
+  const childFilter = await new FilterBuilder('', {isChildrenFilter: true}).buildFilter()
+  const query = `*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}'${rowString}]{
     brand,
     name,
     'slug': slug.current,
-    'content': content[]->{
-        'children': child[]->{ 'id': railcontent_id, 'children': child[]->{'id': railcontent_id}, },
+    'content': content[${childFilter}]->{
+        'children': child[${childFilter}]->{ 'id': railcontent_id, 'children': child[${childFilter}]->{'id': railcontent_id}, },
         ${getFieldsForContentType('tab-data')}
     },
-  }`, true)
+  }`
+  return fetchSanity(query, true)
 }
 
 
