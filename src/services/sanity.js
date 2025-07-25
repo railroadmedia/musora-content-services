@@ -1411,7 +1411,8 @@ export async function fetchLessonsFeaturingThisContent(railcontentId, brand, cou
  */
 async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, count) {
   const typeCheck = `@->_type in [${arrayJoinWithQuotes(SONG_TYPES)}]`
-  const typeCheckString = onlyUseSongTypes ? `${typeCheck}` : `!(${typeCheck})`
+  let typeCheckString = `@->brand == '${brand}' && `
+  typeCheckString += onlyUseSongTypes ? `${typeCheck}` : `!(${typeCheck})`
   const contentFromLicenseFilter = `_type == 'license' && references(^._id)].content[${typeCheckString} && @->railcontent_id != ${railcontentId}`
   let filterSongTypesWithSameLicense = await new FilterBuilder(contentFromLicenseFilter, {
     isChildrenFilter: true,
@@ -1428,7 +1429,6 @@ async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, cou
       "related_by_license" :
           *[${filterSongTypesWithSameLicense}]->{${queryFields}}|order(published_on desc, title asc)[0...${count}],
       }[0...1]`
-
   const results = await fetchSanity(query, false)
   return results['related_by_license'] ?? []
 }
