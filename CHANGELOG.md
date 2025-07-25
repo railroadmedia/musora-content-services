@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.28.5](https://github.com/railroadmedia/musora-content-services/compare/v2.28.4...v2.28.5) (2025-07-25)
+
+
+### Bug Fixes
+
+* **nullcheck:** patch for null sanity results and null check in relatedByLicense ([#382](https://github.com/railroadmedia/musora-content-services/issues/382)) ([05a3e06](https://github.com/railroadmedia/musora-content-services/commit/05a3e068d19cac244eda52203e124f6e8603bdf6))
+
 ### [2.28.4](https://github.com/railroadmedia/musora-content-services/compare/v2.28.3...v2.28.4) (2025-07-25)
 
 ### [2.28.3](https://github.com/railroadmedia/musora-content-services/compare/v2.28.2...v2.28.3) (2025-07-25)
