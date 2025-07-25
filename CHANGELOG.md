@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.28.3](https://github.com/railroadmedia/musora-content-services/compare/v2.28.2...v2.28.3) (2025-07-25)
+
+
+### Bug Fixes
+
+* **verbs:** fix open/closeComment. depreciate patchDataHandler ([#379](https://github.com/railroadmedia/musora-content-services/issues/379)) ([1db2025](https://github.com/railroadmedia/musora-content-services/commit/1db202537851684832f4bbff8e1c6ca39b4bbf35))
+
 ### [2.28.2](https://github.com/railroadmedia/musora-content-services/compare/v2.28.1...v2.28.2) (2025-07-25)
 
 
