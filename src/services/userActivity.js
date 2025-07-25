@@ -1237,6 +1237,8 @@ async function processPlaylistItem(item) {
         brand:  playlist.brand,
         id:     playlist.id,
         itemId: nextItem.id,
+        lastEngagedOn: playlist.last_engaged_on,
+        lastEngagedOnItem: playlist.last_engaged_on_item,
         type:   'playlists',
       }
     }
