@@ -254,6 +254,7 @@ import {
 	markNotificationAsRead,
 	markNotificationAsUnread,
 	pauseLiveEventPolling,
+	restoreNotification,
 	startLiveEventPolling,
 	updateNotificationSetting
 } from './services/user/notifications.js';
@@ -496,6 +497,7 @@ export {
 	resetPassword,
 	restoreComment,
 	restoreItemFromPlaylist,
+	restoreNotification,
 	restorePracticeSession,
 	restoreUserActivity,
 	restoreUserPractice,
