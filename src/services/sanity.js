@@ -2305,6 +2305,7 @@ export async function fetchScheduledAndNewReleases(
       "id": railcontent_id,
       title,
       "image": thumbnail.asset->url,
+      "thumbnail": thumbnail.asset->url,
       ${artistOrInstructorName()},
       "artists": instructor[]->name,
       difficulty,
