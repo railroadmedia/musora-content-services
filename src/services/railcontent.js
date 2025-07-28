@@ -589,10 +589,10 @@ export async function fetchUserPractices(currentVersion = 0, { userId } = {}) {
   const query = params.toString() ? `?${params.toString()}` : '';
   const url = `/api/user/practices/v1/practices${query}`;
   const response = await fetchDataHandler(url, currentVersion);
-  const { data, version } = response;
+  const { data } = response;
   const userPractices = data;
   if(!userPractices ) {
-    return { data: { practices: {} }, version };
+    return { ...response, data: { practices: {} } };
   }
 
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -613,10 +613,10 @@ export async function fetchUserPractices(currentVersion = 0, { userId } = {}) {
   }, {});
 
   return {
+    ...response,
     data: {
       practices: formattedPractices,
-    },
-    version,
+    }
   };
 }
 
