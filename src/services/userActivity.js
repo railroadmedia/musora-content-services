@@ -117,7 +117,7 @@ export async function getUserWeeklyStats() {
     let hasPractice = sortedPracticeDays.some((practiceDate) =>
       isSameDate(practiceDate, day.format('YYYY-MM-DD'))
     )
-    let isActive = isSameDate(today, day)
+    let isActive = isSameDate(today.format(), day.format())
     let type = hasPractice ? 'tracked' : isActive ? 'active' : 'none'
     dailyStats.push({
       key: i,
