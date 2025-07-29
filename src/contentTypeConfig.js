@@ -565,7 +565,18 @@ export let contentTypeConfig = {
       `quarter_removed`,
       '"thumbnail": thumbnail.asset->url',
     ]
+  },
+  'child': {
+    fields: [
+      `'child': child[]->{
+        ${DEFAULT_FIELDS}
+        'child': child[]->{
+          ${DEFAULT_FIELDS}
+        }
+      }`
+    ]
   }
+
 }
 
 export const plusMembershipPermissions = 92
@@ -682,7 +693,7 @@ export function artistOrInstructorNameAsArray(key = 'artists') {
 }
 
 export function getFieldsForContentType(contentType, asQueryString = true) {
-  const fields = contentType
+  let fields = contentType
     ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? [])
     : DEFAULT_FIELDS
   return asQueryString ? fields.toString() + ',' : fields
