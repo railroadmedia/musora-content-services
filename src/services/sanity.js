@@ -2190,7 +2190,6 @@ export async function fetchTabData(
 ) {
   const start = (page - 1) * limit
   const end = start + limit
-  let withoutPagination = false
   // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
   const includedFieldsFilter =
     includedFields.length > 0 ? filtersToGroq(includedFields, [], pageName) : ''
@@ -2201,7 +2200,6 @@ export async function fetchTabData(
     case 'recent':
       progressIds = await getAllStartedOrCompleted({ brand, onlyIds: true });
       sortOrder = null;
-      withoutPagination = true;
       break;
     case 'incomplete':
       progressIds = await getAllStarted();
@@ -2215,11 +2213,6 @@ export async function fetchTabData(
 
   // limits the results to supplied progressIds for started & completed filters
   const progressFilter = await getProgressFilter(progress, progressIds)
-  if (sort === "recommended"){
-    progressIds = await recommendations(brand);
-    withoutPagination = true;
-  }
-
   const fieldsString = getFieldsForContentType('tab-data');
   const now = getSanityDate(new Date())
 
@@ -2247,13 +2240,12 @@ export async function fetchTabData(
   query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
     sortOrder: sortOrder,
     start: start,
-    end: end,
-    withoutPagination: withoutPagination,
+    end: end
   })
 
   let results = await fetchSanity(query, true);
 
-  if ((['recent', 'incomplete', 'completed'].includes(progress) || sort == "recommended" )&& results.entity.length > 1) {
+  if (['recent', 'incomplete', 'completed'].includes(progress) && results.entity.length > 1) {
     const orderMap = new Map(progressIds.map((id, index) => [id, index]))
     results.entity = results.entity
       .sort((a, b) => {
