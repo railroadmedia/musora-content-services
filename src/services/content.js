@@ -87,7 +87,7 @@ export async function getTabResults(brand, pageName, tabName, {
     let temp = await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
 
     const [ranking, contextResults] = await Promise.all([
-      rankItems(brand, temp.entity.map(e => e.railcontent_id)),
+      sort === 'recommended' ? rankItems(brand, temp.entity.map(e => e.railcontent_id)) : [],
       addContextToContent(() => temp.entity, {
         addNextLesson: true,
         addProgressPercentage: true,
@@ -95,10 +95,10 @@ export async function getTabResults(brand, pageName, tabName, {
       })
     ]);
 
-    results = contextResults.sort((a, b) => {
+    results = ranking.length === 0 ? contextResults : contextResults.sort((a, b) => {
       const indexA = ranking.indexOf(a.railcontent_id);
       const indexB = ranking.indexOf(b.railcontent_id);
-      return (indexA >= 0 ? indexA : Infinity) - (indexB >= 0 ? indexB : Infinity);
+      return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
     })
   }
 
