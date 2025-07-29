@@ -303,6 +303,8 @@ export async function recordUserPractice(practiceDetails) {
     practiceDetails.auto = 1
   }
 
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
   await userActivityContext.update(
     async function (localContext) {
       let userData = localContext.data ?? { [DATA_KEY_PRACTICES]: {} }
@@ -310,18 +312,19 @@ export async function recordUserPractice(practiceDetails) {
     },
     async function () {
       const response = await logUserPractice(practiceDetails)
+      console.log({ response })
       if (response) {
         await userActivityContext.updateLocal(async function (localContext) {
           const newPractices = response.data ?? []
           newPractices.forEach((newPractice) => {
             const { date } = newPractice
-            if (!localContext.data[DATA_KEY_PRACTICES][date]) {
-              localContext.data[DATA_KEY_PRACTICES][date] = []
+            const convertedDate = convertToTimeZone(date, userTimeZone)
+            if (!localContext.data[DATA_KEY_PRACTICES][convertedDate]) {
+              localContext.data[DATA_KEY_PRACTICES][convertedDate] = []
             }
-            localContext.data[DATA_KEY_PRACTICES][date][DATA_KEY_LAST_UPDATED_TIME] = Math.round(
-              new Date().getTime() / 1000
-            )
-            localContext.data[DATA_KEY_PRACTICES][date].push({
+            localContext.data[DATA_KEY_PRACTICES][convertedDate][DATA_KEY_LAST_UPDATED_TIME] =
+              Math.round(new Date().getTime() / 1000)
+            localContext.data[DATA_KEY_PRACTICES][convertedDate].push({
               id: newPractice.id,
               duration_seconds: newPractice.duration_seconds, // Add the new practice for this date
             })
@@ -332,6 +335,7 @@ export async function recordUserPractice(practiceDetails) {
     }
   )
 }
+
 /**
  * Updates a user's practice session with new details and syncs the changes remotely.
  *
