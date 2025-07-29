@@ -104,6 +104,35 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   return await processItems(data, addContext, dataField, isDataAnArray, dataField_includeParent)
 }
 
+export async function getNextLessonForPlaylists(data, {dataField = null} = {} )
+{
+  let playlists = extractItemsFromData(data, dataField, false, false)
+  console.log('ps', playlists)
+  let allIds = []
+  playlists.forEach((playlist) => allIds = [...allIds, playlist.items.map(a => a.content_id)])
+  const progressOnItems = await getProgressStateByIds(allIds);
+  const addContext = async (playlist) => {
+    const allItemsCompleted = playlist.items.every(i => {
+      const itemId = i.content_id;
+      const progress = progressOnItems[itemId];
+      return progress && progress === 'completed';
+    });
+    let nextItem = playlist.items[0] ?? null;
+    if (!allItemsCompleted) {
+      const lastItemProgress = progressOnItems[playlist.last_engaged_on];
+      const index = playlist.items.findIndex(i => i.content_id === playlist.last_engaged_on);
+      if (lastItemProgress === 'completed') {
+        nextItem = playlist.items[index + 1] ?? nextItem;
+      } else {
+        nextItem = playlist.items[index] ?? nextItem;
+      }
+    }
+    playlist.nextLesson = nextItem
+    return playlist
+  }
+  return await processItems(data, addContext, dataField, false, false,)
+}
+
 function extractItemsFromData(data, dataField, isParentArray, includeParent)
 {
   let items = []
@@ -158,4 +187,5 @@ async function processItems(data, addContext, dataField, isParentArray, includeP
       : await addContext(data)
   }
 }
+
 
