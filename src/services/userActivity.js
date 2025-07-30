@@ -899,7 +899,7 @@ export async function deleteUserActivity(id) {
   return await fetchHandler(url, 'DELETE')
 }
 
-async function extractPinnedItemsAndSortAllItems(userPinnedItem, contentMap, eligiblePlaylistItems, pinnedGuidedCourse, contentsMap, limit) {
+async function extractPinnedItemsAndSortAllItems(userPinnedItem, contentMap, eligiblePlaylistItems, pinnedGuidedCourse, limit) {
   const pinnedItem = userPinnedItem ? await extractPinnedItem(
     userPinnedItem,
     contentMap,
@@ -934,6 +934,55 @@ async function extractPinnedItemsAndSortAllItems(userPinnedItem, contentMap, eli
   return mergeAndSortItems(combined, limit)
 }
 
+function generateContentsMap(contents, progressContents) {
+  const excludedTypes = new Set([
+    'pack-bundle',
+    'learning-path-course',
+    'learning-path-level'
+  ]);
+  const existingShows = new Set();
+  const contentsMap = {};
+  contents.forEach(content => {
+    contentsMap[content.railcontent_id] = content;
+  });
+  const childToParentMap = {};
+  Object.values(contentsMap).forEach(content => {
+    if (Array.isArray(content.parent_content_data) && content.parent_content_data.length > 0) {
+      childToParentMap[content.id] = content.parent_content_data[content.parent_content_data.length - 1];
+    }
+  });
+
+  const allRecentTypeSet = new Set(
+    Object.values(recentTypes).flat()
+  )
+  for (const [idStr, progress] of Object.entries(progressContents)) {
+    const id = parseInt(idStr);
+    const content = contentsMap[id];
+    if (!content || excludedTypes.has(content.type) || !allRecentTypeSet.has(content.type)) continue;
+    const parentId = childToParentMap[id];
+    // Handle children with parents
+    if (parentId) {
+      const parentContent = contentsMap[parentId];
+      if (!parentContent || excludedTypes.has(parentContent.type)) continue;
+      const existing = contenstMap.get(parentId);
+      if (!existing) {
+        contentsMap[parentId] = parentContent
+      }
+      continue;
+    }
+    // Handle standalone parents
+    if (!contentMap.has(id)) {
+      if (!existingShows.has(content.type)) {
+        contentMap[id] = content
+      }
+      if (showsLessonTypes.includes(content.type)) {
+        existingShows.add(content.type)
+      }
+    }
+  }
+  return contentsMap;
+}
+
 /**
  * Fetches and combines recent user progress rows and playlists, excluding certain types and parents.
  *
@@ -948,11 +997,7 @@ async function extractPinnedItemsAndSortAllItems(userPinnedItem, contentMap, eli
  *   .catch(error => console.error(error));
  */
 export async function getProgressRows({ brand = null, limit = 8 } = {}) {
-  const excludedTypes = new Set([
-    'pack-bundle',
-    'learning-path-course',
-    'learning-path-level'
-  ]);
+
   // TODO slice progress to a reasonable number, say 100
   const [recentPlaylists, progressContents, allPinnedGuidedCourse, userPinnedItem ] = await Promise.all([
     fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit}),
@@ -989,7 +1034,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     })
   ]);
 
-  const existingShows = new Set();
+
   // TODO this doesn't work for guided courses as the GC card takes precedence over the playlist card
   // https://musora.atlassian.net/browse/BEH-812
   for (const item of playlistsContents) {
@@ -999,48 +1044,8 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     parentIds.forEach(id => delete progressContents[id] );
   }
 
-  const contentsMap = {};
-  contents.forEach(content => {
-    contentsMap[content.railcontent_id] = content;
-  });
-  const childToParentMap = {};
-  Object.values(contentsMap).forEach(content => {
-    if (Array.isArray(content.parent_content_data) && content.parent_content_data.length > 0) {
-      childToParentMap[content.id] = content.parent_content_data[content.parent_content_data.length - 1];
-    }
-  });
-
-  const allRecentTypeSet = new Set(
-    Object.values(recentTypes).flat()
-  )
-  const contentMap = new Map();
-  for (const [idStr, progress] of Object.entries(progressContents)) {
-    const id = parseInt(idStr);
-    const content = contentsMap[id];
-    if (!content || excludedTypes.has(content.type)  || !allRecentTypeSet.has(content.type) ) continue;
-    const parentId = childToParentMap[id];
-    // Handle children with parents
-    if (parentId) {
-      const parentContent = contentsMap[parentId];
-      if (!parentContent || excludedTypes.has(parentContent.type)) continue;
-      const existing = contentMap.get(parentId);
-      if (!existing) {
-        contentMap[parentId] = parentContent
-      }
-      continue;
-    }
-    // Handle standalone parents
-    if (!contentMap.has(id)) {
-      if(!existingShows.has(content.type)){
-        contentMap[id] = content
-      }
-      if(showsLessonTypes.includes(content.type)) {
-        existingShows.add(content.type)
-      }
-    }
-  }
-
-  let combined = await extractPinnedItemsAndSortAllItems(userPinnedItem, contentMap, eligiblePlaylistItems, pinnedGuidedCourse, contentsMap, limit);
+  const contentsMap = generateContentsMap(contents, progressContents);
+  let combined = await extractPinnedItemsAndSortAllItems(userPinnedItem, contentsMap, eligiblePlaylistItems, pinnedGuidedCourse, limit);
   const results = await Promise.all(
     combined.slice(0, limit).map(item =>
       item.type === 'playlist'
@@ -1064,12 +1069,13 @@ async function getUserPinnedItem(brand) {
 
 async function processContentItem(content) {
   const contentType = getFormattedType(content.type, content.brand);
-  console.log('contentType', contentType)
   const status = content.progressStatus;
   const isLive = content.isLive ?? false
   let ctaText = getDefaultCTATextForContent(content, contentType)
 
   const nextLessonContent = content.nextLesson ? await fetchByRailContentId(content.nextLesson, null) : null
+
+  content.completed_children = getCompletedChildren(content, contentType)
 
   if (content.lesson_count > 0) {
     const lessonIds = extractChildrenIds(content);
@@ -1094,34 +1100,34 @@ async function processContentItem(content) {
     const shows = await fetchShows(content.brand, content.type)
     const showIds = shows.map(item => item.id);
     const progressOnItems = await getProgressStateByIds(showIds);
-    const completedCount = Object.values(shows).filter(show => show.progressStatus === 'completed').length;
+    const completedShows = content.completed_children
     if (status === 'completed') {
-      const nextByProgress = findIncompleteLesson(progressOnItems, content.id, content.type);
+      const nextByProgress = findIncompleteLesson(progressOnItems, content.id);
       content = shows.find(lesson => lesson.id === nextByProgress);
+      content.completed_children = completedShows
     }
-    content.completed_children = completedCount;
     content.child_count = shows.length;
-    item.percent = Math.round((completedCount / shows.length) * 100);
-    if (completedCount === shows.length) {
+    content.progressPercent = Math.round((completedShows / shows.length) * 100);
+    if (completedShows === shows.length) {
       ctaText = 'Revisit Lessons';
     }
   }
 
   return {
-    id:                item.id,
+    id:                content.id,
     progressType:      'content',
     header:            contentType,
-    pinned:            item.pinned ?? false,
+    pinned:            content.pinned ?? false,
     content:           content,
     body:              {
-      progressPercent: isLive ? undefined: item.percent,
+      progressPercent: isLive ? undefined: content.progressPercent,
       thumbnail:       content.thumbnail,
       title:           content.title,
       isLive:          isLive,
       badge:           content.badge ?? null,
       isLocked:        content.is_locked ?? false,
       subtitle:        !content.child_count || content.lesson_count === 1
-        ? (contentType === 'lesson' && isLive === false) ? `${item.percent}% Complete`: `${content.difficulty_string} • ${content.artist_name}`
+        ? (contentType === 'lesson' && isLive === false) ? `${content.progressPercent}% Complete`: `${content.difficulty_string} • ${content.artist_name}`
         : `${content.completed_children} of ${content.lesson_count ?? content.child_count} Lessons Complete`
     },
     cta:               {
@@ -1170,31 +1176,20 @@ function getDefaultCTATextForContent(content, contentType)
 
 async function getCompletedChildren(content, contentType)
 {
-  if (content.lesson_count > 0) {
+  let completedChildren = null
+  if (contentType === 'show') {
+    const shows = await fetchShows(content.brand, content.type)
+    completedChildren = Object.values(shows).filter(show => show.progressStatus === 'completed').length;
+  } else if (content.lesson_count > 0) {
     const lessonIds = extractChildrenIds(data);
     const progressOnItems = await getProgressStateByIds(lessonIds);
-    data.completed_children  = Object.values(progressOnItems).filter(value => value === 'completed').length;
-    if (item.nextLesson) {
-      const nextLesson = item.nextLesson
-      nextLessonContent = await fetchByRailContentId(nextLesson, null)
-      if(data.type === 'guided-course'){
-        console.log('time to p', nextLessonContent.published_on)
-        let isLocked = new Date(nextLessonContent.published_on) > new Date()
-        data.thumbnail = nextLessonContent.thumbnail
-        if (status === 'started' && isLocked) {
-          data.is_locked = true
-          const timeRemaining = getTimeRemainingUntilLocal(nextLessonContent.published_on, {withTotalSeconds: true})
-          data.time_remaining_seconds = timeRemaining.totalSeconds
-          ctaText = 'Next lesson in ' + timeRemaining.formatted
-        }
-      }
-    }
+    completedChildren  = Object.values(progressOnItems).filter(value => value === 'completed').length;
   }
+  return completedChildren
 }
 
 async function processPlaylistItem(item) {
   const playlist = item.raw;
-  console.log('p',playlist)
   return {
     id:                playlist.id,
     progressType:      'playlist',
@@ -1365,14 +1360,14 @@ async function updateUserPinnedProgressRow(brand, pinnedData) {
   await globalConfig.localStorage.setItem('user', JSON.stringify(user))
 }
 
-async function extractPinnedItem(pinned, progressMap, playlistItems) {
+async function extractPinnedItem(pinned, contentMap, playlistItems) {
   const {id, progressType, pinnedAt} = pinned
 
   if (progressType === 'content') {
     const pinnedId = parseInt(id)
-    if (progressMap.has(pinnedId)) {
-      const item = progressMap.get(pinnedId)
-      progressMap.delete(pinnedId)
+    if (contentMap.has(pinnedId)) {
+      const item = contentMap.get(pinnedId)
+      contentMap.delete(pinnedId)
       return item
     } else {
       const content = await addContextToContent(fetchByRailContentId,`${pinnedId}`, 'progress-tracker',
@@ -1380,14 +1375,9 @@ async function extractPinnedItem(pinned, progressMap, playlistItems) {
           addNextLesson: true,
           addProgressStatus: true,
           addProgressPercentage: true,
-          addProgressTimestamp: true,
         }
       )
-      return {
-        id:                 pinnedId,
-        raw:                content,
-        progressTimestamp:  new Date(pinnedAt).getTime()
-      }
+      content.progressTimestamp = new Date(pinnedAt).getTime()
     }
   }
   if (progressType === 'playlist') {
@@ -1407,23 +1397,20 @@ async function extractPinnedItem(pinned, progressMap, playlistItems) {
   return null
 }
 
-async function extractPinnedGuidedCourseItem(guidedCourse, progressMap) {
+async function extractPinnedGuidedCourseItem(guidedCourse, contentMap) {
   const children = guidedCourse.children.map(child => child.id)
   let existingGuidedCourseProgress = null
-  if (progressMap.has(guidedCourse.id)) {
-    existingGuidedCourseProgress = progressMap.get(guidedCourse.id)
-    progressMap.delete(guidedCourse.id)
+  if (contentMap.has(guidedCourse.id)) {
+    existingGuidedCourseProgress = contentMap.get(guidedCourse.id)
+    contentMap.delete(guidedCourse.id)
   }
   children.forEach(child => {
-    if (progressMap.has(child)) {
-      progressMap.delete(child)
+    if (contentMap.has(child)) {
+      contentMap.delete(child)
     }
   })
   return existingGuidedCourseProgress ?? {
-    id: guidedCourse.id,
-    raw: guidedCourse,
-    pinned: true,
-    progressTimestamp: new Date().getTime(),
+    guidedCourse
   }
 }
 
