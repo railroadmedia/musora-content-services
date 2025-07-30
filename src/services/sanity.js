@@ -1316,10 +1316,11 @@ export async function fetchSiblingContent(railContentId, brand)
 /**
  * Fetch lessons related to a specific lesson by RailContent ID and type.
  * @param {string} railContentId - The RailContent ID of the current lesson.
- * @param {string} brand - The current brand.
+ * @param {string|null} brand - The current brand.
  * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
  */
-export async function fetchRelatedLessons(railContentId, brand) {
+export async function fetchRelatedLessons(railContentId, brand = null) {
+  const brandString = brand ? ` && brand == "${brand}"` : ''
   const filterSameTypeAndSortOrder = await new FilterBuilder(
     `_type==^._type &&  _type in ${JSON.stringify(typeWithSortOrder)} && brand == "${brand}" && railcontent_id !=${railContentId}`
   ).buildFilter()
@@ -1334,7 +1335,7 @@ export async function fetchRelatedLessons(railContentId, brand) {
   ).buildFilter()
   const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
   const queryFieldsWithSort = queryFields + ', sort'
-  const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
+  const query = `*[railcontent_id == ${railContentId}${brandString} && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
     "related_lessons" : array::unique([
       ...(*[${filterSongSameArtist}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
