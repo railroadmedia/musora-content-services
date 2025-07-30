@@ -570,7 +570,7 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
   if (pageName === 'songs') pageName = 'song'
   const rowString = contentRowSlug ? ` && slug.current == "${contentRowSlug.toLowerCase()}"` : ''
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
-  return fetchSanity(`*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}'${rowString}]{
+  const query = `*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}'${rowString}]{
     brand,
     name,
     'slug': slug.current,
@@ -579,7 +579,8 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
         ${getFieldsForContentType('tab-data')}
         'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     },
-  }`, true)
+  }`
+  return fetchSanity(query, true)
 }
 
 
