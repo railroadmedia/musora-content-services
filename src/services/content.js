@@ -41,7 +41,7 @@ export async function getLessonContentRows (brand='drumeo', pageName = 'lessons'
 /**
  * Get data that should be displayed for a specific tab with pagination
  * @param {string} brand - The brand for which to fetch data.
- * @param {string} pageName - The page name (e.g., 'lessons', 'songs','challenges).
+ * @param {string} pageName - The page name (e.g., 'lessons', 'songs').
  * @param {string} tabName - The name for the selected tab. Should be same name received from fetchMetadata (e.g., 'Individuals', 'Collections','For You').
  * @param {Object} params - Parameters for pagination, sorting, and filter.
  * @param {number} [params.page=1] - The page number for pagination.
@@ -166,7 +166,7 @@ export async function getRecent(brand, pageName, tabName = 'all', {
  * Fetches content rows for a given brand and page with optional filtering by content row slug.
  *
  * @param {string} brand - The brand for which to fetch content rows.
- * @param {string} pageName - The page name (e.g., 'lessons', 'songs', 'challenges').
+ * @param {string} pageName - The page name (e.g., 'lessons', 'songs').
  * @param {string|null} contentRowSlug - The specific content row ID to fetch.
  * @param {Object} params - Parameters for pagination.
  * @param {number} [params.page=1] - The page number for pagination.

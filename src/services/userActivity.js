@@ -9,7 +9,6 @@ import {
   fetchUserPracticeNotes,
   fetchHandler,
   fetchRecentUserActivities,
-  fetchChallengeLessonData,
   fetchLastInteractedChild,
 } from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
@@ -1237,6 +1236,8 @@ async function processPlaylistItem(item) {
         brand:  playlist.brand,
         id:     playlist.id,
         itemId: nextItem.id,
+        lastEngagedOn: playlist.last_engaged_on,
+        lastEngagedOnItem: playlist.last_engaged_on_item,
         type:   'playlists',
       }
     }

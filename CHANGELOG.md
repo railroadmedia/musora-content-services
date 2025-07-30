@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.28.6](https://github.com/railroadmedia/musora-content-services/compare/v2.28.5...v2.28.6) (2025-07-28)
+
+
+### Bug Fixes
+
+* **T3PS-306:** remove response validation ([#385](https://github.com/railroadmedia/musora-content-services/issues/385)) ([c188565](https://github.com/railroadmedia/musora-content-services/commit/c18856537f756ea7672672839e2c31355fe9f64a))
+
+### [2.28.5](https://github.com/railroadmedia/musora-content-services/compare/v2.28.4...v2.28.5) (2025-07-25)
+
+
+### Bug Fixes
+
+* **nullcheck:** patch for null sanity results and null check in relatedByLicense ([#382](https://github.com/railroadmedia/musora-content-services/issues/382)) ([05a3e06](https://github.com/railroadmedia/musora-content-services/commit/05a3e068d19cac244eda52203e124f6e8603bdf6))
+
+### [2.28.4](https://github.com/railroadmedia/musora-content-services/compare/v2.28.3...v2.28.4) (2025-07-25)
+
+### [2.28.3](https://github.com/railroadmedia/musora-content-services/compare/v2.28.2...v2.28.3) (2025-07-25)
+
+
+### Bug Fixes
+
+* **verbs:** fix open/closeComment. depreciate patchDataHandler ([#379](https://github.com/railroadmedia/musora-content-services/issues/379)) ([1db2025](https://github.com/railroadmedia/musora-content-services/commit/1db202537851684832f4bbff8e1c6ca39b4bbf35))
+
+### [2.28.2](https://github.com/railroadmedia/musora-content-services/compare/v2.28.1...v2.28.2) (2025-07-25)
+
+
+### Bug Fixes
+
+* **BEH-873:** Lessons Featuring this Song and Other Versions of this Song, restricted to current brand ([#377](https://github.com/railroadmedia/musora-content-services/issues/377)) ([df4d5d7](https://github.com/railroadmedia/musora-content-services/commit/df4d5d7eb1e99c922844682f966cc3145b914291))
+
 ### [2.28.1](https://github.com/railroadmedia/musora-content-services/compare/v2.28.0...v2.28.1) (2025-07-24)
 
 
