@@ -1,6 +1,6 @@
 import {
   getLastInteractedOf,
-  getNextLesson,
+  getNextLesson, getProgressDateByIds,
   getProgressPercentageByIds,
   getProgressStateByIds,
   getResumeTimeSecondsByIds
@@ -28,6 +28,7 @@ import {fetchLastInteractedChild, fetchLikeCount} from "./railcontent"
  * @param options.addIsLiked - add isLikedField
  * @param options.addLikeCount - add likeCount field
  * @param options.addProgressStatus - add progressStatus field
+ * @param options.addProgressTimestamp - add progressTimestamp field
  * @param options.addResumeTimeSeconds - add resumeTimeSeconds field
  * @param options.addLastInteractedChild - add lastInteractedChild field. This may be different from nextLesson
  * @param options.addNextLesson - add nextLesson field. For collection type content. each collection has different logic for calculating this data
@@ -66,6 +67,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addIsLiked = false,
     addLikeCount = false,
     addProgressStatus = false,
+    addProgressTimeStamp = false,
     addResumeTimeSeconds = false,
     addLastInteractedChild = false,
     addNextLesson = false,
@@ -81,9 +83,8 @@ export async function addContextToContent(dataPromise, ...dataArgs)
 
   if(ids.length === 0) return false
 
-  const [progressPercentageData, progressStatusData, isLikedData, resumeTimeData, lastInteractedChildData, nextLessonData] = await Promise.all([
-    addProgressPercentage ? getProgressPercentageByIds(ids) : Promise.resolve(null),
-    addProgressStatus ? getProgressStateByIds(ids) : Promise.resolve(null),
+  const [progressData, isLikedData, resumeTimeData, lastInteractedChildData, nextLessonData] = await Promise.all([
+    addProgressPercentage || addProgressStatus || addProgressTimeStamp ? getProgressDateByIds(ids) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
@@ -92,8 +93,9 @@ export async function addContextToContent(dataPromise, ...dataArgs)
 
   const addContext = async (item) => ({
     ...item,
-    ...(addProgressPercentage ? { progressPercentage: progressPercentageData?.[item.id] } : {}),
-    ...(addProgressStatus ? { progressStatus: progressStatusData?.[item.id] } : {}),
+    ...(addProgressPercentage ? { progressPercentage: progressData?.[item.id]['progress'] } : {}),
+    ...(addProgressStatus ? { progressStatus: progressData?.[item.id]['status'] } : {}),
+    ...(addProgressTimeStamp ? { progressTimestamp: progressData?.[item.id]['last_update'] } : {}),
     ...(addIsLiked ? { isLiked: isLikedData?.[item.id] } : {}),
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),

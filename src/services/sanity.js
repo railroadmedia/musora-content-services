@@ -16,6 +16,7 @@ import {
   showsTypes,
   getNewReleasesTypes,
   coachLessonsTypes,
+  getFieldsForContentTypeWithFilteredChildren,
   getChildFieldsForContentType,
   SONG_TYPES,
 } from '../contentTypeConfig.js'
@@ -477,12 +478,12 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
  *   .catch(error => console.error(error));
  */
 export async function fetchByRailContentId(id, contentType) {
-  const fields = getFieldsForContentType(contentType)
-  const childFields = getChildFieldsForContentType(contentType)
+  const fields = getFieldsForContentTypeWithFilteredChildren(contentType)
+  const lessonFields = getChildFieldsForContentType(contentType)
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const entityFieldsString = ` ${fields}
                                     'child_count': coalesce(count(child[${childrenFilter}]->), 0) ,
-                                    "lessons": child[${childrenFilter}]->{${childFields}},
+                                    "lessons": child[${childrenFilter}]->{${lessonFields}},
                                     'length_in_seconds': coalesce(
       math::sum(
         select(
@@ -522,14 +523,14 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   const idsString = ids.join(',')
   const brandFilter = brand ? ` && brand == "${brand}"` : ''
   const now = getSanityDate(new Date())
+  const fieldString = await getFieldsForContentTypeWithFilteredChildren(contentType);
   const query = `*[
     railcontent_id in [${idsString}]${brandFilter}
   ]{
-    ${getFieldsForContentType(contentType)}
+    ${fieldString}
     live_event_start_time,
     live_event_end_time,
   }`
-
   const customPostProcess = (results) => {
     const now = getSanityDate(new Date(), false);
     const liveProcess = (result) => {
@@ -1172,19 +1173,17 @@ export async function fetchLessonContent(railContentId) {
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
   })
-  console.log('query', query)
   const chapterProcess = (result) => {
     const now = getSanityDate(new Date(), false)
     if (result.live_event_start_time && result.live_event_end_time) {
       result.isLive = result.live_event_start_time <= now && result.live_event_end_time >= now
     }
     const chapters = result.chapters ?? []
-    if (chapters.length == 0) return result
+    if (chapters.length === 0) return result
     result.chapters = chapters.map((chapter, index) => ({
       ...chapter,
       chapter_thumbnail_url: `https://musora-web-platform.s3.amazonaws.com/chapters/${result.brand}/Chapter${index + 1}.jpg`,
     }))
-    console.log('result', result)
     return result
   }
 
@@ -1474,7 +1473,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
  */
 export async function fetchPackData(id) {
   const query = `*[railcontent_id == ${id}]{
-    ${getFieldsForContentType('pack')}
+    ${await getFieldsForContentTypeWithFilteredChildren('pack')}
   } [0...1]`
   return fetchSanity(query, false)
 }
