@@ -521,11 +521,12 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   }
   const idsString = ids.join(',')
   const brandFilter = brand ? ` && brand == "${brand}"` : ''
-  const now = getSanityDate(new Date())
+  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`, {pullFutureContent: true}).buildFilter()
   const query = `*[
     railcontent_id in [${idsString}]${brandFilter}
   ]{
     ${getFieldsForContentType(contentType)}
+    'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     live_event_start_time,
     live_event_end_time,
   }`
@@ -565,6 +566,7 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
   if (pageName === 'lessons') pageName = 'lesson'
   if (pageName === 'songs') pageName = 'song'
   const rowString = contentRowSlug ? ` && slug.current == "${contentRowSlug.toLowerCase()}"` : ''
+  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`, {pullFutureContent: true}).buildFilter()
   const childFilter = await new FilterBuilder('', {isChildrenFilter: true}).buildFilter()
   const query = `*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}'${rowString}]{
     brand,
@@ -573,6 +575,7 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
     'content': content[${childFilter}]->{
         'children': child[${childFilter}]->{ 'id': railcontent_id, 'children': child[${childFilter}]->{'id': railcontent_id}, },
         ${getFieldsForContentType('tab-data')}
+        'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     },
   }`
   return fetchSanity(query, true)
@@ -1172,7 +1175,6 @@ export async function fetchLessonContent(railContentId) {
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
   })
-  console.log('query', query)
   const chapterProcess = (result) => {
     const now = getSanityDate(new Date(), false)
     if (result.live_event_start_time && result.live_event_end_time) {
@@ -1184,7 +1186,6 @@ export async function fetchLessonContent(railContentId) {
       ...chapter,
       chapter_thumbnail_url: `https://musora-web-platform.s3.amazonaws.com/chapters/${result.brand}/Chapter${index + 1}.jpg`,
     }))
-    console.log('result', result)
     return result
   }
 
@@ -2230,11 +2231,12 @@ export async function fetchTabData(
 
   filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
   entityFieldsString =
     ` ${fieldsString}
     'children': child[${childrenFilter}]->{'id': railcontent_id},
     'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
-    'lesson_count': coalesce(count(child[${childrenFilter}]->), 0),
+    'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     'length_in_seconds': coalesce(
       math::sum(
         select(
