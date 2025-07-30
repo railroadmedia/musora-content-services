@@ -312,7 +312,6 @@ export async function recordUserPractice(practiceDetails) {
     },
     async function () {
       const response = await logUserPractice(practiceDetails)
-      console.log({ response })
       if (response) {
         await userActivityContext.updateLocal(async function (localContext) {
           const newPractices = response.data ?? []
