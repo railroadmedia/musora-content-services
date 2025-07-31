@@ -1,5 +1,5 @@
 import {
-  getLastInteractedOf,
+  getLastInteractedOf, getNavigateTo,
   getNextLesson, getProgressDateByIds,
   getProgressPercentageByIds,
   getProgressStateByIds,
@@ -71,6 +71,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addResumeTimeSeconds = false,
     addLastInteractedChild = false,
     addNextLesson = false,
+    addNavigateTo = false,
   } = options
 
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
@@ -83,12 +84,13 @@ export async function addContextToContent(dataPromise, ...dataArgs)
 
   if(ids.length === 0) return false
 
-  const [progressData, isLikedData, resumeTimeData, lastInteractedChildData, nextLessonData] = await Promise.all([
+  const [progressData, isLikedData, resumeTimeData, lastInteractedChildData, nextLessonData, navigateToData] = await Promise.all([
     addProgressPercentage || addProgressStatus || addProgressTimestamp ? getProgressDateByIds(ids) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
     addNextLesson ? getNextLesson(items) : Promise.resolve(null),
+    addNavigateTo ? getNavigateTo(items) : Promise.resolve(null),
   ])
 
   const addContext = async (item) => ({
@@ -101,6 +103,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
     ...(addLastInteractedChild ? { lastInteractedChild: lastInteractedChildData?.[item.id] } : {}),
     ...(addNextLesson ? { nextLesson: nextLessonData?.[item.id] } : {}),
+    ...(addNavigateTo ? { navigateTo: navigateToData?.[item.id] } : {}),
   })
 
   return await processItems(data, addContext, dataField, isDataAnArray, dataField_includeParent)

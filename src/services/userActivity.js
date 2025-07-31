@@ -914,6 +914,7 @@ async function extractPinnedItemsAndSortAllItems(userPinnedItem, contentsMap, el
     const guidedCourseContent = contentsMap.get(guidedCourseID) ?? await addContextToContent(fetchByRailContentId, guidedCourseID, 'guided-course',
       {
         addNextLesson: true,
+        addNavigateTo: true,
         addProgressStatus: true,
         addProgressPercentage: true,
         addProgressTimestamp: true,
@@ -1022,12 +1023,14 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   const [ playlistsContents, contents ] = await Promise.all([
     addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
       addNextLesson: true,
+      addNavigateTo: true,
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
     }),
     addContextToContent(fetchByRailContentIds, nonPlaylistContentIds, 'progress-tracker', brand, {
       addNextLesson: true,
+      addNavigateTo: true,
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
@@ -1204,7 +1207,6 @@ async function processPlaylistItem(item) {
       text:   'Continue',
       action: {
         brand:  playlist.brand,
-        id:     playlist.id,
         item_id: playlist.nextLesson.id,
         content_id: playlist.nextLesson.content_id,
         type:   'playlists',
@@ -1373,6 +1375,7 @@ async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playl
       item = await addContextToContent(fetchByRailContentId,`${pinnedId}`, 'progress-tracker',
         {
           addNextLesson: true,
+          addNavigateTo: true,
           addProgressStatus: true,
           addProgressPercentage: true,
           addProgressTimestamp: true
