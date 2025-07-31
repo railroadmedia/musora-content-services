@@ -224,7 +224,7 @@ export async function togglePlaylistPrivate(playlistId, is_private)
  * Updates a playlists values
  *
  * @param {string|number} playlistId
- * @param {PlaylistDTO} updateData  - An object containing fields to update on the playlist:
+ * @param {UpdatePlaylistDTO} updateData  - An object containing fields to update on the playlist:
  *  - `name` (string): The name of the new playlist (required, max 255 characters).
  *  - `description` (string): A description of the playlist (optional, max 1000 characters).
  *  - `category` (string): The category of the playlist (optional).
