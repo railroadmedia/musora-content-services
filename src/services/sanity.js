@@ -523,12 +523,12 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   ids = [...new Set(ids.filter(item => item !== null && item !== undefined))];
   const idsString = ids.join(',')
   const brandFilter = brand ? ` && brand == "${brand}"` : ''
-  const now = getSanityDate(new Date())
-  const fieldString = await getFieldsForContentTypeWithFilteredChildren(contentType);
+  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`, {pullFutureContent: true}).buildFilter()
   const query = `*[
     railcontent_id in [${idsString}]${brandFilter}
   ]{
-    ${fieldString}
+    ${getFieldsForContentType(contentType)}
+    'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     live_event_start_time,
     live_event_end_time,
   }`
@@ -567,6 +567,7 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
   if (pageName === 'lessons') pageName = 'lesson'
   if (pageName === 'songs') pageName = 'song'
   const rowString = contentRowSlug ? ` && slug.current == "${contentRowSlug.toLowerCase()}"` : ''
+  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`, {pullFutureContent: true}).buildFilter()
   const childFilter = await new FilterBuilder('', {isChildrenFilter: true}).buildFilter()
   const query = `*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}'${rowString}]{
     brand,
@@ -575,6 +576,7 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
     'content': content[${childFilter}]->{
         'children': child[${childFilter}]->{ 'id': railcontent_id, 'children': child[${childFilter}]->{'id': railcontent_id}, },
         ${getFieldsForContentType('tab-data')}
+        'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     },
   }`
   return fetchSanity(query, true)
@@ -2230,11 +2232,12 @@ export async function fetchTabData(
 
   filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
   entityFieldsString =
     ` ${fieldsString}
     'children': child[${childrenFilter}]->{'id': railcontent_id},
     'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
-    'lesson_count': coalesce(count(child[${childrenFilter}]->), 0),
+    'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     'length_in_seconds': coalesce(
       math::sum(
         select(

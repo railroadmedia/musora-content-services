@@ -12,19 +12,35 @@ import {
   fetchLastInteractedChild,
 } from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
-import {fetchByRailContentId, fetchByRailContentIds, fetchShows} from './sanity'
-import {fetchPlaylist, fetchUserPlaylists} from "./content-org/playlists"
-import {pinnedGuidedCourses} from "./content-org/guided-courses"
-import {convertToTimeZone, getMonday, getWeekNumber, isSameDate, isNextDay, getTimeRemainingUntilLocal, toDayjs} from './dateUtils.js'
+import { fetchByRailContentIds, fetchShows } from './sanity'
+import { fetchPlaylist, fetchUserPlaylists } from './content-org/playlists'
+import { pinnedGuidedCourses } from './content-org/guided-courses'
+import {
+  convertToTimeZone,
+  getMonday,
+  getWeekNumber,
+  isSameDate,
+  isNextDay,
+  getTimeRemainingUntilLocal,
+  toDayjs,
+} from './dateUtils.js'
 import { globalConfig } from './config'
-import {collectionLessonTypes, lessonTypesMapping, progressTypesMapping, recentTypes, showsLessonTypes, songs} from "../contentTypeConfig";
+import {
+  collectionLessonTypes,
+  lessonTypesMapping,
+  progressTypesMapping,
+  recentTypes,
+  showsLessonTypes,
+  songs,
+} from '../contentTypeConfig'
 import {
   getAllStartedOrCompleted,
   getProgressPercentageByIds,
   getProgressStateByIds,
-  getResumeTimeSecondsByIds
-} from "./contentProgress";
-import {TabResponseType} from "../contentMetaData";
+  getResumeTimeSecondsByIds,
+} from './contentProgress'
+import { TabResponseType } from '../contentMetaData'
+import { isContentLikedByIds } from './contentLikes.js'
 import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
@@ -88,7 +104,7 @@ export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUs
  *   .catch(error => console.error(error));
  */
 export async function getUserWeeklyStats() {
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   let data = await userActivityContext.getData()
   let practices = data?.[DATA_KEY_PRACTICES] ?? {}
   let sortedPracticeDays = Object.keys(practices)
@@ -99,10 +115,19 @@ export async function getUserWeeklyStats() {
   let dailyStats = []
   for (let i = 0; i < 7; i++) {
     const day = startOfWeek.add(i, 'day')
-    let hasPractice = sortedPracticeDays.some((practiceDate) => isSameDate(practiceDate, day.format('YYYY-MM-DD')))
-    let isActive = isSameDate(today, day)
+    let hasPractice = sortedPracticeDays.some((practiceDate) =>
+      isSameDate(practiceDate, day.format('YYYY-MM-DD'))
+    )
+    let isActive = isSameDate(today.format(), day.format())
     let type = hasPractice ? 'tracked' : isActive ? 'active' : 'none'
-    dailyStats.push({ key: i, label: DAYS[i], isActive, inStreak: hasPractice, type, day: day.format('YYYY-MM-DD') })
+    dailyStats.push({
+      key: i,
+      label: DAYS[i],
+      isActive,
+      inStreak: hasPractice,
+      type,
+      day: day.format('YYYY-MM-DD'),
+    })
   }
 
   let { streakMessage } = getStreaksAndMessage(practices)
@@ -169,7 +194,7 @@ export async function getUserMonthlyStats(params = {}) {
     }
   }
 
- // let endOfMonth = new Date(year, month + 1, 0)
+  // let endOfMonth = new Date(year, month + 1, 0)
   let endOfGrid = endOfMonth.clone()
   while (endOfGrid.day() !== 0) {
     endOfGrid = endOfGrid.add(1, 'day')
@@ -645,7 +670,7 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   let lastActiveDay = null
   let streakMessage = ''
 
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   let sortedPracticeDays = Object.keys(practices)
     .map((dateStr) => {
       const [year, month, day] = dateStr.split('-').map(Number)
@@ -854,7 +879,6 @@ async function formatPracticeMeta(practices) {
   })
 }
 
-
 /**
  * Records a new user activity in the system.
  *
@@ -1010,7 +1034,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
 
   const nonPlaylistContentIds = Object.keys(progressContents)
   if (pinnedGuidedCourse) {
-    nonPlaylistContentIds.push(pinnedGuidedCourse.content_id);
+    nonPlaylistContentIds.push(pinnedGuidedCourse.content_id)
   }
   if (userPinnedItem?.progressType === 'content') {
     nonPlaylistContentIds.push(userPinnedItem.id)
@@ -1044,13 +1068,13 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   return {
     type: TabResponseType.PROGRESS_ROWS,
     displayBrowseAll: combined.length > limit,
-    data: results
-  };
+    data: results,
+  }
 }
 
 async function getUserPinnedItem(brand) {
-  const userRaw = await globalConfig.localStorage.getItem('user');
-  const user = userRaw ? JSON.parse(userRaw) : {};
+  const userRaw = await globalConfig.localStorage.getItem('user')
+  const user = userRaw ? JSON.parse(userRaw) : {}
   user.brand_pinned_progress = user.brand_pinned_progress || {}
   return user.brand_pinned_progress[brand] ?? null
 }
@@ -1169,13 +1193,13 @@ async function processPlaylistItem(item) {
     playlist:          playlist,
     body:              {
       first_items_thumbnail_url: playlist.first_items_thumbnail_url,
-      title:                     playlist.name,
-      subtitle:                  `${playlist.duration_formated} • ${playlist.total_items} items • ${playlist.likes} likes • ${playlist.user.display_name}`,
-      total_items:             playlist.total_items,
+      title: playlist.name,
+      subtitle: `${playlist.duration_formated} • ${playlist.total_items} items • ${playlist.likes} likes • ${playlist.user.display_name}`,
+      total_items: playlist.total_items,
     },
     progressTimestamp: item.progressTimestamp,
-    cta:               {
-      text:   'Continue',
+    cta: {
+      text: 'Continue',
       action: {
         brand:  playlist.brand,
         item_id: playlist.navigateTo.id ?? null,
@@ -1191,12 +1215,12 @@ async function processPlaylistItem(item) {
 const getFormattedType = (type, brand) => {
   for (const [key, values] of Object.entries(progressTypesMapping)) {
     if (values.includes(type)) {
-      return key === 'songs' ? songs[brand] : key;
+      return key === 'songs' ? songs[brand] : key
     }
   }
 
-  return null;
-};
+  return null
+}
 
 function getLeafNodes(content) {
   const ids = [];
@@ -1216,11 +1240,11 @@ function getLeafNodes(content) {
 }
 
 async function getEligiblePlaylistItems(playlists) {
-  const eligible = playlists.filter(p => p.last_progress && p.last_engaged_on);
+  const eligible = playlists.filter((p) => p.last_progress && p.last_engaged_on)
   return Promise.all(
-    eligible.map(async p => {
-      const utcDate = new Date(p.last_progress.replace(' ', 'T') + 'Z');
-      const timestamp = utcDate.getTime();
+    eligible.map(async (p) => {
+      const utcDate = new Date(p.last_progress.replace(' ', 'T') + 'Z')
+      const timestamp = utcDate.getTime()
       return {
         type: 'playlist',
         // Content timestamps are millisecond accurate so for comparison we bring this to the same resolution
@@ -1229,18 +1253,18 @@ async function getEligiblePlaylistItems(playlists) {
         id: p.id,
       };
     })
-  );
+  )
 }
 
 function mergeAndSortItems(items, limit) {
-  const seen = new Set();
-  const deduped = [];
+  const seen = new Set()
+  const deduped = []
 
   for (const item of items) {
     const key = `${item.id}-${item.type}`;
     if (!seen.has(key)) {
-      seen.add(key);
-      deduped.push(item);
+      seen.add(key)
+      deduped.push(item)
     }
   }
 
@@ -1252,28 +1276,28 @@ function mergeAndSortItems(items, limit) {
       // TODO pinned guided course should always be before user pinned item
       return b.progressTimestamp - a.progressTimestamp;
     })
-    .slice(0, limit + 5);
+    .slice(0, limit + 5)
 }
 
 export function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
-  const ids = Object.keys(progressOnItems).map(Number);
+  const ids = Object.keys(progressOnItems).map(Number)
   if (contentType === 'guided-course') {
     // Return first incomplete lesson
-    return ids.find(id => progressOnItems[id] !== 'completed') || ids.at(0);
+    return ids.find((id) => progressOnItems[id] !== 'completed') || ids.at(0)
   }
 
   // For other types, find next incomplete after current
-  const currentIndex = ids.indexOf(Number(currentContentId));
-  if (currentIndex === -1) return null;
+  const currentIndex = ids.indexOf(Number(currentContentId))
+  if (currentIndex === -1) return null
 
   for (let i = currentIndex + 1; i < ids.length; i++) {
-    const id = ids[i];
+    const id = ids[i]
     if (progressOnItems[id] !== 'completed') {
-      return id;
+      return id
     }
   }
 
-  return ids[0];
+  return ids[0]
 }
 
 async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playlistItems) {
@@ -1344,16 +1368,16 @@ function popContentAndRemoveChildrenFromContentsMap(content, contentsMap) {
  *   .catch(error => console.error(error));
  */
 export async function pinProgressRow(brand, id, progressType) {
-  const url = `/api/user-management-system/v1/progress/pin?brand=${brand}&id=${id}&progressType=${progressType}`;
+  const url = `/api/user-management-system/v1/progress/pin?brand=${brand}&id=${id}&progressType=${progressType}`
   const response = await fetchHandler(url, 'PUT', null)
   if (response && !response.error && response['action'] === 'update_user_pin') {
     await updateUserPinnedProgressRow(brand, {
       id,
       progressType,
       pinnedAt: new Date().toISOString(),
-    });
+    })
   }
-  return response;
+  return response
 }
 /**
  * Unpins the current pinned progress row for a user, scoped by brand.
@@ -1378,8 +1402,8 @@ export async function unpinProgressRow(brand, id) {
 }
 
 async function updateUserPinnedProgressRow(brand, pinnedData) {
-  const userRaw = await globalConfig.localStorage.getItem('user');
-  const user = userRaw ? JSON.parse(userRaw) : {};
+  const userRaw = await globalConfig.localStorage.getItem('user')
+  const user = userRaw ? JSON.parse(userRaw) : {}
   user.brand_pinned_progress = user.brand_pinned_progress || {}
   user.brand_pinned_progress[brand] = pinnedData
   await globalConfig.localStorage.setItem('user', JSON.stringify(user))
@@ -1388,18 +1412,16 @@ async function updateUserPinnedProgressRow(brand, pinnedData) {
 export async function fetchRecentActivitiesActiveTabs() {
   const url = `/api/user-management-system/v1/activities/tabs`
   try {
-    const tabs = await fetchHandler(url, 'GET');
-    const activitiesTabs = [];
+    const tabs = await fetchHandler(url, 'GET')
+    const activitiesTabs = []
 
-    tabs.forEach(tab => {
-      activitiesTabs.push({ name: tab.label, short_name:tab.label });
-    });
+    tabs.forEach((tab) => {
+      activitiesTabs.push({ name: tab.label, short_name: tab.label })
+    })
 
-    return activitiesTabs;
+    return activitiesTabs
   } catch (error) {
-    console.error('Error fetching activity tabs:', error);
-    return [];
+    console.error('Error fetching activity tabs:', error)
+    return []
   }
 }
-
-
