@@ -478,7 +478,7 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
  *   .catch(error => console.error(error));
  */
 export async function fetchByRailContentId(id, contentType) {
-  const fields = getFieldsForContentTypeWithFilteredChildren(contentType)
+  const fields = await getFieldsForContentTypeWithFilteredChildren(contentType)
   const lessonFields = getChildFieldsForContentType(contentType)
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const entityFieldsString = ` ${fields}
@@ -520,6 +520,7 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   if (!ids?.length) {
     return []
   }
+  ids = [...new Set(ids.filter(item => item !== null && item !== undefined))];
   const idsString = ids.join(',')
   const brandFilter = brand ? ` && brand == "${brand}"` : ''
   const now = getSanityDate(new Date())
@@ -556,7 +557,7 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   }
 
   // Sort results to match the order of the input IDs
-  const sortedResults = results.sort(sortFuction)
+  const sortedResults = results?.sort(sortFuction) ?? null
 
   return sortedResults
 }

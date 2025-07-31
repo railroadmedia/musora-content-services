@@ -291,6 +291,9 @@ export let contentTypeConfig = {
   'song-tutorial-children': {
     fields: [`"resources": ${resourcesField}`],
   },
+  'guided-course': {
+    includeChildFields: true,
+  },
   course: {
     fields: [
       '"lesson_count": child_count',

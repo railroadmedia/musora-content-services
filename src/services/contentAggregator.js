@@ -67,7 +67,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addIsLiked = false,
     addLikeCount = false,
     addProgressStatus = false,
-    addProgressTimeStamp = false,
+    addProgressTimestamp = false,
     addResumeTimeSeconds = false,
     addLastInteractedChild = false,
     addNextLesson = false,
@@ -84,7 +84,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   if(ids.length === 0) return false
 
   const [progressData, isLikedData, resumeTimeData, lastInteractedChildData, nextLessonData] = await Promise.all([
-    addProgressPercentage || addProgressStatus || addProgressTimeStamp ? getProgressDateByIds(ids) : Promise.resolve(null),
+    addProgressPercentage || addProgressStatus || addProgressTimestamp ? getProgressDateByIds(ids) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
@@ -95,7 +95,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     ...item,
     ...(addProgressPercentage ? { progressPercentage: progressData?.[item.id]['progress'] } : {}),
     ...(addProgressStatus ? { progressStatus: progressData?.[item.id]['status'] } : {}),
-    ...(addProgressTimeStamp ? { progressTimestamp: progressData?.[item.id]['last_update'] } : {}),
+    ...(addProgressTimestamp ? { progressTimestamp: progressData?.[item.id]['last_update'] } : {}),
     ...(addIsLiked ? { isLiked: isLikedData?.[item.id] } : {}),
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
