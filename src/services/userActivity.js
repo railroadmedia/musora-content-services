@@ -901,24 +901,24 @@ export async function deleteUserActivity(id) {
 
 async function extractPinnedItemsAndSortAllItems(userPinnedItem, contentsMap, eligiblePlaylistItems, pinnedGuidedCourse, limit) {
   console.log('1', contentsMap)
-  const pinnedItem = userPinnedItem ? await popPinnedItemFromContentsPlaylistMap(
+  const pinnedItem = await popPinnedItemFromContentsOrPlaylistMap(
     userPinnedItem,
     contentsMap,
     eligiblePlaylistItems,
-  ) : null
+  )
   console.log('2', contentsMap)
   console.log('pinned gc id', pinnedGuidedCourse)
   const guidedCourseID = pinnedGuidedCourse?.content_id
   let combined = [];
   if (pinnedGuidedCourse) {
-    const guidedCourseContent = contentsMap[guidedCourseID] ?? await addContextToContent(fetchByRailContentId, guidedCourseID, 'guided-course',
+    const guidedCourseContent = contentsMap.get(guidedCourseID) ?? await addContextToContent(fetchByRailContentId, guidedCourseID, 'guided-course',
       {
         addNextLesson: true,
         addProgressStatus: true,
         addProgressPercentage: true,
         addProgressTimestamp: true,
       })
-    popContentAndRemoveChildrenFromContentsMap(guidedCourseContent, contentsMap)
+    contentsMap = popContentAndRemoveChildrenFromContentsMap(guidedCourseContent, contentsMap)
     guidedCourseContent.pinned = true
     combined.push(guidedCourseContent)
     console.log('pinned GC', guidedCourseContent)
@@ -1056,6 +1056,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
         : processContentItem(item)
     )
   );
+  console.log('final Results', results)
   return {
     type: TabResponseType.PROGRESS_ROWS,
     displayBrowseAll: combined.length > limit,
@@ -1123,7 +1124,7 @@ async function processContentItem(content) {
     pinned:            content.pinned ?? false,
     content:           content,
     body:              {
-      progressPercent: isLive ? undefined: content.progressPercent * 1000,
+      progressPercent: isLive ? undefined: content.progressPercent,
       thumbnail:       content.thumbnail,
       title:           content.title,
       isLive:          isLive,
@@ -1274,7 +1275,7 @@ function mergeAndSortItems(items, limit) {
     .sort((a, b) => {
       if (a.pinned && !b.pinned) return -1;
       if (!a.pinned && b.pinned) return 1;
-      // TODO guided course should always be before user pinned item
+      // TODO pinned guided course should always be before user pinned item
       return b.progressTimestamp - a.progressTimestamp;
     })
     .slice(0, limit + 5);
@@ -1356,17 +1357,20 @@ async function updateUserPinnedProgressRow(brand, pinnedData) {
   await globalConfig.localStorage.setItem('user', JSON.stringify(user))
 }
 
-async function popPinnedItemFromContentsPlaylistMap(pinned, contentsMap, playlistItems) {
+async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playlistItems) {
+  if (!pinned) return null
   const {id, progressType, pinnedAt} = pinned
-
+  let item = null
   if (progressType === 'content') {
     const pinnedId = parseInt(id)
+    console.log('pid', pinnedId)
     if (contentsMap.has(pinnedId)) {
-      const item = contentsMap[pinnedId]
+      console.log('here1')
+      item = contentsMap.get(pinnedId)
       contentsMap.delete(pinnedId)
-      return item
     } else {
-      return await addContextToContent(fetchByRailContentId,`${pinnedId}`, 'progress-tracker',
+      console.log('here2')
+      item = await addContextToContent(fetchByRailContentId,`${pinnedId}`, 'progress-tracker',
         {
           addNextLesson: true,
           addProgressStatus: true,
@@ -1375,15 +1379,16 @@ async function popPinnedItemFromContentsPlaylistMap(pinned, contentsMap, playlis
         }
       )
     }
+    console.log('item', item)
   }
   if (progressType === 'playlist') {
     const pinnedPlaylist = playlistItems.find(p => p.raw.id === id)
     if (pinnedPlaylist) {
       playlistItems = playlistItems.filter(p => p.raw.id === id)
-      return pinnedPlaylist
+      item = pinnedPlaylist
     } else {
       const playlist = await fetchPlaylist(id)
-      return {
+      item = {
         id:                id,
         raw:               playlist,
         type:              'playlist',
@@ -1391,7 +1396,9 @@ async function popPinnedItemFromContentsPlaylistMap(pinned, contentsMap, playlis
       }
     }
   }
-  return null
+  return item
+  //return { item, contentsMap, playlistItems }
+
 }
 
 function popContentAndRemoveChildrenFromContentsMap(content, contentsMap) {
@@ -1404,6 +1411,7 @@ function popContentAndRemoveChildrenFromContentsMap(content, contentsMap) {
       contentsMap.delete(child)
     }
   })
+  return contentsMap
 }
 
 export async function fetchRecentActivitiesActiveTabs() {
