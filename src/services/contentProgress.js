@@ -109,7 +109,6 @@ export async function getNavigateTo(data)
           children.set(child.id, child)
         }
       )
-      console.log('chisaonthu', children)
       //return first child if parent-content is complete or no progress
       const contentState = await getProgressState(content.id)
       if (contentState !== STATE_STARTED) {
@@ -136,7 +135,8 @@ export async function getNavigateTo(data)
         } else if (twoDepthContentTypes.includes(content.type)) {
           const firstChildren = content.children ?? []
           const lastInteractedChild = await getLastInteractedOf(firstChildren.map(child => child.id));
-          const lastInteractedChildNavToData = await getNavigateTo([lastInteractedChild])[lastInteractedChild] ?? null
+          let lastInteractedChildNavToData = await getNavigateTo([children.get(lastInteractedChild)])
+          lastInteractedChildNavToData = lastInteractedChildNavToData[lastInteractedChild]
           navigateToData[content.id] = buildNavigateTo(children.get(lastInteractedChild), lastInteractedChildNavToData);
         }
       }

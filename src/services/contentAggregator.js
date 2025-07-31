@@ -92,6 +92,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addNextLesson ? getNextLesson(items) : Promise.resolve(null),
     addNavigateTo ? getNavigateTo(items) : Promise.resolve(null),
   ])
+  if (addNextLesson) console.log('AddNextLesson is depreciated in favour of addNavigateTo')
 
   const addContext = async (item) => ({
     ...item,
@@ -109,10 +110,9 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   return await processItems(data, addContext, dataField, isDataAnArray, dataField_includeParent)
 }
 
-export async function getNextLessonForPlaylists(data, {dataField = null} = {} )
+export async function getNavigateToForPlaylists(data, {dataField = null} = {} )
 {
   let playlists = extractItemsFromData(data, dataField, false, false)
-  console.log('ps', playlists)
   let allIds = []
   playlists.forEach((playlist) => allIds = [...allIds, playlist.items.map(a => a.content_id)])
   const progressOnItems = await getProgressStateByIds(allIds);
@@ -132,7 +132,10 @@ export async function getNextLessonForPlaylists(data, {dataField = null} = {} )
         nextItem = playlist.items[index] ?? nextItem;
       }
     }
-    playlist.nextLesson = nextItem
+    playlist.navigateTo = {
+      ...nextItem,
+      playlist_id: playlist.id,
+    }
     return playlist
   }
   return await processItems(data, addContext, dataField, false, false,)

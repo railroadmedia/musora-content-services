@@ -900,14 +900,16 @@ export async function deleteUserActivity(id) {
 }
 
 async function extractPinnedItemsAndSortAllItems(userPinnedItem, contentsMap, eligiblePlaylistItems, pinnedGuidedCourse, limit) {
-  console.log('1', contentsMap)
-  const pinnedItem = await popPinnedItemFromContentsOrPlaylistMap(
+  let pinnedItem = await popPinnedItemFromContentsOrPlaylistMap(
     userPinnedItem,
     contentsMap,
     eligiblePlaylistItems,
   )
-  console.log('2', contentsMap)
-  console.log('pinned gc id', pinnedGuidedCourse)
+  // // TODO there's a nice way to do this unpacking and I don't know it
+  // let temp = removeShowsOfSameType(pinnedItem, contentsMap)
+  // pinnedItem = temp.pinnedItem
+  // contentsMap = temp.contentsMap
+
   const guidedCourseID = pinnedGuidedCourse?.content_id
   let combined = [];
   if (pinnedGuidedCourse) {
@@ -922,21 +924,18 @@ async function extractPinnedItemsAndSortAllItems(userPinnedItem, contentsMap, el
     contentsMap = popContentAndRemoveChildrenFromContentsMap(guidedCourseContent, contentsMap)
     guidedCourseContent.pinned = true
     combined.push(guidedCourseContent)
-    console.log('pinned GC', guidedCourseContent)
   }
   if (pinnedItem) {
     pinnedItem.pinned = true
     combined.push(pinnedItem)
   }
 
-  console.log('3', contentsMap)
   const progressList = Array.from(contentsMap.values())
-  console.log('progress List', progressList)
   combined = [...combined, ...progressList, ...eligiblePlaylistItems]
   return mergeAndSortItems(combined, limit)
 }
 
-function generateContentsMap(contents, progressContents) {
+function generateContentsMap(contents, playlistsContents) {
   const excludedTypes = new Set([
     'pack-bundle',
     'learning-path-course',
@@ -945,11 +944,8 @@ function generateContentsMap(contents, progressContents) {
   ]);
   const existingShows = new Set();
   const contentsMap = new Map();
-  contents.forEach(content => {
-    contentsMap.set(content.railcontent_id, content);
-  });
   const childToParentMap = {};
-  Object.values(contentsMap).forEach(content => {
+  contents.forEach(content => {
     if (Array.isArray(content.parent_content_data) && content.parent_content_data.length > 0) {
       childToParentMap[content.id] = content.parent_content_data[content.parent_content_data.length - 1];
     }
@@ -958,28 +954,28 @@ function generateContentsMap(contents, progressContents) {
   const allRecentTypeSet = new Set(
     Object.values(recentTypes).flat()
   )
-  for (const [idStr, progress] of Object.entries(progressContents)) {
-    const id = parseInt(idStr);
-    const content = contentsMap[id];
-    // TODO I don't think this does what I want
-    // guided-course-parts are showing up
-    if (!content || excludedTypes.has(content.type) || !allRecentTypeSet.has(content.type)) continue;
-    const parentId = childToParentMap[id];
-    // Handle children with parents
-    if (parentId) {
-      const parentContent = contentsMap[parentId];
-      if (!parentContent || excludedTypes.has(parentContent.type)) continue;
-      continue;
-    }
-    // Handle standalone parents
-    if (!contentsMap.has(id)) {
-      if (!existingShows.has(content.type)) {
+  contents.forEach(content => {
+    const id = content.id
+    const type = content.type
+    if (excludedTypes.has(type) || (!allRecentTypeSet.has(type) && !showsLessonTypes.includes(type)) ) return;
+    if (!childToParentMap[id]) {
+      // Shows don't have a parent to link them, but need to be handled as if they're a set of children
+      if (!existingShows.has(type)) {
         contentsMap.set(id, content)
       }
-      if (showsLessonTypes.includes(content.type)) {
-        existingShows.add(content.type)
+      if (showsLessonTypes.includes(type)) {
+        existingShows.add(type)
       }
     }
+  })
+
+  // TODO this doesn't work for guided courses as the GC card takes precedence over the playlist card
+  // https://musora.atlassian.net/browse/BEH-812
+  for (const item of playlistsContents) {
+    const contentId = item.id
+    contentsMap.delete(contentId)
+    const parentIds = item.parent_content_data || [];
+    parentIds.forEach(id => contentsMap.delete(id) );
   }
   return contentsMap;
 }
@@ -1006,12 +1002,11 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     pinnedGuidedCourses(brand),
     getUserPinnedItem(brand),
   ])
-  console.log('r', recentPlaylists)
   let pinnedGuidedCourse = allPinnedGuidedCourse?.[0] ?? null
 
   const playlists = recentPlaylists?.data || [];
   const eligiblePlaylistItems = await getEligiblePlaylistItems(playlists);
-  const playlistEngagedOnContents = eligiblePlaylistItems.map(item => item.raw.last_engaged_on);
+  const playlistEngagedOnContents = eligiblePlaylistItems.map(item => item.playlist.last_engaged_on);
 
   const nonPlaylistContentIds = Object.keys(progressContents)
   if (pinnedGuidedCourse) {
@@ -1036,22 +1031,8 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
       addProgressTimestamp: true,
     })
   ]);
-
-  console.log('playlistContents', playlistsContents)
-  console.log('nonPlaylistContets', contents)
-  // TODO this doesn't work for guided courses as the GC card takes precedence over the playlist card
-  // https://musora.atlassian.net/browse/BEH-812
-  for (const item of playlistsContents) {
-    const contentId = item.id ?? item.railcontent_id;
-    delete progressContents[contentId]
-    const parentIds = item.parent_content_data || [];
-    parentIds.forEach(id => delete progressContents[id] );
-  }
-
-  const contentsMap = generateContentsMap(contents, progressContents);
-  console.log('contentsMap', contentsMap)
+  const contentsMap = generateContentsMap(contents, playlistsContents);
   let combined = await extractPinnedItemsAndSortAllItems(userPinnedItem, contentsMap, eligiblePlaylistItems, pinnedGuidedCourse, limit);
-  console.log('combined + sorted results', combined)
   const results = await Promise.all(
     combined.slice(0, limit).map(item =>
       item.type === 'playlist'
@@ -1059,7 +1040,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
         : processContentItem(item)
     )
   );
-  console.log('final Results', results)
+  console.log('HomePageProgressRows results', results)
   return {
     type: TabResponseType.PROGRESS_ROWS,
     displayBrowseAll: combined.length > limit,
@@ -1079,44 +1060,40 @@ async function processContentItem(content) {
   const isLive = content.isLive ?? false
   let ctaText = getDefaultCTATextForContent(content, contentType)
 
-  const nextLessonContent = content.nextLesson ? await fetchByRailContentId(content.nextLesson, null) : null
-
   content.completed_children = await getCompletedChildren(content, contentType)
 
-  if (content.lesson_count > 0 && content.nextLesson) {
-
-    if(content.type === 'guided-course'){
-      console.log('time to p', nextLessonContent.published_on)
-      let isLocked = new Date(nextLessonContent.published_on) > new Date()
-      content.thumbnail = nextLessonContent.thumbnail
-      if (isLocked) {
-        content.is_locked = true
-        const timeRemaining = getTimeRemainingUntilLocal(nextLessonContent.published_on, {withTotalSeconds: true})
-        content.time_remaining_seconds = timeRemaining.totalSeconds
-        ctaText = 'Next lesson in ' + timeRemaining.formatted
-      } else if (content.progressStatus === 'not-started') {
-        ctaText = "Start Course"
-      }
+  if (content.type === 'guided-course') {
+    const nextLessonPublishedOn = content.children.find(child => child.id === content.navigateTo.id)?.published_on
+    let isLocked = new Date(nextLessonPublishedOn) > new Date()
+    if (isLocked) {
+      content.is_locked = true
+      const timeRemaining = getTimeRemainingUntilLocal(nextLessonPublishedOn, {withTotalSeconds: true})
+      content.time_remaining_seconds = timeRemaining.totalSeconds
+      ctaText = 'Next lesson in ' + timeRemaining.formatted
+    } else if (content.progressStatus === 'not-started') {
+      ctaText = "Start Course"
     }
-    // TODO I suspect we'll be handling behaviour for other types of collections here, so... here's a not
-    // content.thumbnail = nextLessonContent.thumbnail
   }
 
   if (contentType === 'show'){
-    console.log('issa show', content)
     const shows = await fetchShows(content.brand, content.type)
     const showIds = shows.map(item => item.id);
     const progressOnItems = await getProgressStateByIds(showIds);
     const completedShows = content.completed_children
+    const progressTimestamp = content.progressTimestamp
+    const wasPinned = content.pinned ?? false
     if (content.progressStatus === 'completed') {
+      // this could be handled more gracefully if their was a parent content type for shows
       const nextByProgress = findIncompleteLesson(progressOnItems, content.id, content.type);
       content = shows.find(lesson => lesson.id === nextByProgress);
       content.completed_children = completedShows
+      content.progressTimestamp = progressTimestamp
+      content.pinned = wasPinned
     }
     content.child_count = shows.length;
-    content.progressPercent = Math.round((completedShows / shows.length) * 100);
+    content.progressPercentage = Math.round((completedShows / shows.length) * 100);
     if (completedShows === shows.length) {
-      ctaText = 'Revisit Lessons';
+      ctaText = 'Revisit Show';
     }
   }
 
@@ -1127,14 +1104,14 @@ async function processContentItem(content) {
     pinned:            content.pinned ?? false,
     content:           content,
     body:              {
-      progressPercent: isLive ? undefined: content.progressPercent,
+      progressPercent: isLive ? undefined: content.progressPercentage,
       thumbnail:       content.thumbnail,
       title:           content.title,
       isLive:          isLive,
       badge:           content.badge ?? null,
       isLocked:        content.is_locked ?? false,
       subtitle:        !content.child_count || content.lesson_count === 1
-        ? (contentType === 'lesson' && isLive === false) ? `${content.progressPercent}% Complete`: `${content.difficulty_string} • ${content.artist_name}`
+        ? (contentType === 'lesson' && isLive === false) ? `${content.progressPercentage}% Complete`: `${content.difficulty_string} • ${content.artist_name}`
         : `${content.completed_children} of ${content.lesson_count ?? content.child_count} Lessons Complete`
     },
     cta:               {
@@ -1145,18 +1122,10 @@ async function processContentItem(content) {
         brand: content.brand,
         id:    content.id,
         slug:  content.slug,
-        nextLesson: nextLessonContent?.id,
-        child: nextLessonContent
-          ? {
-            id:    nextLessonContent.id,
-            type:  nextLessonContent.type,
-            brand: nextLessonContent.brand,
-            slug:  nextLessonContent.slug,
-            parent_id: nextLessonContent.parent_id,
-          }
-          : null
+        child: content.navigateTo,
       }
     },
+    // *1000 is to match playlists which are saved in millisecond accuracy
     progressTimestamp: content.progressTimestamp * 1000
   };
 }
@@ -1178,10 +1147,12 @@ async function getCompletedChildren(content, contentType)
 {
   let completedChildren = null
   if (contentType === 'show') {
-    const shows = await fetchShows(content.brand, content.type)
+    const shows = await addContextToContent(fetchShows, content.brand, content.type, {
+      addProgressStatus: true,
+    })
     completedChildren = Object.values(shows).filter(show => show.progressStatus === 'completed').length;
   } else if (content.lesson_count > 0) {
-    const lessonIds = extractChildrenIds(content);
+    const lessonIds = getLeafNodes(content);
     const progressOnItems = await getProgressStateByIds(lessonIds);
     completedChildren  = Object.values(progressOnItems).filter(value => value === 'completed').length;
   }
@@ -1189,7 +1160,7 @@ async function getCompletedChildren(content, contentType)
 }
 
 async function processPlaylistItem(item) {
-  const playlist = item.raw;
+  const playlist = item.playlist;
   return {
     id:                playlist.id,
     progressType:      'playlist',
@@ -1207,9 +1178,11 @@ async function processPlaylistItem(item) {
       text:   'Continue',
       action: {
         brand:  playlist.brand,
-        item_id: playlist.nextLesson.id,
-        content_id: playlist.nextLesson.content_id,
+        item_id: playlist.navigateTo.id ?? null,
+        content_id: playlist.navigateTo.content_id ?? null,
         type:   'playlists',
+        // TODO depreciated, maintained to avoid breaking changes
+        id:     playlist.id,
       }
     }
   }
@@ -1225,13 +1198,13 @@ const getFormattedType = (type, brand) => {
   return null;
 };
 
-function extractChildrenIds(content) {
+function getLeafNodes(content) {
   const ids = [];
   function traverse(children) {
     for (const item of children) {
       if (item.children) {
         traverse(item.children); // Recursively handle nested lessons
-      }else if (item.id) {
+      } else if (item.id) {
         ids.push(item.id);
       }
     }
@@ -1239,10 +1212,8 @@ function extractChildrenIds(content) {
   if (content && Array.isArray(content.children)) {
     traverse(content.children);
   }
-
-  return ids;
+  return ids
 }
-
 
 async function getEligiblePlaylistItems(playlists) {
   const eligible = playlists.filter(p => p.last_progress && p.last_engaged_on);
@@ -1252,8 +1223,9 @@ async function getEligiblePlaylistItems(playlists) {
       const timestamp = utcDate.getTime();
       return {
         type: 'playlist',
-        progressTimestamp: timestamp,
-        raw: p,
+        // Content timestamps are millisecond accurate so for comparison we bring this to the same resolution
+        progressTimestamp: timestamp / 1000,
+        playlist: p,
         id: p.id,
       };
     })
@@ -1302,6 +1274,60 @@ export function findIncompleteLesson(progressOnItems, currentContentId, contentT
   }
 
   return ids[0];
+}
+
+async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playlistItems) {
+  if (!pinned) return null
+  const {id, progressType, pinnedAt} = pinned
+  let item = null
+  if (progressType === 'content') {
+    const pinnedId = parseInt(id)
+    if (contentsMap.has(pinnedId)) {
+      item = contentsMap.get(pinnedId)
+      contentsMap.delete(pinnedId)
+    } else {
+      // we use fetchByRailContentIds so that we don't have the _type restriction in the query
+      let data = await fetchByRailContentIds([id], 'progress-tracker')
+      item = await addContextToContent(() => data[0] ?? null,
+        {
+          addNextLesson: true,
+          addNavigateTo: true,
+          addProgressStatus: true,
+          addProgressPercentage: true,
+          addProgressTimestamp: true
+        }
+      )
+    }
+  }
+  if (progressType === 'playlist') {
+    const pinnedPlaylist = playlistItems.find(p => p.playlist.id === id)
+    if (pinnedPlaylist) {
+      playlistItems = playlistItems.filter(p => p.playlist.id === id)
+      item = pinnedPlaylist
+    } else {
+      const playlist = await fetchPlaylist(id)
+      item = {
+        id:                id,
+        playlist:          playlist,
+        type:              'playlist',
+        progressTimestamp: new Date(pinnedAt).getTime(),
+      }
+    }
+  }
+  return item
+}
+
+function popContentAndRemoveChildrenFromContentsMap(content, contentsMap) {
+  const children = content.children.map(child => child.id)
+  if (contentsMap.has(content.id)) {
+    contentsMap.delete(content.id)
+  }
+  children.forEach(child => {
+    if (contentsMap.has(child)) {
+      contentsMap.delete(child)
+    }
+  })
+  return contentsMap
 }
 
 /**
@@ -1357,64 +1383,6 @@ async function updateUserPinnedProgressRow(brand, pinnedData) {
   user.brand_pinned_progress = user.brand_pinned_progress || {}
   user.brand_pinned_progress[brand] = pinnedData
   await globalConfig.localStorage.setItem('user', JSON.stringify(user))
-}
-
-async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playlistItems) {
-  if (!pinned) return null
-  const {id, progressType, pinnedAt} = pinned
-  let item = null
-  if (progressType === 'content') {
-    const pinnedId = parseInt(id)
-    console.log('pid', pinnedId)
-    if (contentsMap.has(pinnedId)) {
-      console.log('here1')
-      item = contentsMap.get(pinnedId)
-      contentsMap.delete(pinnedId)
-    } else {
-      console.log('here2')
-      item = await addContextToContent(fetchByRailContentId,`${pinnedId}`, 'progress-tracker',
-        {
-          addNextLesson: true,
-          addNavigateTo: true,
-          addProgressStatus: true,
-          addProgressPercentage: true,
-          addProgressTimestamp: true
-        }
-      )
-    }
-    console.log('item', item)
-  }
-  if (progressType === 'playlist') {
-    const pinnedPlaylist = playlistItems.find(p => p.raw.id === id)
-    if (pinnedPlaylist) {
-      playlistItems = playlistItems.filter(p => p.raw.id === id)
-      item = pinnedPlaylist
-    } else {
-      const playlist = await fetchPlaylist(id)
-      item = {
-        id:                id,
-        raw:               playlist,
-        type:              'playlist',
-        progressTimestamp: new Date(pinnedAt).getTime(),
-      }
-    }
-  }
-  return item
-  //return { item, contentsMap, playlistItems }
-
-}
-
-function popContentAndRemoveChildrenFromContentsMap(content, contentsMap) {
-  const children = content.children.map(child => child.id)
-  if (contentsMap.has(content.id)) {
-    contentsMap.delete(content.id)
-  }
-  children.forEach(child => {
-    if (contentsMap.has(child)) {
-      contentsMap.delete(child)
-    }
-  })
-  return contentsMap
 }
 
 export async function fetchRecentActivitiesActiveTabs() {

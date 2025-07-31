@@ -2327,6 +2327,7 @@ export async function fetchShows(brand, type, sort = 'sort') {
 
   const query = await buildQuery(filter, filterParams, getFieldsForContentType(type), {
     sortOrder: sortOrder,
+    end: 100, // Adrian: added for homepage progress rows, this should be handled gracefully
   })
   return fetchSanity(query, true)
 }

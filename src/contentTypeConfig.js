@@ -251,6 +251,7 @@ export let contentTypeConfig = {
       'enrollment_start_time',
       'enrollment_end_time',
     ],
+    includeChildFields: true,
   },
   'progress-tracker': {
     fields: [
@@ -683,9 +684,9 @@ export async function getFieldsForContentTypeWithFilteredChildren(contentType, a
   if (childFields) {
     const childFilter = await new FilterBuilder('', {isChildrenFilter: true}).buildFilter()
     parentFields.push(
-      `"children": child[${childFilter}] {
+      `"children": child[${childFilter}]->{
         ${childFields}
-        "children": child[${childFilter}] {
+        "children": child[${childFilter}]->{
           ${childFields}
         },
       }`
