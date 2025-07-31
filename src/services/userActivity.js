@@ -299,6 +299,7 @@ export async function getUserMonthlyStats(params = {}) {
  */
 export async function recordUserPractice(practiceDetails) {
   practiceDetails.auto = 0
+  practiceDetails.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
   if (practiceDetails.content_id) {
     practiceDetails.auto = 1
   }
