@@ -224,12 +224,13 @@ export async function togglePlaylistPrivate(playlistId, is_private)
  * Updates a playlists values
  *
  * @param {string|number} playlistId
- * @param {Object} updateData - An object containing fields to update on the playlist:
+ * @param {PlaylistDTO} updateData  - An object containing fields to update on the playlist:
  *  - `name` (string): The name of the new playlist (required, max 255 characters).
  *  - `description` (string): A description of the playlist (optional, max 1000 characters).
- *  - `category` (string): The category of the playlist.
- * + *  - `deleted_items` (array): List of playlist item IDs to delete.
- * + *  - `item_order` (array): Updated order of playlist items (ids, not railcontent_ids).
+ *  - `category` (string): The category of the playlist (optional).
+ *  - `is_private` (boolean): Whether the playlist is private (optional, defaults to false).
+ *  - `deleted_items` (array): List of playlist item IDs to delete (optional).
+ *  - `item_order` (array): Updated order of playlist items (ids, not railcontent_ids) (optional).
  *
  * @returns {Promise<object>} - A promise that resolves to the created playlist data and lessons if successful, or an error response if validation fails.
  *
@@ -242,16 +243,14 @@ export async function togglePlaylistPrivate(playlistId, is_private)
  *   .then(response => console.log(response.playlist); console.log(response.lessons))
  *   .catch(error => console.error('Error updating playlist:', error));
  */
-export async function updatePlaylist(playlistId, {
-  name = null, description = null,  is_private = null, brand = null, category = null, deleted_items = null, item_order = null
-})
+export async function updatePlaylist(playlistId, updateData)
 {
-  const data = {
+  const { name, description, category, is_private, item_order, deleted_items } = updateData;
+  let data = {
     ...name && { name },
-    ...description && { description },
-    ...is_private !== null && { private: is_private},
-    ...brand && { brand },
-    ...category && { category},
+    ...'description' in updateData && { description },
+    ...'is_private' in updateData && { private: is_private || false },
+    ...'category' in updateData && { category },
     ...deleted_items && { deleted_items },
     ...item_order && { item_order },
   }
