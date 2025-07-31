@@ -9,14 +9,12 @@ import {
   fetchUserPracticeNotes,
   fetchHandler,
   fetchRecentUserActivities,
-  fetchLastInteractedChild,
 } from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import { fetchByRailContentIds, fetchShows } from './sanity'
 import { fetchPlaylist, fetchUserPlaylists } from './content-org/playlists'
 import { pinnedGuidedCourses } from './content-org/guided-courses'
 import {
-  convertToTimeZone,
   getMonday,
   getWeekNumber,
   isSameDate,
@@ -27,23 +25,14 @@ import {
 import { globalConfig } from './config'
 import {
   collectionLessonTypes,
-  lessonTypesMapping,
   progressTypesMapping,
   recentTypes,
   showsLessonTypes,
   songs,
 } from '../contentTypeConfig'
-import {
-  getAllStartedOrCompleted,
-  getProgressPercentageByIds,
-  getProgressStateByIds,
-  getResumeTimeSecondsByIds,
-} from './contentProgress'
+import { getAllStartedOrCompleted, getProgressStateByIds } from './contentProgress'
 import { TabResponseType } from '../contentMetaData'
-import { isContentLikedByIds } from './contentLikes.js'
 import dayjs from 'dayjs'
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
-import weekOfYear from 'dayjs/plugin/weekOfYear'
 
 const DATA_KEY_PRACTICES = 'practices'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
@@ -245,7 +234,7 @@ export async function getUserMonthlyStats(params = {}) {
 
   // Filter past practices only
   let filteredPractices = Object.entries(practices)
-    .filter(([date]) => dayjs.tz(date, timeZone).isSameOrBefore(endOfMonth))
+    .filter(([date]) => dayjs(date).isSameOrBefore(endOfMonth))
     .reduce((acc, [date, val]) => {
       acc[date] = val
       return acc
@@ -415,13 +404,11 @@ export async function restoreUserPractice(id) {
     const restoredPractice = response.data.find((p) => p.id === id)
     if (restoredPractice) {
       await userActivityContext.updateLocal(async function (localContext) {
-        const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-        const date = convertToTimeZone(restoredPractice.day, userTimeZone)
-        if (localContext.data[DATA_KEY_PRACTICES][date]) {
-          localContext.data[DATA_KEY_PRACTICES][date] = []
+        if (localContext.data[DATA_KEY_PRACTICES][restoredPractice.day]) {
+          localContext.data[DATA_KEY_PRACTICES][restoredPractice.day] = []
         }
         response.data.forEach((restoredPractice) => {
-          localContext.data[DATA_KEY_PRACTICES][date].push({
+          localContext.data[DATA_KEY_PRACTICES][restoredPractice.day].push({
             id: restoredPractice.id,
             duration_seconds: restoredPractice.duration_seconds,
           })
@@ -853,8 +840,6 @@ async function formatPracticeMeta(practices) {
   const contentIds = practices.map((p) => p.content_id).filter((id) => id !== null)
   const contents = await fetchByRailContentIds(contentIds)
 
-  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-
   return practices.map((practice) => {
     const content = contents.find((c) => c.id === practice.content_id) || {}
 
@@ -872,7 +857,7 @@ async function formatPracticeMeta(practices) {
       content_type: getFormattedType(content.type || '', content.brand),
       content_id: practice.content_id || null,
       content_brand: content.brand || null,
-      created_at: convertToTimeZone(dayjs(practice.created_at), userTimeZone),
+      created_at: dayjs(practice.created_at),
       sanity_type: content.type || null,
       content_slug: content.slug || null,
     }
