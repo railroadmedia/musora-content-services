@@ -350,8 +350,8 @@ export async function fetchNewReleases(
   const start = (page - 1) * limit
   const end = start + limit
   const sortOrder = getSortOrder(sort, brand)
-  const nextQuarter = getNextAndPreviousQuarterDates()['next']
-  const filter = `_type in ${typesString} && brand == '${brand}' && status == 'published' && show_in_new_feed == true && (!defined(quarter_published) ||  quarter_published != '${nextQuarter}')`
+  const now = new Date().toISOString().split('T')[0]
+  const filter = `_type in ${typesString} && brand == '${brand}' && (status == 'published' && show_in_new_feed == true && published_on <= '${now}')`
   const fields = `
      "id": railcontent_id,
       title,
@@ -367,12 +367,7 @@ export async function fetchNewReleases(
       web_url_path,
       "permission_id": permission[]->railcontent_id,
       `
-  const filterParams = { allowsPullSongsContent: false }
-  const query = await buildQuery(filter, filterParams, fields, {
-    sortOrder: sortOrder,
-    start,
-    end: end,
-  })
+  const query = buildRawQuery(filter, fields, {sortOrder: sortOrder, start, end: end})
   return fetchSanity(query, true)
 }
 
