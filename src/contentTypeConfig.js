@@ -707,7 +707,7 @@ export function getChildFieldsForContentType(contentType, asQueryString = true)
   }
 }
 
-export function getFieldsForContentType(contentType, asQueryString = true, includeChildren = false) {
+export function getFieldsForContentType(contentType, asQueryString = true) {
   const fields = contentType
     ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? [])
     : DEFAULT_FIELDS

@@ -93,7 +93,7 @@ describe('Sanity Queries', function() {
   test('fetchSanity-WithPostProcess', async () => {
     const id = 380094
     const query = `*[railcontent_id == ${id}]{
-        ${await getFieldsForContentType('song')}
+        ${getFieldsForContentType('song')}
           }`
     const newSlug = 'keysmash1'
     const newField = 1

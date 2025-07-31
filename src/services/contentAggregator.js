@@ -114,7 +114,7 @@ export async function getNavigateToForPlaylists(data, {dataField = null} = {} )
 {
   let playlists = extractItemsFromData(data, dataField, false, false)
   let allIds = []
-  playlists.forEach((playlist) => allIds = [...allIds, playlist.items.map(a => a.content_id)])
+  playlists.forEach((playlist) => allIds = [...allIds, ...playlist.items.map(a => a.content_id)])
   const progressOnItems = await getProgressStateByIds(allIds);
   const addContext = async (playlist) => {
     const allItemsCompleted = playlist.items.every(i => {
