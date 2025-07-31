@@ -1064,7 +1064,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
         : processContentItem(item)
     )
   );
-  console.log('HomePageProgressRows results', results)
+  console.log('HomePageProgressRows results: remove before merge', results)
   return {
     type: TabResponseType.PROGRESS_ROWS,
     displayBrowseAll: combined.length > limit,

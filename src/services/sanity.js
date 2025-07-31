@@ -524,10 +524,11 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   const idsString = ids.join(',')
   const brandFilter = brand ? ` && brand == "${brand}"` : ''
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`, {pullFutureContent: true}).buildFilter()
+  const fields = await getFieldsForContentTypeWithFilteredChildren(contentType, true)
   const query = `*[
     railcontent_id in [${idsString}]${brandFilter}
   ]{
-    ${getFieldsForContentType(contentType)}
+    ${fields}
     'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     live_event_start_time,
     live_event_end_time,

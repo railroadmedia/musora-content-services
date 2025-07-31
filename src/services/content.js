@@ -384,7 +384,7 @@ export async function getRecommendedForYou(brand, rowId = null, {
   limit = 10,
 } = {}) {
   const requiredItems = page * limit;
-  const data = recommendations( brand, {limit: requiredItems})
+  const data = await recommendations( brand, {limit: requiredItems})
   if (!data || !data.length) {
     return { id: 'recommended', title: 'Recommended For You', items: [] };
   }
@@ -392,13 +392,11 @@ export async function getRecommendedForYou(brand, rowId = null, {
   // Apply pagination before calling fetchByRailContentIds
   const startIndex = (page - 1) * limit;
   const paginatedData = data.slice(startIndex, startIndex + limit);
-
-  const contents = await addContextToContent(fetchByRailContentIds, paginatedData,
+  const contents = await addContextToContent(fetchByRailContentIds, paginatedData, 'tab-data',
     {
       addNextLesson: true,
       addNavigateTo: true,
     })
-
   if (rowId) {
     return {
       type: TabResponseType.CATALOG,
