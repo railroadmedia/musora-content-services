@@ -224,7 +224,7 @@ export const filterTypes = {
 
 export const recentTypes = {
   lessons: [...individualLessonsTypes, 'course-part', 'pack-bundle-lesson', 'guided-course-part', 'quick-tips'],
-  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes],
+  songs: [...SONG_TYPES],
   home: [...individualLessonsTypes, ...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes,
   'guided-course', 'learning-path', 'live', 'course', 'pack']
 }
