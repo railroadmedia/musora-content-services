@@ -254,6 +254,7 @@ import {
 	markNotificationAsRead,
 	markNotificationAsUnread,
 	pauseLiveEventPolling,
+	restoreNotification,
 	startLiveEventPolling,
 	updateNotificationSetting
 } from './services/user/notifications.js';
@@ -292,6 +293,7 @@ import {
 	recordUserPractice,
 	removeUserPractice,
 	restorePracticeSession,
+	restoreUserActivity,
 	restoreUserPractice,
 	unpinProgressRow,
 	updatePracticeNotes,
@@ -496,7 +498,9 @@ declare module 'musora-content-services' {
 		resetPassword,
 		restoreComment,
 		restoreItemFromPlaylist,
+		restoreNotification,
 		restorePracticeSession,
+		restoreUserActivity,
 		restoreUserPractice,
 		sendAccountSetupEmail,
 		sendPasswordResetEmail,
