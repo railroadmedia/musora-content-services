@@ -75,7 +75,7 @@ export async function fetchSongById(documentId) {
  */
 export async function fetchLeaving(brand, { pageNumber = 1, contentPerPage = 20 } = {}) {
   const today = new Date()
-  const isoDateOnly = today.toISOString().split('T')[0]
+  const isoDateOnly = getDateOnly(today)
   const filterString = `brand == '${brand}' && quarter_removed > '${isoDateOnly}'`
   const startEndOrder = getQueryFromPage(pageNumber, contentPerPage)
   const sortOrder = {
@@ -102,7 +102,7 @@ export async function fetchLeaving(brand, { pageNumber = 1, contentPerPage = 20 
  */
 export async function fetchReturning(brand, { pageNumber = 1, contentPerPage = 20 } = {}) {
   const today = new Date()
-  const isoDateOnly = today.toISOString().split('T')[0]
+  const isoDateOnly = getDateOnly(today)
   const filterString = `brand == '${brand}' && quarter_published >= '${isoDateOnly}'`
   const startEndOrder = getQueryFromPage(pageNumber, contentPerPage)
   const sortOrder = {
@@ -156,41 +156,6 @@ function getQueryFromPage(pageNumber, contentPerPage) {
   let result = []
   result['start'] = start
   result['end'] = end
-  return result
-}
-
-/**
- * returns array of next and previous quarter dates as strings
- *
- * @returns {string[]}
- */
-function getNextAndPreviousQuarterDates() {
-  const january = 1
-  const april = 4
-  const july = 7
-  const october = 10
-  const month = new Date().getMonth()
-  let year = new Date().getFullYear()
-  let nextQuarter = ''
-  let prevQuarter = ''
-  if (month < april) {
-    nextQuarter = `${year}-0${april}-01`
-    prevQuarter = `${year}-0${january}-01`
-  } else if (month < july) {
-    nextQuarter = `${year}-0${july}-01`
-    prevQuarter = `${year}-0${april}-01`
-  } else if (month < october) {
-    nextQuarter = `${year}-${october}-01`
-    prevQuarter = `${year}-0${july}-01`
-  } else {
-    prevQuarter = `${year}-${october}-01`
-    year++
-    nextQuarter = `${year}-0${january}-01`
-  }
-
-  let result = []
-  result['next'] = nextQuarter
-  result['previous'] = prevQuarter
   return result
 }
 
@@ -350,7 +315,7 @@ export async function fetchNewReleases(
   const start = (page - 1) * limit
   const end = start + limit
   const sortOrder = getSortOrder(sort, brand)
-  const now = new Date().toISOString().split('T')[0]
+  const now = getDateOnly()
   const filter = `_type in ${typesString} && brand == '${brand}' && (status == 'published' && show_in_new_feed == true && published_on <= '${now}')`
   const fields = `
      "id": railcontent_id,
@@ -2007,6 +1972,10 @@ function getSanityDate(date, roundToHourForCaching = true) {
   }
 
   return date.toISOString()
+}
+
+function getDateOnly(date = new Date()) {
+  return date.toISOString().split('T')[0]
 }
 
 const merge = (a, b, predicate = (a, b) => a === b) => {
