@@ -917,10 +917,6 @@ async function extractPinnedItemsAndSortAllItems(userPinnedItem, contentsMap, el
     contentsMap,
     eligiblePlaylistItems,
   )
-  // // TODO there's a nice way to do this unpacking and I don't know it
-  // let temp = removeShowsOfSameType(pinnedItem, contentsMap)
-  // pinnedItem = temp.pinnedItem
-  // contentsMap = temp.contentsMap
 
   const guidedCourseID = pinnedGuidedCourse?.content_id
   let combined = [];
