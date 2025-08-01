@@ -12,6 +12,8 @@ import { HttpClient } from '../infrastructure/http/HttpClient'
  */
 const excludeFromGeneratedIndex = []
 
+const baseURL = 'https://recommender.musora.com'
+
 /**
  * Fetches similar content to the provided content id
  *
@@ -36,10 +38,7 @@ export async function fetchSimilarItems(content_id, brand, count = 10) {
   }
   const url = `/similar_items/`
   try {
-    const httpClient = new HttpClient(
-      globalConfig.recommendationsConfig.baseUrl,
-      globalConfig.recommendationsConfig.token
-    )
+    const httpClient = new HttpClient(baseURL)
     const response = await httpClient.post(url, data)
     // we requested count + 1 then filtered out the extra potential value, so we need slice to the correct size if necessary
     return response['similar_items'].filter((item) => item !== content_id).slice(0, count)
@@ -75,17 +74,14 @@ export async function rankCategories(brand, categories) {
   }
   const url = `/rank_each_list/`
   try {
-    const httpClient = new HttpClient(
-      globalConfig.recommendationsConfig.baseUrl,
-      globalConfig.recommendationsConfig.token
-    )
+    const httpClient = new HttpClient(baseURL)
     const response = await httpClient.post(url, data)
     let rankedCategories = []
 
     for (const rankedPlaylist of response['ranked_playlists']) {
       rankedCategories.push({
-        'slug': rankedPlaylist.playlist_id,
-        'items': rankedPlaylist.ranked_items
+        slug: rankedPlaylist.playlist_id,
+        items: rankedPlaylist.ranked_items,
       })
     }
     return rankedCategories
@@ -126,10 +122,7 @@ export async function rankItems(brand, content_ids) {
   }
   const url = `/rank_items/`
   try {
-    const httpClient = new HttpClient(
-      globalConfig.recommendationsConfig.baseUrl,
-      globalConfig.recommendationsConfig.token
-    )
+    const httpClient = new HttpClient(baseURL)
     const response = await httpClient.post(url, data)
     return response['ranked_content_ids']
   } catch (error) {
