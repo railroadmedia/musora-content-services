@@ -995,11 +995,13 @@ function generateContentsMap(contents, playlistsContents) {
 
   // TODO this doesn't work for guided courses as the GC card takes precedence over the playlist card
   // https://musora.atlassian.net/browse/BEH-812
-  for (const item of playlistsContents) {
-    const contentId = item.id
-    contentsMap.delete(contentId)
-    const parentIds = item.parent_content_data || [];
-    parentIds.forEach(id => contentsMap.delete(id) );
+  if (playlistsContents) {
+    for (const item of playlistsContents) {
+      const contentId = item.id
+      contentsMap.delete(contentId)
+      const parentIds = item.parent_content_data || [];
+      parentIds.forEach(id => contentsMap.delete(id));
+    }
   }
   return contentsMap;
 }
@@ -1309,6 +1311,7 @@ async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playl
     if (contentsMap.has(pinnedId)) {
       item = contentsMap.get(pinnedId)
       contentsMap.delete(pinnedId)
+
     } else {
       // we use fetchByRailContentIds so that we don't have the _type restriction in the query
       let data = await fetchByRailContentIds([id], 'progress-tracker')
