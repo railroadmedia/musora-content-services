@@ -1317,7 +1317,7 @@ async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playl
   if (progressType === 'playlist') {
     const pinnedPlaylist = playlistItems.find(p => p.playlist.id === id)
     if (pinnedPlaylist) {
-      playlistItems = playlistItems.filter(p => p.playlist.id === id)
+      playlistItems = playlistItems.filter(p => p.playlist.id !== id)
       item = pinnedPlaylist
     } else {
       const playlist = await fetchPlaylist(id)
