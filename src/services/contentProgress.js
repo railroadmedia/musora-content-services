@@ -109,19 +109,17 @@ export async function getNavigateTo(data)
           children.set(child.id, child)
         }
       )
-      //return first child if parent-content is complete or no progress
+      // return first child (or grand child) if parent-content is complete or no progress
       const contentState = await getProgressState(content.id)
       if (contentState !== STATE_STARTED) {
-        navigateToData[content.id] = buildNavigateTo(content.children[0])
-
+        const firstChild = content.children[0]
+        let lastInteractedChildNavToData = buildNavigateTo([firstChild])[firstChild.id] ?? null
+        navigateToData[content.id] = buildNavigateTo(content.children[0], lastInteractedChildNavToData)
       } else {
         const childrenStates = await getProgressStateByIds(childrenIds)
-
-        //calculate last_engaged
         const lastInteracted = await getLastInteractedOf(childrenIds)
         const lastInteractedStatus = childrenStates[lastInteracted]
 
-        //different nextLesson behaviour for different content types
         if (content.type === 'course' || content.type === 'pack-bundle') {
           if (lastInteractedStatus === STATE_STARTED) {
             navigateToData[content.id] = buildNavigateTo(children.get(lastInteracted))
@@ -134,10 +132,13 @@ export async function getNavigateTo(data)
           navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild))
         } else if (twoDepthContentTypes.includes(content.type)) {
           const firstChildren = content.children ?? []
-          const lastInteractedChild = await getLastInteractedOf(firstChildren.map(child => child.id));
-          let lastInteractedChildNavToData = await getNavigateTo([children.get(lastInteractedChild)])
-          lastInteractedChildNavToData = lastInteractedChildNavToData[lastInteractedChild]
-          navigateToData[content.id] = buildNavigateTo(children.get(lastInteractedChild), lastInteractedChildNavToData);
+          const lastInteractedChildId = await getLastInteractedOf(firstChildren.map(child => child.id));
+          if (childrenStates[lastInteractedChildId] === STATE_COMPLETED) {
+            // TODO: packs have an extra situation where we need to jump to the next course if all lessons in the last engaged course are completed
+          }
+          let lastInteractedChildNavToData = await getNavigateTo(firstChildren)
+          lastInteractedChildNavToData = lastInteractedChildNavToData[lastInteractedChildId]
+          navigateToData[content.id] = buildNavigateTo(children.get(lastInteractedChildId), lastInteractedChildNavToData);
         }
       }
     }
