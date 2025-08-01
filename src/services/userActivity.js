@@ -1084,7 +1084,7 @@ async function processContentItem(content) {
       const timeRemaining = getTimeRemainingUntilLocal(nextLessonPublishedOn, {withTotalSeconds: true})
       content.time_remaining_seconds = timeRemaining.totalSeconds
       ctaText = 'Next lesson in ' + timeRemaining.formatted
-    } else if (content.progressStatus === 'not-started') {
+    } else if (!content.progressStatus || content.progressStatus === 'not-started' ) {
       ctaText = "Start Course"
     }
   }
