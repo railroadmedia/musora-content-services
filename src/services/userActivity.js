@@ -930,6 +930,23 @@ export async function deleteUserActivity(id) {
   return await fetchHandler(url, 'DELETE')
 }
 
+/**
+ * Restores a specific user activity by its ID.
+ *
+ * @param {number|string} id - The ID of the user activity to restore.
+ * @returns {Promise<Object>} - A promise that resolves to the API response after restoration.
+ *
+ * @example
+ * restoreUserActivity(789)
+ *   .then(response => console.log('Restored:', response))
+ *   .catch(error => console.error(error));
+ */
+export async function restoreUserActivity(id) {
+  const url = `/api/user-management-system/v1/activities/${id}`
+  return await fetchHandler(url, 'POST')
+}
+
+
 async function extractPinnedItemsAndSortAllItems(
   userPinnedItem,
   contentsMap,
