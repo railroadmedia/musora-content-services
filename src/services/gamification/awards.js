@@ -20,6 +20,8 @@ export async function fetchAwardsForUser(userId, brand, page = 1, limit = 20) {
       {
         id: 1,
         title: '30-Day Drummer',
+        award:
+          'https://cdn.sanity.io/files/4032r8py/staging/5c7449ea40f09a096451a48e4a58e4452244e38d.png',
         badge:
           'https://cdn.sanity.io/files/4032r8py/staging/5c7449ea40f09a096451a48e4a58e4452244e38d.png',
         date_completed: '2021-01-01',
@@ -29,6 +31,8 @@ export async function fetchAwardsForUser(userId, brand, page = 1, limit = 20) {
       {
         id: 2,
         title: '30-Day Bass',
+        award:
+          'https://cdn.sanity.io/files/4032r8py/production/b7efb6a2f0bd57e87dd13f85b1c3b0c876272b7c.png',
         badge:
           'https://cdn.sanity.io/files/4032r8py/production/b7efb6a2f0bd57e87dd13f85b1c3b0c876272b7c.png',
         date_completed: '2022-02-02',
@@ -38,6 +42,8 @@ export async function fetchAwardsForUser(userId, brand, page = 1, limit = 20) {
       {
         id: 3,
         title: 'New Piano Players Start Here',
+        award:
+          'https://cdn.sanity.io/files/4032r8py/staging/94e663015da362b41695f5d6f3a8ca3f8317e1b5.png',
         badge:
           'https://cdn.sanity.io/files/4032r8py/staging/94e663015da362b41695f5d6f3a8ca3f8317e1b5.png',
         date_completed: '2023-03-03',
@@ -47,6 +53,8 @@ export async function fetchAwardsForUser(userId, brand, page = 1, limit = 20) {
       {
         id: 4,
         title: 'Ear Training For Singers',
+        award:
+          'https://cdn.sanity.io/files/4032r8py/staging/24fc36e8351d7994bfe8fb5c63c577cf5ed16dc9.png',
         badge:
           'https://cdn.sanity.io/files/4032r8py/staging/24fc36e8351d7994bfe8fb5c63c577cf5ed16dc9.png',
         date_completed: '2024-04-04',
