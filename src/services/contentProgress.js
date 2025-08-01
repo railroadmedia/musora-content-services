@@ -90,6 +90,73 @@ export async function getNextLesson(data)
   return nextLessonData
 }
 
+export async function getNavigateTo(data)
+{
+  let navigateToData = {}
+  const twoDepthContentTypes = ['pack'] //TODO add method when we know what it's called
+  //TODO add parent hierarchy upwards as well
+  // data structure is the same but instead of child{} we use parent{}
+  for (const content of data) {
+
+    //only calculate nextLesson if needed, based on content type
+    if (!getNextLessonLessonParentTypes.includes(content.type) || !content.children) {
+      navigateToData[content.id] = null
+    } else {
+      const children = new Map()
+      const childrenIds = []
+      content.children.forEach(child => {
+          childrenIds.push(child.id)
+          children.set(child.id, child)
+        }
+      )
+      // return first child (or grand child) if parent-content is complete or no progress
+      const contentState = await getProgressState(content.id)
+      if (contentState !== STATE_STARTED) {
+        const firstChild = content.children[0]
+        let lastInteractedChildNavToData = await getNavigateTo([firstChild])[firstChild.id] ?? null
+        navigateToData[content.id] = buildNavigateTo(content.children[0], lastInteractedChildNavToData)
+      } else {
+        const childrenStates = await getProgressStateByIds(childrenIds)
+        const lastInteracted = await getLastInteractedOf(childrenIds)
+        const lastInteractedStatus = childrenStates[lastInteracted]
+
+        if (content.type === 'course' || content.type === 'pack-bundle') {
+          if (lastInteractedStatus === STATE_STARTED) {
+            navigateToData[content.id] = buildNavigateTo(children.get(lastInteracted))
+          } else {
+            let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
+            navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild))
+          }
+        } else if (content.type === 'guided-course' || content.type === 'song-tutorial') {
+          let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
+          navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild))
+        } else if (twoDepthContentTypes.includes(content.type)) {
+          const firstChildren = content.children ?? []
+          const lastInteractedChildId = await getLastInteractedOf(firstChildren.map(child => child.id));
+          if (childrenStates[lastInteractedChildId] === STATE_COMPLETED) {
+            // TODO: packs have an extra situation where we need to jump to the next course if all lessons in the last engaged course are completed
+          }
+          let lastInteractedChildNavToData = await getNavigateTo(firstChildren)
+          lastInteractedChildNavToData = lastInteractedChildNavToData[lastInteractedChildId]
+          navigateToData[content.id] = buildNavigateTo(children.get(lastInteractedChildId), lastInteractedChildNavToData);
+        }
+      }
+    }
+  }
+  return navigateToData
+}
+
+function buildNavigateTo(content, child = null)
+{
+  return {
+    brand: content.brand,
+    thumbnail: content.thumbnail ?? '',
+    id: content.id,
+    type: content.type,
+    child: child,
+  }
+}
+
 /**
  * filter through contents, only keeping the most recent
  * @param {array} contentIds

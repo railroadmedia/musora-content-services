@@ -86,8 +86,17 @@ export async function rankCategories(brand, categories) {
     }
     return rankedCategories
   } catch (error) {
-    console.error('Fetch error:', error)
-    return null
+    console.error('RankCategories fetch error:', error)
+    const defaultSorting = []
+    for (const slug in categories) {
+      defaultSorting.push(
+        {
+          slug: slug,
+          items: categories[slug],
+        }
+      )
+    }
+    return defaultSorting
   }
 }
 
@@ -117,8 +126,8 @@ export async function rankItems(brand, content_ids) {
     const response = await httpClient.post(url, data)
     return response['ranked_content_ids']
   } catch (error) {
-    console.error('Fetch error:', error)
-    return null
+    console.error('rankItems fetch error:', error)
+    return content_ids
   }
 }
 

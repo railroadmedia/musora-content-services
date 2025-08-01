@@ -80,6 +80,7 @@ export async function getTabResults(brand, pageName, tabName, {
     results = await addContextToContent(getLessonContentRows, brand, pageName, {
       dataField: 'items',
       addNextLesson: true,
+      addNavigateTo: true,
       addProgressPercentage: true,
       addProgressStatus: true
     })
@@ -87,6 +88,7 @@ export async function getTabResults(brand, pageName, tabName, {
     let temp =  await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
     results = await addContextToContent(() => temp.entity, {
       addNextLesson: true,
+      addNavigateTo: true,
       addProgressPercentage: true,
       addProgressStatus: true
     })
@@ -382,7 +384,7 @@ export async function getRecommendedForYou(brand, rowId = null, {
   limit = 10,
 } = {}) {
   const requiredItems = page * limit;
-  const data = await recommendations(brand, {limit: requiredItems});
+  const data = await recommendations( brand, {limit: requiredItems})
   if (!data || !data.length) {
     return { id: 'recommended', title: 'Recommended For You', items: [] };
   }
@@ -390,14 +392,11 @@ export async function getRecommendedForYou(brand, rowId = null, {
   // Apply pagination before calling fetchByRailContentIds
   const startIndex = (page - 1) * limit;
   const paginatedData = data.slice(startIndex, startIndex + limit);
-
-  const contents = await fetchByRailContentIds(paginatedData);
-  const result = {
-    id: 'recommended',
-    title: 'Recommended For You',
-    items: contents
-  };
-
+  const contents = await addContextToContent(fetchByRailContentIds, paginatedData, 'tab-data',
+    {
+      addNextLesson: true,
+      addNavigateTo: true,
+    })
   if (rowId) {
     return {
       type: TabResponseType.CATALOG,

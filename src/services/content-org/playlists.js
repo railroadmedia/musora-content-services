@@ -3,6 +3,7 @@
  */
 import { globalConfig } from '../config.js'
 import { fetchHandler } from '../railcontent.js'
+import { getNavigateToForPlaylists } from '../contentAggregator.js'
 import './playlists-types.js'
 
 /**
@@ -42,7 +43,7 @@ export async function fetchUserPlaylists(
   const content = content_id ? `&content_id=${content_id}` : ''
   const brandString = brand ? `&brand=${brand}` : ''
   const url = `${BASE_PATH}/v1/user/playlists${pageString}${brandString}${limitString}${sortString}${content}`
-  return await fetchHandler(url)
+  return await getNavigateToForPlaylists(await fetchHandler(url), {dataField: 'data'})
 }
 
 /**
@@ -343,7 +344,7 @@ export async function duplicatePlaylist(playlistId, playlistData) {
  */
 export async function fetchPlaylist(playlistId) {
   const url = `${BASE_PATH}/v1/user/playlists/${playlistId}`
-  return await fetchHandler(url, 'GET')
+  return await getNavigateToForPlaylists(await fetchHandler(url))
 }
 
 /**
