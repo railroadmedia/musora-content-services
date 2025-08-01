@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.29.0](https://github.com/railroadmedia/musora-content-services/compare/v2.28.6...v2.29.0) (2025-08-01)
+
+
+### Features
+
+* **navigateTo:** Add navigateTo context and update homepageprogress rows to pull the same data as other locations ([#389](https://github.com/railroadmedia/musora-content-services/issues/389)) ([b731957](https://github.com/railroadmedia/musora-content-services/commit/b73195790ba0aefd98e1584ef0f57839979613b3))
+
+
+### Bug Fixes
+
+* Change recommendation config to use recommender.musora.com ([#395](https://github.com/railroadmedia/musora-content-services/issues/395)) ([170d48a](https://github.com/railroadmedia/musora-content-services/commit/170d48a4b10bb11371889e14a74b3dd663d5c0e7))
+* **MU2-907:** scheduled content appearing in new releases ([#391](https://github.com/railroadmedia/musora-content-services/issues/391)) ([c4f3c48](https://github.com/railroadmedia/musora-content-services/commit/c4f3c482c62513ddc4b2465bb7a6e155a92a52da))
+* **T3PS-120:** allow falsey values for description and category ([#392](https://github.com/railroadmedia/musora-content-services/issues/392)) ([5645488](https://github.com/railroadmedia/musora-content-services/commit/56454880df8c92fa3c9c0a57f8b8ae7115d49391))
+* **T3PS-139:** fix lesson count on content cards ([#383](https://github.com/railroadmedia/musora-content-services/issues/383)) ([818c4d0](https://github.com/railroadmedia/musora-content-services/commit/818c4d0e5f8903d9f7b2a7667460a4beb144d7ab))
+* **T3PS-594:** wrong active date mobile ([#387](https://github.com/railroadmedia/musora-content-services/issues/387)) ([f9e2dfd](https://github.com/railroadmedia/musora-content-services/commit/f9e2dfd008660d55865e526317ef79e5d95e3f06))
+* **T3PS-602:** fixes thumbnail data missing from getNewAndUpcoming MCS method ([#386](https://github.com/railroadmedia/musora-content-services/issues/386)) ([f8da5fc](https://github.com/railroadmedia/musora-content-services/commit/f8da5fc674380ffdebcf636ddbb7b0a5f14ba7ae))
+* **T3PS-630:** show song-tutorial children in recent songs instead of parent ([#390](https://github.com/railroadmedia/musora-content-services/issues/390)) ([312bdf8](https://github.com/railroadmedia/musora-content-services/commit/312bdf891a6ffb6eb3113ebfea1692d586e0d2ea))
+* **T3PS-644:** practice day incorrectly assigned ([#393](https://github.com/railroadmedia/musora-content-services/issues/393)) ([8b8a424](https://github.com/railroadmedia/musora-content-services/commit/8b8a4245cdaa389c7916eb398da47bf30f6fc056))
+
 ### [2.28.6](https://github.com/railroadmedia/musora-content-services/compare/v2.28.5...v2.28.6) (2025-07-28)
 
 
