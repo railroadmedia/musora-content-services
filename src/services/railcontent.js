@@ -3,7 +3,6 @@
  */
 import { globalConfig } from './config.js'
 import { fetchJSONHandler } from '../lib/httpHelper.js'
-import { convertToTimeZone } from './dateUtils.js'
 
 /**
  * Exported functions that are excluded from index generation.
