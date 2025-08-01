@@ -3,7 +3,6 @@
  */
 import { globalConfig } from './config.js'
 import { fetchJSONHandler } from '../lib/httpHelper.js'
-import { convertToTimeZone } from './dateUtils.js';
 
 /**
  * Exported functions that are excluded from index generation.
@@ -285,7 +284,7 @@ async function postDataHandler(url, data) {
 }
 
 async function patchDataHandler_depreciated(url, data) {
-  throw Error("PATCH verb throws a CORS error on the FEW. Use PATCH instead")
+  throw Error('PATCH verb throws a CORS error on the FEW. Use PATCH instead')
 }
 
 async function putDataHandler(url, data) {
@@ -296,8 +295,8 @@ async function deleteDataHandler(url, data) {
   return fetchHandler(url, 'delete')
 }
 
-export async function fetchLikeCount(contendId){
-  const url  = `/api/content/v1/content/like_count/${contendId}`
+export async function fetchLikeCount(contendId) {
+  const url = `/api/content/v1/content/like_count/${contendId}`
   return await fetchDataHandler(url)
 }
 
@@ -584,40 +583,36 @@ export async function fetchComment(commentId) {
 }
 
 export async function fetchUserPractices(currentVersion = 0, { userId } = {}) {
-  const params = new URLSearchParams();
-  if (userId) params.append('user_id', userId);
-  const query = params.toString() ? `?${params.toString()}` : '';
-  const url = `/api/user/practices/v1/practices${query}`;
-  const response = await fetchDataHandler(url, currentVersion);
-  const { data, version } = response;
-  const userPractices = data;
-  if(!userPractices ) {
-    return { data: { practices: {} }, version };
+  const params = new URLSearchParams()
+  if (userId) params.append('user_id', userId)
+  const query = params.toString() ? `?${params.toString()}` : ''
+  const url = `/api/user/practices/v1/practices${query}`
+  const response = await fetchDataHandler(url, currentVersion)
+  const { data, version } = response
+  const userPractices = data
+  if (!userPractices) {
+    return { data: { practices: {} }, version }
   }
 
-  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
   const formattedPractices = userPractices.reduce((acc, practice) => {
-    // Convert UTC date to user's local date (still a Date object)
-    const userTimeZoneDay = convertToTimeZone(practice.day, userTimeZone);
-    if (!acc[userTimeZoneDay]) {
-      acc[userTimeZoneDay] = [];
+    if (!acc[practice.day]) {
+      acc[practice.day] = []
     }
 
-    acc[userTimeZoneDay].push({
+    acc[practice.day].push({
       id: practice.id,
       duration_seconds: practice.duration_seconds,
-    });
+    })
 
-    return acc;
-  }, {});
+    return acc
+  }, {})
 
   return {
     data: {
       practices: formattedPractices,
     },
     version,
-  };
+  }
 }
 
 export async function logUserPractice(practiceDetails) {
@@ -628,11 +623,11 @@ export async function fetchUserPracticeMeta(practiceIds, userId = null) {
   if (practiceIds.length == 0) {
     return []
   }
-  const params = new URLSearchParams();
-  practiceIds.forEach(id => params.append('practice_ids[]', id));
+  const params = new URLSearchParams()
+  practiceIds.forEach((id) => params.append('practice_ids[]', id))
 
   if (userId !== null) {
-    params.append('user_id', userId);
+    params.append('user_id', userId)
   }
   const url = `/api/user/practices/v1/practices?${params.toString()}`
   return await fetchHandler(url, 'GET', null)
@@ -652,7 +647,6 @@ export async function fetchUserPracticeNotes(date) {
   const url = `/api/user/practices/v1/notes?date=${date}`
   return await fetchHandler(url, 'GET', null)
 }
-
 
 /**
  * Get the id and slug of last interacted child. Only valid for certain content types
@@ -674,8 +668,8 @@ export async function fetchUserPracticeNotes(date) {
  * }
  */
 export async function fetchLastInteractedChild(content_ids) {
-  const params = new URLSearchParams();
-  content_ids.forEach(id => params.append('content_ids[]', id));
+  const params = new URLSearchParams()
+  content_ids.forEach((id) => params.append('content_ids[]', id))
   const url = `/api/content/v1/user/last_interacted_child?${params.toString()}`
   return await fetchHandler(url, 'GET', null)
 }
@@ -708,17 +702,12 @@ export async function fetchLastInteractedChild(content_ids) {
  *   .then(activities => console.log(activities))
  *   .catch(error => console.error(error));
  */
-export async function fetchRecentUserActivities({
-  page = 1,
-  limit = 5,
-  tabName = null
-} = {}) {
+export async function fetchRecentUserActivities({ page = 1, limit = 5, tabName = null } = {}) {
   let pageAndLimit = `?page=${page}&limit=${limit}`
   let tabParam = tabName ? `&tabName=${tabName}` : ''
   const url = `/api/user-management-system/v1/activities/all${pageAndLimit}${tabParam}`
   return await fetchHandler(url, 'GET', null)
 }
-
 
 function fetchAbsolute(url, params) {
   if (globalConfig.sessionConfig.authToken) {
