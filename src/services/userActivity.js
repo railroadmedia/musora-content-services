@@ -929,83 +929,20 @@ export async function deleteUserActivity(id) {
   return await fetchHandler(url, 'DELETE')
 }
 
-async function extractPinnedItemsAndSortAllItems(userPinnedItem, contentsMap, eligiblePlaylistItems, pinnedGuidedCourse, limit) {
-  let pinnedItem = await popPinnedItemFromContentsOrPlaylistMap(
-    userPinnedItem,
-    contentsMap,
-    eligiblePlaylistItems,
-  )
-
-  const guidedCourseID = pinnedGuidedCourse?.content_id
-  let combined = [];
-  if (pinnedGuidedCourse) {
-    const guidedCourseContent = contentsMap.get(guidedCourseID) ?? await addContextToContent(fetchByRailContentId, guidedCourseID, 'guided-course',
-      {
-        addNextLesson: true,
-        addNavigateTo: true,
-        addProgressStatus: true,
-        addProgressPercentage: true,
-        addProgressTimestamp: true,
-      })
-    contentsMap = popContentAndRemoveChildrenFromContentsMap(guidedCourseContent, contentsMap)
-    guidedCourseContent.pinned = true
-    combined.push(guidedCourseContent)
-  }
-  if (pinnedItem) {
-    pinnedItem.pinned = true
-    combined.push(pinnedItem)
-  }
-
-  const progressList = Array.from(contentsMap.values())
-  combined = [...combined, ...progressList, ...eligiblePlaylistItems]
-  return mergeAndSortItems(combined, limit)
-}
-
-function generateContentsMap(contents, playlistsContents) {
-  const excludedTypes = new Set([
-    'pack-bundle',
-    'learning-path-course',
-    'learning-path-level',
-    'guided-course-part',
-  ]);
-  const existingShows = new Set();
-  const contentsMap = new Map();
-  const childToParentMap = {};
-  contents.forEach(content => {
-    if (Array.isArray(content.parent_content_data) && content.parent_content_data.length > 0) {
-      childToParentMap[content.id] = content.parent_content_data[content.parent_content_data.length - 1];
-    }
-  });
-
-  const allRecentTypeSet = new Set(
-    Object.values(recentTypes).flat()
-  )
-  contents.forEach(content => {
-    const id = content.id
-    const type = content.type
-    if (excludedTypes.has(type) || (!allRecentTypeSet.has(type) && !showsLessonTypes.includes(type)) ) return;
-    if (!childToParentMap[id]) {
-      // Shows don't have a parent to link them, but need to be handled as if they're a set of children
-      if (!existingShows.has(type)) {
-        contentsMap.set(id, content)
-      }
-      if (showsLessonTypes.includes(type)) {
-        existingShows.add(type)
-      }
-    }
-  })
-
-  // TODO this doesn't work for guided courses as the GC card takes precedence over the playlist card
-  // https://musora.atlassian.net/browse/BEH-812
-  if (playlistsContents) {
-    for (const item of playlistsContents) {
-      const contentId = item.id
-      contentsMap.delete(contentId)
-      const parentIds = item.parent_content_data || [];
-      parentIds.forEach(id => contentsMap.delete(id));
-    }
-  }
-  return contentsMap;
+/**
+ * Restores a specific user activity by its ID.
+ *
+ * @param {number|string} id - The ID of the user activity to restore.
+ * @returns {Promise<Object>} - A promise that resolves to the API response after restoration.
+ *
+ * @example
+ * restoreUserActivity(789)
+ *   .then(response => console.log('Restored:', response))
+ *   .catch(error => console.error(error));
+ */
+export async function restoreUserActivity(id) {
+  const url = `/api/user-management-system/v1/activities/${id}`
+  return await fetchHandler(url, 'POST')
 }
 
 /**
