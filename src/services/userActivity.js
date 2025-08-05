@@ -407,7 +407,7 @@ export async function restoreUserPractice(id) {
     const restoredPractice = response.data.find((p) => p.id === id)
     if (restoredPractice) {
       await userActivityContext.updateLocal(async function (localContext) {
-        if (localContext.data[DATA_KEY_PRACTICES][restoredPractice.day]) {
+        if (!localContext.data[DATA_KEY_PRACTICES][restoredPractice.day]) {
           localContext.data[DATA_KEY_PRACTICES][restoredPractice.day] = []
         }
         response.data.forEach((restoredPractice) => {
@@ -581,7 +581,21 @@ export async function getPracticeNotes(day) {
  *   .catch(error => console.error("Failed to get recent activity:", error));
  */
 export async function getRecentActivity({ page = 1, limit = 5, tabName = null } = {}) {
-  return await fetchRecentUserActivities({ page, limit, tabName })
+  const recentActivityData = await fetchRecentUserActivities({ page, limit, tabName })
+  const contentIds = recentActivityData.data.map((p) => p.contentId).filter((id) => id !== null)
+  const contents = await addContextToContent(fetchByRailContentIds, contentIds, {
+    addNavigateTo: true,
+    addNextLesson: true
+  })
+  recentActivityData.data = recentActivityData.data.map((practice) => {
+    const content = contents.find((c) => c.id === practice.contentId) || {}
+    return {
+      ...practice,
+      parent_id: content.parent_id || null,
+      navigateTo: content.navigateTo,
+    }
+  })
+  return recentActivityData
 }
 
 /**
@@ -841,8 +855,10 @@ export async function calculateLongestStreaks(userId = globalConfig.sessionConfi
 
 async function formatPracticeMeta(practices) {
   const contentIds = practices.map((p) => p.content_id).filter((id) => id !== null)
-  const contents = await fetchByRailContentIds(contentIds)
-
+  const contents = await addContextToContent(fetchByRailContentIds, contentIds, {
+    addNavigateTo: true,
+    addNextLesson: true
+  })
   return practices.map((practice) => {
     const content = contents.find((c) => c.id === practice.content_id) || {}
 
@@ -863,6 +879,8 @@ async function formatPracticeMeta(practices) {
       created_at: dayjs(practice.created_at),
       sanity_type: content.type || null,
       content_slug: content.slug || null,
+      parent_id: content.parent_id || null,
+      navigateTo: content.navigateTo || null,
     }
   })
 }
