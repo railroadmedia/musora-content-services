@@ -392,7 +392,7 @@ export async function getRecommendedForYou(brand, rowId = null, {
   // Apply pagination before calling fetchByRailContentIds
   const startIndex = (page - 1) * limit;
   const paginatedData = data.slice(startIndex, startIndex + limit);
-  const contents = await addContextToContent(fetchByRailContentIds, paginatedData, 'tab-data',
+  const contents = await addContextToContent(fetchByRailContentIds, paginatedData, 'tab-data', brand, true,
     {
       addNextLesson: true,
       addNavigateTo: true,

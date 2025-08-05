@@ -476,7 +476,7 @@ export async function fetchByRailContentId(id, contentType) {
  *   .then(contents => console.log(contents))
  *   .catch(error => console.error(error));
  */
-export async function fetchByRailContentIds(ids, contentType = undefined, brand = undefined) {
+export async function fetchByRailContentIds(ids, contentType = undefined, brand = undefined, includePermissionsAndStatusFilter = false) {
   if (!ids?.length) {
     return []
   }
@@ -485,8 +485,10 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   const brandFilter = brand ? ` && brand == "${brand}"` : ''
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`, {pullFutureContent: true}).buildFilter()
   const fields = await getFieldsForContentTypeWithFilteredChildren(contentType, true)
+  const baseFilter = `railcontent_id in [${idsString}]${brandFilter}`
+  const finalFilter = includePermissionsAndStatusFilter ? await new FilterBuilder(baseFilter).buildFilter() : baseFilter
   const query = `*[
-    railcontent_id in [${idsString}]${brandFilter}
+    ${finalFilter}
   ]{
     ${fields}
     'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
@@ -1166,7 +1168,7 @@ export async function fetchLessonContent(railContentId) {
 export async function fetchRelatedRecommendedContent(railContentId, brand, count = 10) {
   const recommendedItems = await fetchSimilarItems(railContentId, brand, count)
   if (recommendedItems && recommendedItems.length > 0) {
-    return fetchByRailContentIds(recommendedItems)
+    return fetchByRailContentIds(recommendedItems, 'tab-data', brand, true)
   }
 
   return await fetchRelatedLessons(railContentId, brand).then((result) =>
