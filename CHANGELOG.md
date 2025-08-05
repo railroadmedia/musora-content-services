@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.30.4](https://github.com/railroadmedia/musora-content-services/compare/v2.30.3...v2.30.4) (2025-08-05)
+
+
+### Bug Fixes
+
+* **MU2-912:** pagination for Incomplete and Completed tabs ([#396](https://github.com/railroadmedia/musora-content-services/issues/396)) ([b66d574](https://github.com/railroadmedia/musora-content-services/commit/b66d57483df4bdd158a985bade3cf63fa3aa65bb))
+* **MU2-916:** Add navigateTo and parentId to practice tracker and recent activity ([#398](https://github.com/railroadmedia/musora-content-services/issues/398)) ([6e43768](https://github.com/railroadmedia/musora-content-services/commit/6e437682f09655cc41966277c967c304b275d0ea))
+
 ### [2.30.3](https://github.com/railroadmedia/musora-content-services/compare/v2.30.2...v2.30.3) (2025-08-04)
 
 ### [2.30.2](https://github.com/railroadmedia/musora-content-services/compare/v2.30.1...v2.30.2) (2025-08-04)
