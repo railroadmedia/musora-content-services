@@ -1180,11 +1180,11 @@ async function processContentItem(item) {
       thumbnail:       data.thumbnail,
       title:           data.title,
       isLive:          isLive,
-      badge:           data.badge ?? null,
-      isLocked:        data.is_locked ?? false,
-      subtitle:        !data.child_count || data.lesson_count === 1
-        ? (contentType === 'lesson' && isLive === false) ? `${item.percent}% Complete`: `${data.difficulty_string} • ${data.artist_name}`
-        : `${data.completed_children} of ${data.lesson_count ?? data.child_count} Lessons Complete`
+      badge:           content.badge ?? null,
+      isLocked:        content.is_locked ?? false,
+      subtitle:        collectionLessonTypes.includes(content.type) || content.lesson_count > 1
+        ? `${content.completed_children} of ${content.lesson_count ?? content.child_count} Lessons Complete`
+        : (contentType === 'lesson' && isLive === false) ? `${content.progressPercentage}% Complete`: `${content.difficulty_string} • ${content.artist_name}`
     },
     cta:               {
       text:   ctaText,
