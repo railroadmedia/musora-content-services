@@ -1168,9 +1168,10 @@ async function processContentItem(content) {
     id:                content.id,
     progressType:      'content',
     header:            contentType,
-    pinned:            item.pinned ?? false,
+    pinned:            content.pinned ?? false,
+    content:           content,
     body:              {
-      progressPercent: isLive ? undefined: item.percent,
+      progressPercent: isLive ? undefined : content.progressPercentage,
       thumbnail:       data.thumbnail,
       title:           data.title,
       isLive:          isLive,
