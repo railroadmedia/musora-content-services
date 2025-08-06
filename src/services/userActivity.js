@@ -588,7 +588,7 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
     addNextLesson: true,
   })
   recentActivityData.data = recentActivityData.data.map((practice) => {
-    const content = contents.find((c) => c.id === practice.contentId) || {}
+    const content = contents?.find((c) => c.id === practice.contentId) || {}
     return {
       ...practice,
       parent_id: content.parent_id || null,
@@ -861,7 +861,7 @@ async function formatPracticeMeta(practices = []) {
   })
 
   return practices.map((practice) => {
-    const content = contents ? contents.find((c) => c.id === practice.content_id) : {}
+    const content = contents && contents.length > 0 ? contents.find((c) => c.id === practice.content_id) : {}
 
     return {
       id: practice.id,
