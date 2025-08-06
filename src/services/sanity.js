@@ -1243,6 +1243,7 @@ export async function fetchSiblingContent(railContentId, brand)
 {
   const filterGetParent = await new FilterBuilder(`references(^._id) && _type == ^.parent_type`, {
     pullFutureContent: true,
+    isParentFilter: true,
   }).buildFilter()
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
 
