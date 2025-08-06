@@ -394,7 +394,7 @@ export async function getRecommendedForYou(brand, rowId = null, {
   limit = 10,
 } = {}) {
   const requiredItems = page * limit;
-  const data = await recommendations(brand, {limit: requiredItems});
+  const data = await recommendations( brand, {limit: requiredItems})
   if (!data || !data.length) {
     return { id: 'recommended', title: 'Recommended For You', items: [] };
   }

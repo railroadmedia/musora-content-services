@@ -1,6 +1,6 @@
 import {
-  getLastInteractedOf,
-  getNextLesson,
+  getLastInteractedOf, getNavigateTo,
+  getNextLesson, getProgressDateByIds,
   getProgressPercentageByIds,
   getProgressStateByIds,
   getResumeTimeSecondsByIds
@@ -28,6 +28,7 @@ import {fetchLastInteractedChild, fetchLikeCount} from "./railcontent"
  * @param options.addIsLiked - add isLikedField
  * @param options.addLikeCount - add likeCount field
  * @param options.addProgressStatus - add progressStatus field
+ * @param options.addProgressTimestamp - add progressTimestamp field
  * @param options.addResumeTimeSeconds - add resumeTimeSeconds field
  * @param options.addLastInteractedChild - add lastInteractedChild field. This may be different from nextLesson
  * @param options.addNextLesson - add nextLesson field. For collection type content. each collection has different logic for calculating this data
@@ -66,9 +67,11 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addIsLiked = false,
     addLikeCount = false,
     addProgressStatus = false,
+    addProgressTimestamp = false,
     addResumeTimeSeconds = false,
     addLastInteractedChild = false,
     addNextLesson = false,
+    addNavigateTo = false,
   } = options
 
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
@@ -76,32 +79,66 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   let data = await dataPromise(...dataParam)
   if(!data) return false
   const isDataAnArray = Array.isArray(data)
-  const items = extractItemsFromData(data, dataField, isDataAnArray, dataField_includeParent)
-  const ids = items?.map(item => item?.id).filter(Boolean) ?? []
 
-  if(ids.length === 0) return false
+  const items = extractItemsFromData(data, dataField, isDataAnArray, dataField_includeParent) ?? []
+  const ids = items.map(item => item?.id).filter(Boolean)
+  if(ids.length === 0) return data
 
-  const [progressPercentageData, progressStatusData, isLikedData, resumeTimeData, lastInteractedChildData, nextLessonData] = await Promise.all([
-    addProgressPercentage ? getProgressPercentageByIds(ids) : Promise.resolve(null),
-    addProgressStatus ? getProgressStateByIds(ids) : Promise.resolve(null),
+  const [progressData, isLikedData, resumeTimeData, lastInteractedChildData, nextLessonData, navigateToData] = await Promise.all([
+    addProgressPercentage || addProgressStatus || addProgressTimestamp ? getProgressDateByIds(ids) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
     addNextLesson ? getNextLesson(items) : Promise.resolve(null),
+    addNavigateTo ? getNavigateTo(items) : Promise.resolve(null),
   ])
+  if (addNextLesson) console.log('AddNextLesson is depreciated in favour of addNavigateTo')
 
   const addContext = async (item) => ({
     ...item,
-    ...(addProgressPercentage ? { progressPercentage: progressPercentageData?.[item.id] } : {}),
-    ...(addProgressStatus ? { progressStatus: progressStatusData?.[item.id] } : {}),
+    ...(addProgressPercentage ? { progressPercentage: progressData?.[item.id]['progress'] } : {}),
+    ...(addProgressStatus ? { progressStatus: progressData?.[item.id]['status'] } : {}),
+    ...(addProgressTimestamp ? { progressTimestamp: progressData?.[item.id]['last_update'] } : {}),
     ...(addIsLiked ? { isLiked: isLikedData?.[item.id] } : {}),
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
     ...(addLastInteractedChild ? { lastInteractedChild: lastInteractedChildData?.[item.id] } : {}),
     ...(addNextLesson ? { nextLesson: nextLessonData?.[item.id] } : {}),
+    ...(addNavigateTo ? { navigateTo: navigateToData?.[item.id] } : {}),
   })
 
   return await processItems(data, addContext, dataField, isDataAnArray, dataField_includeParent)
+}
+
+export async function getNavigateToForPlaylists(data, {dataField = null} = {} )
+{
+  let playlists = extractItemsFromData(data, dataField, false, false)
+  let allIds = []
+  playlists.forEach((playlist) => allIds = [...allIds, ...playlist.items.map(a => a.content_id)])
+  const progressOnItems = await getProgressStateByIds(allIds);
+  const addContext = async (playlist) => {
+    const allItemsCompleted = playlist.items.every(i => {
+      const itemId = i.content_id;
+      const progress = progressOnItems[itemId];
+      return progress && progress === 'completed';
+    });
+    let nextItem = playlist.items[0] ?? null;
+    if (!allItemsCompleted) {
+      const lastItemProgress = progressOnItems[playlist.last_engaged_on];
+      const index = playlist.items.findIndex(i => i.content_id === playlist.last_engaged_on);
+      if (lastItemProgress === 'completed') {
+        nextItem = playlist.items[index + 1] ?? nextItem;
+      } else {
+        nextItem = playlist.items[index] ?? nextItem;
+      }
+    }
+    playlist.navigateTo = {
+      ...nextItem,
+      playlist_id: playlist.id,
+    }
+    return playlist
+  }
+  return await processItems(data, addContext, dataField, false, false,)
 }
 
 function extractItemsFromData(data, dataField, isParentArray, includeParent)
@@ -158,4 +195,5 @@ async function processItems(data, addContext, dataField, isParentArray, includeP
       : await addContext(data)
   }
 }
+
 

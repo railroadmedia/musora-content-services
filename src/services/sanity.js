@@ -16,6 +16,7 @@ import {
   showsTypes,
   getNewReleasesTypes,
   coachLessonsTypes,
+  getFieldsForContentTypeWithFilteredChildren,
   getChildFieldsForContentType,
   SONG_TYPES,
 } from '../contentTypeConfig.js'
@@ -75,7 +76,7 @@ export async function fetchSongById(documentId) {
  */
 export async function fetchLeaving(brand, { pageNumber = 1, contentPerPage = 20 } = {}) {
   const today = new Date()
-  const isoDateOnly = today.toISOString().split('T')[0]
+  const isoDateOnly = getDateOnly(today)
   const filterString = `brand == '${brand}' && quarter_removed > '${isoDateOnly}'`
   const startEndOrder = getQueryFromPage(pageNumber, contentPerPage)
   const sortOrder = {
@@ -102,7 +103,7 @@ export async function fetchLeaving(brand, { pageNumber = 1, contentPerPage = 20 
  */
 export async function fetchReturning(brand, { pageNumber = 1, contentPerPage = 20 } = {}) {
   const today = new Date()
-  const isoDateOnly = today.toISOString().split('T')[0]
+  const isoDateOnly = getDateOnly(today)
   const filterString = `brand == '${brand}' && quarter_published >= '${isoDateOnly}'`
   const startEndOrder = getQueryFromPage(pageNumber, contentPerPage)
   const sortOrder = {
@@ -156,41 +157,6 @@ function getQueryFromPage(pageNumber, contentPerPage) {
   let result = []
   result['start'] = start
   result['end'] = end
-  return result
-}
-
-/**
- * returns array of next and previous quarter dates as strings
- *
- * @returns {string[]}
- */
-function getNextAndPreviousQuarterDates() {
-  const january = 1
-  const april = 4
-  const july = 7
-  const october = 10
-  const month = new Date().getMonth()
-  let year = new Date().getFullYear()
-  let nextQuarter = ''
-  let prevQuarter = ''
-  if (month < april) {
-    nextQuarter = `${year}-0${april}-01`
-    prevQuarter = `${year}-0${january}-01`
-  } else if (month < july) {
-    nextQuarter = `${year}-0${july}-01`
-    prevQuarter = `${year}-0${april}-01`
-  } else if (month < october) {
-    nextQuarter = `${year}-${october}-01`
-    prevQuarter = `${year}-0${july}-01`
-  } else {
-    prevQuarter = `${year}-${october}-01`
-    year++
-    nextQuarter = `${year}-0${january}-01`
-  }
-
-  let result = []
-  result['next'] = nextQuarter
-  result['previous'] = prevQuarter
   return result
 }
 
@@ -350,8 +316,8 @@ export async function fetchNewReleases(
   const start = (page - 1) * limit
   const end = start + limit
   const sortOrder = getSortOrder(sort, brand)
-  const nextQuarter = getNextAndPreviousQuarterDates()['next']
-  const filter = `_type in ${typesString} && brand == '${brand}' && status == 'published' && show_in_new_feed == true && (!defined(quarter_published) ||  quarter_published != '${nextQuarter}')`
+  const now = getDateOnly()
+  const filter = `_type in ${typesString} && brand == '${brand}' && (status == 'published' && show_in_new_feed == true && published_on <= '${now}')`
   const fields = `
      "id": railcontent_id,
       title,
@@ -367,12 +333,7 @@ export async function fetchNewReleases(
       web_url_path,
       "permission_id": permission[]->railcontent_id,
       `
-  const filterParams = { allowsPullSongsContent: false }
-  const query = await buildQuery(filter, filterParams, fields, {
-    sortOrder: sortOrder,
-    start,
-    end: end,
-  })
+  const query = buildRawQuery(filter, fields, {sortOrder: sortOrder, start, end: end})
   return fetchSanity(query, true)
 }
 
@@ -477,12 +438,12 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
  *   .catch(error => console.error(error));
  */
 export async function fetchByRailContentId(id, contentType) {
-  const fields = getFieldsForContentType(contentType)
-  const childFields = getChildFieldsForContentType(contentType)
+  const fields = await getFieldsForContentTypeWithFilteredChildren(contentType)
+  const lessonFields = getChildFieldsForContentType(contentType)
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const entityFieldsString = ` ${fields}
                                     'child_count': coalesce(count(child[${childrenFilter}]->), 0) ,
-                                    "lessons": child[${childrenFilter}]->{${childFields}},
+                                    "lessons": child[${childrenFilter}]->{${lessonFields}},
                                     'length_in_seconds': coalesce(
       math::sum(
         select(
@@ -519,6 +480,7 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   if (!ids?.length) {
     return []
   }
+  ids = [...new Set(ids.filter(item => item !== null && item !== undefined))];
   const idsString = ids.join(',')
   const brandFilter = brand ? ` && brand == "${brand}"` : ''
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`, {pullFutureContent: true}).buildFilter()
@@ -528,11 +490,11 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   const query = `*[
     ${finalFilter}
   ]{
-    ${getFieldsForContentType(contentType)}
+    ${fields}
+    'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     live_event_start_time,
     live_event_end_time,
   }`
-
   const customPostProcess = (results) => {
     const now = getSanityDate(new Date(), false);
     const liveProcess = (result) => {
@@ -558,7 +520,7 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   }
 
   // Sort results to match the order of the input IDs
-  const sortedResults = results.sort(sortFuction)
+  const sortedResults = results?.sort(sortFuction) ?? null
 
   return sortedResults
 }
@@ -568,6 +530,7 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
   if (pageName === 'lessons') pageName = 'lesson'
   if (pageName === 'songs') pageName = 'song'
   const rowString = contentRowSlug ? ` && slug.current == "${contentRowSlug.toLowerCase()}"` : ''
+  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`, {pullFutureContent: true}).buildFilter()
   const childFilter = await new FilterBuilder('', {isChildrenFilter: true}).buildFilter()
   const query = `*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}'${rowString}]{
     brand,
@@ -576,6 +539,7 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
     'content': content[${childFilter}]->{
         'children': child[${childFilter}]->{ 'id': railcontent_id, 'children': child[${childFilter}]->{'id': railcontent_id}, },
         ${getFieldsForContentType('tab-data')}
+        'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     },
   }`
   return fetchSanity(query, true)
@@ -1175,19 +1139,17 @@ export async function fetchLessonContent(railContentId) {
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
   })
-  console.log('query', query)
   const chapterProcess = (result) => {
     const now = getSanityDate(new Date(), false)
     if (result.live_event_start_time && result.live_event_end_time) {
       result.isLive = result.live_event_start_time <= now && result.live_event_end_time >= now
     }
     const chapters = result.chapters ?? []
-    if (chapters.length == 0) return result
+    if (chapters.length === 0) return result
     result.chapters = chapters.map((chapter, index) => ({
       ...chapter,
       chapter_thumbnail_url: `https://musora-web-platform.s3.amazonaws.com/chapters/${result.brand}/Chapter${index + 1}.jpg`,
     }))
-    console.log('result', result)
     return result
   }
 
@@ -1477,7 +1439,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
  */
 export async function fetchPackData(id) {
   const query = `*[railcontent_id == ${id}]{
-    ${getFieldsForContentType('pack')}
+    ${await getFieldsForContentTypeWithFilteredChildren('pack')}
   } [0...1]`
   return fetchSanity(query, false)
 }
@@ -2016,6 +1978,10 @@ function getSanityDate(date, roundToHourForCaching = true) {
   return date.toISOString()
 }
 
+function getDateOnly(date = new Date()) {
+  return date.toISOString().split('T')[0]
+}
+
 const merge = (a, b, predicate = (a, b) => a === b) => {
   const c = [...a] // copy to avoid side effects
   // add all items from B to copy C if they're not already present
@@ -2226,11 +2192,12 @@ export async function fetchTabData(
 
   filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
   entityFieldsString =
     ` ${fieldsString}
     'children': child[${childrenFilter}]->{'id': railcontent_id},
     'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
-    'lesson_count': coalesce(count(child[${childrenFilter}]->), 0),
+    'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     'length_in_seconds': coalesce(
       math::sum(
         select(
@@ -2300,6 +2267,7 @@ export async function fetchScheduledAndNewReleases(
       "id": railcontent_id,
       title,
       "image": thumbnail.asset->url,
+      "thumbnail": thumbnail.asset->url,
       ${artistOrInstructorName()},
       "artists": instructor[]->name,
       difficulty,
@@ -2322,6 +2290,7 @@ export async function fetchShows(brand, type, sort = 'sort') {
 
   const query = await buildQuery(filter, filterParams, getFieldsForContentType(type), {
     sortOrder: sortOrder,
+    end: 100, // Adrian: added for homepage progress rows, this should be handled gracefully
   })
   return fetchSanity(query, true)
 }
