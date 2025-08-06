@@ -2176,12 +2176,10 @@ export async function fetchTabData(
     case 'incomplete':
       progressIds = await getAllStarted();
       sortOrder = null;
-      withoutPagination = true;
       break;
     case 'completed':
       progressIds = await getAllCompleted();
       sortOrder = null;
-      withoutPagination = true;
       break;
   }
 
