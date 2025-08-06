@@ -21,6 +21,7 @@ export class FilterBuilder {
       isSingle = false,
       allowsPullSongsContent = true,
       isChildrenFilter = false,
+      isParentFilter = false,
     } = {}
   ) {
     this.availableContentStatuses = availableContentStatuses
@@ -36,6 +37,7 @@ export class FilterBuilder {
     // this.debug = process.env.DEBUG === 'true' || false;
     this.debug = false
     this.prefix = isChildrenFilter ? '@->' : ''
+    this.prefix = isParentFilter ? '^.' : ''
   }
 
   static withOnlyFilterAvailableStatuses(filter, availableContentStatuses, bypassPermissions) {
