@@ -1172,8 +1172,8 @@ async function processContentItem(content) {
     content:           content,
     body:              {
       progressPercent: isLive ? undefined : content.progressPercentage,
-      thumbnail:       data.thumbnail,
-      title:           data.title,
+      thumbnail:       content.thumbnail,
+      title:           content.title,
       isLive:          isLive,
       badge:           content.badge ?? null,
       isLocked:        content.is_locked ?? false,
