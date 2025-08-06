@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.30.5](https://github.com/railroadmedia/musora-content-services/compare/v2.30.4...v2.30.5) (2025-08-06)
+
+
+### Bug Fixes
+
+* **MU2-918:** practice meta data for manual only sessions ([#402](https://github.com/railroadmedia/musora-content-services/issues/402)) ([a911529](https://github.com/railroadmedia/musora-content-services/commit/a9115297f00b6aed5f0ad73714cb860cfd71f331))
+* **MU2-918:** safer .find use ([#405](https://github.com/railroadmedia/musora-content-services/issues/405)) ([ce81469](https://github.com/railroadmedia/musora-content-services/commit/ce814692a7aa46ee814c28ecae1ec404a0c09046))
+
 ### [2.30.4](https://github.com/railroadmedia/musora-content-services/compare/v2.30.3...v2.30.4) (2025-08-05)
 
 
