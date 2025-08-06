@@ -1165,7 +1165,7 @@ async function processContentItem(content) {
   }
 
   return {
-    id:                item.id,
+    id:                content.id,
     progressType:      'content',
     header:            contentType,
     pinned:            item.pinned ?? false,
