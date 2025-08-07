@@ -668,6 +668,22 @@ export async function fetchUserPracticeNotes(date) {
   return await fetchHandler(url, 'GET', null)
 }
 
+export async function fetchRecent(brand, { status, types } = {}, {
+  page = 1,
+  limit = 10
+} = {}) {
+  const query = new URLSearchParams()
+  query.append('brand', brand)
+  if (status) query.append('status', status)
+  if (types) query.append('types', types)
+
+  query.append('page', page)
+  query.append('limit', limit)
+
+  const url = `/api/content-org/v1/user/recent?${query.toString()}`
+  return await fetchHandler(url, 'GET', null)
+}
+
 /**
  * Get the id and slug of last interacted child. Only valid for certain content types
  *
