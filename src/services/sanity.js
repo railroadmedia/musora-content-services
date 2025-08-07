@@ -537,7 +537,9 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
     name,
     'slug': slug.current,
     'content': content[${childFilter}]->{
-        'children': child[${childFilter}]->{ 'id': railcontent_id, 'children': child[${childFilter}]->{'id': railcontent_id}, },
+        'children': child[${childFilter}]->{ 'id': railcontent_id,
+          'type': _type, brand, 'thumbnail': thumbnail.asset->url,
+          'children': child[${childFilter}]->{'id': railcontent_id}, },
         ${getFieldsForContentType('tab-data')}
         'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     },
@@ -2195,7 +2197,7 @@ export async function fetchTabData(
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
   entityFieldsString =
     ` ${fieldsString}
-    'children': child[${childrenFilter}]->{'id': railcontent_id},
+    'children': child[${childrenFilter}]->{'id': railcontent_id, 'type': _type, brand, 'thumbnail': thumbnail.asset->url},
     'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
     'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     'length_in_seconds': coalesce(
