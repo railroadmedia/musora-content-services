@@ -946,7 +946,6 @@ export async function restoreUserActivity(id) {
   return await fetchHandler(url, 'POST')
 }
 
-
 async function extractPinnedItemsAndSortAllItems(
   userPinnedItem,
   contentsMap,
@@ -1166,24 +1165,21 @@ async function processContentItem(content) {
   }
 
   return {
-    id: content.id,
-    progressType: 'content',
-    header: contentType,
-    pinned: content.pinned ?? false,
-    content: content,
-    body: {
+    id:                content.id,
+    progressType:      'content',
+    header:            contentType,
+    pinned:            content.pinned ?? false,
+    content:           content,
+    body:              {
       progressPercent: isLive ? undefined : content.progressPercentage,
-      thumbnail: content.thumbnail,
-      title: content.title,
-      isLive: isLive,
-      badge: content.badge ?? null,
-      isLocked: content.is_locked ?? false,
-      subtitle:
-        !content.child_count || content.lesson_count === 1
-          ? contentType === 'lesson' && isLive === false
-            ? `${content.progressPercentage}% Complete`
-            : `${content.difficulty_string} • ${content.artist_name}`
-          : `${content.completed_children} of ${content.lesson_count ?? content.child_count} Lessons Complete`,
+      thumbnail:       content.thumbnail,
+      title:           content.title,
+      isLive:          isLive,
+      badge:           content.badge ?? null,
+      isLocked:        content.is_locked ?? false,
+      subtitle:        collectionLessonTypes.includes(content.type) || content.lesson_count > 1
+        ? `${content.completed_children} of ${content.lesson_count ?? content.child_count} Lessons Complete`
+        : (contentType === 'lesson' && isLive === false) ? `${content.progressPercentage}% Complete`: `${content.difficulty_string} • ${content.artist_name}`
     },
     cta: {
       text: ctaText,
