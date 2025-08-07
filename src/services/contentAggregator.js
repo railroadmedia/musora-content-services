@@ -108,6 +108,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
         ...(addNextLesson ? { next_lesson: nextLessonData?.[item.id] } : {}),
         ...(addNavigateTo ? { navigate_to: navigateToData?.[item.id] } : {}),
       })
+      // TODO REMOVE https://musora.atlassian.net/browse/BEH-901
       i = {
         ...i,
         ...(addProgressPercentage ? { progressPercentage: i.progress_percentage} : {}),

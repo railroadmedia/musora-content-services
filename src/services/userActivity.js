@@ -595,6 +595,7 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
       // the following fields are depreciated and should be removed sometime soon :)
       // Adrian August 7th 2025
       // Waiting on FE/MA updates
+      // https://musora.atlassian.net/browse/BEH-901
       parent_id: content.parent_id || null,
       navigateTo: content.navigateTo,
 
@@ -884,6 +885,7 @@ async function formatPracticeMeta(practices = []) {
       // the following fields are depreciated and should be removed sometime soon :)
       // Adrian August 7th 2025
       // Waiting on FE/MA updates
+      // https://musora.atlassian.net/browse/BEH-901
       sanity_type: content?.type || null,
       content_slug: content?.slug || null,
       parent_id: content?.parent_id || null,
