@@ -36,8 +36,17 @@ export class FilterBuilder {
     this.filter = filter
     // this.debug = process.env.DEBUG === 'true' || false;
     this.debug = false
-    this.prefix = isChildrenFilter ? '@->' : ''
-    this.prefix = isParentFilter ? '^.' : ''
+    this.prefix = this.getPrefix(isParentFilter, isChildrenFilter)
+  }
+
+  getPrefix(isParentFilter, isChildrenFilter) {
+    if (isParentFilter) {
+      return '^.'
+    } else if (isChildrenFilter) {
+      return '@->'
+    } else {
+      return ''
+    }
   }
 
   static withOnlyFilterAvailableStatuses(filter, availableContentStatuses, bypassPermissions) {
