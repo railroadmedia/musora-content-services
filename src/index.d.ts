@@ -38,13 +38,15 @@ import {
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
+	getRecentForTab,
 	getRecommendedForYou,
 	getScheduleContentRows,
 	getTabResults
 } from './services/content.js';
 
 import {
-	addContextToContent
+	addContextToContent,
+	getNavigateToForPlaylists
 } from './services/contentAggregator.js';
 
 import {
@@ -61,6 +63,7 @@ import {
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getLastInteractedOf,
+	getNavigateTo,
 	getNextLesson,
 	getProgressDateByIds,
 	getProgressPercentage,
@@ -194,7 +197,6 @@ import {
 	fetchPackData,
 	fetchParentForDownload,
 	fetchPlayAlongsCount,
-	fetchRecent,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
@@ -384,7 +386,6 @@ declare module 'musora-content-services' {
 		fetchPlayAlongsCount,
 		fetchPlaylist,
 		fetchPlaylistItems,
-		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
 		fetchRelatedLessons,
@@ -425,6 +426,8 @@ declare module 'musora-content-services' {
 		getLastInteractedOf,
 		getLessonContentRows,
 		getMonday,
+		getNavigateTo,
+		getNavigateToForPlaylists,
 		getNewAndUpcoming,
 		getNextLesson,
 		getPracticeNotes,
@@ -437,6 +440,7 @@ declare module 'musora-content-services' {
 		getProgressStateByIds,
 		getRecent,
 		getRecentActivity,
+		getRecentForTab,
 		getRecommendedForYou,
 		getResumeTimeSeconds,
 		getResumeTimeSecondsByIds,

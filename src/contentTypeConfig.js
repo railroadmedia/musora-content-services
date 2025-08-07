@@ -670,6 +670,10 @@ export function getUpcomingEventsTypes(brand) {
   }
 }
 
+export function getRecentTypesForPage(pageType) {
+  return recentTypes[pageType]
+}
+
 export function artistOrInstructorName(key = 'artist_name') {
   return `'${key}': coalesce(artist->name, instructor[0]->name)`
 }
