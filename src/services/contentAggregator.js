@@ -80,8 +80,6 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   const isDataAnArray = Array.isArray(data)
   if(isDataAnArray && data.length === 0) return data
   if(!data) return false
-  const items = extractItemsFromData(data, dataField, isDataAnArray, dataField_includeParent)
-  const ids = items.map(item => item?.id).filter(Boolean)
 
   const items = extractItemsFromData(data, dataField, isDataAnArray, dataField_includeParent) ?? []
   const ids = items.map(item => item?.id).filter(Boolean)
