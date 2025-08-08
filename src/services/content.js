@@ -15,7 +15,7 @@ import {
 import {getRecentTypesForPage} from '../contentTypeConfig.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {fetchRecent} from "./railcontent";
-import {recommendations, rankCategories} from "./recommendations";
+import {recommendations, rankCategories, rankItems} from "./recommendations";
 import {addContextToContent} from "./contentAggregator.js";
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
