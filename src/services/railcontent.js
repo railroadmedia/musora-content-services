@@ -675,13 +675,16 @@ export async function fetchRecent(brand, { status, types } = {}, {
   const query = new URLSearchParams()
   query.append('brand', brand)
   if (status) query.append('status', status)
-  if (types) query.append('types', types)
+  if (types) {
+    types.forEach((type) => query.append('types[]', type))
+  }
 
   query.append('page', page)
   query.append('limit', limit)
 
   const url = `/api/content-org/v1/user/recent?${query.toString()}`
-  return await fetchHandler(url, 'GET', null)
+  const response = await fetchHandler(url, 'GET', null)
+  return response ? response.result : []
 }
 
 /**
