@@ -38,13 +38,15 @@ import {
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
+	getRecentForTab,
 	getRecommendedForYou,
 	getScheduleContentRows,
 	getTabResults
 } from './services/content.js';
 
 import {
-	addContextToContent
+	addContextToContent,
+	getNavigateToForPlaylists
 } from './services/contentAggregator.js';
 
 import {
@@ -61,6 +63,7 @@ import {
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getLastInteractedOf,
+	getNavigateTo,
 	getNextLesson,
 	getProgressDateByIds,
 	getProgressPercentage,
@@ -127,6 +130,7 @@ import {
 	fetchLastInteractedChild,
 	fetchLikeCount,
 	fetchNextContentDataForParent,
+	fetchRecent,
 	fetchRecentUserActivities,
 	fetchSongsInProgress,
 	fetchTopComment,
@@ -194,7 +198,6 @@ import {
 	fetchPackData,
 	fetchParentForDownload,
 	fetchPlayAlongsCount,
-	fetchRecent,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
@@ -424,6 +427,8 @@ export {
 	getLastInteractedOf,
 	getLessonContentRows,
 	getMonday,
+	getNavigateTo,
+	getNavigateToForPlaylists,
 	getNewAndUpcoming,
 	getNextLesson,
 	getPracticeNotes,
@@ -436,6 +441,7 @@ export {
 	getProgressStateByIds,
 	getRecent,
 	getRecentActivity,
+	getRecentForTab,
 	getRecommendedForYou,
 	getResumeTimeSeconds,
 	getResumeTimeSecondsByIds,
