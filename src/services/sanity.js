@@ -1105,7 +1105,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
   const filterParams = { isSingle: true, pullFutureContent: true }
 
   const parentQuery = addParent
-  ? `"parent_content_data": *[railcontent_id in [...(^.parent_content_data[].id)]]{
+    ? `"parent_content_data": *[railcontent_id in [...(^.parent_content_data[].id)]]{
       "id": railcontent_id,
       title,
       slug,
@@ -1113,9 +1113,9 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
       "logo" : logo_image_url.asset->url,
       "dark_mode_logo": dark_mode_logo_url.asset->url,
       "light_mode_logo": light_mode_logo_url.asset->url,
-    },
-    "badge": *[references(^._id) && railcontent_id == ^.parent_content_data[0].id][0].badge[0]->badge.asset->url,`
-  : ''
+      "badge": badge[0]->badge.asset->url,
+    }`
+    : ''
 
   const fields = `${getFieldsForContentType()}
     "resources": ${resourcesField},
@@ -1145,7 +1145,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
       }
     )
   `
-          
+
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
   })
