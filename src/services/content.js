@@ -19,9 +19,11 @@ import {recommendations, rankCategories, rankItems} from "./recommendations";
 import {addContextToContent} from "./contentAggregator.js";
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
-  let recentContentIds = await fetchRecent(brand, { types: getRecentTypesForPage(pageName) }, { limit: 10 });
+  const [recentContentIds, contentRows] = await Promise.all([
+    fetchRecent(brand, { types: getRecentTypesForPage(pageName) }, { limit: 10 }),
+    getContentRows(brand, pageName)
+  ])
 
-  let contentRows = await getContentRows(brand, pageName);
   contentRows = Array.isArray(contentRows) ? contentRows : [];
   contentRows.unshift({
     id: 'recent',
@@ -183,8 +185,11 @@ export async function getRecentForTab(brand, pageType, tabName, { page = 1, limi
   const types = getRecentTypesForPage(pageType)
   const status = tabName === Tabs.RecentCompleted.name ? 'completed' : tabName === Tabs.RecentIncomplete.name ? 'incomplete' : null
 
-  const recentContentIds = await fetchRecent(brand, { status, types }, { page, limit })
-  const metaData = await fetchMetadata(brand, 'recent');
+  const [recentContentIds, metaData] = await Promise.all([
+    fetchRecent(brand, { status, types }, { page, limit }),
+    fetchMetadata(brand, 'recent')
+  ])
+
   return {
     type: TabResponseType.CATALOG,
     data: recentContentIds,
