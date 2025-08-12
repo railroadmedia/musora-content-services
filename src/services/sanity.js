@@ -1114,7 +1114,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
       "dark_mode_logo": dark_mode_logo_url.asset->url,
       "light_mode_logo": light_mode_logo_url.asset->url,
       "badge": badge[0]->badge.asset->url,
-    }`
+    },`
     : ''
 
   const fields = `${getFieldsForContentType()}
