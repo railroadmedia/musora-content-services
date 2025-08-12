@@ -143,7 +143,7 @@ export async function getTabResults(brand, pageName, tabName, {
  * @returns {Promise<Object>} - The fetched content data.
  *
  * @example
- * getRecent('drumeo', 'lessons', 'all', {
+ * getRecent('drumeo', { status: 'completed', types: ['lessons'] }, {
  *   page: 2,
  *   limit: 15,
  *   sort: '-popularity'
