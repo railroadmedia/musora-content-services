@@ -18,7 +18,7 @@ import {fetchRecent} from "./railcontent";
 import {recommendations, rankCategories, rankItems} from "./recommendations";
 import {addContextToContent} from "./contentAggregator.js";
 
-export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
+export async function getLessonContentRows(brand, pageName) {
   const [recentContentIds, contentRows] = await Promise.all([
     fetchRecent(brand, { types: getRecentTypesForPage(pageName) }, { limit: 10 }),
     getContentRows(brand, pageName)
