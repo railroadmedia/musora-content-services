@@ -1093,6 +1093,7 @@ export async function jumpToContinueContent(railcontentId) {
 /**
  * Fetch the page data for a specific lesson by Railcontent ID.
  * @param {string} railContentId - The Railcontent ID of the current lesson.
+ * @parent {boolean} addParent - Whether to include parent content data in the response.
  * @returns {Promise<Object|null>} - The fetched page data or null if found.
  *
  * @example
@@ -1100,44 +1101,51 @@ export async function jumpToContinueContent(railcontentId) {
  *   .then(data => console.log(data))
  *   .catch(error => console.error(error));
  */
-export async function fetchLessonContent(railContentId) {
+export async function fetchLessonContent(railContentId, { addParent = false } = {}) {
   const filterParams = { isSingle: true, pullFutureContent: true }
 
+  const parentQuery = addParent
+  ? `"parent_content_data": *[railcontent_id in [...(^.parent_content_data[].id)]]{
+      "id": railcontent_id,
+      title,
+      slug,
+      "type": _type,
+      "logo" : logo_image_url.asset->url,
+      "dark_mode_logo": dark_mode_logo_url.asset->url,
+      "light_mode_logo": light_mode_logo_url.asset->url,
+    },
+    "badge": *[references(^._id) && railcontent_id == ^.parent_content_data[0].id][0].badge[0]->badge.asset->url,`
+  : ''
+
   const fields = `${getFieldsForContentType()}
-          "resources": ${resourcesField},
-          soundslice,
-          instrumentless,
-          soundslice_slug,
-          "description": ${descriptionField},
-          "chapters": ${chapterField},
-          "instructors":instructor[]->name,
-          "instructor": ${instructorField},
-          ${assignmentsField}
-          video,
-          length_in_seconds,
-          mp3_no_drums_no_click_url,
-          mp3_no_drums_yes_click_url,
-          mp3_yes_drums_no_click_url,
-          mp3_yes_drums_yes_click_url,
-          "permission_id": permission[]->railcontent_id,
-          "parent_content_data": parent_content_data[]{
-            "id": id,
-            "title": *[railcontent_id == ^.id][0].title,
-            "slug":*[railcontent_id == ^.id][0].slug,
-            "type": *[railcontent_id == ^.id][0]._type,
-            "logo" : *[railcontent_id == ^.id][0].logo_image_url.asset->url,
-            "dark_mode_logo": *[railcontent_id == ^.id][0].dark_mode_logo_url.asset->url,
-            "light_mode_logo": *[railcontent_id == ^.id][0].light_mode_logo_url.asset->url,
-          },
-          ...select(
-                defined(live_event_start_time) => {
-                  "live_event_start_time": live_event_start_time,
-                  "live_event_end_time": live_event_end_time,
-                  "live_event_youtube_id": live_event_youtube_id,
-                  "videoId": coalesce(live_event_youtube_id, video.external_id),
-                  "live_event_is_global": live_global_event == true
-                }
-              )`
+    "resources": ${resourcesField},
+    soundslice,
+    instrumentless,
+    soundslice_slug,
+    "description": ${descriptionField},
+    "chapters": ${chapterField},
+    "instructors":instructor[]->name,
+    "instructor": ${instructorField},
+    ${assignmentsField}
+    video,
+    length_in_seconds,
+    mp3_no_drums_no_click_url,
+    mp3_no_drums_yes_click_url,
+    mp3_yes_drums_no_click_url,
+    mp3_yes_drums_yes_click_url,
+    "permission_id": permission[]->railcontent_id,
+    ${parentQuery}
+    ...select(
+      defined(live_event_start_time) => {
+        "live_event_start_time": live_event_start_time,
+        "live_event_end_time": live_event_end_time,
+        "live_event_youtube_id": live_event_youtube_id,
+        "videoId": coalesce(live_event_youtube_id, video.external_id),
+        "live_event_is_global": live_global_event == true
+      }
+    )
+  `
+          
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
   })
