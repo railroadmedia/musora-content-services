@@ -4,6 +4,9 @@ import { DataContext, PollingStateVersionKey } from './dataContext'
 
 const pollingStateContext = new DataContext(PollingStateVersionKey, fetchLiveEventPollingState)
 
+/**
+ * API for managing notifications and live event polling.
+ */
 class EventsAPI {
   constructor() {
     this.brand = 'drumeo'
@@ -17,18 +20,30 @@ class EventsAPI {
     return pollingStateContext.getData();
   }
 
+  /**
+   * Initializes the EventsAPI, setting the brand and starting auto events.
+   * @param {Object} [options]
+   * @param {string} [options.brand='drumeo'] - Brand identifier.
+   */
   async initialize({ brand = 'drumeo' } = {}) {
     this.brand = brand;
     await this.setupAutoEvents();
     await this.checkNotifications();
   }
-  // Add event handler
+  /**
+   * Adds a callback for when the notification state updates.
+   * @param {(notifications: { unreadCount: number, liveEvent: any }) => void} callback
+   * @returns {() => void} Function to remove the handler.
+   */
   addNotificationStateUpdatedHandler(callback) {
     this.onNotificationStateUpdated.push(callback);
     return () => this.removeNotificationStateUpdatedHandler(callback);
   }
 
-  // Remove event handler
+  /**
+   * Removes a previously added notification state update callback.
+   * @param {Function} callback
+   */
   removeNotificationStateUpdatedHandler(callback) {
     const index = this.onNotificationStateUpdated.indexOf(callback);
     if (index > -1) {
@@ -36,6 +51,12 @@ class EventsAPI {
     }
   }
 
+  /**
+   * Triggers all notification state update callbacks.
+   * @param {Object} notifications
+   * @param {number} notifications.unreadCount
+   * @param {any} notifications.liveEvent
+   */
   triggerNotificationStateUpdated(notifications) {
     this.onNotificationStateUpdated.forEach(callback => {
       try {
@@ -46,6 +67,9 @@ class EventsAPI {
     });
   }
 
+  /**
+   * Sets up automatic polling for notifications.
+   */
   async setupAutoEvents() {
     try {
       const pollingData = await this.initPollingControl();
@@ -60,11 +84,15 @@ class EventsAPI {
         this.checkNotifications();
       }, 60000);
     } catch (error) {
-      console.error('rox:: EventsApi: Failed to setup auto events:', error);
+      console.error('EventsApi: Failed to setup auto events:', error);
       this.checkNotifications();
     }
   }
 
+
+  /**
+   * Checks for unread notifications and triggers callbacks.
+   */
   async checkNotifications() {
     try {
       const notificationRes = await fetchUnreadCount({brand : this.brand });
@@ -77,6 +105,10 @@ class EventsAPI {
     }
   }
 
+  /**
+   * Pauses live event polling for a specified TTL or until the live event ends.
+   * @param {number} ttlMs - Time to pause in milliseconds.
+   */
   async pauseLiveEventCheck(ttlMs) {
     this.isLiveEventPollingActive = false;
     if (this.resumeLiveEventTimeout) {
@@ -102,6 +134,9 @@ class EventsAPI {
     }
   }
 
+  /**
+   * Resumes live event polling immediately.
+   */
   resumeLiveEventCheck() {
     this.isLiveEventPollingActive = true;
     if (this.resumeLiveEventTimeout) {
