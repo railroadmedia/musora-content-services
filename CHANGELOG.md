@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.30.8](https://github.com/railroadmedia/musora-content-services/compare/v2.30.5...v2.30.8) (2025-08-13)
+
+
+### Bug Fixes
+
+* **BEH-845:** enable soft deletes for user activities ([#384](https://github.com/railroadmedia/musora-content-services/issues/384)) ([9c146c4](https://github.com/railroadmedia/musora-content-services/commit/9c146c43536e517ca69d3f264b117850fec748ec))
+* **MU-921:** add context to content empty arrays ([#410](https://github.com/railroadmedia/musora-content-services/issues/410)) ([0ca84ae](https://github.com/railroadmedia/musora-content-services/commit/0ca84aea741e605d17c0f45bbfb6cc8ea018e676))
+* **recsys:** support navigateTo and permissions filtering for recomme… ([#403](https://github.com/railroadmedia/musora-content-services/issues/403)) ([864ec0f](https://github.com/railroadmedia/musora-content-services/commit/864ec0fc05704d9641a965bc4de63a97422668c4))
+* **T3PS-454:** rank lessons by recommended ([#380](https://github.com/railroadmedia/musora-content-services/issues/380)) ([cc55bfd](https://github.com/railroadmedia/musora-content-services/commit/cc55bfd0fb19f1b42c42eb2ea6573817a8d2cc69))
+
 ### [2.30.7](https://github.com/railroadmedia/musora-content-services/compare/v2.30.5...v2.30.7) (2025-08-13)
 
 
