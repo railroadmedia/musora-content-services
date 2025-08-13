@@ -32,7 +32,6 @@ export class Tabs {
   static Genres = { name: 'Genres', short_name: 'Genres', is_group_by: true, value: 'genre' }
   static Completed = { name: 'Completed', short_name: 'COMPLETED', is_group_by: false, value: 'completed' }
   static InProgress = { name: 'In Progress', short_name: 'IN PROGRESS', is_group_by: false, value: 'in progress' }
-  static OwnedChallenges = { name: 'Owned Challenges!!', short_name: 'OWNED CHALLENGES!!', value: 'owned' }
   static Instructors = { name: 'Instructors', short_name: 'INSTRUCTORS', is_group_by: true, value: 'instructor' }
   static Lessons = { name: 'Lessons', short_name: 'LESSONS', value: '' }
   static Artists = { name: 'Artists', short_name: 'ARTISTS', is_group_by: true, value: 'artist' }
@@ -60,29 +59,6 @@ const commonMetadata = {
     name: 'Coaches',
     icon: 'icon-coach',
     allowableFilters: ['genre', 'focus'],
-    sortBy: '-published_on',
-  },
-  challenge: {
-    name: 'Challenges',
-    icon: 'icon-courses',
-    description: '... ',
-    allowableFilters: ['difficulty', 'topic', 'genre'],
-    sortBy: '-published_on',
-    modalText:
-        'Challenges are a series of guided lessons designed to build your skills day-by-day.',
-    tabs: [
-      Tabs.All,
-      Tabs.SkillLevel,
-      Tabs.Genres,
-      Tabs.Completed,
-      Tabs.OwnedChallenges,
-    ],
-  },
-  'challenge-part': {
-    name: 'Challenge Part',
-    icon: 'icon-courses',
-    description: '... ',
-    allowableFilters: ['difficulty', 'genre', 'topic'],
     sortBy: '-published_on',
   },
   course: {
@@ -249,6 +225,7 @@ const commonMetadata = {
   },
   'recent-activities': {
     name: 'Recent Activity',
+    onlyAvailableTabs: true,
     tabs: [
       Tabs.RecentAll,
       Tabs.RecentActivityLessons,

@@ -41,7 +41,7 @@ export async function getLessonContentRows (brand='drumeo', pageName = 'lessons'
 /**
  * Get data that should be displayed for a specific tab with pagination
  * @param {string} brand - The brand for which to fetch data.
- * @param {string} pageName - The page name (e.g., 'lessons', 'songs','challenges).
+ * @param {string} pageName - The page name (e.g., 'lessons', 'songs').
  * @param {string} tabName - The name for the selected tab. Should be same name received from fetchMetadata (e.g., 'Individuals', 'Collections','For You').
  * @param {Object} params - Parameters for pagination, sorting, and filter.
  * @param {number} [params.page=1] - The page number for pagination.
@@ -66,7 +66,6 @@ export async function getTabResults(brand, pageName, tabName, {
   sort = 'recommended',
   selectedFilters = []
 } = {}) {
-
   // Extract and handle 'progress' filter separately
   const progressFilter = selectedFilters.find(f => f.startsWith('progress,')) || 'progress,all';
   const progressValue = progressFilter.split(',')[1].toLowerCase();
@@ -76,9 +75,25 @@ export async function getTabResults(brand, pageName, tabName, {
   const mergedIncludedFields = [...filteredSelectedFilters, `tab,${tabName.toLowerCase()}`];
 
   // Fetch data
-  const results = tabName === Tabs.ForYou.name
-      ? { entity: await getLessonContentRows(brand, pageName) }
-      : await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
+  let results
+  if( tabName === Tabs.ForYou.name ) {
+    results = await addContextToContent(getLessonContentRows, brand, pageName, {
+      dataField: 'items',
+      addNextLesson: true,
+      addNavigateTo: true,
+      addProgressPercentage: true,
+      addProgressStatus: true
+    })
+  } else {
+    let temp =  await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
+    results = await addContextToContent(() => temp.entity, {
+      addNextLesson: true,
+      addNavigateTo: true,
+      addProgressPercentage: true,
+      addProgressStatus: true
+    })
+  }
+
 
   // Fetch metadata
   const metaData = await fetchMetadata(brand, pageName);
@@ -108,7 +123,7 @@ export async function getTabResults(brand, pageName, tabName, {
 
   return {
     type: tabName === Tabs.ForYou.name ? TabResponseType.SECTIONS : TabResponseType.CATALOG,
-    data: results.entity,
+    data: results,
     meta: { filters, sort: sortOptions }
   };
 }
@@ -153,7 +168,7 @@ export async function getRecent(brand, pageName, tabName = 'all', {
  * Fetches content rows for a given brand and page with optional filtering by content row slug.
  *
  * @param {string} brand - The brand for which to fetch content rows.
- * @param {string} pageName - The page name (e.g., 'lessons', 'songs', 'challenges').
+ * @param {string} pageName - The page name (e.g., 'lessons', 'songs').
  * @param {string|null} contentRowSlug - The specific content row ID to fetch.
  * @param {Object} params - Parameters for pagination.
  * @param {number} [params.page=1] - The page number for pagination.
@@ -173,13 +188,7 @@ export async function getContentRows(brand, pageName, contentRowSlug = null, {
   page = 1,
   limit = 10
 } = {}) {
-  const sanityData = await addContextToContent(fetchContentRows, brand, pageName, contentRowSlug, {
-    dataField: 'content',
-    iterateDataFieldOnEachArrayElement: true,
-    addProgressStatus: true,
-    addProgressPercentage: true,
-    addNextLesson: true
-  })
+  const sanityData = await fetchContentRows(brand, pageName, contentRowSlug)
   if (!sanityData) {
     return []
   }
@@ -375,7 +384,7 @@ export async function getRecommendedForYou(brand, rowId = null, {
   limit = 10,
 } = {}) {
   const requiredItems = page * limit;
-  const data = await recommendations(brand, {limit: requiredItems});
+  const data = await recommendations( brand, {limit: requiredItems})
   if (!data || !data.length) {
     return { id: 'recommended', title: 'Recommended For You', items: [] };
   }
@@ -383,14 +392,11 @@ export async function getRecommendedForYou(brand, rowId = null, {
   // Apply pagination before calling fetchByRailContentIds
   const startIndex = (page - 1) * limit;
   const paginatedData = data.slice(startIndex, startIndex + limit);
-
-  const contents = await fetchByRailContentIds(paginatedData);
-  const result = {
-    id: 'recommended',
-    title: 'Recommended For You',
-    items: contents
-  };
-
+  const contents = await addContextToContent(fetchByRailContentIds, paginatedData, 'tab-data',
+    {
+      addNextLesson: true,
+      addNavigateTo: true,
+    })
   if (rowId) {
     return {
       type: TabResponseType.CATALOG,

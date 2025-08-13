@@ -1,11 +1,11 @@
 //import {AWSUrl, CloudFrontURl} from "./services/config";
 import {Tabs} from "./contentMetaData.js";
+import {FilterBuilder} from "./filterBuilder.js";
 
 export const AWSUrl = 'https://s3.us-east-1.amazonaws.com/musora-web-platform'
 export const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net'
 
 export const SONG_TYPES = ['song', 'play-along', 'jam-track', 'song-tutorial-children']
-// Challenges are excluded for the moment as they're still in design flex
 // Single hierarchy refers to only one element in the hierarchy has video lessons, not that they have a single parent
 export const SINGLE_PARENT_TYPES = ['course-part', 'pack-bundle-lesson', 'song-tutorial-children']
 
@@ -14,7 +14,7 @@ export const DEFAULT_FIELDS = [
   "'id': railcontent_id",
   'railcontent_id',
   artistOrInstructorName(),
-  'artist',
+  "'artist': artist->{ 'name': name, 'thumbnail': thumbnail_url.asset->url}",
   'title',
   "'image': thumbnail.asset->url",
   "'thumbnail': thumbnail.asset->url",
@@ -33,14 +33,45 @@ export const DEFAULT_FIELDS = [
   'xp',
   'child_count',
   '"lesson_count": coalesce(count(child[]->.child[]->), child_count)',
+  '"parent_id": parent_content_data[0].id',
 ]
+
 export const DEFAULT_CHILD_FIELDS = [
-  `"id": railcontent_id`,
-  `title`,
-  `"image": thumbnail.asset->url`,
-  `"instructors": instructor[]->name`,
-  `length_in_seconds`,
+  "'id': railcontent_id",
+  'railcontent_id',
+  artistOrInstructorName(),
+  "'artist': artist->{ 'name': name, 'thumbnail': thumbnail_url.asset->url}",
+  'title',
+  "'image': thumbnail.asset->url",
+  "'thumbnail': thumbnail.asset->url",
+  'difficulty',
+  'difficulty_string',
+  'published_on',
+  "'type': _type",
+  "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
+  'brand',
+  "'genre': genre[]->name",
+  'status',
+  "'slug' : slug.current",
+  "'permission_id': permission[]->railcontent_id",
+  'child_count',
+  '"parent_id": parent_content_data[0].id',
 ]
+
+export const instructorField = `instructor[]->{
+            "id": railcontent_id,
+            name,
+            short_bio,
+            "biography": short_bio[0].children[0].text,
+            "coach_card_image": coach_card_image.asset->url,
+            "coach_profile_image": thumbnail_url.asset->url
+          }`
+
+export const chapterField = `chapter[]{
+                    chapter_description,
+                    chapter_timecode,
+                    "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
+                }`
 
 export const descriptionField = 'description[0].children[0].text'
 // this pulls both any defined resources for the document as well as any resources in the parent document
@@ -179,18 +210,20 @@ export const lessonTypesMapping = {
   'jam tracks': ['jam-track'],
 };
 
-export const getNextLessonLessonParentTypes = ['course', 'guided-course', 'pack-bundle'];
+export const getNextLessonLessonParentTypes = ['course', 'guided-course', 'pack', 'pack-bundle', 'song-tutorial'];
 
 export const progressTypesMapping = {
-  'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes, 'live'],
+  'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes, 'live', 'pack-bundle-lesson'],
   'course': ['course'],
   'show': showsLessonTypes,
-  'song tutorial': tutorialsLessonTypes,
+  'song tutorial': [...tutorialsLessonTypes, 'song-tutorial-children'],
   'songs': transcriptionsLessonTypes,
-  'play-along': playAlongLessonTypes,
+  'play along': playAlongLessonTypes,
   'guided course': ['guided-course'],
   'pack': ['pack', 'semester-pack'],
-  'method': ['learning-path']
+  'method': ['learning-path'],
+  'jam track': ['jam-track'],
+  'course video': ['course-part'],
 };
 
 export const songs = {
@@ -206,35 +239,26 @@ export const filterTypes = {
 }
 
 export const recentTypes = {
-  lessons: [...individualLessonsTypes],
-  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes],
+  lessons: [...individualLessonsTypes, 'course-part', 'pack-bundle-lesson', 'guided-course-part', 'quick-tips'],
+  songs: [...SONG_TYPES],
   home: [...individualLessonsTypes, ...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes,
-  'guided-course', 'learning-path', 'live']
+  'guided-course', 'learning-path', 'live', 'course', 'pack']
 }
 
 export let contentTypeConfig = {
-  'progress-tracker': {
-    fields: ['"parent_content_data": parent_content_data[].id',
-      '"badge" : badge.asset->url',
-      '"lessons": child[]->{' +
-        '"id": railcontent_id,' +
-        '"slug":slug.current,' +
-        '"brand":brand,' +
-        '"type": _type,' +
-        '"thumbnail": thumbnail.asset->url,' +
-        'published_on,' +
-        '"lessons": child[]->{' +
-          '"id":railcontent_id,' +
-          '"slug":slug.current,' +
-          '"type": _type,' +
-          '"brand":brand},' +
-          '"thumbnail": thumbnail.asset->url,' +
-          'published_on,' +
-        '}'
+  'tab-data': {
+    fields: [
+      'enrollment_start_time',
+      'enrollment_end_time',
     ],
-
-
-
+    includeChildFields: true,
+  },
+  'progress-tracker': {
+    fields: [
+      '"parent_content_data": parent_content_data[].id',
+      '"badge" : badge.asset->url',
+    ],
+    includeChildFields: true,
   },
   song: {
     fields: ['album', 'soundslice', 'instrumentless', `"resources": ${resourcesField}`],
@@ -258,6 +282,7 @@ export let contentTypeConfig = {
             }`,
       '"instructors": instructor[]->name',
     ],
+    includeChildFields: true,
     relationships: {
       artist: {
         isOneToOne: true,
@@ -267,41 +292,8 @@ export let contentTypeConfig = {
   'song-tutorial-children': {
     fields: [`"resources": ${resourcesField}`],
   },
-  challenge: {
-    fields: [
-      'enrollment_start_time',
-      'enrollment_end_time',
-      "'registration_url': '/' + brand + '/enrollment/' + slug.current",
-      '"lesson_count": child_count',
-      '"primary_cta_text": select(dateTime(published_on) > dateTime(now()) && dateTime(enrollment_start_time) > dateTime(now()) => "Notify Me", "Start Challenge")',
-      'challenge_state',
-      'challenge_state_text',
-      `"description": ${descriptionField}`,
-      'total_xp',
-      'xp',
-      '"instructors": instructor[]->name',
-      '"instructor_signature": instructor[0]->signature.asset->url',
-      '"header_image_url": thumbnail.asset->url',
-      '"logo_image_url": logo_image_url.asset->url',
-      '"award": award.asset->url',
-      'award_custom_text',
-      '"gold_award": gold_award.asset->url',
-      '"silver_award": silver_award.asset->url',
-      '"bronze_award": bronze_award.asset->url',
-      'is_solo',
-      `"lessons": child[]->{
-                    "id": railcontent_id,
-                    title,
-                    "image": thumbnail.asset->url,
-                    "instructors": instructor[]->name,
-                    length_in_seconds,
-                    difficulty_string,
-                    difficulty,
-                    "type": _type,
-                    is_always_unlocked_for_challenge,
-                    is_bonus_content_for_challenge,
-                }`,
-    ],
+  'guided-course': {
+    includeChildFields: true,
   },
   course: {
     fields: [
@@ -336,7 +328,6 @@ export let contentTypeConfig = {
                 published_on,
                 "type":_type,
                 "image": thumbnail.asset->url,
-                "instructors": instructor[]->name,
                 length_in_seconds,
                 "resources": ${resourcesField},
                 difficulty,
@@ -344,11 +335,7 @@ export let contentTypeConfig = {
                 artist->,
                 "thumbnail_url":thumbnail.asset->url,
                 "description": description[0].children[0].text,
-                "chapters": chapter[]{
-                    chapter_description,
-                    chapter_timecode,
-                    "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
-                },
+                "chapters": ${chapterField},
                 "instructors":instructor[]->name,
                 "instructor": instructor[]->{
                     "id":railcontent_id,
@@ -441,20 +428,19 @@ export let contentTypeConfig = {
       '"instructors": instructor[]->{ "id": railcontent_id, name, "thumbnail_url": thumbnail_url.asset->url }',
       '"logo_image_url": logo_image_url.asset->url',
       'total_xp',
-      `"children": child[]->{
-        "description": ${descriptionField},
-        "lesson_count": child_count,
-        "children": child[]->{
-          "description": ${descriptionField},
-          ${getFieldsForContentType()}
-        },
-        ${getFieldsForContentType()}
-      }`,
       `"resources": ${resourcesField}`,
       '"thumbnail": thumbnail.asset->url',
       '"light_mode_logo": light_mode_logo_url.asset->url',
       '"dark_mode_logo": dark_mode_logo_url.asset->url',
       `"description": ${descriptionField}`,
+    ],
+    childFields: [
+      `'description': ${descriptionField}`,
+      "'lesson_count': child_count",
+      `'instructors': select(
+        instructor != null => instructor[]->name,
+        ^.instructor[]->name
+      )`,
     ],
   },
   rudiment: {
@@ -468,10 +454,6 @@ export let contentTypeConfig = {
   'pack-children': {
     fields: [
       'child_count',
-      `"children": child[]->{
-                "description": ${descriptionField},
-                ${getFieldsForContentType()}
-            }`,
       `"resources": ${resourcesField}`,
       '"image": logo_image_url.asset->url',
       '"thumbnail": thumbnail.asset->url',
@@ -480,6 +462,9 @@ export let contentTypeConfig = {
       `"description": ${descriptionField}`,
       'total_xp',
     ],
+    childFields: [
+      `"description": ${descriptionField}`,
+    ]
   },
   'pack-bundle-lesson': {
     fields: [`"resources": ${resourcesField}`],
@@ -593,8 +578,6 @@ export function getNewReleasesTypes(brand) {
     'boot-camps',
     'quick-tips',
     'workout',
-    'challenge',
-    'challenge-part',
     'podcasts',
     'pack',
     'song',
@@ -695,17 +678,39 @@ export function artistOrInstructorNameAsArray(key = 'artists') {
   return `'${key}': select(artist->name != null => [artist->name], instructor[]->name)`
 }
 
+export async function getFieldsForContentTypeWithFilteredChildren(contentType, asQueryString = true) {
+  const childFields = getChildFieldsForContentType(contentType, true)
+  const parentFields = getFieldsForContentType(contentType, false)
+  if (childFields) {
+    const childFilter = await new FilterBuilder('', {isChildrenFilter: true}).buildFilter()
+    parentFields.push(
+      `"children": child[${childFilter}]->{
+        ${childFields}
+        "children": child[${childFilter}]->{
+          ${childFields}
+        },
+      }`
+    )
+  }
+  return asQueryString ? parentFields.toString() + ',' : parentFields
+}
+
+export function getChildFieldsForContentType(contentType, asQueryString = true)
+{
+  if (contentTypeConfig[contentType]?.childFields || contentTypeConfig[contentType]?.includeChildFields) {
+    const childFields = contentType
+      ? DEFAULT_CHILD_FIELDS.concat(contentTypeConfig?.[contentType]?.childFields ?? [])
+      : DEFAULT_CHILD_FIELDS
+    return asQueryString ? childFields.toString() + ',' : childFields
+  } else {
+    return asQueryString ? '' : []
+  }
+}
+
 export function getFieldsForContentType(contentType, asQueryString = true) {
   const fields = contentType
     ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? [])
     : DEFAULT_FIELDS
-  return asQueryString ? fields.toString() + ',' : fields
-}
-
-export function getChildFieldsForContentType(contentType, asQueryString = true) {
-  const fields = contentType
-    ? DEFAULT_CHILD_FIELDS.concat(childContentTypeConfig?.[contentType] ?? [])
-    : DEFAULT_CHILD_FIELDS
   return asQueryString ? fields.toString() + ',' : fields
 }
 
