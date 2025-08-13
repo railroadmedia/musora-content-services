@@ -93,10 +93,14 @@ Object.entries(fileExports).forEach(([file, functionNames]) => {
   content += `\nimport {\n\t${functionNames.join(',\n\t')}\n} from './services/${file}';\n`
 })
 
+content += `\nimport {\n\t default as EventsAPI \n} from './services/eventsAPI';\n`
+
 const allFunctionNames = Object.values(fileExports).flat().sort()
 content += '\nexport {\n'
 content += `\t${allFunctionNames.join(',\n\t')},\n`
 content += '};\n'
+
+content += '\nexport default EventsAPI\n'
 
 // write the generated content to index.js
 const outputPath = path.join(__dirname, '../src/index.js')
