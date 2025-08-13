@@ -116,9 +116,31 @@ export async function deleteNotification(notificationId) {
   if (!notificationId) {
     throw new Error('notificationId is required')
   }
-
   const url = `${baseUrl}/v1/${notificationId}`
   return fetchHandler(url, 'delete')
+}
+
+/**
+ * Restores a specific notification.
+ *
+ * @param {number} notificationId - The ID of the notification to restore.
+ *
+ * @returns {Promise<any>} - A promise that resolves when the notification is successfully restored.
+ *
+ * @throws {Error} - Throws an error if notificationId is not provided.
+ *
+ * @example
+ * restoreNotification(123)
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+export async function restoreNotification(notificationId) {
+  if (!notificationId) {
+    throw new Error('notificationId is required')
+  }
+
+  const url = `${baseUrl}/v1/${notificationId}`
+  return fetchHandler(url, 'put')
 }
 
 /**

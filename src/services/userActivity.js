@@ -11,7 +11,7 @@ import {
   fetchRecentUserActivities,
 } from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
-import { fetchByRailContentIds, fetchShows } from './sanity'
+import { fetchByRailContentId, fetchByRailContentIds, fetchShows } from './sanity'
 import { fetchPlaylist, fetchUserPlaylists } from './content-org/playlists'
 import { pinnedGuidedCourses } from './content-org/guided-courses'
 import {
@@ -930,6 +930,22 @@ export async function deleteUserActivity(id) {
   return await fetchHandler(url, 'DELETE')
 }
 
+/**
+ * Restores a specific user activity by its ID.
+ *
+ * @param {number|string} id - The ID of the user activity to restore.
+ * @returns {Promise<Object>} - A promise that resolves to the API response after restoration.
+ *
+ * @example
+ * restoreUserActivity(789)
+ *   .then(response => console.log('Restored:', response))
+ *   .catch(error => console.error(error));
+ */
+export async function restoreUserActivity(id) {
+  const url = `/api/user-management-system/v1/activities/${id}`
+  return await fetchHandler(url, 'POST')
+}
+
 async function extractPinnedItemsAndSortAllItems(
   userPinnedItem,
   contentsMap,
@@ -1149,24 +1165,21 @@ async function processContentItem(content) {
   }
 
   return {
-    id: content.id,
-    progressType: 'content',
-    header: contentType,
-    pinned: content.pinned ?? false,
-    content: content,
-    body: {
+    id:                content.id,
+    progressType:      'content',
+    header:            contentType,
+    pinned:            content.pinned ?? false,
+    content:           content,
+    body:              {
       progressPercent: isLive ? undefined : content.progressPercentage,
-      thumbnail: content.thumbnail,
-      title: content.title,
-      isLive: isLive,
-      badge: content.badge ?? null,
-      isLocked: content.is_locked ?? false,
-      subtitle:
-        !content.child_count || content.lesson_count === 1
-          ? contentType === 'lesson' && isLive === false
-            ? `${content.progressPercentage}% Complete`
-            : `${content.difficulty_string} • ${content.artist_name}`
-          : `${content.completed_children} of ${content.lesson_count ?? content.child_count} Lessons Complete`,
+      thumbnail:       content.thumbnail,
+      title:           content.title,
+      isLive:          isLive,
+      badge:           content.badge ?? null,
+      isLocked:        content.is_locked ?? false,
+      subtitle:        collectionLessonTypes.includes(content.type) || content.lesson_count > 1
+        ? `${content.completed_children} of ${content.lesson_count ?? content.child_count} Lessons Complete`
+        : (contentType === 'lesson' && isLive === false) ? `${content.progressPercentage}% Complete`: `${content.difficulty_string} • ${content.artist_name}`
     },
     cta: {
       text: ctaText,

@@ -15,7 +15,7 @@ import {
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {fetchHandler} from "./railcontent";
-import {recommendations, rankCategories} from "./recommendations";
+import {recommendations, rankCategories, rankItems} from "./recommendations";
 import {addContextToContent} from "./contentAggregator.js";
 
 
@@ -85,12 +85,22 @@ export async function getTabResults(brand, pageName, tabName, {
       addProgressStatus: true
     })
   } else {
-    let temp =  await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
-    results = await addContextToContent(() => temp.entity, {
-      addNextLesson: true,
-      addNavigateTo: true,
-      addProgressPercentage: true,
-      addProgressStatus: true
+    let temp = await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
+
+    const [ranking, contextResults] = await Promise.all([
+      sort === 'recommended' ? rankItems(brand, temp.entity.map(e => e.railcontent_id)) : [],
+      addContextToContent(() => temp.entity, {
+        addNextLesson: true,
+        addNavigateTo: true,
+        addProgressPercentage: true,
+        addProgressStatus: true
+      })
+    ]);
+
+    results = ranking.length === 0 ? contextResults : contextResults.sort((a, b) => {
+      const indexA = ranking.indexOf(a.railcontent_id);
+      const indexB = ranking.indexOf(b.railcontent_id);
+      return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
     })
   }
 
@@ -392,7 +402,7 @@ export async function getRecommendedForYou(brand, rowId = null, {
   // Apply pagination before calling fetchByRailContentIds
   const startIndex = (page - 1) * limit;
   const paginatedData = data.slice(startIndex, startIndex + limit);
-  const contents = await addContextToContent(fetchByRailContentIds, paginatedData, 'tab-data',
+  const contents = await addContextToContent(fetchByRailContentIds, paginatedData, 'tab-data', brand, true,
     {
       addNextLesson: true,
       addNavigateTo: true,

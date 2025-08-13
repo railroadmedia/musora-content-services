@@ -77,12 +77,13 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
 
   let data = await dataPromise(...dataParam)
-  if(!data) return false
   const isDataAnArray = Array.isArray(data)
-  const items = extractItemsFromData(data, dataField, isDataAnArray, dataField_includeParent)
-  const ids = items.map(item => item?.id).filter(Boolean)
+  if(isDataAnArray && data.length === 0) return data
+  if(!data) return false
 
-  if(ids.length === 0) return false
+  const items = extractItemsFromData(data, dataField, isDataAnArray, dataField_includeParent) ?? []
+  const ids = items.map(item => item?.id).filter(Boolean)
+  if(ids.length === 0) return data
 
   const [progressData, isLikedData, resumeTimeData, lastInteractedChildData, nextLessonData, navigateToData] = await Promise.all([
     addProgressPercentage || addProgressStatus || addProgressTimestamp ? getProgressDateByIds(ids) : Promise.resolve(null),

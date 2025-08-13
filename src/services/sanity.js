@@ -476,7 +476,7 @@ export async function fetchByRailContentId(id, contentType) {
  *   .then(contents => console.log(contents))
  *   .catch(error => console.error(error));
  */
-export async function fetchByRailContentIds(ids, contentType = undefined, brand = undefined) {
+export async function fetchByRailContentIds(ids, contentType = undefined, brand = undefined, includePermissionsAndStatusFilter = false) {
   if (!ids?.length) {
     return []
   }
@@ -485,8 +485,10 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
   const brandFilter = brand ? ` && brand == "${brand}"` : ''
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`, {pullFutureContent: true}).buildFilter()
   const fields = await getFieldsForContentTypeWithFilteredChildren(contentType, true)
+  const baseFilter = `railcontent_id in [${idsString}]${brandFilter}`
+  const finalFilter = includePermissionsAndStatusFilter ? await new FilterBuilder(baseFilter).buildFilter() : baseFilter
   const query = `*[
-    railcontent_id in [${idsString}]${brandFilter}
+    ${finalFilter}
   ]{
     ${fields}
     'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
@@ -535,7 +537,9 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
     name,
     'slug': slug.current,
     'content': content[${childFilter}]->{
-        'children': child[${childFilter}]->{ 'id': railcontent_id, 'children': child[${childFilter}]->{'id': railcontent_id}, },
+        'children': child[${childFilter}]->{ 'id': railcontent_id,
+          'type': _type, brand, 'thumbnail': thumbnail.asset->url,
+          'children': child[${childFilter}]->{'id': railcontent_id}, },
         ${getFieldsForContentType('tab-data')}
         'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     },
@@ -1166,7 +1170,7 @@ export async function fetchLessonContent(railContentId) {
 export async function fetchRelatedRecommendedContent(railContentId, brand, count = 10) {
   const recommendedItems = await fetchSimilarItems(railContentId, brand, count)
   if (recommendedItems && recommendedItems.length > 0) {
-    return fetchByRailContentIds(recommendedItems)
+    return fetchByRailContentIds(recommendedItems, 'tab-data', brand, true)
   }
 
   return await fetchRelatedLessons(railContentId, brand).then((result) =>
@@ -2162,7 +2166,6 @@ export async function fetchTabData(
 ) {
   const start = (page - 1) * limit
   const end = start + limit
-  let withoutPagination = false
   // Construct the included fields filter, replacing 'difficulty' with 'difficulty_string'
   const includedFieldsFilter =
     includedFields.length > 0 ? filtersToGroq(includedFields, [], pageName) : ''
@@ -2173,27 +2176,19 @@ export async function fetchTabData(
     case 'recent':
       progressIds = await getAllStartedOrCompleted({ brand, onlyIds: true });
       sortOrder = null;
-      withoutPagination = true;
       break;
     case 'incomplete':
       progressIds = await getAllStarted();
       sortOrder = null;
-      withoutPagination = true;
       break;
     case 'completed':
       progressIds = await getAllCompleted();
       sortOrder = null;
-      withoutPagination = true;
       break;
   }
 
   // limits the results to supplied progressIds for started & completed filters
   const progressFilter = await getProgressFilter(progress, progressIds)
-  if (sort === "recommended"){
-    progressIds = await recommendations(brand);
-    withoutPagination = true;
-  }
-
   const fieldsString = getFieldsForContentType('tab-data');
   const now = getSanityDate(new Date())
 
@@ -2207,7 +2202,7 @@ export async function fetchTabData(
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
   entityFieldsString =
     ` ${fieldsString}
-    'children': child[${childrenFilter}]->{'id': railcontent_id},
+    'children': child[${childrenFilter}]->{'id': railcontent_id, 'type': _type, brand, 'thumbnail': thumbnail.asset->url},
     'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
     'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     'length_in_seconds': coalesce(
@@ -2222,13 +2217,12 @@ export async function fetchTabData(
   query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
     sortOrder: sortOrder,
     start: start,
-    end: end,
-    withoutPagination: withoutPagination,
+    end: end
   })
 
   let results = await fetchSanity(query, true);
 
-  if ((['recent', 'incomplete', 'completed'].includes(progress) || sort == "recommended" )&& results.entity.length > 1) {
+  if (['recent', 'incomplete', 'completed'].includes(progress) && results.entity.length > 1) {
     const orderMap = new Map(progressIds.map((id, index) => [id, index]))
     results.entity = results.entity
       .sort((a, b) => {
