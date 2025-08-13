@@ -168,7 +168,7 @@ export async function fetchUnreadCount({ brand = 'drumeo'} = {}) {
   const liveEventPollingState = await fetchLiveEventPollingState()
   if(liveEventPollingState.data?.read_state === true){
     const liveEvent = await fetchLiveEvent(brand)
-    return { data: liveEvent ? 1 : 0}
+    return { data: liveEvent ? 1 : 0, liveEvent}
   }
   return { data: 0}
 }
