@@ -44,7 +44,8 @@ import {
 } from './services/content.js';
 
 import {
-	addContextToContent
+	addContextToContent,
+	getNavigateToForPlaylists
 } from './services/contentAggregator.js';
 
 import {
@@ -61,6 +62,7 @@ import {
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getLastInteractedOf,
+	getNavigateTo,
 	getNextLesson,
 	getProgressDateByIds,
 	getProgressPercentage,
@@ -300,7 +302,9 @@ import {
 	updateUserPractice
 } from './services/userActivity.js';
 
-import { default as EventsApi } from './services/eventsAPI.js';
+import {
+	 default as EventsAPI 
+} from './services/eventsAPI';
 
 export {
 	addContextToContent,
@@ -426,6 +430,8 @@ export {
 	getLastInteractedOf,
 	getLessonContentRows,
 	getMonday,
+	getNavigateTo,
+	getNavigateToForPlaylists,
 	getNewAndUpcoming,
 	getNextLesson,
 	getPracticeNotes,
@@ -528,5 +534,6 @@ export {
 	uploadPictureFromS3,
 	verifyImageSRC,
 	verifyLocalDataContext,
-  EventsApi
 };
+
+export default EventsAPI
