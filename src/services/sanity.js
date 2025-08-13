@@ -1288,21 +1288,22 @@ export async function fetchSiblingContent(railContentId, brand= null)
  * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
  */
 export async function fetchRelatedLessons(railContentId, brand) {
+  const defaultFilterFields = `_type==^._type && brand == ^.brand && railcontent_id != ${railContentId}`
   const filterSameTypeAndSortOrder = await new FilterBuilder(
-    `_type==^._type &&  _type in ${JSON.stringify(typeWithSortOrder)} && brand == "${brand}" && railcontent_id !=${railContentId}`
+    `${defaultFilterFields} && _type in ${JSON.stringify(typeWithSortOrder)}`
   ).buildFilter()
   const filterSameType = await new FilterBuilder(
-    `_type==^._type && !(_type in ${JSON.stringify(typeWithSortOrder)}) && !(defined(parent_type)) && brand == "${brand}" && railcontent_id !=${railContentId}`
+    `${defaultFilterFields} && !(_type in ${JSON.stringify(typeWithSortOrder)}) && !(defined(parent_type))`
   ).buildFilter()
   const filterSongSameArtist = await new FilterBuilder(
-    `_type=="song" && _type==^._type && brand == "${brand}" && references(^.artist->_id) && railcontent_id !=${railContentId}`
+    `${defaultFilterFields} && _type=="song" && references(^.artist->_id)`
   ).buildFilter()
   const filterSongSameGenre = await new FilterBuilder(
-    `_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}`
+    `${defaultFilterFields} && _type=="song" && references(^.genre[]->_id)`
   ).buildFilter()
   const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
   const queryFieldsWithSort = queryFields + ', sort'
-  const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
+  const query = `*[railcontent_id == ${railContentId} && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
     "related_lessons" : array::unique([
       ...(*[${filterSongSameArtist}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
