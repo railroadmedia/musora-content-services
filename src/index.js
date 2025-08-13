@@ -44,7 +44,8 @@ import {
 } from './services/content.js';
 
 import {
-	addContextToContent
+	addContextToContent,
+	getNavigateToForPlaylists
 } from './services/contentAggregator.js';
 
 import {
@@ -61,6 +62,7 @@ import {
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getLastInteractedOf,
+	getNavigateTo,
 	getNextLesson,
 	getProgressDateByIds,
 	getProgressPercentage,
@@ -143,6 +145,7 @@ import {
 	postContentComplete,
 	postContentLiked,
 	postContentReset,
+	postContentRestore,
 	postContentUnliked,
 	postPlaylistContentEngaged,
 	postRecordWatchSession,
@@ -424,6 +427,8 @@ export {
 	getLastInteractedOf,
 	getLessonContentRows,
 	getMonday,
+	getNavigateTo,
+	getNavigateToForPlaylists,
 	getNewAndUpcoming,
 	getNextLesson,
 	getPracticeNotes,
@@ -478,6 +483,7 @@ export {
 	postContentComplete,
 	postContentLiked,
 	postContentReset,
+	postContentRestore,
 	postContentUnliked,
 	postPlaylistContentEngaged,
 	postRecordWatchSession,
