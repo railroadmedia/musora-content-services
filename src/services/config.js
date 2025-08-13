@@ -8,7 +8,6 @@ import './types.js'
 export let globalConfig = {
   sanityConfig: {},
   railcontentConfig: {},
-  recommendationsConfig: {},
   sessionConfig: {},
   localStorage: null,
   isMA: false,
@@ -50,10 +49,6 @@ const excludeFromGeneratedIndex = []
  *     userId: 'current-user-id',
  *     authToken 'your-auth-token',
  *   },
- *   recommendationsConfig: {
- *     token: 'your-user-api-token',
- *     baseUrl: 'https://MusoraProductDepartment-PWGenerator.hf.space',
- *   },
  *   baseUrl: 'https://web-staging-one.musora.com',
  *   localStorage: localStorage,
  *   isMA: false,
@@ -67,5 +62,4 @@ export function initializeService(config) {
   globalConfig.localStorage = config.localStorage
   globalConfig.isMA = config.isMA || false
   globalConfig.localTimezoneString = config.localTimezoneString || null
-  globalConfig.recommendationsConfig = config.recommendationsConfig
 }
