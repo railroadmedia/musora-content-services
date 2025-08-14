@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.31.0](https://github.com/railroadmedia/musora-content-services/compare/v2.30.9...v2.31.0) (2025-08-14)
+
+
+### Features
+
+* T3PS-458: Add Jam Tracks pill on Songs Overview page ([7351760](https://github.com/railroadmedia/musora-content-services/commit/7351760f3c4a92997036c860fadb6ef2602fc505))
+
+
+### Bug Fixes
+
+* MU2-914: prevent null access error in fetchUnreadCount ([1813999](https://github.com/railroadmedia/musora-content-services/commit/1813999872466f970aa20c936d702b6a4ecc7b91))
+* prevent null access error in fetchUnreadCount ([df39ccf](https://github.com/railroadmedia/musora-content-services/commit/df39ccfaf972214d08827e5a60f91653d491504e))
+* T3PS-732 Filter sorting by name ([a25792c](https://github.com/railroadmedia/musora-content-services/commit/a25792cfce9163b8124c3f000569fd24541a7b33))
+
 ### [2.30.9](https://github.com/railroadmedia/musora-content-services/compare/v2.30.5...v2.30.9) (2025-08-13)
 
 
