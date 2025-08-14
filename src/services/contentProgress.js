@@ -16,6 +16,7 @@ const DATA_KEY_PROGRESS = 'p'
 const DATA_KEY_RESUME_TIME = 't'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
 const DATA_KEY_BRAND = 'b'
+const DATA_KEY_ENROLLED = 'e'
 
 export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress)
 
@@ -24,6 +25,10 @@ let sessionData = []
 export async function getProgressPercentage(contentId) {
   return getById(contentId, DATA_KEY_PROGRESS, 0)
 }
+
+// export async function getEnrolledStatus(contentId) {
+//   return getById(contentId, DATA_KEY_ENROLLED, [])
+// }
 
 export async function getProgressPercentageByIds(contentIds) {
   return getByIds(contentIds, DATA_KEY_PROGRESS, 0)
@@ -133,6 +138,10 @@ export async function getNavigateTo(data) {
             navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild))
           }
         } else if (content.type === 'guided-course' || content.type === 'song-tutorial') {
+          const enrolled = isUserEnrolledTo(content.id);
+          //decide whatto do with enrolled
+          console.log({enrolled});
+
           let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
           navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild))
         } else if (twoDepthContentTypes.includes(content.type)) {
@@ -154,6 +163,18 @@ export async function getNavigateTo(data) {
     }
   }
   return navigateToData
+}
+
+function isUserEnrolledTo(contentId){
+  console.log(`what content id is being used: ${contentId}`)
+  const data = localStorage.getItem(`dataContext_${ContentProgressVersionKey}`);
+  if (data) {
+    const dataContext = JSON.parse(data);
+
+    return dataContext.data[contentId]?.[DATA_KEY_ENROLLED];
+  }
+
+  return false;
 }
 
 function buildNavigateTo(content, child = null) {

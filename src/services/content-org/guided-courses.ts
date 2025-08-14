@@ -4,7 +4,7 @@
 import { globalConfig } from '../config.js'
 import { fetchHandler } from '../railcontent.js'
 import './playlists-types.js'
-
+import {ContentProgressVersionKey, DATA_KEY_ENROLLED} from '../dataContext'
 
 const excludeFromGeneratedIndex: string[] = []
 
@@ -12,7 +12,10 @@ const BASE_PATH: string = `/api/content-org`
 
 export async function enrollUserInGuidedCourse(guidedCourse, { notifications_enabled = false }) {
   const url: string = `${BASE_PATH}/v1/user/guided-courses/enroll-user/${guidedCourse}`
-  return await fetchHandler(url, 'POST', null, { notifications_enabled })
+  const enrollUserResponse = await fetchHandler(url, 'POST', null, { notifications_enabled })
+  if (enrollUserResponse.status === 200) {
+    updateGuidedCourseCache(guidedCourse);
+  }
 }
 
 export async function unEnrollUserInGuidedCourse(guidedCourse) {
@@ -43,4 +46,14 @@ export async function guidedCourses() {
 export async function pinnedGuidedCourses(brand) {
   const url: string = `${BASE_PATH}/v1/user/guided-courses/pinned?brand=${brand}`
   return await fetchHandler(url, 'GET')
+}
+
+function updateGuidedCourseCache(guidedCourse) {
+  console.log(guidedCourse)
+  const data = localStorage.getItem(`dataContext_${ContentProgressVersionKey}`);
+  if (data) {
+    const dataContext = JSON.parse(data);
+
+    console.log(dataContext.data[guidedCourse]?.[DATA_KEY_ENROLLED]);
+  }
 }
