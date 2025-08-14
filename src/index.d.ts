@@ -308,6 +308,10 @@ import {
 	updateUserPractice
 } from './services/userActivity.js';
 
+import {
+	 default as EventsAPI 
+} from './services/eventsAPI';
+
 declare module 'musora-content-services' {
 	export {
 		addContextToContent,
@@ -545,3 +549,5 @@ declare module 'musora-content-services' {
 		verifyLocalDataContext,
 	}
 }
+
+export default EventsAPI

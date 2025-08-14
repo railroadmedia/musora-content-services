@@ -116,11 +116,15 @@ Object.entries(fileExports).forEach(([file, functionNames]) => {
   dtsContent += `\nimport {\n\t${functionNames.join(',\n\t')}\n} from './services/${file}';\n`
 })
 
+dtsContent += `\nimport {\n\t default as EventsAPI \n} from './services/eventsAPI';\n`
+
 dtsContent += "\ndeclare module 'musora-content-services' {\n"
 dtsContent += '\texport {\n'
 dtsContent += `\t\t${allFunctionNames.join(',\n\t\t')},\n`
 dtsContent += '\t}\n'
 dtsContent += '}\n'
+
+dtsContent += '\nexport default EventsAPI\n'
 
 // write the generated content to index.d.ts
 const outputDtsPath = path.join(__dirname, '../src/index.d.ts')
