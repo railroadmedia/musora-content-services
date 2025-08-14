@@ -162,7 +162,7 @@ export async function restoreNotification(notificationId) {
 export async function fetchUnreadCount({ brand = 'drumeo'} = {}) {
   const url = `${baseUrl}/v1/unread-count`
   const notifUnread =  await fetchHandler(url, 'get')
-  if (notifUnread.data > 0) {
+  if (notifUnread && notifUnread.data > 0) {
     return notifUnread// Return early if unread notifications exist
   }
   const liveEventPollingState = await fetchLiveEventPollingState()
@@ -170,7 +170,7 @@ export async function fetchUnreadCount({ brand = 'drumeo'} = {}) {
     const liveEvent = await fetchLiveEvent(brand)
     return { data: liveEvent ? 1 : 0}
   }
-  return notifUnread
+  return { data: 0}
 }
 
 /**
