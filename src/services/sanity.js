@@ -19,6 +19,7 @@ import {
   getFieldsForContentTypeWithFilteredChildren,
   getChildFieldsForContentType,
   SONG_TYPES,
+  recentTypes
 } from '../contentTypeConfig.js'
 import {fetchSimilarItems, recommendations} from './recommendations.js'
 import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
@@ -2051,10 +2052,10 @@ async function buildQuery(
 function buildEntityAndTotalQuery(
   filter = '',
   fields = '...',
-  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false, withoutPagination = false }
+  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false }
 ) {
   const sortString = sortOrder ? ` | order(${sortOrder})` : ''
-  const countString = isSingle ? '[0...1]' : (withoutPagination ? ``: `[${start}...${end}]`)
+  const countString = isSingle ? '[0...1]' : `[${start}...${end}]`
   const query = `{
       "entity": *[${filter}]  ${sortString}${countString}
       {
@@ -2168,9 +2169,7 @@ export async function fetchTabData(
     page = 1,
     limit = 10,
     sort = '-published_on',
-    includedFields = [],
-    progressIds = undefined,
-    progress = 'all',
+    includedFields = []
   } = {}
 ) {
   const start = (page - 1) * limit
@@ -2181,23 +2180,6 @@ export async function fetchTabData(
 
   let sortOrder = getSortOrder(sort, brand, '')
 
-  switch (progress) {
-    case 'recent':
-      progressIds = await getAllStartedOrCompleted({ brand, onlyIds: true });
-      sortOrder = null;
-      break;
-    case 'incomplete':
-      progressIds = await getAllStarted();
-      sortOrder = null;
-      break;
-    case 'completed':
-      progressIds = await getAllCompleted();
-      sortOrder = null;
-      break;
-  }
-
-  // limits the results to supplied progressIds for started & completed filters
-  const progressFilter = await getProgressFilter(progress, progressIds)
   const fieldsString = getFieldsForContentType('tab-data');
   const now = getSanityDate(new Date())
 
@@ -2206,7 +2188,7 @@ export async function fetchTabData(
   let entityFieldsString = ''
   let filter = ''
 
-  filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
+  filter = `brand == "${brand}" ${includedFieldsFilter}`
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
   entityFieldsString =
@@ -2231,34 +2213,7 @@ export async function fetchTabData(
 
   let results = await fetchSanity(query, true);
 
-  if (['recent', 'incomplete', 'completed'].includes(progress) && results.entity.length > 1) {
-    const orderMap = new Map(progressIds.map((id, index) => [id, index]))
-    results.entity = results.entity
-      .sort((a, b) => {
-        const aIdx = orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER;
-        const bIdx = orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER;
-        return aIdx - bIdx || new Date(b.published_on) - new Date(a.published_on);
-      })
-      .slice(start, end);
-  }
-
   return results;
-}
-
-export async function fetchRecent(
-  brand,
-  pageName,
-  { page = 1, limit = 10, sort = '-published_on', includedFields = [], progress = 'recent' } = {}
-) {
-  const mergedIncludedFields = [...includedFields, `tab,all`]
-  const results = await fetchTabData(brand, pageName, {
-    page,
-    limit,
-    sort,
-    includedFields: mergedIncludedFields,
-    progress: progress.toLowerCase(),
-  })
-  return results.entity
 }
 
 export async function fetchScheduledAndNewReleases(

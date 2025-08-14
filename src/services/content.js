@@ -5,7 +5,6 @@
 import {
   fetchByRailContentIds,
   fetchMetadata,
-  fetchRecent,
   fetchTabData,
   fetchNewReleases,
   fetchUpcomingEvents,
@@ -13,16 +12,18 @@ import {
   fetchReturning,
   fetchLeaving, fetchScheduledAndNewReleases, fetchContentRows
 } from './sanity.js'
+import {getRecentTypesForPage} from '../contentTypeConfig.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
-import {fetchHandler} from "./railcontent";
+import {fetchRecent} from "./railcontent";
 import {recommendations, rankCategories, rankItems} from "./recommendations";
 import {addContextToContent} from "./contentAggregator.js";
 
+export async function getLessonContentRows(brand, pageName) {
+  const [recentContentIds, contentRows] = await Promise.all([
+    fetchRecent(brand, { types: getRecentTypesForPage(pageName) }, { limit: 10 }),
+    getContentRows(brand, pageName)
+  ])
 
-export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
-  let recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent', limit: 10 });
-
-  let contentRows = await getContentRows(brand, pageName);
   contentRows = Array.isArray(contentRows) ? contentRows : [];
   contentRows.unshift({
     id: 'recent',
@@ -66,13 +67,8 @@ export async function getTabResults(brand, pageName, tabName, {
   sort = 'recommended',
   selectedFilters = []
 } = {}) {
-  // Extract and handle 'progress' filter separately
-  const progressFilter = selectedFilters.find(f => f.startsWith('progress,')) || 'progress,all';
-  const progressValue = progressFilter.split(',')[1].toLowerCase();
-  const filteredSelectedFilters = selectedFilters.filter(f => !f.startsWith('progress,'));
-
   // Prepare included fields
-  const mergedIncludedFields = [...filteredSelectedFilters, `tab,${tabName.toLowerCase()}`];
+  const mergedIncludedFields = [...selectedFilters, `tab,${tabName.toLowerCase()}`];
 
   // Fetch data
   let results
@@ -85,7 +81,7 @@ export async function getTabResults(brand, pageName, tabName, {
       addProgressStatus: true
     })
   } else {
-    let temp = await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
+    let temp = await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields });
 
     const [ranking, contextResults] = await Promise.all([
       sort === 'recommended' ? rankItems(brand, temp.entity.map(e => e.railcontent_id)) : [],
@@ -104,7 +100,6 @@ export async function getTabResults(brand, pageName, tabName, {
     })
   }
 
-
   // Fetch metadata
   const metaData = await fetchMetadata(brand, pageName);
 
@@ -115,8 +110,7 @@ export async function getTabResults(brand, pageName, tabName, {
       const value = item.value.split(',')[1];
       return {
         ...item,
-        selected: selectedFilters.includes(`${filter.key},${value}`) ||
-                      (filter.key === 'progress' && value === 'all' && !selectedFilters.some(f => f.startsWith('progress,')))
+        selected: selectedFilters.includes(`${filter.key},${value}`)
       };
     })
   }));
@@ -151,6 +145,34 @@ export async function getTabResults(brand, pageName, tabName, {
  * @returns {Promise<Object>} - The fetched content data.
  *
  * @example
+ * getRecent('drumeo', { status: 'completed', types: ['lessons'] }, {
+ *   page: 2,
+ *   limit: 15,
+ *   sort: '-popularity'
+ * })
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ */
+export async function getRecent(brand, { status, types } = {}, {
+  page = 1,
+  limit = 10
+} = {}) {
+  return await fetchRecent(brand, { status, types }, { page, limit });
+}
+
+/**
+ * Fetches recent content for a given brand and page with pagination.
+ *
+ * @param {string} brand - The brand for which to fetch data.
+ * @param {string} pageName - The page name (e.g., 'all', 'incomplete', 'completed').
+ * @param {string} [tabName='all'] - The tab name (defaults to 'all' for recent content).
+ * @param {Object} params - Parameters for pagination and sorting.
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {number} [params.limit=10] - The number of items per page.
+ * @param {string} [params.sort="-published_on"] - The field to sort the data by.
+ * @returns {Promise<Object>} - The fetched content data.
+ *
+ * @example
  * getRecent('drumeo', 'lessons', 'all', {
  *   page: 2,
  *   limit: 15,
@@ -159,14 +181,15 @@ export async function getTabResults(brand, pageName, tabName, {
  *   .then(content => console.log(content))
  *   .catch(error => console.error(error));
  */
-export async function getRecent(brand, pageName, tabName = 'all', {
-  page = 1,
-  limit = 10,
-  sort = '-published_on',
-} = {}) {
-  const progress = tabName.toLowerCase() == 'all' ? 'recent':tabName.toLowerCase();
-  const recentContentIds = await fetchRecent(brand, pageName, { page:page, limit:limit, progress: progress });
-  const metaData = await fetchMetadata(brand, 'recent');
+export async function getRecentForTab(brand, pageType, tabName, { page = 1, limit = 10 } = {}) {
+  const types = getRecentTypesForPage(pageType)
+  const status = tabName === Tabs.RecentCompleted.name ? 'completed' : tabName === Tabs.RecentIncomplete.name ? 'incomplete' : null
+
+  const [recentContentIds, metaData] = await Promise.all([
+    fetchRecent(brand, { status, types }, { page, limit }),
+    fetchMetadata(brand, 'recent')
+  ])
+
   return {
     type: TabResponseType.CATALOG,
     data: recentContentIds,
