@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.31.1](https://github.com/railroadmedia/musora-content-services/compare/v2.31.0...v2.31.1) (2025-08-14)
+
+
+### Bug Fixes
+
+* **MU-922:** uses BE for fetching recent content items ([#411](https://github.com/railroadmedia/musora-content-services/issues/411)) ([e85fe88](https://github.com/railroadmedia/musora-content-services/commit/e85fe881d382aadbe8fc902e959cfad2cbc98576))
+
 ## [2.31.0](https://github.com/railroadmedia/musora-content-services/compare/v2.30.9...v2.31.0) (2025-08-14)
 
 
