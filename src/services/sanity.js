@@ -753,7 +753,7 @@ export function getSortOrder(sort = '-published_on', brand, groupBy) {
   sort = isDesc ? sort.substring(1) : sort
   switch (sort) {
     case 'slug':
-      sortOrder = groupBy ? 'name' : 'title'
+      sortOrder = groupBy ? 'name' : '!defined(title), lower(title)'
       break
     case 'name':
       sortOrder = sort
