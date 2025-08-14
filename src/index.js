@@ -303,6 +303,10 @@ import {
 	updateUserPractice
 } from './services/userActivity.js';
 
+import {
+	 default as EventsAPI 
+} from './services/eventsAPI';
+
 export {
 	addContextToContent,
 	addItemToPlaylist,
@@ -533,3 +537,5 @@ export {
 	verifyImageSRC,
 	verifyLocalDataContext,
 };
+
+export default EventsAPI

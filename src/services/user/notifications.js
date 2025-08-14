@@ -2,7 +2,9 @@
  * @module UserNotifications
  */
 import { fetchHandler } from '../railcontent.js'
+import  eventsAPI from '../eventsAPI.js'
 import './types.js'
+import {globalConfig} from "../config";
 import {fetchLiveEvent} from "../sanity";
 
 const baseUrl = `/api/notifications`
@@ -67,8 +69,8 @@ export async function markNotificationAsRead(notificationId) {
  * @param {string} [brand='drumeo'] - The brand context for live event handling before marking notifications.
  * @returns {Promise<Object>} - A promise resolving to the API response from the notifications read endpoint.
  */
-export async function markAllNotificationsAsRead(brand = 'drumeo') {
-  await pauseLiveEventPolling(brand)
+export async function markAllNotificationsAsRead() {
+  await eventsAPI.pauseLiveEventCheck()
   const url = `${baseUrl}/v1/read`
   return fetchHandler(url, 'put')
 }
@@ -168,7 +170,7 @@ export async function fetchUnreadCount({ brand = 'drumeo'} = {}) {
   const liveEventPollingState = await fetchLiveEventPollingState()
   if(liveEventPollingState.data?.read_state === true){
     const liveEvent = await fetchLiveEvent(brand)
-    return { data: liveEvent ? 1 : 0}
+    return { data: liveEvent ? 1 : 0, liveEvent}
   }
   return { data: 0}
 }
