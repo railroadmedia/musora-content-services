@@ -174,6 +174,7 @@ export const studentArchivesLessonTypes = ['student-review', 'student-focus','st
 export const tutorialsLessonTypes = ['song-tutorial'];
 export const transcriptionsLessonTypes = ['song'];
 export const playAlongLessonTypes = ['play-along'];
+export const jamTrackLessonTypes = ['jam-track'];
 
 export const individualLessonsTypes = [
   ...singleLessonTypes,
@@ -207,7 +208,7 @@ export const lessonTypesMapping = {
   'tabs': transcriptionsLessonTypes,
   'sheet music': transcriptionsLessonTypes,
   'play-alongs': playAlongLessonTypes,
-  'jam tracks': ['jam-track'],
+  'jam tracks': jamTrackLessonTypes,
 };
 
 export const getNextLessonLessonParentTypes = ['course', 'guided-course', 'pack', 'pack-bundle', 'song-tutorial'];
@@ -222,7 +223,7 @@ export const progressTypesMapping = {
   'guided course': ['guided-course'],
   'pack': ['pack', 'semester-pack'],
   'method': ['learning-path'],
-  'jam track': ['jam-track'],
+  'jam track': jamTrackLessonTypes,
   'course video': ['course-part'],
 };
 
@@ -235,7 +236,7 @@ export const songs = {
 
 export const filterTypes = {
   lessons: [...individualLessonsTypes, ...collectionLessonTypes],
-  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes, 'jam-track'],
+  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes, ...jamTrackLessonTypes],
 }
 
 export const recentTypes = {
@@ -801,6 +802,9 @@ export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
               return ` (${conditions})`;
             } else if(value.toLowerCase() === Tabs.PlayAlongs.name.toLowerCase()){
               const conditions = playAlongLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              return ` (${conditions})`;
+            } else if(value.toLowerCase() === Tabs.JamTracks.name.toLowerCase()){
+              const conditions = jamTrackLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
               return ` (${conditions})`;
             } else if(value.toLowerCase() === Tabs.ExploreAll.name.toLowerCase()){
               var allLessons = filterTypes[pageName] || [];
