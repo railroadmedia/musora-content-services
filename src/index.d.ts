@@ -241,7 +241,9 @@ import {
 	blockUser,
 	deletePicture,
 	getUserData,
+	isDisplayNameAvailable,
 	unblockUser,
+	updateDisplayName,
 	uploadPicture,
 	uploadPictureFromS3
 } from './services/user/management.js';
@@ -460,6 +462,7 @@ declare module 'musora-content-services' {
 		isBucketUrl,
 		isContentLiked,
 		isContentLikedByIds,
+		isDisplayNameAvailable,
 		isNextDay,
 		isSameDate,
 		jumpToContinueContent,
@@ -523,6 +526,7 @@ declare module 'musora-content-services' {
 		unlikeContent,
 		unlikePlaylist,
 		unpinProgressRow,
+		updateDisplayName,
 		updateNotificationSetting,
 		updatePlaylist,
 		updatePracticeNotes,
