@@ -241,6 +241,7 @@ import {
 
 import {
 	blockUser,
+	blockedUsers,
 	deletePicture,
 	getUserData,
 	unblockUser,
@@ -312,6 +313,7 @@ declare module 'musora-content-services' {
 		applySanityTransformations,
 		assignModeratorToComment,
 		blockUser,
+		blockedUsers,
 		buildImageSRC,
 		calculateLongestStreaks,
 		closeComment,

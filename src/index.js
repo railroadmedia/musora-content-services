@@ -241,6 +241,7 @@ import {
 
 import {
 	blockUser,
+	blockedUsers,
 	deletePicture,
 	getUserData,
 	unblockUser,
@@ -311,6 +312,7 @@ export {
 	applySanityTransformations,
 	assignModeratorToComment,
 	blockUser,
+	blockedUsers,
 	buildImageSRC,
 	calculateLongestStreaks,
 	closeComment,
