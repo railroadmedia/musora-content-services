@@ -32,12 +32,17 @@ function extractExportedFunctions(filePath) {
     .filter(name => name !== 'dataContext') // Exclude dataContext as a hack for now
   namedExports = namedExports.concat(variableMatches)
 
-  // 3. Re-exports with aliases: export { default as Name } from './module'
+  // 3. Export classes: export class Name and export abstract class Name
+  const exportClassRegex = /export\s+(?:abstract\s+)?class\s+(\w+)/g
+  const classMatches = [...fileContent.matchAll(exportClassRegex)].map((match) => match[1])
+  namedExports = namedExports.concat(classMatches)
+
+  // 4. Re-exports with aliases: export { default as Name } from './module'
   const reExportAliasRegex = /export\s*{\s*default\s+as\s+(\w+)\s*}\s*from/g
   const reExportAliasMatches = [...fileContent.matchAll(reExportAliasRegex)].map((match) => match[1])
   namedExports = namedExports.concat(reExportAliasMatches)
 
-  // 4. Re-exports: export { name1, name2 } from './module'
+  // 5. Re-exports: export { name1, name2 } from './module'
   const reExportRegex = /export\s*{\s*([^}]+)\s*}\s*from/g
   const reExportMatches = [...fileContent.matchAll(reExportRegex)]
   reExportMatches.forEach((match) => {
@@ -49,7 +54,7 @@ function extractExportedFunctions(filePath) {
     namedExports = namedExports.concat(exports)
   })
 
-  // 5. Named exports: export { name1, name2 }
+  // 6. Named exports: export { name1, name2 }
   const namedExportRegex = /export\s*{\s*([^}]+)\s*}(?!\s*from)/g
   const namedExportMatches = [...fileContent.matchAll(namedExportRegex)]
   namedExportMatches.forEach((match) => {
@@ -61,10 +66,11 @@ function extractExportedFunctions(filePath) {
     namedExports = namedExports.concat(exports)
   })
 
-  // 6. Default exports - comprehensive pattern matching
+  // 7. Default exports - comprehensive pattern matching
   const defaultExportPatterns = [
     /export\s+default\s+function\s+(\w+)/g,           // export default function name
     /export\s+default\s+class\s+(\w+)/g,             // export default class Name
+    /export\s+default\s+abstract\s+class\s+(\w+)/g,  // export default abstract class Name
     /export\s+default\s+(?:const|let|var)\s+(\w+)/g, // export default const name
   ]
 
@@ -78,7 +84,7 @@ function extractExportedFunctions(filePath) {
   const defaultIdentifierMatches = [...fileContent.matchAll(defaultIdentifierRegex)].map((match) => match[1])
   defaultExports = defaultExports.concat(defaultIdentifierMatches)
 
-  // 7. CommonJS module.exports (existing pattern) - treat as named exports
+  // 8. CommonJS module.exports (existing pattern) - treat as named exports
   const moduleExportsRegex = /module\.exports\s*=\s*{\s*([\s\S]+?)\s*};/g
   const moduleExportsMatch = moduleExportsRegex.exec(fileContent)
   if (moduleExportsMatch) {
