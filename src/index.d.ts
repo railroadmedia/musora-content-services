@@ -49,7 +49,7 @@ import {
 } from './services/contentProgress.js';
 import { contentStatusCompleted, contentStatusReset, getAllCompleted, getAllStarted, getAllStartedOrCompleted, getLastInteractedOf, getNavigateTo, getNextLesson, getProgressDateByIds, getProgressPercentage, getProgressPercentageByIds, getProgressState, getProgressStateByIds, getResumeTimeSeconds, getResumeTimeSecondsByIds, getStartedOrCompletedProgressOnly, recordWatchSession } from './services/contentProgress.js';
 
-import { ContentLikesVersionKey, ContentProgressVersionKey, UserActivityVersionKey, verifyLocalDataContext } from './services/dataContext.js';
+import { ContentLikesVersionKey, ContentProgressVersionKey, DataContext, UserActivityVersionKey, verifyLocalDataContext } from './services/dataContext.js';
 
 import { convertToTimeZone, getMonday, getTimeRemainingUntilLocal, getWeekNumber, isNextDay, isSameDate, toDayjs } from './services/dateUtils.js';
 
@@ -276,17 +276,29 @@ import {
 } from './services/user/permissions.js';
 import syncDatabaseFactory from './services/sync/database/factory.ts';
 
+import SyncExecutor from './services/sync/executor.ts';
+
+import { syncPull, syncPush } from './services/sync/fetch.ts';
+
 import ContentLike from './services/sync/models/ContentLike.ts';
 
 import ContentPractice from './services/sync/models/ContentPractice.ts';
 
 import ContentProgress from './services/sync/models/ContentProgress.ts';
 
+import SyncStoreOrchestrator from './services/sync/orchestrator.ts';
+
 import { SYNC_TABLES } from './services/sync/schema/index.ts';
 
 import appSchema from './services/sync/schema/index.ts';
 
 import SyncStore from './services/sync/store/index.ts';
+
+import { BaseSyncStrategy } from './services/sync/strategies/base.ts';
+
+import PollingSyncStrategy from './services/sync/strategies/polling.ts';
+
+import { DefaultTimers } from './services/sync/utils/timers.ts';
 
 import { resetPassword, sendAccountSetupEmail, sendPasswordResetEmail, setupAccount, status } from './services/user/account.ts';
 
@@ -312,8 +324,11 @@ import {
 
 declare module 'musora-content-services' {
 	export {
+		BaseSyncStrategy,
 		ContentLikesVersionKey,
 		ContentProgressVersionKey,
+		DataContext,
+		DefaultTimers,
 		LokiJSAdapter,
 		SQLiteAdapter,
 		SYNC_TABLES,
@@ -557,6 +572,8 @@ declare module 'musora-content-services' {
 		startLiveEventPolling,
 		startOnboarding,
 		status,
+		syncPull,
+		syncPush,
 		toDayjs,
 		togglePlaylistPrivate,
 		toggleSignaturePrivate,
@@ -589,7 +606,10 @@ declare module 'musora-content-services' {
 		ContentLike,
 		ContentPractice,
 		ContentProgress,
+		PollingSyncStrategy,
+		SyncExecutor,
 		SyncStore,
+		SyncStoreOrchestrator,
 		appSchema,
 		syncAdapterFactory,
 		syncDatabaseFactory,
