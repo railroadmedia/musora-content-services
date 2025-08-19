@@ -239,6 +239,7 @@ import {
 
 import {
 	blockUser,
+	blockedUsers,
 	deletePicture,
 	getUserData,
 	isDisplayNameAvailable,
@@ -311,6 +312,7 @@ export {
 	applySanityTransformations,
 	assignModeratorToComment,
 	blockUser,
+	blockedUsers,
 	buildImageSRC,
 	calculateLongestStreaks,
 	closeComment,
