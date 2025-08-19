@@ -139,6 +139,6 @@
  * @typedef {Object} BlockedUsersDTO
  *
  * @property {number} id
- * @property {number} display_name
- * @property {number} profile_picture_url
+ * @property {string} display_name
+ * @property {string|null} profile_picture_url
  */
