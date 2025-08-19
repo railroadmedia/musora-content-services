@@ -10,6 +10,16 @@ import { HttpClient } from '../../infrastructure/http/HttpClient'
 const baseUrl = `/api/user-management-system`
 
 /**
+ * Fetches the blocked users for the current user.
+ * @returns {Promise<Array<BlockedUsersDTO>}
+ */
+export async function blockedUsers() {
+  const url = `${baseUrl}/v1/users/${globalConfig.sessionConfig.userId}/blocked`
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  return httpClient.get(url)
+}
+
+/**
  * Block the provided user
  * @param userId
  * @returns {Promise<any|string|null>}
