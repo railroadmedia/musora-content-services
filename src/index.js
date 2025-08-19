@@ -244,7 +244,9 @@ import {
 	blockedUsers,
 	deletePicture,
 	getUserData,
+	isDisplayNameAvailable,
 	unblockUser,
+	updateDisplayName,
 	uploadPicture,
 	uploadPictureFromS3
 } from './services/user/management.js';
@@ -464,6 +466,7 @@ export {
 	isBucketUrl,
 	isContentLiked,
 	isContentLikedByIds,
+	isDisplayNameAvailable,
 	isNextDay,
 	isSameDate,
 	jumpToContinueContent,
@@ -528,6 +531,7 @@ export {
 	unlikeContent,
 	unlikePlaylist,
 	unpinProgressRow,
+	updateDisplayName,
 	updateNotificationSetting,
 	updatePlaylist,
 	updatePracticeNotes,
