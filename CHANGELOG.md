@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.32.0](https://github.com/railroadmedia/musora-content-services/compare/v2.31.2...v2.32.0) (2025-08-19)
+
+
+### Features
+
+* **MU2-956:** display name update ([#422](https://github.com/railroadmedia/musora-content-services/issues/422)) ([dc66021](https://github.com/railroadmedia/musora-content-services/commit/dc660214feea9eac27d05463518092b5fd202f2f))
+* **MU2-961:** blocked users list ([#421](https://github.com/railroadmedia/musora-content-services/issues/421)) ([78b801d](https://github.com/railroadmedia/musora-content-services/commit/78b801d8dbea154e261046d4717e7f2e4cae5504))
+
+
+### Bug Fixes
+
+* add parent artist if null ([#401](https://github.com/railroadmedia/musora-content-services/issues/401)) ([fb546a3](https://github.com/railroadmedia/musora-content-services/commit/fb546a38e262746d9f118a190c1ec01fe260bb47)), closes [#380](https://github.com/railroadmedia/musora-content-services/issues/380) [#384](https://github.com/railroadmedia/musora-content-services/issues/384)
+* **T3PS-373:** fixes incorrect brand in query on related lessons ([#417](https://github.com/railroadmedia/musora-content-services/issues/417)) ([464b262](https://github.com/railroadmedia/musora-content-services/commit/464b262f733c4c22cd4065de54eda503c0286b9e))
+
 ### [2.31.2](https://github.com/railroadmedia/musora-content-services/compare/v2.31.1...v2.31.2) (2025-08-14)
 
 ### [2.31.1](https://github.com/railroadmedia/musora-content-services/compare/v2.31.0...v2.31.1) (2025-08-14)
