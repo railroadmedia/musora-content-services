@@ -12,31 +12,89 @@ const fileExports = {}
  * Helper function to extract function names from ES module and CommonJS exports
  *
  * @param {string} filePath
- * @returns {string[]}
+ * @returns {{named: string[], default: string[]}}
  */
 function extractExportedFunctions(filePath) {
   const fileContent = fs.readFileSync(filePath, 'utf-8')
 
-  const exportFunctionRegex = /\nexport\s+(async\s+)?function\s+(\w+)/g
-  const exportVariableRegex = /\nexport\s+(let|const|var)\s+(globalConfig)\s+/g
+  let namedExports = []
+  let defaultExports = []
+
+  // 1. Export functions: export function name() or export async function name()
+  const exportFunctionRegex = /export\s+(async\s+)?function\s+(\w+)/g
+  const functionMatches = [...fileContent.matchAll(exportFunctionRegex)].map((match) => match[2])
+  namedExports = namedExports.concat(functionMatches)
+
+  // 2. Export variables: export const/let/var name = ...
+  const exportVariableRegex = /export\s+(const|let|var)\s+(\w+)/g
+  const variableMatches = [...fileContent.matchAll(exportVariableRegex)]
+    .map((match) => match[2])
+    .filter(name => name !== 'dataContext') // Exclude dataContext as a hack for now
+  namedExports = namedExports.concat(variableMatches)
+
+  // 3. Re-exports with aliases: export { default as Name } from './module'
+  const reExportAliasRegex = /export\s*{\s*default\s+as\s+(\w+)\s*}\s*from/g
+  const reExportAliasMatches = [...fileContent.matchAll(reExportAliasRegex)].map((match) => match[1])
+  namedExports = namedExports.concat(reExportAliasMatches)
+
+  // 4. Re-exports: export { name1, name2 } from './module'
+  const reExportRegex = /export\s*{\s*([^}]+)\s*}\s*from/g
+  const reExportMatches = [...fileContent.matchAll(reExportRegex)]
+  reExportMatches.forEach((match) => {
+    const exports = match[1].split(',').map(exp => {
+      // Handle "name as alias" pattern - we want the alias
+      const parts = exp.trim().split(/\s+as\s+/)
+      return parts.length > 1 ? parts[1].trim() : parts[0].trim()
+    })
+    namedExports = namedExports.concat(exports)
+  })
+
+  // 5. Named exports: export { name1, name2 }
+  const namedExportRegex = /export\s*{\s*([^}]+)\s*}(?!\s*from)/g
+  const namedExportMatches = [...fileContent.matchAll(namedExportRegex)]
+  namedExportMatches.forEach((match) => {
+    const exports = match[1].split(',').map(exp => {
+      // Handle "name as alias" pattern - we want the alias
+      const parts = exp.trim().split(/\s+as\s+/)
+      return parts.length > 1 ? parts[1].trim() : parts[0].trim()
+    })
+    namedExports = namedExports.concat(exports)
+  })
+
+  // 6. Default exports - comprehensive pattern matching
+  const defaultExportPatterns = [
+    /export\s+default\s+function\s+(\w+)/g,           // export default function name
+    /export\s+default\s+class\s+(\w+)/g,             // export default class Name
+    /export\s+default\s+(?:const|let|var)\s+(\w+)/g, // export default const name
+  ]
+
+  defaultExportPatterns.forEach(pattern => {
+    const matches_temp = [...fileContent.matchAll(pattern)].map((match) => match[1])
+    defaultExports = defaultExports.concat(matches_temp)
+  })
+
+  // Handle standalone default identifier exports (but not keywords like function, class, etc.)
+  const defaultIdentifierRegex = /export\s+default\s+(?!(?:function|class|const|let|var|async)\s)(\w+)/g
+  const defaultIdentifierMatches = [...fileContent.matchAll(defaultIdentifierRegex)].map((match) => match[1])
+  defaultExports = defaultExports.concat(defaultIdentifierMatches)
+
+  // 7. CommonJS module.exports (existing pattern) - treat as named exports
   const moduleExportsRegex = /module\.exports\s*=\s*{\s*([\s\S]+?)\s*};/g
-
-  let matches = [...fileContent.matchAll(exportFunctionRegex)].map((match) => match[2])
-
-  // Match `globalConfig` variable
-  const variableMatches = [...fileContent.matchAll(exportVariableRegex)].map((match) => match[2])
-  matches = matches.concat(variableMatches)
-
   const moduleExportsMatch = moduleExportsRegex.exec(fileContent)
   if (moduleExportsMatch) {
     const exportsList = moduleExportsMatch[1].split(',').map((exp) => exp.split(':')[0].trim())
-    matches = matches.concat(exportsList)
+    namedExports = namedExports.concat(exportsList)
   }
 
+  // Filter out excluded functions and remove duplicates
   const excludedFunctions = getExclusionList(fileContent)
-  matches = matches.filter((fn) => !excludedFunctions.includes(fn))
+  namedExports = [...new Set(namedExports)].filter((fn) => fn && !excludedFunctions.includes(fn))
+  defaultExports = [...new Set(defaultExports)].filter((fn) => fn && !excludedFunctions.includes(fn))
 
-  return matches.sort()
+  return {
+    named: namedExports.sort(),
+    default: defaultExports.sort()
+  }
 }
 
 /**
@@ -55,43 +113,64 @@ function getExclusionList(fileContent) {
   return excludedFunctions
 }
 
-// get all files in the services directory
-const servicesDir = path.join(__dirname, '../src/services')
-const treeElements = fs.readdirSync(servicesDir)
-
+/**
+ * Helper function to add functions to file exports
+ *
+ * @param {string} filePath - Absolute path to file
+ * @param {string} file - Relative path from services directory (for import paths)
+ */
 function addFunctionsToFileExports(filePath, file) {
-  const functionNames = extractExportedFunctions(filePath)
+  const { named, default: defaultExports } = extractExportedFunctions(filePath)
 
-  if (functionNames.length > 0) {
-    fileExports[file] = functionNames
+  if (named.length > 0 || defaultExports.length > 0) {
+    fileExports[file] = { named, default: defaultExports }
   }
 }
 
-treeElements.forEach((treeNode) => {
-  const filePath = path.join(servicesDir, treeNode)
+/**
+ * Recursively traverse directory and process all files
+ * @param {string} dirPath - Absolute path to directory
+ * @param {string} relativePath - Relative path from services directory (for import paths)
+ */
+function traverseDirectory(dirPath, relativePath = '') {
+  const items = fs.readdirSync(dirPath)
 
-  if (fs.lstatSync(filePath).isFile()) {
-    addFunctionsToFileExports(filePath, treeNode)
-  } else if (fs.lstatSync(filePath).isDirectory()) {
-    const subDir = fs.readdirSync(filePath)
-    subDir.forEach((subFile) => {
-      const filePath = path.join(servicesDir, treeNode, subFile)
-      addFunctionsToFileExports(filePath, treeNode + '/' + subFile)
-    })
-  }
-})
+  items.forEach((item) => {
+    const fullPath = path.join(dirPath, item)
+    const relativeItemPath = relativePath ? `${relativePath}/${item}` : item
+
+    if (fs.lstatSync(fullPath).isFile()) {
+      addFunctionsToFileExports(fullPath, relativeItemPath)
+    } else if (fs.lstatSync(fullPath).isDirectory()) {
+      traverseDirectory(fullPath, relativeItemPath)
+    }
+  })
+}
+
+// get all files in the services directory
+const servicesDir = path.join(__dirname, '../src/services')
+
+// Traverse the services directory recursively
+traverseDirectory(servicesDir)
 
 // populate the index.js content string with the import/export of all functions
 let content =
   '/*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/\n'
 
-Object.entries(fileExports).forEach(([file, functionNames]) => {
-  content += `\nimport {\n\t${functionNames.join(',\n\t')}\n} from './services/${file}';\n`
+Object.entries(fileExports).forEach(([file, { named, default: defaultExports }]) => {
+  if (named.length > 0) {
+    content += `\nimport { ${named.join(', ')} } from './services/${file}';\n`
+  }
+  if (defaultExports.length > 0) {
+    content += `\nimport ${defaultExports[0]} from './services/${file}';\n`
+  }
 })
 
-const allFunctionNames = Object.values(fileExports).flat().sort()
+const allNamedExports = Object.values(fileExports).flatMap(({ named }) => named).sort()
+const allDefaultExports = Object.values(fileExports).flatMap(({ default: defaultExports }) => defaultExports).sort()
 content += '\nexport {\n'
-content += `\t${allFunctionNames.join(',\n\t')},\n`
+content += `\t${allNamedExports.join(',\n\t')},\n`
+content += `\t${allDefaultExports.join(',\n\t')},\n`
 content += '};\n'
 
 // write the generated content to index.js
@@ -104,13 +183,19 @@ console.log('index.js generated successfully!')
 let dtsContent =
   '/*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/\n'
 
-Object.entries(fileExports).forEach(([file, functionNames]) => {
-  dtsContent += `\nimport {\n\t${functionNames.join(',\n\t')}\n} from './services/${file}';\n`
+Object.entries(fileExports).forEach(([file, { named, default: defaultExports }]) => {
+  if (named.length > 0) {
+    dtsContent += `\nimport { ${named.join(', ')} } from './services/${file}';\n`
+  }
+  if (defaultExports.length > 0) {
+    dtsContent += `\nimport ${defaultExports[0]} from './services/${file}';\n`
+  }
 })
 
 dtsContent += "\ndeclare module 'musora-content-services' {\n"
 dtsContent += '\texport {\n'
-dtsContent += `\t\t${allFunctionNames.join(',\n\t\t')},\n`
+dtsContent += `\t\t${allNamedExports.join(',\n\t\t')},\n`
+dtsContent += `\t\t${allDefaultExports.join(',\n\t\t')},\n`
 dtsContent += '\t}\n'
 dtsContent += '}\n'
 
