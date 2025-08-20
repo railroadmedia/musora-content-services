@@ -995,6 +995,7 @@ function generateContentsMap(contents, playlistsContents) {
   const existingShows = new Set()
   const contentsMap = new Map()
   const childToParentMap = {}
+  if (!contents) return contentsMap
   contents.forEach((content) => {
     if (Array.isArray(content.parent_content_data) && content.parent_content_data.length > 0) {
       childToParentMap[content.id] =
@@ -1073,20 +1074,20 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     nonPlaylistContentIds.push(userPinnedItem.id)
   }
   const [playlistsContents, contents] = await Promise.all([
-    addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
+    playlistEngagedOnContents ? addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
       addNextLesson: true,
       addNavigateTo: true,
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
-    }),
-    addContextToContent(fetchByRailContentIds, nonPlaylistContentIds, 'progress-tracker', brand, {
+    }) : Promise.resolve([]),
+    nonPlaylistContentIds ? addContextToContent(fetchByRailContentIds, nonPlaylistContentIds, 'progress-tracker', brand, {
       addNextLesson: true,
       addNavigateTo: true,
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
-    }),
+    }) : Promise.resolve([]),
   ])
   const contentsMap = generateContentsMap(contents, playlistsContents)
   let combined = await extractPinnedItemsAndSortAllItems(
