@@ -1,31 +1,31 @@
-import { RecordId } from "@nozbe/watermelondb"
+import { SyncToken, SyncEntry } from "./index"
 
-export interface ServerPullResponse<T = { id: RecordId }> {
-  data: T[]
-  token: string | null
+export interface RawResponse {
+  meta: {
+    since: SyncToken | null
+    max_stamp: SyncToken | null
+  }
+  records: SyncEntry[]
 }
 
-export function syncPull<T>(url: string) {
-  return async function(lastFetchToken: string | null): Promise<ServerPullResponse<T>> {
-    console.log('syncstore: fetching', url, lastFetchToken)
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    console.log('syncstore: fetched', url, lastFetchToken)
+export interface ServerPullResponse {
+  data: SyncEntry[]
+  token: SyncToken | null
+  previousToken: SyncToken | null
+}
 
-    let data = []
-    let token = null
+export function syncPull(callback: (token: SyncToken | null) => Promise<RawResponse>) {
+  return async function(lastFetchToken: SyncToken | null): Promise<ServerPullResponse> {
+    const response = await callback(lastFetchToken)
 
-    if (url === '/likes') {
-      data = [
-        { id: '1', content_id: '1', user_id: '1' },
-        { id: '2', content_id: '2' },
-        { id: '3', content_id: '3' },
-      ]
-      token = new Date().toISOString()
-    }
+    const data = response.records
+    const previousToken = response.meta.since
+    const token = response.meta.max_stamp
 
     return {
       data,
-      token
+      token,
+      previousToken
     }
   }
 }

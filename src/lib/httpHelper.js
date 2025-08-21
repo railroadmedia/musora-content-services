@@ -69,7 +69,9 @@ export async function fetchHandler(
 
   if (globalConfig.localTimezoneString)
     reqHeaders['M-Client-Timezone'] = globalConfig.localTimezoneString
-  if (dataVersion) reqHeaders['Data-Version'] = dataVersion
+  if (dataVersion) {
+    reqHeaders['If-None-Match'] = dataVersion
+  }
   const options = {
     method,
     headers: reqHeaders,
@@ -77,6 +79,7 @@ export async function fetchHandler(
   if (body) options.body = body
   if (token) options.headers['Authorization'] = `Bearer ${token}`
   if (baseUrl && url.startsWith('/')) url = baseUrl + url
+  if (method === 'get' && dataVersion) url += `?since=${encodeURIComponent(dataVersion)}`
   try {
     return fetch(url, options)
   } catch (error) {

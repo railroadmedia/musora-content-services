@@ -10,7 +10,6 @@ const contentLikesTable = tableSchema({
   name: SYNC_TABLES.CONTENT_LIKES,
   columns: [
     { name: 'content_id', type: 'string' },
-    { name: 'user_id', type: 'string' },
     { name: 'created_at', type: 'number' },
     { name: 'updated_at', type: 'number' }
   ]
@@ -19,7 +18,6 @@ const contentProgressTable = tableSchema({
   name: SYNC_TABLES.CONTENT_PROGRESS,
   columns: [
     { name: 'content_id', type: 'string' },
-    { name: 'user_id', type: 'string' },
     { name: 'created_at', type: 'number' },
     { name: 'updated_at', type: 'number' }
   ]
@@ -28,7 +26,6 @@ const contentPracticesTable = tableSchema({
   name: SYNC_TABLES.CONTENT_PRACTICES,
   columns: [
     { name: 'content_id', type: 'string' },
-    { name: 'user_id', type: 'string' },
     { name: 'created_at', type: 'number' },
     { name: 'updated_at', type: 'number' }
   ]
