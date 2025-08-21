@@ -26,7 +26,7 @@ export default class SyncStore<
   readonly collection: Collection<TModel>
   readonly serializer: TSerializer | SyncSerializer
 
-  lastFetchToken: SyncToken | null = null
+  lastFetchTokenKey: string
   currentSync: Promise<ServerPullResponse> | null = null
 
   readonly pull: (previousFetchToken: SyncToken | null) => Promise<ServerPullResponse>
@@ -48,15 +48,19 @@ export default class SyncStore<
 
     this.pull = pull
     this.push = push
-    this.lastFetchToken = `last_fetch_token:${this.model.table}`
+    this.lastFetchTokenKey = `last_fetch_token:${this.model.table}`
   }
 
   async getLastFetchToken() {
-    return this.db.localStorage.get<SyncToken | null>(this.lastFetchToken) ?? null
+    return (await this.db.localStorage.get<SyncToken | null>(this.lastFetchTokenKey)) ?? null
   }
 
-  async setLastFetchToken(token: SyncToken) {
-    return this.db.localStorage.set(this.lastFetchToken, token)
+  async setLastFetchToken(token: SyncToken | null) {
+    if (token) {
+      return this.db.localStorage.set(this.lastFetchTokenKey, token)
+    } else {
+      return this.db.localStorage.remove(this.lastFetchTokenKey)
+    }
   }
 
   async sync() {
@@ -64,7 +68,6 @@ export default class SyncStore<
   }
 
   async readOne(id: string) {
-    // TODO - verify possible race condition - implement lock?
     const [data, fetchToken] = await Promise.all([
       this.readLocalOne(id),
       this.getLastFetchToken()
@@ -79,7 +82,6 @@ export default class SyncStore<
   }
 
   async readAll() {
-    // TODO - verify possible race condition - implement lock?
     const [data, fetchToken] = await Promise.all([
       this.readLocalAll(),
       this.getLastFetchToken()
@@ -177,19 +179,49 @@ export default class SyncStore<
         }
       }
 
+      // edge cases:
+      // how to handle when server has deleted, but local has changes?
+
       const [entriesToCreate, tuplesToUpdate, recordsToDelete] = freshSync
-        ? [entries.filter(entry => !entry.meta.deleted), [], []]
+        ? [entries.filter(entry => !entry.meta.deleted_at), [], []]
         : entries.reduce<[SyncEntry[], [TModel, SyncEntry][], TModel[]]>(
             (acc, entry) => {
               const existing = existingRecordsMap.get(entry.record.id.toString())
               if (existing) {
-                if (entry.meta.deleted) {
-                  acc[2].push(existing)
-                } else {
-                  acc[1].push([existing, entry])
+                switch (existing._raw._status) {
+                  case 'disposable':
+                    // do what???
+                    break;
+
+                  case 'deleted':
+                    if (entry.meta.deleted_at) {
+                      acc[2].push(existing)
+                    } else {
+                      // do what???
+                    }
+                    break;
+
+                  case 'updated':
+                    if (entry.meta.updated_at > existing._raw['updated_at']) {
+                      acc[1].push([existing, entry])
+                    } else {
+                      // ignore ???
+                    }
+                    break;
+
+                  case 'created': // shouldn't really happen
+                  case 'synced':
+                  default:
+                    if (entry.meta.deleted_at) {
+                      acc[2].push(existing)
+                    } else {
+                      acc[1].push([existing, entry])
+                    }
                 }
               } else {
-                if (!entry.meta.deleted) {
+                if (entry.meta.deleted_at) {
+                  // ignore ???
+                } else {
                   acc[0].push(entry)
                 }
               }
@@ -204,6 +236,11 @@ export default class SyncStore<
             if (key === 'id') r._raw.id = value.toString()
             else r[key] = value
           })
+          r._raw['created_at'] = entry.meta.created_at
+          r._raw['updated_at'] = entry.meta.updated_at
+
+          r._raw._status = 'synced'
+          r._raw._changed = ''
         })
       })
       const updatedBuilds = tuplesToUpdate.map(([record, entry]) => {
@@ -211,6 +248,11 @@ export default class SyncStore<
           Object.entries(entry.record).forEach(([key, value]) => {
             if (key !== 'id') r[key] = value
           })
+          r._raw['created_at'] = entry.meta.created_at
+          r._raw['updated_at'] = entry.meta.updated_at
+
+          r._raw._status = 'synced'
+          r._raw._changed = ''
         })
       })
       const deletedBuilds = recordsToDelete.map(record => {

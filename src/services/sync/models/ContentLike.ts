@@ -1,6 +1,8 @@
 import { Model } from '@nozbe/watermelondb'
 import { SYNC_TABLES } from '../schema'
 
+// todo - decorators need babel support... -_- (`@nozbe/watermelondb/decorators`)
+
 export default class ContentLike extends Model {
   static table = SYNC_TABLES.CONTENT_LIKES
 
@@ -13,3 +15,21 @@ export default class ContentLike extends Model {
     this._setRaw('content_id', String(value))
   }
 }
+
+// manual timestamp support for now without decorators
+
+Object.defineProperty(ContentLike.prototype, 'createdAt', {
+  get(this: Model) {
+    const value = this._raw.created_at
+    return value ? new Date(value) : null
+  },
+  enumerable: true,
+})
+
+Object.defineProperty(ContentLike.prototype, 'updatedAt', {
+  get(this: Model) {
+    const value = this._raw.updated_at
+    return value ? new Date(value) : null
+  },
+  enumerable: true,
+})
