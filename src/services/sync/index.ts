@@ -5,5 +5,9 @@ export type SyncSyncable = { id: RecordId }
 
 export type SyncEntry = {
   record: SyncSyncable
-  meta: { deleted: boolean }
+  meta: {
+    created_at: string
+    updated_at: string
+    deleted_at: string | null
+  }
 }
