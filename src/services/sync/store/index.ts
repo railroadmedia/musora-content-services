@@ -1,56 +1,70 @@
-import { Database, Q, type Collection, type Model } from '@nozbe/watermelondb'
+import { Database, Q, type Collection, type Model, type RecordId } from '@nozbe/watermelondb'
+import SyncSerializer, { type SyncSerialized } from '../serializers'
 import { ServerPullResponse } from '../fetch'
-interface SyncStoreResponse<T extends Model = Model> {
-  data: T | T[]
+import { SyncToken, SyncEntry } from '..'
+
+type SyncStoreResponseMeta = {
   status: 'fresh' | 'possiblyStale'
-  previousFetchToken: string | null
-  fetchToken: string
+  previousFetchToken: SyncToken | null
+  fetchToken: SyncToken
 }
 
-export type SyncStoreMultiResponse<T extends Model = Model> = SyncStoreResponse<T> & {
-  data: T[]
+export type SyncStoreMultiResponse<T extends SyncSerializer> = SyncStoreResponseMeta & {
+  data: SyncSerialized<T>[]
 }
 
-export type SyncStoreSingleResponse<T extends Model = Model> = SyncStoreResponse<T> & {
-  data: T
+export type SyncStoreSingleResponse<T extends SyncSerializer> = SyncStoreResponseMeta & {
+  data: SyncSerialized<T>
 }
 
-export default class SyncStore<T extends Model = Model> {
-  db: Database
-  model: T
-  collection: Collection<T>
-  lastFetchToken: string | null = null
+export default class SyncStore<
+  TModel extends Model = Model,
+  TSerializer extends SyncSerializer = SyncSerializer,
+> {
+  readonly db: Database
+  readonly model: TModel
+  readonly collection: Collection<TModel>
+  readonly serializer: TSerializer | SyncSerializer
 
-  pull: (previousFetchToken: string | null) => Promise<ServerPullResponse<T>>
-  push: () => Promise<any>
+  lastFetchToken: SyncToken | null = null
+  currentSync: Promise<ServerPullResponse> | null = null
+
+  readonly pull: (previousFetchToken: SyncToken | null) => Promise<ServerPullResponse>
+  readonly push: () => Promise<any>
 
   fetchedOnce: boolean = false
 
-  constructor(model: T, db: Database, { pull, push }: {
-    pull: (previousFetchToken: string | null) => Promise<ServerPullResponse<T>>,
-    push: () => Promise<any>
+  constructor({ model, db, pull, push, serializer }: {
+    model: TModel,
+    db: Database,
+    pull: (previousFetchToken: SyncToken | null) => Promise<ServerPullResponse>,
+    push: () => Promise<any>,
+    serializer?: TSerializer
   }) {
     this.db = db
     this.model = model
     this.collection = db.collections.get(model.table)
-    this.lastFetchToken = `last_fetch_token:${this.model.table}`
+    this.serializer = serializer ?? new SyncSerializer()
+
     this.pull = pull
     this.push = push
+    this.lastFetchToken = `last_fetch_token:${this.model.table}`
   }
 
-  async getLastFetchToken(): Promise<string | null> {
-    return this.db.localStorage.get(this.lastFetchToken) ?? null
+  async getLastFetchToken() {
+    return this.db.localStorage.get<SyncToken | null>(this.lastFetchToken) ?? null
   }
 
-  async setLastFetchToken(token: string) {
+  async setLastFetchToken(token: SyncToken) {
     return this.db.localStorage.set(this.lastFetchToken, token)
   }
 
   async sync() {
-    return this.fetch(await this.getLastFetchToken())
+    await this.syncInternal()
   }
 
-  async readOne(id: string): Promise<SyncStoreSingleResponse> {
+  async readOne(id: string) {
+    // TODO - verify possible race condition - implement lock?
     const [data, fetchToken] = await Promise.all([
       this.readLocalOne(id),
       this.getLastFetchToken()
@@ -64,7 +78,8 @@ export default class SyncStore<T extends Model = Model> {
     }
   }
 
-  async readAll(): Promise<SyncStoreMultiResponse> {
+  async readAll() {
+    // TODO - verify possible race condition - implement lock?
     const [data, fetchToken] = await Promise.all([
       this.readLocalAll(),
       this.getLastFetchToken()
@@ -79,37 +94,25 @@ export default class SyncStore<T extends Model = Model> {
   }
 
   async fetchAll() {
-    const fetchToken = await this.getLastFetchToken()
-    const response = await this.fetch(fetchToken)
-    this.fetchedOnce = true
-
-    await Promise.all([
-      this.writeLocal(response.data),
-      this.setLastFetchToken(response.token)
-    ])
+    const response = await this.syncInternal()
+    const data = await this.readLocalAll()
 
     return {
-      data: response.data, // todo - not actual watermelon data
+      data,
       status: 'fresh',
-      previousFetchToken: null,
+      previousFetchToken: response.previousToken,
       fetchToken: response.token
     }
   }
 
   async fetchOne(id: string) {
-    const fetchToken = await this.getLastFetchToken()
-    const response = await this.fetch(fetchToken)
-    this.fetchedOnce = true
-
-    await Promise.all([
-      this.writeLocal(response.data),
-      this.setLastFetchToken(response.token)
-    ])
+    const response = await this.syncInternal()
+    const data = await this.readLocalOne(id)
 
     return {
-      data: response.data.find(d => d.id === id), // todo - not actual watermelon data
+      data,
       status: 'fresh',
-      previousFetchToken: null,
+      previousFetchToken: response.previousToken,
       fetchToken: response.token
     }
   }
@@ -128,24 +131,96 @@ export default class SyncStore<T extends Model = Model> {
     return this.readOne(id)
   }
 
-  private async fetch(previousFetchToken: string | null) {
-    return this.pull(previousFetchToken)
+  private async syncInternal() {
+    if (this.currentSync) return this.currentSync
+
+    this.currentSync = (async () => {
+      const response = await this.fetch()
+
+      await this.writeLocal(response.data, !response.previousToken)
+      await this.setLastFetchToken(response.token)
+
+      this.fetchedOnce = true
+
+      return response
+    })()
+
+    try {
+      return await this.currentSync
+    } finally {
+      this.currentSync = null
+    }
+  }
+
+  private async fetch() {
+    const lastFetchToken = await this.getLastFetchToken()
+    const response = await this.pull(lastFetchToken)
+    return response
   }
 
   private async readLocalAll() {
-    return this.collection.query().fetch()
+    const records = await this.collection.query().fetch()
+    return records.map(record => this.serializer.toPlainObject(record))
   }
 
   private async readLocalOne(id: string) {
-    return this.collection.query(Q.where('id', id)).fetch().then(records => records[0])
+    return this.collection.query(Q.where('id', id)).fetch().then(records => this.serializer.toPlainObject(records[0]))
   }
 
-  private async writeLocal(data: T[]) {
-    return this.db.write(writer => {
-      const records = data.map(recordData => this.collection.prepareCreate(record => {
-        Object.assign(record, recordData)
-      }))
-      return writer.batch(...records)
+  private async writeLocal(entries: SyncEntry[], freshSync: boolean = false) {
+    return this.db.write(async writer => {
+      const existingRecordsMap = new Map<RecordId, TModel>()
+      if (!freshSync) {
+        const existingRecords = await this.collection.query(Q.where('id', Q.oneOf(entries.map(e => e.record.id.toString())))).fetch()
+        for (const record of existingRecords) {
+          existingRecordsMap.set(record.id, record)
+        }
+      }
+
+      const [entriesToCreate, tuplesToUpdate, recordsToDelete] = freshSync
+        ? [entries.filter(entry => !entry.meta.deleted), [], []]
+        : entries.reduce<[SyncEntry[], [TModel, SyncEntry][], TModel[]]>(
+            (acc, entry) => {
+              const existing = existingRecordsMap.get(entry.record.id.toString())
+              if (existing) {
+                if (entry.meta.deleted) {
+                  acc[2].push(existing)
+                } else {
+                  acc[1].push([existing, entry])
+                }
+              } else {
+                if (!entry.meta.deleted) {
+                  acc[0].push(entry)
+                }
+              }
+              return acc
+            },
+            [[], [], []]
+          )
+
+      const createdBuilds = entriesToCreate.map(entry => {
+        return this.collection.prepareCreate(r => {
+          Object.entries(entry.record).forEach(([key, value]) => {
+            if (key === 'id') r._raw.id = value.toString()
+            else r[key] = value
+          })
+        })
+      })
+      const updatedBuilds = tuplesToUpdate.map(([record, entry]) => {
+        return record.prepareUpdate(r => {
+          Object.entries(entry.record).forEach(([key, value]) => {
+            if (key !== 'id') r[key] = value
+          })
+        })
+      })
+      const deletedBuilds = recordsToDelete.map(record => {
+        return record.prepareDestroyPermanently()
+      })
+
+      const builds = [...createdBuilds, ...updatedBuilds, ...deletedBuilds]
+      if (builds.length === 0) return
+
+      await writer.batch(...builds)
     })
   }
 }

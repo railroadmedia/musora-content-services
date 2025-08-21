@@ -1,4 +1,4 @@
-import SyncStore from "./index";
+import SyncStore from "./store";
 import { SyncStrategy } from "./strategies";
 import SyncExecutor from "./executor";
 
