@@ -114,9 +114,31 @@ export async function deleteNotification(notificationId) {
   if (!notificationId) {
     throw new Error('notificationId is required')
   }
-
   const url = `${baseUrl}/v1/${notificationId}`
   return fetchHandler(url, 'delete')
+}
+
+/**
+ * Restores a specific notification.
+ *
+ * @param {number} notificationId - The ID of the notification to restore.
+ *
+ * @returns {Promise<any>} - A promise that resolves when the notification is successfully restored.
+ *
+ * @throws {Error} - Throws an error if notificationId is not provided.
+ *
+ * @example
+ * restoreNotification(123)
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+export async function restoreNotification(notificationId) {
+  if (!notificationId) {
+    throw new Error('notificationId is required')
+  }
+
+  const url = `${baseUrl}/v1/${notificationId}`
+  return fetchHandler(url, 'put')
 }
 
 /**
@@ -140,7 +162,7 @@ export async function deleteNotification(notificationId) {
 export async function fetchUnreadCount({ brand = 'drumeo'} = {}) {
   const url = `${baseUrl}/v1/unread-count`
   const notifUnread =  await fetchHandler(url, 'get')
-  if (notifUnread.data > 0) {
+  if (notifUnread && notifUnread.data > 0) {
     return notifUnread// Return early if unread notifications exist
   }
   const liveEventPollingState = await fetchLiveEventPollingState()
@@ -148,7 +170,7 @@ export async function fetchUnreadCount({ brand = 'drumeo'} = {}) {
     const liveEvent = await fetchLiveEvent(brand)
     return { data: liveEvent ? 1 : 0}
   }
-  return notifUnread
+  return { data: 0}
 }
 
 /**

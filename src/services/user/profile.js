@@ -32,15 +32,12 @@ export async function otherStats(userId = globalConfig.sessionConfig.userId) {
   }
 }
 
+/**
+ * Delete profile picture for the authenticated user
+ *
+ * @returns {Promise<void>}
+ */
 export async function deleteProfilePicture() {
   const url = `${baseUrl}/v1/users/profile_picture`
-  const response = await fetchHandler(url, 'DELETE')
-
-  if (!response.ok) {
-    const problemDetails = await response.json()
-    console.log('Error deleting profile picture:', problemDetails.detail)
-    throw new Error(`Delete failed: ${problemDetails.detail}`)
-  }
-
-  return response.json()
+  await fetchHandler(url, 'DELETE')
 }

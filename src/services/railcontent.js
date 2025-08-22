@@ -3,7 +3,6 @@
  */
 import { globalConfig } from './config.js'
 import { fetchJSONHandler } from '../lib/httpHelper.js'
-import { convertToTimeZone } from './dateUtils.js';
 
 /**
  * Exported functions that are excluded from index generation.
@@ -20,8 +19,6 @@ const excludeFromGeneratedIndex = [
   'postContentReset',
   'fetchUserPermissionsData',
 ]
-
-let challengeIndexMetaDataPromise = null
 
 /**
  * Fetches the completion status of a specific lesson for the current user.
@@ -286,8 +283,8 @@ async function postDataHandler(url, data) {
   return fetchHandler(url, 'post', null, data)
 }
 
-async function patchDataHandler(url, data) {
-  return fetchHandler(url, 'patch', null, data)
+async function patchDataHandler_depreciated(url, data) {
+  throw Error('PATCH verb throws a CORS error on the FEW. Use PATCH instead')
 }
 
 async function putDataHandler(url, data) {
@@ -298,8 +295,8 @@ async function deleteDataHandler(url, data) {
   return fetchHandler(url, 'delete')
 }
 
-export async function fetchLikeCount(contendId){
-  const url  = `/api/content/v1/content/like_count/${contendId}`
+export async function fetchLikeCount(contendId) {
+  const url = `/api/content/v1/content/like_count/${contendId}`
   return await fetchDataHandler(url)
 }
 
@@ -348,67 +345,6 @@ export async function postRecordWatchSession(
 }
 
 /**
- * Fetch enrolled user data for a given challenge. Intended to be used in the enrolled modal
- *
- * @param contentId - railcontent id of the challenge
- * @returns {Promise<any|null>}
- */
-export async function fetchChallengeMetadata(contentId) {
-  let url = `/challenges/${contentId}`
-  return await fetchHandler(url, 'get')
-}
-
-/**
- * Fetch lesson, user, and challenge data for a given lesson
- *
- * @param contentId - railcontent id of the lesson
- * @returns {Promise<any|null>}
- */
-export async function fetchChallengeLessonData(contentId) {
-  let url = `/challenges/lessons/${contentId}`
-  return await fetchHandler(url, 'get')
-}
-
-/**
- * Fetch all owned brand challenges for user
- * @param {string|null} brand - brand
- * @param {int} page - page of data to pull
- * @param {int} limit - number of elements to pull
- * @returns {Promise<any|null>}
- */
-export async function fetchOwnedChallenges(brand = null, page, limit) {
-  let brandParam = brand ? `&brand=${brand}` : ''
-  let pageAndLimit = `?page=${page}&limit=${limit}`
-  let url = `/challenges/tab_owned/get${pageAndLimit}${brandParam}`
-  return await fetchHandler(url, 'get')
-}
-
-/**
- * Fetch all completed brand challenges for user
- * @param {string|null} brand - brand
- * @param {int} page - page of data to pull
- * @param {int} limit - number of elements to pull
- * @returns {Promise<any|null>}
- */
-export async function fetchCompletedChallenges(brand = null, page, limit) {
-  let brandParam = brand ? `&brand=${brand}` : ''
-  let pageAndLimit = `?page=${page}&limit=${limit}`
-  let url = `/challenges/tab_completed/get${pageAndLimit}${brandParam}`
-  return await fetchHandler(url, 'get')
-}
-
-/**
- * Fetch challenge, lesson, and user metadata for a given challenge
- *
- * @param contentId - railcontent id of the challenge
- * @returns {Promise<any|null>}
- */
-export async function fetchUserChallengeProgress(contentId) {
-  let url = `/challenges/user_data/${contentId}`
-  return await fetchHandler(url, 'get')
-}
-
-/**
  * Fetch the user's best award for this challenge
  *
  * @param contentId - railcontent id of the challenge
@@ -416,44 +352,6 @@ export async function fetchUserChallengeProgress(contentId) {
  */
 export async function fetchUserAward(contentId) {
   let url = `/challenges/download_award/${contentId}`
-  return await fetchHandler(url, 'get')
-}
-
-/**
- * Get challenge duration, user progress, and status for the list of challenges
- * Intended to be used on the index page for challenges
- *
- * @param {array} contentIds - arary of railcontent ids of the challenges
- * @returns {Promise<any|null>}
- */
-export async function fetchChallengeIndexMetadata(contentIds) {
-  if (!challengeIndexMetaDataPromise) {
-    challengeIndexMetaDataPromise = getChallengeIndexMetadataPromise()
-  }
-  let results = await challengeIndexMetaDataPromise
-  if (Array.isArray(contentIds)) {
-    results = results.filter(function (challenge) {
-      return contentIds.includes(challenge.content_id)
-    })
-  }
-  return results
-}
-
-async function getChallengeIndexMetadataPromise() {
-  let url = `/challenges/user_progress_for_index_page/get`
-  const result = await fetchHandler(url, 'get')
-  challengeIndexMetaDataPromise = null
-  return result
-}
-
-/**
- * Get active brand challenges for the authorized user
- *
- * @returns {Promise<any|null>}
- */
-export async function fetchChallengeUserActiveChallenges(brand = null) {
-  let brandParam = brand ? `?brand=${brand}` : ''
-  let url = `/challenges/user_active_challenges/get${brandParam}`
   return await fetchHandler(url, 'get')
 }
 
@@ -481,105 +379,32 @@ export async function fetchUserBadges(brand = null) {
 }
 
 /**
- * Enroll a user in a challenge and set the start date of the challenge to the provided day.
- * Clears any existing progress data for this challenge
- *
- * @param {int|string} contentId - railcontent id of the challenge
- * @param {string} startDate - prefered format YYYYMMDD, but any Carbon parsable string will do.
- * @returns {Promise<any|null>}
+ * complete a content's progress for a given user
+ * @param contentId
+ * @returns {Promise<any|string|null>}
  */
-export async function postChallengesSetStartDate(contentId, startDate) {
-  let url = `/challenges/set_start_date/${contentId}?start_date=${startDate}`
-  return await fetchHandler(url, 'post')
-}
-
-/**
- * Enroll the user in the provided challenge and set to unlocked
- * Clears any current progress data for this challenge
- *
- * @param {int|string} contentId - railcontent id of the challenge
- * @returns {Promise<any|null>}
- */
-export async function postChallengesUnlock(contentId) {
-  let url = `/challenges/unlock/${contentId}`
-  return await fetchHandler(url, 'post')
-}
-
-/**
- * Enroll the user in the given challenge on the challenge published_on date
- *  Clears any current progress data for this challenge
- *
- * @param {int|string} contentId - railcontent id of the challenge
- * @returns {Promise<any|null>}
- */
-export async function postChallengesEnroll(contentId) {
-  let url = `/challenges/enroll/${contentId}`
-  return await fetchHandler(url, 'post')
-}
-
-/**
- * Remove the user from the provided challenge
- * Clears any current progress data for this challenge
- *
- * @param {int|string} contentId - railcontent id of the challenge
- * @returns {Promise<any|null>}
- */
-export async function postChallengesLeave(contentId) {
-  let url = `/challenges/leave/${contentId}`
-  return await fetchHandler(url, 'post')
-}
-
-/**
- * Enable enrollment notifications for the provided challenge
- *
- * @param {int|string} contentId - railcontent id of the challenge
- * @returns {Promise<any|null>}
- */
-export async function postChallengesEnrollmentNotification(contentId) {
-  let url = `/challenges/notifications/enrollment_open/${contentId}`
-  return await fetchHandler(url, 'post')
-}
-
-/**
- * Enable community notifications for the provided challenge
- *
- * @param {int|string} contentId - railcontent id of the challenge
- * @returns {Promise<any|null>}
- */
-export async function postChallengesCommunityNotification(contentId) {
-  let url = `/challenges/notifications/community_reminders/${contentId}`
-  return await fetchHandler(url, 'post')
-}
-
-/**
- * Enable solo notifications for the provided challenge
- *
- * @param {int|string} contentId - railcontent id of the challenge
- * @returns {Promise<any|null>}
- */
-export async function postChallengesSoloNotification(contentId) {
-  let url = `/challenges/notifications/solo_reminders/${contentId}`
-  return await fetchHandler(url, 'post')
-}
-
-/**
- * Hide challenge completed award bannare
- *
- * @param {int|string} contentId - railcontent id of the challenge
- * @returns {Promise<any|null>}
- */
-export async function postChallengesHideCompletedBanner(contentId) {
-  let url = `/challenges/hide_completed_banner/${contentId}`
-  return await fetchHandler(url, 'post')
-}
-
 export async function postContentComplete(contentId) {
   let url = `/api/content/v1/user/progress/complete/${contentId}`
   return postDataHandler(url)
 }
 
+/**
+ * resets the user's progress on a content
+ * @param contentId
+ * @returns {Promise<any|string|null>}
+ */
 export async function postContentReset(contentId) {
   let url = `/api/content/v1/user/progress/reset/${contentId}`
+  return postDataHandler(url)
+}
+
+/**
+ * restores the user's progress on a content
+ * @param contentId
+ * @returns {Promise<any|string|null>}
+ */
+export async function postContentRestore(contentId) {
+  let url = `/api/content/v1/user/progress/restore/${contentId}`
   return postDataHandler(url)
 }
 
@@ -593,7 +418,7 @@ export async function postContentReset(contentId) {
 export async function setStudentViewForUser(userId, enable) {
   let url = `/user-management-system/user/update/${userId}`
   let data = { use_student_view: enable ? 1 : 0 }
-  return await patchDataHandler(url, data)
+  return await putDataHandler(url, data)
 }
 
 /**
@@ -719,7 +544,7 @@ export async function closeComment(commentId) {
   const data = {
     conversation_status: 'closed',
   }
-  return await patchDataHandler(url, data)
+  return await putDataHandler(url, data)
 }
 
 /**
@@ -731,7 +556,7 @@ export async function openComment(commentId) {
   const data = {
     conversation_status: 'open',
   }
-  return await patchDataHandler(url, data)
+  return await putDataHandler(url, data)
 }
 
 /**
@@ -778,40 +603,36 @@ export async function fetchComment(commentId) {
 }
 
 export async function fetchUserPractices(currentVersion = 0, { userId } = {}) {
-  const params = new URLSearchParams();
-  if (userId) params.append('user_id', userId);
-  const query = params.toString() ? `?${params.toString()}` : '';
-  const url = `/api/user/practices/v1/practices${query}`;
-  const response = await fetchDataHandler(url, currentVersion);
-  const { data, version } = response;
-  const userPractices = data;
-  if(!userPractices ) {
-    return { data: { practices: {} }, version };
+  const params = new URLSearchParams()
+  if (userId) params.append('user_id', userId)
+  const query = params.toString() ? `?${params.toString()}` : ''
+  const url = `/api/user/practices/v1/practices${query}`
+  const response = await fetchDataHandler(url, currentVersion)
+  const { data, version } = response
+  const userPractices = data
+  if (!userPractices) {
+    return { data: { practices: {} }, version }
   }
 
-  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
   const formattedPractices = userPractices.reduce((acc, practice) => {
-    // Convert UTC date to user's local date (still a Date object)
-    const userTimeZoneDay = convertToTimeZone(practice.day, userTimeZone);
-    if (!acc[userTimeZoneDay]) {
-      acc[userTimeZoneDay] = [];
+    if (!acc[practice.day]) {
+      acc[practice.day] = []
     }
 
-    acc[userTimeZoneDay].push({
+    acc[practice.day].push({
       id: practice.id,
       duration_seconds: practice.duration_seconds,
-    });
+    })
 
-    return acc;
-  }, {});
+    return acc
+  }, {})
 
   return {
     data: {
       practices: formattedPractices,
     },
     version,
-  };
+  }
 }
 
 export async function logUserPractice(practiceDetails) {
@@ -822,11 +643,11 @@ export async function fetchUserPracticeMeta(practiceIds, userId = null) {
   if (practiceIds.length == 0) {
     return []
   }
-  const params = new URLSearchParams();
-  practiceIds.forEach(id => params.append('practice_ids[]', id));
+  const params = new URLSearchParams()
+  practiceIds.forEach((id) => params.append('practice_ids[]', id))
 
   if (userId !== null) {
-    params.append('user_id', userId);
+    params.append('user_id', userId)
   }
   const url = `/api/user/practices/v1/practices?${params.toString()}`
   return await fetchHandler(url, 'GET', null)
@@ -847,6 +668,24 @@ export async function fetchUserPracticeNotes(date) {
   return await fetchHandler(url, 'GET', null)
 }
 
+export async function fetchRecent(brand, { status, types } = {}, {
+  page = 1,
+  limit = 10
+} = {}) {
+  const query = new URLSearchParams()
+  query.append('brand', brand)
+  if (status) query.append('status', status)
+  if (types) {
+    types.forEach((type) => query.append('types[]', type))
+  }
+
+  query.append('page', page)
+  query.append('limit', limit)
+
+  const url = `/api/content-org/v1/user/recent?${query.toString()}`
+  const response = await fetchHandler(url, 'GET', null)
+  return response ? response.result : []
+}
 
 /**
  * Get the id and slug of last interacted child. Only valid for certain content types
@@ -868,8 +707,8 @@ export async function fetchUserPracticeNotes(date) {
  * }
  */
 export async function fetchLastInteractedChild(content_ids) {
-  const params = new URLSearchParams();
-  content_ids.forEach(id => params.append('content_ids[]', id));
+  const params = new URLSearchParams()
+  content_ids.forEach((id) => params.append('content_ids[]', id))
   const url = `/api/content/v1/user/last_interacted_child?${params.toString()}`
   return await fetchHandler(url, 'GET', null)
 }
@@ -902,17 +741,12 @@ export async function fetchLastInteractedChild(content_ids) {
  *   .then(activities => console.log(activities))
  *   .catch(error => console.error(error));
  */
-export async function fetchRecentUserActivities({
-  page = 1,
-  limit = 5,
-  tabName = null
-} = {}) {
+export async function fetchRecentUserActivities({ page = 1, limit = 5, tabName = null } = {}) {
   let pageAndLimit = `?page=${page}&limit=${limit}`
   let tabParam = tabName ? `&tabName=${tabName}` : ''
   const url = `/api/user-management-system/v1/activities/all${pageAndLimit}${tabParam}`
   return await fetchHandler(url, 'GET', null)
 }
-
 
 function fetchAbsolute(url, params) {
   if (globalConfig.sessionConfig.authToken) {

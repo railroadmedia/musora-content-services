@@ -5,7 +5,7 @@ const railContentModule = require('../src/services/railcontent.js')
 import { log } from './log.js'
 import { initializeTestService } from './initializeTests'
 import { dataContext } from '../src/services/contentProgress'
-import { fetchOwnedChallenges, getRecommendedForYou, globalConfig, recommendations } from '../src'
+import { getRecommendedForYou, globalConfig, recommendations } from '../src'
 import { fetchLessonsFeaturingThisContent } from '../src/services/sanity.js'
 
 const {
@@ -15,13 +15,11 @@ const {
   fetchLeaving,
   fetchComingSoon,
   fetchSongArtistCount,
-  fetchRelatedSongs,
   fetchNewReleases,
   fetchUpcomingEvents,
   fetchByRailContentId,
   fetchByRailContentIds,
   fetchAll,
-  fetchAllOld,
   fetchAllFilterOptions,
   fetchFoundation,
   fetchMethod,
@@ -224,53 +222,13 @@ describe('Sanity Queries', function() {
     expect(response.entity[0].sort).toBeDefined()
   })
 
-  test('fetchAllChallenges', async () => {
-    const response = await fetchAll('drumeo', 'challenge', {})
-    log(response)
-    expect(response.entity[0].registration_url).toBeDefined()
-    expect(response.entity[0].enrollment_start_time).toBeDefined()
-    expect(response.entity[0].enrollment_end_time).toBeDefined()
-
-    expect(response.entity[0].lesson_count).toBeDefined()
-    expect(response.entity[0].primary_cta_text).toBeDefined()
-    expect(response.entity[0].challenge_state).toBeDefined()
-    expect(response.entity[0].challenge_state_text).toBeDefined()
-  })
-
-  test('fetchAllChallengesByGenre', async () => {
-    const response = await fetchAll('drumeo', 'challenge', { groupBy: 'genre' })
-    expect(response.entity[0].type).toBe('genre')
-    expect(response.entity[0].lessons).toBeDefined()
-  })
-
-  test('fetchAllChallengesByDifficulty', async () => {
-    const response = await fetchAll('drumeo', 'challenge', { groupBy: 'difficulty_string' })
-    expect(response.entity[0].name).toBeDefined()
-    expect(response.entity[0].lessons).toBeDefined()
-    expect(response.entity[0].lessons.length).toBeGreaterThan(0)
-  })
-
-  test('fetchAllChallengesByCompleted', async () => {
-    var mock = jest.spyOn(railContentModule, 'fetchCompletedChallenges')
-    mock.mockImplementation(() => [402204])
-    const response = await fetchAll('drumeo', 'challenge', { groupBy: 'completed' })
-    expect(response.entity.length).toBe(1)
-  })
-
-  test('fetchAllChallengesByOwned', async () => {
-    var mock = jest.spyOn(railContentModule, 'fetchOwnedChallenges')
-    mock.mockImplementation(() => [402204])
-    const response = await fetchAll('drumeo', 'challenge', { groupBy: 'owned' })
-    expect(response.entity.length).toBe(1)
-  })
-
   test('fetchAll-CustomFields', async () => {
-    let response = await fetchAll('drumeo', 'challenge', { customFields: ['garbage'] })
+    let response = await fetchAll('drumeo', 'course', { customFields: ['garbage'] })
     log(response)
     expect(response.entity[0].garbage).toBeDefined()
     expect(response.entity[0].id).toBeDefined()
 
-    response = await fetchAll('drumeo', 'challenge', {
+    response = await fetchAll('drumeo', 'course', {
       useDefaultFields: false, customFields: ['garbage'],
     })
     log(response)
@@ -805,16 +763,6 @@ describe('MetaData', function() {
   test('invalidContentType', async () => {
     const metaData = processMetadata('guitareo', 'not a real type')
     expect(metaData).toBeNull()
-  })
-
-  test('onlyCommon', async () => {
-    const guitareoMetaData = processMetadata('guitareo', 'challenge')
-    const drumeoMetaData = processMetadata('drumeo', 'challenge')
-    guitareoMetaData.url = ''
-    drumeoMetaData.url = ''
-    expect(guitareoMetaData).toStrictEqual(drumeoMetaData)
-    expect(guitareoMetaData.type).toBe('challenge')
-    expect(guitareoMetaData.name).toBe('Challenges')
   })
 
   test('withCommon', async () => {

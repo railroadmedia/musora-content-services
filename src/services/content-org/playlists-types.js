@@ -9,6 +9,16 @@
  */
 
 /**
+ * @typedef UpdatePlaylistDTO
+ * @property {string} name - The name of the new playlist. (required, max 255 characters)
+ * @property {string} description - A description of the playlist. (optional, max 1000 characters)
+ * @property {string} category - The category of the playlist. (optional, max 255 characters)
+ * @property {boolean} is_private - Whether the playlist is private. (optional, defaults to false)
+ * @property {Array<number>} deleted_items - List of playlist items to be deleted. (optional)
+ * @property {Array<number>} item_order - List of all remaining playlist item ids (not content_ids) provided in the new order. (optional)
+ */
+
+/**
  * @typedef DuplicatePlaylistDTO
  * @property {string} name - The name of the new playlist. (required, max 255 characters)
  * @property {string} description - A description of the playlist. (optional, max 1000 characters)
