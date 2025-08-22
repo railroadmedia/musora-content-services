@@ -95,7 +95,8 @@ import {
 } from './services/forum.js';
 
 import {
-	fetchAwardsForUser
+	fetchAwardsForUser,
+	fetchCertificate
 } from './services/gamification/awards.ts';
 
 import {
@@ -348,6 +349,7 @@ declare module 'musora-content-services' {
 		fetchByRailContentIds,
 		fetchByReference,
 		fetchCarouselCardData,
+		fetchCertificate,
 		fetchChatAndLiveEnvent,
 		fetchChatSettings,
 		fetchCoachLessons,

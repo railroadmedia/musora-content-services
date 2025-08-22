@@ -6,32 +6,39 @@ import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { PaginatedResponse } from '../api/types'
 import { globalConfig } from '../config'
 
-const baseUrl = `/api/user-management-system`
+const baseUrl = `/api/gamification`
 
 export interface Award {
-  username: string
-  date_completed: Date
-  challenge_title: string
-  award_text: string
-  tier: string
-  award: string
-  instructor_signature?: string
-  musora_logo: string
-  brand_logo: string
-  ribbon_image: string
-  award_64: string
-  instructor_signature_64: string
-  musora_logo_64: string
-  brand_logo_64: string
-  ribbon_image_64: string
   id: number
+  user_id: number
+  completed_at: Date
+  completion_data: Object
+  award_id: number
+  type: string
   title: string
   badge: string
-  artist_name: string
-  dark_mode_logo_url: string
-  light_mode_logo_url: string
-  logo_image_url: string
-  web_url_path: string
+}
+
+export interface Certificate {
+  id: number
+  user_name: string
+  user_id: number
+  completed_at: Date
+  message: string
+  award_id: number
+  type: string
+  title: string
+  musora_logo: string
+  musora_logo_64: string
+  brand_logo: string
+  brand_logo_64: string
+  ribbon_image: string
+  ribbon_image_64: string
+  award_image: string
+  award_image_64: string
+
+  instructor_signature?: string
+  instructor_signature_64?: string
 }
 /**
  * Get awards for a specific user.
@@ -57,5 +64,25 @@ export async function fetchAwardsForUser(
     `${baseUrl}/v1/users/${userId}/awards?limit=${limit}&page=${page}`
   )
 
+  return response
+}
+
+/**
+ * Get certificate data for a completed user award
+ *
+ * NOTE: needs error handling for the response from http client
+ * (Alexandre: I'm doing it in a different branch/PR: https://github.com/railroadmedia/musora-content-services/pull/349)
+ * NOTE: This function still expects brand because FE passes the argument. It is ignored for now
+ *
+ * @param {number} userAwardId - The user award progress id
+ * @returns {Promise<Certificate>} - The awards for the user.
+ */
+export async function fetchCertificate(
+  userAwardId: number,
+): Promise<Certificate> {
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  const response = await httpClient.get<Certificate>(
+    `${baseUrl}/v1/users/certificate/${userAwardId}`
+  )
   return response
 }

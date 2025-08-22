@@ -95,7 +95,8 @@ import {
 } from './services/forum.js';
 
 import {
-	fetchAwardsForUser
+	fetchAwardsForUser,
+	fetchCertificate
 } from './services/gamification/awards.ts';
 
 import {
@@ -347,6 +348,7 @@ export {
 	fetchByRailContentIds,
 	fetchByReference,
 	fetchCarouselCardData,
+	fetchCertificate,
 	fetchChatAndLiveEnvent,
 	fetchChatSettings,
 	fetchCoachLessons,
