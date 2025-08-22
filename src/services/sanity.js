@@ -2184,11 +2184,12 @@ export async function fetchTabData(
   let filter = ''
 
   filter = `brand == "${brand}" ${includedFieldsFilter}`
-  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true, pullFutureContent: true }).buildFilter()
+  const childrenFields = await getChildFieldsForContentType('tab-data')
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
   entityFieldsString =
     ` ${fieldsString}
-    'children': child[${childrenFilter}]->{'id': railcontent_id, 'type': _type, brand, 'thumbnail': thumbnail.asset->url, published_on},
+    'children': child[${childrenFilter}]->{ ${childrenFields} },
     'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
     'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     'length_in_seconds': coalesce(
