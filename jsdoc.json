@@ -12,8 +12,18 @@
       "src/services/railcontent.js",
       "src/index.js"
     ],
-    "includePattern": ".js$",
+    "includePattern": "(.js|.ts$)",
     "excludePattern": "(node_modules/|docs)"
+  },
+  "plugins": [
+    "node_modules/jsdoc-babel"
+  ],
+  "babel": {
+    "extensions": ["ts"],
+    "ignore": ["**/*.(test|spec).ts"],
+    "babelrc": false,
+    "presets": [["@babel/preset-env", { "targets": { "node": true } }], "@babel/preset-typescript"],
+    "plugins": ["@babel/plugin-transform-class-properties", "@babel/plugin-transform-object-rest-spread"]
   },
   "opts": {
     "destination": "./docs",
