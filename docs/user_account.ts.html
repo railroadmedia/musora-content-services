@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>user/interests.js - Documentation</title>
+    <title>user/account.ts - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">user/interests.js</h1>
+    <h1 class="page-title">user/account.ts</h1>
     
 
     
@@ -46,82 +46,70 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @module Interests
+ * @module Accounts
  */
+import { HttpClient } from '../../infrastructure/http/HttpClient'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from '../config.js'
-import { fetchHandler } from '../railcontent.js'
-import './types.js'
 
-const baseUrl = `/api/user-management-system`
-
-/**
- * @param {number} [userId=globalConfig.sessionConfig.userId] - The user ID
- * @returns {Promise&lt;Array&lt;number>>} - The list of interests
- */
-export async function fetchInterests(userId = globalConfig.sessionConfig.userId) {
-  const url = `${baseUrl}/v1/users/${userId}/interests`
-  return fetchHandler(url, 'get')
+export interface PasswordResetProps {
+  email: string
+  password: string
+  passwordConfirmation: string
+  token: string
 }
 
-/**
- * @param {number} contentId
- * @returns {Promise&lt;any>}
- */
-export async function markContentAsInterested(contentId) {
-  if (!contentId) {
-    throw new Error('contentId is required')
-  }
-
-  const url = `${baseUrl}/v1/users/interests/${contentId}`
-  return fetchHandler(url, 'post')
+export async function status(email: string): Promise&lt;{ requires_setup: boolean } | HttpError> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  const response = await httpClient.get&lt;{ requires_setup: boolean }>(
+    `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status`
+  )
+  return response
 }
 
-/**
- * @param {number} contentId
- * @returns {Promise&lt;any>}
- */
-export async function removeContentAsInterested(contentId) {
-  if (!contentId) {
-    throw new Error('contentId is required')
-  }
-
-  const url = `${baseUrl}/v1/users/interests/${contentId}`
-  return fetchHandler(url, 'delete')
+export async function sendAccountSetupEmail(email: string): Promise&lt;void | HttpError> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post&lt;void>(
+    `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/send-setup-email`,
+    {}
+  )
 }
 
-/**
- * @param {number} [userId=globalConfig.sessionConfig.userId] - The user ID
- * @returns {Promise&lt;Array&lt;number>>} - The list of content the user is not interested in
- */
-export async function fetchUninterests(userId = globalConfig.sessionConfig.userId) {
-  const url = `${baseUrl}/v1/users/${userId}/uninterests`
-  return fetchHandler(url, 'get')
+export async function setupAccount({
+  email,
+  password,
+  passwordConfirmation,
+  token,
+}: PasswordResetProps): Promise&lt;void | HttpError> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post(`/api/user-management-system/v1/accounts`, {
+    email,
+    password,
+    password_confirmation: passwordConfirmation,
+    token,
+  })
 }
 
-/**
- * @param {number} contentId
- * @returns {Promise&lt;any>}
- */
-export async function markContentAsNotInterested(contentId) {
-  if (!contentId) {
-    throw new Error('contentId is required')
-  }
-
-  const url = `${baseUrl}/v1/users/uninterests/${contentId}`
-  return fetchHandler(url, 'post')
+export async function sendPasswordResetEmail(email: string): Promise&lt;void | HttpError> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post(`/api/user-management-system/v1/accounts/password/reset-email`, {
+    email,
+  })
 }
 
-/**
- * @param {number} contentId
- * @returns {Promise&lt;any>}
- */
-export async function removeContentAsNotInterested(contentId) {
-  if (!contentId) {
-    throw new Error('contentId is required')
-  }
-
-  const url = `${baseUrl}/v1/users/uninterests/${contentId}`
-  return fetchHandler(url, 'delete')
+export async function resetPassword({
+  email,
+  password,
+  passwordConfirmation,
+  token,
+}: PasswordResetProps): Promise&lt;void | HttpError> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post(`/api/user-management-system/v1/accounts/password/reset`, {
+    email,
+    password,
+    password_confirmation: passwordConfirmation,
+    token,
+  })
 }
 </code></pre>
         </article>

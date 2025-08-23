@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>user/interests.js - Documentation</title>
+    <title>gamification/awards.ts - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">user/interests.js</h1>
+    <h1 class="page-title">gamification/awards.ts</h1>
     
 
     
@@ -46,82 +46,92 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @module Interests
+ * @module Awards
  */
-import { globalConfig } from '../config.js'
-import { fetchHandler } from '../railcontent.js'
-import './types.js'
 
-const baseUrl = `/api/user-management-system`
+import { HttpClient } from '../../infrastructure/http/HttpClient'
+import { PaginatedResponse } from '../api/types'
+import { globalConfig } from '../config'
 
+const baseUrl = `/api/gamification`
+
+export interface Award {
+  id: number
+  user_id: number
+  completed_at: Date
+  completion_data: Object
+  award_id: number
+  type: string
+  title: string
+  badge: string
+}
+
+export interface Certificate {
+  id: number
+  user_name: string
+  user_id: number
+  completed_at: Date
+  message: string
+  award_id: number
+  type: string
+  title: string
+  musora_logo: string
+  musora_logo_64: string
+  brand_logo: string
+  brand_logo_64: string
+  ribbon_image: string
+  ribbon_image_64: string
+  award_image: string
+  award_image_64: string
+
+  instructor_signature?: string
+  instructor_signature_64?: string
+}
 /**
- * @param {number} [userId=globalConfig.sessionConfig.userId] - The user ID
- * @returns {Promise&lt;Array&lt;number>>} - The list of interests
+ * Get awards for a specific user.
+ *
+ * NOTE: needs error handling for the response from http client
+ * (Alexandre: I'm doing it in a different branch/PR: https://github.com/railroadmedia/musora-content-services/pull/349)
+ * NOTE: This function still expects brand because FE passes the argument. It is ignored for now
+ *
+ * @param {number|null} userId - The user ID. If not provided, the authenticated user is used instead.
+ * @param {string} _brand - The brand to fetch the awards for.
+ * @param {number|null} page - Page attribute for pagination
+ * @param {number|null} limit - Limit how many items to return
+ * @returns {Promise&lt;PaginatedResponse&lt;Award>>} - The awards for the user.
  */
-export async function fetchInterests(userId = globalConfig.sessionConfig.userId) {
-  const url = `${baseUrl}/v1/users/${userId}/interests`
-  return fetchHandler(url, 'get')
+export async function fetchAwardsForUser(
+  userId: number,
+  _brand: string,
+  page: number = 1,
+  limit: number = 5
+): Promise&lt;PaginatedResponse&lt;Award>> {
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  const response = await httpClient.get&lt;PaginatedResponse&lt;Award>>(
+    `${baseUrl}/v1/users/${userId}/awards?limit=${limit}&amp;page=${page}`
+  )
+
+  return response
 }
 
 /**
- * @param {number} contentId
- * @returns {Promise&lt;any>}
+ * Get certificate data for a completed user award
+ *
+ * NOTE: needs error handling for the response from http client
+ * (Alexandre: I'm doing it in a different branch/PR: https://github.com/railroadmedia/musora-content-services/pull/349)
+ * NOTE: This function still expects brand because FE passes the argument. It is ignored for now
+ *
+ * @param {number} userAwardId - The user award progress id
+ * @returns {Promise&lt;Certificate>} - The awards for the user.
  */
-export async function markContentAsInterested(contentId) {
-  if (!contentId) {
-    throw new Error('contentId is required')
-  }
-
-  const url = `${baseUrl}/v1/users/interests/${contentId}`
-  return fetchHandler(url, 'post')
-}
-
-/**
- * @param {number} contentId
- * @returns {Promise&lt;any>}
- */
-export async function removeContentAsInterested(contentId) {
-  if (!contentId) {
-    throw new Error('contentId is required')
-  }
-
-  const url = `${baseUrl}/v1/users/interests/${contentId}`
-  return fetchHandler(url, 'delete')
-}
-
-/**
- * @param {number} [userId=globalConfig.sessionConfig.userId] - The user ID
- * @returns {Promise&lt;Array&lt;number>>} - The list of content the user is not interested in
- */
-export async function fetchUninterests(userId = globalConfig.sessionConfig.userId) {
-  const url = `${baseUrl}/v1/users/${userId}/uninterests`
-  return fetchHandler(url, 'get')
-}
-
-/**
- * @param {number} contentId
- * @returns {Promise&lt;any>}
- */
-export async function markContentAsNotInterested(contentId) {
-  if (!contentId) {
-    throw new Error('contentId is required')
-  }
-
-  const url = `${baseUrl}/v1/users/uninterests/${contentId}`
-  return fetchHandler(url, 'post')
-}
-
-/**
- * @param {number} contentId
- * @returns {Promise&lt;any>}
- */
-export async function removeContentAsNotInterested(contentId) {
-  if (!contentId) {
-    throw new Error('contentId is required')
-  }
-
-  const url = `${baseUrl}/v1/users/uninterests/${contentId}`
-  return fetchHandler(url, 'delete')
+export async function fetchCertificate(
+  userAwardId: number,
+): Promise&lt;Certificate> {
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  const response = await httpClient.get&lt;Certificate>(
+    `${baseUrl}/v1/users/certificate/${userAwardId}`
+  )
+  return response
 }
 </code></pre>
         </article>
