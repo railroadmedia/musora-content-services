@@ -26,7 +26,7 @@ import { applyCloudflareWrapper, applySanityTransformations, buildImageSRC } fro
 
 import { extractSanityUrl, isBucketUrl, verifyImageSRC } from './services/imageSRCVerify.js';
 
-import { assignModeratorToComment, closeComment, createComment, deleteComment, editComment, fetchAllCompletedStates, fetchCarouselCardData, fetchComment, fetchCommentRelies, fetchComments, fetchCompletedContent, fetchCompletedState, fetchContentInProgress, fetchContentPageUserData, fetchContentProgress, fetchHandler, fetchLastInteractedChild, fetchLikeCount, fetchNextContentDataForParent, fetchRecent, fetchRecentUserActivities, fetchSongsInProgress, fetchTopComment, fetchUserAward, fetchUserBadges, fetchUserLikes, fetchUserPermissionsData, fetchUserPracticeMeta, fetchUserPracticeNotes, fetchUserPractices, likeComment, logUserPractice, openComment, postContentComplete, postContentLiked, postContentReset, postContentRestore, postContentUnliked, postPlaylistContentEngaged, postRecordWatchSession, replyToComment, reportComment, restoreComment, setStudentViewForUser, unassignModeratorToComment, unlikeComment } from './services/railcontent.js';
+import { assignModeratorToComment, closeComment, createComment, deleteComment, editComment, fetchAllCompletedStates, fetchCarouselCardData, fetchComment, fetchCommentRelies, fetchComments, fetchCompletedContent, fetchCompletedState, fetchContentInProgress, fetchContentPageUserData, fetchContentProgress, fetchHandler, fetchLastInteractedChild, fetchLikeCount, fetchNextContentDataForParent, fetchRecent, fetchRecentUserActivities, fetchResponseHandler, fetchSongsInProgress, fetchTopComment, fetchUserAward, fetchUserBadges, fetchUserLikes, fetchUserPermissionsData, fetchUserPracticeMeta, fetchUserPracticeNotes, fetchUserPractices, likeComment, logUserPractice, openComment, postContentComplete, postContentLiked, postContentReset, postContentRestore, postContentUnliked, postPlaylistContentEngaged, postRecordWatchSession, postUserLikes, replyToComment, reportComment, restoreComment, setStudentViewForUser, unassignModeratorToComment, unlikeComment } from './services/railcontent.js';
 
 import { fetchSimilarItems, rankCategories, rankItems, recommendations } from './services/recommendations.js';
 
@@ -55,6 +55,8 @@ import SyncStoreOrchestrator from './services/sync/orchestrator.ts';
 import { SYNC_TABLES } from './services/sync/schema/index.ts';
 
 import appSchema from './services/sync/schema/index.ts';
+
+import SyncSerializer from './services/sync/serializers/index.ts';
 
 import SyncStore from './services/sync/store/index.ts';
 
@@ -180,6 +182,7 @@ export {
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
+	fetchResponseHandler,
 	fetchReturning,
 	fetchSanity,
 	fetchScheduledAndNewReleases,
@@ -276,6 +279,7 @@ export {
 	postContentUnliked,
 	postPlaylistContentEngaged,
 	postRecordWatchSession,
+	postUserLikes,
 	rankCategories,
 	rankItems,
 	recommendations,
@@ -329,6 +333,7 @@ export {
 	ContentProgress,
 	PollingSyncStrategy,
 	SyncExecutor,
+	SyncSerializer,
 	SyncStore,
 	SyncStoreOrchestrator,
 	appSchema,

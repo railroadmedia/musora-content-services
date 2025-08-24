@@ -305,6 +305,11 @@ export async function fetchUserLikes(currentVersion) {
   return fetchDataHandler(url, currentVersion)
 }
 
+export async function postUserLikes(likes) {
+  let url = `/api/content/v1/user/likes`
+  return await postDataHandler(url, likes);
+}
+
 export async function postContentLiked(contentId) {
   let url = `/api/content/v1/user/likes/${contentId}`
   return await postDataHandler(url)
