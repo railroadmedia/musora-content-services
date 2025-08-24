@@ -1,20 +1,28 @@
-import { SyncToken, SyncEntry } from "./index"
+import { SyncToken, SyncPullEntry, SyncPushEntry } from "./index"
 
-export interface RawResponse {
+export interface RawPullResponse {
   meta: {
     since: SyncToken | null
     max_stamp: SyncToken | null
   }
-  records: SyncEntry[]
+  records: SyncPullEntry[]
+}
+
+export interface RawPushResponse {
+  records: SyncPushEntry[]
+}
+
+export interface ServerPushResponse {
+  data: SyncPushEntry[]
 }
 
 export interface ServerPullResponse {
-  data: SyncEntry[]
+  data: SyncPullEntry[]
   token: SyncToken | null
   previousToken: SyncToken | null
 }
 
-export function syncPull(callback: (token: SyncToken | null) => Promise<RawResponse>) {
+export function syncPull(callback: (token: SyncToken | null) => Promise<RawPullResponse>) {
   return async function(lastFetchToken: SyncToken | null): Promise<ServerPullResponse> {
     const response = await callback(lastFetchToken)
 
@@ -30,9 +38,14 @@ export function syncPull(callback: (token: SyncToken | null) => Promise<RawRespo
   }
 }
 
-export function syncPush(url: string) {
-  return async function() {
-    const response = await fetch(url)
-    return response.json()
+export function syncPush(callback: (entries: { records: SyncPullEntry[] }) => Promise<RawPushResponse>) {
+  return async function(entries: SyncPullEntry[]) {
+    const response = await callback({ records: entries })
+
+    const data = response.records
+
+    return {
+      data
+    }
   }
 }

@@ -1,7 +1,8 @@
 import { Database, Q, type Collection, type Model, type RecordId } from '@nozbe/watermelondb'
 import SyncSerializer, { type SyncSerialized } from '../serializers'
 import { ServerPullResponse } from '../fetch'
-import { SyncToken, SyncEntry } from '..'
+import { SyncToken, SyncPullEntry } from '..'
+import { ulid } from 'ulid'
 
 type SyncStoreResponseMeta = {
   status: 'fresh' | 'possiblyStale'
@@ -64,7 +65,12 @@ export default class SyncStore<
   }
 
   async sync() {
+    await this.pushAny()
     await this.syncInternal()
+  }
+
+  async pushAny() {
+    await this.push([{ id: ulid(), content_id: '69420' }])
   }
 
   async readOne(id: string) {
@@ -169,7 +175,7 @@ export default class SyncStore<
     return this.collection.query(Q.where('id', id)).fetch().then(records => this.serializer.toPlainObject(records[0]))
   }
 
-  private async writeLocal(entries: SyncEntry[], freshSync: boolean = false) {
+  private async writeLocal(entries: SyncPullEntry[], freshSync: boolean = false) {
     return this.db.write(async writer => {
       const existingRecordsMap = new Map<RecordId, TModel>()
       if (!freshSync) {
@@ -179,12 +185,9 @@ export default class SyncStore<
         }
       }
 
-      // edge cases:
-      // how to handle when server has deleted, but local has changes?
-
       const [entriesToCreate, tuplesToUpdate, recordsToDelete] = freshSync
-        ? [entries.filter(entry => !entry.meta.deleted_at), [], []]
-        : entries.reduce<[SyncEntry[], [TModel, SyncEntry][], TModel[]]>(
+        ? [entries.filter(entry => !entry.meta.lifecycle.deleted_at), [], []]
+        : entries.reduce<[SyncPullEntry[], [TModel, SyncPullEntry][], TModel[]]>(
             (acc, entry) => {
               const existing = existingRecordsMap.get(entry.record.id.toString())
               if (existing) {
@@ -194,7 +197,7 @@ export default class SyncStore<
                     break;
 
                   case 'deleted':
-                    if (entry.meta.deleted_at) {
+                    if (entry.meta.lifecycle.deleted_at) {
                       acc[2].push(existing)
                     } else {
                       // do what???
@@ -202,7 +205,11 @@ export default class SyncStore<
                     break;
 
                   case 'updated':
-                    if (entry.meta.updated_at > existing._raw['updated_at']) {
+                    if (entry.meta.lifecycle.deleted_at) {
+                      // delete local even though user has newer changes
+                      // otherwise would be some weird id changes/conflicts that I don't even want to think about right now
+                      acc[2].push(existing)
+                    } else if (entry.meta.lifecycle.updated_at > existing._raw['updated_at']) {
                       acc[1].push([existing, entry])
                     } else {
                       // ignore ???
@@ -212,14 +219,14 @@ export default class SyncStore<
                   case 'created': // shouldn't really happen
                   case 'synced':
                   default:
-                    if (entry.meta.deleted_at) {
+                    if (entry.meta.lifecycle.deleted_at) {
                       acc[2].push(existing)
                     } else {
                       acc[1].push([existing, entry])
                     }
                 }
               } else {
-                if (entry.meta.deleted_at) {
+                if (entry.meta.lifecycle.deleted_at) {
                   // ignore ???
                 } else {
                   acc[0].push(entry)
@@ -236,8 +243,8 @@ export default class SyncStore<
             if (key === 'id') r._raw.id = value.toString()
             else r[key] = value
           })
-          r._raw['created_at'] = entry.meta.created_at
-          r._raw['updated_at'] = entry.meta.updated_at
+          r._raw['created_at'] = entry.meta.lifecycle.created_at
+          r._raw['updated_at'] = entry.meta.lifecycle.updated_at
 
           r._raw._status = 'synced'
           r._raw._changed = ''
@@ -248,8 +255,8 @@ export default class SyncStore<
           Object.entries(entry.record).forEach(([key, value]) => {
             if (key !== 'id') r[key] = value
           })
-          r._raw['created_at'] = entry.meta.created_at
-          r._raw['updated_at'] = entry.meta.updated_at
+          r._raw['created_at'] = entry.meta.lifecycle.created_at
+          r._raw['updated_at'] = entry.meta.lifecycle.updated_at
 
           r._raw._status = 'synced'
           r._raw._changed = ''

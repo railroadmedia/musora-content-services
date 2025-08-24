@@ -292,6 +292,8 @@ import { SYNC_TABLES } from './services/sync/schema/index.ts';
 
 import appSchema from './services/sync/schema/index.ts';
 
+import SyncSerializer from './services/sync/serializers/index.ts';
+
 import SyncStore from './services/sync/store/index.ts';
 
 import { BaseSyncStrategy } from './services/sync/strategies/base.ts';
@@ -438,6 +440,7 @@ declare module 'musora-content-services' {
 		fetchRelatedLessons,
 		fetchRelatedRecommendedContent,
 		fetchRelatedSongs,
+		fetchResponseHandler,
 		fetchReturning,
 		fetchSanity,
 		fetchScheduledAndNewReleases,
@@ -541,6 +544,7 @@ declare module 'musora-content-services' {
 		postContentUnliked,
 		postPlaylistContentEngaged,
 		postRecordWatchSession,
+		postUserLikes,
 		rankCategories,
 		rankItems,
 		recommendations,
@@ -608,6 +612,7 @@ declare module 'musora-content-services' {
 		ContentProgress,
 		PollingSyncStrategy,
 		SyncExecutor,
+		SyncSerializer,
 		SyncStore,
 		SyncStoreOrchestrator,
 		appSchema,
