@@ -1,22 +1,6 @@
 import { Database, Q, type Collection, type Model, type RecordId } from '@nozbe/watermelondb'
-import SyncSerializer, { type SyncSerialized } from '../serializers'
-import { ServerPullResponse } from '../fetch'
-import { SyncToken, SyncPullEntry } from '..'
-import { ulid } from 'ulid'
-
-type SyncStoreResponseMeta = {
-  status: 'fresh' | 'possiblyStale'
-  previousFetchToken: SyncToken | null
-  fetchToken: SyncToken
-}
-
-export type SyncStoreMultiResponse<T extends SyncSerializer> = SyncStoreResponseMeta & {
-  data: SyncSerialized<T>[]
-}
-
-export type SyncStoreSingleResponse<T extends SyncSerializer> = SyncStoreResponseMeta & {
-  data: SyncSerialized<T>
-}
+import SyncSerializer from '../serializers'
+import { ClientPushPayload, ServerPullResponse, ServerPushResponse, SyncToken, SyncEntry, SyncStorePushResponseAcknowledged, SyncStorePushResponseUnreachable, SyncStorePullSingleResponse, SyncStorePullMultiResponse, SyncStorePullSingleDTO, SyncStorePullMultiDTO, SyncStorePushDTO } from '..'
 
 export default class SyncStore<
   TModel extends Model = Model,
@@ -31,7 +15,7 @@ export default class SyncStore<
   currentSync: Promise<ServerPullResponse> | null = null
 
   readonly pull: (previousFetchToken: SyncToken | null) => Promise<ServerPullResponse>
-  readonly push: () => Promise<any>
+  readonly push: (payload: ClientPushPayload) => Promise<ServerPushResponse>
 
   fetchedOnce: boolean = false
 
@@ -39,7 +23,7 @@ export default class SyncStore<
     model: TModel,
     db: Database,
     pull: (previousFetchToken: SyncToken | null) => Promise<ServerPullResponse>,
-    push: () => Promise<any>,
+    push: (payload: ClientPushPayload) => Promise<ServerPushResponse>,
     serializer?: TSerializer
   }) {
     this.db = db
@@ -65,12 +49,74 @@ export default class SyncStore<
   }
 
   async sync() {
-    await this.pushAny()
+    await this.pushAny() // TODO - should server return a pull as well? otherwise redundant records returned in syncInternal...
     await this.syncInternal()
   }
 
   async pushAny() {
-    await this.push([{ id: ulid(), content_id: '69420' }])
+    const results = await this.collection.query().fetch()
+    const pushable = results.filter(rec => rec._raw._status !== 'synced')
+
+    if (pushable.length === 0) return
+    await this._pushcommon(pushable)
+  }
+
+  async pushOneImmediate(record: TModel) {
+    const pushed = await this._pushcommon([record])
+
+    if (pushed.acknowledged) {
+      const result = pushed.results[0]
+      if (result.success) {
+        await this.writeLocal([result.entry], false)
+        const data = await this.readLocalOne(result.entry.record.id)
+
+        const ret: SyncStorePushDTO = {
+          data,
+          state: 'synced', // TODO - or 'queued' ?
+        }
+        return ret
+      } else {
+        // todo
+      }
+    } else {
+      throw new Error('SyncStore.pushOneImmediate: push failed') // todo - include originalError
+    }
+  }
+
+  async _pushcommon(pushable: TModel[]) {
+    const entries = pushable.map(rec => {
+      const record = this.serializer.toPlainObject(rec)
+      const meta = {
+        deleted: rec._raw._status === 'deleted'
+      }
+
+      return {
+        record,
+        meta
+      }
+    })
+    const payload = {
+      entries
+    }
+
+    try {
+      const pushed = await this.push(payload)
+
+      const response: SyncStorePushResponseAcknowledged = {
+        acknowledged: true,
+        results: pushed.results,
+      }
+
+      return response
+    } catch (error) {
+      const response: SyncStorePushResponseUnreachable = {
+        acknowledged: false,
+        status: 'unreachable',
+        originalError: error
+      }
+
+      return response
+    }
   }
 
   async readOne(id: string) {
@@ -79,12 +125,14 @@ export default class SyncStore<
       this.getLastFetchToken()
     ])
 
-    return {
+    const result: SyncStorePullSingleDTO = {
+      success: true,
       data,
       status: 'possiblyStale',
       previousFetchToken: fetchToken,
       fetchToken
     }
+    return result
   }
 
   async readAll() {
@@ -93,36 +141,42 @@ export default class SyncStore<
       this.getLastFetchToken()
     ])
 
-    return {
+    const result: SyncStorePullMultiDTO = {
+      success: true,
       data,
       status: 'possiblyStale',
       previousFetchToken: fetchToken,
       fetchToken
     }
+    return result
   }
 
   async fetchAll() {
     const response = await this.syncInternal()
     const data = await this.readLocalAll()
 
-    return {
+    const result: SyncStorePullMultiDTO = {
+      success: true,
       data,
       status: 'fresh',
       previousFetchToken: response.previousToken,
       fetchToken: response.token
     }
+    return result
   }
 
   async fetchOne(id: string) {
     const response = await this.syncInternal()
     const data = await this.readLocalOne(id)
 
-    return {
+    const result: SyncStorePullSingleDTO = {
+      success: true,
       data,
       status: 'fresh',
       previousFetchToken: response.previousToken,
       fetchToken: response.token
     }
+    return result
   }
 
   async fetchAllOnce() {
@@ -175,7 +229,7 @@ export default class SyncStore<
     return this.collection.query(Q.where('id', id)).fetch().then(records => this.serializer.toPlainObject(records[0]))
   }
 
-  private async writeLocal(entries: SyncPullEntry[], freshSync: boolean = false) {
+  private async writeLocal(entries: SyncEntry[], freshSync: boolean = false) {
     return this.db.write(async writer => {
       const existingRecordsMap = new Map<RecordId, TModel>()
       if (!freshSync) {
@@ -187,9 +241,9 @@ export default class SyncStore<
 
       const [entriesToCreate, tuplesToUpdate, recordsToDelete] = freshSync
         ? [entries.filter(entry => !entry.meta.lifecycle.deleted_at), [], []]
-        : entries.reduce<[SyncPullEntry[], [TModel, SyncPullEntry][], TModel[]]>(
+        : entries.reduce<[SyncEntry[], [TModel, SyncEntry][], TModel[]]>(
             (acc, entry) => {
-              const existing = existingRecordsMap.get(entry.record.id.toString())
+              const existing = existingRecordsMap.get(entry.meta.record_id.toString())
               if (existing) {
                 switch (existing._raw._status) {
                   case 'disposable':

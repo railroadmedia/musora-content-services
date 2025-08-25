@@ -1,6 +1,4 @@
-import { Model, RawRecord } from "@nozbe/watermelondb"
-
-export type SyncSerialized<T extends SyncSerializer = SyncSerializer> = ReturnType<T['toPlainObject']>
+import { Model, RecordId } from "@nozbe/watermelondb"
 
 export default class SyncSerializer {
   toPlainObject(model: Model) {
@@ -13,6 +11,6 @@ export default class SyncSerializer {
       }
     }
 
-    return result as Omit<RawRecord, '_changed' | '_status'> & Record<string, unknown>
+    return result as { id: RecordId } & Record<string, any>
   }
 }
