@@ -52,6 +52,10 @@ import ContentProgress from './services/sync/models/ContentProgress.ts';
 
 import SyncStoreOrchestrator from './services/sync/orchestrator.ts';
 
+import SyncRepository from './services/sync/repositories/base.ts';
+
+import LikesRepository from './services/sync/repositories/likes.ts';
+
 import { SYNC_TABLES } from './services/sync/schema/index.ts';
 
 import appSchema from './services/sync/schema/index.ts';
@@ -331,8 +335,10 @@ export {
 	ContentLike,
 	ContentPractice,
 	ContentProgress,
+	LikesRepository,
 	PollingSyncStrategy,
 	SyncExecutor,
+	SyncRepository,
 	SyncSerializer,
 	SyncStore,
 	SyncStoreOrchestrator,

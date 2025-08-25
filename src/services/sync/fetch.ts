@@ -1,25 +1,19 @@
-import { SyncToken, SyncPullEntry, SyncPushEntry } from "./index"
+import { SyncToken, SyncPullEntry, SyncStorePushResult, ServerPullResponse, ServerPushResponse, ClientPushPayload } from "./index"
 
-export interface RawPullResponse {
+interface RawPullResponse {
   meta: {
     since: SyncToken | null
     max_stamp: SyncToken | null
+    timestamp: string
   }
   records: SyncPullEntry[]
 }
 
-export interface RawPushResponse {
-  records: SyncPushEntry[]
-}
-
-export interface ServerPushResponse {
-  data: SyncPushEntry[]
-}
-
-export interface ServerPullResponse {
-  data: SyncPullEntry[]
-  token: SyncToken | null
-  previousToken: SyncToken | null
+interface RawPushResponse {
+  meta: {
+    timestamp: string
+  }
+  results: SyncStorePushResult[]
 }
 
 export function syncPull(callback: (token: SyncToken | null) => Promise<RawPullResponse>) {
@@ -28,7 +22,7 @@ export function syncPull(callback: (token: SyncToken | null) => Promise<RawPullR
 
     const data = response.records
     const previousToken = response.meta.since
-    const token = response.meta.max_stamp
+    const token = response.meta.max_stamp || response.meta.timestamp
 
     return {
       data,
@@ -38,14 +32,14 @@ export function syncPull(callback: (token: SyncToken | null) => Promise<RawPullR
   }
 }
 
-export function syncPush(callback: (entries: { records: SyncPullEntry[] }) => Promise<RawPushResponse>) {
-  return async function(entries: SyncPullEntry[]) {
-    const response = await callback({ records: entries })
+export function syncPush(callback: (payload: ClientPushPayload) => Promise<RawPushResponse>) {
+  return async function(payload: ClientPushPayload): Promise<ServerPushResponse> {
+    const response = await callback(payload)
 
-    const data = response.records
+    const results = response.results
 
     return {
-      data
+      results
     }
   }
 }
