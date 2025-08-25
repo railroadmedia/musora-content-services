@@ -775,7 +775,3 @@ export async function fetchHandler(url, method = 'get', dataVersion = null, body
     body
   )
 }
-
-export async function fetchResponseHandler(url, method = 'get', dataVersion = null, body = null) {
-  return fetchHandler(url, method, dataVersion, body)
-}

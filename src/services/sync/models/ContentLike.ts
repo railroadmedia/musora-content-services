@@ -17,6 +17,7 @@ export default class ContentLike extends Model {
 }
 
 // manual timestamp support for now without decorators
+// todo - find way to use camel_case (so models can always just map 1:1 with server without additional serializing layer)
 
 Object.defineProperty(ContentLike.prototype, 'createdAt', {
   get(this: Model) {
