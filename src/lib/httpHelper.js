@@ -74,6 +74,7 @@ export async function fetchHandler(
   const options = {
     method,
     headers: reqHeaders,
+    credentials: 'include',
   }
   if (body) options.body = body
   if (token) options.headers['Authorization'] = `Bearer ${token}`
