@@ -443,7 +443,6 @@ export {
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
-	fetchResponseHandler,
 	fetchReturning,
 	fetchSanity,
 	fetchScheduledAndNewReleases,

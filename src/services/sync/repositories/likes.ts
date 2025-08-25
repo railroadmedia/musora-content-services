@@ -2,7 +2,7 @@ import SyncRepository from "./base";
 import { Q } from "@nozbe/watermelondb";
 
 export default class LikesRepository extends SyncRepository {
-  async create(contentId: string) {
+  async createAndPush(contentId: string) {
     const id = LikesRepository.generateId(contentId)
 
     await this.store.db.write(async () => {

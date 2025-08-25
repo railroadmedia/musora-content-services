@@ -3,6 +3,8 @@ import { RecordId } from "@nozbe/watermelondb"
 export type SyncToken = string
 export type SyncSyncable = { id: RecordId } & Record<string, any>
 
+export type SyncPullEntry = SyncEntry
+export type SyncPushEntry = SyncEntry
 export type SyncEntry = {
   record: SyncSyncable
   meta: {
@@ -10,9 +12,6 @@ export type SyncEntry = {
     lifecycle: SyncEntryLifecycle
   }
 }
-
-export type SyncPullEntry = SyncEntry
-export type SyncPushEntry = SyncEntry
 
 type SyncEntryLifecycle = {
   created_at: string
@@ -69,21 +68,3 @@ interface SyncStorePushResultBase {
   success: boolean
 }
 
-export interface ClientPushPayload {
-  entries: {
-    record: SyncSyncable
-    meta: {
-      deleted: boolean
-    }
-  }[]
-}
-
-export interface ServerPushResponse {
-  results: SyncStorePushResult[]
-}
-
-export interface ServerPullResponse {
-  data: SyncPullEntry[]
-  token: SyncToken | null
-  previousToken: SyncToken | null
-}

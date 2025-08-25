@@ -70,9 +70,6 @@ export async function fetchHandler(
 
   if (globalConfig.localTimezoneString)
     reqHeaders['M-Client-Timezone'] = globalConfig.localTimezoneString
-  if (dataVersion) {
-    reqHeaders['If-None-Match'] = dataVersion
-  }
   const options = {
     method,
     headers: reqHeaders,

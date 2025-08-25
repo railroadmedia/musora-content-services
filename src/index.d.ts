@@ -444,7 +444,6 @@ declare module 'musora-content-services' {
 		fetchRelatedLessons,
 		fetchRelatedRecommendedContent,
 		fetchRelatedSongs,
-		fetchResponseHandler,
 		fetchReturning,
 		fetchSanity,
 		fetchScheduledAndNewReleases,

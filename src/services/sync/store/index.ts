@@ -1,6 +1,7 @@
 import { Database, Q, type Collection, type Model, type RecordId } from '@nozbe/watermelondb'
 import SyncSerializer from '../serializers'
-import { ClientPushPayload, ServerPullResponse, ServerPushResponse, SyncToken, SyncEntry, SyncStorePushResponseAcknowledged, SyncStorePushResponseUnreachable, SyncStorePullSingleResponse, SyncStorePullMultiResponse, SyncStorePullSingleDTO, SyncStorePullMultiDTO, SyncStorePushDTO } from '..'
+import { SyncToken, SyncEntry, SyncStorePullSingleDTO, SyncStorePullMultiDTO, SyncStorePushDTO, SyncStorePushResponseAcknowledged, SyncStorePushResponseUnreachable } from '..'
+import { ServerPullResponse, ServerPushResponse, ClientPushPayload } from '../fetch'
 
 export default class SyncStore<
   TModel extends Model = Model,
@@ -49,20 +50,15 @@ export default class SyncStore<
   }
 
   async sync() {
-    await this.pushAny() // TODO - should server return a pull as well? otherwise redundant records returned in syncInternal...
+    await this.pushUnsynced()
+
+    // will return records that we just saw in push response, but we can't
+    // be sure there were no other changes before the push
     await this.syncInternal()
   }
 
-  async pushAny() {
-    const results = await this.collection.query().fetch()
-    const pushable = results.filter(rec => rec._raw._status !== 'synced')
-
-    if (pushable.length === 0) return
-    await this._pushcommon(pushable)
-  }
-
   async pushOneImmediate(record: TModel) {
-    const pushed = await this._pushcommon([record])
+    const pushed = await this.internalPush([record])
 
     if (pushed.acknowledged) {
       const result = pushed.results[0]
@@ -80,42 +76,6 @@ export default class SyncStore<
       }
     } else {
       throw new Error('SyncStore.pushOneImmediate: push failed') // todo - include originalError
-    }
-  }
-
-  async _pushcommon(pushable: TModel[]) {
-    const entries = pushable.map(rec => {
-      const record = this.serializer.toPlainObject(rec)
-      const meta = {
-        deleted: rec._raw._status === 'deleted'
-      }
-
-      return {
-        record,
-        meta
-      }
-    })
-    const payload = {
-      entries
-    }
-
-    try {
-      const pushed = await this.push(payload)
-
-      const response: SyncStorePushResponseAcknowledged = {
-        acknowledged: true,
-        results: pushed.results,
-      }
-
-      return response
-    } catch (error) {
-      const response: SyncStorePushResponseUnreachable = {
-        acknowledged: false,
-        status: 'unreachable',
-        originalError: error
-      }
-
-      return response
     }
   }
 
@@ -191,6 +151,52 @@ export default class SyncStore<
       return this.fetchOne(id)
     }
     return this.readOne(id)
+  }
+
+  private async pushUnsynced() {
+    const results = await this.collection.query().fetch()
+    const pushable = results.filter(rec => rec._raw._status !== 'synced')
+
+    if (pushable.length === 0) return
+    await this.internalPush(pushable)
+  }
+
+  private async internalPush(pushable: TModel[]) {
+    // TODO - consider singleton similar to this.currentSync?
+
+    const entries = pushable.map(rec => {
+      const record = this.serializer.toPlainObject(rec)
+      const meta = {
+        deleted: rec._raw._status === 'deleted'
+      }
+
+      return {
+        record,
+        meta
+      }
+    })
+    const payload = {
+      entries
+    }
+
+    try {
+      const pushed = await this.push(payload)
+
+      const response: SyncStorePushResponseAcknowledged = {
+        acknowledged: true,
+        results: pushed.results,
+      }
+
+      return response
+    } catch (error) {
+      const response: SyncStorePushResponseUnreachable = {
+        acknowledged: false,
+        status: 'unreachable',
+        originalError: error
+      }
+
+      return response
+    }
   }
 
   private async syncInternal() {
