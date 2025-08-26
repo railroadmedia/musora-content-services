@@ -148,7 +148,7 @@ export async function updateDisplayName(newDisplayName) {
 }
 
 /**
- * @param {string} email - The new display name to set for the user.
+ * @param {string} email - The new email address to set for the user.
  * @param {string} password - The current password of the user for verification.
  * @returns {Promise<void>} - A promise that resolves when the email change request is made.
  */
