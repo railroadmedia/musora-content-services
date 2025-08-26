@@ -275,12 +275,12 @@ export async function fetchUserPermissionsData() {
   return (await fetchHandler(url, 'get')) ?? []
 }
 
-async function fetchDataHandler(url, dataVersion, method = 'get') {
-  return fetchHandler(url, method, dataVersion)
+async function fetchDataHandler(url, dataVersion, method = 'get', signal = null) {
+  return fetchHandler(url, method, dataVersion, null, signal)
 }
 
-async function postDataHandler(url, data) {
-  return fetchHandler(url, 'post', null, data)
+async function postDataHandler(url, data, signal = null) {
+  return fetchHandler(url, 'post', null, data, signal)
 }
 
 async function patchDataHandler_depreciated(url, data) {
@@ -300,14 +300,14 @@ export async function fetchLikeCount(contendId) {
   return await fetchDataHandler(url)
 }
 
-export async function fetchUserLikes(currentVersion) {
+export async function fetchUserLikes(currentVersion, signal) {
   let url = `/api/content/v1/user/likes`
-  return fetchDataHandler(url, currentVersion)
+  return fetchDataHandler(url, currentVersion, 'get', signal)
 }
 
-export async function postUserLikes(likes) {
+export async function postUserLikes(likes, signal) {
   let url = `/api/content/v1/user/likes`
-  return await postDataHandler(url, likes);
+  return await postDataHandler(url, likes, signal);
 }
 
 export async function postContentLiked(contentId) {
@@ -756,13 +756,14 @@ function fetchAbsolute(url, params) {
   }
   return fetch(url, params)
 }
-export async function fetchHandler(url, method = 'get', dataVersion = null, body = null) {
+export async function fetchHandler(url, method = 'get', dataVersion = null, body = null, signal = null) {
   return fetchJSONHandler(
     url,
     globalConfig.sessionConfig.token,
     globalConfig.baseUrl,
     method,
     dataVersion,
-    body
+    body,
+    signal
   )
 }
