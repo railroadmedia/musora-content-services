@@ -147,23 +147,3 @@ export async function updateDisplayName(newDisplayName) {
   return httpClient.put(apiUrl, { display_name: newDisplayName })
 }
 
-/**
- * @param {string} email - The new email address to set for the user.
- * @param {string} password - The current password of the user for verification.
- * @returns {Promise<void>} - A promise that resolves when the email change request is made.
- */
-export async function requestEmailChange(email, password) {
-  const apiUrl = `${baseUrl}/v1/users/${globalConfig.sessionConfig.userId}/email-change`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.post(apiUrl, { email, password })
-}
-
-/**
- * @param {string} token - The token sent to the user's email for verification.
- * @returns {Promise<void>} - A promise that resolves when the email change is confirmed.
- */
-export async function confirmEmailChange(token) {
-  const apiUrl = `${baseUrl}/v1/users/email-change/confirm`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.post(apiUrl, { token })
-}

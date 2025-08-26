@@ -219,6 +219,8 @@ import {
 } from './services/sanity.js';
 
 import {
+	confirmEmailChange,
+	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
@@ -242,11 +244,9 @@ import {
 import {
 	blockUser,
 	blockedUsers,
-	confirmEmailChange,
 	deletePicture,
 	getUserData,
 	isDisplayNameAvailable,
-	requestEmailChange,
 	unblockUser,
 	updateDisplayName,
 	uploadPicture,
