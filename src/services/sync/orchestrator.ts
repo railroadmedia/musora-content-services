@@ -3,6 +3,7 @@ import { SyncStrategy } from "./strategies";
 import SyncExecutor from "./executor";
 
 export default class SyncStoreOrchestrator {
+  private started = false
   private abortController: AbortController
 
   constructor(
@@ -13,6 +14,9 @@ export default class SyncStoreOrchestrator {
   }
 
   start() {
+    if (this.started) return
+    this.started = true
+
     this.mapping.forEach(({ stores, strategies }) => {
       strategies.forEach(strategy => {
         strategy.onTrigger(reason => {

@@ -11,11 +11,13 @@ type StrictDatabaseAdapterOptions = Omit<DatabaseAdapterOptions, 'schema' | 'mig
 
 export default function syncAdapterFactory<T extends DatabaseAdapter>(
   AdapterClass: new (options: DatabaseAdapterOptions) => T,
+  namespace: string,
   opts: StrictDatabaseAdapterOptions
 ): T {
   // Disallow schema and migrations being passed in
   const options = {
     ...opts,
+    dbName: `sync:${namespace}`,
     schema,
     migrations: undefined
   }

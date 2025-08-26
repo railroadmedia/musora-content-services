@@ -1,4 +1,15 @@
 import { RecordId } from "@nozbe/watermelondb"
+import SyncStoreOrchestrator from "./orchestrator"
+import SyncStore from "./store"
+import { type DatabaseAdapter } from "./adapters/factory"
+import { Database } from "@nozbe/watermelondb"
+
+export type SyncContext = {
+  adapter: DatabaseAdapter
+  databases: Database[]
+  stores: Record<string, SyncStore>
+  orchestrator: SyncStoreOrchestrator
+}
 
 export type SyncToken = string
 export type SyncSyncable = { id: RecordId } & Record<string, any>
