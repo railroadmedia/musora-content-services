@@ -62,6 +62,8 @@ import appSchema from './services/sync/schema/index.ts';
 
 import SyncSerializer from './services/sync/serializers/index.ts';
 
+import syncSetup from './services/sync/setup.ts';
+
 import SyncStore from './services/sync/store/index.ts';
 
 import { BaseSyncStrategy } from './services/sync/strategies/base.ts';
@@ -344,4 +346,5 @@ export {
 	appSchema,
 	syncAdapterFactory,
 	syncDatabaseFactory,
+	syncSetup,
 };

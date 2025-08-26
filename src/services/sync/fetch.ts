@@ -35,9 +35,9 @@ export interface ClientPushPayload {
   }[]
 }
 
-export function syncPull(callback: (token: SyncToken | null) => Promise<RawPullResponse>) {
-  return async function(lastFetchToken: SyncToken | null): Promise<ServerPullResponse> {
-    const response = await callback(lastFetchToken)
+export function syncPull(callback: (token: SyncToken | null, signal: AbortSignal) => Promise<RawPullResponse>) {
+  return async function(lastFetchToken: SyncToken | null, signal: AbortSignal): Promise<ServerPullResponse> {
+    const response = await callback(lastFetchToken, signal)
 
     const data = response.records
     const previousToken = response.meta.since
@@ -54,9 +54,9 @@ export function syncPull(callback: (token: SyncToken | null) => Promise<RawPullR
   }
 }
 
-export function syncPush(callback: (payload: ClientPushPayload) => Promise<RawPushResponse>) {
-  return async function(payload: ClientPushPayload): Promise<ServerPushResponse> {
-    const response = await callback(payload)
+export function syncPush(callback: (payload: ClientPushPayload, signal: AbortSignal) => Promise<RawPushResponse>) {
+  return async function(payload: ClientPushPayload, signal: AbortSignal): Promise<ServerPushResponse> {
+    const response = await callback(payload, signal)
 
     const results = response.results
 

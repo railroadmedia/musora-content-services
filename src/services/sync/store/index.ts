@@ -15,16 +15,16 @@ export default class SyncStore<
   lastFetchTokenKey: string
   currentSync: Promise<ServerPullResponse> | null = null
 
-  readonly pull: (previousFetchToken: SyncToken | null) => Promise<ServerPullResponse>
-  readonly push: (payload: ClientPushPayload) => Promise<ServerPushResponse>
+  readonly pull: (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<ServerPullResponse>
+  readonly push: (payload: ClientPushPayload, signal: AbortSignal) => Promise<ServerPushResponse>
 
   fetchedOnce: boolean = false
 
   constructor({ model, db, pull, push, serializer }: {
     model: TModel,
     db: Database,
-    pull: (previousFetchToken: SyncToken | null) => Promise<ServerPullResponse>,
-    push: (payload: ClientPushPayload) => Promise<ServerPushResponse>,
+    pull: (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<ServerPullResponse>,
+    push: (payload: ClientPushPayload, signal: AbortSignal) => Promise<ServerPushResponse>,
     serializer?: TSerializer
   }) {
     this.db = db
@@ -49,12 +49,12 @@ export default class SyncStore<
     }
   }
 
-  async sync() {
-    await this.pushUnsynced()
+  async sync(signal: AbortSignal) {
+    await this.pushUnsynced(signal)
 
     // will return records that we just saw in push response, but we can't
     // be sure there were no other changes before the push
-    await this.syncInternal()
+    await this.syncInternal(signal)
   }
 
   async pushOneImmediate(record: TModel) {
@@ -153,15 +153,15 @@ export default class SyncStore<
     return this.readOne(id)
   }
 
-  private async pushUnsynced() {
+  private async pushUnsynced(signal: AbortSignal) {
     const results = await this.collection.query().fetch()
     const pushable = results.filter(rec => rec._raw._status !== 'synced')
 
     if (pushable.length === 0) return
-    await this.internalPush(pushable)
+    await this.internalPush(pushable, signal)
   }
 
-  private async internalPush(pushable: TModel[]) {
+  private async internalPush(pushable: TModel[], signal: AbortSignal) {
     // TODO - consider singleton similar to this.currentSync?
 
     const entries = pushable.map(rec => {
@@ -180,7 +180,7 @@ export default class SyncStore<
     }
 
     try {
-      const pushed = await this.push(payload)
+      const pushed = await this.push(payload, signal)
 
       const response: SyncStorePushResponseAcknowledged = {
         acknowledged: true,
@@ -199,11 +199,11 @@ export default class SyncStore<
     }
   }
 
-  private async syncInternal() {
+  private async syncInternal(signal: AbortSignal) {
     if (this.currentSync) return this.currentSync
 
     this.currentSync = (async () => {
-      const response = await this.fetch()
+      const response = await this.fetch(signal)
 
       await this.writeLocal(response.data, !response.previousToken)
       await this.setLastFetchToken(response.token)
@@ -220,9 +220,9 @@ export default class SyncStore<
     }
   }
 
-  private async fetch() {
+  private async fetch(signal: AbortSignal) {
     const lastFetchToken = await this.getLastFetchToken()
-    const response = await this.pull(lastFetchToken)
+    const response = await this.pull(lastFetchToken, signal)
     return response
   }
 
