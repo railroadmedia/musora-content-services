@@ -217,6 +217,8 @@ import {
 } from './services/sanity.js';
 
 import {
+	confirmEmailChange,
+	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
@@ -317,6 +319,7 @@ declare module 'musora-content-services' {
 		buildImageSRC,
 		calculateLongestStreaks,
 		closeComment,
+		confirmEmailChange,
 		contentStatusCompleted,
 		contentStatusReset,
 		convertToTimeZone,
@@ -503,6 +506,7 @@ declare module 'musora-content-services' {
 		replyToComment,
 		reportComment,
 		reportPlaylist,
+		requestEmailChange,
 		reset,
 		resetPassword,
 		restoreComment,
