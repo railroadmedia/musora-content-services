@@ -11,7 +11,7 @@ const baseUrl = `/api/gamification`
 export interface Award {
   id: number
   user_id: number
-  completed_at: Date
+  completed_at: string          // ISO-8601 timestamp
   completion_data: Object
   award_id: number
   type: string
@@ -23,7 +23,7 @@ export interface Certificate {
   id: number
   user_name: string
   user_id: number
-  completed_at: Date
+  completed_at: string          // ISO-8601 timestamp
   message: string
   award_id: number
   type: string
@@ -47,10 +47,10 @@ export interface Certificate {
  * (Alexandre: I'm doing it in a different branch/PR: https://github.com/railroadmedia/musora-content-services/pull/349)
  * NOTE: This function still expects brand because FE passes the argument. It is ignored for now
  *
- * @param {number|null} userId - The user ID. If not provided, the authenticated user is used instead.
+ * @param {number} userId - The user ID
  * @param {string} _brand - The brand to fetch the awards for.
- * @param {number|null} page - Page attribute for pagination
- * @param {number|null} limit - Limit how many items to return
+ * @param {number} [page=1] - Page attribute for pagination
+ * @param {number} [limit=5] - Limit how many items to return
  * @returns {Promise<PaginatedResponse<Award>>} - The awards for the user.
  */
 export async function fetchAwardsForUser(
