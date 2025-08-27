@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.33.0](https://github.com/railroadmedia/musora-content-services/compare/v2.32.0...v2.33.0) (2025-08-27)
+
+
+### Features
+
+* **BEH-714:** call awards endpoint ([#373](https://github.com/railroadmedia/musora-content-services/issues/373)) ([822a2a7](https://github.com/railroadmedia/musora-content-services/commit/822a2a754d24603f2ea92c8cf862b47b4e6b3eb8))
+* **MU2-957:** email change request ([#426](https://github.com/railroadmedia/musora-content-services/issues/426)) ([a5c79fd](https://github.com/railroadmedia/musora-content-services/commit/a5c79fdb95112bce25040f4aaa5ec9a3fc55b2b0))
+
+
+### Bug Fixes
+
+* progress rows throws error for empty progress ([#423](https://github.com/railroadmedia/musora-content-services/issues/423)) ([e388788](https://github.com/railroadmedia/musora-content-services/commit/e38878854bf78bcdd87943ca6564d9a49f946803))
+
 ## [2.32.0](https://github.com/railroadmedia/musora-content-services/compare/v2.31.2...v2.32.0) (2025-08-19)
 
 
