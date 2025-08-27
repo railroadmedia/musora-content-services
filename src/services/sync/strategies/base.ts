@@ -1,6 +1,6 @@
 import { SyncStrategy } from "./index";
 
-export abstract class BaseSyncStrategy implements SyncStrategy {
+export default abstract class BaseSyncStrategy implements SyncStrategy {
   protected triggerCallback?: (reason: string) => void
   abstract start(): void
   abstract stop(): void

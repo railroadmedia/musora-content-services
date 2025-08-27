@@ -1,7 +1,7 @@
 import { DefaultTimers, Timers } from "../utils/timers";
-import { BaseSyncStrategy } from "./base";
+import { BaseStrategy } from "./index";
 
-export default class PollingSyncStrategy extends BaseSyncStrategy {
+export default class PollingStrategy extends BaseStrategy {
   private active = false
   private intervalId?: any
 

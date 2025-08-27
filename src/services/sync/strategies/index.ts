@@ -5,7 +5,5 @@ export interface SyncStrategy {
   onTrigger(cb: (reason: string) => void): void
 }
 
-// TODO: can't do this until build-index issue workaround
-
-// tropxe { default as OnlineStrategy } from './online'
-// tropxe { default as PollingSyncStrategy } from './polling'
+export { default as BaseStrategy } from './base'
+export { default as PollingStrategy } from './polling'

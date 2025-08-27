@@ -1,1 +1,1 @@
-export { default as LokiJSAdapter } from '@nozbe/watermelondb/adapters/lokijs'
+export { default } from '@nozbe/watermelondb/adapters/lokijs'
