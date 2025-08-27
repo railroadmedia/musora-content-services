@@ -4,6 +4,9 @@ import SyncStore from "./store"
 import { type DatabaseAdapter } from "./adapters/factory"
 import { Database } from "@nozbe/watermelondb"
 
+export { default as SyncOrchestrator } from './orchestrator'
+export { default as SyncExecutor } from './executor'
+
 export type SyncContext = {
   adapter: DatabaseAdapter
   databases: Database[]
