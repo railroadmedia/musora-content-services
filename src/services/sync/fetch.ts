@@ -35,8 +35,8 @@ export interface ClientPushPayload {
   }[]
 }
 
-export function syncPull(callback: (token: SyncToken | null, signal: AbortSignal) => Promise<RawPullResponse>) {
-  return async function(lastFetchToken: SyncToken | null, signal: AbortSignal): Promise<ServerPullResponse> {
+export function syncPull(callback: (token: SyncToken | null, signal?: AbortSignal) => Promise<RawPullResponse>) {
+  return async function(lastFetchToken: SyncToken | null, signal?: AbortSignal): Promise<ServerPullResponse> {
     const response = await callback(lastFetchToken, signal)
 
     const data = response.records
@@ -54,8 +54,8 @@ export function syncPull(callback: (token: SyncToken | null, signal: AbortSignal
   }
 }
 
-export function syncPush(callback: (payload: ClientPushPayload, signal: AbortSignal) => Promise<RawPushResponse>) {
-  return async function(payload: ClientPushPayload, signal: AbortSignal): Promise<ServerPushResponse> {
+export function syncPush(callback: (payload: ClientPushPayload, signal?: AbortSignal) => Promise<RawPushResponse>) {
+  return async function(payload: ClientPushPayload, signal?: AbortSignal): Promise<ServerPushResponse> {
     const response = await callback(payload, signal)
 
     const results = response.results
