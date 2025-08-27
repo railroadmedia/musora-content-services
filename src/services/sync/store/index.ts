@@ -57,6 +57,7 @@ export default class SyncStore<
     await this.syncInternal(signal)
   }
 
+  // TODO: should failure throw?
   async pushOneImmediate(record: TModel) {
     const pushed = await this.internalPush([record])
 
@@ -68,14 +69,14 @@ export default class SyncStore<
 
         const ret: SyncStorePushDTO = {
           data,
-          state: 'synced', // TODO - or 'queued' ?
+          state: 'synced'
         }
         return ret
       } else {
         // todo
       }
     } else {
-      throw new Error('SyncStore.pushOneImmediate: push failed') // todo - include originalError
+      // todo - throw?
     }
   }
 
@@ -161,9 +162,7 @@ export default class SyncStore<
     await this.internalPush(pushable, signal)
   }
 
-  private async internalPush(pushable: TModel[], signal: AbortSignal) {
-    // TODO - consider singleton similar to this.currentSync?
-
+  private async internalPush(pushable: TModel[], signal?: AbortSignal) {
     const entries = pushable.map(rec => {
       const record = this.serializer.toPlainObject(rec)
       const meta = {
@@ -199,7 +198,7 @@ export default class SyncStore<
     }
   }
 
-  private async syncInternal(signal: AbortSignal) {
+  private async syncInternal(signal?: AbortSignal) {
     if (this.currentSync) return this.currentSync
 
     this.currentSync = (async () => {
@@ -237,6 +236,8 @@ export default class SyncStore<
 
   private async writeLocal(entries: SyncEntry[], freshSync: boolean = false) {
     return this.db.write(async writer => {
+      // TODO - on freshSync - delete all records as defensive measure? what to do with potentially updated records?
+
       const existingRecordsMap = new Map<RecordId, TModel>()
       if (!freshSync) {
         const existingRecords = await this.collection.query(Q.where('id', Q.oneOf(entries.map(e => e.record.id.toString())))).fetch()
@@ -269,10 +270,12 @@ export default class SyncStore<
                       // delete local even though user has newer changes
                       // otherwise would be some weird id changes/conflicts that I don't even want to think about right now
                       acc[2].push(existing)
+                    // TODO - fix updated_at string vs int inconsistency
                     } else if (entry.meta.lifecycle.updated_at > existing._raw['updated_at']) {
                       acc[1].push([existing, entry])
                     } else {
-                      // ignore ???
+                      // TODO - do we do this? or just ignore?
+                      acc[1].push([existing, entry])
                     }
                     break;
 
