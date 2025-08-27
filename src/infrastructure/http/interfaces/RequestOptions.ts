@@ -1,6 +1,6 @@
 export interface RequestOptions {
   method: string
   headers: Record<string, string>
-  withCredentials?: string
+  credentials?:  "omit" | "same-origin" | "include"
   body?: string
 }
