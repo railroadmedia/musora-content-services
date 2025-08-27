@@ -220,6 +220,8 @@ import {
 } from './services/sanity.js';
 
 import {
+	confirmEmailChange,
+	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
@@ -319,6 +321,7 @@ export {
 	buildImageSRC,
 	calculateLongestStreaks,
 	closeComment,
+	confirmEmailChange,
 	contentStatusCompleted,
 	contentStatusReset,
 	convertToTimeZone,
@@ -508,6 +511,7 @@ export {
 	replyToComment,
 	reportComment,
 	reportPlaylist,
+	requestEmailChange,
 	reset,
 	resetPassword,
 	restoreComment,
