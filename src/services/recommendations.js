@@ -5,13 +5,6 @@
 import { globalConfig } from './config.js'
 import { HttpClient } from '../infrastructure/http/HttpClient'
 
-/**
- * Exported functions that are excluded from index generation.
- *
- * @type {string[]}
- */
-const excludeFromGeneratedIndex = []
-
 const handleError = (message, error) => {
   console.error(message, error)
   return error
@@ -65,6 +58,17 @@ const parseRankedCategories = (data) => {
   return rankedCategories
 }
 
+const defaultSorting = (categories) => {
+  const defaultSorting = []
+  for (const slug in categories) {
+    defaultSorting.push({
+      slug: slug,
+      items: categories[slug],
+    })
+  }
+  return defaultSorting
+}
+
 /**
  * Sorts the provided categories based on the user's match
  *
@@ -95,12 +99,10 @@ export async function rankCategories(brand, categories) {
     globalConfig.recommendationsConfig.token
   )
   return httpClient.post(url, data).then((r) =>
-    r
-      .map((response) => parseRankedCategories(response['ranked_playlists']))
-      .fold(
-        (error) => handleError('Rank categories fetch error:', error),
-        (data) => data
-      )
+    r.fold(
+      (_error) => defaultSorting(categories),
+      (data) => parseRankedCategories(data['ranked_playlists'])
+    )
   )
 }
 
@@ -130,10 +132,12 @@ export async function rankItems(brand, content_ids) {
     globalConfig.recommendationsConfig.token
   )
   return httpClient.post(url, data).then((r) =>
-    r.fold(
-      (error) => handleError('Rank items fetch error:', error),
-      (data) => data['ranked_content_ids']
-    )
+    r
+      .ltap((_e) => handleError('Rank items fetch error:', error))
+      .fold(
+        (_error) => content_ids,
+        (data) => data['ranked_content_ids']
+      )
   )
 }
 

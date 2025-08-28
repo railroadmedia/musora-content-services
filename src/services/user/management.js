@@ -10,6 +10,16 @@ import { HttpClient } from '../../infrastructure/http/HttpClient'
 const baseUrl = `/api/user-management-system`
 
 /**
+ * Fetches the blocked users for the current user.
+ * @returns {Promise<Array<BlockedUsersDTO>>}
+ */
+export async function blockedUsers() {
+  const url = `${baseUrl}/v1/users/${globalConfig.sessionConfig.userId}/blocked`
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  return httpClient.get(url)
+}
+
+/**
  * Block the provided user
  * @param userId
  * @returns {Promise<any|string|null>}
@@ -114,3 +124,24 @@ export async function deletePicture(pictureUrl) {
 export async function getUserData(userId = globalConfig.sessionConfig.userId) {
   return HttpClient.client().get(`${baseUrl}/v1/users/${userId}`)
 }
+
+/**
+ * @param displayName - The display name to check for availability.
+ * @returns {Promise<{ available: boolean }>} - An object indicating if the display name is available.
+ */
+export async function isDisplayNameAvailable(displayName) {
+  const apiUrl = `${baseUrl}/v1/users/display-names/available?display_name=${encodeURIComponent(displayName)}`
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  return httpClient.get(apiUrl)
+}
+
+/**
+ * @param newDisplayName - The new display name to set for the user.
+ * @returns {Promise<User>} - A promise that resolves when the display name is updated.
+ */
+export async function updateDisplayName(newDisplayName) {
+  const apiUrl = `${baseUrl}/v1/users/${globalConfig.sessionConfig.userId}/display-name`
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  return httpClient.put(apiUrl, { display_name: newDisplayName })
+}
+

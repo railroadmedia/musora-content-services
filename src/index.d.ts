@@ -38,13 +38,15 @@ import {
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
+	getRecentForTab,
 	getRecommendedForYou,
 	getScheduleContentRows,
 	getTabResults
 } from './services/content.js';
 
 import {
-	addContextToContent
+	addContextToContent,
+	getNavigateToForPlaylists
 } from './services/contentAggregator.js';
 
 import {
@@ -61,6 +63,7 @@ import {
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getLastInteractedOf,
+	getNavigateTo,
 	getNextLesson,
 	getProgressDateByIds,
 	getProgressPercentage,
@@ -92,8 +95,9 @@ import {
 } from './services/forum.js';
 
 import {
-	fetchAwardsForUser
-} from './services/gamification/awards.js';
+	fetchAwardsForUser,
+	fetchCertificate
+} from './services/gamification/awards.ts';
 
 import {
 	applyCloudflareWrapper,
@@ -115,14 +119,9 @@ import {
 	editComment,
 	fetchAllCompletedStates,
 	fetchCarouselCardData,
-	fetchChallengeIndexMetadata,
-	fetchChallengeLessonData,
-	fetchChallengeMetadata,
-	fetchChallengeUserActiveChallenges,
 	fetchComment,
 	fetchCommentRelies,
 	fetchComments,
-	fetchCompletedChallenges,
 	fetchCompletedContent,
 	fetchCompletedState,
 	fetchContentInProgress,
@@ -132,13 +131,12 @@ import {
 	fetchLastInteractedChild,
 	fetchLikeCount,
 	fetchNextContentDataForParent,
-	fetchOwnedChallenges,
+	fetchRecent,
 	fetchRecentUserActivities,
 	fetchSongsInProgress,
 	fetchTopComment,
 	fetchUserAward,
 	fetchUserBadges,
-	fetchUserChallengeProgress,
 	fetchUserLikes,
 	fetchUserPermissionsData,
 	fetchUserPracticeMeta,
@@ -147,17 +145,10 @@ import {
 	likeComment,
 	logUserPractice,
 	openComment,
-	postChallengesCommunityNotification,
-	postChallengesEnroll,
-	postChallengesEnrollmentNotification,
-	postChallengesHideCompletedBanner,
-	postChallengesLeave,
-	postChallengesSetStartDate,
-	postChallengesSoloNotification,
-	postChallengesUnlock,
 	postContentComplete,
 	postContentLiked,
 	postContentReset,
+	postContentRestore,
 	postContentUnliked,
 	postPlaylistContentEngaged,
 	postRecordWatchSession,
@@ -209,7 +200,6 @@ import {
 	fetchPackData,
 	fetchParentForDownload,
 	fetchPlayAlongsCount,
-	fetchRecent,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
@@ -230,6 +220,8 @@ import {
 } from './services/sanity.js';
 
 import {
+	confirmEmailChange,
+	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
@@ -252,9 +244,12 @@ import {
 
 import {
 	blockUser,
+	blockedUsers,
 	deletePicture,
 	getUserData,
+	isDisplayNameAvailable,
 	unblockUser,
+	updateDisplayName,
 	uploadPicture,
 	uploadPictureFromS3
 } from './services/user/management.js';
@@ -269,6 +264,7 @@ import {
 	markNotificationAsRead,
 	markNotificationAsUnread,
 	pauseLiveEventPolling,
+	restoreNotification,
 	startLiveEventPolling,
 	updateNotificationSetting
 } from './services/user/notifications.js';
@@ -307,6 +303,7 @@ import {
 	recordUserPractice,
 	removeUserPractice,
 	restorePracticeSession,
+	restoreUserActivity,
 	restoreUserPractice,
 	unpinProgressRow,
 	updatePracticeNotes,
@@ -321,9 +318,11 @@ declare module 'musora-content-services' {
 		applySanityTransformations,
 		assignModeratorToComment,
 		blockUser,
+		blockedUsers,
 		buildImageSRC,
 		calculateLongestStreaks,
 		closeComment,
+		confirmEmailChange,
 		contentStatusCompleted,
 		contentStatusReset,
 		convertToTimeZone,
@@ -353,10 +352,7 @@ declare module 'musora-content-services' {
 		fetchByRailContentIds,
 		fetchByReference,
 		fetchCarouselCardData,
-		fetchChallengeIndexMetadata,
-		fetchChallengeLessonData,
-		fetchChallengeMetadata,
-		fetchChallengeUserActiveChallenges,
+		fetchCertificate,
 		fetchChatAndLiveEnvent,
 		fetchChatSettings,
 		fetchCoachLessons,
@@ -365,7 +361,6 @@ declare module 'musora-content-services' {
 		fetchCommentModContentData,
 		fetchCommentRelies,
 		fetchComments,
-		fetchCompletedChallenges,
 		fetchCompletedContent,
 		fetchCompletedState,
 		fetchContentInProgress,
@@ -396,7 +391,6 @@ declare module 'musora-content-services' {
 		fetchNotificationSettings,
 		fetchNotifications,
 		fetchOtherSongVersions,
-		fetchOwnedChallenges,
 		fetchPackAll,
 		fetchPackData,
 		fetchParentForDownload,
@@ -428,7 +422,6 @@ declare module 'musora-content-services' {
 		fetchUpcomingEvents,
 		fetchUserAward,
 		fetchUserBadges,
-		fetchUserChallengeProgress,
 		fetchUserLikes,
 		fetchUserPermissions,
 		fetchUserPermissionsData,
@@ -445,6 +438,8 @@ declare module 'musora-content-services' {
 		getLastInteractedOf,
 		getLessonContentRows,
 		getMonday,
+		getNavigateTo,
+		getNavigateToForPlaylists,
 		getNewAndUpcoming,
 		getNextLesson,
 		getPracticeNotes,
@@ -457,6 +452,7 @@ declare module 'musora-content-services' {
 		getProgressStateByIds,
 		getRecent,
 		getRecentActivity,
+		getRecentForTab,
 		getRecommendedForYou,
 		getResumeTimeSeconds,
 		getResumeTimeSecondsByIds,
@@ -476,6 +472,7 @@ declare module 'musora-content-services' {
 		isBucketUrl,
 		isContentLiked,
 		isContentLikedByIds,
+		isDisplayNameAvailable,
 		isNextDay,
 		isSameDate,
 		jumpToContinueContent,
@@ -496,17 +493,10 @@ declare module 'musora-content-services' {
 		pinGuidedCourse,
 		pinProgressRow,
 		pinnedGuidedCourses,
-		postChallengesCommunityNotification,
-		postChallengesEnroll,
-		postChallengesEnrollmentNotification,
-		postChallengesHideCompletedBanner,
-		postChallengesLeave,
-		postChallengesSetStartDate,
-		postChallengesSoloNotification,
-		postChallengesUnlock,
 		postContentComplete,
 		postContentLiked,
 		postContentReset,
+		postContentRestore,
 		postContentUnliked,
 		postPlaylistContentEngaged,
 		postRecordWatchSession,
@@ -522,11 +512,14 @@ declare module 'musora-content-services' {
 		replyToComment,
 		reportComment,
 		reportPlaylist,
+		requestEmailChange,
 		reset,
 		resetPassword,
 		restoreComment,
 		restoreItemFromPlaylist,
+		restoreNotification,
 		restorePracticeSession,
+		restoreUserActivity,
 		restoreUserPractice,
 		sendAccountSetupEmail,
 		sendPasswordResetEmail,
@@ -545,6 +538,7 @@ declare module 'musora-content-services' {
 		unlikeContent,
 		unlikePlaylist,
 		unpinProgressRow,
+		updateDisplayName,
 		updateNotificationSetting,
 		updatePlaylist,
 		updatePracticeNotes,

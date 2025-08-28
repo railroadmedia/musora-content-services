@@ -5,9 +5,9 @@ import {
   postRecordWatchSession,
 } from './railcontent.js'
 import { DataContext, ContentProgressVersionKey } from './dataContext.js'
-import {fetchHierarchy} from './sanity.js'
-import {recordUserPractice, findIncompleteLesson} from "./userActivity";
-import {getNextLessonLessonParentTypes} from "../contentTypeConfig.js";
+import { fetchHierarchy } from './sanity.js'
+import { recordUserPractice, findIncompleteLesson } from './userActivity'
+import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 
 const STATE_STARTED = 'started'
 const STATE_COMPLETED = 'completed'
@@ -45,22 +45,19 @@ export async function getResumeTimeSecondsByIds(contentIds) {
   return getByIds(contentIds, DATA_KEY_RESUME_TIME, 0)
 }
 
-export async function getNextLesson(data)
-{
+export async function getNextLesson(data) {
   let nextLessonData = {}
 
   for (const content of data) {
-    const children = content.children?.map(child => child.id) ?? []
+    const children = content.children?.map((child) => child.id) ?? []
     //only calculate nextLesson if needed, based on content type
     if (!getNextLessonLessonParentTypes.includes(content.type)) {
       nextLessonData[content.id] = null
-
     } else {
       //return first child if parent-content is complete or no progress
       const contentState = await getProgressState(content.id)
       if (contentState !== STATE_STARTED) {
         nextLessonData[content.id] = children[0]
-
       } else {
         const childrenStates = await getProgressStateByIds(children)
 
@@ -73,21 +70,104 @@ export async function getNextLesson(data)
           if (lastInteractedStatus === STATE_STARTED) {
             nextLessonData[content.id] = lastInteracted
           } else {
-            nextLessonData[content.id] = findIncompleteLesson(childrenStates, lastInteracted, content.type)
+            nextLessonData[content.id] = findIncompleteLesson(
+              childrenStates,
+              lastInteracted,
+              content.type
+            )
           }
-
         } else if (content.type === 'guided-course' || content.type === 'song-tutorial') {
-          nextLessonData[content.id] = findIncompleteLesson(childrenStates, lastInteracted, content.type)
+          nextLessonData[content.id] = findIncompleteLesson(
+            childrenStates,
+            lastInteracted,
+            content.type
+          )
         } else if (content.type === 'pack') {
           const packBundles = content.children ?? []
           const packBundleProgressData = await getNextLesson(packBundles)
-          const parentId = await getLastInteractedOf(packBundles.map(bundle => bundle.id));
-          nextLessonData[content.id] = packBundleProgressData[parentId];
+          const parentId = await getLastInteractedOf(packBundles.map((bundle) => bundle.id))
+          nextLessonData[content.id] = packBundleProgressData[parentId]
         }
       }
     }
   }
   return nextLessonData
+}
+
+export async function getNavigateTo(data) {
+  let navigateToData = {}
+  const twoDepthContentTypes = ['pack'] //TODO add method when we know what it's called
+  //TODO add parent hierarchy upwards as well
+  // data structure is the same but instead of child{} we use parent{}
+  for (const content of data) {
+    //only calculate nextLesson if needed, based on content type
+    if (!getNextLessonLessonParentTypes.includes(content.type) || !content.children) {
+      navigateToData[content.id] = null
+    } else {
+      const children = new Map()
+      const childrenIds = []
+      content.children.forEach((child) => {
+        childrenIds.push(child.id)
+        children.set(child.id, child)
+      })
+      // return first child (or grand child) if parent-content is complete or no progress
+      const contentState = await getProgressState(content.id)
+      if (contentState !== STATE_STARTED) {
+        const firstChild = content.children[0]
+        let lastInteractedChildNavToData =
+          (await getNavigateTo([firstChild])[firstChild.id]) ?? null
+        navigateToData[content.id] = buildNavigateTo(
+          content.children[0],
+          lastInteractedChildNavToData
+        )
+      } else {
+        const childrenStates = await getProgressStateByIds(childrenIds)
+        const lastInteracted = await getLastInteractedOf(childrenIds)
+        const lastInteractedStatus = childrenStates[lastInteracted]
+
+        if (content.type === 'course' || content.type === 'pack-bundle') {
+          if (lastInteractedStatus === STATE_STARTED) {
+            navigateToData[content.id] = buildNavigateTo(children.get(lastInteracted))
+          } else {
+            let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
+            navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild))
+          }
+        } else if (content.type === 'guided-course' || content.type === 'song-tutorial') {
+          let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
+          navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild))
+        } else if (twoDepthContentTypes.includes(content.type)) {
+          const firstChildren = content.children ?? []
+          const lastInteractedChildId = await getLastInteractedOf(
+            firstChildren.map((child) => child.id)
+          )
+          if (childrenStates[lastInteractedChildId] === STATE_COMPLETED) {
+            // TODO: packs have an extra situation where we need to jump to the next course if all lessons in the last engaged course are completed
+          }
+          let lastInteractedChildNavToData = await getNavigateTo(firstChildren)
+          lastInteractedChildNavToData = lastInteractedChildNavToData[lastInteractedChildId]
+          navigateToData[content.id] = buildNavigateTo(
+            children.get(lastInteractedChildId),
+            lastInteractedChildNavToData
+          )
+        }
+      }
+    }
+  }
+  return navigateToData
+}
+
+function buildNavigateTo(content, child = null) {
+  if (!content) {
+    return null
+  }
+
+  return {
+    brand: content.brand ?? '',
+    thumbnail: content.thumbnail ?? '',
+    id: content.id ?? null,
+    type: content.type ?? '',
+    child: child,
+  }
 }
 
 /**
@@ -115,10 +195,14 @@ export async function getLastInteractedOf(contentIds) {
 export async function getProgressDateByIds(contentIds) {
   let data = await dataContext.getData()
   let progress = {}
-  contentIds?.forEach((id) => (progress[id] = {
-    'last_update': data[id]?.[DATA_KEY_LAST_UPDATED_TIME] ?? 0,
-    'progress': data[id]?.[DATA_KEY_PROGRESS] ?? 0,
-    'status': data[id]?.[DATA_KEY_STATUS] ?? ''}))
+  contentIds?.forEach(
+    (id) =>
+      (progress[id] = {
+        last_update: data[id]?.[DATA_KEY_LAST_UPDATED_TIME] ?? 0,
+        progress: data[id]?.[DATA_KEY_PROGRESS] ?? 0,
+        status: data[id]?.[DATA_KEY_STATUS] ?? '',
+      })
+  )
   return progress
 }
 
@@ -178,11 +262,16 @@ export async function getAllCompleted(limit = null) {
   return ids
 }
 
-export async function getAllStartedOrCompleted({ limit = null, onlyIds = true, brand = null, excludedIds = [] } = {}) {
+export async function getAllStartedOrCompleted({
+  limit = null,
+  onlyIds = true,
+  brand = null,
+  excludedIds = [],
+} = {}) {
   const data = await dataContext.getData()
   const oneMonthAgoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
 
-  const excludedSet = new Set(excludedIds.map(id => parseInt(id))) // ensure IDs are numbers
+  const excludedSet = new Set(excludedIds.map((id) => parseInt(id))) // ensure IDs are numbers
 
   let filtered = Object.entries(data)
     .filter(([key, item]) => {
@@ -240,13 +329,14 @@ export async function getAllStartedOrCompleted({ limit = null, onlyIds = true, b
  * const progressMap = await getStartedOrCompletedProgressOnly({ brand: 'drumeo' });
  * console.log(progressMap[123]); // => 52
  */
-export async function getStartedOrCompletedProgressOnly({ brand = null} = {}) {
+export async function getStartedOrCompletedProgressOnly({ brand = null } = {}) {
   const data = await dataContext.getData()
   const result = {}
 
   Object.entries(data).forEach(([key, item]) => {
     const id = parseInt(key)
-    const isRelevantStatus = item[DATA_KEY_STATUS] === STATE_STARTED || item[DATA_KEY_STATUS] === STATE_COMPLETED
+    const isRelevantStatus =
+      item[DATA_KEY_STATUS] === STATE_STARTED || item[DATA_KEY_STATUS] === STATE_COMPLETED
     const isCorrectBrand = !brand || item.b === brand
 
     if (isRelevantStatus && isCorrectBrand) {
@@ -360,7 +450,7 @@ export async function recordWatchSession(
   secondsPlayed,
   sessionId = null,
   instrumentId = null,
-  categoryId = null,
+  categoryId = null
 ) {
   let mediaTypeId = getMediaTypeId(mediaType, mediaCategory)
   let updateLocalProgress = mediaTypeId === 1 || mediaTypeId === 2 //only update for video playback
@@ -371,10 +461,16 @@ export async function recordWatchSession(
   try {
     //TODO: Good enough for Alpha, Refine in reliability improvements
     sessionData[sessionId] = sessionData[sessionId] || {}
-    const secondsSinceLastUpdate = Math.ceil(secondsPlayed - (sessionData[sessionId][contentId] ?? 0))
-    await recordUserPractice({ content_id: contentId, duration_seconds: secondsSinceLastUpdate,  instrument_id: instrumentId })
+    const secondsSinceLastUpdate = Math.ceil(
+      secondsPlayed - (sessionData[sessionId][contentId] ?? 0)
+    )
+    await recordUserPractice({
+      content_id: contentId,
+      duration_seconds: secondsSinceLastUpdate,
+      instrument_id: instrumentId,
+    })
   } catch (error) {
-      console.error('Failed to record user practice:', error)
+    console.error('Failed to record user practice:', error)
   }
   sessionData[sessionId][contentId] = secondsPlayed
 
@@ -439,7 +535,7 @@ function bubbleProgress(hierarchy, contentId, localContext) {
     return localContext.data[childId]?.[DATA_KEY_PROGRESS] ?? 0
   })
   let progress = Math.round(childProgress.reduce((a, b) => a + b, 0) / childProgress.length)
-  const brand =localContext.data[contentId]?.[DATA_KEY_BRAND] ?? null
+  const brand = localContext.data[contentId]?.[DATA_KEY_BRAND] ?? null
   data[DATA_KEY_PROGRESS] = progress
   data[DATA_KEY_STATUS] = progress === 100 ? STATE_COMPLETED : STATE_STARTED
   data[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000)
