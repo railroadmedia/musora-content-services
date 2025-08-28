@@ -3,6 +3,7 @@ import SyncStoreOrchestrator from "./orchestrator"
 import SyncStore from "./store"
 import { type DatabaseAdapter } from "./adapters/factory"
 import { Database } from "@nozbe/watermelondb"
+import { EpochSeconds } from "./utils/brands"
 
 export { default as SyncOrchestrator } from './orchestrator'
 export { default as SyncExecutor } from './executor'
@@ -14,7 +15,7 @@ export type SyncContext = {
   orchestrator: SyncStoreOrchestrator
 }
 
-export type SyncToken = string
+export type SyncToken = EpochSeconds
 
 export type SyncSyncable<TRecordKey extends string = 'id'> = {
   [K in TRecordKey]: RecordId
@@ -29,9 +30,9 @@ export type SyncEntry<TRecordKey extends string = 'id'> = {
 }
 
 type SyncEntryLifecycle = {
-  created_at: string
-  updated_at: string
-  deleted_at: string | null
+  created_at: EpochSeconds
+  updated_at: EpochSeconds
+  deleted_at: EpochSeconds | null
 }
 
 export type SyncStorePullMultiDTO = SyncStorePullDTO<SyncSyncable[]>

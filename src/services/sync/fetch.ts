@@ -3,7 +3,7 @@ import { SyncToken, SyncEntry, SyncStorePushResult, SyncSyncable } from "./index
 interface RawPullResponse {
   meta: {
     since: SyncToken | null
-    max_stamp: SyncToken | null
+    max_updated_at: SyncToken | null
     timestamp: string
   }
   records: SyncEntry<'client_id'>[]
@@ -57,9 +57,9 @@ export function syncPull(callback: (token: SyncToken | null, signal?: AbortSigna
     })
     const previousToken = response.meta.since
 
-    // if no max_stamp, at least use the server's timestamp
+    // if no max_updated_at, at least use the server's timestamp
     // useful for recording that we have at least tried fetching even though resultset empty
-    const token = response.meta.max_stamp || response.meta.timestamp
+    const token = response.meta.max_updated_at || response.meta.timestamp
 
     return {
       data,
