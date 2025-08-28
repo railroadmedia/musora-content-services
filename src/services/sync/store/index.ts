@@ -1,7 +1,16 @@
 import { Database, Q, type Collection, type Model, type RecordId } from '@nozbe/watermelondb'
 import SyncSerializer from '../serializers'
-import { SyncToken, SyncEntry, SyncStorePullSingleDTO, SyncStorePullMultiDTO, SyncStorePushDTO, SyncStorePushResponseAcknowledged, SyncStorePushResponseUnreachable } from '..'
+import {
+  SyncToken,
+  SyncEntry,
+  SyncStorePullSingleDTO,
+  SyncStorePullMultiDTO,
+  SyncStorePushDTO,
+  SyncStorePushResponseAcknowledged,
+  SyncStorePushResponseUnreachable,
+} from '..'
 import { SyncPullResponse, SyncPushResponse, ClientPushPayload } from '../fetch'
+import { asEpochSeconds, msToS } from '../utils/brands'
 
 export default class SyncStore<
   TModel extends Model = Model,
@@ -15,16 +24,25 @@ export default class SyncStore<
   lastFetchTokenKey: string
   currentSync: Promise<SyncPullResponse> | null = null
 
-  readonly pull: (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
+  readonly pull: (
+    previousFetchToken: SyncToken | null,
+    signal: AbortSignal
+  ) => Promise<SyncPullResponse>
   readonly push: (payload: ClientPushPayload, signal: AbortSignal) => Promise<SyncPushResponse>
 
   fetchedOnce: boolean = false
 
-  constructor({ model, db, pull, push, serializer }: {
-    model: TModel,
-    db: Database,
-    pull: (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>,
-    push: (payload: ClientPushPayload, signal: AbortSignal) => Promise<SyncPushResponse>,
+  constructor({
+    model,
+    db,
+    pull,
+    push,
+    serializer,
+  }: {
+    model: TModel
+    db: Database
+    pull: (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
+    push: (payload: ClientPushPayload, signal: AbortSignal) => Promise<SyncPushResponse>
     serializer?: TSerializer
   }) {
     this.db = db
@@ -69,7 +87,7 @@ export default class SyncStore<
 
         const ret: SyncStorePushDTO = {
           data,
-          state: 'synced'
+          state: 'synced',
         }
         return ret
       } else {
@@ -81,33 +99,27 @@ export default class SyncStore<
   }
 
   async readOne(id: string) {
-    const [data, fetchToken] = await Promise.all([
-      this.readLocalOne(id),
-      this.getLastFetchToken()
-    ])
+    const [data, fetchToken] = await Promise.all([this.readLocalOne(id), this.getLastFetchToken()])
 
     const result: SyncStorePullSingleDTO = {
       success: true,
       data,
       status: 'possiblyStale',
       previousFetchToken: fetchToken,
-      fetchToken
+      fetchToken,
     }
     return result
   }
 
   async readAll() {
-    const [data, fetchToken] = await Promise.all([
-      this.readLocalAll(),
-      this.getLastFetchToken()
-    ])
+    const [data, fetchToken] = await Promise.all([this.readLocalAll(), this.getLastFetchToken()])
 
     const result: SyncStorePullMultiDTO = {
       success: true,
       data,
       status: 'possiblyStale',
       previousFetchToken: fetchToken,
-      fetchToken
+      fetchToken,
     }
     return result
   }
@@ -121,7 +133,7 @@ export default class SyncStore<
       data,
       status: 'fresh',
       previousFetchToken: response.previousToken,
-      fetchToken: response.token
+      fetchToken: response.token,
     }
     return result
   }
@@ -135,7 +147,7 @@ export default class SyncStore<
       data,
       status: 'fresh',
       previousFetchToken: response.previousToken,
-      fetchToken: response.token
+      fetchToken: response.token,
     }
     return result
   }
@@ -156,26 +168,26 @@ export default class SyncStore<
 
   private async pushUnsynced(signal: AbortSignal) {
     const results = await this.collection.query().fetch()
-    const pushable = results.filter(rec => rec._raw._status !== 'synced')
+    const pushable = results.filter((rec) => rec._raw._status !== 'synced')
 
     if (pushable.length === 0) return
     await this.internalPush(pushable, signal)
   }
 
   private async internalPush(pushable: TModel[], signal?: AbortSignal) {
-    const entries = pushable.map(rec => {
+    const entries = pushable.map((rec) => {
       const record = this.serializer.toPlainObject(rec)
       const meta = {
-        deleted: rec._raw._status === 'deleted'
+        deleted: rec._raw._status === 'deleted',
       }
 
       return {
         record,
-        meta
+        meta,
       }
     })
     const payload = {
-      entries
+      entries,
     }
 
     try {
@@ -191,7 +203,7 @@ export default class SyncStore<
       const response: SyncStorePushResponseUnreachable = {
         acknowledged: false,
         status: 'unreachable',
-        originalError: error
+        originalError: error,
       }
 
       return response
@@ -227,81 +239,88 @@ export default class SyncStore<
 
   private async readLocalAll() {
     const records = await this.collection.query().fetch()
-    return records.map(record => this.serializer.toPlainObject(record))
+    return records.map((record) => this.serializer.toPlainObject(record))
   }
 
   private async readLocalOne(id: string) {
-    return this.collection.query(Q.where('id', id)).fetch().then(records => this.serializer.toPlainObject(records[0]))
+    return this.collection
+      .query(Q.where('id', id))
+      .fetch()
+      .then((records) => this.serializer.toPlainObject(records[0]))
   }
 
   private async writeLocal(entries: SyncEntry[], freshSync: boolean = false) {
-    return this.db.write(async writer => {
-      // TODO - on freshSync - delete all records as defensive measure? what to do with potentially updated records?
+    // NOTE: not using freshSync here, since we don't want to naively assume
+    // that there aren't any local records that have been created locally that we might clobber
 
+    return this.db.write(async (writer) => {
       const existingRecordsMap = new Map<RecordId, TModel>()
-      if (!freshSync) {
-        const existingRecords = await this.collection.query(Q.where('id', Q.oneOf(entries.map(e => e.record.id.toString())))).fetch()
-        for (const record of existingRecords) {
-          existingRecordsMap.set(record.id, record)
-        }
+      const existingRecords = await this.collection
+        .query(Q.where('id', Q.oneOf(entries.map((e) => e.record.id.toString()))))
+        .fetch()
+      for (const record of existingRecords) {
+        existingRecordsMap.set(record.id, record)
       }
 
-      const [entriesToCreate, tuplesToUpdate, recordsToDelete] = freshSync
-        ? [entries.filter(entry => !entry.meta.lifecycle.deleted_at), [], []]
-        : entries.reduce<[SyncEntry[], [TModel, SyncEntry][], TModel[]]>(
-            (acc, entry) => {
-              const existing = existingRecordsMap.get(entry.meta.ids.id.toString())
-              if (existing) {
-                switch (existing._raw._status) {
-                  case 'disposable':
-                    // do what???
-                    break;
+      const [entriesToCreate, tuplesToUpdate, recordsToDelete] = entries.reduce<
+        [SyncEntry[], [TModel, SyncEntry][], TModel[]]
+      >(
+        (acc, entry) => {
+          const existing = existingRecordsMap.get(entry.meta.ids.id.toString())
+          if (existing) {
+            switch (existing._raw._status) {
+              case 'disposable':
+                // do what???
+                break
 
-                  case 'deleted':
-                    if (entry.meta.lifecycle.deleted_at) {
-                      acc[2].push(existing)
-                    } else {
-                      // do what???
-                    }
-                    break;
-
-                  case 'updated':
-                    if (entry.meta.lifecycle.deleted_at) {
-                      // delete local even though user has newer changes
-                      // otherwise would be some weird id changes/conflicts that I don't even want to think about right now
-                      acc[2].push(existing)
-                    // TODO - fix updated_at string vs int inconsistency
-                    } else if (entry.meta.lifecycle.updated_at > existing._raw['updated_at']) {
-                      acc[1].push([existing, entry])
-                    } else {
-                      // TODO - do we do this? or just ignore?
-                      acc[1].push([existing, entry])
-                    }
-                    break;
-
-                  case 'created': // shouldn't really happen
-                  case 'synced':
-                  default:
-                    if (entry.meta.lifecycle.deleted_at) {
-                      acc[2].push(existing)
-                    } else {
-                      acc[1].push([existing, entry])
-                    }
-                }
-              } else {
+              case 'deleted':
                 if (entry.meta.lifecycle.deleted_at) {
-                  // ignore ???
+                  acc[2].push(existing)
                 } else {
-                  acc[0].push(entry)
+                  // do what???
                 }
-              }
-              return acc
-            },
-            [[], [], []]
-          )
+                break
 
-      const createdBuilds = entriesToCreate.map(entry => {
-        return this.collection.prepareCreate(r => {
+              case 'updated':
+                if (entry.meta.lifecycle.deleted_at) {
+                  // delete local even though user has newer changes
+                  // otherwise would be some weird id changes/conflicts that I don't even want to think about right now
+                  acc[2].push(existing)
+                  // TODO - fix updated_at string vs int inconsistency
+                } else if (
+                  asEpochSeconds(entry.meta.lifecycle.updated_at) >
+                  msToS(existing._raw['updated_at'])
+                ) {
+                  acc[1].push([existing, entry])
+                } else {
+                  // TODO - do we do this? or just ignore?
+                  acc[1].push([existing, entry])
+                }
+                break
+
+              case 'created': // shouldn't really happen
+              case 'synced':
+              default:
+                if (entry.meta.lifecycle.deleted_at) {
+                  acc[2].push(existing)
+                } else {
+                  acc[1].push([existing, entry])
+                }
+            }
+          } else {
+            if (entry.meta.lifecycle.deleted_at) {
+              // ignore ???
+            } else {
+              acc[0].push(entry)
+            }
+          }
+          return acc
+        },
+        [[], [], []]
+      )
+
+      const createdBuilds = entriesToCreate.map((entry) => {
+        return this.collection.prepareCreate((r) => {
           Object.entries(entry.record).forEach(([key, value]) => {
             if (key === 'id') r._raw.id = value.toString()
             else r[key] = value
@@ -314,7 +333,7 @@ export default class SyncStore<
         })
       })
       const updatedBuilds = tuplesToUpdate.map(([record, entry]) => {
-        return record.prepareUpdate(r => {
+        return record.prepareUpdate((r) => {
           Object.entries(entry.record).forEach(([key, value]) => {
             if (key !== 'id') r[key] = value
           })
@@ -325,7 +344,7 @@ export default class SyncStore<
           r._raw._changed = ''
         })
       })
-      const deletedBuilds = recordsToDelete.map(record => {
+      const deletedBuilds = recordsToDelete.map((record) => {
         return record.prepareDestroyPermanently()
       })
 
