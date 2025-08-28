@@ -114,12 +114,14 @@ export async function getNavigateTo(data) {
       const contentState = await getProgressState(content.id)
       if (contentState !== STATE_STARTED) {
         const firstChild = content.children[0]
-        let lastInteractedChildNavToData =
-          (await getNavigateTo([firstChild])[firstChild.id]) ?? null
-        navigateToData[content.id] = buildNavigateTo(
-          content.children[0],
-          lastInteractedChildNavToData
-        )
+        if (firstChild) {
+          let lastInteractedChildNavToData =
+            (await getNavigateTo([firstChild])[firstChild.id]) ?? null
+          navigateToData[content.id] = buildNavigateTo(
+            content.children[0],
+            lastInteractedChildNavToData
+          )
+        }
       } else {
         const childrenStates = await getProgressStateByIds(childrenIds)
         const lastInteracted = await getLastInteractedOf(childrenIds)
@@ -130,7 +132,9 @@ export async function getNavigateTo(data) {
             navigateToData[content.id] = buildNavigateTo(children.get(lastInteracted))
           } else {
             let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
-            navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild))
+            if (incompleteChild) {
+              navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild))
+            }
           }
         } else if (content.type === 'guided-course' || content.type === 'song-tutorial') {
           let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
@@ -144,11 +148,13 @@ export async function getNavigateTo(data) {
             // TODO: packs have an extra situation where we need to jump to the next course if all lessons in the last engaged course are completed
           }
           let lastInteractedChildNavToData = await getNavigateTo(firstChildren)
-          lastInteractedChildNavToData = lastInteractedChildNavToData[lastInteractedChildId]
-          navigateToData[content.id] = buildNavigateTo(
-            children.get(lastInteractedChildId),
-            lastInteractedChildNavToData
-          )
+          if (lastInteractedChildNavToData) {
+            lastInteractedChildNavToData = lastInteractedChildNavToData[lastInteractedChildId]
+            navigateToData[content.id] = buildNavigateTo(
+              children.get(lastInteractedChildId),
+              lastInteractedChildNavToData
+            )
+          }
         }
       }
     }
