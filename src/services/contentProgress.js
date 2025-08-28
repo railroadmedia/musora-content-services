@@ -147,8 +147,8 @@ export async function getNavigateTo(data) {
           if (childrenStates[lastInteractedChildId] === STATE_COMPLETED) {
             // TODO: packs have an extra situation where we need to jump to the next course if all lessons in the last engaged course are completed
           }
-          let lastInteractedChildNavToData = await getNavigateTo(firstChildren)
-          if (lastInteractedChildNavToData) {
+          if (firstChildren){
+            let lastInteractedChildNavToData = await getNavigateTo(firstChildren)
             lastInteractedChildNavToData = lastInteractedChildNavToData[lastInteractedChildId]
             navigateToData[content.id] = buildNavigateTo(
               children.get(lastInteractedChildId),
