@@ -1196,8 +1196,8 @@ export async function fetchRelatedRecommendedContent(railContentId, brand, count
  * @param count
  * @returns {Promise<Array<Object>>}
  */
-export async function fetchOtherSongVersions(railcontentId, brand, count = 3) {
-  return fetchRelatedByLicense(railcontentId, brand, true, count)
+export async function fetchOtherSongVersions(railcontentId, count = 3) {
+  return fetchRelatedByLicense(railcontentId, true, count)
 }
 
 /**
@@ -1209,8 +1209,8 @@ export async function fetchOtherSongVersions(railcontentId, brand, count = 3) {
  * @param {integer:3} count
  * @returns {Promise<Array<Object>>}
  */
-export async function fetchLessonsFeaturingThisContent(railcontentId, brand, count = 3) {
-  return fetchRelatedByLicense(railcontentId, brand, false, count)
+export async function fetchLessonsFeaturingThisContent(railcontentId,  count = 3) {
+  return fetchRelatedByLicense(railcontentId, false, count)
 }
 
 /**
@@ -1222,9 +1222,9 @@ export async function fetchLessonsFeaturingThisContent(railcontentId, brand, cou
  * @param {integer:3} count
  * @returns {Promise<Array<Object>>}
  */
-async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, count) {
+async function fetchRelatedByLicense(railcontentId, onlyUseSongTypes, count) {
   const typeCheck = `@->_type in [${arrayJoinWithQuotes(SONG_TYPES)}]`
-  let typeCheckString = `@->brand == '${brand}' && `
+  let typeCheckString = `@->brand == ^.brand && `
   typeCheckString += onlyUseSongTypes ? `${typeCheck}` : `!(${typeCheck})`
   const contentFromLicenseFilter = `_type == 'license' && references(^._id)].content[${typeCheckString} && @->railcontent_id != ${railcontentId}`
   let filterSongTypesWithSameLicense = await new FilterBuilder(contentFromLicenseFilter, {
@@ -1247,12 +1247,11 @@ async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, cou
 }
 
 /**
- * Fetch sibling lessons to a specific lesson
+ * Fetches sibling lessons to a specific lesson
  * @param {string} railContentId - The RailContent ID of the current lesson.
- * @param {string} brand - The current brand.
  * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
  */
-export async function fetchSiblingContent(railContentId, brand= null)
+export async function fetchSiblingContent(railContentId)
 {
   const filterGetParent = await new FilterBuilder(`references(^._id) && _type == ^.parent_type`, {
     pullFutureContent: true
