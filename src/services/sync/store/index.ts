@@ -10,7 +10,7 @@ import {
   SyncStorePushResponseUnreachable,
 } from '..'
 import { SyncPullResponse, SyncPushResponse, ClientPushPayload } from '../fetch'
-import { asEpochSeconds, msToS } from '../utils/brands'
+import { BaseResolver, LastWriteConflictResolver } from '../resolvers'
 
 export default class SyncStore<
   TModel extends Model = Model,
@@ -20,6 +20,7 @@ export default class SyncStore<
   readonly model: TModel
   readonly collection: Collection<TModel>
   readonly serializer: TSerializer | SyncSerializer
+  readonly Resolver: BaseResolver
 
   lastFetchTokenKey: string
   currentSync: Promise<SyncPullResponse> | null = null
@@ -38,17 +39,20 @@ export default class SyncStore<
     pull,
     push,
     serializer,
+    Resolver
   }: {
     model: TModel
     db: Database
     pull: (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
     push: (payload: ClientPushPayload, signal: AbortSignal) => Promise<SyncPushResponse>
     serializer?: TSerializer
+    Resolver?: typeof BaseResolver
   }) {
     this.db = db
     this.model = model
     this.collection = db.collections.get(model.table)
     this.serializer = serializer ?? new SyncSerializer()
+    this.Resolver = Resolver ?? LastWriteConflictResolver
 
     this.pull = pull
     this.push = push
@@ -266,53 +270,33 @@ export default class SyncStore<
         [SyncEntry[], [TModel, SyncEntry][], TModel[]]
       >(
         (acc, entry) => {
+          const resolver = new this.Resolver({
+            createRecord: (entry) => acc[0].push(entry),
+            updateRecord: (existing, entry) => acc[1].push([existing, entry]),
+            deleteRecord: (existing) => acc[2].push(existing),
+          })
           const existing = existingRecordsMap.get(entry.meta.ids.id.toString())
           if (existing) {
             switch (existing._raw._status) {
               case 'disposable':
-                // do what???
+                // TODO - invariant violation
                 break
 
               case 'deleted':
-                if (entry.meta.lifecycle.deleted_at) {
-                  acc[2].push(existing)
-                } else {
-                  // do what???
-                }
+                resolver.againstDeleted(existing, entry)
                 break
 
               case 'updated':
-                if (entry.meta.lifecycle.deleted_at) {
-                  // delete local even though user has newer changes
-                  // otherwise would be some weird id changes/conflicts that I don't even want to think about right now
-                  acc[2].push(existing)
-                  // TODO - fix updated_at string vs int inconsistency
-                } else if (
-                  asEpochSeconds(entry.meta.lifecycle.updated_at) >
-                  msToS(existing._raw['updated_at'])
-                ) {
-                  acc[1].push([existing, entry])
-                } else {
-                  // TODO - do we do this? or just ignore?
-                  acc[1].push([existing, entry])
-                }
+                resolver.againstDirty(existing, entry)
                 break
 
-              case 'created': // shouldn't really happen
+              case 'created': // shouldn't really happen?
               case 'synced':
               default:
-                if (entry.meta.lifecycle.deleted_at) {
-                  acc[2].push(existing)
-                } else {
-                  acc[1].push([existing, entry])
-                }
+                resolver.againstClean(existing, entry)
             }
           } else {
-            if (entry.meta.lifecycle.deleted_at) {
-              // ignore ???
-            } else {
-              acc[0].push(entry)
-            }
+            resolver.againstNone(entry)
           }
           return acc
         },
