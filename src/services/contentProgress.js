@@ -132,9 +132,7 @@ export async function getNavigateTo(data) {
             navigateToData[content.id] = buildNavigateTo(children.get(lastInteracted))
           } else {
             let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
-            if (incompleteChild) {
-              navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild))
-            }
+            navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild))
           }
         } else if (content.type === 'guided-course' || content.type === 'song-tutorial') {
           let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
