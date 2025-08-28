@@ -15,14 +15,15 @@ export type SyncContext = {
 }
 
 export type SyncToken = string
-export type SyncSyncable = { id: RecordId } & Record<string, any>
 
-export type SyncPullEntry = SyncEntry
-export type SyncPushEntry = SyncEntry
-export type SyncEntry = {
-  record: SyncSyncable
+export type SyncSyncable<TRecordKey extends string = 'id'> = {
+  [K in TRecordKey]: RecordId
+} & Record<string, any>
+
+export type SyncEntry<TRecordKey extends string = 'id'> = {
+  record: SyncSyncable<TRecordKey>
   meta: {
-    record_id: RecordId
+    ids: { [K in TRecordKey]: RecordId }
     lifecycle: SyncEntryLifecycle
   }
 }
@@ -49,34 +50,35 @@ export type SyncStorePushDTO<T = SyncSyncable> = {
   // status: 'accepted' // | 'refused' | 'unreachable'
 }
 
-export type SyncStorePushResponse = SyncStorePushResponseUnreachable | SyncStorePushResponseAcknowledged
+export type SyncStorePushResponse<TRecordKey extends string = 'id'> = SyncStorePushResponseUnreachable | SyncStorePushResponseAcknowledged<TRecordKey>
 
 export type SyncStorePushResponseUnreachable = SyncStorePushResponseBase & {
   acknowledged: false
   status: 'unreachable'
   originalError: Error
 }
-export type SyncStorePushResponseAcknowledged = SyncStorePushResponseBase & {
+export type SyncStorePushResponseAcknowledged<TRecordKey extends string = 'id'> = SyncStorePushResponseBase & {
   acknowledged: true
-  results: SyncStorePushResult[]
+  results: SyncStorePushResult<TRecordKey>[]
 }
 interface SyncStorePushResponseBase {
   acknowledged: boolean
 }
 
-export type SyncStorePushResult = SyncStorePushResultSuccess | SyncStorePushResultFailure
-export type SyncStorePushResultSuccess = SyncStorePushResultBase & {
+export type SyncStorePushResult<TRecordKey extends string = 'id'> = SyncStorePushResultSuccess<TRecordKey> | SyncStorePushResultFailure<TRecordKey>
+export type SyncStorePushResultSuccess<TRecordKey extends string = 'id'> = SyncStorePushResultBase & {
   success: true
-  entry: SyncPushEntry
+  entry: SyncEntry<TRecordKey>
 }
 
-export type SyncStorePushResultFailure = SyncStorePushResultInvalid
-export type SyncStorePushResultInvalid = SyncStorePushResultFailureBase & {
+export type SyncStorePushResultFailure<TRecordKey extends string = 'id'> = SyncStorePushResultInvalid<TRecordKey>
+export type SyncStorePushResultInvalid<TRecordKey extends string = 'id'> = SyncStorePushResultFailureBase<TRecordKey> & {
   failureType: 'invalid'
 }
-interface SyncStorePushResultFailureBase extends SyncStorePushResultBase {
+interface SyncStorePushResultFailureBase<TRecordKey extends string = 'id'> extends SyncStorePushResultBase {
   success: false
   failureType: string
+  ids: { [K in TRecordKey]: RecordId }
 }
 interface SyncStorePushResultBase {
   success: boolean

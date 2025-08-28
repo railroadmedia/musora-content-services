@@ -7,7 +7,6 @@ export default class LikesRepository extends SyncRepository {
     })
   }
 
-
   private static generateId(contentId: string) {
     return contentId;
   }
