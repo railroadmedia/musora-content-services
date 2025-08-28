@@ -1,7 +1,7 @@
 import { Database, Q, type Collection, type Model, type RecordId } from '@nozbe/watermelondb'
 import SyncSerializer from '../serializers'
 import { SyncToken, SyncEntry, SyncStorePullSingleDTO, SyncStorePullMultiDTO, SyncStorePushDTO, SyncStorePushResponseAcknowledged, SyncStorePushResponseUnreachable } from '..'
-import { ServerPullResponse, ServerPushResponse, ClientPushPayload } from '../fetch'
+import { SyncPullResponse, SyncPushResponse, ClientPushPayload } from '../fetch'
 
 export default class SyncStore<
   TModel extends Model = Model,
@@ -13,18 +13,18 @@ export default class SyncStore<
   readonly serializer: TSerializer | SyncSerializer
 
   lastFetchTokenKey: string
-  currentSync: Promise<ServerPullResponse> | null = null
+  currentSync: Promise<SyncPullResponse> | null = null
 
-  readonly pull: (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<ServerPullResponse>
-  readonly push: (payload: ClientPushPayload, signal: AbortSignal) => Promise<ServerPushResponse>
+  readonly pull: (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
+  readonly push: (payload: ClientPushPayload, signal: AbortSignal) => Promise<SyncPushResponse>
 
   fetchedOnce: boolean = false
 
   constructor({ model, db, pull, push, serializer }: {
     model: TModel,
     db: Database,
-    pull: (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<ServerPullResponse>,
-    push: (payload: ClientPushPayload, signal: AbortSignal) => Promise<ServerPushResponse>,
+    pull: (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>,
+    push: (payload: ClientPushPayload, signal: AbortSignal) => Promise<SyncPushResponse>,
     serializer?: TSerializer
   }) {
     this.db = db
@@ -250,7 +250,7 @@ export default class SyncStore<
         ? [entries.filter(entry => !entry.meta.lifecycle.deleted_at), [], []]
         : entries.reduce<[SyncEntry[], [TModel, SyncEntry][], TModel[]]>(
             (acc, entry) => {
-              const existing = existingRecordsMap.get(entry.meta.record_id.toString())
+              const existing = existingRecordsMap.get(entry.meta.ids.id.toString())
               if (existing) {
                 switch (existing._raw._status) {
                   case 'disposable':

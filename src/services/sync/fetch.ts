@@ -1,4 +1,4 @@
-import { SyncToken, SyncPullEntry, SyncStorePushResult, SyncSyncable } from "./index"
+import { SyncToken, SyncEntry, SyncStorePushResult, SyncSyncable } from "./index"
 
 interface RawPullResponse {
   meta: {
@@ -6,22 +6,22 @@ interface RawPullResponse {
     max_stamp: SyncToken | null
     timestamp: string
   }
-  records: SyncPullEntry[]
+  records: SyncEntry<'client_id'>[]
 }
 
 interface RawPushResponse {
   meta: {
     timestamp: string
   }
+  results: SyncStorePushResult<'client_id'>[]
+}
+
+export interface SyncPushResponse {
   results: SyncStorePushResult[]
 }
 
-export interface ServerPushResponse {
-  results: SyncStorePushResult[]
-}
-
-export interface ServerPullResponse {
-  data: SyncPullEntry[]
+export interface SyncPullResponse {
+  data: SyncEntry[]
   token: SyncToken | null
   previousToken: SyncToken | null
 }
@@ -36,10 +36,25 @@ export interface ClientPushPayload {
 }
 
 export function syncPull(callback: (token: SyncToken | null, signal?: AbortSignal) => Promise<RawPullResponse>) {
-  return async function(lastFetchToken: SyncToken | null, signal?: AbortSignal): Promise<ServerPullResponse> {
+  return async function(lastFetchToken: SyncToken | null, signal?: AbortSignal): Promise<SyncPullResponse> {
     const response = await callback(lastFetchToken, signal)
 
-    const data = response.records
+    const data = response.records.map(entry => {
+      const { client_id: id, ...record } = entry.record
+      return {
+        ...entry,
+        record: {
+          ...record,
+          id
+        },
+        meta: {
+          ...entry.meta,
+          ids: {
+            id: entry.meta.ids.client_id
+          }
+        }
+      }
+    })
     const previousToken = response.meta.since
 
     // if no max_stamp, at least use the server's timestamp
@@ -55,13 +70,42 @@ export function syncPull(callback: (token: SyncToken | null, signal?: AbortSigna
 }
 
 export function syncPush(callback: (payload: ClientPushPayload, signal?: AbortSignal) => Promise<RawPushResponse>) {
-  return async function(payload: ClientPushPayload, signal?: AbortSignal): Promise<ServerPushResponse> {
+  return async function(payload: ClientPushPayload, signal?: AbortSignal): Promise<SyncPushResponse> {
     const response = await callback(payload, signal)
 
     const results = response.results
 
     return {
-      results
+      results: results.map(result => {
+        if (result.success) {
+          const entry = result.entry
+          const { client_id: id, ...record } = entry.record
+          return {
+            ...result,
+            entry: {
+              ...entry,
+              record: {
+                ...record,
+                id
+              },
+              meta: {
+                ...entry.meta,
+                ids: {
+                  id: entry.meta.ids.client_id
+                }
+              }
+            }
+          }
+        } else {
+          return {
+            ...result,
+            ids: {
+              id: result.ids.client_id
+            }
+          }
+        }
+      })
     }
   }
 }
+

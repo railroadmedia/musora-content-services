@@ -33,12 +33,14 @@
     "ts-jest": "^29.2.4"
   },
   "dependencies": {
-    "@nozbe/watermelondb": "^0.28.0",
     "@sanity/client": "^5.4.2",
     "dayjs": "^1.11.13",
     "docdash": "^2.0.2",
     "groqd": "^0.15.12",
     "ulid": "^3.0.1"
+  },
+  "peerDependencies": {
+    "@nozbe/watermelondb": "^0.28.0"
   },
   "exports": {
     ".": "./src/index.js",
