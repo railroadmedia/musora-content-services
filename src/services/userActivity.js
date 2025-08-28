@@ -13,7 +13,7 @@ import {
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import { fetchByRailContentId, fetchByRailContentIds, fetchShows } from './sanity'
 import { fetchPlaylist, fetchUserPlaylists } from './content-org/playlists'
-import { pinnedGuidedCourses } from './content-org/guided-courses'
+import {guidedCourses, pinnedGuidedCourses} from './content-org/guided-courses'
 import {
   getMonday,
   getWeekNumber,
@@ -1051,13 +1051,18 @@ function generateContentsMap(contents, playlistsContents) {
  */
 export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   // TODO slice progress to a reasonable number, say 100
-  const [recentPlaylists, progressContents, allPinnedGuidedCourse, userPinnedItem] =
+  console.log('EREX in getProgressRows')
+
+  const [recentPlaylists, progressContents, allPinnedGuidedCourse, userPinnedItem, enrolledGuidedCourses] =
     await Promise.all([
       fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
       getAllStartedOrCompleted({ onlyIds: false, brand: brand }),
       pinnedGuidedCourses(brand),
       getUserPinnedItem(brand),
+      guidedCourses()
     ])
+
+  const mergedGuidedCourses = 1 //get all cuigded courses, incl no progress.
   let pinnedGuidedCourse = allPinnedGuidedCourse?.[0] ?? null
 
   const playlists = recentPlaylists?.data || []
@@ -1066,6 +1071,12 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     (item) => item.playlist.last_engaged_on
   )
 
+  //get the array of progress from nonPlaylistContentIds which has just ids
+  //enrolledGuidedCourses has all the info about GCs -> map it to content_ids
+  //GuidedCourseContentIds <- a mapping
+  //get all GuidedCourseContentIds ids that are not in nonPlaylistContentIds
+  //NOT NEEDED insert that dataContext (we also need last_updated here) into the nonPlaylistContentIds array
+
   const nonPlaylistContentIds = Object.keys(progressContents)
   if (pinnedGuidedCourse) {
     nonPlaylistContentIds.push(pinnedGuidedCourse.content_id)
@@ -1073,6 +1084,9 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   if (userPinnedItem?.progressType === 'content') {
     nonPlaylistContentIds.push(userPinnedItem.id)
   }
+
+
+
   const [playlistsContents, contents] = await Promise.all([
     playlistEngagedOnContents ? addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
       addNextLesson: true,
