@@ -14,6 +14,8 @@ reviews:
     - "!coverage/**"
     - "!tools/**"
     - "!node_modules/**"
+    - "src/**"
+    - "test/**"
   auto_review:
     enabled: true
     drafts: false

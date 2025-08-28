@@ -280,6 +280,8 @@ import {
 } from './services/user/profile.js';
 
 import {
+	authenticateViaAuthKey,
+	generateAuthKey,
 	login,
 	logout
 } from './services/user/sessions.js';
@@ -317,6 +319,7 @@ declare module 'musora-content-services' {
 		applyCloudflareWrapper,
 		applySanityTransformations,
 		assignModeratorToComment,
+		authenticateViaAuthKey,
 		blockUser,
 		blockedUsers,
 		buildImageSRC,
@@ -430,6 +433,7 @@ declare module 'musora-content-services' {
 		fetchUserPracticeNotes,
 		fetchUserPractices,
 		findIncompleteLesson,
+		generateAuthKey,
 		getActiveDiscussions,
 		getAllCompleted,
 		getAllStarted,

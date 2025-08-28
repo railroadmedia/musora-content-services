@@ -2,6 +2,8 @@
  * @module Sessions
  */
 import { globalConfig } from '../config.js'
+import { HttpClient } from '../../infrastructure/http/HttpClient'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import './types.js'
 
 /**
@@ -64,4 +66,29 @@ export async function logout() {
       'Content-Type': 'application/json',
     },
   })
+}
+
+/**
+ * Generates the authentication key for the user.
+ *
+ * @returns {Promise<{key: string}|HttpError>} - The authentication key or an error
+ */
+export async function generateAuthKey() {
+  const apiUrl = `/api/user-management-system/v1/sessions/auth-key`
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  return httpClient.post(apiUrl, { token })
+}
+
+/**
+ * Authenticates the user via an authentication key.
+ *
+ * @param {string} key - The authentication key
+ * @param {number} userId - The user ID
+ *
+ * @returns {Promise<AuthResponse|HttpError>} - User data and authentication token or an error
+ */
+export async function authenticateViaAuthKey(key, userId) {
+  const apiUrl = `/api/user-management-system/v1/sessions/auth-key`
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post(apiUrl, { key, user_id: userId })
 }

@@ -280,6 +280,8 @@ import {
 } from './services/user/profile.js';
 
 import {
+	authenticateViaAuthKey,
+	generateAuthKey,
 	login,
 	logout
 } from './services/user/sessions.js';
@@ -316,6 +318,7 @@ export {
 	applyCloudflareWrapper,
 	applySanityTransformations,
 	assignModeratorToComment,
+	authenticateViaAuthKey,
 	blockUser,
 	blockedUsers,
 	buildImageSRC,
@@ -429,6 +432,7 @@ export {
 	fetchUserPracticeNotes,
 	fetchUserPractices,
 	findIncompleteLesson,
+	generateAuthKey,
 	getActiveDiscussions,
 	getAllCompleted,
 	getAllStarted,
