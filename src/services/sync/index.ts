@@ -42,7 +42,7 @@ export type SyncStorePullDTO<T = SyncSyncable | SyncSyncable[]> = {
   data: T
   status: 'fresh' | 'possiblyStale'
   previousFetchToken: SyncToken | null
-  fetchToken: SyncToken
+  fetchToken: SyncToken | null
 }
 
 export type SyncStorePushDTO<T = SyncSyncable> = {
