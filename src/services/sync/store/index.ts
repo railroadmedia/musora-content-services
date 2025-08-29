@@ -9,7 +9,7 @@ import {
   SyncStorePushResponseAcknowledged,
   SyncStorePushResponseUnreachable,
 } from '..'
-import { SyncPullResponse, SyncPushResponse, ClientPushPayload } from '../fetch'
+import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
 import { BaseResolver, LastWriteConflictResolver } from '../resolvers'
 
 export default class SyncStore<
@@ -29,7 +29,7 @@ export default class SyncStore<
     previousFetchToken: SyncToken | null,
     signal?: AbortSignal
   ) => Promise<SyncPullResponse>
-  readonly push: (payload: ClientPushPayload, signal?: AbortSignal) => Promise<SyncPushResponse>
+  readonly push: (payload: PushPayload, signal?: AbortSignal) => Promise<SyncPushResponse>
 
   fetchedOnce: boolean = false
 
@@ -44,7 +44,7 @@ export default class SyncStore<
     model: TModel
     db: Database
     pull: (previousFetchToken: SyncToken | null, signal?: AbortSignal) => Promise<SyncPullResponse>
-    push: (payload: ClientPushPayload, signal?: AbortSignal) => Promise<SyncPushResponse>
+    push: (payload: PushPayload, signal?: AbortSignal) => Promise<SyncPushResponse>
     serializer?: TSerializer
     Resolver?: typeof BaseResolver
   }) {
@@ -79,14 +79,13 @@ export default class SyncStore<
     await this.syncInternal(signal)
   }
 
-  // TODO: should failure throw?
   async pushOneImmediate(record: TModel) {
     const pushed = await this.internalPush([record])
 
     if (pushed.acknowledged) {
       const result = pushed.results[0]
       if (result.success) {
-        await this.writeLocal([result.entry], false)
+        await this.writeLocal([result.entry])
         const data = await this.readLocalOne(result.entry.record.id)
 
         const ret: SyncStorePushDTO = {
@@ -95,10 +94,10 @@ export default class SyncStore<
         }
         return ret
       } else {
-        // todo
+        throw new Error('SyncStore.pushOneImmediate: failed to push record') // todo - proper error
       }
     } else {
-      // todo - throw?
+      throw new Error('SyncStore.pushOneImmediate: failed to push record') // todo - proper error
     }
   }
 
@@ -196,6 +195,8 @@ export default class SyncStore<
 
     try {
       const pushed = await this.push(payload, signal)
+
+      // todo - if pushedresponse.ok - could be 400, etc.
 
       const response: SyncStorePushResponseAcknowledged = {
         acknowledged: true,
