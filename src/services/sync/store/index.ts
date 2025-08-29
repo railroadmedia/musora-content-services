@@ -257,85 +257,95 @@ export default class SyncStore<
     // NOTE: not using freshSync here, since we don't want to naively assume
     // that there aren't any local records that have been created locally that we might clobber
 
-    return this.db.write(async (writer) => {
-      const existingRecordsMap = new Map<RecordId, TModel>()
-      const existingRecords = await this.collection
-        .query(Q.where('id', Q.oneOf(entries.map((e) => e.record.id.toString()))))
-        .fetch()
-      for (const record of existingRecords) {
-        existingRecordsMap.set(record.id, record)
-      }
-
-      const [entriesToCreate, tuplesToUpdate, recordsToDelete] = entries.reduce<
-        [SyncEntry[], [TModel, SyncEntry][], TModel[]]
-      >(
-        (acc, entry) => {
-          const resolver = new this.Resolver({
-            createRecord: (entry) => acc[0].push(entry),
-            updateRecord: (existing, entry) => acc[1].push([existing, entry]),
-            deleteRecord: (existing) => acc[2].push(existing),
-          })
-          const existing = existingRecordsMap.get(entry.meta.ids.id.toString())
-          if (existing) {
-            switch (existing._raw._status) {
-              case 'disposable':
-                // TODO - invariant violation
-                break
-
-              case 'deleted':
-                resolver.againstDeleted(existing, entry)
-                break
-
-              case 'updated':
-                resolver.againstDirty(existing, entry)
-                break
-
-              case 'created': // shouldn't really happen?
-              case 'synced':
-              default:
-                resolver.againstClean(existing, entry)
-            }
-          } else {
-            resolver.againstNone(entry)
-          }
-          return acc
-        },
-        [[], [], []]
-      )
-
-      const createdBuilds = entriesToCreate.map((entry) => {
-        return this.collection.prepareCreate((r) => {
-          Object.entries(entry.record).forEach(([key, value]) => {
-            if (key === 'id') r._raw.id = value.toString()
-            else r[key] = value
-          })
-          r._raw['created_at'] = entry.meta.lifecycle.created_at
-          r._raw['updated_at'] = entry.meta.lifecycle.updated_at
-
-          r._raw._status = 'synced'
-          r._raw._changed = ''
-        })
-      })
-      const updatedBuilds = tuplesToUpdate.map(([record, entry]) => {
-        return record.prepareUpdate((r) => {
-          Object.entries(entry.record).forEach(([key, value]) => {
-            if (key !== 'id') r[key] = value
-          })
-          r._raw['created_at'] = entry.meta.lifecycle.created_at
-          r._raw['updated_at'] = entry.meta.lifecycle.updated_at
-
-          r._raw._status = 'synced'
-          r._raw._changed = ''
-        })
-      })
-      const deletedBuilds = recordsToDelete.map((record) => {
-        return record.prepareDestroyPermanently()
-      })
-
-      const builds = [...createdBuilds, ...updatedBuilds, ...deletedBuilds]
+    await this.withWriteLock(async () => {
+      const builds = await this.buildSyncedRecordsFromEntries(entries)
       if (builds.length === 0) return
 
-      await writer.batch(...builds)
+      await this.db.write(async (writer) => {
+        await writer.batch(...builds)
+      })
     })
+  }
+
+  private async withWriteLock(write: () => Promise<void>) {
+    return navigator.locks.request(`sync:write:${this.db.adapter.dbName}`, write)
+  }
+
+  private async buildSyncedRecordsFromEntries(entries: SyncEntry[]) {
+    const existingRecordsMap = new Map<RecordId, TModel>()
+    const existingRecords = await this.collection
+      .query(Q.where('id', Q.oneOf(entries.map((e) => e.record.id.toString()))))
+      .fetch()
+    for (const record of existingRecords) {
+      existingRecordsMap.set(record.id, record)
+    }
+
+    const [entriesToCreate, tuplesToUpdate, recordsToDelete] = entries.reduce<
+      [SyncEntry[], [TModel, SyncEntry][], TModel[]]
+    >(
+      (acc, entry) => {
+        const resolver = new this.Resolver({
+          createRecord: (entry) => acc[0].push(entry),
+          updateRecord: (existing, entry) => acc[1].push([existing, entry]),
+          deleteRecord: (existing) => acc[2].push(existing),
+        })
+        const existing = existingRecordsMap.get(entry.meta.ids.id.toString())
+        if (existing) {
+          switch (existing._raw._status) {
+            case 'disposable':
+              // TODO - invariant violation
+              break
+
+            case 'deleted':
+              resolver.againstDeleted(existing, entry)
+              break
+
+            case 'updated':
+              resolver.againstDirty(existing, entry)
+              break
+
+            case 'created': // shouldn't really happen?
+            case 'synced':
+            default:
+              resolver.againstClean(existing, entry)
+          }
+        } else {
+          resolver.againstNone(entry)
+        }
+        return acc
+      },
+      [[], [], []]
+    )
+
+    const createdBuilds = entriesToCreate.map((entry) => {
+      return this.collection.prepareCreate((r) => {
+        Object.entries(entry.record).forEach(([key, value]) => {
+          if (key === 'id') r._raw.id = value.toString()
+          else r[key] = value
+        })
+        r._raw['created_at'] = entry.meta.lifecycle.created_at
+        r._raw['updated_at'] = entry.meta.lifecycle.updated_at
+
+        r._raw._status = 'synced'
+        r._raw._changed = ''
+      })
+    })
+    const updatedBuilds = tuplesToUpdate.map(([record, entry]) => {
+      return record.prepareUpdate((r) => {
+        Object.entries(entry.record).forEach(([key, value]) => {
+          if (key !== 'id') r[key] = value
+        })
+        r._raw['created_at'] = entry.meta.lifecycle.created_at
+        r._raw['updated_at'] = entry.meta.lifecycle.updated_at
+
+        r._raw._status = 'synced'
+        r._raw._changed = ''
+      })
+    })
+    const deletedBuilds = recordsToDelete.map((record) => {
+      return record.prepareDestroyPermanently()
+    })
+
+    return [...createdBuilds, ...updatedBuilds, ...deletedBuilds]
   }
 }
