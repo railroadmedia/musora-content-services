@@ -39,7 +39,7 @@ export default class SyncStore<
     pull,
     push,
     serializer,
-    Resolver
+    Resolver,
   }: {
     model: TModel
     db: Database
@@ -254,11 +254,8 @@ export default class SyncStore<
   }
 
   private async writeLocal(entries: SyncEntry[], freshSync: boolean = false) {
-    // NOTE: not using freshSync here, since we don't want to naively assume
-    // that there aren't any local records that have been created locally that we might clobber
-
     await this.withWriteLock(async () => {
-      const builds = await this.buildSyncedRecordsFromEntries(entries)
+      const builds = await this.buildSyncedRecordsFromEntries(entries, freshSync)
       if (builds.length === 0) return
 
       await this.db.write(async (writer) => {
@@ -271,7 +268,7 @@ export default class SyncStore<
     return navigator.locks.request(`sync:write:${this.db.adapter.dbName}`, write)
   }
 
-  private async buildSyncedRecordsFromEntries(entries: SyncEntry[]) {
+  private async buildSyncedRecordsFromEntries(entries: SyncEntry[], freshSync: boolean = false) {
     const existingRecordsMap = new Map<RecordId, TModel>()
     const existingRecords = await this.collection
       .query(Q.where('id', Q.oneOf(entries.map((e) => e.record.id.toString()))))
@@ -280,42 +277,44 @@ export default class SyncStore<
       existingRecordsMap.set(record.id, record)
     }
 
-    const [entriesToCreate, tuplesToUpdate, recordsToDelete] = entries.reduce<
-      [SyncEntry[], [TModel, SyncEntry][], TModel[]]
-    >(
-      (acc, entry) => {
-        const resolver = new this.Resolver({
-          createRecord: (entry) => acc[0].push(entry),
-          updateRecord: (existing, entry) => acc[1].push([existing, entry]),
-          deleteRecord: (existing) => acc[2].push(existing),
-        })
-        const existing = existingRecordsMap.get(entry.meta.ids.id.toString())
-        if (existing) {
-          switch (existing._raw._status) {
-            case 'disposable':
-              // TODO - invariant violation
-              break
+    // if this is a fresh sync and there are no existing records, we can skip more sophisticated conflict resolution
+    const [entriesToCreate, tuplesToUpdate, recordsToDelete] =
+      freshSync && existingRecordsMap.size === 0
+        ? [entries.filter((e) => !e.meta.lifecycle.deleted_at), [], []]
+        : entries.reduce<[SyncEntry[], [TModel, SyncEntry][], TModel[]]>(
+            (acc, entry) => {
+              const resolver = new this.Resolver({
+                createRecord: (entry) => acc[0].push(entry),
+                updateRecord: (existing, entry) => acc[1].push([existing, entry]),
+                deleteRecord: (existing) => acc[2].push(existing),
+              })
+              const existing = existingRecordsMap.get(entry.meta.ids.id.toString())
+              if (existing) {
+                switch (existing._raw._status) {
+                  case 'disposable':
+                    // TODO - invariant violation
+                    break
 
-            case 'deleted':
-              resolver.againstDeleted(existing, entry)
-              break
+                  case 'deleted':
+                    resolver.againstDeleted(existing, entry)
+                    break
 
-            case 'updated':
-              resolver.againstDirty(existing, entry)
-              break
+                  case 'updated':
+                    resolver.againstDirty(existing, entry)
+                    break
 
-            case 'created': // shouldn't really happen?
-            case 'synced':
-            default:
-              resolver.againstClean(existing, entry)
-          }
-        } else {
-          resolver.againstNone(entry)
-        }
-        return acc
-      },
-      [[], [], []]
-    )
+                  case 'created': // shouldn't really happen?
+                  case 'synced':
+                  default:
+                    resolver.againstClean(existing, entry)
+                }
+              } else {
+                resolver.againstNone(entry)
+              }
+              return acc
+            },
+            [[], [], []]
+          )
 
     const createdBuilds = entriesToCreate.map((entry) => {
       return this.collection.prepareCreate((r) => {
