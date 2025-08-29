@@ -27,9 +27,9 @@ export default class SyncStore<
 
   readonly pull: (
     previousFetchToken: SyncToken | null,
-    signal: AbortSignal
+    signal?: AbortSignal
   ) => Promise<SyncPullResponse>
-  readonly push: (payload: ClientPushPayload, signal: AbortSignal) => Promise<SyncPushResponse>
+  readonly push: (payload: ClientPushPayload, signal?: AbortSignal) => Promise<SyncPushResponse>
 
   fetchedOnce: boolean = false
 
@@ -43,8 +43,8 @@ export default class SyncStore<
   }: {
     model: TModel
     db: Database
-    pull: (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
-    push: (payload: ClientPushPayload, signal: AbortSignal) => Promise<SyncPushResponse>
+    pull: (previousFetchToken: SyncToken | null, signal?: AbortSignal) => Promise<SyncPullResponse>
+    push: (payload: ClientPushPayload, signal?: AbortSignal) => Promise<SyncPushResponse>
     serializer?: TSerializer
     Resolver?: typeof BaseResolver
   }) {
@@ -235,7 +235,7 @@ export default class SyncStore<
     }
   }
 
-  private async fetch(signal: AbortSignal) {
+  private async fetch(signal?: AbortSignal) {
     const lastFetchToken = await this.getLastFetchToken()
     const response = await this.pull(lastFetchToken, signal)
     return response

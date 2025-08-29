@@ -1,17 +1,18 @@
 import { SyncToken, SyncEntry, SyncStorePushResult, SyncSyncable } from "./index"
+import { EpochSeconds } from "./utils/brands"
 
 interface RawPullResponse {
   meta: {
-    since: SyncToken | null
-    max_updated_at: SyncToken | null
-    timestamp: string
+    since: EpochSeconds | null
+    max_updated_at: EpochSeconds | null
+    timestamp: EpochSeconds
   }
   records: SyncEntry<'client_id'>[]
 }
 
 interface RawPushResponse {
   meta: {
-    timestamp: string
+    timestamp: EpochSeconds
   }
   results: SyncStorePushResult<'client_id'>[]
 }
@@ -22,7 +23,7 @@ export interface SyncPushResponse {
 
 export interface SyncPullResponse {
   data: SyncEntry[]
-  token: SyncToken | null
+  token: SyncToken
   previousToken: SyncToken | null
 }
 
