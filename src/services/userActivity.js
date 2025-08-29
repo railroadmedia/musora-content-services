@@ -1061,6 +1061,8 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
       guidedCourses()
     ])
 
+  const enrolledGuidedCoursesIds = enrolledGuidedCourses.map(course => String(course.content_id));
+
   const mergedGuidedCourses = 1 //get all cuigded courses, incl no progress.
   let pinnedGuidedCourse = allPinnedGuidedCourse?.[0] ?? null
 
@@ -1077,13 +1079,13 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   //NOT NEEDED insert that dataContext (we also need last_updated here) into the nonPlaylistContentIds array
 
   const nonPlaylistContentIds = Object.keys(progressContents)
-  if (pinnedGuidedCourse) {
-    nonPlaylistContentIds.push(pinnedGuidedCourse.content_id)
+  if (enrolledGuidedCoursesIds.length > 0) {
+    nonPlaylistContentIds.push(...enrolledGuidedCoursesIds)
   }
   if (userPinnedItem?.progressType === 'content') {
     nonPlaylistContentIds.push(userPinnedItem.id)
   }
-
+console.log("nonPlaylistContentIds",nonPlaylistContentIds)
 
 
   const [playlistsContents, contents] = await Promise.all([
