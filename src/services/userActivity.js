@@ -1051,7 +1051,6 @@ function generateContentsMap(contents, playlistsContents) {
  */
 export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   // TODO slice progress to a reasonable number, say 100
-  console.log('EREX in getProgressRows')
 
   const [recentPlaylists, progressContents, allPinnedGuidedCourse, userPinnedItem, enrolledGuidedCourses] =
     await Promise.all([
