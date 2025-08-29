@@ -1263,10 +1263,9 @@ export async function fetchSiblingContent(railContentId)
 
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
 
-  const brandString = brand ? ` && brand == "${brand}"` : ''
   const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission[]->railcontent_id, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
 
-  const query = `*[railcontent_id == ${railContentId}${brandString}]{
+  const query = `*[railcontent_id == ${railContentId}]{
    _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
    'for-calculations': *[${filterGetParent}][0]{
     'siblings-list': child[]->railcontent_id,
