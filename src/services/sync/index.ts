@@ -47,8 +47,7 @@ export type SyncStorePullDTO<T = SyncSyncable | SyncSyncable[]> = {
 
 export type SyncStorePushDTO<T = SyncSyncable> = {
   data: T
-  state: 'synced' // | 'queued'
-  // status: 'accepted' // | 'refused' | 'unreachable'
+  state: 'synced'
 }
 
 export type SyncStorePushResponse<TRecordKey extends string = 'id'> = SyncStorePushResponseUnreachable | SyncStorePushResponseAcknowledged<TRecordKey>
@@ -75,6 +74,7 @@ export type SyncStorePushResultSuccess<TRecordKey extends string = 'id'> = SyncS
 export type SyncStorePushResultFailure<TRecordKey extends string = 'id'> = SyncStorePushResultInvalid<TRecordKey>
 export type SyncStorePushResultInvalid<TRecordKey extends string = 'id'> = SyncStorePushResultFailureBase<TRecordKey> & {
   failureType: 'invalid'
+  errors: Record<string, string[]>
 }
 interface SyncStorePushResultFailureBase<TRecordKey extends string = 'id'> extends SyncStorePushResultBase {
   success: false
@@ -82,6 +82,6 @@ interface SyncStorePushResultFailureBase<TRecordKey extends string = 'id'> exten
   ids: { [K in TRecordKey]: RecordId }
 }
 interface SyncStorePushResultBase {
-  success: boolean
+
 }
 
