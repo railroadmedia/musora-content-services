@@ -1,13 +1,15 @@
 import { SyncToken, SyncEntry, SyncStorePushResult, SyncSyncable } from "./index"
 import { EpochSeconds } from "./utils/brands"
 
+import { globalConfig } from '../config.js'
+
 interface RawPullResponse {
   meta: {
     since: EpochSeconds | null
     max_updated_at: EpochSeconds | null
     timestamp: EpochSeconds
   }
-  records: SyncEntry<'client_record_id'>[]
+  entries: SyncEntry<'client_record_id'>[]
 }
 
 interface RawPushResponse {
@@ -21,10 +23,19 @@ export interface SyncPushResponse {
   results: SyncStorePushResult[]
 }
 
-export interface SyncPullResponse {
-  data: SyncEntry[]
+export type SyncPullResponse = SyncPullSuccessResponse | SyncPullFailureResponse
+
+type SyncPullSuccessResponse = SyncPullResponseBase & {
+  success: true
+  entries: SyncEntry[]
   token: SyncToken
   previousToken: SyncToken | null
+}
+type SyncPullFailureResponse = SyncPullResponseBase & {
+  success: false
+}
+interface SyncPullResponseBase {
+
 }
 
 export interface PushPayload {
@@ -45,57 +56,98 @@ interface ServerPushPayload {
   }[]
 }
 
-export function syncPull(callback: (token: SyncToken | null, signal?: AbortSignal) => Promise<RawPullResponse>) {
+export function handlePull(callback: () => Request) {
   return async function(lastFetchToken: SyncToken | null, signal?: AbortSignal): Promise<SyncPullResponse> {
-    const response = await callback(lastFetchToken, signal)
+    const generatedRequest = callback()
+    const url = serializePullUrlQuery(generatedRequest.url, lastFetchToken)
+    const request = new Request(url, {
+      headers: generatedRequest.headers,
+      signal
+    });
+    const response = await fetch(request)
 
-    return deserializePullResponse(response)
+    if (!response.ok) {
+      // TODO - error response
+      throw new Error(`Failed to fetch sync pull: ${response.statusText}`)
+    }
+
+    const json = await response.json() as RawPullResponse
+    const data = deserializePullResponse(json)
+
+    // if no max_updated_at, at least use the server's timestamp
+    // useful for recording that we have at least tried fetching even though resultset empty
+    const token = data.meta.max_updated_at || data.meta.timestamp
+    const previousToken = data.meta.since
+
+    const entries = data.entries
+
+    return {
+      success: true,
+      entries,
+      token,
+      previousToken
+    }
   }
 }
 
-export function syncPush(callback: (serverPayload: ServerPushPayload, signal?: AbortSignal) => Promise<RawPushResponse>) {
+export function handlePush(callback: () => Request) {
   return async function(payload: PushPayload, signal?: AbortSignal): Promise<SyncPushResponse> {
+    const generatedRequest = callback()
     const serverPayload = serializePushPayload(payload)
-    const response = await callback(serverPayload, signal)
+    const request = new Request(generatedRequest, {
+      body: JSON.stringify(serverPayload),
+      signal
+    })
+    const response = await fetch(request)
 
-    return deserializePushResponse(response);
+    if (!response.ok) {
+      // todo - error response
+      throw new Error(`Failed to fetch sync push: ${response.statusText}`)
+    }
+
+    const json = await response.json() as RawPushResponse
+    const data = deserializePushResponse(json)
+
+    return data
   }
+}
+
+function serializePullUrlQuery(url: string, fetchToken: SyncToken | null) {
+  const queryString = url.replace(/^[^?]*\??/, '');
+  const searchParams = new URLSearchParams(queryString);
+  if (fetchToken) {
+    searchParams.set('since', fetchToken.toString())
+  }
+  return url + '?' + searchParams.toString()
 }
 
 function deserializePullResponse(response: RawPullResponse) {
   // convert server's client_record_id to our canonical id
-  const data = response.records.map(entry => {
-    const { client_record_id: id, ...record } = entry.record
-    return {
-      ...entry,
-      record: {
-        ...record,
-        id
-      },
-      meta: {
-        ...entry.meta,
-        ids: {
-          id: entry.meta.ids.client_record_id
+  return {
+    ...response,
+    entries: response.entries.map(entry => {
+      const { client_record_id: id, ...record } = entry.record
+      return {
+        ...entry,
+        record: {
+          ...record,
+          id
+        },
+        meta: {
+          ...entry.meta,
+          ids: {
+            id: entry.meta.ids.client_record_id
+          }
         }
       }
-    }
-  })
-  const previousToken = response.meta.since
-
-  // if no max_updated_at, at least use the server's timestamp
-  // useful for recording that we have at least tried fetching even though resultset empty
-  const token = response.meta.max_updated_at || response.meta.timestamp
-
-  return {
-    data,
-    token,
-    previousToken
+    })
   }
 }
 
-function serializePushPayload(payload: PushPayload) {
+function serializePushPayload(payload: PushPayload): ServerPushPayload {
   // convert our canonical id to client_record_id
   return {
+    ...payload,
     entries: payload.entries.map(entry => {
       const { id, ...record } = entry.record
       return {
@@ -106,6 +158,7 @@ function serializePushPayload(payload: PushPayload) {
         meta: entry.meta
       }
     })
+
   }
 }
 
@@ -113,7 +166,7 @@ function deserializePushResponse(response: RawPushResponse) {
   // convert server's client_record_id to our canonical id
   return {
     results: response.results.map(result => {
-      if (result.success) {
+      if (result.type === 'success') {
         const entry = result.entry
         const { client_record_id: id, ...record } = entry.record
         return {
@@ -142,4 +195,15 @@ function deserializePushResponse(response: RawPushResponse) {
       }
     })
   }
+}
+
+export function makeFetchRequest(input: RequestInfo, init?: RequestInit): () => Request {
+  return () => new Request(globalConfig.baseUrl + input, {
+    ...init,
+    headers: {
+      ...init?.headers,
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${globalConfig.sessionConfig.token}`
+    }
+  })
 }

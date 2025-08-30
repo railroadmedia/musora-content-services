@@ -8,7 +8,6 @@ import { globalConfig } from './config.js'
 const excludeFromGeneratedIndex = []
 
 //These constants need to match MWP UserDataVersionKeyEnum enum
-export const ContentLikesVersionKey = 0
 export const ContentProgressVersionKey = 1
 export const UserActivityVersionKey = 2
 
