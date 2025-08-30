@@ -31,7 +31,7 @@ export default class SyncStore<
   ) => Promise<SyncPullResponse>
   readonly push: (payload: PushPayload, signal?: AbortSignal) => Promise<SyncPushResponse>
 
-  fetchedOnce: boolean = false
+  fetchedOnceSuccessfully: boolean = false
 
   constructor({
     model,
@@ -84,7 +84,7 @@ export default class SyncStore<
 
     if (pushed.acknowledged) {
       const result = pushed.results[0]
-      if (result.success) {
+      if (result.type === 'success') {
         await this.writeLocal([result.entry])
         const data = await this.readLocalOne(result.entry.record.id)
 
@@ -109,7 +109,7 @@ export default class SyncStore<
       data,
       status: 'possiblyStale',
       previousFetchToken: fetchToken,
-      fetchToken,
+      fetchToken: null,
     }
     return result
   }
@@ -122,7 +122,37 @@ export default class SyncStore<
       data,
       status: 'possiblyStale',
       previousFetchToken: fetchToken,
-      fetchToken,
+      fetchToken: null,
+    }
+    return result
+  }
+
+  // swr pattern
+  async readButFetchOne(id: string) {
+    const [data, fetchToken] = await Promise.all([this.readLocalOne(id), this.getLastFetchToken()])
+    this.syncInternal()
+
+    const result = {
+      success: true,
+      data,
+      status: 'possiblyStale',
+      previousFetchToken: fetchToken,
+      fetchToken: null,
+    }
+    return result
+  }
+
+  // swr pattern
+  async readButFetchAll() {
+    const [data, fetchToken] = await Promise.all([this.readLocalAll(), this.getLastFetchToken()])
+    this.syncInternal()
+
+    const result = {
+      success: true,
+      data,
+      status: 'possiblyStale',
+      previousFetchToken: fetchToken,
+      fetchToken: null,
     }
     return result
   }
@@ -130,6 +160,11 @@ export default class SyncStore<
   async fetchAll() {
     const response = await this.syncInternal()
     const data = await this.readLocalAll()
+
+    if (!response.success) {
+      // todo - error response
+      throw new Error('SyncStore.fetchAll: failed to fetch')
+    }
 
     const result: SyncStorePullMultiDTO = {
       success: true,
@@ -145,6 +180,11 @@ export default class SyncStore<
     const response = await this.syncInternal()
     const data = await this.readLocalOne(id)
 
+    if (!response.success) {
+      // todo - error response
+      throw new Error('SyncStore.fetchOne: failed to fetch')
+    }
+
     const result: SyncStorePullSingleDTO = {
       success: true,
       data,
@@ -155,15 +195,17 @@ export default class SyncStore<
     return result
   }
 
+  // ideal for initial load - ensures user reloading page would get fresh data
   async fetchAllOnce() {
-    if (!this.fetchedOnce) {
+    if (!this.fetchedOnceSuccessfully) {
       return this.fetchAll()
     }
     return this.readAll()
   }
 
+  // ideal for initial load - ensures user reloading page would get fresh data
   async fetchOneOnce(id: string) {
-    if (!this.fetchedOnce) {
+    if (!this.fetchedOnceSuccessfully) {
       return this.fetchOne(id)
     }
     return this.readOne(id)
@@ -193,17 +235,9 @@ export default class SyncStore<
       entries,
     }
 
+    let pushed: SyncPushResponse
     try {
-      const pushed = await this.push(payload, signal)
-
-      // todo - if pushedresponse.ok - could be 400, etc.
-
-      const response: SyncStorePushResponseAcknowledged = {
-        acknowledged: true,
-        results: pushed.results,
-      }
-
-      return response
+      pushed = await this.push(payload, signal)
     } catch (error) {
       const response: SyncStorePushResponseUnreachable = {
         acknowledged: false,
@@ -213,6 +247,19 @@ export default class SyncStore<
 
       return response
     }
+
+    // todo - if pushedresponse.ok - could be 400, etc.
+
+    const response: SyncStorePushResponseAcknowledged = {
+      acknowledged: true,
+      results: pushed.results,
+    }
+
+    const successfulResults = response.results.filter(result => result.type === 'success')
+    const successfulEntries = successfulResults.map(result => result.entry)
+    await this.writeLocal(successfulEntries)
+
+    return response
   }
 
   private async syncInternal(signal?: AbortSignal) {
@@ -221,10 +268,12 @@ export default class SyncStore<
     this.currentSync = (async () => {
       const response = await this.fetch(signal)
 
-      await this.writeLocal(response.data, !response.previousToken)
-      await this.setLastFetchToken(response.token)
+      if (response.success) {
+        await this.writeLocal(response.entries, !response.previousToken)
+        await this.setLastFetchToken(response.token)
 
-      this.fetchedOnce = true
+        this.fetchedOnceSuccessfully = true
+      }
 
       return response
     })()
@@ -238,8 +287,7 @@ export default class SyncStore<
 
   private async fetch(signal?: AbortSignal) {
     const lastFetchToken = await this.getLastFetchToken()
-    const response = await this.pull(lastFetchToken, signal)
-    return response
+    return await this.pull(lastFetchToken, signal)
   }
 
   private async readLocalAll() {

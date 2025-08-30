@@ -67,7 +67,7 @@ interface SyncStorePushResponseBase {
 
 export type SyncStorePushResult<TRecordKey extends string = 'id'> = SyncStorePushResultSuccess<TRecordKey> | SyncStorePushResultFailure<TRecordKey>
 export type SyncStorePushResultSuccess<TRecordKey extends string = 'id'> = SyncStorePushResultBase & {
-  success: true
+  type: 'success'
   entry: SyncEntry<TRecordKey>
 }
 
@@ -77,11 +77,11 @@ export type SyncStorePushResultInvalid<TRecordKey extends string = 'id'> = SyncS
   errors: Record<string, string[]>
 }
 interface SyncStorePushResultFailureBase<TRecordKey extends string = 'id'> extends SyncStorePushResultBase {
-  success: false
+  type: 'failure'
   failureType: string
   ids: { [K in TRecordKey]: RecordId }
 }
 interface SyncStorePushResultBase {
-
+  type: 'success' | 'failure'
 }
 
