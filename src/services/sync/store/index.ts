@@ -11,11 +11,13 @@ import {
 } from '..'
 import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
 import { BaseResolver, LastWriteConflictResolver } from '../resolvers'
+import SyncSession from '../session'
 
 export default class SyncStore<
   TModel extends Model = Model,
   TSerializer extends SyncSerializer = SyncSerializer,
 > {
+  readonly session: SyncSession
   readonly db: Database
   readonly model: TModel
   readonly collection: Collection<TModel>
@@ -23,17 +25,15 @@ export default class SyncStore<
   readonly Resolver: BaseResolver
 
   lastFetchTokenKey: string
-  currentSync: Promise<SyncPullResponse> | null = null
+  currentPull: Promise<SyncPullResponse> | null = null
 
-  readonly pull: (
-    previousFetchToken: SyncToken | null,
-    signal?: AbortSignal
-  ) => Promise<SyncPullResponse>
-  readonly push: (payload: PushPayload, signal?: AbortSignal) => Promise<SyncPushResponse>
+  readonly pull: (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
+  readonly push: (payload: PushPayload, signal: AbortSignal) => Promise<SyncPushResponse>
 
   fetchedOnceSuccessfully: boolean = false
 
   constructor({
+    session,
     model,
     db,
     pull,
@@ -41,13 +41,15 @@ export default class SyncStore<
     serializer,
     Resolver,
   }: {
+    session: SyncSession
     model: TModel
     db: Database
-    pull: (previousFetchToken: SyncToken | null, signal?: AbortSignal) => Promise<SyncPullResponse>
-    push: (payload: PushPayload, signal?: AbortSignal) => Promise<SyncPushResponse>
+    pull: (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
+    push: (payload: PushPayload, signal: AbortSignal) => Promise<SyncPushResponse>
     serializer?: TSerializer
     Resolver?: typeof BaseResolver
   }) {
+    this.session = session
     this.db = db
     this.model = model
     this.collection = db.collections.get(model.table)
@@ -71,16 +73,16 @@ export default class SyncStore<
     }
   }
 
-  async sync(signal: AbortSignal) {
-    await this.pushUnsynced(signal)
+  async sync() {
+    await this.pushUnsynced()
 
     // will return records that we just saw in push response, but we can't
     // be sure there were no other changes before the push
-    await this.syncInternal(signal)
+    await this.pullRecords()
   }
 
   async pushOneImmediate(record: TModel) {
-    const pushed = await this.internalPush([record])
+    const pushed = await this.pushRecords([record])
 
     if (pushed.acknowledged) {
       const result = pushed.results[0]
@@ -130,7 +132,7 @@ export default class SyncStore<
   // swr pattern
   async readButFetchOne(id: string) {
     const [data, fetchToken] = await Promise.all([this.readLocalOne(id), this.getLastFetchToken()])
-    this.syncInternal()
+    this.pullRecords()
 
     const result = {
       success: true,
@@ -145,7 +147,7 @@ export default class SyncStore<
   // swr pattern
   async readButFetchAll() {
     const [data, fetchToken] = await Promise.all([this.readLocalAll(), this.getLastFetchToken()])
-    this.syncInternal()
+    this.pullRecords()
 
     const result = {
       success: true,
@@ -158,7 +160,7 @@ export default class SyncStore<
   }
 
   async fetchAll() {
-    const response = await this.syncInternal()
+    const response = await this.pullRecords()
     const data = await this.readLocalAll()
 
     if (!response.success) {
@@ -177,7 +179,7 @@ export default class SyncStore<
   }
 
   async fetchOne(id: string) {
-    const response = await this.syncInternal()
+    const response = await this.pullRecords()
     const data = await this.readLocalOne(id)
 
     if (!response.success) {
@@ -211,15 +213,15 @@ export default class SyncStore<
     return this.readOne(id)
   }
 
-  private async pushUnsynced(signal: AbortSignal) {
+  private async pushUnsynced() {
     const results = await this.collection.query().fetch()
     const pushable = results.filter((rec) => rec._raw._status !== 'synced')
 
     if (pushable.length === 0) return
-    await this.internalPush(pushable, signal)
+    await this.pushRecords(pushable)
   }
 
-  private async internalPush(pushable: TModel[], signal?: AbortSignal) {
+  private async pushRecords(pushable: TModel[]) {
     const entries = pushable.map((rec) => {
       const record = this.serializer.toPlainObject(rec)
       const meta = {
@@ -237,7 +239,7 @@ export default class SyncStore<
 
     let pushed: SyncPushResponse
     try {
-      pushed = await this.push(payload, signal)
+      pushed = await this.push(payload, this.session.signal)
     } catch (error) {
       const response: SyncStorePushResponseUnreachable = {
         acknowledged: false,
@@ -247,8 +249,6 @@ export default class SyncStore<
 
       return response
     }
-
-    // todo - if pushedresponse.ok - could be 400, etc.
 
     const response: SyncStorePushResponseAcknowledged = {
       acknowledged: true,
@@ -262,11 +262,12 @@ export default class SyncStore<
     return response
   }
 
-  private async syncInternal(signal?: AbortSignal) {
-    if (this.currentSync) return this.currentSync
+  private async pullRecords() {
+    if (this.currentPull) return this.currentPull
 
-    this.currentSync = (async () => {
-      const response = await this.fetch(signal)
+    this.currentPull = (async () => {
+      const lastFetchToken = await this.getLastFetchToken()
+      const response = await this.pull(lastFetchToken, this.session.signal)
 
       if (response.success) {
         await this.writeLocal(response.entries, !response.previousToken)
@@ -279,15 +280,10 @@ export default class SyncStore<
     })()
 
     try {
-      return await this.currentSync
+      return await this.currentPull
     } finally {
-      this.currentSync = null
+      this.currentPull = null
     }
-  }
-
-  private async fetch(signal?: AbortSignal) {
-    const lastFetchToken = await this.getLastFetchToken()
-    return await this.pull(lastFetchToken, signal)
   }
 
   private async readLocalAll() {
@@ -304,11 +300,11 @@ export default class SyncStore<
 
   private async writeLocal(entries: SyncEntry[], freshSync: boolean = false) {
     await this.withWriteLock(async () => {
-      const builds = await this.buildSyncedRecordsFromEntries(entries, freshSync)
-      if (builds.length === 0) return
-
       await this.db.write(async (writer) => {
-        await writer.batch(...builds)
+        const builds = await this.buildSyncedRecordsFromEntries(entries, freshSync)
+        if (builds.length === 0) return
+
+        await this.session.abortable(() => writer.batch(...builds))
       })
     })
   }
