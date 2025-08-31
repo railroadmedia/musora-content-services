@@ -4,13 +4,11 @@ import SyncExecutor from "./executor";
 
 export default class SyncStoreOrchestrator {
   private started = false
-  private abortController: AbortController
 
   constructor(
     private executor: SyncExecutor,
     private mapping: { stores: SyncStore[], strategies: SyncStrategy[] }[]
   ) {
-    this.abortController = new AbortController()
   }
 
   start() {
@@ -20,7 +18,7 @@ export default class SyncStoreOrchestrator {
     this.mapping.forEach(({ stores, strategies }) => {
       strategies.forEach(strategy => {
         strategy.onTrigger(reason => {
-          stores.forEach(store => this.executor.requestSync(() => store.sync(this.abortController.signal), reason))
+          stores.forEach(store => this.executor.requestSync(() => store.sync(), reason))
         })
         strategy.start()
       })
@@ -29,6 +27,6 @@ export default class SyncStoreOrchestrator {
 
   stop() {
     this.mapping.forEach(({ strategies }) => strategies.forEach(strategy => strategy.stop()))
-    this.abortController.abort()
+    this.started = false
   }
 }
