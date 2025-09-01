@@ -4,7 +4,7 @@ import { EpochSeconds } from "./utils/brands"
 export { default as SyncSession } from './session'
 export { default as SyncOrchestrator } from './orchestrator'
 export { default as SyncExecutor } from './executor'
-export { default as SyncContext } from './context'
+export { default as SyncManager } from './manager'
 
 export type SyncToken = EpochSeconds
 
