@@ -11,15 +11,26 @@ import {
 } from '..'
 import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
 import { BaseResolver, LastWriteConflictResolver } from '../resolvers'
-import SyncSession from '../session'
+import type SyncSession from '../session'
 
+type ModelClass<T extends Model> = { new (...args: any[]): T; table: string };
+type SyncPull = (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
+type SyncPush = (payload: PushPayload, signal: AbortSignal) => Promise<SyncPushResponse>
+
+export type SyncStoreConfig<TModel extends Model = Model, TSerializer extends SyncSerializer = SyncSerializer> = {
+  model: ModelClass<TModel>
+  pull: SyncPull
+  push: SyncPush
+  serializer?: TSerializer
+  Resolver?: typeof BaseResolver
+}
 export default class SyncStore<
   TModel extends Model = Model,
   TSerializer extends SyncSerializer = SyncSerializer,
 > {
   readonly session: SyncSession
   readonly db: Database
-  readonly model: TModel
+  readonly model: ModelClass<TModel>
   readonly collection: Collection<TModel>
   readonly serializer: TSerializer | SyncSerializer
   readonly Resolver: BaseResolver
@@ -27,28 +38,18 @@ export default class SyncStore<
   lastFetchTokenKey: string
   currentPull: Promise<SyncPullResponse> | null = null
 
-  readonly pull: (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
-  readonly push: (payload: PushPayload, signal: AbortSignal) => Promise<SyncPushResponse>
+  readonly puller: SyncPull
+  readonly pusher: SyncPush
 
   fetchedOnceSuccessfully: boolean = false
 
   constructor({
-    session,
     model,
-    db,
     pull,
     push,
     serializer,
     Resolver,
-  }: {
-    session: SyncSession
-    model: TModel
-    db: Database
-    pull: (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
-    push: (payload: PushPayload, signal: AbortSignal) => Promise<SyncPushResponse>
-    serializer?: TSerializer
-    Resolver?: typeof BaseResolver
-  }) {
+  }: SyncStoreConfig<TModel, TSerializer>, db: Database, session: SyncSession) {
     this.session = session
     this.db = db
     this.model = model
@@ -56,8 +57,8 @@ export default class SyncStore<
     this.serializer = serializer ?? new SyncSerializer()
     this.Resolver = Resolver ?? LastWriteConflictResolver
 
-    this.pull = pull
-    this.push = push
+    this.puller = pull
+    this.pusher = push
     this.lastFetchTokenKey = `last_fetch_token:${this.model.table}`
   }
 
@@ -239,7 +240,7 @@ export default class SyncStore<
 
     let pushed: SyncPushResponse
     try {
-      pushed = await this.push(payload, this.session.signal)
+      pushed = await this.pusher(payload, this.session.signal)
     } catch (error) {
       const response: SyncStorePushResponseUnreachable = {
         acknowledged: false,
@@ -267,7 +268,7 @@ export default class SyncStore<
 
     this.currentPull = (async () => {
       const lastFetchToken = await this.getLastFetchToken()
-      const response = await this.pull(lastFetchToken, this.session.signal)
+      const response = await this.puller(lastFetchToken, this.session.signal)
 
       if (response.success) {
         await this.writeLocal(response.entries, !response.previousToken)

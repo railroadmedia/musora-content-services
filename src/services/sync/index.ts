@@ -1,22 +1,10 @@
 import { RecordId } from "@nozbe/watermelondb"
-import SyncStoreOrchestrator from "./orchestrator"
-import SyncStore from "./store"
-import SyncSession from "./session"
-import { type DatabaseAdapter } from "./adapters/factory"
-import { Database } from "@nozbe/watermelondb"
 import { EpochSeconds } from "./utils/brands"
 
 export { default as SyncSession } from './session'
 export { default as SyncOrchestrator } from './orchestrator'
 export { default as SyncExecutor } from './executor'
-
-export type SyncContext = {
-  session: SyncSession
-  adapter: DatabaseAdapter
-  databases: Database[]
-  stores: Record<string, SyncStore>
-  orchestrator: SyncStoreOrchestrator
-}
+export { default as SyncContext } from './context'
 
 export type SyncToken = EpochSeconds
 

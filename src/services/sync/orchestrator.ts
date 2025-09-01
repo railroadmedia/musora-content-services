@@ -26,6 +26,7 @@ export default class SyncStoreOrchestrator {
   }
 
   stop() {
+    if (!this.started) return
     this.mapping.forEach(({ strategies }) => strategies.forEach(strategy => strategy.stop()))
     this.started = false
   }
