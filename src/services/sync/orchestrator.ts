@@ -2,7 +2,7 @@ import SyncStore from "./store";
 import { SyncStrategy } from "./strategies";
 import SyncExecutor from "./executor";
 
-export default class SyncStoreOrchestrator {
+export default class SyncOrchestrator {
   private started = false
 
   constructor(
