@@ -1,4 +1,4 @@
-export default class SyncSession {
+export default class SyncRunScope {
   private abortController: AbortController
 
   constructor() {

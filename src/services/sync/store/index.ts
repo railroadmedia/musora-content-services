@@ -11,7 +11,7 @@ import {
 } from '..'
 import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
 import { BaseResolver, LastWriteConflictResolver } from '../resolvers'
-import type SyncSession from '../session'
+import type SyncRunScope from '../run-scope'
 
 type ModelClass<T extends Model> = { new (...args: any[]): T; table: string };
 type SyncPull = (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
@@ -28,18 +28,20 @@ export default class SyncStore<
   TModel extends Model = Model,
   TSerializer extends SyncSerializer = SyncSerializer,
 > {
-  readonly session: SyncSession
+  static LOCK_NAMESPACE = 'sync:write'
+
+  readonly runScope: SyncRunScope
   readonly db: Database
   readonly model: ModelClass<TModel>
   readonly collection: Collection<TModel>
   readonly serializer: TSerializer | SyncSerializer
   readonly Resolver: BaseResolver
 
-  lastFetchTokenKey: string
-  currentPull: Promise<SyncPullResponse> | null = null
-
   readonly puller: SyncPull
   readonly pusher: SyncPush
+
+  lastFetchTokenKey: string
+  currentPull: Promise<SyncPullResponse> | null = null
 
   fetchedOnceSuccessfully: boolean = false
 
@@ -49,8 +51,8 @@ export default class SyncStore<
     push,
     serializer,
     Resolver,
-  }: SyncStoreConfig<TModel, TSerializer>, db: Database, session: SyncSession) {
-    this.session = session
+  }: SyncStoreConfig<TModel, TSerializer>, db: Database, runScope: SyncRunScope) {
+    this.runScope = runScope
     this.db = db
     this.model = model
     this.collection = db.collections.get(model.table)
@@ -240,7 +242,7 @@ export default class SyncStore<
 
     let pushed: SyncPushResponse
     try {
-      pushed = await this.pusher(payload, this.session.signal)
+      pushed = await this.pusher(payload, this.runScope.signal)
     } catch (error) {
       const response: SyncStorePushResponseUnreachable = {
         acknowledged: false,
@@ -268,7 +270,7 @@ export default class SyncStore<
 
     this.currentPull = (async () => {
       const lastFetchToken = await this.getLastFetchToken()
-      const response = await this.puller(lastFetchToken, this.session.signal)
+      const response = await this.puller(lastFetchToken, this.runScope.signal)
 
       if (response.success) {
         await this.writeLocal(response.entries, !response.previousToken)
@@ -305,13 +307,13 @@ export default class SyncStore<
         const builds = await this.buildSyncedRecordsFromEntries(entries, freshSync)
         if (builds.length === 0) return
 
-        await this.session.abortable(() => writer.batch(...builds))
+        await this.runScope.abortable(() => writer.batch(...builds))
       })
     })
   }
 
   private async withWriteLock(write: () => Promise<void>) {
-    return navigator.locks.request(`sync:write:${this.db.adapter.dbName}`, write)
+    return navigator.locks.request(`${SyncStore.LOCK_NAMESPACE}:${this.db.adapter.dbName}`, write)
   }
 
   private async buildSyncedRecordsFromEntries(entries: SyncEntry[], freshSync: boolean = false) {

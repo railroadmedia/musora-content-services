@@ -1,5 +1,5 @@
 import { SyncToken, SyncEntry, SyncStorePushResult, SyncSyncable } from "./index"
-import { EpochSeconds } from "./utils/brands"
+import { EpochSeconds } from "./utils/epoch.js"
 
 import { globalConfig } from '../config.js'
 
