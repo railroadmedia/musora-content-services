@@ -3,12 +3,8 @@ import { RawSerializer, ModelSerializer } from '../serializers'
 import {
   SyncToken,
   SyncEntry,
-  SyncStoreReadDTO,
-  SyncStoreWriteDTO,
   SyncStorePushResponseAcknowledged,
   SyncStorePushResponseUnreachable,
-  SyncStorePushFailureDTO,
-  SyncSyncable,
 } from '..'
 import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
 import { BaseResolver, LastWriteConflictResolver } from '../resolvers'
@@ -40,8 +36,6 @@ export default class SyncStore<TModel extends Model = Model> {
 
   lastFetchTokenKey: string
   currentPull: Promise<SyncPullResponse> | null = null
-
-  fetchedOnceSuccessfully: boolean = false
 
   constructor({
     model,
@@ -82,147 +76,6 @@ export default class SyncStore<TModel extends Model = Model> {
     await this.pullRecords()
   }
 
-  async readOne(id: string) {
-    const [data, fetchToken] = await Promise.all([this.readLocalOne(id), this.getLastFetchToken()])
-
-    const result: SyncStoreReadDTO<TModel> = {
-      data,
-      status: 'stale',
-      pullStatus: null,
-      lastFetchToken: fetchToken
-    }
-    return result
-  }
-
-  async readAll() {
-    const [data, fetchToken] = await Promise.all([this.readLocalAll(), this.getLastFetchToken()])
-
-    const result: SyncStoreReadDTO<TModel, true> = {
-      data,
-      status: 'stale',
-      pullStatus: null,
-      lastFetchToken: fetchToken,
-    }
-    return result
-  }
-
-  // swr pattern
-  async readButFetchOne(id: string) {
-    const [data, fetchToken] = await Promise.all([this.readLocalOne(id), this.getLastFetchToken()])
-    this.pullRecords()
-
-    const result: SyncStoreReadDTO<TModel> = {
-      data,
-      status: 'stale',
-      pullStatus: null,
-      lastFetchToken: fetchToken,
-    }
-    return result
-  }
-
-  // swr pattern
-  async readButFetchAll() {
-    const [data, fetchToken] = await Promise.all([this.readLocalAll(), this.getLastFetchToken()])
-    this.pullRecords()
-
-    const result: SyncStoreReadDTO<TModel, true> = {
-      data,
-      status: 'stale',
-      pullStatus: 'pending',
-      lastFetchToken: fetchToken,
-    }
-    return result
-  }
-
-  async fetchOne(id: string) {
-    const [response, fetchToken] = await Promise.all([this.pullRecords(), this.getLastFetchToken()])
-    const data = await this.readLocalOne(id)
-
-    if (!response.success) {
-      const result: SyncStoreReadDTO<TModel> = {
-        data,
-        status: 'stale',
-        pullStatus: 'failure',
-        lastFetchToken: fetchToken,
-      }
-      return result
-    }
-
-    const result: SyncStoreReadDTO<TModel> = {
-      data,
-      status: 'fresh',
-      pullStatus: 'success',
-      lastFetchToken: response.token,
-    }
-    return result
-  }
-
-  async fetchAll() {
-    const [response, fetchToken] = await Promise.all([this.pullRecords(), this.getLastFetchToken()])
-    const data = await this.readLocalAll()
-
-    if (!response.success) {
-      const result: SyncStoreReadDTO<TModel, true> = {
-        data,
-        status: 'stale',
-        pullStatus: 'failure',
-        lastFetchToken: fetchToken,
-      }
-      return result
-    }
-
-    const result: SyncStoreReadDTO<TModel, true> = {
-      data,
-      status: 'fresh',
-      pullStatus: 'success',
-      lastFetchToken: response.token,
-    }
-    return result
-  }
-
-  // ideal for initial load - ensures user reloading page would get fresh data
-  async fetchOneOnce(id: string) {
-    if (!this.fetchedOnceSuccessfully) {
-      return this.fetchOne(id)
-    }
-    return this.readOne(id)
-  }
-
-  // ideal for initial load - ensures user reloading page would get fresh data
-  async fetchAllOnce() {
-    if (!this.fetchedOnceSuccessfully) {
-      return this.fetchAll()
-    }
-    return this.readAll()
-  }
-
-  async pushOneEagerly(record: TModel) {
-    const pushed = await this.pushRecords([record])
-
-    if (pushed.acknowledged) {
-      const result = pushed.results[0]
-      if (result.type === 'success') {
-        await this.writeLocal([result.entry])
-        const data = await this.readLocalOne(result.entry.record.id)
-
-        const ret: SyncStorePushSuccessDTO = {
-          data,
-          state: 'synced',
-        }
-        return ret
-      } else if (result.type === 'failure') {
-        const data = record
-        const ret: SyncStorePushFailureDTO = {
-          data,
-          state: 'invalid'
-        }
-        return ret
-      }
-    } else {
-      throw new Error('SyncStore.pushOneImmediate: failed to push record') // todo - proper error
-    }
-  }
-
   private async pushUnsynced() {
     const results = await this.collection.query().fetch()
     const pushable = results.filter((rec) => rec._raw._status !== 'synced')
@@ -231,7 +84,7 @@ export default class SyncStore<TModel extends Model = Model> {
     await this.pushRecords(pushable)
   }
 
-  private async pushRecords(pushable: TModel[]) {
+  async pushRecords(pushable: TModel[]) {
     const entries = pushable.map((rec) => {
       const record = this.rawSerializer.toPlainObject(rec)
       const meta = {
@@ -267,12 +120,12 @@ export default class SyncStore<TModel extends Model = Model> {
 
     const successfulResults = response.results.filter(result => result.type === 'success')
     const successfulEntries = successfulResults.map(result => result.entry)
-    await this.writeLocal(successfulEntries)
+    await this.write(successfulEntries)
 
     return response
   }
 
-  private async pullRecords() {
+  async pullRecords() {
     if (this.currentPull) return this.currentPull
 
     this.currentPull = (async () => {
@@ -280,10 +133,8 @@ export default class SyncStore<TModel extends Model = Model> {
       const response = await this.puller(lastFetchToken, this.runScope.signal)
 
       if (response.success) {
-        await this.writeLocal(response.entries, !response.previousToken)
+        await this.write(response.entries, !response.previousToken)
         await this.setLastFetchToken(response.token)
-
-        this.fetchedOnceSuccessfully = true
       }
 
       return response
@@ -296,19 +147,32 @@ export default class SyncStore<TModel extends Model = Model> {
     }
   }
 
-  private async readLocalAll() {
-    const records = await this.collection.query().fetch()
+  async readAll() {
+    const records = await this.readRecords();
     return records.map(record => this.modelSerializer.toPlainObject(record))
   }
 
-  private async readLocalOne(id: string) {
+  async readOne(id: RecordId) {
+    const record = await this.readRecord(id);
+    return record ? this.modelSerializer.toPlainObject(record) : null
+  }
+
+  serialize(record: TModel | null) {
+    return record ? this.modelSerializer.toPlainObject(record) : null
+  }
+
+  async readRecords() {
+    return await this.collection.query().fetch()
+  }
+
+  async readRecord(id: RecordId) {
     return this.collection
       .query(Q.where('id', id))
       .fetch()
-      .then(records => records.map(record => this.modelSerializer.toPlainObject(record))[0])
+      .then(records => records[0])
   }
 
-  private async writeLocal(entries: SyncEntry[], freshSync: boolean = false) {
+  async write(entries: SyncEntry[], freshSync: boolean = false) {
     await this.withWriteLock(async () => {
       await this.db.write(async (writer) => {
         const builds = await this.buildSyncedRecordsFromEntries(entries, freshSync)

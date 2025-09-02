@@ -28,22 +28,17 @@ type SyncEntryLifecycle = {
   deleted_at: EpochSeconds | null
 }
 
-export type SyncStoreReadDTO<TModel extends Model, TMultiple extends boolean = false> = {
-  data: TMultiple extends true ? ModelSerialized<TModel>[] : ModelSerialized<TModel>
+export type SyncReadDTO<TModel extends Model, TMultiple extends boolean = false> = {
+  data: TMultiple extends true ? ModelSerialized<TModel>[] : ModelSerialized<TModel> | null
   status: 'fresh' | 'stale'
   pullStatus: 'success' | 'pending' | 'failure' | null
   lastFetchToken: SyncToken | null
 }
 
-export type SyncStoreWriteDTO<T extends Model> = SyncStoreWriteSuccessDTO<T> | SyncStoreWriteFailureDTO<T>
-
-export type SyncStoreWriteSuccessDTO<T extends Model> = {
+export type SyncWriteDTO<T extends Model> = {
   data: T
-  state: 'synced'
-}
-export type SyncStoreWriteFailureDTO<T = SyncSyncable> = {
-  data: T
-  state: 'invalid'
+  state: 'synced' | 'unsynced'
+  pushStatus: 'success' | 'failure'
 }
 
 export type SyncStorePushResponse<TRecordKey extends string = 'id'> = SyncStorePushResponseUnreachable | SyncStorePushResponseAcknowledged<TRecordKey>
