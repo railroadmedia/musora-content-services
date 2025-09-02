@@ -1,4 +1,5 @@
-import { RecordId } from "@nozbe/watermelondb"
+import { Model, RecordId } from "@nozbe/watermelondb"
+import { type ModelSerialized } from "./serializers"
 import { EpochSeconds } from "./utils/epoch"
 
 export { default as SyncSession } from './run-scope'
@@ -27,19 +28,22 @@ type SyncEntryLifecycle = {
   deleted_at: EpochSeconds | null
 }
 
-export type SyncStorePullMultiDTO = SyncStorePullDTO<SyncSyncable[]>
-export type SyncStorePullSingleDTO = SyncStorePullDTO<SyncSyncable>
-export type SyncStorePullDTO<T = SyncSyncable | SyncSyncable[]> = {
-  success: true
-  data: T
-  status: 'fresh' | 'possiblyStale'
-  previousFetchToken: SyncToken | null
-  fetchToken: SyncToken | null
+export type SyncStoreReadDTO<TModel extends Model, TMultiple extends boolean = false> = {
+  data: TMultiple extends true ? ModelSerialized<TModel>[] : ModelSerialized<TModel>
+  status: 'fresh' | 'stale'
+  pullStatus: 'success' | 'pending' | 'failure' | null
+  lastFetchToken: SyncToken | null
 }
 
-export type SyncStorePushDTO<T = SyncSyncable> = {
+export type SyncStoreWriteDTO<T extends Model> = SyncStoreWriteSuccessDTO<T> | SyncStoreWriteFailureDTO<T>
+
+export type SyncStoreWriteSuccessDTO<T extends Model> = {
   data: T
   state: 'synced'
+}
+export type SyncStoreWriteFailureDTO<T = SyncSyncable> = {
+  data: T
+  state: 'invalid'
 }
 
 export type SyncStorePushResponse<TRecordKey extends string = 'id'> = SyncStorePushResponseUnreachable | SyncStorePushResponseAcknowledged<TRecordKey>
