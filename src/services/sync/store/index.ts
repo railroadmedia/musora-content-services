@@ -114,6 +114,19 @@ export default class SyncStore<
     return result
   }
 
+  async readOneWhere(field: string, value: string|boolean|number) {
+    const [data, fetchToken] = await Promise.all([this.readLocalOneWhere(field, value), this.getLastFetchToken()])
+
+    const result: SyncStorePullSingleDTO = {
+      success: true,
+      data,
+      status: 'possiblyStale',
+      previousFetchToken: fetchToken,
+      fetchToken,
+    }
+    return result
+  }
+
   async readAll() {
     const [data, fetchToken] = await Promise.all([this.readLocalAll(), this.getLastFetchToken()])
 
@@ -250,6 +263,13 @@ export default class SyncStore<
   private async readLocalOne(id: string) {
     return this.collection
       .query(Q.where('id', id))
+      .fetch()
+      .then((records) => this.serializer.toPlainObject(records[0]))
+  }
+
+  private async readLocalOneWhere(field: string, value: string|boolean|number) {
+    return this.collection
+      .query(Q.where(field, value))
       .fetch()
       .then((records) => this.serializer.toPlainObject(records[0]))
   }
