@@ -1,15 +1,46 @@
+import SyncContext from "./context"
+
 export default class SyncExecutor {
   private BASE_BACKOFF = 1000 // Start with 1 second
   private MAX_BACKOFF = 60000 // Cap at 1 minute
   private MAX_RETRIES = 6 // Maximum number of retry attempts
 
   private syncing = false
+  private paused = false
   private backoffUntil = 0
   private failureCount = 0
 
+  private context: SyncContext
+
+  constructor(context: SyncContext) {
+    this.context = context
+
+    // When we come back online, reset the paused state and backoff timer
+    // so the next sync attempt can proceed immediately.
+    this.context.connectivityProvider.subscribe(isOnline => {
+      if (isOnline && this.paused) {
+        this.paused = false
+        this.resetBackoff()
+      }
+    })
+  }
+
   async requestSync(syncFn: () => Promise<void>, reason: string) {
     const now = Date.now()
-    if (this.syncing || now < this.backoffUntil) {
+
+    // 1. Don't sync if already syncing
+    if (this.syncing) {
+      return
+    }
+
+    // 2. If offline, pause execution and wait for connectivity
+    if (!this.context.connectivityProvider.getValue()) {
+      this.paused = true
+      return
+    }
+
+    // 3. Respect the backoff timer for online failures
+    if (now < this.backoffUntil) {
       return
     }
 
@@ -18,7 +49,13 @@ export default class SyncExecutor {
       await syncFn()
       this.resetBackoff()
     } catch (e) {
-      this.scheduleBackoff()
+      // Only schedule a backoff if the failure happened while online.
+      // If we're offline, the connectivity listener will handle resuming.
+      if (this.context.connectivityProvider.getValue()) {
+        this.scheduleBackoff()
+      } else {
+        this.paused = true
+      }
     } finally {
       this.syncing = false
     }

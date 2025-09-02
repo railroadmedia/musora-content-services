@@ -4,11 +4,13 @@ import SyncExecutor from "./executor";
 
 export default class SyncOrchestrator {
   private started = false
+  private mapping: { stores: SyncStore[], strategies: SyncStrategy[] }[]
 
   constructor(
     private executor: SyncExecutor,
-    private mapping: { stores: SyncStore[], strategies: SyncStrategy[] }[]
+    mapping: { stores: SyncStore[], strategies: SyncStrategy[] }[]
   ) {
+    this.mapping = mapping
   }
 
   start() {

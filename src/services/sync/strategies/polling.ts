@@ -1,15 +1,17 @@
 import { DefaultTimers, Timers } from "../utils/timers";
 import { BaseStrategy } from "./index";
+import SyncContext from "../context";
 
 export default class PollingStrategy extends BaseStrategy {
   private active = false
   private intervalId?: any
 
   constructor(
+    context: SyncContext,
     private intervalMs: number,
     private readonly timers: Timers = DefaultTimers
   ) {
-    super()
+    super(context)
   }
 
   start() {
@@ -26,7 +28,13 @@ export default class PollingStrategy extends BaseStrategy {
 
   private tick() {
     if (!this.active) return
-    this.triggerCallback?.('polling')
+    this.triggerIfVisible()
     this.intervalId = this.timers.setTimeout(() => this.tick(), this.intervalMs)
+  }
+
+  private triggerIfVisible() {
+    if (this.context.visibilityProvider.getValue()) {
+      this.triggerCallback?.('polling')
+    }
   }
 }

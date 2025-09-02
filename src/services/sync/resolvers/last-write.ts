@@ -2,7 +2,7 @@ import BaseResolver from "./base";
 
 import { Model } from "@nozbe/watermelondb";
 import { SyncEntry } from "../index";
-import { asEpochSeconds, msToS } from '../utils/brands'
+import { asEpochSeconds, msToS } from '../utils/epoch'
 
 export default class LastWriteConflictResolver extends BaseResolver {
   againstNone(server: SyncEntry) {
