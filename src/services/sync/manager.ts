@@ -66,6 +66,10 @@ export default class SyncManager {
   }
 
   getStore<TModel extends typeof Model>(model: TModel) {
-    return this.storesRegistry[model.table]
+    const store = this.storesRegistry[model.table];
+    if (!store) {
+      return undefined;
+    }
+    return store as unknown as SyncStore<InstanceType<TModel>>;
   }
 }
