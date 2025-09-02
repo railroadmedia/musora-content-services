@@ -4,15 +4,15 @@ import { SyncStrategy } from "./strategies"
 import { default as SyncStore, SyncStoreConfig } from "./store"
 
 import SyncExecutor from "./executor"
-import SyncOrchestrator from "./orchestrator"
 import SyncContext from "./context"
 
 export default class SyncManager {
   private database: Database
   private context: SyncContext
   private storesRegistry: Record<typeof Model.table, SyncStore<Model>>
-  private mappings: { stores: SyncStore<Model>[], strategies: SyncStrategy[] }[]
+  private mapping: { stores: SyncStore<Model>[], strategies: SyncStrategy[] }[]
   private runScope: SyncRunScope
+  private executor: SyncExecutor
 
   constructor(context: SyncContext, database: Database) {
     this.database = database
@@ -20,7 +20,9 @@ export default class SyncManager {
     this.runScope = new SyncRunScope()
 
     this.storesRegistry = {} as Record<typeof Model.table, SyncStore<Model>>
-    this.mappings = []
+    this.mapping = []
+
+    this.executor = new SyncExecutor(this.context)
   }
 
   createStrategy<
@@ -43,13 +45,18 @@ export default class SyncManager {
       return store
     })
 
-    this.mappings.push({ stores, strategies })
+    this.mapping.push({ stores, strategies })
   }
 
   setup() {
-    // todo - just move orchestrator logic here - it isn't doing anything special anymore
-    const orchestrator = new SyncOrchestrator(new SyncExecutor(this.context), this.mappings)
-    orchestrator.start()
+    this.mapping.forEach(({ stores, strategies }) => {
+      strategies.forEach(strategy => {
+        strategy.onTrigger(reason => {
+          stores.forEach(store => this.executor.requestSync(() => store.sync(), reason))
+        })
+        strategy.start()
+      })
+    })
 
     // teardown (ideally occurring on logout) should:
     // 1. stop all sync strategies
@@ -59,7 +66,7 @@ export default class SyncManager {
 
     return async function teardown() {
       this.session.abort()
-      orchestrator.stop()
+      this.mapping.forEach(({ strategies }) => strategies.forEach(strategy => strategy.stop()))
       await this.database.write(() => this.database.unsafeResetDatabase())
       // todo - purge adapter?
     }
