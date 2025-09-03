@@ -1072,12 +1072,6 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     (item) => item.playlist.last_engaged_on
   )
 
-  //get the array of progress from nonPlaylistContentIds which has just ids
-  //enrolledGuidedCourses has all the info about GCs -> map it to content_ids
-  //GuidedCourseContentIds <- a mapping
-  //get all GuidedCourseContentIds ids that are not in nonPlaylistContentIds
-  //NOT NEEDED insert that dataContext (we also need last_updated here) into the nonPlaylistContentIds array
-
   const nonPlaylistContentIds = Object.keys(progressContents)
   if (enrolledGuidedCoursesIds.length > 0) {
     nonPlaylistContentIds.push(...enrolledGuidedCoursesIds)
