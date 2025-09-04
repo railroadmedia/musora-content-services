@@ -38,6 +38,7 @@ import {
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
+	getRecentForTab,
 	getRecommendedForYou,
 	getScheduleContentRows,
 	getTabResults
@@ -94,8 +95,9 @@ import {
 } from './services/forum.js';
 
 import {
-	fetchAwardsForUser
-} from './services/gamification/awards.js';
+	fetchAwardsForUser,
+	fetchCertificate
+} from './services/gamification/awards.ts';
 
 import {
 	applyCloudflareWrapper,
@@ -129,6 +131,7 @@ import {
 	fetchLastInteractedChild,
 	fetchLikeCount,
 	fetchNextContentDataForParent,
+	fetchRecent,
 	fetchRecentUserActivities,
 	fetchSongsInProgress,
 	fetchTopComment,
@@ -145,6 +148,7 @@ import {
 	postContentComplete,
 	postContentLiked,
 	postContentReset,
+	postContentRestore,
 	postContentUnliked,
 	postPlaylistContentEngaged,
 	postRecordWatchSession,
@@ -196,7 +200,6 @@ import {
 	fetchPackData,
 	fetchParentForDownload,
 	fetchPlayAlongsCount,
-	fetchRecent,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
@@ -217,6 +220,8 @@ import {
 } from './services/sanity.js';
 
 import {
+	confirmEmailChange,
+	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
@@ -239,9 +244,12 @@ import {
 
 import {
 	blockUser,
+	blockedUsers,
 	deletePicture,
 	getUserData,
+	isDisplayNameAvailable,
 	unblockUser,
+	updateDisplayName,
 	uploadPicture,
 	uploadPictureFromS3
 } from './services/user/management.js';
@@ -313,9 +321,11 @@ export {
 	applySanityTransformations,
 	assignModeratorToComment,
 	blockUser,
+	blockedUsers,
 	buildImageSRC,
 	calculateLongestStreaks,
 	closeComment,
+	confirmEmailChange,
 	contentStatusCompleted,
 	contentStatusReset,
 	convertToTimeZone,
@@ -345,6 +355,7 @@ export {
 	fetchByRailContentIds,
 	fetchByReference,
 	fetchCarouselCardData,
+	fetchCertificate,
 	fetchChatAndLiveEnvent,
 	fetchChatSettings,
 	fetchCoachLessons,
@@ -444,6 +455,7 @@ export {
 	getProgressStateByIds,
 	getRecent,
 	getRecentActivity,
+	getRecentForTab,
 	getRecommendedForYou,
 	getResumeTimeSeconds,
 	getResumeTimeSecondsByIds,
@@ -463,6 +475,7 @@ export {
 	isBucketUrl,
 	isContentLiked,
 	isContentLikedByIds,
+	isDisplayNameAvailable,
 	isNextDay,
 	isSameDate,
 	jumpToContinueContent,
@@ -486,6 +499,7 @@ export {
 	postContentComplete,
 	postContentLiked,
 	postContentReset,
+	postContentRestore,
 	postContentUnliked,
 	postPlaylistContentEngaged,
 	postRecordWatchSession,
@@ -501,6 +515,7 @@ export {
 	replyToComment,
 	reportComment,
 	reportPlaylist,
+	requestEmailChange,
 	reset,
 	resetPassword,
 	restoreComment,
@@ -526,6 +541,7 @@ export {
 	unlikeContent,
 	unlikePlaylist,
 	unpinProgressRow,
+	updateDisplayName,
 	updateNotificationSetting,
 	updatePlaylist,
 	updatePracticeNotes,

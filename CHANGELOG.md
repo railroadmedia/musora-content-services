@@ -2,6 +2,108 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.33.6](https://github.com/railroadmedia/musora-content-services/compare/v2.33.5...v2.33.6) (2025-09-03)
+
+### [2.33.5](https://github.com/railroadmedia/musora-content-services/compare/v2.33.1...v2.33.5) (2025-09-03)
+
+### [2.33.4](https://github.com/railroadmedia/musora-content-services/compare/v2.33.3...v2.33.4) (2025-09-03)
+
+### [2.33.3](https://github.com/railroadmedia/musora-content-services/compare/v2.33.2...v2.33.3) (2025-09-03)
+
+### [2.33.2](https://github.com/railroadmedia/musora-content-services/compare/v2.33.1...v2.33.2) (2025-09-03)
+
+### [2.33.1](https://github.com/railroadmedia/musora-content-services/compare/v2.33.0...v2.33.1) (2025-08-27)
+
+## [2.33.0](https://github.com/railroadmedia/musora-content-services/compare/v2.32.0...v2.33.0) (2025-08-27)
+
+
+### Features
+
+* **BEH-714:** call awards endpoint ([#373](https://github.com/railroadmedia/musora-content-services/issues/373)) ([822a2a7](https://github.com/railroadmedia/musora-content-services/commit/822a2a754d24603f2ea92c8cf862b47b4e6b3eb8))
+* **MU2-957:** email change request ([#426](https://github.com/railroadmedia/musora-content-services/issues/426)) ([a5c79fd](https://github.com/railroadmedia/musora-content-services/commit/a5c79fdb95112bce25040f4aaa5ec9a3fc55b2b0))
+
+
+### Bug Fixes
+
+* progress rows throws error for empty progress ([#423](https://github.com/railroadmedia/musora-content-services/issues/423)) ([e388788](https://github.com/railroadmedia/musora-content-services/commit/e38878854bf78bcdd87943ca6564d9a49f946803))
+
+## [2.32.0](https://github.com/railroadmedia/musora-content-services/compare/v2.31.2...v2.32.0) (2025-08-19)
+
+
+### Features
+
+* **MU2-956:** display name update ([#422](https://github.com/railroadmedia/musora-content-services/issues/422)) ([dc66021](https://github.com/railroadmedia/musora-content-services/commit/dc660214feea9eac27d05463518092b5fd202f2f))
+* **MU2-961:** blocked users list ([#421](https://github.com/railroadmedia/musora-content-services/issues/421)) ([78b801d](https://github.com/railroadmedia/musora-content-services/commit/78b801d8dbea154e261046d4717e7f2e4cae5504))
+
+
+### Bug Fixes
+
+* add parent artist if null ([#401](https://github.com/railroadmedia/musora-content-services/issues/401)) ([fb546a3](https://github.com/railroadmedia/musora-content-services/commit/fb546a38e262746d9f118a190c1ec01fe260bb47)), closes [#380](https://github.com/railroadmedia/musora-content-services/issues/380) [#384](https://github.com/railroadmedia/musora-content-services/issues/384)
+* **T3PS-373:** fixes incorrect brand in query on related lessons ([#417](https://github.com/railroadmedia/musora-content-services/issues/417)) ([464b262](https://github.com/railroadmedia/musora-content-services/commit/464b262f733c4c22cd4065de54eda503c0286b9e))
+
+### [2.31.2](https://github.com/railroadmedia/musora-content-services/compare/v2.31.1...v2.31.2) (2025-08-14)
+
+### [2.31.1](https://github.com/railroadmedia/musora-content-services/compare/v2.31.0...v2.31.1) (2025-08-14)
+
+
+### Bug Fixes
+
+* **MU-922:** uses BE for fetching recent content items ([#411](https://github.com/railroadmedia/musora-content-services/issues/411)) ([e85fe88](https://github.com/railroadmedia/musora-content-services/commit/e85fe881d382aadbe8fc902e959cfad2cbc98576))
+
+## [2.31.0](https://github.com/railroadmedia/musora-content-services/compare/v2.30.9...v2.31.0) (2025-08-14)
+
+
+### Features
+
+* T3PS-458: Add Jam Tracks pill on Songs Overview page ([7351760](https://github.com/railroadmedia/musora-content-services/commit/7351760f3c4a92997036c860fadb6ef2602fc505))
+
+
+### Bug Fixes
+
+* MU2-914: prevent null access error in fetchUnreadCount ([1813999](https://github.com/railroadmedia/musora-content-services/commit/1813999872466f970aa20c936d702b6a4ecc7b91))
+* prevent null access error in fetchUnreadCount ([df39ccf](https://github.com/railroadmedia/musora-content-services/commit/df39ccfaf972214d08827e5a60f91653d491504e))
+* T3PS-732 Filter sorting by name ([a25792c](https://github.com/railroadmedia/musora-content-services/commit/a25792cfce9163b8124c3f000569fd24541a7b33))
+
+### [2.30.9](https://github.com/railroadmedia/musora-content-services/compare/v2.30.5...v2.30.9) (2025-08-13)
+
+
+### Bug Fixes
+
+* **BEH-845:** enable soft deletes for user activities ([#384](https://github.com/railroadmedia/musora-content-services/issues/384)) ([9c146c4](https://github.com/railroadmedia/musora-content-services/commit/9c146c43536e517ca69d3f264b117850fec748ec))
+* **MU-921:** add context to content empty arrays ([#410](https://github.com/railroadmedia/musora-content-services/issues/410)) ([0ca84ae](https://github.com/railroadmedia/musora-content-services/commit/0ca84aea741e605d17c0f45bbfb6cc8ea018e676))
+* **recsys:** support navigateTo and permissions filtering for recomme… ([#403](https://github.com/railroadmedia/musora-content-services/issues/403)) ([864ec0f](https://github.com/railroadmedia/musora-content-services/commit/864ec0fc05704d9641a965bc4de63a97422668c4))
+* **T3PS-454:** rank lessons by recommended ([#380](https://github.com/railroadmedia/musora-content-services/issues/380)) ([cc55bfd](https://github.com/railroadmedia/musora-content-services/commit/cc55bfd0fb19f1b42c42eb2ea6573817a8d2cc69))
+
+### [2.30.8](https://github.com/railroadmedia/musora-content-services/compare/v2.30.5...v2.30.8) (2025-08-13)
+
+
+### Bug Fixes
+
+* **BEH-845:** enable soft deletes for user activities ([#384](https://github.com/railroadmedia/musora-content-services/issues/384)) ([9c146c4](https://github.com/railroadmedia/musora-content-services/commit/9c146c43536e517ca69d3f264b117850fec748ec))
+* **MU-921:** add context to content empty arrays ([#410](https://github.com/railroadmedia/musora-content-services/issues/410)) ([0ca84ae](https://github.com/railroadmedia/musora-content-services/commit/0ca84aea741e605d17c0f45bbfb6cc8ea018e676))
+* **recsys:** support navigateTo and permissions filtering for recomme… ([#403](https://github.com/railroadmedia/musora-content-services/issues/403)) ([864ec0f](https://github.com/railroadmedia/musora-content-services/commit/864ec0fc05704d9641a965bc4de63a97422668c4))
+* **T3PS-454:** rank lessons by recommended ([#380](https://github.com/railroadmedia/musora-content-services/issues/380)) ([cc55bfd](https://github.com/railroadmedia/musora-content-services/commit/cc55bfd0fb19f1b42c42eb2ea6573817a8d2cc69))
+
+### [2.30.7](https://github.com/railroadmedia/musora-content-services/compare/v2.30.5...v2.30.7) (2025-08-13)
+
+
+### Bug Fixes
+
+* **BEH-845:** enable soft deletes for user activities ([#384](https://github.com/railroadmedia/musora-content-services/issues/384)) ([9c146c4](https://github.com/railroadmedia/musora-content-services/commit/9c146c43536e517ca69d3f264b117850fec748ec))
+* **MU-921:** add context to content empty arrays ([#410](https://github.com/railroadmedia/musora-content-services/issues/410)) ([0ca84ae](https://github.com/railroadmedia/musora-content-services/commit/0ca84aea741e605d17c0f45bbfb6cc8ea018e676))
+* **recsys:** support navigateTo and permissions filtering for recomme… ([#403](https://github.com/railroadmedia/musora-content-services/issues/403)) ([864ec0f](https://github.com/railroadmedia/musora-content-services/commit/864ec0fc05704d9641a965bc4de63a97422668c4))
+* **T3PS-454:** rank lessons by recommended ([#380](https://github.com/railroadmedia/musora-content-services/issues/380)) ([cc55bfd](https://github.com/railroadmedia/musora-content-services/commit/cc55bfd0fb19f1b42c42eb2ea6573817a8d2cc69))
+
+### [2.30.6](https://github.com/railroadmedia/musora-content-services/compare/v2.30.5...v2.30.6) (2025-08-13)
+
+
+### Bug Fixes
+
+* **BEH-845:** enable soft deletes for user activities ([#384](https://github.com/railroadmedia/musora-content-services/issues/384)) ([9c146c4](https://github.com/railroadmedia/musora-content-services/commit/9c146c43536e517ca69d3f264b117850fec748ec))
+* **MU-921:** add context to content empty arrays ([#410](https://github.com/railroadmedia/musora-content-services/issues/410)) ([0ca84ae](https://github.com/railroadmedia/musora-content-services/commit/0ca84aea741e605d17c0f45bbfb6cc8ea018e676))
+* **recsys:** support navigateTo and permissions filtering for recomme… ([#403](https://github.com/railroadmedia/musora-content-services/issues/403)) ([864ec0f](https://github.com/railroadmedia/musora-content-services/commit/864ec0fc05704d9641a965bc4de63a97422668c4))
+* **T3PS-454:** rank lessons by recommended ([#380](https://github.com/railroadmedia/musora-content-services/issues/380)) ([cc55bfd](https://github.com/railroadmedia/musora-content-services/commit/cc55bfd0fb19f1b42c42eb2ea6573817a8d2cc69))
+
 ### [2.30.5](https://github.com/railroadmedia/musora-content-services/compare/v2.30.4...v2.30.5) (2025-08-06)
 
 

@@ -19,6 +19,7 @@ import {
   getFieldsForContentTypeWithFilteredChildren,
   getChildFieldsForContentType,
   SONG_TYPES,
+  recentTypes
 } from '../contentTypeConfig.js'
 import {fetchSimilarItems, recommendations} from './recommendations.js'
 import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
@@ -753,7 +754,7 @@ export function getSortOrder(sort = '-published_on', brand, groupBy) {
   sort = isDesc ? sort.substring(1) : sort
   switch (sort) {
     case 'slug':
-      sortOrder = groupBy ? 'name' : 'title'
+      sortOrder = groupBy ? 'name' : '!defined(title), lower(title)'
       break
     case 'name':
       sortOrder = sort
@@ -1093,6 +1094,7 @@ export async function jumpToContinueContent(railcontentId) {
 /**
  * Fetch the page data for a specific lesson by Railcontent ID.
  * @param {string} railContentId - The Railcontent ID of the current lesson.
+ * @parent {boolean} addParent - Whether to include parent content data in the response.
  * @returns {Promise<Object|null>} - The fetched page data or null if found.
  *
  * @example
@@ -1100,44 +1102,51 @@ export async function jumpToContinueContent(railcontentId) {
  *   .then(data => console.log(data))
  *   .catch(error => console.error(error));
  */
-export async function fetchLessonContent(railContentId) {
+export async function fetchLessonContent(railContentId, { addParent = false } = {}) {
   const filterParams = { isSingle: true, pullFutureContent: true }
 
+  const parentQuery = addParent
+    ? `"parent_content_data": *[railcontent_id in [...(^.parent_content_data[].id)]]{
+      "id": railcontent_id,
+      title,
+      slug,
+      "type": _type,
+      "logo" : logo_image_url.asset->url,
+      "dark_mode_logo": dark_mode_logo_url.asset->url,
+      "light_mode_logo": light_mode_logo_url.asset->url,
+      "badge": badge[0]->badge.asset->url,
+    },`
+    : ''
+
   const fields = `${getFieldsForContentType()}
-          "resources": ${resourcesField},
-          soundslice,
-          instrumentless,
-          soundslice_slug,
-          "description": ${descriptionField},
-          "chapters": ${chapterField},
-          "instructors":instructor[]->name,
-          "instructor": ${instructorField},
-          ${assignmentsField}
-          video,
-          length_in_seconds,
-          mp3_no_drums_no_click_url,
-          mp3_no_drums_yes_click_url,
-          mp3_yes_drums_no_click_url,
-          mp3_yes_drums_yes_click_url,
-          "permission_id": permission[]->railcontent_id,
-          "parent_content_data": parent_content_data[]{
-            "id": id,
-            "title": *[railcontent_id == ^.id][0].title,
-            "slug":*[railcontent_id == ^.id][0].slug,
-            "type": *[railcontent_id == ^.id][0]._type,
-            "logo" : *[railcontent_id == ^.id][0].logo_image_url.asset->url,
-            "dark_mode_logo": *[railcontent_id == ^.id][0].dark_mode_logo_url.asset->url,
-            "light_mode_logo": *[railcontent_id == ^.id][0].light_mode_logo_url.asset->url,
-          },
-          ...select(
-                defined(live_event_start_time) => {
-                  "live_event_start_time": live_event_start_time,
-                  "live_event_end_time": live_event_end_time,
-                  "live_event_youtube_id": live_event_youtube_id,
-                  "videoId": coalesce(live_event_youtube_id, video.external_id),
-                  "live_event_is_global": live_global_event == true
-                }
-              )`
+    "resources": ${resourcesField},
+    soundslice,
+    instrumentless,
+    soundslice_slug,
+    "description": ${descriptionField},
+    "chapters": ${chapterField},
+    "instructors":instructor[]->name,
+    "instructor": ${instructorField},
+    ${assignmentsField}
+    video,
+    length_in_seconds,
+    mp3_no_drums_no_click_url,
+    mp3_no_drums_yes_click_url,
+    mp3_yes_drums_no_click_url,
+    mp3_yes_drums_yes_click_url,
+    "permission_id": permission[]->railcontent_id,
+    ${parentQuery}
+    ...select(
+      defined(live_event_start_time) => {
+        "live_event_start_time": live_event_start_time,
+        "live_event_end_time": live_event_end_time,
+        "live_event_youtube_id": live_event_youtube_id,
+        "videoId": coalesce(live_event_youtube_id, video.external_id),
+        "live_event_is_global": live_global_event == true
+      }
+    )
+  `
+
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
   })
@@ -1243,7 +1252,7 @@ async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, cou
  * @param {string} brand - The current brand.
  * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
  */
-export async function fetchSiblingContent(railContentId, brand)
+export async function fetchSiblingContent(railContentId, brand= null)
 {
   const filterGetParent = await new FilterBuilder(`references(^._id) && _type == ^.parent_type`, {
     pullFutureContent: true
@@ -1255,9 +1264,10 @@ export async function fetchSiblingContent(railContentId, brand)
 
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
 
+  const brandString = brand ? ` && brand == "${brand}"` : ''
   const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission[]->railcontent_id, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
 
-  const query = `*[railcontent_id == ${railContentId} && brand == "${brand}"]{
+  const query = `*[railcontent_id == ${railContentId}${brandString}]{
    _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
    'for-calculations': *[${filterGetParent}][0]{
     'siblings-list': child[]->railcontent_id,
@@ -1288,33 +1298,28 @@ export async function fetchSiblingContent(railContentId, brand)
 /**
  * Fetch lessons related to a specific lesson by RailContent ID and type.
  * @param {string} railContentId - The RailContent ID of the current lesson.
- * @param {string} brand - The current brand.
  * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
  */
-export async function fetchRelatedLessons(railContentId, brand) {
-  const filterSameTypeAndSortOrder = await new FilterBuilder(
-    `_type==^._type &&  _type in ${JSON.stringify(typeWithSortOrder)} && brand == "${brand}" && railcontent_id !=${railContentId}`
+export async function fetchRelatedLessons(railContentId)
+{
+  const defaultFilterFields = `_type==^._type && brand == ^.brand && railcontent_id != ${railContentId}`
+
+  const filterSameArtist = await new FilterBuilder(
+    `${defaultFilterFields} && references(^.artist->_id)`
   ).buildFilter()
-  const filterSameType = await new FilterBuilder(
-    `_type==^._type && !(_type in ${JSON.stringify(typeWithSortOrder)}) && !(defined(parent_type)) && brand == "${brand}" && railcontent_id !=${railContentId}`
+  const filterSameGenre = await new FilterBuilder(
+    `${defaultFilterFields} && references(^.genre[]->_id)`
   ).buildFilter()
-  const filterSongSameArtist = await new FilterBuilder(
-    `_type=="song" && _type==^._type && brand == "${brand}" && references(^.artist->_id) && railcontent_id !=${railContentId}`
-  ).buildFilter()
-  const filterSongSameGenre = await new FilterBuilder(
-    `_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}`
-  ).buildFilter()
+
   const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
-  const queryFieldsWithSort = queryFields + ', sort'
-  const query = `*[railcontent_id == ${railContentId} && brand == "${brand}" && (!defined(permission) || references(*[_type=='permission']._id))]{
+
+  const query = `*[railcontent_id == ${railContentId} && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
     "related_lessons" : array::unique([
-      ...(*[${filterSongSameArtist}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
-      ...(*[${filterSongSameGenre}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
-      ...(*[${filterSameTypeAndSortOrder}]{${queryFieldsWithSort}}|order(sort asc, title asc)[0...10]),
-      ...(*[${filterSameType}]{${queryFields}}|order(published_on desc, title asc)[0...10])
-      ,
+      ...(*[${filterSameArtist}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
+      ...(*[${filterSameGenre}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
       ])[0...10]}`
+
   return await fetchSanity(query, false)
 }
 
@@ -2042,10 +2047,10 @@ async function buildQuery(
 function buildEntityAndTotalQuery(
   filter = '',
   fields = '...',
-  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false, withoutPagination = false }
+  { sortOrder = 'published_on desc', start = 0, end = 10, isSingle = false }
 ) {
   const sortString = sortOrder ? ` | order(${sortOrder})` : ''
-  const countString = isSingle ? '[0...1]' : (withoutPagination ? ``: `[${start}...${end}]`)
+  const countString = isSingle ? '[0...1]' : `[${start}...${end}]`
   const query = `{
       "entity": *[${filter}]  ${sortString}${countString}
       {
@@ -2159,9 +2164,7 @@ export async function fetchTabData(
     page = 1,
     limit = 10,
     sort = '-published_on',
-    includedFields = [],
-    progressIds = undefined,
-    progress = 'all',
+    includedFields = []
   } = {}
 ) {
   const start = (page - 1) * limit
@@ -2172,23 +2175,6 @@ export async function fetchTabData(
 
   let sortOrder = getSortOrder(sort, brand, '')
 
-  switch (progress) {
-    case 'recent':
-      progressIds = await getAllStartedOrCompleted({ brand, onlyIds: true });
-      sortOrder = null;
-      break;
-    case 'incomplete':
-      progressIds = await getAllStarted();
-      sortOrder = null;
-      break;
-    case 'completed':
-      progressIds = await getAllCompleted();
-      sortOrder = null;
-      break;
-  }
-
-  // limits the results to supplied progressIds for started & completed filters
-  const progressFilter = await getProgressFilter(progress, progressIds)
   const fieldsString = getFieldsForContentType('tab-data');
   const now = getSanityDate(new Date())
 
@@ -2197,7 +2183,7 @@ export async function fetchTabData(
   let entityFieldsString = ''
   let filter = ''
 
-  filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
+  filter = `brand == "${brand}" ${includedFieldsFilter}`
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
   entityFieldsString =
@@ -2222,34 +2208,7 @@ export async function fetchTabData(
 
   let results = await fetchSanity(query, true);
 
-  if (['recent', 'incomplete', 'completed'].includes(progress) && results.entity.length > 1) {
-    const orderMap = new Map(progressIds.map((id, index) => [id, index]))
-    results.entity = results.entity
-      .sort((a, b) => {
-        const aIdx = orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER;
-        const bIdx = orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER;
-        return aIdx - bIdx || new Date(b.published_on) - new Date(a.published_on);
-      })
-      .slice(start, end);
-  }
-
   return results;
-}
-
-export async function fetchRecent(
-  brand,
-  pageName,
-  { page = 1, limit = 10, sort = '-published_on', includedFields = [], progress = 'recent' } = {}
-) {
-  const mergedIncludedFields = [...includedFields, `tab,all`]
-  const results = await fetchTabData(brand, pageName, {
-    page,
-    limit,
-    sort,
-    includedFields: mergedIncludedFields,
-    progress: progress.toLowerCase(),
-  })
-  return results.entity
 }
 
 export async function fetchScheduledAndNewReleases(

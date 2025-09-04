@@ -38,6 +38,7 @@ import {
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
+	getRecentForTab,
 	getRecommendedForYou,
 	getScheduleContentRows,
 	getTabResults
@@ -94,8 +95,9 @@ import {
 } from './services/forum.js';
 
 import {
-	fetchAwardsForUser
-} from './services/gamification/awards.js';
+	fetchAwardsForUser,
+	fetchCertificate
+} from './services/gamification/awards.ts';
 
 import {
 	applyCloudflareWrapper,
@@ -129,6 +131,7 @@ import {
 	fetchLastInteractedChild,
 	fetchLikeCount,
 	fetchNextContentDataForParent,
+	fetchRecent,
 	fetchRecentUserActivities,
 	fetchSongsInProgress,
 	fetchTopComment,
@@ -145,6 +148,7 @@ import {
 	postContentComplete,
 	postContentLiked,
 	postContentReset,
+	postContentRestore,
 	postContentUnliked,
 	postPlaylistContentEngaged,
 	postRecordWatchSession,
@@ -196,7 +200,6 @@ import {
 	fetchPackData,
 	fetchParentForDownload,
 	fetchPlayAlongsCount,
-	fetchRecent,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
@@ -217,6 +220,8 @@ import {
 } from './services/sanity.js';
 
 import {
+	confirmEmailChange,
+	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
@@ -239,9 +244,12 @@ import {
 
 import {
 	blockUser,
+	blockedUsers,
 	deletePicture,
 	getUserData,
+	isDisplayNameAvailable,
 	unblockUser,
+	updateDisplayName,
 	uploadPicture,
 	uploadPictureFromS3
 } from './services/user/management.js';
@@ -314,9 +322,11 @@ declare module 'musora-content-services' {
 		applySanityTransformations,
 		assignModeratorToComment,
 		blockUser,
+		blockedUsers,
 		buildImageSRC,
 		calculateLongestStreaks,
 		closeComment,
+		confirmEmailChange,
 		contentStatusCompleted,
 		contentStatusReset,
 		convertToTimeZone,
@@ -346,6 +356,7 @@ declare module 'musora-content-services' {
 		fetchByRailContentIds,
 		fetchByReference,
 		fetchCarouselCardData,
+		fetchCertificate,
 		fetchChatAndLiveEnvent,
 		fetchChatSettings,
 		fetchCoachLessons,
@@ -445,6 +456,7 @@ declare module 'musora-content-services' {
 		getProgressStateByIds,
 		getRecent,
 		getRecentActivity,
+		getRecentForTab,
 		getRecommendedForYou,
 		getResumeTimeSeconds,
 		getResumeTimeSecondsByIds,
@@ -464,6 +476,7 @@ declare module 'musora-content-services' {
 		isBucketUrl,
 		isContentLiked,
 		isContentLikedByIds,
+		isDisplayNameAvailable,
 		isNextDay,
 		isSameDate,
 		jumpToContinueContent,
@@ -487,6 +500,7 @@ declare module 'musora-content-services' {
 		postContentComplete,
 		postContentLiked,
 		postContentReset,
+		postContentRestore,
 		postContentUnliked,
 		postPlaylistContentEngaged,
 		postRecordWatchSession,
@@ -502,6 +516,7 @@ declare module 'musora-content-services' {
 		replyToComment,
 		reportComment,
 		reportPlaylist,
+		requestEmailChange,
 		reset,
 		resetPassword,
 		restoreComment,
@@ -527,6 +542,7 @@ declare module 'musora-content-services' {
 		unlikeContent,
 		unlikePlaylist,
 		unpinProgressRow,
+		updateDisplayName,
 		updateNotificationSetting,
 		updatePlaylist,
 		updatePracticeNotes,

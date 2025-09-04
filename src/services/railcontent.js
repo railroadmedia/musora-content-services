@@ -378,13 +378,33 @@ export async function fetchUserBadges(brand = null) {
   return await fetchHandler(url, 'get')
 }
 
+/**
+ * complete a content's progress for a given user
+ * @param contentId
+ * @returns {Promise<any|string|null>}
+ */
 export async function postContentComplete(contentId) {
   let url = `/api/content/v1/user/progress/complete/${contentId}`
   return postDataHandler(url)
 }
 
+/**
+ * resets the user's progress on a content
+ * @param contentId
+ * @returns {Promise<any|string|null>}
+ */
 export async function postContentReset(contentId) {
   let url = `/api/content/v1/user/progress/reset/${contentId}`
+  return postDataHandler(url)
+}
+
+/**
+ * restores the user's progress on a content
+ * @param contentId
+ * @returns {Promise<any|string|null>}
+ */
+export async function postContentRestore(contentId) {
+  let url = `/api/content/v1/user/progress/restore/${contentId}`
   return postDataHandler(url)
 }
 
@@ -646,6 +666,25 @@ export async function fetchUserPracticeMeta(practiceIds, userId = null) {
 export async function fetchUserPracticeNotes(date) {
   const url = `/api/user/practices/v1/notes?date=${date}`
   return await fetchHandler(url, 'GET', null)
+}
+
+export async function fetchRecent(brand, { status, types } = {}, {
+  page = 1,
+  limit = 10
+} = {}) {
+  const query = new URLSearchParams()
+  query.append('brand', brand)
+  if (status) query.append('status', status)
+  if (types) {
+    types.forEach((type) => query.append('types[]', type))
+  }
+
+  query.append('page', page)
+  query.append('limit', limit)
+
+  const url = `/api/content-org/v1/user/recent?${query.toString()}`
+  const response = await fetchHandler(url, 'GET', null)
+  return response ? response.result : []
 }
 
 /**

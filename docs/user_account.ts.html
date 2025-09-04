@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>config.js - Documentation</title>
+    <title>user/account.ts - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">config.js</h1>
+    <h1 class="page-title">user/account.ts</h1>
     
 
     
@@ -46,69 +46,122 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @module Config
+ * @module Accounts
  */
+import { HttpClient } from '../../infrastructure/http/HttpClient'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
+import { globalConfig } from '../config.js'
 
-import './types.js'
-
-/** @type {Config} */
-export let globalConfig = {
-  sanityConfig: {},
-  railcontentConfig: {},
-  sessionConfig: {},
-  localStorage: null,
-  isMA: false,
-  localTimezoneString: null, // In format: America/Vancouver
+export interface PasswordResetProps {
+  email: string
+  password: string
+  passwordConfirmation: string
+  token: string
 }
 
 /**
- * Exported functions that are excluded from index generation.
- *
- * @type {string[]}
+ * @param {string} email - The email address to check the account status for.
+ * @returns {Promise&lt;{requires_setup: boolean}|HttpError>} - A promise that resolves to an object indicating whether account setup is required, or an HttpError if the request fails.
  */
-const excludeFromGeneratedIndex = []
+export async function status(email: string): Promise&lt;{ requires_setup: boolean } | HttpError> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  const response = await httpClient.get&lt;{ requires_setup: boolean }>(
+    `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status`
+  )
+  return response
+}
 
 /**
- * Initializes the service with the given configuration.
- * This function must be called before using any other functions in this library.
- *
- * @param {Config} config - Configuration object containing API settings.
- *
- * @example
- * // Initialize the service in your app.js
- * initializeService({
- *   sanityConfig: {
- *     token: 'your-sanity-api-token',
- *     projectId: 'your-sanity-project-id',
- *     dataset: 'your-dataset-name',
- *     version: '2021-06-07',
- *     debug: true,
- *     useCachedAPI: false,
- *   },
- *   railcontentConfig: {
- *     token: 'your-user-api-token',
- *     userId: 'current-user-id',
- *     baseUrl: 'https://web-staging-one.musora.com',
- *     authToken 'your-auth-token',
- *   },
- *   sessionConfig: {
- *     token: 'your-user-api-token',
- *     userId: 'current-user-id',
- *     authToken 'your-auth-token',
- *   },
- *   baseUrl: 'https://web-staging-one.musora.com',
- *   localStorage: localStorage,
- *   isMA: false,
- * });
+ * @param {string} email - The email address to send the account setup email to.
+ * @returns {Promise&lt;void|HttpError>} - A promise that resolves when the email is sent or an HttpError if the request fails.
  */
-export function initializeService(config) {
-  globalConfig.sanityConfig = config.sanityConfig
-  globalConfig.railcontentConfig = config.railcontentConfig
-  globalConfig.sessionConfig = config.sessionConfig || config.railcontentConfig
-  globalConfig.baseUrl = config.baseUrl || config.railcontentConfig.baseUrl
-  globalConfig.localStorage = config.localStorage
-  globalConfig.isMA = config.isMA || false
-  globalConfig.localTimezoneString = config.localTimezoneString || null
+export async function sendAccountSetupEmail(email: string): Promise&lt;void | HttpError> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post&lt;void>(
+    `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/send-setup-email`,
+    {}
+  )
+}
+
+/**
+ * @param {Object} params - The parameters for setting up the account.
+ * @property {string} email - The email address for the account.
+ * @property {string} password - The new password for the account.
+ * @property {string} passwordConfirmation - The confirmation of the new password.
+ * @property {string} token - The token sent to the user's email for verification.
+ * @returns {Promise&lt;void|HttpError>} - A promise that resolves when the account setup is complete or an HttpError if the request fails.
+ */
+export async function setupAccount({
+  email,
+  password,
+  passwordConfirmation,
+  token,
+}: PasswordResetProps): Promise&lt;void | HttpError> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post(`/api/user-management-system/v1/accounts`, {
+    email,
+    password,
+    password_confirmation: passwordConfirmation,
+    token,
+  })
+}
+
+/**
+ * @param {string} email - The email address to send the password reset email to.
+ * @returns {Promise&lt;void|HttpError>} - A promise that resolves when the email change request is made.
+ */
+export async function sendPasswordResetEmail(email: string): Promise&lt;void | HttpError> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post(`/api/user-management-system/v1/accounts/password/reset-email`, {
+    email,
+  })
+}
+
+/**
+ * @param {Object} params - The parameters for resetting the password.
+ * @property {string} email - The email address for the account.
+ * @property {string} password - The new password for the account.
+ * @property {string} passwordConfirmation - The confirmation of the new password.
+ * @property {string} token - The token sent to the user's email for verification.
+ * @returns {Promise&lt;void|HttpError>} - A promise that resolves when the password reset is complete or an HttpError if the request fails.
+ */
+export async function resetPassword({
+  email,
+  password,
+  passwordConfirmation,
+  token,
+}: PasswordResetProps): Promise&lt;void | HttpError> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post(`/api/user-management-system/v1/accounts/password/reset`, {
+    email,
+    password,
+    password_confirmation: passwordConfirmation,
+    token,
+  })
+}
+
+/**
+ * @param {string} email - The new email address to set for the user.
+ * @param {string} password - The current password of the user for verification.
+ * @returns {Promise&lt;void|HttpError>} - A promise that resolves when the email change request is made.
+ */
+export async function requestEmailChange(
+  email: string,
+  password: string
+): Promise&lt;void | HttpError> {
+  const apiUrl = `/api/user-management-system/v1/accounts/${globalConfig.sessionConfig.userId}/email-change`
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  return httpClient.post(apiUrl, { email, password })
+}
+
+/**
+ * @param {string} token - The token sent to the user's email for verification.
+ * @returns {Promise&lt;void|HttpError>} - A promise that resolves when the email change is confirmed.
+ */
+export async function confirmEmailChange(token: string): Promise&lt;void | HttpError> {
+  const apiUrl = `/api/user-management-system/v1/accounts/email-change/confirm`
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  return httpClient.post(apiUrl, { token })
 }
 </code></pre>
         </article>

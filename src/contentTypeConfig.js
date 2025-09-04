@@ -9,12 +9,17 @@ export const SONG_TYPES = ['song', 'play-along', 'jam-track', 'song-tutorial-chi
 // Single hierarchy refers to only one element in the hierarchy has video lessons, not that they have a single parent
 export const SINGLE_PARENT_TYPES = ['course-part', 'pack-bundle-lesson', 'song-tutorial-children']
 
+export const artistField = `select(
+          defined(artist) => artist->{ 'name': name, 'thumbnail': thumbnail_url.asset->url},
+          defined(parent_content_data) => *[_type == ^.parent_content_data[0].type && railcontent_id == ^.parent_content_data[0].id][0].artist->{ 'name': name, 'thumbnail': thumbnail_url.asset->url}
+        )`
+
 export const DEFAULT_FIELDS = [
   "'sanity_id' : _id",
   "'id': railcontent_id",
   'railcontent_id',
   artistOrInstructorName(),
-  "'artist': artist->{ 'name': name, 'thumbnail': thumbnail_url.asset->url}",
+  `'artist': ${artistField}`,
   'title',
   "'image': thumbnail.asset->url",
   "'thumbnail': thumbnail.asset->url",
@@ -174,6 +179,7 @@ export const studentArchivesLessonTypes = ['student-review', 'student-focus','st
 export const tutorialsLessonTypes = ['song-tutorial'];
 export const transcriptionsLessonTypes = ['song'];
 export const playAlongLessonTypes = ['play-along'];
+export const jamTrackLessonTypes = ['jam-track'];
 
 export const individualLessonsTypes = [
   ...singleLessonTypes,
@@ -207,7 +213,7 @@ export const lessonTypesMapping = {
   'tabs': transcriptionsLessonTypes,
   'sheet music': transcriptionsLessonTypes,
   'play-alongs': playAlongLessonTypes,
-  'jam tracks': ['jam-track'],
+  'jam tracks': jamTrackLessonTypes,
 };
 
 export const getNextLessonLessonParentTypes = ['course', 'guided-course', 'pack', 'pack-bundle', 'song-tutorial'];
@@ -222,7 +228,7 @@ export const progressTypesMapping = {
   'guided course': ['guided-course'],
   'pack': ['pack', 'semester-pack'],
   'method': ['learning-path'],
-  'jam track': ['jam-track'],
+  'jam track': jamTrackLessonTypes,
   'course video': ['course-part'],
 };
 
@@ -235,7 +241,7 @@ export const songs = {
 
 export const filterTypes = {
   lessons: [...individualLessonsTypes, ...collectionLessonTypes],
-  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes, 'jam-track'],
+  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes, ...jamTrackLessonTypes],
 }
 
 export const recentTypes = {
@@ -670,6 +676,12 @@ export function getUpcomingEventsTypes(brand) {
   }
 }
 
+export function getRecentTypesForPage(pageType) {
+  const types = recentTypes[pageType]
+  // defensive copy with de-duplication to avoid accidental mutation and redundant query params
+  return Array.isArray(types) ? [...new Set(types)] : []
+}
+
 export function artistOrInstructorName(key = 'artist_name') {
   return `'${key}': coalesce(artist->name, instructor[0]->name)`
 }
@@ -801,6 +813,9 @@ export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
               return ` (${conditions})`;
             } else if(value.toLowerCase() === Tabs.PlayAlongs.name.toLowerCase()){
               const conditions = playAlongLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              return ` (${conditions})`;
+            } else if(value.toLowerCase() === Tabs.JamTracks.name.toLowerCase()){
+              const conditions = jamTrackLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
               return ` (${conditions})`;
             } else if(value.toLowerCase() === Tabs.ExploreAll.name.toLowerCase()){
               var allLessons = filterTypes[pageName] || [];
