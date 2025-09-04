@@ -6,6 +6,16 @@ import {
 } from './services/config.js';
 
 import {
+	enrollUserInGuidedCourse,
+	fetchEnrollmentPageMetadata,
+	guidedCourses,
+	pinGuidedCourse,
+	pinnedGuidedCourses,
+	unEnrollUserInGuidedCourse,
+	unPinGuidedCourse
+} from './services/content-org/guided-courses.ts';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -209,6 +219,14 @@ import {
 } from './services/sanity.js';
 
 import {
+	resetPassword,
+	sendAccountSetupEmail,
+	sendPasswordResetEmail,
+	setupAccount,
+	status
+} from './services/user/account.ts';
+
+import {
 	fetchChatSettings
 } from './services/user/chat.js';
 
@@ -312,6 +330,7 @@ export {
 	deleteUserActivity,
 	duplicatePlaylist,
 	editComment,
+	enrollUserInGuidedCourse,
 	extractSanityUrl,
 	fetchAll,
 	fetchAllCompletedStates,
@@ -338,6 +357,7 @@ export {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchContentRows,
+	fetchEnrollmentPageMetadata,
 	fetchFoundation,
 	fetchGenreLessons,
 	fetchHandler,
@@ -436,6 +456,7 @@ export {
 	getUserWeeklyStats,
 	getWeekNumber,
 	globalConfig,
+	guidedCourses,
 	initializeService,
 	isBucketUrl,
 	isContentLiked,
@@ -457,7 +478,9 @@ export {
 	openComment,
 	otherStats,
 	pauseLiveEventPolling,
+	pinGuidedCourse,
 	pinProgressRow,
+	pinnedGuidedCourses,
 	postContentComplete,
 	postContentLiked,
 	postContentReset,
@@ -479,16 +502,23 @@ export {
 	reportComment,
 	reportPlaylist,
 	reset,
+	resetPassword,
 	restoreComment,
 	restoreItemFromPlaylist,
 	restoreNotification,
 	restorePracticeSession,
 	restoreUserActivity,
 	restoreUserPractice,
+	sendAccountSetupEmail,
+	sendPasswordResetEmail,
 	setStudentViewForUser,
+	setupAccount,
 	startLiveEventPolling,
+	status,
 	toDayjs,
 	togglePlaylistPrivate,
+	unEnrollUserInGuidedCourse,
+	unPinGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,
 	undeletePlaylist,

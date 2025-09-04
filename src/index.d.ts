@@ -6,6 +6,16 @@ import {
 } from './services/config.js';
 
 import {
+	enrollUserInGuidedCourse,
+	fetchEnrollmentPageMetadata,
+	guidedCourses,
+	pinGuidedCourse,
+	pinnedGuidedCourses,
+	unEnrollUserInGuidedCourse,
+	unPinGuidedCourse
+} from './services/content-org/guided-courses.ts';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -209,6 +219,14 @@ import {
 } from './services/sanity.js';
 
 import {
+	resetPassword,
+	sendAccountSetupEmail,
+	sendPasswordResetEmail,
+	setupAccount,
+	status
+} from './services/user/account.ts';
+
+import {
 	fetchChatSettings
 } from './services/user/chat.js';
 
@@ -313,6 +331,7 @@ declare module 'musora-content-services' {
 		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
+		enrollUserInGuidedCourse,
 		extractSanityUrl,
 		fetchAll,
 		fetchAllCompletedStates,
@@ -339,6 +358,7 @@ declare module 'musora-content-services' {
 		fetchContentPageUserData,
 		fetchContentProgress,
 		fetchContentRows,
+		fetchEnrollmentPageMetadata,
 		fetchFoundation,
 		fetchGenreLessons,
 		fetchHandler,
@@ -437,6 +457,7 @@ declare module 'musora-content-services' {
 		getUserWeeklyStats,
 		getWeekNumber,
 		globalConfig,
+		guidedCourses,
 		initializeService,
 		isBucketUrl,
 		isContentLiked,
@@ -458,7 +479,9 @@ declare module 'musora-content-services' {
 		openComment,
 		otherStats,
 		pauseLiveEventPolling,
+		pinGuidedCourse,
 		pinProgressRow,
+		pinnedGuidedCourses,
 		postContentComplete,
 		postContentLiked,
 		postContentReset,
@@ -480,16 +503,23 @@ declare module 'musora-content-services' {
 		reportComment,
 		reportPlaylist,
 		reset,
+		resetPassword,
 		restoreComment,
 		restoreItemFromPlaylist,
 		restoreNotification,
 		restorePracticeSession,
 		restoreUserActivity,
 		restoreUserPractice,
+		sendAccountSetupEmail,
+		sendPasswordResetEmail,
 		setStudentViewForUser,
+		setupAccount,
 		startLiveEventPolling,
+		status,
 		toDayjs,
 		togglePlaylistPrivate,
+		unEnrollUserInGuidedCourse,
+		unPinGuidedCourse,
 		unassignModeratorToComment,
 		unblockUser,
 		undeletePlaylist,
