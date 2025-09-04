@@ -13,7 +13,7 @@ import {
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import { fetchByRailContentId, fetchByRailContentIds, fetchShows } from './sanity'
 import { fetchPlaylist, fetchUserPlaylists } from './content-org/playlists'
-import {guidedCourses, pinnedGuidedCourses} from './content-org/guided-courses'
+import {guidedCourses} from './content-org/guided-courses'
 import {
   getMonday,
   getWeekNumber,
@@ -1052,20 +1052,15 @@ function generateContentsMap(contents, playlistsContents) {
 export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   // TODO slice progress to a reasonable number, say 100
 
-  const [recentPlaylists, progressContents, allPinnedGuidedCourse, userPinnedItem, enrolledGuidedCourses] =
+  const [recentPlaylists, progressContents, userPinnedItem, enrolledGuidedCourses] =
     await Promise.all([
       fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
       getAllStartedOrCompleted({ onlyIds: false, brand: brand }),
-      pinnedGuidedCourses(brand),
       getUserPinnedItem(brand),
       guidedCourses()
     ])
 
   const enrolledGuidedCoursesIds = enrolledGuidedCourses.map(course => String(course.content_id));
-
-  const mergedGuidedCourses = 1 //get all cuigded courses, incl no progress.
-  let pinnedGuidedCourse = allPinnedGuidedCourse?.[0] ?? null
-
   const playlists = recentPlaylists?.data || []
   const eligiblePlaylistItems = await getEligiblePlaylistItems(playlists)
   const playlistEngagedOnContents = eligiblePlaylistItems.map(
@@ -1103,7 +1098,6 @@ console.log("nonPlaylistContentIds",nonPlaylistContentIds)
     userPinnedItem,
     contentsMap,
     eligiblePlaylistItems,
-    pinnedGuidedCourse,
     limit
   )
   const results = await Promise.all(
@@ -1427,7 +1421,7 @@ function popContentAndRemoveChildrenFromContentsMap(content, contentsMap) {
 export async function pinProgressRow(brand, id, progressType) {
   const url = `/api/user-management-system/v1/progress/pin?brand=${brand}&id=${id}&progressType=${progressType}`
   const response = await fetchHandler(url, 'PUT', null)
-  if (response && !response.error && response['action'] === 'update_user_pin') {
+  if (response && !response.error) {
     await updateUserPinnedProgressRow(brand, {
       id,
       progressType,

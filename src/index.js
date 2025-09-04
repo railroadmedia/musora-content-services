@@ -10,7 +10,6 @@ import {
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
 	pinGuidedCourse,
-	pinnedGuidedCourses,
 	unEnrollUserInGuidedCourse,
 	unPinGuidedCourse
 } from './services/content-org/guided-courses.ts';
@@ -491,7 +490,6 @@ export {
 	pauseLiveEventPolling,
 	pinGuidedCourse,
 	pinProgressRow,
-	pinnedGuidedCourses,
 	postContentComplete,
 	postContentLiked,
 	postContentReset,
