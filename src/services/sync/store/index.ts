@@ -69,7 +69,6 @@ export default class SyncStore<TModel extends Model = Model> {
 
   async sync() {
     await this.pushUnsynced()
-    console.log(await this.collection.query().fetch())
 
     // will return records that we just saw in push response, but we can't
     // be sure there were no other changes before the push
