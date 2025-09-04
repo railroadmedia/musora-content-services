@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.33.7](https://github.com/railroadmedia/musora-content-services/compare/v2.33.6...v2.33.7) (2025-09-04)
+
+
+### Bug Fixes
+
+* add published on to navigate_to ([#424](https://github.com/railroadmedia/musora-content-services/issues/424)) ([2a73222](https://github.com/railroadmedia/musora-content-services/commit/2a73222f0b8278ef2026ab4013cb10d331e0f94a))
+
 ### [2.33.6](https://github.com/railroadmedia/musora-content-services/compare/v2.33.5...v2.33.6) (2025-09-03)
 
 ### [2.33.5](https://github.com/railroadmedia/musora-content-services/compare/v2.33.1...v2.33.5) (2025-09-03)
