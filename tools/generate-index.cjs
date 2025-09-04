@@ -1,3 +1,9 @@
+/**
+ * Tool script to generate index.js and index.d.ts files based on exports from files in our services directory.
+ * This scans all files from the src/services directory and retrieves any functions that are declared with
+ * `export function` or `export async function`. It also retrieves ES module exports through `module.exports`. *
+ */
+
 const fs = require('fs')
 const path = require('path')
 const fileExports = {}
@@ -11,12 +17,13 @@ const fileExports = {}
 function extractExportedFunctions(filePath) {
   const fileContent = fs.readFileSync(filePath, 'utf-8')
 
-  const exportFunctionRegex = /export\s+(async\s+)?function\s+(\w+)/g
-  const exportVariableRegex = /export\s+(let|const|var)\s+(globalConfig)\s+/g
+  const exportFunctionRegex = /\nexport\s+(async\s+)?function\s+(\w+)/g
+  const exportVariableRegex = /\nexport\s+(let|const|var)\s+(globalConfig)\s+/g
   const moduleExportsRegex = /module\.exports\s*=\s*{\s*([\s\S]+?)\s*};/g
 
   let matches = [...fileContent.matchAll(exportFunctionRegex)].map((match) => match[2])
 
+  // Match `globalConfig` variable
   const variableMatches = [...fileContent.matchAll(exportVariableRegex)].map((match) => match[2])
   matches = matches.concat(variableMatches)
 
@@ -48,45 +55,37 @@ function getExclusionList(fileContent) {
   return excludedFunctions
 }
 
-/**
- * Recursively scan a directory for files, skipping directories with .indexignore
- *
- * @param {string} dir
- * @returns {string[]} array of file paths
- */
-function getAllFiles(dir) {
-  if (fs.existsSync(path.join(dir, '.indexignore'))) {
-    return [] // skip this directory entirely
+// get all files in the services directory
+const servicesDir = path.join(__dirname, '../src/services')
+const treeElements = fs.readdirSync(servicesDir)
+
+function addFunctionsToFileExports(filePath, file) {
+  const functionNames = extractExportedFunctions(filePath)
+
+  if (functionNames.length > 0) {
+    fileExports[file] = functionNames
   }
-
-  const entries = fs.readdirSync(dir, { withFileTypes: true })
-  const files = []
-
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name)
-    if (entry.isDirectory()) {
-      files.push(...getAllFiles(fullPath))
-    } else if (entry.isFile() && entry.name.endsWith('.js')) {
-      files.push(fullPath)
-    }
-  }
-
-  return files
 }
 
-// get all JS files in the services directory
-const servicesDir = path.join(__dirname, '../src/services')
-const allFiles = getAllFiles(servicesDir)
+treeElements.forEach((treeNode) => {
+  const filePath = path.join(servicesDir, treeNode)
 
-allFiles.forEach((filePath) => {
-  const relativeFile = path.relative(servicesDir, filePath).replace(/\\/g, '/')
-  const functionNames = extractExportedFunctions(filePath)
-  if (functionNames.length > 0) {
-    fileExports[relativeFile] = functionNames
+  if (fs.lstatSync(filePath).isFile()) {
+    addFunctionsToFileExports(filePath, treeNode)
+  } else if (fs.lstatSync(filePath).isDirectory()) {
+    if (fs.existsSync(path.join(filePath, '.indexignore'))) {
+      console.log(`Skipping directory: ${treeNode} due to .indexignore`)
+      return
+    }
+    const subDir = fs.readdirSync(filePath)
+    subDir.forEach((subFile) => {
+      const subFilePath = path.join(servicesDir, treeNode, subFile)
+      addFunctionsToFileExports(subFilePath, treeNode + '/' + subFile)
+    })
   }
 })
 
-// generate index.js
+// populate the index.js content string with the import/export of all functions
 let content =
   '/*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/\n'
 
@@ -109,7 +108,7 @@ fs.writeFileSync(outputPath, content)
 
 console.log('index.js generated successfully!')
 
-// generate index.d.ts
+// populate the index.d.ts content string with the import and module export of all functions
 let dtsContent =
   '/*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/\n'
 
