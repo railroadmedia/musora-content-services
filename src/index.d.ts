@@ -253,6 +253,11 @@ import {
 } from './services/user/management.js';
 
 import {
+	fetchMemberships,
+	fetchRechargeTokens
+} from './services/user/memberships.js';
+
+import {
 	deleteNotification,
 	fetchLiveEventPollingState,
 	fetchNotificationSettings,
@@ -382,6 +387,7 @@ declare module 'musora-content-services' {
 		fetchLikeCount,
 		fetchLiveEvent,
 		fetchLiveEventPollingState,
+		fetchMemberships,
 		fetchMetadata,
 		fetchMethod,
 		fetchMethodChildren,
@@ -402,6 +408,7 @@ declare module 'musora-content-services' {
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
+		fetchRechargeTokens,
 		fetchRelatedLessons,
 		fetchRelatedRecommendedContent,
 		fetchRelatedSongs,
