@@ -117,6 +117,9 @@ class EventsAPI {
     if (typeof ttlMs !== 'number') {
       try {
         const liveEvent = await fetchLiveEvent(this.brand);
+        if(liveEvent == null || liveEvent.live_event_end_time == null){
+          return;
+        }
         const now = Date.now();
         const endTime = new Date(liveEvent.live_event_end_time).getTime();
         await pauseLiveEventPolling(this.brand);
