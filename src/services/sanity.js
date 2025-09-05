@@ -1838,7 +1838,7 @@ export async function fetchSanity(
     const result = await response.json()
     if (result.result) {
       if (globalConfig.sanityConfig.debug) {
-        console.log('fetchSanity Results:', result)
+        // console.log('fetchSanity Results:', result)
       }
       let results = isList ? result.result : result.result[0]
       if (!results) {
