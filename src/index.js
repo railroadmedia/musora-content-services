@@ -255,6 +255,11 @@ import {
 } from './services/user/management.js';
 
 import {
+	fetchMemberships,
+	fetchRechargeTokens
+} from './services/user/memberships.js';
+
+import {
 	deleteNotification,
 	fetchLiveEventPollingState,
 	fetchNotificationSettings,
@@ -383,6 +388,7 @@ export {
 	fetchLikeCount,
 	fetchLiveEvent,
 	fetchLiveEventPollingState,
+	fetchMemberships,
 	fetchMetadata,
 	fetchMethod,
 	fetchMethodChildren,
@@ -403,6 +409,7 @@ export {
 	fetchRecent,
 	fetchRecentActivitiesActiveTabs,
 	fetchRecentUserActivities,
+	fetchRechargeTokens,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
