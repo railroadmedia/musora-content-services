@@ -45,6 +45,21 @@ export async function login(email, password, deviceName, deviceToken, platform) 
   })
 }
 
+export async function loginWithProvider(provider, token) {
+  const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
+  return fetch(`${baseUrl}/v1/sessions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Client-Platform': 'mobile',
+      Authorization: null,
+    },
+    body: JSON.stringify({
+      provider: provider,
+      token: token,
+    }),
+  });
+}
 /**
  * Logs the user out of the current session.
  *
