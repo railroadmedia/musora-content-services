@@ -1380,7 +1380,7 @@ async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playl
 function popContentAndRemoveChildrenFromContentsMap(content, contentsMap) {
   if (!content.children || content.children.length === 0){
     console.warn(`content ${content.id} has no children`, content);
-  }else {
+  } else {
     const children = content.children.map((child) => child.id)
     if (contentsMap.has(content.id)) {
       contentsMap.delete(content.id)
