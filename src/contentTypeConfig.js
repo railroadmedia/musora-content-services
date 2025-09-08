@@ -262,7 +262,7 @@ export let contentTypeConfig = {
   'progress-tracker': {
     fields: [
       '"parent_content_data": parent_content_data[].id',
-      '"badge" : badge.asset->url',
+      '"badge" : *[references(^._id) && _type == "content-award"][0].badge.asset->url',
     ],
     includeChildFields: true,
   },
