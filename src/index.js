@@ -278,6 +278,7 @@ import {
 
 import {
 	login,
+	loginWithProvider,
 	logout
 } from './services/user/sessions.js';
 
@@ -475,6 +476,7 @@ export {
 	likePlaylist,
 	logUserPractice,
 	login,
+	loginWithProvider,
 	logout,
 	markAllNotificationsAsRead,
 	markContentAsInterested,
