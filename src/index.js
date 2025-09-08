@@ -112,6 +112,10 @@ import {
 } from './services/imageSRCVerify.js';
 
 import {
+	fetchCustomerPayments
+} from './services/payments.js';
+
+import {
 	assignModeratorToComment,
 	closeComment,
 	createComment,
@@ -369,6 +373,7 @@ export {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchContentRows,
+	fetchCustomerPayments,
 	fetchEnrollmentPageMetadata,
 	fetchFoundation,
 	fetchGenreLessons,
