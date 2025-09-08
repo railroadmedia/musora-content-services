@@ -112,6 +112,10 @@ import {
 } from './services/imageSRCVerify.js';
 
 import {
+	fetchCustomerPayments
+} from './services/payments.js';
+
+import {
 	assignModeratorToComment,
 	closeComment,
 	createComment,
@@ -376,6 +380,7 @@ declare module 'musora-content-services' {
 		fetchContentPageUserData,
 		fetchContentProgress,
 		fetchContentRows,
+		fetchCustomerPayments,
 		fetchEnrollmentPageMetadata,
 		fetchFoundation,
 		fetchGenreLessons,
