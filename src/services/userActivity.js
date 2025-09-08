@@ -1108,7 +1108,6 @@ async function processContentItem(content) {
   const contentType = getFormattedType(content.type, content.brand)
   const isLive = content.isLive ?? false
   let ctaText = getDefaultCTATextForContent(content, contentType)
-
   content.completed_children = await getCompletedChildren(content, contentType)
 
   if (content.type === 'guided-course') {
@@ -1193,7 +1192,7 @@ function getDefaultCTATextForContent(content, contentType) {
     )
       ctaText = 'Replay Song'
     if (contentType === 'lesson') ctaText = 'Revisit Lesson'
-    if (contentType === 'song tutorial' || collectionLessonTypes.includes(contentType))
+    if (contentType === 'song tutorial' || collectionLessonTypes.includes(content.type))
       ctaText = 'Revisit Lessons'
     if (contentType === 'pack') ctaText = 'View Lessons'
   }
@@ -1303,7 +1302,6 @@ function mergeAndSortItems(items, limit) {
       deduped.push(item)
     }
   }
-
   return deduped
     .filter((item) => typeof item.progressTimestamp === 'number' && item.progressTimestamp >= 0)
     .sort((a, b) => {
