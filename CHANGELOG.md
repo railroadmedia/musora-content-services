@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.35.0](https://github.com/railroadmedia/musora-content-services/compare/v2.34.0...v2.35.0) (2025-09-08)
+
+
+### Features
+
+* **beh-809:** show correct badge data on home page + lesson page ([#439](https://github.com/railroadmedia/musora-content-services/issues/439)) ([0c95805](https://github.com/railroadmedia/musora-content-services/commit/0c958051334450083c15514ed915c848f57af4c3))
+
 ## [2.34.0](https://github.com/railroadmedia/musora-content-services/compare/v2.31.0...v2.34.0) (2025-09-08)
 
 
