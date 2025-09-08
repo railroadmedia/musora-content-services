@@ -1804,10 +1804,7 @@ export async function fetchSanity(
   if (!checkSanityConfig(globalConfig)) {
     return null
   }
-
-  // if (globalConfig.sanityConfig.debug) {
-  //   console.log('fetchSanity Query:', query)
-  // }
+  
   const perspective = globalConfig.sanityConfig.perspective ?? 'published'
   const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api'
   const url = `https://${globalConfig.sanityConfig.projectId}.${api}.sanity.io/v${globalConfig.sanityConfig.version}/data/query/${globalConfig.sanityConfig.dataset}?perspective=${perspective}`
@@ -1853,6 +1850,7 @@ export async function fetchSanity(
     }
   } catch (error) {
     console.error('fetchSanity: Fetch error:', error)
+    console.error('fetchSanity: Error Query', query)
     return null
   }
 }
