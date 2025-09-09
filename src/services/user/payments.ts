@@ -2,7 +2,8 @@
  * @module Payments
  */
 import { globalConfig } from '../config.js'
-import { HttpClient } from '../../infrastructure/http'
+import { HttpClient, HttpError } from '../../infrastructure/http'
+import { Either } from '../../core/types/ads/either'
 
 interface CustomerOrder {
   id: string
@@ -16,10 +17,9 @@ interface CustomerOrder {
 /**
  * Fetches a list of orders (from Shopify) for the authenticated user (customer).
  *
- * @returns {Promise<CustomerOrder[]>} - A promise that resolves to an array of customer order objects.
- * @throws {HttpError} - Throws HttpError if the request fails.
+ * @returns {Promise<Either<HttpError, CustomerOrder[]>>} - A promise that resolves to an array of customer order objects.
  */
-export async function fetchCustomerPayments(): Promise<CustomerOrder[]> {
+export async function fetchCustomerPayments(): Promise<Either<HttpError, CustomerOrder[]>> {
   const client = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.authToken)
-  return await client.get<CustomerOrder[]>('/api/customer/orders/v1')
+  return client.get<CustomerOrder[]>('/api/customer/orders/v1')
 }
