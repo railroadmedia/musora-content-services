@@ -2,14 +2,8 @@
  * @module Payments
  */
 import { globalConfig } from './config.js'
+import { fetchHandler } from '../lib/httpHelper.js'
 
-export async function fetchCustomerPayments(brand, { page = 1, limit = 10 } = {}) {
-  const params = {
-    method: 'GET',
-    headers: {
-        'Authorization': `Bearer ${globalConfig.sessionConfig.authToken}`,
-        'Content-Type': 'application/json',
-      }
-    }
-    return await fetch(globalConfig.baseUrl + '/api/customer/orders/v1', params)
+export async function fetchCustomerPayments() {
+    return await fetchHandler(globalConfig.baseUrl + '/api/customer/orders/v1', globalConfig.sessionConfig.authToken, 'get')
 }
