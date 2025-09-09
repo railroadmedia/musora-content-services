@@ -113,7 +113,7 @@ import {
 
 import {
 	fetchCustomerPayments
-} from './services/payments.js';
+} from './services/user/payments.ts';
 
 import {
 	assignModeratorToComment,
@@ -320,7 +320,7 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 export {
