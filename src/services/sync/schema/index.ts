@@ -4,7 +4,7 @@ export const SYNC_TABLES = {
   CONTENT_LIKES: 'content_likes',
   CONTENT_PROGRESS: 'progress',
   CONTENT_PRACTICES: 'practice',
-  USER_PLAYLISTS: 'playlists'
+  DOWNLOADS: 'playlists'
 }
 
 const contentLikesTable = tableSchema({
@@ -31,15 +31,13 @@ const contentPracticesTable = tableSchema({
     { name: 'updated_at', type: 'number' }
   ]
 })
-const userPlaylistsTable = tableSchema({
-  name: SYNC_TABLES.USER_PLAYLISTS,
+const downloadsTable = tableSchema({
+  name: SYNC_TABLES.DOWNLOADS,
   columns: [
-    { name: 'playlist_id', type: 'string' },
-    { name: 'name', type: 'string' },
-    { name: 'category', type: 'string' },
-    { name: 'description', type: 'string' },
-    { name: 'duration', type: 'number' },
+    { name: 'parent_id', type: 'string' },
+    { name: 'type', type: 'string' },
     { name: 'is_downloads_collection', type: 'boolean' },
+    { name: 'playlist_resource', type: 'string' },
     { name: 'created_at', type: 'number' },
     { name: 'updated_at', type: 'number' }
   ]
@@ -51,6 +49,6 @@ export default appSchema({
     contentLikesTable,
     contentProgressTable,
     contentPracticesTable,
-    userPlaylistsTable
+    downloadsTable
   ]
 })

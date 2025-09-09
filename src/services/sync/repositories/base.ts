@@ -22,4 +22,6 @@ export default class SyncRepository<T extends Model> {
 
     return this.store.readOne(id)
   }
+
+  //create upsert object?
 }
