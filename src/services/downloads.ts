@@ -2,19 +2,42 @@ import UserPlaylistRepository from "./sync/repositories/playlists";
 import {LikesRepository} from "./sync/repositories";
 import {UserPlaylist} from "./sync/models";
 import { getInstance } from '@/application/sync'
+import {fetchHandler} from "../index";
+
+const BASE_PATH = `/api/content-org`
 
 export async function testing()
 {
     const repo = new UserPlaylistRepository(getInstance().getStore(UserPlaylist))
 }
 
-export async function downloadContent()
+export async function downloadPlaylist(playlistId: number)
 {
-    //fetch sanity here, return video data
+    //request BE resource
+    const url = `${BASE_PATH}/v1/user/downloads/playlist/${playlistId}`
+    const response = await fetchHandler(url) //returns PlaylistResource
 
-    //get content type. for now its just single content types
+    //create DTO for watermelonDB row (so all columns)
+
+
+    //upsert to watermelonDB model
+
 
     addContentToDownloads(contentId)
+}
+
+export async function downloadCollection(contentId: number)
+{
+    //request BE resource
+    const url = `${BASE_PATH}/v1/user/downloads/collection/${contentId}`
+    return await fetchHandler(url)
+
+    addContentToDownloads(contentId)
+}
+
+export async function downloadIndividual()
+{
+
 }
 
 function addContentToDownloads(contentId: number)
