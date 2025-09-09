@@ -2187,7 +2187,7 @@ export async function fetchTabData(
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
   entityFieldsString =
     ` ${fieldsString}
-    'children': child[${childrenFilter}]->{ ${childrenFields} },
+    'children': child[${childrenFilter}]->{ ${childrenFields} 'children': child[${childrenFilter}]->{ ${childrenFields} }, },
     'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
     'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     'length_in_seconds': coalesce(
