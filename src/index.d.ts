@@ -96,7 +96,7 @@ import {
 
 import {
 	fetchForumDiscussions
-} from './services/forums/forum.js';
+} from './services/forums/discussions.js';
 
 import {
 	fetchAwardsForUser,

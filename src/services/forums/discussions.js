@@ -1,5 +1,5 @@
 /**
- * @module Forums
+ * @module ForumDiscussions
  */
 import {fetchHandler} from "../railcontent";
 
