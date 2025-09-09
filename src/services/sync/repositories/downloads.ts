@@ -10,7 +10,14 @@ export default class DownloadsRepository extends SyncRepository<Download> {
     return await this.upsert(parentId, record => {
       record.parentId = parentId
       record.type = dataObject.type
-      //continue once we have the resource set up
+      record.playlistResource = dataObject.playlistResource
+      record.isDownloadsCollection = dataObject.isDownloadsCollection
+      // Only set created_at if it doesn't exist (new record)
+      if (!record._raw['created_at']) {
+        record._setRaw('created_at', new Date().toISOString())
+      }
+      // Always update the updated_at timestamp
+      record._setRaw('updated_at', new Date().toISOString())
     })
   }
 

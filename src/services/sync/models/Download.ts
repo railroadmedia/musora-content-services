@@ -12,13 +12,12 @@ export default class Download extends Model {
   set type(value: string) {
     this._setRaw('type', String(value))
   }
-  set isDownloadsCollection(value: boolean) {
-    this._setRaw('is_downloads_collection', String(value))
-  }
   set playlistResource(value: string) {
     this._setRaw('playlist_resource', String(value))
   }
-
+  set isDownloadsCollection(value: boolean) {
+    this._setRaw('is_downloads_collection', String(value))
+  }
 }
 
 // manual timestamp support for now without decorators
