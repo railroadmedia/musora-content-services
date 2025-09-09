@@ -1,8 +1,10 @@
+import SyncStore from "../store";
+
 export interface SyncStrategy {
   start(): void
   stop(): void
 
-  onTrigger(cb: (reason: string) => void): void
+  onTrigger(store: SyncStore, callback: (reason: string) => void): this
 }
 
 export { default as BaseStrategy } from './base'

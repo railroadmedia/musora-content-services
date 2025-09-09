@@ -1,8 +1,9 @@
 import { SyncStrategy } from "./index";
 import SyncContext from "../context";
+import SyncStore from "../store";
 
 export default abstract class BaseSyncStrategy implements SyncStrategy {
-  protected triggerCallback?: (reason: string) => void
+  protected registry: { callback: (reason: string) => void, store: SyncStore }[] = []
   abstract start(): void
   abstract stop(): void
 
@@ -10,9 +11,11 @@ export default abstract class BaseSyncStrategy implements SyncStrategy {
 
   constructor(context: SyncContext) {
     this.context = context
+    this.registry = []
   }
 
-  onTrigger(callback: (reason: string) => void): void {
-    this.triggerCallback = callback
+  onTrigger(store: SyncStore, callback: (reason: string) => void): this {
+    this.registry.push({ callback, store })
+    return this
   }
 }

@@ -1,18 +1,21 @@
-import { Database, Model } from "@nozbe/watermelondb"
-import SyncRunScope from "./run-scope"
-import { SyncStrategy } from "./strategies"
-import { default as SyncStore, SyncStoreConfig } from "./store"
+import { Database, Model } from '@nozbe/watermelondb'
+import SyncRunScope from './run-scope'
+import { SyncStrategy } from './strategies'
+import { default as SyncStore, SyncStoreConfig } from './store'
 
-import SyncExecutor from "./executor"
-import SyncContext from "./context"
+import SyncExecutor from './executor'
+import SyncContext from './context'
+import type SyncConcurrencySafety from './concurrency-safety'
 
 export default class SyncManager {
   private database: Database
   private context: SyncContext
   private storesRegistry: Record<typeof Model.table, SyncStore<Model>>
-  private mapping: { stores: SyncStore<Model>[], strategies: SyncStrategy[] }[]
   private runScope: SyncRunScope
   private executor: SyncExecutor
+
+  private strategyMap: { stores: SyncStore<Model>[]; strategies: SyncStrategy[] }[]
+  private safetyMap: { stores: SyncStore<Model>[]; safety: SyncConcurrencySafety }[]
 
   constructor(context: SyncContext, database: Database) {
     this.database = database
@@ -20,63 +23,77 @@ export default class SyncManager {
     this.runScope = new SyncRunScope()
 
     this.storesRegistry = {} as Record<typeof Model.table, SyncStore<Model>>
-    this.mapping = []
+    this.strategyMap = []
+    this.safetyMap = []
 
     this.executor = new SyncExecutor(this.context)
+    this.executor.start()
   }
 
-  createStrategy<
-    T extends SyncStrategy,
-    U extends any[]
-  >(
+  createStore(config: SyncStoreConfig) {
+    if (this.storesRegistry[config.model.table]) {
+      throw new Error(`Store ${config.model.table} already registered`)
+    }
+    const store = new SyncStore(config, this.database, this.runScope)
+    this.storesRegistry[config.model.table] = store
+    return store
+  }
+
+  createStrategy<T extends SyncStrategy, U extends any[]>(
     strategyClass: new (context: SyncContext, ...args: U) => T,
     ...args: U
   ): T {
-    return new strategyClass(this.context, ...args);
+    return new strategyClass(this.context, ...args)
   }
 
-  syncStoresWith(storeConfigs: SyncStoreConfig[], strategies: SyncStrategy[]) {
-    const stores = storeConfigs.map(config => {
-      if (this.storesRegistry[config.model.table]) {
-        throw new Error(`Store ${config.model.table} already registered`)
-      }
-      const store = new SyncStore(config, this.database, this.runScope)
-      this.storesRegistry[config.model.table] = store
-      return store
-    })
+  syncStoresWithStrategies(stores: SyncStore[], strategies: SyncStrategy[]) {
+    this.strategyMap.push({ stores, strategies })
+  }
 
-    this.mapping.push({ stores, strategies })
+  protectStores(
+    stores: SyncStore[],
+    safetyClass: new (context: SyncContext, stores: SyncStore[]) => SyncConcurrencySafety
+  ) {
+    this.safetyMap.push({ stores, safety: new safetyClass(this.context, stores) })
   }
 
   setup() {
-    this.mapping.forEach(({ stores, strategies }) => {
-      strategies.forEach(strategy => {
-        strategy.onTrigger(reason => {
-          stores.forEach(store => this.executor.requestSync(() => store.sync(), reason))
+    this.safetyMap.forEach(({ safety }) => safety.start())
+
+    this.strategyMap.forEach(({ stores, strategies }) => {
+      strategies.forEach((strategy) => {
+        stores.forEach((store) => {
+          strategy.onTrigger(store, (reason) => {
+            this.executor.requestSync(() => store.sync(), reason) // todo? - executor per store instead of global?
+          })
+          strategy.start()
         })
-        strategy.start()
       })
     })
 
     // teardown (ideally occurring on logout) should:
-    // 1. stop all sync strategies
-    // 2. cancel any scheduled fetch requests that came from those sync strategies (handled by orchestrator abort controller)
-    // 3. reset local databases
-    // 4. purge any databases that are no longer referenced in schema (possible if user logs out after a schema change)?
+    // - stop all safety mechanisms
+    // - stop all sync strategies
+    // - cancel any scheduled fetch requests that came from those sync strategies (handled by abort controller)
+    // - reset local databases
+    // - purge any databases that are no longer referenced in schema (possible if user logs out after a schema change)?
 
-    return async function teardown() {
-      this.session.abort()
-      this.mapping.forEach(({ strategies }) => strategies.forEach(strategy => strategy.stop()))
+    const teardown = async () => {
+      this.runScope.abort()
+      this.strategyMap.forEach(({ strategies }) => strategies.forEach((strategy) => strategy.stop()))
+      this.safetyMap.forEach(({ safety }) => safety.stop())
+      this.executor.stop()
       await this.database.write(() => this.database.unsafeResetDatabase())
       // todo - purge adapter?
     }
+    return teardown
   }
 
   getStore<TModel extends typeof Model>(model: TModel) {
-    const store = this.storesRegistry[model.table];
+    const store = this.storesRegistry[model.table]
     if (!store) {
-      return undefined;
+      return undefined
     }
-    return store as unknown as SyncStore<InstanceType<TModel>>;
+    return store as unknown as SyncStore<InstanceType<TModel>>
   }
 }
