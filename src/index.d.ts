@@ -112,10 +112,6 @@ import {
 } from './services/imageSRCVerify.js';
 
 import {
-	fetchCustomerPayments
-} from './services/user/payments.js';
-
-import {
 	assignModeratorToComment,
 	closeComment,
 	createComment,
@@ -279,6 +275,10 @@ import {
 } from './services/user/notifications.js';
 
 import {
+	fetchCustomerPayments
+} from './services/user/payments.ts';
+
+import {
 	fetchUserPermissions,
 	reset
 } from './services/user/permissions.js';
@@ -320,7 +320,7 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI
+	 default as EventsAPI 
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
