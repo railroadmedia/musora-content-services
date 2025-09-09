@@ -376,6 +376,16 @@ export async function postContentComplete(contentId) {
 }
 
 /**
+ * start a Guided Course content's progress for a given user
+ * @param contentId
+ * @returns {Promise<any|string|null>}
+ */
+export async function postContentStartForGC(contentId) {
+  let url = `/api/content/v1/user/progress/start_gc`
+  return postDataHandler(url, { contentId })
+}
+
+/**
  * resets the user's progress on a content
  * @param contentId
  * @returns {Promise<any|string|null>}
