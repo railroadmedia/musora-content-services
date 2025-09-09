@@ -9,6 +9,7 @@ import {
 import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
 import { BaseResolver, LastWriteConflictResolver } from '../resolvers'
 import type SyncRunScope from '../run-scope'
+import { EventEmitter } from '../utils/event-emitter'
 
 type ModelClass<T extends Model> = { new (...args: any[]): T; table: string };
 type SyncPull = (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
@@ -19,6 +20,7 @@ export type SyncStoreConfig<TModel extends Model = Model> = {
   pull: SyncPull
   push: SyncPush
 }
+
 export default class SyncStore<TModel extends Model = Model> {
   static LOCK_NAMESPACE = 'sync:write'
 
@@ -36,6 +38,8 @@ export default class SyncStore<TModel extends Model = Model> {
 
   lastFetchTokenKey: string
   currentPull: Promise<SyncPullResponse> | null = null
+
+  private emitter = new EventEmitter()
 
   constructor({
     model,
@@ -55,17 +59,10 @@ export default class SyncStore<TModel extends Model = Model> {
     this.lastFetchTokenKey = `last_fetch_token:${this.model.table}`
   }
 
-  async getLastFetchToken() {
-    return (await this.db.localStorage.get<SyncToken | null>(this.lastFetchTokenKey)) ?? null
-  }
+  on = this.emitter.on.bind(this.emitter)
+  off = this.emitter.off.bind(this.emitter)
+  private emit = this.emitter.emit.bind(this.emitter)
 
-  async setLastFetchToken(token: SyncToken | null) {
-    if (token) {
-      return this.db.localStorage.set(this.lastFetchTokenKey, token)
-    } else {
-      return this.db.localStorage.remove(this.lastFetchTokenKey)
-    }
-  }
 
   async sync() {
     await this.pushUnsynced()
@@ -73,6 +70,18 @@ export default class SyncStore<TModel extends Model = Model> {
     // will return records that we just saw in push response, but we can't
     // be sure there were no other changes before the push
     await this.pullRecords()
+  }
+
+  async getLastFetchToken() {
+    return (await this.db.localStorage.get<SyncToken | null>(this.lastFetchTokenKey)) ?? null
+  }
+
+  private async setLastFetchToken(token: SyncToken | null) {
+    if (token) {
+      return this.db.localStorage.set(this.lastFetchTokenKey, token)
+    } else {
+      return this.db.localStorage.remove(this.lastFetchTokenKey)
+    }
   }
 
   private async pushUnsynced() {
@@ -121,6 +130,8 @@ export default class SyncStore<TModel extends Model = Model> {
     const successfulEntries = successfulResults.map(result => result.entry)
     await this.write(successfulEntries)
 
+    this.emit('pushCompleted')
+
     return response
   }
 
@@ -135,6 +146,8 @@ export default class SyncStore<TModel extends Model = Model> {
         await this.write(response.entries, !response.previousToken)
         await this.setLastFetchToken(response.token)
       }
+
+      this.emit('pullCompleted')
 
       return response
     })()
@@ -183,6 +196,7 @@ export default class SyncStore<TModel extends Model = Model> {
   }
 
   private async withWriteLock(write: () => Promise<void>) {
+    // todo - make an interface - navigator.locks not available on RN
     return navigator.locks.request(`${SyncStore.LOCK_NAMESPACE}:${this.db.adapter.dbName}`, write)
   }
 

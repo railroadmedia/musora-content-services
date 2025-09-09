@@ -11,18 +11,25 @@ export default class SyncExecutor {
   private failureCount = 0
 
   private context: SyncContext
+  private unsubscribeConnectivity: () => void
 
   constructor(context: SyncContext) {
     this.context = context
+  }
 
+  start() {
     // When we come back online, reset the paused state and backoff timer
     // so the next sync attempt can proceed immediately.
-    this.context.connectivityProvider.subscribe(isOnline => {
+    this.unsubscribeConnectivity = this.context.connectivity.subscribe(isOnline => {
       if (isOnline && this.paused) {
         this.paused = false
         this.resetBackoff()
       }
     })
+  }
+
+  stop() {
+    this.unsubscribeConnectivity()
   }
 
   async requestSync(syncFn: () => Promise<void>, reason: string) {
@@ -34,7 +41,7 @@ export default class SyncExecutor {
     }
 
     // 2. If offline, pause execution and wait for connectivity
-    if (!this.context.connectivityProvider.getValue()) {
+    if (!this.context.connectivity.getValue()) {
       this.paused = true
       return
     }
@@ -51,7 +58,7 @@ export default class SyncExecutor {
     } catch (e) {
       // Only schedule a backoff if the failure happened while online.
       // If we're offline, the connectivity listener will handle resuming.
-      if (this.context.connectivityProvider.getValue()) {
+      if (this.context.connectivity.getValue()) {
         this.scheduleBackoff()
       } else {
         this.paused = true
