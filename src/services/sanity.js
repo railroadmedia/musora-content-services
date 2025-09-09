@@ -1450,7 +1450,8 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
  *   .catch(error => console.error(error));
  */
 export async function fetchPackData(id) {
-  const query = `*[railcontent_id == ${id}]{
+  const builder = await new FilterBuilder(`railcontent_id == ${id}`).buildFilter()
+  const query = `*[${builder}]{
     ${await getFieldsForContentTypeWithFilteredChildren('pack')}
   } [0...1]`
   return fetchSanity(query, false)
