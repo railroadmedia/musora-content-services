@@ -275,6 +275,10 @@ import {
 } from './services/user/notifications.js';
 
 import {
+	fetchCustomerPayments
+} from './services/user/payments.ts';
+
+import {
 	fetchUserPermissions,
 	reset
 } from './services/user/permissions.js';
@@ -376,6 +380,7 @@ declare module 'musora-content-services' {
 		fetchContentPageUserData,
 		fetchContentProgress,
 		fetchContentRows,
+		fetchCustomerPayments,
 		fetchEnrollmentPageMetadata,
 		fetchFoundation,
 		fetchGenreLessons,

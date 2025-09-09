@@ -275,6 +275,10 @@ import {
 } from './services/user/notifications.js';
 
 import {
+	fetchCustomerPayments
+} from './services/user/payments.ts';
+
+import {
 	fetchUserPermissions,
 	reset
 } from './services/user/permissions.js';
@@ -375,6 +379,7 @@ export {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchContentRows,
+	fetchCustomerPayments,
 	fetchEnrollmentPageMetadata,
 	fetchFoundation,
 	fetchGenreLessons,
