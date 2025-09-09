@@ -394,7 +394,7 @@ export async function postContentComplete(contentId) {
  * @returns {Promise<any|string|null>}
  */
 export async function postContentStartForGC(contentId) {
-  let url = `/api/content/v1/user/progress/start_gc`
+  let url = `/api/content/v1/user/progress/start`
   return postDataHandler(url, { contentId })
 }
 
