@@ -13,7 +13,7 @@ import {
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import { fetchByRailContentId, fetchByRailContentIds, fetchShows } from './sanity'
 import { fetchPlaylist, fetchUserPlaylists } from './content-org/playlists'
-import { pinnedGuidedCourses } from './content-org/guided-courses'
+import {guidedCourses, pinnedGuidedCourses} from './content-org/guided-courses'
 import {
   getMonday,
   getWeekNumber,
@@ -1051,13 +1051,19 @@ function generateContentsMap(contents, playlistsContents) {
  */
 export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   // TODO slice progress to a reasonable number, say 100
-  const [recentPlaylists, progressContents, allPinnedGuidedCourse, userPinnedItem] =
+
+  const [recentPlaylists, progressContents, allPinnedGuidedCourse, userPinnedItem, enrolledGuidedCourses] =
     await Promise.all([
       fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
       getAllStartedOrCompleted({ onlyIds: false, brand: brand }),
       pinnedGuidedCourses(brand),
       getUserPinnedItem(brand),
+      guidedCourses()
     ])
+
+  const enrolledGuidedCoursesIds = enrolledGuidedCourses.map(course => String(course.content_id));
+
+  const mergedGuidedCourses = 1 //get all cuigded courses, incl no progress.
   let pinnedGuidedCourse = allPinnedGuidedCourse?.[0] ?? null
 
   const playlists = recentPlaylists?.data || []
@@ -1067,12 +1073,15 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   )
 
   const nonPlaylistContentIds = Object.keys(progressContents)
-  if (pinnedGuidedCourse) {
-    nonPlaylistContentIds.push(pinnedGuidedCourse.content_id)
+  if (enrolledGuidedCoursesIds.length > 0) {
+    nonPlaylistContentIds.push(...enrolledGuidedCoursesIds)
   }
   if (userPinnedItem?.progressType === 'content') {
     nonPlaylistContentIds.push(userPinnedItem.id)
   }
+console.log("nonPlaylistContentIds",nonPlaylistContentIds)
+
+
   const [playlistsContents, contents] = await Promise.all([
     playlistEngagedOnContents ? addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
       addNextLesson: true,
@@ -1207,7 +1216,7 @@ function getDefaultCTATextForContent(content, contentType) {
     )
       ctaText = 'Replay Song'
     if (contentType === 'lesson') ctaText = 'Revisit Lesson'
-    if (contentType === 'song tutorial' || collectionLessonTypes.includes(contentType))
+    if (contentType === 'song tutorial' || collectionLessonTypes.includes(content.type))
       ctaText = 'Revisit Lessons'
     if (contentType === 'pack') ctaText = 'View Lessons'
   }

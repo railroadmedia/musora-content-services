@@ -255,6 +255,11 @@ import {
 } from './services/user/management.js';
 
 import {
+	fetchMemberships,
+	fetchRechargeTokens
+} from './services/user/memberships.js';
+
+import {
 	deleteNotification,
 	fetchLiveEventPollingState,
 	fetchNotificationSettings,
@@ -268,6 +273,10 @@ import {
 	startLiveEventPolling,
 	updateNotificationSetting
 } from './services/user/notifications.js';
+
+import {
+	fetchCustomerPayments
+} from './services/user/payments.ts';
 
 import {
 	fetchUserPermissions,
@@ -309,6 +318,10 @@ import {
 	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
+
+import {
+	 default as EventsAPI 
+} from './services/eventsAPI';
 
 export {
 	addContextToContent,
@@ -366,6 +379,7 @@ export {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchContentRows,
+	fetchCustomerPayments,
 	fetchEnrollmentPageMetadata,
 	fetchFoundation,
 	fetchGenreLessons,
@@ -379,6 +393,7 @@ export {
 	fetchLikeCount,
 	fetchLiveEvent,
 	fetchLiveEventPollingState,
+	fetchMemberships,
 	fetchMetadata,
 	fetchMethod,
 	fetchMethodChildren,
@@ -399,6 +414,7 @@ export {
 	fetchRecent,
 	fetchRecentActivitiesActiveTabs,
 	fetchRecentUserActivities,
+	fetchRechargeTokens,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
@@ -547,3 +563,5 @@ export {
 	verifyImageSRC,
 	verifyLocalDataContext,
 };
+
+export default EventsAPI

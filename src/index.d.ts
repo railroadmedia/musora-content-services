@@ -255,6 +255,11 @@ import {
 } from './services/user/management.js';
 
 import {
+	fetchMemberships,
+	fetchRechargeTokens
+} from './services/user/memberships.js';
+
+import {
 	deleteNotification,
 	fetchLiveEventPollingState,
 	fetchNotificationSettings,
@@ -268,6 +273,10 @@ import {
 	startLiveEventPolling,
 	updateNotificationSetting
 } from './services/user/notifications.js';
+
+import {
+	fetchCustomerPayments
+} from './services/user/payments.ts';
 
 import {
 	fetchUserPermissions,
@@ -309,6 +318,10 @@ import {
 	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
+
+import {
+	 default as EventsAPI 
+} from './services/eventsAPI';
 
 declare module 'musora-content-services' {
 	export {
@@ -367,6 +380,7 @@ declare module 'musora-content-services' {
 		fetchContentPageUserData,
 		fetchContentProgress,
 		fetchContentRows,
+		fetchCustomerPayments,
 		fetchEnrollmentPageMetadata,
 		fetchFoundation,
 		fetchGenreLessons,
@@ -380,6 +394,7 @@ declare module 'musora-content-services' {
 		fetchLikeCount,
 		fetchLiveEvent,
 		fetchLiveEventPollingState,
+		fetchMemberships,
 		fetchMetadata,
 		fetchMethod,
 		fetchMethodChildren,
@@ -400,6 +415,7 @@ declare module 'musora-content-services' {
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
+		fetchRechargeTokens,
 		fetchRelatedLessons,
 		fetchRelatedRecommendedContent,
 		fetchRelatedSongs,
@@ -549,3 +565,5 @@ declare module 'musora-content-services' {
 		verifyLocalDataContext,
 	}
 }
+
+export default EventsAPI
