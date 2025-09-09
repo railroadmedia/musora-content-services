@@ -2,6 +2,7 @@ import {
   fetchContentProgress,
   postContentComplete,
   postContentReset,
+  postContentStartForGC,
   postRecordWatchSession,
 } from './railcontent.js'
 import { DataContext, ContentProgressVersionKey } from './dataContext.js'
@@ -359,6 +360,19 @@ export async function contentStatusCompleted(contentId) {
     }
   )
 }
+export async function contentStatusStartedForGuidedCourseEnrollment(contentId) {
+  const response = await postContentStartForGC(contentId);
+
+  return await dataContext.update(
+    async function (localContext) {
+      let hierarchy = await fetchHierarchy(contentId)
+      startStatusInLocalContext(localContext, contentId, hierarchy)
+    },
+    async function () {
+      return response
+    }
+  )
+}
 
 function saveContentProgress(localContext, contentId, progress, currentSeconds, hierarchy) {
   if (progress === 100) {
@@ -391,6 +405,22 @@ function completeStatusInLocalContext(localContext, contentId, hierarchy) {
   for (let i = 0; i < children.length; i++) {
     let childId = children[i]
     completeStatusInLocalContext(localContext, childId, hierarchy)
+  }
+  bubbleProgress(hierarchy, contentId, localContext)
+}
+
+function startStatusInLocalContext(localContext, contentId, hierarchy) {
+  let data = localContext.data[contentId] ?? {}
+  data[DATA_KEY_PROGRESS] = 0
+  data[DATA_KEY_STATUS] = STATE_STARTED
+  data[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000)
+  localContext.data[contentId] = data
+
+  if (!hierarchy) return
+  let children = hierarchy.children[contentId] ?? []
+  for (let i = 0; i < children.length; i++) {
+    let childId = children[i]
+    startStatusInLocalContext(localContext, childId, hierarchy)
   }
   bubbleProgress(hierarchy, contentId, localContext)
 }
