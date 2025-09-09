@@ -8,6 +8,27 @@ import SyncContext from './context'
 import type SyncConcurrencySafety from './concurrency-safety'
 
 export default class SyncManager {
+  private static instance: SyncManager | null = null
+
+  public static assignAndSetupInstance(instance: SyncManager) {
+    if (SyncManager.instance) {
+      throw new Error('SyncManager already initialized')
+    }
+    SyncManager.instance = instance
+    const teardown = instance.setup()
+    return async () => {
+      await teardown()
+      SyncManager.instance = null
+    }
+  }
+
+  public static getInstance(): SyncManager {
+    if (!SyncManager.instance) {
+      throw new Error('SyncManager not initialized')
+    }
+    return SyncManager.instance
+  }
+
   private database: Database
   private context: SyncContext
   private storesRegistry: Record<typeof Model.table, SyncStore<Model>>
@@ -92,7 +113,7 @@ export default class SyncManager {
   getStore<TModel extends typeof Model>(model: TModel) {
     const store = this.storesRegistry[model.table]
     if (!store) {
-      return undefined
+      throw new Error(`Store for ${model.table} not found`)
     }
     return store as unknown as SyncStore<InstanceType<TModel>>
   }

@@ -27,6 +27,13 @@ type SyncEntryLifecycle = {
   deleted_at: EpochSeconds | null
 }
 
+export type SyncExistsDTO<TMultiple extends boolean = false> = {
+  data: TMultiple extends true ? boolean[] : boolean
+  status: 'fresh' | 'stale'
+  pullStatus: 'success' | 'pending' | 'failure' | null
+  lastFetchToken: SyncToken | null
+}
+
 export type SyncReadDTO<TModel extends Model, TMultiple extends boolean = false> = {
   data: TMultiple extends true ? ModelSerialized<TModel>[] : ModelSerialized<TModel> | null
   status: 'fresh' | 'stale'

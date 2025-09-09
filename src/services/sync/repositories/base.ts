@@ -1,10 +1,37 @@
+
+import SyncManager from "../manager";
 import SyncStore from '../store'
 import { Model, Q } from '@nozbe/watermelondb'
 
-import { SyncReadDTO, SyncWriteDTO } from '..'
+import { SyncExistsDTO, SyncReadDTO, SyncWriteDTO } from '..'
 
 export default class SyncRepository<TModel extends Model> {
-  constructor(protected store: SyncStore<TModel>) {}
+  protected static getStore<T extends typeof Model>(model: T) {
+    return SyncManager.getInstance().getStore(model)
+  }
+
+  protected constructor(protected store: SyncStore<TModel>) {}
+
+  protected async existOne(id: string) {
+    const read = await this.readOne(id)
+    const result: SyncExistsDTO = {
+      ...read,
+      data: read.data !== null
+    }
+    return result
+  }
+
+  protected async existSome(ids: string[]) {
+    const read = await this.readSome(ids)
+    const map = new Map<string, typeof read.data[0]>()
+    read.data.forEach(record => map.set(record.id, record))
+
+    const result: SyncExistsDTO<true> = {
+      ...read,
+      data: ids.map(id => map.has(id))
+    }
+    return result
+  }
 
   protected async readOne(id: string) {
     const [data, fetchToken] = await Promise.all([
@@ -13,6 +40,21 @@ export default class SyncRepository<TModel extends Model> {
     ])
 
     const result: SyncReadDTO<TModel> = {
+      data,
+      status: 'stale',
+      pullStatus: null,
+      lastFetchToken: fetchToken,
+    }
+    return result
+  }
+
+  protected async readSome(ids: string[]) {
+    const [data, fetchToken] = await Promise.all([
+      this.store.readSome(ids),
+      this.store.getLastFetchToken(),
+    ])
+
+    const result: SyncReadDTO<TModel, true> = {
       data,
       status: 'stale',
       pullStatus: null,
@@ -129,7 +171,7 @@ export default class SyncRepository<TModel extends Model> {
       const result = pushed.results[0]
       if (result.type === 'success') {
         await this.store.write([result.entry])
-        const data = await this.store.readOne(result.entry.record.id)
+        const data = await this.store.readOne(result.entry.record.id)!
 
         const ret: SyncWriteDTO<TModel> = {
           data,
@@ -149,25 +191,5 @@ export default class SyncRepository<TModel extends Model> {
     } else {
       throw new Error('SyncStore.pushOneImmediate: failed to push record') // todo - proper error
     }
-  }
-
-  protected async upsert(id: string, builder: (record: TModel) => void) {
-    await this.store.db.write(async () => {
-      const existing = await this.store.collection
-        .query(Q.where('id', id))
-        .fetch()
-        .then((records) => records[0])
-
-      if (existing) {
-        existing.update(builder)
-      } else {
-        this.store.collection.create((record) => {
-          record._raw.id = id
-          builder(record)
-        })
-      }
-    })
-
-    return this.store.readRecord(id)
   }
 }

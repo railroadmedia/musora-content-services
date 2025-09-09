@@ -160,12 +160,17 @@ export default class SyncStore<TModel extends Model = Model> {
   }
 
   async readAll() {
-    const records = await this.readRecords();
+    const records = await this.queryRecords();
+    return records.map(record => this.modelSerializer.toPlainObject(record))
+  }
+
+  async readSome(ids: RecordId[]) {
+    const records = await this.queryRecords(Q.where('id', Q.oneOf(ids)));
     return records.map(record => this.modelSerializer.toPlainObject(record))
   }
 
   async readOne(id: RecordId) {
-    const record = await this.readRecord(id);
+    const record = await this.queryRecord(id);
     return record ? this.modelSerializer.toPlainObject(record) : null
   }
 
@@ -173,15 +178,49 @@ export default class SyncStore<TModel extends Model = Model> {
     return record ? this.modelSerializer.toPlainObject(record) : null
   }
 
-  async readRecords() {
-    return await this.collection.query().fetch()
+  private async queryRecords(...args: Q.Clause[]) {
+    return await this.collection.query(...args).fetch()
   }
 
-  async readRecord(id: RecordId) {
+  private async queryRecord(id: RecordId) {
     return this.collection
       .query(Q.where('id', id))
       .fetch()
-      .then(records => records[0])
+      .then(records => records[0] as TModel | null)
+  }
+
+  async upsert(id: string, builder: (record: TModel) => void) {
+    await this.db.write(async () => {
+      const existing = await this.queryRecord(id)
+
+      // wtf
+      // need to consider deleted records here - HOW
+      const x = await this.collection.query().fetch()
+      debugger
+
+      if (existing) {
+        existing.update(builder)
+      } else {
+        this.collection.create((record) => {
+          record._raw.id = id
+          builder(record)
+        })
+      }
+    })
+
+    return this.queryRecord(id)!
+  }
+
+  async deleteOne(id: RecordId) {
+    await this.db.write(async () => {
+      const existing = await this.queryRecord(id)
+
+      if (existing) {
+        existing.markAsDeleted() // TODO - consider throwing if not exist...or?
+      }
+    })
+
+    return this.queryRecord(id)
   }
 
   async write(entries: SyncEntry[], freshSync: boolean = false) {

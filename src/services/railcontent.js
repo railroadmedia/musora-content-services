@@ -10,8 +10,6 @@ import { fetchJSONHandler } from '../lib/httpHelper.js'
  * @type {string[]}
  */
 const excludeFromGeneratedIndex = [
-  'postContentLiked',
-  'postContentUnliked',
   'postRecordWatchSession',
   'postContentStarted',
   'postContentComplete',
@@ -302,16 +300,6 @@ export async function fetchLikeCount(contendId) {
 export async function postUserLikes(likes, signal) {
   let url = `/api/content/v1/user/likes`
   return await postDataHandler(url, likes, signal);
-}
-
-export async function postContentLiked(contentId) {
-  let url = `/api/content/v1/user/likes/${contentId}`
-  return await postDataHandler(url)
-}
-
-export async function postContentUnliked(contentId) {
-  let url = `/api/content/v1/user/likes/${contentId}`
-  return await deleteDataHandler(url)
 }
 
 export async function fetchContentProgress(currentVersion) {
