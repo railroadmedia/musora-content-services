@@ -1,8 +1,8 @@
 /**
  * @module GuidedCourses
  */
-import { globalConfig } from '../config.js'
 import { fetchHandler } from '../railcontent.js'
+import { contentStatusStarted } from '../contentProgress.js'
 import './playlists-types.js'
 
 
@@ -12,7 +12,9 @@ const BASE_PATH: string = `/api/content-org`
 
 export async function enrollUserInGuidedCourse(guidedCourse, { notifications_enabled = false }) {
   const url: string = `${BASE_PATH}/v1/user/guided-courses/enroll-user/${guidedCourse}`
-  return await fetchHandler(url, 'POST', null, { notifications_enabled })
+  const response = await fetchHandler(url, 'POST', null, { notifications_enabled })
+  await contentStatusStarted(guidedCourse)
+  return response
 }
 
 export async function unEnrollUserInGuidedCourse(guidedCourse) {

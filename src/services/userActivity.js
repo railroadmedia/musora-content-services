@@ -1037,15 +1037,13 @@ function generateContentsMap(contents, playlistsContents) {
 export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   // TODO slice progress to a reasonable number, say 100
 
-  const [recentPlaylists, progressContents, userPinnedItem, enrolledGuidedCourses] =
+  const [recentPlaylists, progressContents, userPinnedItem] =
     await Promise.all([
       fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
       getAllStartedOrCompleted({ onlyIds: false, brand: brand }),
       getUserPinnedItem(brand),
-      guidedCourses()
     ])
 
-  const enrolledGuidedCoursesIds = enrolledGuidedCourses.map(course => String(course.content_id));
   const playlists = recentPlaylists?.data || []
   const eligiblePlaylistItems = await getEligiblePlaylistItems(playlists)
   const playlistEngagedOnContents = eligiblePlaylistItems.map(
@@ -1053,9 +1051,6 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   )
 
   const nonPlaylistContentIds = Object.keys(progressContents)
-  if (enrolledGuidedCoursesIds.length > 0) {
-    nonPlaylistContentIds.push(...enrolledGuidedCoursesIds)
-  }
   if (userPinnedItem?.progressType === 'content') {
     nonPlaylistContentIds.push(userPinnedItem.id)
   }
