@@ -95,6 +95,10 @@ import {
 } from './services/forum.js';
 
 import {
+	fetchForumDiscussions
+} from './services/forums/forum.js';
+
+import {
 	fetchAwardsForUser,
 	fetchCertificate
 } from './services/gamification/awards.ts';
@@ -377,6 +381,7 @@ declare module 'musora-content-services' {
 		fetchContentProgress,
 		fetchContentRows,
 		fetchEnrollmentPageMetadata,
+		fetchForumDiscussions,
 		fetchFoundation,
 		fetchGenreLessons,
 		fetchHandler,

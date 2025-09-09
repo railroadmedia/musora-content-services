@@ -95,6 +95,10 @@ import {
 } from './services/forum.js';
 
 import {
+	fetchForumDiscussions
+} from './services/forums/forum.js';
+
+import {
 	fetchAwardsForUser,
 	fetchCertificate
 } from './services/gamification/awards.ts';
@@ -376,6 +380,7 @@ export {
 	fetchContentProgress,
 	fetchContentRows,
 	fetchEnrollmentPageMetadata,
+	fetchForumDiscussions,
 	fetchFoundation,
 	fetchGenreLessons,
 	fetchHandler,
