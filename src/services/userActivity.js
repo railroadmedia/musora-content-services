@@ -1037,15 +1037,13 @@ function generateContentsMap(contents, playlistsContents) {
 export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   // TODO slice progress to a reasonable number, say 100
 
-  const [recentPlaylists, progressContents, userPinnedItem, enrolledGuidedCourses] =
+  const [recentPlaylists, progressContents, userPinnedItem] =
     await Promise.all([
       fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
       getAllStartedOrCompleted({ onlyIds: false, brand: brand }),
       getUserPinnedItem(brand),
-      guidedCourses()
     ])
 
-  const enrolledGuidedCoursesIds = enrolledGuidedCourses.map(course => String(course.content_id));
   const playlists = recentPlaylists?.data || []
   const eligiblePlaylistItems = await getEligiblePlaylistItems(playlists)
   const playlistEngagedOnContents = eligiblePlaylistItems.map(
@@ -1053,9 +1051,6 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   )
 
   const nonPlaylistContentIds = Object.keys(progressContents)
-  if (enrolledGuidedCoursesIds.length > 0) {
-    nonPlaylistContentIds.push(...enrolledGuidedCoursesIds)
-  }
   if (userPinnedItem?.progressType === 'content') {
     nonPlaylistContentIds.push(userPinnedItem.id)
   }
@@ -1423,7 +1418,6 @@ export async function pinProgressRow(brand, id, progressType) {
  * Unpins the current pinned progress row for a user, scoped by brand.
  *
  * @param {string} brand - The brand context for the unpin action.
- * @param {string} id - The content or playlist id to unpin.
  * @returns {Promise<Object>} - A promise resolving to the response from the unpin API.
  *
  * @example
@@ -1431,11 +1425,10 @@ export async function pinProgressRow(brand, id, progressType) {
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
-export async function unpinProgressRow(brand, id) {
-  if (!(brand && id)) throw new Error(`undefined parameter brand: ${brand} or id: ${id}`)
-  const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}&id=${id}`
+export async function unpinProgressRow(brand) {
+  const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}`
   const response = await fetchHandler(url, 'PUT', null)
-  if (response && !response.error && response['action'] === 'clear_user_pin') {
+  if (response && !response.error) {
     await updateUserPinnedProgressRow(brand, null)
   }
   return response
