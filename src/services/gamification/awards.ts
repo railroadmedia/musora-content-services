@@ -30,13 +30,15 @@ export interface Certificate {
   title: string
   musora_logo: string
   musora_logo_64: string
+  musora_bg_logo: string
+  musora_bg_logo_64: string
   brand_logo: string
   brand_logo_64: string
   ribbon_image: string
   ribbon_image_64: string
   award_image: string
   award_image_64: string
-
+  instructor_name: string
   instructor_signature?: string
   instructor_signature_64?: string
 }
