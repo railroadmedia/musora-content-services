@@ -1,8 +1,8 @@
 /**
  * @module Payments
  */
+import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
-import { HttpClient } from '../../infrastructure/http'
 
 interface CustomerOrder {
   id: string
