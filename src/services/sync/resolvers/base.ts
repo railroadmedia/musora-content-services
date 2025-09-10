@@ -1,15 +1,15 @@
 import { SyncEntry } from "../index";
-import { Model } from "@nozbe/watermelondb";
+import { Model, RecordId } from "@nozbe/watermelondb";
 
 export default abstract class BaseResolver {
   createRecord: (server: SyncEntry) => void
   updateRecord: (local: Model, server: SyncEntry) => void
-  deleteRecord: (local: Model) => void
+  deleteRecord: (record: Model) => void
 
   constructor(callbacks: {
     createRecord: (server: SyncEntry) => void
     updateRecord: (local: Model, server: SyncEntry) => void
-    deleteRecord: (local: Model) => void
+    deleteRecord: (record: Model) => void
   }) {
     this.createRecord = callbacks.createRecord
     this.updateRecord = callbacks.updateRecord

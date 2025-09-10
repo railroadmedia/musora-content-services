@@ -42,7 +42,7 @@ export type SyncReadDTO<TModel extends Model, TMultiple extends boolean = false>
 }
 
 export type SyncWriteDTO<T extends Model> = {
-  data: T
+  data: ModelSerialized<T>
   state: 'synced' | 'unsynced'
   pushStatus: 'success' | 'failure'
 }

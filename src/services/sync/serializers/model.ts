@@ -6,6 +6,7 @@ type ExtractGetters<T> = {
 } & { id: RecordId }
 
 // serializes a record to a POJO based on its model getters
+// (essentially strips out all watermelon properties)
 // useful for consumption in components, etc.
 
 export default class ModelSerializer<TModel extends Model = Model> {
