@@ -18,3 +18,25 @@ export async function fetchForumCategories(brand: string): Promise<ForumCategory
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.get<ForumCategory>(`${baseUrl}/v1/categories?brand=${brand}`)
 }
+
+export interface CreateForumCategoryParams {
+  name: string
+  description: string
+  weight: number
+  brand: string
+  icon?: string
+}
+
+/**
+ * Creates a new forum category.
+ *
+ * @param {CreateForumCategoryParams} params - The parameters for creating the forum category.
+ * @returns {Promise<ForumCategory>} - A promise that resolves to the created forum category or HttpError.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function createForumCategory(
+  params: CreateForumCategoryParams
+): Promise<ForumCategory> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post<ForumCategory>(`${baseUrl}/v1/categories`, params)
+}
