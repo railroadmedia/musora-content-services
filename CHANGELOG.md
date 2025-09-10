@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.37.0](https://github.com/railroadmedia/musora-content-services/compare/v2.36.4...v2.37.0) (2025-09-10)
+
+
+### Features
+
+* fix navigateTo for packs without progress, restrict pack access to allowed packs ([#444](https://github.com/railroadmedia/musora-content-services/issues/444)) ([5807c54](https://github.com/railroadmedia/musora-content-services/commit/5807c5496209dcdbbbe9820ce8ecdb30dab74c54))
+
 ### [2.36.4](https://github.com/railroadmedia/musora-content-services/compare/v2.36.3...v2.36.4) (2025-09-10)
 
 ### [2.36.3](https://github.com/railroadmedia/musora-content-services/compare/v2.36.2...v2.36.3) (2025-09-09)
