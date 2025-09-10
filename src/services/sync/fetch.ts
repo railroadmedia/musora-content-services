@@ -2,6 +2,7 @@ import { SyncToken, SyncEntry, SyncStorePushResult, SyncSyncable } from "./index
 import { EpochSeconds } from "./utils/epoch.js"
 
 import { globalConfig } from '../config.js'
+import { RecordId } from "@nozbe/watermelondb/index.js"
 
 interface RawPullResponse {
   meta: {
@@ -38,19 +39,33 @@ interface SyncPullResponseBase {
 
 }
 
-export interface PushPayload {
-  entries: {
+export type PushPayload = {
+  entries: ({
     record: SyncSyncable
     meta: {
-      deleted: boolean
+      ids: {
+        id: RecordId
+      }
+      deleted: false
     }
-  }[]
+  } | {
+    record: null
+    meta: {
+      ids: {
+        id: RecordId
+      }
+      deleted: true
+    }
+  })[]
 }
 
 interface ServerPushPayload {
   entries: {
-    record: SyncSyncable<'client_record_id'>
+    record: SyncSyncable<'client_record_id'> | null
     meta: {
+      ids: {
+        client_record_id: RecordId
+      },
       deleted: boolean
     }
   }[]
@@ -149,16 +164,32 @@ function serializePushPayload(payload: PushPayload): ServerPushPayload {
   return {
     ...payload,
     entries: payload.entries.map(entry => {
+      const ids = {
+        client_record_id: entry.meta.ids.id
+      }
+
+      if (!entry.record) {
+        return {
+          record: null,
+          meta: {
+            ...entry.meta,
+            ids
+          }
+        }
+      }
+
       const { id, ...record } = entry.record
       return {
         record: {
           ...record,
           client_record_id: id
         },
-        meta: entry.meta
+        meta: {
+          ...entry.meta,
+          ids
+        }
       }
     })
-
   }
 }
 

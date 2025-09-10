@@ -88,26 +88,54 @@ export default class SyncStore<TModel extends Model = Model> {
     const results = await this.collection.query().fetch()
     const pushable = results.filter((rec) => rec._raw._status !== 'synced')
 
+    // TODO - ADD DELETED IDS!!!
+
     if (pushable.length === 0) return
     await this.pushRecords(pushable)
   }
 
-  async pushRecords(pushable: TModel[]) {
-    const entries = pushable.map((rec) => {
-      const record = this.rawSerializer.toPlainObject(rec)
-      const meta = {
-        deleted: rec._raw._status === 'deleted',
-      }
+  async pushId(id: RecordId) {
+    const record = await this.queryRecord(id)
 
-      return {
-        record,
-        meta,
+    if (record) {
+      return this.pushRecords([record])
+    } else {
+      const payload = {
+        entries: [{
+          record: null,
+          meta: {
+            ids: { id },
+            deleted: true as true,
+          },
+        }],
+      }
+      return this.makePush(payload) // todo - need to allow null record in push payload...client and server
+    }
+  }
+
+  async pushRecords(pushable: TModel[]) {
+    const entries = pushable.map(rec => {
+      if (rec._raw._status === 'deleted') {
+        return {
+          record: null,
+          meta: { ids: { id: rec._raw.id }, deleted: true as true },
+        }
+      } else {
+        const record = this.rawSerializer.toPlainObject(rec)
+        return {
+          record,
+          meta: { ids: { id: rec._raw.id }, deleted: false as false },
+        }
       }
     })
     const payload = {
       entries,
     }
 
+    return this.makePush(payload)
+  }
+
+  private async makePush(payload: PushPayload) {
     let pushed: SyncPushResponse
     try {
       pushed = await this.pusher(payload, this.runScope.signal)
@@ -174,10 +202,6 @@ export default class SyncStore<TModel extends Model = Model> {
     return record ? this.modelSerializer.toPlainObject(record) : null
   }
 
-  serialize(record: TModel | null) {
-    return record ? this.modelSerializer.toPlainObject(record) : null
-  }
-
   private async queryRecords(...args: Q.Clause[]) {
     return await this.collection.query(...args).fetch()
   }
@@ -189,18 +213,20 @@ export default class SyncStore<TModel extends Model = Model> {
       .then(records => records[0] as TModel | null)
   }
 
-  async upsert(id: string, builder: (record: TModel) => void) {
+  async upsertOne(id: string, builder: (record: TModel) => void) {
     await this.db.write(async () => {
       const existing = await this.queryRecord(id)
-
-      // wtf
-      // need to consider deleted records here - HOW
-      const x = await this.collection.query().fetch()
-      debugger
 
       if (existing) {
         existing.update(builder)
       } else {
+        // todo - only deleted because we didn't find it non-deleted above, kinda hacky - formalize this better?
+        const deletedExisting = await this.db.adapter.find(this.model.table, id)
+
+        if (deletedExisting) {
+          await this.db.adapter.destroyDeletedRecords(this.model.table, [id])
+        }
+
         this.collection.create((record) => {
           record._raw.id = id
           builder(record)
@@ -208,19 +234,32 @@ export default class SyncStore<TModel extends Model = Model> {
       }
     })
 
-    return this.queryRecord(id)!
+    return (await this.readOne(id))!
   }
 
   async deleteOne(id: RecordId) {
     await this.db.write(async () => {
-      const existing = await this.queryRecord(id)
+      const existingUndeleted = await this.queryRecord(id)
 
-      if (existing) {
-        existing.markAsDeleted() // TODO - consider throwing if not exist...or?
+      if (existingUndeleted) {
+        existingUndeleted.markAsDeleted()
+      } else {
+        const adapterRecord = await this.db.adapter.find(this.model.table, id)
+        if (!adapterRecord) {
+          await this.collection.create((record) => {
+            record._raw.id = id
+            record._raw._status = 'deleted'
+          })
+        }
       }
     })
 
-    return this.queryRecord(id)
+    // // need to hit adapter to query deleted records
+    // const raw = await this.db.adapter.find(this.model.table, id)
+    // // this seems to work, but not completely verified
+    // return new this.model(this.collection, raw)
+
+    return id
   }
 
   async write(entries: SyncEntry[], freshSync: boolean = false) {
@@ -231,6 +270,12 @@ export default class SyncStore<TModel extends Model = Model> {
 
         await this.runScope.abortable(() => writer.batch(...builds))
       })
+
+      // clean up soft-deleted records
+      const deletedIds = await this.db.adapter.getDeletedRecords(this.model.table)
+      if (deletedIds.length) {
+        await this.db.adapter.destroyDeletedRecords(this.model.table, deletedIds)
+      }
     })
   }
 
@@ -244,9 +289,7 @@ export default class SyncStore<TModel extends Model = Model> {
     const existingRecords = await this.collection
       .query(Q.where('id', Q.oneOf(entries.map((e) => e.record.id.toString()))))
       .fetch()
-    for (const record of existingRecords) {
-      existingRecordsMap.set(record.id, record)
-    }
+    existingRecords.forEach(record => existingRecordsMap.set(record.id, record))
 
     // if this is a fresh sync and there are no existing records, we can skip more sophisticated conflict resolution
     const [entriesToCreate, tuplesToUpdate, recordsToDelete] =
@@ -259,25 +302,24 @@ export default class SyncStore<TModel extends Model = Model> {
                 updateRecord: (existing, entry) => acc[1].push([existing, entry]),
                 deleteRecord: (existing) => acc[2].push(existing),
               })
-              const existing = existingRecordsMap.get(entry.meta.ids.id.toString())
+
+              const existing = existingRecordsMap.get(entry.meta.ids.id)
               if (existing) {
                 switch (existing._raw._status) {
-                  case 'disposable':
-                    // TODO - invariant violation
-                    break
-
                   case 'deleted':
-                    resolver.againstDeleted(existing, entry)
-                    break
+                    throw new Error('SyncStore.buildSyncedRecordsFromEntries: deleted record returned from existing records')
 
                   case 'updated':
                     resolver.againstDirty(existing, entry)
                     break
 
-                  case 'created': // shouldn't really happen?
+                  case 'created':
                   case 'synced':
-                  default:
                     resolver.againstClean(existing, entry)
+                    break
+
+                  default:
+                    throw new Error('SyncStore.buildSyncedRecordsFromEntries: unknown record status')
                 }
               } else {
                 resolver.againstNone(entry)
@@ -312,8 +354,8 @@ export default class SyncStore<TModel extends Model = Model> {
         r._raw._changed = ''
       })
     })
-    const deletedBuilds = recordsToDelete.map((record) => {
-      return record.prepareDestroyPermanently()
+    const deletedBuilds = recordsToDelete.map(record => {
+      return record.prepareMarkAsDeleted()
     })
 
     return [...createdBuilds, ...updatedBuilds, ...deletedBuilds]

@@ -15,17 +15,17 @@ export default class LikesRepository extends SyncRepository<ContentLike> {
     return await this.existSome(contentIds.map(LikesRepository.generateId))
   }
 
-  async like(contentId: number) {
-    const record = await this.store.upsert(LikesRepository.generateId(contentId), r => {
+  async likeOptimisticEager(contentId: number) {
+    const like = await this.store.upsertOne(LikesRepository.generateId(contentId), r => {
       r.content_id = contentId;
     })
 
-    return await this.pushOneEagerly(record)
+    return await this.pushOneEagerlyById(like.id)
   }
 
-  async unlike(contentId: number) {
-    const record = (await this.store.deleteOne(LikesRepository.generateId(contentId)))! // todo - handle null?
-    return await this.pushOneEagerly(record)
+  async unlikeOptimisticEager(contentId: number) {
+    const id = await this.store.deleteOne(LikesRepository.generateId(contentId))
+    return await this.pushOneEagerlyById(id)
   }
 
   private static generateId(contentId: number) {

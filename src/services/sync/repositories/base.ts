@@ -1,7 +1,7 @@
 
 import SyncManager from "../manager";
 import SyncStore from '../store'
-import { Model, Q } from '@nozbe/watermelondb'
+import { Model, RecordId } from '@nozbe/watermelondb'
 
 import { SyncExistsDTO, SyncReadDTO, SyncWriteDTO } from '..'
 
@@ -12,7 +12,7 @@ export default class SyncRepository<TModel extends Model> {
 
   protected constructor(protected store: SyncStore<TModel>) {}
 
-  protected async existOne(id: string) {
+  protected async existOne(id: RecordId) {
     const read = await this.readOne(id)
     const result: SyncExistsDTO = {
       ...read,
@@ -21,9 +21,9 @@ export default class SyncRepository<TModel extends Model> {
     return result
   }
 
-  protected async existSome(ids: string[]) {
+  protected async existSome(ids: RecordId[]) {
     const read = await this.readSome(ids)
-    const map = new Map<string, typeof read.data[0]>()
+    const map = new Map<RecordId, typeof read.data[0]>()
     read.data.forEach(record => map.set(record.id, record))
 
     const result: SyncExistsDTO<true> = {
@@ -33,7 +33,7 @@ export default class SyncRepository<TModel extends Model> {
     return result
   }
 
-  protected async readOne(id: string) {
+  protected async readOne(id: RecordId) {
     const [data, fetchToken] = await Promise.all([
       this.store.readOne(id),
       this.store.getLastFetchToken(),
@@ -48,7 +48,7 @@ export default class SyncRepository<TModel extends Model> {
     return result
   }
 
-  protected async readSome(ids: string[]) {
+  protected async readSome(ids: RecordId[]) {
     const [data, fetchToken] = await Promise.all([
       this.store.readSome(ids),
       this.store.getLastFetchToken(),
@@ -79,7 +79,7 @@ export default class SyncRepository<TModel extends Model> {
   }
 
   // swr pattern
-  protected async readButFetchOne(id: string) {
+  protected async readButFetchOne(id: RecordId) {
     const [data, fetchToken] = await Promise.all([
       this.store.readOne(id),
       this.store.getLastFetchToken(),
@@ -112,7 +112,7 @@ export default class SyncRepository<TModel extends Model> {
     return result
   }
 
-  protected async fetchOne(id: string) {
+  protected async fetchOne(id: RecordId) {
     const [response, fetchToken] = await Promise.all([
       this.store.pullRecords(),
       this.store.getLastFetchToken(),
@@ -164,14 +164,13 @@ export default class SyncRepository<TModel extends Model> {
     return result
   }
 
-  protected async pushOneEagerly(record: TModel) {
-    const pushed = await this.store.pushRecords([record])
-
+  protected async pushOneEagerlyById(id: RecordId) {
+    const pushed = await this.store.pushId(id)
     if (pushed.acknowledged) {
       const result = pushed.results[0]
       if (result.type === 'success') {
         await this.store.write([result.entry])
-        const data = await this.store.readOne(result.entry.record.id)!
+        const data = (await this.store.readOne(result.entry.record.id))!
 
         const ret: SyncWriteDTO<TModel> = {
           data,
@@ -180,7 +179,7 @@ export default class SyncRepository<TModel extends Model> {
         }
         return ret
       } else if (result.type === 'failure') {
-        const data = record
+        const data = null // TODO - get back from server
         const ret: SyncWriteDTO<TModel> = {
           data,
           state: 'unsynced',
