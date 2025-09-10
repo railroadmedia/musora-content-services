@@ -9,9 +9,7 @@ import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
-	pinGuidedCourse,
-	unEnrollUserInGuidedCourse,
-	unPinGuidedCourse
+	unEnrollUserInGuidedCourse
 } from './services/content-org/guided-courses.ts';
 
 import {
@@ -321,7 +319,7 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI
+	 default as EventsAPI 
 } from './services/eventsAPI';
 
 export {
@@ -507,7 +505,6 @@ export {
 	openComment,
 	otherStats,
 	pauseLiveEventPolling,
-	pinGuidedCourse,
 	pinProgressRow,
 	postContentComplete,
 	postContentLiked,
@@ -547,7 +544,6 @@ export {
 	toDayjs,
 	togglePlaylistPrivate,
 	unEnrollUserInGuidedCourse,
-	unPinGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,
 	undeletePlaylist,

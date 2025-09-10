@@ -1426,7 +1426,6 @@ export async function pinProgressRow(brand, id, progressType) {
  *   .catch(error => console.error(error));
  */
 export async function unpinProgressRow(brand) {
-  if (!(brand && id)) throw new Error(`undefined parameter brand: ${brand}`)
   const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}`
   const response = await fetchHandler(url, 'PUT', null)
   if (response && !response.error) {

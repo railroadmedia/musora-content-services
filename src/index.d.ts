@@ -9,9 +9,7 @@ import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
-	pinGuidedCourse,
-	unEnrollUserInGuidedCourse,
-	unPinGuidedCourse
+	unEnrollUserInGuidedCourse
 } from './services/content-org/guided-courses.ts';
 
 import {
@@ -321,7 +319,7 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI
+	 default as EventsAPI 
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
@@ -508,7 +506,6 @@ declare module 'musora-content-services' {
 		openComment,
 		otherStats,
 		pauseLiveEventPolling,
-		pinGuidedCourse,
 		pinProgressRow,
 		postContentComplete,
 		postContentLiked,
@@ -548,7 +545,6 @@ declare module 'musora-content-services' {
 		toDayjs,
 		togglePlaylistPrivate,
 		unEnrollUserInGuidedCourse,
-		unPinGuidedCourse,
 		unassignModeratorToComment,
 		unblockUser,
 		undeletePlaylist,
