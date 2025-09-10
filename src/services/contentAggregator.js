@@ -93,7 +93,6 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addNextLesson ? getNextLesson(items) : Promise.resolve(null),
     addNavigateTo ? getNavigateTo(items) : Promise.resolve(null),
   ])
-  if (addNextLesson) console.log('AddNextLesson is depreciated in favour of addNavigateTo')
 
   const addContext = async (item) => ({
     ...item,

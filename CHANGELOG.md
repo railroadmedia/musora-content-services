@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.36.3](https://github.com/railroadmedia/musora-content-services/compare/v2.36.2...v2.36.3) (2025-09-09)
+
+### [2.36.2](https://github.com/railroadmedia/musora-content-services/compare/v2.36.1...v2.36.2) (2025-09-09)
+
+### [2.36.1](https://github.com/railroadmedia/musora-content-services/compare/v2.36.0...v2.36.1) (2025-09-09)
+
+## [2.36.0](https://github.com/railroadmedia/musora-content-services/compare/v2.35.0...v2.36.0) (2025-09-09)
+
+
+### Features
+
+* **988:** Return json of the response ([e37c5fb](https://github.com/railroadmedia/musora-content-services/commit/e37c5fb4c5861745973352500258101e2c280585))
+* **998:** Initial commit, for troubleshooting npm ([899b5bc](https://github.com/railroadmedia/musora-content-services/commit/899b5bcaa1f20a315273391a001575c1728a88cf))
+* **MU2-998:** Add shape of payload, update annotation/doc, update jsdoc ([9df418e](https://github.com/railroadmedia/musora-content-services/commit/9df418ebfe846dd2842d6eff8ce810579718525d))
+* **MU2-998:** fix authorization for request ([c0b9ada](https://github.com/railroadmedia/musora-content-services/commit/c0b9ada7d4f401f1492505decdad472f32ea37ed))
+* **MU2-998:** Update payments typescript, move to user for now, update docs, remove yarn.lock ([4f61eb1](https://github.com/railroadmedia/musora-content-services/commit/4f61eb162af8f35406fd683324900ec353d00c44))
+* **MU2-998:** Use fetchHandler ([72e1715](https://github.com/railroadmedia/musora-content-services/commit/72e17159e5aa2cc662174239c1783fba7621d710))
+
 ## [2.35.0](https://github.com/railroadmedia/musora-content-services/compare/v2.34.0...v2.35.0) (2025-09-08)
 
 

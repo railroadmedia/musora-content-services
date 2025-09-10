@@ -10,7 +10,6 @@ import {
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
 	pinGuidedCourse,
-	pinnedGuidedCourses,
 	unEnrollUserInGuidedCourse,
 	unPinGuidedCourse
 } from './services/content-org/guided-courses.ts';
@@ -59,6 +58,7 @@ import {
 import {
 	contentStatusCompleted,
 	contentStatusReset,
+	contentStatusStartedForGuidedCourseEnrollment,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
@@ -153,6 +153,7 @@ import {
 	postContentLiked,
 	postContentReset,
 	postContentRestore,
+	postContentStartForGC,
 	postContentUnliked,
 	postPlaylistContentEngaged,
 	postRecordWatchSession,
@@ -279,6 +280,10 @@ import {
 } from './services/user/notifications.js';
 
 import {
+	fetchCustomerPayments
+} from './services/user/payments.ts';
+
+import {
 	fetchUserPermissions,
 	reset
 } from './services/user/permissions.js';
@@ -337,6 +342,7 @@ export {
 	confirmEmailChange,
 	contentStatusCompleted,
 	contentStatusReset,
+	contentStatusStartedForGuidedCourseEnrollment,
 	convertToTimeZone,
 	createComment,
 	createPlaylist,
@@ -379,6 +385,7 @@ export {
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchContentRows,
+	fetchCustomerPayments,
 	fetchEnrollmentPageMetadata,
 	fetchForumCategories,
 	fetchFoundation,
@@ -507,11 +514,11 @@ export {
 	pauseLiveEventPolling,
 	pinGuidedCourse,
 	pinProgressRow,
-	pinnedGuidedCourses,
 	postContentComplete,
 	postContentLiked,
 	postContentReset,
 	postContentRestore,
+	postContentStartForGC,
 	postContentUnliked,
 	postPlaylistContentEngaged,
 	postRecordWatchSession,
