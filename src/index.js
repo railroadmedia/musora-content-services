@@ -95,6 +95,7 @@ import {
 } from './services/forum.js';
 
 import {
+	createForumCategory,
 	fetchForumCategories
 } from './services/forums/categories.ts';
 
@@ -295,6 +296,7 @@ import {
 
 import {
 	login,
+	loginWithProvider,
 	logout
 } from './services/user/sessions.js';
 
@@ -345,6 +347,7 @@ export {
 	contentStatusStartedForGuidedCourseEnrollment,
 	convertToTimeZone,
 	createComment,
+	createForumCategory,
 	createPlaylist,
 	createPracticeNotes,
 	deleteComment,
@@ -503,6 +506,7 @@ export {
 	likePlaylist,
 	logUserPractice,
 	login,
+	loginWithProvider,
 	logout,
 	markAllNotificationsAsRead,
 	markContentAsInterested,
