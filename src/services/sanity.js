@@ -1450,7 +1450,8 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
  *   .catch(error => console.error(error));
  */
 export async function fetchPackData(id) {
-  const query = `*[railcontent_id == ${id}]{
+  const builder = await new FilterBuilder(`railcontent_id == ${id}`).buildFilter()
+  const query = `*[${builder}]{
     ${await getFieldsForContentTypeWithFilteredChildren('pack')}
   } [0...1]`
   return fetchSanity(query, false)
@@ -2183,7 +2184,7 @@ export async function fetchTabData(
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
   entityFieldsString =
     ` ${fieldsString}
-    'children': child[${childrenFilter}]->{ ${childrenFields} },
+    'children': child[${childrenFilter}]->{ ${childrenFields} 'children': child[${childrenFilter}]->{ ${childrenFields} }, },
     'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
     'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     'length_in_seconds': coalesce(

@@ -115,10 +115,10 @@ export async function getNavigateTo(data) {
       const contentState = await getProgressState(content.id)
       if (contentState !== STATE_STARTED) {
         const firstChild = content.children[0]
-        let lastInteractedChildNavToData =
-          (await getNavigateTo([firstChild])[firstChild.id]) ?? null
+        let lastInteractedChildNavToData = await getNavigateTo([firstChild])
+        lastInteractedChildNavToData = lastInteractedChildNavToData[firstChild.id] ?? null
         navigateToData[content.id] = buildNavigateTo(
-          content.children[0],
+          firstChild,
           lastInteractedChildNavToData
         )
       } else {
