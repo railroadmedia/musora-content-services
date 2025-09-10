@@ -11,7 +11,7 @@ const baseUrl = `/api/forums`
  * Fetches forum categories for the given brand.
  *
  * @param {string|null} brand - The brand context (e.g., "drumeo", "singeo").
- * @returns {Promise<ForumCategory>} - A promise that resolves to the list of forum categories or HttpError.
+ * @returns {Promise<ForumCategory>} - A promise that resolves to the list of forum categories.
  * @throws {HttpError} - If the request fails.
  */
 export async function fetchForumCategories(brand: string): Promise<ForumCategory> {
@@ -31,7 +31,7 @@ export interface CreateForumCategoryParams {
  * Creates a new forum category.
  *
  * @param {CreateForumCategoryParams} params - The parameters for creating the forum category.
- * @returns {Promise<ForumCategory>} - A promise that resolves to the created forum category or HttpError.
+ * @returns {Promise<ForumCategory>} - A promise that resolves to the created forum category.
  * @throws {HttpError} - If the request fails.
  */
 export async function createForumCategory(
