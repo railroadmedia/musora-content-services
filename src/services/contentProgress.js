@@ -367,7 +367,7 @@ export async function contentStatusStart(contentId) {
       startStatusInLocalContext(localContext, contentId, hierarchy)
     },
     async function () {
-      return postContentComplete(contentId)
+      return postContentStart(contentId)
     }
   )
 }
@@ -392,14 +392,14 @@ function saveContentProgress(localContext, contentId, progress, currentSeconds, 
 }
 
 function completeStatusInLocalContext(localContext, contentId, hierarchy) {
-  setStatusInLocalContext(localContext, contentId, true, hierarchy)
+  setStartedOrCompletedStatusInLocalContext(localContext, contentId, true, hierarchy)
 }
 
 function startStatusInLocalContext(localContext, contentId, hierarchy) {
-  setStatusInLocalContext(localContext, contentId, false, hierarchy)
+  setStartedOrCompletedStatusInLocalContext(localContext, contentId, false, hierarchy)
 }
 
-function setStatusInLocalContext(localContext, contentId, isCompleted, hierarchy) {
+function setStartedOrCompletedStatusInLocalContext(localContext, contentId, isCompleted, hierarchy) {
   let data = localContext.data[contentId] ?? {}
   data[DATA_KEY_PROGRESS] = isCompleted ? 100 : 0
   data[DATA_KEY_STATUS] = isCompleted ? STATE_COMPLETED : STATE_STARTED
@@ -410,7 +410,7 @@ function setStatusInLocalContext(localContext, contentId, isCompleted, hierarchy
   let children = hierarchy.children[contentId] ?? []
   for (let i = 0; i < children.length; i++) {
     let childId = children[i]
-    setStatusInLocalContext(localContext, childId, isCompleted, hierarchy)
+    setStartedOrCompletedStatusInLocalContext(localContext, childId, isCompleted, hierarchy)
   }
   bubbleProgress(hierarchy, contentId, localContext)
 }

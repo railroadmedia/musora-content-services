@@ -389,7 +389,7 @@ export async function postContentComplete(contentId) {
 }
 
 /**
- * start a Guided Course content's progress for a given user
+ * start the user's progress on a content
  * @param contentId
  * @returns {Promise<any|string|null>}
  */
