@@ -5,7 +5,6 @@ export { NetworkError } from './interfaces/NetworkError'
 export { HeaderProvider } from './interfaces/HeaderProvider'
 export { RequestExecutor } from './interfaces/RequestExecutor'
 
-
 // Implementations
 export { DefaultHeaderProvider } from './providers/DefaultHeaderProvider'
 export { FetchRequestExecutor } from './executors/FetchRequestExecutor'
