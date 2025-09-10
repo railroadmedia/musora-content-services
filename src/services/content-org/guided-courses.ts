@@ -27,16 +27,6 @@ export async function fetchEnrollmentPageMetadata(guidedCourse) {
   return await fetchHandler(url, 'GET')
 }
 
-export async function pinGuidedCourse(guidedCourse) {
-  const url: string = `${BASE_PATH}/v1/user/guided-courses/pin/${guidedCourse}`
-  return await fetchHandler(url, 'POST')
-}
-
-export async function unPinGuidedCourse(guidedCourse) {
-  const url: string = `${BASE_PATH}/v1/user/guided-courses/unpin/${guidedCourse}`
-  return await fetchHandler(url, 'POST')
-}
-
 export async function guidedCourses() {
   const url: string = `${BASE_PATH}/v1/user/guided-courses/`
   return await fetchHandler(url, 'GET')

@@ -58,7 +58,7 @@ import {
 import {
 	contentStatusCompleted,
 	contentStatusReset,
-	contentStatusStart,
+	contentStatusStarted,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
@@ -321,7 +321,7 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 export {
@@ -338,7 +338,7 @@ export {
 	confirmEmailChange,
 	contentStatusCompleted,
 	contentStatusReset,
-	contentStatusStart,
+	contentStatusStarted,
 	convertToTimeZone,
 	createComment,
 	createPlaylist,

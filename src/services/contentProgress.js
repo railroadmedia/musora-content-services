@@ -360,7 +360,7 @@ export async function contentStatusCompleted(contentId) {
     }
   )
 }
-export async function contentStatusStart(contentId) {
+export async function contentStatusStarted(contentId) {
   return await dataContext.update(
     async function (localContext) {
       let hierarchy = await fetchHierarchy(contentId)
