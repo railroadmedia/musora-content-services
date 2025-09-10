@@ -36,8 +36,8 @@ const downloadsTable = tableSchema({
   columns: [
     { name: 'parent_id', type: 'string' },
     { name: 'type', type: 'string' },
-    { name: 'is_downloads_collection', type: 'boolean' },
     { name: 'playlist_resource', type: 'string' },
+    { name: 'is_downloads_collection', type: 'boolean' },
     { name: 'created_at', type: 'number' },
     { name: 'updated_at', type: 'number' }
   ]
