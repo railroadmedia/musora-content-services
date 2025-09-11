@@ -14,7 +14,7 @@ export type SyncSyncable<TRecordKey extends string = 'id'> = {
 } & Record<string, any>
 
 export type SyncEntry<TRecordKey extends string = 'id'> = {
-  record: SyncSyncable<TRecordKey>
+  record: SyncSyncable<TRecordKey> | null
   meta: {
     ids: { [K in TRecordKey]: RecordId }
     lifecycle: SyncEntryLifecycle
