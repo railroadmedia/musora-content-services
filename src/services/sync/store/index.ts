@@ -109,7 +109,7 @@ export default class SyncStore<TModel extends Model = Model> {
           },
         }],
       }
-      return this.makePush(payload) // todo - need to allow null record in push payload...client and server
+      return this.makePush(payload)
     }
   }
 
@@ -254,11 +254,6 @@ export default class SyncStore<TModel extends Model = Model> {
       }
     })
 
-    // // need to hit adapter to query deleted records
-    // const raw = await this.db.adapter.find(this.model.table, id)
-    // // this seems to work, but not completely verified
-    // return new this.model(this.collection, raw)
-
     return id
   }
 
@@ -287,7 +282,7 @@ export default class SyncStore<TModel extends Model = Model> {
   private async buildSyncedRecordsFromEntries(entries: SyncEntry[], freshSync: boolean = false) {
     const existingRecordsMap = new Map<RecordId, TModel>()
     const existingRecords = await this.collection
-      .query(Q.where('id', Q.oneOf(entries.map((e) => e.record.id.toString()))))
+      .query(Q.where('id', Q.oneOf(entries.map(e => e.meta.ids.id))))
       .fetch()
     existingRecords.forEach(record => existingRecordsMap.set(record.id, record))
 

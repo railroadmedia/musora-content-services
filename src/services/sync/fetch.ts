@@ -71,6 +71,17 @@ interface ServerPushPayload {
   }[]
 }
 
+export function makeFetchRequest(input: RequestInfo, init?: RequestInit): () => Request {
+  return () => new Request(globalConfig.baseUrl + input, {
+    ...init,
+    headers: {
+      ...init?.headers,
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${globalConfig.sessionConfig.token}`
+    }
+  })
+}
+
 export function handlePull(callback: () => Request) {
   return async function(lastFetchToken: SyncToken | null, signal?: AbortSignal): Promise<SyncPullResponse> {
     const generatedRequest = callback()
@@ -137,22 +148,15 @@ function serializePullUrlQuery(url: string, fetchToken: SyncToken | null) {
 }
 
 function deserializePullResponse(response: RawPullResponse) {
-  // convert server's client_record_id to our canonical id
   return {
     ...response,
     entries: response.entries.map(entry => {
-      const { client_record_id: id, ...record } = entry.record
       return {
         ...entry,
-        record: {
-          ...record,
-          id
-        },
+        record: deserializeRecord(entry.record),
         meta: {
           ...entry.meta,
-          ids: {
-            id: entry.meta.ids.client_record_id
-          }
+          ids: deserializeIds(entry.meta.ids)
         }
       }
     })
@@ -160,33 +164,14 @@ function deserializePullResponse(response: RawPullResponse) {
 }
 
 function serializePushPayload(payload: PushPayload): ServerPushPayload {
-  // convert our canonical id to client_record_id
   return {
     ...payload,
     entries: payload.entries.map(entry => {
-      const ids = {
-        client_record_id: entry.meta.ids.id
-      }
-
-      if (!entry.record) {
-        return {
-          record: null,
-          meta: {
-            ...entry.meta,
-            ids
-          }
-        }
-      }
-
-      const { id, ...record } = entry.record
       return {
-        record: {
-          ...record,
-          client_record_id: id
-        },
+        record: serializeRecord(entry.record),
         meta: {
           ...entry.meta,
-          ids
+          ids: serializeIds(entry.meta.ids)
         }
       }
     })
@@ -194,47 +179,64 @@ function serializePushPayload(payload: PushPayload): ServerPushPayload {
 }
 
 function deserializePushResponse(response: RawPushResponse) {
-  // convert server's client_record_id to our canonical id
   return {
     results: response.results.map(result => {
       if (result.type === 'success') {
         const entry = result.entry
-        const { client_record_id: id, ...record } = entry.record
+
         return {
           ...result,
           entry: {
             ...entry,
-            record: {
-              ...record,
-              id
-            },
+            record: deserializeRecord(entry.record),
             meta: {
               ...entry.meta,
-              ids: {
-                id: entry.meta.ids.client_record_id
-              }
+              ids: deserializeIds(entry.meta.ids)
             }
           }
         }
       } else {
         return {
           ...result,
-          ids: {
-            id: result.ids.client_record_id
-          }
+          ids: deserializeIds(result.ids)
         }
       }
     })
   }
 }
 
-export function makeFetchRequest(input: RequestInfo, init?: RequestInit): () => Request {
-  return () => new Request(globalConfig.baseUrl + input, {
-    ...init,
-    headers: {
-      ...init?.headers,
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${globalConfig.sessionConfig.token}`
+function serializeRecord(record: SyncSyncable<'id'> | null): SyncSyncable<'client_record_id'> | null {
+  if (record) {
+    const { id, ...rest } = record
+    return {
+      ...rest,
+      client_record_id: id
     }
-  })
+  }
+
+  return null
+}
+
+function serializeIds(ids: { id: RecordId }): { client_record_id: RecordId } {
+  return {
+    client_record_id: ids.id
+  }
+}
+
+function deserializeRecord(record: SyncSyncable<'client_record_id'> | null): SyncSyncable<'id'> | null {
+  if (record) {
+    const { client_record_id: id, ...rest } = record
+    return {
+      ...rest,
+      id
+    }
+  }
+
+  return null
+}
+
+function deserializeIds(ids: { client_record_id: RecordId }): { id: RecordId } {
+  return {
+    id: ids.client_record_id
+  }
 }
