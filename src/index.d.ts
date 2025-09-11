@@ -94,6 +94,7 @@ import {
 } from './services/forum.js';
 
 import {
+	createForumCategory,
 	fetchForumCategories
 } from './services/forums/categories.ts';
 
@@ -291,6 +292,7 @@ import {
 
 import {
 	login,
+	loginWithProvider,
 	logout
 } from './services/user/sessions.js';
 
@@ -341,6 +343,7 @@ declare module 'musora-content-services' {
 		contentStatusReset,
 		convertToTimeZone,
 		createComment,
+		createForumCategory,
 		createPlaylist,
 		createPracticeNotes,
 		deleteComment,
@@ -498,6 +501,7 @@ declare module 'musora-content-services' {
 		likePlaylist,
 		logUserPractice,
 		login,
+		loginWithProvider,
 		logout,
 		markAllNotificationsAsRead,
 		markContentAsInterested,
