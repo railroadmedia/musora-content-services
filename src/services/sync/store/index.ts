@@ -266,7 +266,8 @@ export default class SyncStore<TModel extends Model = Model> {
         await this.runScope.abortable(() => writer.batch(...builds))
       })
 
-      // clean up soft-deleted records
+      // clean up soft-deleted records (out of band is fine)
+      // TODO - don't want to permanently destroy until they've been synced with server!!!
       const deletedIds = await this.db.adapter.getDeletedRecords(this.model.table)
       if (deletedIds.length) {
         await this.db.adapter.destroyDeletedRecords(this.model.table, deletedIds)

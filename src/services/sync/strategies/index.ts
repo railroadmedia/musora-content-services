@@ -8,4 +8,5 @@ export interface SyncStrategy {
 }
 
 export { default as BaseStrategy } from './base'
+export { default as InitialStrategy } from './initial'
 export { default as PollingStrategy } from './polling'

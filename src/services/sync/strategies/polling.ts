@@ -20,10 +20,6 @@ export default class PollingStrategy extends BaseStrategy {
     this.active = true
 
     this.registry.forEach(({ store, callback }) => {
-      if (this.context.visibility.getValue()) {
-        callback('polling-initial')
-      }
-
       store.on('pullCompleted', () => {
         this.resetTimer(store, callback)
       })

@@ -12,156 +12,52 @@ export default class SyncRepository<TModel extends Model> {
 
   protected constructor(protected store: SyncStore<TModel>) {}
 
-  protected async existOne(id: RecordId) {
-    const read = await this.readOne(id)
-    const result: SyncExistsDTO = {
-      ...read,
-      data: read.data !== null
-    }
-    return result
-  }
-
-  protected async existSome(ids: RecordId[]) {
-    const read = await this.readSome(ids)
-    const map = new Map<RecordId, typeof read.data[0]>()
-    read.data.forEach(record => map.set(record.id, record))
-
-    const result: SyncExistsDTO<true> = {
-      ...read,
-      data: ids.map(id => map.has(id))
-    }
-    return result
-  }
-
   protected async readOne(id: RecordId) {
-    const [data, fetchToken] = await Promise.all([
-      this.store.readOne(id),
-      this.store.getLastFetchToken(),
-    ])
-
-    const result: SyncReadDTO<TModel> = {
-      data,
-      status: 'stale',
-      pullStatus: null,
-      lastFetchToken: fetchToken,
-    }
-    return result
+    return this._read(this.store.readOne(id))
   }
 
   protected async readSome(ids: RecordId[]) {
-    const [data, fetchToken] = await Promise.all([
-      this.store.readSome(ids),
-      this.store.getLastFetchToken(),
-    ])
-
-    const result: SyncReadDTO<TModel, true> = {
-      data,
-      status: 'stale',
-      pullStatus: null,
-      lastFetchToken: fetchToken,
-    }
-    return result
+    return this._read<true>(this.store.readSome(ids))
   }
 
   protected async readAll() {
-    const [data, fetchToken] = await Promise.all([
-      this.store.readAll(),
-      this.store.getLastFetchToken(),
-    ])
-
-    const result: SyncReadDTO<TModel, true> = {
-      data,
-      status: 'stale',
-      pullStatus: null,
-      lastFetchToken: fetchToken,
-    }
-    return result
+    return this._read<true>(this.store.readAll())
   }
 
-  // swr pattern
-  protected async readButFetchOne(id: RecordId) {
-    const [data, fetchToken] = await Promise.all([
-      this.store.readOne(id),
-      this.store.getLastFetchToken(),
-    ])
-    this.store.pullRecords()
-
-    const result: SyncReadDTO<TModel> = {
-      data,
-      status: 'stale',
-      pullStatus: null,
-      lastFetchToken: fetchToken,
-    }
-    return result
+  protected async existOne(id: RecordId) {
+    return this._existOne(this.readOne(id))
   }
 
-  // swr pattern
-  protected async readButFetchAll() {
-    const [data, fetchToken] = await Promise.all([
-      this.store.readAll(),
-      this.store.getLastFetchToken(),
-    ])
-    this.store.pullRecords()
+  protected async existSome(ids: RecordId[]) {
+    return this._existSome(this.readSome(ids))
+  }
 
-    const result: SyncReadDTO<TModel, true> = {
-      data,
-      status: 'stale',
-      pullStatus: 'pending',
-      lastFetchToken: fetchToken,
-    }
-    return result
+  protected async readOneUnsynced(id: RecordId) {
+    return this._readUnsynced(this.store.readOne(id))
+  }
+
+  protected async readSomeUnsynced(ids: RecordId[]) {
+    return this._readUnsynced<true>(this.store.readSome(ids))
+  }
+
+  protected async readAllUnsynced() {
+    return this._readUnsynced<true>(this.store.readAll())
+  }
+
+  protected async existOneUnsynced(id: RecordId) {
+    return this._existOne(this.readOneUnsynced(id))
+  }
+
+  protected async existSomeUnsynced(ids: RecordId[]) {
+    return this._existSome(this.readSomeUnsynced(ids))
   }
 
   protected async fetchOne(id: RecordId) {
-    const [response, fetchToken] = await Promise.all([
-      this.store.pullRecords(),
-      this.store.getLastFetchToken(),
-    ])
-    const data = await this.store.readOne(id)
-
-    if (!response.success) {
-      const result: SyncReadDTO<TModel> = {
-        data,
-        status: 'stale',
-        pullStatus: 'failure',
-        lastFetchToken: fetchToken,
-      }
-      return result
-    }
-
-    const result: SyncReadDTO<TModel> = {
-      data,
-      status: 'fresh',
-      pullStatus: 'success',
-      lastFetchToken: response.token,
-    }
-    return result
+    return this._fetch(this.store.readOne(id))
   }
 
   protected async fetchAll() {
-    const [response, fetchToken] = await Promise.all([
-      this.store.pullRecords(),
-      this.store.getLastFetchToken(),
-    ])
-    const data = await this.store.readAll()
-
-    if (!response.success) {
-      const result: SyncReadDTO<TModel, true> = {
-        data,
-        status: 'stale',
-        pullStatus: 'failure',
-        lastFetchToken: fetchToken,
-      }
-      return result
-    }
-
-    const result: SyncReadDTO<TModel, true> = {
-      data,
-      status: 'fresh',
-      pullStatus: 'success',
-      lastFetchToken: response.token,
-    }
-    return result
+    return this._fetch<true>(this.store.readAll())
   }
 
   protected async pushOneEagerlyById(id: RecordId) {
@@ -170,7 +66,7 @@ export default class SyncRepository<TModel extends Model> {
       const result = pushed.results[0]
       if (result.type === 'success') {
         await this.store.write([result.entry])
-        const data = (await this.store.readOne(result.entry.record.id))!
+        const data = (await this.store.readOne(result.entry.meta.ids.id))! // todo - server could still have deleted this record
 
         const ret: SyncWriteDTO<TModel> = {
           data,
@@ -190,5 +86,89 @@ export default class SyncRepository<TModel extends Model> {
     } else {
       throw new Error('SyncStore.pushOneImmediate: failed to push record') // todo - proper error
     }
+  }
+
+  // read from local db, but pull (and potentially throw (!)) if it's never been synced before
+
+  private async _read<TMultiple extends boolean = false>(query: Promise<SyncReadDTO<TModel, TMultiple>['data']>) {
+    const fetchToken = await this.store.getLastFetchToken();
+    const synced = !!fetchToken;
+    let pull: Awaited<ReturnType<typeof this.store.pullRecords>> | null = null;
+
+    if (!synced) {
+      pull = await this.store.pullRecords()
+    }
+
+    const data = await query
+
+    const result: SyncReadDTO<TModel, TMultiple> = {
+      data,
+      status: pull?.success ? 'fresh' : 'stale',
+      pullStatus: null,
+      lastFetchToken: fetchToken,
+    }
+    return result
+  }
+
+  private async _readUnsynced<TMultiple extends boolean = false>(query: Promise<SyncReadDTO<TModel, TMultiple>['data']>) {
+    const [data, fetchToken] = await Promise.all([
+      query,
+      this.store.getLastFetchToken(),
+    ])
+
+    const result: SyncReadDTO<TModel, TMultiple> = {
+      data,
+      status: 'stale',
+      pullStatus: null,
+      lastFetchToken: fetchToken,
+    }
+    return result
+  }
+
+  private async _existOne(promise: Promise<SyncReadDTO<TModel>>) {
+    const read = await promise
+    const result: SyncExistsDTO = {
+      ...read,
+      data: read.data !== null
+    }
+    return result
+  }
+
+  private async _existSome(promise: Promise<SyncReadDTO<TModel, true>>) {
+    const read = await promise
+    const map = new Map<RecordId, typeof read.data[0]>()
+    read.data.forEach(record => map.set(record.id, record))
+
+    const result: SyncExistsDTO<true> = {
+      ...read,
+      data: read.data.map(record => map.has(record.id))
+    }
+    return result
+  }
+
+  private async _fetch<TMultiple extends boolean = false>(query: Promise<SyncReadDTO<TModel, TMultiple>['data']>) {
+    const [response, fetchToken] = await Promise.all([
+      this.store.pullRecords(),
+      this.store.getLastFetchToken(),
+    ])
+    const data = await query
+
+    if (!response.success) {
+      const result: SyncReadDTO<TModel, TMultiple> = {
+        data,
+        status: 'stale',
+        pullStatus: 'failure',
+        lastFetchToken: fetchToken,
+      }
+      return result
+    }
+
+    const result: SyncReadDTO<TModel, TMultiple> = {
+      data,
+      status: 'fresh',
+      pullStatus: 'success',
+      lastFetchToken: response.token,
+    }
+    return result
   }
 }
