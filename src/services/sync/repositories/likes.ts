@@ -1,7 +1,9 @@
 import SyncRepository from "./base";
 import ContentLike from "../models/ContentLike";
 
-// note naming, assumes pessimistic by default, optimistic opt-in
+// note naming, assumes pessimistic (confirms with server) by default,
+// optimistic opt-in (reads locally (except if never once synced))
+
 export default class LikesRepository extends SyncRepository<ContentLike> {
   static create() {
     return new LikesRepository(SyncRepository.getStore(ContentLike))
