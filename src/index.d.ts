@@ -9,9 +9,7 @@ import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
-	pinGuidedCourse,
-	unEnrollUserInGuidedCourse,
-	unPinGuidedCourse
+	unEnrollUserInGuidedCourse
 } from './services/content-org/guided-courses.ts';
 
 import {
@@ -58,7 +56,7 @@ import {
 import {
 	contentStatusCompleted,
 	contentStatusReset,
-	contentStatusStartedForGuidedCourseEnrollment,
+	contentStatusStarted,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
@@ -154,7 +152,7 @@ import {
 	postContentLiked,
 	postContentReset,
 	postContentRestore,
-	postContentStartForGC,
+	postContentStart,
 	postContentUnliked,
 	postPlaylistContentEngaged,
 	postRecordWatchSession,
@@ -345,7 +343,7 @@ declare module 'musora-content-services' {
 		confirmEmailChange,
 		contentStatusCompleted,
 		contentStatusReset,
-		contentStatusStartedForGuidedCourseEnrollment,
+		contentStatusStarted,
 		convertToTimeZone,
 		createComment,
 		createForumCategory,
@@ -517,13 +515,12 @@ declare module 'musora-content-services' {
 		openComment,
 		otherStats,
 		pauseLiveEventPolling,
-		pinGuidedCourse,
 		pinProgressRow,
 		postContentComplete,
 		postContentLiked,
 		postContentReset,
 		postContentRestore,
-		postContentStartForGC,
+		postContentStart,
 		postContentUnliked,
 		postPlaylistContentEngaged,
 		postRecordWatchSession,
@@ -557,7 +554,6 @@ declare module 'musora-content-services' {
 		toDayjs,
 		togglePlaylistPrivate,
 		unEnrollUserInGuidedCourse,
-		unPinGuidedCourse,
 		unassignModeratorToComment,
 		unblockUser,
 		undeletePlaylist,

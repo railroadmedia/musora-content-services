@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.38.0](https://github.com/railroadmedia/musora-content-services/compare/v2.37.0...v2.38.0) (2025-09-10)
+
+
+### Features
+
+* **MU2-1028:** forum categories ([#441](https://github.com/railroadmedia/musora-content-services/issues/441)) ([0781f11](https://github.com/railroadmedia/musora-content-services/commit/0781f11b9cc75b5e2aed646b877ba2fdc5066386))
+
+
+### Bug Fixes
+
+* Guided Courses - System Test Patches ([#446](https://github.com/railroadmedia/musora-content-services/issues/446)) ([81ccee9](https://github.com/railroadmedia/musora-content-services/commit/81ccee9cc0021a0d326e5f021bed41c4696e06f7))
+
 ## [2.37.0](https://github.com/railroadmedia/musora-content-services/compare/v2.36.4...v2.37.0) (2025-09-10)
 
 
