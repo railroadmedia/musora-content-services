@@ -44,6 +44,28 @@ export async function fetchRechargeTokens() {
   return fetchHandler(url, 'get')
 }
 
+/**
+ * Upgrades the user's subscription or provides a prefilled add-to-cart URL.
+ *
+ * @returns {Promise<Object>} A promise that resolves to an object containing either:
+ *  - {string} action - The action performed (e.g., 'instant_upgrade').
+ *  - {string} message - Success message if the subscription was upgraded immediately.
+ *  OR
+ *  - {string} action - The action performed (e.g., 'shopify').
+ *  - {string} url - URL to the ecommerce store with prefilled add-to-cart parameters.
+ *
+ * @throws {Error} Throws an error if the request fails.
+ *
+ * @example
+ * upgradeSubscription()
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+export async function upgradeSubscription() {
+  const url = `${baseUrl}/v1/update-subscription`
+  return fetchHandler(url, 'get')
+}
+
 
 
 
