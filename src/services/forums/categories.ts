@@ -40,3 +40,30 @@ export async function createForumCategory(
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<ForumCategory>(`${baseUrl}/v1/categories`, params)
 }
+
+export interface UpdateForumCategoryParams {
+  id: number
+  name: string
+  description: string
+  weight: number
+  icon: string
+}
+
+/**
+ * Creates a new forum category.
+ *
+ * @param {UpdateForumCategoryParams} params - The parameters for creating the forum category.
+ * @returns {Promise<ForumCategory>} - A promise that resolves to the created forum category.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function updateForumCategory(
+  params: UpdateForumCategoryParams
+): Promise<ForumCategory> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.put<ForumCategory>(`${baseUrl}/v1/categories/${params.id}`, {
+    name: params.name,
+    description: params.description,
+    weight: params.weight,
+    icon: params.icon,
+  })
+}
