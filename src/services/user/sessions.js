@@ -45,7 +45,7 @@ export async function login(email, password, deviceName, deviceToken, platform) 
   })
 }
 
-export async function loginWithProvider(provider, providerIdToken, deviceToken, platform) {
+export async function loginWithProvider(provider, providerIdToken, deviceToken, deviceName, platform) {
   const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
 
   try {
@@ -57,7 +57,7 @@ export async function loginWithProvider(provider, providerIdToken, deviceToken, 
       },
       body: JSON.stringify({
         id_token: providerIdToken,
-        device_name: deviceToken, // matches backend expectation
+        device_name: deviceName,
         firebase_token: deviceToken,
         platform,
       }),
