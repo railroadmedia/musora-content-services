@@ -9,10 +9,7 @@ import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
-	pinGuidedCourse,
-	pinnedGuidedCourses,
-	unEnrollUserInGuidedCourse,
-	unPinGuidedCourse
+	unEnrollUserInGuidedCourse
 } from './services/content-org/guided-courses.ts';
 
 import {
@@ -59,6 +56,7 @@ import {
 import {
 	contentStatusCompleted,
 	contentStatusReset,
+	contentStatusStarted,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
@@ -95,8 +93,14 @@ import {
 } from './services/forum.js';
 
 import {
-	fetchAwardsForUser
-} from './services/gamification/awards.js';
+	createForumCategory,
+	fetchForumCategories
+} from './services/forums/categories.ts';
+
+import {
+	fetchAwardsForUser,
+	fetchCertificate
+} from './services/gamification/awards.ts';
 
 import {
 	applyCloudflareWrapper,
@@ -148,6 +152,7 @@ import {
 	postContentLiked,
 	postContentReset,
 	postContentRestore,
+	postContentStart,
 	postContentUnliked,
 	postPlaylistContentEngaged,
 	postRecordWatchSession,
@@ -219,6 +224,8 @@ import {
 } from './services/sanity.js';
 
 import {
+	confirmEmailChange,
+	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
@@ -252,6 +259,11 @@ import {
 } from './services/user/management.js';
 
 import {
+	fetchMemberships,
+	fetchRechargeTokens
+} from './services/user/memberships.js';
+
+import {
 	deleteNotification,
 	fetchLiveEventPollingState,
 	fetchNotificationSettings,
@@ -265,6 +277,10 @@ import {
 	startLiveEventPolling,
 	updateNotificationSetting
 } from './services/user/notifications.js';
+
+import {
+	fetchCustomerPayments
+} from './services/user/payments.ts';
 
 import {
 	fetchUserPermissions,
@@ -308,6 +324,10 @@ import {
 	updateUserPractice
 } from './services/userActivity.js';
 
+import {
+	 default as EventsAPI 
+} from './services/eventsAPI';
+
 declare module 'musora-content-services' {
 	export {
 		addContextToContent,
@@ -320,10 +340,13 @@ declare module 'musora-content-services' {
 		buildImageSRC,
 		calculateLongestStreaks,
 		closeComment,
+		confirmEmailChange,
 		contentStatusCompleted,
 		contentStatusReset,
+		contentStatusStarted,
 		convertToTimeZone,
 		createComment,
+		createForumCategory,
 		createPlaylist,
 		createPracticeNotes,
 		deleteComment,
@@ -349,6 +372,7 @@ declare module 'musora-content-services' {
 		fetchByRailContentIds,
 		fetchByReference,
 		fetchCarouselCardData,
+		fetchCertificate,
 		fetchChatAndLiveEnvent,
 		fetchChatSettings,
 		fetchCoachLessons,
@@ -363,7 +387,9 @@ declare module 'musora-content-services' {
 		fetchContentPageUserData,
 		fetchContentProgress,
 		fetchContentRows,
+		fetchCustomerPayments,
 		fetchEnrollmentPageMetadata,
+		fetchForumCategories,
 		fetchFoundation,
 		fetchGenreLessons,
 		fetchHandler,
@@ -376,6 +402,7 @@ declare module 'musora-content-services' {
 		fetchLikeCount,
 		fetchLiveEvent,
 		fetchLiveEventPollingState,
+		fetchMemberships,
 		fetchMetadata,
 		fetchMethod,
 		fetchMethodChildren,
@@ -396,6 +423,7 @@ declare module 'musora-content-services' {
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
+		fetchRechargeTokens,
 		fetchRelatedLessons,
 		fetchRelatedRecommendedContent,
 		fetchRelatedSongs,
@@ -487,13 +515,12 @@ declare module 'musora-content-services' {
 		openComment,
 		otherStats,
 		pauseLiveEventPolling,
-		pinGuidedCourse,
 		pinProgressRow,
-		pinnedGuidedCourses,
 		postContentComplete,
 		postContentLiked,
 		postContentReset,
 		postContentRestore,
+		postContentStart,
 		postContentUnliked,
 		postPlaylistContentEngaged,
 		postRecordWatchSession,
@@ -509,6 +536,7 @@ declare module 'musora-content-services' {
 		replyToComment,
 		reportComment,
 		reportPlaylist,
+		requestEmailChange,
 		reset,
 		resetPassword,
 		restoreComment,
@@ -526,7 +554,6 @@ declare module 'musora-content-services' {
 		toDayjs,
 		togglePlaylistPrivate,
 		unEnrollUserInGuidedCourse,
-		unPinGuidedCourse,
 		unassignModeratorToComment,
 		unblockUser,
 		undeletePlaylist,
@@ -545,3 +572,5 @@ declare module 'musora-content-services' {
 		verifyLocalDataContext,
 	}
 }
+
+export default EventsAPI

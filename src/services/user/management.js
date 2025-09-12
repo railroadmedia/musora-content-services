@@ -146,3 +146,4 @@ export async function updateDisplayName(newDisplayName) {
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   return httpClient.put(apiUrl, { display_name: newDisplayName })
 }
+

@@ -13,7 +13,7 @@ import {
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import { fetchByRailContentId, fetchByRailContentIds, fetchShows } from './sanity'
 import { fetchPlaylist, fetchUserPlaylists } from './content-org/playlists'
-import { pinnedGuidedCourses } from './content-org/guided-courses'
+import {guidedCourses} from './content-org/guided-courses'
 import {
   getMonday,
   getWeekNumber,
@@ -950,7 +950,6 @@ async function extractPinnedItemsAndSortAllItems(
   userPinnedItem,
   contentsMap,
   eligiblePlaylistItems,
-  pinnedGuidedCourse,
   limit
 ) {
   let pinnedItem = await popPinnedItemFromContentsOrPlaylistMap(
@@ -959,22 +958,8 @@ async function extractPinnedItemsAndSortAllItems(
     eligiblePlaylistItems
   )
 
-  const guidedCourseID = pinnedGuidedCourse?.content_id
   let combined = []
-  if (pinnedGuidedCourse) {
-    const guidedCourseContent =
-      contentsMap.get(guidedCourseID) ??
-      (await addContextToContent(fetchByRailContentId, guidedCourseID, 'guided-course', {
-        addNextLesson: true,
-        addNavigateTo: true,
-        addProgressStatus: true,
-        addProgressPercentage: true,
-        addProgressTimestamp: true,
-      }))
-    contentsMap = popContentAndRemoveChildrenFromContentsMap(guidedCourseContent, contentsMap)
-    guidedCourseContent.pinned = true
-    combined.push(guidedCourseContent)
-  }
+
   if (pinnedItem) {
     pinnedItem.pinned = true
     combined.push(pinnedItem)
@@ -1051,14 +1036,13 @@ function generateContentsMap(contents, playlistsContents) {
  */
 export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   // TODO slice progress to a reasonable number, say 100
-  const [recentPlaylists, progressContents, allPinnedGuidedCourse, userPinnedItem] =
+
+  const [recentPlaylists, progressContents, userPinnedItem] =
     await Promise.all([
       fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
       getAllStartedOrCompleted({ onlyIds: false, brand: brand }),
-      pinnedGuidedCourses(brand),
       getUserPinnedItem(brand),
     ])
-  let pinnedGuidedCourse = allPinnedGuidedCourse?.[0] ?? null
 
   const playlists = recentPlaylists?.data || []
   const eligiblePlaylistItems = await getEligiblePlaylistItems(playlists)
@@ -1067,12 +1051,10 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   )
 
   const nonPlaylistContentIds = Object.keys(progressContents)
-  if (pinnedGuidedCourse) {
-    nonPlaylistContentIds.push(pinnedGuidedCourse.content_id)
-  }
   if (userPinnedItem?.progressType === 'content') {
     nonPlaylistContentIds.push(userPinnedItem.id)
   }
+
   const [playlistsContents, contents] = await Promise.all([
     playlistEngagedOnContents ? addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
       addNextLesson: true,
@@ -1094,7 +1076,6 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     userPinnedItem,
     contentsMap,
     eligiblePlaylistItems,
-    pinnedGuidedCourse,
     limit
   )
   const results = await Promise.all(
@@ -1104,7 +1085,6 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
         item.type === 'playlist' ? processPlaylistItem(item) : processContentItem(item)
       )
   )
-  console.log('HomePageProgressRows results: remove before merge', results)
   return {
     type: TabResponseType.PROGRESS_ROWS,
     displayBrowseAll: combined.length > limit,
@@ -1208,7 +1188,7 @@ function getDefaultCTATextForContent(content, contentType) {
     )
       ctaText = 'Replay Song'
     if (contentType === 'lesson') ctaText = 'Revisit Lesson'
-    if (contentType === 'song tutorial' || collectionLessonTypes.includes(contentType))
+    if (contentType === 'song tutorial' || collectionLessonTypes.includes(content.type))
       ctaText = 'Revisit Lessons'
     if (contentType === 'pack') ctaText = 'View Lessons'
   }
@@ -1353,8 +1333,10 @@ export function findIncompleteLesson(progressOnItems, currentContentId, contentT
 
 async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playlistItems) {
   if (!pinned) return null
-  const { id, progressType, pinnedAt } = pinned
+  const { id, pinnedAt } = pinned
   let item = null
+  const progressType = pinned.progressType ?? pinned.type;
+
   if (progressType === 'content') {
     const pinnedId = parseInt(id)
     if (contentsMap.has(pinnedId)) {
@@ -1391,15 +1373,19 @@ async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playl
 }
 
 function popContentAndRemoveChildrenFromContentsMap(content, contentsMap) {
-  const children = content.children.map((child) => child.id)
-  if (contentsMap.has(content.id)) {
-    contentsMap.delete(content.id)
-  }
-  children.forEach((child) => {
-    if (contentsMap.has(child)) {
-      contentsMap.delete(child)
+  if (!content.children || content.children.length === 0){
+    console.warn(`content ${content.id} has no children`, content);
+  } else {
+    const children = content.children.map((child) => child.id)
+    if (contentsMap.has(content.id)) {
+      contentsMap.delete(content.id)
     }
-  })
+    children.forEach((child) => {
+      if (contentsMap.has(child)) {
+        contentsMap.delete(child)
+      }
+    })
+  }
   return contentsMap
 }
 
@@ -1419,7 +1405,7 @@ function popContentAndRemoveChildrenFromContentsMap(content, contentsMap) {
 export async function pinProgressRow(brand, id, progressType) {
   const url = `/api/user-management-system/v1/progress/pin?brand=${brand}&id=${id}&progressType=${progressType}`
   const response = await fetchHandler(url, 'PUT', null)
-  if (response && !response.error && response['action'] === 'update_user_pin') {
+  if (response && !response.error) {
     await updateUserPinnedProgressRow(brand, {
       id,
       progressType,
@@ -1432,7 +1418,6 @@ export async function pinProgressRow(brand, id, progressType) {
  * Unpins the current pinned progress row for a user, scoped by brand.
  *
  * @param {string} brand - The brand context for the unpin action.
- * @param {string} id - The content or playlist id to unpin.
  * @returns {Promise<Object>} - A promise resolving to the response from the unpin API.
  *
  * @example
@@ -1440,11 +1425,10 @@ export async function pinProgressRow(brand, id, progressType) {
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
-export async function unpinProgressRow(brand, id) {
-  if (!(brand && id)) throw new Error(`undefined parameter brand: ${brand} or id: ${id}`)
-  const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}&id=${id}`
+export async function unpinProgressRow(brand) {
+  const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}`
   const response = await fetchHandler(url, 'PUT', null)
-  if (response && !response.error && response['action'] === 'clear_user_pin') {
+  if (response && !response.error) {
     await updateUserPinnedProgressRow(brand, null)
   }
   return response

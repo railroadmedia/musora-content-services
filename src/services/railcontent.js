@@ -389,6 +389,16 @@ export async function postContentComplete(contentId) {
 }
 
 /**
+ * start the user's progress on a content
+ * @param contentId
+ * @returns {Promise<any|string|null>}
+ */
+export async function postContentStart(contentId) {
+  let url = `/api/content/v1/user/progress/start/${contentId}`
+  return postDataHandler(url)
+}
+
+/**
  * resets the user's progress on a content
  * @param contentId
  * @returns {Promise<any|string|null>}

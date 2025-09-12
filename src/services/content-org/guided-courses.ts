@@ -1,8 +1,8 @@
 /**
  * @module GuidedCourses
  */
-import { globalConfig } from '../config.js'
 import { fetchHandler } from '../railcontent.js'
+import {contentStatusStarted, getProgressPercentage, getProgressState} from '../contentProgress.js'
 import './playlists-types.js'
 
 
@@ -12,7 +12,14 @@ const BASE_PATH: string = `/api/content-org`
 
 export async function enrollUserInGuidedCourse(guidedCourse, { notifications_enabled = false }) {
   const url: string = `${BASE_PATH}/v1/user/guided-courses/enroll-user/${guidedCourse}`
-  return await fetchHandler(url, 'POST', null, { notifications_enabled })
+  const response = await fetchHandler(url, 'POST', null, { notifications_enabled })
+  // we only get the text response back (no status code) so I cannot do error checking on this. We hope it works
+  const state = await getProgressState(guidedCourse)
+  // If the content has been started already we don't want to reset the progress
+  if (!state) {
+    await contentStatusStarted(guidedCourse)
+  }
+  return response
 }
 
 export async function unEnrollUserInGuidedCourse(guidedCourse) {
@@ -25,22 +32,7 @@ export async function fetchEnrollmentPageMetadata(guidedCourse) {
   return await fetchHandler(url, 'GET')
 }
 
-export async function pinGuidedCourse(guidedCourse) {
-  const url: string = `${BASE_PATH}/v1/user/guided-courses/pin/${guidedCourse}`
-  return await fetchHandler(url, 'POST')
-}
-
-export async function unPinGuidedCourse(guidedCourse) {
-  const url: string = `${BASE_PATH}/v1/user/guided-courses/unpin/${guidedCourse}`
-  return await fetchHandler(url, 'POST')
-}
-
 export async function guidedCourses() {
   const url: string = `${BASE_PATH}/v1/user/guided-courses/`
-  return await fetchHandler(url, 'GET')
-}
-
-export async function pinnedGuidedCourses(brand) {
-  const url: string = `${BASE_PATH}/v1/user/guided-courses/pinned?brand=${brand}`
   return await fetchHandler(url, 'GET')
 }

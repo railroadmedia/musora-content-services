@@ -12,6 +12,7 @@ export async function fetchJSONHandler(
     'Content-Type': 'application/json',
     Accept: 'application/json',
     'X-CSRF-TOKEN': token,
+    credentials: 'include',
   }
 
   if (body) {

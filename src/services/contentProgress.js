@@ -2,6 +2,7 @@ import {
   fetchContentProgress,
   postContentComplete,
   postContentReset,
+  postContentStart,
   postRecordWatchSession,
 } from './railcontent.js'
 import { DataContext, ContentProgressVersionKey } from './dataContext.js'
@@ -114,10 +115,10 @@ export async function getNavigateTo(data) {
       const contentState = await getProgressState(content.id)
       if (contentState !== STATE_STARTED) {
         const firstChild = content.children[0]
-        let lastInteractedChildNavToData =
-          (await getNavigateTo([firstChild])[firstChild.id]) ?? null
+        let lastInteractedChildNavToData = await getNavigateTo([firstChild])
+        lastInteractedChildNavToData = lastInteractedChildNavToData[firstChild.id] ?? null
         navigateToData[content.id] = buildNavigateTo(
-          content.children[0],
+          firstChild,
           lastInteractedChildNavToData
         )
       } else {
@@ -166,6 +167,7 @@ function buildNavigateTo(content, child = null) {
     thumbnail: content.thumbnail ?? '',
     id: content.id ?? null,
     type: content.type ?? '',
+    published_on: content.published_on ?? null,
     child: child,
   }
 }
@@ -358,6 +360,17 @@ export async function contentStatusCompleted(contentId) {
     }
   )
 }
+export async function contentStatusStarted(contentId) {
+  return await dataContext.update(
+    async function (localContext) {
+      let hierarchy = await fetchHierarchy(contentId)
+      startStatusInLocalContext(localContext, contentId, hierarchy)
+    },
+    async function () {
+      return postContentStart(contentId)
+    }
+  )
+}
 
 function saveContentProgress(localContext, contentId, progress, currentSeconds, hierarchy) {
   if (progress === 100) {
@@ -379,9 +392,17 @@ function saveContentProgress(localContext, contentId, progress, currentSeconds, 
 }
 
 function completeStatusInLocalContext(localContext, contentId, hierarchy) {
+  setStartedOrCompletedStatusInLocalContext(localContext, contentId, true, hierarchy)
+}
+
+function startStatusInLocalContext(localContext, contentId, hierarchy) {
+  setStartedOrCompletedStatusInLocalContext(localContext, contentId, false, hierarchy)
+}
+
+function setStartedOrCompletedStatusInLocalContext(localContext, contentId, isCompleted, hierarchy) {
   let data = localContext.data[contentId] ?? {}
-  data[DATA_KEY_PROGRESS] = 100
-  data[DATA_KEY_STATUS] = STATE_COMPLETED
+  data[DATA_KEY_PROGRESS] = isCompleted ? 100 : 0
+  data[DATA_KEY_STATUS] = isCompleted ? STATE_COMPLETED : STATE_STARTED
   data[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000)
   localContext.data[contentId] = data
 
@@ -389,7 +410,7 @@ function completeStatusInLocalContext(localContext, contentId, hierarchy) {
   let children = hierarchy.children[contentId] ?? []
   for (let i = 0; i < children.length; i++) {
     let childId = children[i]
-    completeStatusInLocalContext(localContext, childId, hierarchy)
+    setStartedOrCompletedStatusInLocalContext(localContext, childId, isCompleted, hierarchy)
   }
   bubbleProgress(hierarchy, contentId, localContext)
 }
