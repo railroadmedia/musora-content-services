@@ -260,7 +260,8 @@ import {
 
 import {
 	fetchMemberships,
-	fetchRechargeTokens
+	fetchRechargeTokens,
+	upgradeSubscription
 } from './services/user/memberships.js';
 
 import {
@@ -566,6 +567,7 @@ declare module 'musora-content-services' {
 		updatePlaylist,
 		updatePracticeNotes,
 		updateUserPractice,
+		upgradeSubscription,
 		uploadPicture,
 		uploadPictureFromS3,
 		verifyImageSRC,
