@@ -1810,7 +1810,6 @@ export async function fetchSanity(
   const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api'
   const url = `https://${globalConfig.sanityConfig.projectId}.${api}.sanity.io/v${globalConfig.sanityConfig.version}/data/query/${globalConfig.sanityConfig.dataset}?perspective=${perspective}`
   const headers = {
-    Authorization: `Bearer ${globalConfig.sanityConfig.token}`,
     'Content-Type': 'application/json',
   }
 
