@@ -17,9 +17,9 @@ export async function isContentLikedByIds(contentIds) {
 }
 
 export async function likeContent(contentId) {
-  return await LikesRepository.create().likeOptimisticEager(contentId)
+  return await LikesRepository.create().likeOptimistic(contentId)
 }
 
 export async function unlikeContent(contentId) {
-  return await LikesRepository.create().unlikeOptimisticEager(contentId)
+  return await LikesRepository.create().unlikeOptimistic(contentId)
 }

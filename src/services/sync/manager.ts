@@ -118,4 +118,8 @@ export default class SyncManager {
     }
     return store as unknown as SyncStore<InstanceType<TModel>>
   }
+
+  getContext() {
+    return this.context
+  }
 }
