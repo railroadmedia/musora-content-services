@@ -1,11 +1,11 @@
-import { Model } from "@nozbe/watermelondb"
+import BaseModel from '../models/Base'
 
-export type RawSerialized<TModel extends Model> = Omit<TModel['_raw'], '_changed' | '_status'>
+export type RawSerialized<TModel extends BaseModel> = Omit<TModel['_raw'], '_changed' | '_status'>
 
 // serializes a record to a POJO based on its _raw attributes
 // useful for sending to back-end for sync
 
-export default class RawSerializer<TModel extends Model = Model> {
+export default class RawSerializer<TModel extends BaseModel = BaseModel> {
   toPlainObject(model: TModel) {
     const result = {}
     const raw = model._raw

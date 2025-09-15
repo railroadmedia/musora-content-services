@@ -1,4 +1,5 @@
-import { Model, RecordId } from "@nozbe/watermelondb"
+import BaseModel from "./models/Base"
+import { RecordId } from "@nozbe/watermelondb"
 import { type ModelSerialized } from "./serializers"
 import { EpochSeconds } from "./utils/epoch"
 
@@ -34,14 +35,14 @@ export type SyncExistsDTO<TMultiple extends boolean = false> = {
   lastFetchToken: SyncToken | null
 }
 
-export type SyncReadDTO<TModel extends Model, TMultiple extends boolean = false> = {
+export type SyncReadDTO<TModel extends BaseModel, TMultiple extends boolean = false> = {
   data: TMultiple extends true ? ModelSerialized<TModel>[] : ModelSerialized<TModel> | null
   status: 'fresh' | 'stale'
   pullStatus: 'success' | 'pending' | 'failure' | null
   lastFetchToken: SyncToken | null
 }
 
-export type SyncWriteDTO<T extends Model> = {
+export type SyncWriteDTO<T extends BaseModel> = {
   data: ModelSerialized<T>
   state: 'synced' | 'unsynced'
   pushStatus: 'success' | 'failure'

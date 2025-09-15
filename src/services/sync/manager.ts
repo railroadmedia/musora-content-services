@@ -1,4 +1,5 @@
-import { Database, Model } from '@nozbe/watermelondb'
+import BaseModel from './models/Base'
+import { Database } from '@nozbe/watermelondb'
 import SyncRunScope from './run-scope'
 import { SyncStrategy } from './strategies'
 import { default as SyncStore, SyncStoreConfig } from './store'
@@ -31,19 +32,19 @@ export default class SyncManager {
 
   private database: Database
   private context: SyncContext
-  private storesRegistry: Record<typeof Model.table, SyncStore<Model>>
+  private storesRegistry: Record<typeof BaseModel.table, SyncStore<BaseModel>>
   private runScope: SyncRunScope
   private executor: SyncExecutor
 
-  private strategyMap: { stores: SyncStore<Model>[]; strategies: SyncStrategy[] }[]
-  private safetyMap: { stores: SyncStore<Model>[]; safety: SyncConcurrencySafety }[]
+  private strategyMap: { stores: SyncStore<BaseModel>[]; strategies: SyncStrategy[] }[]
+  private safetyMap: { stores: SyncStore<BaseModel>[]; safety: SyncConcurrencySafety }[]
 
   constructor(context: SyncContext, database: Database) {
     this.database = database
     this.context = context
     this.runScope = new SyncRunScope()
 
-    this.storesRegistry = {} as Record<typeof Model.table, SyncStore<Model>>
+    this.storesRegistry = {} as Record<typeof BaseModel.table, SyncStore<BaseModel>>
     this.strategyMap = []
     this.safetyMap = []
 
@@ -110,7 +111,7 @@ export default class SyncManager {
     return teardown
   }
 
-  getStore<TModel extends typeof Model>(model: TModel) {
+  getStore<TModel extends typeof BaseModel>(model: TModel) {
     const store = this.storesRegistry[model.table]
     if (!store) {
       throw new Error(`Store for ${model.table} not found`)
