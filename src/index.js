@@ -94,8 +94,13 @@ import {
 
 import {
 	createForumCategory,
+	createThread,
 	fetchForumCategories
 } from './services/forums/categories.ts';
+
+import {
+	createThread
+} from './services/forums/threads.ts';
 
 import {
 	fetchAwardsForUser,
@@ -348,6 +353,8 @@ export {
 	createForumCategory,
 	createPlaylist,
 	createPracticeNotes,
+	createThread,
+	createThread,
 	deleteComment,
 	deleteItemsFromPlaylist,
 	deleteNotification,
