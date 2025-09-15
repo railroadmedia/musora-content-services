@@ -12,6 +12,8 @@ export interface ForumPost {
   author: ForumUser | null
 }
 
+export interface ForumThread {}
+
 export interface ForumCategory {
   id: number
   brand: string
