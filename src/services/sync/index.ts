@@ -42,10 +42,19 @@ export type SyncReadDTO<TModel extends BaseModel, TMultiple extends boolean = fa
   lastFetchToken: SyncToken | null
 }
 
-export type SyncWriteDTO<T extends BaseModel> = {
-  data: ModelSerialized<T>
-  state: 'synced' | 'unsynced'
-  pushStatus: 'success' | 'failure'
+export type SyncWriteDTO<T extends BaseModel> = SyncNonDeleteWriteDTO<T> | SyncDeleteWriteDTO
+
+type SyncNonDeleteWriteDTO<T extends BaseModel, TMultiple extends boolean = false> = SyncWriteDTOBase & {
+  data: TMultiple extends true ? ModelSerialized<T>[] : ModelSerialized<T>
+}
+
+type SyncDeleteWriteDTO<TMultiple extends boolean = false> = SyncWriteDTOBase & {
+  data: TMultiple extends true ? RecordId[] : RecordId
+}
+
+interface SyncWriteDTOBase {
+  status: 'synced' | 'unsynced'
+  pushStatus: 'success' | 'pending' | 'failure'
 }
 
 export type SyncStorePushResponse<TRecordKey extends string = 'id'> = SyncStorePushResponseUnreachable | SyncStorePushResponseAcknowledged<TRecordKey>

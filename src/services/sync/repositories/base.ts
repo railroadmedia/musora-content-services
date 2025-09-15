@@ -1,17 +1,22 @@
 
 import SyncManager from "../manager";
 import SyncStore from '../store'
+import SyncContext from '../context'
 import BaseModel from '../models/Base'
 import { RecordId } from '@nozbe/watermelondb'
 
 import { SyncExistsDTO, SyncReadDTO, SyncWriteDTO } from '..'
 
 export default class SyncRepository<TModel extends BaseModel> {
+  context: SyncContext
+
   protected static getStore<T extends typeof BaseModel>(model: T) {
     return SyncManager.getInstance().getStore(model)
   }
 
-  protected constructor(protected store: SyncStore<TModel>) {}
+  protected constructor(protected store: SyncStore<TModel>) {
+    this.context = SyncManager.getInstance().getContext()
+  }
 
   protected async readOne(id: RecordId) {
     return this._read(() => this.store.readOne(id))
@@ -61,32 +66,26 @@ export default class SyncRepository<TModel extends BaseModel> {
     return this._fetch<true>(() => this.store.readAll())
   }
 
-  protected async pushOneEagerlyById(id: RecordId) {
-    const pushed = await this.store.pushId(id)
-    if (pushed.acknowledged) {
-      const result = pushed.results[0]
-      if (result.type === 'success') {
-        await this.store.write([result.entry])
-        const data = (await this.store.readOne(result.entry.meta.ids.id))! // todo - server could still have deleted this record
+  protected async upsertOne(id: RecordId, builder: (record: TModel) => void) {
+    const record = await this.store.upsertOne(id, builder);
 
-        const ret: SyncWriteDTO<TModel> = {
-          data,
-          state: 'synced',
-          pushStatus: 'success'
-        }
-        return ret
-      } else if (result.type === 'failure') {
-        const data = null // TODO - get back from server
-        const ret: SyncWriteDTO<TModel> = {
-          data,
-          state: 'unsynced',
-          pushStatus: 'failure'
-        }
-        return ret
-      }
-    } else {
-      throw new Error('SyncStore.pushOneImmediate: failed to push record') // todo - proper error
+    const ret: SyncWriteDTO<TModel> = {
+      data: record,
+      status: 'unsynced',
+      pushStatus: 'pending'
     }
+    return ret
+  }
+
+  protected async deleteOne(id: RecordId) {
+    await this.store.deleteOne(id)
+
+    const ret: SyncWriteDTO<TModel> = {
+      data: id,
+      status: 'unsynced',
+      pushStatus: 'pending'
+    }
+    return ret
   }
 
   // read from local db, but pull (and potentially throw (!)) if it's never been synced before

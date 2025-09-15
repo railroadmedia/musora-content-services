@@ -101,27 +101,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     }
   }
 
-  async pushId(id: RecordId) {
-    // todo - reader block?
-    const record = await this.queryRecord(id)
-
-    if (record) {
-      return this.pushRecords([record])
-    } else {
-      const payload = {
-        entries: [{
-          record: null,
-          meta: {
-            ids: { id },
-            deleted: true as true,
-          },
-        }],
-      }
-      return this.makePush(payload)
-    }
-  }
-
-  async pushRecords(pushable: TModel[], deletedIds: RecordId[] = []) {
+  private async pushRecords(pushable: TModel[], deletedIds: RecordId[] = []) {
     const entries = [...pushable.map(rec => {
       if (rec._raw._status === 'deleted') {
         return {
@@ -219,7 +199,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return await this.collection.query(...args).fetch()
   }
 
-  // excludes deleted records
   private async queryRecord(id: RecordId) {
     return this.collection
       .query(Q.where('id', id))
@@ -227,19 +206,13 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       .then(records => records[0] as TModel | null)
   }
 
-  // considers soft-deleted
-  private async findRecord(id: RecordId) {
-    return this.collection.find(id).catch(err => {
-      if (err.message === `Record ${this.collection.table}#${id} not found`) {
-        return null
-      } else {
-        throw err
-      }
+  private async queryMaybeDeletedRecord(id: RecordId) {
+    return this.queryMaybeDeletedRecords([id]).then(records => {
+      return records[0] || null
     })
   }
 
-  // considers soft-deleted
-  private async findRecords(ids: RecordId[]) {
+  private async queryMaybeDeletedRecords(ids: RecordId[]) {
     const serializedQuery = this.collection.query(Q.where('id', Q.oneOf(ids))).serialize()
     const adjustedQuery = {
       ...serializedQuery,
@@ -271,7 +244,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       if (existing) {
         existing.update(builder)
       } else {
-        const deletedExisting = await this.findRecord(id)
+        const deletedExisting = await this.queryMaybeDeletedRecord(id)
 
         if (deletedExisting) {
           await this.db.adapter.destroyDeletedRecords(this.model.table, [id])
@@ -292,21 +265,18 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   async deleteOne(id: RecordId) {
     await this.db.write(async () => {
-      const existingUndeleted = await this.queryRecord(id)
+      const existing = await this.queryMaybeDeletedRecord(id)
 
-      if (existingUndeleted) {
-        existingUndeleted.markAsDeleted()
+      if (existing && existing._raw._status !== 'deleted') {
+        existing.markAsDeleted()
       } else {
-        const adapterRecord = await this.findRecord(id)
-        if (!adapterRecord) {
-          await this.collection.create((record) => {
-            const now = this.generateTimestamp()
+        await this.collection.create((record) => {
+          const now = this.generateTimestamp()
 
-            record._raw.id = id
-            record._raw.updated_at = now
-            record._raw._status = 'deleted'
-          })
-        }
+          record._raw.id = id
+          record._raw.updated_at = now
+          record._raw._status = 'deleted'
+        })
       }
     })
 
@@ -348,7 +318,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     const existingRecordsMap = new Map<RecordId, TModel>()
 
     // todo - verify we don't need callReader behavior here
-    const existingRecords = await this.findRecords(entryIds)
+    const existingRecords = await this.queryMaybeDeletedRecords(entryIds)
     existingRecords.forEach(record => existingRecordsMap.set(record.id, record))
 
     const resolver = new Resolver()
