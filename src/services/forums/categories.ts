@@ -43,6 +43,7 @@ export async function createForumCategory(
 
 export interface UpdateForumCategoryParams {
   id: number
+  brand: number
   name: string
   description: string
   weight: number
@@ -61,6 +62,7 @@ export async function updateForumCategory(
 ): Promise<ForumCategory> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.put<ForumCategory>(`${baseUrl}/v1/categories/${params.id}`, {
+    brand: params.brand,
     name: params.name,
     description: params.description,
     weight: params.weight,
