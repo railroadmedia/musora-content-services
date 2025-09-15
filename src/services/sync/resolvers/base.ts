@@ -4,16 +4,19 @@ import { Model, RecordId } from "@nozbe/watermelondb";
 export default abstract class BaseResolver {
   createRecord: (server: SyncEntry) => void
   updateRecord: (local: Model, server: SyncEntry) => void
-  deleteRecord: (record: Model) => void
+  restoreRecord: (local: Model, server: SyncEntry) => void
+  destroyRecord: (id: RecordId) => void
 
   constructor(callbacks: {
     createRecord: (server: SyncEntry) => void
     updateRecord: (local: Model, server: SyncEntry) => void
-    deleteRecord: (record: Model) => void
+    restoreRecord: (local: Model, server: SyncEntry) => void
+    destroyRecord: (id: RecordId) => void
   }) {
     this.createRecord = callbacks.createRecord
     this.updateRecord = callbacks.updateRecord
-    this.deleteRecord = callbacks.deleteRecord
+    this.restoreRecord = callbacks.restoreRecord
+    this.destroyRecord = callbacks.destroyRecord
   }
 
   abstract againstNone(server: SyncEntry): void

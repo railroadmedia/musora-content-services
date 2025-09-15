@@ -2,7 +2,7 @@ import BaseResolver from "./base";
 
 import { Model } from "@nozbe/watermelondb";
 import { SyncEntry } from "../index";
-import { asEpochSeconds, msToS } from '../utils/epoch'
+import BaseModel from "../models/Base";
 
 export default class LastWriteConflictResolver extends BaseResolver {
   againstNone(server: SyncEntry) {
@@ -12,21 +12,18 @@ export default class LastWriteConflictResolver extends BaseResolver {
   }
   againstClean(local: Model, server: SyncEntry) {
     if (server.meta.lifecycle.deleted_at) {
-      this.deleteRecord(local)
+      this.destroyRecord(local.id)
     } else {
       this.updateRecord(local, server)
     }
   }
 
-  againstDirty(local: Model, server: SyncEntry) {
+  againstDirty(local: BaseModel, server: SyncEntry) {
     if (server.meta.lifecycle.deleted_at) {
       // delete local even though user has newer changes
-      // we don't ever try to resurrect records
-      this.deleteRecord(local);
-    } else if (
-      asEpochSeconds(server.meta.lifecycle.updated_at) >
-      msToS(local._raw['updated_at'])
-    ) {
+      // (we don't ever try to resurrect records)
+      this.destroyRecord(local.id);
+    } else if (server.meta.lifecycle.updated_at > local.updated_at) {
       // local is older, so update it
       this.updateRecord(local, server)
     } else {
@@ -35,11 +32,13 @@ export default class LastWriteConflictResolver extends BaseResolver {
     }
   }
 
-  againstDeleted(local: Model, server: SyncEntry) {
+  againstDeleted(local: BaseModel, server: SyncEntry) {
     if (server.meta.lifecycle.deleted_at) {
-      this.deleteRecord(local)
+      this.destroyRecord(local.id)
+    } else if (server.meta.lifecycle.updated_at > local.updated_at) {
+      this.restoreRecord(local, server)
     } else {
-      this.updateRecord(local, server)
+      this.destroyRecord(local.id);
     }
   }
 }
