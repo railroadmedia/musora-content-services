@@ -7,12 +7,12 @@ import {
   SyncStorePushResponseUnreachable,
 } from '..'
 import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
-import { BaseResolver, LastWriteConflictResolver } from '../resolvers'
 import type SyncRunScope from '../run-scope'
 import { EventEmitter } from '../utils/event-emitter'
 import BaseModel from '../models/Base'
 import { EpochSeconds } from '../utils/epoch'
 import { sanitizedRaw } from '@nozbe/watermelondb/RawRecord'
+import { default as Resolver, type SyncResolution } from '../resolver'
 
 type ModelClass<T extends Model> = { new (...args: any[]): T; table: string };
 type SyncPull = (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
@@ -31,7 +31,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   readonly db: Database
   readonly model: ModelClass<TModel>
   readonly collection: Collection<TModel>
-  readonly Resolver: typeof BaseResolver | LastWriteConflictResolver
 
   readonly rawSerializer: RawSerializer<TModel>
   readonly modelSerializer: ModelSerializer<TModel>
@@ -53,7 +52,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.db = db
     this.model = model
     this.collection = db.collections.get(model.table)
-    this.Resolver = LastWriteConflictResolver
     this.rawSerializer = new RawSerializer()
     this.modelSerializer = new ModelSerializer()
 
@@ -61,11 +59,11 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.pusher = push
     this.lastFetchTokenKey = `last_fetch_token:${this.model.table}`
 
-    window.Q = Q
-    window.db = db
-    window.collection = this.collection
-    window.id = '402009'
-    window.store = this
+    // window.Q = Q
+    // window.db = db
+    // window.collection = this.collection
+    // window.id = '402009'
+    // window.store = this
   }
 
   on = this.emitter.on.bind(this.emitter)
@@ -151,8 +149,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   private async makePush(payload: PushPayload) {
-    if (window.foo) { return }
-
     let pushed: SyncPushResponse
     try {
       pushed = await this.pusher(payload, this.runScope.signal)
@@ -282,7 +278,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         }
 
         this.collection.create((record) => {
-          const now = Math.round(Date.now() / 1000) as EpochSeconds
+          const now = this.generateTimestamp()
           record._raw.id = id
           record._raw.created_at = now
           record._raw.updated_at = now
@@ -304,7 +300,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         const adapterRecord = await this.findRecord(id)
         if (!adapterRecord) {
           await this.collection.create((record) => {
-            const now = Math.round(Date.now() / 1000) as EpochSeconds
+            const now = this.generateTimestamp()
 
             record._raw.id = id
             record._raw.updated_at = now
@@ -320,7 +316,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private async write(entries: SyncEntry[], freshSync: boolean = false) {
     await this.withWriteLock(async () => {
       await this.db.write(async (writer) => {
-        const batches = await this.buildSyncedRecordsFromEntries(entries, freshSync)
+        const batches = await this.buildWriteBatchesFromEntries(entries, freshSync)
 
         for (const batch of batches) {
           if (batch.length) {
@@ -339,64 +335,57 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return write()
   }
 
-  private async buildSyncedRecordsFromEntries(entries: SyncEntry[], freshSync: boolean) {
-    const existingRecordsMap = new Map<RecordId, TModel>()
+  private async buildWriteBatchesFromEntries(entries: SyncEntry[], freshSync: boolean) {
+    // if this is a fresh sync and there are no existing records, we can skip more sophisticated conflict resolution
+    if (freshSync) {
+      const resolver = new Resolver();
+      entries.filter((e) => !e.meta.lifecycle.deleted_at).forEach(entry => resolver.againstNone(entry))
+
+      return this.prepareRecords(resolver.result)
+    }
 
     const entryIds = entries.map(e => e.meta.ids.id)
+    const existingRecordsMap = new Map<RecordId, TModel>()
 
     // todo - verify we don't need callReader behavior here
-    const [undeletedRecords, deletedRecords] = await Promise.all([
-      this.collection.query(Q.where('id', Q.oneOf(entryIds))).fetch(),
-      this.findRecords(entryIds)
-    ])
+    const existingRecords = await this.findRecords(entryIds)
+    existingRecords.forEach(record => existingRecordsMap.set(record.id, record))
 
-    undeletedRecords.forEach(record => existingRecordsMap.set(record.id, record))
-    deletedRecords.forEach(record => existingRecordsMap.set(record.id, record))
+    const resolver = new Resolver()
 
-    // if this is a fresh sync and there are no existing records, we can skip more sophisticated conflict resolution
-    const [entriesToCreate, tuplesToUpdate, tuplesToRestore, idsToDestroy] =
-      freshSync && existingRecordsMap.size === 0
-        ? [entries.filter((e) => !e.meta.lifecycle.deleted_at), [], [], []]
-        : entries.reduce<[SyncEntry[], [TModel, SyncEntry][], [TModel, SyncEntry][], RecordId[]]>(
-            (acc, entry) => {
-              const resolver = new this.Resolver({
-                createRecord: (entry) => acc[0].push(entry),
-                updateRecord: (existing, entry) => acc[1].push([existing, entry]),
-                restoreRecord: (existing, entry) => acc[2].push([existing, entry]),
-                destroyRecord: (id) => acc[3].push(id),
-              })
+    entries.forEach(entry => {
+      const existing = existingRecordsMap.get(entry.meta.ids.id)
+      if (existing) {
+        switch (existing._raw._status) {
+          case 'updated':
+            resolver.againstDirty(existing, entry)
+            break
 
-              const existing = existingRecordsMap.get(entry.meta.ids.id)
-              if (existing) {
-                switch (existing._raw._status) {
-                  case 'updated':
-                    resolver.againstDirty(existing, entry)
-                    break
+          case 'created':
+          case 'synced':
+            resolver.againstClean(existing, entry)
+            break
 
-                  case 'created':
-                  case 'synced':
-                    resolver.againstClean(existing, entry)
-                    break
+          case 'deleted':
+            resolver.againstDeleted(existing, entry);
+            break;
 
-                  case 'deleted':
-                    resolver.againstDeleted(existing, entry);
-                    break;
+          default:
+            throw new Error('SyncStore.buildSyncedRecordsFromEntries: unknown record status')
+        }
+      } else {
+        resolver.againstNone(entry)
+      }
+    })
 
-                  default:
-                    throw new Error('SyncStore.buildSyncedRecordsFromEntries: unknown record status')
-                }
-              } else {
-                resolver.againstNone(entry)
-              }
-              return acc
-            },
-            [[], [], [], []]
-          )
+    return this.prepareRecords(resolver.result);
+  }
 
-    const destroyedBuilds = idsToDestroy.map(id => {
+  private prepareRecords(result: SyncResolution) {
+    const destroyedBuilds = result.idsForDestroy.map(id => {
       return new this.model(this.collection, { id }).prepareDestroyPermanently()
     })
-    const createdBuilds = entriesToCreate.map((entry) => {
+    const createdBuilds = result.entriesForCreate.map((entry) => {
       return this.collection.prepareCreate((r) => {
         Object.entries(entry.record!).forEach(([key, value]) => {
           if (key === 'id') r._raw.id = value.toString()
@@ -409,7 +398,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         r._raw._changed = ''
       })
     })
-    const updatedBuilds = [...tuplesToUpdate, ...tuplesToRestore].map(([record, entry]) => {
+    const updatedBuilds = result.tuplesForUpdate.map(([record, entry]) => {
       return record.prepareUpdate((r) => {
         Object.entries(entry.record!).forEach(([key, value]) => {
           if (key !== 'id') r._raw[key] = value
@@ -422,10 +411,10 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       })
     })
 
-    const restoreDestroyBuilds = tuplesToRestore.map(([model]) => {
+    const restoreDestroyBuilds = result.tuplesForRestore.map(([model]) => {
       return new this.model(this.collection, { id: model.id }).prepareDestroyPermanently()
     })
-    const restoreCreateBuilds = tuplesToRestore.map(([_model, entry]) => {
+    const restoreCreateBuilds = result.tuplesForRestore.map(([_model, entry]) => {
       return this.collection.prepareCreate((r) => {
         Object.entries(entry.record!).forEach(([key, value]) => {
           if (key === 'id') r._raw.id = value.toString()
@@ -443,5 +432,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       [...destroyedBuilds, ...createdBuilds, ...updatedBuilds, ...restoreDestroyBuilds],
       [...restoreCreateBuilds]
     ]
+  }
+
+  private generateTimestamp() {
+    return Math.round(Date.now() / 1000) as EpochSeconds
   }
 }
