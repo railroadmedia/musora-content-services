@@ -33,7 +33,10 @@ export default class SyncResolver {
   againstClean(local: BaseModel, server: SyncEntry) {
     if (server.meta.lifecycle.deleted_at) {
       this.resolution.idsForDestroy.push(local.id)
-    } else {
+    }
+    // take care that the server stamp isn't older than the current local
+    // (imagine a race condition where a pull request resolves long after a second one)
+    else if (server.meta.lifecycle.updated_at > local.updated_at) {
       this.resolution.tuplesForUpdate.push([local, server])
     }
   }
