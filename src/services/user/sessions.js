@@ -12,28 +12,20 @@ import './types.js'
 const excludeFromGeneratedIndex = []
 
 /**
- * Sends a login request to the User Management System.
+ * Authenticates the User.
  *
- * The request always includes the `X-Client-Platform` header set to `"mobile"`.
- * This header is used by the backend to identify the source client type.
+ * @param {string} email - User's email
+ * @param {string} password - User's password
+ * @param {string|null} deviceName -  Device name for the user
+ * @param {string|null} deviceToken - Firebase token for the device
+ * @param {string|null} platform - Device platform
  *
- * @param {string} email - The user's email address.
- * @param {string} password - The user's account password.
- * @param {string|null} [deviceName] - A human-readable identifier for the device (e.g. "iPhone 15").
- * @param {string|null} [deviceToken] - Optional Firebase Cloud Messaging token for push notifications.
- * @param {string|null} [platform] - The device platform (e.g. "ios", "android", "web").
- *
- * @returns {Promise<Response>} - The raw `fetch` Response object.
- *   Call `response.json()` to access the API payload, which typically includes:
- *   - `token` (string): Access token.
- *   - `refresh_token` (string): Refresh token.
- *   - `user` (object): Authenticated user data.
+ * @returns {Promise<AuthResponse>} - User data and authentication token
  *
  * @example
- * login('john@doe.com', 'music123', 'Pixel 8', 'abc123', 'android')
- *   .then(res => res.json())
- *   .then(data => console.log(data))
- *   .catch(err => console.error(err));
+ * login('john@doe.com', 'music123')
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
  */
 export async function login(email, password, deviceName, deviceToken, platform) {
   const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
@@ -59,7 +51,7 @@ export async function loginWithProvider(provider, providerIdToken, deviceToken, 
 
   try {
     const response = await fetch(`${baseUrl}/v1/auth/${provider}/mobile`, {
-      method: 'GET',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-Client-Platform': 'mobile',
