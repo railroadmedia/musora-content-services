@@ -1,4 +1,4 @@
-import { SyncToken, SyncEntry, SyncStorePushResult, SyncSyncable } from "./index"
+import { SyncToken, SyncEntry, SyncSyncable } from "./index"
 import { EpochSeconds } from "./utils/epoch.js"
 
 import { globalConfig } from '../config.js'
@@ -32,6 +32,25 @@ type SyncPushFailureResponse = SyncPushResponseBase & {
 }
 interface SyncPushResponseBase extends SyncResponseBase {
 
+}
+
+type SyncStorePushResult<TRecordKey extends string = 'id'> = SyncStorePushResultSuccess<TRecordKey> | SyncStorePushResultFailure<TRecordKey>
+type SyncStorePushResultSuccess<TRecordKey extends string = 'id'> = SyncStorePushResultBase & {
+  type: 'success'
+  entry: SyncEntry<TRecordKey>
+}
+type SyncStorePushResultFailure<TRecordKey extends string = 'id'> = SyncStorePushResultInvalid<TRecordKey>
+type SyncStorePushResultInvalid<TRecordKey extends string = 'id'> = SyncStorePushResultFailureBase<TRecordKey> & {
+  failureType: 'invalid'
+  errors: Record<string, string[]>
+}
+interface SyncStorePushResultFailureBase<TRecordKey extends string = 'id'> extends SyncStorePushResultBase {
+  type: 'failure'
+  failureType: string
+  ids: { [K in TRecordKey]: RecordId }
+}
+interface SyncStorePushResultBase {
+  type: 'success' | 'failure'
 }
 
 export type SyncPullResponse = SyncPullSuccessResponse | SyncPullFailureResponse
