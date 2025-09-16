@@ -1,3 +1,5 @@
+import './telemetry'
+
 import BaseModel from "./models/Base"
 import { RecordId } from "@nozbe/watermelondb"
 import { type ModelSerialized } from "./serializers"

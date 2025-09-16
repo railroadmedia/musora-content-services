@@ -7,6 +7,7 @@ import { default as SyncStore, SyncStoreConfig } from './store'
 import SyncBackoff from './backoff'
 import SyncContext from './context'
 import type SyncConcurrencySafety from './concurrency-safety'
+import telemetry from './telemetry'
 
 export default class SyncManager {
   private static instance: SyncManager | null = null
@@ -85,7 +86,10 @@ export default class SyncManager {
     this.strategyMap.forEach(({ stores, strategies }) => {
       strategies.forEach(strategy => {
         stores.forEach(store => {
-          strategy.onTrigger(store, _reason => store.sync())
+          strategy.onTrigger(store, reason => {
+            telemetry.info(`[Manager] Sync triggered for ${store.model.table} because: ` + reason)
+            store.sync()
+          })
           strategy.start()
         })
       })

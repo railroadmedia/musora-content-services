@@ -1,5 +1,6 @@
 import SyncContext from "./context"
-import { SyncResponse, SyncResponseBase } from "./fetch"
+import { SyncResponse } from "./fetch"
+import telemetry from "./telemetry"
 
 export default class SyncBackoff {
   private readonly BASE_BACKOFF = 1_000
@@ -36,6 +37,7 @@ export default class SyncBackoff {
    */
   async request<T extends SyncResponse>(syncFn: () => Promise<T>) {
     if (!this.context.connectivity.getValue()) {
+      telemetry.info('[Backoff] No connectivity - skipping')
       this.paused = true
       return { ok: false } as T
     }
