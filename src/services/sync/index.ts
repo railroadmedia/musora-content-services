@@ -9,6 +9,7 @@ export { default as SyncSession } from './run-scope'
 export { default as SyncBackoff } from './backoff'
 export { default as SyncManager } from './manager'
 export { default as SyncContext } from './context'
+export { SyncError } from './errors'
 
 export type SyncToken = EpochSeconds
 
