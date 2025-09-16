@@ -95,7 +95,8 @@ import {
 
 import {
 	createForumCategory,
-	fetchForumCategories
+	fetchForumCategories,
+	updateForumCategory
 } from './services/forums/categories.ts';
 
 import {
@@ -559,6 +560,7 @@ declare module 'musora-content-services' {
 		unlikePlaylist,
 		unpinProgressRow,
 		updateDisplayName,
+		updateForumCategory,
 		updateNotificationSetting,
 		updatePlaylist,
 		updatePracticeNotes,
