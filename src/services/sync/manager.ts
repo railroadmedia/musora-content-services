@@ -4,7 +4,7 @@ import SyncRunScope from './run-scope'
 import { SyncStrategy } from './strategies'
 import { default as SyncStore, SyncStoreConfig } from './store'
 
-import SyncBackoff from './backoff'
+import SyncRetry from './retry'
 import SyncContext from './context'
 import type SyncConcurrencySafety from './concurrency-safety'
 import telemetry from './telemetry'
@@ -36,7 +36,7 @@ export default class SyncManager {
   private context: SyncContext
   private storesRegistry: Record<typeof BaseModel.table, SyncStore<BaseModel>>
   private runScope: SyncRunScope
-  private backoff: SyncBackoff
+  private retry: SyncRetry
 
   private strategyMap: { stores: SyncStore<BaseModel>[]; strategies: SyncStrategy[] }[]
   private safetyMap: { stores: SyncStore<BaseModel>[]; safety: SyncConcurrencySafety }[]
@@ -50,15 +50,15 @@ export default class SyncManager {
     this.strategyMap = []
     this.safetyMap = []
 
-    this.backoff = new SyncBackoff(this.context)
-    this.backoff.start()
+    this.retry = new SyncRetry(this.context)
+    this.retry.start()
   }
 
   createStore(config: SyncStoreConfig) {
     if (this.storesRegistry[config.model.table]) {
       throw new SyncError(`Store ${config.model.table} already registered`)
     }
-    const store = new SyncStore(config, this.database, this.backoff, this.runScope)
+    const store = new SyncStore(config, this.database, this.retry, this.runScope)
     this.storesRegistry[config.model.table] = store
     return store
   }
@@ -82,14 +82,14 @@ export default class SyncManager {
   }
 
   setup() {
+    telemetry.debug('[SyncManager] Setting up')
     this.safetyMap.forEach(({ safety }) => safety.start())
 
     this.strategyMap.forEach(({ stores, strategies }) => {
       strategies.forEach(strategy => {
         stores.forEach(store => {
           strategy.onTrigger(store, reason => {
-            telemetry.debug(`[manager] Sync triggered for \`${store.model.table}\` from: "${reason}"`)
-            store.sync()
+            store.sync(reason)
           })
           strategy.start()
         })
@@ -104,10 +104,11 @@ export default class SyncManager {
     // - purge any databases that are no longer referenced in schema (possible if user logs out after a schema change)?
 
     const teardown = async () => {
+      telemetry.debug('[SyncManager] Tearing down')
       this.runScope.abort()
       this.strategyMap.forEach(({ strategies }) => strategies.forEach(strategy => strategy.stop()))
       this.safetyMap.forEach(({ safety }) => safety.stop())
-      this.backoff.stop()
+      this.retry.stop()
       await this.database.write(() => this.database.unsafeResetDatabase())
       // todo - purge adapter?
     }
