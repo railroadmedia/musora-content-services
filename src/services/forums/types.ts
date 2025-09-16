@@ -28,6 +28,19 @@ export interface ForumThread {
   is_read: boolean
 }
 
+export interface ForumThread {
+  id: number
+  slug: string
+  title: string
+  locked: boolean
+  pinned: boolean
+  state: string
+  author: ForumUser | null
+  category_id: number
+  post_count: number
+  last_post: ForumPost | null
+}
+
 export interface ForumCategory {
   id: number
   brand: string
