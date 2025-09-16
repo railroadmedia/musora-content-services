@@ -3,7 +3,7 @@
  */
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
-import { ForumCategory, ForumThread } from './types'
+import { ForumCategory } from './types'
 
 const baseUrl = `/api/forums`
 
@@ -39,27 +39,4 @@ export async function createForumCategory(
 ): Promise<ForumCategory> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<ForumCategory>(`${baseUrl}/v1/categories`, params)
-}
-
-export interface CreateThreadParams {
-  name: string
-  description: string
-  weight: number
-  brand: string
-}
-
-/**
- * Creates a new thread under a forum category.
- *
- * @param {number} categoryId - The ID of the category under which to create the thread.
- * @param {CreateThreadParams} params - The parameters for creating the thread.
- * @returns {Promise<ForumThread>} - A promise that resolves to the created thread.
- * @throws {HttpError} - If the request fails.
- */
-export async function createThread(
-  categoryId: number,
-  params: CreateThreadParams
-): Promise<ForumThread> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<ForumThread>(`${baseUrl}/v1/categories/${categoryId}/threads`, params)
 }
