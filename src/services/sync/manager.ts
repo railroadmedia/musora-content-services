@@ -8,13 +8,14 @@ import SyncBackoff from './backoff'
 import SyncContext from './context'
 import type SyncConcurrencySafety from './concurrency-safety'
 import telemetry from './telemetry'
+import { SyncError } from './errors'
 
 export default class SyncManager {
   private static instance: SyncManager | null = null
 
   public static assignAndSetupInstance(instance: SyncManager) {
     if (SyncManager.instance) {
-      throw new Error('SyncManager already initialized')
+      throw new SyncError('SyncManager already initialized')
     }
     SyncManager.instance = instance
     const teardown = instance.setup()
@@ -26,7 +27,7 @@ export default class SyncManager {
 
   public static getInstance(): SyncManager {
     if (!SyncManager.instance) {
-      throw new Error('SyncManager not initialized')
+      throw new SyncError('SyncManager not initialized')
     }
     return SyncManager.instance
   }
@@ -55,7 +56,7 @@ export default class SyncManager {
 
   createStore(config: SyncStoreConfig) {
     if (this.storesRegistry[config.model.table]) {
-      throw new Error(`Store ${config.model.table} already registered`)
+      throw new SyncError(`Store ${config.model.table} already registered`)
     }
     const store = new SyncStore(config, this.database, this.backoff, this.runScope)
     this.storesRegistry[config.model.table] = store
@@ -87,7 +88,7 @@ export default class SyncManager {
       strategies.forEach(strategy => {
         stores.forEach(store => {
           strategy.onTrigger(store, reason => {
-            telemetry.info(`[Manager] Sync triggered for ${store.model.table} because: ` + reason)
+            telemetry.debug(`[manager] Sync triggered for \`${store.model.table}\` from: "${reason}`)
             store.sync()
           })
           strategy.start()
@@ -116,7 +117,7 @@ export default class SyncManager {
   getStore<TModel extends typeof BaseModel>(model: TModel) {
     const store = this.storesRegistry[model.table]
     if (!store) {
-      throw new Error(`Store for ${model.table} not found`)
+      throw new SyncError(`Store not found`, { table: model.table })
     }
     return store as unknown as SyncStore<InstanceType<TModel>>
   }

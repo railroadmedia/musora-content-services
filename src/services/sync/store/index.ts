@@ -1,6 +1,6 @@
 import { Database, Q, type Collection, type Model, type RecordId } from '@nozbe/watermelondb'
 import { RawSerializer, ModelSerializer } from '../serializers'
-import { SyncToken, SyncEntry } from '..'
+import { SyncToken, SyncEntry, SyncError } from '..'
 import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
 import type SyncBackoff from '../backoff'
 import type SyncRunScope from '../run-scope'
@@ -10,6 +10,8 @@ import { EpochSeconds } from '../utils/epoch'
 import { sanitizedRaw } from '@nozbe/watermelondb/RawRecord'
 import { default as Resolver, type SyncResolution } from '../resolver'
 import PushCoalescer from './push-coalescer'
+import telemetry from '../telemetry'
+import { SyncStoreError } from '../errors'
 
 type ModelClass<T extends Model> = { new (...args: any[]): T; table: string };
 type SyncPull = (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
@@ -90,8 +92,14 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   private async setLastFetchToken(token: SyncToken | null) {
     if (token) {
-      return this.db.localStorage.set(this.lastFetchTokenKey, token)
+      const storedValue = await this.getLastFetchToken()
+
+      if (storedValue !== token) {
+        telemetry.debug(`[store:${this.model.table}] Setting last fetch token: ${token}`)
+        return this.db.localStorage.set(this.lastFetchTokenKey, token)
+      }
     } else {
+      telemetry.debug(`[store:${this.model.table}] Removing last fetch token`)
       return this.db.localStorage.remove(this.lastFetchTokenKey)
     }
   }
@@ -328,7 +336,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             break;
 
           default:
-            throw new Error('SyncStore.buildSyncedRecordsFromEntries: unknown record status')
+            throw new SyncStoreError('Unknown record status', this, { status: existing._raw._status })
         }
       } else {
         resolver.againstNone(entry)

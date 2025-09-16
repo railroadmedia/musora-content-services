@@ -37,7 +37,7 @@ export default class SyncBackoff {
    */
   async request<T extends SyncResponse>(syncFn: () => Promise<T>) {
     if (!this.context.connectivity.getValue()) {
-      telemetry.info('[Backoff] No connectivity - skipping')
+      telemetry.debug('[Backoff] No connectivity - skipping')
       this.paused = true
       return { ok: false } as T
     }
