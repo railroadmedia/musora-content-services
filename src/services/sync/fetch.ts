@@ -20,6 +20,8 @@ interface RawPushResponse {
   results: SyncStorePushResult<'client_record_id'>[]
 }
 
+export type SyncResponse = SyncPushResponse | SyncPullResponse
+
 export type SyncPushResponse = SyncPushSuccessResponse | SyncPushFailureResponse
 
 type SyncPushSuccessResponse = SyncPushResponseBase & {
