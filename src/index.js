@@ -99,6 +99,10 @@ import {
 } from './services/forums/categories.ts';
 
 import {
+	createThread
+} from './services/forums/threads.ts';
+
+import {
 	fetchAwardsForUser,
 	fetchCertificate
 } from './services/gamification/awards.ts';
@@ -349,6 +353,7 @@ export {
 	createForumCategory,
 	createPlaylist,
 	createPracticeNotes,
+	createThread,
 	deleteComment,
 	deleteItemsFromPlaylist,
 	deleteNotification,
