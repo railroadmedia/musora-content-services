@@ -1,5 +1,5 @@
 import SyncContext from "./context"
-import { SyncResponseBase } from "./fetch"
+import { SyncResponse, SyncResponseBase } from "./fetch"
 
 export default class SyncBackoff {
   private readonly BASE_BACKOFF = 1_000
@@ -34,10 +34,10 @@ export default class SyncBackoff {
    * Runs the given syncFn with automatic retries.
    * Returns the first successful result or the last failed result after retries.
    */
-  async request(syncFn: () => Promise<SyncResponseBase>): Promise<SyncResponseBase> {
+  async request<T extends SyncResponse>(syncFn: () => Promise<T>) {
     if (!this.context.connectivity.getValue()) {
       this.paused = true
-      return { ok: false }
+      return { ok: false } as T
     }
 
     let attempt = 0

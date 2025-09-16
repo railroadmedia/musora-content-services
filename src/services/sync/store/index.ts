@@ -1,11 +1,6 @@
 import { Database, Q, type Collection, type Model, type RecordId } from '@nozbe/watermelondb'
 import { RawSerializer, ModelSerializer } from '../serializers'
-import {
-  SyncToken,
-  SyncEntry,
-  SyncStorePushResponseAcknowledged,
-  SyncStorePushResponseUnreachable,
-} from '..'
+import { SyncToken, SyncEntry } from '..'
 import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
 import type SyncBackoff from '../backoff'
 import type SyncRunScope from '../run-scope'
@@ -65,12 +60,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.puller = pull
     this.pusher = push
     this.lastFetchTokenKey = `last_fetch_token:${this.model.table}`
-
-    window.Q = Q
-    window.db = db
-    window.collection = this.collection
-    window.id = '402009'
-    window.store = this
   }
 
   on = this.emitter.on.bind(this.emitter)
@@ -122,29 +111,15 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private async makePush(records: TModel[]) {
     const payload = this.generatePushPayload(records)
 
-    let pushed: SyncPushResponse
-    try {
-      pushed = await this.backoff.request(() => this.pusher(payload, this.runScope.signal))
-    } catch (error) {
-      const response: SyncStorePushResponseUnreachable = {
-        acknowledged: false,
-        status: 'unreachable',
-        originalError: error,
-      }
+    const response = await this.backoff.request<SyncPushResponse>(() => this.pusher(payload, this.runScope.signal))
 
-      return response
+    if (response.ok) {
+      const successfulResults = response.results.filter(result => result.type === 'success')
+      const successfulEntries = successfulResults.map(result => result.entry)
+      await this.writeEntries(successfulEntries)
+
+      this.emit('pushCompleted')
     }
-
-    const response: SyncStorePushResponseAcknowledged = {
-      acknowledged: true,
-      results: pushed.results,
-    }
-
-    const successfulResults = response.results.filter(result => result.type === 'success')
-    const successfulEntries = successfulResults.map(result => result.entry)
-    await this.write(successfulEntries)
-
-    this.emit('pushCompleted')
 
     return response
   }
@@ -176,14 +151,14 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
     this.currentPull = (async () => {
       const lastFetchToken = await this.getLastFetchToken()
-      const response = await this.backoff.request(() => this.puller(lastFetchToken, this.runScope.signal))
+      const response = await this.backoff.request<SyncPullResponse>(() => this.puller(lastFetchToken, this.runScope.signal))
 
       if (response.ok) {
-        await this.write(response.entries, !response.previousToken)
+        await this.writeEntries(response.entries, !response.previousToken)
         await this.setLastFetchToken(response.token)
-      }
 
-      this.emit('pullCompleted')
+        this.emit('pullCompleted')
+      }
 
       return response
     })()
@@ -247,6 +222,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   async upsertOne(id: string, builder: (record: TModel) => void) {
+    let record: TModel | null = null
+
     await this.db.write(async () => {
       const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(records => records[0] || null)
 
@@ -265,10 +242,12 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
           builder(record)
         })
       }
+
+      record = await this.queryRecord(id)
     })
 
     this.pushUnsynced()
-    return (await this.readOne(id))! // todo - possible race after write?
+    return this.modelSerializer.toPlainObject(record!)
   }
 
   async deleteOne(id: RecordId) {
@@ -292,7 +271,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return id
   }
 
-  private async write(entries: SyncEntry[], freshSync: boolean = false) {
+  private async writeEntries(entries: SyncEntry[], freshSync: boolean = false) {
     await this.withWriteLock(async () => {
       await this.db.write(async (writer) => {
         const batches = await this.buildWriteBatchesFromEntries(entries, freshSync)
@@ -326,7 +305,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     const entryIds = entries.map(e => e.meta.ids.id)
     const existingRecordsMap = new Map<RecordId, TModel>()
 
-    // todo - verify we don't need callReader behavior here
     const existingRecords = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(entryIds)))
     existingRecords.forEach(record => existingRecordsMap.set(record.id, record))
 
