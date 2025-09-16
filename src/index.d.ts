@@ -99,7 +99,8 @@ import {
 } from './services/forums/categories.ts';
 
 import {
-	createThread
+	createThread,
+	updateThread
 } from './services/forums/threads.ts';
 
 import {
@@ -572,6 +573,7 @@ declare module 'musora-content-services' {
 		updateNotificationSetting,
 		updatePlaylist,
 		updatePracticeNotes,
+		updateThread,
 		updateUserPractice,
 		uploadPicture,
 		uploadPictureFromS3,

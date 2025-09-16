@@ -99,7 +99,8 @@ import {
 } from './services/forums/categories.ts';
 
 import {
-	createThread
+	createThread,
+	updateThread
 } from './services/forums/threads.ts';
 
 import {
@@ -571,6 +572,7 @@ export {
 	updateNotificationSetting,
 	updatePlaylist,
 	updatePracticeNotes,
+	updateThread,
 	updateUserPractice,
 	uploadPicture,
 	uploadPictureFromS3,
