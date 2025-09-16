@@ -4,7 +4,7 @@ import SyncRunScope from './run-scope'
 import { SyncStrategy } from './strategies'
 import { default as SyncStore, SyncStoreConfig } from './store'
 
-import SyncExecutor from './executor'
+import SyncBackoff from './backoff'
 import SyncContext from './context'
 import type SyncConcurrencySafety from './concurrency-safety'
 
@@ -34,7 +34,7 @@ export default class SyncManager {
   private context: SyncContext
   private storesRegistry: Record<typeof BaseModel.table, SyncStore<BaseModel>>
   private runScope: SyncRunScope
-  private executor: SyncExecutor
+  private backoff: SyncBackoff
 
   private strategyMap: { stores: SyncStore<BaseModel>[]; strategies: SyncStrategy[] }[]
   private safetyMap: { stores: SyncStore<BaseModel>[]; safety: SyncConcurrencySafety }[]
@@ -48,15 +48,15 @@ export default class SyncManager {
     this.strategyMap = []
     this.safetyMap = []
 
-    this.executor = new SyncExecutor(this.context)
-    this.executor.start()
+    this.backoff = new SyncBackoff(this.context)
+    this.backoff.start()
   }
 
   createStore(config: SyncStoreConfig) {
     if (this.storesRegistry[config.model.table]) {
       throw new Error(`Store ${config.model.table} already registered`)
     }
-    const store = new SyncStore(config, this.database, this.runScope)
+    const store = new SyncStore(config, this.database, this.backoff, this.runScope)
     this.storesRegistry[config.model.table] = store
     return store
   }
@@ -83,11 +83,9 @@ export default class SyncManager {
     this.safetyMap.forEach(({ safety }) => safety.start())
 
     this.strategyMap.forEach(({ stores, strategies }) => {
-      strategies.forEach((strategy) => {
-        stores.forEach((store) => {
-          strategy.onTrigger(store, (reason) => {
-            this.executor.requestSync(() => store.sync(), reason) // todo? - executor per store instead of global?
-          })
+      strategies.forEach(strategy => {
+        stores.forEach(store => {
+          strategy.onTrigger(store, _reason => store.sync())
           strategy.start()
         })
       })
@@ -102,9 +100,9 @@ export default class SyncManager {
 
     const teardown = async () => {
       this.runScope.abort()
-      this.strategyMap.forEach(({ strategies }) => strategies.forEach((strategy) => strategy.stop()))
+      this.strategyMap.forEach(({ strategies }) => strategies.forEach(strategy => strategy.stop()))
       this.safetyMap.forEach(({ safety }) => safety.stop())
-      this.executor.stop()
+      this.backoff.stop()
       await this.database.write(() => this.database.unsafeResetDatabase())
       // todo - purge adapter?
     }

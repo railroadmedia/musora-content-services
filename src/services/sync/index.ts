@@ -4,7 +4,7 @@ import { type ModelSerialized } from "./serializers"
 import { EpochSeconds } from "./utils/epoch"
 
 export { default as SyncSession } from './run-scope'
-export { default as SyncExecutor } from './executor'
+export { default as SyncBackoff } from './backoff'
 export { default as SyncManager } from './manager'
 export { default as SyncContext } from './context'
 

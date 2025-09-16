@@ -20,23 +20,37 @@ interface RawPushResponse {
   results: SyncStorePushResult<'client_record_id'>[]
 }
 
-export interface SyncPushResponse {
+export type SyncPushResponse = SyncPushSuccessResponse | SyncPushFailureResponse
+
+type SyncPushSuccessResponse = SyncPushResponseBase & {
+  ok: true
   results: SyncStorePushResult[]
+}
+type SyncPushFailureResponse = SyncPushResponseBase & {
+  ok: false,
+  originalError: Error
+}
+interface SyncPushResponseBase extends SyncResponseBase {
+
 }
 
 export type SyncPullResponse = SyncPullSuccessResponse | SyncPullFailureResponse
 
 type SyncPullSuccessResponse = SyncPullResponseBase & {
-  success: true
+  ok: true
   entries: SyncEntry[]
   token: SyncToken
   previousToken: SyncToken | null
 }
 type SyncPullFailureResponse = SyncPullResponseBase & {
-  success: false
+  ok: false,
+  originalError: Error
 }
-interface SyncPullResponseBase {
+interface SyncPullResponseBase extends SyncResponseBase {
 
+}
+export interface SyncResponseBase {
+  ok: boolean
 }
 
 export type PushPayload = {
@@ -90,11 +104,15 @@ export function handlePull(callback: () => Request) {
       headers: generatedRequest.headers,
       signal
     });
-    const response = await fetch(request)
 
-    if (!response.ok) {
-      // TODO - error response
-      throw new Error(`Failed to fetch sync pull: ${response.statusText}`)
+    let response: Response | null = null
+    try {
+      response = await performFetch(request)
+    } catch (e) {
+      return {
+        ok: false,
+        originalError: e
+      }
     }
 
     const json = await response.json() as RawPullResponse
@@ -108,7 +126,7 @@ export function handlePull(callback: () => Request) {
     const entries = data.entries
 
     return {
-      success: true,
+      ok: true,
       entries,
       token,
       previousToken
@@ -124,18 +142,36 @@ export function handlePush(callback: () => Request) {
       body: JSON.stringify(serverPayload),
       signal
     })
-    const response = await fetch(request)
 
-    if (!response.ok) {
-      // todo - error response
-      throw new Error(`Failed to fetch sync push: ${response.statusText}`)
+    let response: Response | null = null
+    try {
+      response = await performFetch(request)
+    } catch (e) {
+      return {
+        ok: false,
+        originalError: e
+      }
     }
 
     const json = await response.json() as RawPushResponse
     const data = deserializePushResponse(json)
 
-    return data
+    return {
+      ok: true,
+      results: data.results
+    }
   }
+}
+
+async function performFetch(request: Request) {
+  const response = await fetch(request)
+  const isRetryable = (response.status >= 500 && response.status < 504) || response.status === 429 || response.status === 408
+
+  if (isRetryable) {
+    throw new Error(`Server returned ${response.status}`)
+  }
+
+  return response
 }
 
 function serializePullUrlQuery(url: string, fetchToken: SyncToken | null) {

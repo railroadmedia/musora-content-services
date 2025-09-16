@@ -33,4 +33,11 @@ export default abstract class BaseModel<ExtraRaw extends object = {}> extends Mo
       if (recordBuilder) recordBuilder(record)
     })
   }
+
+  prepareMarkAsDeleted() {
+    return super.prepareUpdate((record: this) => {
+      record._raw['updated_at'] = Math.round(Date.now() / 1000) as EpochSeconds
+      record._raw._status = 'deleted'
+    })
+  }
 }

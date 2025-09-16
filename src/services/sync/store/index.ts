@@ -7,12 +7,14 @@ import {
   SyncStorePushResponseUnreachable,
 } from '..'
 import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
+import type SyncBackoff from '../backoff'
 import type SyncRunScope from '../run-scope'
 import { EventEmitter } from '../utils/event-emitter'
 import BaseModel from '../models/Base'
 import { EpochSeconds } from '../utils/epoch'
 import { sanitizedRaw } from '@nozbe/watermelondb/RawRecord'
 import { default as Resolver, type SyncResolution } from '../resolver'
+import PushCoalescer from './push-coalescer'
 
 type ModelClass<T extends Model> = { new (...args: any[]): T; table: string };
 type SyncPull = (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
@@ -27,6 +29,7 @@ export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
 export default class SyncStore<TModel extends BaseModel = BaseModel> {
   static LOCK_NAMESPACE = 'sync:write'
 
+  readonly backoff: SyncBackoff
   readonly runScope: SyncRunScope
   readonly db: Database
   readonly model: ModelClass<TModel>
@@ -38,32 +41,36 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   readonly puller: SyncPull
   readonly pusher: SyncPush
 
-  lastFetchTokenKey: string
-  currentPull: Promise<SyncPullResponse> | null = null
+  private pushCoalescer = new PushCoalescer()
+  private currentPull: Promise<SyncPullResponse> | null = null
 
   private emitter = new EventEmitter()
+
+  private lastFetchTokenKey: string
 
   constructor({
     model,
     pull,
     push,
-  }: SyncStoreConfig<TModel>, db: Database, runScope: SyncRunScope) {
+  }: SyncStoreConfig<TModel>, db: Database, backoff: SyncBackoff, runScope: SyncRunScope) {
+    this.backoff = backoff
     this.runScope = runScope
     this.db = db
     this.model = model
     this.collection = db.collections.get(model.table)
     this.rawSerializer = new RawSerializer()
     this.modelSerializer = new ModelSerializer()
+    this.pushCoalescer = new PushCoalescer()
 
     this.puller = pull
     this.pusher = push
     this.lastFetchTokenKey = `last_fetch_token:${this.model.table}`
 
-    // window.Q = Q
-    // window.db = db
-    // window.collection = this.collection
-    // window.id = '402009'
-    // window.store = this
+    window.Q = Q
+    window.db = db
+    window.collection = this.collection
+    window.id = '402009'
+    window.store = this
   }
 
   on = this.emitter.on.bind(this.emitter)
@@ -71,11 +78,21 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private emit = this.emitter.emit.bind(this.emitter)
 
   async sync() {
-    await this.pushUnsynced()
+    let pushError: any = null
+
+    try {
+      await this.pushUnsynced()
+    } catch (err) {
+      pushError = err
+    }
 
     // will return records that we just saw in push response, but we can't
     // be sure there were no other changes before the push
     await this.pullRecords()
+
+    if (pushError) {
+      throw pushError
+    }
   }
 
   async getLastFetchToken() {
@@ -91,47 +108,23 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   private async pushUnsynced() {
-    const results = await this.collection.query().fetch()
-    const records = results.filter((rec) => rec._raw._status !== 'synced')
+    const records = await this.queryMaybeDeletedRecords(Q.where('_status', Q.notEq('synced')))
 
-    const deletedIds = await this.db.adapter.getDeletedRecords(this.collection.table)
-
-    if (records.length || deletedIds.length) {
-      await this.pushRecords(records, deletedIds)
+    if (records.length) {
+      await this.pushRecords(records)
     }
   }
 
-  private async pushRecords(pushable: TModel[], deletedIds: RecordId[] = []) {
-    const entries = [...pushable.map(rec => {
-      if (rec._raw._status === 'deleted') {
-        return {
-          record: null,
-          meta: { ids: { id: rec._raw.id }, deleted: true as true },
-        }
-      } else {
-        const record = this.rawSerializer.toPlainObject(rec)
-        return {
-          record,
-          meta: { ids: { id: rec._raw.id }, deleted: false as false },
-        }
-      }
-    }), ...deletedIds.map(id => {
-      return {
-        record: null,
-        meta: { ids: { id }, deleted: true as true },
-      }
-    })]
-    const payload = {
-      entries,
-    }
-
-    return this.makePush(payload)
+  private async pushRecords(records: TModel[]) {
+    return this.pushCoalescer.push(records, this.makePush.bind(this))
   }
 
-  private async makePush(payload: PushPayload) {
+  private async makePush(records: TModel[]) {
+    const payload = this.generatePushPayload(records)
+
     let pushed: SyncPushResponse
     try {
-      pushed = await this.pusher(payload, this.runScope.signal)
+      pushed = await this.backoff.request(() => this.pusher(payload, this.runScope.signal))
     } catch (error) {
       const response: SyncStorePushResponseUnreachable = {
         acknowledged: false,
@@ -156,14 +149,36 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return response
   }
 
+  private generatePushPayload(records: TModel[]) {
+    const entries = records.map(rec => {
+      if (rec._raw._status === 'deleted') {
+        return {
+          record: null,
+          meta: { ids: { id: rec._raw.id }, deleted: true as true },
+        }
+      } else {
+        const record = this.rawSerializer.toPlainObject(rec)
+        return {
+          record,
+          meta: { ids: { id: rec._raw.id }, deleted: false as false },
+        }
+      }
+    })
+    return {
+      entries,
+    }
+  }
+
   async pullRecords() {
+    // todo - if additional request made while currentPull, set flag to run another after currentPull?
+
     if (this.currentPull) return this.currentPull
 
     this.currentPull = (async () => {
       const lastFetchToken = await this.getLastFetchToken()
-      const response = await this.puller(lastFetchToken, this.runScope.signal)
+      const response = await this.backoff.request(() => this.puller(lastFetchToken, this.runScope.signal))
 
-      if (response.success) {
+      if (response.ok) {
         await this.write(response.entries, !response.previousToken)
         await this.setLastFetchToken(response.token)
       }
@@ -206,14 +221,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       .then(records => records[0] as TModel | null)
   }
 
-  private async queryMaybeDeletedRecord(id: RecordId) {
-    return this.queryMaybeDeletedRecords([id]).then(records => {
-      return records[0] || null
-    })
-  }
-
-  private async queryMaybeDeletedRecords(ids: RecordId[]) {
-    const serializedQuery = this.collection.query(Q.where('id', Q.oneOf(ids))).serialize()
+  private async queryMaybeDeletedRecords(...args: Q.Clause[]) {
+    const serializedQuery = this.collection.query(...args).serialize()
     const adjustedQuery = {
       ...serializedQuery,
       description: {
@@ -239,18 +248,16 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   async upsertOne(id: string, builder: (record: TModel) => void) {
     await this.db.write(async () => {
-      const existing = await this.queryRecord(id)
+      const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(records => records[0] || null)
 
       if (existing) {
-        existing.update(builder)
-      } else {
-        const deletedExisting = await this.queryMaybeDeletedRecord(id)
-
-        if (deletedExisting) {
-          await this.db.adapter.destroyDeletedRecords(this.model.table, [id])
+        if (existing._raw._status === 'deleted') {
+          await existing.destroyPermanently()
+        } else {
+          await existing.update(builder)
         }
-
-        this.collection.create((record) => {
+      } else {
+        await this.collection.create((record) => {
           const now = this.generateTimestamp()
           record._raw.id = id
           record._raw.created_at = now
@@ -260,17 +267,18 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       }
     })
 
+    this.pushUnsynced()
     return (await this.readOne(id))! // todo - possible race after write?
   }
 
   async deleteOne(id: RecordId) {
     await this.db.write(async () => {
-      const existing = await this.queryMaybeDeletedRecord(id)
+      const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(records => records[0] || null)
 
       if (existing && existing._raw._status !== 'deleted') {
-        existing.markAsDeleted()
+        await existing.markAsDeleted()
       } else {
-        await this.collection.create((record) => {
+        await this.collection.create(record => {
           const now = this.generateTimestamp()
 
           record._raw.id = id
@@ -280,6 +288,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       }
     })
 
+    this.pushUnsynced()
     return id
   }
 
@@ -318,7 +327,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     const existingRecordsMap = new Map<RecordId, TModel>()
 
     // todo - verify we don't need callReader behavior here
-    const existingRecords = await this.queryMaybeDeletedRecords(entryIds)
+    const existingRecords = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(entryIds)))
     existingRecords.forEach(record => existingRecordsMap.set(record.id, record))
 
     const resolver = new Resolver()
