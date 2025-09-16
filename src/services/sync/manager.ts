@@ -88,7 +88,7 @@ export default class SyncManager {
       strategies.forEach(strategy => {
         stores.forEach(store => {
           strategy.onTrigger(store, reason => {
-            telemetry.debug(`[manager] Sync triggered for \`${store.model.table}\` from: "${reason}`)
+            telemetry.debug(`[manager] Sync triggered for \`${store.model.table}\` from: "${reason}"`)
             store.sync()
           })
           strategy.start()
