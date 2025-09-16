@@ -3,7 +3,8 @@ import { SyncResponseBase } from "./fetch"
 
 export default class SyncBackoff {
   private readonly BASE_BACKOFF = 1_000
-  private readonly MAX_BACKOFF = 30_000
+  private readonly MAX_BACKOFF = 8_000
+  private readonly MAX_ATTEMPTS = 4
 
   private paused = false
   private backoffUntil = 0
@@ -29,27 +30,42 @@ export default class SyncBackoff {
     this.unsubscribeConnectivity?.()
   }
 
-  async request(syncFn: () => Promise<SyncResponseBase>) {
+  /**
+   * Runs the given syncFn with automatic retries.
+   * Returns the first successful result or the last failed result after retries.
+   */
+  async request(syncFn: () => Promise<SyncResponseBase>): Promise<SyncResponseBase> {
     if (!this.context.connectivity.getValue()) {
       this.paused = true
       return { ok: false }
     }
 
-    const now = Date.now()
-    if (now < this.backoffUntil) {
-      const waitMs = this.backoffUntil - now
-      await this.sleep(waitMs)
+    let attempt = 0
+
+    while (true) {
+      const now = Date.now()
+      if (now < this.backoffUntil) {
+        await this.sleep(this.backoffUntil - now)
+      }
+
+      attempt++
+
+      try {
+        const result = await syncFn()
+
+        if (result.ok) {
+          this.resetBackoff()
+          return result
+        } else {
+          this.scheduleBackoff()
+          if (attempt >= this.MAX_ATTEMPTS) return result
+          // otherwise loop to retry
+        }
+      } catch (err) {
+        // client-side exception; bubble up immediately
+        throw err
+      }
     }
-
-    const result = await syncFn()
-
-    if (!result.ok) {
-      this.scheduleBackoff()
-    } else {
-      this.resetBackoff()
-    }
-
-    return result
   }
 
   private resetBackoff() {
@@ -64,8 +80,7 @@ export default class SyncBackoff {
     const jitter = exponentialDelay * 0.25 * (Math.random() - 0.5)
     const delayWithJitter = exponentialDelay + jitter
 
-    const finalDelay = Math.min(this.MAX_BACKOFF, delayWithJitter)
-    this.backoffUntil = Date.now() + finalDelay
+    this.backoffUntil = Date.now() + Math.min(this.MAX_BACKOFF, delayWithJitter)
   }
 
   private sleep(ms: number) {
