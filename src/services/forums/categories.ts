@@ -1,5 +1,5 @@
 /**
- * @module ForumCategories
+ * @module Categories
  */
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'

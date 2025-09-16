@@ -1,4 +1,5 @@
 /**
  * @namespace Forums
- * @property {module:ForumCategories} ForumCategories
+ * @property {module:Categories} Categories
+ * @property {module:Threads} Threads
  */
