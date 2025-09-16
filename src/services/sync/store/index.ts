@@ -2,7 +2,7 @@ import { Database, Q, type Collection, type Model, type RecordId } from '@nozbe/
 import { RawSerializer, ModelSerializer } from '../serializers'
 import { SyncToken, SyncEntry, SyncError } from '..'
 import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
-import type SyncBackoff from '../backoff'
+import type SyncRetry from '../retry'
 import type SyncRunScope from '../run-scope'
 import { EventEmitter } from '../utils/event-emitter'
 import BaseModel from '../models/Base'
@@ -26,7 +26,7 @@ export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
 export default class SyncStore<TModel extends BaseModel = BaseModel> {
   static LOCK_NAMESPACE = 'sync:write'
 
-  readonly backoff: SyncBackoff
+  readonly retry: SyncRetry
   readonly runScope: SyncRunScope
   readonly db: Database
   readonly model: ModelClass<TModel>
@@ -49,8 +49,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     model,
     pull,
     push,
-  }: SyncStoreConfig<TModel>, db: Database, backoff: SyncBackoff, runScope: SyncRunScope) {
-    this.backoff = backoff
+  }: SyncStoreConfig<TModel>, db: Database, retry: SyncRetry, runScope: SyncRunScope) {
+    this.retry = retry
     this.runScope = runScope
     this.db = db
     this.model = model
@@ -68,7 +68,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   off = this.emitter.off.bind(this.emitter)
   private emit = this.emitter.emit.bind(this.emitter)
 
-  async sync() {
+  async sync(reason: string) {
+    telemetry.debug(`[store:${this.model.table}] Attempting sync from: "${reason}"`)
+
     let pushError: any = null
 
     try {
@@ -119,7 +121,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private async makePush(records: TModel[]) {
     const payload = this.generatePushPayload(records)
 
-    const response = await this.backoff.request<SyncPushResponse>(() => this.pusher(payload, this.runScope.signal))
+    const response = await this.retry.request<SyncPushResponse>(() => this.pusher(payload, this.runScope.signal))
 
     if (response.ok) {
       const successfulResults = response.results.filter(result => result.type === 'success')
@@ -159,7 +161,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
     this.currentPull = (async () => {
       const lastFetchToken = await this.getLastFetchToken()
-      const response = await this.backoff.request<SyncPullResponse>(() => this.puller(lastFetchToken, this.runScope.signal))
+      const response = await this.retry.request<SyncPullResponse>(() => this.puller(lastFetchToken, this.runScope.signal))
 
       if (response.ok) {
         await this.writeEntries(response.entries, !response.previousToken)
@@ -347,6 +349,10 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   private prepareRecords(result: SyncResolution) {
+    if (Object.values(result).find(c => c.length)) {
+      telemetry.debug(`[store:${this.model.table}] Writing changes`, { changes: result })
+    }
+
     const destroyedBuilds = result.idsForDestroy.map(id => {
       return new this.model(this.collection, { id }).prepareDestroyPermanently()
     })

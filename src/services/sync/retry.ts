@@ -2,7 +2,7 @@ import SyncContext from "./context"
 import { SyncResponse } from "./fetch"
 import telemetry from "./telemetry"
 
-export default class SyncBackoff {
+export default class SyncRetry {
   private readonly BASE_BACKOFF = 1_000
   private readonly MAX_BACKOFF = 8_000
   private readonly MAX_ATTEMPTS = 4
@@ -71,8 +71,11 @@ export default class SyncBackoff {
   }
 
   private resetBackoff() {
-    this.backoffUntil = 0
-    this.failureCount = 0
+    if (this.backoffUntil !== 0 || this.failureCount !== 0) {
+      telemetry.debug('[Retry] Resetting backoff')
+      this.backoffUntil = 0
+      this.failureCount = 0
+    }
   }
 
   private scheduleBackoff() {
@@ -83,6 +86,8 @@ export default class SyncBackoff {
     const delayWithJitter = exponentialDelay + jitter
 
     this.backoffUntil = Date.now() + Math.min(this.MAX_BACKOFF, delayWithJitter)
+
+    telemetry.debug('[Retry] Scheduling backoff', { failureCount: this.failureCount, backoffUntil: this.backoffUntil })
   }
 
   private sleep(ms: number) {
