@@ -99,7 +99,9 @@ import {
 } from './services/forums/categories.ts';
 
 import {
-	createThread
+	createThread,
+	lockThread,
+	unlockThread
 } from './services/forums/threads.ts';
 
 import {
@@ -508,6 +510,7 @@ export {
 	likeComment,
 	likeContent,
 	likePlaylist,
+	lockThread,
 	logUserPractice,
 	login,
 	loginWithProvider,
@@ -565,6 +568,7 @@ export {
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
+	unlockThread,
 	unpinProgressRow,
 	updateDisplayName,
 	updateForumCategory,
