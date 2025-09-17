@@ -1,31 +1,38 @@
-import type { BaseConnectivityProvider, BaseVisibilityProvider, BaseTabsProvider, BaseDurabilityProvider } from './providers'
+import type {
+  BaseConnectivityProvider,
+  BaseVisibilityProvider,
+  BaseTabsProvider,
+  BaseDurabilityProvider,
+} from './providers'
 
-export default class SyncContext {
+type Providers = {
   connectivity: BaseConnectivityProvider
   visibility: BaseVisibilityProvider
   tabs: BaseTabsProvider
   durability: BaseDurabilityProvider
+}
 
-  constructor(providers: {
-    connectivity: BaseConnectivityProvider,
-    visibility: BaseVisibilityProvider,
-    tabs: BaseTabsProvider,
-    durability: BaseDurabilityProvider
-  }) {
-    this.connectivity = providers.connectivity
-    this.visibility = providers.visibility
-    this.tabs = providers.tabs
-    this.durability = providers.durability
+export default class SyncContext {
+  constructor(private providers: Providers) {}
+
+  start() {
+    Object.values(this.providers).forEach((p) => p.start())
   }
 
-  setup() {
-    const teardowns = [
-      this.connectivity.setup(),
-      this.visibility.setup(),
-      this.tabs.setup(),
-      this.durability.setup(),
-    ]
+  stop() {
+    Object.values(this.providers).forEach((p) => p.stop())
+  }
 
-    return () => teardowns.forEach(teardown => teardown())
+  get connectivity() {
+    return this.providers.connectivity
+  }
+  get visibility() {
+    return this.providers.visibility
+  }
+  get tabs() {
+    return this.providers.tabs
+  }
+  get durability() {
+    return this.providers.durability
   }
 }

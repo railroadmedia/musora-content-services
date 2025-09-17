@@ -4,9 +4,8 @@ export default abstract class BaseContextProvider<T> {
   private emitter = new EventEmitter<{ change: [T] }>()
   abstract getValue(): T
 
-  setup() {
-    return () => {}
-  }
+  start() {}
+  stop() {}
 
   subscribe(listener: (value: T) => void) {
     return this.emitter.on('change', listener)

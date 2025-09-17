@@ -83,6 +83,8 @@ export default class SyncManager {
 
   setup() {
     telemetry.debug('[SyncManager] Setting up')
+    this.context.start()
+
     this.safetyMap.forEach(({ safety }) => safety.start())
 
     this.strategyMap.forEach(({ stores, strategies }) => {
@@ -109,6 +111,7 @@ export default class SyncManager {
       this.strategyMap.forEach(({ strategies }) => strategies.forEach(strategy => strategy.stop()))
       this.safetyMap.forEach(({ safety }) => safety.stop())
       this.retry.stop()
+      this.context.stop()
       await this.database.write(() => this.database.unsafeResetDatabase())
       // todo - purge adapter?
     }

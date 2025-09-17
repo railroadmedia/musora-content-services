@@ -6,6 +6,8 @@ import BaseModel from '../models/Base'
 import { RecordId } from '@nozbe/watermelondb'
 
 import { SyncError, SyncExistsDTO, SyncReadDTO, SyncWriteDTO } from '..'
+import { SyncPushResponse } from "../fetch";
+import { ModelSerialized } from "../serializers";
 
 export default class SyncRepository<TModel extends BaseModel> {
   context: SyncContext
@@ -67,23 +69,45 @@ export default class SyncRepository<TModel extends BaseModel> {
   }
 
   protected async upsertOne(id: RecordId, builder: (record: TModel) => void) {
-    const record = await this.store.upsertOne(id, builder);
+    return this._push(await this.store.upsertOne(id, builder))
+  }
+
+  protected async deleteOne(id: RecordId) {
+    return this._pushId(await this.store.deleteOne(id))
+  }
+
+  private async _push(record: ModelSerialized<TModel>) {
+    let response: SyncPushResponse | null = null
+    if (!this.context.durability.getValue()) {
+      response = await this.store.pushRecordIdsImpatiently([record.id])
+
+      if (!response.ok) {
+        throw new SyncError('Failed to push records', { response })
+      }
+    }
 
     const ret: SyncWriteDTO<TModel> = {
       data: record,
-      status: 'unsynced',
-      pushStatus: 'pending'
+      status: response ? 'synced' : 'unsynced',
+      pushStatus: response ? 'success' : 'pending'
     }
     return ret
   }
 
-  protected async deleteOne(id: RecordId) {
-    await this.store.deleteOne(id)
+  private async _pushId(id: RecordId) {
+    let response: SyncPushResponse | null = null
+    if (!this.context.durability.getValue()) {
+      response = await this.store.pushRecordIdsImpatiently([id])
+
+      if (!response.ok) {
+        throw new SyncError('Failed to push records', { response })
+      }
+    }
 
     const ret: SyncWriteDTO<TModel> = {
       data: id,
-      status: 'unsynced',
-      pushStatus: 'pending'
+      status: response ? 'synced' : 'unsynced',
+      pushStatus: response ? 'success' : 'pending'
     }
     return ret
   }
@@ -92,11 +116,14 @@ export default class SyncRepository<TModel extends BaseModel> {
 
   private async _read<TMultiple extends boolean = false>(query: () => Promise<SyncReadDTO<TModel, TMultiple>['data']>) {
     const fetchToken = await this.store.getLastFetchToken();
-    const synced = !!fetchToken;
-    let pull: Awaited<ReturnType<typeof this.store.pullRecordsAggressive>> | null = null;
+    const everPulled = !!fetchToken;
+    let pull: Awaited<ReturnType<typeof this.store.pullRecordsImpatiently>> | null = null;
 
-    if (!synced) {
-      pull = await this.store.pullRecordsAggressive()
+    if (!everPulled) {
+      pull = await this.store.pullRecordsImpatiently()
+      if (!pull.ok) {
+        throw new SyncError('Failed to pull records', { pull })
+      }
     }
 
     const data = await query()
