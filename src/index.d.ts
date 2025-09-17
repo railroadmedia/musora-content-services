@@ -99,7 +99,9 @@ import {
 } from './services/forums/categories.ts';
 
 import {
-	createThread
+	createThread,
+	lockThread,
+	unlockThread
 } from './services/forums/threads.ts';
 
 import {
@@ -509,6 +511,7 @@ declare module 'musora-content-services' {
 		likeComment,
 		likeContent,
 		likePlaylist,
+		lockThread,
 		logUserPractice,
 		login,
 		loginWithProvider,
@@ -566,6 +569,7 @@ declare module 'musora-content-services' {
 		unlikeComment,
 		unlikeContent,
 		unlikePlaylist,
+		unlockThread,
 		unpinProgressRow,
 		updateDisplayName,
 		updateForumCategory,
