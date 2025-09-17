@@ -6,6 +6,10 @@ import {
 } from './services/config.js';
 
 import {
+	downloadCollectionMetadata
+} from './services/content-org/downloads.ts';
+
+import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
@@ -363,6 +367,7 @@ declare module 'musora-content-services' {
 		deletePracticeSession,
 		deleteProfilePicture,
 		deleteUserActivity,
+		downloadCollectionMetadata,
 		duplicatePlaylist,
 		editComment,
 		enrollUserInGuidedCourse,

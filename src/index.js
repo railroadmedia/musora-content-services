@@ -6,6 +6,10 @@ import {
 } from './services/config.js';
 
 import {
+	downloadCollectionMetadata
+} from './services/content-org/downloads.ts';
+
+import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
@@ -362,6 +366,7 @@ export {
 	deletePracticeSession,
 	deleteProfilePicture,
 	deleteUserActivity,
+	downloadCollectionMetadata,
 	duplicatePlaylist,
 	editComment,
 	enrollUserInGuidedCourse,
