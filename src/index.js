@@ -99,7 +99,9 @@ import {
 } from './services/forums/categories.ts';
 
 import {
-	createThread
+	createThread,
+	pinThread,
+	unpinThread
 } from './services/forums/threads.ts';
 
 import {
@@ -521,6 +523,7 @@ export {
 	otherStats,
 	pauseLiveEventPolling,
 	pinProgressRow,
+	pinThread,
 	postContentComplete,
 	postContentLiked,
 	postContentReset,
@@ -566,6 +569,7 @@ export {
 	unlikeContent,
 	unlikePlaylist,
 	unpinProgressRow,
+	unpinThread,
 	updateDisplayName,
 	updateForumCategory,
 	updateNotificationSetting,
