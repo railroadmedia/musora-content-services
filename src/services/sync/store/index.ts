@@ -106,22 +106,23 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     }
   }
 
+  async pushRecordIdsImpatiently(ids: RecordId[]) {
+    const records = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))
+    return await this.retry.request<SyncPushResponse>(() => this.pushCoalescer.push(records, this.makePush.bind(this)), true)
+  }
+
   private async pushUnsynced() {
     const records = await this.queryMaybeDeletedRecords(Q.where('_status', Q.notEq('synced')))
 
     if (records.length) {
-      await this.pushRecords(records)
+      return await this.retry.request<SyncPushResponse>(() => this.pushCoalescer.push(records, this.makePush.bind(this)))
     }
-  }
-
-  private async pushRecords(records: TModel[]) {
-    return this.pushCoalescer.push(records, this.makePush.bind(this))
   }
 
   private async makePush(records: TModel[]) {
     const payload = this.generatePushPayload(records)
 
-    const response = await this.retry.request<SyncPushResponse>(() => this.pusher(payload, this.runScope.signal))
+    const response = await this.pusher(payload, this.runScope.signal)
 
     if (response.ok) {
       const successfulResults = response.results.filter(result => result.type === 'success')
@@ -182,13 +183,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     }
   }
 
-  async pullRecordsAggressive() {
-    const pull = await this.retry.request<SyncPullResponse>(() => this.getCurrentPull(), 1)
-
-    if (!pull.ok) {
-      throw new SyncStoreError('Failed to pull records', this, { pull })
-    }
-    return pull
+  async pullRecordsImpatiently() {
+    return await this.retry.request<SyncPullResponse>(() => this.getCurrentPull(), true)
   }
 
   async readAll() {

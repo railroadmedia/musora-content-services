@@ -2,7 +2,7 @@ import SyncStore from "./store"
 import telemetry from "./telemetry"
 
 export class SyncError extends Error {
-  constructor(message: string, name: string = 'SyncError', context?: any) {
+  constructor(message: string, context?: any, name: string = 'SyncError') {
     super(message)
     this.name = name
     telemetry.error(this.name, this.message, context)
@@ -11,7 +11,7 @@ export class SyncError extends Error {
 
 export class SyncStoreError extends SyncError {
   constructor(message: string, store: SyncStore, context?: any) {
-    super(message, 'SyncStoreError', context)
+    super(message, context, 'SyncStoreError')
     context.store = store
   }
 }
