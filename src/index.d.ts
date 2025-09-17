@@ -99,7 +99,9 @@ import {
 } from './services/forums/categories.ts';
 
 import {
-	createThread
+	createThread,
+	pinThread,
+	unpinThread
 } from './services/forums/threads.ts';
 
 import {
@@ -522,6 +524,7 @@ declare module 'musora-content-services' {
 		otherStats,
 		pauseLiveEventPolling,
 		pinProgressRow,
+		pinThread,
 		postContentComplete,
 		postContentLiked,
 		postContentReset,
@@ -567,6 +570,7 @@ declare module 'musora-content-services' {
 		unlikeContent,
 		unlikePlaylist,
 		unpinProgressRow,
+		unpinThread,
 		updateDisplayName,
 		updateForumCategory,
 		updateNotificationSetting,

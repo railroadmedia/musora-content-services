@@ -28,3 +28,27 @@ export async function createThread(
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<ForumThread>(`${baseUrl}/v1/categories/${categoryId}/threads`, params)
 }
+
+/**
+ * Pins a thread to the top of its category.
+ *
+ * @param {number} threadId - The ID of the thread to pin.
+ * @return {Promise<void>} - A promise that resolves when the thread is pinned.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function pinThread(threadId: number): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post<void>(`${baseUrl}/v1/threads/${threadId}/pin`, {})
+}
+
+/**
+ * Unpins a thread from the top of its category.
+ *
+ * @param {number} threadId - The ID of the thread to unpin.
+ * @return {Promise<void>} - A promise that resolves when the thread is unpinned.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function unpinThread(threadId: number): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}/pin`)
+}
