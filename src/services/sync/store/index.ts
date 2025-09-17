@@ -155,13 +155,15 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   async pullRecords() {
-    // todo - if additional request made while currentPull, set flag to run another after currentPull?
+    return await this.retry.request<SyncPullResponse>(() => this.getCurrentPull())
+  }
 
+  private async getCurrentPull() {
     if (this.currentPull) return this.currentPull
 
     this.currentPull = (async () => {
       const lastFetchToken = await this.getLastFetchToken()
-      const response = await this.retry.request<SyncPullResponse>(() => this.puller(lastFetchToken, this.runScope.signal))
+      const response = await this.puller(lastFetchToken, this.runScope.signal)
 
       if (response.ok) {
         await this.writeEntries(response.entries, !response.previousToken)
@@ -178,6 +180,15 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     } finally {
       this.currentPull = null
     }
+  }
+
+  async pullRecordsAggressive() {
+    const pull = await this.retry.request<SyncPullResponse>(() => this.getCurrentPull(), 1)
+
+    if (!pull.ok) {
+      throw new SyncStoreError('Failed to pull records', this, { pull })
+    }
+    return pull
   }
 
   async readAll() {
