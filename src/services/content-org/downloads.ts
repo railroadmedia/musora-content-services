@@ -1,6 +1,4 @@
-import {fetchByRailContentId, fetchByRailContentIds} from '../sanity.js';
-
-const BASE_PATH = `/api/content-org`
+import {fetchByRailContentId, fetchByRailContentIds, fetchParentForDownload} from '../sanity.js';
 
 
 // Type definitions
@@ -42,19 +40,6 @@ interface Document {
 interface Response {
   content: any[]
   group: any[]
-}
-
-interface ContentKey {
-  key: ContentMetadata;
-}
-
-interface GroupKey {
-  key: GroupMetadata;
-}
-
-interface ContentMetadata {
-  id: string | number;
-  lesson: any[];
 }
 
 // Main function. this is a copy of fetchLeafNodesWithDurationForContent() in mpb SanityGateway
@@ -107,16 +92,17 @@ export async function downloadCollectionMetadata(contentId: number)
 {
   // fetch sanity resource by id (parent)
   // return children[] all the way down (up to 4 layers ig)
-  const parent: any = await fetchByRailContentId(String(contentId), 'parent-download')
+  const parent: any = await fetchParentForDownload(String(contentId))
+  console.log('parent', parent)
 
-  // use this children[] array with js parsing to determine leaf nodes (lessons)
+  // use children[] array with js parsing to determine leaf nodes (lessons)
   const children = getLeafNodes(parent)
 
   //get id list of children
   const childrenIds = children.map(child => String(child.id))
 
   // with list of children ids, fetch resources for each lesson with fetchByRailcontentIds()
-  const childrenResources = await fetchByRailContentIds(childrenIds, 'lesson-download', undefined, true)
+  const childrenResources = await fetchByRailContentIds(childrenIds, 'content-download', undefined, true)
 
   // structure into response object, and send
   const mappedChildren = childrenResources.map(child => ({

@@ -319,6 +319,36 @@ export let contentTypeConfig = {
     ],
     slug: 'courses',
   },
+  'content-download': {
+    fields: [
+      `"resources": ${resourcesField}`,
+      'soundslice',
+      'instrumentless',
+      'soundslice_slug',
+      `"description": ${descriptionField}`,
+      `"chapters": ${chapterField}`,
+      '"instructors":instructor[]->name',
+      `"instructor": ${instructorField}`,
+      'video',
+      'length_in_seconds',
+      'mp3_no_drums_no_click_url',
+      'mp3_no_drums_yes_click_url',
+      'mp3_yes_drums_no_click_url',
+      'mp3_yes_drums_yes_click_url',
+      '"permission_id": permission[]->railcontent_id',
+      `...select(
+      defined(live_event_start_time) => {
+      "live_event_start_time": live_event_start_time,
+      "live_event_end_time": live_event_end_time,
+      "live_event_youtube_id": live_event_youtube_id,
+      "videoId": coalesce(live_event_youtube_id, video.external_id),
+      "live_event_is_global": live_global_event == true
+      }
+      )`
+
+    ]
+  },
+
   'parent-download': {
     fields: [
       '"lesson_count": child_count',
@@ -328,6 +358,20 @@ export let contentTypeConfig = {
       'xp',
       'total_xp',
       '"thumbnail_url":thumbnail.asset->url',
+      `'lastChildItems': array::compact(
+          child[]-> {
+              'id': railcontent_id,
+              length_in_seconds,
+              status,
+              'children': child[]-> {
+                  // Fetch child nodes if they exist
+                  'id': railcontent_id,
+                  length_in_seconds,
+                  status,
+                  'isLeaf': !defined(child)
+              }
+          }
+      )`,
       `"lessons": child[]->{
                 "id": railcontent_id,
                 title,
