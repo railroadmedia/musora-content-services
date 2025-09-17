@@ -5,7 +5,7 @@ import SyncContext from '../context'
 import BaseModel from '../models/Base'
 import { RecordId } from '@nozbe/watermelondb'
 
-import { SyncExistsDTO, SyncReadDTO, SyncWriteDTO } from '..'
+import { SyncError, SyncExistsDTO, SyncReadDTO, SyncWriteDTO } from '..'
 
 export default class SyncRepository<TModel extends BaseModel> {
   context: SyncContext
@@ -88,23 +88,23 @@ export default class SyncRepository<TModel extends BaseModel> {
     return ret
   }
 
-  // read from local db, but pull (and potentially throw (!)) if it's never been synced before
+  // read from local db, but pull (and throw (!) if it fails) if it's never been synced before
 
   private async _read<TMultiple extends boolean = false>(query: () => Promise<SyncReadDTO<TModel, TMultiple>['data']>) {
     const fetchToken = await this.store.getLastFetchToken();
     const synced = !!fetchToken;
-    let pull: Awaited<ReturnType<typeof this.store.pullRecords>> | null = null;
+    let pull: Awaited<ReturnType<typeof this.store.pullRecordsAggressive>> | null = null;
 
     if (!synced) {
-      pull = await this.store.pullRecords()
+      pull = await this.store.pullRecordsAggressive()
     }
 
     const data = await query()
 
     const result: SyncReadDTO<TModel, TMultiple> = {
       data,
-      status: pull?.success ? 'fresh' : 'stale',
-      pullStatus: null,
+      status: pull?.ok ? 'fresh' : 'stale',
+      pullStatus: pull?.ok ? 'success' : 'failure',
       lastFetchToken: fetchToken,
     }
     return result
@@ -153,7 +153,7 @@ export default class SyncRepository<TModel extends BaseModel> {
     ])
     const data = await query()
 
-    if (!response.success) {
+    if (!response.ok) {
       const result: SyncReadDTO<TModel, TMultiple> = {
         data,
         status: 'stale',

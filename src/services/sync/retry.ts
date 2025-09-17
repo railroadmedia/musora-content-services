@@ -35,7 +35,7 @@ export default class SyncRetry {
    * Runs the given syncFn with automatic retries.
    * Returns the first successful result or the last failed result after retries.
    */
-  async request<T extends SyncResponse>(syncFn: () => Promise<T>) {
+  async request<T extends SyncResponse>(syncFn: () => Promise<T>, attemptsOverride?: number) {
     if (!this.context.connectivity.getValue()) {
       telemetry.debug('[Backoff] No connectivity - skipping')
       this.paused = true
@@ -51,21 +51,14 @@ export default class SyncRetry {
       }
 
       attempt++
+      const result = await syncFn()
 
-      try {
-        const result = await syncFn()
-
-        if (result.ok) {
-          this.resetBackoff()
-          return result
-        } else {
-          this.scheduleBackoff()
-          if (attempt >= this.MAX_ATTEMPTS) return result
-          // otherwise loop to retry
-        }
-      } catch (err) {
-        // client-side exception; bubble up immediately
-        throw err
+      if (result.ok) {
+        this.resetBackoff()
+        return result
+      } else {
+        this.scheduleBackoff()
+        if (attempt >= (attemptsOverride ?? this.MAX_ATTEMPTS)) return result
       }
     }
   }
