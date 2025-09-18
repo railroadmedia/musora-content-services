@@ -6,10 +6,6 @@ import {
 } from './services/config.js';
 
 import {
-	downloadCollectionMetadata
-} from './services/content-org/downloads.ts';
-
-import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
@@ -91,6 +87,10 @@ import {
 	isSameDate,
 	toDayjs
 } from './services/dateUtils.js';
+
+import {
+	downloadCollectionMetadata
+} from './services/downloads.ts';
 
 import {
 	getActiveDiscussions

@@ -1,4 +1,4 @@
-import {fetchByRailContentId, fetchByRailContentIds, fetchParentForDownload} from '../sanity.js';
+import {fetchByRailContentId, fetchByRailContentIds, fetchParentForDownload} from './sanity.js';
 
 
 // Type definitions
