@@ -265,7 +265,8 @@ import {
 
 import {
 	fetchMemberships,
-	fetchRechargeTokens
+	fetchRechargeTokens,
+	upgradeSubscription
 } from './services/user/memberships.js';
 
 import {
@@ -572,6 +573,7 @@ export {
 	updatePlaylist,
 	updatePracticeNotes,
 	updateUserPractice,
+	upgradeSubscription,
 	uploadPicture,
 	uploadPictureFromS3,
 	verifyImageSRC,
