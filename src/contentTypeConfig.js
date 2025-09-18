@@ -146,7 +146,12 @@ export const showsTypes = {
   pianote: ['student-review', 'question-and-answer'],
   guitareo: ['student-review', 'question-and-answer', 'archives', 'recording'],
   singeo: ['student-review', 'question-and-answer'],
-  playBass: ['student-review', 'question-and-answer'],
+  playBass: [
+    'student-review',
+    'question-and-answer',
+    'live',
+    'quick-tips',
+  ],
 }
 
 export const coachLessonsTypes = [
