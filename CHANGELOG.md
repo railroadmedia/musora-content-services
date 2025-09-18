@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.40.0](https://github.com/railroadmedia/musora-content-services/compare/v2.34.0...v2.40.0) (2025-09-18)
+
+
+### Features
+
+* **988:** Return json of the response ([e37c5fb](https://github.com/railroadmedia/musora-content-services/commit/e37c5fb4c5861745973352500258101e2c280585))
+* **998:** Initial commit, for troubleshooting npm ([899b5bc](https://github.com/railroadmedia/musora-content-services/commit/899b5bcaa1f20a315273391a001575c1728a88cf))
+* **beh-809:** show correct badge data on home page + lesson page ([#439](https://github.com/railroadmedia/musora-content-services/issues/439)) ([0c95805](https://github.com/railroadmedia/musora-content-services/commit/0c958051334450083c15514ed915c848f57af4c3))
+* fix navigateTo for packs without progress, restrict pack access to allowed packs ([#444](https://github.com/railroadmedia/musora-content-services/issues/444)) ([5807c54](https://github.com/railroadmedia/musora-content-services/commit/5807c5496209dcdbbbe9820ce8ecdb30dab74c54))
+* **MU2-1028:** forum categories ([#441](https://github.com/railroadmedia/musora-content-services/issues/441)) ([0781f11](https://github.com/railroadmedia/musora-content-services/commit/0781f11b9cc75b5e2aed646b877ba2fdc5066386))
+* **MU2-1029:** create forum category ([#445](https://github.com/railroadmedia/musora-content-services/issues/445)) ([966ee55](https://github.com/railroadmedia/musora-content-services/commit/966ee553bd150ecbe1fc80ec29e7a273a66fb662))
+* **MU2-1032:** store thread ([#451](https://github.com/railroadmedia/musora-content-services/issues/451)) ([78dcd70](https://github.com/railroadmedia/musora-content-services/commit/78dcd7094af2c3e7dd81d0e1355809c244a73fe0))
+* **MU2-1042:** update forum category ([#448](https://github.com/railroadmedia/musora-content-services/issues/448)) ([7e498de](https://github.com/railroadmedia/musora-content-services/commit/7e498de976173122820b8008818b530a298fb8f3))
+* **MU2-998:** Add shape of payload, update annotation/doc, update jsdoc ([9df418e](https://github.com/railroadmedia/musora-content-services/commit/9df418ebfe846dd2842d6eff8ce810579718525d))
+* **MU2-998:** fix authorization for request ([c0b9ada](https://github.com/railroadmedia/musora-content-services/commit/c0b9ada7d4f401f1492505decdad472f32ea37ed))
+* **MU2-998:** Update payments typescript, move to user for now, update docs, remove yarn.lock ([4f61eb1](https://github.com/railroadmedia/musora-content-services/commit/4f61eb162af8f35406fd683324900ec353d00c44))
+* **MU2-998:** Use fetchHandler ([72e1715](https://github.com/railroadmedia/musora-content-services/commit/72e17159e5aa2cc662174239c1783fba7621d710))
+
+
+### Bug Fixes
+
+* Guided Courses - System Test Patches ([#446](https://github.com/railroadmedia/musora-content-services/issues/446)) ([81ccee9](https://github.com/railroadmedia/musora-content-services/commit/81ccee9cc0021a0d326e5f021bed41c4696e06f7))
+
 ### [2.39.5](https://github.com/railroadmedia/musora-content-services/compare/v2.39.4...v2.39.5) (2025-09-16)
 
 ### [2.39.4](https://github.com/railroadmedia/musora-content-services/compare/v2.39.3...v2.39.4) (2025-09-16)
