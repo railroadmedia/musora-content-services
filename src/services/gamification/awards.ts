@@ -70,6 +70,27 @@ export async function fetchAwardsForUser(
 }
 
 /**
+ * Get award progress for the guided course lesson for the authorized user.
+ *
+ * NOTE: needs error handling for the response from http client
+ * (Alexandre: I'm doing it in a different branch/PR: https://github.com/railroadmedia/musora-content-services/pull/349)
+ * NOTE: This function still expects brand because FE passes the argument. It is ignored for now
+ *
+ * @param {number} guidedCourseLessonId - The guided course lesson Id
+ * @returns {Promise<Award>} - The award data for a given award and given user.
+ */
+export async function getAwardDataForGuidedContentt(
+  guidedCourseLessonId,
+): Promise<Award> {
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  const response = await httpClient.get<Award>(
+    `${baseUrl}/v1/users/guided_course_award/${guidedCourseLessonId}`
+  )
+
+  return response
+}
+
+/**
  * Get certificate data for a completed user award
  *
  * NOTE: needs error handling for the response from http client
