@@ -30,6 +30,7 @@ export async function createThread(
 
 export interface UpdateThreadParams {
   title: string
+  brand: string
 }
 /**
  * Updates an existing thread under a forum category.
