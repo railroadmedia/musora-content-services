@@ -33,22 +33,24 @@ export async function createThread(
  * Follow a thread.
  *
  * @param {number} threadId - The ID of the thread to lock.
+ * @param {string} brand - The brand associated with the follow action.
  * @return {Promise<void>} - A promise that resolves when the thread is locked.
  * @throws {HttpError} - If the request fails.
  */
-export async function followThread(threadId: number): Promise<void> {
+export async function followThread(threadId: number, brand: string): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<void>(`${baseUrl}/v1/threads/${threadId}/follow`, {})
+  return httpClient.post<void>(`${baseUrl}/v1/threads/${threadId}/follow`, { brand })
 }
 
 /**
  * Unlock a thread to allow further posts.
  *
  * @param {number} threadId - The ID of the thread to unlock.
+ * @param {string} brand - The brand associated with the unlock action.
  * @return {Promise<void>} - A promise that resolves when the thread is unlocked.
  * @throws {HttpError} - If the request fails.
  */
-export async function unfollowThread(threadId: number): Promise<void> {
+export async function unfollowThread(threadId: number, brand: string): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}/follow`)
+  return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}/follow?brand=${brand}`)
 }
