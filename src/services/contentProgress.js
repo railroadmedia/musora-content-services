@@ -168,6 +168,7 @@ function buildNavigateTo(content, child = null) {
     id: content.id ?? null,
     type: content.type ?? '',
     published_on: content.published_on ?? null,
+    status: content.status ?? '',
     child: child,
   }
 }
