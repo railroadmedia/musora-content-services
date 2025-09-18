@@ -1,5 +1,5 @@
 /**
- * @module ForumCategories
+ * @module Categories
  */
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
@@ -39,4 +39,27 @@ export async function createForumCategory(
 ): Promise<ForumCategory> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<ForumCategory>(`${baseUrl}/v1/categories`, params)
+}
+
+export interface UpdateForumCategoryParams {
+  id: number
+  brand: number
+  name: string
+  weight: number
+  description?: string
+  icon?: string
+}
+
+/**
+ * Creates a new forum category.
+ *
+ * @param {UpdateForumCategoryParams} params - The parameters for creating the forum category.
+ * @returns {Promise<ForumCategory>} - A promise that resolves to the created forum category.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function updateForumCategory(
+  params: UpdateForumCategoryParams
+): Promise<ForumCategory> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.put<ForumCategory>(`${baseUrl}/v1/categories/${params.id}`, params)
 }

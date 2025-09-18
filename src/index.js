@@ -94,8 +94,13 @@ import {
 
 import {
 	createForumCategory,
-	fetchForumCategories
+	fetchForumCategories,
+	updateForumCategory
 } from './services/forums/categories.ts';
+
+import {
+	createThread
+} from './services/forums/threads.ts';
 
 import {
 	fetchAwardsForUser,
@@ -349,6 +354,7 @@ export {
 	createForumCategory,
 	createPlaylist,
 	createPracticeNotes,
+	createThread,
 	deleteComment,
 	deleteItemsFromPlaylist,
 	deleteNotification,
@@ -562,6 +568,7 @@ export {
 	unlikePlaylist,
 	unpinProgressRow,
 	updateDisplayName,
+	updateForumCategory,
 	updateNotificationSetting,
 	updatePlaylist,
 	updatePracticeNotes,
