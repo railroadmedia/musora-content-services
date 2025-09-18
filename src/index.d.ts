@@ -89,7 +89,8 @@ import {
 } from './services/dateUtils.js';
 
 import {
-	downloadCollectionMetadata
+	downloadCollectionMetadata,
+	downloadPlaylistMetadata
 } from './services/downloads.ts';
 
 import {
@@ -368,6 +369,7 @@ declare module 'musora-content-services' {
 		deleteProfilePicture,
 		deleteUserActivity,
 		downloadCollectionMetadata,
+		downloadPlaylistMetadata,
 		duplicatePlaylist,
 		editComment,
 		enrollUserInGuidedCourse,

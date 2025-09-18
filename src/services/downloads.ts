@@ -1,4 +1,5 @@
-import {fetchByRailContentId, fetchByRailContentIds, fetchParentForDownload} from './sanity.js';
+import {fetchByRailContentIds, fetchParentForDownload} from './sanity.js';
+import {fetchPlaylist} from "./content-org/playlists.js";
 
 
 // Type definitions
@@ -99,7 +100,7 @@ export async function downloadCollectionMetadata(contentId: number)
   const children = getLeafNodes(parent)
 
   //get id list of children
-  const childrenIds = children.map(child => String(child.id))
+  const childrenIds = children.map(child => child.id)
 
   // with list of children ids, fetch resources for each lesson with fetchByRailcontentIds()
   const childrenResources = await fetchByRailContentIds(childrenIds, 'content-download', undefined, true)
@@ -116,6 +117,44 @@ export async function downloadCollectionMetadata(contentId: number)
       type: "collection",
       brand: parent.brand || null,
       title: parent.title || null,
+      items: childrenIds,
+      append_items: false,    // if this is true, we can append this list to the existing one
+    }
+  }]
+
+  const result: Response = { content: mappedChildren, group: groupObject };
+  return result;
+
+}
+
+export async function downloadPlaylistMetadata(playlistId: number)
+{
+  // fetch sanity resource by id (parent)
+  // return children[] all the way down (up to 4 layers ig)
+  let playlist = await fetchPlaylist(playlistId);
+
+  //get id list of children
+  const childrenIds = playlist.items.map(child => child.content_id)
+
+  // with list of children ids, fetch resources for each lesson with fetchByRailcontentIds()
+  const childrenResources = await fetchByRailContentIds(childrenIds, 'content-download', undefined, true)
+
+  // structure into playlist object, and send
+  const mappedChildren = childrenResources.map(child => ({
+    [child.id]: { id: child.id, lesson: child }
+  }));
+
+  const key: string = 'playlist:' + playlistId
+  const groupObject = [{
+    [key]: {
+      id: playlist.id,
+      type: "playlist",
+      name: playlist.name || null,
+      brand: playlist.brand || null,
+      instrument: playlist.instrument || null,
+      category: playlist.category || null,
+      user: playlist.user || null,
+      total_items: playlist.total_items || 0,
       items: childrenIds,
       append_items: false,    // if this is true, we can append this list to the existing one
     }

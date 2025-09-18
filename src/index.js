@@ -89,7 +89,8 @@ import {
 } from './services/dateUtils.js';
 
 import {
-	downloadCollectionMetadata
+	downloadCollectionMetadata,
+	downloadPlaylistMetadata
 } from './services/downloads.ts';
 
 import {
@@ -367,6 +368,7 @@ export {
 	deleteProfilePicture,
 	deleteUserActivity,
 	downloadCollectionMetadata,
+	downloadPlaylistMetadata,
 	duplicatePlaylist,
 	editComment,
 	enrollUserInGuidedCourse,
