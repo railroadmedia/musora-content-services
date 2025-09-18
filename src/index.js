@@ -100,7 +100,9 @@ import {
 } from './services/forums/categories.ts';
 
 import {
-	createThread
+	createThread,
+	followThread,
+	unfollowThread
 } from './services/forums/threads.ts';
 
 import {
@@ -452,6 +454,7 @@ export {
 	fetchUserPracticeNotes,
 	fetchUserPractices,
 	findIncompleteLesson,
+	followThread,
 	getActiveDiscussions,
 	getAllCompleted,
 	getAllStarted,
@@ -555,6 +558,7 @@ export {
 	unassignModeratorToComment,
 	unblockUser,
 	undeletePlaylist,
+	unfollowThread,
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
