@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.41.0](https://github.com/railroadmedia/musora-content-services/compare/v2.40.0...v2.41.0) (2025-09-19)
+
+
+### Features
+
+* add status field to navigateTo ([#456](https://github.com/railroadmedia/musora-content-services/issues/456)) ([bc48bd6](https://github.com/railroadmedia/musora-content-services/commit/bc48bd6d8e87091d4981fbff8246c3cb23f99394))
+* **MU2-1038:** New method for follow/unfollow threads [#455](https://github.com/railroadmedia/musora-content-services/issues/455) ([a612c30](https://github.com/railroadmedia/musora-content-services/commit/a612c302c2bb50af1c6a8f350f8950f342168c40))
+* **t3ps-785:** Add guided course lesson award endpoint ([#457](https://github.com/railroadmedia/musora-content-services/issues/457)) ([21bc634](https://github.com/railroadmedia/musora-content-services/commit/21bc63496ca38ab789e736a356c898a778718f54))
+
 ## [2.40.0](https://github.com/railroadmedia/musora-content-services/compare/v2.34.0...v2.40.0) (2025-09-18)
 
 
