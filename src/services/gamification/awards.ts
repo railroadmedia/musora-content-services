@@ -79,7 +79,7 @@ export async function fetchAwardsForUser(
  * @param {number} guidedCourseLessonId - The guided course lesson Id
  * @returns {Promise<Award>} - The award data for a given award and given user.
  */
-export async function getAwardDataForGuidedContentt(
+export async function getAwardDataForGuidedContent(
   guidedCourseLessonId,
 ): Promise<Award> {
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
