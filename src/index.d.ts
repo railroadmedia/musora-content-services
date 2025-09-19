@@ -99,7 +99,9 @@ import {
 } from './services/forums/categories.ts';
 
 import {
-	createThread
+	createThread,
+	followThread,
+	unfollowThread
 } from './services/forums/threads.ts';
 
 import {
@@ -461,6 +463,7 @@ declare module 'musora-content-services' {
 		fetchUserPracticeNotes,
 		fetchUserPractices,
 		findIncompleteLesson,
+		followThread,
 		getActiveDiscussions,
 		getAllCompleted,
 		getAllStarted,
@@ -564,6 +567,7 @@ declare module 'musora-content-services' {
 		unassignModeratorToComment,
 		unblockUser,
 		undeletePlaylist,
+		unfollowThread,
 		unlikeComment,
 		unlikeContent,
 		unlikePlaylist,
