@@ -105,7 +105,7 @@ import {
 import {
 	fetchAwardsForUser,
 	fetchCertificate,
-	getAwardDataForGuidedContentt
+	getAwardDataForGuidedContent
 } from './services/gamification/awards.ts';
 
 import {
@@ -465,7 +465,7 @@ export {
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
-	getAwardDataForGuidedContentt,
+	getAwardDataForGuidedContent,
 	getContentRows,
 	getLastInteractedOf,
 	getLessonContentRows,
