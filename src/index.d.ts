@@ -101,6 +101,7 @@ import {
 
 import {
 	createThread,
+	fetchThreads,
 	followThread,
 	unfollowThread
 } from './services/forums/threads.ts';
@@ -445,6 +446,7 @@ declare module 'musora-content-services' {
 		fetchSongById,
 		fetchSongsInProgress,
 		fetchTabData,
+		fetchThreads,
 		fetchTopComment,
 		fetchTopLevelParentId,
 		fetchUninterests,
