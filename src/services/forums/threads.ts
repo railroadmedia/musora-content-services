@@ -55,15 +55,30 @@ export async function unfollowThread(threadId: number, brand: string): Promise<v
   return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}/follow?brand=${brand}`)
 }
 
+export interface FetchThreadParams {
+  is_followed?: boolean,
+}
 /**
  * Fetches forum threads for the given category.
  *
  * @param {number} categoryId - The ID of the forum category.
  * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @param {FetchThreadParams} params - Optional additional parameters (e.g., is_followed).
  * @returns {Promise<ForumThread[]>} - A promise that resolves to a list of forum threads.
  * @throws {HttpError} - If the HTTP request fails.
  */
-export async function fetchThreads(categoryId: number, brand: string): Promise<ForumThread> {
+export async function fetchThreads(
+  categoryId: number,
+  brand: string,
+  params: FetchThreadParams = {}
+): Promise<ForumThread[]> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<ForumThread>(`${baseUrl}/v1/categories/${categoryId}/threads?brand=${brand}`)
+  const queryObj: Record<string, string> = { brand, ...Object.fromEntries(
+      Object.entries(params).filter(([_, v]) => v !== undefined && v !== null).map(([k, v]) => [k, String(v)])
+    )}
+  const query = new URLSearchParams(queryObj).toString()
+
+  const url = `${baseUrl}/v1/categories/${categoryId}/threads?${query}`
+  return httpClient.get<ForumThread[]>(url)
 }
+
