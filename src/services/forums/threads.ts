@@ -54,3 +54,16 @@ export async function unfollowThread(threadId: number, brand: string): Promise<v
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}/follow?brand=${brand}`)
 }
+
+/**
+ * Fetches forum threads for the given category.
+ *
+ * @param {number} categoryId - The ID of the forum category.
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @returns {Promise<ForumThread[]>} - A promise that resolves to a list of forum threads.
+ * @throws {HttpError} - If the HTTP request fails.
+ */
+export async function fetchThreads(categoryId: number, brand: string): Promise<ForumThread> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.get<ForumThread>(`${baseUrl}/v1/categories/${categoryId}/threads?brand=${brand}`)
+}
