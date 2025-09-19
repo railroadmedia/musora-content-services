@@ -107,6 +107,14 @@ const commonMetadata = {
       Tabs.RecentCompleted
     ],
   },
+  recommendation: {
+    tabs: [
+      { name: 'All', is_group_by: true, value: ['group_by,Recommended'] },
+      { name: 'Songs', value: ['filter,song'] },
+      { name: 'Lessons', value: ['filter,lesson'] },
+      { name: 'Workouts', value: ['filter,workout'] },
+    ],
+  },
   'recent-activities': {
     name: 'Recent Activity',
     onlyAvailableTabs: true,
