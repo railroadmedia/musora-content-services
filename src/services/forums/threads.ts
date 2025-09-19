@@ -57,6 +57,8 @@ export async function unfollowThread(threadId: number, brand: string): Promise<v
 
 export interface FetchThreadParams {
   is_followed?: boolean,
+  page?: number,
+  limit?: number
 }
 /**
  * Fetches forum threads for the given category.
