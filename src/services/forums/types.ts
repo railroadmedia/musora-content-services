@@ -23,6 +23,7 @@ export interface ForumThread {
   category_id: number
   post_count: number
   last_post: ForumPost | null
+  is_read: boolean
 }
 
 export interface ForumCategory {

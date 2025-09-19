@@ -100,6 +100,7 @@ import {
 
 import {
 	createThread,
+	fetchThreads,
 	followThread,
 	unfollowThread
 } from './services/forums/threads.ts';
@@ -447,6 +448,7 @@ export {
 	fetchSongById,
 	fetchSongsInProgress,
 	fetchTabData,
+	fetchThreads,
 	fetchTopComment,
 	fetchTopLevelParentId,
 	fetchUninterests,
