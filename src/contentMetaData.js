@@ -468,6 +468,58 @@ const contentMetadata = {
       ],
     },
   },
+  playBass: {
+    instructor: {
+      description:
+        'Tackle your next bass goal with bite-sized courses from many of the world\'s best bassists.',
+    },
+    recording: {
+      name: 'Archives',
+      shortname: 'Lessons',
+      icon: 'icon-library',
+      description:
+        'Miss a live event or just want to watch a particular episode again? This is the place to do it. All of the PlayBass live broadcasts are archived here for you to watch at your leisure. If you have any questions or want to discuss the topics mentioned in the videos you can always post in the forum.',
+      allowableFilters: ['difficulty', 'genre'],
+      tabs: [
+        Tabs.Lessons,
+        Tabs.Instructors,
+        Tabs.Genres,
+      ],
+    },
+    'songs': {
+      name:          'Songs',
+      filterOptions: {
+        difficulty: DIFFICULTY_STRINGS,
+        style:      [
+          'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
+          'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
+        ],
+        type:       ['Tutorials', 'Tabs', 'Play-Alongs', 'Jam Tracks'],
+        progress:   PROGRESS_NAMES,
+      },
+      sortingOptions: {
+        title: 'Sort By',
+        type: 'radio',
+        items: SortingOptions.AllSortingOptions,
+      },
+      tabs: [
+        Tabs.ForYou,
+        Tabs.Tutorials,
+        Tabs.Transcriptions,
+        Tabs.PlayAlongs,
+        Tabs.JamTracks,
+        Tabs.ExploreAll
+      ],
+    },
+    'recent': {
+      name: 'Recent Lessons',
+      tabs: [
+        Tabs.RecentAll,
+        Tabs.RecentIncomplete,
+        Tabs.RecentCompleted
+      ],
+    },
+  },
   singeo: {
     'student-review': {
       thumbnailUrl: 'https://d1923uyy6spedc.cloudfront.net/student-reviews.png',

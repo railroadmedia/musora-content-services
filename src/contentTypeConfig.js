@@ -146,6 +146,12 @@ export const showsTypes = {
   pianote: ['student-review', 'question-and-answer'],
   guitareo: ['student-review', 'question-and-answer', 'archives', 'recording'],
   singeo: ['student-review', 'question-and-answer'],
+  playBass: [
+    'student-review',
+    'question-and-answer',
+    'live',
+    'quick-tips',
+  ],
 }
 
 export const coachLessonsTypes = [
@@ -237,6 +243,7 @@ export const songs = {
   guitareo: 'tab',
   pianote: 'sheet music',
   singeo: 'sheet music',
+  playBass: 'sheet music',
 }
 
 export const filterTypes = {
@@ -622,6 +629,7 @@ export function getNewReleasesTypes(brand) {
       return [...baseNewTypes, 'archives', 'recording', 'chords-and-scales']
     case 'pianote':
     case 'singeo':
+    case 'playBass':
     default:
       return baseNewTypes
   }
