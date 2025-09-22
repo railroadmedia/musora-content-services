@@ -468,7 +468,7 @@ export async function fetchByRailContentId(id, contentType) {
 /**
  * Fetch content by an array of Railcontent IDs.
  *
- * @param {Array<string>} ids - The array of Railcontent IDs of the content to fetch.
+ * @param {Array<string|number>} ids - The array of Railcontent IDs of the content to fetch.
  * @param {string} [contentType] - The content type the IDs to add needed fields to the response.
  * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of content objects or null if not found.
  *
@@ -1507,14 +1507,33 @@ export async function fetchCoachLessons(
  *   .catch(error => console.error(error));
  */
 export async function fetchParentForDownload(id) {
+
+  const childFilter = await new FilterBuilder(``, {isChildrenFilter: true}).buildFilter()
+
+  // const joined =
+
   const query = buildRawQuery(
-    `railcontent_id == ${id}`,
-    getFieldsForContentType('parent-download'),
+    `railcontent_id in [${id}]`,
+    `${getFieldsForContentType('parent-download')}
+    'lastChildItems': array::compact(
+          child[${childFilter}]-> {
+              'id': railcontent_id,
+              length_in_seconds,
+              status,
+              'children': child[${childFilter}]-> {
+                  // Fetch child nodes if they exist
+                  'id': railcontent_id,
+                  length_in_seconds,
+                  status,
+                  'isLeaf': !defined(child)
+              }
+          }
+      )`,
     {
       isSingle: true,
     }
   )
-
+  console.log('u', query)
   return fetchSanity(query, false)
 }
 
@@ -1833,6 +1852,7 @@ export async function fetchSanity(
       throw new Error(`Sanity API error: ${response.status} - ${response.statusText}`)
     }
     const result = await response.json()
+    console.log('Sanity result', { result, query })
     if (result.result) {
       let results = isList ? result.result : result.result[0]
       if (!results) {
