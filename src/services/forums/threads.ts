@@ -67,7 +67,7 @@ export interface FetchThreadParams {
  *
  * @param {number} categoryId - The ID of the forum category.
  * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
- * @param {FetchThreadParams} params - Optional additional parameters (e.g., is_followed, sort).
+ * @param {FetchThreadParams} params - Optional additional parameters (e.g., is_followed, sort("last_post_published_on","-last_post_published_on","mine")).
  * @returns {Promise<PaginatedResponse<ForumThread>>} - A promise that resolves to a paginated list of forum threads.
  * @throws {HttpError} - If the HTTP request fails.
  */
