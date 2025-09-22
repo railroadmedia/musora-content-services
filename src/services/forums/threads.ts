@@ -59,22 +59,23 @@ export async function unfollowThread(threadId: number, brand: string): Promise<v
 export interface FetchThreadParams {
   is_followed?: boolean,
   page?: number,
-  limit?: number
+  limit?: number,
+  sort?: '-last_post_published_on' | string
 }
 /**
  * Fetches forum threads for the given category.
  *
  * @param {number} categoryId - The ID of the forum category.
  * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
- * @param {FetchThreadParams} params - Optional additional parameters (e.g., is_followed).
- * @returns {Promise<PaginatedResponse[]>} - A promise that resolves to a list of forum threads.
+ * @param {FetchThreadParams} params - Optional additional parameters (e.g., is_followed, sort).
+ * @returns {Promise<PaginatedResponse<ForumThread>>} - A promise that resolves to a paginated list of forum threads.
  * @throws {HttpError} - If the HTTP request fails.
  */
 export async function fetchThreads(
   categoryId: number,
   brand: string,
   params: FetchThreadParams = {}
-): Promise<PaginatedResponse<ForumThread>[]> {
+): Promise<PaginatedResponse<ForumThread>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   const queryObj: Record<string, string> = { brand, ...Object.fromEntries(
       Object.entries(params).filter(([_, v]) => v !== undefined && v !== null).map(([k, v]) => [k, String(v)])
@@ -82,6 +83,6 @@ export async function fetchThreads(
   const query = new URLSearchParams(queryObj).toString()
 
   const url = `${baseUrl}/v1/categories/${categoryId}/threads?${query}`
-  return httpClient.get<PaginatedResponse<ForumThread>[]>(url)
+  return httpClient.get<PaginatedResponse<ForumThread>>(url)
 }
 
