@@ -468,7 +468,7 @@ export async function fetchByRailContentId(id, contentType) {
 /**
  * Fetch content by an array of Railcontent IDs.
  *
- * @param {Array<string>} ids - The array of Railcontent IDs of the content to fetch.
+ * @param {Array<string|number>} ids - The array of Railcontent IDs of the content to fetch.
  * @param {string} [contentType] - The content type the IDs to add needed fields to the response.
  * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of content objects or null if not found.
  *
@@ -1494,28 +1494,6 @@ export async function fetchCoachLessons(
     end: end,
   })
   return fetchSanity(query, true)
-}
-
-/**
- * Fetch the data needed for the Course Overview screen.
- * @param {string} id - The Railcontent ID of the course
- * @returns {Promise<Object|null>} - The course information and lessons or null if not found.
- *
- * @example
- * fetchParentForDownload('course123')
- *   .then(course => console.log(course))
- *   .catch(error => console.error(error));
- */
-export async function fetchParentForDownload(id) {
-  const query = buildRawQuery(
-    `railcontent_id == ${id}`,
-    getFieldsForContentType('parent-download'),
-    {
-      isSingle: true,
-    }
-  )
-
-  return fetchSanity(query, false)
 }
 
 /**
