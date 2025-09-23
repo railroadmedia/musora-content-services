@@ -12,6 +12,7 @@ import { default as Resolver, type SyncResolution } from '../resolver'
 import PushCoalescer from './push-coalescer'
 import telemetry from '../telemetry'
 import { SyncStoreError } from '../errors'
+import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 
 type ModelClass<T extends Model> = { new (...args: any[]): T; table: string };
 type SyncPull = (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
@@ -263,6 +264,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       record = await this.queryRecord(id)
     })
 
+    await this.ensurePersistence()
+
     this.pushUnsynced()
     return this.modelSerializer.toPlainObject(record!)
   }
@@ -284,8 +287,28 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       }
     })
 
+    await this.ensurePersistence()
+
     this.pushUnsynced()
     return id
+  }
+
+  // Avoid lazy persistence to IndexedDB
+  // to eliminate data loss risk due to tab close/crash
+  private async ensurePersistence() {
+    return new Promise<void>((resolve, reject) => {
+      if (this.db.adapter.underlyingAdapter instanceof LokiJSAdapter) {
+        this.db.adapter.underlyingAdapter._driver.loki.saveDatabase(err => {
+          if (err) {
+            reject(err)
+          } else {
+            resolve()
+          }
+        })
+      } else {
+        resolve()
+      }
+    })
   }
 
   private async writeEntries(entries: SyncEntry[], freshSync: boolean = false) {
