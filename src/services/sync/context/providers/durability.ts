@@ -1,7 +1,5 @@
 import BaseContextProvider from "./base";
 
-export default class BaseDurabilityProvider extends BaseContextProvider<boolean> {
-  getValue() {
-    return true
-  }
+export default abstract class BaseDurabilityProvider extends BaseContextProvider {
+  abstract getValue(): boolean
 }
