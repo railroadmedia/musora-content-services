@@ -59,6 +59,14 @@ export const DEFAULT_CHILD_FIELDS = [
   '"parent_id": parent_content_data[0].id',
 ]
 
+export const playAlongMp3sField = `{
+      'mp3_no_drums_no_click_url':      mp3_no_drums_no_click_url,
+      'mp3_no_drums_yes_click_url':     mp3_no_drums_yes_click_url,
+      'mp3_yes_drums_no_click_url':     mp3_yes_drums_no_click_url,
+      'mp3_yes_drums_yes_click_url':    mp3_yes_drums_yes_click_url,
+}
+`
+
 export const instructorField = `instructor[]->{
             "id": railcontent_id,
             name,
@@ -325,10 +333,7 @@ export let contentTypeConfig = {
       '"instructors":instructor[]->name',
       `"instructor": ${instructorField}`,
       'video',
-      'mp3_no_drums_no_click_url',
-      'mp3_no_drums_yes_click_url',
-      'mp3_yes_drums_no_click_url',
-      'mp3_yes_drums_yes_click_url',
+      `"play_along_mp3s": ${playAlongMp3sField}`,
       `...select(
         defined(live_event_start_time) => {
           "live_event_start_time": live_event_start_time,
@@ -349,10 +354,7 @@ export let contentTypeConfig = {
       '"instructors":instructor[]->name',
       `"instructor": ${instructorField}`,
       'video',
-      'mp3_no_drums_no_click_url',
-      'mp3_no_drums_yes_click_url',
-      'mp3_yes_drums_no_click_url',
-      'mp3_yes_drums_yes_click_url',
+      `"play_along_mp3s": ${playAlongMp3sField}`,
       `...select(
         defined(live_event_start_time) => {
           "live_event_start_time": live_event_start_time,
