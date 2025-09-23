@@ -99,6 +99,11 @@ import {
 } from './services/forums/categories.ts';
 
 import {
+	createPost,
+	fetchPosts
+} from './services/forums/posts.ts';
+
+import {
 	createThread,
 	fetchThreads,
 	followThread,
@@ -357,6 +362,7 @@ export {
 	createComment,
 	createForumCategory,
 	createPlaylist,
+	createPost,
 	createPracticeNotes,
 	createThread,
 	deleteComment,
@@ -430,6 +436,7 @@ export {
 	fetchPlayAlongsCount,
 	fetchPlaylist,
 	fetchPlaylistItems,
+	fetchPosts,
 	fetchRecent,
 	fetchRecentActivitiesActiveTabs,
 	fetchRecentUserActivities,
