@@ -1497,47 +1497,6 @@ export async function fetchCoachLessons(
 }
 
 /**
- * Fetch the data needed for the Course Overview screen.
- * @param {string} id - The Railcontent ID of the course
- * @returns {Promise<Object|null>} - The course information and lessons or null if not found.
- *
- * @example
- * fetchParentForDownload('course123')
- *   .then(course => console.log(course))
- *   .catch(error => console.error(error));
- */
-export async function fetchParentForDownload(id) {
-
-  const childFilter = await new FilterBuilder(``, {isChildrenFilter: true}).buildFilter()
-
-  // const joined =
-
-  const query = buildRawQuery(
-    `railcontent_id in [${id}]`,
-    `${getFieldsForContentType('parent-download')}
-    'lastChildItems': array::compact(
-          child[${childFilter}]-> {
-              'id': railcontent_id,
-              length_in_seconds,
-              status,
-              'children': child[${childFilter}]-> {
-                  // Fetch child nodes if they exist
-                  'id': railcontent_id,
-                  length_in_seconds,
-                  status,
-                  'isLeaf': !defined(child)
-              }
-          }
-      )`,
-    {
-      isSingle: true,
-    }
-  )
-  console.log('u', query)
-  return fetchSanity(query, false)
-}
-
-/**
  * Fetch the data needed for the coach screen.
  * @param {string} id - The Railcontent ID of the coach
  *
