@@ -4,7 +4,7 @@ import { SyncToken, SyncEntry, SyncError } from '..'
 import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
 import type SyncRetry from '../retry'
 import type SyncRunScope from '../run-scope'
-import { EventEmitter } from '../utils/event-emitter'
+import EventEmitter from '../utils/event-emitter'
 import BaseModel from '../models/Base'
 import { EpochSeconds } from '../utils/epoch'
 import { sanitizedRaw } from '@nozbe/watermelondb/RawRecord'
@@ -94,17 +94,19 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   private async setLastFetchToken(token: SyncToken | null) {
-    if (token) {
-      const storedValue = await this.getLastFetchToken()
+    await this.db.write(async () => {
+      if (token) {
+        const storedValue = await this.getLastFetchToken()
 
-      if (storedValue !== token) {
-        telemetry.debug(`[store:${this.model.table}] Setting last fetch token: ${token}`)
-        return this.db.localStorage.set(this.lastFetchTokenKey, token)
+        if (storedValue !== token) {
+          telemetry.debug(`[store:${this.model.table}] Setting last fetch token: ${token}`)
+          return this.db.localStorage.set(this.lastFetchTokenKey, token)
+        }
+      } else {
+        telemetry.debug(`[store:${this.model.table}] Removing last fetch token`)
+        return this.db.localStorage.remove(this.lastFetchTokenKey)
       }
-    } else {
-      telemetry.debug(`[store:${this.model.table}] Removing last fetch token`)
-      return this.db.localStorage.remove(this.lastFetchTokenKey)
-    }
+    })
   }
 
   async pushRecordIdsImpatiently(ids: RecordId[]) {
@@ -264,6 +266,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       record = await this.queryRecord(id)
     })
 
+    this.emit('wrote', record)
+
     await this.ensurePersistence()
 
     this.pushUnsynced()
@@ -311,6 +315,10 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
+  private async isEmpty() {
+    return (await this.queryMaybeDeletedRecords()).length === 0
+  }
+
   private async writeEntries(entries: SyncEntry[], freshSync: boolean = false) {
     await this.withWriteLock(async () => {
       await this.db.write(async (writer) => {
@@ -335,7 +343,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   private async buildWriteBatchesFromEntries(entries: SyncEntry[], freshSync: boolean) {
     // if this is a fresh sync and there are no existing records, we can skip more sophisticated conflict resolution
-    if (freshSync) {
+    if (freshSync && (await this.isEmpty())) {
       const resolver = new Resolver();
       entries.filter((e) => !e.meta.lifecycle.deleted_at).forEach(entry => resolver.againstNone(entry))
 

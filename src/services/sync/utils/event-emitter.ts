@@ -1,6 +1,6 @@
 type EventMap = Record<string, any[]>;
 
-export class EventEmitter<Events extends EventMap> {
+export default class EventEmitter<Events extends EventMap> {
   private events: {
     [K in keyof Events]?: Array<(...args: Events[K]) => void>
   } = {};
