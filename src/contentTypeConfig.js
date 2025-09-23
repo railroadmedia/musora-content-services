@@ -33,7 +33,6 @@ export const DEFAULT_FIELDS = [
   "'slug' : slug.current",
   "'permission_id': permission[]->railcontent_id",
   'child_count',
-  '"lesson_count": coalesce(count(child[]->.child[]->), child_count)', //why do we have this
   '"parent_id": parent_content_data[0].id',
 ]
 
