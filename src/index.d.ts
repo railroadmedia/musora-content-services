@@ -89,11 +89,6 @@ import {
 } from './services/dateUtils.js';
 
 import {
-	downloadCollectionMetadata,
-	downloadPlaylistMetadata
-} from './services/downloads.ts';
-
-import {
 	getActiveDiscussions
 } from './services/forum.js';
 
@@ -212,7 +207,6 @@ import {
 	fetchOtherSongVersions,
 	fetchPackAll,
 	fetchPackData,
-	fetchParentForDownload,
 	fetchPlayAlongsCount,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
@@ -368,8 +362,6 @@ declare module 'musora-content-services' {
 		deletePracticeSession,
 		deleteProfilePicture,
 		deleteUserActivity,
-		downloadCollectionMetadata,
-		downloadPlaylistMetadata,
 		duplicatePlaylist,
 		editComment,
 		enrollUserInGuidedCourse,
@@ -429,7 +421,6 @@ declare module 'musora-content-services' {
 		fetchOtherSongVersions,
 		fetchPackAll,
 		fetchPackData,
-		fetchParentForDownload,
 		fetchPlayAlongsCount,
 		fetchPlaylist,
 		fetchPlaylistItems,

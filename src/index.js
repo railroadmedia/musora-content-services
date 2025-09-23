@@ -89,11 +89,6 @@ import {
 } from './services/dateUtils.js';
 
 import {
-	downloadCollectionMetadata,
-	downloadPlaylistMetadata
-} from './services/downloads.ts';
-
-import {
 	getActiveDiscussions
 } from './services/forum.js';
 
@@ -212,7 +207,6 @@ import {
 	fetchOtherSongVersions,
 	fetchPackAll,
 	fetchPackData,
-	fetchParentForDownload,
 	fetchPlayAlongsCount,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
@@ -367,8 +361,6 @@ export {
 	deletePracticeSession,
 	deleteProfilePicture,
 	deleteUserActivity,
-	downloadCollectionMetadata,
-	downloadPlaylistMetadata,
 	duplicatePlaylist,
 	editComment,
 	enrollUserInGuidedCourse,
@@ -428,7 +420,6 @@ export {
 	fetchOtherSongVersions,
 	fetchPackAll,
 	fetchPackData,
-	fetchParentForDownload,
 	fetchPlayAlongsCount,
 	fetchPlaylist,
 	fetchPlaylistItems,
