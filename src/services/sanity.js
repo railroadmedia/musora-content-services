@@ -1811,7 +1811,6 @@ export async function fetchSanity(
       throw new Error(`Sanity API error: ${response.status} - ${response.statusText}`)
     }
     const result = await response.json()
-    console.log('Sanity result', { result, query })
     if (result.result) {
       let results = isList ? result.result : result.result[0]
       if (!results) {
