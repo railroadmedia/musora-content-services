@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.43.0](https://github.com/railroadmedia/musora-content-services/compare/v2.42.0...v2.43.0) (2025-09-23)
+
+
+### Features
+
+* **BEH-910:** fetch metadata for download functionality ([#463](https://github.com/railroadmedia/musora-content-services/issues/463)) ([8406795](https://github.com/railroadmedia/musora-content-services/commit/84067954f1aed3f7e65c42f8621d6c5d81970037))
+
 ## [2.42.0](https://github.com/railroadmedia/musora-content-services/compare/v2.40.0...v2.42.0) (2025-09-22)
 
 
