@@ -17,7 +17,6 @@ export const artistField = `select(
 export const DEFAULT_FIELDS = [
   "'sanity_id' : _id",
   "'id': railcontent_id",
-  'railcontent_id',
   artistOrInstructorName(),
   `'artist': ${artistField}`,
   'title',
@@ -25,8 +24,6 @@ export const DEFAULT_FIELDS = [
   "'thumbnail': thumbnail.asset->url",
   'difficulty',
   'difficulty_string',
-  'web_url_path',
-  "'url': web_url_path",
   'published_on',
   "'type': _type",
   "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
@@ -35,17 +32,17 @@ export const DEFAULT_FIELDS = [
   'status',
   "'slug' : slug.current",
   "'permission_id': permission[]->railcontent_id",
-  'xp',
   'child_count',
-  '"lesson_count": coalesce(count(child[]->.child[]->), child_count)',
+  '"lesson_count": coalesce(count(child[]->.child[]->), child_count)', //why do we have this
   '"parent_id": parent_content_data[0].id',
 ]
 
+// these are identical... why
 export const DEFAULT_CHILD_FIELDS = [
+  "'sanity_id' : _id",
   "'id': railcontent_id",
-  'railcontent_id',
   artistOrInstructorName(),
-  "'artist': artist->{ 'name': name, 'thumbnail': thumbnail_url.asset->url}",
+  `'artist': ${artistField}`,
   'title',
   "'image': thumbnail.asset->url",
   "'thumbnail': thumbnail.asset->url",
@@ -321,36 +318,50 @@ export let contentTypeConfig = {
   },
   'download': {
     fields: [
-      '"lesson_count": child_count',
-      '"instructors": instructor[]->name',
-      `"description": ${descriptionField}`,
       `"resource": ${resourcesField}`,
-      '"thumbnail_url":thumbnail.asset->url',
-    ],
-    childFields: [
-      `"resources": ${resourcesField}`,
       'soundslice',
       'instrumentless',
-      'soundslice_slug',
       `"description": ${descriptionField}`,
       `"chapters": ${chapterField}`,
       '"instructors":instructor[]->name',
       `"instructor": ${instructorField}`,
       'video',
-      'length_in_seconds',
       'mp3_no_drums_no_click_url',
       'mp3_no_drums_yes_click_url',
       'mp3_yes_drums_no_click_url',
       'mp3_yes_drums_yes_click_url',
-      '"permission_id": permission[]->railcontent_id',
       `...select(
-      defined(live_event_start_time) => {
-      "live_event_start_time": live_event_start_time,
-      "live_event_end_time": live_event_end_time,
-      "live_event_youtube_id": live_event_youtube_id,
-      "videoId": coalesce(live_event_youtube_id, video.external_id),
-      "live_event_is_global": live_global_event == true
-      }
+        defined(live_event_start_time) => {
+          "live_event_start_time": live_event_start_time,
+          "live_event_end_time": live_event_end_time,
+          "live_event_youtube_id": live_event_youtube_id,
+          "videoId": coalesce(live_event_youtube_id, video.external_id),
+          "live_event_is_global": live_global_event == true
+        }
+      )`
+
+    ],
+    childFields: [
+      `"resource": ${resourcesField}`,
+      'soundslice',
+      'instrumentless',
+      `"description": ${descriptionField}`,
+      `"chapters": ${chapterField}`,
+      '"instructors":instructor[]->name',
+      `"instructor": ${instructorField}`,
+      'video',
+      'mp3_no_drums_no_click_url',
+      'mp3_no_drums_yes_click_url',
+      'mp3_yes_drums_no_click_url',
+      'mp3_yes_drums_yes_click_url',
+      `...select(
+        defined(live_event_start_time) => {
+          "live_event_start_time": live_event_start_time,
+          "live_event_end_time": live_event_end_time,
+          "live_event_youtube_id": live_event_youtube_id,
+          "videoId": coalesce(live_event_youtube_id, video.external_id),
+          "live_event_is_global": live_global_event == true
+        }
       )`
 
     ]
