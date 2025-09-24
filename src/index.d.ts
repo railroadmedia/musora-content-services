@@ -107,6 +107,7 @@ import {
 
 import {
 	createThread,
+	fetchLatestThreads,
 	fetchThreads,
 	followThread,
 	lockThread,
@@ -415,6 +416,7 @@ declare module 'musora-content-services' {
 		fetchHierarchy,
 		fetchInterests,
 		fetchLastInteractedChild,
+		fetchLatestThreads,
 		fetchLeaving,
 		fetchLessonContent,
 		fetchLessonsFeaturingThisContent,
