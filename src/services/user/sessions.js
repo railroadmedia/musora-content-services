@@ -45,8 +45,8 @@ export async function login(email, password, deviceName, deviceToken, platform) 
     }),
   })
 }
-
-export async function loginWithProvider(provider, providerIdToken, deviceToken, deviceName, platform) {
+//Removing 3rdParty OAuth2 for now => https://musora.atlassian.net/browse/BEH-624?focusedCommentId=21492
+/*export async function loginWithProvider(provider, providerIdToken, deviceToken, deviceName, platform) {
   const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
 
   try {
@@ -74,7 +74,7 @@ export async function loginWithProvider(provider, providerIdToken, deviceToken, 
     console.error('loginWithProvider failed', err)
     throw err
   }
-}
+}*/
 
 /**
  * Logs the user out of the current session.
