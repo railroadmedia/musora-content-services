@@ -105,3 +105,29 @@ export async function fetchThreads(
   return httpClient.get<PaginatedResponse<ForumThread>>(url)
 }
 
+/**
+ * Pins a thread to the top of its category.
+ *
+ * @param {number} threadId - The ID of the thread to pin.
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @return {Promise<void>} - A promise that resolves when the thread is pinned.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function pinThread(threadId: number, brand: string): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post<void>(`${baseUrl}/v1/threads/${threadId}/pin`, { brand })
+}
+
+/**
+ * Unpins a thread from the top of its category.
+ *
+ * @param {number} threadId - The ID of the thread to unpin.
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @return {Promise<void>} - A promise that resolves when the thread is unpinned.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function unpinThread(threadId: number, brand: string): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}/pin?brand=${brand}`)
+}
+

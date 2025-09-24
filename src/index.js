@@ -102,7 +102,9 @@ import {
 	createThread,
 	fetchThreads,
 	followThread,
+	pinThread,
 	unfollowThread,
+	unpinThread,
 	updateThread
 } from './services/forums/threads.ts';
 
@@ -528,6 +530,7 @@ export {
 	otherStats,
 	pauseLiveEventPolling,
 	pinProgressRow,
+	pinThread,
 	postContentComplete,
 	postContentLiked,
 	postContentReset,
@@ -574,6 +577,7 @@ export {
 	unlikeContent,
 	unlikePlaylist,
 	unpinProgressRow,
+	unpinThread,
 	updateDisplayName,
 	updateForumCategory,
 	updateNotificationSetting,
