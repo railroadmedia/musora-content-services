@@ -100,13 +100,18 @@ import {
 
 import {
 	createThread,
-	lockThread,
-	unlockThread
+	fetchThreads,
+	followThread,
+	pinThread,
+	unfollowThread,
+	unpinThread,
+	updateThread
 } from './services/forums/threads.ts';
 
 import {
 	fetchAwardsForUser,
-	fetchCertificate
+	fetchCertificate,
+	getAwardDataForGuidedContent
 } from './services/gamification/awards.ts';
 
 import {
@@ -209,7 +214,6 @@ import {
 	fetchOtherSongVersions,
 	fetchPackAll,
 	fetchPackData,
-	fetchParentForDownload,
 	fetchPlayAlongsCount,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
@@ -267,7 +271,8 @@ import {
 
 import {
 	fetchMemberships,
-	fetchRechargeTokens
+	fetchRechargeTokens,
+	upgradeSubscription
 } from './services/user/memberships.js';
 
 import {
@@ -424,7 +429,6 @@ declare module 'musora-content-services' {
 		fetchOtherSongVersions,
 		fetchPackAll,
 		fetchPackData,
-		fetchParentForDownload,
 		fetchPlayAlongsCount,
 		fetchPlaylist,
 		fetchPlaylistItems,
@@ -447,6 +451,7 @@ declare module 'musora-content-services' {
 		fetchSongById,
 		fetchSongsInProgress,
 		fetchTabData,
+		fetchThreads,
 		fetchTopComment,
 		fetchTopLevelParentId,
 		fetchUninterests,
@@ -462,10 +467,12 @@ declare module 'musora-content-services' {
 		fetchUserPracticeNotes,
 		fetchUserPractices,
 		findIncompleteLesson,
+		followThread,
 		getActiveDiscussions,
 		getAllCompleted,
 		getAllStarted,
 		getAllStartedOrCompleted,
+		getAwardDataForGuidedContent,
 		getContentRows,
 		getLastInteractedOf,
 		getLessonContentRows,
@@ -525,6 +532,7 @@ declare module 'musora-content-services' {
 		otherStats,
 		pauseLiveEventPolling,
 		pinProgressRow,
+		pinThread,
 		postContentComplete,
 		postContentLiked,
 		postContentReset,
@@ -566,17 +574,21 @@ declare module 'musora-content-services' {
 		unassignModeratorToComment,
 		unblockUser,
 		undeletePlaylist,
+		unfollowThread,
 		unlikeComment,
 		unlikeContent,
 		unlikePlaylist,
 		unlockThread,
 		unpinProgressRow,
+		unpinThread,
 		updateDisplayName,
 		updateForumCategory,
 		updateNotificationSetting,
 		updatePlaylist,
 		updatePracticeNotes,
+		updateThread,
 		updateUserPractice,
+		upgradeSubscription,
 		uploadPicture,
 		uploadPictureFromS3,
 		verifyImageSRC,
