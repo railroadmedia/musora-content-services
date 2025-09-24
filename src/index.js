@@ -100,13 +100,21 @@ import {
 
 import {
 	createThread,
+<<<<<<< HEAD
 	pinThread,
 	unpinThread
+=======
+	fetchThreads,
+	followThread,
+	unfollowThread,
+	updateThread
+>>>>>>> project-v2
 } from './services/forums/threads.ts';
 
 import {
 	fetchAwardsForUser,
-	fetchCertificate
+	fetchCertificate,
+	getAwardDataForGuidedContent
 } from './services/gamification/awards.ts';
 
 import {
@@ -209,7 +217,6 @@ import {
 	fetchOtherSongVersions,
 	fetchPackAll,
 	fetchPackData,
-	fetchParentForDownload,
 	fetchPlayAlongsCount,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
@@ -267,7 +274,8 @@ import {
 
 import {
 	fetchMemberships,
-	fetchRechargeTokens
+	fetchRechargeTokens,
+	upgradeSubscription
 } from './services/user/memberships.js';
 
 import {
@@ -423,7 +431,6 @@ export {
 	fetchOtherSongVersions,
 	fetchPackAll,
 	fetchPackData,
-	fetchParentForDownload,
 	fetchPlayAlongsCount,
 	fetchPlaylist,
 	fetchPlaylistItems,
@@ -446,6 +453,7 @@ export {
 	fetchSongById,
 	fetchSongsInProgress,
 	fetchTabData,
+	fetchThreads,
 	fetchTopComment,
 	fetchTopLevelParentId,
 	fetchUninterests,
@@ -461,10 +469,12 @@ export {
 	fetchUserPracticeNotes,
 	fetchUserPractices,
 	findIncompleteLesson,
+	followThread,
 	getActiveDiscussions,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
+	getAwardDataForGuidedContent,
 	getContentRows,
 	getLastInteractedOf,
 	getLessonContentRows,
@@ -565,6 +575,7 @@ export {
 	unassignModeratorToComment,
 	unblockUser,
 	undeletePlaylist,
+	unfollowThread,
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
@@ -575,7 +586,9 @@ export {
 	updateNotificationSetting,
 	updatePlaylist,
 	updatePracticeNotes,
+	updateThread,
 	updateUserPractice,
+	upgradeSubscription,
 	uploadPicture,
 	uploadPictureFromS3,
 	verifyImageSRC,
