@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.44.0](https://github.com/railroadmedia/musora-content-services/compare/v2.43.0...v2.44.0) (2025-09-24)
+
+
+### Features
+
+* **MU2-1034:** Update thread [#452](https://github.com/railroadmedia/musora-content-services/issues/452) ([5fbd76b](https://github.com/railroadmedia/musora-content-services/commit/5fbd76b97614f9f0df16397840e821ac96f2834e))
+* **MU2-1034:** update thread function ([75cd537](https://github.com/railroadmedia/musora-content-services/commit/75cd537c1d864761b4bf4413f85da6c04db2f615))
+* **MU2-1040:** thread pinning ([f43038e](https://github.com/railroadmedia/musora-content-services/commit/f43038e7aaba5742bb69d60c59e326ef5d57905c))
+* **MU2-1040:** thread pinning [#453](https://github.com/railroadmedia/musora-content-services/issues/453) ([209c3bf](https://github.com/railroadmedia/musora-content-services/commit/209c3bf1aabee76ff4ca455fc242333a2eb1c040))
+* **MU2-1041:** thread locking ([9c743f2](https://github.com/railroadmedia/musora-content-services/commit/9c743f2150fc0cb2ad9373c62cf4b33ca93c0795))
+* **MU2-1041:** thread locking [#454](https://github.com/railroadmedia/musora-content-services/issues/454)  ([88709fd](https://github.com/railroadmedia/musora-content-services/commit/88709fdedfec55ea69197542038ae2cdca420f12))
+
 ## [2.43.0](https://github.com/railroadmedia/musora-content-services/compare/v2.42.0...v2.43.0) (2025-09-23)
 
 
