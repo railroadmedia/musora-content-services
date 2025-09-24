@@ -157,3 +157,16 @@ export async function unlockThread(threadId: number, brand: string): Promise<voi
   return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}/lock?brand=${brand}`)
 }
 
+/**
+ * Fetches latest forum Threads for the given brand and not blocked to current user.
+ *
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @returns {Promise<PaginatedResponse<ForumThread>>} - A promise that resolves to the list of forum threads.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function fetchLatestThreads(
+  brand: string
+): Promise<PaginatedResponse<ForumThread>> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.get<PaginatedResponse<ForumThread>>(`${baseUrl}/v1/threads/latest?brand=${brand}`)
+}
