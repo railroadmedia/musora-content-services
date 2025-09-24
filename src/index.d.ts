@@ -108,7 +108,8 @@ import {
 	createThread,
 	fetchThreads,
 	followThread,
-	unfollowThread
+	unfollowThread,
+	updateThread
 } from './services/forums/threads.ts';
 
 import {
