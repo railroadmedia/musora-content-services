@@ -100,6 +100,7 @@ import {
 
 import {
 	createThread,
+	fetchFollowedThreads,
 	fetchThreads,
 	followThread,
 	lockThread,
@@ -403,6 +404,7 @@ export {
 	fetchContentRows,
 	fetchCustomerPayments,
 	fetchEnrollmentPageMetadata,
+	fetchFollowedThreads,
 	fetchForumCategories,
 	fetchFoundation,
 	fetchGenreLessons,
