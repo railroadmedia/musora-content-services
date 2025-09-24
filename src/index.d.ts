@@ -102,8 +102,10 @@ import {
 	createThread,
 	fetchThreads,
 	followThread,
+	lockThread,
 	pinThread,
 	unfollowThread,
+	unlockThread,
 	unpinThread,
 	updateThread
 } from './services/forums/threads.ts';
@@ -518,6 +520,7 @@ declare module 'musora-content-services' {
 		likeComment,
 		likeContent,
 		likePlaylist,
+		lockThread,
 		logUserPractice,
 		login,
 		loginWithProvider,
@@ -577,6 +580,7 @@ declare module 'musora-content-services' {
 		unlikeComment,
 		unlikeContent,
 		unlikePlaylist,
+		unlockThread,
 		unpinProgressRow,
 		unpinThread,
 		updateDisplayName,

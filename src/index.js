@@ -102,8 +102,10 @@ import {
 	createThread,
 	fetchThreads,
 	followThread,
+	lockThread,
 	pinThread,
 	unfollowThread,
+	unlockThread,
 	unpinThread,
 	updateThread
 } from './services/forums/threads.ts';
@@ -517,6 +519,7 @@ export {
 	likeComment,
 	likeContent,
 	likePlaylist,
+	lockThread,
 	logUserPractice,
 	login,
 	loginWithProvider,
@@ -576,6 +579,7 @@ export {
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
+	unlockThread,
 	unpinProgressRow,
 	unpinThread,
 	updateDisplayName,

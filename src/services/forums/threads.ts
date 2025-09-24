@@ -131,3 +131,29 @@ export async function unpinThread(threadId: number, brand: string): Promise<void
   return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}/pin?brand=${brand}`)
 }
 
+/**
+ * Locks a thread to prevent further posts.
+ *
+ * @param {number} threadId - The ID of the thread to lock.
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @return {Promise<void>} - A promise that resolves when the thread is locked.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function lockThread(threadId: number, brand: string): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post<void>(`${baseUrl}/v1/threads/${threadId}/unlock`, { brand })
+}
+
+/**
+ * Unlock a thread to allow further posts.
+ *
+ * @param {number} threadId - The ID of the thread to unlock.
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @return {Promise<void>} - A promise that resolves when the thread is unlocked.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function unlockThread(threadId: number, brand: string): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}/lock?brand=${brand}`)
+}
+
