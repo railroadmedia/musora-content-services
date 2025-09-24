@@ -100,15 +100,12 @@ import {
 
 import {
 	createThread,
-<<<<<<< HEAD
-	pinThread,
-	unpinThread
-=======
 	fetchThreads,
 	followThread,
+	pinThread,
 	unfollowThread,
+	unpinThread,
 	updateThread
->>>>>>> project-v2
 } from './services/forums/threads.ts';
 
 import {

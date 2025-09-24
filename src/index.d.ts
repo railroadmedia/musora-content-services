@@ -102,7 +102,9 @@ import {
 	createThread,
 	fetchThreads,
 	followThread,
+	pinThread,
 	unfollowThread,
+	unpinThread,
 	updateThread
 } from './services/forums/threads.ts';
 
