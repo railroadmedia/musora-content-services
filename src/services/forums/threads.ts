@@ -9,9 +9,8 @@ import { PaginatedResponse } from '../api/types'
 const baseUrl = `/api/forums`
 
 export interface CreateThreadParams {
-  name: string
-  description: string
-  weight: number
+  title: string
+  first_post_content: string
   brand: string
 }
 
@@ -28,6 +27,26 @@ export async function createThread(
 ): Promise<ForumThread> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<ForumThread>(`${baseUrl}/v1/categories/${categoryId}/threads`, params)
+}
+
+export interface UpdateThreadParams {
+  title: string
+  brand: string
+}
+/**
+ * Updates an existing thread under a forum category.
+ *
+ * @param {number} threadId - The ID of the thread to update.
+ * @param {UpdateThreadParams} params - The parameters for updating the thread.
+ * @returns {Promise<ForumThread>} - A promise that resolves to the updated thread.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function updateThread(
+  threadId: number,
+  params: UpdateThreadParams
+): Promise<ForumThread> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.put<ForumThread>(`${baseUrl}/v1/threads/${threadId}`, params)
 }
 
 /**
@@ -84,5 +103,57 @@ export async function fetchThreads(
 
   const url = `${baseUrl}/v1/categories/${categoryId}/threads?${query}`
   return httpClient.get<PaginatedResponse<ForumThread>>(url)
+}
+
+/**
+ * Pins a thread to the top of its category.
+ *
+ * @param {number} threadId - The ID of the thread to pin.
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @return {Promise<void>} - A promise that resolves when the thread is pinned.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function pinThread(threadId: number, brand: string): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post<void>(`${baseUrl}/v1/threads/${threadId}/pin`, { brand })
+}
+
+/**
+ * Unpins a thread from the top of its category.
+ *
+ * @param {number} threadId - The ID of the thread to unpin.
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @return {Promise<void>} - A promise that resolves when the thread is unpinned.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function unpinThread(threadId: number, brand: string): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}/pin?brand=${brand}`)
+}
+
+/**
+ * Locks a thread to prevent further posts.
+ *
+ * @param {number} threadId - The ID of the thread to lock.
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @return {Promise<void>} - A promise that resolves when the thread is locked.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function lockThread(threadId: number, brand: string): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post<void>(`${baseUrl}/v1/threads/${threadId}/unlock`, { brand })
+}
+
+/**
+ * Unlock a thread to allow further posts.
+ *
+ * @param {number} threadId - The ID of the thread to unlock.
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @return {Promise<void>} - A promise that resolves when the thread is unlocked.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function unlockThread(threadId: number, brand: string): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}/lock?brand=${brand}`)
 }
 
