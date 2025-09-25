@@ -99,12 +99,15 @@ import {
 } from './services/forums/categories.ts';
 
 import {
-	createThread
+	createThread,
+	followThread,
+	unfollowThread
 } from './services/forums/threads.ts';
 
 import {
 	fetchAwardsForUser,
-	fetchCertificate
+	fetchCertificate,
+	getAwardDataForGuidedContent
 } from './services/gamification/awards.ts';
 
 import {
@@ -460,10 +463,12 @@ export {
 	fetchUserPracticeNotes,
 	fetchUserPractices,
 	findIncompleteLesson,
+	followThread,
 	getActiveDiscussions,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
+	getAwardDataForGuidedContent,
 	getContentRows,
 	getLastInteractedOf,
 	getLessonContentRows,
@@ -563,6 +568,7 @@ export {
 	unassignModeratorToComment,
 	unblockUser,
 	undeletePlaylist,
+	unfollowThread,
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
