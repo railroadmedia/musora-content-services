@@ -242,63 +242,117 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   async upsertOne(id: string, builder: (record: TModel) => void) {
-    let record: TModel | null = null
+    return await this.runScope.abortable(async () => {
+      let record: TModel | null = null
 
-    await this.db.write(async () => {
-      const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(records => records[0] || null)
+      await this.db.write(async () => {
+        const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(records => records[0] || null)
 
-      if (existing) {
-        if (existing._raw._status === 'deleted') {
-          await existing.destroyPermanently()
-        } else {
-          await existing.update(builder)
+        if (existing) {
+          if (existing._raw._status === 'deleted') {
+            await existing.destroyPermanently()
+          } else {
+            await existing.update(builder)
+          }
         }
-      } else {
-        await this.collection.create((record) => {
-          const now = this.generateTimestamp()
-          record._raw.id = id
-          record._raw.created_at = now
-          record._raw.updated_at = now
-          builder(record)
-        })
-      }
 
-      record = await this.queryRecord(id)
+        if (!existing || existing._raw._status === 'deleted') {
+          await this.collection.create((record) => {
+            const now = this.generateTimestamp()
+            record._raw.id = id
+            record._raw.created_at = now
+            record._raw.updated_at = now
+            builder(record)
+          })
+        }
+
+        record = await this.queryRecord(id)
+      })
+
+      this.emit('write', record)
+
+      this.pushUnsynced()
+      await this.ensurePersistence()
+
+      return this.modelSerializer.toPlainObject(record!)
     })
+  }
 
-    this.emit('wrote', record)
+  async importRaw(recordRaw: TModel['_raw']) {
+    await this.runScope.abortable(async () => {
+      await this.db.write(async () => {
+        const existing = await this.queryMaybeDeletedRecords(Q.where('id', recordRaw.id)).then(records => records[0] || null)
 
-    await this.ensurePersistence()
+        if (existing) {
+          if (existing._raw._status === 'deleted') {
+            if (recordRaw._status !== 'deleted') {
+              // todo - resurrect
+            }
+          } else {
+            if (recordRaw._status === 'deleted') {
+              await existing.markAsDeleted()
+            } else {
+              await existing.update(record => {
+                Object.keys(recordRaw).forEach(key => {
+                  record._raw[key] = recordRaw[key]
+                })
+              })
+            }
+          }
+        } else {
+          if (recordRaw._status === 'deleted') {
+            await this.collection.create(record => {
+              const now = this.generateTimestamp()
 
-    this.pushUnsynced()
-    return this.modelSerializer.toPlainObject(record!)
+              record._raw.id = recordRaw.id
+              record._raw.updated_at = now
+              record._raw._status = 'deleted'
+            })
+          } else {
+            await this.collection.create(record => {
+              Object.keys(recordRaw).forEach(key => {
+                record._raw[key] = recordRaw[key]
+              })
+            })
+          }
+        }
+      })
+    })
   }
 
   async deleteOne(id: RecordId) {
-    await this.db.write(async () => {
-      const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(records => records[0] || null)
+    return await this.runScope.abortable(async () => {
+      let record: TModel | null = null
 
-      if (existing && existing._raw._status !== 'deleted') {
-        await existing.markAsDeleted()
-      } else {
-        await this.collection.create(record => {
-          const now = this.generateTimestamp()
+      await this.db.write(async () => {
+        const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(records => records[0] || null)
 
-          record._raw.id = id
-          record._raw.updated_at = now
-          record._raw._status = 'deleted'
-        })
-      }
+        if (existing && existing._raw._status !== 'deleted') {
+          await existing.markAsDeleted()
+          record = existing
+        } else {
+          record = await this.collection.create(record => {
+            const now = this.generateTimestamp()
+
+            record._raw.id = id
+            record._raw.updated_at = now
+            record._raw._status = 'deleted'
+          })
+        }
+      })
+
+      this.emit('write', record)
+
+      this.pushUnsynced()
+      await this.ensurePersistence()
+
+      return id
     })
-
-    await this.ensurePersistence()
-
-    this.pushUnsynced()
-    return id
   }
 
   // Avoid lazy persistence to IndexedDB
-  // to eliminate data loss risk due to tab close/crash
+  // to eliminate data loss risk due to tab close/crash before flush to IndexedDB
+  // NOTE: does NOT go through watermelon, so this might be dangerous?
   private async ensurePersistence() {
     return new Promise<void>((resolve, reject) => {
       if (this.db.adapter.underlyingAdapter instanceof LokiJSAdapter) {
@@ -362,13 +416,16 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       const existing = existingRecordsMap.get(entry.meta.ids.id)
       if (existing) {
         switch (existing._raw._status) {
-          case 'updated':
-            resolver.againstDirty(existing, entry)
+          case 'created':
+            resolver.againstCreated(existing, entry)
             break
 
-          case 'created':
+          case 'updated':
+            resolver.againstUpdated(existing, entry)
+            break
+
           case 'synced':
-            resolver.againstClean(existing, entry)
+            resolver.againstSynced(existing, entry)
             break
 
           case 'deleted':
@@ -376,7 +433,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             break;
 
           default:
-            throw new SyncStoreError('Unknown record status', this, { status: existing._raw._status })
+            telemetry.error(`[store:${this.model.table}] Unknown record status`, { status: existing._raw._status })
         }
       } else {
         resolver.againstNone(entry)
