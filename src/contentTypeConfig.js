@@ -17,7 +17,6 @@ export const artistField = `select(
 export const DEFAULT_FIELDS = [
   "'sanity_id' : _id",
   "'id': railcontent_id",
-  'railcontent_id',
   artistOrInstructorName(),
   `'artist': ${artistField}`,
   'title',
@@ -25,8 +24,6 @@ export const DEFAULT_FIELDS = [
   "'thumbnail': thumbnail.asset->url",
   'difficulty',
   'difficulty_string',
-  'web_url_path',
-  "'url': web_url_path",
   'published_on',
   "'type': _type",
   "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
@@ -35,17 +32,16 @@ export const DEFAULT_FIELDS = [
   'status',
   "'slug' : slug.current",
   "'permission_id': permission[]->railcontent_id",
-  'xp',
   'child_count',
-  '"lesson_count": coalesce(count(child[]->.child[]->), child_count)',
   '"parent_id": parent_content_data[0].id',
 ]
 
+// these are identical... why
 export const DEFAULT_CHILD_FIELDS = [
+  "'sanity_id' : _id",
   "'id': railcontent_id",
-  'railcontent_id',
   artistOrInstructorName(),
-  "'artist': artist->{ 'name': name, 'thumbnail': thumbnail_url.asset->url}",
+  `'artist': ${artistField}`,
   'title',
   "'image': thumbnail.asset->url",
   "'thumbnail': thumbnail.asset->url",
@@ -62,6 +58,14 @@ export const DEFAULT_CHILD_FIELDS = [
   'child_count',
   '"parent_id": parent_content_data[0].id',
 ]
+
+export const playAlongMp3sField = `{
+      'mp3_no_drums_no_click_url':      mp3_no_drums_no_click_url,
+      'mp3_no_drums_yes_click_url':     mp3_no_drums_yes_click_url,
+      'mp3_yes_drums_no_click_url':     mp3_yes_drums_no_click_url,
+      'mp3_yes_drums_yes_click_url':    mp3_yes_drums_yes_click_url,
+}
+`
 
 export const instructorField = `instructor[]->{
             "id": railcontent_id,
@@ -321,44 +325,49 @@ export let contentTypeConfig = {
     ],
     slug: 'courses',
   },
-  'parent-download': {
+  'download': {
     fields: [
-      '"lesson_count": child_count',
-      '"instructors": instructor[]->name',
-      `"description": ${descriptionField}`,
       `"resource": ${resourcesField}`,
-      'xp',
-      'total_xp',
-      '"thumbnail_url":thumbnail.asset->url',
-      `"lessons": child[]->{
-                "id": railcontent_id,
-                title,
-                published_on,
-                "type":_type,
-                "image": thumbnail.asset->url,
-                length_in_seconds,
-                "resources": ${resourcesField},
-                difficulty,
-                difficulty_string,
-                artist->,
-                "thumbnail_url":thumbnail.asset->url,
-                "description": description[0].children[0].text,
-                "chapters": ${chapterField},
-                "instructors":instructor[]->name,
-                "instructor": instructor[]->{
-                    "id":railcontent_id,
-                    name,
-                    short_bio,
-                    "biography": short_bio[0].children[0].text,
-                    web_url_path,
-                    "coach_card_image": coach_card_image.asset->url,
-                    "coach_profile_image":thumbnail_url.asset->url
-                },
-                ${assignmentsField}
-                video,
-                parent_content_data,
-            }`,
+      'soundslice',
+      'instrumentless',
+      `"description": ${descriptionField}`,
+      `"chapters": ${chapterField}`,
+      '"instructors":instructor[]->name',
+      `"instructor": ${instructorField}`,
+      'video',
+      `"play_along_mp3s": ${playAlongMp3sField}`,
+      `...select(
+        defined(live_event_start_time) => {
+          "live_event_start_time": live_event_start_time,
+          "live_event_end_time": live_event_end_time,
+          "live_event_youtube_id": live_event_youtube_id,
+          "videoId": coalesce(live_event_youtube_id, video.external_id),
+          "live_event_is_global": live_global_event == true
+        }
+      )`
+
     ],
+    childFields: [
+      `"resource": ${resourcesField}`,
+      'soundslice',
+      'instrumentless',
+      `"description": ${descriptionField}`,
+      `"chapters": ${chapterField}`,
+      '"instructors":instructor[]->name',
+      `"instructor": ${instructorField}`,
+      'video',
+      `"play_along_mp3s": ${playAlongMp3sField}`,
+      `...select(
+        defined(live_event_start_time) => {
+          "live_event_start_time": live_event_start_time,
+          "live_event_end_time": live_event_end_time,
+          "live_event_youtube_id": live_event_youtube_id,
+          "videoId": coalesce(live_event_youtube_id, video.external_id),
+          "live_event_is_global": live_global_event == true
+        }
+      )`
+
+    ]
   },
   method: {
     fields: [

@@ -99,9 +99,20 @@ import {
 } from './services/forums/categories.ts';
 
 import {
+	createPost,
+	fetchPosts
+} from './services/forums/posts.ts';
+
+import {
 	createThread,
+	fetchThreads,
 	followThread,
-	unfollowThread
+	lockThread,
+	pinThread,
+	unfollowThread,
+	unlockThread,
+	unpinThread,
+	updateThread
 } from './services/forums/threads.ts';
 
 import {
@@ -210,7 +221,6 @@ import {
 	fetchOtherSongVersions,
 	fetchPackAll,
 	fetchPackData,
-	fetchParentForDownload,
 	fetchPlayAlongsCount,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
@@ -356,6 +366,7 @@ export {
 	createComment,
 	createForumCategory,
 	createPlaylist,
+	createPost,
 	createPracticeNotes,
 	createThread,
 	deleteComment,
@@ -425,10 +436,10 @@ export {
 	fetchOtherSongVersions,
 	fetchPackAll,
 	fetchPackData,
-	fetchParentForDownload,
 	fetchPlayAlongsCount,
 	fetchPlaylist,
 	fetchPlaylistItems,
+	fetchPosts,
 	fetchRecent,
 	fetchRecentActivitiesActiveTabs,
 	fetchRecentUserActivities,
@@ -448,6 +459,7 @@ export {
 	fetchSongById,
 	fetchSongsInProgress,
 	fetchTabData,
+	fetchThreads,
 	fetchTopComment,
 	fetchTopLevelParentId,
 	fetchUninterests,
@@ -514,6 +526,7 @@ export {
 	likeComment,
 	likeContent,
 	likePlaylist,
+	lockThread,
 	logUserPractice,
 	login,
 	loginWithProvider,
@@ -527,6 +540,7 @@ export {
 	otherStats,
 	pauseLiveEventPolling,
 	pinProgressRow,
+	pinThread,
 	postContentComplete,
 	postContentLiked,
 	postContentReset,
@@ -572,12 +586,15 @@ export {
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
+	unlockThread,
 	unpinProgressRow,
+	unpinThread,
 	updateDisplayName,
 	updateForumCategory,
 	updateNotificationSetting,
 	updatePlaylist,
 	updatePracticeNotes,
+	updateThread,
 	updateUserPractice,
 	upgradeSubscription,
 	uploadPicture,

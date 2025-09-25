@@ -99,9 +99,20 @@ import {
 } from './services/forums/categories.ts';
 
 import {
+	createPost,
+	fetchPosts
+} from './services/forums/posts.ts';
+
+import {
 	createThread,
+	fetchThreads,
 	followThread,
-	unfollowThread
+	lockThread,
+	pinThread,
+	unfollowThread,
+	unlockThread,
+	unpinThread,
+	updateThread
 } from './services/forums/threads.ts';
 
 import {
@@ -210,7 +221,6 @@ import {
 	fetchOtherSongVersions,
 	fetchPackAll,
 	fetchPackData,
-	fetchParentForDownload,
 	fetchPlayAlongsCount,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
@@ -357,6 +367,7 @@ declare module 'musora-content-services' {
 		createComment,
 		createForumCategory,
 		createPlaylist,
+		createPost,
 		createPracticeNotes,
 		createThread,
 		deleteComment,
@@ -426,10 +437,10 @@ declare module 'musora-content-services' {
 		fetchOtherSongVersions,
 		fetchPackAll,
 		fetchPackData,
-		fetchParentForDownload,
 		fetchPlayAlongsCount,
 		fetchPlaylist,
 		fetchPlaylistItems,
+		fetchPosts,
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
@@ -449,6 +460,7 @@ declare module 'musora-content-services' {
 		fetchSongById,
 		fetchSongsInProgress,
 		fetchTabData,
+		fetchThreads,
 		fetchTopComment,
 		fetchTopLevelParentId,
 		fetchUninterests,
@@ -515,6 +527,7 @@ declare module 'musora-content-services' {
 		likeComment,
 		likeContent,
 		likePlaylist,
+		lockThread,
 		logUserPractice,
 		login,
 		loginWithProvider,
@@ -528,6 +541,7 @@ declare module 'musora-content-services' {
 		otherStats,
 		pauseLiveEventPolling,
 		pinProgressRow,
+		pinThread,
 		postContentComplete,
 		postContentLiked,
 		postContentReset,
@@ -573,12 +587,15 @@ declare module 'musora-content-services' {
 		unlikeComment,
 		unlikeContent,
 		unlikePlaylist,
+		unlockThread,
 		unpinProgressRow,
+		unpinThread,
 		updateDisplayName,
 		updateForumCategory,
 		updateNotificationSetting,
 		updatePlaylist,
 		updatePracticeNotes,
+		updateThread,
 		updateUserPractice,
 		upgradeSubscription,
 		uploadPicture,

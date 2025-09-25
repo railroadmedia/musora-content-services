@@ -10,6 +10,8 @@ export interface ForumPost {
   created_at: string
   created_at_human: string
   author: ForumUser | null
+  like_count: number
+  is_liked: boolean
 }
 
 export interface ForumThread {
@@ -23,6 +25,7 @@ export interface ForumThread {
   category_id: number
   post_count: number
   last_post: ForumPost | null
+  is_read: boolean
 }
 
 export interface ForumCategory {

@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.45.0](https://github.com/railroadmedia/musora-content-services/compare/v2.44.0...v2.45.0) (2025-09-25)
+
+
+### Features
+
+* **MU2-1035/MU2-1036:** New methods for fetch posts and create post [#462](https://github.com/railroadmedia/musora-content-services/issues/462)  ([714cf70](https://github.com/railroadmedia/musora-content-services/commit/714cf706e6deb8e3c93241e29894729210012d84))
+
+## [2.44.0](https://github.com/railroadmedia/musora-content-services/compare/v2.43.0...v2.44.0) (2025-09-24)
+
+
+### Features
+
+* **MU2-1034:** Update thread [#452](https://github.com/railroadmedia/musora-content-services/issues/452) ([5fbd76b](https://github.com/railroadmedia/musora-content-services/commit/5fbd76b97614f9f0df16397840e821ac96f2834e))
+* **MU2-1034:** update thread function ([75cd537](https://github.com/railroadmedia/musora-content-services/commit/75cd537c1d864761b4bf4413f85da6c04db2f615))
+* **MU2-1040:** thread pinning ([f43038e](https://github.com/railroadmedia/musora-content-services/commit/f43038e7aaba5742bb69d60c59e326ef5d57905c))
+* **MU2-1040:** thread pinning [#453](https://github.com/railroadmedia/musora-content-services/issues/453) ([209c3bf](https://github.com/railroadmedia/musora-content-services/commit/209c3bf1aabee76ff4ca455fc242333a2eb1c040))
+* **MU2-1041:** thread locking ([9c743f2](https://github.com/railroadmedia/musora-content-services/commit/9c743f2150fc0cb2ad9373c62cf4b33ca93c0795))
+* **MU2-1041:** thread locking [#454](https://github.com/railroadmedia/musora-content-services/issues/454)  ([88709fd](https://github.com/railroadmedia/musora-content-services/commit/88709fdedfec55ea69197542038ae2cdca420f12))
+
+## [2.43.0](https://github.com/railroadmedia/musora-content-services/compare/v2.42.0...v2.43.0) (2025-09-23)
+
+
+### Features
+
+* **BEH-910:** fetch metadata for download functionality ([#463](https://github.com/railroadmedia/musora-content-services/issues/463)) ([8406795](https://github.com/railroadmedia/musora-content-services/commit/84067954f1aed3f7e65c42f8621d6c5d81970037))
+
+## [2.42.0](https://github.com/railroadmedia/musora-content-services/compare/v2.40.0...v2.42.0) (2025-09-22)
+
+
+### Features
+
+* add status field to navigateTo ([#456](https://github.com/railroadmedia/musora-content-services/issues/456)) ([bc48bd6](https://github.com/railroadmedia/musora-content-services/commit/bc48bd6d8e87091d4981fbff8246c3cb23f99394))
+* **MU2-1031:** fetch threads [#460](https://github.com/railroadmedia/musora-content-services/issues/460) ([c72131f](https://github.com/railroadmedia/musora-content-services/commit/c72131fbdeeea6ee59e70a404a7fe383bf05b315))
+* **MU2-1038:** New method for follow/unfollow threads [#455](https://github.com/railroadmedia/musora-content-services/issues/455) ([a612c30](https://github.com/railroadmedia/musora-content-services/commit/a612c302c2bb50af1c6a8f350f8950f342168c40))
+* **t3ps-785:** Add guided course lesson award endpoint ([#457](https://github.com/railroadmedia/musora-content-services/issues/457)) ([21bc634](https://github.com/railroadmedia/musora-content-services/commit/21bc63496ca38ab789e736a356c898a778718f54))
+
 ## [2.41.0](https://github.com/railroadmedia/musora-content-services/compare/v2.40.0...v2.41.0) (2025-09-19)
 
 
