@@ -1,4 +1,5 @@
 import type {
+  BaseSessionProvider,
   BaseConnectivityProvider,
   BaseVisibilityProvider,
   BaseTabsProvider,
@@ -6,6 +7,7 @@ import type {
 } from './providers'
 
 type Providers = {
+  session: BaseSessionProvider
   connectivity: BaseConnectivityProvider
   visibility: BaseVisibilityProvider
   tabs: BaseTabsProvider
@@ -23,6 +25,9 @@ export default class SyncContext {
     Object.values(this.providers).forEach((p) => p.stop())
   }
 
+  get session() {
+    return this.providers.session
+  }
   get connectivity() {
     return this.providers.connectivity
   }
