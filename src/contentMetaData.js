@@ -196,7 +196,6 @@ export function processMetadata(brand, type, withFilters = false) {
   let commonMetaData = commonMetadata[type]
   brandMetaData = { ...commonMetaData, ...brandMetaData }
   if (type === 'songs' && contentMetadata[brand]?.['songs-types']) {
-    console.log('heyo', brandMetaData)
     brandMetaData['filterOptions']['type'] = contentMetadata[brand]['songs-types']
   }
   if (Object.keys(brandMetaData).length === 0) {
