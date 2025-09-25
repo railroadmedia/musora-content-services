@@ -146,12 +146,7 @@ export const showsTypes = {
   pianote: ['student-review', 'question-and-answer'],
   guitareo: ['student-review', 'question-and-answer', 'archives', 'recording'],
   singeo: ['student-review', 'question-and-answer'],
-  playbass: [
-    'student-review',
-    'question-and-answer',
-    'live',
-    'quick-tips',
-  ],
+  playbass: ['student-review', 'question-and-answer'],
 }
 
 export const coachLessonsTypes = [
@@ -243,7 +238,7 @@ export const songs = {
   guitareo: 'tab',
   pianote: 'sheet music',
   singeo: 'sheet music',
-  playbass: 'sheet music',
+  playbass: 'tab',
 }
 
 export const filterTypes = {
@@ -677,8 +672,6 @@ export function getUpcomingEventsTypes(brand) {
       ]
     case 'guitareo':
       return [...baseLiveTypes, 'archives']
-    case 'pianote':
-    case 'singeo':
     default:
       return baseLiveTypes
   }
