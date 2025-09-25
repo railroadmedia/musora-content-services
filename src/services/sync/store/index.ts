@@ -1,6 +1,6 @@
 import { Database, Q, type Collection, type Model, type RecordId } from '@nozbe/watermelondb'
 import { RawSerializer, ModelSerializer } from '../serializers'
-import { SyncToken, SyncEntry, SyncError } from '..'
+import { SyncToken, SyncEntry, SyncError, SyncContext } from '..'
 import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
 import type SyncRetry from '../retry'
 import type SyncRunScope from '../run-scope'
@@ -15,8 +15,8 @@ import { SyncStoreError } from '../errors'
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 
 type ModelClass<T extends Model> = { new (...args: any[]): T; table: string };
-type SyncPull = (previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
-type SyncPush = (payload: PushPayload, signal: AbortSignal) => Promise<SyncPushResponse>
+type SyncPull = (context: SyncContext, previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
+type SyncPush = (context: SyncContext, payload: PushPayload, signal: AbortSignal) => Promise<SyncPushResponse>
 
 export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
   model: ModelClass<TModel>
@@ -27,6 +27,7 @@ export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
 export default class SyncStore<TModel extends BaseModel = BaseModel> {
   static LOCK_NAMESPACE = 'sync:write'
 
+  readonly context: SyncContext
   readonly retry: SyncRetry
   readonly runScope: SyncRunScope
   readonly db: Database
@@ -50,7 +51,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     model,
     pull,
     push,
-  }: SyncStoreConfig<TModel>, db: Database, retry: SyncRetry, runScope: SyncRunScope) {
+  }: SyncStoreConfig<TModel>, context: SyncContext, db: Database, retry: SyncRetry, runScope: SyncRunScope) {
+    this.context = context
     this.retry = retry
     this.runScope = runScope
     this.db = db
@@ -63,6 +65,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.puller = pull
     this.pusher = push
     this.lastFetchTokenKey = `last_fetch_token:${this.model.table}`
+
+    window.x = this
   }
 
   on = this.emitter.on.bind(this.emitter)
@@ -125,7 +129,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private async makePush(records: TModel[]) {
     const payload = this.generatePushPayload(records)
 
-    const response = await this.pusher(payload, this.runScope.signal)
+    const response = await this.pusher(this.context, payload, this.runScope.signal)
 
     if (response.ok) {
       const successfulResults = response.results.filter(result => result.type === 'success')
@@ -167,7 +171,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
     this.currentPull = (async () => {
       const lastFetchToken = await this.getLastFetchToken()
-      const response = await this.puller(lastFetchToken, this.runScope.signal)
+      const response = await this.puller(this.context, lastFetchToken, this.runScope.signal)
 
       if (response.ok) {
         await this.writeEntries(response.entries, !response.previousToken)

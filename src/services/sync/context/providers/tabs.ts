@@ -11,9 +11,6 @@ export class NullTabsProvider extends BaseTabsProvider {
     return false
   }
 
-  start() {}
-  stop() {}
-
   broadcast() {}
   subscribe() {
     return () => {}

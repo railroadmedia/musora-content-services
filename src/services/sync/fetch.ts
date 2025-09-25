@@ -1,4 +1,4 @@
-import { SyncToken, SyncEntry, SyncSyncable } from "./index"
+import { SyncToken, SyncEntry, SyncSyncable, SyncContext } from "./index"
 import { EpochSeconds } from "./utils/epoch.js"
 
 import { globalConfig } from '../config.js'
@@ -106,20 +106,22 @@ interface ServerPushPayload {
   }[]
 }
 
-export function makeFetchRequest(input: RequestInfo, init?: RequestInit): () => Request {
-  return () => new Request(globalConfig.baseUrl + input, {
+export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (context: SyncContext) => Request {
+  return (context) => new Request(globalConfig.baseUrl + input, {
     ...init,
     headers: {
       ...init?.headers,
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${globalConfig.sessionConfig.token}`
+      'Authorization': `Bearer ${globalConfig.sessionConfig.token}`,
+      'X-Sync-Client-Id': context.session.getClientId(),
+      'X-Sync-Client-Session-Id': context.session.getSessionId(),
     }
   })
 }
 
-export function handlePull(callback: () => Request) {
-  return async function(lastFetchToken: SyncToken | null, signal?: AbortSignal): Promise<SyncPullResponse> {
-    const generatedRequest = callback()
+export function handlePull(callback: (context: SyncContext) => Request) {
+  return async function(context: SyncContext, lastFetchToken: SyncToken | null, signal?: AbortSignal): Promise<SyncPullResponse> {
+    const generatedRequest = callback(context)
     const url = serializePullUrlQuery(generatedRequest.url, lastFetchToken)
     const request = new Request(url, {
       headers: generatedRequest.headers,
@@ -155,9 +157,9 @@ export function handlePull(callback: () => Request) {
   }
 }
 
-export function handlePush(callback: () => Request) {
-  return async function(payload: PushPayload, signal?: AbortSignal): Promise<SyncPushResponse> {
-    const generatedRequest = callback()
+export function handlePush(callback: (context: SyncContext) => Request) {
+  return async function(context: SyncContext, payload: PushPayload, signal?: AbortSignal): Promise<SyncPushResponse> {
+    const generatedRequest = callback(context)
     const serverPayload = serializePushPayload(payload)
     const request = new Request(generatedRequest, {
       body: JSON.stringify(serverPayload),

@@ -1,10 +1,17 @@
+import { BaseSessionProvider } from './context/providers'
 import watermelonLogger from '@nozbe/watermelondb/utils/common/logger'
 
 class SyncTelemetry {
+  private session: BaseSessionProvider
+
   constructor(w: typeof watermelonLogger) {
     w.log = (...messages: any[]) => this.log('[Watermelon]', ...messages)
     w.warn = (...messages: any[]) => this.warn('[Watermelon]', ...messages)
     w.error = (...messages: any[]) => this.error('[Watermelon]', ...messages)
+  }
+
+  useSession(session: BaseSessionProvider) {
+    this.session = session
   }
 
   debug(...messages: any[]) {
@@ -43,7 +50,7 @@ class SyncTelemetry {
   }
 
   private suffix(date: Date) {
-    return [` [${date.toLocaleTimeString()}, ${date.getTime()}]`]
+    return [` [${date.toLocaleTimeString()}, ${date.getTime()}, ${this.session.getSessionId()}, ${this.session.getClientId()}]`]
   }
 }
 

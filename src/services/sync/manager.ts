@@ -40,9 +40,12 @@ export default class SyncManager {
   private strategyMap: { stores: SyncStore<BaseModel>[]; strategies: SyncStrategy[] }[]
   private safetyMap: { stores: SyncStore<BaseModel>[]; mechanisms: (() => void)[] }[]
 
-  constructor(context: SyncContext, database: Database) {
-    this.database = database
+  constructor(context: SyncContext, database: () => Database) {
+    telemetry.useSession(context.session)
+
     this.context = context
+
+    this.database = database()
     this.runScope = new SyncRunScope()
 
     this.storesRegistry = {} as Record<typeof BaseModel.table, SyncStore<BaseModel>>
@@ -50,14 +53,13 @@ export default class SyncManager {
     this.safetyMap = []
 
     this.retry = new SyncRetry(this.context)
-    this.retry.start()
   }
 
   createStore(config: SyncStoreConfig) {
     if (this.storesRegistry[config.model.table]) {
       throw new SyncError(`Store ${config.model.table} already registered`)
     }
-    const store = new SyncStore(config, this.database, this.retry, this.runScope)
+    const store = new SyncStore(config, this.context, this.database, this.retry, this.runScope)
     this.storesRegistry[config.model.table] = store
     return store
   }
@@ -83,7 +85,9 @@ export default class SyncManager {
 
   setup() {
     telemetry.debug('[SyncManager] Setting up')
+
     this.context.start()
+    this.retry.start()
 
     this.strategyMap.forEach(({ stores, strategies }) => {
       strategies.forEach(strategy => {
