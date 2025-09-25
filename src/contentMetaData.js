@@ -177,7 +177,7 @@ const contentMetadata = {
   guitareo: {
     'songs-types': ['Tutorials', 'Tabs', 'Play-Alongs', 'Jam Tracks'],
   },
-  playBass: {
+  playbass: {
     'songs-types': ['Tutorials', 'Tabs', 'Play-Alongs', 'Jam Tracks'],
   },
   singeo: {
