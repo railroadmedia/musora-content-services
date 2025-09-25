@@ -99,6 +99,11 @@ import {
 } from './services/forums/categories.ts';
 
 import {
+	createPost,
+	fetchPosts
+} from './services/forums/posts.ts';
+
+import {
 	createThread,
 	fetchThreads,
 	followThread,
@@ -362,6 +367,7 @@ declare module 'musora-content-services' {
 		createComment,
 		createForumCategory,
 		createPlaylist,
+		createPost,
 		createPracticeNotes,
 		createThread,
 		deleteComment,
@@ -434,6 +440,7 @@ declare module 'musora-content-services' {
 		fetchPlayAlongsCount,
 		fetchPlaylist,
 		fetchPlaylistItems,
+		fetchPosts,
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
