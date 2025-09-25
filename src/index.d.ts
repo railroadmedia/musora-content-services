@@ -100,7 +100,9 @@ import {
 
 import {
 	createPost,
-	fetchPosts
+	fetchPosts,
+	likePost,
+	unlikePost
 } from './services/forums/posts.ts';
 
 import {
@@ -313,7 +315,6 @@ import {
 
 import {
 	login,
-	loginWithProvider,
 	logout
 } from './services/user/sessions.js';
 
@@ -527,10 +528,10 @@ declare module 'musora-content-services' {
 		likeComment,
 		likeContent,
 		likePlaylist,
+		likePost,
 		lockThread,
 		logUserPractice,
 		login,
-		loginWithProvider,
 		logout,
 		markAllNotificationsAsRead,
 		markContentAsInterested,
@@ -587,6 +588,7 @@ declare module 'musora-content-services' {
 		unlikeComment,
 		unlikeContent,
 		unlikePlaylist,
+		unlikePost,
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,

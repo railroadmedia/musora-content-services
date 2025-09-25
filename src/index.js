@@ -100,7 +100,9 @@ import {
 
 import {
 	createPost,
-	fetchPosts
+	fetchPosts,
+	likePost,
+	unlikePost
 } from './services/forums/posts.ts';
 
 import {
@@ -313,7 +315,6 @@ import {
 
 import {
 	login,
-	loginWithProvider,
 	logout
 } from './services/user/sessions.js';
 
@@ -526,10 +527,10 @@ export {
 	likeComment,
 	likeContent,
 	likePlaylist,
+	likePost,
 	lockThread,
 	logUserPractice,
 	login,
-	loginWithProvider,
 	logout,
 	markAllNotificationsAsRead,
 	markContentAsInterested,
@@ -586,6 +587,7 @@ export {
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
+	unlikePost,
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
