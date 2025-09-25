@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.45.0](https://github.com/railroadmedia/musora-content-services/compare/v2.44.0...v2.45.0) (2025-09-25)
+
+
+### Features
+
+* **MU2-1035/MU2-1036:** New methods for fetch posts and create post [#462](https://github.com/railroadmedia/musora-content-services/issues/462)  ([714cf70](https://github.com/railroadmedia/musora-content-services/commit/714cf706e6deb8e3c93241e29894729210012d84))
+
 ## [2.44.0](https://github.com/railroadmedia/musora-content-services/compare/v2.43.0...v2.44.0) (2025-09-24)
 
 
