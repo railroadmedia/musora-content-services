@@ -468,7 +468,7 @@ const contentMetadata = {
       ],
     },
   },
-  playBass: {
+  playbass: {
     instructor: {
       description:
         'Tackle your next bass goal with bite-sized courses from many of the world\'s best bassists.',
@@ -478,7 +478,7 @@ const contentMetadata = {
       shortname: 'Lessons',
       icon: 'icon-library',
       description:
-        'Miss a live event or just want to watch a particular episode again? This is the place to do it. All of the PlayBass live broadcasts are archived here for you to watch at your leisure. If you have any questions or want to discuss the topics mentioned in the videos you can always post in the forum.',
+        'Miss a live event or just want to watch a particular episode again? This is the place to do it. All of the playbass live broadcasts are archived here for you to watch at your leisure. If you have any questions or want to discuss the topics mentioned in the videos you can always post in the forum.',
       allowableFilters: ['difficulty', 'genre'],
       tabs: [
         Tabs.Lessons,
