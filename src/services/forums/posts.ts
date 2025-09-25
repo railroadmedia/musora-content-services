@@ -82,6 +82,7 @@ export async function likePost(postId: number, brand: string): Promise<void> {
  */
 export async function unlikePost(postId: number, brand: string): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.delete<void>(`${baseUrl}/v1/posts/${postId}/likes?brand=${brand}`)
+  const query = new URLSearchParams({ brand }).toString()
+  return httpClient.delete<void>(`${baseUrl}/v1/posts/${postId}/likes?${query}`)
 }
 
