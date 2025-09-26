@@ -67,7 +67,7 @@ export async function fetchPosts(
  */
 export async function fetchCommunityGuidelines(brand: string): Promise<ForumPost[]> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  const url = `${baseUrl}/v1/rules?${brand}`
+  const url = `${baseUrl}/v1/rules?brand=${brand}`
   return httpClient.get<ForumPost[]>(url);
 }
 
