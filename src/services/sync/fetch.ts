@@ -3,6 +3,7 @@ import { EpochSeconds } from "./utils/epoch.js"
 
 import { globalConfig } from '../config.js'
 import { RecordId } from "@nozbe/watermelondb/index.js"
+import { BaseSessionProvider } from "./context/providers"
 
 interface RawPullResponse {
   meta: {
@@ -106,22 +107,22 @@ interface ServerPushPayload {
   }[]
 }
 
-export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (context: SyncContext) => Request {
-  return (context) => new Request(globalConfig.baseUrl + input, {
+export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (session: BaseSessionProvider) => Request {
+  return (session) => new Request(globalConfig.baseUrl + input, {
     ...init,
     headers: {
       ...init?.headers,
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${globalConfig.sessionConfig.token}`,
-      'X-Sync-Client-Id': context.session.getClientId(),
-      'X-Sync-Client-Session-Id': context.session.getSessionId(),
+      'X-Sync-Client-Id': session.getClientId(),
+      'X-Sync-Client-Session-Id': session.getSessionId(),
     }
   })
 }
 
-export function handlePull(callback: (context: SyncContext) => Request) {
-  return async function(context: SyncContext, lastFetchToken: SyncToken | null, signal?: AbortSignal): Promise<SyncPullResponse> {
-    const generatedRequest = callback(context)
+export function handlePull(callback: (session: BaseSessionProvider) => Request) {
+  return async function(session: BaseSessionProvider, lastFetchToken: SyncToken | null, signal?: AbortSignal): Promise<SyncPullResponse> {
+    const generatedRequest = callback(session)
     const url = serializePullUrlQuery(generatedRequest.url, lastFetchToken)
     const request = new Request(url, {
       headers: generatedRequest.headers,
@@ -157,9 +158,9 @@ export function handlePull(callback: (context: SyncContext) => Request) {
   }
 }
 
-export function handlePush(callback: (context: SyncContext) => Request) {
-  return async function(context: SyncContext, payload: PushPayload, signal?: AbortSignal): Promise<SyncPushResponse> {
-    const generatedRequest = callback(context)
+export function handlePush(callback: (session: BaseSessionProvider) => Request) {
+  return async function(session: BaseSessionProvider, payload: PushPayload, signal?: AbortSignal): Promise<SyncPushResponse> {
+    const generatedRequest = callback(session)
     const serverPayload = serializePushPayload(payload)
     const request = new Request(generatedRequest, {
       body: JSON.stringify(serverPayload),

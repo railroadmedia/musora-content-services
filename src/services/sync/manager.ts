@@ -6,9 +6,9 @@ import { default as SyncStore, SyncStoreConfig } from './store'
 
 import SyncRetry from './retry'
 import SyncContext from './context'
-import telemetry from './telemetry'
 import { SyncError } from './errors'
-import { SyncConcurrencySafetyMechanism } from '@/infrastructure/sync/concurrency-safety'
+import { SyncConcurrencySafetyMechanism } from './concurrency-safety'
+import { SyncTelemetry } from './telemetry'
 
 export default class SyncManager {
   private static instance: SyncManager | null = null
@@ -32,6 +32,7 @@ export default class SyncManager {
     return SyncManager.instance
   }
 
+  public telemetry: SyncTelemetry
   private database: Database
   private context: SyncContext
   private storesRegistry: Record<typeof BaseModel.table, SyncStore<BaseModel>>
@@ -40,9 +41,8 @@ export default class SyncManager {
   private strategyMap: { stores: SyncStore<BaseModel>[]; strategies: SyncStrategy[] }[]
   private safetyMap: { stores: SyncStore<BaseModel>[]; mechanisms: (() => void)[] }[]
 
-  constructor(context: SyncContext, database: () => Database) {
-    telemetry.useSession(context.session)
-
+  constructor(context: SyncContext, database: () => Database, telemetry: SyncTelemetry) {
+    this.telemetry = telemetry
     this.context = context
 
     this.database = database()
@@ -52,14 +52,14 @@ export default class SyncManager {
     this.strategyMap = []
     this.safetyMap = []
 
-    this.retry = new SyncRetry(this.context)
+    this.retry = new SyncRetry(this.context, this.telemetry)
   }
 
   createStore(config: SyncStoreConfig) {
     if (this.storesRegistry[config.model.table]) {
       throw new SyncError(`Store ${config.model.table} already registered`)
     }
-    const store = new SyncStore(config, this.context, this.database, this.retry, this.runScope)
+    const store = new SyncStore(config, this.context, this.database, this.retry, this.runScope, this.telemetry)
     this.storesRegistry[config.model.table] = store
     return store
   }
@@ -84,7 +84,7 @@ export default class SyncManager {
   }
 
   setup() {
-    telemetry.debug('[SyncManager] Setting up')
+    this.telemetry.debug('[SyncManager] Setting up')
 
     this.context.start()
     this.retry.start()
@@ -101,7 +101,7 @@ export default class SyncManager {
     })
 
     const teardown = async () => {
-      telemetry.debug('[SyncManager] Tearing down')
+      this.telemetry.debug('[SyncManager] Tearing down')
       this.runScope.abort()
       this.strategyMap.forEach(({ strategies }) => strategies.forEach(strategy => strategy.stop()))
       this.safetyMap.forEach(({ mechanisms }) => mechanisms.forEach(mechanism => mechanism()))
