@@ -313,7 +313,6 @@ import {
 
 import {
 	login,
-	loginWithProvider,
 	logout
 } from './services/user/sessions.js';
 
@@ -530,7 +529,6 @@ declare module 'musora-content-services' {
 		lockThread,
 		logUserPractice,
 		login,
-		loginWithProvider,
 		logout,
 		markAllNotificationsAsRead,
 		markContentAsInterested,

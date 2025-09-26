@@ -313,7 +313,6 @@ import {
 
 import {
 	login,
-	loginWithProvider,
 	logout
 } from './services/user/sessions.js';
 
@@ -529,7 +528,6 @@ export {
 	lockThread,
 	logUserPractice,
 	login,
-	loginWithProvider,
 	logout,
 	markAllNotificationsAsRead,
 	markContentAsInterested,
