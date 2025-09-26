@@ -24,6 +24,7 @@
     "@babel/plugin-transform-class-properties": "^7.27.1",
     "@babel/plugin-transform-object-rest-spread": "^7.28.0",
     "@babel/preset-typescript": "^7.27.1",
+    "@sentry/browser": "^10.15.0",
     "dotenv": "^16.4.5",
     "jest": "^29.7.0",
     "jsdoc": "^4.0.3",

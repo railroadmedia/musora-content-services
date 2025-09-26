@@ -10,13 +10,14 @@ import { EpochSeconds } from '../utils/epoch'
 import { sanitizedRaw } from '@nozbe/watermelondb/RawRecord'
 import { default as Resolver, type SyncResolution } from '../resolver'
 import PushCoalescer from './push-coalescer'
-import telemetry from '../telemetry'
-import { SyncStoreError } from '../errors'
+import { SyncTelemetry } from '../telemetry'
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
+import { BaseSessionProvider } from '../context/providers'
+import inBoundary from '../boundary'
 
 type ModelClass<T extends Model> = { new (...args: any[]): T; table: string };
-type SyncPull = (context: SyncContext, previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
-type SyncPush = (context: SyncContext, payload: PushPayload, signal: AbortSignal) => Promise<SyncPushResponse>
+type SyncPull = (session: BaseSessionProvider, previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
+type SyncPush = (session: BaseSessionProvider, payload: PushPayload, signal: AbortSignal) => Promise<SyncPushResponse>
 
 export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
   model: ModelClass<TModel>
@@ -25,8 +26,7 @@ export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
 }
 
 export default class SyncStore<TModel extends BaseModel = BaseModel> {
-  static LOCK_NAMESPACE = 'sync:write'
-
+  readonly telemetry: SyncTelemetry
   readonly context: SyncContext
   readonly retry: SyncRetry
   readonly runScope: SyncRunScope
@@ -51,7 +51,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     model,
     pull,
     push,
-  }: SyncStoreConfig<TModel>, context: SyncContext, db: Database, retry: SyncRetry, runScope: SyncRunScope) {
+  }: SyncStoreConfig<TModel>, context: SyncContext, db: Database, retry: SyncRetry, runScope: SyncRunScope, telemetry: SyncTelemetry) {
     this.context = context
     this.retry = retry
     this.runScope = runScope
@@ -66,7 +66,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.pusher = push
     this.lastFetchTokenKey = `last_fetch_token:${this.model.table}`
 
-    window.x = this
+    this.telemetry = telemetry
   }
 
   on = this.emitter.on.bind(this.emitter)
@@ -74,7 +74,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private emit = this.emitter.emit.bind(this.emitter)
 
   async sync(reason: string) {
-    telemetry.debug(`[store:${this.model.table}] Attempting sync from: "${reason}"`)
+    this.telemetry.debug(`[store:${this.model.table}] Attempting sync from: "${reason}"`)
 
     let pushError: any = null
 
@@ -102,12 +102,13 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       if (token) {
         const storedValue = await this.getLastFetchToken()
 
+        // avoids thrashing if we get and compare first before setting
         if (storedValue !== token) {
-          telemetry.debug(`[store:${this.model.table}] Setting last fetch token: ${token}`)
+          this.telemetry.debug(`[store:${this.model.table}] Setting last fetch token: ${token}`)
           return this.db.localStorage.set(this.lastFetchTokenKey, token)
         }
       } else {
-        telemetry.debug(`[store:${this.model.table}] Removing last fetch token`)
+        this.telemetry.debug(`[store:${this.model.table}] Removing last fetch token`)
         return this.db.localStorage.remove(this.lastFetchTokenKey)
       }
     })
@@ -129,7 +130,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private async makePush(records: TModel[]) {
     const payload = this.generatePushPayload(records)
 
-    const response = await this.pusher(this.context, payload, this.runScope.signal)
+    const response = await this.pusher(this.context.session, payload, this.runScope.signal)
 
     if (response.ok) {
       const successfulResults = response.results.filter(result => result.type === 'success')
@@ -171,7 +172,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
     this.currentPull = (async () => {
       const lastFetchToken = await this.getLastFetchToken()
-      const response = await this.puller(this.context, lastFetchToken, this.runScope.signal)
+      const response = await this.puller(this.context.session, lastFetchToken, this.runScope.signal)
 
       if (response.ok) {
         await this.writeEntries(response.entries, !response.previousToken)
@@ -378,25 +379,15 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   private async writeEntries(entries: SyncEntry[], freshSync: boolean = false) {
-    await this.withWriteLock(async () => {
-      await this.db.write(async (writer) => {
-        const batches = await this.buildWriteBatchesFromEntries(entries, freshSync)
+    await this.db.write(async (writer) => {
+      const batches = await this.buildWriteBatchesFromEntries(entries, freshSync)
 
-        for (const batch of batches) {
-          if (batch.length) {
-            await this.runScope.abortable(() => writer.batch(...batch))
-          }
+      for (const batch of batches) {
+        if (batch.length) {
+          await this.runScope.abortable(() => writer.batch(...batch))
         }
-      })
+      }
     })
-  }
-
-  private async withWriteLock(write: () => Promise<void>) {
-    // no-op
-    // on web, could use navigator.locks, but only useful if loki flushed immediately (in-band) to indexeddb
-    // so handled by other measures/capitulations, hopefully
-    // on app, only one instance of sqlite, so nothing necessary here
-    return write()
   }
 
   private async buildWriteBatchesFromEntries(entries: SyncEntry[], freshSync: boolean) {
@@ -437,7 +428,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             break;
 
           default:
-            telemetry.error(`[store:${this.model.table}] Unknown record status`, { status: existing._raw._status })
+            this.telemetry.error(`[store:${this.model.table}] Unknown record status`, { status: existing._raw._status })
         }
       } else {
         resolver.againstNone(entry)
@@ -449,7 +440,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   private prepareRecords(result: SyncResolution) {
     if (Object.values(result).find(c => c.length)) {
-      telemetry.debug(`[store:${this.model.table}] Writing changes`, { changes: result })
+      this.telemetry.debug(`[store:${this.model.table}] Writing changes`, { changes: result })
     }
 
     const destroyedBuilds = result.idsForDestroy.map(id => {

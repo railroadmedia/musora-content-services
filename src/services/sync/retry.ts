@@ -1,6 +1,6 @@
 import SyncContext from "./context"
 import { SyncResponse } from "./fetch"
-import telemetry from "./telemetry"
+import { SyncTelemetry } from "./telemetry"
 
 export default class SyncRetry {
   private readonly BASE_BACKOFF = 1_000
@@ -11,12 +11,9 @@ export default class SyncRetry {
   private backoffUntil = 0
   private failureCount = 0
 
-  private context: SyncContext
   private unsubscribeConnectivity: () => void
 
-  constructor(context: SyncContext) {
-    this.context = context
-  }
+  constructor(private readonly context: SyncContext, private readonly telemetry: SyncTelemetry) {}
 
   start() {
     this.unsubscribeConnectivity = this.context.connectivity.subscribe(isOnline => {
@@ -37,7 +34,7 @@ export default class SyncRetry {
    */
   async request<T extends SyncResponse>(syncFn: () => Promise<T>, forceOne?: boolean) {
     if (!this.context.connectivity.getValue()) {
-      telemetry.debug('[Backoff] No connectivity - skipping')
+      this.telemetry.debug('[Backoff] No connectivity - skipping')
       this.paused = true
       return { ok: false } as T
     }
@@ -67,7 +64,7 @@ export default class SyncRetry {
 
   private resetBackoff() {
     if (this.backoffUntil !== 0 || this.failureCount !== 0) {
-      telemetry.debug('[Retry] Resetting backoff')
+      this.telemetry.debug('[Retry] Resetting backoff')
       this.backoffUntil = 0
       this.failureCount = 0
     }
@@ -82,7 +79,7 @@ export default class SyncRetry {
 
     this.backoffUntil = Date.now() + Math.min(this.MAX_BACKOFF, delayWithJitter)
 
-    telemetry.debug('[Retry] Scheduling backoff', { failureCount: this.failureCount, backoffUntil: this.backoffUntil })
+    this.telemetry.debug('[Retry] Scheduling backoff', { failureCount: this.failureCount, backoffUntil: this.backoffUntil })
   }
 
   private sleep(ms: number) {
