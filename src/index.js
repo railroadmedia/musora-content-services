@@ -100,6 +100,7 @@ import {
 
 import {
 	createPost,
+	fetchCommunityGuidelines,
 	fetchPosts
 } from './services/forums/posts.ts';
 
@@ -313,7 +314,6 @@ import {
 
 import {
 	login,
-	loginWithProvider,
 	logout
 } from './services/user/sessions.js';
 
@@ -401,6 +401,7 @@ export {
 	fetchCommentModContentData,
 	fetchCommentRelies,
 	fetchComments,
+	fetchCommunityGuidelines,
 	fetchCompletedContent,
 	fetchCompletedState,
 	fetchContentInProgress,
@@ -529,7 +530,6 @@ export {
 	lockThread,
 	logUserPractice,
 	login,
-	loginWithProvider,
 	logout,
 	markAllNotificationsAsRead,
 	markContentAsInterested,

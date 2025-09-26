@@ -100,6 +100,7 @@ import {
 
 import {
 	createPost,
+	fetchCommunityGuidelines,
 	fetchPosts
 } from './services/forums/posts.ts';
 
@@ -313,7 +314,6 @@ import {
 
 import {
 	login,
-	loginWithProvider,
 	logout
 } from './services/user/sessions.js';
 
@@ -402,6 +402,7 @@ declare module 'musora-content-services' {
 		fetchCommentModContentData,
 		fetchCommentRelies,
 		fetchComments,
+		fetchCommunityGuidelines,
 		fetchCompletedContent,
 		fetchCompletedState,
 		fetchContentInProgress,
@@ -530,7 +531,6 @@ declare module 'musora-content-services' {
 		lockThread,
 		logUserPractice,
 		login,
-		loginWithProvider,
 		logout,
 		markAllNotificationsAsRead,
 		markContentAsInterested,
