@@ -106,6 +106,7 @@ import {
 import {
 	createThread,
 	fetchFollowedThreads,
+	fetchLatestThreads,
 	fetchThreads,
 	followThread,
 	lockThread,
