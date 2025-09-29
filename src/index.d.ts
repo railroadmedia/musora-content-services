@@ -105,6 +105,7 @@ import {
 
 import {
 	createThread,
+	fetchFollowedThreads,
 	fetchThreads,
 	followThread,
 	lockThread,
@@ -409,6 +410,7 @@ declare module 'musora-content-services' {
 		fetchContentRows,
 		fetchCustomerPayments,
 		fetchEnrollmentPageMetadata,
+		fetchFollowedThreads,
 		fetchForumCategories,
 		fetchFoundation,
 		fetchGenreLessons,
