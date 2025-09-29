@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.46.0](https://github.com/railroadmedia/musora-content-services/compare/v2.45.0...v2.46.0) (2025-09-26)
+
+
+### Features
+
+* **BEH-1106:** update contentTypeConfig and contentMetaData ([#458](https://github.com/railroadmedia/musora-content-services/issues/458)) ([8b8c7fc](https://github.com/railroadmedia/musora-content-services/commit/8b8c7fce81197a7e9ffde80b9718be87caec915d))
+
+
+### Bug Fixes
+
+* 0 progress shows start course cta text ([#468](https://github.com/railroadmedia/musora-content-services/issues/468)) ([d9ae881](https://github.com/railroadmedia/musora-content-services/commit/d9ae8815fd233e142f60b2293136546f7693862d))
+
+## [2.45.0](https://github.com/railroadmedia/musora-content-services/compare/v2.44.0...v2.45.0) (2025-09-25)
+
+
+### Features
+
+* **MU2-1035/MU2-1036:** New methods for fetch posts and create post [#462](https://github.com/railroadmedia/musora-content-services/issues/462)  ([714cf70](https://github.com/railroadmedia/musora-content-services/commit/714cf706e6deb8e3c93241e29894729210012d84))
+
 ## [2.44.0](https://github.com/railroadmedia/musora-content-services/compare/v2.43.0...v2.44.0) (2025-09-24)
 
 

@@ -3,7 +3,7 @@
  */
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
-import { ForumThread } from './types'
+import { ForumCategory, ForumThread } from './types'
 import { PaginatedResponse } from '../api/types'
 
 const baseUrl = `/api/forums`
@@ -155,6 +155,20 @@ export async function lockThread(threadId: number, brand: string): Promise<void>
 export async function unlockThread(threadId: number, brand: string): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}/lock?brand=${brand}`)
+}
+
+/**
+ * Fetches followed forum Threads for the given brand and current user.
+ *
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @returns {Promise<PaginatedResponse<ForumThread>>} - A promise that resolves to the list of forum threads.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function fetchFollowedThreads(
+  brand: string
+): Promise<PaginatedResponse<ForumThread>> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.get<PaginatedResponse<ForumThread>>(`${baseUrl}/v1/threads?brand=${brand}`)
 }
 
 /**
