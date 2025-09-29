@@ -106,6 +106,7 @@ import {
 import {
 	createThread,
 	fetchFollowedThreads,
+	fetchLatestThreads,
 	fetchThreads,
 	followThread,
 	lockThread,
@@ -417,6 +418,7 @@ export {
 	fetchHierarchy,
 	fetchInterests,
 	fetchLastInteractedChild,
+	fetchLatestThreads,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
