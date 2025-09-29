@@ -99,6 +99,11 @@ import {
 } from './services/forums/categories.ts';
 
 import {
+	createPost,
+	fetchPosts
+} from './services/forums/posts.ts';
+
+import {
 	createThread,
 	fetchFollowedThreads,
 	fetchThreads,
@@ -309,7 +314,6 @@ import {
 
 import {
 	login,
-	loginWithProvider,
 	logout
 } from './services/user/sessions.js';
 
@@ -362,6 +366,7 @@ export {
 	createComment,
 	createForumCategory,
 	createPlaylist,
+	createPost,
 	createPracticeNotes,
 	createThread,
 	deleteComment,
@@ -435,6 +440,7 @@ export {
 	fetchPlayAlongsCount,
 	fetchPlaylist,
 	fetchPlaylistItems,
+	fetchPosts,
 	fetchRecent,
 	fetchRecentActivitiesActiveTabs,
 	fetchRecentUserActivities,
@@ -524,7 +530,6 @@ export {
 	lockThread,
 	logUserPractice,
 	login,
-	loginWithProvider,
 	logout,
 	markAllNotificationsAsRead,
 	markContentAsInterested,

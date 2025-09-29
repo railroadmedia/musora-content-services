@@ -99,6 +99,11 @@ import {
 } from './services/forums/categories.ts';
 
 import {
+	createPost,
+	fetchPosts
+} from './services/forums/posts.ts';
+
+import {
 	createThread,
 	fetchFollowedThreads,
 	fetchThreads,
@@ -309,7 +314,6 @@ import {
 
 import {
 	login,
-	loginWithProvider,
 	logout
 } from './services/user/sessions.js';
 
@@ -363,6 +367,7 @@ declare module 'musora-content-services' {
 		createComment,
 		createForumCategory,
 		createPlaylist,
+		createPost,
 		createPracticeNotes,
 		createThread,
 		deleteComment,
@@ -436,6 +441,7 @@ declare module 'musora-content-services' {
 		fetchPlayAlongsCount,
 		fetchPlaylist,
 		fetchPlaylistItems,
+		fetchPosts,
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
@@ -525,7 +531,6 @@ declare module 'musora-content-services' {
 		lockThread,
 		logUserPractice,
 		login,
-		loginWithProvider,
 		logout,
 		markAllNotificationsAsRead,
 		markContentAsInterested,
