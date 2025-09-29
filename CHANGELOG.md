@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.47.0](https://github.com/railroadmedia/musora-content-services/compare/v2.46.0...v2.47.0) (2025-09-29)
+
+
+### Features
+
+* **MU2-1030:** adding fetch method for followed threads endpoint ([7925a44](https://github.com/railroadmedia/musora-content-services/commit/7925a4439f6110612e6c905548afce7ef081ff85))
+* **MU2-1030:** adding fetch method for followed threads endpoint [#464](https://github.com/railroadmedia/musora-content-services/issues/464) ([05401df](https://github.com/railroadmedia/musora-content-services/commit/05401df2f53d342e7dc7311d59faa715d6f08f38))
+* **MU2-1033:** Add function for fetch latest threads, update docs ([967e152](https://github.com/railroadmedia/musora-content-services/commit/967e1526418933e3f287e78e606f4caf6ff0f095))
+* **MU2-1033:** Add function for fetch latest threads, update docs [#466](https://github.com/railroadmedia/musora-content-services/issues/466) ([4b270ab](https://github.com/railroadmedia/musora-content-services/commit/4b270aba3c7d0177f18183e2f75c03a8544bf930))
+
 ## [2.46.0](https://github.com/railroadmedia/musora-content-services/compare/v2.45.0...v2.46.0) (2025-09-26)
 
 
