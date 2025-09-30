@@ -1643,7 +1643,7 @@ export async function fetchGenreLessons(
 }
 
 export async function fetchTopLevelParentId(railcontentId) {
-  const statusFilter = "&& status in ['scheduled', 'published', 'archived', 'unlisted']"
+  const statusFilter = "&& status in ['scheduled', 'published', 'archived']"
 
   const query = `*[railcontent_id == ${railcontentId}]{
       railcontent_id,

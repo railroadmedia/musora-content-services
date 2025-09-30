@@ -6,7 +6,6 @@ export class FilterBuilder {
   STATUS_PUBLISHED = 'published'
   STATUS_DRAFT = 'draft'
   STATUS_ARCHIVED = 'archived'
-  STATUS_UNLISTED = 'unlisted'
 
   constructor(
     filter = '',
@@ -86,14 +85,12 @@ export class FilterBuilder {
           this.STATUS_SCHEDULED,
           this.STATUS_PUBLISHED,
           this.STATUS_ARCHIVED,
-          this.STATUS_UNLISTED,
         ]
         this.getFutureScheduledContentsOnly = true
       } else if (this.isSingle) {
         this.availableContentStatuses = [
           this.STATUS_SCHEDULED,
           this.STATUS_PUBLISHED,
-          this.STATUS_UNLISTED,
           this.STATUS_ARCHIVED,
         ]
       } else {
