@@ -100,6 +100,7 @@ import {
 
 import {
 	createPost,
+	deletePost,
 	fetchPosts
 } from './services/forums/posts.ts';
 
@@ -376,6 +377,7 @@ declare module 'musora-content-services' {
 		deleteNotification,
 		deletePicture,
 		deletePlaylist,
+		deletePost,
 		deletePracticeSession,
 		deleteProfilePicture,
 		deleteUserActivity,
