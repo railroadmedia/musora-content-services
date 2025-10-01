@@ -11,14 +11,17 @@ export const syncSentryBeforeSend: NonNullable<SentryBrowserOptions['beforeSend'
   return event
 }
 export const syncSentryBeforeSendTransaction: NonNullable<SentryBrowserOptions['beforeSendTransaction']> = (event, hint) => {
-  debugger
   return event
 }
 
 export type SentryLike = {
   captureException: typeof InjectedSentry.captureException
   addBreadcrumb: typeof InjectedSentry.addBreadcrumb
+  startSpan: typeof InjectedSentry.startSpan
 }
+type StartSpanOptions = Parameters<typeof InjectedSentry.startSpan>[0]
+type Span = InjectedSentry.Span
+
 export class SyncTelemetry {
   private Sentry: SentryLike;
 
@@ -29,8 +32,19 @@ export class SyncTelemetry {
     watermelonLogger.error = (...messages: any[]) => this.error('[Watermelon]', ...messages);
   }
 
-  trace() {
-    //
+  trace<T>(options: StartSpanOptions, callback: (span: Span) => T) {
+    const span = this.Sentry.startSpan<T>(options, (span) => {
+      let desc = span['_spanId'].slice(0, 4)
+      desc += span['_parentSpanId'] ? ` (< ${span['_parentSpanId'].slice(0, 4)})` : ''
+
+      this.debug(`[trace:start] ${options.name} (${desc})`)
+      const result = callback(span)
+      Promise.resolve(result).finally(() => this.debug(`[trace:end] ${options.name} (${desc})`))
+
+      return result
+    })
+
+    return span
   }
 
   capture(err: Error) {
@@ -92,6 +106,6 @@ export class SyncTelemetry {
   }
 
   private consoleSuffix(date: Date) {
-    return [` [${date.toLocaleTimeString()}, ${date.getTime()}`];
+    return [` [${date.toLocaleTimeString()}, ${date.getTime()}]`];
   }
 }

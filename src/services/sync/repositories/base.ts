@@ -117,10 +117,10 @@ export default class SyncRepository<TModel extends BaseModel> {
   private async _read<TMultiple extends boolean = false>(query: () => Promise<SyncReadDTO<TModel, TMultiple>['data']>) {
     const fetchToken = await this.store.getLastFetchToken();
     const everPulled = !!fetchToken;
-    let pull: Awaited<ReturnType<typeof this.store.pullRecordsImpatiently>> | null = null;
+    let pull: Awaited<ReturnType<typeof this.store.pullRecords>> | null = null;
 
     if (!everPulled) {
-      pull = await this.store.pullRecordsImpatiently()
+      pull = await this.store.pullRecords(false)
       if (!pull.ok) {
         throw new SyncError('Failed to pull records', { pull })
       }
