@@ -33,15 +33,15 @@ export default class SyncRetry {
    * Returns the first successful result or the last failed result after retries.
    */
   async request<T extends SyncResponse>(syncFn: () => Promise<T>, forceOne?: boolean) {
-    if (!this.context.connectivity.getValue()) {
-      this.telemetry.debug('[Backoff] No connectivity - skipping')
-      this.paused = true
-      return { ok: false } as T
-    }
-
     let attempt = 0
 
     while (true) {
+      if (!this.context.connectivity.getValue()) {
+        this.telemetry.debug('[Retry] No connectivity - skipping')
+        this.paused = true
+        return { ok: false } as T
+      }
+
       if (!forceOne) {
         const now = Date.now()
         if (now < this.backoffUntil) {
@@ -50,7 +50,7 @@ export default class SyncRetry {
       }
 
       attempt++
-      const result = await syncFn()
+      const result = await this.telemetry.trace({ name: `retry:attempt:${attempt}`, op: 'retry:attempt' }, () => syncFn())
 
       if (result.ok) {
         this.resetBackoff()

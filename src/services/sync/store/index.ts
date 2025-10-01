@@ -14,6 +14,7 @@ import { SyncTelemetry } from '../telemetry'
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 import { BaseSessionProvider } from '../context/providers'
 import inBoundary from '../boundary'
+import { Span } from 'node_modules/@sentry/browser/build/npm/types'
 
 type ModelClass<T extends Model> = { new (...args: any[]): T; table: string };
 type SyncPull = (session: BaseSessionProvider, previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
@@ -163,36 +164,32 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     }
   }
 
-  async pullRecords() {
-    return await this.retry.request<SyncPullResponse>(() => this.getCurrentPull())
+  async pullRecords(retry = true) {
+    return this.retry.request<SyncPullResponse>(() => this.getCurrentPull(), !retry)
   }
 
   private async getCurrentPull() {
     if (this.currentPull) return this.currentPull
 
-    this.currentPull = (async () => {
-      const lastFetchToken = await this.getLastFetchToken()
-      const response = await this.puller(this.context.session, lastFetchToken, this.runScope.signal)
+    this.currentPull = this.telemetry.trace({ name: `pull:${this.model.table}`, op: 'pull' }, async parentSpan => {
+      const lastFetchToken = await this.telemetry.trace({ name: `pull:${this.model.table}:token:read`, op: 'pull:token:read', parentSpan }, () => this.getLastFetchToken())
+      const response = await this.telemetry.trace({ name: `pull:${this.model.table}:fetch`, parentSpan }, () => this.puller(this.context.session, lastFetchToken, this.runScope.signal))
 
       if (response.ok) {
-        await this.writeEntries(response.entries, !response.previousToken)
-        await this.setLastFetchToken(response.token)
+        await this.telemetry.trace({ name: `pull:${this.model.table}:write`, parentSpan }, () => this.writeEntries(response.entries, !response.previousToken))
+        await this.telemetry.trace({ name: `pull:${this.model.table}:token:write`, parentSpan }, () => this.setLastFetchToken(response.token))
 
         this.emit('pullCompleted')
       }
 
       return response
-    })()
+    })
 
     try {
       return await this.currentPull
     } finally {
       this.currentPull = null
     }
-  }
-
-  async pullRecordsImpatiently() {
-    return await this.retry.request<SyncPullResponse>(() => this.getCurrentPull(), true)
   }
 
   async readAll() {

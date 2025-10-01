@@ -45,7 +45,7 @@ export default class SyncManager {
     this.telemetry = telemetry
     this.context = context
 
-    this.database = database()
+    this.database = this.telemetry.trace({ name: 'db:init' }, database)
     this.runScope = new SyncRunScope()
 
     this.storesRegistry = {} as Record<typeof BaseModel.table, SyncStore<BaseModel>>
