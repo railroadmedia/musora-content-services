@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.49.0](https://github.com/railroadmedia/musora-content-services/compare/v2.48.0...v2.49.0) (2025-10-02)
+
+
+### Features
+
+* **MU2-1043:** Add .js to eventsAPI ([aadad63](https://github.com/railroadmedia/musora-content-services/commit/aadad6324d425d90580db96179b2a7088e0354de))
+* **MU2-1043:** Add function to like and unlike posts ([771d342](https://github.com/railroadmedia/musora-content-services/commit/771d34271e5c561287f5a0ad56e48ac87349681d))
+* **MU2-1043:** resolve problems arising from trying to resolve merge conflicts ([a92df9d](https://github.com/railroadmedia/musora-content-services/commit/a92df9d97e6ea65179358b5bf50b43de14126b36))
+* **MU2-1043:** Wrap brand in search parameters per codreabbit suggestion ([0ba3180](https://github.com/railroadmedia/musora-content-services/commit/0ba3180dcde38d4996a8de601ca969bbf7549d9d))
+
 ## [2.48.0](https://github.com/railroadmedia/musora-content-services/compare/v2.47.0...v2.48.0) (2025-10-02)
 
 
