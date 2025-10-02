@@ -100,12 +100,19 @@ import {
 
 import {
 	createPost,
+<<<<<<< HEAD
 	fetchCommunityGuidelines,
+=======
+	deletePost,
+>>>>>>> project-v2
 	fetchPosts
 } from './services/forums/posts.ts';
 
 import {
 	createThread,
+	deleteThread,
+	fetchFollowedThreads,
+	fetchLatestThreads,
 	fetchThreads,
 	followThread,
 	lockThread,
@@ -375,8 +382,10 @@ declare module 'musora-content-services' {
 		deleteNotification,
 		deletePicture,
 		deletePlaylist,
+		deletePost,
 		deletePracticeSession,
 		deleteProfilePicture,
+		deleteThread,
 		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
@@ -411,6 +420,7 @@ declare module 'musora-content-services' {
 		fetchContentRows,
 		fetchCustomerPayments,
 		fetchEnrollmentPageMetadata,
+		fetchFollowedThreads,
 		fetchForumCategories,
 		fetchFoundation,
 		fetchGenreLessons,
@@ -418,6 +428,7 @@ declare module 'musora-content-services' {
 		fetchHierarchy,
 		fetchInterests,
 		fetchLastInteractedChild,
+		fetchLatestThreads,
 		fetchLeaving,
 		fetchLessonContent,
 		fetchLessonsFeaturingThisContent,

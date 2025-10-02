@@ -59,6 +59,19 @@ export async function fetchPosts(
 }
 
 /**
+ * Delete a post.
+ *
+ * @param {number} postId - The ID of the post to delete.
+ * @param {string} brand - The brand associated with the delete action.
+ * @return {Promise<void>} - A promise that resolves when the post is deleted.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function deletePost(postId: number, brand: string): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.delete<void>(`${baseUrl}/v1/posts/${postId}?brand=${brand}`)
+}
+
+/**
  * Fetches community guidelines posts for the given brand.
  *
  * @param {string} brand - The brand context (e.g., "drumeo", "singeo").

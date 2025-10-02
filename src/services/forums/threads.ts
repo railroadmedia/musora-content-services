@@ -3,7 +3,7 @@
  */
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
-import { ForumThread } from './types'
+import { ForumCategory, ForumThread } from './types'
 import { PaginatedResponse } from '../api/types'
 
 const baseUrl = `/api/forums`
@@ -157,3 +157,43 @@ export async function unlockThread(threadId: number, brand: string): Promise<voi
   return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}/lock?brand=${brand}`)
 }
 
+/**
+ * Fetches followed forum Threads for the given brand and current user.
+ *
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @returns {Promise<PaginatedResponse<ForumThread>>} - A promise that resolves to the list of forum threads.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function fetchFollowedThreads(
+  brand: string
+): Promise<PaginatedResponse<ForumThread>> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.get<PaginatedResponse<ForumThread>>(`${baseUrl}/v1/threads?brand=${brand}`)
+}
+
+/**
+ * Fetches latest forum Threads for the given brand and not blocked to current user.
+ *
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @returns {Promise<PaginatedResponse<ForumThread>>} - A promise that resolves to the list of forum threads.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function fetchLatestThreads(
+  brand: string
+): Promise<PaginatedResponse<ForumThread>> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.get<PaginatedResponse<ForumThread>>(`${baseUrl}/v1/threads/latest?brand=${brand}`)
+}
+
+/**
+ * Delete a thread.
+ *
+ * @param {number} threadId - The ID of the thread.
+ * @param {string} brand - The brand associated with the delete action.
+ * @return {Promise<void>} - A promise that resolves when the thread is deleted.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function deleteThread(threadId: number, brand: string): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}?brand=${brand}`)
+}

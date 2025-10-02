@@ -100,12 +100,19 @@ import {
 
 import {
 	createPost,
+<<<<<<< HEAD
 	fetchCommunityGuidelines,
+=======
+	deletePost,
+>>>>>>> project-v2
 	fetchPosts
 } from './services/forums/posts.ts';
 
 import {
 	createThread,
+	deleteThread,
+	fetchFollowedThreads,
+	fetchLatestThreads,
 	fetchThreads,
 	followThread,
 	lockThread,
@@ -374,8 +381,10 @@ export {
 	deleteNotification,
 	deletePicture,
 	deletePlaylist,
+	deletePost,
 	deletePracticeSession,
 	deleteProfilePicture,
+	deleteThread,
 	deleteUserActivity,
 	duplicatePlaylist,
 	editComment,
@@ -410,6 +419,7 @@ export {
 	fetchContentRows,
 	fetchCustomerPayments,
 	fetchEnrollmentPageMetadata,
+	fetchFollowedThreads,
 	fetchForumCategories,
 	fetchFoundation,
 	fetchGenreLessons,
@@ -417,6 +427,7 @@ export {
 	fetchHierarchy,
 	fetchInterests,
 	fetchLastInteractedChild,
+	fetchLatestThreads,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
