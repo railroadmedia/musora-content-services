@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.48.0](https://github.com/railroadmedia/musora-content-services/compare/v2.47.0...v2.48.0) (2025-10-02)
+
+
+### Features
+
+* add method to delete post ([950468d](https://github.com/railroadmedia/musora-content-services/commit/950468ddb81f7aef28d10c254789051d556f0c56))
+* add method to delete post  [#472](https://github.com/railroadmedia/musora-content-services/issues/472)  ([3fe4987](https://github.com/railroadmedia/musora-content-services/commit/3fe49878777d099e151f07fa3730a856876eba59))
+* add method to delete thread ([a47daca](https://github.com/railroadmedia/musora-content-services/commit/a47dacabc0879126b5bb32afcb5c7c0bb34001e9))
+* **MU2-1111:** New method for forum rules [#469](https://github.com/railroadmedia/musora-content-services/issues/469)  ([b758a4c](https://github.com/railroadmedia/musora-content-services/commit/b758a4c08da2d5d1fbdaa94f58ccda9da28b14ac))
+* **MU2-1112:** add method to delete thread [#470](https://github.com/railroadmedia/musora-content-services/issues/470)  ([eb83ab3](https://github.com/railroadmedia/musora-content-services/commit/eb83ab31c26be4ead643e22ce3d59216682805bb))
+
 ## [2.47.0](https://github.com/railroadmedia/musora-content-services/compare/v2.46.0...v2.47.0) (2025-09-29)
 
 
