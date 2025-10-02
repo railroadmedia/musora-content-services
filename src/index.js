@@ -102,7 +102,7 @@ import {
 	createPost,
 	fetchPosts,
 	likePost,
-	unlikePost
+	unlikePost,
 	deletePost,
 	fetchCommunityGuidelines
 } from './services/forums/posts.ts';
@@ -350,7 +350,7 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 export {
@@ -532,7 +532,7 @@ export {
 	isContentLikedByIds,
 	isDisplayNameAvailable,
 	isNextDay,
-	isSameDate,>>>>>>> project-v2
+	isSameDate,
 	jumpToContinueContent,
 	likeComment,
 	likeContent,

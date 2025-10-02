@@ -84,8 +84,9 @@ export async function unlikePost(postId: number, brand: string): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   const query = new URLSearchParams({ brand }).toString()
   return httpClient.delete<void>(`${baseUrl}/v1/posts/${postId}/likes?${query}`)
+}
 
-/** 
+/**
  * Delete a post.
  *
  * @param {number} postId - The ID of the post to delete.
