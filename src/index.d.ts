@@ -102,7 +102,7 @@ import {
 	createPost,
 	fetchPosts,
 	likePost,
-	unlikePost
+	unlikePost,
 	deletePost,
 	fetchCommunityGuidelines
 } from './services/forums/posts.ts';
@@ -350,8 +350,8 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI 
-} from './services/eventsAPI';
+	 default as EventsAPI
+} from './services/eventsAPI.js';
 
 declare module 'musora-content-services' {
 	export {
@@ -613,7 +613,7 @@ declare module 'musora-content-services' {
 		uploadPicture,
 		uploadPictureFromS3,
 		verifyImageSRC,
-		verifyLocalDataContext,
+		verifyLocalDataContext
 	}
 }
 
