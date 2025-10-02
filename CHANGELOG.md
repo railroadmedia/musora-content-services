@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.48.0](https://github.com/railroadmedia/musora-content-services/compare/v2.47.0...v2.48.0) (2025-10-02)
+
+
+### Features
+
+* add method to delete post ([950468d](https://github.com/railroadmedia/musora-content-services/commit/950468ddb81f7aef28d10c254789051d556f0c56))
+* add method to delete post  [#472](https://github.com/railroadmedia/musora-content-services/issues/472)  ([3fe4987](https://github.com/railroadmedia/musora-content-services/commit/3fe49878777d099e151f07fa3730a856876eba59))
+* add method to delete thread ([a47daca](https://github.com/railroadmedia/musora-content-services/commit/a47dacabc0879126b5bb32afcb5c7c0bb34001e9))
+* **MU2-1111:** New method for forum rules [#469](https://github.com/railroadmedia/musora-content-services/issues/469)  ([b758a4c](https://github.com/railroadmedia/musora-content-services/commit/b758a4c08da2d5d1fbdaa94f58ccda9da28b14ac))
+* **MU2-1112:** add method to delete thread [#470](https://github.com/railroadmedia/musora-content-services/issues/470)  ([eb83ab3](https://github.com/railroadmedia/musora-content-services/commit/eb83ab31c26be4ead643e22ce3d59216682805bb))
+
+## [2.47.0](https://github.com/railroadmedia/musora-content-services/compare/v2.46.0...v2.47.0) (2025-09-29)
+
+
+### Features
+
+* **MU2-1030:** adding fetch method for followed threads endpoint ([7925a44](https://github.com/railroadmedia/musora-content-services/commit/7925a4439f6110612e6c905548afce7ef081ff85))
+* **MU2-1030:** adding fetch method for followed threads endpoint [#464](https://github.com/railroadmedia/musora-content-services/issues/464) ([05401df](https://github.com/railroadmedia/musora-content-services/commit/05401df2f53d342e7dc7311d59faa715d6f08f38))
+* **MU2-1033:** Add function for fetch latest threads, update docs ([967e152](https://github.com/railroadmedia/musora-content-services/commit/967e1526418933e3f287e78e606f4caf6ff0f095))
+* **MU2-1033:** Add function for fetch latest threads, update docs [#466](https://github.com/railroadmedia/musora-content-services/issues/466) ([4b270ab](https://github.com/railroadmedia/musora-content-services/commit/4b270aba3c7d0177f18183e2f75c03a8544bf930))
+
+## [2.46.0](https://github.com/railroadmedia/musora-content-services/compare/v2.45.0...v2.46.0) (2025-09-26)
+
+
+### Features
+
+* **BEH-1106:** update contentTypeConfig and contentMetaData ([#458](https://github.com/railroadmedia/musora-content-services/issues/458)) ([8b8c7fc](https://github.com/railroadmedia/musora-content-services/commit/8b8c7fce81197a7e9ffde80b9718be87caec915d))
+
+
+### Bug Fixes
+
+* 0 progress shows start course cta text ([#468](https://github.com/railroadmedia/musora-content-services/issues/468)) ([d9ae881](https://github.com/railroadmedia/musora-content-services/commit/d9ae8815fd233e142f60b2293136546f7693862d))
+
 ## [2.45.0](https://github.com/railroadmedia/musora-content-services/compare/v2.44.0...v2.45.0) (2025-09-25)
 
 

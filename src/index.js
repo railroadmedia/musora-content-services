@@ -103,10 +103,15 @@ import {
 	fetchPosts,
 	likePost,
 	unlikePost
+	deletePost,
+	fetchCommunityGuidelines
 } from './services/forums/posts.ts';
 
 import {
 	createThread,
+	deleteThread,
+	fetchFollowedThreads,
+	fetchLatestThreads,
 	fetchThreads,
 	followThread,
 	lockThread,
@@ -375,8 +380,10 @@ export {
 	deleteNotification,
 	deletePicture,
 	deletePlaylist,
+	deletePost,
 	deletePracticeSession,
 	deleteProfilePicture,
+	deleteThread,
 	deleteUserActivity,
 	duplicatePlaylist,
 	editComment,
@@ -402,6 +409,7 @@ export {
 	fetchCommentModContentData,
 	fetchCommentRelies,
 	fetchComments,
+	fetchCommunityGuidelines,
 	fetchCompletedContent,
 	fetchCompletedState,
 	fetchContentInProgress,
@@ -410,6 +418,7 @@ export {
 	fetchContentRows,
 	fetchCustomerPayments,
 	fetchEnrollmentPageMetadata,
+	fetchFollowedThreads,
 	fetchForumCategories,
 	fetchFoundation,
 	fetchGenreLessons,
@@ -417,6 +426,7 @@ export {
 	fetchHierarchy,
 	fetchInterests,
 	fetchLastInteractedChild,
+	fetchLatestThreads,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
@@ -522,7 +532,7 @@ export {
 	isContentLikedByIds,
 	isDisplayNameAvailable,
 	isNextDay,
-	isSameDate,
+	isSameDate,>>>>>>> project-v2
 	jumpToContinueContent,
 	likeComment,
 	likeContent,
