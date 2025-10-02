@@ -106,6 +106,7 @@ import {
 
 import {
 	createThread,
+	deleteThread,
 	fetchFollowedThreads,
 	fetchLatestThreads,
 	fetchThreads,
@@ -379,6 +380,7 @@ export {
 	deletePost,
 	deletePracticeSession,
 	deleteProfilePicture,
+	deleteThread,
 	deleteUserActivity,
 	duplicatePlaylist,
 	editComment,

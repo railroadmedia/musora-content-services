@@ -184,3 +184,16 @@ export async function fetchLatestThreads(
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.get<PaginatedResponse<ForumThread>>(`${baseUrl}/v1/threads/latest?brand=${brand}`)
 }
+
+/**
+ * Delete a thread.
+ *
+ * @param {number} threadId - The ID of the thread.
+ * @param {string} brand - The brand associated with the delete action.
+ * @return {Promise<void>} - A promise that resolves when the thread is deleted.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function deleteThread(threadId: number, brand: string): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}?brand=${brand}`)
+}

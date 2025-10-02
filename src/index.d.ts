@@ -106,6 +106,7 @@ import {
 
 import {
 	createThread,
+	deleteThread,
 	fetchFollowedThreads,
 	fetchLatestThreads,
 	fetchThreads,
@@ -380,6 +381,7 @@ declare module 'musora-content-services' {
 		deletePost,
 		deletePracticeSession,
 		deleteProfilePicture,
+		deleteThread,
 		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
