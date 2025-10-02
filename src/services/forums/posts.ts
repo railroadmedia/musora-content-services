@@ -58,3 +58,4 @@ export async function fetchPosts(
   return httpClient.get<PaginatedResponse<ForumPost>>(url)
 }
 
+
