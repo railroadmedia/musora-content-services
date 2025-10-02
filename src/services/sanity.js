@@ -2175,6 +2175,7 @@ export async function fetchTabData(
 
   filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+  const childrenFields = await getChildFieldsForContentType('tab-data')
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
   entityFieldsString =
     ` ${fieldsString}
