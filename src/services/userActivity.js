@@ -591,8 +591,14 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
     const content = contents?.find((c) => c.id === practice.contentId) || {}
     return {
       ...practice,
+      content: content,
+      // the following fields are depreciated and should be removed sometime soon :)
+      // Adrian August 7th 2025
+      // Waiting on FE/MA updates
+      // https://musora.atlassian.net/browse/BEH-901
       parent_id: content.parent_id || null,
       navigateTo: content.navigateTo,
+
     }
   })
   return recentActivityData
@@ -870,18 +876,23 @@ async function formatPracticeMeta(practices = []) {
       thumbnail_url: practice.content_id ? content.thumbnail : practice.thumbnail_url || '',
       duration: practice.duration_seconds || 0,
       duration_seconds: practice.duration_seconds || 0,
-      content_url: content?.url || null,
       title: practice.content_id ? content.title : practice.title,
       category_id: practice.category_id,
       instrument_id: practice.instrument_id,
       content_type: getFormattedType(content?.type || '', content?.brand || null),
-      content_id: practice.content_id || null,
-      content_brand: content?.brand || null,
       created_at: dayjs(practice.created_at),
+      content: content,
+      // the following fields are depreciated and should be removed sometime soon :)
+      // Adrian August 7th 2025
+      // Waiting on FE/MA updates
+      // https://musora.atlassian.net/browse/BEH-901
       sanity_type: content?.type || null,
       content_slug: content?.slug || null,
       parent_id: content?.parent_id || null,
       navigateTo: content?.navigateTo || null,
+      content_id: practice.content_id || null,
+      content_brand: content?.brand || null,
+      content_url: content?.url || null,
     }
   })
 }

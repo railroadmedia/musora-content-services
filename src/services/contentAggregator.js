@@ -94,18 +94,34 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addNavigateTo ? getNavigateTo(items) : Promise.resolve(null),
   ])
 
-  const addContext = async (item) => ({
-    ...item,
-    ...(addProgressPercentage ? { progressPercentage: progressData?.[item.id]['progress'] } : {}),
-    ...(addProgressStatus ? { progressStatus: progressData?.[item.id]['status'] } : {}),
-    ...(addProgressTimestamp ? { progressTimestamp: progressData?.[item.id]['last_update'] } : {}),
-    ...(addIsLiked ? { isLiked: isLikedData?.[item.id] } : {}),
-    ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
-    ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
-    ...(addLastInteractedChild ? { lastInteractedChild: lastInteractedChildData?.[item.id] } : {}),
-    ...(addNextLesson ? { nextLesson: nextLessonData?.[item.id] } : {}),
-    ...(addNavigateTo ? { navigateTo: navigateToData?.[item.id] } : {}),
-  })
+  const addContext = async (item) => {
+      let i = ({
+        ...item,
+        ...(addProgressPercentage ? { progress_percentage: progressData?.[item.id]['progress'] } : {}),
+        ...(addProgressStatus ? { progress_status: progressData?.[item.id]['status'] } : {}),
+        ...(addProgressTimestamp ? { progress_timestamp: progressData?.[item.id]['last_update'] } : {}),
+        ...(addIsLiked ? { is_liked: isLikedData?.[item.id] } : {}),
+        ...(addLikeCount && ids.length === 1 ? { like_count: await fetchLikeCount(item.id) } : {}),
+        ...(addResumeTimeSeconds ? { resume_time: resumeTimeData?.[item.id] } : {}),
+        ...(addLastInteractedChild ? { last_interacted_child: lastInteractedChildData?.[item.id] } : {}),
+        ...(addNextLesson ? { next_lesson: nextLessonData?.[item.id] } : {}),
+        ...(addNavigateTo ? { navigate_to: navigateToData?.[item.id] } : {}),
+      })
+      // TODO REMOVE https://musora.atlassian.net/browse/BEH-901
+      i = {
+        ...i,
+        ...(addProgressPercentage ? { progressPercentage: i.progress_percentage} : {}),
+        ...(addProgressStatus ? { progressStatus: i.progress_status} : {}),
+        ...(addProgressTimestamp ? { progressTimestamp: i.progress_timestamp } : {}),
+        ...(addIsLiked ? { isLiked: i.is_liked } : {}),
+        ...(addLikeCount && ids.length === 1 ? { likeCount: i.like_count } : {}),
+        ...(addResumeTimeSeconds ? { resumeTime: i.resume_time } : {}),
+        ...(addLastInteractedChild ? { lastInteractedChild: i.last_interacted_child } : {}),
+        ...(addNextLesson ? { nextLesson: i.next_lesson } : {}),
+        ...(addNavigateTo ? { navigateTo: i.navigate_to } : {}),
+      }
+      return i
+    }
 
   return await processItems(data, addContext, dataField, isDataAnArray, dataField_includeParent)
 }
