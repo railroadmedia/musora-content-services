@@ -100,11 +100,8 @@ import {
 
 import {
 	createPost,
-<<<<<<< HEAD
-	fetchCommunityGuidelines,
-=======
 	deletePost,
->>>>>>> project-v2
+	fetchCommunityGuidelines,
 	fetchPosts
 } from './services/forums/posts.ts';
 
