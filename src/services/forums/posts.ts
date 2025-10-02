@@ -71,4 +71,16 @@ export async function deletePost(postId: number, brand: string): Promise<void> {
   return httpClient.delete<void>(`${baseUrl}/v1/posts/${postId}?brand=${brand}`)
 }
 
+/**
+ * Fetches community guidelines posts for the given brand.
+ *
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @returns {Promise<ForumPost[]>} - Resolves to an array of forum posts.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function fetchCommunityGuidelines(brand: string): Promise<ForumPost[]> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  const url = `${baseUrl}/v1/rules?brand=${brand}`
+  return httpClient.get<ForumPost[]>(url);
+}
 

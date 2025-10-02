@@ -101,6 +101,7 @@ import {
 import {
 	createPost,
 	deletePost,
+	fetchCommunityGuidelines,
 	fetchPosts
 } from './services/forums/posts.ts';
 
@@ -407,6 +408,7 @@ declare module 'musora-content-services' {
 		fetchCommentModContentData,
 		fetchCommentRelies,
 		fetchComments,
+		fetchCommunityGuidelines,
 		fetchCompletedContent,
 		fetchCompletedState,
 		fetchContentInProgress,

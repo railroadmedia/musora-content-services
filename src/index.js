@@ -101,6 +101,7 @@ import {
 import {
 	createPost,
 	deletePost,
+	fetchCommunityGuidelines,
 	fetchPosts
 } from './services/forums/posts.ts';
 
@@ -406,6 +407,7 @@ export {
 	fetchCommentModContentData,
 	fetchCommentRelies,
 	fetchComments,
+	fetchCommunityGuidelines,
 	fetchCompletedContent,
 	fetchCompletedState,
 	fetchContentInProgress,
