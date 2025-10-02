@@ -610,21 +610,21 @@ describe('Filter Builder', function() {
 
   test('withOnlyFilterAvailableStatuses', async () => {
     const filter = 'railcontent_id = 111'
-    const builder = FilterBuilder.withOnlyFilterAvailableStatuses(filter, ['published', 'unlisted'], true)
+    const builder = FilterBuilder.withOnlyFilterAvailableStatuses(filter, ['published'], true)
     const finalFilter = await builder.buildFilter()
     const clauses = spliceFilterForAnds(finalFilter)
     expect(clauses[0].phrase).toBe(filter)
     expect(clauses[1].field).toBe('status')
     expect(clauses[1].operator).toBe('in')
     // not sure I like this
-    expect(clauses[1].condition).toBe(`['published','unlisted']`)
+    expect(clauses[1].condition).toBe(`['published']`)
     expect(clauses[2].field).toBe('published_on')
   })
 
   test('withContentStatusAndFutureScheduledContent', async () => {
     const filter = 'railcontent_id = 111'
     const builder = new FilterBuilder(filter, {
-      availableContentStatuses: ['published', 'unlisted', 'scheduled'], getFutureScheduledContentsOnly: true,
+      availableContentStatuses: ['published', 'scheduled'], getFutureScheduledContentsOnly: true,
     })
     const finalFilter = await builder.buildFilter()
     const clauses = spliceFilterForAnds(finalFilter)
@@ -632,7 +632,7 @@ describe('Filter Builder', function() {
     expect(clauses[1].field).toBe('(status') // extra ( because it's a multi part filter
     expect(clauses[1].operator).toBe('in')
     // getFutureScheduledContentsOnly doesn't make a filter that's splicable, so we match on the more static string
-    const expected = `['published','unlisted'] || (status == 'scheduled' && defined(published_on) && published_on >=`
+    const expected = `['published'] || (status == 'scheduled' && defined(published_on) && published_on >=`
     const isMatch = finalFilter.includes(expected)
     expect(isMatch).toBeTruthy()
   })
