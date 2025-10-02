@@ -16,6 +16,7 @@ export interface CreatePostParams {
 /**
  * Creates a new post under a forum thread.
  *
+ * @param threadId
  * @param {CreatePostParams} params - The parameters for creating the post.
  * @returns {Promise<ForumPost>} - A promise that resolves to the created post.
  * @throws {HttpError} - If the request fails.
@@ -59,6 +60,32 @@ export async function fetchPosts(
 }
 
 /**
+ * Like a forum post.
+ *
+ * @param {number} postId - The ID of the post to like.
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @return {Promise<void>} - A promise that resolves when the post is liked.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function likePost(postId: number, brand: string): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post<void>(`${baseUrl}/v1/posts/${postId}/likes`, { brand })
+}
+
+/**
+ * Unlike a forum post.
+ *
+ * @param {number} postId - The ID of the post to unlike.
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @return {Promise<void>} - A promise that resolves when the post is unliked.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function unlikePost(postId: number, brand: string): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  const query = new URLSearchParams({ brand }).toString()
+  return httpClient.delete<void>(`${baseUrl}/v1/posts/${postId}/likes?${query}`)
+
+/** 
  * Delete a post.
  *
  * @param {number} postId - The ID of the post to delete.

@@ -100,9 +100,11 @@ import {
 
 import {
 	createPost,
+	fetchPosts,
+	likePost,
+	unlikePost
 	deletePost,
-	fetchCommunityGuidelines,
-	fetchPosts
+	fetchCommunityGuidelines
 } from './services/forums/posts.ts';
 
 import {
@@ -530,11 +532,12 @@ export {
 	isContentLikedByIds,
 	isDisplayNameAvailable,
 	isNextDay,
-	isSameDate,
+	isSameDate,>>>>>>> project-v2
 	jumpToContinueContent,
 	likeComment,
 	likeContent,
 	likePlaylist,
+	likePost,
 	lockThread,
 	logUserPractice,
 	login,
@@ -594,6 +597,7 @@ export {
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
+	unlikePost,
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
