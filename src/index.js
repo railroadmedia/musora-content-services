@@ -351,7 +351,7 @@ import {
 
 import {
 	 default as EventsAPI
-} from './services/eventsAPI';
+} from './services/eventsAPI.js';
 
 export {
 	addContextToContent,
