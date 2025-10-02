@@ -185,6 +185,7 @@ export const tutorialsLessonTypes = ['song-tutorial'];
 export const transcriptionsLessonTypes = ['song'];
 export const playAlongLessonTypes = ['play-along'];
 export const jamTrackLessonTypes = ['jam-track'];
+export const skillPackLessonTypes = ['skill-pack-lesson'];
 
 export const individualLessonsTypes = [
   ...singleLessonTypes,
@@ -192,7 +193,8 @@ export const individualLessonsTypes = [
   ...performancesLessonTypes,
   ...documentariesLessonTypes,
   ...liveArchivesLessonTypes,
-  ...studentArchivesLessonTypes
+  ...studentArchivesLessonTypes,
+  ...skillPackLessonTypes
 ];
 
 export const coursesLessonTypes = ['course', 'pack','spotlight', 'guided-course'];
