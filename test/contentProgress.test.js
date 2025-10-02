@@ -15,6 +15,7 @@ import {
 } from '../src/services/contentProgress'
 import { initializeTestService } from './initializeTests'
 import {getLessonContentRows, postContentComplete} from '../src'
+import {fetchRecent} from "../src/services/sanity";
 import {getRecent, getTabResults} from "../src/services/content";
 import {individualLessonsTypes, playAlongLessonTypes, transcriptionsLessonTypes, tutorialsLessonTypes} from "../src/contentTypeConfig";
 
@@ -257,21 +258,21 @@ describe('contentProgressDataContext', function () {
   //
   // });
   test('getRecentLessons', async () => {
-    let result = await getRecent('drumeo', {})
+    let result = await getRecent('drumeo','lessons', 'all',{page:1, limit:10})
     console.log(result);
     expect(result.data[0].id).toStrictEqual(412986)
     expect(individualLessonsTypes).toContain(result.data[0].type)
   })
 
   test('getRecentLessons-Incomplete', async () => {
-    let result = await getRecent('drumeo', {status: 'incomplete'})
+    let result = await getRecent('drumeo','lessons','Incomplete')
     console.log(result);
     expect(result.data[0].id).toStrictEqual(407665)
     expect(individualLessonsTypes).toContain(result.data[0].type)
   })
 
   test('getRecentLessons-Completed', async () => {
-    let result = await getRecent('drumeo', {status: 'completed'})
+    let result = await getRecent('drumeo','lessons','Completed')
     console.log(result);
     expect(result.data[0].id).toStrictEqual(412986)
     expect(individualLessonsTypes).toContain(result.data[0].type)
