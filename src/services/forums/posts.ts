@@ -29,6 +29,23 @@ export async function createPost(
   return httpClient.post<ForumPost>(`${baseUrl}/v1/threads/${threadId}/posts`, params)
 }
 
+/**
+ * Creates a new post under a forum thread.
+ *
+ * @param postId
+ * @param {CreatePostParams} params - The parameters for updating the post.
+ * @returns {Promise<ForumPost>} - A promise that resolves to the updated post.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function updatePost(
+  postId: number,
+  params: CreatePostParams
+): Promise<ForumPost> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.put<ForumPost>(`${baseUrl}/v1/posts/${postId}`, params)
+}
+
+
 export interface FetchPostParams {
   page?: number,
   limit?: number,

@@ -100,11 +100,12 @@ import {
 
 import {
 	createPost,
+	deletePost,
+	fetchCommunityGuidelines,
 	fetchPosts,
 	likePost,
 	unlikePost,
-	deletePost,
-	fetchCommunityGuidelines
+	updatePost
 } from './services/forums/posts.ts';
 
 import {
@@ -350,8 +351,8 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI
-} from './services/eventsAPI.js';
+	 default as EventsAPI 
+} from './services/eventsAPI';
 
 declare module 'musora-content-services' {
 	export {
@@ -606,6 +607,7 @@ declare module 'musora-content-services' {
 		updateForumCategory,
 		updateNotificationSetting,
 		updatePlaylist,
+		updatePost,
 		updatePracticeNotes,
 		updateThread,
 		updateUserPractice,
@@ -613,7 +615,7 @@ declare module 'musora-content-services' {
 		uploadPicture,
 		uploadPictureFromS3,
 		verifyImageSRC,
-		verifyLocalDataContext
+		verifyLocalDataContext,
 	}
 }
 
