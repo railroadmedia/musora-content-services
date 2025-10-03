@@ -120,7 +120,7 @@ export default class SyncRepository<TModel extends BaseModel> {
     let pull: Awaited<ReturnType<typeof this.store.pullRecords>> | null = null;
 
     if (!everPulled) {
-      pull = await this.store.pullRecords(false)
+      pull = await this.store.pullRecords()
       if (!pull.ok) {
         throw new SyncError('Failed to pull records', { pull })
       }

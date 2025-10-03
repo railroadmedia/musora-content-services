@@ -1,6 +1,6 @@
 import SyncContext from "./context"
 import { SyncResponse } from "./fetch"
-import { SyncTelemetry } from "./telemetry"
+import { SyncTelemetry, Span } from "./telemetry"
 
 export default class SyncRetry {
   private readonly BASE_BACKOFF = 1_000
@@ -32,7 +32,7 @@ export default class SyncRetry {
    * Runs the given syncFn with automatic retries.
    * Returns the first successful result or the last failed result after retries.
    */
-  async request<T extends SyncResponse>(syncFn: () => Promise<T>, forceOne?: boolean) {
+  async request<T extends SyncResponse>(name: string, syncFn: (span: Span) => Promise<T>) {
     let attempt = 0
 
     while (true) {
@@ -42,22 +42,20 @@ export default class SyncRetry {
         return { ok: false } as T
       }
 
-      if (!forceOne) {
-        const now = Date.now()
-        if (now < this.backoffUntil) {
-          await this.sleep(this.backoffUntil - now)
-        }
+      const now = Date.now()
+      if (now < this.backoffUntil) {
+        await this.sleep(this.backoffUntil - now)
       }
 
       attempt++
-      const result = await this.telemetry.trace({ name: `retry:attempt:${attempt}`, op: 'retry:attempt' }, () => syncFn())
+      const result = await this.telemetry.trace({ name: `${name}:attempt:${attempt}/${this.MAX_ATTEMPTS}`, op: 'retry:attempt' }, span => syncFn(span))
 
       if (result.ok) {
         this.resetBackoff()
         return result
       } else {
         this.scheduleBackoff()
-        if (forceOne || attempt >= this.MAX_ATTEMPTS) return result
+        if (attempt >= this.MAX_ATTEMPTS) return result
       }
     }
   }
