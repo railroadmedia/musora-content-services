@@ -16,9 +16,17 @@ import { BaseSessionProvider } from '../context/providers'
 import inBoundary from '../boundary'
 import { throttle, createThrottleState, type ThrottleState } from '../utils'
 
-type ModelClass<T extends Model> = { new (...args: any[]): T; table: string };
-type SyncPull = (session: BaseSessionProvider, previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
-type SyncPush = (session: BaseSessionProvider, payload: PushPayload, signal: AbortSignal) => Promise<SyncPushResponse>
+type ModelClass<T extends Model> = { new (...args: any[]): T; table: string }
+type SyncPull = (
+  session: BaseSessionProvider,
+  previousFetchToken: SyncToken | null,
+  signal: AbortSignal
+) => Promise<SyncPullResponse>
+type SyncPush = (
+  session: BaseSessionProvider,
+  payload: PushPayload,
+  signal: AbortSignal
+) => Promise<SyncPushResponse>
 
 export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
   model: ModelClass<TModel>
@@ -50,11 +58,14 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   private lastFetchTokenKey: string
 
-  constructor({
-    model,
-    pull,
-    push,
-  }: SyncStoreConfig<TModel>, context: SyncContext, db: Database, retry: SyncRetry, runScope: SyncRunScope, telemetry: SyncTelemetry) {
+  constructor(
+    { model, pull, push }: SyncStoreConfig<TModel>,
+    context: SyncContext,
+    db: Database,
+    retry: SyncRetry,
+    runScope: SyncRunScope,
+    telemetry: SyncTelemetry
+  ) {
     this.context = context
     this.retry = retry
     this.runScope = runScope
@@ -130,7 +141,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     const records = await this.queryMaybeDeletedRecords(Q.where('_status', Q.notEq('synced')))
 
     if (records.length) {
-      return await this.retry.request('push:record-ids', () => this.pushCoalescer.push(records, this.makePush.bind(this)))
+      return await this.retry.request('push:record-ids', () =>
+        this.pushCoalescer.push(records, this.makePush.bind(this))
+      )
     }
   }
 
@@ -140,8 +153,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     const response = await this.pusher(this.context.session, payload, this.runScope.signal)
 
     if (response.ok) {
-      const successfulResults = response.results.filter(result => result.type === 'success')
-      const successfulEntries = successfulResults.map(result => result.entry)
+      const successfulResults = response.results.filter((result) => result.type === 'success')
+      const successfulEntries = successfulResults.map((result) => result.entry)
       await this.writeEntries(successfulEntries)
 
       this.emit('pushCompleted')
@@ -151,7 +164,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   private generatePushPayload(records: TModel[]) {
-    const entries = records.map(rec => {
+    const entries = records.map((rec) => {
       if (rec._raw._status === 'deleted') {
         return {
           record: null,
@@ -171,7 +184,12 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   private async pullRecordsWithRetry() {
-    return this.retry.request(`pull:${this.model.table}`, span => throttle({ state: this.pullThrottleState, deferOnce: true }, this.executePull.bind(this))(span))
+    return this.retry.request(`pull:${this.model.table}`, (span) =>
+      throttle(
+        { state: this.pullThrottleState, deferOnce: true },
+        this.executePull.bind(this)
+      )(span)
+    )
   }
 
   async pullRecords(span?: Span) {
@@ -179,33 +197,56 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   private async executePull(span?: Span) {
-    return this.telemetry.trace({ name: `pull:${this.model.table}:run`, op: 'pull:run', parentSpan: span }, async parentSpan => {
-      const lastFetchToken = await this.telemetry.trace({ name: `pull:${this.model.table}:run:token:read`, op: 'pull:run:token:read', parentSpan }, () => this.getLastFetchToken())
-      const response = await this.telemetry.trace({ name: `pull:${this.model.table}:run:fetch`, op: 'pull:run:fetch', parentSpan }, () => this.puller(this.context.session, lastFetchToken, this.runScope.signal))
+    return this.telemetry.trace(
+      { name: `pull:${this.model.table}:run`, op: 'pull:run', parentSpan: span },
+      async (parentSpan) => {
+        const lastFetchToken = await this.telemetry.trace(
+          {
+            name: `pull:${this.model.table}:run:token:read`,
+            op: 'pull:run:token:read',
+            parentSpan,
+          },
+          () => this.getLastFetchToken()
+        )
+        const response = await this.telemetry.trace(
+          { name: `pull:${this.model.table}:run:fetch`, op: 'pull:run:fetch', parentSpan },
+          () => this.puller(this.context.session, lastFetchToken, this.runScope.signal)
+        )
 
-      if (response.ok) {
-        await this.telemetry.trace({ name: `pull:${this.model.table}:run:write`, op: 'pull:run:write', parentSpan }, () => this.writeEntries(response.entries, !response.previousToken))
-        await this.telemetry.trace({ name: `pull:${this.model.table}:run:token:write`, op: 'pull:run:token:write', parentSpan }, () => this.setLastFetchToken(response.token))
+        if (response.ok) {
+          await this.telemetry.trace(
+            { name: `pull:${this.model.table}:run:write`, op: 'pull:run:write', parentSpan },
+            () => this.writeEntries(response.entries, !response.previousToken)
+          )
+          await this.telemetry.trace(
+            {
+              name: `pull:${this.model.table}:run:token:write`,
+              op: 'pull:run:token:write',
+              parentSpan,
+            },
+            () => this.setLastFetchToken(response.token)
+          )
 
-        this.emit('pullCompleted')
+          this.emit('pullCompleted')
+        }
+
+        return response
       }
-
-      return response
-    })
+    )
   }
 
   async readAll() {
-    const records = await this.queryRecords();
-    return records.map(record => this.modelSerializer.toPlainObject(record))
+    const records = await this.queryRecords()
+    return records.map((record) => this.modelSerializer.toPlainObject(record))
   }
 
   async readSome(ids: RecordId[]) {
-    const records = await this.queryRecords(Q.where('id', Q.oneOf(ids)));
-    return records.map(record => this.modelSerializer.toPlainObject(record))
+    const records = await this.queryRecords(Q.where('id', Q.oneOf(ids)))
+    return records.map((record) => this.modelSerializer.toPlainObject(record))
   }
 
   async readOne(id: RecordId) {
-    const record = await this.queryRecord(id);
+    const record = await this.queryRecord(id)
     return record ? this.modelSerializer.toPlainObject(record) : null
   }
 
@@ -217,7 +258,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return this.collection
       .query(Q.where('id', id))
       .fetch()
-      .then(records => records[0] as TModel | null)
+      .then((records) => records[0] as TModel | null)
   }
 
   private async queryMaybeDeletedRecords(...args: Q.Clause[]) {
@@ -234,14 +275,18 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
               w.comparison &&
               w.comparison.operator === 'notEq' &&
               w.comparison.right &&
-              'value' in w.comparison.right && w.comparison.right.value === 'deleted'
+              'value' in w.comparison.right &&
+              w.comparison.right.value === 'deleted'
             )
-        )
-      }
+        ),
+      },
     }
 
-    return (await this.db.adapter.unsafeQueryRaw(adjustedQuery)).map(raw => {
-      return new this.model(this.collection, sanitizedRaw(raw, this.db.schema.tables[this.collection.table]))
+    return (await this.db.adapter.unsafeQueryRaw(adjustedQuery)).map((raw) => {
+      return new this.model(
+        this.collection,
+        sanitizedRaw(raw, this.db.schema.tables[this.collection.table])
+      )
     })
   }
 
@@ -250,7 +295,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       let record: TModel | null = null
 
       await this.db.write(async () => {
-        const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(records => records[0] || null)
+        const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(
+          (records) => records[0] || null
+        )
 
         if (existing) {
           if (existing._raw._status === 'deleted') {
@@ -285,7 +332,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   async importRaw(recordRaw: TModel['_raw']) {
     await this.runScope.abortable(async () => {
       await this.db.write(async () => {
-        const existing = await this.queryMaybeDeletedRecords(Q.where('id', recordRaw.id)).then(records => records[0] || null)
+        const existing = await this.queryMaybeDeletedRecords(Q.where('id', recordRaw.id)).then(
+          (records) => records[0] || null
+        )
 
         if (existing) {
           if (existing._raw._status === 'deleted') {
@@ -296,8 +345,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             if (recordRaw._status === 'deleted') {
               await existing.markAsDeleted()
             } else {
-              await existing.update(record => {
-                Object.keys(recordRaw).forEach(key => {
+              await existing.update((record) => {
+                Object.keys(recordRaw).forEach((key) => {
                   record._raw[key] = recordRaw[key]
                 })
               })
@@ -305,7 +354,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
           }
         } else {
           if (recordRaw._status === 'deleted') {
-            await this.collection.create(record => {
+            await this.collection.create((record) => {
               const now = this.generateTimestamp()
 
               record._raw.id = recordRaw.id
@@ -313,8 +362,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
               record._raw._status = 'deleted'
             })
           } else {
-            await this.collection.create(record => {
-              Object.keys(recordRaw).forEach(key => {
+            await this.collection.create((record) => {
+              Object.keys(recordRaw).forEach((key) => {
                 record._raw[key] = recordRaw[key]
               })
             })
@@ -329,13 +378,15 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       let record: TModel | null = null
 
       await this.db.write(async () => {
-        const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(records => records[0] || null)
+        const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(
+          (records) => records[0] || null
+        )
 
         if (existing && existing._raw._status !== 'deleted') {
           await existing.markAsDeleted()
           record = existing
         } else {
-          record = await this.collection.create(record => {
+          record = await this.collection.create((record) => {
             const now = this.generateTimestamp()
 
             record._raw.id = id
@@ -360,7 +411,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private async ensurePersistence() {
     return new Promise<void>((resolve, reject) => {
       if (this.db.adapter.underlyingAdapter instanceof LokiJSAdapter) {
-        this.db.adapter.underlyingAdapter._driver.loki.saveDatabase(err => {
+        this.db.adapter.underlyingAdapter._driver.loki.saveDatabase((err) => {
           if (err) {
             reject(err)
           } else {
@@ -392,21 +443,23 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private async buildWriteBatchesFromEntries(entries: SyncEntry[], freshSync: boolean) {
     // if this is a fresh sync and there are no existing records, we can skip more sophisticated conflict resolution
     if (freshSync && (await this.isEmpty())) {
-      const resolver = new Resolver();
-      entries.filter((e) => !e.meta.lifecycle.deleted_at).forEach(entry => resolver.againstNone(entry))
+      const resolver = new Resolver()
+      entries
+        .filter((e) => !e.meta.lifecycle.deleted_at)
+        .forEach((entry) => resolver.againstNone(entry))
 
       return this.prepareRecords(resolver.result)
     }
 
-    const entryIds = entries.map(e => e.meta.ids.id)
+    const entryIds = entries.map((e) => e.meta.ids.id)
     const existingRecordsMap = new Map<RecordId, TModel>()
 
     const existingRecords = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(entryIds)))
-    existingRecords.forEach(record => existingRecordsMap.set(record.id, record))
+    existingRecords.forEach((record) => existingRecordsMap.set(record.id, record))
 
     const resolver = new Resolver()
 
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       const existing = existingRecordsMap.get(entry.meta.ids.id)
       if (existing) {
         switch (existing._raw._status) {
@@ -423,26 +476,28 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             break
 
           case 'deleted':
-            resolver.againstDeleted(existing, entry);
-            break;
+            resolver.againstDeleted(existing, entry)
+            break
 
           default:
-            this.telemetry.error(`[store:${this.model.table}] Unknown record status`, { status: existing._raw._status })
+            this.telemetry.error(`[store:${this.model.table}] Unknown record status`, {
+              status: existing._raw._status,
+            })
         }
       } else {
         resolver.againstNone(entry)
       }
     })
 
-    return this.prepareRecords(resolver.result);
+    return this.prepareRecords(resolver.result)
   }
 
   private prepareRecords(result: SyncResolution) {
-    if (Object.values(result).find(c => c.length)) {
+    if (Object.values(result).find((c) => c.length)) {
       this.telemetry.debug(`[store:${this.model.table}] Writing changes`, { changes: result })
     }
 
-    const destroyedBuilds = result.idsForDestroy.map(id => {
+    const destroyedBuilds = result.idsForDestroy.map((id) => {
       return new this.model(this.collection, { id }).prepareDestroyPermanently()
     })
     const createdBuilds = result.entriesForCreate.map((entry) => {
@@ -490,7 +545,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
     return [
       [...destroyedBuilds, ...createdBuilds, ...updatedBuilds, ...restoreDestroyBuilds],
-      [...restoreCreateBuilds]
+      [...restoreCreateBuilds],
     ]
   }
 
