@@ -19,8 +19,8 @@ export type SentryLike = {
   addBreadcrumb: typeof InjectedSentry.addBreadcrumb
   startSpan: typeof InjectedSentry.startSpan
 }
-type StartSpanOptions = Parameters<typeof InjectedSentry.startSpan>[0]
-type Span = InjectedSentry.Span
+export type StartSpanOptions = Parameters<typeof InjectedSentry.startSpan>[0]
+export type Span = InjectedSentry.Span
 
 export class SyncTelemetry {
   private Sentry: SentryLike;

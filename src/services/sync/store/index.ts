@@ -10,11 +10,11 @@ import { EpochSeconds } from '../utils/epoch'
 import { sanitizedRaw } from '@nozbe/watermelondb/RawRecord'
 import { default as Resolver, type SyncResolution } from '../resolver'
 import PushCoalescer from './push-coalescer'
-import { SyncTelemetry } from '../telemetry'
+import { SyncTelemetry, Span } from '../telemetry'
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 import { BaseSessionProvider } from '../context/providers'
 import inBoundary from '../boundary'
-import { Span } from 'node_modules/@sentry/browser/build/npm/types'
+import { throttle, createThrottleState, type ThrottleState } from '../utils'
 
 type ModelClass<T extends Model> = { new (...args: any[]): T; table: string };
 type SyncPull = (session: BaseSessionProvider, previousFetchToken: SyncToken | null, signal: AbortSignal) => Promise<SyncPullResponse>
@@ -27,6 +27,8 @@ export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
 }
 
 export default class SyncStore<TModel extends BaseModel = BaseModel> {
+  static readonly PULL_THROTTLE_INTERVAL = 2_000
+
   readonly telemetry: SyncTelemetry
   readonly context: SyncContext
   readonly retry: SyncRetry
@@ -41,8 +43,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   readonly puller: SyncPull
   readonly pusher: SyncPush
 
+  private pullThrottleState: ThrottleState<SyncPullResponse>
   private pushCoalescer = new PushCoalescer()
-  private currentPull: Promise<SyncPullResponse> | null = null
 
   private emitter = new EventEmitter()
 
@@ -61,6 +63,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.collection = db.collections.get(model.table)
     this.rawSerializer = new RawSerializer()
     this.modelSerializer = new ModelSerializer()
+
+    this.pullThrottleState = createThrottleState(SyncStore.PULL_THROTTLE_INTERVAL)
     this.pushCoalescer = new PushCoalescer()
 
     this.puller = pull
@@ -68,6 +72,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.lastFetchTokenKey = `last_fetch_token:${this.model.table}`
 
     this.telemetry = telemetry
+
+    window.x = this
   }
 
   on = this.emitter.on.bind(this.emitter)
@@ -87,7 +93,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
     // will return records that we just saw in push response, but we can't
     // be sure there were no other changes before the push
-    await this.pullRecords()
+    await this.pullRecordsWithRetry()
 
     if (pushError) {
       throw pushError
@@ -117,14 +123,14 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   async pushRecordIdsImpatiently(ids: RecordId[]) {
     const records = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))
-    return await this.retry.request<SyncPushResponse>(() => this.pushCoalescer.push(records, this.makePush.bind(this)), true)
+    return await this.pushCoalescer.push(records, this.makePush.bind(this))
   }
 
   private async pushUnsynced() {
     const records = await this.queryMaybeDeletedRecords(Q.where('_status', Q.notEq('synced')))
 
     if (records.length) {
-      return await this.retry.request<SyncPushResponse>(() => this.pushCoalescer.push(records, this.makePush.bind(this)))
+      return await this.retry.request('push:record-ids', () => this.pushCoalescer.push(records, this.makePush.bind(this)))
     }
   }
 
@@ -164,32 +170,28 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     }
   }
 
-  async pullRecords(retry = true) {
-    return this.retry.request<SyncPullResponse>(() => this.getCurrentPull(), !retry)
+  private async pullRecordsWithRetry() {
+    return this.retry.request(`pull:${this.model.table}`, span => throttle({ state: this.pullThrottleState, deferOnce: true }, this.executePull.bind(this))(span))
   }
 
-  private async getCurrentPull() {
-    if (this.currentPull) return this.currentPull
+  async pullRecords(span?: Span) {
+    return throttle({ state: this.pullThrottleState }, this.executePull.bind(this))(span)
+  }
 
-    this.currentPull = this.telemetry.trace({ name: `pull:${this.model.table}`, op: 'pull' }, async parentSpan => {
-      const lastFetchToken = await this.telemetry.trace({ name: `pull:${this.model.table}:token:read`, op: 'pull:token:read', parentSpan }, () => this.getLastFetchToken())
-      const response = await this.telemetry.trace({ name: `pull:${this.model.table}:fetch`, parentSpan }, () => this.puller(this.context.session, lastFetchToken, this.runScope.signal))
+  private async executePull(span?: Span) {
+    return this.telemetry.trace({ name: `pull:${this.model.table}:run`, op: 'pull:run', parentSpan: span }, async parentSpan => {
+      const lastFetchToken = await this.telemetry.trace({ name: `pull:${this.model.table}:run:token:read`, op: 'pull:run:token:read', parentSpan }, () => this.getLastFetchToken())
+      const response = await this.telemetry.trace({ name: `pull:${this.model.table}:run:fetch`, op: 'pull:run:fetch', parentSpan }, () => this.puller(this.context.session, lastFetchToken, this.runScope.signal))
 
       if (response.ok) {
-        await this.telemetry.trace({ name: `pull:${this.model.table}:write`, parentSpan }, () => this.writeEntries(response.entries, !response.previousToken))
-        await this.telemetry.trace({ name: `pull:${this.model.table}:token:write`, parentSpan }, () => this.setLastFetchToken(response.token))
+        await this.telemetry.trace({ name: `pull:${this.model.table}:run:write`, op: 'pull:run:write', parentSpan }, () => this.writeEntries(response.entries, !response.previousToken))
+        await this.telemetry.trace({ name: `pull:${this.model.table}:run:token:write`, op: 'pull:run:token:write', parentSpan }, () => this.setLastFetchToken(response.token))
 
         this.emit('pullCompleted')
       }
 
       return response
     })
-
-    try {
-      return await this.currentPull
-    } finally {
-      this.currentPull = null
-    }
   }
 
   async readAll() {
