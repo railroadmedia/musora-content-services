@@ -9,6 +9,7 @@ import { DataContext, ContentProgressVersionKey } from './dataContext.js'
 import { fetchHierarchy } from './sanity.js'
 import { recordUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
+import ProgressRepository from "./sync/repositories/content-progress.js";
 
 const STATE_STARTED = 'started'
 const STATE_COMPLETED = 'completed'
@@ -31,11 +32,12 @@ export async function getProgressPercentageByIds(contentIds) {
 }
 
 export async function getProgressState(contentId) {
-  return getById(contentId, DATA_KEY_STATUS, '')
+  return (await ProgressRepository.create().getProgressOptimistic(contentId)).data.state
 }
 
 export async function getProgressStateByIds(contentIds) {
-  return getByIds(contentIds, DATA_KEY_STATUS, '')
+  const data = (await ProgressRepository.create().getProgressOptimistic(contentIds)).data
+  return data.map(item => item.state)
 }
 
 export async function getResumeTimeSeconds(contentId) {

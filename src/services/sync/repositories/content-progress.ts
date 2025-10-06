@@ -13,6 +13,14 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.existOne(ProgressRepository.generateId(contentId))
   }
 
+  async getProgressOptimistic(contentId: number) {
+    return await this.readOne(ProgressRepository.generateId(contentId))
+  }
+
+  async getProgressesOptimistic(contentIds: number[]) {
+    return await this.readSome(contentIds.map(ProgressRepository.generateId))
+  }
+
   async areLikedOptimistic(contentIds: number[]) {
     return await this.existSome(contentIds.map(ProgressRepository.generateId))
   }
