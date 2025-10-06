@@ -17,6 +17,12 @@ export interface Award {
   type: string
   title: string
   badge: string
+  musora_logo: string
+  musora_bg_logo: string
+  brand_logo: string
+  ribbon_image: string
+  award_image: string
+  instructor_signature?: string
 }
 
 export interface Certificate {
