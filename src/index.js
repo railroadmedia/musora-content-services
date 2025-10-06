@@ -100,11 +100,11 @@ import {
 
 import {
 	createPost,
+	deletePost,
+	fetchCommunityGuidelines,
 	fetchPosts,
 	likePost,
-	unlikePost,
-	deletePost,
-	fetchCommunityGuidelines
+	unlikePost
 } from './services/forums/posts.ts';
 
 import {
@@ -166,7 +166,6 @@ import {
 	fetchTopComment,
 	fetchUserAward,
 	fetchUserBadges,
-	fetchUserLikes,
 	fetchUserPermissionsData,
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
@@ -175,13 +174,12 @@ import {
 	logUserPractice,
 	openComment,
 	postContentComplete,
-	postContentLiked,
 	postContentReset,
 	postContentRestore,
 	postContentStart,
-	postContentUnliked,
 	postPlaylistContentEngaged,
 	postRecordWatchSession,
+	postUserLikes,
 	replyToComment,
 	reportComment,
 	restoreComment,
@@ -350,8 +348,8 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI
-} from './services/eventsAPI.js';
+	 default as EventsAPI 
+} from './services/eventsAPI';
 
 export {
 	addContextToContent,
@@ -478,7 +476,6 @@ export {
 	fetchUpcomingEvents,
 	fetchUserAward,
 	fetchUserBadges,
-	fetchUserLikes,
 	fetchUserPermissions,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
@@ -553,13 +550,12 @@ export {
 	pinProgressRow,
 	pinThread,
 	postContentComplete,
-	postContentLiked,
 	postContentReset,
 	postContentRestore,
 	postContentStart,
-	postContentUnliked,
 	postPlaylistContentEngaged,
 	postRecordWatchSession,
+	postUserLikes,
 	rankCategories,
 	rankItems,
 	recommendations,
