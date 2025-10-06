@@ -32,12 +32,11 @@ export async function getProgressPercentageByIds(contentIds) {
 }
 
 export async function getProgressState(contentId) {
-  return (await ProgressRepository.create().getProgressOptimistic(contentId)).data.state
+  return getById(contentId, DATA_KEY_STATUS, '')
 }
 
 export async function getProgressStateByIds(contentIds) {
-  const data = (await ProgressRepository.create().getProgressOptimistic(contentIds)).data
-  return data.map(item => item.state)
+  return getByIds(contentIds, DATA_KEY_STATUS, '')
 }
 
 export async function getResumeTimeSeconds(contentId) {
@@ -212,14 +211,15 @@ export async function getProgressDateByIds(contentIds) {
 }
 
 async function getById(contentId, dataKey, defaultValue) {
-  let data = await dataContext.getData()
-  return data[contentId]?.[dataKey] ?? defaultValue
+  let data = (await ProgressRepository.create().getProgressOptimistic(contentId)).data
+
+  return data?.[dataKey] ?? defaultValue
 }
 
 async function getByIds(contentIds, dataKey, defaultValue) {
-  let data = await dataContext.getData()
+  let data = (await ProgressRepository.create().getProgressOptimistic(contentIds)).data
   let progress = {}
-  contentIds?.forEach((id) => (progress[id] = data[id]?.[dataKey] ?? defaultValue))
+  contentIds?.forEach((id) => (progress[id] = data[id]?.[dataKey] ?? defaultValue)) // what does watermelon return? are values keyed by id?
   return progress
 }
 
