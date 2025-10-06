@@ -1,5 +1,4 @@
-import { fetchUserLikes, postContentLiked, postContentUnliked } from './railcontent.js'
-import { DataContext, ContentLikesVersionKey } from './dataContext.js'
+import { LikesRepository } from './sync/repositories'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -8,51 +7,19 @@ import { DataContext, ContentLikesVersionKey } from './dataContext.js'
  */
 const excludeFromGeneratedIndex = []
 
-export let dataContext = new DataContext(ContentLikesVersionKey, fetchUserLikes)
-
 export async function isContentLiked(contentId) {
-  contentId = parseInt(contentId)
-  let data = await dataContext.getData()
-  return data.includes(contentId)
+  return (await LikesRepository.create().isLikedOptimistic(contentId)).data
 }
 
 export async function isContentLikedByIds(contentIds) {
-  const data = await dataContext.getData()
-  const likes = {}
-
-  contentIds?.forEach((id) => (likes[id] = data.includes(id)))
-
-  return likes
+  const existences = (await LikesRepository.create().areLikedOptimistic(contentIds)).data
+  return Object.fromEntries(contentIds.map((id, i) => [id, existences[i]]))
 }
 
 export async function likeContent(contentId) {
-  contentId = parseInt(contentId)
-  await dataContext.update(
-    function (localContext) {
-      if (!localContext.data.includes(contentId)) {
-        localContext.data.push(contentId)
-      }
-    },
-    async function () {
-      return postContentLiked(contentId)
-    }
-  )
+  return await LikesRepository.create().likeOptimisticEager(contentId)
 }
 
 export async function unlikeContent(contentId) {
-  contentId = parseInt(contentId)
-  await dataContext.update(
-    function (localContext) {
-      if (localContext.data.includes(contentId)) {
-        const index = localContext.data.indexOf(contentId)
-        if (index > -1) {
-          // only splice array when item is found
-          localContext.data.splice(index, 1) // 2nd parameter means remove one item only
-        }
-      }
-    },
-    async function () {
-      return postContentUnliked(contentId)
-    }
-  )
+  return await LikesRepository.create().unlikeOptimisticEager(contentId)
 }

@@ -10,9 +10,6 @@ import { fetchJSONHandler } from '../lib/httpHelper.js'
  * @type {string[]}
  */
 const excludeFromGeneratedIndex = [
-  'fetchUserLikes',
-  'postContentLiked',
-  'postContentUnliked',
   'postRecordWatchSession',
   'postContentStarted',
   'postContentComplete',
@@ -275,12 +272,12 @@ export async function fetchUserPermissionsData() {
   return (await fetchHandler(url, 'get')) ?? []
 }
 
-async function fetchDataHandler(url, dataVersion, method = 'get') {
-  return fetchHandler(url, method, dataVersion)
+async function fetchDataHandler(url, dataVersion, method = 'get', signal = null) {
+  return fetchHandler(url, method, dataVersion, null, signal)
 }
 
-async function postDataHandler(url, data) {
-  return fetchHandler(url, 'post', null, data)
+async function postDataHandler(url, data, signal = null) {
+  return fetchHandler(url, 'post', null, data, signal)
 }
 
 async function patchDataHandler_depreciated(url, data) {
@@ -300,19 +297,9 @@ export async function fetchLikeCount(contendId) {
   return await fetchDataHandler(url)
 }
 
-export async function fetchUserLikes(currentVersion) {
+export async function postUserLikes(likes, signal) {
   let url = `/api/content/v1/user/likes`
-  return fetchDataHandler(url, currentVersion)
-}
-
-export async function postContentLiked(contentId) {
-  let url = `/api/content/v1/user/likes/${contentId}`
-  return await postDataHandler(url)
-}
-
-export async function postContentUnliked(contentId) {
-  let url = `/api/content/v1/user/likes/${contentId}`
-  return await deleteDataHandler(url)
+  return await postDataHandler(url, likes, signal);
 }
 
 export async function fetchContentProgress(currentVersion) {
@@ -770,13 +757,14 @@ function fetchAbsolute(url, params) {
   }
   return fetch(url, params)
 }
-export async function fetchHandler(url, method = 'get', dataVersion = null, body = null) {
+export async function fetchHandler(url, method = 'get', dataVersion = null, body = null, signal = null) {
   return fetchJSONHandler(
     url,
     globalConfig.sessionConfig.token,
     globalConfig.baseUrl,
     method,
     dataVersion,
-    body
+    body,
+    signal
   )
 }
