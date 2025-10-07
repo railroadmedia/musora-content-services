@@ -202,6 +202,14 @@ export default class SyncStore<TModel extends Model = Model> {
     return record ? this.modelSerializer.toPlainObject(record) : null
   }
 
+  async readAllWhere(clauses: Record<string, any>[]) {
+    const args = clauses.map(q => {
+      return Q.where(q.key, q.value)
+    })
+    const records = await this.queryRecords(...args);
+    return records.map(record => this.modelSerializer.toPlainObject(record))
+  }
+
   private async queryRecords(...args: Q.Clause[]) {
     return await this.collection.query(...args).fetch()
   }
