@@ -4,6 +4,7 @@ import SyncStore from '../store'
 import SyncContext from '../context'
 import BaseModel from '../models/Base'
 import { RecordId } from '@nozbe/watermelondb'
+import type { Span } from '../telemetry'
 
 import { SyncError, SyncExistsDTO, SyncReadDTO, SyncWriteDTO } from '..'
 import { SyncPushResponse } from "../fetch";
@@ -69,17 +70,19 @@ export default class SyncRepository<TModel extends BaseModel> {
   }
 
   protected async upsertOne(id: RecordId, builder: (record: TModel) => void) {
-    return this._push(await this.store.upsertOne(id, builder))
+    return this.store.telemetry.trace({ name: `upsert:${this.store.model.table}`, op: 'upsert' }, span => this._push(() => this.store.upsertOne(id, builder, span), span))
   }
 
   protected async deleteOne(id: RecordId) {
-    return this._pushId(await this.store.deleteOne(id))
+    return this.store.telemetry.trace({ name: `delete:${this.store.model.table}`, op: 'delete' }, span => this._pushId(() => this.store.deleteOne(id, span), span))
   }
 
-  private async _push(record: ModelSerialized<TModel>) {
+  private async _push(createRecord: () => Promise<ModelSerialized<TModel>>, span?: Span) {
+    const record = await createRecord()
+
     let response: SyncPushResponse | null = null
     if (!this.context.durability.getValue()) {
-      response = await this.store.pushRecordIdsImpatiently([record.id])
+      response = await this.store.pushRecordIdsImpatiently([record.id], span)
 
       if (!response.ok) {
         throw new SyncError('Failed to push records', { response })
@@ -94,10 +97,12 @@ export default class SyncRepository<TModel extends BaseModel> {
     return ret
   }
 
-  private async _pushId(id: RecordId) {
+  private async _pushId(createId: () => Promise<RecordId>, span?: Span) {
+    const id = await createId()
+
     let response: SyncPushResponse | null = null
     if (!this.context.durability.getValue()) {
-      response = await this.store.pushRecordIdsImpatiently([id])
+      response = await this.store.pushRecordIdsImpatiently([id], span)
 
       if (!response.ok) {
         throw new SyncError('Failed to push records', { response })

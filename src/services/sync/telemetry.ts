@@ -22,6 +22,8 @@ export type SentryLike = {
 export type StartSpanOptions = Parameters<typeof InjectedSentry.startSpan>[0]
 export type Span = InjectedSentry.Span
 
+let activeSpan: Span | null = null
+
 export class SyncTelemetry {
   private Sentry: SentryLike;
 
@@ -32,7 +34,12 @@ export class SyncTelemetry {
     watermelonLogger.error = (...messages: any[]) => this.error('[Watermelon]', ...messages);
   }
 
-  trace<T>(options: StartSpanOptions, callback: (span: Span) => T) {
+  trace<T>(opts: StartSpanOptions, callback: (span: Span) => T) {
+    const options = {
+      ...opts,
+      name: `sync:${opts.name}`,
+      op: `sync:${opts.op}`
+    }
     const span = this.Sentry.startSpan<T>(options, (span) => {
       let desc = span['_spanId'].slice(0, 4)
       desc += span['_parentSpanId'] ? ` (< ${span['_parentSpanId'].slice(0, 4)})` : ''
