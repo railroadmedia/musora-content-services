@@ -20,6 +20,9 @@ export default class ContentProgress extends BaseModel {
   get parent_id() {
     return this._getRaw('parent_id') as number
   }
+  get brand() {
+    return this._getRaw('brand') as string
+  }
 
   set content_id(value: number) {
     this._setRaw('content_id', value)
@@ -35,6 +38,9 @@ export default class ContentProgress extends BaseModel {
   }
   set parent_id(value: number) {
     this._setRaw('parent_id', value)
+  }
+  set brand(value: string) {
+    this._setRaw('brand', value)
   }
 
 
