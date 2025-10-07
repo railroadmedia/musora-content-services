@@ -120,6 +120,10 @@ export default class SyncManager {
     return store as unknown as SyncStore<InstanceType<TModel>>
   }
 
+  getTelemetry() {
+    return this.telemetry
+  }
+
   getContext() {
     return this.context
   }

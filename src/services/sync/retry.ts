@@ -1,6 +1,6 @@
 import SyncContext from "./context"
 import { SyncResponse } from "./fetch"
-import { SyncTelemetry, Span } from "./telemetry"
+import { SyncTelemetry, Span, StartSpanOptions } from "./telemetry"
 
 export default class SyncRetry {
   private readonly BASE_BACKOFF = 1_000
@@ -32,7 +32,7 @@ export default class SyncRetry {
    * Runs the given syncFn with automatic retries.
    * Returns the first successful result or the last failed result after retries.
    */
-  async request<T extends SyncResponse>(name: string, syncFn: (span: Span) => Promise<T>) {
+  async request<T extends SyncResponse>(spanOpts: StartSpanOptions, syncFn: (span: Span) => Promise<T>) {
     let attempt = 0
 
     while (true) {
@@ -48,7 +48,9 @@ export default class SyncRetry {
       }
 
       attempt++
-      const result = await this.telemetry.trace({ name: `${name}:attempt:${attempt}/${this.MAX_ATTEMPTS}`, op: 'retry:attempt' }, span => syncFn(span))
+
+      const spanOptions = { ...spanOpts, name: `${spanOpts.name}:attempt:${attempt}/${this.MAX_ATTEMPTS}`, op: `${spanOpts.op}:attempt` }
+      const result = await this.telemetry.trace(spanOptions, span => syncFn(span))
 
       if (result.ok) {
         this.resetBackoff()
