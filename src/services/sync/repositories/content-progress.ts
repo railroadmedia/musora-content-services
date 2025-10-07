@@ -20,6 +20,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   }
 
   // todo is it useful to have limit here without order by ?
+  // todo create enum of parent type so param can input "method", and then can generalize functions
 
   async queryWhere(clauses: Record<string, any>[], limit: number = null) {
     return await this.readAllWhere(clauses, limit)
@@ -33,17 +34,31 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.readAllWhere([{brand: brand}, {parent_type: null}], limit)
   }
 
-  async getLearningPathProgress(learningPathId: number) {
-    return await this.readAllWhere([{parent_type: PARENT_ENUM_LEARNING_PATH}, {parent_id: learningPathId}])
-  }
-
   async getAllProgress(brand: string, limit: number = null) {
     return await this.readAllWhere([{brand: brand}], limit)
   }
 
-  async getMethodProgressByIds(method_id: number, limit: number = null) {
-    return await this.readAllWhere([{parent_type: 1}, {parent_id: method_id}], limit)
+  async getLearningPathProgress(learningPathId: number) {
+    return await this.readAllWhere([{parent_type: PARENT_ENUM_LEARNING_PATH}, {parent_id: learningPathId}])
   }
+
+  async getStandardProgressByContentId(contentId: number) {
+    return await this.readOne(ProgressRepository.generateId(contentId, PARENT_ENUM_DEFAULT, null))
+  }
+
+  async getStandardProgressByContentIds(contentIds: number[]) {
+    return await this.readSome(contentIds.map((c) => ProgressRepository.generateId(c, PARENT_ENUM_DEFAULT, null)))
+  }
+
+  async getMethodProgressByContentId(contentId: number, parentId: number) {
+    return await this.readOne(ProgressRepository.generateId(contentId, PARENT_ENUM_LEARNING_PATH, parentId))
+  }
+
+  async getMethodProgressByContentIds(contentIds: number[], parentId: number) {
+    return await this.readSome(contentIds.map((c) => ProgressRepository.generateId(c, PARENT_ENUM_LEARNING_PATH, parentId)))
+  }
+
+
 
   async writeStandardProgress({
                         contentId,
