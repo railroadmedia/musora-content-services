@@ -12,38 +12,56 @@ import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 
 const STATE_STARTED = 'started'
 const STATE_COMPLETED = 'completed'
-const DATA_KEY_STATUS = 's'
-const DATA_KEY_PROGRESS = 'p'
+const DATA_KEY_STATUS = 'status'
+const DATA_KEY_PROGRESS = 'progress_percent'
 const DATA_KEY_RESUME_TIME = 't'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
-const DATA_KEY_BRAND = 'b'
+const DATA_KEY_BRAND = 'brand'
 
 export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress)
 
 let sessionData = []
 
 export async function getProgressPercentage(contentId) {
-  return getById(contentId, DATA_KEY_PROGRESS, 0)
+  const progress = await ProgressRepository.create().getProgressOptimistic(contentId);
+  return progress?.data?.[DATA_KEY_PROGRESS] ?? 0;
 }
 
 export async function getProgressPercentageByIds(contentIds) {
-  return getByIds(contentIds, DATA_KEY_PROGRESS, 0)
+  const progress = await ProgressRepository.create().getProgressesOptimistic(contentIds);
+  const result = {};
+  contentIds.forEach(id => {
+    result[id] = progress?.data?.[id]?.[DATA_KEY_PROGRESS] ?? 0;
+  });
+  return result;
 }
 
 export async function getProgressState(contentId) {
-  return getById(contentId, DATA_KEY_STATUS, '')
+  const progress = await ProgressRepository.create().getProgressOptimistic(contentId);
+  return progress?.data?.[DATA_KEY_STATUS] ?? '';
 }
 
 export async function getProgressStateByIds(contentIds) {
-  return getByIds(contentIds, DATA_KEY_STATUS, '')
+  const progress = await ProgressRepository.create().getProgressesOptimistic(contentIds);
+  const result = {};
+  contentIds.forEach(id => {
+    result[id] = progress?.data?.[id]?.[DATA_KEY_STATUS] ?? '';
+  });
+  return result;
 }
 
 export async function getResumeTimeSeconds(contentId) {
-  return getById(contentId, DATA_KEY_RESUME_TIME, 0)
+  const progress = await ProgressRepository.create().getProgressOptimistic(contentId);
+  return progress?.data?.[DATA_KEY_RESUME_TIME] ?? 0;
 }
 
 export async function getResumeTimeSecondsByIds(contentIds) {
-  return getByIds(contentIds, DATA_KEY_RESUME_TIME, 0)
+  const progress = await ProgressRepository.create().getProgressesOptimistic(contentIds);
+  const result = {};
+  contentIds.forEach(id => {
+    result[id] = progress?.data?.[id]?.[DATA_KEY_RESUME_TIME] ?? 0;
+  });
+  return result;
 }
 
 export async function getNextLesson(data) {
