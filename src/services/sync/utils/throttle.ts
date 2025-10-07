@@ -16,9 +16,9 @@ export function createThrottleState<T>(minIntervalMs: number): ThrottleState<T> 
   };
 }
 
-export function throttle<T>(
+export function dropThrottle<T>(
   options: { state: ThrottleState<T>, deferOnce?: boolean },
-  fn: (...args: any[]) => Promise<T>
+  fn: (..._args: any[]) => Promise<T>
 ) {
   return (...args: any[]) => {
     const { state } = options
@@ -37,7 +37,7 @@ export function throttle<T>(
       })
     }
 
-    const run = (fn: (...args: any[]) => Promise<T>, args: any[]) => {
+    const run = (fn: (..._args: any[]) => Promise<T>, args: any[]) => {
       state.lastCallTime = Date.now()
       return fn(...args).finally(() => {
         if (state.next) {
@@ -58,4 +58,36 @@ export function throttle<T>(
 
     return state.current
   }
+}
+
+export function queueThrottle<T>(
+  options: { state: ThrottleState<T>, deferOnce?: boolean },
+  fn: (..._args: any[]) => Promise<T>
+) {
+  return (...args: any[]) => {
+    const { state } = options
+
+    const run = async () => {
+      const elapsed = Date.now() - state.lastCallTime
+      if (elapsed < state.minIntervalMs) {
+        await new Promise<void>(r => setTimeout(r, state.minIntervalMs - elapsed))
+      }
+
+      state.lastCallTime = Date.now()
+      return fn(...args).finally(() => {
+        const next = state.next
+        state.next = null
+        state.current = next ? next() : null
+      })
+    }
+
+    if (!state.current) {
+      state.current = run()
+    } else {
+      state.next = () => run()
+    }
+
+    return state.current
+  }
+
 }
