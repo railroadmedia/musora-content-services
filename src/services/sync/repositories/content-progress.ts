@@ -13,6 +13,23 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.readAllWhere(clauses)
   }
 
+  async writeProgress({
+                        number: contentId,
+                        string: state,
+                        number: progressPercent,
+                        number: parentType = null,
+                        number: parentId = null
+                      }) {
+    const progress = await this.store.upsertOne(ProgressRepository.generateId(contentId, parentType, parentId), r => {
+      r.content_id = contentId;
+      r.state = state;
+      r.progress_percent = progressPercent;
+      r.parent_type = parentType;
+      r.parent_id = parentId;
+    })
+    return await this.pushOneEagerlyById(progress.id)
+  }
+
   async getProgressOptimistic(contentId: number) {
     return await this.readOne(ProgressRepository.generateId(contentId))
   }
@@ -38,7 +55,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.pushOneEagerlyById(id)
   }
 
-  private static generateId(contentId: number) {
-    return contentId.toString();
+  private static generateId(contentId: number, parentType: number = null, parentId: number = null) {
+    return contentId.toString() + ":" + parentType.toString() + ":" + parentId.toString();
   }
 }
