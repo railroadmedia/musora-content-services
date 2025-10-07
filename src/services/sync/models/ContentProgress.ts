@@ -4,6 +4,7 @@ import { SYNC_TABLES } from '../schema'
 export default class ContentProgress extends BaseModel {
   static table = SYNC_TABLES.CONTENT_PROGRESS
 
+  // todo add resume_time
 
   get content_id() {
     return this._getRaw('content_id') as number
