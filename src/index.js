@@ -99,11 +99,12 @@ import {
 
 import {
 	createPost,
+	deletePost,
+	fetchCommunityGuidelines,
 	fetchPosts,
 	likePost,
-	unlikePost,
-	deletePost,
-	fetchCommunityGuidelines
+	search,
+	unlikePost
 } from './services/forums/posts.ts';
 
 import {
@@ -349,8 +350,8 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI
-} from './services/eventsAPI.js';
+	 default as EventsAPI 
+} from './services/eventsAPI';
 
 export {
 	addContextToContent,
@@ -579,6 +580,7 @@ export {
 	restorePracticeSession,
 	restoreUserActivity,
 	restoreUserPractice,
+	search,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	setStudentViewForUser,

@@ -112,3 +112,33 @@ export async function fetchCommunityGuidelines(brand: string): Promise<ForumPost
   return httpClient.get<ForumPost[]>(url);
 }
 
+export interface SearchParams {
+  page?: number,
+  limit?: number,
+  /** Sort order: "-published_on" (default), "published_on", or "mine". */
+  sort?: '-published_on' | string,
+  term: string
+}
+
+/**
+ * Search forum posts.
+ *
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @param {SearchParams} [params] - Optional search parameters such as `query`, `page`, `limit`, and `sort`.
+ * @returns {Promise<PaginatedResponse<ForumPost>>} - Resolves to a paginated list of forum posts.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function search(
+  brand: string,
+  params: SearchParams = {}
+): Promise<PaginatedResponse<ForumPost>> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  const queryObj: Record<string, string> = { brand, ...Object.fromEntries(
+      Object.entries(params).filter(([_, v]) => v !== undefined && v !== null).map(([k, v]) => [k, String(v)])
+    )}
+  const query = new URLSearchParams(queryObj).toString()
+
+  const url = `${baseUrl}/v1/search?${query}`
+  return httpClient.get<PaginatedResponse<ForumPost>>(url)
+}
+
