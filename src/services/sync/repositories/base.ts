@@ -33,8 +33,8 @@ export default class SyncRepository<TModel extends BaseModel> {
     return this._read<true>(() => this.store.readAll())
   }
 
-  protected async readAllWhere(clauses: Record<string, any>[]) {
-    return this._read<true>(this.store.readAllWhere(clauses))
+  protected async readAllWhere(clauses: Record<string, any>[], limit: number = null) {
+    return this._read<true>(this.store.readAllWhere(clauses, limit))
   }
 
   protected async existOne(id: RecordId) {
