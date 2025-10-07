@@ -14,7 +14,7 @@ import { SyncTelemetry, Span } from '../telemetry'
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 import { BaseSessionProvider } from '../context/providers'
 import inBoundary from '../boundary'
-import { throttle, createThrottleState, type ThrottleState } from '../utils'
+import { dropThrottle, queueThrottle, createThrottleState, type ThrottleState } from '../utils'
 
 type ModelClass<T extends Model> = { new (...args: any[]): T; table: string }
 type SyncPull = (
@@ -36,6 +36,7 @@ export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
 
 export default class SyncStore<TModel extends BaseModel = BaseModel> {
   static readonly PULL_THROTTLE_INTERVAL = 2_000
+  static readonly PUSH_THROTTLE_INTERVAL = 1_000
 
   readonly telemetry: SyncTelemetry
   readonly context: SyncContext
@@ -52,6 +53,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   readonly pusher: SyncPush
 
   private pullThrottleState: ThrottleState<SyncPullResponse>
+  private pushThrottleState: ThrottleState<SyncPushResponse>
   private pushCoalescer = new PushCoalescer()
 
   private emitter = new EventEmitter()
@@ -75,14 +77,19 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.rawSerializer = new RawSerializer()
     this.modelSerializer = new ModelSerializer()
 
-    this.pullThrottleState = createThrottleState(SyncStore.PULL_THROTTLE_INTERVAL)
     this.pushCoalescer = new PushCoalescer()
+    this.pushThrottleState = createThrottleState(SyncStore.PUSH_THROTTLE_INTERVAL)
+    this.pullThrottleState = createThrottleState(SyncStore.PULL_THROTTLE_INTERVAL)
 
     this.puller = pull
     this.pusher = push
     this.lastFetchTokenKey = `last_fetch_token:${this.model.table}`
 
     this.telemetry = telemetry
+
+    this.telemetry.trace({ name: 'foo', op: 'bar' }, () => {
+      return new Promise(resolve => setTimeout(() => resolve('xxx'), 1000))
+    })
 
     window.x = this
   }
@@ -97,7 +104,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     let pushError: any = null
 
     try {
-      await this.pushUnsynced()
+      await this.pushUnsyncedWithRetry()
     } catch (err) {
       pushError = err
     }
@@ -132,25 +139,35 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
-  async pushRecordIdsImpatiently(ids: RecordId[]) {
+  async pushRecordIdsImpatiently(ids: RecordId[], span?: Span) {
     const records = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))
-    return await this.pushCoalescer.push(records, this.makePush.bind(this))
+
+    return await this.pushCoalescer.push(records, queueThrottle({ state: this.pushThrottleState }, () => {
+      return this.executePush(records, span)
+    }))
   }
 
-  private async pushUnsynced() {
+  private async pushUnsyncedWithRetry() {
     const records = await this.queryMaybeDeletedRecords(Q.where('_status', Q.notEq('synced')))
 
     if (records.length) {
-      return await this.retry.request('push:record-ids', () =>
-        this.pushCoalescer.push(records, this.makePush.bind(this))
-      )
+      this.pushCoalescer.push(records, queueThrottle({ state: this.pushThrottleState }, () => {
+        return this.retry.request(`push:${this.model.table}`, span => this.executePush(records, span))
+      }))
     }
   }
 
-  private async makePush(records: TModel[]) {
+  private async executePush(records: TModel[], span?: Span) {
     const payload = this.generatePushPayload(records)
 
-    const response = await this.pusher(this.context.session, payload, this.runScope.signal)
+    const response = await this.telemetry.trace(
+      {
+        name: `push:${this.model.table}:run:fetch`,
+        op: 'push:run:fetch',
+        parentSpan: span,
+      },
+      () => this.pusher(this.context.session, payload, this.runScope.signal)
+    )
 
     if (response.ok) {
       const successfulResults = response.results.filter((result) => result.type === 'success')
@@ -184,16 +201,14 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   private async pullRecordsWithRetry() {
-    return this.retry.request(`pull:${this.model.table}`, (span) =>
-      throttle(
-        { state: this.pullThrottleState, deferOnce: true },
-        this.executePull.bind(this)
-      )(span)
-    )
+    dropThrottle(
+      { state: this.pullThrottleState, deferOnce: true },
+      () => this.retry.request(`pull:${this.model.table}`, span => this.executePull(span))
+    )()
   }
 
   async pullRecords(span?: Span) {
-    return throttle({ state: this.pullThrottleState }, this.executePull.bind(this))(span)
+    return dropThrottle({ state: this.pullThrottleState }, this.executePull.bind(this))(span)
   }
 
   private async executePull(span?: Span) {
@@ -322,7 +337,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
       this.emit('write', record)
 
-      this.pushUnsynced()
+      this.pushUnsyncedWithRetry()
       await this.ensurePersistence()
 
       return this.modelSerializer.toPlainObject(record!)
@@ -398,7 +413,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
       this.emit('write', record)
 
-      this.pushUnsynced()
+      this.pushUnsyncedWithRetry()
       await this.ensurePersistence()
 
       return id
