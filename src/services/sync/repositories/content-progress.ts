@@ -9,8 +9,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return new ProgressRepository(SyncRepository.getStore(ContentProgress))
   }
 
-  async isLikedOptimistic(contentId: number) {
-    return await this.existOne(ProgressRepository.generateId(contentId))
+  async queryWhere(clauses: Record<string, any>[]) {
+    return await this.readAllWhere(clauses)
   }
 
   async getProgressOptimistic(contentId: number) {
