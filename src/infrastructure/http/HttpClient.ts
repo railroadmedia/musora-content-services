@@ -5,6 +5,7 @@ import { HttpError } from './interfaces/HttpError'
 import { NetworkError } from './interfaces/NetworkError'
 import { DefaultHeaderProvider } from './providers/DefaultHeaderProvider'
 import { FetchRequestExecutor } from './executors/FetchRequestExecutor'
+import { globalConfig } from '../../services/config'
 
 export class HttpClient {
   private baseUrl: string
@@ -19,7 +20,7 @@ export class HttpClient {
     requestExecutor: RequestExecutor = new FetchRequestExecutor()
   ) {
     this.baseUrl = baseUrl
-    this.token = token
+    this.token = token || globalConfig.sessionConfig.token || null
     this.headerProvider = headerProvider
     this.requestExecutor = requestExecutor
   }
