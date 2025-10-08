@@ -293,43 +293,29 @@ export async function getAllStartedOrCompleted({
   parentType = 0,
 } = {}) {
 
-  const data = await dataContext.getData()
-  // replace with watermelon fetch
+  const thirtyDaysAgo = (Date.now() - (30 * 24 * 60 * 60 * 1000)).toISOString()
 
-  // and deal with other logic like sorting and limits
-  const oneMonthAgoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
+  // change to queryWhere so we can query on statuses
+  const data = await ProgressRepository.create().getAllProgress({
+    brand: brand,
+    parentType: parentType,
+    since: thirtyDaysAgo, // need to actually set up this functionality still
+    limit: limit,
+  })?.data
 
   const excludedSet = new Set(excludedIds.map((id) => parseInt(id))) // ensure IDs are numbers
 
   let filtered = Object.entries(data)
-    .filter(([key, item]) => {
-      const id = parseInt(key)
-      const isRelevantStatus =
-        item[DATA_KEY_STATUS] === STATE_STARTED || item[DATA_KEY_STATUS] === STATE_COMPLETED
-      const isRecent = item[DATA_KEY_LAST_UPDATED_TIME] >= oneMonthAgoInSeconds
-      const isCorrectBrand = !brand || !item.b || item.b === brand
-      const isNotExcluded = !excludedSet.has(id)
-      return isRelevantStatus && isCorrectBrand && isNotExcluded
+    .filter(([_, item]) => {
+      return !excludedSet.has(item.content_id)
     })
-    .sort(([, a], [, b]) => {
-      const v1 = a[DATA_KEY_LAST_UPDATED_TIME]
-      const v2 = b[DATA_KEY_LAST_UPDATED_TIME]
-      if (v1 > v2) return -1
-      else if (v1 < v2) return 1
-      return 0
-    })
-
-  if (limit) {
-    filtered = filtered.slice(0, limit)
-  }
 
   if (onlyIds) {
-    return filtered.map(([key]) => parseInt(key))
+    return filtered.map(([_, item]) => item.content_id)
   } else {
     const progress = {}
-    filtered.forEach(([key, item]) => {
-      const id = parseInt(key)
-      progress[id] = {
+    filtered.forEach(([_, item]) => {
+      progress[item.content_id] = {
         last_update: item?.[DATA_KEY_LAST_UPDATED_TIME] ?? 0,
         progress: item?.[DATA_KEY_PROGRESS] ?? 0,
         status: item?.[DATA_KEY_STATUS] ?? '',
