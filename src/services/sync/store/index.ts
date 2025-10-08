@@ -99,8 +99,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.telemetry.trace({ name: `sync:${this.model.table}`, op: 'sync', attributes: { reason } }, async span => inBoundary(async () => {
       let pushError: any = null
 
-      woot.asdsad
-
       try {
         await this.pushUnsyncedWithRetry(span)
       } catch (err) {
