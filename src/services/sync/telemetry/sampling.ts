@@ -1,7 +1,23 @@
-import { SyncError } from '../errors'
 import { SYNC_TELEMETRY_TRACE_PREFIX, type SentryBrowserOptions } from './index'
+import SyncManager from '../manager'
+import { SyncError } from '../errors'
 
-export type TransactionEvent = Parameters<SentryBrowserOptions['beforeSendTransaction']>[0]
+export const syncSentryBeforeSend: SentryBrowserOptions['beforeSend'] = (event, hint) => {
+  if (event.logger === 'console' && SyncManager.getInstance().telemetry.shouldIgnoreConsole()) {
+    return null
+  }
+
+  if (hint?.originalException instanceof SyncError) {
+    event.extra = {
+      ...event.extra,
+      details: hint.originalException.getDetails()
+    }
+
+    return event
+  }
+
+  return undefined
+}
 
 export const syncSentryTracesSampler: SentryBrowserOptions['tracesSampler'] = (context) => {
   if (!context.name.startsWith(SYNC_TELEMETRY_TRACE_PREFIX)) {
@@ -14,21 +30,13 @@ export const syncSentryTracesSampler: SentryBrowserOptions['tracesSampler'] = (c
     return true
   }
 
+  // todo - return 1.0 in development+staging
+
   if (attributes?.userId) {
     return userBucketedSampler(attributes.userId as string | number, 0.1)
   }
 
   return false
-}
-
-export const syncSentryBeforeSend: SentryBrowserOptions['beforeSend'] = (event, hint) => {
-  if (hint.originalException instanceof SyncError && hint.originalException.isReported()) {
-    return null
-  }
-  return undefined
-}
-export const syncSentryBeforeSendTransaction: SentryBrowserOptions['beforeSendTransaction'] = (event, hint) => {
-  return undefined
 }
 
 /**

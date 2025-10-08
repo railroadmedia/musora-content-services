@@ -11,6 +11,7 @@ import { sanitizedRaw } from '@nozbe/watermelondb/RawRecord'
 import { default as Resolver, type SyncResolution } from '../resolver'
 import PushCoalescer from './push-coalescer'
 import { SyncTelemetry, Span } from '../telemetry/index'
+import { inBoundary } from '../errors/boundary'
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 import { BaseSessionProvider } from '../context/providers'
 import { dropThrottle, queueThrottle, createThrottleState, type ThrottleState } from '../utils'
@@ -95,8 +96,10 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private emit = this.emitter.emit.bind(this.emitter)
 
   async sync(reason: string) {
-    this.telemetry.trace({ name: `sync:${this.model.table}`, op: 'sync' }, async span => {
+    this.telemetry.trace({ name: `sync:${this.model.table}`, op: 'sync', attributes: { reason } }, async span => inBoundary(async () => {
       let pushError: any = null
+
+      woot.asdsad
 
       try {
         await this.pushUnsyncedWithRetry(span)
@@ -111,7 +114,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       if (pushError) {
         throw pushError
       }
-    })
+    }, { table: this.model.table }))
   }
 
   async getLastFetchToken() {

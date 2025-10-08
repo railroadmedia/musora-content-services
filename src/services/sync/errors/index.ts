@@ -1,4 +1,4 @@
-import SyncStore from "./store"
+import SyncStore from "../store"
 
 type ErrorDetails = Record<string, unknown>
 type Without<TRecord, T extends string> = {
@@ -6,7 +6,6 @@ type Without<TRecord, T extends string> = {
 } & TRecord
 
 export class SyncError extends Error {
-  private _reported: boolean = false
   readonly details?: ErrorDetails
 
   constructor(message: string, details?: ErrorDetails) {
@@ -17,13 +16,8 @@ export class SyncError extends Error {
     this.details = details
   }
 
-  markReported() {
-    this._reported = true
-    return this
-  }
-
-  isReported() {
-    return this._reported
+  getDetails() {
+    return this.details
   }
 }
 

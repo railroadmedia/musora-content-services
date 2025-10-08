@@ -1,8 +1,8 @@
 import watermelonLogger from '@nozbe/watermelondb/utils/common/logger'
-import { SyncError } from '../errors'
+import { SyncError, SyncUnexpectedError } from '../errors'
 
 import * as InjectedSentry from '@sentry/browser'
-export type SentryBrowserOptions = Parameters<typeof InjectedSentry.init>[0];
+export type SentryBrowserOptions = NonNullable<Parameters<typeof InjectedSentry.init>[0]>;
 
 export type SentryLike = {
   captureException: typeof InjectedSentry.captureException
@@ -18,6 +18,9 @@ export const SYNC_TELEMETRY_TRACE_PREFIX = 'sync:'
 export class SyncTelemetry {
   private userId: string
   private Sentry: SentryLike;
+
+  // allows us to know if Sentry shouldn't double-capture a dev-prettified console.error log
+  private _ignoreConsole = false
 
   constructor(userId: string, { Sentry }: { Sentry: SentryLike }) {
     this.userId = userId
@@ -51,14 +54,19 @@ export class SyncTelemetry {
     return span
   }
 
-  capture(err: Error) {
-    if (!(err instanceof SyncError) || !err.isReported()) {
-      this.Sentry.captureException(err)
-
-      if (err instanceof SyncError) {
-        err.markReported()
+  capture(err: SyncError) {
+    this.Sentry.captureException(err, err instanceof SyncUnexpectedError ? {
+      mechanism: {
+        handled: false
       }
-    }
+    } : undefined)
+    this._ignoreConsole = true
+    this.error(err.message)
+    this._ignoreConsole = false
+  }
+
+  shouldIgnoreConsole() {
+    return this._ignoreConsole
   }
 
   debug(...messages: any[]) {
