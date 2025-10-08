@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.50.1](https://github.com/railroadmedia/musora-content-services/compare/v2.50.0...v2.50.1) (2025-10-08)
+
+
+### Bug Fixes
+
+* Rank Recommended Rows - fix invalid integer error ([#479](https://github.com/railroadmedia/musora-content-services/issues/479)) ([6ad68f4](https://github.com/railroadmedia/musora-content-services/commit/6ad68f4da7446a7d2f8e93ab48e35753f19e627d))
+
 ## [2.50.0](https://github.com/railroadmedia/musora-content-services/compare/v2.48.0...v2.50.0) (2025-10-07)
 
 
