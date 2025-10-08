@@ -1,18 +1,21 @@
-import { Database, Model } from '@nozbe/watermelondb'
+import BaseModel from './models/Base'
+import { Database } from '@nozbe/watermelondb'
 import SyncRunScope from './run-scope'
 import { SyncStrategy } from './strategies'
 import { default as SyncStore, SyncStoreConfig } from './store'
 
-import SyncExecutor from './executor'
+import SyncRetry from './retry'
 import SyncContext from './context'
-import type SyncConcurrencySafety from './concurrency-safety'
+import { SyncError } from './errors'
+import { SyncConcurrencySafetyMechanism } from './concurrency-safety'
+import { SyncTelemetry } from './telemetry/index'
 
 export default class SyncManager {
   private static instance: SyncManager | null = null
 
   public static assignAndSetupInstance(instance: SyncManager) {
     if (SyncManager.instance) {
-      throw new Error('SyncManager already initialized')
+      throw new SyncError('SyncManager already initialized')
     }
     SyncManager.instance = instance
     const teardown = instance.setup()
@@ -24,38 +27,39 @@ export default class SyncManager {
 
   public static getInstance(): SyncManager {
     if (!SyncManager.instance) {
-      throw new Error('SyncManager not initialized')
+      throw new SyncError('SyncManager not initialized')
     }
     return SyncManager.instance
   }
 
+  public telemetry: SyncTelemetry
   private database: Database
   private context: SyncContext
-  private storesRegistry: Record<typeof Model.table, SyncStore<Model>>
+  private storesRegistry: Record<typeof BaseModel.table, SyncStore<BaseModel>>
   private runScope: SyncRunScope
-  private executor: SyncExecutor
+  private retry: SyncRetry
+  private strategyMap: { stores: SyncStore<BaseModel>[]; strategies: SyncStrategy[] }[]
+  private safetyMap: { stores: SyncStore<BaseModel>[]; mechanisms: (() => void)[] }[]
 
-  private strategyMap: { stores: SyncStore<Model>[]; strategies: SyncStrategy[] }[]
-  private safetyMap: { stores: SyncStore<Model>[]; safety: SyncConcurrencySafety }[]
-
-  constructor(context: SyncContext, database: Database) {
-    this.database = database
+  constructor(context: SyncContext, database: () => Database, telemetry: SyncTelemetry) {
+    this.telemetry = telemetry
     this.context = context
+
+    this.database = this.telemetry.trace({ name: 'db:init' }, database)
     this.runScope = new SyncRunScope()
 
-    this.storesRegistry = {} as Record<typeof Model.table, SyncStore<Model>>
+    this.storesRegistry = {} as Record<typeof BaseModel.table, SyncStore<BaseModel>>
     this.strategyMap = []
     this.safetyMap = []
 
-    this.executor = new SyncExecutor(this.context)
-    this.executor.start()
+    this.retry = new SyncRetry(this.context, this.telemetry)
   }
 
   createStore(config: SyncStoreConfig) {
     if (this.storesRegistry[config.model.table]) {
-      throw new Error(`Store ${config.model.table} already registered`)
+      throw new SyncError(`Store ${config.model.table} already registered`)
     }
-    const store = new SyncStore(config, this.database, this.runScope)
+    const store = new SyncStore(config, this.context, this.database, this.retry, this.runScope, this.telemetry)
     this.storesRegistry[config.model.table] = store
     return store
   }
@@ -73,48 +77,54 @@ export default class SyncManager {
 
   protectStores(
     stores: SyncStore[],
-    safetyClass: new (context: SyncContext, stores: SyncStore[]) => SyncConcurrencySafety
+    mechanisms: SyncConcurrencySafetyMechanism[]
   ) {
-    this.safetyMap.push({ stores, safety: new safetyClass(this.context, stores) })
+    const teardowns = mechanisms.map(mechanism => mechanism(this.context, stores))
+    this.safetyMap.push({ stores, mechanisms: teardowns })
   }
 
   setup() {
-    this.safetyMap.forEach(({ safety }) => safety.start())
+    this.telemetry.debug('[SyncManager] Setting up')
+
+    this.context.start()
+    this.retry.start()
 
     this.strategyMap.forEach(({ stores, strategies }) => {
-      strategies.forEach((strategy) => {
-        stores.forEach((store) => {
-          strategy.onTrigger(store, (reason) => {
-            this.executor.requestSync(() => store.sync(), reason) // todo? - executor per store instead of global?
+      strategies.forEach(strategy => {
+        stores.forEach(store => {
+          strategy.onTrigger(store, reason => {
+            store.sync(reason)
           })
           strategy.start()
         })
       })
     })
 
-    // teardown (ideally occurring on logout) should:
-    // - stop all safety mechanisms
-    // - stop all sync strategies
-    // - cancel any scheduled fetch requests that came from those sync strategies (handled by abort controller)
-    // - reset local databases
-    // - purge any databases that are no longer referenced in schema (possible if user logs out after a schema change)?
-
     const teardown = async () => {
+      this.telemetry.debug('[SyncManager] Tearing down')
       this.runScope.abort()
-      this.strategyMap.forEach(({ strategies }) => strategies.forEach((strategy) => strategy.stop()))
-      this.safetyMap.forEach(({ safety }) => safety.stop())
-      this.executor.stop()
+      this.strategyMap.forEach(({ strategies }) => strategies.forEach(strategy => strategy.stop()))
+      this.safetyMap.forEach(({ mechanisms }) => mechanisms.forEach(mechanism => mechanism()))
+      this.retry.stop()
+      this.context.stop()
       await this.database.write(() => this.database.unsafeResetDatabase())
-      // todo - purge adapter?
     }
     return teardown
   }
 
-  getStore<TModel extends typeof Model>(model: TModel) {
+  getStore<TModel extends typeof BaseModel>(model: TModel) {
     const store = this.storesRegistry[model.table]
     if (!store) {
-      throw new Error(`Store for ${model.table} not found`)
+      throw new SyncError(`Store not found`, { table: model.table })
     }
     return store as unknown as SyncStore<InstanceType<TModel>>
+  }
+
+  getTelemetry() {
+    return this.telemetry
+  }
+
+  getContext() {
+    return this.context
   }
 }

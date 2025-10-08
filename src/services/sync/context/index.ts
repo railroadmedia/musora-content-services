@@ -1,17 +1,43 @@
-import type { BaseConnectivityProvider, BaseVisibilityProvider, BaseTabsProvider } from './providers'
+import type {
+  BaseSessionProvider,
+  BaseConnectivityProvider,
+  BaseVisibilityProvider,
+  BaseTabsProvider,
+  BaseDurabilityProvider,
+} from './providers'
 
-export default class SyncContext {
+type Providers = {
+  session: BaseSessionProvider
   connectivity: BaseConnectivityProvider
   visibility: BaseVisibilityProvider
   tabs: BaseTabsProvider
+  durability: BaseDurabilityProvider
+}
 
-  constructor(providers: {
-    connectivity: BaseConnectivityProvider,
-    visibility: BaseVisibilityProvider,
-    tabs: BaseTabsProvider
-  }) {
-    this.connectivity = providers.connectivity
-    this.visibility = providers.visibility
-    this.tabs = providers.tabs
+export default class SyncContext {
+  constructor(private providers: Providers) {}
+
+  start() {
+    Object.values(this.providers).forEach((p) => p.start())
+  }
+
+  stop() {
+    Object.values(this.providers).forEach((p) => p.stop())
+  }
+
+  get session() {
+    return this.providers.session
+  }
+  get connectivity() {
+    return this.providers.connectivity
+  }
+  get visibility() {
+    return this.providers.visibility
+  }
+  get tabs() {
+    return this.providers.tabs
+  }
+  get durability() {
+    return this.providers.durability
   }
 }
