@@ -1,11 +1,15 @@
-import { Model, RecordId } from "@nozbe/watermelondb"
+import './telemetry/index'
+
+import BaseModel from "./models/Base"
+import { RecordId } from "@nozbe/watermelondb"
 import { type ModelSerialized } from "./serializers"
 import { EpochSeconds } from "./utils/epoch"
 
 export { default as SyncSession } from './run-scope'
-export { default as SyncExecutor } from './executor'
+export { default as SyncRetry } from './retry'
 export { default as SyncManager } from './manager'
 export { default as SyncContext } from './context'
+export { SyncError } from './errors'
 
 export type SyncToken = EpochSeconds
 
@@ -34,51 +38,25 @@ export type SyncExistsDTO<TMultiple extends boolean = false> = {
   lastFetchToken: SyncToken | null
 }
 
-export type SyncReadDTO<TModel extends Model, TMultiple extends boolean = false> = {
+export type SyncReadDTO<TModel extends BaseModel, TMultiple extends boolean = false> = {
   data: TMultiple extends true ? ModelSerialized<TModel>[] : ModelSerialized<TModel> | null
   status: 'fresh' | 'stale'
   pullStatus: 'success' | 'pending' | 'failure' | null
   lastFetchToken: SyncToken | null
 }
 
-export type SyncWriteDTO<T extends Model> = {
-  data: ModelSerialized<T>
-  state: 'synced' | 'unsynced'
-  pushStatus: 'success' | 'failure'
+export type SyncWriteDTO<T extends BaseModel> = SyncNonDeleteWriteDTO<T> | SyncDeleteWriteDTO
+
+type SyncNonDeleteWriteDTO<T extends BaseModel, TMultiple extends boolean = false> = SyncWriteDTOBase & {
+  data: TMultiple extends true ? ModelSerialized<T>[] : ModelSerialized<T>
 }
 
-export type SyncStorePushResponse<TRecordKey extends string = 'id'> = SyncStorePushResponseUnreachable | SyncStorePushResponseAcknowledged<TRecordKey>
-
-export type SyncStorePushResponseUnreachable = SyncStorePushResponseBase & {
-  acknowledged: false
-  status: 'unreachable'
-  originalError: Error
-}
-export type SyncStorePushResponseAcknowledged<TRecordKey extends string = 'id'> = SyncStorePushResponseBase & {
-  acknowledged: true
-  results: SyncStorePushResult<TRecordKey>[]
-}
-interface SyncStorePushResponseBase {
-  acknowledged: boolean
+type SyncDeleteWriteDTO<TMultiple extends boolean = false> = SyncWriteDTOBase & {
+  data: TMultiple extends true ? RecordId[] : RecordId
 }
 
-export type SyncStorePushResult<TRecordKey extends string = 'id'> = SyncStorePushResultSuccess<TRecordKey> | SyncStorePushResultFailure<TRecordKey>
-export type SyncStorePushResultSuccess<TRecordKey extends string = 'id'> = SyncStorePushResultBase & {
-  type: 'success'
-  entry: SyncEntry<TRecordKey>
-}
-
-export type SyncStorePushResultFailure<TRecordKey extends string = 'id'> = SyncStorePushResultInvalid<TRecordKey>
-export type SyncStorePushResultInvalid<TRecordKey extends string = 'id'> = SyncStorePushResultFailureBase<TRecordKey> & {
-  failureType: 'invalid'
-  errors: Record<string, string[]>
-}
-interface SyncStorePushResultFailureBase<TRecordKey extends string = 'id'> extends SyncStorePushResultBase {
-  type: 'failure'
-  failureType: string
-  ids: { [K in TRecordKey]: RecordId }
-}
-interface SyncStorePushResultBase {
-  type: 'success' | 'failure'
+interface SyncWriteDTOBase {
+  status: 'synced' | 'unsynced'
+  pushStatus: 'success' | 'pending' | 'failure'
 }
 

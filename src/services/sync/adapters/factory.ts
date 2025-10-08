@@ -14,7 +14,7 @@ export default function syncAdapterFactory<T extends DatabaseAdapter>(
   AdapterClass: new (options: DatabaseAdapterOptions) => T,
   namespace: string,
   opts: Omit<DatabaseAdapterOptions, 'schema' | 'migrations'>
-): T {
+): () => T {
   const options = {
     ...opts,
     dbName: `sync:${namespace}`,
@@ -22,5 +22,5 @@ export default function syncAdapterFactory<T extends DatabaseAdapter>(
     migrations: undefined
   }
 
-  return new AdapterClass(options)
+  return () => new AdapterClass(options)
 }
