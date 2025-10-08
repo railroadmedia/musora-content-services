@@ -9,7 +9,6 @@ import { DataContext, ContentProgressVersionKey } from './dataContext.js'
 import { fetchHierarchy } from './sanity.js'
 import { recordUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
-import ProgressRepository from "./sync/repositories/content-progress.js";
 
 const STATE_STARTED = 'started'
 const STATE_COMPLETED = 'completed'
@@ -211,15 +210,14 @@ export async function getProgressDateByIds(contentIds) {
 }
 
 async function getById(contentId, dataKey, defaultValue) {
-  let data = (await ProgressRepository.create().getProgressOptimistic(contentId)).data
-
-  return data?.[dataKey] ?? defaultValue
+  let data = await dataContext.getData()
+  return data[contentId]?.[dataKey] ?? defaultValue
 }
 
 async function getByIds(contentIds, dataKey, defaultValue) {
-  let data = (await ProgressRepository.create().getProgressOptimistic(contentIds)).data
+  let data = await dataContext.getData()
   let progress = {}
-  contentIds?.forEach((id) => (progress[id] = data[id]?.[dataKey] ?? defaultValue)) // what does watermelon return? are values keyed by id?
+  contentIds?.forEach((id) => (progress[id] = data[id]?.[dataKey] ?? defaultValue))
   return progress
 }
 
