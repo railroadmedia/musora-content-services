@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.50.2](https://github.com/railroadmedia/musora-content-services/compare/v2.50.1...v2.50.2) (2025-10-08)
+
+
+### Bug Fixes
+
+* **auth:** add token to http client ([#481](https://github.com/railroadmedia/musora-content-services/issues/481)) ([3ac38bb](https://github.com/railroadmedia/musora-content-services/commit/3ac38bb3945f5bb521f4cc49ade023cd90c12aa1))
+
 ### [2.50.1](https://github.com/railroadmedia/musora-content-services/compare/v2.50.0...v2.50.1) (2025-10-08)
 
 
