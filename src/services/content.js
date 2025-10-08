@@ -208,9 +208,9 @@ export async function getContentRows(brand, pageName, contentRowSlug = null, {
   let recData = {}
   let slugNameMap = {}
   for (const category of sanityData) {
-    recData[category.slug] = category.content.map(item => item.railcontent_id)
+    recData[category.slug] = category.content.map(item => item.id)
     for (const content of category.content) {
-      contentMap[content.railcontent_id] = content
+      contentMap[content.id] = content
     }
     slugNameMap[category.slug] = category.name
   }
