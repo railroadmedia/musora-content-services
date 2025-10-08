@@ -87,8 +87,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.lastFetchTokenKey = `last_fetch_token:${this.model.table}`
 
     this.telemetry = telemetry
-
-    window.x = this
   }
 
   on = this.emitter.on.bind(this.emitter)
@@ -126,6 +124,151 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return (await this.db.localStorage.get<SyncToken | null>(this.lastFetchTokenKey)) ?? null
   }
 
+  async pullRecords(span?: Span) {
+    return dropThrottle({ state: this.pullThrottleState }, this.executePull.bind(this))(span)
+  }
+
+  async pushRecordIdsImpatiently(ids: RecordId[], span?: Span) {
+    const records = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))
+
+    return await this.pushCoalescer.push(
+      records,
+      queueThrottle({ state: this.pushThrottleState }, () => {
+        return this.executePush(records, span)
+      })
+    )
+  }
+
+  async readAll() {
+    const records = await this.queryRecords()
+    return records.map((record) => this.modelSerializer.toPlainObject(record))
+  }
+
+  async readSome(ids: RecordId[]) {
+    const records = await this.queryRecords(Q.where('id', Q.oneOf(ids)))
+    return records.map((record) => this.modelSerializer.toPlainObject(record))
+  }
+
+  async readOne(id: RecordId) {
+    const record = await this.queryRecord(id)
+    return record ? this.modelSerializer.toPlainObject(record) : null
+  }
+
+  async upsertOne(id: string, builder: (record: TModel) => void, span?: Span) {
+    return await this.runScope.abortable(async () => {
+      let record: TModel | null = null
+
+      await this.telemeterizedWrite(span, async () => {
+        const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(
+          (records) => records[0] || null
+        )
+
+        if (existing) {
+          if (existing._raw._status === 'deleted') {
+            await existing.destroyPermanently()
+          } else {
+            await existing.update(builder)
+          }
+        }
+
+        if (!existing || existing._raw._status === 'deleted') {
+          await this.collection.create((record) => {
+            const now = this.generateTimestamp()
+            record._raw.id = id
+            record._raw.created_at = now
+            record._raw.updated_at = now
+            builder(record)
+          })
+        }
+
+        record = await this.queryRecord(id)
+      })
+
+      this.emit('write', record)
+
+      this.pushUnsyncedWithRetry(span)
+      await this.ensurePersistence()
+
+      return this.modelSerializer.toPlainObject(record!)
+    })
+  }
+
+  async deleteOne(id: RecordId, span?: Span) {
+    return await this.runScope.abortable(async () => {
+      let record: TModel | null = null
+
+      await this.telemeterizedWrite(span, async () => {
+        const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(
+          (records) => records[0] || null
+        )
+
+        if (existing && existing._raw._status !== 'deleted') {
+          await existing.markAsDeleted()
+          record = existing
+        } else {
+          record = await this.collection.create((record) => {
+            const now = this.generateTimestamp()
+
+            record._raw.id = id
+            record._raw.updated_at = now
+            record._raw._status = 'deleted'
+          })
+        }
+      })
+
+      this.emit('write', record)
+
+      this.pushUnsyncedWithRetry(span)
+      await this.ensurePersistence()
+
+      return id
+    })
+  }
+
+  async importRaw(recordRaw: TModel['_raw']) {
+    await this.runScope.abortable(async () => {
+      await this.db.write(async () => {
+        const existing = await this.queryMaybeDeletedRecords(Q.where('id', recordRaw.id)).then(
+          (records) => records[0] || null
+        )
+
+        if (existing) {
+          if (existing._raw._status === 'deleted') {
+            if (recordRaw._status !== 'deleted') {
+              // todo - resurrect
+            }
+          } else {
+            if (recordRaw._status === 'deleted') {
+              await existing.markAsDeleted()
+            } else {
+              await existing.update((record) => {
+                Object.keys(recordRaw).forEach((key) => {
+                  record._raw[key] = recordRaw[key]
+                })
+              })
+            }
+          }
+        } else {
+          if (recordRaw._status === 'deleted') {
+            await this.collection.create((record) => {
+              const now = this.generateTimestamp()
+
+              record._raw.id = recordRaw.id
+              record._raw.updated_at = now
+              record._raw._status = 'deleted'
+            })
+          } else {
+            await this.collection.create((record) => {
+              Object.keys(recordRaw).forEach((key) => {
+                record._raw[key] = recordRaw[key]
+              })
+            })
+          }
+        }
+      })
+    })
+  }
+
   private async setLastFetchToken(token: SyncToken | null) {
     await this.db.write(async () => {
       if (token) {
@@ -141,17 +284,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         return this.db.localStorage.remove(this.lastFetchTokenKey)
       }
     })
-  }
-
-  async pushRecordIdsImpatiently(ids: RecordId[], span?: Span) {
-    const records = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))
-
-    return await this.pushCoalescer.push(
-      records,
-      queueThrottle({ state: this.pushThrottleState }, () => {
-        return this.executePush(records, span)
-      })
-    )
   }
 
   private async pushUnsyncedWithRetry(span?: Span) {
@@ -232,10 +364,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     )()
   }
 
-  async pullRecords(span?: Span) {
-    return dropThrottle({ state: this.pullThrottleState }, this.executePull.bind(this))(span)
-  }
-
   private async executePull(span?: Span) {
     return this.telemetry.trace(
       {
@@ -251,7 +379,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
           {
             name: `pull:${this.model.table}:run:fetch`,
             op: 'pull:run:fetch',
-            attributes: { lastFetchToken },
+            attributes: { lastFetchToken: lastFetchToken ?? undefined },
             parentSpan: pullSpan,
           },
           () => this.puller(this.context.session, lastFetchToken, this.runScope.signal)
@@ -267,21 +395,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         return response
       }
     )
-  }
-
-  async readAll() {
-    const records = await this.queryRecords()
-    return records.map((record) => this.modelSerializer.toPlainObject(record))
-  }
-
-  async readSome(ids: RecordId[]) {
-    const records = await this.queryRecords(Q.where('id', Q.oneOf(ids)))
-    return records.map((record) => this.modelSerializer.toPlainObject(record))
-  }
-
-  async readOne(id: RecordId) {
-    const record = await this.queryRecord(id)
-    return record ? this.modelSerializer.toPlainObject(record) : null
   }
 
   private async queryRecords(...args: Q.Clause[]) {
@@ -324,118 +437,22 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
-  async upsertOne(id: string, builder: (record: TModel) => void, span?: Span) {
-    return await this.runScope.abortable(async () => {
-      let record: TModel | null = null
-
-      await this.telemeterizedWrite(span, async () => {
-        const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(
-          (records) => records[0] || null
-        )
-
-        if (existing) {
-          if (existing._raw._status === 'deleted') {
-            await existing.destroyPermanently()
+  // Avoid lazy persistence to IndexedDB
+  // to eliminate data loss risk due to tab close/crash before flush to IndexedDB
+  // NOTE: does NOT go through watermelon, so this might be dangerous?
+  private async ensurePersistence() {
+    return new Promise<void>((resolve, reject) => {
+      if (this.db.adapter.underlyingAdapter instanceof LokiJSAdapter) {
+        this.db.adapter.underlyingAdapter._driver.loki.saveDatabase((err) => {
+          if (err) {
+            reject(err)
           } else {
-            await existing.update(builder)
+            resolve()
           }
-        }
-
-        if (!existing || existing._raw._status === 'deleted') {
-          await this.collection.create((record) => {
-            const now = this.generateTimestamp()
-            record._raw.id = id
-            record._raw.created_at = now
-            record._raw.updated_at = now
-            builder(record)
-          })
-        }
-
-        record = await this.queryRecord(id)
-      })
-
-      this.emit('write', record)
-
-      this.pushUnsyncedWithRetry(span)
-      await this.ensurePersistence()
-
-      return this.modelSerializer.toPlainObject(record!)
-    })
-  }
-
-  async importRaw(recordRaw: TModel['_raw']) {
-    await this.runScope.abortable(async () => {
-      await this.db.write(async () => {
-        const existing = await this.queryMaybeDeletedRecords(Q.where('id', recordRaw.id)).then(
-          (records) => records[0] || null
-        )
-
-        if (existing) {
-          if (existing._raw._status === 'deleted') {
-            if (recordRaw._status !== 'deleted') {
-              // todo - resurrect
-            }
-          } else {
-            if (recordRaw._status === 'deleted') {
-              await existing.markAsDeleted()
-            } else {
-              await existing.update((record) => {
-                Object.keys(recordRaw).forEach((key) => {
-                  record._raw[key] = recordRaw[key]
-                })
-              })
-            }
-          }
-        } else {
-          if (recordRaw._status === 'deleted') {
-            await this.collection.create((record) => {
-              const now = this.generateTimestamp()
-
-              record._raw.id = recordRaw.id
-              record._raw.updated_at = now
-              record._raw._status = 'deleted'
-            })
-          } else {
-            await this.collection.create((record) => {
-              Object.keys(recordRaw).forEach((key) => {
-                record._raw[key] = recordRaw[key]
-              })
-            })
-          }
-        }
-      })
-    })
-  }
-
-  async deleteOne(id: RecordId, span?: Span) {
-    return await this.runScope.abortable(async () => {
-      let record: TModel | null = null
-
-      await this.telemeterizedWrite(span, async () => {
-        const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(
-          (records) => records[0] || null
-        )
-
-        if (existing && existing._raw._status !== 'deleted') {
-          await existing.markAsDeleted()
-          record = existing
-        } else {
-          record = await this.collection.create((record) => {
-            const now = this.generateTimestamp()
-
-            record._raw.id = id
-            record._raw.updated_at = now
-            record._raw._status = 'deleted'
-          })
-        }
-      })
-
-      this.emit('write', record)
-
-      this.pushUnsyncedWithRetry(span)
-      await this.ensurePersistence()
-
-      return id
+        })
+      } else {
+        resolve()
+      }
     })
   }
 
@@ -460,29 +477,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     )
   }
 
-  // Avoid lazy persistence to IndexedDB
-  // to eliminate data loss risk due to tab close/crash before flush to IndexedDB
-  // NOTE: does NOT go through watermelon, so this might be dangerous?
-  private async ensurePersistence() {
-    return new Promise<void>((resolve, reject) => {
-      if (this.db.adapter.underlyingAdapter instanceof LokiJSAdapter) {
-        this.db.adapter.underlyingAdapter._driver.loki.saveDatabase((err) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve()
-          }
-        })
-      } else {
-        resolve()
-      }
-    })
-  }
-
-  private async isEmpty() {
-    return (await this.queryMaybeDeletedRecords()).length === 0
-  }
-
   private async writeEntries(entries: SyncEntry[], freshSync: boolean = false, parentSpan?: Span) {
     await this.telemeterizedWrite(parentSpan, async (writer) => {
       const batches = await this.buildWriteBatchesFromEntries(entries, freshSync)
@@ -497,13 +491,15 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   private async buildWriteBatchesFromEntries(entries: SyncEntry[], freshSync: boolean) {
     // if this is a fresh sync and there are no existing records, we can skip more sophisticated conflict resolution
-    if (freshSync && (await this.isEmpty())) {
-      const resolver = new Resolver()
-      entries
-        .filter((e) => !e.meta.lifecycle.deleted_at)
-        .forEach((entry) => resolver.againstNone(entry))
+    if (freshSync) {
+      if ((await this.queryMaybeDeletedRecords()).length === 0) {
+        const resolver = new Resolver()
+        entries
+          .filter((e) => !e.meta.lifecycle.deleted_at)
+          .forEach((entry) => resolver.againstNone(entry))
 
-      return this.prepareRecords(resolver.result)
+        return this.prepareRecords(resolver.result)
+      }
     }
 
     const entryIds = entries.map((e) => e.meta.ids.id)
