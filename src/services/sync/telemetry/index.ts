@@ -1,33 +1,26 @@
 import watermelonLogger from '@nozbe/watermelondb/utils/common/logger'
-import { SyncError } from './errors'
+import { SyncError } from '../errors'
 
 import * as InjectedSentry from '@sentry/browser'
-type SentryBrowserOptions = Parameters<typeof InjectedSentry.init>[0];
-
-export const syncSentryBeforeSend: NonNullable<SentryBrowserOptions['beforeSend']> = (event, hint) => {
-  if (hint.originalException instanceof SyncError && hint.originalException.isReported()) {
-    return null
-  }
-  return event
-}
-export const syncSentryBeforeSendTransaction: NonNullable<SentryBrowserOptions['beforeSendTransaction']> = (event, hint) => {
-  return event
-}
+export type SentryBrowserOptions = Parameters<typeof InjectedSentry.init>[0];
 
 export type SentryLike = {
   captureException: typeof InjectedSentry.captureException
   addBreadcrumb: typeof InjectedSentry.addBreadcrumb
   startSpan: typeof InjectedSentry.startSpan
 }
+
 export type StartSpanOptions = Parameters<typeof InjectedSentry.startSpan>[0]
 export type Span = InjectedSentry.Span
 
-let activeSpan: Span | null = null
+export const SYNC_TELEMETRY_TRACE_PREFIX = 'sync:'
 
 export class SyncTelemetry {
+  private userId: string
   private Sentry: SentryLike;
 
-  constructor({ Sentry }: { Sentry: SentryLike }) {
+  constructor(userId: string, { Sentry }: { Sentry: SentryLike }) {
+    this.userId = userId
     this.Sentry = Sentry
     watermelonLogger.log = (...messages: any[]) => this.log('[Watermelon]', ...messages);
     watermelonLogger.warn = (...messages: any[]) => this.warn('[Watermelon]', ...messages);
@@ -37,8 +30,12 @@ export class SyncTelemetry {
   trace<T>(opts: StartSpanOptions, callback: (span: Span) => T) {
     const options = {
       ...opts,
-      name: `sync:${opts.name}`,
-      op: `sync:${opts.op}`
+      name: `${SYNC_TELEMETRY_TRACE_PREFIX}${opts.name}`,
+      op: `${SYNC_TELEMETRY_TRACE_PREFIX}${opts.op}`,
+      attributes: {
+        ...opts.attributes,
+        userId: this.userId
+      }
     }
     const span = this.Sentry.startSpan<T>(options, (span) => {
       let desc = span['_spanId'].slice(0, 4)

@@ -1,4 +1,4 @@
-import './telemetry'
+import './telemetry/index'
 
 import BaseModel from "./models/Base"
 import { RecordId } from "@nozbe/watermelondb"

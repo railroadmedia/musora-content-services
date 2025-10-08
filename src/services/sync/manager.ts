@@ -8,7 +8,7 @@ import SyncRetry from './retry'
 import SyncContext from './context'
 import { SyncError } from './errors'
 import { SyncConcurrencySafetyMechanism } from './concurrency-safety'
-import { SyncTelemetry } from './telemetry'
+import { SyncTelemetry } from './telemetry/index'
 
 export default class SyncManager {
   private static instance: SyncManager | null = null

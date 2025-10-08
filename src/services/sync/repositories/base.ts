@@ -4,7 +4,7 @@ import SyncStore from '../store'
 import SyncContext from '../context'
 import BaseModel from '../models/Base'
 import { RecordId } from '@nozbe/watermelondb'
-import type { Span } from '../telemetry'
+import type { Span } from '../telemetry/index'
 
 import { SyncError, SyncExistsDTO, SyncReadDTO, SyncWriteDTO } from '..'
 import { SyncPushResponse } from "../fetch";

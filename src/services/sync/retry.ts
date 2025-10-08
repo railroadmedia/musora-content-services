@@ -1,6 +1,6 @@
 import SyncContext from "./context"
 import { SyncResponse } from "./fetch"
-import { SyncTelemetry, Span, StartSpanOptions } from "./telemetry"
+import { SyncTelemetry, Span, StartSpanOptions } from "./telemetry/index"
 
 export default class SyncRetry {
   private readonly BASE_BACKOFF = 1_000
