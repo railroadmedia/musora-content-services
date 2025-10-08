@@ -27,13 +27,13 @@ export async function getProgressPercentage(contentId) {
   return progress?.data?.[DATA_KEY_PROGRESS] ?? 0;
 }
 
+// returns in same order as contentIds input
 export async function getProgressPercentageByIds(contentIds) {
-  const progress = await ProgressRepository.create().getProgressesOptimistic(contentIds);
-  const result = {};
-  contentIds.forEach(id => {
-    result[id] = progress?.data?.[id]?.[DATA_KEY_PROGRESS] ?? 0;
-  });
-  return result;
+  const progress = await ProgressRepository.create().getProgressesOptimistic(contentIds).data;
+  progress.forEach(r => {
+    contentIds[r.content_id] = r[DATA_KEY_PROGRESS] ?? 0;
+  })
+  return progress
 }
 
 export async function getProgressState(contentId) {
@@ -42,12 +42,11 @@ export async function getProgressState(contentId) {
 }
 
 export async function getProgressStateByIds(contentIds) {
-  const progress = await ProgressRepository.create().getProgressesOptimistic(contentIds);
-  const result = {};
-  contentIds.forEach(id => {
-    result[id] = progress?.data?.[id]?.[DATA_KEY_STATUS] ?? '';
-  });
-  return result;
+  const progress = await ProgressRepository.create().getProgressesOptimistic(contentIds).data;
+  progress.forEach(r => {
+    contentIds[r.content_id] = r[DATA_KEY_STATUS] ?? 0;
+  })
+  return progress;
 }
 
 export async function getResumeTimeSeconds(contentId) {
@@ -56,12 +55,11 @@ export async function getResumeTimeSeconds(contentId) {
 }
 
 export async function getResumeTimeSecondsByIds(contentIds) {
-  const progress = await ProgressRepository.create().getProgressesOptimistic(contentIds);
-  const result = {};
-  contentIds.forEach(id => {
-    result[id] = progress?.data?.[id]?.[DATA_KEY_RESUME_TIME] ?? 0;
-  });
-  return result;
+  const progress = await ProgressRepository.create().getProgressesOptimistic(contentIds).data;
+  progress.forEach(r => {
+    contentIds[r.content_id] = r[DATA_KEY_RESUME_TIME] ?? 0;
+  })
+  return progress;
 }
 
 export async function getNextLesson(data) {
@@ -113,6 +111,7 @@ export async function getNextLesson(data) {
   return nextLessonData
 }
 
+// todo create a getNavigateTo for method
 export async function getNavigateTo(data) {
   let navigateToData = {}
   const twoDepthContentTypes = ['pack'] //TODO add method when we know what it's called
@@ -214,7 +213,8 @@ export async function getLastInteractedOf(contentIds) {
 }
 
 export async function getProgressDateByIds(contentIds) {
-  let data = await dataContext.getData()
+  let data = await ProgressRepository.create().getStandardProgressByContentIds(contentIds)?.data
+
   let progress = {}
   contentIds?.forEach(
     (id) =>
