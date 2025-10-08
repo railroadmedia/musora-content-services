@@ -17,6 +17,8 @@ const DATA_KEY_PROGRESS = 'progress_percent'
 const DATA_KEY_RESUME_TIME = 't'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
 const DATA_KEY_BRAND = 'brand'
+const DATA_KEY_PARENT_TYPE = 'parent_type'
+const DATA_KEY_PARENT_ID = 'parent_id'
 
 export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress)
 
@@ -288,8 +290,13 @@ export async function getAllStartedOrCompleted({
   onlyIds = true,
   brand = null,
   excludedIds = [],
+  parentType = 0,
 } = {}) {
+
   const data = await dataContext.getData()
+  // replace with watermelon fetch
+
+  // and deal with other logic like sorting and limits
   const oneMonthAgoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
 
   const excludedSet = new Set(excludedIds.map((id) => parseInt(id))) // ensure IDs are numbers
@@ -327,6 +334,8 @@ export async function getAllStartedOrCompleted({
         progress: item?.[DATA_KEY_PROGRESS] ?? 0,
         status: item?.[DATA_KEY_STATUS] ?? '',
         brand: item?.b ?? '',
+        parent_type: item?.[DATA_KEY_PARENT_TYPE] ?? 0,
+        parent_id: item?.[DATA_KEY_PARENT_ID] ?? 0,
       }
     })
     return progress
