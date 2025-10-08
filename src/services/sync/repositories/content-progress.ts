@@ -78,17 +78,17 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
                         parentType = PARENT_TYPE.DEFAULT,
                         parentId = null,
                       }: ProgressWriteDTO) {
-    const progress = await this.store.upsertOne(ProgressRepository.generateId(contentId, parentType, parentId), r => {
+    return await this.store.upsertOne(ProgressRepository.generateId(contentId, parentType, parentId), r => {
       r.content_id = contentId;
       r.state = state;
       r.progress_percent = progressPercent;
       r.parent_type = parentType;
       r.parent_id = parentId;
     })
-    return await this.pushOneEagerlyById(progress.id)
   }
 
   private static generateId(contentId: number, parentType: number, parentId: number) {
-    return contentId.toString() + ":" + parentType.toString() + ":" + parentId.toString();
+    const parent = parentId ? parentId.toString() : "null";
+    return contentId.toString() + ":" + parentType.toString() + ":" + parent;
   }
 }
