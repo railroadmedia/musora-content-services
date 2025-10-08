@@ -39,6 +39,7 @@ import { addContextToContent } from './contentAggregator.js'
 
 const DATA_KEY_PRACTICES = 'practices'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
+const PARENT_TYPE_LEARNING_PATH = 1;
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
@@ -970,11 +971,10 @@ async function extractPinnedItemsAndSortAllItems(
   return mergeAndSortItems(combined, limit)
 }
 
-function generateContentsMap(contents, playlistsContents) {
+function generateContentsMap(contents, playlistsContents, methodContents) {
   const excludedTypes = new Set([
     'pack-bundle',
-    'learning-path-course',
-    'learning-path-level',
+    'learning-path',
     'guided-course-part',
   ])
   const existingShows = new Set()
@@ -1008,8 +1008,6 @@ function generateContentsMap(contents, playlistsContents) {
     }
   })
 
-  // TODO this doesn't work for guided courses as the GC card takes precedence over the playlist card
-  // https://musora.atlassian.net/browse/BEH-812
   if (playlistsContents) {
     for (const item of playlistsContents) {
       const contentId = item.id
@@ -1018,6 +1016,16 @@ function generateContentsMap(contents, playlistsContents) {
       parentIds.forEach((id) => contentsMap.delete(id))
     }
   }
+  if (methodContents) {
+    for (const item of methodContents) {
+      const contentId = item.id
+      contentsMap.delete(contentId)
+      const parentIds = item.parent_content_data || []
+      parentIds.forEach((id) => contentsMap.delete(id))
+    }
+  }
+
+  //if methodContents()
   return contentsMap
 }
 
@@ -1037,10 +1045,11 @@ function generateContentsMap(contents, playlistsContents) {
 export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   // TODO slice progress to a reasonable number, say 100
 
-  const [recentPlaylists, progressContents, userPinnedItem] =
+  const [recentPlaylists, progressContents, methodProgressContents, userPinnedItem] =
     await Promise.all([
       fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
       getAllStartedOrCompleted({ onlyIds: false, brand: brand }),
+      getAllStartedOrCompleted({ onlyIds: false, brand: brand, parentType: PARENT_TYPE_LEARNING_PATH }),
       getUserPinnedItem(brand),
     ])
 
@@ -1070,6 +1079,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
       addProgressPercentage: true,
       addProgressTimestamp: true,
     }) : Promise.resolve([]),
+    // fetching method progress content already returns all these context fields
   ])
   const contentsMap = generateContentsMap(contents, playlistsContents)
   let combined = await extractPinnedItemsAndSortAllItems(
@@ -1083,6 +1093,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
       .slice(0, limit)
       .map((item) =>
         item.type === 'playlist' ? processPlaylistItem(item) : processContentItem(item)
+        // need custom processing for the method card as well
       )
   )
   return {
