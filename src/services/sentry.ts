@@ -18,5 +18,6 @@ export function composeHandlers<H extends (...args: any[]) => any>(...handlers: 
       const res = handler(...args);
       if (res !== undefined) return res;
     }
+    return args[0]
   }) as H;
 }
