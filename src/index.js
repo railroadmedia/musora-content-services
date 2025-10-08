@@ -9,7 +9,10 @@ import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
-	unEnrollUserInGuidedCourse
+	pinGuidedCourse,
+	pinnedGuidedCourses,
+	unEnrollUserInGuidedCourse,
+	unPinGuidedCourse
 } from './services/content-org/guided-courses.ts';
 
 import {
@@ -56,7 +59,6 @@ import {
 import {
 	contentStatusCompleted,
 	contentStatusReset,
-	contentStatusStarted,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
@@ -93,40 +95,8 @@ import {
 } from './services/forum.js';
 
 import {
-	createForumCategory,
-	fetchForumCategories,
-	updateForumCategory
-} from './services/forums/categories.ts';
-
-import {
-	createPost,
-	fetchPosts,
-	likePost,
-	unlikePost,
-	deletePost,
-	fetchCommunityGuidelines
-} from './services/forums/posts.ts';
-
-import {
-	createThread,
-	deleteThread,
-	fetchFollowedThreads,
-	fetchLatestThreads,
-	fetchThreads,
-	followThread,
-	lockThread,
-	pinThread,
-	unfollowThread,
-	unlockThread,
-	unpinThread,
-	updateThread
-} from './services/forums/threads.ts';
-
-import {
-	fetchAwardsForUser,
-	fetchCertificate,
-	getAwardDataForGuidedContent
-} from './services/gamification/awards.ts';
+	fetchAwardsForUser
+} from './services/gamification/awards.js';
 
 import {
 	applyCloudflareWrapper,
@@ -166,7 +136,6 @@ import {
 	fetchTopComment,
 	fetchUserAward,
 	fetchUserBadges,
-	fetchUserLikes,
 	fetchUserPermissionsData,
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
@@ -175,13 +144,11 @@ import {
 	logUserPractice,
 	openComment,
 	postContentComplete,
-	postContentLiked,
 	postContentReset,
 	postContentRestore,
-	postContentStart,
-	postContentUnliked,
 	postPlaylistContentEngaged,
 	postRecordWatchSession,
+	postUserLikes,
 	replyToComment,
 	reportComment,
 	restoreComment,
@@ -228,6 +195,7 @@ import {
 	fetchOtherSongVersions,
 	fetchPackAll,
 	fetchPackData,
+	fetchParentForDownload,
 	fetchPlayAlongsCount,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
@@ -249,8 +217,6 @@ import {
 } from './services/sanity.js';
 
 import {
-	confirmEmailChange,
-	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
@@ -273,21 +239,12 @@ import {
 
 import {
 	blockUser,
-	blockedUsers,
 	deletePicture,
 	getUserData,
-	isDisplayNameAvailable,
 	unblockUser,
-	updateDisplayName,
 	uploadPicture,
 	uploadPictureFromS3
 } from './services/user/management.js';
-
-import {
-	fetchMemberships,
-	fetchRechargeTokens,
-	upgradeSubscription
-} from './services/user/memberships.js';
 
 import {
 	deleteNotification,
@@ -303,10 +260,6 @@ import {
 	startLiveEventPolling,
 	updateNotificationSetting
 } from './services/user/notifications.js';
-
-import {
-	fetchCustomerPayments
-} from './services/user/payments.ts';
 
 import {
 	fetchUserPermissions,
@@ -349,10 +302,6 @@ import {
 	updateUserPractice
 } from './services/userActivity.js';
 
-import {
-	 default as EventsAPI
-} from './services/eventsAPI.js';
-
 export {
 	addContextToContent,
 	addItemToPlaylist,
@@ -360,30 +309,22 @@ export {
 	applySanityTransformations,
 	assignModeratorToComment,
 	blockUser,
-	blockedUsers,
 	buildImageSRC,
 	calculateLongestStreaks,
 	closeComment,
-	confirmEmailChange,
 	contentStatusCompleted,
 	contentStatusReset,
-	contentStatusStarted,
 	convertToTimeZone,
 	createComment,
-	createForumCategory,
 	createPlaylist,
-	createPost,
 	createPracticeNotes,
-	createThread,
 	deleteComment,
 	deleteItemsFromPlaylist,
 	deleteNotification,
 	deletePicture,
 	deletePlaylist,
-	deletePost,
 	deletePracticeSession,
 	deleteProfilePicture,
-	deleteThread,
 	deleteUserActivity,
 	duplicatePlaylist,
 	editComment,
@@ -400,7 +341,6 @@ export {
 	fetchByRailContentIds,
 	fetchByReference,
 	fetchCarouselCardData,
-	fetchCertificate,
 	fetchChatAndLiveEnvent,
 	fetchChatSettings,
 	fetchCoachLessons,
@@ -409,31 +349,25 @@ export {
 	fetchCommentModContentData,
 	fetchCommentRelies,
 	fetchComments,
-	fetchCommunityGuidelines,
 	fetchCompletedContent,
 	fetchCompletedState,
 	fetchContentInProgress,
 	fetchContentPageUserData,
 	fetchContentProgress,
 	fetchContentRows,
-	fetchCustomerPayments,
 	fetchEnrollmentPageMetadata,
-	fetchFollowedThreads,
-	fetchForumCategories,
 	fetchFoundation,
 	fetchGenreLessons,
 	fetchHandler,
 	fetchHierarchy,
 	fetchInterests,
 	fetchLastInteractedChild,
-	fetchLatestThreads,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
 	fetchLikeCount,
 	fetchLiveEvent,
 	fetchLiveEventPollingState,
-	fetchMemberships,
 	fetchMetadata,
 	fetchMethod,
 	fetchMethodChildren,
@@ -447,14 +381,13 @@ export {
 	fetchOtherSongVersions,
 	fetchPackAll,
 	fetchPackData,
+	fetchParentForDownload,
 	fetchPlayAlongsCount,
 	fetchPlaylist,
 	fetchPlaylistItems,
-	fetchPosts,
 	fetchRecent,
 	fetchRecentActivitiesActiveTabs,
 	fetchRecentUserActivities,
-	fetchRechargeTokens,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
@@ -470,7 +403,6 @@ export {
 	fetchSongById,
 	fetchSongsInProgress,
 	fetchTabData,
-	fetchThreads,
 	fetchTopComment,
 	fetchTopLevelParentId,
 	fetchUninterests,
@@ -478,7 +410,6 @@ export {
 	fetchUpcomingEvents,
 	fetchUserAward,
 	fetchUserBadges,
-	fetchUserLikes,
 	fetchUserPermissions,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
@@ -486,12 +417,10 @@ export {
 	fetchUserPracticeNotes,
 	fetchUserPractices,
 	findIncompleteLesson,
-	followThread,
 	getActiveDiscussions,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
-	getAwardDataForGuidedContent,
 	getContentRows,
 	getLastInteractedOf,
 	getLessonContentRows,
@@ -530,15 +459,12 @@ export {
 	isBucketUrl,
 	isContentLiked,
 	isContentLikedByIds,
-	isDisplayNameAvailable,
 	isNextDay,
 	isSameDate,
 	jumpToContinueContent,
 	likeComment,
 	likeContent,
 	likePlaylist,
-	likePost,
-	lockThread,
 	logUserPractice,
 	login,
 	logout,
@@ -550,16 +476,15 @@ export {
 	openComment,
 	otherStats,
 	pauseLiveEventPolling,
+	pinGuidedCourse,
 	pinProgressRow,
-	pinThread,
+	pinnedGuidedCourses,
 	postContentComplete,
-	postContentLiked,
 	postContentReset,
 	postContentRestore,
-	postContentStart,
-	postContentUnliked,
 	postPlaylistContentEngaged,
 	postRecordWatchSession,
+	postUserLikes,
 	rankCategories,
 	rankItems,
 	recommendations,
@@ -572,7 +497,6 @@ export {
 	replyToComment,
 	reportComment,
 	reportPlaylist,
-	requestEmailChange,
 	reset,
 	resetPassword,
 	restoreComment,
@@ -590,29 +514,20 @@ export {
 	toDayjs,
 	togglePlaylistPrivate,
 	unEnrollUserInGuidedCourse,
+	unPinGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,
 	undeletePlaylist,
-	unfollowThread,
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
-	unlikePost,
-	unlockThread,
 	unpinProgressRow,
-	unpinThread,
-	updateDisplayName,
-	updateForumCategory,
 	updateNotificationSetting,
 	updatePlaylist,
 	updatePracticeNotes,
-	updateThread,
 	updateUserPractice,
-	upgradeSubscription,
 	uploadPicture,
 	uploadPictureFromS3,
 	verifyImageSRC,
 	verifyLocalDataContext,
 };
-
-export default EventsAPI

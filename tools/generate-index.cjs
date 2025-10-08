@@ -73,10 +73,14 @@ treeElements.forEach((treeNode) => {
   if (fs.lstatSync(filePath).isFile()) {
     addFunctionsToFileExports(filePath, treeNode)
   } else if (fs.lstatSync(filePath).isDirectory()) {
+    if (fs.existsSync(path.join(filePath, '.indexignore'))) {
+      console.log(`Skipping directory: ${treeNode} due to .indexignore`)
+      return
+    }
     const subDir = fs.readdirSync(filePath)
     subDir.forEach((subFile) => {
-      const filePath = path.join(servicesDir, treeNode, subFile)
-      addFunctionsToFileExports(filePath, treeNode + '/' + subFile)
+      const subFilePath = path.join(servicesDir, treeNode, subFile)
+      addFunctionsToFileExports(subFilePath, treeNode + '/' + subFile)
     })
   }
 })
