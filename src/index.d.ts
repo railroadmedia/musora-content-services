@@ -9,10 +9,7 @@ import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
-	pinGuidedCourse,
-	pinnedGuidedCourses,
-	unEnrollUserInGuidedCourse,
-	unPinGuidedCourse
+	unEnrollUserInGuidedCourse
 } from './services/content-org/guided-courses.ts';
 
 import {
@@ -59,6 +56,7 @@ import {
 import {
 	contentStatusCompleted,
 	contentStatusReset,
+	contentStatusStarted,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
@@ -95,8 +93,40 @@ import {
 } from './services/forum.js';
 
 import {
-	fetchAwardsForUser
-} from './services/gamification/awards.js';
+	createForumCategory,
+	fetchForumCategories,
+	updateForumCategory
+} from './services/forums/categories.ts';
+
+import {
+	createPost,
+	deletePost,
+	fetchCommunityGuidelines,
+	fetchPosts,
+	likePost,
+	unlikePost
+} from './services/forums/posts.ts';
+
+import {
+	createThread,
+	deleteThread,
+	fetchFollowedThreads,
+	fetchLatestThreads,
+	fetchThreads,
+	followThread,
+	lockThread,
+	pinThread,
+	unfollowThread,
+	unlockThread,
+	unpinThread,
+	updateThread
+} from './services/forums/threads.ts';
+
+import {
+	fetchAwardsForUser,
+	fetchCertificate,
+	getAwardDataForGuidedContent
+} from './services/gamification/awards.ts';
 
 import {
 	applyCloudflareWrapper,
@@ -146,6 +176,7 @@ import {
 	postContentComplete,
 	postContentReset,
 	postContentRestore,
+	postContentStart,
 	postPlaylistContentEngaged,
 	postRecordWatchSession,
 	postUserLikes,
@@ -195,7 +226,6 @@ import {
 	fetchOtherSongVersions,
 	fetchPackAll,
 	fetchPackData,
-	fetchParentForDownload,
 	fetchPlayAlongsCount,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
@@ -217,6 +247,8 @@ import {
 } from './services/sanity.js';
 
 import {
+	confirmEmailChange,
+	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
@@ -239,12 +271,21 @@ import {
 
 import {
 	blockUser,
+	blockedUsers,
 	deletePicture,
 	getUserData,
+	isDisplayNameAvailable,
 	unblockUser,
+	updateDisplayName,
 	uploadPicture,
 	uploadPictureFromS3
 } from './services/user/management.js';
+
+import {
+	fetchMemberships,
+	fetchRechargeTokens,
+	upgradeSubscription
+} from './services/user/memberships.js';
 
 import {
 	deleteNotification,
@@ -260,6 +301,10 @@ import {
 	startLiveEventPolling,
 	updateNotificationSetting
 } from './services/user/notifications.js';
+
+import {
+	fetchCustomerPayments
+} from './services/user/payments.ts';
 
 import {
 	fetchUserPermissions,
@@ -302,6 +347,10 @@ import {
 	updateUserPractice
 } from './services/userActivity.js';
 
+import {
+	 default as EventsAPI 
+} from './services/eventsAPI';
+
 declare module 'musora-content-services' {
 	export {
 		addContextToContent,
@@ -310,22 +359,30 @@ declare module 'musora-content-services' {
 		applySanityTransformations,
 		assignModeratorToComment,
 		blockUser,
+		blockedUsers,
 		buildImageSRC,
 		calculateLongestStreaks,
 		closeComment,
+		confirmEmailChange,
 		contentStatusCompleted,
 		contentStatusReset,
+		contentStatusStarted,
 		convertToTimeZone,
 		createComment,
+		createForumCategory,
 		createPlaylist,
+		createPost,
 		createPracticeNotes,
+		createThread,
 		deleteComment,
 		deleteItemsFromPlaylist,
 		deleteNotification,
 		deletePicture,
 		deletePlaylist,
+		deletePost,
 		deletePracticeSession,
 		deleteProfilePicture,
+		deleteThread,
 		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
@@ -342,6 +399,7 @@ declare module 'musora-content-services' {
 		fetchByRailContentIds,
 		fetchByReference,
 		fetchCarouselCardData,
+		fetchCertificate,
 		fetchChatAndLiveEnvent,
 		fetchChatSettings,
 		fetchCoachLessons,
@@ -350,25 +408,31 @@ declare module 'musora-content-services' {
 		fetchCommentModContentData,
 		fetchCommentRelies,
 		fetchComments,
+		fetchCommunityGuidelines,
 		fetchCompletedContent,
 		fetchCompletedState,
 		fetchContentInProgress,
 		fetchContentPageUserData,
 		fetchContentProgress,
 		fetchContentRows,
+		fetchCustomerPayments,
 		fetchEnrollmentPageMetadata,
+		fetchFollowedThreads,
+		fetchForumCategories,
 		fetchFoundation,
 		fetchGenreLessons,
 		fetchHandler,
 		fetchHierarchy,
 		fetchInterests,
 		fetchLastInteractedChild,
+		fetchLatestThreads,
 		fetchLeaving,
 		fetchLessonContent,
 		fetchLessonsFeaturingThisContent,
 		fetchLikeCount,
 		fetchLiveEvent,
 		fetchLiveEventPollingState,
+		fetchMemberships,
 		fetchMetadata,
 		fetchMethod,
 		fetchMethodChildren,
@@ -382,13 +446,14 @@ declare module 'musora-content-services' {
 		fetchOtherSongVersions,
 		fetchPackAll,
 		fetchPackData,
-		fetchParentForDownload,
 		fetchPlayAlongsCount,
 		fetchPlaylist,
 		fetchPlaylistItems,
+		fetchPosts,
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
 		fetchRecentUserActivities,
+		fetchRechargeTokens,
 		fetchRelatedLessons,
 		fetchRelatedRecommendedContent,
 		fetchRelatedSongs,
@@ -404,6 +469,7 @@ declare module 'musora-content-services' {
 		fetchSongById,
 		fetchSongsInProgress,
 		fetchTabData,
+		fetchThreads,
 		fetchTopComment,
 		fetchTopLevelParentId,
 		fetchUninterests,
@@ -418,10 +484,12 @@ declare module 'musora-content-services' {
 		fetchUserPracticeNotes,
 		fetchUserPractices,
 		findIncompleteLesson,
+		followThread,
 		getActiveDiscussions,
 		getAllCompleted,
 		getAllStarted,
 		getAllStartedOrCompleted,
+		getAwardDataForGuidedContent,
 		getContentRows,
 		getLastInteractedOf,
 		getLessonContentRows,
@@ -460,12 +528,15 @@ declare module 'musora-content-services' {
 		isBucketUrl,
 		isContentLiked,
 		isContentLikedByIds,
+		isDisplayNameAvailable,
 		isNextDay,
 		isSameDate,
 		jumpToContinueContent,
 		likeComment,
 		likeContent,
 		likePlaylist,
+		likePost,
+		lockThread,
 		logUserPractice,
 		login,
 		logout,
@@ -477,12 +548,12 @@ declare module 'musora-content-services' {
 		openComment,
 		otherStats,
 		pauseLiveEventPolling,
-		pinGuidedCourse,
 		pinProgressRow,
-		pinnedGuidedCourses,
+		pinThread,
 		postContentComplete,
 		postContentReset,
 		postContentRestore,
+		postContentStart,
 		postPlaylistContentEngaged,
 		postRecordWatchSession,
 		postUserLikes,
@@ -498,6 +569,7 @@ declare module 'musora-content-services' {
 		replyToComment,
 		reportComment,
 		reportPlaylist,
+		requestEmailChange,
 		reset,
 		resetPassword,
 		restoreComment,
@@ -515,21 +587,30 @@ declare module 'musora-content-services' {
 		toDayjs,
 		togglePlaylistPrivate,
 		unEnrollUserInGuidedCourse,
-		unPinGuidedCourse,
 		unassignModeratorToComment,
 		unblockUser,
 		undeletePlaylist,
+		unfollowThread,
 		unlikeComment,
 		unlikeContent,
 		unlikePlaylist,
+		unlikePost,
+		unlockThread,
 		unpinProgressRow,
+		unpinThread,
+		updateDisplayName,
+		updateForumCategory,
 		updateNotificationSetting,
 		updatePlaylist,
 		updatePracticeNotes,
+		updateThread,
 		updateUserPractice,
+		upgradeSubscription,
 		uploadPicture,
 		uploadPictureFromS3,
 		verifyImageSRC,
 		verifyLocalDataContext,
 	}
 }
+
+export default EventsAPI
