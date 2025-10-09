@@ -9,6 +9,7 @@ import SyncContext from './context'
 import { SyncError } from './errors'
 import { SyncConcurrencySafetyMechanism } from './concurrency-safety'
 import { SyncTelemetry } from './telemetry/index'
+import { inBoundary } from './errors/boundary'
 
 export default class SyncManager {
   private static instance: SyncManager | null = null
@@ -41,11 +42,11 @@ export default class SyncManager {
   private strategyMap: { stores: SyncStore<BaseModel>[]; strategies: SyncStrategy[] }[]
   private safetyMap: { stores: SyncStore<BaseModel>[]; mechanisms: (() => void)[] }[]
 
-  constructor(context: SyncContext, database: () => Database, telemetry: SyncTelemetry) {
-    this.telemetry = telemetry
+  constructor(context: SyncContext, initDatabase: () => Database) {
+    this.telemetry = SyncTelemetry.getInstance()
     this.context = context
 
-    this.database = this.telemetry.trace({ name: 'db:init' }, database)
+    this.database = this.telemetry.trace({ name: 'db:init' }, () => inBoundary(initDatabase))
     this.runScope = new SyncRunScope()
 
     this.storesRegistry = {} as Record<typeof BaseModel.table, SyncStore<BaseModel>>

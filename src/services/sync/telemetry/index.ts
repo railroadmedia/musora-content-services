@@ -16,6 +16,21 @@ export type Span = InjectedSentry.Span
 export const SYNC_TELEMETRY_TRACE_PREFIX = 'sync:'
 
 export class SyncTelemetry {
+  private static instance: SyncTelemetry | null = null
+
+  public static setInstance(instance: SyncTelemetry): SyncTelemetry {
+    SyncTelemetry.instance = instance
+    return instance
+  }
+
+  public static getInstance(): SyncTelemetry | null {
+    return SyncTelemetry.instance
+  }
+
+  public static clearInstance(): void {
+    SyncTelemetry.instance = null
+  }
+
   private userId: string
   private Sentry: SentryLike;
 
@@ -30,7 +45,7 @@ export class SyncTelemetry {
     watermelonLogger.error = (...messages: any[]) => this.error('[Watermelon]', ...messages);
   }
 
-  trace<T>(opts: StartSpanOptions, callback: (span: Span) => T) {
+  trace<T>(opts: StartSpanOptions, callback: (_span: Span) => T) {
     const options = {
       ...opts,
       name: `${SYNC_TELEMETRY_TRACE_PREFIX}${opts.name}`,
@@ -40,7 +55,7 @@ export class SyncTelemetry {
         userId: this.userId
       }
     }
-    const span = this.Sentry.startSpan<T>(options, (span) => {
+    return this.Sentry.startSpan<T>(options, (span) => {
       let desc = span['_spanId'].slice(0, 4)
       desc += span['_parentSpanId'] ? ` (< ${span['_parentSpanId'].slice(0, 4)})` : ''
 
@@ -50,21 +65,23 @@ export class SyncTelemetry {
 
       return result
     })
-
-    return span
   }
 
   capture(err: SyncError) {
+    err.markReported()
     this.Sentry.captureException(err, err instanceof SyncUnexpectedError ? {
       mechanism: {
         handled: false
       }
     } : undefined)
+
+
     this._ignoreConsole = true
     this.error(err.message)
     this._ignoreConsole = false
   }
 
+  // allows us to know if Sentry shouldn't double-capture a dev-prettified console.error log
   shouldIgnoreConsole() {
     return this._ignoreConsole
   }

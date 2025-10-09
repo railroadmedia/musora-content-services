@@ -94,30 +94,28 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private emit = this.emitter.emit.bind(this.emitter)
 
   async sync(reason: string) {
-    this.telemetry.trace(
-      { name: `sync:${this.model.table}`, op: 'sync', attributes: { reason } },
-      async (span) =>
-        inBoundary(
-          async () => {
-            let pushError: any = null
+    inBoundary(ctx => {
+      this.telemetry.trace(
+        { name: `sync:${this.model.table}`, op: 'sync', attributes: ctx },
+        async span => {
+          let pushError: any = null
 
-            try {
-              await this.pushUnsyncedWithRetry(span)
-            } catch (err) {
-              pushError = err
-            }
+          try {
+            await this.pushUnsyncedWithRetry(span)
+          } catch (err) {
+            pushError = err
+          }
 
-            // will return records that we just saw in push response, but we can't
-            // be sure there were no other changes before the push
-            await this.pullRecordsWithRetry(span)
+          // will return records that we just saw in push response, but we can't
+          // be sure there were no other changes before the push
+          await this.pullRecordsWithRetry(span)
 
-            if (pushError) {
-              throw pushError
-            }
-          },
-          { table: this.model.table }
-        )
-    )
+          if (pushError) {
+            throw pushError
+          }
+        }
+      )
+    }, { table: this.model.table, reason })
   }
 
   async getLastFetchToken() {
@@ -286,6 +284,15 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
+  private async pullRecordsWithRetry(span?: Span) {
+    dropThrottle({ state: this.pullThrottleState, deferOnce: true }, () =>
+      this.retry.request(
+        { name: `pull:${this.model.table}`, op: 'pull', parentSpan: span },
+        (span) => this.executePull(span)
+      )
+    )()
+  }
+
   private async pushUnsyncedWithRetry(span?: Span) {
     const records = await this.queryMaybeDeletedRecords(Q.where('_status', Q.notEq('synced')))
 
@@ -300,6 +307,39 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         })
       )
     }
+  }
+
+  private async executePull(span?: Span) {
+    return this.telemetry.trace(
+      {
+        name: `pull:${this.model.table}:run`,
+        op: 'pull:run',
+        attributes: { table: this.model.table },
+        parentSpan: span,
+      },
+      async (pullSpan) => {
+        const lastFetchToken = await this.getLastFetchToken()
+
+        const response = await this.telemetry.trace(
+          {
+            name: `pull:${this.model.table}:run:fetch`,
+            op: 'pull:run:fetch',
+            attributes: { lastFetchToken: lastFetchToken ?? undefined },
+            parentSpan: pullSpan,
+          },
+          () => this.puller(this.context.session, lastFetchToken, this.runScope.signal)
+        )
+
+        if (response.ok) {
+          await this.writeEntries(response.entries, !response.previousToken, pullSpan)
+          await this.setLastFetchToken(response.token)
+
+          this.emit('pullCompleted')
+        }
+
+        return response
+      }
+    )
   }
 
   private async executePush(records: TModel[], parentSpan?: Span) {
@@ -353,48 +393,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return {
       entries,
     }
-  }
-
-  private async pullRecordsWithRetry(span?: Span) {
-    dropThrottle({ state: this.pullThrottleState, deferOnce: true }, () =>
-      this.retry.request(
-        { name: `pull:${this.model.table}`, op: 'pull', parentSpan: span },
-        (span) => this.executePull(span)
-      )
-    )()
-  }
-
-  private async executePull(span?: Span) {
-    return this.telemetry.trace(
-      {
-        name: `pull:${this.model.table}:run`,
-        op: 'pull:run',
-        attributes: { table: this.model.table },
-        parentSpan: span,
-      },
-      async (pullSpan) => {
-        const lastFetchToken = await this.getLastFetchToken()
-
-        const response = await this.telemetry.trace(
-          {
-            name: `pull:${this.model.table}:run:fetch`,
-            op: 'pull:run:fetch',
-            attributes: { lastFetchToken: lastFetchToken ?? undefined },
-            parentSpan: pullSpan,
-          },
-          () => this.puller(this.context.session, lastFetchToken, this.runScope.signal)
-        )
-
-        if (response.ok) {
-          await this.writeEntries(response.entries, !response.previousToken, pullSpan)
-          await this.setLastFetchToken(response.token)
-
-          this.emit('pullCompleted')
-        }
-
-        return response
-      }
-    )
   }
 
   private async queryRecords(...args: Q.Clause[]) {
