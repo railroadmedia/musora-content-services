@@ -22,7 +22,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   }
 
   async queryWhere(clauses: Record<string, any>[], limit: number = null) {
-    return await this.readAllWhere(clauses, limit)
+    return await this.queryBy(clauses, limit)
   }
 
 // get all progress for a given brand, collection type and id
@@ -38,7 +38,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     if (collectionType) clauses.push({collection_type: collectionType});
     if (collectionId != 0) clauses.push({collection_id: collectionId});
 
-    return await this.readAllWhere(clauses, limit)
+    return await this.queryBy(clauses, limit)
   }
 
   // get one contentId of a given collection type and id
@@ -64,7 +64,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     if (collectionType) clauses.push({collection_type: collectionType});
     if (collectionId != 0) clauses.push({collection_id: collectionId});
 
-    return await this.readAllWhere(clauses)
+    return await this.queryBy(clauses)
   }
 
   async writeProgress({

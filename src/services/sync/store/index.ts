@@ -142,6 +142,11 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return records.map((record) => this.modelSerializer.toPlainObject(record))
   }
 
+  async readBy(...args: Q.Clause[]) {
+    const records = await this.queryRecords(...args)
+    return records.map((record) => this.modelSerializer.toPlainObject(record))
+  }
+
   async readSome(ids: RecordId[]) {
     const records = await this.queryRecords(Q.where('id', Q.oneOf(ids)))
     return records.map((record) => this.modelSerializer.toPlainObject(record))
