@@ -87,8 +87,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.lastFetchTokenKey = `last_fetch_token:${this.model.table}`
 
     this.telemetry = telemetry
-
-    window.x = this
   }
 
   on = this.emitter.on.bind(this.emitter)
@@ -96,148 +94,46 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private emit = this.emitter.emit.bind(this.emitter)
 
   async sync(reason: string) {
-    this.telemetry.trace({ name: `sync:${this.model.table}`, op: 'sync', attributes: { reason } }, async span => inBoundary(async () => {
-      let pushError: any = null
+    inBoundary(ctx => {
+      this.telemetry.trace(
+        { name: `sync:${this.model.table}`, op: 'sync', attributes: ctx },
+        async span => {
+          let pushError: any = null
 
-      try {
-        await this.pushUnsyncedWithRetry(span)
-      } catch (err) {
-        pushError = err
-      }
+          try {
+            await this.pushUnsyncedWithRetry(span)
+          } catch (err) {
+            pushError = err
+          }
 
-      // will return records that we just saw in push response, but we can't
-      // be sure there were no other changes before the push
-      await this.pullRecordsWithRetry(span)
+          // will return records that we just saw in push response, but we can't
+          // be sure there were no other changes before the push
+          await this.pullRecordsWithRetry(span)
 
-      if (pushError) {
-        throw pushError
-      }
-    }, { table: this.model.table }))
+          if (pushError) {
+            throw pushError
+          }
+        }
+      )
+    }, { table: this.model.table, reason })
   }
 
   async getLastFetchToken() {
     return (await this.db.localStorage.get<SyncToken | null>(this.lastFetchTokenKey)) ?? null
   }
 
-  private async setLastFetchToken(token: SyncToken | null) {
-    await this.db.write(async () => {
-      if (token) {
-        const storedValue = await this.getLastFetchToken()
-
-        // avoids thrashing if we get and compare first before setting
-        if (storedValue !== token) {
-          this.telemetry.debug(`[store:${this.model.table}] Setting last fetch token: ${token}`)
-          return this.db.localStorage.set(this.lastFetchTokenKey, token)
-        }
-      } else {
-        this.telemetry.debug(`[store:${this.model.table}] Removing last fetch token`)
-        return this.db.localStorage.remove(this.lastFetchTokenKey)
-      }
-    })
+  async pullRecords(span?: Span) {
+    return dropThrottle({ state: this.pullThrottleState }, this.executePull.bind(this))(span)
   }
 
   async pushRecordIdsImpatiently(ids: RecordId[], span?: Span) {
     const records = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))
 
-    return await this.pushCoalescer.push(records, queueThrottle({ state: this.pushThrottleState }, () => {
-      return this.executePush(records, span)
-    }))
-  }
-
-  private async pushUnsyncedWithRetry(span?: Span) {
-    const records = await this.queryMaybeDeletedRecords(Q.where('_status', Q.notEq('synced')))
-
-    if (records.length) {
-      this.pushCoalescer.push(records, queueThrottle({ state: this.pushThrottleState }, () => {
-        return this.retry.request({ name: `push:${this.model.table}`, op: 'push', parentSpan: span }, span => this.executePush(records, span))
-      }))
-    }
-  }
-
-  private async executePush(records: TModel[], parentSpan?: Span) {
-    return this.telemetry.trace(
-      {
-        name: `push:${this.model.table}`,
-        op: 'push:run',
-        attributes: { table: this.model.table },
-        parentSpan,
-      },
-      async pushSpan => {
-        const payload = this.generatePushPayload(records)
-
-        const response = await this.telemetry.trace(
-          {
-            name: `push:${this.model.table}:run:fetch`,
-            op: 'push:run:fetch',
-            parentSpan: pushSpan,
-          },
-          () => this.pusher(this.context.session, payload, this.runScope.signal)
-        )
-
-        if (response.ok) {
-          const successfulResults = response.results.filter((result) => result.type === 'success')
-          const successfulEntries = successfulResults.map((result) => result.entry)
-          await this.writeEntries(successfulEntries, false, pushSpan)
-
-          this.emit('pushCompleted')
-        }
-
-        return response
-      }
-    )
-  }
-
-  private generatePushPayload(records: TModel[]) {
-    const entries = records.map((rec) => {
-      if (rec._raw._status === 'deleted') {
-        return {
-          record: null,
-          meta: { ids: { id: rec._raw.id }, deleted: true as true },
-        }
-      } else {
-        const record = this.rawSerializer.toPlainObject(rec)
-        return {
-          record,
-          meta: { ids: { id: rec._raw.id }, deleted: false as false },
-        }
-      }
-    })
-    return {
-      entries,
-    }
-  }
-
-  private async pullRecordsWithRetry(span?: Span) {
-    dropThrottle(
-      { state: this.pullThrottleState, deferOnce: true },
-      () => this.retry.request({ name: `pull:${this.model.table}`, op: 'pull', parentSpan: span }, span => this.executePull(span))
-    )()
-  }
-
-  async pullRecords(span?: Span) {
-    return dropThrottle({ state: this.pullThrottleState }, this.executePull.bind(this))(span)
-  }
-
-  private async executePull(span?: Span) {
-    return this.telemetry.trace(
-      { name: `pull:${this.model.table}:run`, op: 'pull:run', attributes: { table: this.model.table }, parentSpan: span },
-      async pullSpan => {
-        const lastFetchToken = await this.getLastFetchToken()
-
-        const response = await this.telemetry.trace(
-          { name: `pull:${this.model.table}:run:fetch`, op: 'pull:run:fetch', attributes: { lastFetchToken }, parentSpan: pullSpan },
-          () => this.puller(this.context.session, lastFetchToken, this.runScope.signal)
-        )
-
-        if (response.ok) {
-          await this.writeEntries(response.entries, !response.previousToken, pullSpan)
-          await this.setLastFetchToken(response.token)
-
-          this.emit('pullCompleted')
-        }
-
-        return response
-      }
+    return await this.pushCoalescer.push(
+      records,
+      queueThrottle({ state: this.pushThrottleState }, () => {
+        return this.executePush(records, span)
+      })
     )
   }
 
@@ -264,46 +160,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
     const records = await this.queryRecords(...args);
     return records.map(record => this.modelSerializer.toPlainObject(record))
-  }
-
-  private async queryRecords(...args: Q.Clause[]) {
-    return await this.collection.query(...args).fetch()
-  }
-
-  private async queryRecord(id: RecordId) {
-    return this.collection
-      .query(Q.where('id', id))
-      .fetch()
-      .then((records) => records[0] as TModel | null)
-  }
-
-  private async queryMaybeDeletedRecords(...args: Q.Clause[]) {
-    const serializedQuery = this.collection.query(...args).serialize()
-    const adjustedQuery = {
-      ...serializedQuery,
-      description: {
-        ...serializedQuery.description,
-        where: serializedQuery.description.where.filter(
-          (w) =>
-            !(
-              w.type === 'where' &&
-              w.left === '_status' &&
-              w.comparison &&
-              w.comparison.operator === 'notEq' &&
-              w.comparison.right &&
-              'value' in w.comparison.right &&
-              w.comparison.right.value === 'deleted'
-            )
-        ),
-      },
-    }
-
-    return (await this.db.adapter.unsafeQueryRaw(adjustedQuery)).map((raw) => {
-      return new this.model(
-        this.collection,
-        sanitizedRaw(raw, this.db.schema.tables[this.collection.table])
-      )
-    })
   }
 
   async upsertOne(id: string, builder: (record: TModel) => void, span?: Span) {
@@ -342,6 +198,38 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       await this.ensurePersistence()
 
       return this.modelSerializer.toPlainObject(record!)
+    })
+  }
+
+  async deleteOne(id: RecordId, span?: Span) {
+    return await this.runScope.abortable(async () => {
+      let record: TModel | null = null
+
+      await this.telemeterizedWrite(span, async () => {
+        const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(
+          (records) => records[0] || null
+        )
+
+        if (existing && existing._raw._status !== 'deleted') {
+          await existing.markAsDeleted()
+          record = existing
+        } else {
+          record = await this.collection.create((record) => {
+            const now = this.generateTimestamp()
+
+            record._raw.id = id
+            record._raw.updated_at = now
+            record._raw._status = 'deleted'
+          })
+        }
+      })
+
+      this.emit('write', record)
+
+      this.pushUnsyncedWithRetry(span)
+      await this.ensurePersistence()
+
+      return id
     })
   }
 
@@ -389,41 +277,171 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
-  async deleteOne(id: RecordId, span?: Span) {
-    return await this.runScope.abortable(async () => {
-      let record: TModel | null = null
+  private async setLastFetchToken(token: SyncToken | null) {
+    await this.db.write(async () => {
+      if (token) {
+        const storedValue = await this.getLastFetchToken()
 
-      await this.telemeterizedWrite(span, async () => {
-        const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(
-          (records) => records[0] || null
-        )
-
-        if (existing && existing._raw._status !== 'deleted') {
-          await existing.markAsDeleted()
-          record = existing
-        } else {
-          record = await this.collection.create((record) => {
-            const now = this.generateTimestamp()
-
-            record._raw.id = id
-            record._raw.updated_at = now
-            record._raw._status = 'deleted'
-          })
+        // avoids thrashing if we get and compare first before setting
+        if (storedValue !== token) {
+          this.telemetry.debug(`[store:${this.model.table}] Setting last fetch token: ${token}`)
+          return this.db.localStorage.set(this.lastFetchTokenKey, token)
         }
-      })
-
-      this.emit('write', record)
-
-      this.pushUnsyncedWithRetry(span)
-      await this.ensurePersistence()
-
-      return id
+      } else {
+        this.telemetry.debug(`[store:${this.model.table}] Removing last fetch token`)
+        return this.db.localStorage.remove(this.lastFetchTokenKey)
+      }
     })
   }
 
-  private telemeterizedWrite(parentSpan: Span | undefined, work: (writer: WriterInterface) => Promise<void>) {
-    return this.telemetry.trace({ name: `write:${this.model.table}`, op: 'write', parentSpan }, writeSpan => {
-      return this.db.write(writer => this.telemetry.trace({ name: `write:generate:${this.model.table}`, op: 'write:generate', parentSpan: writeSpan }, () => work(writer)))
+  private async pullRecordsWithRetry(span?: Span) {
+    dropThrottle({ state: this.pullThrottleState, deferOnce: true }, () =>
+      this.retry.request(
+        { name: `pull:${this.model.table}`, op: 'pull', parentSpan: span },
+        (span) => this.executePull(span)
+      )
+    )()
+  }
+
+  private async pushUnsyncedWithRetry(span?: Span) {
+    const records = await this.queryMaybeDeletedRecords(Q.where('_status', Q.notEq('synced')))
+
+    if (records.length) {
+      this.pushCoalescer.push(
+        records,
+        queueThrottle({ state: this.pushThrottleState }, () => {
+          return this.retry.request(
+            { name: `push:${this.model.table}`, op: 'push', parentSpan: span },
+            (span) => this.executePush(records, span)
+          )
+        })
+      )
+    }
+  }
+
+  private async executePull(span?: Span) {
+    return this.telemetry.trace(
+      {
+        name: `pull:${this.model.table}:run`,
+        op: 'pull:run',
+        attributes: { table: this.model.table },
+        parentSpan: span,
+      },
+      async (pullSpan) => {
+        const lastFetchToken = await this.getLastFetchToken()
+
+        const response = await this.telemetry.trace(
+          {
+            name: `pull:${this.model.table}:run:fetch`,
+            op: 'pull:run:fetch',
+            attributes: { lastFetchToken: lastFetchToken ?? undefined },
+            parentSpan: pullSpan,
+          },
+          () => this.puller(this.context.session, lastFetchToken, this.runScope.signal)
+        )
+
+        if (response.ok) {
+          await this.writeEntries(response.entries, !response.previousToken, pullSpan)
+          await this.setLastFetchToken(response.token)
+
+          this.emit('pullCompleted')
+        }
+
+        return response
+      }
+    )
+  }
+
+  private async executePush(records: TModel[], parentSpan?: Span) {
+    return this.telemetry.trace(
+      {
+        name: `push:${this.model.table}`,
+        op: 'push:run',
+        attributes: { table: this.model.table },
+        parentSpan,
+      },
+      async (pushSpan) => {
+        const payload = this.generatePushPayload(records)
+
+        const response = await this.telemetry.trace(
+          {
+            name: `push:${this.model.table}:run:fetch`,
+            op: 'push:run:fetch',
+            parentSpan: pushSpan,
+          },
+          () => this.pusher(this.context.session, payload, this.runScope.signal)
+        )
+
+        if (response.ok) {
+          const successfulResults = response.results.filter((result) => result.type === 'success')
+          const successfulEntries = successfulResults.map((result) => result.entry)
+          await this.writeEntries(successfulEntries, false, pushSpan)
+
+          this.emit('pushCompleted')
+        }
+
+        return response
+      }
+    )
+  }
+
+  private generatePushPayload(records: TModel[]) {
+    const entries = records.map((rec) => {
+      if (rec._raw._status === 'deleted') {
+        return {
+          record: null,
+          meta: { ids: { id: rec._raw.id }, deleted: true as true },
+        }
+      } else {
+        const record = this.rawSerializer.toPlainObject(rec)
+        return {
+          record,
+          meta: { ids: { id: rec._raw.id }, deleted: false as false },
+        }
+      }
+    })
+    return {
+      entries,
+    }
+  }
+
+  private async queryRecords(...args: Q.Clause[]) {
+    return await this.collection.query(...args).fetch()
+  }
+
+  private async queryRecord(id: RecordId) {
+    return this.collection
+      .query(Q.where('id', id))
+      .fetch()
+      .then((records) => records[0] as TModel | null)
+  }
+
+  private async queryMaybeDeletedRecords(...args: Q.Clause[]) {
+    const serializedQuery = this.collection.query(...args).serialize()
+    const adjustedQuery = {
+      ...serializedQuery,
+      description: {
+        ...serializedQuery.description,
+        where: serializedQuery.description.where.filter(
+          (w) =>
+            !(
+              w.type === 'where' &&
+              w.left === '_status' &&
+              w.comparison &&
+              w.comparison.operator === 'notEq' &&
+              w.comparison.right &&
+              'value' in w.comparison.right &&
+              w.comparison.right.value === 'deleted'
+            )
+        ),
+      },
+    }
+
+    return (await this.db.adapter.unsafeQueryRaw(adjustedQuery)).map((raw) => {
+      return new this.model(
+        this.collection,
+        sanitizedRaw(raw, this.db.schema.tables[this.collection.table])
+      )
     })
   }
 
@@ -446,12 +464,29 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
-  private async isEmpty() {
-    return (await this.queryMaybeDeletedRecords()).length === 0
+  private telemeterizedWrite(
+    parentSpan: Span | undefined,
+    work: (writer: WriterInterface) => Promise<void>
+  ) {
+    return this.telemetry.trace(
+      { name: `write:${this.model.table}`, op: 'write', parentSpan },
+      (writeSpan) => {
+        return this.db.write((writer) =>
+          this.telemetry.trace(
+            {
+              name: `write:generate:${this.model.table}`,
+              op: 'write:generate',
+              parentSpan: writeSpan,
+            },
+            () => work(writer)
+          )
+        )
+      }
+    )
   }
 
   private async writeEntries(entries: SyncEntry[], freshSync: boolean = false, parentSpan?: Span) {
-    await this.telemeterizedWrite(parentSpan, async writer => {
+    await this.telemeterizedWrite(parentSpan, async (writer) => {
       const batches = await this.buildWriteBatchesFromEntries(entries, freshSync)
 
       for (const batch of batches) {
@@ -464,13 +499,15 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   private async buildWriteBatchesFromEntries(entries: SyncEntry[], freshSync: boolean) {
     // if this is a fresh sync and there are no existing records, we can skip more sophisticated conflict resolution
-    if (freshSync && (await this.isEmpty())) {
-      const resolver = new Resolver()
-      entries
-        .filter((e) => !e.meta.lifecycle.deleted_at)
-        .forEach((entry) => resolver.againstNone(entry))
+    if (freshSync) {
+      if ((await this.queryMaybeDeletedRecords()).length === 0) {
+        const resolver = new Resolver()
+        entries
+          .filter((e) => !e.meta.lifecycle.deleted_at)
+          .forEach((entry) => resolver.againstNone(entry))
 
-      return this.prepareRecords(resolver.result)
+        return this.prepareRecords(resolver.result)
+      }
     }
 
     const entryIds = entries.map((e) => e.meta.ids.id)

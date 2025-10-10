@@ -6,6 +6,7 @@ type Without<TRecord, T extends string> = {
 } & TRecord
 
 export class SyncError extends Error {
+  private _reported = false
   readonly details?: ErrorDetails
 
   constructor(message: string, details?: ErrorDetails) {
@@ -14,6 +15,14 @@ export class SyncError extends Error {
     Object.setPrototypeOf(this, new.target.prototype)
 
     this.details = details
+  }
+
+  markReported() {
+    this._reported = true
+  }
+
+  isReported() {
+    return this._reported
   }
 
   getDetails() {
@@ -29,6 +38,8 @@ export class SyncStoreError extends SyncError {
   }
 }
 
+// useful for transforming non-sync-related errors into one
+// that captures surrounding details (e.g., table name)
 export class SyncUnexpectedError extends SyncError {
   constructor(message: string, details?: ErrorDetails) {
     super(message, details)
