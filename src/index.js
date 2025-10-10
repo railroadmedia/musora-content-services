@@ -88,14 +88,14 @@ import {
 } from './services/dateUtils.js';
 
 import {
-	getActiveDiscussions
-} from './services/forum.js';
-
-import {
 	createForumCategory,
 	fetchForumCategories,
 	updateForumCategory
 } from './services/forums/categories.ts';
+
+import {
+	getActiveDiscussions
+} from './services/forums/forums.ts';
 
 import {
 	createPost,
