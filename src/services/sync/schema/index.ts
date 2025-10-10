@@ -18,6 +18,10 @@ const contentProgressTable = tableSchema({
   name: SYNC_TABLES.CONTENT_PROGRESS,
   columns: [
     { name: 'content_id', type: 'number' },
+    { name: 'state', type: 'string' },
+    { name: 'progress_percent', type: 'number' },
+    { name: 'parent_type', type: 'number' },
+    { name: 'parent_id', type: 'number' },
     { name: 'created_at', type: 'number' },
     { name: 'updated_at', type: 'number' }
   ]

@@ -1,8 +1,9 @@
-import { SyncToken, SyncEntry, SyncStorePushResult, SyncSyncable } from "./index"
+import { SyncToken, SyncEntry, SyncSyncable, SyncContext } from "./index"
 import { EpochSeconds } from "./utils/epoch.js"
 
 import { globalConfig } from '../config.js'
 import { RecordId } from "@nozbe/watermelondb/index.js"
+import { BaseSessionProvider } from "./context/providers"
 
 interface RawPullResponse {
   meta: {
@@ -20,23 +21,58 @@ interface RawPushResponse {
   results: SyncStorePushResult<'client_record_id'>[]
 }
 
-export interface SyncPushResponse {
+export type SyncResponse = SyncPushResponse | SyncPullResponse
+
+export type SyncPushResponse = SyncPushSuccessResponse | SyncPushFailureResponse
+
+type SyncPushSuccessResponse = SyncPushResponseBase & {
+  ok: true
   results: SyncStorePushResult[]
+}
+type SyncPushFailureResponse = SyncPushResponseBase & {
+  ok: false,
+  originalError: Error
+}
+interface SyncPushResponseBase extends SyncResponseBase {
+
+}
+
+type SyncStorePushResult<TRecordKey extends string = 'id'> = SyncStorePushResultSuccess<TRecordKey> | SyncStorePushResultFailure<TRecordKey>
+type SyncStorePushResultSuccess<TRecordKey extends string = 'id'> = SyncStorePushResultBase & {
+  type: 'success'
+  entry: SyncEntry<TRecordKey>
+}
+type SyncStorePushResultFailure<TRecordKey extends string = 'id'> = SyncStorePushResultInvalid<TRecordKey>
+type SyncStorePushResultInvalid<TRecordKey extends string = 'id'> = SyncStorePushResultFailureBase<TRecordKey> & {
+  failureType: 'invalid'
+  errors: Record<string, string[]>
+}
+interface SyncStorePushResultFailureBase<TRecordKey extends string = 'id'> extends SyncStorePushResultBase {
+  type: 'failure'
+  failureType: string
+  ids: { [K in TRecordKey]: RecordId }
+}
+interface SyncStorePushResultBase {
+  type: 'success' | 'failure'
 }
 
 export type SyncPullResponse = SyncPullSuccessResponse | SyncPullFailureResponse
 
 type SyncPullSuccessResponse = SyncPullResponseBase & {
-  success: true
+  ok: true
   entries: SyncEntry[]
   token: SyncToken
   previousToken: SyncToken | null
 }
 type SyncPullFailureResponse = SyncPullResponseBase & {
-  success: false
+  ok: false,
+  originalError: Error
 }
-interface SyncPullResponseBase {
+interface SyncPullResponseBase extends SyncResponseBase {
 
+}
+export interface SyncResponseBase {
+  ok: boolean
 }
 
 export type PushPayload = {
@@ -71,30 +107,36 @@ interface ServerPushPayload {
   }[]
 }
 
-export function makeFetchRequest(input: RequestInfo, init?: RequestInit): () => Request {
-  return () => new Request(globalConfig.baseUrl + input, {
+export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (session: BaseSessionProvider) => Request {
+  return (session) => new Request(globalConfig.baseUrl + input, {
     ...init,
     headers: {
       ...init?.headers,
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${globalConfig.sessionConfig.token}`
+      'Authorization': `Bearer ${globalConfig.sessionConfig.token}`,
+      'X-Sync-Client-Id': session.getClientId(),
+      'X-Sync-Client-Session-Id': session.getSessionId(),
     }
   })
 }
 
-export function handlePull(callback: () => Request) {
-  return async function(lastFetchToken: SyncToken | null, signal?: AbortSignal): Promise<SyncPullResponse> {
-    const generatedRequest = callback()
+export function handlePull(callback: (session: BaseSessionProvider) => Request) {
+  return async function(session: BaseSessionProvider, lastFetchToken: SyncToken | null, signal?: AbortSignal): Promise<SyncPullResponse> {
+    const generatedRequest = callback(session)
     const url = serializePullUrlQuery(generatedRequest.url, lastFetchToken)
     const request = new Request(url, {
       headers: generatedRequest.headers,
       signal
     });
-    const response = await fetch(request)
 
-    if (!response.ok) {
-      // TODO - error response
-      throw new Error(`Failed to fetch sync pull: ${response.statusText}`)
+    let response: Response | null = null
+    try {
+      response = await performFetch(request)
+    } catch (e) {
+      return {
+        ok: false,
+        originalError: e
+      }
     }
 
     const json = await response.json() as RawPullResponse
@@ -108,7 +150,7 @@ export function handlePull(callback: () => Request) {
     const entries = data.entries
 
     return {
-      success: true,
+      ok: true,
       entries,
       token,
       previousToken
@@ -116,26 +158,44 @@ export function handlePull(callback: () => Request) {
   }
 }
 
-export function handlePush(callback: () => Request) {
-  return async function(payload: PushPayload, signal?: AbortSignal): Promise<SyncPushResponse> {
-    const generatedRequest = callback()
+export function handlePush(callback: (session: BaseSessionProvider) => Request) {
+  return async function(session: BaseSessionProvider, payload: PushPayload, signal?: AbortSignal): Promise<SyncPushResponse> {
+    const generatedRequest = callback(session)
     const serverPayload = serializePushPayload(payload)
     const request = new Request(generatedRequest, {
       body: JSON.stringify(serverPayload),
       signal
     })
-    const response = await fetch(request)
 
-    if (!response.ok) {
-      // todo - error response
-      throw new Error(`Failed to fetch sync push: ${response.statusText}`)
+    let response: Response | null = null
+    try {
+      response = await performFetch(request)
+    } catch (e) {
+      return {
+        ok: false,
+        originalError: e
+      }
     }
 
     const json = await response.json() as RawPushResponse
     const data = deserializePushResponse(json)
 
-    return data
+    return {
+      ok: true,
+      results: data.results
+    }
   }
+}
+
+async function performFetch(request: Request) {
+  const response = await fetch(request)
+  const isRetryable = (response.status >= 500 && response.status < 504) || response.status === 429 || response.status === 408
+
+  if (isRetryable) {
+    throw new Error(`Server returned ${response.status}`)
+  }
+
+  return response
 }
 
 function serializePullUrlQuery(url: string, fetchToken: SyncToken | null) {

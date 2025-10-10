@@ -17,17 +17,14 @@ export default class LikesRepository extends SyncRepository<ContentLike> {
     return await this.existSome(contentIds.map(LikesRepository.generateId))
   }
 
-  async likeOptimisticEager(contentId: number) {
-    const like = await this.store.upsertOne(LikesRepository.generateId(contentId), r => {
+  async likeOptimistic(contentId: number) {
+    return await this.upsertOne(LikesRepository.generateId(contentId), r => {
       r.content_id = contentId;
     })
-
-    return await this.pushOneEagerlyById(like.id)
   }
 
-  async unlikeOptimisticEager(contentId: number) {
-    const id = await this.store.deleteOne(LikesRepository.generateId(contentId))
-    return await this.pushOneEagerlyById(id)
+  async unlikeOptimistic(contentId: number) {
+    return await this.deleteOne(LikesRepository.generateId(contentId))
   }
 
   private static generateId(contentId: number) {
