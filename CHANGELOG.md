@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.50.4](https://github.com/railroadmedia/musora-content-services/compare/v2.50.3...v2.50.4) (2025-10-10)
+
+
+### Bug Fixes
+
+* **auth:** token null coalescing on http client ([#487](https://github.com/railroadmedia/musora-content-services/issues/487)) ([71b4ca7](https://github.com/railroadmedia/musora-content-services/commit/71b4ca76cd08bf865993a741689bc66b279fe03b))
+
 ### [2.50.3](https://github.com/railroadmedia/musora-content-services/compare/v2.50.2...v2.50.3) (2025-10-08)
 
 ### [2.50.2](https://github.com/railroadmedia/musora-content-services/compare/v2.50.1...v2.50.2) (2025-10-08)
