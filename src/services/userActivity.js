@@ -36,6 +36,7 @@ import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { addContextToContent } from './contentAggregator.js'
+import ProgressRepository from "./sync/repositories/content-progress.js";
 
 const DATA_KEY_PRACTICES = 'practices'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
@@ -971,7 +972,7 @@ async function extractPinnedItemsAndSortAllItems(
   return mergeAndSortItems(combined, limit)
 }
 
-function generateContentsMap(contents, playlistsContents, methodContents) {
+function generateContentsMap(contents, playlistsContents) {
   const excludedTypes = new Set([
     'pack-bundle',
     'learning-path',
@@ -1016,16 +1017,7 @@ function generateContentsMap(contents, playlistsContents, methodContents) {
       parentIds.forEach((id) => contentsMap.delete(id))
     }
   }
-  if (methodContents) {
-    for (const item of methodContents) {
-      const contentId = item.id
-      contentsMap.delete(contentId)
-      const parentIds = item.parent_content_data || []
-      parentIds.forEach((id) => contentsMap.delete(id))
-    }
-  }
 
-  //if methodContents()
   return contentsMap
 }
 
@@ -1059,10 +1051,13 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     (item) => item.playlist.last_engaged_on
   )
 
+  // todo post v2: refactor this once we migrate playlist progress tracking to new system
   const nonPlaylistContentIds = Object.keys(progressContents)
   if (userPinnedItem?.progressType === 'content') {
     nonPlaylistContentIds.push(userPinnedItem.id)
   }
+
+  const methodCardData = getNextMethodLesson(methodProgressContents)
 
   const [playlistsContents, contents] = await Promise.all([
     playlistEngagedOnContents ? addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
@@ -1079,10 +1074,11 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
       addProgressPercentage: true,
       addProgressTimestamp: true,
     }) : Promise.resolve([]),
-    // fetching method progress content already returns all these context fields
+    // fetching method progress content already returns all these context fields, because they're stored in table
   ])
   const contentsMap = generateContentsMap(contents, playlistsContents)
   let combined = await extractPinnedItemsAndSortAllItems(
+    methodCard
     userPinnedItem,
     contentsMap,
     eligiblePlaylistItems,
@@ -1096,6 +1092,8 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
         // need custom processing for the method card as well
       )
   )
+
+
   return {
     type: TabResponseType.PROGRESS_ROWS,
     displayBrowseAll: combined.length > limit,
@@ -1315,7 +1313,6 @@ function mergeAndSortItems(items, limit) {
     .sort((a, b) => {
       if (a.pinned && !b.pinned) return -1
       if (!a.pinned && b.pinned) return 1
-      // TODO pinned guided course should always be before user pinned item
       return b.progressTimestamp - a.progressTimestamp
     })
     .slice(0, limit + 5)
@@ -1468,4 +1465,25 @@ export async function fetchRecentActivitiesActiveTabs() {
     console.error('Error fetching activity tabs:', error)
     return []
   }
+}
+
+export function getDailySession(brand) { //one method per brand right now. replace brand with method id later
+
+  const dailySessionIds = getDailySessionIdsForBrand(brand)
+
+  if (dailySessionIds?.length === 0) return []
+
+  const records = ProgressRepository.create().getProgressByContentIds({contentIds: dailySessionIds, parentType: PARENT_TYPE_LEARNING_PATH, brand: brand})
+
+  // ensure order is same as dailySessionIds
+  const orderedRecords = dailySessionIds.map(id => records.find(r => r.content_id === id))
+
+  return orderedRecords
+}
+
+function getDailySessionIdsForBrand(brand) {
+
+  // const records =  DailySessionRepository.create().getDailySessionIds(brand)
+
+  return records ? records.map(r => r.content_id) : []
 }
