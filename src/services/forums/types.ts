@@ -2,6 +2,7 @@ export interface ForumUser {
   id: number
   display_name: string
   profile_picture_url: string | null
+  access_level: string
 }
 
 export interface ForumPost {
