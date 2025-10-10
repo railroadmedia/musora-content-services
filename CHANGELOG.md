@@ -2,6 +2,53 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.50.4](https://github.com/railroadmedia/musora-content-services/compare/v2.50.3...v2.50.4) (2025-10-10)
+
+
+### Bug Fixes
+
+* **auth:** token null coalescing on http client ([#487](https://github.com/railroadmedia/musora-content-services/issues/487)) ([71b4ca7](https://github.com/railroadmedia/musora-content-services/commit/71b4ca76cd08bf865993a741689bc66b279fe03b))
+
+### [2.50.3](https://github.com/railroadmedia/musora-content-services/compare/v2.50.2...v2.50.3) (2025-10-08)
+
+### [2.50.2](https://github.com/railroadmedia/musora-content-services/compare/v2.50.1...v2.50.2) (2025-10-08)
+
+
+### Bug Fixes
+
+* **auth:** add token to http client ([#481](https://github.com/railroadmedia/musora-content-services/issues/481)) ([3ac38bb](https://github.com/railroadmedia/musora-content-services/commit/3ac38bb3945f5bb521f4cc49ade023cd90c12aa1))
+
+### [2.50.1](https://github.com/railroadmedia/musora-content-services/compare/v2.50.0...v2.50.1) (2025-10-08)
+
+
+### Bug Fixes
+
+* Rank Recommended Rows - fix invalid integer error ([#479](https://github.com/railroadmedia/musora-content-services/issues/479)) ([6ad68f4](https://github.com/railroadmedia/musora-content-services/commit/6ad68f4da7446a7d2f8e93ab48e35753f19e627d))
+
+## [2.50.0](https://github.com/railroadmedia/musora-content-services/compare/v2.48.0...v2.50.0) (2025-10-07)
+
+
+### Features
+
+* **MU2-1043:** Add .js to eventsAPI ([aadad63](https://github.com/railroadmedia/musora-content-services/commit/aadad6324d425d90580db96179b2a7088e0354de))
+* **MU2-1043:** Add function to like and unlike posts ([771d342](https://github.com/railroadmedia/musora-content-services/commit/771d34271e5c561287f5a0ad56e48ac87349681d))
+* **MU2-1043:** resolve problems arising from trying to resolve merge conflicts ([a92df9d](https://github.com/railroadmedia/musora-content-services/commit/a92df9d97e6ea65179358b5bf50b43de14126b36))
+* **MU2-1043:** Wrap brand in search parameters per codreabbit suggestion ([0ba3180](https://github.com/railroadmedia/musora-content-services/commit/0ba3180dcde38d4996a8de601ca969bbf7549d9d))
+
+
+### Bug Fixes
+
+* **MU2-1124:** Reverts MU2-922 ([#475](https://github.com/railroadmedia/musora-content-services/issues/475)) ([07537e3](https://github.com/railroadmedia/musora-content-services/commit/07537e3fa8e700c65dbe02f76a4c5786422b70b2)), closes [#411](https://github.com/railroadmedia/musora-content-services/issues/411)
+
+### [2.49.2](https://github.com/railroadmedia/musora-content-services/compare/v2.49.1...v2.49.2) (2025-10-06)
+
+### [2.49.1](https://github.com/railroadmedia/musora-content-services/compare/v2.49.0...v2.49.1) (2025-10-06)
+
+
+### Bug Fixes
+
+* **MU2-1124:** Reverts MU2-922 ([#475](https://github.com/railroadmedia/musora-content-services/issues/475)) ([07537e3](https://github.com/railroadmedia/musora-content-services/commit/07537e3fa8e700c65dbe02f76a4c5786422b70b2)), closes [#411](https://github.com/railroadmedia/musora-content-services/issues/411)
+
 ## [2.49.0](https://github.com/railroadmedia/musora-content-services/compare/v2.48.0...v2.49.0) (2025-10-02)
 
 

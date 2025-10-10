@@ -686,12 +686,6 @@ export function getUpcomingEventsTypes(brand) {
   }
 }
 
-export function getRecentTypesForPage(pageType) {
-  const types = recentTypes[pageType]
-  // defensive copy with de-duplication to avoid accidental mutation and redundant query params
-  return Array.isArray(types) ? [...new Set(types)] : []
-}
-
 export function artistOrInstructorName(key = 'artist_name') {
   return `'${key}': coalesce(artist->name, instructor[0]->name)`
 }

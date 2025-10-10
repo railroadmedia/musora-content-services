@@ -35,7 +35,6 @@ import {
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
-	getRecentForTab,
 	getRecommendedForYou,
 	getScheduleContentRows,
 	getTabResults
@@ -104,6 +103,7 @@ import {
 	fetchCommunityGuidelines,
 	fetchPosts,
 	likePost,
+	search,
 	unlikePost,
 	updatePost
 } from './services/forums/posts.ts';
@@ -161,7 +161,6 @@ import {
 	fetchLastInteractedChild,
 	fetchLikeCount,
 	fetchNextContentDataForParent,
-	fetchRecent,
 	fetchRecentUserActivities,
 	fetchSongsInProgress,
 	fetchTopComment,
@@ -230,6 +229,7 @@ import {
 	fetchPackAll,
 	fetchPackData,
 	fetchPlayAlongsCount,
+	fetchRecent,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
@@ -511,7 +511,6 @@ export {
 	getProgressStateByIds,
 	getRecent,
 	getRecentActivity,
-	getRecentForTab,
 	getRecommendedForYou,
 	getResumeTimeSeconds,
 	getResumeTimeSecondsByIds,
@@ -582,6 +581,7 @@ export {
 	restorePracticeSession,
 	restoreUserActivity,
 	restoreUserPractice,
+	search,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	setStudentViewForUser,
