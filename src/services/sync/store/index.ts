@@ -142,6 +142,11 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return records.map((record) => this.modelSerializer.toPlainObject(record))
   }
 
+  async readBy(...args: Q.Clause[]) {
+    const records = await this.queryRecords(...args)
+    return records.map((record) => this.modelSerializer.toPlainObject(record))
+  }
+
   async readSome(ids: RecordId[]) {
     const records = await this.queryRecords(Q.where('id', Q.oneOf(ids)))
     return records.map((record) => this.modelSerializer.toPlainObject(record))
@@ -150,16 +155,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   async readOne(id: RecordId) {
     const record = await this.queryRecord(id)
     return record ? this.modelSerializer.toPlainObject(record) : null
-  }
-
-  async readAllWhere(clauses: Record<string, any>[], limit: number = null) {
-    const args: any[] = clauses.map(q => {
-      return (q.value instanceof Array) ? Q.where(q.key, Q.oneOf(q.value)) : Q.where(q.key, q.value)
-    })
-    if (limit) args.push(Q.take(limit), Q.sortBy('updated_at', 'desc'))
-
-    const records = await this.queryRecords(...args);
-    return records.map(record => this.modelSerializer.toPlainObject(record))
   }
 
   async upsertOne(id: string, builder: (record: TModel) => void, span?: Span) {

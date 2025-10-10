@@ -22,7 +22,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   }
 
   async queryWhere(clauses: Record<string, any>[], limit: number = null) {
-    return await this.readAllWhere(clauses, limit)
+    return await this.queryBy(clauses, limit)
   }
 
   // all records: all parents null
@@ -40,7 +40,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     if (parentType) clauses.push({parent_type: parentType});
     if (parentId) clauses.push({parent_id: parentId});
 
-    return await this.readAllWhere(clauses, limit)
+    return await this.queryBy(clauses, limit)
   }
 
   // does not allow retrieval of content_id and all its parent types
@@ -68,7 +68,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     if (parentType) clauses.push({parent_type: parentType});
     if (parentId) clauses.push({parent_id: parentId});
 
-    return await this.readAllWhere(clauses)
+    return await this.queryBy(clauses)
   }
 
   async writeProgress({
