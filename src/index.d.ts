@@ -104,7 +104,8 @@ import {
 	fetchPosts,
 	likePost,
 	search,
-	unlikePost
+	unlikePost,
+	updatePost
 } from './services/forums/posts.ts';
 
 import {
@@ -606,6 +607,7 @@ declare module 'musora-content-services' {
 		updateForumCategory,
 		updateNotificationSetting,
 		updatePlaylist,
+		updatePost,
 		updatePracticeNotes,
 		updateThread,
 		updateUserPractice,

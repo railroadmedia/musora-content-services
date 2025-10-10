@@ -104,7 +104,8 @@ import {
 	fetchPosts,
 	likePost,
 	search,
-	unlikePost
+	unlikePost,
+	updatePost
 } from './services/forums/posts.ts';
 
 import {
@@ -605,6 +606,7 @@ export {
 	updateForumCategory,
 	updateNotificationSetting,
 	updatePlaylist,
+	updatePost,
 	updatePracticeNotes,
 	updateThread,
 	updateUserPractice,
