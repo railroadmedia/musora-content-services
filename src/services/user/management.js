@@ -147,3 +147,40 @@ export async function updateDisplayName(newDisplayName) {
   return httpClient.put(apiUrl, { display_name: newDisplayName })
 }
 
+/**
+ * Updates the user's signature.
+ *
+ * @param {SetUserSignatureParams} params - Parameters containing the user's signature and brand.
+ * @returns {Promise<{ signature: string }>} - A promise that resolves with the updated signature data.
+ */
+export async function setUserSignature(params) {
+  const apiUrl = `${baseUrl}/v1/forums/signature`
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  return httpClient.post(apiUrl, params)
+}
+
+/**
+ * Retrieves the current signature for the authenticated user.
+ *
+ * @returns {Promise<{ signature: string }>} - A promise that resolves with the user's current signature data.
+ */
+export async function getUserSignature() {
+  const apiUrl = `${baseUrl}/v1/forums/signature`
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  return httpClient.get(apiUrl)
+}
+
+/**
+ * Toggles whether the user's signature is displayed publicly.
+ *
+ * @param {boolean} [showSignature=true] - Whether to show (`true`) or hide (`false`) the user's signature.
+ * @returns {Promise<{ show: boolean }>} - A promise that resolves with the updated visibility state.
+ */
+export async function toggleSignaturePrivate(showSignature = true) {
+  const apiUrl = `${baseUrl}/v1/forums/signature/toggle`
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  return httpClient.put(apiUrl, { show: showSignature })
+}
+
+
+

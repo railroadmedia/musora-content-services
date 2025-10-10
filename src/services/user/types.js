@@ -142,3 +142,10 @@
  * @property {string} display_name
  * @property {string|null} profile_picture_url
  */
+
+/**
+ * @typedef {Object} SetUserSignatureParams
+ * @property {string} signature - The signature text to set for the user.
+ * @property {string} brand - The brand associated with the user.
+ */
+
