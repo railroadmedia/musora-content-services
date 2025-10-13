@@ -143,7 +143,7 @@ export async function search(
 }
 
 /**
- * Fetches posts for the given thread.
+ * Fetches posts for the given post, jumping to the post's location in the thread.
  *
  * @param {number} postId - The ID of the forum post.
  * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
