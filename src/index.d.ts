@@ -102,6 +102,7 @@ import {
 	deletePost,
 	fetchCommunityGuidelines,
 	fetchPosts,
+	jumpToPost,
 	likePost,
 	search,
 	unlikePost
@@ -534,6 +535,7 @@ declare module 'musora-content-services' {
 		isNextDay,
 		isSameDate,
 		jumpToContinueContent,
+		jumpToPost,
 		likeComment,
 		likeContent,
 		likePlaylist,

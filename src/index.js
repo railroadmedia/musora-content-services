@@ -102,6 +102,7 @@ import {
 	deletePost,
 	fetchCommunityGuidelines,
 	fetchPosts,
+	jumpToPost,
 	likePost,
 	search,
 	unlikePost
@@ -533,6 +534,7 @@ export {
 	isNextDay,
 	isSameDate,
 	jumpToContinueContent,
+	jumpToPost,
 	likeComment,
 	likeContent,
 	likePlaylist,

@@ -142,3 +142,27 @@ export async function search(
   return httpClient.get<PaginatedResponse<ForumPost>>(url)
 }
 
+/**
+ * Fetches posts for the given thread.
+ *
+ * @param {number} postId - The ID of the forum post.
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @param {FetchPostParams} [params] - Optional parameters such as `page`, `limit`, and `sort`.
+ * @returns {Promise<PaginatedResponse<ForumPost>>} - Resolves to a paginated list of forum posts.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function jumpToPost(
+  postId: number,
+  brand: string,
+  params: FetchPostParams = {}
+): Promise<PaginatedResponse<ForumPost>> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  const queryObj: Record<string, string> = { brand, ...Object.fromEntries(
+      Object.entries(params).filter(([_, v]) => v !== undefined && v !== null).map(([k, v]) => [k, String(v)])
+    )}
+  const query = new URLSearchParams(queryObj).toString()
+
+  const url = `${baseUrl}/v1/posts/${postId}/jump?${query}`
+  return httpClient.get<PaginatedResponse<ForumPost>>(url)
+}
+
