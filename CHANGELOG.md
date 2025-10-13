@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.51.0](https://github.com/railroadmedia/musora-content-services/compare/v2.50.0...v2.51.0) (2025-10-13)
+
+
+### Features
+
+* **MU2E2-34:** Add updatePost method ([7023d41](https://github.com/railroadmedia/musora-content-services/commit/7023d4130d8015eade5c168233b37c3513acba2c))
+* **MU2E2-34:** Update docs after handling merge conflicts ([4c0d6ff](https://github.com/railroadmedia/musora-content-services/commit/4c0d6ff0fa33ca4fca9773bcf5ccfc41de5bd719))
+
+
+### Bug Fixes
+
+* **auth:** add token to http client ([#481](https://github.com/railroadmedia/musora-content-services/issues/481)) ([3ac38bb](https://github.com/railroadmedia/musora-content-services/commit/3ac38bb3945f5bb521f4cc49ade023cd90c12aa1))
+* **auth:** token null coalescing on http client ([#487](https://github.com/railroadmedia/musora-content-services/issues/487)) ([71b4ca7](https://github.com/railroadmedia/musora-content-services/commit/71b4ca76cd08bf865993a741689bc66b279fe03b))
+* Rank Recommended Rows - fix invalid integer error ([#479](https://github.com/railroadmedia/musora-content-services/issues/479)) ([6ad68f4](https://github.com/railroadmedia/musora-content-services/commit/6ad68f4da7446a7d2f8e93ab48e35753f19e627d))
+
 ### [2.50.4](https://github.com/railroadmedia/musora-content-services/compare/v2.50.3...v2.50.4) (2025-10-10)
 
 
