@@ -119,7 +119,7 @@ export class FilterBuilder {
       requiredPermissions = [...requiredPermissions, plusMembershipPermissions]
     }
     this._andWhere(
-      `(!defined(permission) || references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id))`
+      `(!defined(permission) || array::intersects(permission, ${arrayToRawRepresentation(requiredPermissions)}))`
     )
     return this
   }

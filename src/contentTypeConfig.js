@@ -22,7 +22,7 @@ export const DEFAULT_FIELDS = [
   "'genre': genre[]->name",
   'status',
   "'slug' : slug.current",
-  "'permission_id': permission[]->railcontent_id",
+  "permission",
   'xp',
   'child_count',
 ]
@@ -32,7 +32,7 @@ export const DEFAULT_CHILD_FIELDS = [
   `"image": thumbnail.asset->url`,
   `"instructors": instructor[]->name`,
   `length_in_seconds`,
-  `'permission_id': permission[]->railcontent_id`,
+  `permission`,
 ]
 
 export const descriptionField = 'description[0].children[0].text'
