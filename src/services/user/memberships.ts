@@ -115,7 +115,7 @@ export async function upgradeSubscription(): Promise<UpgradeSubscriptionResponse
  * Restores purchases by verifying subscriber status with RevenueCat.
  *
  * @param {string} originalAppUserId - The original app user ID from RevenueCat.
- * @param {string} email - The user's email address.
+ * @param {string} [email] - (Optional) The user's email address.
  *
  * @returns {Promise<RestorePurchasesResponse>} - A promise that resolves to the verification response containing subscriber status.
  *
@@ -128,15 +128,24 @@ export async function upgradeSubscription(): Promise<UpgradeSubscriptionResponse
  */
 export async function restorePurchases(
   originalAppUserId: string,
-  email: string
+  email?: string|null
 ): Promise<RestorePurchasesResponse> {
-  if (!originalAppUserId || !email) {
-    throw new Error('Both originalAppUserId and email are required parameters')
+  if (!originalAppUserId) {
+    throw new Error('originalAppUserId is a required parameter')
+  }
+
+  const requestBody: { original_app_user_id: string; email?: string } = {
+    original_app_user_id: originalAppUserId
+  }
+
+  // Only include email if it has a valid value
+  if (email) {
+    requestBody.email = email
   }
 
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<RestorePurchasesResponse>(
     `${baseUrl}/v1/revenuecat/verify-subscriber-status`,
-    { original_app_user_id: originalAppUserId, email }
+    requestBody
   )
 }
