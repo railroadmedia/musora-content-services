@@ -73,6 +73,10 @@ export default class SyncRepository<TModel extends BaseModel> {
     return this.store.telemetry.trace({ name: `upsert:${this.store.model.table}`, op: 'upsert' }, span => this._push(() => this.store.upsertOne(id, builder, span), span))
   }
 
+  protected async upsertOneOptimistic(id: RecordId, builder: (record: TModel) => void) {
+    return this.store.telemetry.trace({ name: `upsert:${this.store.model.table}`, op: 'upsertOptimistic' }, span => this._push(() => this.store.upsertOneOptimistic(id, builder, span), span))
+  }
+
   protected async deleteOne(id: RecordId) {
     return this.store.telemetry.trace({ name: `delete:${this.store.model.table}`, op: 'delete' }, span => this._pushId(() => this.store.deleteOne(id, span), span))
   }

@@ -157,6 +157,31 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return record ? this.modelSerializer.toPlainObject(record) : null
   }
 
+  async updateOne(id: RecordId, builder: (record: TModel) => void, span?: Span) {
+    return await this.runScope.abortable(async () => {
+      let record: TModel | null = null
+
+      await this.telemeterizedWrite(span, async () => {
+        const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(
+          (records) => records[0] || null
+        )
+
+        // todo - verify if need deleted check
+        if (existing && existing._raw._status !== 'deleted') {
+          await existing.update(builder)
+          record = existing
+        }
+      })
+
+      this.emit('write', record)
+
+      this.pushUnsyncedWithRetry(span)
+      await this.ensurePersistence()
+
+      return this.modelSerializer.toPlainObject(record!)
+    })
+  }
+
   async upsertOne(id: string, builder: (record: TModel) => void, span?: Span) {
     return await this.runScope.abortable(async () => {
       let record: TModel | null = null
@@ -194,6 +219,13 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
       return this.modelSerializer.toPlainObject(record!)
     })
+  }
+
+  async upsertOneOptimistic(id: string, builder: (record: TModel) => void, span?: Span) {
+    return this.upsertOne(id, record => {
+      builder(record)
+      record.buildMarkAsOptimistic()
+    }, span)
   }
 
   async deleteOne(id: RecordId, span?: Span) {
@@ -302,7 +334,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     const records = await this.queryMaybeDeletedRecords(Q.where('_status', Q.notEq('synced')))
 
     if (records.length) {
-      this.pushCoalescer.push(
+      return this.pushCoalescer.push(
         records,
         queueThrottle({ state: this.pushThrottleState }, () => {
           return this.retry.request(
@@ -565,6 +597,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
         r._raw._status = 'synced'
         r._raw._changed = ''
+        r._raw._optimistic = false
       })
     })
     const updatedBuilds = result.tuplesForUpdate.map(([record, entry]) => {
@@ -577,6 +610,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
         r._raw._status = 'synced'
         r._raw._changed = ''
+        r._raw._optimistic = false
       })
     })
 
@@ -594,6 +628,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
         r._raw._status = 'synced'
         r._raw._changed = ''
+        r._raw._optimistic = false
       })
     })
 

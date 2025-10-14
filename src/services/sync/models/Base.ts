@@ -5,6 +5,7 @@ export default abstract class BaseModel<ExtraRaw extends object = {}> extends Mo
   declare _raw: RawRecord & ExtraRaw & {
     created_at: EpochSeconds
     updated_at: EpochSeconds
+    _optimistic?: boolean
   }
 
   get created_at() {
@@ -39,5 +40,9 @@ export default abstract class BaseModel<ExtraRaw extends object = {}> extends Mo
       record._raw['updated_at'] = Math.round(Date.now() / 1000) as EpochSeconds
       record._raw._status = 'deleted'
     })
+  }
+
+  buildMarkAsOptimistic() {
+    this._raw._optimistic = true
   }
 }

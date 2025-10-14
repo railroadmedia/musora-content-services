@@ -11,7 +11,8 @@ const contentLikesTable = tableSchema({
   columns: [
     { name: 'content_id', type: 'number' },
     { name: 'created_at', type: 'number' },
-    { name: 'updated_at', type: 'number' }
+    { name: 'updated_at', type: 'number' },
+    { name: '_optimistic', type: 'boolean' }
   ]
 })
 const contentProgressTable = tableSchema({
@@ -19,7 +20,8 @@ const contentProgressTable = tableSchema({
   columns: [
     { name: 'content_id', type: 'number' },
     { name: 'created_at', type: 'number' },
-    { name: 'updated_at', type: 'number' }
+    { name: 'updated_at', type: 'number' },
+    { name: '_optimistic', type: 'boolean' }
   ]
 })
 const contentPracticesTable = tableSchema({
@@ -27,7 +29,8 @@ const contentPracticesTable = tableSchema({
   columns: [
     { name: 'content_id', type: 'number' },
     { name: 'created_at', type: 'number' },
-    { name: 'updated_at', type: 'number' }
+    { name: 'updated_at', type: 'number' },
+    { name: '_optimistic', type: 'boolean' }
   ]
 })
 
