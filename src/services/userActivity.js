@@ -37,6 +37,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { addContextToContent } from './contentAggregator.js'
 import ProgressRepository from "./sync/repositories/content-progress.js";
+import {getNextLearningPathLesson} from "./content-org/method.js";
 
 const DATA_KEY_PRACTICES = 'practices'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
@@ -1057,7 +1058,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     nonPlaylistContentIds.push(userPinnedItem.id)
   }
 
-  const methodCardData = getNextMethodLesson(methodProgressContents)
+  const methodCardData = getNextLearningPathLesson(methodProgressContents, brand)
 
   const [playlistsContents, contents] = await Promise.all([
     playlistEngagedOnContents ? addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
@@ -1076,6 +1077,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     }) : Promise.resolve([]),
     // fetching method progress content already returns all these context fields, because they're stored in table
   ])
+
   const contentsMap = generateContentsMap(contents, playlistsContents)
   let combined = await extractPinnedItemsAndSortAllItems(
     methodCard
@@ -1320,7 +1322,7 @@ function mergeAndSortItems(items, limit) {
 
 export function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
   const ids = Object.keys(progressOnItems).map(Number)
-  if (contentType === 'guided-course') {
+  if (contentType === 'guided-course' || contentType === 'learning-path') {
     // Return first incomplete lesson
     return ids.find((id) => progressOnItems[id] !== 'completed') || ids.at(0)
   }
@@ -1467,23 +1469,3 @@ export async function fetchRecentActivitiesActiveTabs() {
   }
 }
 
-export function getDailySession(brand) { //one method per brand right now. replace brand with method id later
-
-  const dailySessionIds = getDailySessionIdsForBrand(brand)
-
-  if (dailySessionIds?.length === 0) return []
-
-  const records = ProgressRepository.create().getProgressByContentIds({contentIds: dailySessionIds, parentType: PARENT_TYPE_LEARNING_PATH, brand: brand})
-
-  // ensure order is same as dailySessionIds
-  const orderedRecords = dailySessionIds.map(id => records.find(r => r.content_id === id))
-
-  return orderedRecords
-}
-
-function getDailySessionIdsForBrand(brand) {
-
-  // const records =  DailySessionRepository.create().getDailySessionIds(brand)
-
-  return records ? records.map(r => r.content_id) : []
-}

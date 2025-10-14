@@ -7,7 +7,7 @@ import {
 } from './railcontent.js'
 import { DataContext, ContentProgressVersionKey } from './dataContext.js'
 import { fetchHierarchy } from './sanity.js'
-import {recordUserPractice, findIncompleteLesson, getDailySessionLessons, getDailySession} from './userActivity'
+import {recordUserPractice, findIncompleteLesson} from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 
 const STATE_STARTED = 'started'
@@ -579,50 +579,7 @@ function bubbleProgress(hierarchy, contentId, localContext) {
   bubbleProgress(hierarchy, parentId, localContext)
 }
 
-export async function getNextMethodLesson(progressData){
-  // we have progress
-  // need active LP and lessons within... pass in?
-  // need daily session... pass in?
-  // the above 2 can be cached tho idk how caches work
 
-  // if no progress on method at all
-  if (!progressData || Object.keys(progressData).length === 0) {
-    // sanity method IV
-  } else {
-    const dailySession = getDailySession(brand)
-
-    const isDailyComplete = dailySession ? checkIfDailyComplete(dailySession) : false
-
-    let lessons = []
-    if (isDailyComplete) {
-      // no -> first incomplete lesson in LP's >= active path
-
-      // get first lesson of active learning path
-
-      //can we use findIncompleteLesson here? and then add context
-      const lesson = findIncompleteLesson(progressData, null, 'method')
-      lessons.push(lesson)
-    } else {
-      // yes -> return daily session lessons
-      lessons = dailySession
-    }
-  }
-
-
-    // is daily session complete?
-    // no -> return daily session lessons
-
-
-}
-
-function checkIfDailyComplete(dailySession) {
-      dailySession.forEach(session => {
-        if (session.status !== 'completed') {
-          return false
-        }
-      });
-      return true
-}
 
 
 
