@@ -5,13 +5,6 @@ import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from '../config.js'
 
-export interface PasswordResetProps {
-  email: string
-  password: string
-  passwordConfirmation: string
-  token: string
-}
-
 /**
  * @param {string} email - The email address to check the account status for.
  * @returns {Promise<{requires_setup: boolean}|HttpError>} - A promise that resolves to an object indicating whether account setup is required, or an HttpError if the request fails.
@@ -36,26 +29,45 @@ export async function sendAccountSetupEmail(email: string): Promise<void | HttpE
   )
 }
 
+export interface PasswordResetProps {
+  email: string
+  password: string
+  passwordConfirmation: string
+  token?: string
+  revenuecatAppUserId?: string
+  deviceName?: string
+}
+
 /**
- * @param {Object} params - The parameters for setting up the account.
+ * @param {Object} props - The parameters for setting up the account.
  * @property {string} email - The email address for the account.
  * @property {string} password - The new password for the account.
  * @property {string} passwordConfirmation - The confirmation of the new password.
- * @property {string} token - The token sent to the user's email for verification.
- * @returns {Promise<void|HttpError>} - A promise that resolves when the account setup is complete or an HttpError if the request fails.
+ * @property {string} token - The token sent to the user's email for verification. Required for web requests
+ * @property {string} revenuecatAppUserId - The RevenueCat App User ID for MA environments. Required for MA requests
+ * @property {string} deviceName - The device name for MA environments. Required for MA requests
+ *
+ * @returns {Promise<void>} - A promise that resolves when the account setup is complete or an HttpError if the request fails.
+ * @throws {Error} - Throws an error if required parameters are missing based on the environment.
+ * @throws {HttpError} - Throws an HttpError if the HTTP request fails.
  */
-export async function setupAccount({
-  email,
-  password,
-  passwordConfirmation,
-  token,
-}: PasswordResetProps): Promise<void | HttpError> {
+export async function setupAccount(props: PasswordResetProps): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
+  if (!globalConfig.isMA && !props.token) {
+    throw new Error('Token is required for non-MA environments')
+  }
+
+  if (globalConfig.isMA && (!props.deviceName || !props.revenuecatAppUserId)) {
+    throw new Error('Device name and RevenueCat App User ID are required for MA environments')
+  }
+
   return httpClient.post(`/api/user-management-system/v1/accounts`, {
-    email,
-    password,
-    password_confirmation: passwordConfirmation,
-    token,
+    email: props.email,
+    password: props.password,
+    password_confirmation: props.passwordConfirmation,
+    token: props.token,
+    revenuecat_origin_app_user_id: props.revenuecatAppUserId,
+    device_name: props.deviceName,
   })
 }
 
