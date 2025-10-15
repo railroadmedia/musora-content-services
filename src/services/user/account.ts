@@ -7,7 +7,9 @@ import { globalConfig } from '../config.js'
 
 /**
  * @param {string} email - The email address to check the account status for.
- * @returns {Promise<{requires_setup: boolean}|HttpError>} - A promise that resolves to an object indicating whether account setup is required, or an HttpError if the request fails.
+ * @returns {Promise<{requires_setup: boolean}>} - A promise that resolves to an object indicating whether account setup is required, or an HttpError if the request fails.
+ *
+ * @throws {HttpError} - Throws HttpError if the request fails.
  */
 export async function status(email: string): Promise<{ requires_setup: boolean } | HttpError> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
@@ -29,7 +31,7 @@ export async function sendAccountSetupEmail(email: string): Promise<void | HttpE
   )
 }
 
-export interface PasswordResetProps {
+export interface AccountSetupProps {
   email: string
   password: string
   passwordConfirmation: string
@@ -51,7 +53,7 @@ export interface PasswordResetProps {
  * @throws {Error} - Throws an error if required parameters are missing based on the environment.
  * @throws {HttpError} - Throws an HttpError if the HTTP request fails.
  */
-export async function setupAccount(props: PasswordResetProps): Promise<void> {
+export async function setupAccount(props: AccountSetupProps): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   if (!globalConfig.isMA && !props.token) {
     throw new Error('Token is required for non-MA environments')
@@ -82,6 +84,12 @@ export async function sendPasswordResetEmail(email: string): Promise<void | Http
   })
 }
 
+export interface PasswordResetProps {
+  email: string
+  password: string
+  passwordConfirmation: string
+  token: string
+}
 /**
  * @param {Object} params - The parameters for resetting the password.
  * @property {string} email - The email address for the account.
