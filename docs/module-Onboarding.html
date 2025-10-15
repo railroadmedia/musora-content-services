@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>user/profile.js - Documentation</title>
+    <title>Onboarding - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,62 +35,321 @@
 
 <div id="main">
     
-    <h1 class="page-title">user/profile.js</h1>
+    <h1 class="page-title">Onboarding</h1>
     
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @module UserProfile
- */
-import { globalConfig } from '../config.js'
-import { fetchHandler } from '../railcontent.js'
-import { calculateLongestStreaks } from '../userActivity.js'
-import './types.js'
+        
+    
+</header>
 
-const baseUrl = `/api/user-management-system`
+<article>
+    
+        <div class="container-overview">
+        
+            
 
-/**
- * @param {number|null} userId - The user ID to reset permissions for.
- * @returns {Promise&lt;OtherStatsDTO>}
- */
-export async function otherStats(userId = globalConfig.sessionConfig.userId) {
-  const [otherStats, longestStreaks] = await Promise.all([
-    fetchHandler(`${baseUrl}/v1/users/${userId}/statistics`, 'get'),
-    calculateLongestStreaks(userId),
-  ])
+            
+        
+        </div>
+    
 
-  return {
-    ...otherStats,
-    longest_day_streak: {
-      type: 'day',
-      length: longestStreaks.longestDailyStreak,
-    },
-    longest_week_streak: {
-      type: 'week',
-      length: longestStreaks.longestWeeklyStreak,
-    },
-    total_practice_time: longestStreaks.totalPracticeSeconds,
-  }
-}
+    
 
-/**
- * Delete profile picture for the authenticated user
- *
- * @returns {Promise&lt;void>}
- */
-export async function deleteProfilePicture() {
-  const url = `${baseUrl}/v1/users/profile_picture`
-  await fetchHandler(url, 'DELETE')
-}
-</code></pre>
-        </article>
-    </section>
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="~storeOnboardingAnswer"><span class="type-signature type-signature-async, inner">(async, inner) </span>storeOnboardingAnswer<span class="signature">(props)</span><span class="type-signature"> &rarr; {Promise.&lt;void>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="user_onboarding.ts.html">user/onboarding.ts</a>, <a href="user_onboarding.ts.html#line12">line 12</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>props.question</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The onboarding question identifier.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>props.answer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The answer to the onboarding question.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>props</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">UpdateOnboardingAnswerProps</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The properties for updating an onboarding answer.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-throws">Throws:</h5>
+
+        
+
+<dl>
+    <dt>
+        <div class="param-desc usertext">
+        - Throws an HttpError if the request fails.
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl class="param-type">
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type">HttpError</span>
+
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+
+    
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    - A promise that resolves when the onboarding answer is updated.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;void></span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 

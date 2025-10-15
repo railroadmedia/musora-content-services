@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>user/profile.js - Documentation</title>
+    <title>user/onboarding.ts - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">user/profile.js</h1>
+    <h1 class="page-title">user/onboarding.ts</h1>
     
 
     
@@ -46,47 +46,32 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @module UserProfile
+ * @module Onboarding
  */
+import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
-import { fetchHandler } from '../railcontent.js'
-import { calculateLongestStreaks } from '../userActivity.js'
-import './types.js'
 
-const baseUrl = `/api/user-management-system`
-
-/**
- * @param {number|null} userId - The user ID to reset permissions for.
- * @returns {Promise&lt;OtherStatsDTO>}
- */
-export async function otherStats(userId = globalConfig.sessionConfig.userId) {
-  const [otherStats, longestStreaks] = await Promise.all([
-    fetchHandler(`${baseUrl}/v1/users/${userId}/statistics`, 'get'),
-    calculateLongestStreaks(userId),
-  ])
-
-  return {
-    ...otherStats,
-    longest_day_streak: {
-      type: 'day',
-      length: longestStreaks.longestDailyStreak,
-    },
-    longest_week_streak: {
-      type: 'week',
-      length: longestStreaks.longestWeeklyStreak,
-    },
-    total_practice_time: longestStreaks.totalPracticeSeconds,
-  }
+export interface UpdateOnboardingAnswerProps {
+  question: 'gear' | 'topic' | 'genre' | 'experience' | 'goals' | 'instrument' | 'coach'
+  answer: string
 }
 
 /**
- * Delete profile picture for the authenticated user
+ * @param {UpdateOnboardingAnswerProps} props - The properties for updating an onboarding answer.
+ * @property {string} props.question - The onboarding question identifier.
+ * @property {string} props.answer - The answer to the onboarding question.
  *
- * @returns {Promise&lt;void>}
+ * @returns {Promise&lt;void>} - A promise that resolves when the onboarding answer is updated.
+ * @throws {HttpError} - Throws an HttpError if the request fails.
  */
-export async function deleteProfilePicture() {
-  const url = `${baseUrl}/v1/users/profile_picture`
-  await fetchHandler(url, 'DELETE')
+export async function storeOnboardingAnswer(props: UpdateOnboardingAnswerProps): Promise&lt;void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post(
+    `/api/user-management-system/v1/users/${globalConfig.sessionConfig.userId}/onboarding/${props.question}`,
+    {
+      answer: props.answer,
+    }
+  )
 }
 </code></pre>
         </article>
