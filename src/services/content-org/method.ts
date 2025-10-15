@@ -38,7 +38,7 @@ export async function getNextLearningPathLesson(progressData: object[], brand: s
     } else {
       contentData = dailySessionProgress
     }
-    return {ids: contentData, isDailyComplete: isDailyComplete}
+    return {data: contentData, isDailyComplete: isDailyComplete}
   }
 }
 

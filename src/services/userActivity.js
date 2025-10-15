@@ -1069,6 +1069,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   }
 
   const methodCardData = getNextLearningPathLesson(methodProgressContents, brand)
+  const methodCardIds = methodCardData.data.map(item => item.ids)
   //parse
 
   const [playlistsContents, contents, methodContents] = await Promise.all([
@@ -1095,6 +1096,7 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     }) : Promise.resolve([]),
   ])
 
+  // this data structure wll need to be set in a custom method addContext function
   const methodCard = {id: learningPath, type: 'method', ids: methodContents}
 
   //need to exclude standard progress copies that originated from a method
