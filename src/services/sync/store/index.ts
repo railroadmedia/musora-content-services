@@ -400,16 +400,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     }
   }
 
-  async readAllWhere(clauses: Record<string, any>[], limit: number = null) {
-    const args: any[] = clauses.map(q => {
-      return (q.value instanceof Array) ? Q.where(q.key, Q.oneOf(q.value)) : Q.where(q.key, q.value)
-    })
-    if (limit) args.push(Q.take(limit), Q.sortBy('updated_at', 'desc'))
-
-    const records = await this.queryRecords(...args);
-    return records.map(record => this.modelSerializer.toPlainObject(record))
-  }
-
   private async queryRecords(...args: Q.Clause[]) {
     return await this.collection.query(...args).fetch()
   }
