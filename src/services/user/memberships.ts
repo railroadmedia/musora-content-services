@@ -114,15 +114,36 @@ export async function upgradeSubscription(): Promise<UpgradeSubscriptionResponse
 /**
  * Restores purchases by verifying subscriber status with RevenueCat.
  *
- * @param {string} originalAppUserId - The original app user ID from RevenueCat.
- * @param {string} [email] - (Optional) The user's email address.
+ * This function verifies the subscriber's status with RevenueCat and attempts to sync their
+ * subscription data with the platform. The backend will search for a user by email (if provided)
+ * or by the RevenueCat original app user ID.
  *
- * @returns {Promise<RestorePurchasesResponse>} - A promise that resolves to the verification response containing subscriber status.
+ * @param {string} originalAppUserId - The original app user ID from RevenueCat.
+ * @param {string} [email] - (Optional) The user's email address. If provided and a user with this
+ *                           email exists, their subscription will be synced. If omitted, the backend
+ *                           will only search by the RevenueCat original app user ID.
+ *
+ * @returns {Promise<RestorePurchasesResponse>} - A promise that resolves to the verification response containing:
+ *  - {boolean} success - Whether the operation was successful
+ *  - {boolean} [shouldCreateAccount] - Whether the user should create a new account
+ *  - {boolean} [shouldLogin] - Whether the user should login
+ *  - {string} [email] - The email address of the found user (if shouldLogin is true)
+ *  - {string} [originalAppUserId] - The RevenueCat original app user ID (if shouldCreateAccount is true)
+ *  - {string} [token] - Authentication token (if success is true)
+ *  - {string} [tokenType] - Token type, typically 'bearer' (if success is true)
+ *  - {number} [userId] - The user's ID (if success is true)
  *
  * @throws {Error} - Throws an error if the request fails or if required parameters are missing.
  *
  * @example
+ * // With email
  * restorePurchases('rc_user_123', 'user@example.com')
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Without email (search by original app user ID only)
+ * restorePurchases('rc_user_123')
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
@@ -145,7 +166,7 @@ export async function restorePurchases(
 
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<RestorePurchasesResponse>(
-    `${baseUrl}/v1/revenuecat/verify-subscriber-status`,
+    `${baseUrl}/v1/revenuecat/restore`,
     requestBody
   )
 }
