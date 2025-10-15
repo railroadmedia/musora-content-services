@@ -97,7 +97,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="user_account.ts.html">user/account.ts</a>, <a href="user_account.ts.html#line110">line 110</a>
+        <a href="user_account.ts.html">user/account.ts</a>, <a href="user_account.ts.html#line122">line 122</a>
     </li></ul></dd>
     
 
@@ -252,7 +252,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="user_account.ts.html">user/account.ts</a>, <a href="user_account.ts.html#line96">line 96</a>
+        <a href="user_account.ts.html">user/account.ts</a>, <a href="user_account.ts.html#line108">line 108</a>
     </li></ul></dd>
     
 
@@ -431,7 +431,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="user_account.ts.html">user/account.ts</a>, <a href="user_account.ts.html#line73">line 73</a>
+        <a href="user_account.ts.html">user/account.ts</a>, <a href="user_account.ts.html#line85">line 85</a>
     </li></ul></dd>
     
 
@@ -711,7 +711,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="user_account.ts.html">user/account.ts</a>, <a href="user_account.ts.html#line27">line 27</a>
+        <a href="user_account.ts.html">user/account.ts</a>, <a href="user_account.ts.html#line20">line 20</a>
     </li></ul></dd>
     
 
@@ -866,7 +866,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="user_account.ts.html">user/account.ts</a>, <a href="user_account.ts.html#line62">line 62</a>
+        <a href="user_account.ts.html">user/account.ts</a>, <a href="user_account.ts.html#line74">line 74</a>
     </li></ul></dd>
     
 
@@ -1008,7 +1008,7 @@
 
     
 
-    <h4 class="name" id="~setupAccount"><span class="type-signature type-signature-async, inner">(async, inner) </span>setupAccount<span class="signature">(params)</span><span class="type-signature"> &rarr; {Promise.&lt;(void|HttpError)>}</span></h4>
+    <h4 class="name" id="~setupAccount"><span class="type-signature type-signature-async, inner">(async, inner) </span>setupAccount<span class="signature">(props)</span><span class="type-signature"> &rarr; {Promise.&lt;void>}</span></h4>
 
     
 
@@ -1021,7 +1021,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="user_account.ts.html">user/account.ts</a>, <a href="user_account.ts.html#line39">line 39</a>
+        <a href="user_account.ts.html">user/account.ts</a>, <a href="user_account.ts.html#line41">line 41</a>
     </li></ul></dd>
     
 
@@ -1173,7 +1173,55 @@
 
             
 
-            <td class="description last">The token sent to the user's email for verification.</td>
+            <td class="description last">The token sent to the user's email for verification. Required for web requests</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>revenuecatAppUserId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The RevenueCat App User ID for MA environments. Required for MA requests</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>deviceName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The device name for MA environments. Required for MA requests</td>
         </tr>
 
     
@@ -1218,7 +1266,7 @@
 
         <tr>
             
-                <td class="name"><code>params</code></td>
+                <td class="name"><code>props</code></td>
             
 
             <td class="type">
@@ -1255,6 +1303,64 @@
 
 
 
+<h5 class="h5-throws">Throws:</h5>
+<ul>
+        <li>
+
+<dl>
+    <dt>
+        <div class="param-desc usertext">
+        - Throws an error if required parameters are missing based on the environment.
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl class="param-type">
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type">Error</span>
+
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+</li>
+    
+        <li>
+
+<dl>
+    <dt>
+        <div class="param-desc usertext">
+        - Throws an HttpError if the HTTP request fails.
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl class="param-type">
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type">HttpError</span>
+
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+</li>
+    </ul>
 
 
 <h5 class="h5-returns">Returns:</h5>
@@ -1272,7 +1378,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;(void|HttpError)></span>
+<span class="param-type">Promise.&lt;void></span>
 
 
 
@@ -1301,7 +1407,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="user_account.ts.html">user/account.ts</a>, <a href="user_account.ts.html#line15">line 15</a>
+        <a href="user_account.ts.html">user/account.ts</a>, <a href="user_account.ts.html#line8">line 8</a>
     </li></ul></dd>
     
 
@@ -1458,7 +1564,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Fri Oct 10 2025 15:36:47 GMT-0700 (Pacific Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Wed Oct 15 2025 17:20:20 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
