@@ -7,13 +7,13 @@ interface ProgressWriteDTO {
   contentId: number,
   state: string,
   progressPercent: number,
-  parentType?: number,
-  parentId?: number
+  collectionType: COLLECTION_TYPE,
+  collectionId: number
 }
 
-enum PARENT_TYPE {
-  DEFAULT = 0,
-  LEARNING_PATH = 1,
+enum COLLECTION_TYPE {
+  DEFAULT = "none", // for creation of record id, we cannot use null
+  LEARNING_PATH = "learning-path",
 }
 
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
@@ -25,48 +25,44 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.readAllWhere(clauses, limit)
   }
 
-  // all records: all parents null
-  // method records: parentType = 1, parentId = null
-  // LP records: parentType = 1, parentId = LP_id
+// get all progress for a given brand, collection type and id
   async getAllProgress(
       {
         brand = null,
-        parentType = null,
-        parentId = null
-      }: {brand: string, parentType: number, parentId: number},
+        collectionType = COLLECTION_TYPE.DEFAULT,
+        collectionId = 0
+      }: {brand: string, collectionType: COLLECTION_TYPE, collectionId: number},
       limit: number = null) {
     let clauses = [];
     if (brand) clauses.push({brand: brand});
-    if (parentType) clauses.push({parent_type: parentType});
-    if (parentId) clauses.push({parent_id: parentId});
+    if (collectionType) clauses.push({collection_type: collectionType});
+    if (collectionId != 0) clauses.push({collection_id: collectionId});
 
     return await this.readAllWhere(clauses, limit)
   }
 
-  // does not allow retrieval of content_id and all its parent types
-  async getProgressByContentId(
+  // get one contentId of a given collection type and id
+  async getOneProgressByContentId(
       {
         contentId,
-        parentType = null,
-        parentId = null
-      }: {contentId: number, parentType: number, parentId: number}
+        collectionType = COLLECTION_TYPE.DEFAULT,
+        collectionId = 0
+      }: {contentId: number, collectionType: COLLECTION_TYPE, collectionId: number}
   ) {
-    const parentTypeVal = parentType ? parentType : PARENT_TYPE.DEFAULT;
-    const parentIdVal = parentId ? parentId : null;
-
-    return await this.readOne(ProgressRepository.generateId(contentId, parentTypeVal, parentIdVal))
+    return await this.readOne(ProgressRepository.generateId(contentId, collectionType, collectionId))
   }
 
-  async getProgressByContentIds(
+  // get multiple contentIds of a given collection type and id
+  async getSomeProgressByContentIds(
       {
         contentIds,
-        parentType = null,
-        parentId = null
-      }: {contentIds: number[], parentType: number, parentId: number}) {
+        collectionType = COLLECTION_TYPE.DEFAULT,
+        collectionId = 0
+      }: {contentIds: number[], collectionType: COLLECTION_TYPE, collectionId: number}) {
     let clauses = [];
     clauses.push({content_id: contentIds});
-    if (parentType) clauses.push({parent_type: parentType});
-    if (parentId) clauses.push({parent_id: parentId});
+    if (collectionType) clauses.push({collection_type: collectionType});
+    if (collectionId != 0) clauses.push({collection_id: collectionId});
 
     return await this.readAllWhere(clauses)
   }
@@ -75,20 +71,20 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
                         contentId,
                         state,
                         progressPercent,
-                        parentType = PARENT_TYPE.DEFAULT,
-                        parentId = null,
+                        collectionType = COLLECTION_TYPE.DEFAULT,
+                        collectionId = 0,
                       }: ProgressWriteDTO) {
-    const progress = await this.store.upsertOne(ProgressRepository.generateId(contentId, parentType, parentId), r => {
+    const progress = await this.store.upsertOne(ProgressRepository.generateId(contentId, collectionType, collectionId), r => {
       r.content_id = contentId;
       r.state = state;
       r.progress_percent = progressPercent;
-      r.parent_type = parentType;
-      r.parent_id = parentId;
+      r.collection_type = collectionType;
+      r.collection_id = collectionId;
     })
     return await this.pushOneEagerlyById(progress.id)
   }
 
-  private static generateId(contentId: number, parentType: number, parentId: number) {
-    return contentId.toString() + ":" + parentType.toString() + ":" + parentId.toString();
+  private static generateId(contentId: number, collectionType: string, collectionId: number) {
+    return contentId.toString() + ":" + collectionType + ":" + collectionId.toString();
   }
 }

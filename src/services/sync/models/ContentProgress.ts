@@ -5,6 +5,7 @@ export default class ContentProgress extends BaseModel {
   static table = SYNC_TABLES.CONTENT_PROGRESS
 
   // todo add resume_time
+  // todo add brand, synced from railcontent_content's brand field (maybe status too while we're at it?)
 
   get content_id() {
     return this._getRaw('content_id') as number
@@ -15,11 +16,11 @@ export default class ContentProgress extends BaseModel {
   get progress_percent() {
     return this._getRaw('progress_percent') as number
   }
-  get parent_type() {
-    return this._getRaw('parent_type') as number
+  get collection_type() {
+    return this._getRaw('collection_type') as string
   }
-  get parent_id() {
-    return this._getRaw('parent_id') as number
+  get collection_id() {
+    return this._getRaw('collection_id') as number
   }
   get brand() {
     return this._getRaw('brand') as string
@@ -34,11 +35,11 @@ export default class ContentProgress extends BaseModel {
   set progress_percent(value: number) {
     this._setRaw('progress_percent', value)
   }
-  set parent_type(value: number) {
-    this._setRaw('parent_type', value)
+  set collection_type(value: string) {
+    this._setRaw('collection_type', value)
   }
-  set parent_id(value: number) {
-    this._setRaw('parent_id', value)
+  set collection_id(value: number) {
+    this._setRaw('collection_id', value)
   }
   set brand(value: string) {
     this._setRaw('brand', value)
