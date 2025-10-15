@@ -43,9 +43,9 @@ export interface PasswordResetProps {
  * @property {string} email - The email address for the account.
  * @property {string} password - The new password for the account.
  * @property {string} passwordConfirmation - The confirmation of the new password.
- * @property {string} token - The token sent to the user's email for verification. Required for web requests
- * @property {string} revenuecatAppUserId - The RevenueCat App User ID for MA environments. Required for MA requests
- * @property {string} deviceName - The device name for MA environments. Required for MA requests
+ * @property {string|null} token - The token sent to the user's email for verification. Required for web requests
+ * @property {string|null} revenuecatAppUserId - The RevenueCat App User ID for MA environments. Required for MA requests
+ * @property {string|null} deviceName - The device name for MA environments. Required for MA requests
  *
  * @returns {Promise<void>} - A promise that resolves when the account setup is complete or an HttpError if the request fails.
  * @throws {Error} - Throws an error if required parameters are missing based on the environment.
