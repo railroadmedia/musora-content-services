@@ -950,6 +950,7 @@ export async function restoreUserActivity(id) {
 }
 
 async function extractPinnedItemsAndSortAllItems(
+  methodCard,
   userPinnedItem,
   contentsMap,
   eligiblePlaylistItems,
@@ -969,11 +970,12 @@ async function extractPinnedItemsAndSortAllItems(
   }
 
   const progressList = Array.from(contentsMap.values())
-  combined = [...combined, ...progressList, ...eligiblePlaylistItems]
-  return mergeAndSortItems(combined, limit)
+  //todo handle hiding of the method card. user-set
+  combined = [methodCard, ...combined, ...progressList, ...eligiblePlaylistItems]
+  return mergeAndSortItems(combined, limit) // this will error, no id or type on method card
 }
 
-function generateContentsMap(contents, playlistsContents) {
+function generateContentsMap(contents, playlistsContents, methodProgressContents) {
   const excludedTypes = new Set([
     'pack-bundle',
     'learning-path',
@@ -1012,6 +1014,14 @@ function generateContentsMap(contents, playlistsContents) {
 
   if (playlistsContents) {
     for (const item of playlistsContents) {
+      const contentId = item.id
+      contentsMap.delete(contentId)
+      const parentIds = item.parent_content_data || []
+      parentIds.forEach((id) => contentsMap.delete(id))
+    }
+  }
+  if (methodProgressContents) {
+    for (const item of methodProgressContents) {
       const contentId = item.id
       contentsMap.delete(contentId)
       const parentIds = item.parent_content_data || []
@@ -1059,8 +1069,9 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
   }
 
   const methodCardData = getNextLearningPathLesson(methodProgressContents, brand)
+  //parse
 
-  const [playlistsContents, contents] = await Promise.all([
+  const [playlistsContents, contents, methodContents] = await Promise.all([
     playlistEngagedOnContents ? addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
       addNextLesson: true,
       addNavigateTo: true,
@@ -1075,12 +1086,21 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
       addProgressPercentage: true,
       addProgressTimestamp: true,
     }) : Promise.resolve([]),
-    // fetching method progress content already returns all these context fields, because they're stored in table
+
+    //todo make a custom Method addContext function. make sure has all the same fields
+    methodCardIds ? addContextToContent(fetchByRailContentIds, methodCardIds, 'progress-tracker', brand, {
+      addProgressStatus: true,
+      addProgressPercentage: true,
+      addProgressTimestamp: true,
+    }) : Promise.resolve([]),
   ])
 
-  const contentsMap = generateContentsMap(contents, playlistsContents)
+  const methodCard = {id: learningPath, type: 'method', ids: methodContents}
+
+  //need to exclude standard progress copies that originated from a method
+  const contentsMap = generateContentsMap(contents, playlistsContents, methodProgressContents)
   let combined = await extractPinnedItemsAndSortAllItems(
-    methodCard
+    methodCard,
     userPinnedItem,
     contentsMap,
     eligiblePlaylistItems,
@@ -1090,7 +1110,9 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     combined
       .slice(0, limit)
       .map((item) =>
-        item.type === 'playlist' ? processPlaylistItem(item) : processContentItem(item)
+        item.type === 'playlist' ? processPlaylistItem(item)
+          : item.type === 'sqitch' ? processMethodItem(item)
+            : processContentItem(item) // add method card process
         // need custom processing for the method card as well
       )
   )
@@ -1108,6 +1130,100 @@ async function getUserPinnedItem(brand) {
   const user = userRaw ? JSON.parse(userRaw) : {}
   user.brand_pinned_progress = user.brand_pinned_progress || {}
   return user.brand_pinned_progress[brand] ?? null
+}
+
+async function processMethodItem(content) {
+  // need to handle logic or having 1 or 3 ids
+
+  if (content.ids.length === 1) {
+
+  } else if (content.ids.length === 3) {
+
+  }
+
+  let ctaText = []
+  for (const item of content.ids) {
+
+  }
+
+
+  const contentType = getFormattedType(content.type, content.brand)
+
+  let ctaText = getDefaultCTATextForContent(content, contentType)
+
+  content.completed_children = await getCompletedChildren(content, contentType)
+
+  // this logic needs to be added
+  if (content.isDailyComplete) {
+    if (content.isTheActivePathDone) {
+      if (content.noNextActivePath) {
+        ctaText = 'BROWSE LESSONS'
+      }
+      ctaText = 'START NEXT PATH'
+    } else {
+      ctaText = 'KEEP GOING'
+    }
+  } else if (content.sessionProgressStatus === 'started') {
+    ctaText = 'CONTINUE SESSION'
+  } else if (!content.sessionProgressStatus === '') {
+    ctaText = 'START SESSION'
+  }
+
+  return {
+    id:                content.collectionId,
+    progressType:      'method',
+    header:            contentType,
+    content:           content,
+    items: getItemsFields(content.ids),
+    body: {
+      title:           content.title,
+      subtitle:        "nice work cta. should FE do this? can wehave a subtitle 2?"
+    },
+    cta: {
+      text: ctaText,
+      timeRemainingToUnlockSeconds: content.time_remaining_seconds ?? null,
+      action: {
+        type: content.type,
+        brand: content.brand,
+        id: content.id,
+        slug: content.slug,
+        child: content.navigateTo,
+      },
+    },
+    // *1000 is to match playlists which are saved in millisecond accuracy
+    progressTimestamp: content.progressTimestamp * 1000,
+  }
+
+  function getItemsFields(ids) {
+
+    let items = []
+    for (const item of ids) {
+      const body = getMethodItemBody(id)
+      const cta = getMethodItemCTA(id)
+      items[] = {body: body, cta: cta}
+    }
+    return items
+  }
+
+  function getMethodItemCTA(item) {
+    return {
+      action: {
+        type: item.type,
+        brand: item.brand,
+        id: item.id,
+        slug: item.slug
+      },
+    }
+  }
+
+  function getMethodItemBody(item) {
+    return {
+      progressPercent: item.progressPercentage,
+      thumbnail:       item.thumbnail,
+      title:           item.title,
+      subtitle:        item.subtitle
+    }
+  }
 }
 
 async function processContentItem(content) {
