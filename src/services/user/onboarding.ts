@@ -17,7 +17,7 @@ export interface UpdateOnboardingAnswerProps {
  * @returns {Promise<void>} - A promise that resolves when the onboarding answer is updated.
  * @throws {HttpError} - Throws an HttpError if the request fails.
  */
-export async function store(props: UpdateOnboardingAnswerProps): Promise<void> {
+export async function storeOnboardingAnswer(props: UpdateOnboardingAnswerProps): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post(
     `/api/user-management-system/v1/users/${globalConfig.sessionConfig.userId}/onboarding/${props.question}`,
