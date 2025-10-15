@@ -131,3 +131,6 @@ dist
 
 # Remove .swp file from Vim
 *.swp
+
+# Ignore yarn.lock
+yarn.lock

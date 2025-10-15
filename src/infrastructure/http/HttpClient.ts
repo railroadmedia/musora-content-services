@@ -89,6 +89,7 @@ export class HttpClient {
     const options: RequestOptions = {
       method,
       headers,
+      credentials: 'include',
     }
 
     // Add body for non-GET requests

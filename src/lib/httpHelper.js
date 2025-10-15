@@ -13,6 +13,7 @@ export async function fetchJSONHandler(
     'Content-Type': 'application/json',
     Accept: 'application/json',
     'X-CSRF-TOKEN': token,
+    credentials: 'include',
   }
 
   if (body) {
@@ -74,6 +75,7 @@ export async function fetchHandler(
   const options = {
     method,
     headers: reqHeaders,
+    credentials: 'include',
   }
   if (body) options.body = body
   if (token) options.headers['Authorization'] = `Bearer ${token}`

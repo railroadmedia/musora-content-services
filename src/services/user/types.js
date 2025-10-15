@@ -134,3 +134,11 @@
  * @property {number} forum_post_likes
  * @property {number} experience_points
  */
+
+/**
+ * @typedef {Object} BlockedUsersDTO
+ *
+ * @property {number} id
+ * @property {string} display_name
+ * @property {string|null} profile_picture_url
+ */

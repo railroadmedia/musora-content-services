@@ -468,7 +468,7 @@ export async function fetchByRailContentId(id, contentType) {
 /**
  * Fetch content by an array of Railcontent IDs.
  *
- * @param {Array<string>} ids - The array of Railcontent IDs of the content to fetch.
+ * @param {Array<string|number>} ids - The array of Railcontent IDs of the content to fetch.
  * @param {string} [contentType] - The content type the IDs to add needed fields to the response.
  * @returns {Promise<Array<Object>|null>} - A promise that resolves to an array of content objects or null if not found.
  *
@@ -1114,7 +1114,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
       "logo" : logo_image_url.asset->url,
       "dark_mode_logo": dark_mode_logo_url.asset->url,
       "light_mode_logo": light_mode_logo_url.asset->url,
-      "badge": badge[0]->badge.asset->url,
+      "badge": *[references(^._id) && _type == 'content-award'][0].badge.asset->url,
     },`
     : ''
 
@@ -1450,7 +1450,8 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
  *   .catch(error => console.error(error));
  */
 export async function fetchPackData(id) {
-  const query = `*[railcontent_id == ${id}]{
+  const builder = await new FilterBuilder(`railcontent_id == ${id}`).buildFilter()
+  const query = `*[${builder}]{
     ${await getFieldsForContentTypeWithFilteredChildren('pack')}
   } [0...1]`
   return fetchSanity(query, false)
@@ -1493,28 +1494,6 @@ export async function fetchCoachLessons(
     end: end,
   })
   return fetchSanity(query, true)
-}
-
-/**
- * Fetch the data needed for the Course Overview screen.
- * @param {string} id - The Railcontent ID of the course
- * @returns {Promise<Object|null>} - The course information and lessons or null if not found.
- *
- * @example
- * fetchParentForDownload('course123')
- *   .then(course => console.log(course))
- *   .catch(error => console.error(error));
- */
-export async function fetchParentForDownload(id) {
-  const query = buildRawQuery(
-    `railcontent_id == ${id}`,
-    getFieldsForContentType('parent-download'),
-    {
-      isSingle: true,
-    }
-  )
-
-  return fetchSanity(query, false)
 }
 
 /**
@@ -1805,14 +1784,10 @@ export async function fetchSanity(
     return null
   }
 
-  // if (globalConfig.sanityConfig.debug) {
-  //   console.log('fetchSanity Query:', query)
-  // }
   const perspective = globalConfig.sanityConfig.perspective ?? 'published'
   const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api'
   const url = `https://${globalConfig.sanityConfig.projectId}.${api}.sanity.io/v${globalConfig.sanityConfig.version}/data/query/${globalConfig.sanityConfig.dataset}?perspective=${perspective}`
   const headers = {
-    Authorization: `Bearer ${globalConfig.sanityConfig.token}`,
     'Content-Type': 'application/json',
   }
 
@@ -1837,9 +1812,6 @@ export async function fetchSanity(
     }
     const result = await response.json()
     if (result.result) {
-      if (globalConfig.sanityConfig.debug) {
-        console.log('fetchSanity Results:', result)
-      }
       let results = isList ? result.result : result.result[0]
       if (!results) {
         throw new Error('No results found')
@@ -1852,7 +1824,7 @@ export async function fetchSanity(
       throw new Error('No results found')
     }
   } catch (error) {
-    console.error('fetchSanity: Fetch error:', error)
+    console.error('fetchSanity: Fetch error:', {error, query})
     return null
   }
 }
@@ -2184,11 +2156,12 @@ export async function fetchTabData(
   let filter = ''
 
   filter = `brand == "${brand}" ${includedFieldsFilter}`
-  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true, pullFutureContent: true }).buildFilter()
+  const childrenFields = await getChildFieldsForContentType('tab-data')
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
   entityFieldsString =
     ` ${fieldsString}
-    'children': child[${childrenFilter}]->{'id': railcontent_id, 'type': _type, brand, 'thumbnail': thumbnail.asset->url},
+    'children': child[${childrenFilter}]->{ ${childrenFields} 'children': child[${childrenFilter}]->{ ${childrenFields} }, },
     'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
     'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     'length_in_seconds': coalesce(

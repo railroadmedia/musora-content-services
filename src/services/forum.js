@@ -15,7 +15,7 @@ export async function getActiveDiscussions(brand, { page = 1, limit = 10 } = {})
         author: {
           id: 123,
           name: 'Zucconi',
-          avatar: 'https://www.musora.com/cdn-cgi/image/quality=75,width=250,height=250,metadata=none/https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/BE9F40FC-61C8-48FB-BC79-6E5A7100638F-1710514476-612136.jpg'
+          avatar: 'https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/BE9F40FC-61C8-48FB-BC79-6E5A7100638F-1710514476-612136.jpg'
         }
       },
       {
@@ -26,7 +26,7 @@ export async function getActiveDiscussions(brand, { page = 1, limit = 10 } = {})
         author: {
           id: 124,
           name: 'Abyssic Wizard',
-          avatar: 'https://www.musora.com/cdn-cgi/image/quality=75,width=250,height=250,metadata=none/https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/32F50623-BC25-429A-B480-B4A6A0E037D7-1748730048-844311.jpg'
+          avatar: 'https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/32F50623-BC25-429A-B480-B4A6A0E037D7-1748730048-844311.jpg'
         }
       },
       {
@@ -37,7 +37,7 @@ export async function getActiveDiscussions(brand, { page = 1, limit = 10 } = {})
         author: {
           id: 125,
           name: 'Rwogie',
-          avatar: 'https://www.musora.com/cdn-cgi/image/quality=75,width=250,height=250,metadata=none/https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/user-profile-picture-1752520294-843602.jpg'
+          avatar: 'https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/user-profile-picture-1752520294-843602.jpg'
         }
       },
       {
@@ -48,7 +48,7 @@ export async function getActiveDiscussions(brand, { page = 1, limit = 10 } = {})
         author: {
           id: 126,
           name: 'Ale',
-          avatar: 'https://www.musora.com/cdn-cgi/image/quality=75,width=250,height=250,metadata=none/https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/user-profile-picture-1728402676-577074.jpg'
+          avatar: 'https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/user-profile-picture-1728402676-577074.jpg'
         }
       },
       {
@@ -59,7 +59,7 @@ export async function getActiveDiscussions(brand, { page = 1, limit = 10 } = {})
         author: {
           id: 127,
           name: 'Peter Neumann',
-          avatar: 'https://www.musora.com/cdn-cgi/image/quality=75,width=250,height=250,metadata=none/https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/user-profile-picture-1725633212-597725.jpg'
+          avatar: 'https://d3fzm1tzeyr5n3.cloudfront.net/profile_picture_url/user-profile-picture-1725633212-597725.jpg'
         }
       },
       {
@@ -70,7 +70,7 @@ export async function getActiveDiscussions(brand, { page = 1, limit = 10 } = {})
         author: {
           id: 128,
           name: 'Stidger (Musora Mod)',
-          avatar: 'https://www.musora.com/cdn-cgi/image/quality=75,width=250,height=250,metadata=none/https://dzryyo1we6bm3.cloudfront.net/avatars/6A09AFCB-B242-4278-A8B3-0013A650206A-1644690552-495979.jpg'
+          avatar: 'https://dzryyo1we6bm3.cloudfront.net/avatars/6A09AFCB-B242-4278-A8B3-0013A650206A-1644690552-495979.jpg'
         }
       }
     ]

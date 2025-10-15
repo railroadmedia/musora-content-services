@@ -2,6 +2,249 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.49.0](https://github.com/railroadmedia/musora-content-services/compare/v2.48.0...v2.49.0) (2025-10-02)
+
+
+### Features
+
+* **MU2-1043:** Add .js to eventsAPI ([aadad63](https://github.com/railroadmedia/musora-content-services/commit/aadad6324d425d90580db96179b2a7088e0354de))
+* **MU2-1043:** Add function to like and unlike posts ([771d342](https://github.com/railroadmedia/musora-content-services/commit/771d34271e5c561287f5a0ad56e48ac87349681d))
+* **MU2-1043:** resolve problems arising from trying to resolve merge conflicts ([a92df9d](https://github.com/railroadmedia/musora-content-services/commit/a92df9d97e6ea65179358b5bf50b43de14126b36))
+* **MU2-1043:** Wrap brand in search parameters per codreabbit suggestion ([0ba3180](https://github.com/railroadmedia/musora-content-services/commit/0ba3180dcde38d4996a8de601ca969bbf7549d9d))
+
+## [2.48.0](https://github.com/railroadmedia/musora-content-services/compare/v2.47.0...v2.48.0) (2025-10-02)
+
+
+### Features
+
+* add method to delete post ([950468d](https://github.com/railroadmedia/musora-content-services/commit/950468ddb81f7aef28d10c254789051d556f0c56))
+* add method to delete post  [#472](https://github.com/railroadmedia/musora-content-services/issues/472)  ([3fe4987](https://github.com/railroadmedia/musora-content-services/commit/3fe49878777d099e151f07fa3730a856876eba59))
+* add method to delete thread ([a47daca](https://github.com/railroadmedia/musora-content-services/commit/a47dacabc0879126b5bb32afcb5c7c0bb34001e9))
+* **MU2-1111:** New method for forum rules [#469](https://github.com/railroadmedia/musora-content-services/issues/469)  ([b758a4c](https://github.com/railroadmedia/musora-content-services/commit/b758a4c08da2d5d1fbdaa94f58ccda9da28b14ac))
+* **MU2-1112:** add method to delete thread [#470](https://github.com/railroadmedia/musora-content-services/issues/470)  ([eb83ab3](https://github.com/railroadmedia/musora-content-services/commit/eb83ab31c26be4ead643e22ce3d59216682805bb))
+
+## [2.47.0](https://github.com/railroadmedia/musora-content-services/compare/v2.46.0...v2.47.0) (2025-09-29)
+
+
+### Features
+
+* **MU2-1030:** adding fetch method for followed threads endpoint ([7925a44](https://github.com/railroadmedia/musora-content-services/commit/7925a4439f6110612e6c905548afce7ef081ff85))
+* **MU2-1030:** adding fetch method for followed threads endpoint [#464](https://github.com/railroadmedia/musora-content-services/issues/464) ([05401df](https://github.com/railroadmedia/musora-content-services/commit/05401df2f53d342e7dc7311d59faa715d6f08f38))
+* **MU2-1033:** Add function for fetch latest threads, update docs ([967e152](https://github.com/railroadmedia/musora-content-services/commit/967e1526418933e3f287e78e606f4caf6ff0f095))
+* **MU2-1033:** Add function for fetch latest threads, update docs [#466](https://github.com/railroadmedia/musora-content-services/issues/466) ([4b270ab](https://github.com/railroadmedia/musora-content-services/commit/4b270aba3c7d0177f18183e2f75c03a8544bf930))
+
+## [2.46.0](https://github.com/railroadmedia/musora-content-services/compare/v2.45.0...v2.46.0) (2025-09-26)
+
+
+### Features
+
+* **BEH-1106:** update contentTypeConfig and contentMetaData ([#458](https://github.com/railroadmedia/musora-content-services/issues/458)) ([8b8c7fc](https://github.com/railroadmedia/musora-content-services/commit/8b8c7fce81197a7e9ffde80b9718be87caec915d))
+
+
+### Bug Fixes
+
+* 0 progress shows start course cta text ([#468](https://github.com/railroadmedia/musora-content-services/issues/468)) ([d9ae881](https://github.com/railroadmedia/musora-content-services/commit/d9ae8815fd233e142f60b2293136546f7693862d))
+
+## [2.45.0](https://github.com/railroadmedia/musora-content-services/compare/v2.44.0...v2.45.0) (2025-09-25)
+
+
+### Features
+
+* **MU2-1035/MU2-1036:** New methods for fetch posts and create post [#462](https://github.com/railroadmedia/musora-content-services/issues/462)  ([714cf70](https://github.com/railroadmedia/musora-content-services/commit/714cf706e6deb8e3c93241e29894729210012d84))
+
+## [2.44.0](https://github.com/railroadmedia/musora-content-services/compare/v2.43.0...v2.44.0) (2025-09-24)
+
+
+### Features
+
+* **MU2-1034:** Update thread [#452](https://github.com/railroadmedia/musora-content-services/issues/452) ([5fbd76b](https://github.com/railroadmedia/musora-content-services/commit/5fbd76b97614f9f0df16397840e821ac96f2834e))
+* **MU2-1034:** update thread function ([75cd537](https://github.com/railroadmedia/musora-content-services/commit/75cd537c1d864761b4bf4413f85da6c04db2f615))
+* **MU2-1040:** thread pinning ([f43038e](https://github.com/railroadmedia/musora-content-services/commit/f43038e7aaba5742bb69d60c59e326ef5d57905c))
+* **MU2-1040:** thread pinning [#453](https://github.com/railroadmedia/musora-content-services/issues/453) ([209c3bf](https://github.com/railroadmedia/musora-content-services/commit/209c3bf1aabee76ff4ca455fc242333a2eb1c040))
+* **MU2-1041:** thread locking ([9c743f2](https://github.com/railroadmedia/musora-content-services/commit/9c743f2150fc0cb2ad9373c62cf4b33ca93c0795))
+* **MU2-1041:** thread locking [#454](https://github.com/railroadmedia/musora-content-services/issues/454)  ([88709fd](https://github.com/railroadmedia/musora-content-services/commit/88709fdedfec55ea69197542038ae2cdca420f12))
+
+## [2.43.0](https://github.com/railroadmedia/musora-content-services/compare/v2.42.0...v2.43.0) (2025-09-23)
+
+
+### Features
+
+* **BEH-910:** fetch metadata for download functionality ([#463](https://github.com/railroadmedia/musora-content-services/issues/463)) ([8406795](https://github.com/railroadmedia/musora-content-services/commit/84067954f1aed3f7e65c42f8621d6c5d81970037))
+
+## [2.42.0](https://github.com/railroadmedia/musora-content-services/compare/v2.40.0...v2.42.0) (2025-09-22)
+
+
+### Features
+
+* add status field to navigateTo ([#456](https://github.com/railroadmedia/musora-content-services/issues/456)) ([bc48bd6](https://github.com/railroadmedia/musora-content-services/commit/bc48bd6d8e87091d4981fbff8246c3cb23f99394))
+* **MU2-1031:** fetch threads [#460](https://github.com/railroadmedia/musora-content-services/issues/460) ([c72131f](https://github.com/railroadmedia/musora-content-services/commit/c72131fbdeeea6ee59e70a404a7fe383bf05b315))
+* **MU2-1038:** New method for follow/unfollow threads [#455](https://github.com/railroadmedia/musora-content-services/issues/455) ([a612c30](https://github.com/railroadmedia/musora-content-services/commit/a612c302c2bb50af1c6a8f350f8950f342168c40))
+* **t3ps-785:** Add guided course lesson award endpoint ([#457](https://github.com/railroadmedia/musora-content-services/issues/457)) ([21bc634](https://github.com/railroadmedia/musora-content-services/commit/21bc63496ca38ab789e736a356c898a778718f54))
+
+## [2.41.0](https://github.com/railroadmedia/musora-content-services/compare/v2.40.0...v2.41.0) (2025-09-19)
+
+
+### Features
+
+* add status field to navigateTo ([#456](https://github.com/railroadmedia/musora-content-services/issues/456)) ([bc48bd6](https://github.com/railroadmedia/musora-content-services/commit/bc48bd6d8e87091d4981fbff8246c3cb23f99394))
+* **MU2-1038:** New method for follow/unfollow threads [#455](https://github.com/railroadmedia/musora-content-services/issues/455) ([a612c30](https://github.com/railroadmedia/musora-content-services/commit/a612c302c2bb50af1c6a8f350f8950f342168c40))
+* **t3ps-785:** Add guided course lesson award endpoint ([#457](https://github.com/railroadmedia/musora-content-services/issues/457)) ([21bc634](https://github.com/railroadmedia/musora-content-services/commit/21bc63496ca38ab789e736a356c898a778718f54))
+
+## [2.40.0](https://github.com/railroadmedia/musora-content-services/compare/v2.34.0...v2.40.0) (2025-09-18)
+
+
+### Features
+
+* **988:** Return json of the response ([e37c5fb](https://github.com/railroadmedia/musora-content-services/commit/e37c5fb4c5861745973352500258101e2c280585))
+* **998:** Initial commit, for troubleshooting npm ([899b5bc](https://github.com/railroadmedia/musora-content-services/commit/899b5bcaa1f20a315273391a001575c1728a88cf))
+* **beh-809:** show correct badge data on home page + lesson page ([#439](https://github.com/railroadmedia/musora-content-services/issues/439)) ([0c95805](https://github.com/railroadmedia/musora-content-services/commit/0c958051334450083c15514ed915c848f57af4c3))
+* fix navigateTo for packs without progress, restrict pack access to allowed packs ([#444](https://github.com/railroadmedia/musora-content-services/issues/444)) ([5807c54](https://github.com/railroadmedia/musora-content-services/commit/5807c5496209dcdbbbe9820ce8ecdb30dab74c54))
+* **MU2-1028:** forum categories ([#441](https://github.com/railroadmedia/musora-content-services/issues/441)) ([0781f11](https://github.com/railroadmedia/musora-content-services/commit/0781f11b9cc75b5e2aed646b877ba2fdc5066386))
+* **MU2-1029:** create forum category ([#445](https://github.com/railroadmedia/musora-content-services/issues/445)) ([966ee55](https://github.com/railroadmedia/musora-content-services/commit/966ee553bd150ecbe1fc80ec29e7a273a66fb662))
+* **MU2-1032:** store thread ([#451](https://github.com/railroadmedia/musora-content-services/issues/451)) ([78dcd70](https://github.com/railroadmedia/musora-content-services/commit/78dcd7094af2c3e7dd81d0e1355809c244a73fe0))
+* **MU2-1042:** update forum category ([#448](https://github.com/railroadmedia/musora-content-services/issues/448)) ([7e498de](https://github.com/railroadmedia/musora-content-services/commit/7e498de976173122820b8008818b530a298fb8f3))
+* **MU2-998:** Add shape of payload, update annotation/doc, update jsdoc ([9df418e](https://github.com/railroadmedia/musora-content-services/commit/9df418ebfe846dd2842d6eff8ce810579718525d))
+* **MU2-998:** fix authorization for request ([c0b9ada](https://github.com/railroadmedia/musora-content-services/commit/c0b9ada7d4f401f1492505decdad472f32ea37ed))
+* **MU2-998:** Update payments typescript, move to user for now, update docs, remove yarn.lock ([4f61eb1](https://github.com/railroadmedia/musora-content-services/commit/4f61eb162af8f35406fd683324900ec353d00c44))
+* **MU2-998:** Use fetchHandler ([72e1715](https://github.com/railroadmedia/musora-content-services/commit/72e17159e5aa2cc662174239c1783fba7621d710))
+
+
+### Bug Fixes
+
+* Guided Courses - System Test Patches ([#446](https://github.com/railroadmedia/musora-content-services/issues/446)) ([81ccee9](https://github.com/railroadmedia/musora-content-services/commit/81ccee9cc0021a0d326e5f021bed41c4696e06f7))
+
+### [2.39.5](https://github.com/railroadmedia/musora-content-services/compare/v2.39.4...v2.39.5) (2025-09-16)
+
+### [2.39.4](https://github.com/railroadmedia/musora-content-services/compare/v2.39.3...v2.39.4) (2025-09-16)
+
+### [2.39.3](https://github.com/railroadmedia/musora-content-services/compare/v2.39.2...v2.39.3) (2025-09-16)
+
+### [2.39.2](https://github.com/railroadmedia/musora-content-services/compare/v2.39.1...v2.39.2) (2025-09-15)
+
+### [2.39.1](https://github.com/railroadmedia/musora-content-services/compare/v2.39.0...v2.39.1) (2025-09-15)
+
+## [2.39.0](https://github.com/railroadmedia/musora-content-services/compare/v2.38.0...v2.39.0) (2025-09-15)
+
+
+### Features
+
+* **MU2-1029:** create forum category ([#445](https://github.com/railroadmedia/musora-content-services/issues/445)) ([966ee55](https://github.com/railroadmedia/musora-content-services/commit/966ee553bd150ecbe1fc80ec29e7a273a66fb662))
+
+## [2.38.0](https://github.com/railroadmedia/musora-content-services/compare/v2.37.0...v2.38.0) (2025-09-10)
+
+
+### Features
+
+* **MU2-1028:** forum categories ([#441](https://github.com/railroadmedia/musora-content-services/issues/441)) ([0781f11](https://github.com/railroadmedia/musora-content-services/commit/0781f11b9cc75b5e2aed646b877ba2fdc5066386))
+
+
+### Bug Fixes
+
+* Guided Courses - System Test Patches ([#446](https://github.com/railroadmedia/musora-content-services/issues/446)) ([81ccee9](https://github.com/railroadmedia/musora-content-services/commit/81ccee9cc0021a0d326e5f021bed41c4696e06f7))
+
+## [2.37.0](https://github.com/railroadmedia/musora-content-services/compare/v2.36.4...v2.37.0) (2025-09-10)
+
+
+### Features
+
+* fix navigateTo for packs without progress, restrict pack access to allowed packs ([#444](https://github.com/railroadmedia/musora-content-services/issues/444)) ([5807c54](https://github.com/railroadmedia/musora-content-services/commit/5807c5496209dcdbbbe9820ce8ecdb30dab74c54))
+
+### [2.36.4](https://github.com/railroadmedia/musora-content-services/compare/v2.36.3...v2.36.4) (2025-09-10)
+
+### [2.36.3](https://github.com/railroadmedia/musora-content-services/compare/v2.36.2...v2.36.3) (2025-09-09)
+
+### [2.36.2](https://github.com/railroadmedia/musora-content-services/compare/v2.36.1...v2.36.2) (2025-09-09)
+
+### [2.36.1](https://github.com/railroadmedia/musora-content-services/compare/v2.36.0...v2.36.1) (2025-09-09)
+
+## [2.36.0](https://github.com/railroadmedia/musora-content-services/compare/v2.35.0...v2.36.0) (2025-09-09)
+
+
+### Features
+
+* **988:** Return json of the response ([e37c5fb](https://github.com/railroadmedia/musora-content-services/commit/e37c5fb4c5861745973352500258101e2c280585))
+* **998:** Initial commit, for troubleshooting npm ([899b5bc](https://github.com/railroadmedia/musora-content-services/commit/899b5bcaa1f20a315273391a001575c1728a88cf))
+* **MU2-998:** Add shape of payload, update annotation/doc, update jsdoc ([9df418e](https://github.com/railroadmedia/musora-content-services/commit/9df418ebfe846dd2842d6eff8ce810579718525d))
+* **MU2-998:** fix authorization for request ([c0b9ada](https://github.com/railroadmedia/musora-content-services/commit/c0b9ada7d4f401f1492505decdad472f32ea37ed))
+* **MU2-998:** Update payments typescript, move to user for now, update docs, remove yarn.lock ([4f61eb1](https://github.com/railroadmedia/musora-content-services/commit/4f61eb162af8f35406fd683324900ec353d00c44))
+* **MU2-998:** Use fetchHandler ([72e1715](https://github.com/railroadmedia/musora-content-services/commit/72e17159e5aa2cc662174239c1783fba7621d710))
+
+## [2.35.0](https://github.com/railroadmedia/musora-content-services/compare/v2.34.0...v2.35.0) (2025-09-08)
+
+
+### Features
+
+* **beh-809:** show correct badge data on home page + lesson page ([#439](https://github.com/railroadmedia/musora-content-services/issues/439)) ([0c95805](https://github.com/railroadmedia/musora-content-services/commit/0c958051334450083c15514ed915c848f57af4c3))
+
+## [2.34.0](https://github.com/railroadmedia/musora-content-services/compare/v2.31.0...v2.34.0) (2025-09-08)
+
+
+### Features
+
+* **BEH-714:** call awards endpoint ([#373](https://github.com/railroadmedia/musora-content-services/issues/373)) ([822a2a7](https://github.com/railroadmedia/musora-content-services/commit/822a2a754d24603f2ea92c8cf862b47b4e6b3eb8))
+* **MU2-956:** display name update ([#422](https://github.com/railroadmedia/musora-content-services/issues/422)) ([dc66021](https://github.com/railroadmedia/musora-content-services/commit/dc660214feea9eac27d05463518092b5fd202f2f))
+* **MU2-957:** email change request ([#426](https://github.com/railroadmedia/musora-content-services/issues/426)) ([a5c79fd](https://github.com/railroadmedia/musora-content-services/commit/a5c79fdb95112bce25040f4aaa5ec9a3fc55b2b0))
+* **MU2-961:** blocked users list ([#421](https://github.com/railroadmedia/musora-content-services/issues/421)) ([78b801d](https://github.com/railroadmedia/musora-content-services/commit/78b801d8dbea154e261046d4717e7f2e4cae5504))
+
+
+### Bug Fixes
+
+* add parent artist if null ([#401](https://github.com/railroadmedia/musora-content-services/issues/401)) ([fb546a3](https://github.com/railroadmedia/musora-content-services/commit/fb546a38e262746d9f118a190c1ec01fe260bb47)), closes [#380](https://github.com/railroadmedia/musora-content-services/issues/380) [#384](https://github.com/railroadmedia/musora-content-services/issues/384)
+* add published on to navigate_to ([#424](https://github.com/railroadmedia/musora-content-services/issues/424)) ([2a73222](https://github.com/railroadmedia/musora-content-services/commit/2a73222f0b8278ef2026ab4013cb10d331e0f94a))
+* **BEH-845:** enable soft deletes for user activities ([#384](https://github.com/railroadmedia/musora-content-services/issues/384)) ([acc8b6b](https://github.com/railroadmedia/musora-content-services/commit/acc8b6bf54fccd510cd9f2dbdeb8db880a3de213))
+* **MU-921:** add context to content empty arrays ([#410](https://github.com/railroadmedia/musora-content-services/issues/410)) ([9de1620](https://github.com/railroadmedia/musora-content-services/commit/9de1620e8b7b703e2ca9a77a455edc1820040b72))
+* **MU-922:** uses BE for fetching recent content items ([#411](https://github.com/railroadmedia/musora-content-services/issues/411)) ([e85fe88](https://github.com/railroadmedia/musora-content-services/commit/e85fe881d382aadbe8fc902e959cfad2cbc98576))
+* progress rows throws error for empty progress ([#423](https://github.com/railroadmedia/musora-content-services/issues/423)) ([e388788](https://github.com/railroadmedia/musora-content-services/commit/e38878854bf78bcdd87943ca6564d9a49f946803))
+* **recsys:** support navigateTo and permissions filtering for recomme… ([#403](https://github.com/railroadmedia/musora-content-services/issues/403)) ([a8c0fb3](https://github.com/railroadmedia/musora-content-services/commit/a8c0fb34b17acb4df564231430c5f91995b2aa2b))
+* **T3PS-373:** fixes incorrect brand in query on related lessons ([#417](https://github.com/railroadmedia/musora-content-services/issues/417)) ([464b262](https://github.com/railroadmedia/musora-content-services/commit/464b262f733c4c22cd4065de54eda503c0286b9e))
+* **T3PS-454:** rank lessons by recommended ([#380](https://github.com/railroadmedia/musora-content-services/issues/380)) ([7539f0d](https://github.com/railroadmedia/musora-content-services/commit/7539f0d30ad0f48edc637e9b0c046805730cd63b))
+
+### [2.33.7](https://github.com/railroadmedia/musora-content-services/compare/v2.33.6...v2.33.7) (2025-09-04)
+
+
+### Bug Fixes
+
+* add published on to navigate_to ([#424](https://github.com/railroadmedia/musora-content-services/issues/424)) ([2a73222](https://github.com/railroadmedia/musora-content-services/commit/2a73222f0b8278ef2026ab4013cb10d331e0f94a))
+
+### [2.33.6](https://github.com/railroadmedia/musora-content-services/compare/v2.33.5...v2.33.6) (2025-09-03)
+
+### [2.33.5](https://github.com/railroadmedia/musora-content-services/compare/v2.33.1...v2.33.5) (2025-09-03)
+
+### [2.33.4](https://github.com/railroadmedia/musora-content-services/compare/v2.33.3...v2.33.4) (2025-09-03)
+
+### [2.33.3](https://github.com/railroadmedia/musora-content-services/compare/v2.33.2...v2.33.3) (2025-09-03)
+
+### [2.33.2](https://github.com/railroadmedia/musora-content-services/compare/v2.33.1...v2.33.2) (2025-09-03)
+
+### [2.33.1](https://github.com/railroadmedia/musora-content-services/compare/v2.33.0...v2.33.1) (2025-08-27)
+
+## [2.33.0](https://github.com/railroadmedia/musora-content-services/compare/v2.32.0...v2.33.0) (2025-08-27)
+
+
+### Features
+
+* **BEH-714:** call awards endpoint ([#373](https://github.com/railroadmedia/musora-content-services/issues/373)) ([822a2a7](https://github.com/railroadmedia/musora-content-services/commit/822a2a754d24603f2ea92c8cf862b47b4e6b3eb8))
+* **MU2-957:** email change request ([#426](https://github.com/railroadmedia/musora-content-services/issues/426)) ([a5c79fd](https://github.com/railroadmedia/musora-content-services/commit/a5c79fdb95112bce25040f4aaa5ec9a3fc55b2b0))
+
+
+### Bug Fixes
+
+* progress rows throws error for empty progress ([#423](https://github.com/railroadmedia/musora-content-services/issues/423)) ([e388788](https://github.com/railroadmedia/musora-content-services/commit/e38878854bf78bcdd87943ca6564d9a49f946803))
+
+## [2.32.0](https://github.com/railroadmedia/musora-content-services/compare/v2.31.2...v2.32.0) (2025-08-19)
+
+
+### Features
+
+* **MU2-956:** display name update ([#422](https://github.com/railroadmedia/musora-content-services/issues/422)) ([dc66021](https://github.com/railroadmedia/musora-content-services/commit/dc660214feea9eac27d05463518092b5fd202f2f))
+* **MU2-961:** blocked users list ([#421](https://github.com/railroadmedia/musora-content-services/issues/421)) ([78b801d](https://github.com/railroadmedia/musora-content-services/commit/78b801d8dbea154e261046d4717e7f2e4cae5504))
+
+
+### Bug Fixes
+
+* add parent artist if null ([#401](https://github.com/railroadmedia/musora-content-services/issues/401)) ([fb546a3](https://github.com/railroadmedia/musora-content-services/commit/fb546a38e262746d9f118a190c1ec01fe260bb47)), closes [#380](https://github.com/railroadmedia/musora-content-services/issues/380) [#384](https://github.com/railroadmedia/musora-content-services/issues/384)
+* **T3PS-373:** fixes incorrect brand in query on related lessons ([#417](https://github.com/railroadmedia/musora-content-services/issues/417)) ([464b262](https://github.com/railroadmedia/musora-content-services/commit/464b262f733c4c22cd4065de54eda503c0286b9e))
+
 ### [2.31.2](https://github.com/railroadmedia/musora-content-services/compare/v2.31.1...v2.31.2) (2025-08-14)
 
 ### [2.31.1](https://github.com/railroadmedia/musora-content-services/compare/v2.31.0...v2.31.1) (2025-08-14)

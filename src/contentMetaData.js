@@ -56,132 +56,6 @@ export const TabResponseType = {
 };
 
 const commonMetadata = {
-  instructor: {
-    name: 'Coaches',
-    icon: 'icon-coach',
-    allowableFilters: ['genre', 'focus'],
-    sortBy: '-published_on',
-  },
-  course: {
-    name: 'Courses',
-    allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
-    icon: 'icon-courses',
-    tabs: [
-      Tabs.Courses,
-      Tabs.Instructors,
-      Tabs.Genres,
-    ],
-  },
-  pack: {
-    allowableFilters: [],
-  },
-  'student-review': {
-    name: 'Student Reviews',
-    icon: 'icon-student-focus',
-    allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'creativity', 'lifestyle'],
-    sortBy: '-published_on',
-    tabs: [
-      Tabs.Lessons,
-      Tabs.Instructors,
-      Tabs.Genres,
-    ],
-  },
-  song: {
-    name: 'Songs',
-    icon: 'icon-songs',
-    description:
-          'Play the songs you love with note-for-note transcriptions and handy practice tools.',
-    allowableFilters: ['difficulty', 'genre', 'lifestyle', 'instrumentless'],
-    tabs: [
-      Tabs.Songs,
-      Tabs.Artists,
-      Tabs.Genres,
-    ],
-  },
-  'quick-tips': {
-    name: 'Quick Tips',
-    icon: 'icon-shows',
-    description:
-          'Only have 10 minutes? These short lessons are designed to inspire you with quick tips and exercises, even if you don’t have lots of time to practice.',
-    allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle', 'creativity'],
-    sortBy: '-published_on',
-    tabs: [
-      Tabs.Lessons,
-      Tabs.Instructors,
-      Tabs.Genres,
-    ],
-  },
-  'question-and-answer': {
-    name: 'Q&A',
-    description:
-          'Each week we go live to answer your questions. Submit your questions in advance using the button below, in the Q&A thread in the forums, or live in the community chat.',
-    allowableFilters: ['difficulty', 'genre', 'essential', 'theory'],
-    sortBy: '-published_on',
-  },
-  recommendation: {
-    tabs: [
-      { name: 'All', is_group_by: true, value: ['group_by,Recommended'] },
-      { name: 'Songs', value: ['filter,song'] },
-      { name: 'Lessons', value: ['filter,lesson'] },
-      { name: 'Workouts', value: ['filter,workout'] },
-    ],
-  },
-  workout: {
-    name: 'Workouts',
-    shortname: 'Workouts',
-    allowableFilters: ['difficulty', 'genre', 'topic'],
-    tabs: [
-      Tabs.All,
-      {
-        name: '5 Minutes',
-        short_name: '5 MINS',
-        is_required_field: true,
-        value: 'length_in_seconds,-450',
-        value_web: ['length_in_seconds < 450'],
-      },
-      {
-        name: '10 Minutes',
-        short_name: '10 MINS',
-        is_required_field: true,
-        value: 'length_in_seconds,450-750',
-        value_web: ['length_in_seconds > 451', 'length_in_seconds < 751'],
-      },
-      {
-        name: '15+ Minutes',
-        short_name: '15+ MINS',
-        is_required_field: true,
-        value: 'length_in_seconds,750+',
-        value_web: ['length_in_seconds > 750'],
-      },
-      Tabs.Instructors,
-    ],
-    modalText:
-        'Workouts are fun play-along lessons that help hone your musical skills. They cover various topics, and have multiple difficulty and duration options — so there’s always a perfect Workout for you. Just pick one, press start, and play along!',
-  },
-  'coach-lessons': {
-    allowableFilters: ['difficulty', 'genre', 'essential', 'theory', 'lifestyle', 'type'],
-  },
-  'lesson-history': {
-    name: 'Lesson History',
-    shortname: 'Lesson History',
-    icon: 'bookmark',
-    allowableFilters: ['difficulty', 'type'],
-    sortBy: '-published_on',
-    tabs: [
-      Tabs.InProgress,
-      Tabs.Completed,
-    ],
-  },
-  'new-release': {
-    name: 'New Releases',
-    description:
-          "Here's a list of all lessons recently added to Drumeo. Browse on your own or use search to find whatever it is you'd like to learn!",
-    allowableFilters: ['type'],
-    sortBy: '-published_on',
-    tabs: [
-      Tabs.Lessons,
-    ],
-  },
   'lessons': {
     name: 'Lessons',
     filterOptions: {
@@ -225,6 +99,22 @@ const commonMetadata = {
       Tabs.ExploreAll
     ],
   },
+  'recent': {
+    name: 'Recent Lessons',
+    tabs: [
+      Tabs.RecentAll,
+      Tabs.RecentIncomplete,
+      Tabs.RecentCompleted
+    ],
+  },
+  recommendation: {
+    tabs: [
+      { name: 'All', is_group_by: true, value: ['group_by,Recommended'] },
+      { name: 'Songs', value: ['filter,song'] },
+      { name: 'Lessons', value: ['filter,lesson'] },
+      { name: 'Workouts', value: ['filter,workout'] },
+    ],
+  },
   'recent-activities': {
     name: 'Recent Activity',
     onlyAvailableTabs: true,
@@ -239,84 +129,6 @@ const commonMetadata = {
 }
 const contentMetadata = {
   drumeo: {
-    instructor: {
-      description:
-          'Your drumming journey is unique. You need personalized coaching that helps you reach your goals. Learn from some of the best drummers in the world!',
-    },
-    live: {
-      thumbnailUrl: 'https://dpwjbsxqtam5n.cloudfront.net/shows/show-live.jpg',
-      name: 'Live',
-      url: '/live-streams',
-      shortname: 'Live Lessons',
-      icon: 'icon-shows',
-      description:
-                    'Practice sessions, Q&A, celebrations, and more are available during Drumeo live lessons. Subscribe to an event or the whole calendar, so you don’t miss out!',
-      allowableFilters: ['difficulty', 'genre', 'essential', 'theory'],
-      sortBy: '-published_on',
-      tabs: [
-        Tabs.Lessons,
-        Tabs.Instructors,
-        Tabs.Genres,
-      ],
-    },
-    'odd-times': {
-      thumbnailUrl:
-                        'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/1bf6fc7a-d1a5-4934-d322-b9f6da454000/public',
-      name: 'Odd Times With Aaron Edgar',
-      shortname: 'Episodes',
-      icon: 'icon-shows',
-      allowableFilters: [],
-      sortBy: 'sort',
-    },
-    rudiment: {
-      name: 'Rudiments',
-      icon: 'icon-drums',
-      description:
-            'The 40 drum rudiments are essential for any drummer, no matter the style, genre, or scenario. You can use the videos below to help you learn, practice, and perfect every single one.',
-      allowableFilters: ['difficulty', 'genre', 'gear', 'topic'],
-      tabs: [
-        Tabs.All,
-        {
-          name: 'Drags',
-          short_name: 'DRAGS',
-          is_required_field: true,
-          value: 'topic,Drags',
-        },
-        {
-          name: 'Flams',
-          short_name: 'FLAMS',
-          is_required_field: true,
-          value: 'topic,Flams',
-        },
-        {
-          name: 'Paradiddles',
-          short_name: 'PARADIDDLES',
-          is_required_field: true,
-          value: 'topic,Paradiddles',
-        },
-        {
-          name: 'Rolls',
-          short_name: 'ROLLS',
-          is_required_field: true,
-          value: 'topic,Rolls',
-        },
-      ],
-      sortBy: 'sort',
-    },
-    'play-along': {
-      name: 'Play-Alongs',
-      icon: 'icon-play-alongs',
-      description:
-            'Add your drumming to high-quality drumless play-along tracks - with handy playback tools to help you create the perfect performance.',
-      allowableFilters: ['difficulty', 'genre', 'bpm'],
-      tabs: [
-        {
-          name: 'All Play-Alongs',
-          short_name: 'ALL',
-          value: '',
-        },
-      ],
-    },
     'lessons': {
       name: 'Lessons',
       filterOptions: {
@@ -325,32 +137,6 @@ const contentMetadata = {
         type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Shows', 'Documentaries', 'Live Archives', 'Student Archives'],
         progress: PROGRESS_NAMES,
       },
-      tabs: [
-        Tabs.ForYou,
-        Tabs.Individuals,
-        Tabs.Collections,
-        Tabs.ExploreAll
-      ],
-    },
-    'recent': {
-      name: 'Recent Lessons',
-      tabs: [
-        Tabs.RecentAll,
-        Tabs.RecentIncomplete,
-        Tabs.RecentCompleted
-      ],
-    },
-    'songs': {
-      name:          'Songs',
-      filterOptions: {
-        difficulty: DIFFICULTY_STRINGS,
-        style:      [
-          'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
-          'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
-        ],
-        type:       ['Tutorials', 'Transcriptions', 'Play-Alongs', 'Jam Tracks'],
-        progress:   PROGRESS_NAMES,
-      },
       sortingOptions: {
         title: 'Sort By',
         type: 'radio',
@@ -358,13 +144,12 @@ const contentMetadata = {
       },
       tabs: [
         Tabs.ForYou,
-        Tabs.Tutorials,
-        Tabs.Transcriptions,
-        Tabs.PlayAlongs,
-        Tabs.JamTracks,
+        Tabs.Individuals,
+        Tabs.Collections,
         Tabs.ExploreAll
       ],
     },
+    'songs-types': ['Tutorials', 'Transcriptions', 'Play-Alongs', 'Jam Tracks'],
   },
   pianote: {
     'lessons': {
@@ -375,6 +160,11 @@ const contentMetadata = {
         type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Live Archives', 'Student Archives'],
         progress: PROGRESS_NAMES,
       },
+      sortingOptions: {
+        title: 'Sort By',
+        type: 'radio',
+        items: SortingOptions.AllSortingOptions,
+      },
       tabs: [
         Tabs.ForYou,
         Tabs.Individuals,
@@ -382,132 +172,16 @@ const contentMetadata = {
         Tabs.ExploreAll
       ],
     },
-    'songs': {
-      name:          'Songs',
-      filterOptions: {
-        difficulty: DIFFICULTY_STRINGS,
-        style:      [
-          'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
-          'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
-        ],
-        type:       ['Tutorials', 'Sheet Music', 'Play-Alongs', 'Jam Tracks'],
-        progress:   PROGRESS_NAMES,
-      },
-      sortingOptions: {
-        title: 'Sort By',
-        type: 'radio',
-        items: SortingOptions.AllSortingOptions,
-      },
-      tabs: [
-        Tabs.ForYou,
-        Tabs.Tutorials,
-        Tabs.Transcriptions,
-        Tabs.PlayAlongs,
-        Tabs.JamTracks,
-        Tabs.ExploreAll
-      ],
-    },
-    'recent': {
-      name: 'Recent Lessons',
-      tabs: [
-        Tabs.RecentAll,
-        Tabs.RecentIncomplete,
-        Tabs.RecentCompleted
-      ],
-    },
+    'songs-types': ['Tutorials', 'Sheet Music', 'Play-Alongs', 'Jam Tracks'],
   },
   guitareo: {
-    instructor: {
-      description:
-          'Tackle your next guitar goal with bite-sized courses from many of the world\'s best guitarists.',
-    },
-    recording: {
-      name: 'Archives',
-      shortname: 'Lessons',
-      icon: 'icon-library',
-      description:
-          'Miss a live event or just want to watch a particular episode again? This is the place to do it. All of the Guitareo live broadcasts are archived here for you to watch at your leisure. If you have any questions or want to discuss the topics mentioned in the videos you can always post in the forum.',
-      allowableFilters: ['difficulty', 'genre'],
-      tabs: [
-        Tabs.Lessons,
-        Tabs.Instructors,
-        Tabs.Genres,
-      ],
-    },
-    'songs': {
-      name:          'Songs',
-      filterOptions: {
-        difficulty: DIFFICULTY_STRINGS,
-        style:      [
-          'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
-          'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
-        ],
-        type:       ['Tutorials', 'Tabs', 'Play-Alongs', 'Jam Tracks'],
-        progress:   PROGRESS_NAMES,
-      },
-      sortingOptions: {
-        title: 'Sort By',
-        type: 'radio',
-        items: SortingOptions.AllSortingOptions,
-      },
-      tabs: [
-        Tabs.ForYou,
-        Tabs.Tutorials,
-        Tabs.Transcriptions,
-        Tabs.PlayAlongs,
-        Tabs.JamTracks,
-        Tabs.ExploreAll
-      ],
-    },
-    'recent': {
-      name: 'Recent Lessons',
-      tabs: [
-        Tabs.RecentAll,
-        Tabs.RecentIncomplete,
-        Tabs.RecentCompleted
-      ],
-    },
+    'songs-types': ['Tutorials', 'Tabs', 'Play-Alongs', 'Jam Tracks'],
+  },
+  playbass: {
+    'songs-types': ['Tutorials', 'Tabs', 'Play-Alongs', 'Jam Tracks'],
   },
   singeo: {
-    'student-review': {
-      thumbnailUrl: 'https://d1923uyy6spedc.cloudfront.net/student-reviews.png',
-      icon: 'icon-student-focus',
-      description:
-                    'Want feedback on your singing? Submit a video for student review. We will watch your submission and then provide helpful encouragement and feedback. This is a great way to build accountability and benefit from the expertise of our teachers.',
-    },
-    'songs': {
-      name:          'Songs',
-      filterOptions: {
-        difficulty: DIFFICULTY_STRINGS,
-        style:      [
-          'Blues', 'Christian', 'Classical', 'Country', 'Disco', 'Electronic', 'Folk', 'Funk', 'Hip-Hop/Rap', 'Holiday', 'Jazz', 'Soundtrack',
-          'World', 'Metal', 'Pop', 'R&B/Soul', 'Rock'
-        ],
-        type:       ['Tutorials', 'Sheet Music', 'Play-Alongs', 'Jam Tracks'],
-        progress:   PROGRESS_NAMES,
-      },
-      sortingOptions: {
-        title: 'Sort By',
-        type: 'radio',
-        items: SortingOptions.AllSortingOptions,
-      },
-      tabs: [
-        Tabs.ForYou,
-        Tabs.Tutorials,
-        Tabs.Transcriptions,
-        Tabs.PlayAlongs,
-        Tabs.JamTracks,
-        Tabs.ExploreAll
-      ],
-    },
-    'recent': {
-      name: 'Recent Lessons',
-      tabs: [
-        Tabs.RecentAll,
-        Tabs.RecentIncomplete,
-        Tabs.RecentCompleted
-      ],
-    },
+    'songs-types': ['Tutorials', 'Sheet Music', 'Play-Alongs', 'Jam Tracks'],
   }
 }
 
@@ -519,22 +193,17 @@ export const typeWithSortOrder = [
 
 export function processMetadata(brand, type, withFilters = false) {
   let brandMetaData = contentMetadata[brand]?.[type]
-  // If the type is explicitly defined as null or the brand doesn't exist return null
-  // Specifically this is for drumeo.student-review
-  if (brandMetaData === null) {
-    return null
-  }
   let commonMetaData = commonMetadata[type]
   brandMetaData = { ...commonMetaData, ...brandMetaData }
+  if (type === 'songs' && contentMetadata[brand]?.['songs-types']) {
+    brandMetaData['filterOptions']['type'] = contentMetadata[brand]['songs-types']
+  }
   if (Object.keys(brandMetaData).length === 0) {
     return null
   }
   const processedData = {
     type,
-    thumbnailUrl: brandMetaData.thumbnailUrl || null,
     name: brandMetaData.name || null,
-    description: brandMetaData.description || null,
-    url: brandMetaData.url ? brand + brandMetaData.url : brand + '/' + type,
     sort: brandMetaData.sortingOptions || null,
     tabs: brandMetaData.tabs || [],
   }
@@ -545,7 +214,7 @@ export function processMetadata(brand, type, withFilters = false) {
 
   if (withFilters && !brandMetaData.filterOptions) {
     Object.keys(brandMetaData).forEach((key) => {
-      if (!['thumbnailUrl', 'name', 'description'].includes(key)) {
+      if ('name' !== key) {
         processedData[key] = brandMetaData[key]
       }
     })
