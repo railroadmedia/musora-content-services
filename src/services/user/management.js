@@ -177,7 +177,7 @@ export async function getUserSignature() {
  * @returns {Promise<{ show: boolean }>} - A promise that resolves with the updated visibility state.
  */
 export async function toggleSignaturePrivate(showSignature = true) {
-  const apiUrl = `${baseUrl}/v1/forums/signature/toggle`
+  const apiUrl = `/api/forums/v1/signature/toggle`
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   return httpClient.put(apiUrl, { show: showSignature })
 }
