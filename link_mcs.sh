@@ -23,4 +23,4 @@ npm link musora-content-services
 echo "Symlink created successfully. You can now test your changes locally."
 
 # Optional: If you want to run the frontend with the linked package
-npm run dev
+#npm run dev

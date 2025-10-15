@@ -578,8 +578,3 @@ function bubbleProgress(hierarchy, contentId, localContext) {
   localContext.data[parentId] = data
   bubbleProgress(hierarchy, parentId, localContext)
 }
-
-
-
-
-

@@ -13,15 +13,6 @@ interface CustomerOrder {
   customer_url: string
 }
 
-interface CustomerOrder {
-  id: string
-  line_item_title: string
-  date: string
-  total_price: string
-  currency: string
-  customer_url: string
-}
-
 /**
  * Fetches a list of orders (from Shopify) for the authenticated user (customer).
  *
