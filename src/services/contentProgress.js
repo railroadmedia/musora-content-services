@@ -7,43 +7,61 @@ import {
 } from './railcontent.js'
 import { DataContext, ContentProgressVersionKey } from './dataContext.js'
 import { fetchHierarchy } from './sanity.js'
-import { recordUserPractice, findIncompleteLesson } from './userActivity'
+import {recordUserPractice, findIncompleteLesson} from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 
 const STATE_STARTED = 'started'
 const STATE_COMPLETED = 'completed'
-const DATA_KEY_STATUS = 's'
-const DATA_KEY_PROGRESS = 'p'
+const DATA_KEY_STATUS = 'status'
+const DATA_KEY_PROGRESS = 'progress_percent'
 const DATA_KEY_RESUME_TIME = 't'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
-const DATA_KEY_BRAND = 'b'
+const DATA_KEY_BRAND = 'brand'
+const DATA_KEY_PARENT_TYPE = 'parent_type'
+const DATA_KEY_PARENT_ID = 'parent_id'
 
 export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress)
 
 let sessionData = []
 
 export async function getProgressPercentage(contentId) {
-  return getById(contentId, DATA_KEY_PROGRESS, 0)
+  const progress = await ProgressRepository.create().getProgressOptimistic(contentId);
+  return progress?.data?.[DATA_KEY_PROGRESS] ?? 0;
 }
 
+// returns in same order as contentIds input
 export async function getProgressPercentageByIds(contentIds) {
-  return getByIds(contentIds, DATA_KEY_PROGRESS, 0)
+  const progress = await ProgressRepository.create().getProgressesOptimistic(contentIds).data;
+  progress.forEach(r => {
+    contentIds[r.content_id] = r[DATA_KEY_PROGRESS] ?? 0;
+  })
+  return progress
 }
 
 export async function getProgressState(contentId) {
-  return getById(contentId, DATA_KEY_STATUS, '')
+  const progress = await ProgressRepository.create().getProgressOptimistic(contentId);
+  return progress?.data?.[DATA_KEY_STATUS] ?? '';
 }
 
 export async function getProgressStateByIds(contentIds) {
-  return getByIds(contentIds, DATA_KEY_STATUS, '')
+  const progress = await ProgressRepository.create().getProgressesOptimistic(contentIds).data;
+  progress.forEach(r => {
+    contentIds[r.content_id] = r[DATA_KEY_STATUS] ?? 0;
+  })
+  return progress;
 }
 
 export async function getResumeTimeSeconds(contentId) {
-  return getById(contentId, DATA_KEY_RESUME_TIME, 0)
+  const progress = await ProgressRepository.create().getProgressOptimistic(contentId);
+  return progress?.data?.[DATA_KEY_RESUME_TIME] ?? 0;
 }
 
 export async function getResumeTimeSecondsByIds(contentIds) {
-  return getByIds(contentIds, DATA_KEY_RESUME_TIME, 0)
+  const progress = await ProgressRepository.create().getProgressesOptimistic(contentIds).data;
+  progress.forEach(r => {
+    contentIds[r.content_id] = r[DATA_KEY_RESUME_TIME] ?? 0;
+  })
+  return progress;
 }
 
 export async function getNextLesson(data) {
@@ -95,6 +113,7 @@ export async function getNextLesson(data) {
   return nextLessonData
 }
 
+// todo create a getNavigateTo for method
 export async function getNavigateTo(data) {
   let navigateToData = {}
   const twoDepthContentTypes = ['pack'] //TODO add method when we know what it's called
@@ -196,7 +215,8 @@ export async function getLastInteractedOf(contentIds) {
 }
 
 export async function getProgressDateByIds(contentIds) {
-  let data = await dataContext.getData()
+  let data = await ProgressRepository.create().getStandardProgressByContentIds(contentIds)?.data
+
   let progress = {}
   contentIds?.forEach(
     (id) =>
@@ -270,45 +290,38 @@ export async function getAllStartedOrCompleted({
   onlyIds = true,
   brand = null,
   excludedIds = [],
+  parentType = 0,
 } = {}) {
-  const data = await dataContext.getData()
-  const oneMonthAgoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
+
+  const thirtyDaysAgo = (Date.now() - (30 * 24 * 60 * 60 * 1000)).toISOString()
+
+  // change to queryWhere so we can query on statuses
+  const data = await ProgressRepository.create().getAllProgress({
+    brand: brand,
+    parentType: parentType,
+    since: thirtyDaysAgo, // need to actually set up this functionality still
+    limit: limit,
+  })?.data
 
   const excludedSet = new Set(excludedIds.map((id) => parseInt(id))) // ensure IDs are numbers
 
   let filtered = Object.entries(data)
-    .filter(([key, item]) => {
-      const id = parseInt(key)
-      const isRelevantStatus =
-        item[DATA_KEY_STATUS] === STATE_STARTED || item[DATA_KEY_STATUS] === STATE_COMPLETED
-      const isRecent = item[DATA_KEY_LAST_UPDATED_TIME] >= oneMonthAgoInSeconds
-      const isCorrectBrand = !brand || !item.b || item.b === brand
-      const isNotExcluded = !excludedSet.has(id)
-      return isRelevantStatus && isCorrectBrand && isNotExcluded
+    .filter(([_, item]) => {
+      return !excludedSet.has(item.content_id)
     })
-    .sort(([, a], [, b]) => {
-      const v1 = a[DATA_KEY_LAST_UPDATED_TIME]
-      const v2 = b[DATA_KEY_LAST_UPDATED_TIME]
-      if (v1 > v2) return -1
-      else if (v1 < v2) return 1
-      return 0
-    })
-
-  if (limit) {
-    filtered = filtered.slice(0, limit)
-  }
 
   if (onlyIds) {
-    return filtered.map(([key]) => parseInt(key))
+    return filtered.map(([_, item]) => item.content_id)
   } else {
     const progress = {}
-    filtered.forEach(([key, item]) => {
-      const id = parseInt(key)
-      progress[id] = {
+    filtered.forEach(([_, item]) => {
+      progress[item.content_id] = {
         last_update: item?.[DATA_KEY_LAST_UPDATED_TIME] ?? 0,
         progress: item?.[DATA_KEY_PROGRESS] ?? 0,
         status: item?.[DATA_KEY_STATUS] ?? '',
         brand: item?.b ?? '',
+        parent_type: item?.[DATA_KEY_PARENT_TYPE] ?? 0,
+        parent_id: item?.[DATA_KEY_PARENT_ID] ?? 0,
       }
     })
     return progress
