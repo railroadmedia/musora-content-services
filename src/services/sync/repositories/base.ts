@@ -10,6 +10,8 @@ import { SyncError, SyncExistsDTO, SyncReadDTO, SyncWriteDTO } from '..'
 import { SyncPushResponse } from "../fetch";
 import { ModelSerialized } from "../serializers";
 
+import { Q } from "@nozbe/watermelondb";
+
 export default class SyncRepository<TModel extends BaseModel> {
   context: SyncContext
 
@@ -31,6 +33,15 @@ export default class SyncRepository<TModel extends BaseModel> {
 
   protected async readAll() {
     return this._read<true>(() => this.store.readAll())
+  }
+
+  protected async queryBy(clauses: Record<string, any>[], limit: number = null) {
+    const args: any[] = clauses.map(q => {
+      return (q.value instanceof Array) ? Q.where(q.key, Q.oneOf(q.value)) : Q.where(q.key, q.value)
+    })
+    if (limit) args.push(Q.take(limit), Q.sortBy('updated_at', 'desc'))
+
+    return this._read<true>(() => this.store.readBy(...args))
   }
 
   protected async existOne(id: RecordId) {
