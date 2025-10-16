@@ -174,12 +174,12 @@ export async function getUserSignature() {
  * Toggles whether the user's signature is displayed publicly.
  *
  * @param {boolean} [showSignature=true] - Whether to show (`true`) or hide (`false`) the user's signature.
- * @returns {Promise<{ show: boolean }>} - A promise that resolves with the updated visibility state.
+ * @returns {Promise<{ show_signature: boolean }>} - A promise that resolves with the updated visibility state.
  */
 export async function toggleSignaturePrivate(showSignature = true) {
   const apiUrl = `/api/forums/v1/signature/toggle`
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.put(apiUrl, { show: showSignature })
+  return httpClient.put(apiUrl, { show_signature: showSignature })
 }
 
 
