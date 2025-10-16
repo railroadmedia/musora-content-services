@@ -2278,3 +2278,21 @@ export async function fetchShows(brand, type, sort = 'sort') {
   })
   return fetchSanity(query, true)
 }
+
+export async function fetchMethodV2IntroVideo(brand) {
+  const _type = 'method-intro'
+  const filter = `_type == '${_type}' && brand == '${brand}'`;
+  const sortOrder = getSortOrder('sort', brand)
+
+  const query = await buildQuery(
+    filter,
+    {},
+    getFieldsForContentType(_type),
+    {
+      sortOrder: sortOrder,
+      end: 1,
+    }
+  )
+
+  return fetchSanity(query, true)
+}
