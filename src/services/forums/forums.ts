@@ -1,4 +1,4 @@
-import {HttpClient} from "../../infrastructure/http";
+import {HttpClient} from "../../infrastructure/http/HttpClient";
 import {PaginatedResponse} from "../api/types";
 import {ForumThread} from "./types";
 import { globalConfig } from '../config.js'
