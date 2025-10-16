@@ -119,9 +119,9 @@ export async function confirmEmailChange(token: string): Promise<void | HttpErro
 
 /**
  * @param {number} userId - The ID of the user account to delete.
- * @returns {Promise<any|HttpError>} - A promise that resolves with the anonymized user data or an HttpError if the request fails.
+ * @returns {Promise<void>} - A promise that resolves with the anonymized user data or an HttpError if the request fails.
  */
-export async function deleteAccount(userId: number): Promise<any | HttpError> {
+export async function deleteAccount(userId: number): Promise<void> {
   const apiUrl = `/api/user-management-system/v1/users/${userId}`
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   return httpClient.delete(apiUrl)
