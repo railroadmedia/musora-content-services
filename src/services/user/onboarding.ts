@@ -13,14 +13,14 @@ export interface OnboardingProps {
 }
 
 /**
- * @param {Object} params - The parameters for resetting the password.
+ * @param {Object} params - The parameters for starting the onboarding process.
  * @property {string} email - The email address for the account.
  * @property {string} brand - The brand associated with the account.
  * @property {string} flow - The onboarding flow identifier.
  * @property {object} steps - An object representing the steps completed in the onboarding process.
  * @property {boolean} isCompleted - A boolean indicating whether the onboarding process is completed.
  *
- * @returns {Promise<void>} - A promise that resolves when the password reset is complete or an HttpError if the request fails.
+ * @returns {Promise<void>} - A promise that resolves when the onboarding process is started.
  * @throws {HttpError} - If the HTTP request fails.
  */
 export async function startOnboarding({
