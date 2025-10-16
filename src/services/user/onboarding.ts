@@ -12,7 +12,7 @@ export interface UpdateOnboardingAnswerProps {
 
 /**
  * @param {UpdateOnboardingAnswerProps} props - The properties for updating an onboarding answer.
- * @property {string} props.question - The onboarding question identifier.
+ * @property {string} props.question - The onboarding question identifier. One of the following: 'gear', 'topic', 'genre', 'skill-level', 'goals', 'instrument', 'coach'.
  * @property {string} props.answer - The answer to the onboarding question.
  *
  * @returns {Promise<void>} - A promise that resolves when the onboarding answer is updated.
