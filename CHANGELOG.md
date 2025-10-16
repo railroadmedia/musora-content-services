@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.52.0](https://github.com/railroadmedia/musora-content-services/compare/v2.51.0...v2.52.0) (2025-10-16)
+
+
+### Features
+
+* **MU2-1097:** Add function deleteAccount, update docs ([e27f259](https://github.com/railroadmedia/musora-content-services/commit/e27f259422c8142cf5a28840cce6a6fa2a547016))
+* **MU2-1097:** Update method to return Promise<void> ([f9537da](https://github.com/railroadmedia/musora-content-services/commit/f9537da3e3db9011f3ba2bf82f88b197657106a3))
+
 ## [2.51.0](https://github.com/railroadmedia/musora-content-services/compare/v2.50.0...v2.51.0) (2025-10-13)
 
 
