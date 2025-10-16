@@ -154,7 +154,7 @@ export async function updateDisplayName(newDisplayName) {
  * @returns {Promise<{ signature: string }>} - A promise that resolves with the updated signature data.
  */
 export async function setUserSignature(params) {
-  const apiUrl = `${baseUrl}/v1/forums/signature`
+  const apiUrl = `/api/forums/v1/signature`
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   return httpClient.post(apiUrl, params)
 }
@@ -165,7 +165,7 @@ export async function setUserSignature(params) {
  * @returns {Promise<{ signature: string }>} - A promise that resolves with the user's current signature data.
  */
 export async function getUserSignature() {
-  const apiUrl = `${baseUrl}/v1/forums/signature`
+  const apiUrl = `/api/forums/v1/signature`
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   return httpClient.get(apiUrl)
 }
