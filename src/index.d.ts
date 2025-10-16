@@ -251,6 +251,7 @@ import {
 
 import {
 	confirmEmailChange,
+	deleteAccount,
 	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
@@ -377,6 +378,7 @@ declare module 'musora-content-services' {
 		createPost,
 		createPracticeNotes,
 		createThread,
+		deleteAccount,
 		deleteComment,
 		deleteItemsFromPlaylist,
 		deleteNotification,

@@ -251,6 +251,7 @@ import {
 
 import {
 	confirmEmailChange,
+	deleteAccount,
 	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
@@ -376,6 +377,7 @@ export {
 	createPost,
 	createPracticeNotes,
 	createThread,
+	deleteAccount,
 	deleteComment,
 	deleteItemsFromPlaylist,
 	deleteNotification,
