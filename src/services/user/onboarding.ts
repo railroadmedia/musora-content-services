@@ -5,7 +5,7 @@ import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
 
 export interface UpdateOnboardingAnswerProps {
-  question: 'gear' | 'topic' | 'genre' | 'experience' | 'goals' | 'instrument' | 'coach'
+  question: 'gear' | 'topic' | 'genre' | 'skill-level' | 'goals' | 'instrument' | 'coach'
   answer: string
   brand: string
 }
