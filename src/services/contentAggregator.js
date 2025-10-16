@@ -1,7 +1,6 @@
 import {
   getLastInteractedOf, getNavigateTo,
-  getNextLesson, getProgressDateByIds,
-  getProgressPercentageByIds,
+  getNextLesson,
   getProgressStateByIds,
   getResumeTimeSecondsByIds
 } from "./contentProgress"
@@ -86,7 +85,7 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   if(ids.length === 0) return data
 
   const [progressData, isLikedData, resumeTimeData, lastInteractedChildData, nextLessonData, navigateToData] = await Promise.all([
-    addProgressPercentage || addProgressStatus || addProgressTimestamp ? getProgressDateByIds(ids) : Promise.resolve(null),
+    addProgressPercentage || addProgressStatus || addProgressTimestamp ? getProgressDataByIds(ids) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),

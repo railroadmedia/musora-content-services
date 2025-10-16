@@ -1,13 +1,36 @@
 import SyncRepository, { Q } from './base'
-import ContentProgress, { COLLECTION_TYPE } from '../models/ContentProgress'
+import ContentProgress, { COLLECTION_TYPE, STATE } from '../models/ContentProgress'
 
 // note naming, assumes pessimistic (confirms with server) by default,
 // optimistic opt-in (reads locally (except if never once synced))
 
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
+  async startedIds(limit?: number) {
+    return this.queryAllIds(
+      Q.where('state', STATE.STARTED),
+      Q.sortBy('updated_at', 'desc'),
+      Q.take(limit || Infinity)
+    )
+  }
+
+  async completedIds(limit?: number) {
+    return this.queryAllIds(
+      Q.where('state', STATE.COMPLETED),
+      Q.sortBy('updated_at', 'desc'),
+      Q.take(limit || Infinity)
+    )
+  }
+
+  async mostRecentlyUpdatedId(contentIds: number[]) {
+    return this.queryOneId(
+      Q.where('content_id', Q.oneOf(contentIds)),
+      Q.sortBy('updated_at', 'desc'),
+    )
+  }
+
   // get all progress for a given brand, collection type and id
   async getAllProgress(
-    { brand, collection }: { brand?: string; collection?: { type: COLLECTION_TYPE, id: number } | null },
+    { brand, collection }: { brand?: string; collection?: { type: COLLECTION_TYPE, id: number } | null } = {},
     limit?: number
   ) {
     const clauses: Q.Clause[] = []
@@ -26,7 +49,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   // get one contentId of a given collection type and id
   async getOneProgressByContentId(
     contentId: number,
-    { brand, collection }: { brand?: string; collection?: { type: COLLECTION_TYPE, id: number } | null }
+    { brand, collection }: { brand?: string; collection?: { type: COLLECTION_TYPE, id: number } | null } = {}
   ) {
     const clauses = [
       Q.where('content_id', contentId)
@@ -45,7 +68,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   // get multiple contentIds of a given collection type and id
   async getSomeProgressByContentIds(
     contentIds: number[],
-    { brand, collection }: { brand?: string; collection?: { type: COLLECTION_TYPE, id: number } | null }
+    { brand, collection }: { brand?: string; collection?: { type: COLLECTION_TYPE, id: number } | null } = {}
   ) {
     const clauses = [
       Q.where('content_id', Q.oneOf(contentIds))
