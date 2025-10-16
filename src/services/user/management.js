@@ -150,7 +150,7 @@ export async function updateDisplayName(newDisplayName) {
 /**
  * Updates the user's signature.
  *
- * @param {SetUserSignatureParams} params - Parameters containing the user's signature and brand.
+ * @param {SetUserSignatureParams} params - Parameters containing the user's signature.
  * @returns {Promise<{ signature: string }>} - A promise that resolves with the updated signature data.
  */
 export async function setUserSignature(params) {
