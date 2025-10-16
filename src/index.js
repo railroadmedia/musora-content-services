@@ -88,14 +88,14 @@ import {
 } from './services/dateUtils.js';
 
 import {
-	getActiveDiscussions
-} from './services/forum.js';
-
-import {
 	createForumCategory,
 	fetchForumCategories,
 	updateForumCategory
 } from './services/forums/categories.ts';
+
+import {
+	getActiveDiscussions
+} from './services/forums/forums.ts';
 
 import {
 	createPost,
@@ -104,7 +104,8 @@ import {
 	fetchPosts,
 	likePost,
 	search,
-	unlikePost
+	unlikePost,
+	updatePost
 } from './services/forums/posts.ts';
 
 import {
@@ -250,6 +251,7 @@ import {
 
 import {
 	confirmEmailChange,
+	deleteAccount,
 	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
@@ -375,6 +377,7 @@ export {
 	createPost,
 	createPracticeNotes,
 	createThread,
+	deleteAccount,
 	deleteComment,
 	deleteItemsFromPlaylist,
 	deleteNotification,
@@ -605,6 +608,7 @@ export {
 	updateForumCategory,
 	updateNotificationSetting,
 	updatePlaylist,
+	updatePost,
 	updatePracticeNotes,
 	updateThread,
 	updateUserPractice,

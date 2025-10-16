@@ -20,7 +20,7 @@ export class HttpClient {
     requestExecutor: RequestExecutor = new FetchRequestExecutor()
   ) {
     this.baseUrl = baseUrl
-    this.token = token || globalConfig.sessionConfig.token || null
+    this.token = token || globalConfig?.sessionConfig?.token || null
     this.headerProvider = headerProvider
     this.requestExecutor = requestExecutor
   }
