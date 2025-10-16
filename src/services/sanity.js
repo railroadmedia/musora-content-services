@@ -1341,11 +1341,10 @@ export async function fetchAllPacks(
   const sortOrder = getSortOrder(sort, brand)
   const filter = `(_type == 'pack' || _type == 'semester-pack') && brand == '${brand}' && title match "${searchTerm}*"`
   const filterParams = {}
-  const fields = getFieldsForContentType('pack')
   const start = (page - 1) * limit
   const end = start + limit
 
-  const query = await buildQuery(filter, filterParams, getFieldsForContentType('pack'), {
+  const query = await buildQuery(filter, filterParams, await getFieldsForContentTypeWithFilteredChildren('pack'), {
     logo_image_url: 'logo_image_url.asset->url',
     sortOrder: sortOrder,
     start,
