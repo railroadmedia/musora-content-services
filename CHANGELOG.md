@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.52.2](https://github.com/railroadmedia/musora-content-services/compare/v2.52.1...v2.52.2) (2025-10-16)
+
+
+### Bug Fixes
+
+* correct the import for HttpClient ([fff2b42](https://github.com/railroadmedia/musora-content-services/commit/fff2b4233d7d2b23d4660e2ea05f9a81dcf540c6))
+
 ### [2.52.1](https://github.com/railroadmedia/musora-content-services/compare/v2.52.0...v2.52.1) (2025-10-16)
 
 ## [2.52.0](https://github.com/railroadmedia/musora-content-services/compare/v2.51.0...v2.52.0) (2025-10-16)
