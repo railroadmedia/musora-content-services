@@ -1,6 +1,10 @@
 import BaseModel from './Base'
 import { SYNC_TABLES } from '../schema'
 
+export enum COLLECTION_TYPE {
+  LEARNING_PATH = 'learning-path',
+}
+
 export default class ContentProgress extends BaseModel {
   static table = SYNC_TABLES.CONTENT_PROGRESS
 
@@ -17,10 +21,10 @@ export default class ContentProgress extends BaseModel {
     return this._getRaw('progress_percent') as number
   }
   get collection_type() {
-    return this._getRaw('collection_type') as string
+    return (this._getRaw('collection_type') as COLLECTION_TYPE) || null
   }
   get collection_id() {
-    return this._getRaw('collection_id') as number
+    return (this._getRaw('collection_id') as number) || null
   }
   get brand() {
     return this._getRaw('brand') as string
@@ -35,10 +39,10 @@ export default class ContentProgress extends BaseModel {
   set progress_percent(value: number) {
     this._setRaw('progress_percent', value)
   }
-  set collection_type(value: string) {
+  set collection_type(value: COLLECTION_TYPE | null) {
     this._setRaw('collection_type', value)
   }
-  set collection_id(value: number) {
+  set collection_id(value: number | null) {
     this._setRaw('collection_id', value)
   }
   set brand(value: string) {

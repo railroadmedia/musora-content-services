@@ -9,7 +9,7 @@ export const SYNC_TABLES = {
 const contentLikesTable = tableSchema({
   name: SYNC_TABLES.CONTENT_LIKES,
   columns: [
-    { name: 'content_id', type: 'number' },
+    { name: 'content_id', type: 'number', isIndexed: true },
     { name: 'created_at', type: 'number' },
     { name: 'updated_at', type: 'number' },
     { name: '_optimistic', type: 'boolean' }
@@ -18,11 +18,11 @@ const contentLikesTable = tableSchema({
 const contentProgressTable = tableSchema({
   name: SYNC_TABLES.CONTENT_PROGRESS,
   columns: [
-    { name: 'content_id', type: 'number' },
+    { name: 'content_id', type: 'number', isIndexed: true },
     { name: 'state', type: 'string' },
     { name: 'progress_percent', type: 'number' },
-    { name: 'parent_type', type: 'string' },
-    { name: 'parent_id', type: 'number' },
+    { name: 'collection_type', type: 'string', isOptional: true },
+    { name: 'collection_id', type: 'number', isOptional: true },
     { name: 'created_at', type: 'number' },
     { name: 'updated_at', type: 'number' },
     { name: '_optimistic', type: 'boolean' }
@@ -31,7 +31,7 @@ const contentProgressTable = tableSchema({
 const contentPracticesTable = tableSchema({
   name: SYNC_TABLES.CONTENT_PRACTICES,
   columns: [
-    { name: 'content_id', type: 'number' },
+    { name: 'content_id', type: 'number', isIndexed: true },
     { name: 'created_at', type: 'number' },
     { name: 'updated_at', type: 'number' },
     { name: '_optimistic', type: 'boolean' }

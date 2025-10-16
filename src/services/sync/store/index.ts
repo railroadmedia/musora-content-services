@@ -142,18 +142,23 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return records.map((record) => this.modelSerializer.toPlainObject(record))
   }
 
-  async readBy(...args: Q.Clause[]) {
-    const records = await this.queryRecords(...args)
-    return records.map((record) => this.modelSerializer.toPlainObject(record))
-  }
-
   async readSome(ids: RecordId[]) {
     const records = await this.queryRecords(Q.where('id', Q.oneOf(ids)))
     return records.map((record) => this.modelSerializer.toPlainObject(record))
   }
 
   async readOne(id: RecordId) {
-    const record = await this.queryRecord(id)
+    const record = await this.findRecord(id)
+    return record ? this.modelSerializer.toPlainObject(record) : null
+  }
+
+  async queryAll(...args: Q.Clause[]) {
+    const records = await this.queryRecords(...args)
+    return records.map((record) => this.modelSerializer.toPlainObject(record))
+  }
+
+  async queryOne(...args: Q.Clause[]) {
+    const record = await this.queryRecord(...args)
     return record ? this.modelSerializer.toPlainObject(record) : null
   }
 
@@ -209,7 +214,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
           })
         }
 
-        record = await this.queryRecord(id)
+        record = await this.findRecord(id)
       })
 
       this.emit('write', record)
@@ -436,7 +441,11 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return await this.collection.query(...args).fetch()
   }
 
-  private async queryRecord(id: RecordId) {
+  private async queryRecord(...args: Q.Clause[]) {
+    return await this.collection.query(...args).fetch().then((records) => records[0] as TModel | null)
+  }
+
+  private async findRecord(id: RecordId) {
     return this.collection
       .query(Q.where('id', id))
       .fetch()

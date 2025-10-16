@@ -4,14 +4,12 @@ import {
 	globalConfig,
 	initializeService
 } from './services/config.js';
-import { default as EventsApi } from './services/eventsAPI.js';
+
 import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
-	pinGuidedCourse,
-	unEnrollUserInGuidedCourse,
-	unPinGuidedCourse
+	unEnrollUserInGuidedCourse
 } from './services/content-org/guided-courses.ts';
 
 import {
@@ -58,6 +56,7 @@ import {
 import {
 	contentStatusCompleted,
 	contentStatusReset,
+	contentStatusStarted,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
@@ -101,21 +100,16 @@ import {
 
 import {
 	createPost,
-	fetchCommunityGuidelines,
-	fetchPosts
+	fetchPosts,
+	likePost,
+	unlikePost
 } from './services/forums/posts.ts';
 
 import {
 	createThread,
-	fetchLatestThreads,
 	fetchThreads,
 	followThread,
-	lockThread,
-	pinThread,
-	unfollowThread,
-	unlockThread,
-	unpinThread,
-	updateThread
+	unfollowThread
 } from './services/forums/threads.ts';
 
 import {
@@ -137,10 +131,6 @@ import {
 } from './services/imageSRCVerify.js';
 
 import {
-	fetchCustomerPayments
-} from './services/payments.js';
-
-import {
 	assignModeratorToComment,
 	closeComment,
 	createComment,
@@ -155,7 +145,6 @@ import {
 	fetchCompletedState,
 	fetchContentInProgress,
 	fetchContentPageUserData,
-	fetchContentProgress,
 	fetchHandler,
 	fetchLastInteractedChild,
 	fetchLikeCount,
@@ -176,9 +165,8 @@ import {
 	postContentComplete,
 	postContentReset,
 	postContentRestore,
+	postContentStart,
 	postPlaylistContentEngaged,
-	postRecordWatchSession,
-	postUserLikes,
 	replyToComment,
 	reportComment,
 	restoreComment,
@@ -302,6 +290,10 @@ import {
 } from './services/user/notifications.js';
 
 import {
+	fetchCustomerPayments
+} from './services/user/payments.ts';
+
+import {
 	fetchUserPermissions,
 	reset
 } from './services/user/permissions.js';
@@ -342,6 +334,10 @@ import {
 	updateUserPractice
 } from './services/userActivity.js';
 
+import {
+	 default as EventsAPI 
+} from './services/eventsAPI';
+
 export {
 	addContextToContent,
 	addItemToPlaylist,
@@ -356,6 +352,7 @@ export {
 	confirmEmailChange,
 	contentStatusCompleted,
 	contentStatusReset,
+	contentStatusStarted,
 	convertToTimeZone,
 	createComment,
 	createForumCategory,
@@ -395,12 +392,10 @@ export {
 	fetchCommentModContentData,
 	fetchCommentRelies,
 	fetchComments,
-	fetchCommunityGuidelines,
 	fetchCompletedContent,
 	fetchCompletedState,
 	fetchContentInProgress,
 	fetchContentPageUserData,
-	fetchContentProgress,
 	fetchContentRows,
 	fetchCustomerPayments,
 	fetchEnrollmentPageMetadata,
@@ -411,7 +406,6 @@ export {
 	fetchHierarchy,
 	fetchInterests,
 	fetchLastInteractedChild,
-	fetchLatestThreads,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
@@ -521,6 +515,7 @@ export {
 	likeComment,
 	likeContent,
 	likePlaylist,
+	likePost,
 	logUserPractice,
 	login,
 	logout,
@@ -532,14 +527,12 @@ export {
 	openComment,
 	otherStats,
 	pauseLiveEventPolling,
-	pinGuidedCourse,
 	pinProgressRow,
 	postContentComplete,
 	postContentReset,
 	postContentRestore,
+	postContentStart,
 	postPlaylistContentEngaged,
-	postRecordWatchSession,
-	postUserLikes,
 	rankCategories,
 	rankItems,
 	recommendations,
@@ -570,7 +563,6 @@ export {
 	toDayjs,
 	togglePlaylistPrivate,
 	unEnrollUserInGuidedCourse,
-	unPinGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,
 	undeletePlaylist,
@@ -578,6 +570,7 @@ export {
 	unlikeComment,
 	unlikeContent,
 	unlikePlaylist,
+	unlikePost,
 	unpinProgressRow,
 	updateDisplayName,
 	updateForumCategory,
@@ -590,5 +583,6 @@ export {
 	uploadPictureFromS3,
 	verifyImageSRC,
 	verifyLocalDataContext,
-  EventsApi
 };
+
+export default EventsAPI

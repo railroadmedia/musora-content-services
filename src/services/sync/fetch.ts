@@ -42,9 +42,13 @@ type SyncStorePushResultSuccess<TRecordKey extends string = 'id'> = SyncStorePus
   type: 'success'
   entry: SyncEntry<TRecordKey>
 }
-type SyncStorePushResultFailure<TRecordKey extends string = 'id'> = SyncStorePushResultInvalid<TRecordKey>
-type SyncStorePushResultInvalid<TRecordKey extends string = 'id'> = SyncStorePushResultFailureBase<TRecordKey> & {
-  failureType: 'invalid'
+type SyncStorePushResultFailure<TRecordKey extends string = 'id'> = SyncStorePushResultProcessingFailure<TRecordKey> | SyncStorePushResultValidationFailure<TRecordKey>
+type SyncStorePushResultProcessingFailure<TRecordKey extends string = 'id'> = SyncStorePushResultFailureBase<TRecordKey> & {
+  failureType: 'processing'
+  error: any
+}
+type SyncStorePushResultValidationFailure<TRecordKey extends string = 'id'> = SyncStorePushResultFailureBase<TRecordKey> & {
+  failureType: 'validation'
   errors: Record<string, string[]>
 }
 interface SyncStorePushResultFailureBase<TRecordKey extends string = 'id'> extends SyncStorePushResultBase {
@@ -267,7 +271,7 @@ function deserializePushResponse(response: RawPushResponse) {
 
 function serializeRecord(record: SyncSyncable<'id'> | null): SyncSyncable<'client_record_id'> | null {
   if (record) {
-    const { id, ...rest } = record
+    const { id, _optimistic, ...rest } = record
     return {
       ...rest,
       client_record_id: id

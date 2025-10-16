@@ -9,9 +9,7 @@ import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
-	pinGuidedCourse,
-	unEnrollUserInGuidedCourse,
-	unPinGuidedCourse
+	unEnrollUserInGuidedCourse
 } from './services/content-org/guided-courses.ts';
 
 import {
@@ -58,6 +56,7 @@ import {
 import {
 	contentStatusCompleted,
 	contentStatusReset,
+	contentStatusStarted,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
@@ -101,21 +100,16 @@ import {
 
 import {
 	createPost,
-	fetchCommunityGuidelines,
-	fetchPosts
+	fetchPosts,
+	likePost,
+	unlikePost
 } from './services/forums/posts.ts';
 
 import {
 	createThread,
-	fetchLatestThreads,
 	fetchThreads,
 	followThread,
-	lockThread,
-	pinThread,
-	unfollowThread,
-	unlockThread,
-	unpinThread,
-	updateThread
+	unfollowThread
 } from './services/forums/threads.ts';
 
 import {
@@ -151,7 +145,6 @@ import {
 	fetchCompletedState,
 	fetchContentInProgress,
 	fetchContentPageUserData,
-	fetchContentProgress,
 	fetchHandler,
 	fetchLastInteractedChild,
 	fetchLikeCount,
@@ -172,9 +165,8 @@ import {
 	postContentComplete,
 	postContentReset,
 	postContentRestore,
+	postContentStart,
 	postPlaylistContentEngaged,
-	postRecordWatchSession,
-	postUserLikes,
 	replyToComment,
 	reportComment,
 	restoreComment,
@@ -361,6 +353,7 @@ declare module 'musora-content-services' {
 		confirmEmailChange,
 		contentStatusCompleted,
 		contentStatusReset,
+		contentStatusStarted,
 		convertToTimeZone,
 		createComment,
 		createForumCategory,
@@ -400,12 +393,10 @@ declare module 'musora-content-services' {
 		fetchCommentModContentData,
 		fetchCommentRelies,
 		fetchComments,
-		fetchCommunityGuidelines,
 		fetchCompletedContent,
 		fetchCompletedState,
 		fetchContentInProgress,
 		fetchContentPageUserData,
-		fetchContentProgress,
 		fetchContentRows,
 		fetchCustomerPayments,
 		fetchEnrollmentPageMetadata,
@@ -416,7 +407,6 @@ declare module 'musora-content-services' {
 		fetchHierarchy,
 		fetchInterests,
 		fetchLastInteractedChild,
-		fetchLatestThreads,
 		fetchLeaving,
 		fetchLessonContent,
 		fetchLessonsFeaturingThisContent,
@@ -526,6 +516,7 @@ declare module 'musora-content-services' {
 		likeComment,
 		likeContent,
 		likePlaylist,
+		likePost,
 		logUserPractice,
 		login,
 		logout,
@@ -537,14 +528,12 @@ declare module 'musora-content-services' {
 		openComment,
 		otherStats,
 		pauseLiveEventPolling,
-		pinGuidedCourse,
 		pinProgressRow,
 		postContentComplete,
 		postContentReset,
 		postContentRestore,
+		postContentStart,
 		postPlaylistContentEngaged,
-		postRecordWatchSession,
-		postUserLikes,
 		rankCategories,
 		rankItems,
 		recommendations,
@@ -575,7 +564,6 @@ declare module 'musora-content-services' {
 		toDayjs,
 		togglePlaylistPrivate,
 		unEnrollUserInGuidedCourse,
-		unPinGuidedCourse,
 		unassignModeratorToComment,
 		unblockUser,
 		undeletePlaylist,
@@ -583,6 +571,7 @@ declare module 'musora-content-services' {
 		unlikeComment,
 		unlikeContent,
 		unlikePlaylist,
+		unlikePost,
 		unpinProgressRow,
 		updateDisplayName,
 		updateForumCategory,

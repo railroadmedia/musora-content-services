@@ -11,6 +11,7 @@ import { SyncPushResponse } from "../fetch";
 import { ModelSerialized } from "../serializers";
 
 import { Q } from "@nozbe/watermelondb";
+export { Q }
 
 export default class SyncRepository<TModel extends BaseModel> {
   context: SyncContext
@@ -35,15 +36,6 @@ export default class SyncRepository<TModel extends BaseModel> {
     return this._read<true>(() => this.store.readAll())
   }
 
-  protected async queryBy(clauses: Record<string, any>[], limit: number = null) {
-    const args: any[] = clauses.map(q => {
-      return (q.value instanceof Array) ? Q.where(q.key, Q.oneOf(q.value)) : Q.where(q.key, q.value)
-    })
-    if (limit) args.push(Q.take(limit), Q.sortBy('updated_at', 'desc'))
-
-    return this._read<true>(() => this.store.readBy(...args))
-  }
-
   protected async existOne(id: RecordId) {
     return this._existOne(() => this.readOne(id))
   }
@@ -52,24 +44,12 @@ export default class SyncRepository<TModel extends BaseModel> {
     return this._existSome(() => this.readSome(ids))
   }
 
-  protected async readOneUnsynced(id: RecordId) {
-    return this._readUnsynced(() => this.store.readOne(id))
+  protected async queryOne(...args: Q.Clause[]) {
+    return this._read(() => this.store.queryOne(...args))
   }
 
-  protected async readSomeUnsynced(ids: RecordId[]) {
-    return this._readUnsynced<true>(() => this.store.readSome(ids))
-  }
-
-  protected async readAllUnsynced() {
-    return this._readUnsynced<true>(() => this.store.readAll())
-  }
-
-  protected async existOneUnsynced(id: RecordId) {
-    return this._existOne(() => this.readOneUnsynced(id))
-  }
-
-  protected async existSomeUnsynced(ids: RecordId[]) {
-    return this._existSome(() => this.readSomeUnsynced(ids))
+  protected async queryAll(...args: Q.Clause[]) {
+    return this._read<true>(() => this.store.queryAll(...args))
   }
 
   protected async fetchOne(id: RecordId) {
@@ -152,21 +132,6 @@ export default class SyncRepository<TModel extends BaseModel> {
       data,
       status: pull?.ok ? 'fresh' : 'stale',
       pullStatus: pull?.ok ? 'success' : 'failure',
-      lastFetchToken: fetchToken,
-    }
-    return result
-  }
-
-  private async _readUnsynced<TMultiple extends boolean = false>(query: () => Promise<SyncReadDTO<TModel, TMultiple>['data']>) {
-    const [data, fetchToken] = await Promise.all([
-      query(),
-      this.store.getLastFetchToken(),
-    ])
-
-    const result: SyncReadDTO<TModel, TMultiple> = {
-      data,
-      status: 'stale',
-      pullStatus: null,
       lastFetchToken: fetchToken,
     }
     return result

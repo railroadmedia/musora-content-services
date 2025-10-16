@@ -297,38 +297,9 @@ export async function fetchLikeCount(contendId) {
   return await fetchDataHandler(url)
 }
 
-export async function postUserLikes(likes, signal) {
-  let url = `/api/content/v1/user/likes`
-  return await postDataHandler(url, likes, signal);
-}
-
-export async function fetchContentProgress(currentVersion) {
-  let url = `/content/user/progress/all`
-  return fetchDataHandler(url, currentVersion)
-}
-
 export async function postPlaylistContentEngaged(playlistItemId) {
   let url = `/railtracker/v1/last-engaged/${playlistItemId}`
   return postDataHandler(url)
-}
-
-export async function postRecordWatchSession(
-  contentId,
-  mediaTypeId,
-  mediaLengthSeconds,
-  currentSeconds,
-  secondsPlayed,
-  sessionId
-) {
-  let url = `/railtracker/v2/media-playback-session`
-  return postDataHandler(url, {
-    content_id: contentId,
-    media_type_id: mediaTypeId,
-    media_length_seconds: mediaLengthSeconds,
-    current_second: currentSeconds,
-    seconds_played: secondsPlayed,
-    session_id: sessionId,
-  })
 }
 
 /**
