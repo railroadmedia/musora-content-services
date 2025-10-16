@@ -7,6 +7,7 @@ import { globalConfig } from '../config.js'
 export interface UpdateOnboardingAnswerProps {
   question: 'gear' | 'topic' | 'genre' | 'experience' | 'goals' | 'instrument' | 'coach'
   answer: string
+  brand: string
 }
 
 /**
@@ -17,9 +18,14 @@ export interface UpdateOnboardingAnswerProps {
  * @returns {Promise<void>} - A promise that resolves when the onboarding answer is updated.
  * @throws {HttpError} - Throws an HttpError if the request fails.
  */
-export async function storeOnboardingAnswer(props: UpdateOnboardingAnswerProps): Promise<void> {
+export async function storeOnboardingAnswer({
+  question,
+  answer,
+  brand,
+}: UpdateOnboardingAnswerProps): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post(`/api/user-management-system/v1/users/onboarding/${props.question}`, {
-    answer: props.answer,
+  return httpClient.post(`/api/user-management-system/v1/users/onboarding/${question}`, {
+    answer,
+    brand,
   })
 }
