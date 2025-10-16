@@ -1,4 +1,4 @@
-import { LikesRepository } from './sync/repositories'
+import { db } from './sync'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -8,18 +8,18 @@ import { LikesRepository } from './sync/repositories'
 const excludeFromGeneratedIndex = []
 
 export async function isContentLiked(contentId) {
-  return (await LikesRepository.create().isLikedOptimistic(contentId)).data
+  return (await db.likes.isLikedOptimistic(contentId)).data
 }
 
 export async function isContentLikedByIds(contentIds) {
-  const existences = (await LikesRepository.create().areLikedOptimistic(contentIds)).data
+  const existences = await db.likes.areLikedOptimistic(contentIds)
   return Object.fromEntries(contentIds.map((id, i) => [id, existences[i]]))
 }
 
 export async function likeContent(contentId) {
-  return await LikesRepository.create().likeOptimistic(contentId)
+  return db.likes.likeOptimistic(contentId)
 }
 
 export async function unlikeContent(contentId) {
-  return await LikesRepository.create().unlikeOptimistic(contentId)
+  return db.likes.unlikeOptimistic(contentId)
 }

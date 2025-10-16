@@ -15,13 +15,11 @@ export { Q }
 
 export default class SyncRepository<TModel extends BaseModel> {
   context: SyncContext
+  store: SyncStore<TModel>
 
-  protected static getStore<T extends typeof BaseModel>(model: T) {
-    return SyncManager.getInstance().getStore(model)
-  }
-
-  protected constructor(protected store: SyncStore<TModel>) {
-    this.context = SyncManager.getInstance().getContext()
+  constructor(store: SyncStore<TModel>) {
+    this.context = store.context
+    this.store = store
   }
 
   protected async readOne(id: RecordId) {
