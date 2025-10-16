@@ -5,10 +5,6 @@ import ContentProgress, { COLLECTION_TYPE } from '../models/ContentProgress'
 // optimistic opt-in (reads locally (except if never once synced))
 
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
-  static create() {
-    return new ProgressRepository(SyncRepository.getStore(ContentProgress))
-  }
-
   // get all progress for a given brand, collection type and id
   async getAllProgress(
     { brand, collection }: { brand?: string; collection?: { type: COLLECTION_TYPE, id: number } | null },

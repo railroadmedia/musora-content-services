@@ -1,7 +1,6 @@
-import BaseModel from '../models/Base'
-import { RecordId } from "@nozbe/watermelondb"
+import { Model, RecordId } from "@nozbe/watermelondb"
 
-export type ModelSerialized<TModel extends BaseModel> = ExtractGetters<TModel>
+export type ModelSerialized<TModel extends Model> = ExtractGetters<TModel>
 type ExtractGetters<T> = {
   [K in keyof T as T[K] extends Function ? never : K]: T[K];
 } & { id: RecordId }
@@ -10,7 +9,7 @@ type ExtractGetters<T> = {
 // (essentially strips out all watermelon properties)
 // useful for consumption in components, etc.
 
-export default class ModelSerializer<TModel extends BaseModel = BaseModel> {
+export default class ModelSerializer<TModel extends Model = Model> {
   toPlainObject(record: TModel) {
     const proto = Object.getPrototypeOf(record)
     const keys = Object.getOwnPropertyNames(proto)

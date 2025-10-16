@@ -1,6 +1,6 @@
-import { Database, Q, type Collection, type Model, type RecordId } from '@nozbe/watermelondb'
+import { Database, Q, type Collection, type RecordId } from '@nozbe/watermelondb'
 import { RawSerializer, ModelSerializer } from '../serializers'
-import { SyncToken, SyncEntry, SyncError, SyncContext } from '..'
+import { ModelClass, SyncToken, SyncEntry,  SyncContext } from '..'
 import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
 import type SyncRetry from '../retry'
 import type SyncRunScope from '../run-scope'
@@ -17,7 +17,6 @@ import { BaseSessionProvider } from '../context/providers'
 import { dropThrottle, queueThrottle, createThrottleState, type ThrottleState } from '../utils'
 import { WriterInterface } from '@nozbe/watermelondb/Database/WorkQueue'
 
-type ModelClass<T extends Model> = { new (...args: any[]): T; table: string }
 type SyncPull = (
   session: BaseSessionProvider,
   previousFetchToken: SyncToken | null,

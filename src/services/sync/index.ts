@@ -1,9 +1,10 @@
 import './telemetry/index'
+export { default as db } from './repository-proxy'
 
-import BaseModel from "./models/Base"
 import { RecordId } from "@nozbe/watermelondb"
 import { type ModelSerialized } from "./serializers"
 import { EpochSeconds } from "./utils/epoch"
+import { Model } from "@nozbe/watermelondb"
 
 export { default as SyncSession } from './run-scope'
 export { default as SyncRetry } from './retry'
@@ -38,16 +39,16 @@ export type SyncExistsDTO<TMultiple extends boolean = false> = {
   lastFetchToken: SyncToken | null
 }
 
-export type SyncReadDTO<TModel extends BaseModel, TMultiple extends boolean = false> = {
+export type SyncReadDTO<TModel extends Model, TMultiple extends boolean = false> = {
   data: TMultiple extends true ? ModelSerialized<TModel>[] : ModelSerialized<TModel> | null
   status: 'fresh' | 'stale'
   pullStatus: 'success' | 'pending' | 'failure' | null
   lastFetchToken: SyncToken | null
 }
 
-export type SyncWriteDTO<T extends BaseModel> = SyncNonDeleteWriteDTO<T> | SyncDeleteWriteDTO
+export type SyncWriteDTO<T extends Model> = SyncNonDeleteWriteDTO<T> | SyncDeleteWriteDTO
 
-type SyncNonDeleteWriteDTO<T extends BaseModel, TMultiple extends boolean = false> = SyncWriteDTOBase & {
+type SyncNonDeleteWriteDTO<T extends Model, TMultiple extends boolean = false> = SyncWriteDTOBase & {
   data: TMultiple extends true ? ModelSerialized<T>[] : ModelSerialized<T>
 }
 
@@ -60,3 +61,7 @@ interface SyncWriteDTOBase {
   pushStatus: 'success' | 'pending' | 'failure'
 }
 
+export type ModelClass<T extends Model = Model> = {
+  new (...args: any[]): T
+  table: string
+}

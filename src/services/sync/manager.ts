@@ -4,6 +4,7 @@ import SyncRunScope from './run-scope'
 import { SyncStrategy } from './strategies'
 import { default as SyncStore, SyncStoreConfig } from './store'
 
+import { ModelClass } from './index'
 import SyncRetry from './retry'
 import SyncContext from './context'
 import { SyncError } from './errors'
@@ -36,20 +37,20 @@ export default class SyncManager {
   public telemetry: SyncTelemetry
   private database: Database
   private context: SyncContext
-  private storesRegistry: Record<typeof BaseModel.table, SyncStore<BaseModel>>
+  private storesRegistry: Map<string, SyncStore<BaseModel>>
   private runScope: SyncRunScope
   private retry: SyncRetry
   private strategyMap: { stores: SyncStore<BaseModel>[]; strategies: SyncStrategy[] }[]
   private safetyMap: { stores: SyncStore<BaseModel>[]; mechanisms: (() => void)[] }[]
 
   constructor(context: SyncContext, initDatabase: () => Database) {
-    this.telemetry = SyncTelemetry.getInstance()
+    this.telemetry = SyncTelemetry.getInstance()!
     this.context = context
 
     this.database = this.telemetry.trace({ name: 'db:init' }, () => inBoundary(initDatabase))
     this.runScope = new SyncRunScope()
 
-    this.storesRegistry = {} as Record<typeof BaseModel.table, SyncStore<BaseModel>>
+    this.storesRegistry = new Map()
     this.strategyMap = []
     this.safetyMap = []
 
@@ -113,12 +114,12 @@ export default class SyncManager {
     return teardown
   }
 
-  getStore<TModel extends typeof BaseModel>(model: TModel) {
+  getStore<TModel extends BaseModel>(model: ModelClass<TModel>): SyncStore<TModel> {
     const store = this.storesRegistry[model.table]
     if (!store) {
       throw new SyncError(`Store not found`, { table: model.table })
     }
-    return store as unknown as SyncStore<InstanceType<TModel>>
+    return store
   }
 
   getTelemetry() {

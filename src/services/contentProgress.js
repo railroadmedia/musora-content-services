@@ -7,7 +7,7 @@ import {
 } from './railcontent.js'
 import { DataContext, ContentProgressVersionKey } from './dataContext.js'
 import { fetchHierarchy } from './sanity.js'
-import { ContentProgressRepository } from './sync/repositories'
+import { db } from './sync'
 import { recordUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 
@@ -508,7 +508,7 @@ export async function recordWatchSession(
 
   //
 
-  await ContentProgressRepository.create().recordProgress(contentId, null, {
+  await db.contentProgress.recordProgress(contentId, null, {
     state: 'started',
     progressPercent: Math.round(Math.random() * 100),
   })

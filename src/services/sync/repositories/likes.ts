@@ -5,10 +5,6 @@ import ContentLike from "../models/ContentLike";
 // optimistic opt-in (reads locally (except if never once synced))
 
 export default class LikesRepository extends SyncRepository<ContentLike> {
-  static create() {
-    return new LikesRepository(SyncRepository.getStore(ContentLike))
-  }
-
   async isLikedOptimistic(contentId: number) {
     return await this.existOne(LikesRepository.generateId(contentId))
   }
