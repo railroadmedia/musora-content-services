@@ -7,6 +7,7 @@ import {
 } from './railcontent.js'
 import { DataContext, ContentProgressVersionKey } from './dataContext.js'
 import { fetchHierarchy } from './sanity.js'
+import { ContentProgressRepository } from './sync/repositories'
 import { recordUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 
@@ -17,8 +18,6 @@ const DATA_KEY_PROGRESS = 'p'
 const DATA_KEY_RESUME_TIME = 't'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
 const DATA_KEY_BRAND = 'b'
-
-export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress)
 
 let sessionData = []
 
@@ -196,73 +195,73 @@ export async function getLastInteractedOf(contentIds) {
 }
 
 export async function getProgressDateByIds(contentIds) {
-  let data = await dataContext.getData()
-  let progress = {}
-  contentIds?.forEach(
-    (id) =>
-      (progress[id] = {
-        last_update: data[id]?.[DATA_KEY_LAST_UPDATED_TIME] ?? 0,
-        progress: data[id]?.[DATA_KEY_PROGRESS] ?? 0,
-        status: data[id]?.[DATA_KEY_STATUS] ?? '',
-      })
-  )
-  return progress
+  // let data = await dataContext.getData()
+  // let progress = {}
+  // contentIds?.forEach(
+  //   (id) =>
+  //     (progress[id] = {
+  //       last_update: data[id]?.[DATA_KEY_LAST_UPDATED_TIME] ?? 0,
+  //       progress: data[id]?.[DATA_KEY_PROGRESS] ?? 0,
+  //       status: data[id]?.[DATA_KEY_STATUS] ?? '',
+  //     })
+  // )
+  // return progress
 }
 
 async function getById(contentId, dataKey, defaultValue) {
-  let data = await dataContext.getData()
-  return data[contentId]?.[dataKey] ?? defaultValue
+  // let data = await dataContext.getData()
+  // return data[contentId]?.[dataKey] ?? defaultValue
 }
 
 async function getByIds(contentIds, dataKey, defaultValue) {
-  let data = await dataContext.getData()
-  let progress = {}
-  contentIds?.forEach((id) => (progress[id] = data[id]?.[dataKey] ?? defaultValue))
-  return progress
+  // let data = await dataContext.getData()
+  // let progress = {}
+  // contentIds?.forEach((id) => (progress[id] = data[id]?.[dataKey] ?? defaultValue))
+  // return progress
 }
 
 export async function getAllStarted(limit = null) {
-  const data = await dataContext.getData()
-  let ids = Object.keys(data)
-    .filter(function (key) {
-      return data[parseInt(key)][DATA_KEY_STATUS] === STATE_STARTED
-    })
-    .map(function (key) {
-      return parseInt(key)
-    })
-    .sort(function (a, b) {
-      let v1 = data[a][DATA_KEY_LAST_UPDATED_TIME]
-      let v2 = data[b][DATA_KEY_LAST_UPDATED_TIME]
-      if (v1 > v2) return -1
-      else if (v1 < v2) return 1
-      return 0
-    })
-  if (limit) {
-    ids = ids.slice(0, limit)
-  }
-  return ids
+  // const data = await dataContext.getData()
+  // let ids = Object.keys(data)
+  //   .filter(function (key) {
+  //     return data[parseInt(key)][DATA_KEY_STATUS] === STATE_STARTED
+  //   })
+  //   .map(function (key) {
+  //     return parseInt(key)
+  //   })
+  //   .sort(function (a, b) {
+  //     let v1 = data[a][DATA_KEY_LAST_UPDATED_TIME]
+  //     let v2 = data[b][DATA_KEY_LAST_UPDATED_TIME]
+  //     if (v1 > v2) return -1
+  //     else if (v1 < v2) return 1
+  //     return 0
+  //   })
+  // if (limit) {
+  //   ids = ids.slice(0, limit)
+  // }
+  // return ids
 }
 
 export async function getAllCompleted(limit = null) {
-  const data = await dataContext.getData()
-  let ids = Object.keys(data)
-    .filter(function (key) {
-      return data[parseInt(key)][DATA_KEY_STATUS] === STATE_COMPLETED
-    })
-    .map(function (key) {
-      return parseInt(key)
-    })
-    .sort(function (a, b) {
-      let v1 = data[a][DATA_KEY_LAST_UPDATED_TIME]
-      let v2 = data[b][DATA_KEY_LAST_UPDATED_TIME]
-      if (v1 > v2) return -1
-      else if (v1 < v2) return 1
-      return 0
-    })
-  if (limit) {
-    ids = ids.slice(0, limit)
-  }
-  return ids
+  // const data = await dataContext.getData()
+  // let ids = Object.keys(data)
+  //   .filter(function (key) {
+  //     return data[parseInt(key)][DATA_KEY_STATUS] === STATE_COMPLETED
+  //   })
+  //   .map(function (key) {
+  //     return parseInt(key)
+  //   })
+  //   .sort(function (a, b) {
+  //     let v1 = data[a][DATA_KEY_LAST_UPDATED_TIME]
+  //     let v2 = data[b][DATA_KEY_LAST_UPDATED_TIME]
+  //     if (v1 > v2) return -1
+  //     else if (v1 < v2) return 1
+  //     return 0
+  //   })
+  // if (limit) {
+  //   ids = ids.slice(0, limit)
+  // }
+  // return ids
 }
 
 export async function getAllStartedOrCompleted({
@@ -271,48 +270,48 @@ export async function getAllStartedOrCompleted({
   brand = null,
   excludedIds = [],
 } = {}) {
-  const data = await dataContext.getData()
-  const oneMonthAgoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
+  // const data = await dataContext.getData()
+  // const oneMonthAgoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
 
-  const excludedSet = new Set(excludedIds.map((id) => parseInt(id))) // ensure IDs are numbers
+  // const excludedSet = new Set(excludedIds.map((id) => parseInt(id))) // ensure IDs are numbers
 
-  let filtered = Object.entries(data)
-    .filter(([key, item]) => {
-      const id = parseInt(key)
-      const isRelevantStatus =
-        item[DATA_KEY_STATUS] === STATE_STARTED || item[DATA_KEY_STATUS] === STATE_COMPLETED
-      const isRecent = item[DATA_KEY_LAST_UPDATED_TIME] >= oneMonthAgoInSeconds
-      const isCorrectBrand = !brand || !item.b || item.b === brand
-      const isNotExcluded = !excludedSet.has(id)
-      return isRelevantStatus && isCorrectBrand && isNotExcluded
-    })
-    .sort(([, a], [, b]) => {
-      const v1 = a[DATA_KEY_LAST_UPDATED_TIME]
-      const v2 = b[DATA_KEY_LAST_UPDATED_TIME]
-      if (v1 > v2) return -1
-      else if (v1 < v2) return 1
-      return 0
-    })
+  // let filtered = Object.entries(data)
+  //   .filter(([key, item]) => {
+  //     const id = parseInt(key)
+  //     const isRelevantStatus =
+  //       item[DATA_KEY_STATUS] === STATE_STARTED || item[DATA_KEY_STATUS] === STATE_COMPLETED
+  //     const isRecent = item[DATA_KEY_LAST_UPDATED_TIME] >= oneMonthAgoInSeconds
+  //     const isCorrectBrand = !brand || !item.b || item.b === brand
+  //     const isNotExcluded = !excludedSet.has(id)
+  //     return isRelevantStatus && isCorrectBrand && isNotExcluded
+  //   })
+  //   .sort(([, a], [, b]) => {
+  //     const v1 = a[DATA_KEY_LAST_UPDATED_TIME]
+  //     const v2 = b[DATA_KEY_LAST_UPDATED_TIME]
+  //     if (v1 > v2) return -1
+  //     else if (v1 < v2) return 1
+  //     return 0
+  //   })
 
-  if (limit) {
-    filtered = filtered.slice(0, limit)
-  }
+  // if (limit) {
+  //   filtered = filtered.slice(0, limit)
+  // }
 
-  if (onlyIds) {
-    return filtered.map(([key]) => parseInt(key))
-  } else {
-    const progress = {}
-    filtered.forEach(([key, item]) => {
-      const id = parseInt(key)
-      progress[id] = {
-        last_update: item?.[DATA_KEY_LAST_UPDATED_TIME] ?? 0,
-        progress: item?.[DATA_KEY_PROGRESS] ?? 0,
-        status: item?.[DATA_KEY_STATUS] ?? '',
-        brand: item?.b ?? '',
-      }
-    })
-    return progress
-  }
+  // if (onlyIds) {
+  //   return filtered.map(([key]) => parseInt(key))
+  // } else {
+  //   const progress = {}
+  //   filtered.forEach(([key, item]) => {
+  //     const id = parseInt(key)
+  //     progress[id] = {
+  //       last_update: item?.[DATA_KEY_LAST_UPDATED_TIME] ?? 0,
+  //       progress: item?.[DATA_KEY_PROGRESS] ?? 0,
+  //       status: item?.[DATA_KEY_STATUS] ?? '',
+  //       brand: item?.b ?? '',
+  //     }
+  //   })
+  //   return progress
+  // }
 }
 
 /**
@@ -333,33 +332,44 @@ export async function getAllStartedOrCompleted({
  * console.log(progressMap[123]); // => 52
  */
 export async function getStartedOrCompletedProgressOnly({ brand = null } = {}) {
-  const data = await dataContext.getData()
-  const result = {}
+  // const data = await dataContext.getData()
+  // const result = {}
 
-  Object.entries(data).forEach(([key, item]) => {
-    const id = parseInt(key)
-    const isRelevantStatus =
-      item[DATA_KEY_STATUS] === STATE_STARTED || item[DATA_KEY_STATUS] === STATE_COMPLETED
-    const isCorrectBrand = !brand || item.b === brand
+  // Object.entries(data).forEach(([key, item]) => {
+  //   const id = parseInt(key)
+  //   const isRelevantStatus =
+  //     item[DATA_KEY_STATUS] === STATE_STARTED || item[DATA_KEY_STATUS] === STATE_COMPLETED
+  //   const isCorrectBrand = !brand || item.b === brand
 
-    if (isRelevantStatus && isCorrectBrand) {
-      result[id] = item?.[DATA_KEY_PROGRESS] ?? 0
-    }
-  })
+  //   if (isRelevantStatus && isCorrectBrand) {
+  //     result[id] = item?.[DATA_KEY_PROGRESS] ?? 0
+  //   }
+  // })
 
-  return result
+  // return result
 }
 
 export async function contentStatusCompleted(contentId) {
-  return await dataContext.update(
-    async function (localContext) {
-      let hierarchy = await fetchHierarchy(contentId)
-      completeStatusInLocalContext(localContext, contentId, hierarchy)
-    },
-    async function () {
-      return postContentComplete(contentId)
-    }
-  )
+  // return await dataContext.update(
+  //   async function (localContext) {
+  //     let hierarchy = await fetchHierarchy(contentId)
+  //     completeStatusInLocalContext(localContext, contentId, hierarchy)
+  //   },
+  //   async function () {
+  //     return postContentComplete(contentId)
+  //   }
+  // )
+}
+export async function contentStatusStarted(contentId) {
+  // return await dataContext.update(
+  //   async function (localContext) {
+  //     let hierarchy = await fetchHierarchy(contentId)
+  //     startStatusInLocalContext(localContext, contentId, hierarchy)
+  //   },
+  //   async function () {
+  //     return postContentStart(contentId)
+  //   }
+  // )
 }
 export async function contentStatusStarted(contentId) {
   return await dataContext.update(
@@ -426,15 +436,15 @@ function getChildrenToDepth(parentId, hierarchy, depth = 1) {
 }
 
 export async function contentStatusReset(contentId) {
-  await dataContext.update(
-    async function (localContext) {
-      let hierarchy = await fetchHierarchy(contentId)
-      resetStatusInLocalContext(localContext, contentId, hierarchy)
-    },
-    async function () {
-      return postContentReset(contentId)
-    }
-  )
+  // await dataContext.update(
+  //   async function (localContext) {
+  //     let hierarchy = await fetchHierarchy(contentId)
+  //     resetStatusInLocalContext(localContext, contentId, hierarchy)
+  //   },
+  //   async function () {
+  //     return postContentReset(contentId)
+  //   }
+  // )
 }
 
 function resetStatusInLocalContext(localContext, contentId, hierarchy) {
@@ -496,31 +506,38 @@ export async function recordWatchSession(
   }
   sessionData[sessionId][contentId] = secondsPlayed
 
-  await dataContext.update(
-    async function (localContext) {
-      if (contentId && updateLocalProgress) {
-        if (mediaLengthSeconds <= 0) {
-          return
-        }
-        let progress = Math.min(
-          99,
-          Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds ?? 0)) * 100)
-        )
-        let hierarchy = await fetchHierarchy(contentId)
-        saveContentProgress(localContext, contentId, progress, currentSeconds, hierarchy)
-      }
-    },
-    async function () {
-      return postRecordWatchSession(
-        contentId,
-        mediaTypeId,
-        mediaLengthSeconds,
-        currentSeconds,
-        secondsPlayed,
-        sessionId
-      )
-    }
-  )
+  //
+
+  await ContentProgressRepository.create().recordProgress(contentId, null, {
+    state: 'started',
+    progressPercent: Math.round(Math.random() * 100),
+  })
+
+  // await dataContext.update(
+  //   async function (localContext) {
+  //     if (contentId && updateLocalProgress) {
+  //       if (mediaLengthSeconds <= 0) {
+  //         return
+  //       }
+  //       let progress = Math.min(
+  //         99,
+  //         Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds ?? 0)) * 100)
+  //       )
+  //       let hierarchy = await fetchHierarchy(contentId)
+  //       saveContentProgress(localContext, contentId, progress, currentSeconds, hierarchy)
+  //     }
+  //   },
+  //   async function () {
+  //     // return postRecordWatchSession(
+  //     //   contentId,
+  //     //   mediaTypeId,
+  //     //   mediaLengthSeconds,
+  //     //   currentSeconds,
+  //     //   secondsPlayed,
+  //     //   sessionId
+  //     // )
+  //   }
+  // )
   return sessionId
 }
 

@@ -10,6 +10,9 @@ import { SyncError, SyncExistsDTO, SyncReadDTO, SyncWriteDTO } from '..'
 import { SyncPushResponse } from "../fetch";
 import { ModelSerialized } from "../serializers";
 
+import { Q } from "@nozbe/watermelondb";
+export { Q }
+
 export default class SyncRepository<TModel extends BaseModel> {
   context: SyncContext
 
@@ -41,24 +44,12 @@ export default class SyncRepository<TModel extends BaseModel> {
     return this._existSome(() => this.readSome(ids))
   }
 
-  protected async readOneUnsynced(id: RecordId) {
-    return this._readUnsynced(() => this.store.readOne(id))
+  protected async queryOne(...args: Q.Clause[]) {
+    return this._read(() => this.store.queryOne(...args))
   }
 
-  protected async readSomeUnsynced(ids: RecordId[]) {
-    return this._readUnsynced<true>(() => this.store.readSome(ids))
-  }
-
-  protected async readAllUnsynced() {
-    return this._readUnsynced<true>(() => this.store.readAll())
-  }
-
-  protected async existOneUnsynced(id: RecordId) {
-    return this._existOne(() => this.readOneUnsynced(id))
-  }
-
-  protected async existSomeUnsynced(ids: RecordId[]) {
-    return this._existSome(() => this.readSomeUnsynced(ids))
+  protected async queryAll(...args: Q.Clause[]) {
+    return this._read<true>(() => this.store.queryAll(...args))
   }
 
   protected async fetchOne(id: RecordId) {
@@ -137,21 +128,6 @@ export default class SyncRepository<TModel extends BaseModel> {
       data,
       status: pull?.ok ? 'fresh' : 'stale',
       pullStatus: pull?.ok ? 'success' : 'failure',
-      lastFetchToken: fetchToken,
-    }
-    return result
-  }
-
-  private async _readUnsynced<TMultiple extends boolean = false>(query: () => Promise<SyncReadDTO<TModel, TMultiple>['data']>) {
-    const [data, fetchToken] = await Promise.all([
-      query(),
-      this.store.getLastFetchToken(),
-    ])
-
-    const result: SyncReadDTO<TModel, TMultiple> = {
-      data,
-      status: 'stale',
-      pullStatus: null,
       lastFetchToken: fetchToken,
     }
     return result
