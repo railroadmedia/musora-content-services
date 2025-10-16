@@ -19,10 +19,7 @@ export interface UpdateOnboardingAnswerProps {
  */
 export async function storeOnboardingAnswer(props: UpdateOnboardingAnswerProps): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post(
-    `/api/user-management-system/v1/users/${globalConfig.sessionConfig.userId}/onboarding/${props.question}`,
-    {
-      answer: props.answer,
-    }
-  )
+  return httpClient.post(`/api/user-management-system/v1/users/onboarding/${props.question}`, {
+    answer: props.answer,
+  })
 }
