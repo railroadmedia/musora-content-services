@@ -156,9 +156,43 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return records.map((record) => this.modelSerializer.toPlainObject(record))
   }
 
+  async queryAllIds(...args: Q.Clause[]) {
+    return this.queryRecordIds(...args)
+  }
+
   async queryOne(...args: Q.Clause[]) {
     const record = await this.queryRecord(...args)
     return record ? this.modelSerializer.toPlainObject(record) : null
+  }
+
+  async queryOneId(...args: Q.Clause[]) {
+    const record = await this.queryRecordId(...args)
+    return record ? record.id : null
+  }
+
+  async updateOne(id: RecordId, builder: (record: TModel) => void, span?: Span) {
+    return await this.runScope.abortable(async () => {
+      let record: TModel | null = null
+
+      await this.telemeterizedWrite(span, async () => {
+        const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(
+          (records) => records[0] || null
+        )
+
+        // todo - verify if need deleted check
+        if (existing && existing._raw._status !== 'deleted') {
+          await existing.update(builder)
+          record = existing
+        }
+      })
+
+      this.emit('write', record)
+
+      this.pushUnsyncedWithRetry(span)
+      await this.ensurePersistence()
+
+      return this.modelSerializer.toPlainObject(record!)
+    })
   }
 
   async upsertOne(id: string, builder: (record: TModel) => void, span?: Span) {
@@ -408,8 +442,16 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return await this.collection.query(...args).fetch()
   }
 
+  private async queryRecordIds(...args: Q.Clause[]) {
+    return await this.collection.query(...args).fetchIds()
+  }
+
   private async queryRecord(...args: Q.Clause[]) {
-    return await this.collection.query(...args).fetch().then((records) => records[0] as TModel | null)
+    return await this.collection.query(Q.take(1), ...args).fetch().then((records) => records[0] as TModel | null)
+  }
+
+  private async queryRecordId(...args: Q.Clause[]) {
+    return await this.collection.query(Q.take(1), ...args).fetchIds().then((ids) => ids[0] as RecordId | null)
   }
 
   private async findRecord(id: RecordId) {

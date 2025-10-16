@@ -32,15 +32,17 @@ type SyncEntryLifecycle = {
   deleted_at: EpochSeconds | null
 }
 
-export type SyncExistsDTO<TMultiple extends boolean = false> = {
-  data: TMultiple extends true ? boolean[] : boolean
+export type SyncExistsDTO<_TModel extends Model, T extends boolean | boolean[]> = {
+  data: T
   status: 'fresh' | 'stale'
   pullStatus: 'success' | 'pending' | 'failure' | null
   lastFetchToken: SyncToken | null
 }
 
-export type SyncReadDTO<TModel extends Model, TMultiple extends boolean = false> = {
-  data: TMultiple extends true ? ModelSerialized<TModel>[] : ModelSerialized<TModel> | null
+export type SyncReadDTOTarget<TModel extends Model> = ModelSerialized<TModel> | ModelSerialized<TModel>[] | RecordId | RecordId[] | null
+
+export type SyncReadDTO<TModel extends Model, T extends SyncReadDTOTarget<TModel>> = {
+  data: T
   status: 'fresh' | 'stale'
   pullStatus: 'success' | 'pending' | 'failure' | null
   lastFetchToken: SyncToken | null

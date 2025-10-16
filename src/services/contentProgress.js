@@ -11,38 +11,29 @@ import { db } from './sync'
 import { recordUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 
-const STATE_STARTED = 'started'
-const STATE_COMPLETED = 'completed'
-const DATA_KEY_STATUS = 's'
-const DATA_KEY_PROGRESS = 'p'
-const DATA_KEY_RESUME_TIME = 't'
-const DATA_KEY_LAST_UPDATED_TIME = 'u'
-const DATA_KEY_BRAND = 'b'
+// const STATE_STARTED = 'started'
+// const STATE_COMPLETED = 'completed'
+
+// const DATA_KEY_STATUS = 's'
+// const DATA_KEY_RESUME_TIME = 't'
+// const DATA_KEY_LAST_UPDATED_TIME = 'u'
 
 let sessionData = []
 
-export async function getProgressPercentage(contentId) {
-  return getById(contentId, DATA_KEY_PROGRESS, 0)
-}
-
-export async function getProgressPercentageByIds(contentIds) {
-  return getByIds(contentIds, DATA_KEY_PROGRESS, 0)
-}
-
 export async function getProgressState(contentId) {
-  return getById(contentId, DATA_KEY_STATUS, '')
+  return getById(contentId).then(progress => progress.state)
 }
 
 export async function getProgressStateByIds(contentIds) {
-  return getByIds(contentIds, DATA_KEY_STATUS, '')
-}
-
-export async function getResumeTimeSeconds(contentId) {
-  return getById(contentId, DATA_KEY_RESUME_TIME, 0)
+  return getByIds(contentIds).then(progresses => {
+    return Object.fromEntries(progresses.map(p => [p.content_id, p.state]))
+  })
 }
 
 export async function getResumeTimeSecondsByIds(contentIds) {
-  return getByIds(contentIds, DATA_KEY_RESUME_TIME, 0)
+  return getByIds(contentIds).then(progresses => {
+    return Object.fromEntries(progresses.map(p => [p.content_id, 69420])) // TODO - add resume time to model
+  })
 }
 
 export async function getNextLesson(data) {
@@ -178,90 +169,33 @@ function buildNavigateTo(content, child = null) {
  * @returns {Promise<number>}
  */
 export async function getLastInteractedOf(contentIds) {
-  const data = await getByIds(contentIds, DATA_KEY_LAST_UPDATED_TIME, 0)
-  const sorted = Object.keys(data)
-    .map(function (key) {
-      return parseInt(key)
-    })
-    .sort(function (a, b) {
-      let v1 = data[a]
-      let v2 = data[b]
-      if (v1 > v2) return -1
-      else if (v1 < v2) return 1
-      return 0
-    })
-
-  return sorted[0]
+  return db.contentProgress.mostRecentlyUpdatedId(contentIds).then(r => r.data)
 }
 
-export async function getProgressDateByIds(contentIds) {
-  // let data = await dataContext.getData()
-  // let progress = {}
-  // contentIds?.forEach(
-  //   (id) =>
-  //     (progress[id] = {
-  //       last_update: data[id]?.[DATA_KEY_LAST_UPDATED_TIME] ?? 0,
-  //       progress: data[id]?.[DATA_KEY_PROGRESS] ?? 0,
-  //       status: data[id]?.[DATA_KEY_STATUS] ?? '',
-  //     })
-  // )
-  // return progress
+export async function getProgressDataByIds(contentIds) {
+  return getByIds(contentIds).then(progresses => {
+    return Object.fromEntries(progresses.map(p => [p.content_id, {
+      last_update: p.updated_at,
+      progress: p.progress_percent,
+      status: p.state,
+    }]))
+  })
 }
 
-async function getById(contentId, dataKey, defaultValue) {
-  // let data = await dataContext.getData()
-  // return data[contentId]?.[dataKey] ?? defaultValue
+async function getById(contentId) {
+  return db.contentProgress.getOneProgressByContentId(contentId).then(r => r.data)
 }
 
-async function getByIds(contentIds, dataKey, defaultValue) {
-  // let data = await dataContext.getData()
-  // let progress = {}
-  // contentIds?.forEach((id) => (progress[id] = data[id]?.[dataKey] ?? defaultValue))
-  // return progress
+async function getByIds(contentIds) {
+  return db.contentProgress.getSomeProgressByContentIds(contentIds).then(r => r.data)
 }
 
 export async function getAllStarted(limit = null) {
-  // const data = await dataContext.getData()
-  // let ids = Object.keys(data)
-  //   .filter(function (key) {
-  //     return data[parseInt(key)][DATA_KEY_STATUS] === STATE_STARTED
-  //   })
-  //   .map(function (key) {
-  //     return parseInt(key)
-  //   })
-  //   .sort(function (a, b) {
-  //     let v1 = data[a][DATA_KEY_LAST_UPDATED_TIME]
-  //     let v2 = data[b][DATA_KEY_LAST_UPDATED_TIME]
-  //     if (v1 > v2) return -1
-  //     else if (v1 < v2) return 1
-  //     return 0
-  //   })
-  // if (limit) {
-  //   ids = ids.slice(0, limit)
-  // }
-  // return ids
+  return db.contentProgress.startedIds(limit).then(r => r.data)
 }
 
 export async function getAllCompleted(limit = null) {
-  // const data = await dataContext.getData()
-  // let ids = Object.keys(data)
-  //   .filter(function (key) {
-  //     return data[parseInt(key)][DATA_KEY_STATUS] === STATE_COMPLETED
-  //   })
-  //   .map(function (key) {
-  //     return parseInt(key)
-  //   })
-  //   .sort(function (a, b) {
-  //     let v1 = data[a][DATA_KEY_LAST_UPDATED_TIME]
-  //     let v2 = data[b][DATA_KEY_LAST_UPDATED_TIME]
-  //     if (v1 > v2) return -1
-  //     else if (v1 < v2) return 1
-  //     return 0
-  //   })
-  // if (limit) {
-  //   ids = ids.slice(0, limit)
-  // }
-  // return ids
+  return db.contentProgress.completedIds(limit).then(r => r.data)
 }
 
 export async function getAllStartedOrCompleted({

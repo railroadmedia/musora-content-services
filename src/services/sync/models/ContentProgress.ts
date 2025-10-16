@@ -5,6 +5,11 @@ export enum COLLECTION_TYPE {
   LEARNING_PATH = 'learning-path',
 }
 
+export enum STATE {
+  STARTED = 'started',
+  COMPLETED = 'completed'
+}
+
 export default class ContentProgress extends BaseModel {
   static table = SYNC_TABLES.CONTENT_PROGRESS
 
@@ -15,7 +20,7 @@ export default class ContentProgress extends BaseModel {
     return this._getRaw('content_id') as number
   }
   get state() {
-    return this._getRaw('state') as string
+    return this._getRaw('state') as STATE
   }
   get progress_percent() {
     return this._getRaw('progress_percent') as number
@@ -33,7 +38,7 @@ export default class ContentProgress extends BaseModel {
   set content_id(value: number) {
     this._setRaw('content_id', value)
   }
-  set state(value: string) {
+  set state(value: STATE) {
     this._setRaw('state', value)
   }
   set progress_percent(value: number) {
