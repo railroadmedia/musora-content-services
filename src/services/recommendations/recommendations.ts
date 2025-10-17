@@ -137,9 +137,7 @@ export async function fetchRecommendedCategories(
   const url = `/recommend_topics/`
 
   try {
-    // TODO Remove before production deployment
-    //const httpClient = new HttpClient(tempBaseURL)
-    const httpClient = new HttpClient('https://MusoraProductDepartment-PWGeneratorDEV.hf.space')
+    const httpClient = new HttpClient(tempBaseURL)
     const response = await httpClient.post<RecommendedCategoriesResponse>(url, data)
     return response.ranked_topics
       .slice(0, count) // topics come pre-ranked
