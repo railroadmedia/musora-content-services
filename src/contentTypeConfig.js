@@ -340,8 +340,8 @@ export let contentTypeConfig = {
         defined(live_event_start_time) => {
           "live_event_start_time": live_event_start_time,
           "live_event_end_time": live_event_end_time,
-          "live_event_youtube_id": live_event_youtube_id,
-          "videoId": coalesce(live_event_youtube_id, video.external_id),
+          "live_event_stream_id": live_event_stream_id,
+          "videoId": coalesce(live_event_stream_id, video.external_id),
           "live_event_is_global": live_global_event == true
         }
       )`
@@ -361,8 +361,8 @@ export let contentTypeConfig = {
         defined(live_event_start_time) => {
           "live_event_start_time": live_event_start_time,
           "live_event_end_time": live_event_end_time,
-          "live_event_youtube_id": live_event_youtube_id,
-          "videoId": coalesce(live_event_youtube_id, video.external_id),
+          "live_event_stream_id": live_event_stream_id,
+          "videoId": coalesce(live_event_stream_id, video.external_id),
           "live_event_is_global": live_global_event == true
         }
       )`

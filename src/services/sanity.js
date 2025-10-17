@@ -1139,8 +1139,8 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
       defined(live_event_start_time) => {
         "live_event_start_time": live_event_start_time,
         "live_event_end_time": live_event_end_time,
-        "live_event_youtube_id": live_event_youtube_id,
-        "videoId": coalesce(live_event_youtube_id, video.external_id),
+        "live_event_stream_id": live_event_stream_id,
+        "videoId": coalesce(live_event_stream_id, video.external_id),
         "live_event_is_global": live_global_event == true
       }
     )
@@ -1402,7 +1402,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
       'id': railcontent_id,
       live_event_start_time,
       live_event_end_time,
-      live_event_youtube_id,
+      live_event_stream_id,
       railcontent_id,
       published_on,
       'event_coach_url' : instructor[0]->web_url_path,
@@ -1412,14 +1412,14 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
       ${artistOrInstructorName()},
       difficulty_string,
       "instructors": ${instructorField},
-      'videoId': coalesce(live_event_youtube_id, video.external_id),
+      'videoId': coalesce(live_event_stream_id, video.external_id),
     } | order(live_event_start_time)[0...1]`
       : `*[status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}']{
       'slug': slug.current,
       'id': railcontent_id,
       live_event_start_time,
       live_event_end_time,
-      live_event_youtube_id,
+      live_event_stream_id,
       railcontent_id,
       published_on,
       'event_coach_url' : instructor[0]->web_url_path,
@@ -1432,7 +1432,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
             name,
             web_url_path,
           },
-      'videoId': coalesce(live_event_youtube_id, video.external_id),
+      'videoId': coalesce(live_event_stream_id, video.external_id),
     } | order(live_event_start_time)[0...1]`
 
   return await fetchSanity(query, false, { processNeedAccess: false })
