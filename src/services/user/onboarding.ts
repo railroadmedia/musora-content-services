@@ -9,7 +9,7 @@ export interface OnboardingSteps {
   instrument?: 'drums' | 'guitar' | 'piano' | 'voice' | 'bass'
   skill_level?: 'new' | 'beginner' | 'intermediate' | 'advanced' | 'expert'
   topics?: string[]
-  gears?: string[]
+  gear?: string[]
   genres?: string[]
   goals?: string[]
   practice_frequency?: string
