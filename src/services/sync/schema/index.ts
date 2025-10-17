@@ -18,12 +18,13 @@ const contentProgressTable = tableSchema({
   name: SYNC_TABLES.CONTENT_PROGRESS,
   columns: [
     { name: 'content_id', type: 'number', isIndexed: true },
-    { name: 'state', type: 'string' },
+    { name: 'state', type: 'string', isIndexed: true },
     { name: 'progress_percent', type: 'number' },
     { name: 'collection_type', type: 'string', isOptional: true },
     { name: 'collection_id', type: 'number', isOptional: true },
     { name: 'created_at', type: 'number' },
-    { name: 'updated_at', type: 'number' }
+    { name: 'updated_at', type: 'number', isIndexed: true },
+    { name: '_optimistic', type: 'boolean' }
   ]
 })
 const contentPracticesTable = tableSchema({
