@@ -128,11 +128,11 @@ export async function getUserData(userId = globalConfig.sessionConfig.userId) {
 }
 
 /**
- * @param displayName - The display name to check for availability.
+ * @param userName - The display name to check for availability.
  * @returns {Promise<{ available: boolean }>} - An object indicating if the display name is available.
  */
-export async function isDisplayNameAvailable(displayName) {
-  const apiUrl = `${baseUrl}/v1/users/display-names/available?display_name=${encodeURIComponent(displayName)}`
+export async function isUsernameAvailable(userName) {
+  const apiUrl = `${baseUrl}/v1/users/usernames/available?username=${encodeURIComponent(userName)}`
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   return httpClient.get(apiUrl)
 }
