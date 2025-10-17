@@ -14,8 +14,7 @@ import {
   fetchLeaving, fetchScheduledAndNewReleases, fetchContentRows
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
-import {fetchHandler} from "./railcontent";
-import {recommendations, rankCategories, rankItems} from "./recommendations";
+import {recommendations, rankCategories, rankItems, fetchRecommendedCategories} from "./recommendations/recommendations.js";
 import {addContextToContent} from "./contentAggregator.js";
 
 
@@ -200,13 +199,38 @@ export async function getContentRows(brand, pageName, contentRowSlug = null, {
   page = 1,
   limit = 10
 } = {}) {
-  const sanityData = await fetchContentRows(brand, pageName, contentRowSlug)
-  if (!sanityData) {
-    return []
+  var recommendedCategories = await fetchRecommendedCategories(brand, pageName);
+  var wasRecommendedRow = false;
+  if (contentRowSlug) {
+    const t = recommendedCategories.find(c => c.slug.toLowerCase() === contentRowSlug.toLowerCase())
+    if (t) {
+      wasRecommendedRow = true
+      recommendedCategories = [t]
+    } else {
+      recommendedCategories = []
+    }
   }
+  var recommendedIds = [];
+  for (const category of recommendedCategories) {
+    recommendedIds = [
+      ...recommendedIds,
+      ...category.ids,
+    ]
+  }
+  const [sanityData, recommendedData] = await Promise.all([
+    wasRecommendedRow ? Promise.resolve([]) : fetchContentRows(brand, pageName, contentRowSlug),
+    fetchByRailContentIds(recommendedIds, 'tab-data', ),
+  ]);
   let contentMap = {}
   let recData = {}
   let slugNameMap = {}
+  for (const content of recommendedData) {
+    contentMap[content.id] = content;
+  }
+  for (const category of recommendedCategories) {
+    recData[category.slug] = category.ids
+    slugNameMap[category.slug] = category.name
+  }
   for (const category of sanityData) {
     recData[category.slug] = category.content.map(item => item.id)
     for (const content of category.content) {
@@ -216,19 +240,22 @@ export async function getContentRows(brand, pageName, contentRowSlug = null, {
   }
   const start = (page - 1) * limit
   const end = start + limit
+
   const sortedData = await rankCategories(brand, recData)
   let finalData = []
   for (const category of sortedData) {
+    const items = category.items.map(id => contentMap[id]).filter(r => r);
     finalData.push( {
       id: category.slug,
       title: slugNameMap[category.slug],
-      items: category.items.slice(start, end).map(id => contentMap[id])})
+      items: items.slice(start, end),
+    })
   }
 
   return contentRowSlug ?
     {
       type: TabResponseType.CATALOG,
-      data: finalData[0].items,
+      data: finalData[0]?.items ?? [],
       meta: {}
     }
     : finalData

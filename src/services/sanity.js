@@ -20,7 +20,7 @@ import {
   getChildFieldsForContentType,
   SONG_TYPES,
 } from '../contentTypeConfig.js'
-import {fetchSimilarItems, recommendations} from './recommendations.js'
+import { fetchSimilarItems } from './recommendations/recommendations.js'
 import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
 
 import { globalConfig } from './config.js'
@@ -527,8 +527,9 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
 
 export async function fetchContentRows(brand, pageName, contentRowSlug)
 {
-  if (pageName === 'lessons') pageName = 'lesson'
-  if (pageName === 'songs') pageName = 'song'
+  pageName = pageName.toLowerCase()
+  // songs/lesson -> song/lesson
+  pageName = pageName.endsWith('s') ? pageName.slice(0, -1) : pageName;
   const rowString = contentRowSlug ? ` && slug.current == "${contentRowSlug.toLowerCase()}"` : ''
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`, {pullFutureContent: true}).buildFilter()
   const childFilter = await new FilterBuilder('', {isChildrenFilter: true}).buildFilter()

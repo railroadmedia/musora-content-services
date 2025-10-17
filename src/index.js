@@ -192,11 +192,12 @@ import {
 } from './services/railcontent.js';
 
 import {
+	fetchRecommendedCategories,
 	fetchSimilarItems,
 	rankCategories,
 	rankItems,
 	recommendations
-} from './services/recommendations.js';
+} from './services/recommendations/recommendations.ts';
 
 import {
 	fetchAll,
@@ -462,6 +463,7 @@ export {
 	fetchRecentActivitiesActiveTabs,
 	fetchRecentUserActivities,
 	fetchRechargeTokens,
+	fetchRecommendedCategories,
 	fetchRelatedLessons,
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
