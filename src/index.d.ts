@@ -292,8 +292,9 @@ import {
 import {
 	fetchMemberships,
 	fetchRechargeTokens,
+	restorePurchases,
 	upgradeSubscription
-} from './services/user/memberships.js';
+} from './services/user/memberships.ts';
 
 import {
 	deleteNotification,
@@ -588,6 +589,7 @@ declare module 'musora-content-services' {
 		restoreItemFromPlaylist,
 		restoreNotification,
 		restorePracticeSession,
+		restorePurchases,
 		restoreUserActivity,
 		restoreUserPractice,
 		search,
