@@ -4,23 +4,41 @@
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
 
-export interface OnboardingProps {
+export interface OnboardingSteps {
+  email?: string
+  instrument?: 'drums' | 'guitar' | 'piano' | 'voice' | 'bass'
+  skill_level?: 'new' | 'beginner' | 'intermediate' | 'advanced' | 'expert'
+  topics?: string[]
+  gears?: string[]
+  genres?: string[]
+  goals?: string[]
+  practice_frequency?: string
+  enable_notifications?: boolean
+}
+
+export interface StartOnboardingParams {
   email: string
   brand: string
   flow: string
-  steps: object
-  isCompleted: boolean
+  marketingOptIn: boolean
+  steps?: OnboardingSteps
+}
+
+export interface Onboarding {
+  id: number
+  email: string
+  brand: string
+  flow: string
+  steps: OnboardingSteps
+  is_completed: boolean
+  completed_at: Date | null
+  marketing_opt_in: boolean
 }
 
 /**
- * @param {Object} params - The parameters for starting the onboarding process.
- * @property {string} email - The email address for the account.
- * @property {string} brand - The brand associated with the account.
- * @property {string} flow - The onboarding flow identifier.
- * @property {object} steps - An object representing the steps completed in the onboarding process.
- * @property {boolean} isCompleted - A boolean indicating whether the onboarding process is completed.
+ * @param {StartOnboardingParams} params - The parameters for starting the onboarding process.
  *
- * @returns {Promise<void>} - A promise that resolves when the onboarding process is started.
+ * @returns {Promise<Onboarding>} - A promise that resolves when the onboarding process is started.
  * @throws {HttpError} - If the HTTP request fails.
  */
 export async function startOnboarding({
@@ -28,14 +46,15 @@ export async function startOnboarding({
   brand,
   flow,
   steps,
-  isCompleted,
-}: OnboardingProps): Promise<void> {
+  marketingOptIn = false,
+}: StartOnboardingParams): Promise<Onboarding> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post(`/api/user-management-system/v1/onboardings`, {
+  return httpClient.post<Onboarding>(`/api/user-management-system/v1/onboardings`, {
     email,
     brand,
     flow,
     steps,
-    is_completed: isCompleted,
+    marketing_opt_in: marketingOptIn,
+    is_completed: false,
   })
 }
