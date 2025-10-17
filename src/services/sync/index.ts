@@ -1,10 +1,12 @@
 import './telemetry/index'
-export { default as db } from './repository-proxy'
 
-import { RecordId } from "@nozbe/watermelondb"
+import { Q, RecordId } from "@nozbe/watermelondb"
 import { type ModelSerialized } from "./serializers"
 import { EpochSeconds } from "./utils/epoch"
 import { Model } from "@nozbe/watermelondb"
+
+export { default as db } from './repository-proxy'
+export { Q }
 
 export { default as SyncSession } from './run-scope'
 export { default as SyncRetry } from './retry'

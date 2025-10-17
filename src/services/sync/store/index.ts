@@ -166,8 +166,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   async queryOneId(...args: Q.Clause[]) {
-    const record = await this.queryRecordId(...args)
-    return record ? record.id : null
+    return this.queryRecordId(...args)
   }
 
   async updateOne(id: RecordId, builder: (record: TModel) => void, span?: Span) {

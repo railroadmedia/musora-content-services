@@ -2,6 +2,7 @@ import {
   getLastInteractedOf, getNavigateTo,
   getNextLesson,
   getProgressStateByIds,
+  getProgressDataByIds,
   getResumeTimeSecondsByIds
 } from "./contentProgress"
 import {isContentLikedByIds} from "./contentLikes"

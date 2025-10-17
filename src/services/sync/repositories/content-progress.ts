@@ -21,6 +21,37 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     )
   }
 
+  async startedOrCompleted(opts: Parameters<typeof this.startedOrCompletedClauses>[0] = {}) {
+    return this.queryAll(...this.startedOrCompletedClauses(opts))
+  }
+
+  async startedOrCompletedIds(opts: Parameters<typeof this.startedOrCompletedClauses>[0] = {}) {
+    return this.queryAllIds(...this.startedOrCompletedClauses(opts))
+  }
+
+  private startedOrCompletedClauses(opts: {
+    brand?: string;
+    updatedAfter?: number;
+  } = {}) {
+    const clauses: Q.Clause[] = [
+      Q.or(
+        Q.where('state', STATE.STARTED),
+        Q.where('state', STATE.COMPLETED)
+      ),
+      Q.sortBy('updated_at', 'desc')
+    ]
+
+    if (opts.updatedAfter) {
+      clauses.push(Q.where('updated_at', Q.gte(opts.updatedAfter)))
+    }
+
+    if (opts.brand) {
+      clauses.push(Q.where('brand', opts.brand))
+    }
+
+    return clauses
+  }
+
   async mostRecentlyUpdatedId(contentIds: number[]) {
     return this.queryOneId(
       Q.where('content_id', Q.oneOf(contentIds)),
@@ -28,33 +59,14 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     )
   }
 
-  // get all progress for a given brand, collection type and id
-  async getAllProgress(
-    { brand, collection }: { brand?: string; collection?: { type: COLLECTION_TYPE, id: number } | null } = {},
-    limit?: number
-  ) {
-    const clauses: Q.Clause[] = []
-    if (brand) { clauses.push(Q.where('brand', brand)) }
-    if (typeof collection != 'undefined') {
-      clauses.push(...[
-        Q.where('collection_type', collection?.type ?? null),
-        Q.where('collection_id', collection?.id ?? null)
-      ])
-    }
-    if (limit) { clauses.push(Q.take(limit)) }
-
-    return await this.queryAll(...clauses)
-  }
-
   // get one contentId of a given collection type and id
   async getOneProgressByContentId(
     contentId: number,
-    { brand, collection }: { brand?: string; collection?: { type: COLLECTION_TYPE, id: number } | null } = {}
+    { collection }: { collection?: { type: COLLECTION_TYPE, id: number } | null } = {}
   ) {
     const clauses = [
       Q.where('content_id', contentId)
     ]
-    if (brand) { clauses.push(Q.where('brand', brand)) }
     if (typeof collection != 'undefined') {
       clauses.push(...[
         Q.where('collection_type', collection?.type ?? null),
@@ -68,12 +80,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   // get multiple contentIds of a given collection type and id
   async getSomeProgressByContentIds(
     contentIds: number[],
-    { brand, collection }: { brand?: string; collection?: { type: COLLECTION_TYPE, id: number } | null } = {}
+    { collection }: { collection?: { type: COLLECTION_TYPE, id: number } | null } = {}
   ) {
     const clauses = [
       Q.where('content_id', Q.oneOf(contentIds))
     ]
-    if (brand) { clauses.push(Q.where('brand', brand)) }
     if (typeof collection != 'undefined') {
       clauses.push(...[
         Q.where('collection_type', collection?.type ?? null),
