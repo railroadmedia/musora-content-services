@@ -202,10 +202,12 @@ export async function getContentRows(brand, pageName, contentRowSlug = null, {
   var recommendedCategories = await fetchRecommendedCategories(brand, pageName);
   var wasRecommendedRow = false;
   if (contentRowSlug) {
-    const t = recommendedCategories.find(c => c.name.toLowerCase() === contentRowSlug.toLowerCase())
+    const t = recommendedCategories.find(c => c.slug.toLowerCase() === contentRowSlug.toLowerCase())
     if (t) {
       wasRecommendedRow = true
       recommendedCategories = [t]
+    } else {
+      recommendedCategories = []
     }
   }
   var recommendedIds = [];

@@ -9,7 +9,8 @@ import { HttpClient } from '../../infrastructure/http/HttpClient'
  * Exported functions that are excluded from index generation.
  */
 const excludeFromGeneratedIndex: string[] = []
-
+// If you're testing something locally and it's on DEV skip the proxy and target it directly
+// const baseURL = 'https://MusoraProductDepartment-PWGeneratorDEV.hf.space'
 const baseURL = 'https://recommender.musora.com'
 
 interface SimilarItemsResponse {
@@ -136,7 +137,7 @@ export async function fetchRecommendedCategories(
   const url = `/recommend_topics/`
 
   try {
-    // TODO Remove once routing is done for this in the baseURL
+    // TODO Remove before production deployment
     //const httpClient = new HttpClient(tempBaseURL)
     const httpClient = new HttpClient('https://MusoraProductDepartment-PWGeneratorDEV.hf.space')
     const response = await httpClient.post<RecommendedCategoriesResponse>(url, data)
