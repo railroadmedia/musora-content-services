@@ -70,7 +70,7 @@ export async function startOnboarding({
 }
 
 /**
- * @param {StartOnboardingParams} params - The parameters for updating the onboarding process.
+ * @param {UpdateOnboardingParams} params - The parameters for updating the onboarding process.
  *
  * @returns {Promise<Onboarding>} - A promise that resolves when the onboarding process is updated.
  * @throws {HttpError} - If the HTTP request fails.
