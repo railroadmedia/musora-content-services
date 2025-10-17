@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.54.0](https://github.com/railroadmedia/musora-content-services/compare/v2.53.0...v2.54.0) (2025-10-17)
+
+
+### Features
+
+* **MU2E2:** Add access level to author type, update docs ([de76fe6](https://github.com/railroadmedia/musora-content-services/commit/de76fe63964d9f8644e8b14e432d5e0b34f662f3))
+
 ## [2.53.0](https://github.com/railroadmedia/musora-content-services/compare/v2.51.0...v2.53.0) (2025-10-17)
 
 
