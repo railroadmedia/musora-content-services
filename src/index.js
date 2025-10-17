@@ -311,7 +311,8 @@ import {
 } from './services/user/notifications.js';
 
 import {
-	startOnboarding
+	startOnboarding,
+	updateOnboarding
 } from './services/user/onboarding.ts';
 
 import {
@@ -620,6 +621,7 @@ export {
 	updateDisplayName,
 	updateForumCategory,
 	updateNotificationSetting,
+	updateOnboarding,
 	updatePlaylist,
 	updatePost,
 	updatePracticeNotes,
