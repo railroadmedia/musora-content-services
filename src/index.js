@@ -311,6 +311,10 @@ import {
 } from './services/user/notifications.js';
 
 import {
+	startOnboarding
+} from './services/user/onboarding.ts';
+
+import {
 	fetchCustomerPayments
 } from './services/user/payments.ts';
 
@@ -596,6 +600,7 @@ export {
 	setUserSignature,
 	setupAccount,
 	startLiveEventPolling,
+	startOnboarding,
 	status,
 	toDayjs,
 	togglePlaylistPrivate,
