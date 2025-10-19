@@ -97,8 +97,8 @@ export default class SyncManager {
           strategy.onTrigger(store, reason => {
             store.sync(reason)
           })
-          strategy.start()
         })
+        strategy.start()
       })
     })
 

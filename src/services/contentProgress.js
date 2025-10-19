@@ -15,10 +15,6 @@ import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 const STATE_STARTED = STATE.STARTED
 const STATE_COMPLETED = STATE.COMPLETED
 
-// const DATA_KEY_STATUS = 's'
-// const DATA_KEY_RESUME_TIME = 't'
-// const DATA_KEY_LAST_UPDATED_TIME = 'u'
-
 let sessionData = []
 
 export async function getProgressState(contentId) {
@@ -258,117 +254,6 @@ export async function getStartedOrCompletedProgressOnly({ brand = undefined } = 
   })
 }
 
-export async function contentStatusCompleted(contentId) {
-  // return await dataContext.update(
-  //   async function (localContext) {
-  //     let hierarchy = await fetchHierarchy(contentId)
-  //     completeStatusInLocalContext(localContext, contentId, hierarchy)
-  //   },
-  //   async function () {
-  //     return postContentComplete(contentId)
-  //   }
-  // )
-}
-export async function contentStatusStarted(contentId) {
-  // return await dataContext.update(
-  //   async function (localContext) {
-  //     let hierarchy = await fetchHierarchy(contentId)
-  //     startStatusInLocalContext(localContext, contentId, hierarchy)
-  //   },
-  //   async function () {
-  //     return postContentStart(contentId)
-  //   }
-  // )
-}
-export async function contentStatusStarted(contentId) {
-  return await dataContext.update(
-    async function (localContext) {
-      let hierarchy = await fetchHierarchy(contentId)
-      startStatusInLocalContext(localContext, contentId, hierarchy)
-    },
-    async function () {
-      return postContentStart(contentId)
-    }
-  )
-}
-
-function saveContentProgress(localContext, contentId, progress, currentSeconds, hierarchy) {
-  if (progress === 100) {
-    completeStatusInLocalContext(localContext, contentId, hierarchy)
-    return
-  }
-
-  let data = localContext.data[contentId] ?? {}
-  const currentProgress = data[DATA_KEY_STATUS]
-  if (!currentProgress || currentProgress !== STATE_COMPLETED) {
-    data[DATA_KEY_PROGRESS] = progress
-    data[DATA_KEY_STATUS] = STATE_STARTED
-  }
-  data[DATA_KEY_RESUME_TIME] = currentSeconds
-  data[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000)
-  localContext.data[contentId] = data
-
-  bubbleProgress(hierarchy, contentId, localContext)
-}
-
-function completeStatusInLocalContext(localContext, contentId, hierarchy) {
-  setStartedOrCompletedStatusInLocalContext(localContext, contentId, true, hierarchy)
-}
-
-function startStatusInLocalContext(localContext, contentId, hierarchy) {
-  setStartedOrCompletedStatusInLocalContext(localContext, contentId, false, hierarchy)
-}
-
-function setStartedOrCompletedStatusInLocalContext(localContext, contentId, isCompleted, hierarchy) {
-  let data = localContext.data[contentId] ?? {}
-  data[DATA_KEY_PROGRESS] = isCompleted ? 100 : 0
-  data[DATA_KEY_STATUS] = isCompleted ? STATE_COMPLETED : STATE_STARTED
-  data[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000)
-  localContext.data[contentId] = data
-
-  if (!hierarchy) return
-  let children = hierarchy.children[contentId] ?? []
-  for (let i = 0; i < children.length; i++) {
-    let childId = children[i]
-    setStartedOrCompletedStatusInLocalContext(localContext, childId, isCompleted, hierarchy)
-  }
-  bubbleProgress(hierarchy, contentId, localContext)
-}
-
-function getChildrenToDepth(parentId, hierarchy, depth = 1) {
-  let childIds = hierarchy.children[parentId] ?? []
-  let allChildrenIds = childIds
-  childIds.forEach((id) => {
-    allChildrenIds = allChildrenIds.concat(getChildrenToDepth(id, hierarchy, depth - 1))
-  })
-  return allChildrenIds
-}
-
-export async function contentStatusReset(contentId) {
-  // await dataContext.update(
-  //   async function (localContext) {
-  //     let hierarchy = await fetchHierarchy(contentId)
-  //     resetStatusInLocalContext(localContext, contentId, hierarchy)
-  //   },
-  //   async function () {
-  //     return postContentReset(contentId)
-  //   }
-  // )
-}
-
-function resetStatusInLocalContext(localContext, contentId, hierarchy) {
-  let allChildIds = getChildrenToDepth(contentId, hierarchy, 5)
-  allChildIds.push(contentId)
-  allChildIds.forEach((id) => {
-    const index = Object.keys(localContext.data).indexOf(id.toString())
-    if (index > -1) {
-      // only splice array when item is found
-      delete localContext.data[id]
-    }
-  })
-  bubbleProgress(hierarchy, contentId, localContext)
-}
-
 /**
  * Record watch session
  * @return {string} sessionId - provide in future calls to update progress
@@ -393,8 +278,6 @@ export async function recordWatchSession(
   instrumentId = null,
   categoryId = null
 ) {
-  let mediaTypeId = getMediaTypeId(mediaType, mediaCategory)
-  let updateLocalProgress = mediaTypeId === 1 || mediaTypeId === 2 //only update for video playback
   if (!sessionId) {
     sessionId = uuidv4()
   }
@@ -415,56 +298,97 @@ export async function recordWatchSession(
   }
   sessionData[sessionId][contentId] = secondsPlayed
 
-  //
+  let progress = Math.min(
+    99,
+    Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds)) * 100)
+  )
+  await saveContentProgress(contentId, progress, currentSeconds)
 
-  await db.contentProgress.recordProgress(contentId, null, {
-    state: 'started',
-    progressPercent: Math.round(Math.random() * 100),
-  })
-
-  // await dataContext.update(
-  //   async function (localContext) {
-  //     if (contentId && updateLocalProgress) {
-  //       if (mediaLengthSeconds <= 0) {
-  //         return
-  //       }
-  //       let progress = Math.min(
-  //         99,
-  //         Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds ?? 0)) * 100)
-  //       )
-  //       let hierarchy = await fetchHierarchy(contentId)
-  //       saveContentProgress(localContext, contentId, progress, currentSeconds, hierarchy)
-  //     }
-  //   },
-  //   async function () {
-  //     // return postRecordWatchSession(
-  //     //   contentId,
-  //     //   mediaTypeId,
-  //     //   mediaLengthSeconds,
-  //     //   currentSeconds,
-  //     //   secondsPlayed,
-  //     //   sessionId
-  //     // )
-  //   }
-  // )
   return sessionId
 }
 
-function getMediaTypeId(mediaType, mediaCategory) {
-  switch (`${mediaType}_${mediaCategory}`) {
-    case 'video_youtube':
-      return 1
-    case 'video_vimeo':
-      return 2
-    case 'assignment_soundslice':
-      return 3
-    case 'practice_play-alongs':
-      return 4
-    case 'video_soundslice':
-      return 3
-    default:
-      return 5
+export async function contentStatusCompleted(contentId) {
+  return setStartedOrCompletedStatus(contentId, true)
+}
+export async function contentStatusStarted(contentId) {
+  return setStartedOrCompletedStatus(contentId, false)
+}
+export async function contentStatusReset(contentId) {
+  return resetStatus(contentId)
+}
+
+async function saveContentProgress(contentId, progress, currentSeconds) {
+  await db.contentProgress.recordProgress(contentId, progress, currentSeconds)
+
+  // note - previous implementation explicitly did not trickle progress to children here
+  // (only to siblings/parents via le bubbles)
+
+  const bubbledProgresses = bubbleProgress(await fetchHierarchy(), contentId)
+  return db.contentProgress.recordProgressesOptimistic(bubbledProgresses)
+}
+
+async function setStartedOrCompletedStatus(contentId, isCompleted) {
+  const progress = isCompleted ? 100 : 0
+  await db.contentProgress.recordProgress(contentId, progress)
+
+  const hierarchy = await fetchHierarchy()
+
+  return Promise.all([
+    db.contentProgress.recordProgressesOptimistic(trickleProgress(hierarchy, contentId, progress)),
+    bubbleProgress(hierarchy, contentId).then(bubbledProgresses => db.contentProgress.recordProgressesOptimistic(bubbledProgresses))
+  ])
+}
+
+async function resetStatus(contentId) {
+  await db.contentProgress.eraseProgress(contentId)
+  const hierarchy = await fetchHierarchy()
+
+  return Promise.all([
+    db.contentProgress.eraseProgressesOptimistic(getChildrenToDepth(contentId, hierarchy, 5)),
+    bubbleProgress(hierarchy, contentId).then(bubbledProgresses => db.contentProgress.eraseProgressesOptimistic(bubbledProgresses))
+  ])
+}
+
+function trickleProgress(hierarchy, contentId, progress) {
+  const descendantIds = getChildrenToDepth(contentId, hierarchy, 5)
+  return Object.fromEntries(descendantIds.map(id => [id, progress]))
+}
+
+async function bubbleProgress(hierarchy, contentId)     {
+  const ids = getAncestorAndSiblingIds(hierarchy, contentId)
+  const progresses = await getByIds(ids, 'progress_percent', 0)
+  return averageProgressesFor(hierarchy, contentId, progresses)
+}
+
+function getAncestorAndSiblingIds(hierarchy, contentId) {
+  const parentId = hierarchy?.parents?.[contentId]
+  if (!parentId) return []
+
+  return [...(hierarchy?.children?.[parentId] ?? []), ...getUpstreams(hierarchy, parentId)]
+}
+
+function averageProgressesFor(hierarchy, contentId, progressData) {
+  const parentId = hierarchy?.parents?.[contentId]
+  if (!parentId) return []
+
+  const parentChildProgress = hierarchy?.children?.[parentId]?.map(childId => {
+    return progressData[childId] ?? 0
+  })
+  const avgParentProgress = Math.round(parentChildProgress.reduce((a, b) => a + b, 0) / parentChildProgress.length)
+
+  return {
+    ...bubbleProgress(hierarchy, parentId),
+    [parentId]: avgParentProgress,
   }
+}
+
+function getChildrenToDepth(parentId, hierarchy, depth = 1) {
+  let childIds = hierarchy.children[parentId] ?? []
+  let allChildrenIds = childIds
+  childIds.forEach((id) => {
+    allChildrenIds = allChildrenIds.concat(getChildrenToDepth(id, hierarchy, depth - 1))
+  })
+  return allChildrenIds
 }
 
 function uuidv4() {
@@ -475,19 +399,3 @@ function uuidv4() {
   })
 }
 
-function bubbleProgress(hierarchy, contentId, localContext) {
-  let parentId = hierarchy?.parents?.[contentId]
-  if (!parentId) return
-  let data = localContext.data[parentId] ?? {}
-  let childProgress = hierarchy?.children?.[parentId]?.map(function (childId) {
-    return localContext.data[childId]?.[DATA_KEY_PROGRESS] ?? 0
-  })
-  let progress = Math.round(childProgress.reduce((a, b) => a + b, 0) / childProgress.length)
-  const brand = localContext.data[contentId]?.[DATA_KEY_BRAND] ?? null
-  data[DATA_KEY_PROGRESS] = progress
-  data[DATA_KEY_STATUS] = progress === 100 ? STATE_COMPLETED : STATE_STARTED
-  data[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000)
-  data[DATA_KEY_BRAND] = brand
-  localContext.data[parentId] = data
-  bubbleProgress(hierarchy, parentId, localContext)
-}

@@ -4,7 +4,7 @@ import BaseModel from '../models/Base'
 import { RecordId } from '@nozbe/watermelondb'
 import type { Span } from '../telemetry/index'
 
-import { SyncError, SyncExistsDTO, SyncReadDTO, SyncReadDTOTarget, SyncWriteDTO } from '..'
+import { SyncError, SyncExistsDTO, SyncReadDTO, SyncReadData, SyncWriteDTO, SyncWriteIdData, SyncWriteRecordData } from '..'
 import { SyncPushResponse } from '../fetch'
 import { ModelSerialized } from '../serializers'
 
@@ -78,15 +78,29 @@ export default class SyncRepository<TModel extends BaseModel> {
 
   protected async upsertOne(id: RecordId, builder: (record: TModel) => void) {
     return this.store.telemetry.trace(
-      { name: `upsert:${this.store.model.table}`, op: 'upsert' },
+      { name: `upsertOne:${this.store.model.table}`, op: 'upsert' },
       (span) => this._push(() => this.store.upsertOne(id, builder, span), span)
     )
   }
 
   protected async upsertOneOptimistic(id: RecordId, builder: (record: TModel) => void) {
     return this.store.telemetry.trace(
-      { name: `upsert:${this.store.model.table}`, op: 'upsertOptimistic' },
+      { name: `upsertOneOptimistic:${this.store.model.table}`, op: 'upsert' },
       (span) => this._push(() => this.store.upsertOneOptimistic(id, builder, span), span)
+    )
+  }
+
+  protected async upsertSome(builders: Record<RecordId, (record: TModel) => void>) {
+    return this.store.telemetry.trace(
+      { name: `upsertSome:${this.store.model.table}`, op: 'upsert' },
+      (span) => this._push(() => this.store.upsertSome(builders, span), span)
+    )
+  }
+
+  protected async upsertSomeOptimistic(builders: Record<RecordId, (record: TModel) => void>) {
+    return this.store.telemetry.trace(
+      { name: `upsertSomeOptimistic:${this.store.model.table}`, op: 'upsert' },
+      (span) => this._push(() => this.store.upsertSomeOptimistic(builders, span), span)
     )
   }
 
@@ -97,40 +111,54 @@ export default class SyncRepository<TModel extends BaseModel> {
     )
   }
 
-  private async _push(createRecord: () => Promise<ModelSerialized<TModel>>, span?: Span) {
-    const record = await createRecord()
+  protected async deleteSome(ids: RecordId[]) {
+    return this.store.telemetry.trace(
+      { name: `deleteSome:${this.store.model.table}`, op: 'delete' },
+      (span) => this._pushId(() => this.store.deleteSome(ids, span), span)
+    )
+  }
+
+  protected async deleteSomeOptimistic(ids: RecordId[]) {
+    return this.store.telemetry.trace(
+      { name: `deleteSomeOptimistic:${this.store.model.table}`, op: 'delete' },
+      (span) => this._pushId(() => this.store.deleteSomeOptimistic(ids, span), span)
+    )
+  }
+
+  private async _push<T extends SyncWriteRecordData<TModel>>(create: () => Promise<T>, span?: Span) {
+    const data = await create()
 
     let response: SyncPushResponse | null = null
     if (!this.context.durability.getValue()) {
-      response = await this.store.pushRecordIdsImpatiently([record.id], span)
+      response = await this.store.pushRecordIdsImpatiently('id' in data ? [data.id] : data.map(r => r.id), span)
 
       if (!response.ok) {
         throw new SyncError('Failed to push records', { response })
       }
     }
 
-    const ret: SyncWriteDTO<TModel> = {
-      data: record,
+    const ret: SyncWriteDTO<TModel, T> = {
+      data,
       status: response ? 'synced' : 'unsynced',
       pushStatus: response ? 'success' : 'pending',
     }
     return ret
   }
 
-  private async _pushId(createId: () => Promise<RecordId>, span?: Span) {
-    const id = await createId()
+  private async _pushId<T extends SyncWriteIdData<TModel>>(create: () => Promise<T>, span?: Span) {
+    const data = await create()
 
     let response: SyncPushResponse | null = null
     if (!this.context.durability.getValue()) {
-      response = await this.store.pushRecordIdsImpatiently([id], span)
+      response = await this.store.pushRecordIdsImpatiently(typeof data === 'string' ? [data] : data, span)
 
       if (!response.ok) {
         throw new SyncError('Failed to push records', { response })
       }
     }
 
-    const ret: SyncWriteDTO<TModel> = {
-      data: id,
+    const ret: SyncWriteDTO<TModel, T> = {
+      data,
       status: response ? 'synced' : 'unsynced',
       pushStatus: response ? 'success' : 'pending',
     }
@@ -138,7 +166,7 @@ export default class SyncRepository<TModel extends BaseModel> {
   }
 
   // read from local db, but pull (and throw (!) if it fails) if it's never been synced before
-  private async _read<T extends SyncReadDTOTarget<TModel>>(query: () => Promise<T>) {
+  private async _read<T extends SyncReadData<TModel>>(query: () => Promise<T>) {
     const fetchToken = await this.store.getLastFetchToken()
     const everPulled = !!fetchToken
     let pull: Awaited<ReturnType<typeof this.store.pullRecords>> | null = null
@@ -161,7 +189,7 @@ export default class SyncRepository<TModel extends BaseModel> {
     return result
   }
 
-  private async _fetch<T extends SyncReadDTOTarget<TModel>>(query: () => Promise<T>) {
+  private async _fetch<T extends SyncReadData<TModel>>(query: () => Promise<T>) {
     const [response, fetchToken] = await Promise.all([
       this.store.pullRecords(),
       this.store.getLastFetchToken(),

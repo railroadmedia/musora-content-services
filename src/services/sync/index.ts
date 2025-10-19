@@ -41,26 +41,19 @@ export type SyncExistsDTO<_TModel extends Model, T extends boolean | boolean[]> 
   lastFetchToken: SyncToken | null
 }
 
-export type SyncReadDTOTarget<TModel extends Model> = ModelSerialized<TModel> | ModelSerialized<TModel>[] | RecordId | RecordId[] | null
-
-export type SyncReadDTO<TModel extends Model, T extends SyncReadDTOTarget<TModel>> = {
-  data: T
+export type SyncReadData<T extends Model> = ModelSerialized<T> | ModelSerialized<T>[] | RecordId | RecordId[] | null
+export type SyncReadDTO<T extends Model, TData extends SyncReadData<T>> = {
+  data: TData
   status: 'fresh' | 'stale'
   pullStatus: 'success' | 'pending' | 'failure' | null
   lastFetchToken: SyncToken | null
 }
 
-export type SyncWriteDTO<T extends Model> = SyncNonDeleteWriteDTO<T> | SyncDeleteWriteDTO
-
-type SyncNonDeleteWriteDTO<T extends Model, TMultiple extends boolean = false> = SyncWriteDTOBase & {
-  data: TMultiple extends true ? ModelSerialized<T>[] : ModelSerialized<T>
-}
-
-type SyncDeleteWriteDTO<TMultiple extends boolean = false> = SyncWriteDTOBase & {
-  data: TMultiple extends true ? RecordId[] : RecordId
-}
-
-interface SyncWriteDTOBase {
+export type SyncWriteData<T extends Model> = SyncWriteRecordData<T> | SyncWriteIdData<T>
+export type SyncWriteRecordData<T extends Model> = ModelSerialized<T> | ModelSerialized<T>[]
+export type SyncWriteIdData<_T extends Model> = RecordId | RecordId[]
+export type SyncWriteDTO<T extends Model, TData extends SyncWriteData<T>> = {
+  data: TData
   status: 'synced' | 'unsynced'
   pushStatus: 'success' | 'pending' | 'failure'
 }
