@@ -251,10 +251,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   async upsertOneOptimistic(id: string, builder: (record: TModel) => void, span?: Span) {
-    return this.upsertOne(id, record => {
-      builder(record)
-      record.buildMarkAsOptimistic()
-    }, span)
+    return this.upsertSomeOptimistic({ [id]: builder }, span).then(r => r[0])
   }
 
   async deleteOne(id: RecordId, span?: Span) {
@@ -286,6 +283,28 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       await this.ensurePersistence()
 
       return id
+    })
+  }
+
+  async deleteSomeOptimistic(ids: RecordId[], span?: Span) {
+    return this.runScope.abortable(async () => {
+      await this.telemeterizedWrite(span, async writer => {
+        const existing = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))
+
+        const destroyedBuilds = existing.filter(record => record._raw._status === 'deleted').map(record => {
+          return new this.model(this.collection, { id: record.id }).prepareDestroyPermanently()
+        })
+
+        await writer.batch(...destroyedBuilds)
+      })
+
+      // todo - can't communicate destroyed records via _raw - consider _preparedState on record?
+      // this.emit('write', [])
+
+      this.pushUnsyncedWithRetry(span)
+      await this.ensurePersistence()
+
+      return ids
     })
   }
 

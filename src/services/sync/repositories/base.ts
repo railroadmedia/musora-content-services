@@ -107,21 +107,13 @@ export default class SyncRepository<TModel extends BaseModel> {
   protected async deleteOne(id: RecordId) {
     return this.store.telemetry.trace(
       { name: `delete:${this.store.model.table}`, op: 'delete' },
-      (span) => this._pushId(() => this.store.deleteOne(id, span), span)
+      (span) => this._pushIds(() => this.store.deleteOne(id, span), span)
     )
   }
-
-  protected async deleteSome(ids: RecordId[]) {
-    return this.store.telemetry.trace(
-      { name: `deleteSome:${this.store.model.table}`, op: 'delete' },
-      (span) => this._pushId(() => this.store.deleteSome(ids, span), span)
-    )
-  }
-
   protected async deleteSomeOptimistic(ids: RecordId[]) {
     return this.store.telemetry.trace(
       { name: `deleteSomeOptimistic:${this.store.model.table}`, op: 'delete' },
-      (span) => this._pushId(() => this.store.deleteSomeOptimistic(ids, span), span)
+      (span) => this._pushIds(() => this.store.deleteSomeOptimistic(ids, span), span)
     )
   }
 
@@ -145,7 +137,7 @@ export default class SyncRepository<TModel extends BaseModel> {
     return ret
   }
 
-  private async _pushId<T extends SyncWriteIdData<TModel>>(create: () => Promise<T>, span?: Span) {
+  private async _pushIds<T extends SyncWriteIdData<TModel>>(create: () => Promise<T>, span?: Span) {
     const data = await create()
 
     let response: SyncPushResponse | null = null
