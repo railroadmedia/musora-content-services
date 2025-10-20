@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.55.2](https://github.com/railroadmedia/musora-content-services/compare/v2.55.1...v2.55.2) (2025-10-20)
+
+
+### Bug Fixes
+
+* **MU2-1088:** Remove log_image_url field ([d58de5c](https://github.com/railroadmedia/musora-content-services/commit/d58de5c2c6a42997a731482907b085bb470bb23a))
+* **MU2-1088:** Update to use getFieldsForContentTypeWithFilteredChildren ([d207afd](https://github.com/railroadmedia/musora-content-services/commit/d207afda2de57f45b4526109b5bf2e7ea27f0de6))
+
 ### [2.55.1](https://github.com/railroadmedia/musora-content-services/compare/v2.55.0...v2.55.1) (2025-10-20)
 
 ## [2.55.0](https://github.com/railroadmedia/musora-content-services/compare/v2.54.0...v2.55.0) (2025-10-20)
