@@ -1345,7 +1345,6 @@ export async function fetchAllPacks(
   const end = start + limit
 
   const query = await buildQuery(filter, filterParams, await getFieldsForContentTypeWithFilteredChildren('pack'), {
-    logo_image_url: 'logo_image_url.asset->url',
     sortOrder: sortOrder,
     start,
     end,
