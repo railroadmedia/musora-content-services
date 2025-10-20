@@ -2283,7 +2283,7 @@ export async function fetchMethodV2IntroVideo(brand) {
   const _type = 'method-intro'
   const filter = `_type == '${_type}' && brand == '${brand}'`;
 
-  const finalFilter = await new FilterBuilder(filter).buildFilter()
+  const finalFilter = await new FilterBuilder(filter).buildFilter(true)
   const query =`*[${finalFilter}]`
 
   return fetchSanity(query, false)
