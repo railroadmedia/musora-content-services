@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.55.0](https://github.com/railroadmedia/musora-content-services/compare/v2.54.0...v2.55.0) (2025-10-20)
+
+
+### Features
+
+* **MU2-1129:** Update endpoint to username instead of display-name ([594763d](https://github.com/railroadmedia/musora-content-services/commit/594763d2d93d92885e0ea1694e2d84ca515ee183))
+
 ## [2.54.0](https://github.com/railroadmedia/musora-content-services/compare/v2.53.0...v2.54.0) (2025-10-17)
 
 
