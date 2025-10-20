@@ -137,7 +137,7 @@ export async function fetchRecommendedCategories(
   const url = `/recommend_topics/`
 
   try {
-    const httpClient = new HttpClient(tempBaseURL)
+    const httpClient = new HttpClient(baseURL)
     const response = await httpClient.post<RecommendedCategoriesResponse>(url, data)
     return response.ranked_topics
       .slice(0, count) // topics come pre-ranked
