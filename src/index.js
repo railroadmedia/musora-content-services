@@ -102,6 +102,7 @@ import {
 	deletePost,
 	fetchCommunityGuidelines,
 	fetchPosts,
+	jumpToPost,
 	likePost,
 	search,
 	unlikePost,
@@ -251,6 +252,7 @@ import {
 
 import {
 	confirmEmailChange,
+	deleteAccount,
 	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
@@ -277,7 +279,10 @@ import {
 	blockedUsers,
 	deletePicture,
 	getUserData,
-	isDisplayNameAvailable,
+	getUserSignature,
+	isUsernameAvailable,
+	setUserSignature,
+	toggleSignaturePrivate,
 	unblockUser,
 	updateDisplayName,
 	uploadPicture,
@@ -287,8 +292,9 @@ import {
 import {
 	fetchMemberships,
 	fetchRechargeTokens,
+	restorePurchases,
 	upgradeSubscription
-} from './services/user/memberships.js';
+} from './services/user/memberships.ts';
 
 import {
 	deleteNotification,
@@ -304,6 +310,10 @@ import {
 	startLiveEventPolling,
 	updateNotificationSetting
 } from './services/user/notifications.js';
+
+import {
+	startOnboarding
+} from './services/user/onboarding.ts';
 
 import {
 	fetchCustomerPayments
@@ -376,6 +386,7 @@ export {
 	createPost,
 	createPracticeNotes,
 	createThread,
+	deleteAccount,
 	deleteComment,
 	deleteItemsFromPlaylist,
 	deleteNotification,
@@ -522,6 +533,7 @@ export {
 	getUserData,
 	getUserMonthlyStats,
 	getUserPractices,
+	getUserSignature,
 	getUserWeeklyStats,
 	getWeekNumber,
 	globalConfig,
@@ -530,10 +542,11 @@ export {
 	isBucketUrl,
 	isContentLiked,
 	isContentLikedByIds,
-	isDisplayNameAvailable,
 	isNextDay,
 	isSameDate,
+	isUsernameAvailable,
 	jumpToContinueContent,
+	jumpToPost,
 	likeComment,
 	likeContent,
 	likePlaylist,
@@ -579,17 +592,21 @@ export {
 	restoreItemFromPlaylist,
 	restoreNotification,
 	restorePracticeSession,
+	restorePurchases,
 	restoreUserActivity,
 	restoreUserPractice,
 	search,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	setStudentViewForUser,
+	setUserSignature,
 	setupAccount,
 	startLiveEventPolling,
+	startOnboarding,
 	status,
 	toDayjs,
 	togglePlaylistPrivate,
+	toggleSignaturePrivate,
 	unEnrollUserInGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,

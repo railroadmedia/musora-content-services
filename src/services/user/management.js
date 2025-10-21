@@ -128,11 +128,11 @@ export async function getUserData(userId = globalConfig.sessionConfig.userId) {
 }
 
 /**
- * @param displayName - The display name to check for availability.
+ * @param userName - The display name to check for availability.
  * @returns {Promise<{ available: boolean }>} - An object indicating if the display name is available.
  */
-export async function isDisplayNameAvailable(displayName) {
-  const apiUrl = `${baseUrl}/v1/users/display-names/available?display_name=${encodeURIComponent(displayName)}`
+export async function isUsernameAvailable(userName) {
+  const apiUrl = `${baseUrl}/v1/users/usernames/available?username=${encodeURIComponent(userName)}`
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   return httpClient.get(apiUrl)
 }
@@ -146,4 +146,41 @@ export async function updateDisplayName(newDisplayName) {
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   return httpClient.put(apiUrl, { display_name: newDisplayName })
 }
+
+/**
+ * Updates the user's signature.
+ *
+ * @param {SetUserSignatureParams} params - Parameters containing the user's signature.
+ * @returns {Promise<{ signature: string }>} - A promise that resolves with the updated signature data.
+ */
+export async function setUserSignature(params) {
+  const apiUrl = `/api/forums/v1/signature`
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  return httpClient.post(apiUrl, params)
+}
+
+/**
+ * Retrieves the current signature for the authenticated user.
+ *
+ * @returns {Promise<{ signature: string }>} - A promise that resolves with the user's current signature data.
+ */
+export async function getUserSignature() {
+  const apiUrl = `/api/forums/v1/signature`
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  return httpClient.get(apiUrl)
+}
+
+/**
+ * Toggles whether the user's signature is displayed publicly.
+ *
+ * @param {boolean} [showSignature=true] - Whether to show (`true`) or hide (`false`) the user's signature.
+ * @returns {Promise<{ show_signature: boolean }>} - A promise that resolves with the updated visibility state.
+ */
+export async function toggleSignaturePrivate(showSignature = true) {
+  const apiUrl = `/api/forums/v1/signature/toggle`
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  return httpClient.put(apiUrl, { show_signature: showSignature })
+}
+
+
 

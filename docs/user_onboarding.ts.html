@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>user/interests.js - Documentation</title>
+    <title>user/onboarding.ts - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">user/interests.js</h1>
+    <h1 class="page-title">user/onboarding.ts</h1>
     
 
     
@@ -46,82 +46,64 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @module Interests
+ * @module Onboarding
  */
+import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
-import { fetchHandler } from '../railcontent.js'
-import './types.js'
 
-const baseUrl = `/api/user-management-system`
+export interface OnboardingSteps {
+  email?: string
+  instrument?: 'drums' | 'guitar' | 'piano' | 'voice' | 'bass'
+  skill_level?: 'new' | 'beginner' | 'intermediate' | 'advanced' | 'expert'
+  topics?: string[]
+  gear?: string[]
+  genres?: string[]
+  goals?: string[]
+  practice_frequency?: string
+  enable_notifications?: boolean
+}
 
-/**
- * @param {number} [userId=globalConfig.sessionConfig.userId] - The user ID
- * @returns {Promise&lt;Array&lt;number>>} - The list of interests
- */
-export async function fetchInterests(userId = globalConfig.sessionConfig.userId) {
-  const url = `${baseUrl}/v1/users/${userId}/interests`
-  return fetchHandler(url, 'get')
+export interface StartOnboardingParams {
+  email: string
+  brand: string
+  flow: string
+  marketingOptIn: boolean
+  steps?: OnboardingSteps
+}
+
+export interface Onboarding {
+  id: number
+  email: string
+  brand: string
+  flow: string
+  steps: OnboardingSteps
+  is_completed: boolean
+  completed_at: Date | null
+  marketing_opt_in: boolean
 }
 
 /**
- * @param {number} contentId
- * @returns {Promise&lt;any>}
+ * @param {StartOnboardingParams} params - The parameters for starting the onboarding process.
+ *
+ * @returns {Promise&lt;Onboarding>} - A promise that resolves when the onboarding process is started.
+ * @throws {HttpError} - If the HTTP request fails.
  */
-export async function markContentAsInterested(contentId) {
-  if (!contentId) {
-    throw new Error('contentId is required')
-  }
-
-  const url = `${baseUrl}/v1/users/interests/${contentId}`
-  return fetchHandler(url, 'post')
-}
-
-/**
- * @param {number} contentId
- * @returns {Promise&lt;any>}
- */
-export async function removeContentAsInterested(contentId) {
-  if (!contentId) {
-    throw new Error('contentId is required')
-  }
-
-  const url = `${baseUrl}/v1/users/interests/${contentId}`
-  return fetchHandler(url, 'delete')
-}
-
-/**
- * @param {number} [userId=globalConfig.sessionConfig.userId] - The user ID
- * @returns {Promise&lt;Array&lt;number>>} - The list of content the user is not interested in
- */
-export async function fetchUninterests(userId = globalConfig.sessionConfig.userId) {
-  const url = `${baseUrl}/v1/users/${userId}/uninterests`
-  return fetchHandler(url, 'get')
-}
-
-/**
- * @param {number} contentId
- * @returns {Promise&lt;any>}
- */
-export async function markContentAsNotInterested(contentId) {
-  if (!contentId) {
-    throw new Error('contentId is required')
-  }
-
-  const url = `${baseUrl}/v1/users/uninterests/${contentId}`
-  return fetchHandler(url, 'post')
-}
-
-/**
- * @param {number} contentId
- * @returns {Promise&lt;any>}
- */
-export async function removeContentAsNotInterested(contentId) {
-  if (!contentId) {
-    throw new Error('contentId is required')
-  }
-
-  const url = `${baseUrl}/v1/users/uninterests/${contentId}`
-  return fetchHandler(url, 'delete')
+export async function startOnboarding({
+  email,
+  brand,
+  flow,
+  steps,
+  marketingOptIn = false,
+}: StartOnboardingParams): Promise&lt;Onboarding> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post&lt;Onboarding>(`/api/user-management-system/v1/onboardings`, {
+    email,
+    brand,
+    flow,
+    steps,
+    marketing_opt_in: marketingOptIn,
+    is_completed: false,
+  })
 }
 </code></pre>
         </article>

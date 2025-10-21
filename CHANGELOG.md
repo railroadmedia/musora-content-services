@@ -2,6 +2,75 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.56.0](https://github.com/railroadmedia/musora-content-services/compare/v2.53.0...v2.56.0) (2025-10-21)
+
+
+### Features
+
+* **MU2-1119:** Merge pull request [#490](https://github.com/railroadmedia/musora-content-services/issues/490) from railroadmedia/MU2-1119-restore ([fea9755](https://github.com/railroadmedia/musora-content-services/commit/fea97554be2c9c94d024a789fbc8e88051b3180f))
+* **MU2-1129:** Update endpoint to username instead of display-name ([594763d](https://github.com/railroadmedia/musora-content-services/commit/594763d2d93d92885e0ea1694e2d84ca515ee183))
+* **MU2E2:** Add access level to author type, update docs ([de76fe6](https://github.com/railroadmedia/musora-content-services/commit/de76fe63964d9f8644e8b14e432d5e0b34f662f3))
+
+
+### Bug Fixes
+
+* **MU2-1088:** Remove log_image_url field ([d58de5c](https://github.com/railroadmedia/musora-content-services/commit/d58de5c2c6a42997a731482907b085bb470bb23a))
+* **MU2-1088:** Update to use getFieldsForContentTypeWithFilteredChildren ([d207afd](https://github.com/railroadmedia/musora-content-services/commit/d207afda2de57f45b4526109b5bf2e7ea27f0de6))
+
+### [2.55.2](https://github.com/railroadmedia/musora-content-services/compare/v2.55.1...v2.55.2) (2025-10-20)
+
+
+### Bug Fixes
+
+* **MU2-1088:** Remove log_image_url field ([d58de5c](https://github.com/railroadmedia/musora-content-services/commit/d58de5c2c6a42997a731482907b085bb470bb23a))
+* **MU2-1088:** Update to use getFieldsForContentTypeWithFilteredChildren ([d207afd](https://github.com/railroadmedia/musora-content-services/commit/d207afda2de57f45b4526109b5bf2e7ea27f0de6))
+
+### [2.55.1](https://github.com/railroadmedia/musora-content-services/compare/v2.55.0...v2.55.1) (2025-10-20)
+
+## [2.55.0](https://github.com/railroadmedia/musora-content-services/compare/v2.54.0...v2.55.0) (2025-10-20)
+
+
+### Features
+
+* **MU2-1129:** Update endpoint to username instead of display-name ([594763d](https://github.com/railroadmedia/musora-content-services/commit/594763d2d93d92885e0ea1694e2d84ca515ee183))
+
+## [2.54.0](https://github.com/railroadmedia/musora-content-services/compare/v2.53.0...v2.54.0) (2025-10-17)
+
+
+### Features
+
+* **MU2E2:** Add access level to author type, update docs ([de76fe6](https://github.com/railroadmedia/musora-content-services/commit/de76fe63964d9f8644e8b14e432d5e0b34f662f3))
+
+## [2.53.0](https://github.com/railroadmedia/musora-content-services/compare/v2.51.0...v2.53.0) (2025-10-17)
+
+
+### Features
+
+* **MU2-1097:** Add function deleteAccount, update docs ([e27f259](https://github.com/railroadmedia/musora-content-services/commit/e27f259422c8142cf5a28840cce6a6fa2a547016))
+* **MU2-1097:** Update method to return Promise<void> ([f9537da](https://github.com/railroadmedia/musora-content-services/commit/f9537da3e3db9011f3ba2bf82f88b197657106a3))
+
+
+### Bug Fixes
+
+* correct the import for HttpClient ([fff2b42](https://github.com/railroadmedia/musora-content-services/commit/fff2b4233d7d2b23d4660e2ea05f9a81dcf540c6))
+
+### [2.52.2](https://github.com/railroadmedia/musora-content-services/compare/v2.52.1...v2.52.2) (2025-10-16)
+
+
+### Bug Fixes
+
+* correct the import for HttpClient ([fff2b42](https://github.com/railroadmedia/musora-content-services/commit/fff2b4233d7d2b23d4660e2ea05f9a81dcf540c6))
+
+### [2.52.1](https://github.com/railroadmedia/musora-content-services/compare/v2.52.0...v2.52.1) (2025-10-16)
+
+## [2.52.0](https://github.com/railroadmedia/musora-content-services/compare/v2.51.0...v2.52.0) (2025-10-16)
+
+
+### Features
+
+* **MU2-1097:** Add function deleteAccount, update docs ([e27f259](https://github.com/railroadmedia/musora-content-services/commit/e27f259422c8142cf5a28840cce6a6fa2a547016))
+* **MU2-1097:** Update method to return Promise<void> ([f9537da](https://github.com/railroadmedia/musora-content-services/commit/f9537da3e3db9011f3ba2bf82f88b197657106a3))
+
 ## [2.51.0](https://github.com/railroadmedia/musora-content-services/compare/v2.50.0...v2.51.0) (2025-10-13)
 
 
