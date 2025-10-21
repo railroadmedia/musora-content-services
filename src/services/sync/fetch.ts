@@ -167,6 +167,7 @@ export function handlePush(callback: (session: BaseSessionProvider) => Request) 
     const generatedRequest = callback(session)
     const serverPayload = serializePushPayload(payload)
     const request = new Request(generatedRequest, {
+      credentials: 'include',
       body: JSON.stringify(serverPayload),
       signal
     })
