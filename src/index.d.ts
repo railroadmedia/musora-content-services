@@ -280,7 +280,7 @@ import {
 	deletePicture,
 	getUserData,
 	getUserSignature,
-	isDisplayNameAvailable,
+	isUsernameAvailable,
 	setUserSignature,
 	toggleSignaturePrivate,
 	unblockUser,
@@ -292,8 +292,9 @@ import {
 import {
 	fetchMemberships,
 	fetchRechargeTokens,
+	restorePurchases,
 	upgradeSubscription
-} from './services/user/memberships.js';
+} from './services/user/memberships.ts';
 
 import {
 	deleteNotification,
@@ -542,9 +543,9 @@ declare module 'musora-content-services' {
 		isBucketUrl,
 		isContentLiked,
 		isContentLikedByIds,
-		isDisplayNameAvailable,
 		isNextDay,
 		isSameDate,
+		isUsernameAvailable,
 		jumpToContinueContent,
 		jumpToPost,
 		likeComment,
@@ -592,6 +593,7 @@ declare module 'musora-content-services' {
 		restoreItemFromPlaylist,
 		restoreNotification,
 		restorePracticeSession,
+		restorePurchases,
 		restoreUserActivity,
 		restoreUserPractice,
 		search,
