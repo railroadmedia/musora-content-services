@@ -2286,22 +2286,10 @@ export async function fetchMethodV2IntroVideo(brand) {
     brand,
     'description': pt::text(description),
     thumbnail,
-    ${getProjectionsForMethodIntroVideoByDevice('mobile')},
-    ${getProjectionsForMethodIntroVideoByDevice('desktop')},
+    video_desktop{external_id, hlsManifestUrl, video_playback_endpoints},
+    video_mobile{external_id, hlsManifestUrl, video_playback_endpoints},
     length_in_seconds,
   }`
 
   return fetchSanity(query, false)
-}
-
-function getProjectionsForMethodIntroVideoByDevice(device){
-  return `"video_${device}": {
-    "external_id": video_mobile.external_id,
-    "hlsManifestUrl": video_mobile.hlsManifestUrl,
-    "video_playback_endpoints": video_mobile.video_playback_endpoints[]{
-      file,
-      height,
-      width
-    }
-  }`
 }
