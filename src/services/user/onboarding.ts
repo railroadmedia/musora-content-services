@@ -31,7 +31,7 @@ export interface UpdateOnboardingParams {
   flow: string
   marketingOptIn: boolean
   is_completed?: boolean
-  steps?: OnboardingSteps
+  steps: OnboardingSteps
 }
 
 export interface Onboarding {
@@ -55,7 +55,7 @@ export async function startOnboarding({
   email,
   brand,
   flow,
-  steps,
+  steps = {},
   marketingOptIn = false,
 }: StartOnboardingParams): Promise<Onboarding> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
