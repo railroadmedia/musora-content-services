@@ -2284,7 +2284,7 @@ export async function fetchMethodV2IntroVideo(brand) {
   const filter = `_type == '${_type}' && brand == '${brand}'`;
   const query =`*[${filter}] {
     brand,
-    'pt:text': pt::text(description),
+    'description': pt::text(description),
     thumbnail,
     ${getProjectionsForMethodIntroVideoByDevice('mobile')},
     ${getProjectionsForMethodIntroVideoByDevice('desktop')},
