@@ -117,7 +117,6 @@ export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (sessi
     headers: {
       ...init?.headers,
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${globalConfig.sessionConfig.token}`,
       'X-Sync-Client-Id': session.getClientId(),
       'X-Sync-Client-Session-Id': session.getSessionId(),
     }
@@ -129,6 +128,7 @@ export function handlePull(callback: (session: BaseSessionProvider) => Request) 
     const generatedRequest = callback(session)
     const url = serializePullUrlQuery(generatedRequest.url, lastFetchToken)
     const request = new Request(url, {
+      credentials: 'include',
       headers: generatedRequest.headers,
       signal
     });
