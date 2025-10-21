@@ -60,7 +60,9 @@ export async function setupAccount(props: AccountSetupProps): Promise<void> {
     throw new Error('Token is required for non-MA environments')
   }
 
-  if (globalConfig.isMA && (!props.deviceName || !props.revenuecatAppUserId)) {
+  // NOTE: remove deviceName temporarily. It will be required late
+  // if (globalConfig.isMA && (!props.deviceName || !props.revenuecatAppUserId)) {
+  if (globalConfig.isMA && !props.revenuecatAppUserId) {
     throw new Error('Device name and RevenueCat App User ID are required for MA environments')
   }
 
