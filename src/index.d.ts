@@ -11,29 +11,39 @@ import {
 	guidedCourses,
 	unEnrollUserInGuidedCourse
 } from './services/content-org/guided-courses.ts';
-import { enrollUserInGuidedCourse, fetchEnrollmentPageMetadata, guidedCourses, pinGuidedCourse, pinnedGuidedCourses, unEnrollUserInGuidedCourse, unPinGuidedCourse } from './services/content-org/guided-courses.ts';
+
+import {
+	addItemToPlaylist,
+	createPlaylist,
+	deleteItemsFromPlaylist,
+	deletePlaylist,
+	duplicatePlaylist,
+	fetchPlaylist,
+	fetchPlaylistItems,
+	fetchUserPlaylists,
+	likePlaylist,
+	reportPlaylist,
+	restoreItemFromPlaylist,
+	togglePlaylistPrivate,
+	undeletePlaylist,
+	unlikePlaylist,
+	updatePlaylist
+} from './services/content-org/playlists.js';
 
 import {
 	getContentRows,
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
-	getRecentForTab,
 	getRecommendedForYou,
 	getScheduleContentRows,
 	getTabResults
 } from './services/content.js';
 
 import {
-	getContentRows,
-	getLessonContentRows,
-	getNewAndUpcoming,
-	getRecent,
-	getRecommendedForYou,
-	getScheduleContentRows,
-	getTabResults
-} from './services/content.js';
-import { getContentRows, getLessonContentRows, getNewAndUpcoming, getRecent, getRecentForTab, getRecommendedForYou, getScheduleContentRows, getTabResults } from './services/content.js';
+	addContextToContent,
+	getNavigateToForPlaylists
+} from './services/contentAggregator.js';
 
 import {
 	isContentLiked,
@@ -61,26 +71,8 @@ import {
 } from './services/contentProgress.js';
 
 import {
-	contentStatusCompleted,
-	contentStatusReset,
-	contentStatusStarted,
-	getAllCompleted,
-	getAllStarted,
-	getAllStartedOrCompleted,
-	getLastInteractedOf,
-	getNavigateTo,
-	getNextLesson,
-	getProgressDateByIds,
-	getProgressPercentage,
-	getProgressPercentageByIds,
-	getProgressState,
-	getProgressStateByIds,
-	getResumeTimeSeconds,
-	getResumeTimeSecondsByIds,
-	getStartedOrCompletedProgressOnly,
-	recordWatchSession
-} from './services/contentProgress.js';
-import { contentStatusCompleted, contentStatusReset, getAllCompleted, getAllStarted, getAllStartedOrCompleted, getLastInteractedOf, getNavigateTo, getNextLesson, getProgressDateByIds, getProgressPercentage, getProgressPercentageByIds, getProgressState, getProgressStateByIds, getResumeTimeSeconds, getResumeTimeSecondsByIds, getStartedOrCompletedProgressOnly, recordWatchSession } from './services/contentProgress.js';
+	verifyLocalDataContext
+} from './services/dataContext.js';
 
 import {
 	convertToTimeZone,
@@ -91,10 +83,6 @@ import {
 	isSameDate,
 	toDayjs
 } from './services/dateUtils.js';
-
-import {
-	getActiveDiscussions
-} from './services/forum.js';
 
 import {
 	createForumCategory,
@@ -138,7 +126,6 @@ import {
 	fetchCertificate,
 	getAwardDataForGuidedContent
 } from './services/gamification/awards.ts';
-import { getActiveDiscussions } from './services/forum.js';
 
 import {
 	applyCloudflareWrapper,
@@ -171,7 +158,6 @@ import {
 	fetchLastInteractedChild,
 	fetchLikeCount,
 	fetchNextContentDataForParent,
-	fetchRecent,
 	fetchRecentUserActivities,
 	fetchSongsInProgress,
 	fetchTopComment,
@@ -198,106 +184,11 @@ import {
 } from './services/railcontent.js';
 
 import {
-	assignModeratorToComment,
-	closeComment,
-	createComment,
-	deleteComment,
-	editComment,
-	fetchAllCompletedStates,
-	fetchCarouselCardData,
-	fetchComment,
-	fetchCommentRelies,
-	fetchComments,
-	fetchCompletedContent,
-	fetchCompletedState,
-	fetchContentInProgress,
-	fetchContentPageUserData,
-	fetchContentProgress,
-	fetchHandler,
-	fetchLastInteractedChild,
-	fetchLikeCount,
-	fetchNextContentDataForParent,
-	fetchRecentUserActivities,
-	fetchSongsInProgress,
-	fetchTopComment,
-	fetchUserAward,
-	fetchUserBadges,
-	fetchUserLikes,
-	fetchUserPermissionsData,
-	fetchUserPracticeMeta,
-	fetchUserPracticeNotes,
-	fetchUserPractices,
-	likeComment,
-	logUserPractice,
-	openComment,
-	postContentComplete,
-	postContentLiked,
-	postContentReset,
-	postContentRestore,
-	postContentStart,
-	postContentUnliked,
-	postPlaylistContentEngaged,
-	postRecordWatchSession,
-	replyToComment,
-	reportComment,
-	restoreComment,
-	setStudentViewForUser,
-	unassignModeratorToComment,
-	unlikeComment
-} from './services/railcontent.js';
-import { assignModeratorToComment, closeComment, createComment, deleteComment, editComment, fetchAllCompletedStates, fetchCarouselCardData, fetchComment, fetchCommentRelies, fetchComments, fetchCompletedContent, fetchCompletedState, fetchContentInProgress, fetchContentPageUserData, fetchContentProgress, fetchHandler, fetchLastInteractedChild, fetchLikeCount, fetchNextContentDataForParent, fetchRecent, fetchRecentUserActivities, fetchSongsInProgress, fetchTopComment, fetchUserAward, fetchUserBadges, fetchUserLikes, fetchUserPermissionsData, fetchUserPracticeMeta, fetchUserPracticeNotes, fetchUserPractices, likeComment, logUserPractice, openComment, postContentComplete, postContentLiked, postContentReset, postContentRestore, postContentUnliked, postPlaylistContentEngaged, postRecordWatchSession, replyToComment, reportComment, restoreComment, setStudentViewForUser, unassignModeratorToComment, unlikeComment } from './services/railcontent.js';
-
-import {
-	fetchAll,
-	fetchAllFilterOptions,
-	fetchAllPacks,
-	fetchArtistLessons,
-	fetchArtists,
-	fetchByRailContentId,
-	fetchByRailContentIds,
-	fetchByReference,
-	fetchChatAndLiveEnvent,
-	fetchCoachLessons,
-	fetchComingSoon,
-	fetchCommentModContentData,
-	fetchContentRows,
-	fetchFoundation,
-	fetchGenreLessons,
-	fetchHierarchy,
-	fetchLeaving,
-	fetchLessonContent,
-	fetchLessonsFeaturingThisContent,
-	fetchLiveEvent,
-	fetchMetadata,
-	fetchMethod,
-	fetchMethodChildren,
-	fetchMethodChildrenIds,
-	fetchMethodPreviousNextLesson,
-	fetchNewReleases,
-	fetchNextPreviousLesson,
-	fetchOtherSongVersions,
-	fetchPackAll,
-	fetchPackData,
-	fetchParentForDownload,
-	fetchPlayAlongsCount,
-	fetchRelatedLessons,
-	fetchRelatedRecommendedContent,
-	fetchRelatedSongs,
-	fetchReturning,
-	fetchSanity,
-	fetchScheduledAndNewReleases,
-	fetchScheduledReleases,
-	fetchShows,
-	fetchShowsData,
-	fetchSiblingContent,
-	fetchSongArtistCount,
-	fetchSongById,
-	fetchTabData,
-	fetchTopLevelParentId,
-	fetchUpcomingEvents,
-	getSortOrder,
-	jumpToContinueContent
-} from './services/sanity.js';
+	fetchSimilarItems,
+	rankCategories,
+	rankItems,
+	recommendations
+} from './services/recommendations.js';
 
 import {
 	fetchAll,
@@ -361,7 +252,10 @@ import {
 	setupAccount,
 	status
 } from './services/user/account.ts';
-import { fetchAll, fetchAllFilterOptions, fetchAllPacks, fetchArtistLessons, fetchArtists, fetchByRailContentId, fetchByRailContentIds, fetchByReference, fetchChatAndLiveEnvent, fetchCoachLessons, fetchComingSoon, fetchCommentModContentData, fetchContentRows, fetchFoundation, fetchGenreLessons, fetchHierarchy, fetchLeaving, fetchLessonContent, fetchLessonsFeaturingThisContent, fetchLiveEvent, fetchMetadata, fetchMethod, fetchMethodChildren, fetchMethodChildrenIds, fetchMethodPreviousNextLesson, fetchNewReleases, fetchNextPreviousLesson, fetchOtherSongVersions, fetchPackAll, fetchPackData, fetchParentForDownload, fetchPlayAlongsCount, fetchRelatedLessons, fetchRelatedRecommendedContent, fetchRelatedSongs, fetchReturning, fetchSanity, fetchScheduledAndNewReleases, fetchScheduledReleases, fetchShows, fetchShowsData, fetchSiblingContent, fetchSongArtistCount, fetchSongById, fetchTabData, fetchTopLevelParentId, fetchUpcomingEvents, getSortOrder, jumpToContinueContent } from './services/sanity.js';
+
+import {
+	fetchChatSettings
+} from './services/user/chat.js';
 
 import {
 	fetchInterests,
@@ -371,30 +265,6 @@ import {
 	removeContentAsInterested,
 	removeContentAsNotInterested
 } from './services/user/interests.js';
-
-import {
-	blockUser,
-	deletePicture,
-	getUserData,
-	unblockUser,
-	uploadPicture,
-	uploadPictureFromS3
-} from './services/user/management.js';
-
-import {
-	deleteNotification,
-	fetchLiveEventPollingState,
-	fetchNotificationSettings,
-	fetchNotifications,
-	fetchUnreadCount,
-	markAllNotificationsAsRead,
-	markNotificationAsRead,
-	markNotificationAsUnread,
-	pauseLiveEventPolling,
-	restoreNotification,
-	startLiveEventPolling,
-	updateNotificationSetting
-} from './services/user/notifications.js';
 
 import {
 	blockUser,
@@ -445,7 +315,6 @@ import {
 	fetchUserPermissions,
 	reset
 } from './services/user/permissions.js';
-import syncDatabaseFactory from './services/sync/database/factory.ts';
 
 import {
 	deleteProfilePicture,
@@ -484,7 +353,7 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI
+	 default as EventsAPI 
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
@@ -688,7 +557,6 @@ declare module 'musora-content-services' {
 		postContentReset,
 		postContentRestore,
 		postContentStart,
-		postContentUnliked,
 		postPlaylistContentEngaged,
 		rankCategories,
 		rankItems,
@@ -721,8 +589,6 @@ declare module 'musora-content-services' {
 		startLiveEventPolling,
 		startOnboarding,
 		status,
-		syncPull,
-		syncPush,
 		toDayjs,
 		togglePlaylistPrivate,
 		toggleSignaturePrivate,
