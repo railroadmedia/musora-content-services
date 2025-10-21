@@ -292,8 +292,9 @@ import {
 import {
 	fetchMemberships,
 	fetchRechargeTokens,
+	restorePurchases,
 	upgradeSubscription
-} from './services/user/memberships.js';
+} from './services/user/memberships.ts';
 
 import {
 	deleteNotification,
@@ -587,6 +588,7 @@ export {
 	restoreItemFromPlaylist,
 	restoreNotification,
 	restorePracticeSession,
+	restorePurchases,
 	restoreUserActivity,
 	restoreUserPractice,
 	search,
