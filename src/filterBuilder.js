@@ -56,15 +56,13 @@ export class FilterBuilder {
     })
   }
 
-  async buildFilter(noFilterPermissionsAndPublishingRestrictions = false) {
+  async buildFilter() {
     this.userData = await fetchUserPermissions()
     if (this.debug) console.log('baseFilter', this.filter)
-    let filter = this._applyContentStatuses()
-      if(!noFilterPermissionsAndPublishingRestrictions){
-        filter._applyPermissions()._applyPublishingDateRestrictions()
-      }
-
-    filter = filter._trimAmpersands().filter // just in case
+    const filter = this._applyContentStatuses()
+      ._applyPermissions()
+      ._applyPublishingDateRestrictions()
+      ._trimAmpersands().filter // just in case
     if (this.debug) console.log('finalFilter', filter)
     return filter
   }

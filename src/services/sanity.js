@@ -2282,12 +2282,13 @@ export async function fetchShows(brand, type, sort = 'sort') {
 export async function fetchMethodV2IntroVideo(brand) {
   const _type = 'method-intro'
   const filter = `_type == '${_type}' && brand == '${brand}'`;
-
-  const finalFilter = await new FilterBuilder(filter).buildFilter(true)
   const query =`*[${filter}] {
     brand,
+    description,
+    thumbnail
     video_mobile,
     video_desktop,
+    length_in_seconds,
   }`
 
   return fetchSanity(query, false)
