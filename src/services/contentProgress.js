@@ -1,11 +1,3 @@
-import {
-  fetchContentProgress,
-  postContentComplete,
-  postContentReset,
-  postContentStart,
-  postRecordWatchSession,
-} from './railcontent.js'
-import { DataContext, ContentProgressVersionKey } from './dataContext.js'
 import { fetchHierarchy } from './sanity.js'
 import { db } from './sync'
 import { STATE } from './sync/models/ContentProgress'
