@@ -105,11 +105,11 @@ export async function fetchSimilarItems(
 }
 
 /**
- * Fetches recommended content from the PWRecsys
+ * Fetches recommended content rows from the PWRecsys
  *
- * @returns Returns the content_ids sorted by rank (most significant first)
+ * @returns Returns array of Categories, ranked by algorithm weight
  * @example
- * fetchSimilarItems('drumeo', 'song')
+ * fetchRecommendedCategories('drumeo', 'songs')
  *   .then(status => console.log(status))
  *   .catch(error => console.error(error));
  * @param brand
