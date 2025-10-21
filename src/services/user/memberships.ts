@@ -61,7 +61,7 @@ export interface RestorePurchasesShouldLoginResponse {
  * Represents the response when user is authenticated successfully
  */
 export interface RestorePurchasesSuccessResponse {
-  success: true
+  success: boolean
   token: string
   tokenType: string
   userId: number
