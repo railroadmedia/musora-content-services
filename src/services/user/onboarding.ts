@@ -24,16 +24,6 @@ export interface StartOnboardingParams {
   steps?: OnboardingSteps
 }
 
-export interface UpdateOnboardingParams {
-  id: number
-  email: string
-  brand: string
-  flow: string
-  marketingOptIn: boolean
-  is_completed?: boolean
-  steps: OnboardingSteps
-}
-
 export interface Onboarding {
   id: number
   email: string
@@ -67,6 +57,16 @@ export async function startOnboarding({
     marketing_opt_in: marketingOptIn,
     is_completed: false,
   })
+}
+
+export interface UpdateOnboardingParams {
+  id: number
+  email: string
+  brand: string
+  flow: string
+  marketingOptIn: boolean
+  is_completed?: boolean
+  steps: OnboardingSteps
 }
 
 /**
