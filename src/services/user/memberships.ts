@@ -42,14 +42,38 @@ export interface UpgradeSubscriptionResponse {
 }
 
 /**
- * Represents the response from RevenueCat purchase verification
+ * Represents the response when user should create an account (no entitlements or user not found)
  */
-export interface RestorePurchasesResponse {
-  success: boolean
-  message?: string
-  subscriber_status?: any
-  [key: string]: any
+export interface RestorePurchasesCreateAccountResponse {
+  shouldCreateAccount: true
+  originalAppUserId?: string
 }
+
+/**
+ * Represents the response when user should login
+ */
+export interface RestorePurchasesShouldLoginResponse {
+  shouldLogin: true
+  email: string
+}
+
+/**
+ * Represents the response when user is authenticated successfully
+ */
+export interface RestorePurchasesSuccessResponse {
+  success: true
+  token: string
+  tokenType: string
+  userId: number
+}
+
+/**
+ * Represents all possible responses from RevenueCat purchase restoration
+ */
+export type RestorePurchasesResponse =
+  | RestorePurchasesCreateAccountResponse
+  | RestorePurchasesShouldLoginResponse
+  | RestorePurchasesSuccessResponse
 
 /**
  * Fetches the authenticated user's memberships from the API.
@@ -123,22 +147,36 @@ export async function upgradeSubscription(): Promise<UpgradeSubscriptionResponse
  *                           email exists, their subscription will be synced. If omitted, the backend
  *                           will only search by the RevenueCat original app user ID.
  *
- * @returns {Promise<RestorePurchasesResponse>} - A promise that resolves to the verification response containing:
- *  - {boolean} success - Whether the operation was successful
- *  - {boolean} [shouldCreateAccount] - Whether the user should create a new account
- *  - {boolean} [shouldLogin] - Whether the user should login
- *  - {string} [email] - The email address of the found user (if shouldLogin is true)
- *  - {string} [originalAppUserId] - The RevenueCat original app user ID (if shouldCreateAccount is true)
- *  - {string} [token] - Authentication token (if success is true)
- *  - {string} [tokenType] - Token type, typically 'bearer' (if success is true)
- *  - {number} [userId] - The user's ID (if success is true)
+ * @returns {Promise<RestorePurchasesResponse>} - A promise that resolves to one of three possible responses:
+ *
+ * **Case 1: Should Create Account** (No active entitlements OR user not found with active entitlements)
+ *  - {boolean} shouldCreateAccount - Always true
+ *  - {string} [originalAppUserId] - RevenueCat ID to link when creating account (only if user has entitlements)
+ *
+ * **Case 2: Should Login** (User exists but not currently authenticated)
+ *  - {boolean} shouldLogin - Always true
+ *  - {string} email - The email address of the found user
+ *
+ * **Case 3: Success** (User authenticated and synced successfully)
+ *  - {boolean} success - Always true
+ *  - {string} token - Authentication token
+ *  - {string} tokenType - Token type 'bearer'
+ *  - {number} userId - The user's ID
  *
  * @throws {Error} - Throws an error if the request fails or if required parameters are missing.
  *
  * @example
  * // With email
  * restorePurchases('rc_user_123', 'user@example.com')
- *   .then(response => console.log(response))
+ *   .then(response => {
+ *     if ('shouldCreateAccount' in response) {
+ *       // Handle account creation
+ *     } else if ('shouldLogin' in response) {
+ *       // Handle login with response.email
+ *     } else if ('success' in response) {
+ *       // Handle successful authentication with response.token
+ *     }
+ *   })
  *   .catch(error => console.error(error));
  *
  * @example
