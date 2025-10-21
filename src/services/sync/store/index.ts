@@ -242,7 +242,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   async upsertSomeOptimistic(builders: Record<RecordId, (record: TModel) => void>, span?: Span) {
     return this.upsertSome(Object.fromEntries(Object.entries(builders).map(([id, builder]) => [id, record => {
       builder(record)
-      record.buildMarkAsOptimistic()
+      record._raw._status = 'synced'
     }])), span)
   }
 

@@ -23,8 +23,7 @@ const contentProgressTable = tableSchema({
     { name: 'collection_type', type: 'string', isOptional: true },
     { name: 'collection_id', type: 'number', isOptional: true },
     { name: 'created_at', type: 'number' },
-    { name: 'updated_at', type: 'number', isIndexed: true },
-    { name: '_optimistic', type: 'boolean' }
+    { name: 'updated_at', type: 'number', isIndexed: true }
   ]
 })
 const contentPracticesTable = tableSchema({

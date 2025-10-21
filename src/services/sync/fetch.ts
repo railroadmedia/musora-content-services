@@ -271,7 +271,7 @@ function deserializePushResponse(response: RawPushResponse) {
 
 function serializeRecord(record: SyncSyncable<'id'> | null): SyncSyncable<'client_record_id'> | null {
   if (record) {
-    const { id, _optimistic, ...rest } = record
+    const { id, ...rest } = record
     return {
       ...rest,
       client_record_id: id
