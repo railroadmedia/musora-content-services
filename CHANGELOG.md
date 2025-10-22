@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.57.0](https://github.com/railroadmedia/musora-content-services/compare/v2.56.0...v2.57.0) (2025-10-22)
+
+
+### Features
+
+* **BEH-1189:** Adding method intro video MCS fetcher ([#497](https://github.com/railroadmedia/musora-content-services/issues/497)) ([80a2106](https://github.com/railroadmedia/musora-content-services/commit/80a2106227d608221141df7775867f2c7e7322e7))
+* **MU2E1-132:** start onboarding function ([#501](https://github.com/railroadmedia/musora-content-services/issues/501)) ([edfa596](https://github.com/railroadmedia/musora-content-services/commit/edfa5967683c8b23f55bba471254935626739121))
+
+
+### Bug Fixes
+
+* **MU2-1075:** Merge pull request [#504](https://github.com/railroadmedia/musora-content-services/issues/504) from railroadmedia/MU2-1075-live-stream-published-restriction ([bea35fc](https://github.com/railroadmedia/musora-content-services/commit/bea35fc64e14c185f8361328b122148421ecea1e))
+
 ## [2.56.0](https://github.com/railroadmedia/musora-content-services/compare/v2.53.0...v2.56.0) (2025-10-21)
 
 
