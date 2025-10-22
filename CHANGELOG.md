@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.58.0](https://github.com/railroadmedia/musora-content-services/compare/v2.57.0...v2.58.0) (2025-10-22)
+
+
+### Features
+
+* **MU2E1-133:** update onboarding function ([#505](https://github.com/railroadmedia/musora-content-services/issues/505)) ([89f1a12](https://github.com/railroadmedia/musora-content-services/commit/89f1a12c36f8e0812afc2fa412cf9824cf0dab33))
+
+
+### Bug Fixes
+
+* **MU2-1181:** Strip blockquotes from Active Discussions ([#506](https://github.com/railroadmedia/musora-content-services/issues/506)) ([9377e57](https://github.com/railroadmedia/musora-content-services/commit/9377e57e4ab3842f4c32d6c7c903ff555037cc5a))
+
 ## [2.57.0](https://github.com/railroadmedia/musora-content-services/compare/v2.56.0...v2.57.0) (2025-10-22)
 
 
