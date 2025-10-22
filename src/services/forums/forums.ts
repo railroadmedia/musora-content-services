@@ -38,8 +38,14 @@ interface TransformedResponse {
 
 // Helper function to strip HTML tags and decode entities
 function stripHtml(html: string): string {
-  // Remove HTML tags
-  const withoutTags = html.replace(/<[^>]*>/g, '');
+  // Remove blockquotes and their content first
+  let filtered = html.replace(/<blockquote[^>]*>.*?<\/blockquote>/gis, '');
+
+  // Remove iframes and their content
+  filtered = filtered.replace(/<iframe[^>]*>.*?<\/iframe>/gis, '');
+
+  // Remove remaining HTML tags
+  const withoutTags = filtered.replace(/<[^>]*>/g, '');
 
   // Decode common HTML entities
   const decoded = withoutTags
