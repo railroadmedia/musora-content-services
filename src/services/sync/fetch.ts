@@ -1,8 +1,8 @@
-import { SyncToken, SyncEntry, SyncSyncable, SyncContext } from "./index"
+import { SyncToken, SyncEntry, SyncSyncable } from "./index"
 import { EpochSeconds } from "./utils/epoch.js"
 
 import { globalConfig } from '../config.js'
-import { RecordId } from "@nozbe/watermelondb/index.js"
+import { Model, RecordId } from "@nozbe/watermelondb"
 import { BaseSessionProvider } from "./context/providers"
 
 interface RawPullResponse {
@@ -11,7 +11,7 @@ interface RawPullResponse {
     max_updated_at: EpochSeconds | null
     timestamp: EpochSeconds
   }
-  entries: SyncEntry<'client_record_id'>[]
+  entries: SyncEntry<Model, 'client_record_id'>[]
 }
 
 interface RawPushResponse {
@@ -40,7 +40,7 @@ interface SyncPushResponseBase extends SyncResponseBase {
 type SyncStorePushResult<TRecordKey extends string = 'id'> = SyncStorePushResultSuccess<TRecordKey> | SyncStorePushResultFailure<TRecordKey>
 type SyncStorePushResultSuccess<TRecordKey extends string = 'id'> = SyncStorePushResultBase & {
   type: 'success'
-  entry: SyncEntry<TRecordKey>
+  entry: SyncEntry<Model, TRecordKey>
 }
 type SyncStorePushResultFailure<TRecordKey extends string = 'id'> = SyncStorePushResultProcessingFailure<TRecordKey> | SyncStorePushResultValidationFailure<TRecordKey>
 type SyncStorePushResultProcessingFailure<TRecordKey extends string = 'id'> = SyncStorePushResultFailureBase<TRecordKey> & {
@@ -101,7 +101,7 @@ export type PushPayload = {
 
 interface ServerPushPayload {
   entries: {
-    record: SyncSyncable<'client_record_id'> | null
+    record: SyncSyncable<Model, 'client_record_id'> | null
     meta: {
       ids: {
         client_record_id: RecordId
@@ -270,7 +270,7 @@ function deserializePushResponse(response: RawPushResponse) {
   }
 }
 
-function serializeRecord(record: SyncSyncable<'id'> | null): SyncSyncable<'client_record_id'> | null {
+function serializeRecord(record: SyncSyncable<Model, 'id'> | null): SyncSyncable<Model, 'client_record_id'> | null {
   if (record) {
     const { id, ...rest } = record
     return {
@@ -288,7 +288,7 @@ function serializeIds(ids: { id: RecordId }): { client_record_id: RecordId } {
   }
 }
 
-function deserializeRecord(record: SyncSyncable<'client_record_id'> | null): SyncSyncable<'id'> | null {
+function deserializeRecord(record: SyncSyncable<Model, 'client_record_id'> | null): SyncSyncable<Model, 'id'> | null {
   if (record) {
     const { client_record_id: id, ...rest } = record
     return {

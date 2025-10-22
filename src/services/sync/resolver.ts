@@ -9,10 +9,17 @@ export type SyncResolution = {
   idsForDestroy: RecordId[]
 }
 
+export type SyncResolverComparator<T extends BaseModel = BaseModel> = (serverEntry: SyncEntry, localModel: T) => 'SERVER' | 'LOCAL'
+
+export const updatedAtComparator: SyncResolverComparator = (server, local) => {
+  return server.meta.lifecycle.updated_at >= local.updated_at ? 'SERVER' : 'LOCAL'
+}
 export default class SyncResolver {
   private resolution: SyncResolution
+  private comparator: SyncResolverComparator
 
-  constructor() {
+  constructor(comparator?: SyncResolverComparator) {
+    this.comparator = comparator || updatedAtComparator
     this.resolution = {
       entriesForCreate: [],
       tuplesForUpdate: [],
@@ -37,7 +44,7 @@ export default class SyncResolver {
     }
     // take care that the server stamp isn't older than the current local
     // (imagine a race condition where a pull request resolves long after a second one)
-    else if (server.meta.lifecycle.updated_at >= local.updated_at) {
+    else if (this.comparator(server, local) !== 'LOCAL') {
       this.resolution.tuplesForUpdate.push([local, server])
     }
   }
@@ -48,7 +55,7 @@ export default class SyncResolver {
       // delete local even though user has newer changes
       // (we don't ever try to resurrect records here)
       this.resolution.idsForDestroy.push(local.id)
-    } else if (server.meta.lifecycle.updated_at >= local.updated_at) {
+    } else if (this.comparator(server, local) !== 'LOCAL') {
       // local is older, so update it with server's
       this.resolution.tuplesForUpdate.push([local, server])
     }
@@ -59,7 +66,7 @@ export default class SyncResolver {
       // delete local even though user has newer changes
       // (we don't ever try to resurrect records here)
       this.resolution.idsForDestroy.push(local.id);
-    } else if (server.meta.lifecycle.updated_at >= local.updated_at) {
+    } else if (this.comparator(server, local) !== 'LOCAL') {
       // local is older, so update it with server's
       this.resolution.tuplesForUpdate.push([local, server])
     }
@@ -68,7 +75,7 @@ export default class SyncResolver {
   againstDeleted(local: BaseModel, server: SyncEntry) {
     if (server.meta.lifecycle.deleted_at) {
       this.resolution.idsForDestroy.push(local.id)
-    } else if (server.meta.lifecycle.updated_at >= local.updated_at) {
+    } else if (this.comparator(server, local) !== 'LOCAL') {
       this.resolution.tuplesForRestore.push([local, server])
     } else {
       this.resolution.idsForDestroy.push(local.id);

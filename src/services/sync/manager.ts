@@ -57,11 +57,11 @@ export default class SyncManager {
     this.retry = new SyncRetry(this.context, this.telemetry)
   }
 
-  createStore(config: SyncStoreConfig) {
+  createStore<TModel extends BaseModel>(config: SyncStoreConfig<TModel>) {
     if (this.storesRegistry[config.model.table]) {
       throw new SyncError(`Store ${config.model.table} already registered`)
     }
-    const store = new SyncStore(config, this.context, this.database, this.retry, this.runScope, this.telemetry)
+    const store = new SyncStore<TModel>(config, this.context, this.database, this.retry, this.runScope, this.telemetry)
     this.storesRegistry[config.model.table] = store
     return store
   }

@@ -8,7 +8,7 @@ import EventEmitter from '../utils/event-emitter'
 import BaseModel from '../models/Base'
 import { EpochSeconds } from '../utils/epoch'
 import { sanitizedRaw } from '@nozbe/watermelondb/RawRecord'
-import { default as Resolver, type SyncResolution } from '../resolver'
+import { default as Resolver, type SyncResolution, type SyncResolverComparator } from '../resolver'
 import PushCoalescer from './push-coalescer'
 import { SyncTelemetry, Span } from '../telemetry/index'
 import { inBoundary } from '../errors/boundary'
@@ -30,6 +30,7 @@ type SyncPush = (
 
 export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
   model: ModelClass<TModel>
+  comparator?: SyncResolverComparator<TModel>
   pull: SyncPull
   push: SyncPush
 }
@@ -46,6 +47,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   readonly model: ModelClass<TModel>
   readonly collection: Collection<TModel>
 
+  readonly resolverComparator?: SyncResolverComparator<TModel>
   readonly rawSerializer: RawSerializer<TModel>
   readonly modelSerializer: ModelSerializer<TModel>
 
@@ -61,7 +63,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private lastFetchTokenKey: string
 
   constructor(
-    { model, pull, push }: SyncStoreConfig<TModel>,
+    { model, comparator, pull, push }: SyncStoreConfig<TModel>,
     context: SyncContext,
     db: Database,
     retry: SyncRetry,
@@ -76,6 +78,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.collection = db.collections.get(model.table)
     this.rawSerializer = new RawSerializer()
     this.modelSerializer = new ModelSerializer()
+
+    this.resolverComparator = comparator
 
     this.pushCoalescer = new PushCoalescer()
     this.pushThrottleState = createThrottleState(SyncStore.PUSH_THROTTLE_INTERVAL)
@@ -595,7 +599,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     // if this is a fresh sync and there are no existing records, we can skip more sophisticated conflict resolution
     if (freshSync) {
       if ((await this.queryMaybeDeletedRecords()).length === 0) {
-        const resolver = new Resolver()
+        const resolver = new Resolver(this.resolverComparator)
         entries
           .filter((e) => !e.meta.lifecycle.deleted_at)
           .forEach((entry) => resolver.againstNone(entry))
@@ -610,7 +614,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     const existingRecords = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(entryIds)))
     existingRecords.forEach((record) => existingRecordsMap.set(record.id, record))
 
-    const resolver = new Resolver()
+    const resolver = new Resolver(this.resolverComparator)
 
     entries.forEach((entry) => {
       const existing = existingRecordsMap.get(entry.meta.ids.id)

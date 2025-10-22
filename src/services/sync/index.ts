@@ -1,7 +1,7 @@
 import './telemetry/index'
 
 import { Q, RecordId } from "@nozbe/watermelondb"
-import { type ModelSerialized } from "./serializers"
+import { type ModelSerialized, type RawSerialized } from "./serializers"
 import { EpochSeconds } from "./utils/epoch"
 import { Model } from "@nozbe/watermelondb"
 
@@ -16,12 +16,12 @@ export { SyncError } from './errors'
 
 export type SyncToken = EpochSeconds
 
-export type SyncSyncable<TRecordKey extends string = 'id'> = {
+export type SyncSyncable<TModel extends Model = Model, TRecordKey extends string = 'id'> = {
   [K in TRecordKey]: RecordId
-} & Record<string, any>
+} & Omit<RawSerialized<TModel>, 'id'>
 
-export type SyncEntry<TRecordKey extends string = 'id'> = {
-  record: SyncSyncable<TRecordKey> | null
+export type SyncEntry<TModel extends Model = Model, TRecordKey extends string = 'id'> = {
+  record: SyncSyncable<TModel, TRecordKey> | null
   meta: {
     ids: { [K in TRecordKey]: RecordId }
     lifecycle: SyncEntryLifecycle

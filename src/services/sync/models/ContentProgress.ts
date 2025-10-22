@@ -10,7 +10,9 @@ export enum STATE {
   COMPLETED = 'completed'
 }
 
-export default class ContentProgress extends BaseModel {
+export default class ContentProgress extends BaseModel<{
+  content_id: number
+}> {
   static table = SYNC_TABLES.CONTENT_PROGRESS
 
   // todo add resume_time
