@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.59.0](https://github.com/railroadmedia/musora-content-services/compare/v2.58.0...v2.59.0) (2025-10-22)
+
+
+### Features
+
+* **BEH-1269:** Rename live_event_youtube_id -> live_event_stream_id ([#484](https://github.com/railroadmedia/musora-content-services/issues/484)) ([ae3f328](https://github.com/railroadmedia/musora-content-services/commit/ae3f328f90c3657ba8c1464757c0d7dc8ce2071d))
+
 ## [2.58.0](https://github.com/railroadmedia/musora-content-services/compare/v2.57.0...v2.58.0) (2025-10-22)
 
 
