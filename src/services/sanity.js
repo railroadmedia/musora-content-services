@@ -2276,3 +2276,18 @@ export async function fetchShows(brand, type, sort = 'sort') {
   })
   return fetchSanity(query, true)
 }
+
+export async function fetchMethodV2IntroVideo(brand) {
+  const _type = 'method-intro'
+  const filter = `_type == '${_type}' && brand == '${brand}'`;
+  const query =`*[${filter}] {
+    brand,
+    'description': ${descriptionField},
+    'thumbnail': thumbnail.asset->url,
+    video_desktop{external_id, hlsManifestUrl, video_playback_endpoints},
+    video_mobile{external_id, hlsManifestUrl, video_playback_endpoints},
+    length_in_seconds,
+  }`
+
+  return fetchSanity(query, false)
+}

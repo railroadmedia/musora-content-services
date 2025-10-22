@@ -113,7 +113,7 @@ export class FilterBuilder {
       let statuses = [...this.availableContentStatuses]
       statuses.splice(statuses.indexOf(this.STATUS_SCHEDULED), 1)
       this._andWhere(
-        `(${this.prefix}status in ${arrayToStringRepresentation(statuses)} || (${this.prefix}status == '${this.STATUS_SCHEDULED}' && defined(${this.prefix}published_on) && ${this.prefix}published_on >= '${now}'))`
+        `(${this.prefix}status in ${arrayToStringRepresentation(statuses)} || (${this.prefix}status == '${this.STATUS_SCHEDULED}' && defined(${this.prefix}live_event_end_date) && ${this.prefix}live_event_end_date <= '${now}'))`
       )
     } else {
       this._andWhere(
