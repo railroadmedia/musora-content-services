@@ -12,6 +12,11 @@ export enum STATE {
 
 export default class ContentProgress extends BaseModel<{
   content_id: number
+  state: STATE
+  progress_percent: number
+  collection_type: COLLECTION_TYPE | null
+  collection_id: number | null
+  brand: string
 }> {
   static table = SYNC_TABLES.CONTENT_PROGRESS
 

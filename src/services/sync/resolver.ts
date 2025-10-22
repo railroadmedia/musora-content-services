@@ -9,7 +9,7 @@ export type SyncResolution = {
   idsForDestroy: RecordId[]
 }
 
-export type SyncResolverComparator<T extends BaseModel = BaseModel> = (serverEntry: SyncEntry, localModel: T) => 'SERVER' | 'LOCAL'
+export type SyncResolverComparator<T extends BaseModel = BaseModel> = (serverEntry: SyncEntry<T>, localModel: T) => 'SERVER' | 'LOCAL'
 
 export const updatedAtComparator: SyncResolverComparator = (server, local) => {
   return server.meta.lifecycle.updated_at >= local.updated_at ? 'SERVER' : 'LOCAL'
@@ -75,7 +75,7 @@ export default class SyncResolver {
   againstDeleted(local: BaseModel, server: SyncEntry) {
     if (server.meta.lifecycle.deleted_at) {
       this.resolution.idsForDestroy.push(local.id)
-    } else if (this.comparator(server, local) !== 'LOCAL') {
+    } else if (server.meta.lifecycle.updated_at >= local.updated_at) {
       this.resolution.tuplesForRestore.push([local, server])
     } else {
       this.resolution.idsForDestroy.push(local.id);

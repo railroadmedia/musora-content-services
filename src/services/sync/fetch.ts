@@ -2,7 +2,8 @@ import { SyncToken, SyncEntry, SyncSyncable } from "./index"
 import { EpochSeconds } from "./utils/epoch.js"
 
 import { globalConfig } from '../config.js'
-import { Model, RecordId } from "@nozbe/watermelondb"
+import { RecordId } from "@nozbe/watermelondb"
+import BaseModel from "./models/Base"
 import { BaseSessionProvider } from "./context/providers"
 
 interface RawPullResponse {
@@ -11,7 +12,7 @@ interface RawPullResponse {
     max_updated_at: EpochSeconds | null
     timestamp: EpochSeconds
   }
-  entries: SyncEntry<Model, 'client_record_id'>[]
+  entries: SyncEntry<BaseModel, 'client_record_id'>[]
 }
 
 interface RawPushResponse {
@@ -40,7 +41,7 @@ interface SyncPushResponseBase extends SyncResponseBase {
 type SyncStorePushResult<TRecordKey extends string = 'id'> = SyncStorePushResultSuccess<TRecordKey> | SyncStorePushResultFailure<TRecordKey>
 type SyncStorePushResultSuccess<TRecordKey extends string = 'id'> = SyncStorePushResultBase & {
   type: 'success'
-  entry: SyncEntry<Model, TRecordKey>
+  entry: SyncEntry<BaseModel, TRecordKey>
 }
 type SyncStorePushResultFailure<TRecordKey extends string = 'id'> = SyncStorePushResultProcessingFailure<TRecordKey> | SyncStorePushResultValidationFailure<TRecordKey>
 type SyncStorePushResultProcessingFailure<TRecordKey extends string = 'id'> = SyncStorePushResultFailureBase<TRecordKey> & {
@@ -101,7 +102,7 @@ export type PushPayload = {
 
 interface ServerPushPayload {
   entries: {
-    record: SyncSyncable<Model, 'client_record_id'> | null
+    record: SyncSyncable<BaseModel, 'client_record_id'> | null
     meta: {
       ids: {
         client_record_id: RecordId
@@ -118,7 +119,9 @@ export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (sessi
       ...init?.headers,
       'Content-Type': 'application/json',
       'X-Sync-Client-Id': session.getClientId(),
-      'X-Sync-Client-Session-Id': session.getSessionId(),
+      ...(session.getSessionId() ? {
+        'X-Sync-Client-Session-Id': session.getSessionId()!
+      } : {})
     }
   })
 }
@@ -270,7 +273,7 @@ function deserializePushResponse(response: RawPushResponse) {
   }
 }
 
-function serializeRecord(record: SyncSyncable<Model, 'id'> | null): SyncSyncable<Model, 'client_record_id'> | null {
+function serializeRecord(record: SyncSyncable<BaseModel, 'id'> | null): SyncSyncable<BaseModel, 'client_record_id'> | null {
   if (record) {
     const { id, ...rest } = record
     return {
@@ -288,7 +291,7 @@ function serializeIds(ids: { id: RecordId }): { client_record_id: RecordId } {
   }
 }
 
-function deserializeRecord(record: SyncSyncable<Model, 'client_record_id'> | null): SyncSyncable<Model, 'id'> | null {
+function deserializeRecord(record: SyncSyncable<BaseModel, 'client_record_id'> | null): SyncSyncable<BaseModel, 'id'> | null {
   if (record) {
     const { client_record_id: id, ...rest } = record
     return {

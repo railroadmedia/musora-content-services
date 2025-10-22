@@ -3,7 +3,7 @@ import './telemetry/index'
 import { Q, RecordId } from "@nozbe/watermelondb"
 import { type ModelSerialized, type RawSerialized } from "./serializers"
 import { EpochSeconds } from "./utils/epoch"
-import { Model } from "@nozbe/watermelondb"
+import BaseModel from "./models/Base"
 
 export { default as db } from './repository-proxy'
 export { Q }
@@ -16,11 +16,11 @@ export { SyncError } from './errors'
 
 export type SyncToken = EpochSeconds
 
-export type SyncSyncable<TModel extends Model = Model, TRecordKey extends string = 'id'> = {
+export type SyncSyncable<TModel extends BaseModel = BaseModel, TRecordKey extends string = 'id'> = {
   [K in TRecordKey]: RecordId
 } & Omit<RawSerialized<TModel>, 'id'>
 
-export type SyncEntry<TModel extends Model = Model, TRecordKey extends string = 'id'> = {
+export type SyncEntry<TModel extends BaseModel = BaseModel, TRecordKey extends string = 'id'> = {
   record: SyncSyncable<TModel, TRecordKey> | null
   meta: {
     ids: { [K in TRecordKey]: RecordId }
@@ -34,31 +34,31 @@ type SyncEntryLifecycle = {
   deleted_at: EpochSeconds | null
 }
 
-export type SyncExistsDTO<_TModel extends Model, T extends boolean | boolean[]> = {
+export type SyncExistsDTO<_TModel extends BaseModel, T extends boolean | boolean[]> = {
   data: T
   status: 'fresh' | 'stale'
   pullStatus: 'success' | 'pending' | 'failure' | null
   lastFetchToken: SyncToken | null
 }
 
-export type SyncReadData<T extends Model> = ModelSerialized<T> | ModelSerialized<T>[] | RecordId | RecordId[] | null
-export type SyncReadDTO<T extends Model, TData extends SyncReadData<T>> = {
+export type SyncReadData<T extends BaseModel> = ModelSerialized<T> | ModelSerialized<T>[] | RecordId | RecordId[] | null
+export type SyncReadDTO<T extends BaseModel, TData extends SyncReadData<T>> = {
   data: TData
   status: 'fresh' | 'stale'
   pullStatus: 'success' | 'pending' | 'failure' | null
   lastFetchToken: SyncToken | null
 }
 
-export type SyncWriteData<T extends Model> = SyncWriteRecordData<T> | SyncWriteIdData<T>
-export type SyncWriteRecordData<T extends Model> = ModelSerialized<T> | ModelSerialized<T>[]
-export type SyncWriteIdData<_T extends Model> = RecordId | RecordId[]
-export type SyncWriteDTO<T extends Model, TData extends SyncWriteData<T>> = {
+export type SyncWriteData<T extends BaseModel> = SyncWriteRecordData<T> | SyncWriteIdData<T>
+export type SyncWriteRecordData<T extends BaseModel> = ModelSerialized<T> | ModelSerialized<T>[]
+export type SyncWriteIdData<_T extends BaseModel> = RecordId | RecordId[]
+export type SyncWriteDTO<T extends BaseModel, TData extends SyncWriteData<T>> = {
   data: TData
   status: 'synced' | 'unsynced'
   pushStatus: 'success' | 'pending' | 'failure'
 }
 
-export type ModelClass<T extends Model = Model> = {
+export type ModelClass<T extends BaseModel = BaseModel> = {
   new (...args: any[]): T
   table: string
 }
