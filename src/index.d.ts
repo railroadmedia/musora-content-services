@@ -313,7 +313,8 @@ import {
 } from './services/user/notifications.js';
 
 import {
-	startOnboarding
+	startOnboarding,
+	updateOnboarding
 } from './services/user/onboarding.ts';
 
 import {
@@ -625,6 +626,7 @@ declare module 'musora-content-services' {
 		updateDisplayName,
 		updateForumCategory,
 		updateNotificationSetting,
+		updateOnboarding,
 		updatePlaylist,
 		updatePost,
 		updatePracticeNotes,

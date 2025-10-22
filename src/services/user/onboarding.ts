@@ -45,7 +45,7 @@ export async function startOnboarding({
   email,
   brand,
   flow,
-  steps,
+  steps = {},
   marketingOptIn = false,
 }: StartOnboardingParams): Promise<Onboarding> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
@@ -56,5 +56,41 @@ export async function startOnboarding({
     steps,
     marketing_opt_in: marketingOptIn,
     is_completed: false,
+  })
+}
+
+export interface UpdateOnboardingParams {
+  id: number
+  email: string
+  brand: string
+  flow: string
+  marketingOptIn: boolean
+  is_completed?: boolean
+  steps: OnboardingSteps
+}
+
+/**
+ * @param {UpdateOnboardingParams} params - The parameters for updating the onboarding process.
+ *
+ * @returns {Promise<Onboarding>} - A promise that resolves when the onboarding process is updated.
+ * @throws {HttpError} - If the HTTP request fails.
+ */
+export async function updateOnboarding({
+  id,
+  email,
+  brand,
+  flow,
+  steps,
+  is_completed = false,
+  marketingOptIn = false,
+}: UpdateOnboardingParams): Promise<Onboarding> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.put<Onboarding>(`/api/user-management-system/v1/onboardings/${id}`, {
+    email,
+    brand,
+    flow,
+    steps,
+    is_completed,
+    marketing_opt_in: marketingOptIn,
   })
 }
