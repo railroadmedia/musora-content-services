@@ -85,7 +85,7 @@ export async function updateOnboarding({
   marketingOptIn = false,
 }: UpdateOnboardingParams): Promise<Onboarding> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<Onboarding>(`/api/user-management-system/v1/onboardings/${id}`, {
+  return httpClient.put<Onboarding>(`/api/user-management-system/v1/onboardings/${id}`, {
     email,
     brand,
     flow,
