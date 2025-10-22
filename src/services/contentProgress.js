@@ -356,7 +356,7 @@ function getAncestorAndSiblingIds(hierarchy, contentId) {
   const parentId = hierarchy?.parents?.[contentId]
   if (!parentId) return []
 
-  return [...(hierarchy?.children?.[parentId] ?? []), ...getUpstreams(hierarchy, parentId)]
+  return [...(hierarchy?.children?.[parentId] ?? []), ...getAncestorAndSiblingIds(hierarchy, parentId)]
 }
 
 function averageProgressesFor(hierarchy, contentId, progressData) {
