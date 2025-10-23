@@ -11,7 +11,7 @@ import { SyncError } from './errors'
 import { SyncConcurrencySafetyMechanism } from './concurrency-safety'
 import { SyncTelemetry } from './telemetry/index'
 import { inBoundary } from './errors/boundary'
-import createStores from './store-configs'
+import createStoresFromConfig from './store-configs'
 
 export default class SyncManager {
   private static instance: SyncManager | null = null
@@ -38,7 +38,7 @@ export default class SyncManager {
   public telemetry: SyncTelemetry
   private database: Database
   private context: SyncContext
-  private storesRegistry: Record<string, SyncStore>
+  private storesRegistry: Record<string, SyncStore<BaseModel>>
   private runScope: SyncRunScope
   private retry: SyncRetry
   private strategyMap: { stores: SyncStore[]; strategies: SyncStrategy[] }[]
@@ -53,13 +53,13 @@ export default class SyncManager {
     this.runScope = new SyncRunScope()
     this.retry = new SyncRetry(this.context, this.telemetry)
 
-    this.storesRegistry = this.registerStores(createStores(this.foo.bind(this)))
+    this.storesRegistry = this.registerStores(createStoresFromConfig(this.createStore.bind(this)))
 
     this.strategyMap = []
     this.safetyMap = []
   }
 
-  foo<TModel extends BaseModel>(config: SyncStoreConfig<TModel>) {
+  createStore<TModel extends BaseModel>(config: SyncStoreConfig<TModel>) {
     return new SyncStore<TModel>(config, this.context, this.database, this.retry, this.runScope, this.telemetry)
   }
 
@@ -126,7 +126,7 @@ export default class SyncManager {
     if (!store) {
       throw new SyncError(`Store not found`, { table: model.table })
     }
-    return store
+    return store as unknown as SyncStore<TModel>
   }
 
   getTelemetry() {

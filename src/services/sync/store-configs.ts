@@ -5,7 +5,7 @@ import { handlePull, handlePush, makeFetchRequest } from "./fetch"
 import SyncStore from "./store"
 import BaseModel from "./models/Base"
 
-export default function createStores(createStore: <TModel extends BaseModel>(config: SyncStoreConfig<TModel>) => SyncStore<TModel>) {
+export default function createStoresFromConfig(createStore: <TModel extends BaseModel>(config: SyncStoreConfig<TModel>) => SyncStore<TModel>) {
   return [
     createStore({
       model: ContentLike,
