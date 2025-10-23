@@ -1,5 +1,5 @@
 import { RecordId } from "@nozbe/watermelondb";
-import { SyncEntry } from ".";
+import { SyncEntry, SyncEntryNonDeleted } from ".";
 import BaseModel from "./models/Base";
 
 export type SyncResolution = {
@@ -9,7 +9,7 @@ export type SyncResolution = {
   idsForDestroy: RecordId[]
 }
 
-export type SyncResolverComparator<T extends BaseModel = BaseModel> = (serverEntry: SyncEntry<T>, localModel: T) => 'SERVER' | 'LOCAL'
+export type SyncResolverComparator<T extends BaseModel = BaseModel> = (serverEntry: SyncEntryNonDeleted<T>, localModel: T) => 'SERVER' | 'LOCAL'
 
 export const updatedAtComparator: SyncResolverComparator = (server, local) => {
   return server.meta.lifecycle.updated_at >= local.updated_at ? 'SERVER' : 'LOCAL'

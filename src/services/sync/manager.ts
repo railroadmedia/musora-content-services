@@ -11,6 +11,7 @@ import { SyncError } from './errors'
 import { SyncConcurrencySafetyMechanism } from './concurrency-safety'
 import { SyncTelemetry } from './telemetry/index'
 import { inBoundary } from './errors/boundary'
+import createStores from './store-configs'
 
 export default class SyncManager {
   private static instance: SyncManager | null = null
@@ -37,33 +38,39 @@ export default class SyncManager {
   public telemetry: SyncTelemetry
   private database: Database
   private context: SyncContext
-  private storesRegistry: Map<string, SyncStore<BaseModel>>
+  private storesRegistry: Record<string, SyncStore>
   private runScope: SyncRunScope
   private retry: SyncRetry
-  private strategyMap: { stores: SyncStore<BaseModel>[]; strategies: SyncStrategy[] }[]
-  private safetyMap: { stores: SyncStore<BaseModel>[]; mechanisms: (() => void)[] }[]
+  private strategyMap: { stores: SyncStore[]; strategies: SyncStrategy[] }[]
+  private safetyMap: { stores: SyncStore[]; mechanisms: (() => void)[] }[]
 
   constructor(context: SyncContext, initDatabase: () => Database) {
     this.telemetry = SyncTelemetry.getInstance()!
     this.context = context
 
     this.database = this.telemetry.trace({ name: 'db:init' }, () => inBoundary(initDatabase))
-    this.runScope = new SyncRunScope()
 
-    this.storesRegistry = new Map()
+    this.runScope = new SyncRunScope()
+    this.retry = new SyncRetry(this.context, this.telemetry)
+
+    this.storesRegistry = this.registerStores(createStores(this.foo.bind(this)))
+
     this.strategyMap = []
     this.safetyMap = []
-
-    this.retry = new SyncRetry(this.context, this.telemetry)
   }
 
-  createStore<TModel extends BaseModel>(config: SyncStoreConfig<TModel>) {
-    if (this.storesRegistry[config.model.table]) {
-      throw new SyncError(`Store ${config.model.table} already registered`)
-    }
-    const store = new SyncStore<TModel>(config, this.context, this.database, this.retry, this.runScope, this.telemetry)
-    this.storesRegistry[config.model.table] = store
-    return store
+  foo<TModel extends BaseModel>(config: SyncStoreConfig<TModel>) {
+    return new SyncStore<TModel>(config, this.context, this.database, this.retry, this.runScope, this.telemetry)
+  }
+
+  registerStores(stores: SyncStore[]) {
+    return Object.fromEntries(stores.map(store => {
+      return [store.model.table, store]
+    }))
+  }
+
+  storesForModels(models: ModelClass[]) {
+    return models.map(model => this.storesRegistry[model.table])
   }
 
   createStrategy<T extends SyncStrategy, U extends any[]>(
@@ -114,7 +121,7 @@ export default class SyncManager {
     return teardown
   }
 
-  getStore<TModel extends BaseModel>(model: ModelClass<TModel>): SyncStore<TModel> {
+  getStore<TModel extends BaseModel>(model: ModelClass<TModel>) {
     const store = this.storesRegistry[model.table]
     if (!store) {
       throw new SyncError(`Store not found`, { table: model.table })

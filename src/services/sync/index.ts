@@ -20,8 +20,17 @@ export type SyncSyncable<TModel extends BaseModel = BaseModel, TRecordKey extend
   [K in TRecordKey]: RecordId
 } & Omit<RawSerialized<TModel>, 'id'>
 
-export type SyncEntry<TModel extends BaseModel = BaseModel, TRecordKey extends string = 'id'> = {
-  record: SyncSyncable<TModel, TRecordKey> | null
+export type SyncEntry<TModel extends BaseModel = BaseModel, TRecordKey extends string = 'id'> = SyncEntryNonDeleted<TModel, TRecordKey> | SyncEntryDeleted<TModel, TRecordKey>
+
+export type SyncEntryNonDeleted<TModel extends BaseModel = BaseModel, TRecordKey extends string = 'id'> = SyncEntryBase<TRecordKey> & {
+  record: SyncSyncable<TModel, TRecordKey>
+}
+
+export type SyncEntryDeleted<_TModel extends BaseModel = BaseModel, TRecordKey extends string = 'id'> = SyncEntryBase<TRecordKey> & {
+  record: null
+}
+
+interface SyncEntryBase<TRecordKey extends string = 'id'> {
   meta: {
     ids: { [K in TRecordKey]: RecordId }
     lifecycle: SyncEntryLifecycle

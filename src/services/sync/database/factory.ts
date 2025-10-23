@@ -1,9 +1,10 @@
 import type { DatabaseAdapter } from '../adapters/factory'
-import { Database, Model } from '@nozbe/watermelondb'
+import { Database, } from '@nozbe/watermelondb'
+import * as modelClasses from '../models'
 
-export default function syncDatabaseFactory(adapter: () => DatabaseAdapter, modelClasses: (typeof Model)[]) {
+export default function syncDatabaseFactory(adapter: () => DatabaseAdapter) {
   return () => new Database({
     adapter: adapter(),
-    modelClasses
+    modelClasses: Object.values(modelClasses)
   })
 }
