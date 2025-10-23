@@ -22,25 +22,28 @@ export type SyncSyncable<TModel extends BaseModel = BaseModel, TRecordKey extend
 
 export type SyncEntry<TModel extends BaseModel = BaseModel, TRecordKey extends string = 'id'> = SyncEntryNonDeleted<TModel, TRecordKey> | SyncEntryDeleted<TModel, TRecordKey>
 
-export type SyncEntryNonDeleted<TModel extends BaseModel = BaseModel, TRecordKey extends string = 'id'> = SyncEntryBase<TRecordKey> & {
+export type SyncEntryNonDeleted<TModel extends BaseModel = BaseModel, TRecordKey extends string = 'id'> = {
   record: SyncSyncable<TModel, TRecordKey>
-}
-
-export type SyncEntryDeleted<_TModel extends BaseModel = BaseModel, TRecordKey extends string = 'id'> = SyncEntryBase<TRecordKey> & {
-  record: null
-}
-
-interface SyncEntryBase<TRecordKey extends string = 'id'> {
   meta: {
     ids: { [K in TRecordKey]: RecordId }
-    lifecycle: SyncEntryLifecycle
+    lifecycle: {
+      created_at: EpochSeconds
+      updated_at: EpochSeconds
+      deleted_at: null
+    }
   }
 }
 
-type SyncEntryLifecycle = {
-  created_at: EpochSeconds
-  updated_at: EpochSeconds
-  deleted_at: EpochSeconds | null
+export type SyncEntryDeleted<_TModel extends BaseModel = BaseModel, TRecordKey extends string = 'id'> = {
+  record: null
+  meta: {
+    ids: { [K in TRecordKey]: RecordId }
+    lifecycle: {
+      created_at: EpochSeconds
+      updated_at: EpochSeconds
+      deleted_at: EpochSeconds
+    }
+  }
 }
 
 export type SyncExistsDTO<_TModel extends BaseModel, T extends boolean | boolean[]> = {

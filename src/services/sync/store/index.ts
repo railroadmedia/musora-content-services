@@ -28,9 +28,9 @@ type SyncPush = (
   signal: AbortSignal
 ) => Promise<SyncPushResponse>
 
-export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
+export type SyncStoreConfig<TModel extends BaseModel> = {
   model: ModelClass<TModel>
-  comparator?: SyncResolverComparator<TModel>
+  comparator?: TModel extends BaseModel ? SyncResolverComparator<TModel> : SyncResolverComparator
   pull: SyncPull
   push: SyncPush
 }
@@ -47,7 +47,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   readonly model: ModelClass<TModel>
   readonly collection: Collection<TModel>
 
-  readonly resolverComparator?: SyncResolverComparator<TModel>
+  readonly resolverComparator?: SyncResolverComparator
   readonly rawSerializer: RawSerializer<TModel>
   readonly modelSerializer: ModelSerializer<TModel>
 
