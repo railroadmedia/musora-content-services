@@ -315,7 +315,7 @@ async function saveContentProgress(contentId, progress, currentSeconds) {
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
 
-  const bubbledProgresses = bubbleProgress(await fetchHierarchy(), contentId)
+  const bubbledProgresses = bubbleProgress(await fetchHierarchy(contentId), contentId)
   return db.contentProgress.recordProgressesOptimistic(bubbledProgresses)
 }
 
@@ -323,7 +323,7 @@ async function setStartedOrCompletedStatus(contentId, isCompleted) {
   const progress = isCompleted ? 100 : 0
   await db.contentProgress.recordProgress(contentId, progress)
 
-  const hierarchy = await fetchHierarchy()
+  const hierarchy = await fetchHierarchy(contentId)
 
   return Promise.all([
     db.contentProgress.recordProgressesOptimistic(trickleProgress(hierarchy, contentId, progress)),
@@ -333,11 +333,11 @@ async function setStartedOrCompletedStatus(contentId, isCompleted) {
 
 async function resetStatus(contentId) {
   await db.contentProgress.eraseProgress(contentId)
-  const hierarchy = await fetchHierarchy()
+  const hierarchy = await fetchHierarchy(contentId)
 
   return Promise.all([
     db.contentProgress.eraseProgressesOptimistic(getChildrenToDepth(contentId, hierarchy, 5)),
-    bubbleProgress(hierarchy, contentId).then(bubbledProgresses => db.contentProgress.eraseProgressesOptimistic(bubbledProgresses))
+    bubbleProgress(hierarchy, contentId).then(bubbledProgresses => db.contentProgress.recordProgressesOptimistic(bubbledProgresses))
   ])
 }
 
