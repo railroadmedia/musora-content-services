@@ -38,11 +38,11 @@ export default class SyncManager {
   public telemetry: SyncTelemetry
   private database: Database
   private context: SyncContext
-  private storesRegistry: Record<string, SyncStore<BaseModel>>
+  private storesRegistry: Record<string, SyncStore<any>>
   private runScope: SyncRunScope
   private retry: SyncRetry
-  private strategyMap: { stores: SyncStore[]; strategies: SyncStrategy[] }[]
-  private safetyMap: { stores: SyncStore[]; mechanisms: (() => void)[] }[]
+  private strategyMap: { stores: SyncStore<any>[]; strategies: SyncStrategy[] }[]
+  private safetyMap: { stores: SyncStore<any>[]; mechanisms: (() => void)[] }[]
 
   constructor(context: SyncContext, initDatabase: () => Database) {
     this.telemetry = SyncTelemetry.getInstance()!
@@ -63,10 +63,10 @@ export default class SyncManager {
     return new SyncStore<TModel>(config, this.context, this.database, this.retry, this.runScope, this.telemetry)
   }
 
-  registerStores(stores: SyncStore[]) {
+  registerStores<TModel extends BaseModel>(stores: SyncStore<TModel>[]) {
     return Object.fromEntries(stores.map(store => {
       return [store.model.table, store]
-    }))
+    })) as Record<string, SyncStore<TModel>>
   }
 
   storesForModels(models: ModelClass[]) {
@@ -80,12 +80,12 @@ export default class SyncManager {
     return new strategyClass(this.context, ...args)
   }
 
-  syncStoresWithStrategies(stores: SyncStore[], strategies: SyncStrategy[]) {
+  syncStoresWithStrategies(stores: SyncStore<any>[], strategies: SyncStrategy[]) {
     this.strategyMap.push({ stores, strategies })
   }
 
   protectStores(
-    stores: SyncStore[],
+    stores: SyncStore<any>[],
     mechanisms: SyncConcurrencySafetyMechanism[]
   ) {
     const teardowns = mechanisms.map(mechanism => mechanism(this.context, stores))

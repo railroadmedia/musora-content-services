@@ -39,41 +39,41 @@ export default class SyncResolver {
   }
 
   againstSynced(local: BaseModel, server: SyncEntry) {
-    if (!server.record) {
+    if (server.meta.lifecycle.deleted_at) {
       this.resolution.idsForDestroy.push(local.id)
     }
     // take care that the server stamp isn't older than the current local
     // (imagine a race condition where a pull request resolves long after a second one)
-    else if (this.comparator(server, local) !== 'LOCAL') {
+    else if (this.comparator(server as SyncEntryNonDeleted<BaseModel>, local) !== 'LOCAL') {
       this.resolution.tuplesForUpdate.push([local, server])
     }
   }
 
   // can happen if one tab notifies another of a created record, pushes to server, and other tab pulls
   againstCreated(local: BaseModel, server: SyncEntry) {
-    if (!server.record) {
+    if (server.meta.lifecycle.deleted_at) {
       // delete local even though user has newer changes
       // (we don't ever try to resurrect records here)
       this.resolution.idsForDestroy.push(local.id)
-    } else if (this.comparator(server, local) !== 'LOCAL') {
+    } else if (this.comparator(server as SyncEntryNonDeleted<BaseModel>, local) !== 'LOCAL') {
       // local is older, so update it with server's
       this.resolution.tuplesForUpdate.push([local, server])
     }
   }
 
   againstUpdated(local: BaseModel, server: SyncEntry) {
-    if (!server.record) {
+    if (server.meta.lifecycle.deleted_at) {
       // delete local even though user has newer changes
       // (we don't ever try to resurrect records here)
       this.resolution.idsForDestroy.push(local.id);
-    } else if (this.comparator(server, local) !== 'LOCAL') {
+    } else if (this.comparator(server as SyncEntryNonDeleted<BaseModel>, local) !== 'LOCAL') {
       // local is older, so update it with server's
       this.resolution.tuplesForUpdate.push([local, server])
     }
   }
 
   againstDeleted(local: BaseModel, server: SyncEntry) {
-    if (!server.record) {
+    if (server.meta.lifecycle.deleted_at) {
       this.resolution.idsForDestroy.push(local.id)
     } else if (server.meta.lifecycle.updated_at >= local.updated_at) {
       this.resolution.tuplesForRestore.push([local, server])

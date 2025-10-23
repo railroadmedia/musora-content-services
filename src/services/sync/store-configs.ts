@@ -25,5 +25,5 @@ export default function createStoresFromConfig(createStore: <TModel extends Base
       pull: handlePull(makeFetchRequest('/content/user/progress')),
       push: handlePush(makeFetchRequest('/content/user/progress', { method: 'POST' })),
     })
-  ]
+  ] as unknown as SyncStore<BaseModel>[]
 }
