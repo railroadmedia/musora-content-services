@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.60.0](https://github.com/railroadmedia/musora-content-services/compare/v2.57.0...v2.60.0) (2025-10-23)
+
+
+### Features
+
+* **BEH-1269:** Rename live_event_youtube_id -> live_event_stream_id ([#484](https://github.com/railroadmedia/musora-content-services/issues/484)) ([ae3f328](https://github.com/railroadmedia/musora-content-services/commit/ae3f328f90c3657ba8c1464757c0d7dc8ce2071d))
+* **MU2E1-133:** update onboarding function ([#505](https://github.com/railroadmedia/musora-content-services/issues/505)) ([89f1a12](https://github.com/railroadmedia/musora-content-services/commit/89f1a12c36f8e0812afc2fa412cf9824cf0dab33))
+
+
+### Bug Fixes
+
+* **MU2-1181:** Strip blockquotes from Active Discussions ([#506](https://github.com/railroadmedia/musora-content-services/issues/506)) ([9377e57](https://github.com/railroadmedia/musora-content-services/commit/9377e57e4ab3842f4c32d6c7c903ff555037cc5a))
+
 ### [2.59.1](https://github.com/railroadmedia/musora-content-services/compare/v2.59.0...v2.59.1) (2025-10-22)
 
 ## [2.59.0](https://github.com/railroadmedia/musora-content-services/compare/v2.58.0...v2.59.0) (2025-10-22)
