@@ -147,6 +147,21 @@ class EventsAPI {
       this.resumeLiveEventTimeout = null;
     }
   }
+
+  destroy() {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
+    }
+
+    if (this.resumeLiveEventTimeout) {
+      clearTimeout(this.resumeLiveEventTimeout);
+      this.resumeLiveEventTimeout = null;
+    }
+
+    this.onNotificationStateUpdated = [];
+    this.isLiveEventPollingActive = false;
+  }
 }
 
 // Export singleton
