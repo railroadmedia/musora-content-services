@@ -73,10 +73,14 @@ treeElements.forEach((treeNode) => {
   if (fs.lstatSync(filePath).isFile()) {
     addFunctionsToFileExports(filePath, treeNode)
   } else if (fs.lstatSync(filePath).isDirectory()) {
+    if (fs.existsSync(path.join(filePath, '.indexignore'))) {
+      console.log(`Skipping directory: ${treeNode} due to .indexignore`)
+      return
+    }
     const subDir = fs.readdirSync(filePath)
     subDir.forEach((subFile) => {
-      const filePath = path.join(servicesDir, treeNode, subFile)
-      addFunctionsToFileExports(filePath, treeNode + '/' + subFile)
+      const subFilePath = path.join(servicesDir, treeNode, subFile)
+      addFunctionsToFileExports(subFilePath, treeNode + '/' + subFile)
     })
   }
 })
@@ -85,11 +89,11 @@ treeElements.forEach((treeNode) => {
 let content =
   '/*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/\n'
 
+content += `\nimport {\n\t default as EventsAPI \n} from './services/eventsAPI';\n`
+
 Object.entries(fileExports).forEach(([file, functionNames]) => {
   content += `\nimport {\n\t${functionNames.join(',\n\t')}\n} from './services/${file}';\n`
 })
-
-content += `\nimport {\n\t default as EventsAPI \n} from './services/eventsAPI';\n`
 
 const allFunctionNames = Object.values(fileExports).flat().sort()
 content += '\nexport {\n'
