@@ -373,7 +373,7 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         live_event_end_time,
          "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}'`
   const query = buildRawQuery(
-    `defined(live_event_start_time) && (!defined(live_event_end_time) || live_event_end_time >= '${now}' ) && brand == '${brand}' && published_on > '${now}' && status == 'scheduled'`,
+    `defined(live_event_start_time) && live_event_start_time >= '${now}' && (!defined(live_event_end_time) || live_event_end_time >= '${now}' ) && brand == '${brand}' &&  status == 'scheduled'`,
     fields,
     {
       sortOrder: 'published_on asc',
@@ -2243,7 +2243,7 @@ export async function fetchScheduledAndNewReleases(
   const sortOrder = getSortOrder(sort, brand)
 
   const query = `
-    *[_type in [${typesString}] && brand == '${brand}' && ((status in ['published','scheduled'] && published_on > '${now}')||(show_in_new_feed == true)) ]
+    *[_type in [${typesString}] && brand == '${brand}' && ((status in ['published','scheduled'] )||(show_in_new_feed == true)) ]
     [${start}...${end}]
    | order(published_on asc) {
       "id": railcontent_id,
