@@ -2295,50 +2295,9 @@ export async function fetchMethodV2IntroVideo(brand) {
 export async function fetchFullMethodV2StructureFor(brand) {
   const _type = "method-v2";
   const filter = `_type == '${_type}' && brand == '${brand}'`;
-  const parentFields = [
-    "_id",
-    `"type": _type`,
-    "brand",
-    `"description": ${descriptionField}`,
-    `"thumbnail": thumbnail.asset->url`,
-    `"intro_video": intro_video->{
-      external_id,
-      railcontent_id,
-      id,
-      video_desktop {
-        external_id,
-        hlsManifestUrl,
-        video_playback_endpoints
-      },
-      video_mobile {
-        external_id,
-        hlsManifestUrl,
-        video_playback_endpoints
-      }
-    }`,
-    `child[]->{
-      "type": _type,
-      brand,
-      title,
-      "description": ${descriptionField},
-      "thumbnail": thumbnail.asset->url,
-      length_in_seconds,
-      intro_video {
-        external_id,
-        hlsManifestUrl,
-        video_playback_endpoints
-      },
-      lp_lessons[]->{
-        railcontent_id,
-        _type,
-        title,
-        "thumbnail": thumbnail.asset->url
-      }
-    }`,
-  ].join(",");
 
-  const query = `*[${filter}] { ${parentFields} }`;
+  const fields = contentTypeConfig[_type];
+  const query = `*[${filter}] { ${fields.join(",")} }`;
 
-  console.log({ query });
-  return query;
+  return await fetchSanity(query, true);
 }

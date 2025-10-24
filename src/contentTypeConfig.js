@@ -579,7 +579,54 @@ export let contentTypeConfig = {
       `quarter_removed`,
       '"thumbnail": thumbnail.asset->url',
     ]
-  }
+  },
+  "method-v2": [
+    `"id":_id`,
+    `"type":_type`,
+    "brand",
+    `"description": ${descriptionField}`,
+    `"thumbnail": thumbnail.asset->url`,
+    `"intro_video": intro_video->{
+    external_id,
+    video_desktop {
+      external_id,
+      hlsManifestUrl,
+      video_playback_endpoints
+    },
+    video_mobile {
+      external_id,
+      hlsManifestUrl,
+      video_playback_endpoints
+    }
+  }`,
+    `child[]->{
+    "type":_type,
+    brand,
+    title,
+    "description": ${descriptionField},
+    "thumbnail": thumbnail.asset->url,
+    length_in_seconds,
+    "intro_video": intro_video->{
+      external_id,
+      hlsManifestUrl,
+      video_playback_endpoints
+    },
+    lp_lessons[]->{
+      "type":_type,
+      railcontent_id,
+      title,
+      "thumbnail": thumbnail.asset->url,
+      length_in_seconds,
+      difficulty,
+      genre,
+      artist->{
+        name,
+        "thumbnail": thumbnail.asset->url
+      }
+    }
+  }`,
+  ],
+
 }
 
 export const plusMembershipPermissions = 92
