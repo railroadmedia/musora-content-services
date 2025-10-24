@@ -587,6 +587,7 @@ export let contentTypeConfig = {
     `"intro_video": intro_video->{ ${getIntroVideoFields().join(", ")} }`,
     `child[]->{
     "resource": ${resourcesField},
+    total_skills,
     "type":_type,
     brand,
     title,
