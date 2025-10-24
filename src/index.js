@@ -294,6 +294,7 @@ import {
 	fetchMemberships,
 	fetchRechargeTokens,
 	restorePurchases,
+	syncRevenueCatUser,
 	upgradeSubscription
 } from './services/user/memberships.ts';
 
@@ -607,6 +608,7 @@ export {
 	startLiveEventPolling,
 	startOnboarding,
 	status,
+	syncRevenueCatUser,
 	toDayjs,
 	togglePlaylistPrivate,
 	toggleSignaturePrivate,

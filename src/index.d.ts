@@ -294,6 +294,7 @@ import {
 	fetchMemberships,
 	fetchRechargeTokens,
 	restorePurchases,
+	syncRevenueCatUser,
 	upgradeSubscription
 } from './services/user/memberships.ts';
 
@@ -608,6 +609,7 @@ declare module 'musora-content-services' {
 		startLiveEventPolling,
 		startOnboarding,
 		status,
+		syncRevenueCatUser,
 		toDayjs,
 		togglePlaylistPrivate,
 		toggleSignaturePrivate,

@@ -4,6 +4,7 @@
 import './types.js'
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError.js'
 
 const baseUrl = `/api/user-memberships`
 
@@ -187,14 +188,14 @@ export async function upgradeSubscription(): Promise<UpgradeSubscriptionResponse
  */
 export async function restorePurchases(
   originalAppUserId: string,
-  email?: string|null
+  email?: string | null
 ): Promise<RestorePurchasesResponse> {
   if (!originalAppUserId) {
     throw new Error('originalAppUserId is a required parameter')
   }
 
   const requestBody: { original_app_user_id: string; email?: string } = {
-    original_app_user_id: originalAppUserId
+    original_app_user_id: originalAppUserId,
   }
 
   // Only include email if it has a valid value
@@ -203,8 +204,46 @@ export async function restorePurchases(
   }
 
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<RestorePurchasesResponse>(
-    `${baseUrl}/v1/revenuecat/restore`,
-    requestBody
-  )
+  return httpClient.post<RestorePurchasesResponse>(`${baseUrl}/v1/revenuecat/restore`, requestBody)
+}
+
+export interface SyncRevenueCatUserParams {
+  originalAppUserId: string
+  email: string
+}
+
+export interface SyncRevenueCatUserResponse {
+  original_app_user_id: string
+  email: string
+}
+
+/**
+ * Syncs a RevenueCat user with the platform by linking their original app user ID and email.
+ * This function is useful for associating a RevenueCat subscriber with an existing user account
+ * on the platform.
+ * @param {SyncRevenueCatUserParams} params - The parameters for syncing the RevenueCat user.
+ * @param {string} params.originalAppUserId - The original app user ID from RevenueCat.
+ * @param {string} params.email - The email address of the user to link.
+ * @returns {Promise<SyncRevenueCatUserResponse>} - A promise that resolves to an object containing:
+ *   - {string} original_app_user_id - The original app user ID from RevenueCat.
+ *   - {string} email - The email address of the linked user.
+ *
+ * @throws {HttpError} - Throws an error if the request fails.
+ *
+ * @example
+ * ```
+ * syncRevenueCatUser({ originalAppUserId: 'rc_user_123', email: 'johndoe@musora.com' })
+ *  .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ * ```
+ */
+export async function syncRevenueCatUser({
+  originalAppUserId,
+  email,
+}: SyncRevenueCatUserParams): Promise<SyncRevenueCatUserResponse> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return await httpClient.post<SyncRevenueCatUserResponse>(`${baseUrl}/v1/revenuecat/sync`, {
+    original_app_user_id: originalAppUserId,
+    email: email,
+  })
 }
