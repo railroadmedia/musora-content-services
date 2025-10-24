@@ -4,6 +4,7 @@
 import './types.js'
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError.js'
 
 const baseUrl = `/api/user-memberships`
 
@@ -216,6 +217,26 @@ export interface SyncRevenueCatUserResponse {
   email: string
 }
 
+/**
+ * Syncs a RevenueCat user with the platform by linking their original app user ID and email.
+ * This function is useful for associating a RevenueCat subscriber with an existing user account
+ * on the platform.
+ * @param {SyncRevenueCatUserParams} params - The parameters for syncing the RevenueCat user.
+ * @param {string} params.originalAppUserId - The original app user ID from RevenueCat.
+ * @param {string} params.email - The email address of the user to link.
+ * @returns {Promise<SyncRevenueCatUserResponse>} - A promise that resolves to an object containing:
+ *   - {string} original_app_user_id - The original app user ID from RevenueCat.
+ *   - {string} email - The email address of the linked user.
+ *
+ * @throws {HttpError} - Throws an error if the request fails.
+ *
+ * @example
+ * ```
+ * syncRevenueCatUser({ originalAppUserId: 'rc_user_123', email: 'johndoe@musora.com' })
+ *  .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ * ```
+ */
 export async function syncRevenueCatUser({
   originalAppUserId,
   email,
