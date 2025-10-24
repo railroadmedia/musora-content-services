@@ -10,7 +10,7 @@ interface CustomerOrder {
   date: string
   total_price: string
   currency: string
-  customer_url: string
+  status_url: string
 }
 
 /**
