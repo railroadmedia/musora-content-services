@@ -584,21 +584,7 @@ export let contentTypeConfig = {
     `"id":_id`,
     `"type":_type`,
     "brand",
-    `"description": ${descriptionField}`,
-    `"thumbnail": thumbnail.asset->url`,
-    `"intro_video": intro_video->{
-    external_id,
-    video_desktop {
-      external_id,
-      hlsManifestUrl,
-      video_playback_endpoints
-    },
-    video_mobile {
-      external_id,
-      hlsManifestUrl,
-      video_playback_endpoints
-    }
-  }`,
+    `"intro_video": intro_video->{ ${getIntroVideoFields().join(", ")} }`,
     `child[]->{
     "type":_type,
     brand,
@@ -616,8 +602,43 @@ export let contentTypeConfig = {
     }
   }`,
   ],
-
+  "method-v2-intro-video": [
+    "brand",
+    `"description": ${descriptionField}`,
+    `"thumbnail": thumbnail.asset->url`,
+    "length_in_seconds",
+    `video_desktop {
+      external_id,
+      hlsManifestUrl,
+      video_playback_endpoints
+    }`,
+      `video_mobile {
+      external_id,
+      hlsManifestUrl,
+      video_playback_endpoints
+    }`
+  ],
 }
+
+export function getIntroVideoFields() {
+  return [
+    "brand",
+    `"description": ${descriptionField}`,
+    `"thumbnail": thumbnail.asset->url`,
+    "length_in_seconds",
+    `video_desktop {
+      external_id,
+      hlsManifestUrl,
+      video_playback_endpoints
+    }`,
+    `video_mobile {
+      external_id,
+      hlsManifestUrl,
+      video_playback_endpoints
+    }`
+  ];
+}
+
 
 export const plusMembershipPermissions = 92
 
