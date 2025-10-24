@@ -187,14 +187,14 @@ export async function upgradeSubscription(): Promise<UpgradeSubscriptionResponse
  */
 export async function restorePurchases(
   originalAppUserId: string,
-  email?: string|null
+  email?: string | null
 ): Promise<RestorePurchasesResponse> {
   if (!originalAppUserId) {
     throw new Error('originalAppUserId is a required parameter')
   }
 
   const requestBody: { original_app_user_id: string; email?: string } = {
-    original_app_user_id: originalAppUserId
+    original_app_user_id: originalAppUserId,
   }
 
   // Only include email if it has a valid value
@@ -203,8 +203,26 @@ export async function restorePurchases(
   }
 
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<RestorePurchasesResponse>(
-    `${baseUrl}/v1/revenuecat/restore`,
-    requestBody
-  )
+  return httpClient.post<RestorePurchasesResponse>(`${baseUrl}/v1/revenuecat/restore`, requestBody)
+}
+
+export interface SyncRevenueCatUserParams {
+  originalAppUserId: string
+  email: string
+}
+
+export interface SyncRevenueCatUserResponse {
+  original_app_user_id: string
+  email: string
+}
+
+export async function syncRevenueCatUser({
+  originalAppUserId,
+  email,
+}: SyncRevenueCatUserParams): Promise<SyncRevenueCatUserResponse> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return await httpClient.post<SyncRevenueCatUserResponse>(`${baseUrl}/v1/revenuecat/sync`, {
+    original_app_user_id: originalAppUserId,
+    email: email,
+  })
 }
