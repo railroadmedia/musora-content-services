@@ -34,6 +34,7 @@ export const DEFAULT_FIELDS = [
   "'permission_id': permission[]->railcontent_id",
   'child_count',
   '"parent_id": parent_content_data[0].id',
+  'page_type',
 ]
 
 // these are identical... why
