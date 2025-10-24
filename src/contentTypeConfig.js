@@ -612,17 +612,7 @@ export let contentTypeConfig = {
       video_playback_endpoints
     },
     lp_lessons[]->{
-      "type":_type,
-      railcontent_id,
-      title,
-      "thumbnail": thumbnail.asset->url,
-      length_in_seconds,
-      difficulty,
-      genre,
-      artist->{
-        name,
-        "thumbnail": thumbnail.asset->url
-      }
+      ${DEFAULT_FIELDS.join(',')}
     }
   }`,
   ],
