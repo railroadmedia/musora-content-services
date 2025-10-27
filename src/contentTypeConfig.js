@@ -606,22 +606,7 @@ export let contentTypeConfig = {
       }
     }`,
   ],
-  "method-v2-intro-video": [
-    "brand",
-    `"description": ${descriptionField}`,
-    `"thumbnail": thumbnail.asset->url`,
-    "length_in_seconds",
-    `video_desktop {
-      external_id,
-      hlsManifestUrl,
-      video_playback_endpoints
-    }`,
-      `video_mobile {
-      external_id,
-      hlsManifestUrl,
-      video_playback_endpoints
-    }`
-  ],
+  "method-v2-intro-video": getIntroVideoFields(),
 }
 
 export function getIntroVideoFields() {
