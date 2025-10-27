@@ -9,7 +9,7 @@ import {
   descriptionField,
   resourcesField,
   contentTypeConfig,
-  getIntroVideoFields,
+  getMethodV2IntroVideoFields,
   DEFAULT_FIELDS,
   getFieldsForContentType,
   filtersToGroq,
@@ -2282,16 +2282,15 @@ export async function fetchShows(brand, type, sort = 'sort') {
 export async function fetchMethodV2IntroVideo(brand) {
   const _type = "method-intro";
   const filter = `_type == '${_type}' && brand == '${brand}'`;
-  const fields = getIntroVideoFields();
-
+  const fields = getMethodV2IntroVideoFields();
   const query = `*[${filter}] { ${fields.join(", ")} }`;
+
   return fetchSanity(query, false);
 }
 
 export async function fetchFullMethodV2StructureFor(brand) {
   const _type = "method-v2";
   const filter = `_type == '${_type}' && brand == '${brand}'`;
-
   const fields = contentTypeConfig[_type];
   const query = `*[${filter}] { ${fields.join(",")} }`;
 
