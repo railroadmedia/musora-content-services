@@ -579,8 +579,55 @@ export let contentTypeConfig = {
       `quarter_removed`,
       '"thumbnail": thumbnail.asset->url',
     ]
-  }
+  },
+  "method-v2": [
+    `"id":_id`,
+    `"type":_type`,
+    "brand",
+    `"intro_video": intro_video->{ ${getIntroVideoFields().join(", ")} }`,
+    `child[]->{
+      "resource": ${resourcesField},
+      total_skills,
+      "difficulty":difficulty,
+      "published_on":published_on,
+      "type":_type,
+      brand,
+      title,
+      "description": ${descriptionField},
+      "thumbnail": thumbnail.asset->url,
+      length_in_seconds,
+      "intro_video": intro_video->{
+        external_id,
+        hlsManifestUrl,
+        video_playback_endpoints
+      },
+      lp_lessons[]->{
+        ${DEFAULT_FIELDS.join(',')}
+      }
+    }`,
+  ],
+  "method-v2-intro-video": getIntroVideoFields(),
 }
+
+export function getIntroVideoFields() {
+  return [
+    "brand",
+    `"description": ${descriptionField}`,
+    `"thumbnail": thumbnail.asset->url`,
+    "length_in_seconds",
+    `video_desktop {
+      external_id,
+      hlsManifestUrl,
+      video_playback_endpoints
+    }`,
+    `video_mobile {
+      external_id,
+      hlsManifestUrl,
+      video_playback_endpoints
+    }`
+  ];
+}
+
 
 export const plusMembershipPermissions = 92
 
