@@ -584,27 +584,27 @@ export let contentTypeConfig = {
     `"id":_id`,
     `"type":_type`,
     "brand",
-    `"difficulty":difficulty`,
-    `"published_on":published_on`,
     `"intro_video": intro_video->{ ${getIntroVideoFields().join(", ")} }`,
     `child[]->{
-    "resource": ${resourcesField},
-    total_skills,
-    "type":_type,
-    brand,
-    title,
-    "description": ${descriptionField},
-    "thumbnail": thumbnail.asset->url,
-    length_in_seconds,
-    "intro_video": intro_video->{
-      external_id,
-      hlsManifestUrl,
-      video_playback_endpoints
-    },
-    lp_lessons[]->{
-      ${DEFAULT_FIELDS.join(',')}
-    }
-  }`,
+      "resource": ${resourcesField},
+      total_skills,
+      "difficulty":difficulty,
+      "published_on":published_on,
+      "type":_type,
+      brand,
+      title,
+      "description": ${descriptionField},
+      "thumbnail": thumbnail.asset->url,
+      length_in_seconds,
+      "intro_video": intro_video->{
+        external_id,
+        hlsManifestUrl,
+        video_playback_endpoints
+      },
+      lp_lessons[]->{
+        ${DEFAULT_FIELDS.join(',')}
+      }
+    }`,
   ],
   "method-v2-intro-video": [
     "brand",
