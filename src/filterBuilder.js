@@ -109,17 +109,12 @@ export class FilterBuilder {
     ) {
       // we must pull in future content here, otherwise we'll restrict on content this is published in the past and remove any scheduled content
       this.pullFutureContent = true
-      const now = this._getRoundedTime().toISOString()
-      let statuses = [...this.availableContentStatuses]
-      statuses.splice(statuses.indexOf(this.STATUS_SCHEDULED), 1)
-      this._andWhere(
-        `(${this.prefix}status in ${arrayToStringRepresentation(statuses)} || (${this.prefix}status == '${this.STATUS_SCHEDULED}' && defined(${this.prefix}live_event_end_date) && ${this.prefix}live_event_end_date <= '${now}'))`
-      )
-    } else {
-      this._andWhere(
-        `${this.prefix}status in ${arrayToStringRepresentation(this.availableContentStatuses)}`
-      )
     }
+
+    this._andWhere(
+      `${this.prefix}status in ${arrayToStringRepresentation(this.availableContentStatuses)}`
+    )
+
     return this
   }
 
