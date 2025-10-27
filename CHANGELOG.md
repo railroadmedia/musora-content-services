@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.60.2](https://github.com/railroadmedia/musora-content-services/compare/v2.60.0...v2.60.2) (2025-10-27)
+
+
+### Bug Fixes
+
+* **MU2-1075:**  Merge pull request [#510](https://github.com/railroadmedia/musora-content-services/issues/510) from railroadmedia/MU2-1075-scheduled-states ([baefd2c](https://github.com/railroadmedia/musora-content-services/commit/baefd2c4acda9d685176690bf1360b0b72e9f730))
+* **T3PS-865:** Update CustomerOrder from customer_url to status_url ([df46b99](https://github.com/railroadmedia/musora-content-services/commit/df46b991b9cd312d6e70a1d8ec5e5ef92400e363))
+* **T3PS:** Update docs ([fd49e25](https://github.com/railroadmedia/musora-content-services/commit/fd49e25c9468f51f2982b0406efd514092a228b7))
+
 ### [2.60.1](https://github.com/railroadmedia/musora-content-services/compare/v2.60.0...v2.60.1) (2025-10-24)
 
 
