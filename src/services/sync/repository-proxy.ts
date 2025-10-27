@@ -1,11 +1,11 @@
 import SyncManager from "./manager"
 import { SyncError } from "./errors"
 
-import { LikesRepository, ContentProgressRepository } from "./repositories"
+import { ContentLikesRepository, ContentProgressRepository } from "./repositories"
 import { ContentLike, ContentProgress } from "./models"
 
 interface SyncRepositories {
- likes: LikesRepository
+ likes: ContentLikesRepository
  contentProgress: ContentProgressRepository
 }
 
@@ -16,7 +16,7 @@ export default new Proxy({} as SyncRepositories, {
 
       switch (prop) {
         case 'likes':
-          target[prop] = new LikesRepository(manager.getStore(ContentLike))
+          target[prop] = new ContentLikesRepository(manager.getStore(ContentLike))
           break
         case 'contentProgress':
           target[prop] = new ContentProgressRepository(manager.getStore(ContentProgress))
