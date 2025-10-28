@@ -160,9 +160,19 @@ const PARENT_TYPE_LEARNING_PATH = 'learning-path';
 
 const DATA_KEY_STATE = 'state';
 
+interface dailySessionItem {
+  learningPathId: number,
+  contentIds: number
+}
 
 
-export async function getNextLearningPathLesson(progressData: object[], brand: string): Promise<object>
+export async function getNextLearningPathLesson( //there's gotta be a better name for this
+  progressData: object[],
+  brand: string,
+  activePathId: number,
+  dailySession: dailySessionItem[],
+  methodStructure: object
+): Promise<object>
 {
   let contentData: any
   // if no progress on method at all
@@ -173,11 +183,12 @@ export async function getNextLearningPathLesson(progressData: object[], brand: s
     return {}
 
   } else {
-    const activePathId = await getActiveLearningPath(brand)
-    const dailySession = getDailySession(brand)
+    // const activePathId = await getActiveLearningPath(brand)
+    // const dailySession = getDailySession(brand)
 
-    // refactor to utilize parent
-    const dailySessionProgress = await getKeyedProgress(dailySession, PARENT_TYPE_LEARNING_PATH)
+    // get progress for daily session ids
+    const dailySessionIds = dailySession.map((item: dailySessionItem) => item.contentIds)
+    const dailySessionProgress = await getKeyedProgress(dailySessionIds, PARENT_TYPE_LEARNING_PATH)
 
     const isDailyComplete = dailySessionProgress ? checkIfDailyComplete(dailySessionProgress) : false
     if (isDailyComplete) {
