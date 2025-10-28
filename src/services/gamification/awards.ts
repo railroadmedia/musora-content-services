@@ -96,7 +96,7 @@ export async function getAwardDataForLearningPath(
 ): Promise<Award> {
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   const response = await httpClient.get<Award>(
-    `${baseUrl}/v1/users/guided_course_award/${learningPathContentId}`
+    `${baseUrl}/v1/users/learning_path_award/${learningPathContentId}`
   )
 
   return response
