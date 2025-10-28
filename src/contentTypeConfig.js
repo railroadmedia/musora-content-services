@@ -713,6 +713,11 @@ export async function getFieldsForContentTypeWithFilteredChildren(contentType, a
 
 export function getChildFieldsForContentType(contentType, asQueryString = true)
 {
+  // When contentType is undefined/null, return DEFAULT_CHILD_FIELDS to support mixed-type queries (e.g., from Algolia)
+  if (!contentType) {
+    return asQueryString ? DEFAULT_CHILD_FIELDS.toString() + ',' : DEFAULT_CHILD_FIELDS
+  }
+  
   if (contentTypeConfig[contentType]?.childFields || contentTypeConfig[contentType]?.includeChildFields) {
     const childFields = contentType
       ? DEFAULT_CHILD_FIELDS.concat(contentTypeConfig?.[contentType]?.childFields ?? [])
