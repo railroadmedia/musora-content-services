@@ -584,7 +584,7 @@ export let contentTypeConfig = {
     `"id":_id`,
     `"type":_type`,
     "brand",
-    `"intro_video": intro_video->{ ${getIntroVideoFields().join(", ")} }`,
+    `"intro_video": intro_video->{ ${getMethodV2IntroVideoFields().join(", ")} }`,
     `child[]->{
       "resource": ${resourcesField},
       total_skills,
@@ -603,13 +603,32 @@ export let contentTypeConfig = {
       },
       lp_lessons[]->{
         ${DEFAULT_FIELDS.join(',')}
-      }
+      },
+      ${getLearningPathAwardFields()}
     }`,
   ],
-  "method-v2-intro-video": getIntroVideoFields(),
+  "method-v2-intro-video": getMethodV2IntroVideoFields(),
 }
 
-export function getIntroVideoFields() {
+export function getLearningPathAwardFields() {
+  return `"lp_awards": *[
+    _type == "content-award" &&
+    references(^._id)
+  ]{
+    _id,
+    name,
+    is_active,
+    start_time,
+    end_time,
+    "awardImage": award.asset->url,
+    "badgeImage": badge.asset->url,
+    badge_headline,
+    badge_subheadline,
+    award_custom_text
+  }`;
+}
+
+export function getMethodV2IntroVideoFields() {
   return [
     "brand",
     `"description": ${descriptionField}`,

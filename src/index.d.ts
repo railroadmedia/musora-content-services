@@ -127,7 +127,8 @@ import {
 import {
 	fetchAwardsForUser,
 	fetchCertificate,
-	getAwardDataForGuidedContent
+	getAwardDataForGuidedContent,
+	getAwardDataForLearningPath
 } from './services/gamification/awards.ts';
 
 import {
@@ -510,6 +511,7 @@ declare module 'musora-content-services' {
 		getAllStarted,
 		getAllStartedOrCompleted,
 		getAwardDataForGuidedContent,
+		getAwardDataForLearningPath,
 		getContentRows,
 		getLastInteractedOf,
 		getLessonContentRows,

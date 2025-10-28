@@ -84,7 +84,19 @@ export async function getAwardDataForGuidedContent(
 ): Promise<Award> {
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   const response = await httpClient.get<Award>(
-    `${baseUrl}/v1/users/guided_course_award/${guidedCourseLessonId}`
+    `${baseUrl}/v1/users/awards/guided-course/${guidedCourseLessonId}`
+  )
+
+  return response
+}
+
+
+export async function getAwardDataForLearningPath(
+  learningPathContentId,
+): Promise<Award> {
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  const response = await httpClient.get<Award>(
+    `${baseUrl}/v1/users/awards/learning-path/${learningPathContentId}`
   )
 
   return response
