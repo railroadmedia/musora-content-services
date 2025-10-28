@@ -90,6 +90,18 @@ export async function getAwardDataForGuidedContent(
   return response
 }
 
+
+export async function getAwardDataForLearningPath(
+  learningPathContentId,
+): Promise<Award> {
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  const response = await httpClient.get<Award>(
+    `${baseUrl}/v1/users/guided_course_award/${learningPathContentId}`
+  )
+
+  return response
+}
+
 /**
  * Get certificate data for a completed user award
  *
