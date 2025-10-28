@@ -106,9 +106,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     })
   }
 
-  // todo - "optimistic" naming clashes with other convention - use different word
-  recordProgressesOptimistic(contentProgresses: Map<number, number>) {
-    this.upsertSomeOptimistic(
+  recordProgressesTentative(contentProgresses: Map<number, number>) {
+    this.upsertSomeTentative(
       Object.fromEntries(
         Array.from(contentProgresses, ([contentId, progressPct]) => [
           ProgressRepository.generateId(contentId, null),
@@ -126,8 +125,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return this.deleteOne(ProgressRepository.generateId(contentId, null))
   }
 
-  eraseProgressesOptimistic(contentIds: number[]) {
-    return this.deleteSomeOptimistic(contentIds.map(id => ProgressRepository.generateId(id, null)))
+  eraseProgressesTentative(contentIds: number[]) {
+    return this.deleteSomeTentative(contentIds.map(id => ProgressRepository.generateId(id, null)))
   }
 
   private static generateId(

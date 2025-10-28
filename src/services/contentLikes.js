@@ -13,7 +13,7 @@ export async function isContentLiked(contentId) {
 
 export async function isContentLikedByIds(contentIds) {
   const existences = await db.likes.areLikedOptimistic(contentIds)
-  return Object.fromEntries(contentIds.map((id, i) => [id, existences[i]]))
+  return Object.fromEntries(contentIds.map((id, i) => [id, existences.data[i]]))
 }
 
 export async function likeContent(contentId) {

@@ -96,7 +96,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   off = this.emitter.off.bind(this.emitter)
   private emit = this.emitter.emit.bind(this.emitter)
 
-  async sync(reason: string) {
+  async requestSync(reason: string) {
     inBoundary(ctx => {
       this.telemetry.trace(
         { name: `sync:${this.model.table}`, op: 'sync', attributes: ctx },
@@ -243,7 +243,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
-  async upsertSomeOptimistic(builders: Record<RecordId, (record: TModel) => void>, span?: Span) {
+  async upsertSomeTentative(builders: Record<RecordId, (record: TModel) => void>, span?: Span) {
     return this.upsertSome(Object.fromEntries(Object.entries(builders).map(([id, builder]) => [id, record => {
       builder(record)
       record._raw._status = 'synced'
@@ -254,8 +254,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return this.upsertSome({ [id]: builder }, span).then(r => r[0])
   }
 
-  async upsertOneOptimistic(id: string, builder: (record: TModel) => void, span?: Span) {
-    return this.upsertSomeOptimistic({ [id]: builder }, span).then(r => r[0])
+  async upsertOneTentative(id: string, builder: (record: TModel) => void, span?: Span) {
+    return this.upsertSomeTentative({ [id]: builder }, span).then(r => r[0])
   }
 
   async deleteOne(id: RecordId, span?: Span) {
@@ -290,7 +290,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
-  async deleteSomeOptimistic(ids: RecordId[], span?: Span) {
+  async deleteSomeTentative(ids: RecordId[], span?: Span) {
     return this.runScope.abortable(async () => {
       await this.telemeterizedWrite(span, async writer => {
         const existing = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))

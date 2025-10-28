@@ -102,7 +102,7 @@ export default class SyncManager {
       strategies.forEach(strategy => {
         stores.forEach(store => {
           strategy.onTrigger(store, reason => {
-            store.sync(reason)
+            store.requestSync(reason)
           })
         })
         strategy.start()
