@@ -265,6 +265,7 @@ export async function getAllCompleted(limit = null) {
   return ids
 }
 
+// todo: either refactor to use watermelon, or add method functionality to dataContext (more work overall)
 export async function getAllStartedOrCompleted({
   limit = null,
   onlyIds = true,
