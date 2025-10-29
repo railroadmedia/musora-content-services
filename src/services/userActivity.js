@@ -11,7 +11,7 @@ import {
   fetchRecentUserActivities,
 } from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
-import { fetchByRailContentId, fetchByRailContentIds, fetchShows } from './sanity'
+import {fetchByRailContentId, fetchByRailContentIds, fetchMethodV2IntroVideo, fetchShows} from './sanity'
 import { fetchPlaylist, fetchUserPlaylists } from './content-org/playlists'
 import {guidedCourses} from './content-org/guided-courses'
 import {
@@ -37,7 +37,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { addContextToContent } from './contentAggregator.js'
 import ProgressRepository from "./sync/repositories/content-progress.js";
-import {getNextLearningPathLesson} from "./content-org/learning-paths.ts";
+import {getNextLearningPathLessonsForMethod} from "./content-org/learning-paths.ts";
 
 const DATA_KEY_PRACTICES = 'practices'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
@@ -1038,7 +1038,9 @@ function generateContentsMap(contents, playlistsContents, methodProgressContents
  * @param {Object} [options={}] - Options for fetching progress rows.
  * @param {string|null} [options.brand=null] - The brand context for progress data.
  * @param {number} [options.limit=8] - Maximum number of progress rows to return.
- * @param {array} [options.dailySession=null] - The user's daily session.
+ * @param {object} [options.methodStructure=null] - The user's active path.
+ * @param {number} [options.activePathId=null] - The user's active path.
+ * @param {dailySessionItem[]} [options.dailySession=null] - The user's daily session.
  * @returns {Promise<Object>} - A promise that resolves to an object containing progress rows formatted for UI.
  *
  * @example
@@ -1046,7 +1048,13 @@ function generateContentsMap(contents, playlistsContents, methodProgressContents
  *   .then(data => console.log(data))
  *   .catch(error => console.error(error));
  */
- export async function getProgressRows({ brand = null, limit = 8, dailySession = null } = {}) {
+export async function getProgressRows({
+                                        brand = null,
+                                        limit = 8,
+                                        methodStructure = null,
+                                        activePathId = null,
+                                        dailySession = null
+                                      } = {}) {
   // TODO slice progress to a reasonable number, say 100
 
   //todo method card needs to conform to pinning laws (currently an outlaw)
@@ -1071,10 +1079,18 @@ function generateContentsMap(contents, playlistsContents, methodProgressContents
     nonPlaylistContentIds.push(userPinnedItem.id)
   }
 
-  const methodCardData = getNextLearningPathLesson(methodProgressContents, brand)
-  const methodCardIds = methodCardData.data.map(item => item.ids)
+  const activePath = methodStructure.child.find(child => child.id === activePathId)
+  const activePathWithLessons = {learningPathId: activePath.id, contentIds: activePath.child.map(lesson => lesson.id)}
+  // here we can also remove the active LP from the rest of structure for the sake of making sure we dont double-dip
+  // on the rest of the method progress cards
 
-  const [playlistsContents, contents, methodContents] = await Promise.all([
+  // todo: need to show progress on LPs that are not active paths as welll...
+  // this will likely behave the same as non-playlist content ids, like showing collection progress not child
+
+  const methodCardData = getNextLearningPathLessonsForMethod(progressContents, activePathWithLessons, dailySession)
+  const methodCardIds = methodCardData?.data?.map(item => item.ids)
+
+  const [playlistsContents, contents, methodCardContents] = await Promise.all([
     playlistEngagedOnContents ? addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
       addNextLesson: true,
       addNavigateTo: true,
@@ -1090,22 +1106,24 @@ function generateContentsMap(contents, playlistsContents, methodProgressContents
       addProgressTimestamp: true,
     }) : Promise.resolve([]),
 
-    //todo make a custom Method addContext function. make sure has all the same fields
+    // fetch method intro card if no lessons for card (welcome state)
     methodCardIds ? addContextToContent(fetchByRailContentIds, methodCardIds, 'progress-tracker', brand, {
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
-    }) : Promise.resolve([]),
-  ])
+    }) : (methodCardData && methodCardData.data === null) ? fetchMethodV2IntroVideo(brand) : Promise.resolve([]),
 
-  // this data structure wll need to be set in a custom method addContext function
-  const methodCard = {id: learningPath, type: 'method', ids: methodContents}
+    // methodContents: and another one here for rest of method progress?
+  ])
 
   //need to exclude standard progress copies that originated from a method
   const contentsMap = generateContentsMap(contents, playlistsContents, methodProgressContents)
+  // add learningPathsMap for method? for the sake of only keeping parent
+
   let combined = await extractPinnedItemsAndSortAllItems(
-    methodCard,
-    userPinnedItem,
+    methodCardContents,
+    //methodContents
+    userPinnedItem, //this should have some indicator for if method is pinned. there's no id
     contentsMap,
     eligiblePlaylistItems,
     limit
@@ -1115,9 +1133,9 @@ function generateContentsMap(contents, playlistsContents, methodProgressContents
       .slice(0, limit)
       .map((item) =>
           item.type === 'playlist' ? processPlaylistItem(item)
-            : item.type === 'method' ? processMethodItem(item)
-              : processContentItem(item) // add method card process
-        // need custom processing for the method card as well
+            : item.type === 'method-card' ? processMethodItem(item)
+            : item.type === 'learning-path' ? processMethodItem(item) //maybe can just use processContentItem for this?
+            : processContentItem(item) // add method card process
       )
   )
 
@@ -1471,7 +1489,6 @@ function mergeAndSortItems(items, limit) {
 }
 
 export function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
-   //todo add method functionality
   const ids = Object.keys(progressOnItems).map(Number)
   if (contentType === 'guided-course' || contentType === 'learning-path') {
     // Return first incomplete lesson
