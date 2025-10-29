@@ -316,7 +316,7 @@ async function saveContentProgress(contentId, progress, currentSeconds) {
   // (only to siblings/parents via le bubbles)
 
   const bubbledProgresses = bubbleProgress(await fetchHierarchy(contentId), contentId)
-  return db.contentProgress.recordProgressesOptimistic(bubbledProgresses)
+  return db.contentProgress.recordProgressesTentative(bubbledProgresses)
 }
 
 async function setStartedOrCompletedStatus(contentId, isCompleted) {
@@ -326,8 +326,8 @@ async function setStartedOrCompletedStatus(contentId, isCompleted) {
   const hierarchy = await fetchHierarchy(contentId)
 
   return Promise.all([
-    db.contentProgress.recordProgressesOptimistic(trickleProgress(hierarchy, contentId, progress)),
-    bubbleProgress(hierarchy, contentId).then(bubbledProgresses => db.contentProgress.recordProgressesOptimistic(bubbledProgresses))
+    db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, progress)),
+    bubbleProgress(hierarchy, contentId).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses))
   ])
 }
 
@@ -336,8 +336,8 @@ async function resetStatus(contentId) {
   const hierarchy = await fetchHierarchy(contentId)
 
   return Promise.all([
-    db.contentProgress.eraseProgressesOptimistic(getChildrenToDepth(contentId, hierarchy, 5)),
-    bubbleProgress(hierarchy, contentId).then(bubbledProgresses => db.contentProgress.recordProgressesOptimistic(bubbledProgresses))
+    db.contentProgress.recordProgressesTentative(getChildrenToDepth(contentId, hierarchy, 5)),
+    bubbleProgress(hierarchy, contentId).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses))
   ])
 }
 
