@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.61.0](https://github.com/railroadmedia/musora-content-services/compare/v2.60.2...v2.61.0) (2025-10-29)
+
+
+### Features
+
+* **BEH-1358:** Fetch all methods ([#511](https://github.com/railroadmedia/musora-content-services/issues/511)) ([4778770](https://github.com/railroadmedia/musora-content-services/commit/47787704ef8c835ac05ecee88313f0f02cf01109))
+
+
+### Bug Fixes
+
+* add client platform header for mobile requests ([#512](https://github.com/railroadmedia/musora-content-services/issues/512)) ([23e0eaa](https://github.com/railroadmedia/musora-content-services/commit/23e0eaab439aba231ff04b41b13c5440704779a2))
+
 ### [2.60.2](https://github.com/railroadmedia/musora-content-services/compare/v2.60.0...v2.60.2) (2025-10-27)
 
 
