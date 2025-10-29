@@ -296,8 +296,8 @@ export const progressTypesMapping = {
   songs: transcriptionsLessonTypes,
   'play along': playAlongLessonTypes,
   'guided course': ['guided-course'],
-  pack: ['pack', 'semester-pack'],
-  method: ['learning-path'],
+  'pack': ['pack', 'semester-pack'],
+  'method': ['method-card', 'method-intro', 'learning-path'], //learning path might have to be seperate?
   'jam track': jamTrackLessonTypes,
   'course video': ['course-part'],
 }

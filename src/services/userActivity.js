@@ -36,8 +36,11 @@ import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { addContextToContent } from './contentAggregator.js'
-import ProgressRepository from "./sync/repositories/content-progress.js";
-import {getNextLearningPathLessonsForMethod} from "./content-org/learning-paths.ts";
+import {
+  areNoneCompleted,
+  getNextLearningPathLessonsForMethod,
+  isFirstLearningPathCompleted
+} from "./content-org/learning-paths.ts";
 
 const DATA_KEY_PRACTICES = 'practices'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
@@ -950,16 +953,18 @@ export async function restoreUserActivity(id) {
 }
 
 async function extractPinnedItemsAndSortAllItems(
-  methodCard,
   userPinnedItem,
   contentsMap,
   eligiblePlaylistItems,
+  methodCard,
+  //method contents
   limit
 ) {
   let pinnedItem = await popPinnedItemFromContentsOrPlaylistMap(
     userPinnedItem,
     contentsMap,
-    eligiblePlaylistItems
+    eligiblePlaylistItems,
+    methodCard
   )
 
   let combined = []
@@ -970,15 +975,15 @@ async function extractPinnedItemsAndSortAllItems(
   }
 
   const progressList = Array.from(contentsMap.values())
-  //todo handle hiding of the method card. user-set
-  combined = [methodCard, ...combined, ...progressList, ...eligiblePlaylistItems]
-  return mergeAndSortItems(combined, limit) // this will error, no id or type on method card
+  //need another for methodContents?
+
+  combined = [...combined, ...progressList, ...eligiblePlaylistItems, methodCard]
+  return mergeAndSortItems(combined, limit)
 }
 
 function generateContentsMap(contents, playlistsContents, methodProgressContents) {
   const excludedTypes = new Set([
     'pack-bundle',
-    'learning-path',
     'guided-course-part',
   ])
   const existingShows = new Set()
@@ -1038,9 +1043,9 @@ function generateContentsMap(contents, playlistsContents, methodProgressContents
  * @param {Object} [options={}] - Options for fetching progress rows.
  * @param {string|null} [options.brand=null] - The brand context for progress data.
  * @param {number} [options.limit=8] - Maximum number of progress rows to return.
- * @param {object} [options.methodStructure=null] - The user's active path.
- * @param {number} [options.activePathId=null] - The user's active path.
- * @param {dailySessionItem[]} [options.dailySession=null] - The user's daily session.
+ * @param {object|null} [options.methodStructure=null] - The user's active path.
+ * @param {number|null} [options.activePathId=null] - The user's active path.
+ * @param {dailySessionItem[]|null} [options.dailySession=null] - The user's daily session.
  * @returns {Promise<Object>} - A promise that resolves to an object containing progress rows formatted for UI.
  *
  * @example
@@ -1064,7 +1069,7 @@ export async function getProgressRows({
       fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
       getAllStartedOrCompleted({ onlyIds: false, brand: brand }),
       getAllStartedOrCompleted({ onlyIds: false, brand: brand, parentType: PARENT_TYPE_LEARNING_PATH }),
-      getUserPinnedItem(brand),
+      getUserPinnedItem(brand),// how is item pinned?
     ])
 
   const playlists = recentPlaylists?.data || []
@@ -1087,9 +1092,10 @@ export async function getProgressRows({
   // todo: need to show progress on LPs that are not active paths as welll...
   // this will likely behave the same as non-playlist content ids, like showing collection progress not child
 
-  const methodCardData = getNextLearningPathLessonsForMethod(progressContents, activePathWithLessons, dailySession)
-  const methodCardIds = methodCardData?.data?.map(item => item.ids)
+  const methodCardData = await getNextLearningPathLessonsForMethod(methodProgressContents, activePathWithLessons, dailySession)
+  const methodCardIds = methodCardData?.next.map(item => item.contentIds).flat() // returns null if method intro video card
 
+  //need to update addContextToContent to accept collection info
   const [playlistsContents, contents, methodCardContents] = await Promise.all([
     playlistEngagedOnContents ? addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
       addNextLesson: true,
@@ -1106,26 +1112,39 @@ export async function getProgressRows({
       addProgressTimestamp: true,
     }) : Promise.resolve([]),
 
-    // fetch method intro card if no lessons for card (welcome state)
     methodCardIds ? addContextToContent(fetchByRailContentIds, methodCardIds, 'progress-tracker', brand, {
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
-    }) : (methodCardData && methodCardData.data === null) ? fetchMethodV2IntroVideo(brand) : Promise.resolve([]),
+    // null is state for method intro video card
+    }) : (methodCardData === null) ? fetchMethodV2IntroVideo(brand) : Promise.resolve([]),
 
     // methodContents: and another one here for rest of method progress?
   ])
+
+  // need to coalesce methodIds into one structure for going into the sort function. and give it a timestamp
+  const methodCard = methodCardIds
+    ? {
+      id: 0, // dummy id
+      type: 'method-card',
+      content_ids: [...methodCardContents],
+      dailyComplete: methodCardData.dailyComplete,
+      progressTimestamp: Math.max(
+        ...methodCardContents.map(item => item.progressTimestamp || 0)
+      )
+    }
+    : methodCardContents // intro video card
 
   //need to exclude standard progress copies that originated from a method
   const contentsMap = generateContentsMap(contents, playlistsContents, methodProgressContents)
   // add learningPathsMap for method? for the sake of only keeping parent
 
   let combined = await extractPinnedItemsAndSortAllItems(
-    methodCardContents,
-    //methodContents
     userPinnedItem, //this should have some indicator for if method is pinned. there's no id
     contentsMap,
     eligiblePlaylistItems,
+    methodCard,
+    //methodContents
     limit
   )
   const results = await Promise.all(
@@ -1133,9 +1152,9 @@ export async function getProgressRows({
       .slice(0, limit)
       .map((item) =>
           item.type === 'playlist' ? processPlaylistItem(item)
-            : item.type === 'method-card' ? processMethodItem(item)
+            : (item.type === 'method-card' || item.type === 'method-intro') ? processMethodCard(item)
             : item.type === 'learning-path' ? processMethodItem(item) //maybe can just use processContentItem for this?
-            : processContentItem(item) // add method card process
+            : processContentItem(item) // i think we cant user this for intro vid bcs of pinning
       )
   )
 
@@ -1154,127 +1173,59 @@ async function getUserPinnedItem(brand) {
   return user.brand_pinned_progress[brand] ?? null
 }
 
-async function processMethodItem(content) {
-  // need to handle logic or having 1 or 3 ids
-
-  //do a check here to determine status of card (welcome, in-progress, continue, complete, etc)
-
+async function processMethodCard(content) {
 
   const contentType = getFormattedType(content.type, content.brand)
 
-  let ctaText = getDefaultCTATextForContent(content, contentType)
+  const ctaText = getMethodCardCTAText(content)
 
-  content.completed_children = await getCompletedChildren(content, contentType)
-
-  // this logic needs to be added
-  if (content.isDailyComplete) {
-    if (content.isTheActivePathDone) {
-      if (content.noNextActivePath) {
-        ctaText = 'BROWSE LESSONS'
-      }
-      ctaText = 'START NEXT PATH'
-    } else {
-      ctaText = 'KEEP GOING'
+  const dailyCardBody = content.content_ids?.map(item => {
+    return {
+      title: item.title,
+      subtitle: item.subtitle,
+      content: item,
+      learningPathId: item.learningPathId, //might have to rename depending on addContextToContent output
+      progressPercent: content.progressPercent,
+      thumbnail: item.thumbnail,
+      cta: getMethodItemCTA(item),
     }
-  } else if (content.sessionProgressStatus === 'started') {
-    ctaText = 'CONTINUE SESSION'
-  } else if (!content.sessionProgressStatus === '') {
-    ctaText = 'START SESSION'
-  }
+  })
 
+  // todo not yet sure whether intro video card should be processed here or within processContentItem
+  // i think it depends on pin mechanics.
   return {
-    id: content.collectionId, //this isnt really a thing. its just for the processing
-    progressType: 'method', //for calculation stuff. card type
-    header: contentType, // for display purposes
-    introCardBody: {
+    id: 0,
+    progressType: 'method',
+    header: contentType,
+    body: {
       title: content.title,
       subtitle: `${content.difficulty_string} • ${content.artist_name}`,
       content: content,
-      cta: {
-        action: {
-          type: content.type,
-          brand: content.brand,
-          id: content.id,
-          slug: content.slug,
-          child: content.navigateTo,
-        },
-      },
+      cta: getMethodItemCTA(content)
     },
-    dailyCardBody: [
-      {
-        title: content[0].title,
-        subtitle: content[0].subtitle,
-        content: content[0],
-        cta: { // no cta text for the individual content cards
-          action: {
-            type: content[0].type,
-            brand: content[0].brand,
-            id: content[0].id,
-            slug: content[0].slug,
-            child: content[0].navigateTo,
-          },
-        },
-      },
-      {
-        title: content[1].title,
-        subtitle: content[1].subtitle,
-        content: content[1],
-        cta: {
-          action: {
-            type: content[1].type,
-            brand: content[1].brand,
-            id: content[1].id,
-            slug: content[1].slug,
-            child: content[1].navigateTo,
-          },
-        },
-      },
-      {
-        title: content[2].title,
-        subtitle: content[2].subtitle,
-        content: content[2],
-        cta: {
-          action: {
-            type: content[2].type,
-            brand: content[2].brand,
-            id: content[2].id,
-            slug: content[2].slug,
-            child: content[2].navigateTo,
-          },
-        },
-      },
-    ],
-    cta: { // cta for the button
-      text: "GET STARTED", // dynamic
-      action: {
+    dailyCardBody: dailyCardBody,
+    cta: {
+      text: ctaText,
+      action: { // this needs to point to the next incomplete lesson in the list
         type: content.type,
         brand: content.brand,
         id: content.id,
         slug: content.slug,
       },
     },
-    cardTitle: "Almost there! Just 2 lessons to go. you got this!", // for above the cards, the red text. dynamic
-    cardText: "You're on the last lesson. Nice work!", // for inside the card with emoji. dynamic
+    // *1000 is to match playlists which are saved in millisecond accuracy
+    progressTimestamp: content.progressTimestamp * 1000,
   }
+}
 
-  function getMethodItemCTA(item) {
-    return {
-      action: {
-        type: item.type,
-        brand: item.brand,
-        id: item.id,
-        slug: item.slug
-      },
-    }
-  }
-
-  function getMethodItemBody(item) {
-    return {
-      progressPercent: item.progressPercentage,
-      thumbnail:       item.thumbnail,
-      title:           item.title,
-      subtitle:        item.subtitle
-    }
+function getMethodItemCTA(item) {
+  return {
+    action: {
+      type: item.type,
+      brand: item.brand,
+      id: item.id,
+      slug: item.slug
+    },
   }
 }
 
@@ -1315,6 +1266,7 @@ async function processContentItem(content) {
       content = shows.find((lesson) => lesson.id === nextByProgress)
       content.completed_children = completedShows
       content.progressTimestamp = progressTimestamp
+      content.progressTimestamp = progressTimestamp
       content.pinned = wasPinned
     }
     content.child_count = shows.length
@@ -1354,6 +1306,28 @@ async function processContentItem(content) {
     },
     // *1000 is to match playlists which are saved in millisecond accuracy
     progressTimestamp: content.progressTimestamp * 1000,
+  }
+}
+
+function getMethodCardCTAText(content) {
+  const dailyComplete = content.isDailyComplete
+  const noneCompleted = areNoneCompleted(content.content_ids)
+  const firstLPCompleted = isFirstLearningPathCompleted(content.content_ids)
+
+  if (content.content_ids.type === 'method-intro') {
+    return 'Get Started'
+  }
+  if (!dailyComplete) {
+    if (noneCompleted || firstLPCompleted) {
+      return 'Start Session'
+    } else {
+      return 'Continue Session'
+    }
+  } else {
+    if (content.content_ids) {
+      return 'Start Next Lesson'
+    }
+    return 'Browse Lessons'
   }
 }
 
