@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.61.1](https://github.com/railroadmedia/musora-content-services/compare/v2.61.0...v2.61.1) (2025-10-29)
+
+
+### Bug Fixes
+
+* **MU2-1008:** Update set query to fetch children if no contentType ([82f03ef](https://github.com/railroadmedia/musora-content-services/commit/82f03ef4c0257a10f41b2b336ac80476252cfbb2))
+
 ## [2.61.0](https://github.com/railroadmedia/musora-content-services/compare/v2.60.2...v2.61.0) (2025-10-29)
 
 
