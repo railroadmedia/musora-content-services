@@ -13,7 +13,7 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
-	fetchDailySession,
+	getDailySession,
 	updateDailySession
 } from './services/content-org/learning-paths.ts';
 
@@ -439,7 +439,6 @@ declare module 'musora-content-services' {
 		fetchContentProgress,
 		fetchContentRows,
 		fetchCustomerPayments,
-		fetchDailySession,
 		fetchEnrollmentPageMetadata,
 		fetchFollowedThreads,
 		fetchForumCategories,
@@ -518,6 +517,7 @@ declare module 'musora-content-services' {
 		getAllStartedOrCompleted,
 		getAwardDataForGuidedContent,
 		getContentRows,
+		getDailySession,
 		getLastInteractedOf,
 		getLessonContentRows,
 		getMonday,

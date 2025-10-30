@@ -13,7 +13,7 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
-	fetchDailySession,
+	getDailySession,
 	updateDailySession
 } from './services/content-org/learning-paths.ts';
 
@@ -438,7 +438,6 @@ export {
 	fetchContentProgress,
 	fetchContentRows,
 	fetchCustomerPayments,
-	fetchDailySession,
 	fetchEnrollmentPageMetadata,
 	fetchFollowedThreads,
 	fetchForumCategories,
@@ -517,6 +516,7 @@ export {
 	getAllStartedOrCompleted,
 	getAwardDataForGuidedContent,
 	getContentRows,
+	getDailySession,
 	getLastInteractedOf,
 	getLessonContentRows,
 	getMonday,

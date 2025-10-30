@@ -6,11 +6,11 @@ import { fetchHandler } from '../railcontent.js'
 const BASE_PATH: string = `/api/content-org`
 
 /**
- * Fetches today's daily session for the user.
+ * Gets today's daily session for the user.
  * @param brand
  * @param userDate
  */
-export async function fetchDailySession(brand: string, userDate: string) {
+export async function getDailySession(brand: string, userDate: string) {
   const url: string = `${BASE_PATH}/v1/user/learning-paths/daily-session/get-or-create`
   const body = { brand: brand, userDate: userDate }
   return await fetchHandler(url, 'POST', null, body)
