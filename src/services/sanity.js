@@ -749,7 +749,7 @@ async function getProgressFilter(progress, progressIds) {
 
 export function getSortOrder(sort = '-published_on', brand, groupBy) {
   const sanitizedSort = sort?.trim() || '-published_on'
-  const isDesc = sanitizedSort.startsWith('-')
+  let isDesc = sanitizedSort.startsWith('-')
   const sortField = isDesc ? sanitizedSort.substring(1) : sanitizedSort
 
   let sortOrder = ''
