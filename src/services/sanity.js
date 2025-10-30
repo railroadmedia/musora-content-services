@@ -748,17 +748,17 @@ async function getProgressFilter(progress, progressIds) {
 }
 
 export function getSortOrder(sort = '-published_on', brand, groupBy) {
-  // Determine the sort order
+  const sanitizedSort = sort?.trim() || '-published_on'
+  const isDesc = sanitizedSort.startsWith('-')
+  const sortField = isDesc ? sanitizedSort.substring(1) : sanitizedSort
+
   let sortOrder = ''
-  let isDesc = sort.startsWith('-')
-  sort = isDesc ? sort.substring(1) : sort
-  switch (sort) {
+
+  switch (sortField) {
     case 'slug':
       sortOrder = groupBy ? 'name' : '!defined(title), lower(title)'
       break
-    case 'name':
-      sortOrder = sort
-      break
+
     case 'popularity':
       if (groupBy == 'artist' || groupBy == 'genre') {
         sortOrder = isDesc ? `coalesce(popularity.${brand}, -1)` : 'popularity'
@@ -766,15 +766,17 @@ export function getSortOrder(sort = '-published_on', brand, groupBy) {
         sortOrder = isDesc ? 'coalesce(popularity, -1)' : 'popularity'
       }
       break
+
     case 'recommended':
       sortOrder = 'published_on'
       isDesc = true
       break
-    case 'published_on':
+
     default:
-      sortOrder = sort
+      sortOrder = sortField
       break
   }
+
   sortOrder += isDesc ? ' desc' : ' asc'
   return sortOrder
 }
