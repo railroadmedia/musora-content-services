@@ -13,6 +13,11 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	fetchDailySession,
+	updateDailySession
+} from './services/content-org/learning-paths.ts';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -433,6 +438,7 @@ export {
 	fetchContentProgress,
 	fetchContentRows,
 	fetchCustomerPayments,
+	fetchDailySession,
 	fetchEnrollmentPageMetadata,
 	fetchFollowedThreads,
 	fetchForumCategories,
@@ -626,6 +632,7 @@ export {
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
+	updateDailySession,
 	updateDisplayName,
 	updateForumCategory,
 	updateNotificationSetting,

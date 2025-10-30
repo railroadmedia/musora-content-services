@@ -13,6 +13,11 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	fetchDailySession,
+	updateDailySession
+} from './services/content-org/learning-paths.ts';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -434,6 +439,7 @@ declare module 'musora-content-services' {
 		fetchContentProgress,
 		fetchContentRows,
 		fetchCustomerPayments,
+		fetchDailySession,
 		fetchEnrollmentPageMetadata,
 		fetchFollowedThreads,
 		fetchForumCategories,
@@ -627,6 +633,7 @@ declare module 'musora-content-services' {
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,
+		updateDailySession,
 		updateDisplayName,
 		updateForumCategory,
 		updateNotificationSetting,
