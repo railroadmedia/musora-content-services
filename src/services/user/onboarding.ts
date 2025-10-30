@@ -100,18 +100,16 @@ export interface OnboardingStatusResponse {
 }
 
 /**
- * @param {string} email - The email of the user.
+ * Checks the onboarding status for a specific brand and authenticated user.
+ *
  * @param {string} brand - The brand associated with the onboarding.
  *
  * @returns {Promise<OnboardingStatusResponse>} - A promise that resolves with the onboarding status.
  * @throws {HttpError} - If the HTTP request fails.
  */
-export async function onboardingStatus(
-  email: string,
-  brand: string
-): Promise<OnboardingStatusResponse> {
+export async function onboardingStatus(brand: string): Promise<OnboardingStatusResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.get<OnboardingStatusResponse>(
-    `/api/user-management-system/v1/onboarding/status?brand=${encodeURIComponent(brand)}&email=${encodeURIComponent(email)}`
+    `/api/user-management-system/v1/users/${globalConfig.sessionConfig.userId}/onboardings/status?brand=${encodeURIComponent(brand)}`
   )
 }
