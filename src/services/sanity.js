@@ -2292,9 +2292,9 @@ export async function fetchMethodV2Structure(brand) {
   const _type = "method-v2";
   const query = `*[_type == '${_type}' && brand == '${brand}'][0...1]{
     'sanity_id': _id,
-    'child': child[]->{
+    'children': child[]->{
       'id': railcontent_id,
-      'child': child[]->railcontent_id
+      'children': child[]->railcontent_id
     }
   }`;
 
