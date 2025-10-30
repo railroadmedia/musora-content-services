@@ -94,3 +94,24 @@ export async function updateOnboarding({
     marketing_opt_in: marketingOptIn,
   })
 }
+
+export interface OnboardingStatusResponse {
+  completed: boolean
+}
+
+/**
+ * @param {string} email - The email of the user.
+ * @param {string} brand - The brand associated with the onboarding.
+ *
+ * @returns {Promise<OnboardingStatusResponse>} - A promise that resolves with the onboarding status.
+ * @throws {HttpError} - If the HTTP request fails.
+ */
+export async function onboardingStatus(
+  email: string,
+  brand: string
+): Promise<OnboardingStatusResponse> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.get<OnboardingStatusResponse>(
+    `/api/user-management-system/v1/onboarding/status?brand=${encodeURIComponent(brand)}&email=${encodeURIComponent(email)}`
+  )
+}
