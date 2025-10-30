@@ -284,7 +284,7 @@ export let contentTypeConfig = {
   'song-tutorial': {
     fields: [
       '"lesson_count": child_count',
-      `"lessons": child[]->{
+      `"children": child[]->{
                 "id": railcontent_id,
                 title,
                 "image": thumbnail.asset->url,
