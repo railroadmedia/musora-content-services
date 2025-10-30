@@ -772,7 +772,7 @@ export function getSortOrder(sort = '-published_on', brand, groupBy) {
       break
     case 'published_on':
     default:
-      sortOrder = 'published_on'
+      sortOrder = sort
       break
   }
   sortOrder += isDesc ? ' desc' : ' asc'
