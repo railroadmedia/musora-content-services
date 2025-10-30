@@ -663,7 +663,7 @@ export async function fetchAll(
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': '/${brand}/${webUrlPath}/'+name+'?included_fieds[]=type,${type}',
                 'all_lessons_count': count(*[${lessonsFilterWithRestrictions}]._id),
-                'lessons': *[${lessonsFilterWithRestrictions}]{
+                'children': *[${lessonsFilterWithRestrictions}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...20]
@@ -683,7 +683,7 @@ export async function fetchAll(
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': select(defined(web_url_path)=> web_url_path +'?included_fieds[]=type,${type}',!defined(web_url_path)=> '/${brand}${webUrlPath}/'+name+'/${webUrlPathType}'),
                 'all_lessons_count': count(*[${lessonsFilterWithRestrictions}]._id),
-                'lessons': *[${lessonsFilterWithRestrictions}]{
+                'children': *[${lessonsFilterWithRestrictions}]{
                     ${fieldsString},
                      'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
                     ${groupBy}
@@ -693,8 +693,8 @@ export async function fetchAll(
     filter = `brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter} ${customFilter}`
     const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
     entityFieldsString = ` ${fieldsString},
-                                    'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
-                                    'length_in_seconds': coalesce(
+      'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
+      'length_in_seconds': coalesce(
       math::sum(
         select(
           child[${childrenFilter}]->length_in_seconds
