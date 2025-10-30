@@ -255,6 +255,7 @@ import {
 import {
 	confirmEmailChange,
 	deleteAccount,
+	numberOfActiveUsers,
 	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
@@ -314,6 +315,7 @@ import {
 } from './services/user/notifications.js';
 
 import {
+	onboardingStatus,
 	startOnboarding,
 	updateOnboarding
 } from './services/user/onboarding.ts';
@@ -566,6 +568,8 @@ declare module 'musora-content-services' {
 		markContentAsNotInterested,
 		markNotificationAsRead,
 		markNotificationAsUnread,
+		numberOfActiveUsers,
+		onboardingStatus,
 		openComment,
 		otherStats,
 		pauseLiveEventPolling,
