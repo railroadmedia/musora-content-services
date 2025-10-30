@@ -583,13 +583,14 @@ export let contentTypeConfig = {
   "method-v2": [
     `"id":_id`,
     `"type":_type`,
+    "title",
     "brand",
     `"intro_video": intro_video->{ ${getIntroVideoFields().join(", ")} }`,
     `child[]->{
       "resource": ${resourcesField},
       total_skills,
-      "difficulty":difficulty,
-      "published_on":published_on,
+      difficulty,
+      published_on,
       "type":_type,
       brand,
       title,
@@ -601,16 +602,17 @@ export let contentTypeConfig = {
         hlsManifestUrl,
         video_playback_endpoints
       },
-      lp_lessons[]->{
+      child[]->{
         ${DEFAULT_FIELDS.join(',')}
       }
     }`,
   ],
-  "method-v2-intro-video": getIntroVideoFields(),
+  "method-intro": getIntroVideoFields(),
 }
 
 export function getIntroVideoFields() {
   return [
+    "title",
     "brand",
     `"description": ${descriptionField}`,
     `"thumbnail": thumbnail.asset->url`,
@@ -764,7 +766,7 @@ export function getChildFieldsForContentType(contentType, asQueryString = true)
   if (!contentType) {
     return asQueryString ? DEFAULT_CHILD_FIELDS.toString() + ',' : DEFAULT_CHILD_FIELDS
   }
-  
+
   if (contentTypeConfig[contentType]?.childFields || contentTypeConfig[contentType]?.includeChildFields) {
     const childFields = contentType
       ? DEFAULT_CHILD_FIELDS.concat(contentTypeConfig?.[contentType]?.childFields ?? [])
