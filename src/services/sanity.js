@@ -2280,20 +2280,23 @@ export async function fetchShows(brand, type, sort = 'sort') {
 
 
 export async function fetchMethodV2IntroVideo(brand) {
-  const _type = "method-intro";
-  const filter = `_type == '${_type}' && brand == '${brand}'`;
+  const type = "method-intro";
+  const filter = `_type == '${type}' && brand == '${brand}'`;
   const fields = getIntroVideoFields();
 
   const query = `*[${filter}] { ${fields.join(", ")} }`;
   return fetchSanity(query, false);
 }
 
-export async function fetchFullMethodV2StructureFor(brand) {
+export async function fetchMethodV2Structure(brand) {
   const _type = "method-v2";
-  const filter = `_type == '${_type}' && brand == '${brand}'`;
+  const query = `*[_type == '${_type}' && brand == '${brand}'][0]{
+    'sanity_id': _id,
+    'child': child[]->{
+      'id': railcontent_id,
+      'child': child[]->{'id': railcontent_id}
+    }
+  }`;
 
-  const fields = contentTypeConfig[_type];
-  const query = `*[${filter}] { ${fields.join(",")} }`;
-
-  return await fetchSanity(query, true);
+  return await fetchSanity(query, false);
 }
