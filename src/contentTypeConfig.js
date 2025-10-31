@@ -777,7 +777,7 @@ export function getChildFieldsForContentType(contentType, asQueryString = true)
   if (!contentType) {
     return asQueryString ? DEFAULT_CHILD_FIELDS.toString() + ',' : DEFAULT_CHILD_FIELDS
   }
-  
+
   if (contentTypeConfig[contentType]?.childFields || contentTypeConfig[contentType]?.includeChildFields) {
     const childFields = contentType
       ? DEFAULT_CHILD_FIELDS.concat(contentTypeConfig?.[contentType]?.childFields ?? [])
@@ -868,39 +868,24 @@ export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
             }
             return `difficulty_string == "${value}"`
           } else if (key === 'tab' && !selectedFilters.includes(key)) {
-            if(value.toLowerCase() === Tabs.SingleLessons.name.toLowerCase()){
-              const conditions = individualLessonsTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.Courses.name.toLowerCase()){
-              const conditions = coursesLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.Entertainment.name.toLowerCase()){
-              const conditions = entertainmentLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.Tutorials.name.toLowerCase()){
-              const conditions = tutorialsLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.Transcriptions.name.toLowerCase()){
-              const conditions = transcriptionsLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.PlayAlongs.name.toLowerCase()){
-              const conditions = playAlongLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.JamTracks.name.toLowerCase()){
-              const conditions = jamTrackLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.ExploreAll.name.toLowerCase()){
-              var allLessons = filterTypes[pageName] || [];
-              const conditions = allLessons.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              if (conditions === "") return '';
-              return ` (${conditions})`;
-          }else if(value.toLowerCase() === Tabs.RecentAll.name.toLowerCase()){
-              var allLessons = recentTypes[pageName] || [];
-              const conditions = allLessons.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              if (conditions === "") return '';
-              return ` (${conditions})`;
-            }
-            return `_type == "${value}"`
+            const valueLower = value.toLowerCase();
+            const tabLessonTypeMap = {
+              [Tabs.SingleLessons.name.toLowerCase()]: individualLessonsTypes,
+              [Tabs.Courses.name.toLowerCase()]: coursesLessonTypes,
+              [Tabs.Entertainment.name.toLowerCase()]: entertainmentLessonTypes,
+              [Tabs.Tutorials.name.toLowerCase()]: tutorialsLessonTypes,
+              [Tabs.Transcriptions.name.toLowerCase()]: transcriptionsLessonTypes,
+              [Tabs.PlayAlongs.name.toLowerCase()]: playAlongLessonTypes,
+              [Tabs.JamTracks.name.toLowerCase()]: jamTrackLessonTypes,
+              [Tabs.ExploreAll.name.toLowerCase()]: filterTypes[pageName] || [],
+              [Tabs.RecentAll.name.toLowerCase()]: recentTypes[pageName] || [],
+            };
+
+            const lessonTypes = tabLessonTypeMap[valueLower];
+            if (!lessonTypes || lessonTypes.length === 0) return `_type == "${value}"`
+
+            const conditions = lessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ')
+            return ` (${conditions})`
           } else if (key === 'type' && !selectedFilters.includes(key)) {
             const typeKey = value.toLowerCase();
             const lessonTypes = lessonTypesMapping[typeKey];
