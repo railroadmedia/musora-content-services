@@ -21,6 +21,19 @@ class SortingOptions {
   ]
 }
 
+export class LengthFilterOptions {
+  static UpTo7 = { value: '<420', name: 'Up to 7 Minutes' }
+  static From7To15 = { value: '420-900', name: '7 to 15 Minutes' }
+  static From15To30 = { value: '901-1800', name: '15 to 30 Minutes' }
+  static More30 = { value: '>1801', name: '30+ Minutes' }
+  static AllOptions = [
+    this.UpTo7.name,
+    this.From7To15.name,
+    this.From15To30.name,
+    this.More30.name,
+  ]
+}
+
 export class Tabs {
   static ForYou = { name: 'For You', short_name: 'For You' }
   static Individuals = { name: 'Individuals', short_name: 'Individuals', value: 'type,individuals', cardType: 'big' }
@@ -60,6 +73,7 @@ const commonMetadata = {
     name: 'Lessons',
     filterOptions: {
       difficulty: DIFFICULTY_STRINGS,
+      length: LengthFilterOptions.AllOptions,
       style: ['Country/Folk', 'Funk/Disco', 'Hard Rock/Metal', 'Hip-Hop/Rap/EDM', 'Holiday/Soundtrack', 'Jazz/Blues', 'Latin/World', 'Pop/Rock', 'R&B/Soul', 'Worship/Gospel'],
       type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Live Archives', 'Student Archives'],
       progress: PROGRESS_NAMES,
@@ -133,6 +147,7 @@ const contentMetadata = {
       name: 'Lessons',
       filterOptions: {
         difficulty: DIFFICULTY_STRINGS,
+        length: LengthFilterOptions.AllOptions,
         style: ['Country/Folk', 'Funk/Disco', 'Hard Rock/Metal', 'Hip-Hop/Rap/EDM', 'Holiday/Soundtrack', 'Jazz/Blues', 'Latin/World', 'Pop/Rock', 'R&B/Soul', 'Worship/Gospel'],
         type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Shows', 'Documentaries', 'Live Archives', 'Student Archives'],
         progress: PROGRESS_NAMES,
@@ -156,6 +171,7 @@ const contentMetadata = {
       name: 'Lessons',
       filterOptions: {
         difficulty: DIFFICULTY_STRINGS,
+        length: LengthFilterOptions.AllOptions,
         style: ['Classical', 'Country/Folk', 'Funk/Disco', 'Hip-Hop/Rap/EDM', 'Holiday/Soundtrack', 'Jazz/Blues', 'Latin/World', 'Pop/Rock', 'R&B/Soul', 'Worship/Gospel'],
         type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Live Archives', 'Student Archives'],
         progress: PROGRESS_NAMES,
