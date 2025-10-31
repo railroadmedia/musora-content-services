@@ -10,9 +10,10 @@ const BASE_PATH: string = `/api/content-org`
  * @param brand
  * @param userDate
  */
-export async function getDailySession(brand: string, userDate: string) {
+export async function getDailySession(brand: string, userDate: Date) {
+  const stringDate = userDate.toISOString().split('T')[0]
   const url: string = `${BASE_PATH}/v1/user/learning-paths/daily-session/get-or-create`
-  const body = { brand: brand, userDate: userDate }
+  const body = { brand: brand, userDate: stringDate }
   return await fetchHandler(url, 'POST', null, body)
 }
 
@@ -22,8 +23,9 @@ export async function getDailySession(brand: string, userDate: string) {
  * @param userDate
  * @param keepFirstLearningPath
  */
-export async function updateDailySession(brand: string, userDate: string, keepFirstLearningPath: boolean) {
+export async function updateDailySession(brand: string, userDate: Date, keepFirstLearningPath: boolean) {
+  const stringDate = userDate.toISOString().split('T')[0]
   const url: string = `${BASE_PATH}/v1/user/learning-paths/daily-session/update`
-  const body = { brand: brand, userDate: userDate, keepFirstLearningPath: keepFirstLearningPath }
+  const body = { brand: brand, userDate: stringDate, keepFirstLearningPath: keepFirstLearningPath }
   return await fetchHandler(url, 'POST', null, body)
 }
