@@ -496,6 +496,8 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
     live_event_start_time,
     live_event_end_time,
   }`
+
+  console.log('ids query', query)
   const customPostProcess = (results) => {
     const now = getSanityDate(new Date(), false);
     const liveProcess = (result) => {
@@ -2294,7 +2296,7 @@ export async function fetchMethodV2Structure(brand) {
   const _type = "method-v2";
   const query = `*[_type == '${_type}' && brand == '${brand}'][0...1]{
     'sanity_id': _id,
-    'children': child[]->{
+    'learningPaths': child[]->{
       'id': railcontent_id,
       'children': child[]->railcontent_id
     }
