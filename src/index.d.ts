@@ -13,6 +13,13 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	areAllCompleted,
+	areNoneCompleted,
+	getNextLearningPathLessonsForMethod,
+	isFirstLearningPathCompleted
+} from './services/content-org/learning-paths.ts';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -373,6 +380,8 @@ declare module 'musora-content-services' {
 		addItemToPlaylist,
 		applyCloudflareWrapper,
 		applySanityTransformations,
+		areAllCompleted,
+		areNoneCompleted,
 		assignModeratorToComment,
 		blockUser,
 		blockedUsers,
@@ -517,6 +526,7 @@ declare module 'musora-content-services' {
 		getNavigateTo,
 		getNavigateToForPlaylists,
 		getNewAndUpcoming,
+		getNextLearningPathLessonsForMethod,
 		getNextLesson,
 		getPracticeNotes,
 		getPracticeSessions,
@@ -548,6 +558,7 @@ declare module 'musora-content-services' {
 		isBucketUrl,
 		isContentLiked,
 		isContentLikedByIds,
+		isFirstLearningPathCompleted,
 		isNextDay,
 		isSameDate,
 		isUsernameAvailable,

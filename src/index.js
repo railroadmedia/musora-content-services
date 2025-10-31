@@ -13,6 +13,13 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	areAllCompleted,
+	areNoneCompleted,
+	getNextLearningPathLessonsForMethod,
+	isFirstLearningPathCompleted
+} from './services/content-org/learning-paths.ts';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -372,6 +379,8 @@ export {
 	addItemToPlaylist,
 	applyCloudflareWrapper,
 	applySanityTransformations,
+	areAllCompleted,
+	areNoneCompleted,
 	assignModeratorToComment,
 	blockUser,
 	blockedUsers,
@@ -516,6 +525,7 @@ export {
 	getNavigateTo,
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
+	getNextLearningPathLessonsForMethod,
 	getNextLesson,
 	getPracticeNotes,
 	getPracticeSessions,
@@ -547,6 +557,7 @@ export {
 	isBucketUrl,
 	isContentLiked,
 	isContentLikedByIds,
+	isFirstLearningPathCompleted,
 	isNextDay,
 	isSameDate,
 	isUsernameAvailable,
