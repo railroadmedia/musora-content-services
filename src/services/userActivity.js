@@ -1122,6 +1122,8 @@ export async function getProgressRows({
     // methodContents: and another one here for rest of method progress?
   ])
 
+  //have to consider how we fetch/dont fetch method card when its not recent.
+
   // need to coalesce methodIds into one structure for going into the sort function. and give it a timestamp
   const methodCard = methodCardIds
     ? {
@@ -1133,14 +1135,14 @@ export async function getProgressRows({
         ...methodCardContents.map(item => item.progressTimestamp || 0)
       )
     }
-    : methodCardContents // intro video card
+    : methodCardContents // intro video card. we need ot give it an id? or just nullcheck the id in processMethodCard
 
   //need to exclude standard progress copies that originated from a method
   const contentsMap = generateContentsMap(contents, playlistsContents, methodProgressContents)
   // add learningPathsMap for method? for the sake of only keeping parent
 
   let combined = await extractPinnedItemsAndSortAllItems(
-    userPinnedItem, //this should have some indicator for if method is pinned. there's no id
+    userPinnedItem,
     contentsMap,
     eligiblePlaylistItems,
     methodCard,
@@ -1152,12 +1154,11 @@ export async function getProgressRows({
       .slice(0, limit)
       .map((item) =>
           item.type === 'playlist' ? processPlaylistItem(item)
-            : (item.type === 'method-card' || item.type === 'method-intro') ? processMethodCard(item)
-            : item.type === 'learning-path' ? processMethodItem(item) //maybe can just use processContentItem for this?
+            : item.type === 'method-card' ? processMethodCard(item)
             : processContentItem(item) // i think we cant user this for intro vid bcs of pinning
       )
   )
-
+// we want to handle method intro card with content so that they're together
 
   return {
     type: TabResponseType.PROGRESS_ROWS,
@@ -1179,6 +1180,9 @@ async function processMethodCard(content) {
 
   const ctaText = getMethodCardCTAText(content)
 
+  const nextIncomplete = content.content_ids?.find(item => item.progressStatus !== 'completed')
+
+
   const dailyCardBody = content.content_ids?.map(item => {
     return {
       title: item.title,
@@ -1187,38 +1191,33 @@ async function processMethodCard(content) {
       learningPathId: item.learningPathId, //might have to rename depending on addContextToContent output
       progressPercent: content.progressPercent,
       thumbnail: item.thumbnail,
-      cta: getMethodItemCTA(item),
+      cta: {
+        action: getMethodActionCTA(item),
+      }
     }
   })
 
-  // todo not yet sure whether intro video card should be processed here or within processContentItem
+  //well have to handle above the joining of pinned item being method card and intro video card
+  // we should only pin where progressType = method, and handle adding intro video after
+
+  // todo not yet sure whether intro video card should be processed here or within processContentAction
   // i think it depends on pin mechanics.
+  //pinned has id, progressType, pinnedAt
   return {
-    id: 0,
+    id: 0, // method card has no id
     progressType: 'method',
     header: contentType,
-    body: {
-      title: content.title,
-      subtitle: `${content.difficulty_string} • ${content.artist_name}`,
-      content: content,
-      cta: getMethodItemCTA(content)
-    },
-    dailyCardBody: dailyCardBody,
+    body: dailyCardBody,
     cta: {
       text: ctaText,
-      action: { // this needs to point to the next incomplete lesson in the list
-        type: content.type,
-        brand: content.brand,
-        id: content.id,
-        slug: content.slug,
-      },
+      action: getMethodActionCTA(nextIncomplete),
     },
     // *1000 is to match playlists which are saved in millisecond accuracy
     progressTimestamp: content.progressTimestamp * 1000,
   }
 }
 
-function getMethodItemCTA(item) {
+function getMethodActionCTA(item) {
   return {
     action: {
       type: item.type,
@@ -1483,11 +1482,11 @@ export function findIncompleteLesson(progressOnItems, currentContentId, contentT
   return ids[0]
 }
 
-async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playlistItems) {
+async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playlistItems, methodCard) {
   if (!pinned) return null
   const { id, pinnedAt } = pinned
   let item = null
-  const progressType = pinned.progressType ?? pinned.type;
+  const progressType = pinned.progressType ?? pinned.type; // = 'method' for method card (both method-card and method-intro)
 
   if (progressType === 'content') {
     const pinnedId = parseInt(id)
@@ -1520,6 +1519,11 @@ async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playl
         progressTimestamp: new Date(pinnedAt).getTime(),
       }
     }
+  }
+  if (progressType === 'method') {
+    // simply get method card and return
+    item = methodCard
+    //remove method card
   }
   return item
 }

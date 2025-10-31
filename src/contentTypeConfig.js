@@ -232,7 +232,8 @@ export const progressTypesMapping = {
   'play along': playAlongLessonTypes,
   'guided course': ['guided-course'],
   'pack': ['pack', 'semester-pack'],
-  'method': ['method-card', 'method-intro', 'learning-path'], //learning path might have to be seperate?
+  'method': ['method-card', 'method-intro'],
+  'learning path': ['learning-path'],
   'jam track': jamTrackLessonTypes,
   'course video': ['course-part'],
 };
