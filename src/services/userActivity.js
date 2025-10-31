@@ -974,10 +974,14 @@ async function extractPinnedItemsAndSortAllItems(
     combined.push(pinnedItem)
   }
 
+  if (!(pinnedItem && pinnedItem.progressType === 'method')) {
+    combined.push(methodCard)
+  }
+
   const progressList = Array.from(contentsMap.values())
   //need another for methodContents?
 
-  combined = [...combined, ...progressList, ...eligiblePlaylistItems, methodCard]
+  combined = [...combined, ...progressList, ...eligiblePlaylistItems]
   return mergeAndSortItems(combined, limit)
 }
 
@@ -1062,14 +1066,12 @@ export async function getProgressRows({
                                       } = {}) {
   // TODO slice progress to a reasonable number, say 100
 
-  //todo method card needs to conform to pinning laws (currently an outlaw)
-
   const [recentPlaylists, progressContents, methodProgressContents, userPinnedItem] =
     await Promise.all([
       fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
       getAllStartedOrCompleted({ onlyIds: false, brand: brand }),
       getAllStartedOrCompleted({ onlyIds: false, brand: brand, parentType: PARENT_TYPE_LEARNING_PATH }),
-      getUserPinnedItem(brand),// how is item pinned?
+      getUserPinnedItem(brand),
     ])
 
   const playlists = recentPlaylists?.data || []
@@ -1086,11 +1088,6 @@ export async function getProgressRows({
 
   const activePath = methodStructure.child.find(child => child.id === activePathId)
   const activePathWithLessons = {learningPathId: activePath.id, contentIds: activePath.child.map(lesson => lesson.id)}
-  // here we can also remove the active LP from the rest of structure for the sake of making sure we dont double-dip
-  // on the rest of the method progress cards
-
-  // todo: need to show progress on LPs that are not active paths as welll...
-  // this will likely behave the same as non-playlist content ids, like showing collection progress not child
 
   const methodCardData = await getNextLearningPathLessonsForMethod(methodProgressContents, activePathWithLessons, dailySession)
   const methodCardIds = methodCardData?.next.map(item => item.contentIds).flat() // returns null if method intro video card
@@ -1118,11 +1115,7 @@ export async function getProgressRows({
       addProgressTimestamp: true,
     // null is state for method intro video card
     }) : (methodCardData === null) ? fetchMethodV2IntroVideo(brand) : Promise.resolve([]),
-
-    // methodContents: and another one here for rest of method progress?
   ])
-
-  //have to consider how we fetch/dont fetch method card when its not recent.
 
   // need to coalesce methodIds into one structure for going into the sort function. and give it a timestamp
   const methodCard = methodCardIds
@@ -1135,18 +1128,20 @@ export async function getProgressRows({
         ...methodCardContents.map(item => item.progressTimestamp || 0)
       )
     }
-    : methodCardContents // intro video card. we need ot give it an id? or just nullcheck the id in processMethodCard
+    : {
+      ...methodCardContents,
+      id: 0,
+      progressTimestamp: 0
+    }
 
   //need to exclude standard progress copies that originated from a method
   const contentsMap = generateContentsMap(contents, playlistsContents, methodProgressContents)
-  // add learningPathsMap for method? for the sake of only keeping parent
 
   let combined = await extractPinnedItemsAndSortAllItems(
     userPinnedItem,
     contentsMap,
     eligiblePlaylistItems,
     methodCard,
-    //methodContents
     limit
   )
   const results = await Promise.all(
@@ -1154,11 +1149,10 @@ export async function getProgressRows({
       .slice(0, limit)
       .map((item) =>
           item.type === 'playlist' ? processPlaylistItem(item)
-            : item.type === 'method-card' ? processMethodCard(item)
-            : processContentItem(item) // i think we cant user this for intro vid bcs of pinning
+            : (item.type === 'method-card' || item.type === 'method-intro') ? processMethodCard(item)
+            : processContentItem(item)
       )
   )
-// we want to handle method intro card with content so that they're together
 
   return {
     type: TabResponseType.PROGRESS_ROWS,
@@ -1176,7 +1170,7 @@ async function getUserPinnedItem(brand) {
 
 async function processMethodCard(content) {
 
-  const contentType = getFormattedType(content.type, content.brand)
+  const contentType = getFormattedType(content.type, content.brand) //will be 'method'. item.type is either method-card or method-intro
 
   const ctaText = getMethodCardCTAText(content)
 
@@ -1197,20 +1191,19 @@ async function processMethodCard(content) {
     }
   })
 
-  //well have to handle above the joining of pinned item being method card and intro video card
-  // we should only pin where progressType = method, and handle adding intro video after
-
-  // todo not yet sure whether intro video card should be processed here or within processContentAction
-  // i think it depends on pin mechanics.
-  //pinned has id, progressType, pinnedAt
   return {
     id: 0, // method card has no id
     progressType: 'method',
+    pinned: content.pinned ?? false,
     header: contentType,
-    body: dailyCardBody,
+    body: dailyCardBody ?? {
+      thumbnail:       content.thumbnail,
+      title:           content.title,
+      subtitle:        `${content.difficulty_string} • ${content.artist_name}`
+    },
     cta: {
       text: ctaText,
-      action: getMethodActionCTA(nextIncomplete),
+      action: nextIncomplete ? getMethodActionCTA(nextIncomplete) : getMethodActionCTA(content),
     },
     // *1000 is to match playlists which are saved in millisecond accuracy
     progressTimestamp: content.progressTimestamp * 1000,
@@ -1309,7 +1302,11 @@ async function processContentItem(content) {
 }
 
 function getMethodCardCTAText(content) {
-  const dailyComplete = content.isDailyComplete
+  if (content.type === 'method-intro') {
+    return 'Get Started'
+  }
+
+  const dailyComplete = content.dailyComplete
   const noneCompleted = areNoneCompleted(content.content_ids)
   const firstLPCompleted = isFirstLearningPathCompleted(content.content_ids)
 
@@ -1486,7 +1483,7 @@ async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playl
   if (!pinned) return null
   const { id, pinnedAt } = pinned
   let item = null
-  const progressType = pinned.progressType ?? pinned.type; // = 'method' for method card (both method-card and method-intro)
+  const progressType = pinned.progressType ?? pinned.type;
 
   if (progressType === 'content') {
     const pinnedId = parseInt(id)
@@ -1523,7 +1520,8 @@ async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playl
   if (progressType === 'method') {
     // simply get method card and return
     item = methodCard
-    //remove method card
+    //todo remove method card
+
   }
   return item
 }
