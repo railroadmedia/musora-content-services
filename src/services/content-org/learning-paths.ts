@@ -20,7 +20,7 @@ export async function getDailySession(brand: string, userDate: Date) {
 /**
  * Updates the daily session for the user. Optionally, keeps the first learning path's dailies from a matching day's session.
  * @param brand
- * @param userDate
+ * @param userDate - format 2025-10-31
  * @param keepFirstLearningPath
  */
 export async function updateDailySession(brand: string, userDate: Date, keepFirstLearningPath: boolean) {
