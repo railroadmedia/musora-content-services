@@ -13,6 +13,11 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	getDailySession,
+	updateDailySession
+} from './services/content-org/learning-paths.ts';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -511,6 +516,7 @@ export {
 	getAllStartedOrCompleted,
 	getAwardDataForGuidedContent,
 	getContentRows,
+	getDailySession,
 	getLastInteractedOf,
 	getLessonContentRows,
 	getMonday,
@@ -626,6 +632,7 @@ export {
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
+	updateDailySession,
 	updateDisplayName,
 	updateForumCategory,
 	updateNotificationSetting,
