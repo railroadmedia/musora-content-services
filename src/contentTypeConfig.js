@@ -870,7 +870,7 @@ const filterHandlers = {
 }
 
 /**
- * Takes the included fields array and returns a string that can be used in a groq query.
+ * Takes the included fields array and returns a string that can be used in the groq query.
  * @param {Array<string>} filters - An array of strings that represent applied filters.
  *                                  Format: ['difficulty,Intermediate', 'genre,rock']
  * @param {Array<string>} selectedFilters - Filters to exclude from processing
