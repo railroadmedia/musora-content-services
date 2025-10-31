@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.62.1](https://github.com/railroadmedia/musora-content-services/compare/v2.62.0...v2.62.1) (2025-10-30)
+
+
+### Bug Fixes
+
+* field in fetchAll ([#522](https://github.com/railroadmedia/musora-content-services/issues/522)) ([ff723fc](https://github.com/railroadmedia/musora-content-services/commit/ff723fcb5d1ba931eb5a2f3796bfe3cca6300ecd))
+
+## [2.62.0](https://github.com/railroadmedia/musora-content-services/compare/v2.61.1...v2.62.0) (2025-10-30)
+
+
+### Features
+
+* **MU2E1-137:** number of active accounts ([#515](https://github.com/railroadmedia/musora-content-services/issues/515)) ([fd8b57e](https://github.com/railroadmedia/musora-content-services/commit/fd8b57ee401596471cdc4e940b1282c800483bf5))
+
+
+### Bug Fixes
+
+* sanity function refactors ([#520](https://github.com/railroadmedia/musora-content-services/issues/520)) ([2667c25](https://github.com/railroadmedia/musora-content-services/commit/2667c25dd876bec81c49a524823efac66f846fbf))
+* sort in fetch all ([#521](https://github.com/railroadmedia/musora-content-services/issues/521)) ([f353410](https://github.com/railroadmedia/musora-content-services/commit/f353410c210a1185337ae737e6f0c047bd95c751))
+
 ### [2.61.1](https://github.com/railroadmedia/musora-content-services/compare/v2.61.0...v2.61.1) (2025-10-29)
 
 

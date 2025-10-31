@@ -663,7 +663,7 @@ export async function fetchAll(
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': '/${brand}/${webUrlPath}/'+name+'?included_fieds[]=type,${type}',
                 'all_lessons_count': count(*[${lessonsFilterWithRestrictions}]._id),
-                'lessons': *[${lessonsFilterWithRestrictions}]{
+                'children': *[${lessonsFilterWithRestrictions}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...20]
@@ -683,7 +683,7 @@ export async function fetchAll(
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': select(defined(web_url_path)=> web_url_path +'?included_fieds[]=type,${type}',!defined(web_url_path)=> '/${brand}${webUrlPath}/'+name+'/${webUrlPathType}'),
                 'all_lessons_count': count(*[${lessonsFilterWithRestrictions}]._id),
-                'lessons': *[${lessonsFilterWithRestrictions}]{
+                'children': *[${lessonsFilterWithRestrictions}]{
                     ${fieldsString},
                      'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
                     ${groupBy}
@@ -693,8 +693,8 @@ export async function fetchAll(
     filter = `brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter} ${customFilter}`
     const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
     entityFieldsString = ` ${fieldsString},
-                                    'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
-                                    'length_in_seconds': coalesce(
+      'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
+      'length_in_seconds': coalesce(
       math::sum(
         select(
           child[${childrenFilter}]->length_in_seconds
@@ -748,17 +748,17 @@ async function getProgressFilter(progress, progressIds) {
 }
 
 export function getSortOrder(sort = '-published_on', brand, groupBy) {
-  // Determine the sort order
+  const sanitizedSort = sort?.trim() || '-published_on'
+  let isDesc = sanitizedSort.startsWith('-')
+  const sortField = isDesc ? sanitizedSort.substring(1) : sanitizedSort
+
   let sortOrder = ''
-  let isDesc = sort.startsWith('-')
-  sort = isDesc ? sort.substring(1) : sort
-  switch (sort) {
+
+  switch (sortField) {
     case 'slug':
       sortOrder = groupBy ? 'name' : '!defined(title), lower(title)'
       break
-    case 'name':
-      sortOrder = sort
-      break
+
     case 'popularity':
       if (groupBy == 'artist' || groupBy == 'genre') {
         sortOrder = isDesc ? `coalesce(popularity.${brand}, -1)` : 'popularity'
@@ -766,15 +766,17 @@ export function getSortOrder(sort = '-published_on', brand, groupBy) {
         sortOrder = isDesc ? 'coalesce(popularity, -1)' : 'popularity'
       }
       break
+
     case 'recommended':
       sortOrder = 'published_on'
       isDesc = true
       break
-    case 'published_on':
+
     default:
-      sortOrder = 'published_on'
+      sortOrder = sortField
       break
   }
+
   sortOrder += isDesc ? ' desc' : ' asc'
   return sortOrder
 }
@@ -2280,20 +2282,23 @@ export async function fetchShows(brand, type, sort = 'sort') {
 
 
 export async function fetchMethodV2IntroVideo(brand) {
-  const _type = "method-intro";
-  const filter = `_type == '${_type}' && brand == '${brand}'`;
+  const type = "method-intro";
+  const filter = `_type == '${type}' && brand == '${brand}'`;
   const fields = getIntroVideoFields();
 
   const query = `*[${filter}] { ${fields.join(", ")} }`;
   return fetchSanity(query, false);
 }
 
-export async function fetchFullMethodV2StructureFor(brand) {
+export async function fetchMethodV2Structure(brand) {
   const _type = "method-v2";
-  const filter = `_type == '${_type}' && brand == '${brand}'`;
+  const query = `*[_type == '${_type}' && brand == '${brand}'][0...1]{
+    'sanity_id': _id,
+    'children': child[]->{
+      'id': railcontent_id,
+      'children': child[]->railcontent_id
+    }
+  }`;
 
-  const fields = contentTypeConfig[_type];
-  const query = `*[${filter}] { ${fields.join(",")} }`;
-
-  return await fetchSanity(query, true);
+  return await fetchSanity(query, false);
 }
