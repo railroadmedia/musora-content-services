@@ -777,7 +777,6 @@ export function getChildFieldsForContentType(contentType, asQueryString = true)
   if (!contentType) {
     return asQueryString ? DEFAULT_CHILD_FIELDS.toString() + ',' : DEFAULT_CHILD_FIELDS
   }
-
   if (contentTypeConfig[contentType]?.childFields || contentTypeConfig[contentType]?.includeChildFields) {
     const childFields = contentType
       ? DEFAULT_CHILD_FIELDS.concat(contentTypeConfig?.[contentType]?.childFields ?? [])
