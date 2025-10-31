@@ -48,9 +48,9 @@ export class Tabs {
   static RecentActivityPosts = { name: 'Posts', short_name: 'Posts' }
   static RecentActivityComments = { name: 'Comments', short_name: 'Comments' }
  // new tabs - 29.10
-  static SingleLessons = { name: 'Single Lessons', short_name: 'Single Lessons', value: 'type,individuals', cardType: 'big' }
-  static SkillPacks = { name: 'Skill Packs', short_name: 'Skill Packs', value: 'type,collections', cardType: 'big' }
-  static Entertainment = { name: 'Entertainment', short_name: 'Entertainment', value: 'type,collections', cardType: 'big' }
+  static SingleLessons = { name: 'Single Lessons', short_name: 'Single Lessons' }
+  static SkillPacks = { name: 'Skill Packs', short_name: 'Skill Packs' }
+  static Entertainment = { name: 'Entertainment', short_name: 'Entertainment' }
 }
 
 export const TabResponseType = {
