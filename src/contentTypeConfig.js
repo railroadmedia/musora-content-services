@@ -785,7 +785,7 @@ export function getFieldsForContentType(contentType, asQueryString = true) {
 }
 
 /**
- * Helper function to create type conditions from lesson type arrays
+ * Helper function to create type conditions from content type arrays
  */
 function createTypeConditions(lessonTypes) {
   if (!lessonTypes || lessonTypes.length === 0) return ''
