@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.63.0](https://github.com/railroadmedia/musora-content-services/compare/v2.62.1...v2.63.0) (2025-10-31)
+
+
+### Features
+
+* **BEH-1198:** method daily session ([#523](https://github.com/railroadmedia/musora-content-services/issues/523)) ([672a761](https://github.com/railroadmedia/musora-content-services/commit/672a76134c12cec0dbda987e115ffc1d316c609b))
+* method structure updates ([#525](https://github.com/railroadmedia/musora-content-services/issues/525)) ([ac0efb1](https://github.com/railroadmedia/musora-content-services/commit/ac0efb119b209160063d6e11fafabc7719d4f65e))
+
 ### [2.62.1](https://github.com/railroadmedia/musora-content-services/compare/v2.62.0...v2.62.1) (2025-10-30)
 
 
