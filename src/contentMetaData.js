@@ -293,8 +293,6 @@ function transformFilters(filterOptions) {
         // Only include isParent and items if children exist
         ...(group.children && group.children.length > 0 && {
           isParent: true,
-          isCollapsible: true,
-          defaultCollapsed: true, // Parents start collapsed
           items: group.children.map(child => ({
             name: child,
             value: `${key},${child}`,
@@ -308,7 +306,6 @@ function transformFilters(filterOptions) {
         key,
         items,
         isHierarchical: true,
-        supportsPartialSelection: true // Enable pill-style parent-child linking
       };
     } else {
       // Handle flat structure (existing behavior - no changes)
