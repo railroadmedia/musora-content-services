@@ -197,6 +197,10 @@ export const coursesLessonTypes = [
   'tiered-course', // TODO: new content type
   'guided-course'];
 
+export const skillLessonTypes = [
+  'skill-pack'
+]
+
 export const showsLessonTypes = [
   'boot-camp',
   'diy-drum-experiment',
@@ -216,13 +220,17 @@ export const collectionLessonTypes = [
 ];
 
 export const lessonTypesMapping = {
-  'single lessons': singleLessonTypes,
+  'lessons': singleLessonTypes,
   'practice alongs': practiceAlongsLessonTypes,
   'live archives': liveArchivesLessonTypes,
   'performances': performancesLessonTypes,
   'student archives': studentArchivesLessonTypes,
   'documentaries': documentariesLessonTypes,
-  'courses': coursesLessonTypes,
+  'courses': ['course'],
+  'guided courses': ['guided-course'],
+  'tiered courses': ['tiered-course' ],
+  'skill packs': ['skill-pack'],
+  'specials': ['specials'],
   'shows': showsLessonTypes,
   'collections': collectionLessonTypes,
   'individuals': individualLessonsTypes,
@@ -259,7 +267,7 @@ export const songs = {
 }
 
 export const filterTypes = {
-  lessons: [...individualLessonsTypes, ...collectionLessonTypes],
+  lessons: [...singleLessonTypes, ...practiceAlongsLessonTypes , ...liveArchivesLessonTypes, ...studentArchivesLessonTypes, ...coursesLessonTypes, ...skillLessonTypes , ...entertainmentLessonTypes],
   songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes, ...jamTrackLessonTypes],
 }
 
