@@ -421,9 +421,34 @@ export async function getRecommendedForYou(brand, rowId = null, {
 }
 
 
+/**
+ * Fetches legacy methods for a given brand by permission.
+ *
+ * @param {string} brand - The brand for which to fetch legacy methods.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing legacy methods.
+ *
+ * @example
+ * // Fetch legacy methods for a brand by permission
+ * getLegacyMethods('drumeo')
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ */
+export async function getLegacyMethods(brand) {
 
-
-
-
-
-
+  // TODO: Replace with real data from Sanity when available with permissions
+  
+  return [
+    {
+      id: 1,
+      title: '2020 Method',
+      type: 'pack',
+      child_count: 12,
+    },
+    {
+      id: 2,
+      title: '2016 Foundations',
+      type: 'pack',
+      child_count: 12,
+    },
+  ]
+}
