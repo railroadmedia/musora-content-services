@@ -47,6 +47,10 @@ export class Tabs {
   static RecentActivitySongs = { name: 'Songs', short_name: 'Songs' }
   static RecentActivityPosts = { name: 'Posts', short_name: 'Posts' }
   static RecentActivityComments = { name: 'Comments', short_name: 'Comments' }
+ // new tabs - 29.10
+  static SingleLessons = { name: 'Single Lessons', short_name: 'Single Lessons' }
+  static SkillPacks = { name: 'Skill Packs', short_name: 'Skill Packs' }
+  static Entertainment = { name: 'Entertainment', short_name: 'Entertainment' }
 }
 
 export const TabResponseType = {
@@ -71,8 +75,10 @@ const commonMetadata = {
     },
     tabs: [
       Tabs.ForYou,
-      Tabs.Individuals,
-      Tabs.Collections,
+      Tabs.SingleLessons,
+      Tabs.Courses,
+      Tabs.SkillPacks,
+      Tabs.Entertainment,
       Tabs.ExploreAll
     ],
   },
@@ -144,8 +150,10 @@ const contentMetadata = {
       },
       tabs: [
         Tabs.ForYou,
-        Tabs.Individuals,
-        Tabs.Collections,
+        Tabs.SingleLessons,
+        Tabs.Courses,
+        Tabs.SkillPacks,
+        Tabs.Entertainment,
         Tabs.ExploreAll
       ],
     },
@@ -167,8 +175,10 @@ const contentMetadata = {
       },
       tabs: [
         Tabs.ForYou,
-        Tabs.Individuals,
-        Tabs.Collections,
+        Tabs.SingleLessons,
+        Tabs.Courses,
+        Tabs.SkillPacks,
+        Tabs.Entertainment,
         Tabs.ExploreAll
       ],
     },
