@@ -37,6 +37,7 @@ import {
 
 import {
 	getContentRows,
+	getLegacyMethods,
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
@@ -519,6 +520,7 @@ export {
 	getContentRows,
 	getDailySession,
 	getLastInteractedOf,
+	getLegacyMethods,
 	getLessonContentRows,
 	getMonday,
 	getNavigateTo,

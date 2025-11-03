@@ -37,6 +37,7 @@ import {
 
 import {
 	getContentRows,
+	getLegacyMethods,
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
@@ -520,6 +521,7 @@ declare module 'musora-content-services' {
 		getContentRows,
 		getDailySession,
 		getLastInteractedOf,
+		getLegacyMethods,
 		getLessonContentRows,
 		getMonday,
 		getNavigateTo,
