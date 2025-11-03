@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.66.0](https://github.com/railroadmedia/musora-content-services/compare/v2.65.0...v2.66.0) (2025-11-03)
+
+
+### Features
+
+* legacy methods function with mock data ([#534](https://github.com/railroadmedia/musora-content-services/issues/534)) ([76f74d2](https://github.com/railroadmedia/musora-content-services/commit/76f74d255ab6b6b35ef6422a7952b4f75b551b8c))
+
 ## [2.65.0](https://github.com/railroadmedia/musora-content-services/compare/v2.64.0...v2.65.0) (2025-11-03)
 
 
