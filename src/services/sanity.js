@@ -496,6 +496,8 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
     live_event_start_time,
     live_event_end_time,
   }`
+
+  console.log('ids query', query)
   const customPostProcess = (results) => {
     const now = getSanityDate(new Date(), false);
     const liveProcess = (result) => {
@@ -2280,7 +2282,11 @@ export async function fetchShows(brand, type, sort = 'sort') {
   return fetchSanity(query, true)
 }
 
-
+/**
+ * Fetch the method intro video for a given brand.
+ * @param brand
+ * @returns {Promise<*|null>}
+ */
 export async function fetchMethodV2IntroVideo(brand) {
   const type = "method-intro";
   const filter = `_type == '${type}' && brand == '${brand}'`;
@@ -2290,15 +2296,19 @@ export async function fetchMethodV2IntroVideo(brand) {
   return fetchSanity(query, false);
 }
 
+/**
+ * Fetch the structure (just ids) of the Method for a given brand.
+ * @param brand
+ * @returns {Promise<*|null>}
+ */
 export async function fetchMethodV2Structure(brand) {
   const _type = "method-v2";
   const query = `*[_type == '${_type}' && brand == '${brand}'][0...1]{
     'sanity_id': _id,
-    'children': child[]->{
+    'learningPaths': child[]->{
       'id': railcontent_id,
       'children': child[]->railcontent_id
     }
   }`;
-
   return await fetchSanity(query, false);
 }

@@ -127,7 +127,6 @@ export const showsTypes = {
     'backstage-secret',
     'quick-tips',
     'question-and-answer',
-    'student-collaboration',
     'live',
     'podcast',
     'solo',
@@ -175,10 +174,10 @@ export const childContentTypeConfig = {
   ]
 }
 
-export const singleLessonTypes = ['quick-tips', 'rudiment', 'coach-lessons'];
-export const practiceAlongsLessonTypes = ['workout', 'boot-camp','challenges'];
-export const performancesLessonTypes = ['performance','solo','drum-fest-international-2022'];
-export const documentariesLessonTypes = ['tama','sonor','history-of-electronic-drums','paiste-cymbals'];
+export const singleLessonTypes = ['quick-tips', 'rudiment'];
+export const practiceAlongsLessonTypes = ['workout']; // challenges ->workouts
+export const performancesLessonTypes = ['performance'];
+export const documentariesLessonTypes = ['tama','sonor','history-of-electronic-drums','paiste-cymbals', 'backstage-secret'];
 export const liveArchivesLessonTypes = ['podcast', 'coach-stream', 'question-and-answer', 'live-streams', 'live'];
 export const studentArchivesLessonTypes = ['student-review', 'student-focus','student-collaboration'];
 export const tutorialsLessonTypes = ['song-tutorial'];
@@ -189,14 +188,28 @@ export const jamTrackLessonTypes = ['jam-track'];
 export const individualLessonsTypes = [
   ...singleLessonTypes,
   ...practiceAlongsLessonTypes,
-  ...performancesLessonTypes,
-  ...documentariesLessonTypes,
   ...liveArchivesLessonTypes,
   ...studentArchivesLessonTypes
 ];
 
-export const coursesLessonTypes = ['course', 'pack','spotlight', 'guided-course'];
-export const showsLessonTypes = ['diy-drum-experiment','exploring-beats','in-rhythm',  'rhythmic-adventures-of-captain-carson','rhythms-from-another-planet','study-the-greats'];
+export const coursesLessonTypes = [
+  'course',
+  'tiered-course', // TODO: new content type
+  'guided-course'];
+
+export const showsLessonTypes = [
+  'boot-camp',
+  'diy-drum-experiment',
+  'exploring-beats',
+  'in-rhythm',
+  'rhythmic-adventures-of-captain-carson',
+  'rhythms-from-another-planet',
+  'study-the-greats'];
+export const entertainmentLessonTypes = [
+  'specials', // TODO: new type
+  ...documentariesLessonTypes,
+  ...showsLessonTypes
+];
 export const collectionLessonTypes = [
     ...coursesLessonTypes,
     ...showsLessonTypes
