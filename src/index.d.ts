@@ -321,7 +321,8 @@ import {
 
 import {
 	startOnboarding,
-	updateOnboarding
+	updateOnboarding,
+	userOnboardingForBrand
 } from './services/user/onboarding.ts';
 
 import {
@@ -646,6 +647,7 @@ declare module 'musora-content-services' {
 		upgradeSubscription,
 		uploadPicture,
 		uploadPictureFromS3,
+		userOnboardingForBrand,
 		verifyImageSRC,
 		verifyLocalDataContext,
 	}

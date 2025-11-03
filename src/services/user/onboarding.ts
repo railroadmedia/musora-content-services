@@ -94,3 +94,18 @@ export async function updateOnboarding({
     marketing_opt_in: marketingOptIn,
   })
 }
+
+/**
+ * Fetches the onboardings for the current user and specified brand.
+ *
+ * @param {string} brand - The brand identifier.
+ *
+ * @returns {Promise<Onboarding>} - A promise that resolves with the onboarding data.
+ * @throws {HttpError} - If the HTTP request fails.
+ */
+export async function userOnboardingForBrand(brand: string): Promise<Onboarding> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.get<Onboarding>(
+    `/api/user-management-system/v1/users/${globalConfig.sessionConfig.userId}/onboardings/brand/${encodeURIComponent(brand)}`
+  )
+}
