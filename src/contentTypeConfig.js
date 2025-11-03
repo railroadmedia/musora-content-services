@@ -194,7 +194,7 @@ export const individualLessonsTypes = [
 
 export const coursesLessonTypes = [
   'course',
-  'tiered-courses', // TODO: new content type
+  'tiered-course', // TODO: new content type
   'guided-course'];
 
 export const showsLessonTypes = [
