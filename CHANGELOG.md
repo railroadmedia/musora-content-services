@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.65.0](https://github.com/railroadmedia/musora-content-services/compare/v2.64.0...v2.65.0) (2025-11-03)
+
+
+### Features
+
+* **MU2E1-168:** onboarding status function ([#530](https://github.com/railroadmedia/musora-content-services/issues/530)) ([1e1cf78](https://github.com/railroadmedia/musora-content-services/commit/1e1cf78afb452792a859ab808d3c0ff1d59ddc6f))
+
 ## [2.64.0](https://github.com/railroadmedia/musora-content-services/compare/v2.62.1...v2.64.0) (2025-11-03)
 
 
