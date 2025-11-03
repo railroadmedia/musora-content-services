@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.64.0](https://github.com/railroadmedia/musora-content-services/compare/v2.62.1...v2.64.0) (2025-11-03)
+
+
+### Features
+
+* **BEH-1198:** method daily session ([#523](https://github.com/railroadmedia/musora-content-services/issues/523)) ([672a761](https://github.com/railroadmedia/musora-content-services/commit/672a76134c12cec0dbda987e115ffc1d316c609b))
+* method structure updates ([#525](https://github.com/railroadmedia/musora-content-services/issues/525)) ([ac0efb1](https://github.com/railroadmedia/musora-content-services/commit/ac0efb119b209160063d6e11fafabc7719d4f65e))
+* **MU2-1201:** Merge pull request [#526](https://github.com/railroadmedia/musora-content-services/issues/526) from railroadmedia/MU2-1201-lessons-nav-pills ([e362caa](https://github.com/railroadmedia/musora-content-services/commit/e362caa80acf0d07eb977c694d24235e551888b3))
+
 ## [2.63.0](https://github.com/railroadmedia/musora-content-services/compare/v2.62.1...v2.63.0) (2025-10-31)
 
 
