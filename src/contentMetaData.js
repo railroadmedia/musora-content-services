@@ -277,7 +277,7 @@ const filterTypes = {
  * and is ideal for collapsible groups and hierarchical rendering
  */
 function transformFilters(filterOptions) {
-  const res = Object.entries(filterOptions).map(([key, values]) => {
+  return Object.entries(filterOptions).map(([key, values]) => {
     // Check if values is hierarchical (array of objects with title property)
     // We check for 'title' property to distinguish from simple string arrays
     const isHierarchical = Array.isArray(values) &&
@@ -320,8 +320,6 @@ function transformFilters(filterOptions) {
       };
     }
   });
-
-  return res
 }
 
 /**
