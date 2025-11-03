@@ -315,9 +315,9 @@ import {
 } from './services/user/notifications.js';
 
 import {
-	onboardingStatus,
 	startOnboarding,
-	updateOnboarding
+	updateOnboarding,
+	userOnboardings
 } from './services/user/onboarding.ts';
 
 import {
@@ -569,7 +569,6 @@ declare module 'musora-content-services' {
 		markNotificationAsRead,
 		markNotificationAsUnread,
 		numberOfActiveUsers,
-		onboardingStatus,
 		openComment,
 		otherStats,
 		pauseLiveEventPolling,
@@ -641,6 +640,7 @@ declare module 'musora-content-services' {
 		upgradeSubscription,
 		uploadPicture,
 		uploadPictureFromS3,
+		userOnboardings,
 		verifyImageSRC,
 		verifyLocalDataContext,
 	}

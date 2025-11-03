@@ -315,9 +315,9 @@ import {
 } from './services/user/notifications.js';
 
 import {
-	onboardingStatus,
 	startOnboarding,
-	updateOnboarding
+	updateOnboarding,
+	userOnboardings
 } from './services/user/onboarding.ts';
 
 import {
@@ -568,7 +568,6 @@ export {
 	markNotificationAsRead,
 	markNotificationAsUnread,
 	numberOfActiveUsers,
-	onboardingStatus,
 	openComment,
 	otherStats,
 	pauseLiveEventPolling,
@@ -640,6 +639,7 @@ export {
 	upgradeSubscription,
 	uploadPicture,
 	uploadPictureFromS3,
+	userOnboardings,
 	verifyImageSRC,
 	verifyLocalDataContext,
 };
