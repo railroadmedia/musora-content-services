@@ -109,3 +109,46 @@ export async function userOnboardingForBrand(brand: string): Promise<Onboarding>
     `/api/user-management-system/v1/users/${globalConfig.sessionConfig.userId}/onboardings/brand/${encodeURIComponent(brand)}`
   )
 }
+
+export interface OnboardingRecommendedContent {
+  title: string
+  difficulty: string
+  lesson_count: number
+  skill_count: number
+  award: string
+  description: string
+  video: {
+    external_id: string
+    hlsManifestUrl: string
+    type: string
+  }
+}
+
+/**
+ * Fetches recommended content for onboarding based on the specified brand.
+ *
+ * @param {string} brand - The brand identifier.
+ * @returns {Promise<OnboardingRecommendedContent>} - A promise that resolves with the recommended content.
+ * @throws {HttpError} - If the HTTP request fails.
+ */
+export async function getOnboardingRecommendedContent(
+  brand: string
+): Promise<OnboardingRecommendedContent> {
+  // TODO: Replace with real API call when available
+  return {
+    title: 'Getting Started On The Piano',
+    difficulty: 'Beginner',
+    lesson_count: 4,
+    skill_count: 3,
+    award:
+      'https://cdn.sanity.io/files/4032r8py/staging/9470587f03479b7c1f8019c3cbcbdfe12aa267f3.png',
+    description:
+      'The goal of this course is to introduce you to the keys, and get you playing a song as fast as possible. ',
+    video: {
+      external_id: '1001267395',
+      hlsManifestUrl:
+        'https://player.vimeo.com/external/1001267395.m3u8?s=8f8d8a8a762f688058e6e6fd6704c402baf1b797&oauth2_token_id=1284792283',
+      type: 'vimeo-video',
+    },
+  }
+}
