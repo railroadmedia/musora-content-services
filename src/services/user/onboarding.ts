@@ -96,17 +96,16 @@ export async function updateOnboarding({
 }
 
 /**
- * Fetches the onboardings for the current user and a optional specified brand.
+ * Fetches the onboardings for the current user and specified brand.
  *
- * @param {string} [brand] - Optional brand to filter the onboarding status.
+ * @param {string} brand - The brand identifier.
  *
- * @returns {Promise<OnboardingStatusResponse>} - A promise that resolves with the onboarding status.
+ * @returns {Promise<Onboarding>} - A promise that resolves with the onboarding data.
  * @throws {HttpError} - If the HTTP request fails.
  */
-export async function userOnboardings(brand?: string): Promise<Onboarding> {
+export async function userOnboardingForBrand(brand: string): Promise<Onboarding> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  const brandParam = brand ? `?brand=${encodeURIComponent(brand)}` : ''
   return httpClient.get<Onboarding>(
-    `/api/user-management-system/v1/users/${globalConfig.sessionConfig.userId}/onboardings/status${brandParam}`
+    `/api/user-management-system/v1/users/${globalConfig.sessionConfig.userId}/onboardings/brand/${encodeURIComponent(brand)}`
   )
 }

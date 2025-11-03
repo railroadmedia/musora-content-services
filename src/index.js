@@ -322,7 +322,7 @@ import {
 import {
 	startOnboarding,
 	updateOnboarding,
-	userOnboardings
+	userOnboardingForBrand
 } from './services/user/onboarding.ts';
 
 import {
@@ -646,7 +646,7 @@ export {
 	upgradeSubscription,
 	uploadPicture,
 	uploadPictureFromS3,
-	userOnboardings,
+	userOnboardingForBrand,
 	verifyImageSRC,
 	verifyLocalDataContext,
 };
