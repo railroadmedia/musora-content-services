@@ -13,6 +13,11 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	getDailySession,
+	updateDailySession
+} from './services/content-org/learning-paths.ts';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -213,7 +218,6 @@ import {
 	fetchCommentModContentData,
 	fetchContentRows,
 	fetchFoundation,
-	fetchFullMethodV2StructureFor,
 	fetchGenreLessons,
 	fetchHierarchy,
 	fetchLeaving,
@@ -226,6 +230,7 @@ import {
 	fetchMethodChildrenIds,
 	fetchMethodPreviousNextLesson,
 	fetchMethodV2IntroVideo,
+	fetchMethodV2Structure,
 	fetchNewReleases,
 	fetchNextPreviousLesson,
 	fetchOtherSongVersions,
@@ -255,6 +260,7 @@ import {
 import {
 	confirmEmailChange,
 	deleteAccount,
+	numberOfActiveUsers,
 	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
@@ -436,7 +442,6 @@ export {
 	fetchFollowedThreads,
 	fetchForumCategories,
 	fetchFoundation,
-	fetchFullMethodV2StructureFor,
 	fetchGenreLessons,
 	fetchHandler,
 	fetchHierarchy,
@@ -456,6 +461,7 @@ export {
 	fetchMethodChildrenIds,
 	fetchMethodPreviousNextLesson,
 	fetchMethodV2IntroVideo,
+	fetchMethodV2Structure,
 	fetchNewReleases,
 	fetchNextContentDataForParent,
 	fetchNextPreviousLesson,
@@ -510,6 +516,7 @@ export {
 	getAllStartedOrCompleted,
 	getAwardDataForGuidedContent,
 	getContentRows,
+	getDailySession,
 	getLastInteractedOf,
 	getLessonContentRows,
 	getMonday,
@@ -565,6 +572,7 @@ export {
 	markContentAsNotInterested,
 	markNotificationAsRead,
 	markNotificationAsUnread,
+	numberOfActiveUsers,
 	openComment,
 	otherStats,
 	pauseLiveEventPolling,
@@ -624,6 +632,7 @@ export {
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
+	updateDailySession,
 	updateDisplayName,
 	updateForumCategory,
 	updateNotificationSetting,

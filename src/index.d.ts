@@ -13,6 +13,11 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	getDailySession,
+	updateDailySession
+} from './services/content-org/learning-paths.ts';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -213,7 +218,6 @@ import {
 	fetchCommentModContentData,
 	fetchContentRows,
 	fetchFoundation,
-	fetchFullMethodV2StructureFor,
 	fetchGenreLessons,
 	fetchHierarchy,
 	fetchLeaving,
@@ -226,6 +230,7 @@ import {
 	fetchMethodChildrenIds,
 	fetchMethodPreviousNextLesson,
 	fetchMethodV2IntroVideo,
+	fetchMethodV2Structure,
 	fetchNewReleases,
 	fetchNextPreviousLesson,
 	fetchOtherSongVersions,
@@ -255,6 +260,7 @@ import {
 import {
 	confirmEmailChange,
 	deleteAccount,
+	numberOfActiveUsers,
 	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
@@ -437,7 +443,6 @@ declare module 'musora-content-services' {
 		fetchFollowedThreads,
 		fetchForumCategories,
 		fetchFoundation,
-		fetchFullMethodV2StructureFor,
 		fetchGenreLessons,
 		fetchHandler,
 		fetchHierarchy,
@@ -457,6 +462,7 @@ declare module 'musora-content-services' {
 		fetchMethodChildrenIds,
 		fetchMethodPreviousNextLesson,
 		fetchMethodV2IntroVideo,
+		fetchMethodV2Structure,
 		fetchNewReleases,
 		fetchNextContentDataForParent,
 		fetchNextPreviousLesson,
@@ -511,6 +517,7 @@ declare module 'musora-content-services' {
 		getAllStartedOrCompleted,
 		getAwardDataForGuidedContent,
 		getContentRows,
+		getDailySession,
 		getLastInteractedOf,
 		getLessonContentRows,
 		getMonday,
@@ -566,6 +573,7 @@ declare module 'musora-content-services' {
 		markContentAsNotInterested,
 		markNotificationAsRead,
 		markNotificationAsUnread,
+		numberOfActiveUsers,
 		openComment,
 		otherStats,
 		pauseLiveEventPolling,
@@ -625,6 +633,7 @@ declare module 'musora-content-services' {
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,
+		updateDailySession,
 		updateDisplayName,
 		updateForumCategory,
 		updateNotificationSetting,

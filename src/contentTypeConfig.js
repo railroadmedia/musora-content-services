@@ -127,7 +127,6 @@ export const showsTypes = {
     'backstage-secret',
     'quick-tips',
     'question-and-answer',
-    'student-collaboration',
     'live',
     'podcast',
     'solo',
@@ -175,10 +174,10 @@ export const childContentTypeConfig = {
   ]
 }
 
-export const singleLessonTypes = ['quick-tips', 'rudiment', 'coach-lessons'];
-export const practiceAlongsLessonTypes = ['workout', 'boot-camp','challenges'];
-export const performancesLessonTypes = ['performance','solo','drum-fest-international-2022'];
-export const documentariesLessonTypes = ['tama','sonor','history-of-electronic-drums','paiste-cymbals'];
+export const singleLessonTypes = ['quick-tips', 'rudiment'];
+export const practiceAlongsLessonTypes = ['workout']; // challenges ->workouts
+export const performancesLessonTypes = ['performance'];
+export const documentariesLessonTypes = ['tama','sonor','history-of-electronic-drums','paiste-cymbals', 'backstage-secret'];
 export const liveArchivesLessonTypes = ['podcast', 'coach-stream', 'question-and-answer', 'live-streams', 'live'];
 export const studentArchivesLessonTypes = ['student-review', 'student-focus','student-collaboration'];
 export const tutorialsLessonTypes = ['song-tutorial'];
@@ -189,14 +188,28 @@ export const jamTrackLessonTypes = ['jam-track'];
 export const individualLessonsTypes = [
   ...singleLessonTypes,
   ...practiceAlongsLessonTypes,
-  ...performancesLessonTypes,
-  ...documentariesLessonTypes,
   ...liveArchivesLessonTypes,
   ...studentArchivesLessonTypes
 ];
 
-export const coursesLessonTypes = ['course', 'pack','spotlight', 'guided-course'];
-export const showsLessonTypes = ['diy-drum-experiment','exploring-beats','in-rhythm',  'rhythmic-adventures-of-captain-carson','rhythms-from-another-planet','study-the-greats'];
+export const coursesLessonTypes = [
+  'course',
+  'tiered-course', // TODO: new content type
+  'guided-course'];
+
+export const showsLessonTypes = [
+  'boot-camp',
+  'diy-drum-experiment',
+  'exploring-beats',
+  'in-rhythm',
+  'rhythmic-adventures-of-captain-carson',
+  'rhythms-from-another-planet',
+  'study-the-greats'];
+export const entertainmentLessonTypes = [
+  'specials', // TODO: new type
+  ...documentariesLessonTypes,
+  ...showsLessonTypes
+];
 export const collectionLessonTypes = [
     ...coursesLessonTypes,
     ...showsLessonTypes
@@ -284,7 +297,7 @@ export let contentTypeConfig = {
   'song-tutorial': {
     fields: [
       '"lesson_count": child_count',
-      `"lessons": child[]->{
+      `"children": child[]->{
                 "id": railcontent_id,
                 title,
                 "image": thumbnail.asset->url,
@@ -583,13 +596,14 @@ export let contentTypeConfig = {
   "method-v2": [
     `"id":_id`,
     `"type":_type`,
+    "title",
     "brand",
     `"intro_video": intro_video->{ ${getIntroVideoFields().join(", ")} }`,
     `child[]->{
       "resource": ${resourcesField},
       total_skills,
-      "difficulty":difficulty,
-      "published_on":published_on,
+      difficulty,
+      published_on,
       "type":_type,
       brand,
       title,
@@ -601,16 +615,17 @@ export let contentTypeConfig = {
         hlsManifestUrl,
         video_playback_endpoints
       },
-      lp_lessons[]->{
+      child[]->{
         ${DEFAULT_FIELDS.join(',')}
       }
     }`,
   ],
-  "method-v2-intro-video": getIntroVideoFields(),
+  "method-intro": getIntroVideoFields(),
 }
 
 export function getIntroVideoFields() {
   return [
+    "title",
     "brand",
     `"description": ${descriptionField}`,
     `"thumbnail": thumbnail.asset->url`,
@@ -760,6 +775,11 @@ export async function getFieldsForContentTypeWithFilteredChildren(contentType, a
 
 export function getChildFieldsForContentType(contentType, asQueryString = true)
 {
+  // When contentType is undefined/null, return DEFAULT_CHILD_FIELDS to support mixed-type queries (e.g., from Algolia)
+  if (!contentType) {
+    return asQueryString ? DEFAULT_CHILD_FIELDS.toString() + ',' : DEFAULT_CHILD_FIELDS
+  }
+
   if (contentTypeConfig[contentType]?.childFields || contentTypeConfig[contentType]?.includeChildFields) {
     const childFields = contentType
       ? DEFAULT_CHILD_FIELDS.concat(contentTypeConfig?.[contentType]?.childFields ?? [])
@@ -850,11 +870,14 @@ export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
             }
             return `difficulty_string == "${value}"`
           } else if (key === 'tab' && !selectedFilters.includes(key)) {
-            if(value.toLowerCase() === Tabs.Individuals.name.toLowerCase()){
+            if(value.toLowerCase() === Tabs.SingleLessons.name.toLowerCase()){
               const conditions = individualLessonsTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
               return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.Collections.name.toLowerCase()){
-              const conditions = collectionLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+            } else if(value.toLowerCase() === Tabs.Courses.name.toLowerCase()){
+              const conditions = coursesLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
+              return ` (${conditions})`;
+            } else if(value.toLowerCase() === Tabs.Entertainment.name.toLowerCase()){
+              const conditions = entertainmentLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
               return ` (${conditions})`;
             } else if(value.toLowerCase() === Tabs.Tutorials.name.toLowerCase()){
               const conditions = tutorialsLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');

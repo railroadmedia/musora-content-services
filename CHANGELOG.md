@@ -2,6 +2,62 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.64.0](https://github.com/railroadmedia/musora-content-services/compare/v2.62.1...v2.64.0) (2025-11-03)
+
+
+### Features
+
+* **BEH-1198:** method daily session ([#523](https://github.com/railroadmedia/musora-content-services/issues/523)) ([672a761](https://github.com/railroadmedia/musora-content-services/commit/672a76134c12cec0dbda987e115ffc1d316c609b))
+* method structure updates ([#525](https://github.com/railroadmedia/musora-content-services/issues/525)) ([ac0efb1](https://github.com/railroadmedia/musora-content-services/commit/ac0efb119b209160063d6e11fafabc7719d4f65e))
+* **MU2-1201:** Merge pull request [#526](https://github.com/railroadmedia/musora-content-services/issues/526) from railroadmedia/MU2-1201-lessons-nav-pills ([e362caa](https://github.com/railroadmedia/musora-content-services/commit/e362caa80acf0d07eb977c694d24235e551888b3))
+
+## [2.63.0](https://github.com/railroadmedia/musora-content-services/compare/v2.62.1...v2.63.0) (2025-10-31)
+
+
+### Features
+
+* **BEH-1198:** method daily session ([#523](https://github.com/railroadmedia/musora-content-services/issues/523)) ([672a761](https://github.com/railroadmedia/musora-content-services/commit/672a76134c12cec0dbda987e115ffc1d316c609b))
+* method structure updates ([#525](https://github.com/railroadmedia/musora-content-services/issues/525)) ([ac0efb1](https://github.com/railroadmedia/musora-content-services/commit/ac0efb119b209160063d6e11fafabc7719d4f65e))
+
+### [2.62.1](https://github.com/railroadmedia/musora-content-services/compare/v2.62.0...v2.62.1) (2025-10-30)
+
+
+### Bug Fixes
+
+* field in fetchAll ([#522](https://github.com/railroadmedia/musora-content-services/issues/522)) ([ff723fc](https://github.com/railroadmedia/musora-content-services/commit/ff723fcb5d1ba931eb5a2f3796bfe3cca6300ecd))
+
+## [2.62.0](https://github.com/railroadmedia/musora-content-services/compare/v2.61.1...v2.62.0) (2025-10-30)
+
+
+### Features
+
+* **MU2E1-137:** number of active accounts ([#515](https://github.com/railroadmedia/musora-content-services/issues/515)) ([fd8b57e](https://github.com/railroadmedia/musora-content-services/commit/fd8b57ee401596471cdc4e940b1282c800483bf5))
+
+
+### Bug Fixes
+
+* sanity function refactors ([#520](https://github.com/railroadmedia/musora-content-services/issues/520)) ([2667c25](https://github.com/railroadmedia/musora-content-services/commit/2667c25dd876bec81c49a524823efac66f846fbf))
+* sort in fetch all ([#521](https://github.com/railroadmedia/musora-content-services/issues/521)) ([f353410](https://github.com/railroadmedia/musora-content-services/commit/f353410c210a1185337ae737e6f0c047bd95c751))
+
+### [2.61.1](https://github.com/railroadmedia/musora-content-services/compare/v2.61.0...v2.61.1) (2025-10-29)
+
+
+### Bug Fixes
+
+* **MU2-1008:** Update set query to fetch children if no contentType ([82f03ef](https://github.com/railroadmedia/musora-content-services/commit/82f03ef4c0257a10f41b2b336ac80476252cfbb2))
+
+## [2.61.0](https://github.com/railroadmedia/musora-content-services/compare/v2.60.2...v2.61.0) (2025-10-29)
+
+
+### Features
+
+* **BEH-1358:** Fetch all methods ([#511](https://github.com/railroadmedia/musora-content-services/issues/511)) ([4778770](https://github.com/railroadmedia/musora-content-services/commit/47787704ef8c835ac05ecee88313f0f02cf01109))
+
+
+### Bug Fixes
+
+* add client platform header for mobile requests ([#512](https://github.com/railroadmedia/musora-content-services/issues/512)) ([23e0eaa](https://github.com/railroadmedia/musora-content-services/commit/23e0eaab439aba231ff04b41b13c5440704779a2))
+
 ### [2.60.2](https://github.com/railroadmedia/musora-content-services/compare/v2.60.0...v2.60.2) (2025-10-27)
 
 
