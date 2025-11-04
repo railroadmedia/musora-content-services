@@ -240,6 +240,8 @@ export const lessonTypesMapping = {
   'sheet music': transcriptionsLessonTypes,
   'play-alongs': playAlongLessonTypes,
   'jam tracks': jamTrackLessonTypes,
+  'entertainment': entertainmentLessonTypes,
+  'single lessons': [...singleLessonTypes, ...liveArchivesLessonTypes, ...studentArchivesLessonTypes, ...practiceAlongsLessonTypes]
 };
 
 export const getNextLessonLessonParentTypes = ['course', 'guided-course', 'pack', 'pack-bundle', 'song-tutorial'];
