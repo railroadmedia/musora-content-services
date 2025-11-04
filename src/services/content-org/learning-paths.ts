@@ -1,5 +1,5 @@
 import { fetchHandler } from '../railcontent.js'
-import { fetchByRailContentId, fetchMethodV2Structure } from '../sanity.js'
+import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2Structure } from '../sanity.js'
 import { addContextToContent } from '../contentAggregator.js'
 import { getProgressStateByIds } from '../contentProgress.js'
 /**
@@ -92,38 +92,49 @@ export async function fetchLearningPathLessons(
     getDailySession(brand, userDate),
   ])
 
-  const lessons = await addContextToContent(() => learningPath.lessons, {
+  const addContextParameters = {
     addProgressStatus: true,
     addProgressPercentage: true,
-  })
-
-  // Initialize result arrays
-  const completed = []
-  const today = []
-  const nextPath = []
-  let upcoming = []
-
-  const lessonIds = lessons.map((lesson: any) => lesson.id).filter(Boolean)
-
-  if (lessonIds.length > 0) {
-    const progressStatuses = await getProgressStateByIds(lessonIds)
-
-    // Categorize lessons based on progress status
-    lessons.forEach((lesson: any) => {
-      const status = progressStatuses[lesson.id]
-      if (status === 'completed') {
-        completed.push(lesson)
-      } else {
-        upcoming.push(lesson)
-      }
-    })
   }
 
-  if (upcoming.length == 0) {
-    const nextLearningPathId = getNextLearningPath(learningPathId, brand)
-    if (nextLearningPathId) {
-      const nextLearningPath = fetchByRailContentId(nextLearningPathId, 'learning-path-v2')
+  const lessons = await addContextToContent(() => learningPath.lessons, addContextParameters)
+  const isActiveLearningPath = (dailySession?.active_learning_path_id || 0) == learningPathId
+  const todayContentIds = dailySession.daily_session[0]?.content_ids || []
+  const nextContentIds = dailySession.daily_session[1]?.content_ids || []
+  const completedLessons = []
+  let todaysLessons = []
+  let nextLPLessons = []
+  const upcomingLessons = []
+  const lessonIds = lessons.map((lesson: any) => lesson.id).filter(Boolean)
+
+  lessons.forEach((lesson: any) => {
+    if (todayContentIds.includes(lesson.id)) {
+      todaysLessons.push(lesson)
+    } else if (nextContentIds.includes(lesson.id)) {
+      nextLPLessons.push(lesson)
+    } else if (lesson.progressStatus === 'completed') {
+      completedLessons.push(lesson)
+    } else {
+      upcomingLessons.push(lesson)
     }
+  })
+
+  if (todaysLessons.length == 0 && nextLPLessons.length > 0) {
+    // Daily sessions first lessons are not part of the active learning path, but next lessons are
+    // load todays lessons from previous learning path
+    todaysLessons = await addContextToContent(
+      fetchByRailContentIds,
+      todayContentIds,
+      addContextParameters
+    )
+  } else if (nextContentIds.length > 0 && nextLPLessons.length == 0 && todaysLessons.length > 0) {
+    // Daily sessions first lessons are the active learning path and the next lessons are not
+    // load next lessons from next learning path
+    nextLPLessons = await addContextToContent(
+      fetchByRailContentIds,
+      nextContentIds,
+      addContextParameters
+    )
   }
 
   return {
@@ -131,15 +142,10 @@ export async function fetchLearningPathLessons(
     type: 'learning_path',
     thumbnail: learningPath.thumbnail,
     title: learningPath.title || '',
-    isActive: dailySession?.isActive || false,
-    completed,
-    upcoming,
-    nextPath,
-    today,
+    is_active_learning_path: isActiveLearningPath,
+    upcoming_lessons: upcomingLessons,
+    todays_lessons: todaysLessons,
+    next_learning_path_lessons: nextLPLessons,
+    completed_lessons: completedLessons,
   }
-}
-
-export async function getNextLearningPath(learningPathId: number, brand: string) {
-  const method = fetchMethodV2Structure(brand)
-  console.log(method)
 }
