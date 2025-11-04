@@ -411,6 +411,9 @@ export let contentTypeConfig = {
       'xp',
     ],
   },
+  'learning-path-v2': {
+    fields: ['total_skills']
+  },
   'learning-path-course': {
     fields: [
       '"lesson_count": child_count',
