@@ -10,7 +10,7 @@
       "src/services/content.js",
       "src/services/userActivity.js",
       "src/services/railcontent.js",
-      "src/services/liveTesting.js",
+      "src/services/liveTesting.ts",
       "src/services/forums",
       "src/index.js"
     ],
