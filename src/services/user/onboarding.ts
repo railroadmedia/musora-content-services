@@ -111,11 +111,12 @@ export async function userOnboardingForBrand(brand: string): Promise<Onboarding>
 }
 
 export interface OnboardingRecommendedContent {
+  id: number
   title: string
   difficulty: string
   lesson_count: number
   skill_count: number
-  award: string
+  badge: string
   description: string
   video: {
     external_id: string
@@ -136,11 +137,12 @@ export async function getOnboardingRecommendedContent(
 ): Promise<OnboardingRecommendedContent> {
   // TODO: Replace with real API call when available
   return {
+    id: 412405,
     title: 'Getting Started On The Piano',
     difficulty: 'Beginner',
     lesson_count: 4,
     skill_count: 3,
-    award:
+    badge:
       'https://cdn.sanity.io/files/4032r8py/staging/9470587f03479b7c1f8019c3cbcbdfe12aa267f3.png',
     description:
       'The goal of this course is to introduce you to the keys, and get you playing a song as fast as possible. ',
