@@ -13,7 +13,9 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	getActivePath,
 	getDailySession,
+	updateActivePath,
 	updateDailySession
 } from './services/content-org/learning-paths.ts';
 
@@ -37,6 +39,7 @@ import {
 
 import {
 	getContentRows,
+	getLegacyMethods,
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
@@ -321,7 +324,8 @@ import {
 
 import {
 	startOnboarding,
-	updateOnboarding
+	updateOnboarding,
+	userOnboardingForBrand
 } from './services/user/onboarding.ts';
 
 import {
@@ -511,6 +515,7 @@ export {
 	findIncompleteLesson,
 	followThread,
 	getActiveDiscussions,
+	getActivePath,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
@@ -518,6 +523,7 @@ export {
 	getContentRows,
 	getDailySession,
 	getLastInteractedOf,
+	getLegacyMethods,
 	getLessonContentRows,
 	getMonday,
 	getNavigateTo,
@@ -632,6 +638,7 @@ export {
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
+	updateActivePath,
 	updateDailySession,
 	updateDisplayName,
 	updateForumCategory,
@@ -645,6 +652,7 @@ export {
 	upgradeSubscription,
 	uploadPicture,
 	uploadPictureFromS3,
+	userOnboardingForBrand,
 	verifyImageSRC,
 	verifyLocalDataContext,
 };

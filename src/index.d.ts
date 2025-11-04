@@ -13,7 +13,9 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	getActivePath,
 	getDailySession,
+	updateActivePath,
 	updateDailySession
 } from './services/content-org/learning-paths.ts';
 
@@ -37,6 +39,7 @@ import {
 
 import {
 	getContentRows,
+	getLegacyMethods,
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
@@ -321,7 +324,8 @@ import {
 
 import {
 	startOnboarding,
-	updateOnboarding
+	updateOnboarding,
+	userOnboardingForBrand
 } from './services/user/onboarding.ts';
 
 import {
@@ -512,6 +516,7 @@ declare module 'musora-content-services' {
 		findIncompleteLesson,
 		followThread,
 		getActiveDiscussions,
+		getActivePath,
 		getAllCompleted,
 		getAllStarted,
 		getAllStartedOrCompleted,
@@ -519,6 +524,7 @@ declare module 'musora-content-services' {
 		getContentRows,
 		getDailySession,
 		getLastInteractedOf,
+		getLegacyMethods,
 		getLessonContentRows,
 		getMonday,
 		getNavigateTo,
@@ -633,6 +639,7 @@ declare module 'musora-content-services' {
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,
+		updateActivePath,
 		updateDailySession,
 		updateDisplayName,
 		updateForumCategory,
@@ -646,6 +653,7 @@ declare module 'musora-content-services' {
 		upgradeSubscription,
 		uploadPicture,
 		uploadPictureFromS3,
+		userOnboardingForBrand,
 		verifyImageSRC,
 		verifyLocalDataContext,
 	}

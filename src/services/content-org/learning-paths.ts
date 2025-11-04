@@ -29,3 +29,23 @@ export async function updateDailySession(brand: string, userDate: Date, keepFirs
   const body = { brand: brand, userDate: stringDate, keepFirstLearningPath: keepFirstLearningPath }
   return await fetchHandler(url, 'POST', null, body)
 }
+
+/**
+ * Gets user's active learning path.
+ * @param brand
+ */
+export async function getActivePath(brand: string) {
+  const url: string = `${BASE_PATH}/v1/user/learning-paths/active-path/get-or-create`
+  const body = { brand: brand }
+  return await fetchHandler(url, 'POST', null, body)
+}
+
+/**
+ * Updates user's active learning path.
+ * @param brand
+ */
+export async function updateActivePath(brand: string) {
+  const url: string = `${BASE_PATH}/v1/user/learning-paths/active-path/update`
+  const body = { brand: brand }
+  return await fetchHandler(url, 'POST', null, body)
+}
