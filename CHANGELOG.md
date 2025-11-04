@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.67.1](https://github.com/railroadmedia/musora-content-services/compare/v2.67.0...v2.67.1) (2025-11-04)
+
+## [2.67.0](https://github.com/railroadmedia/musora-content-services/compare/v2.66.0...v2.67.0) (2025-11-04)
+
+
+### Features
+
+* **BEH-1377:** active path ([#533](https://github.com/railroadmedia/musora-content-services/issues/533)) ([1135271](https://github.com/railroadmedia/musora-content-services/commit/11352714d4228e21f5ac2974d59e6c2805fe900f))
+
+## [2.66.0](https://github.com/railroadmedia/musora-content-services/compare/v2.65.0...v2.66.0) (2025-11-03)
+
+
+### Features
+
+* legacy methods function with mock data ([#534](https://github.com/railroadmedia/musora-content-services/issues/534)) ([76f74d2](https://github.com/railroadmedia/musora-content-services/commit/76f74d255ab6b6b35ef6422a7952b4f75b551b8c))
+
+## [2.65.0](https://github.com/railroadmedia/musora-content-services/compare/v2.64.0...v2.65.0) (2025-11-03)
+
+
+### Features
+
+* **MU2E1-168:** onboarding status function ([#530](https://github.com/railroadmedia/musora-content-services/issues/530)) ([1e1cf78](https://github.com/railroadmedia/musora-content-services/commit/1e1cf78afb452792a859ab808d3c0ff1d59ddc6f))
+
 ## [2.64.0](https://github.com/railroadmedia/musora-content-services/compare/v2.62.1...v2.64.0) (2025-11-03)
 
 

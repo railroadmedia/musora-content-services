@@ -68,12 +68,22 @@ export interface RestorePurchasesSuccessResponse {
 }
 
 /**
+ * Represents the response when user should setup an account (entitlements found but account requires setup)
+ */
+export interface RestorePurchasesSetupAccountResponse {
+  shouldSetupAccount: true
+  email: string
+  originalAppUserId: string
+}
+
+/**
  * Represents all possible responses from RevenueCat purchase restoration
  */
 export type RestorePurchasesResponse =
   | RestorePurchasesCreateAccountResponse
   | RestorePurchasesShouldLoginResponse
   | RestorePurchasesSuccessResponse
+  | RestorePurchasesSetupAccountResponse
 
 /**
  * Fetches the authenticated user's memberships from the API.
