@@ -14,7 +14,7 @@
  *
  * @example
  * // Check a Sanity URL inside a Cloudflare URL
- * verifyImageSRC('https://www.musora.com/cdn-cgi/image/width=500,quality=95/https://cdn.sanity.io/images/4032r8py/staging/504c4e3393170f937a579de6f3c75c457b0c9e65-640x360.jpg');
+ * verifyImageSRC('https://www.musora-cdn.com/cdn-cgi/image/width=500,quality=95/https://cdn.sanity.io/images/4032r8py/staging/504c4e3393170f937a579de6f3c75c457b0c9e65-640x360.jpg');
  */
 export function verifyImageSRC(src) {
   // Exit early if the URL is empty

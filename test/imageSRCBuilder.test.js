@@ -30,7 +30,7 @@ describe('imageSRCBuilder', function () {
       height: height,
     })
 
-    const expected = `https://www.musora.com/cdn-cgi/image/width=${width},height=${height},quality=${quality}/${url}`
+    const expected = `https://www.musora-cdn.com/cdn-cgi/image/width=${width},height=${height},quality=${quality}/${url}`
 
     expect(resultingURL).toStrictEqual(expected)
   })

@@ -81,7 +81,7 @@ describe('Image URL Verification', () => {
     test('should extract and validate Sanity URL from Cloudflare wrapper', () => {
       // Arrange
       const url =
-        'https://www.musora.com/cdn-cgi/image/width=500,quality=95/https://cdn.sanity.io/images/4032r8py/staging/504c4e3393170f937a579de6f3c75c457b0c9e65-640x360.jpg'
+        'https://www.musora-cdn.com/cdn-cgi/image/width=500,quality=95/https://cdn.sanity.io/images/4032r8py/staging/504c4e3393170f937a579de6f3c75c457b0c9e65-640x360.jpg'
 
       // Act
       verifyImageSRC(url)
@@ -96,7 +96,7 @@ describe('Image URL Verification', () => {
     test('should not warn for Cloudflare wrapped Sanity URL with parameters', () => {
       // Arrange
       const url =
-        'https://www.musora.com/cdn-cgi/image/width=500,quality=95/https://cdn.sanity.io/images/4032r8py/staging/504c4e3393170f937a579de6f3c75c457b0c9e65-640x360.jpg?w=500&q=95'
+        'https://www.musora-cdn.com/cdn-cgi/image/width=500,quality=95/https://cdn.sanity.io/images/4032r8py/staging/504c4e3393170f937a579de6f3c75c457b0c9e65-640x360.jpg?w=500&q=95'
 
       // Act
       verifyImageSRC(url)
@@ -125,7 +125,7 @@ describe('Image URL Verification', () => {
     test('should extract Sanity URL from Cloudflare wrapper', () => {
       // Arrange
       const wrappedUrl =
-        'https://www.musora.com/cdn-cgi/image/width=500,quality=95/https://cdn.sanity.io/images/123/production/image.jpg'
+        'https://www.musora-cdn.com/cdn-cgi/image/width=500,quality=95/https://cdn.sanity.io/images/123/production/image.jpg'
       const expectedExtracted = 'https://cdn.sanity.io/images/123/production/image.jpg'
 
       // Act
@@ -148,7 +148,7 @@ describe('Image URL Verification', () => {
 
     test('should handle malformed Cloudflare URLs gracefully', () => {
       // Arrange
-      const malformedUrl = 'https://www.musora.com/cdn-cgi/image/width=500'
+      const malformedUrl = 'https://www.musora-cdn.com/cdn-cgi/image/width=500'
 
       // Act
       const result = extractSanityUrl(malformedUrl)

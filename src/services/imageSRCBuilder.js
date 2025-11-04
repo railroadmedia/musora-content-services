@@ -137,5 +137,5 @@ export function applyCloudflareWrapper(url, options) {
 
   const optionsString = cloudflareOptions.length > 0 ? cloudflareOptions.join(',') : ''
 
-  return `https://www.musora.com/cdn-cgi/image/${optionsString}/${url}`
+  return `https://www.musora-cdn.com/cdn-cgi/image/${optionsString}/${url}`
 }
