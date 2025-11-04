@@ -840,6 +840,10 @@ const filterHandlers = {
       [Tabs.JamTracks.name.toLowerCase()]: jamTrackLessonTypes,
       [Tabs.ExploreAll.name.toLowerCase()]: filterTypes[pageName] || [],
       [Tabs.RecentAll.name.toLowerCase()]: recentTypes[pageName] || [],
+      [Tabs.SingleLessons.name.toLowerCase()]: individualLessonsTypes,
+      [Tabs.Courses.name.toLowerCase()]: coursesLessonTypes,
+      [Tabs.SkillPacks.name.toLowerCase()]: skillLessonTypes,
+      [Tabs.Entertainment.name.toLowerCase()]: entertainmentLessonTypes,
     }
 
     const lessonTypes = tabMappings[valueLower]
