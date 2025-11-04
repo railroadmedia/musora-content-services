@@ -14,6 +14,12 @@ export interface OnboardingSteps {
   goals?: string[]
   practice_frequency?: string
   enable_notifications?: boolean
+  recommendation?:
+    | {
+        accepted: true
+        content_id: number
+      }
+    | { accepted: false }
 }
 
 export interface StartOnboardingParams {
