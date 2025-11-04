@@ -3,7 +3,7 @@
  */
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
-import {ForumPost} from './types'
+import { ForumPost } from './types'
 import { PaginatedResponse } from '../api/types'
 
 const baseUrl = `/api/forums`
@@ -21,10 +21,7 @@ export interface CreatePostParams {
  * @returns {Promise<ForumPost>} - A promise that resolves to the created post.
  * @throws {HttpError} - If the request fails.
  */
-export async function createPost(
-  threadId: number,
-  params: CreatePostParams
-): Promise<ForumPost> {
+export async function createPost(threadId: number, params: CreatePostParams): Promise<ForumPost> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<ForumPost>(`${baseUrl}/v1/threads/${threadId}/posts`, params)
 }
@@ -37,18 +34,14 @@ export async function createPost(
  * @returns {Promise<ForumPost>} - A promise that resolves to the updated post.
  * @throws {HttpError} - If the request fails.
  */
-export async function updatePost(
-  postId: number,
-  params: CreatePostParams
-): Promise<ForumPost> {
+export async function updatePost(postId: number, params: CreatePostParams): Promise<ForumPost> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.put<ForumPost>(`${baseUrl}/v1/posts/${postId}`, params)
 }
 
-
 export interface FetchPostParams {
-  page?: number,
-  limit?: number,
+  page?: number
+  limit?: number
   /** Sort order: "-published_on" (default), "published_on", or "mine". */
   sort?: '-published_on' | string
 }
@@ -67,9 +60,14 @@ export async function fetchPosts(
   params: FetchPostParams = {}
 ): Promise<PaginatedResponse<ForumPost>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  const queryObj: Record<string, string> = { brand, ...Object.fromEntries(
-      Object.entries(params).filter(([_, v]) => v !== undefined && v !== null).map(([k, v]) => [k, String(v)])
-    )}
+  const queryObj: Record<string, string> = {
+    brand,
+    ...Object.fromEntries(
+      Object.entries(params)
+        .filter(([_, v]) => v !== undefined && v !== null)
+        .map(([k, v]) => [k, String(v)])
+    ),
+  }
   const query = new URLSearchParams(queryObj).toString()
 
   const url = `${baseUrl}/v1/threads/${threadId}/posts?${query}`
@@ -126,7 +124,7 @@ export async function deletePost(postId: number, brand: string): Promise<void> {
 export async function fetchCommunityGuidelines(brand: string): Promise<ForumPost[]> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   const url = `${baseUrl}/v1/rules?brand=${brand}`
-  return httpClient.get<ForumPost[]>(url);
+  return httpClient.get<ForumPost[]>(url)
 }
 
 export interface SearchParams {
@@ -134,8 +132,8 @@ export interface SearchParams {
   limit?: number,
   category_id?: number,
   /** Sort order: "-published_on" (default), "published_on", or "mine". */
-  sort?: '-published_on' | string,
-  term: string
+  sort?: '-published_on' | string
+  term?: string
 }
 
 /**
@@ -151,9 +149,14 @@ export async function search(
   params: SearchParams
 ): Promise<PaginatedResponse<ForumPost>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  const queryObj: Record<string, string> = { brand, ...Object.fromEntries(
-      Object.entries(params).filter(([_, v]) => v !== undefined && v !== null).map(([k, v]) => [k, String(v)])
-    )}
+  const queryObj: Record<string, string> = {
+    brand,
+    ...Object.fromEntries(
+      Object.entries(params)
+        .filter(([_, v]) => v !== undefined && v !== null)
+        .map(([k, v]) => [k, String(v)])
+    ),
+  }
   const query = new URLSearchParams(queryObj).toString()
 
   const url = `${baseUrl}/v1/search?${query}`
@@ -175,12 +178,16 @@ export async function jumpToPost(
   params: FetchPostParams = {}
 ): Promise<PaginatedResponse<ForumPost>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  const queryObj: Record<string, string> = { brand, ...Object.fromEntries(
-      Object.entries(params).filter(([_, v]) => v !== undefined && v !== null).map(([k, v]) => [k, String(v)])
-    )}
+  const queryObj: Record<string, string> = {
+    brand,
+    ...Object.fromEntries(
+      Object.entries(params)
+        .filter(([_, v]) => v !== undefined && v !== null)
+        .map(([k, v]) => [k, String(v)])
+    ),
+  }
   const query = new URLSearchParams(queryObj).toString()
 
   const url = `${baseUrl}/v1/posts/${postId}/jump?${query}`
   return httpClient.get<PaginatedResponse<ForumPost>>(url)
 }
-
