@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.68.0](https://github.com/railroadmedia/musora-content-services/compare/v2.67.2...v2.68.0) (2025-11-04)
+
+
+### Features
+
+* add fields for learning path v2 ([#537](https://github.com/railroadmedia/musora-content-services/issues/537)) ([b2bcbd2](https://github.com/railroadmedia/musora-content-services/commit/b2bcbd2306afa730e5c61d6ee34fe082212dfdbb))
+
 ### [2.67.2](https://github.com/railroadmedia/musora-content-services/compare/v2.67.1...v2.67.2) (2025-11-04)
 
 ### [2.67.1](https://github.com/railroadmedia/musora-content-services/compare/v2.67.0...v2.67.1) (2025-11-04)
