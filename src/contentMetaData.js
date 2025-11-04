@@ -4,6 +4,24 @@
 const PROGRESS_NAMES = ['All', 'In Progress', 'Completed', 'Not Started']
 const DIFFICULTY_STRINGS = ['Introductory', 'Beginner', 'Intermediate', 'Advanced', 'Expert']
 
+const LESSON_TYPE_FILTER = [
+  {
+    title: 'Single Lessons',
+    children: ['Lessons', 'Practice Alongs', 'Live Archives', 'Student Archives']
+  },
+  {
+    title: 'Courses',
+    children: ['Courses', 'Guided Courses', 'Tiered Courses']
+  },
+  {
+    title: 'Skill Packs',
+  },
+  {
+    title: 'Entertainment',
+    children: ['Specials', 'Documentaries', 'Shows']
+  }
+]
+
 class SortingOptions {
   static Popularity = { value: '-popularity', name: 'Most Popular' }
   static PopularityDesc = { value: 'recommended', name: 'Recommended' }
@@ -65,7 +83,7 @@ const commonMetadata = {
     filterOptions: {
       difficulty: DIFFICULTY_STRINGS,
       style: ['Country/Folk', 'Funk/Disco', 'Hard Rock/Metal', 'Hip-Hop/Rap/EDM', 'Holiday/Soundtrack', 'Jazz/Blues', 'Latin/World', 'Pop/Rock', 'R&B/Soul', 'Worship/Gospel'],
-      type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Live Archives', 'Student Archives'],
+      type: LESSON_TYPE_FILTER,
       progress: PROGRESS_NAMES,
     },
     sortingOptions: {
@@ -140,7 +158,7 @@ const contentMetadata = {
       filterOptions: {
         difficulty: DIFFICULTY_STRINGS,
         style: ['Country/Folk', 'Funk/Disco', 'Hard Rock/Metal', 'Hip-Hop/Rap/EDM', 'Holiday/Soundtrack', 'Jazz/Blues', 'Latin/World', 'Pop/Rock', 'R&B/Soul', 'Worship/Gospel'],
-        type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Shows', 'Documentaries', 'Live Archives', 'Student Archives'],
+        type: LESSON_TYPE_FILTER,
         progress: PROGRESS_NAMES,
       },
       sortingOptions: {
@@ -165,7 +183,7 @@ const contentMetadata = {
       filterOptions: {
         difficulty: DIFFICULTY_STRINGS,
         style: ['Classical', 'Country/Folk', 'Funk/Disco', 'Hip-Hop/Rap/EDM', 'Holiday/Soundtrack', 'Jazz/Blues', 'Latin/World', 'Pop/Rock', 'R&B/Soul', 'Worship/Gospel'],
-        type: ['Single Lessons', 'Practice Alongs', 'Performances', 'Courses', 'Live Archives', 'Student Archives'],
+        type: LESSON_TYPE_FILTER,
         progress: PROGRESS_NAMES,
       },
       sortingOptions: {
@@ -246,17 +264,62 @@ const filterTypes = {
 
 /**
  * Transforms filterOptions into the required format
+ * Supports both flat and hierarchical (two-layer) filter structures
+ *
+ * @param {Object} filterOptions - The raw filter options object
+ * @returns {Array} Transformed filter groups with items
+ *
+ * Hierarchical Structure Format:
+ * Input: [{ parent: 'Category', children: ['Sub1', 'Sub2'] }]
+ * Output: Parent items with nested children in 'items' property
+ *
+ * This nested structure provides clear parent-child relationships
+ * and is ideal for collapsible groups and hierarchical rendering
  */
 function transformFilters(filterOptions) {
-  return Object.entries(filterOptions).map(([key, values]) => ({
-    title: capitalizeFirstLetter(key),
-    type: filterTypes[key] || 'checkbox',
-    key,
-    items: values.map(value => ({
-      name: value,
-      value: `${key},${key === 'progress' ? value.toLowerCase() : value}`,
-    })),
-  }))
+  return Object.entries(filterOptions).map(([key, values]) => {
+    // Check if values is hierarchical (array of objects with title property)
+    // We check for 'title' property to distinguish from simple string arrays
+    const isHierarchical = Array.isArray(values) &&
+      values.length > 0 &&
+      typeof values[0] === 'object' &&
+      values[0].title !== undefined;
+
+    if (isHierarchical) {
+      // Handle hierarchical structure - nest children inside parents
+      const items = values.map(group => ({
+        name: group.title,
+        value: `${key},${group.title}`,
+        // Only include isParent and items if children exist
+        ...(group.children && group.children.length > 0 && {
+          isParent: true,
+          items: group.children.map(child => ({
+            name: child,
+            value: `${key},${child}`,
+          }))
+        })
+      }));
+
+      return {
+        title: capitalizeFirstLetter(key),
+        type: filterTypes[key] || 'checkbox',
+        key,
+        items,
+        isHierarchical: true,
+      };
+    } else {
+      // Handle flat structure (existing behavior - no changes)
+      return {
+        title: capitalizeFirstLetter(key),
+        type: filterTypes[key] || 'checkbox',
+        key,
+        items: values.map(value => ({
+          name: value,
+          value: `${key},${key === 'progress' ? value.toLowerCase() : value}`,
+        })),
+      };
+    }
+  });
 }
 
 /**

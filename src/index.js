@@ -13,7 +13,9 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	getActivePath,
 	getDailySession,
+	updateActivePath,
 	updateDailySession
 } from './services/content-org/learning-paths.ts';
 
@@ -518,6 +520,7 @@ export {
 	findIncompleteLesson,
 	followThread,
 	getActiveDiscussions,
+	getActivePath,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
@@ -640,6 +643,7 @@ export {
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
+	updateActivePath,
 	updateDailySession,
 	updateDisplayName,
 	updateForumCategory,

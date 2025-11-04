@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.67.2](https://github.com/railroadmedia/musora-content-services/compare/v2.67.1...v2.67.2) (2025-11-04)
+
+### [2.67.1](https://github.com/railroadmedia/musora-content-services/compare/v2.67.0...v2.67.1) (2025-11-04)
+
+## [2.67.0](https://github.com/railroadmedia/musora-content-services/compare/v2.66.0...v2.67.0) (2025-11-04)
+
+
+### Features
+
+* **BEH-1377:** active path ([#533](https://github.com/railroadmedia/musora-content-services/issues/533)) ([1135271](https://github.com/railroadmedia/musora-content-services/commit/11352714d4228e21f5ac2974d59e6c2805fe900f))
+
 ## [2.66.0](https://github.com/railroadmedia/musora-content-services/compare/v2.65.0...v2.66.0) (2025-11-03)
 
 
