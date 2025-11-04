@@ -2288,12 +2288,19 @@ export async function fetchMethodV2IntroVideo(brand) {
   return fetchSanity(query, false);
 }
 
-export async function fetchFullMethodV2StructureFor(brand) {
+/**
+ * Fetch the structure (just ids) of the Method for a given brand.
+ * @param brand
+ * @returns {Promise<*|null>}
+ */
+export async function fetchMethodV2Structure(brand) {
   const _type = "method-v2";
-  const filter = `_type == '${_type}' && brand == '${brand}'`;
-
-  const fields = contentTypeConfig[_type];
-  const query = `*[${filter}] { ${fields.join(",")} }`;
-
-  return await fetchSanity(query, true);
+  const query = `*[_type == '${_type}' && brand == '${brand}'][0...1]{
+    'sanity_id': _id,
+    'learningPaths': child[]->{
+      'id': railcontent_id,
+      'children': child[]->railcontent_id
+    }
+  }`;
+  return await fetchSanity(query, false);
 }

@@ -612,6 +612,7 @@ export let contentTypeConfig = {
 
 export function getIntroVideoFields() {
   return [
+    `"type": _type`,
     "brand",
     `"description": ${descriptionField}`,
     `"thumbnail": thumbnail.asset->url`,

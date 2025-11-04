@@ -44,7 +44,6 @@ import {
 
 const DATA_KEY_PRACTICES = 'practices'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
-const PARENT_TYPE_LEARNING_PATH = 1;
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
@@ -1029,7 +1028,7 @@ function generateContentsMap(contents, playlistsContents, methodProgressContents
       parentIds.forEach((id) => contentsMap.delete(id))
     }
   }
-  if (methodProgressContents) {
+  if (methodProgressContents && Object.keys(methodProgressContents).length) {
     for (const item of methodProgressContents) {
       const contentId = item.id
       contentsMap.delete(contentId)
@@ -1058,7 +1057,7 @@ function generateContentsMap(contents, playlistsContents, methodProgressContents
  *   .catch(error => console.error(error));
  */
 export async function getProgressRows({
-                                        brand = null,
+                                        brand = "drumeo",
                                         limit = 8,
                                         methodStructure = null,
                                         activePathId = null,
@@ -1074,6 +1073,65 @@ export async function getProgressRows({
       getUserPinnedItem(brand),
     ])
 
+  //Rob note: leaving the mock data as comments here
+
+  // activePathId = 422533
+
+  // methodStructure = {
+  //   "learningPaths": [
+  //     {
+  //       "children": [
+  //         417101,
+  //         422526
+  //       ],
+  //       "id": 422533
+  //     },
+  //     {
+  //       "children": [
+  //         417105,
+  //         417111,
+  //         417117,
+  //         417106,
+  //         417112,
+  //         417118,
+  //         417107,
+  //         417113,
+  //         417119,
+  //         416951,
+  //         417108,
+  //         416952,
+  //         417114,
+  //         416953,
+  //         417121,
+  //         416954,
+  //         417109,
+  //         416955,
+  //         417115,
+  //         416956,
+  //         417122,
+  //         416957
+  //       ],
+  //       "id": 417140
+  //     }
+  //   ],
+  //   "sanity_id": "6e2700ba-075f-46ff-a2f7-c8346919d394"
+  // }
+
+  // const userPinnedItem = {
+  //   id: 0,
+  //   progressType: 'method',
+  // }
+
+  // const methodProgressContents = {
+    // 417101: {
+    //   progress: '100',
+    //   status: 'completed',
+    //   brand: 'pianote',
+    //   collectionType: 'learning-path',
+    //   collectionId: 422533,
+    // }
+  // }
+
   const playlists = recentPlaylists?.data || []
   const eligiblePlaylistItems = await getEligiblePlaylistItems(playlists)
   const playlistEngagedOnContents = eligiblePlaylistItems.map(
@@ -1086,11 +1144,11 @@ export async function getProgressRows({
     nonPlaylistContentIds.push(userPinnedItem.id)
   }
 
-  const activePath = methodStructure.child.find(child => child.id === activePathId)
-  const activePathWithLessons = {learningPathId: activePath.id, contentIds: activePath.child.map(lesson => lesson.id)}
+  const activePath = methodStructure.learningPaths.find(learningPath => learningPath.id === activePathId)
+  const activePathWithLessons = {learningPathId: activePath.id, contentIds: activePath.children}
 
   const methodCardData = await getNextLearningPathLessonsForMethod(methodProgressContents, activePathWithLessons, dailySession)
-  const methodCardIds = methodCardData?.next.map(item => item.contentIds).flat() // returns null if method intro video card
+  const methodCardIds = methodCardData?.next ? methodCardData.next.map(item => item.contentIds).flat() : null // returns null if method intro video card
 
   //need to update addContextToContent to accept collection info
   const [playlistsContents, contents, methodCardContents] = await Promise.all([
@@ -1109,6 +1167,7 @@ export async function getProgressRows({
       addProgressTimestamp: true,
     }) : Promise.resolve([]),
 
+    // will have to mock this. look inside for the format
     methodCardIds ? addContextToContent(fetchByRailContentIds, methodCardIds, 'progress-tracker', brand, {
       addProgressStatus: true,
       addProgressPercentage: true,
@@ -1125,7 +1184,7 @@ export async function getProgressRows({
       content_ids: [...methodCardContents],
       dailyComplete: methodCardData.dailyComplete,
       progressTimestamp: Math.max(
-        ...methodCardContents.map(item => item.progressTimestamp || 0)
+        ...methodProgressContents.map(item => item.progressTimestamp || 0) // get most recent activity of all method progress items
       )
     }
     : {
@@ -1133,6 +1192,7 @@ export async function getProgressRows({
       id: 0,
       progressTimestamp: 0
     }
+
 
   //need to exclude standard progress copies that originated from a method
   const contentsMap = generateContentsMap(contents, playlistsContents, methodProgressContents)
@@ -1144,6 +1204,7 @@ export async function getProgressRows({
     methodCard,
     limit
   )
+
   const results = await Promise.all(
     combined
       .slice(0, limit)
