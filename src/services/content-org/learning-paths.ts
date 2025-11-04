@@ -173,17 +173,18 @@ interface NextLessonsResponse {
  * @param dailySession
  */
 export async function getNextLearningPathLessonsForMethod(
-    progressData: object[]|null,
+    progressData: object|null,
     activePath: DailySessionItem|null, //turns out this is the right structure. this is not the cached value
     dailySession: DailySessionItem[]|null,
 ): Promise<NextLessonsResponse|null> {
-  if (!progressData) {
-    console.log('null', null)
+  if (!progressData || Object.keys(progressData).length === 0) {
     return null
 
   } else {
     const dailySessionIds = dailySession?.map((item: DailySessionItem) => item.contentIds).flat()
-    const dailySessionProgress = dailySessionIds ? progressData.filter((item: any) => dailySessionIds.includes(item.content_id)) : null
+    const dailySessionProgress = dailySessionIds
+      ? Object.values(progressData).filter((item: any) => dailySessionIds.includes(item.content_id))
+      : null
 
     const isDailyComplete = dailySessionProgress ? areAllCompleted(dailySessionProgress) : false
 
@@ -192,7 +193,7 @@ export async function getNextLearningPathLessonsForMethod(
 
     } else {
       // active path is set if daily session is.
-      const learningPathProgress = progressData.filter((item: any) => activePath.contentIds.includes(item.content_id))
+      const learningPathProgress = Object.values(progressData).filter((item: any) => activePath.contentIds.includes(item.content_id))
 
       if (areAllCompleted(learningPathProgress)) {
         return {next: [], dailyComplete: isDailyComplete}

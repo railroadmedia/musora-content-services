@@ -703,6 +703,8 @@ export function getIntroVideoFields() {
   return [
     'title',
     'brand',
+    `"type": _type`,
+    "brand",
     `"description": ${descriptionField}`,
     `"thumbnail": thumbnail.asset->url`,
     'length_in_seconds',
