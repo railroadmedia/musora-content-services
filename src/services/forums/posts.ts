@@ -132,6 +132,7 @@ export async function fetchCommunityGuidelines(brand: string): Promise<ForumPost
 export interface SearchParams {
   page?: number,
   limit?: number,
+  category_id?: number,
   /** Sort order: "-published_on" (default), "published_on", or "mine". */
   sort?: '-published_on' | string,
   term: string
@@ -147,7 +148,7 @@ export interface SearchParams {
  */
 export async function search(
   brand: string,
-  params: SearchParams = {}
+  params: SearchParams
 ): Promise<PaginatedResponse<ForumPost>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   const queryObj: Record<string, string> = { brand, ...Object.fromEntries(
