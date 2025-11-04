@@ -151,6 +151,10 @@ import {
 } from './services/imageSRCVerify.js';
 
 import {
+	createTestUser
+} from './services/liveTesting.ts';
+
+import {
 	assignModeratorToComment,
 	closeComment,
 	createComment,
@@ -398,6 +402,7 @@ export {
 	createPlaylist,
 	createPost,
 	createPracticeNotes,
+	createTestUser,
 	createThread,
 	deleteAccount,
 	deleteComment,

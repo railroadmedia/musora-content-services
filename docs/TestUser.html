@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>gamification/awards.ts - Documentation</title>
+    <title>TestUser - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,128 +35,207 @@
 
 <div id="main">
     
-    <h1 class="page-title">gamification/awards.ts</h1>
+    <h1 class="page-title">TestUser</h1>
     
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @module Awards
- */
+        <h2>
+        
+            TestUser
+        
+        </h2>
+        
+    
+</header>
 
-import { HttpClient } from '../../infrastructure/http/HttpClient'
-import { PaginatedResponse } from '../api/types'
-import { globalConfig } from '../config'
+<article>
+    
+        <div class="container-overview">
+        
+            
 
-const baseUrl = `/api/gamification`
+<dl class="details">
+    
 
-export interface Award {
-  id: number
-  user_id: number
-  completed_at: string          // ISO-8601 timestamp
-  completion_data: Object
-  award_id: number
-  type: string
-  title: string
-  badge: string
-}
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="liveTesting.ts.html">liveTesting.ts</a>, <a href="liveTesting.ts.html#line10">line 10</a>
+    </li></ul></dd>
+    
 
-export interface Certificate {
-  id: number
-  user_name: string
-  user_id: number
-  completed_at: string          // ISO-8601 timestamp
-  message: string
-  award_id: number
-  type: string
-  title: string
-  musora_logo: string
-  musora_logo_64: string
-  musora_bg_logo: string
-  musora_bg_logo_64: string
-  brand_logo: string
-  brand_logo_64: string
-  ribbon_image: string
-  ribbon_image_64: string
-  award_image: string
-  award_image_64: string
-  instructor_name: string
-  instructor_signature?: string
-  instructor_signature_64?: string
-}
-/**
- * Get awards for a specific user.
- *
- * NOTE: needs error handling for the response from http client
- * (Alexandre: I'm doing it in a different branch/PR: https://github.com/railroadmedia/musora-content-services/pull/349)
- * NOTE: This function still expects brand because FE passes the argument. It is ignored for now
- *
- * @param {number} userId - The user ID. If not provided, the authenticated user is used instead.
- * @param {string} _brand - The brand to fetch the awards for.
- * @param {number|null} [page=1] - Page attribute for pagination
- * @param {number|null} [limit=5] - Limit how many items to return
- * @returns {Promise&lt;PaginatedResponse&lt;Award>>} - The awards for the user.
- */
-export async function fetchAwardsForUser(
-  userId: number,
-  _brand: string,
-  page: number = 1,
-  limit: number = 5
-): Promise&lt;PaginatedResponse&lt;Award>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  const response = await httpClient.get&lt;PaginatedResponse&lt;Award>>(
-    `${baseUrl}/v1/users/${userId}/awards?limit=${limit}&amp;page=${page}`
-  )
+    
 
-  return response
-}
+    
 
-/**
- * Get award progress for the guided course lesson for the authorized user.
- *
- * NOTE: needs error handling for the response from http client
- * (Alexandre: I'm doing it in a different branch/PR: https://github.com/railroadmedia/musora-content-services/pull/349)
- * NOTE: This function still expects brand because FE passes the argument. It is ignored for now
- *
- * @param {number} guidedCourseLessonId - The guided course lesson Id
- * @returns {Promise&lt;Award>} - The award data for a given award and given user.
- */
-export async function getAwardDataForGuidedContent(
-  guidedCourseLessonId,
-): Promise&lt;Award> {
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  const response = await httpClient.get&lt;Award>(
-    `${baseUrl}/v1/users/guided_course_award/${guidedCourseLessonId}`
-  )
+    
 
-  return response
-}
+    
 
-/**
- * Get certificate data for a completed user award
- *
- * NOTE: needs error handling for the response from http client
- * (Alexandre: I'm doing it in a different branch/PR: https://github.com/railroadmedia/musora-content-services/pull/349)
- * NOTE: This function still expects brand because FE passes the argument. It is ignored for now
- *
- * @param {number} userAwardId - The user award progress id
- * @returns {Promise&lt;Certificate>} - The certificate data for the completed user award.
- */
-export async function fetchCertificate(userAwardId: number): Promise&lt;Certificate> {
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  const response = await httpClient.get&lt;Certificate>(
-    `${baseUrl}/v1/users/certificate/${userAwardId}`
-  )
-  return response
-}
-</code></pre>
-        </article>
-    </section>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>user</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#User">User</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The user object containing user details.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>brand</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The brand associated with the test user.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>verificationToken</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The verification token for the test user.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+            
+
+            
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 
