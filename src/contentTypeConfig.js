@@ -411,6 +411,16 @@ export let contentTypeConfig = {
       'xp',
     ],
   },
+  'learning-path-v2': {
+    fields: [
+      'total_skills',
+      `"resource": ${resourcesField}`,
+      `"badge": *[
+        _type == "content-award" &&
+        content._ref == ^._id
+      ][0].badge.asset->url`,
+    ],
+  },
   'learning-path-course': {
     fields: [
       '"lesson_count": child_count',
