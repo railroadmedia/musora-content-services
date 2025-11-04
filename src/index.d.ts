@@ -13,7 +13,9 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	getActivePath,
 	getDailySession,
+	updateActivePath,
 	updateDailySession
 } from './services/content-org/learning-paths.ts';
 
@@ -514,6 +516,7 @@ declare module 'musora-content-services' {
 		findIncompleteLesson,
 		followThread,
 		getActiveDiscussions,
+		getActivePath,
 		getAllCompleted,
 		getAllStarted,
 		getAllStartedOrCompleted,
@@ -636,6 +639,7 @@ declare module 'musora-content-services' {
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,
+		updateActivePath,
 		updateDailySession,
 		updateDisplayName,
 		updateForumCategory,
