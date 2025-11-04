@@ -5,7 +5,12 @@ import {FilterBuilder} from "./filterBuilder.js";
 export const AWSUrl = 'https://s3.us-east-1.amazonaws.com/musora-web-platform'
 export const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net'
 
+// This is used to pull related content by license, so we only show "consumable" content
 export const SONG_TYPES = ['song', 'play-along', 'jam-track', 'song-tutorial-children']
+// Oct 2025: It turns out content-meta categories are not really clear
+// THis is used for the page_type field as a post processor so we include parents and children
+ // Duplicated in SanityGateway.php if you update this, update that
+export const SONG_TYPES_WITH_CHILDREN = ['song', 'song-part', 'play-along', 'play-along-part', 'jam-track', 'song-tutorial', 'song-tutorial-children']
 // Single hierarchy refers to only one element in the hierarchy has video lessons, not that they have a single parent
 export const SINGLE_PARENT_TYPES = ['course-part', 'pack-bundle-lesson', 'song-tutorial-children']
 

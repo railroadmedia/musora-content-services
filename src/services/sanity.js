@@ -20,6 +20,7 @@ import {
   getFieldsForContentTypeWithFilteredChildren,
   getChildFieldsForContentType,
   SONG_TYPES,
+  SONG_TYPES_WITH_CHILDREN,
 } from '../contentTypeConfig.js'
 import {fetchSimilarItems, recommendations} from './recommendations.js'
 import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
@@ -1821,6 +1822,7 @@ export async function fetchSanity(
       results = processNeedAccess
         ? await needsAccessDecorator(results, userPermissions, isAdmin)
         : results
+      results = pageTypeDecorator(results)
       return customPostProcess ? customPostProcess(results) : results
     } else {
       throw new Error('No results found')
@@ -1831,35 +1833,44 @@ export async function fetchSanity(
   }
 }
 
-function needsAccessDecorator(results, userPermissions, isAdmin) {
-  if (globalConfig.sanityConfig.useDummyRailContentMethods) return results
-
-  userPermissions = new Set(userPermissions)
-
+function contentResultsDecorator(results, fieldName, callback)
+{
   if (Array.isArray(results)) {
     results.forEach((result) => {
-      result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin)
+      result[fieldName] = callback(result)
     })
   } else if (results.entity && Array.isArray(results.entity)) {
     // Group By
     results.entity.forEach((result) => {
       if (result.lessons) {
         result.lessons.forEach((lesson) => {
-          lesson['need_access'] = doesUserNeedAccessToContent(lesson, userPermissions, isAdmin) // Updated to check lesson access
+          lesson[fieldName] = callback(lesson) // Updated to check lesson access
         })
       } else {
-        result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin)
+        result[fieldName] = callback(result)
       }
     })
   } else if (results.related_lessons && Array.isArray(results.related_lessons)) {
     results.related_lessons.forEach((result) => {
-      result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin)
+      result[fieldName] = callback(result)
     })
   } else {
-    results['need_access'] = doesUserNeedAccessToContent(results, userPermissions, isAdmin)
+    results[fieldName] = callback(results)
   }
 
   return results
+}
+
+function pageTypeDecorator(results)
+{
+  return contentResultsDecorator(results, 'page_type', function(content) { return SONG_TYPES_WITH_CHILDREN.includes(content['type']) ? 'song' : 'lesson'})
+}
+
+
+function needsAccessDecorator(results, userPermissions, isAdmin) {
+  if (globalConfig.sanityConfig.useDummyRailContentMethods) return results
+  userPermissions = new Set(userPermissions)
+  return contentResultsDecorator(results, 'need_access', function (content) { return doesUserNeedAccessToContent(content, userPermissions, isAdmin) })
 }
 
 function doesUserNeedAccessToContent(result, userPermissions, isAdmin) {
