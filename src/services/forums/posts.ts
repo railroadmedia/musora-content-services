@@ -148,7 +148,7 @@ export interface SearchParams {
  */
 export async function search(
   brand: string,
-  params: SearchParams = {}
+  params: SearchParams
 ): Promise<PaginatedResponse<ForumPost>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   const queryObj: Record<string, string> = { brand, ...Object.fromEntries(
