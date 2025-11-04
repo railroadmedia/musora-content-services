@@ -414,7 +414,7 @@ export let contentTypeConfig = {
   'learning-path-v2': {
     fields: [
       'total_skills',
-      'resource',
+      `"resource": ${resourcesField}`,
       `"badge": *[
         _type == "content-award" &&
         content._ref == ^._id
