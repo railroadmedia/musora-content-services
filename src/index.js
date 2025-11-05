@@ -13,6 +13,13 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	getActivePath,
+	getDailySession,
+	updateActivePath,
+	updateDailySession
+} from './services/content-org/learning-paths.ts';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -32,6 +39,7 @@ import {
 
 import {
 	getContentRows,
+	getLegacyMethods,
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
@@ -143,6 +151,10 @@ import {
 } from './services/imageSRCVerify.js';
 
 import {
+	createTestUser
+} from './services/liveTesting.ts';
+
+import {
 	assignModeratorToComment,
 	closeComment,
 	createComment,
@@ -213,7 +225,6 @@ import {
 	fetchCommentModContentData,
 	fetchContentRows,
 	fetchFoundation,
-	fetchFullMethodV2StructureFor,
 	fetchGenreLessons,
 	fetchHierarchy,
 	fetchLeaving,
@@ -226,6 +237,7 @@ import {
 	fetchMethodChildrenIds,
 	fetchMethodPreviousNextLesson,
 	fetchMethodV2IntroVideo,
+	fetchMethodV2Structure,
 	fetchNewReleases,
 	fetchNextPreviousLesson,
 	fetchOtherSongVersions,
@@ -255,6 +267,7 @@ import {
 import {
 	confirmEmailChange,
 	deleteAccount,
+	numberOfActiveUsers,
 	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
@@ -315,7 +328,8 @@ import {
 
 import {
 	startOnboarding,
-	updateOnboarding
+	updateOnboarding,
+	userOnboardingForBrand
 } from './services/user/onboarding.ts';
 
 import {
@@ -388,6 +402,7 @@ export {
 	createPlaylist,
 	createPost,
 	createPracticeNotes,
+	createTestUser,
 	createThread,
 	deleteAccount,
 	deleteComment,
@@ -436,7 +451,6 @@ export {
 	fetchFollowedThreads,
 	fetchForumCategories,
 	fetchFoundation,
-	fetchFullMethodV2StructureFor,
 	fetchGenreLessons,
 	fetchHandler,
 	fetchHierarchy,
@@ -456,6 +470,7 @@ export {
 	fetchMethodChildrenIds,
 	fetchMethodPreviousNextLesson,
 	fetchMethodV2IntroVideo,
+	fetchMethodV2Structure,
 	fetchNewReleases,
 	fetchNextContentDataForParent,
 	fetchNextPreviousLesson,
@@ -505,12 +520,15 @@ export {
 	findIncompleteLesson,
 	followThread,
 	getActiveDiscussions,
+	getActivePath,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getAwardDataForGuidedContent,
 	getContentRows,
+	getDailySession,
 	getLastInteractedOf,
+	getLegacyMethods,
 	getLessonContentRows,
 	getMonday,
 	getNavigateTo,
@@ -565,6 +583,7 @@ export {
 	markContentAsNotInterested,
 	markNotificationAsRead,
 	markNotificationAsUnread,
+	numberOfActiveUsers,
 	openComment,
 	otherStats,
 	pauseLiveEventPolling,
@@ -624,6 +643,8 @@ export {
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
+	updateActivePath,
+	updateDailySession,
 	updateDisplayName,
 	updateForumCategory,
 	updateNotificationSetting,
@@ -636,6 +657,7 @@ export {
 	upgradeSubscription,
 	uploadPicture,
 	uploadPictureFromS3,
+	userOnboardingForBrand,
 	verifyImageSRC,
 	verifyLocalDataContext,
 };

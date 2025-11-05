@@ -151,3 +151,15 @@ export async function deleteAccount(userId: number): Promise<void> {
   return httpClient.delete(apiUrl)
 }
 
+/**
+ * Calls a public API endpoint to get the number of active users.
+ *
+ * @returns {Promise<number>} - A promise that resolves to the number of active users.
+ * @throws {HttpError} - Throws HttpError if the request fails.
+ */
+export async function numberOfActiveUsers(): Promise<number> {
+  const apiUrl = `/api/user-management-system/v1/accounts/active-users/count`
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  const response = await httpClient.get<{ active_users: number }>(apiUrl)
+  return response.active_users
+}

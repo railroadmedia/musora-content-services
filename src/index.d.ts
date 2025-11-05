@@ -13,6 +13,13 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	getActivePath,
+	getDailySession,
+	updateActivePath,
+	updateDailySession
+} from './services/content-org/learning-paths.ts';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -32,6 +39,7 @@ import {
 
 import {
 	getContentRows,
+	getLegacyMethods,
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
@@ -143,6 +151,10 @@ import {
 } from './services/imageSRCVerify.js';
 
 import {
+	createTestUser
+} from './services/liveTesting.ts';
+
+import {
 	assignModeratorToComment,
 	closeComment,
 	createComment,
@@ -213,7 +225,6 @@ import {
 	fetchCommentModContentData,
 	fetchContentRows,
 	fetchFoundation,
-	fetchFullMethodV2StructureFor,
 	fetchGenreLessons,
 	fetchHierarchy,
 	fetchLeaving,
@@ -226,6 +237,7 @@ import {
 	fetchMethodChildrenIds,
 	fetchMethodPreviousNextLesson,
 	fetchMethodV2IntroVideo,
+	fetchMethodV2Structure,
 	fetchNewReleases,
 	fetchNextPreviousLesson,
 	fetchOtherSongVersions,
@@ -255,6 +267,7 @@ import {
 import {
 	confirmEmailChange,
 	deleteAccount,
+	numberOfActiveUsers,
 	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
@@ -315,7 +328,8 @@ import {
 
 import {
 	startOnboarding,
-	updateOnboarding
+	updateOnboarding,
+	userOnboardingForBrand
 } from './services/user/onboarding.ts';
 
 import {
@@ -389,6 +403,7 @@ declare module 'musora-content-services' {
 		createPlaylist,
 		createPost,
 		createPracticeNotes,
+		createTestUser,
 		createThread,
 		deleteAccount,
 		deleteComment,
@@ -437,7 +452,6 @@ declare module 'musora-content-services' {
 		fetchFollowedThreads,
 		fetchForumCategories,
 		fetchFoundation,
-		fetchFullMethodV2StructureFor,
 		fetchGenreLessons,
 		fetchHandler,
 		fetchHierarchy,
@@ -457,6 +471,7 @@ declare module 'musora-content-services' {
 		fetchMethodChildrenIds,
 		fetchMethodPreviousNextLesson,
 		fetchMethodV2IntroVideo,
+		fetchMethodV2Structure,
 		fetchNewReleases,
 		fetchNextContentDataForParent,
 		fetchNextPreviousLesson,
@@ -506,12 +521,15 @@ declare module 'musora-content-services' {
 		findIncompleteLesson,
 		followThread,
 		getActiveDiscussions,
+		getActivePath,
 		getAllCompleted,
 		getAllStarted,
 		getAllStartedOrCompleted,
 		getAwardDataForGuidedContent,
 		getContentRows,
+		getDailySession,
 		getLastInteractedOf,
+		getLegacyMethods,
 		getLessonContentRows,
 		getMonday,
 		getNavigateTo,
@@ -566,6 +584,7 @@ declare module 'musora-content-services' {
 		markContentAsNotInterested,
 		markNotificationAsRead,
 		markNotificationAsUnread,
+		numberOfActiveUsers,
 		openComment,
 		otherStats,
 		pauseLiveEventPolling,
@@ -625,6 +644,8 @@ declare module 'musora-content-services' {
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,
+		updateActivePath,
+		updateDailySession,
 		updateDisplayName,
 		updateForumCategory,
 		updateNotificationSetting,
@@ -637,6 +658,7 @@ declare module 'musora-content-services' {
 		upgradeSubscription,
 		uploadPicture,
 		uploadPictureFromS3,
+		userOnboardingForBrand,
 		verifyImageSRC,
 		verifyLocalDataContext,
 	}

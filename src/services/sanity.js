@@ -20,6 +20,7 @@ import {
   getFieldsForContentTypeWithFilteredChildren,
   getChildFieldsForContentType,
   SONG_TYPES,
+  SONG_TYPES_WITH_CHILDREN,
 } from '../contentTypeConfig.js'
 import {fetchSimilarItems, recommendations} from './recommendations.js'
 import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
@@ -496,6 +497,8 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
     live_event_start_time,
     live_event_end_time,
   }`
+
+  console.log('ids query', query)
   const customPostProcess = (results) => {
     const now = getSanityDate(new Date(), false);
     const liveProcess = (result) => {
@@ -663,7 +666,7 @@ export async function fetchAll(
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': '/${brand}/${webUrlPath}/'+name+'?included_fieds[]=type,${type}',
                 'all_lessons_count': count(*[${lessonsFilterWithRestrictions}]._id),
-                'lessons': *[${lessonsFilterWithRestrictions}]{
+                'children': *[${lessonsFilterWithRestrictions}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...20]
@@ -683,7 +686,7 @@ export async function fetchAll(
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': select(defined(web_url_path)=> web_url_path +'?included_fieds[]=type,${type}',!defined(web_url_path)=> '/${brand}${webUrlPath}/'+name+'/${webUrlPathType}'),
                 'all_lessons_count': count(*[${lessonsFilterWithRestrictions}]._id),
-                'lessons': *[${lessonsFilterWithRestrictions}]{
+                'children': *[${lessonsFilterWithRestrictions}]{
                     ${fieldsString},
                      'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
                     ${groupBy}
@@ -693,8 +696,8 @@ export async function fetchAll(
     filter = `brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter} ${customFilter}`
     const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
     entityFieldsString = ` ${fieldsString},
-                                    'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
-                                    'length_in_seconds': coalesce(
+      'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
+      'length_in_seconds': coalesce(
       math::sum(
         select(
           child[${childrenFilter}]->length_in_seconds
@@ -748,17 +751,17 @@ async function getProgressFilter(progress, progressIds) {
 }
 
 export function getSortOrder(sort = '-published_on', brand, groupBy) {
-  // Determine the sort order
+  const sanitizedSort = sort?.trim() || '-published_on'
+  let isDesc = sanitizedSort.startsWith('-')
+  const sortField = isDesc ? sanitizedSort.substring(1) : sanitizedSort
+
   let sortOrder = ''
-  let isDesc = sort.startsWith('-')
-  sort = isDesc ? sort.substring(1) : sort
-  switch (sort) {
+
+  switch (sortField) {
     case 'slug':
       sortOrder = groupBy ? 'name' : '!defined(title), lower(title)'
       break
-    case 'name':
-      sortOrder = sort
-      break
+
     case 'popularity':
       if (groupBy == 'artist' || groupBy == 'genre') {
         sortOrder = isDesc ? `coalesce(popularity.${brand}, -1)` : 'popularity'
@@ -766,15 +769,17 @@ export function getSortOrder(sort = '-published_on', brand, groupBy) {
         sortOrder = isDesc ? 'coalesce(popularity, -1)' : 'popularity'
       }
       break
+
     case 'recommended':
       sortOrder = 'published_on'
       isDesc = true
       break
-    case 'published_on':
+
     default:
-      sortOrder = 'published_on'
+      sortOrder = sortField
       break
   }
+
   sortOrder += isDesc ? ' desc' : ' asc'
   return sortOrder
 }
@@ -1817,6 +1822,7 @@ export async function fetchSanity(
       results = processNeedAccess
         ? await needsAccessDecorator(results, userPermissions, isAdmin)
         : results
+      results = pageTypeDecorator(results)
       return customPostProcess ? customPostProcess(results) : results
     } else {
       throw new Error('No results found')
@@ -1827,40 +1833,44 @@ export async function fetchSanity(
   }
 }
 
-function needsAccessDecorator(results, userPermissions, isAdmin) {
-  if (globalConfig.sanityConfig.useDummyRailContentMethods) return results
-
-  userPermissions = new Set(userPermissions)
-
+function contentResultsDecorator(results, fieldName, callback)
+{
   if (Array.isArray(results)) {
     results.forEach((result) => {
-      result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin)
-      if(result.content){
-        result.content.forEach((content) => {
-          content['need_access'] = doesUserNeedAccessToContent(content, userPermissions, isAdmin) // Updated to check lesson access
-        })
-      }
+      result[fieldName] = callback(result)
     })
   } else if (results.entity && Array.isArray(results.entity)) {
     // Group By
     results.entity.forEach((result) => {
       if (result.lessons) {
         result.lessons.forEach((lesson) => {
-          lesson['need_access'] = doesUserNeedAccessToContent(lesson, userPermissions, isAdmin) // Updated to check lesson access
+          lesson[fieldName] = callback(lesson) // Updated to check lesson access
         })
       } else {
-        result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin)
+        result[fieldName] = callback(result)
       }
     })
   } else if (results.related_lessons && Array.isArray(results.related_lessons)) {
     results.related_lessons.forEach((result) => {
-      result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin)
+      result[fieldName] = callback(result)
     })
   } else {
-    results['need_access'] = doesUserNeedAccessToContent(results, userPermissions, isAdmin)
+    results[fieldName] = callback(results)
   }
 
   return results
+}
+
+function pageTypeDecorator(results)
+{
+  return contentResultsDecorator(results, 'page_type', function(content) { return SONG_TYPES_WITH_CHILDREN.includes(content['type']) ? 'song' : 'lesson'})
+}
+
+
+function needsAccessDecorator(results, userPermissions, isAdmin) {
+  if (globalConfig.sanityConfig.useDummyRailContentMethods) return results
+  userPermissions = new Set(userPermissions)
+  return contentResultsDecorator(results, 'need_access', function (content) { return doesUserNeedAccessToContent(content, userPermissions, isAdmin) })
 }
 
 function doesUserNeedAccessToContent(result, userPermissions, isAdmin) {
@@ -2177,7 +2187,7 @@ export async function fetchTabData(
   let entityFieldsString = ''
   let filter = ''
 
-  filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
+  filter = `brand == "${brand}" && (defined(railcontent_id)) ${includedFieldsFilter} ${progressFilter}`
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const childrenFields = await getChildFieldsForContentType('tab-data')
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
@@ -2283,22 +2293,33 @@ export async function fetchShows(brand, type, sort = 'sort') {
   return fetchSanity(query, true)
 }
 
-
+/**
+ * Fetch the method intro video for a given brand.
+ * @param brand
+ * @returns {Promise<*|null>}
+ */
 export async function fetchMethodV2IntroVideo(brand) {
-  const _type = "method-intro";
-  const filter = `_type == '${_type}' && brand == '${brand}'`;
+  const type = "method-intro";
+  const filter = `_type == '${type}' && brand == '${brand}'`;
   const fields = getIntroVideoFields();
 
   const query = `*[${filter}] { ${fields.join(", ")} }`;
   return fetchSanity(query, false);
 }
 
-export async function fetchFullMethodV2StructureFor(brand) {
+/**
+ * Fetch the structure (just ids) of the Method for a given brand.
+ * @param brand
+ * @returns {Promise<*|null>}
+ */
+export async function fetchMethodV2Structure(brand) {
   const _type = "method-v2";
-  const filter = `_type == '${_type}' && brand == '${brand}'`;
-
-  const fields = contentTypeConfig[_type];
-  const query = `*[${filter}] { ${fields.join(",")} }`;
-
-  return await fetchSanity(query, true);
+  const query = `*[_type == '${_type}' && brand == '${brand}'][0...1]{
+    'sanity_id': _id,
+    'learningPaths': child[]->{
+      'id': railcontent_id,
+      'children': child[]->railcontent_id
+    }
+  }`;
+  return await fetchSanity(query, false);
 }
