@@ -534,7 +534,7 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
   if (pageName === 'lessons') pageName = 'lesson'
   if (pageName === 'songs') pageName = 'song'
   const rowString = contentRowSlug ? ` && slug.current == "${contentRowSlug.toLowerCase()}"` : ''
-  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`, {pullFutureContent: true}).buildFilter()
+  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`, {pullFutureContent: true, bypassPermissions:true}).buildFilter()
   const childFilter = await new FilterBuilder('', {isChildrenFilter: true}).buildFilter()
   const query = `*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}'${rowString}]{
     brand,
@@ -548,7 +548,7 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
         'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     },
   }`
-  return fetchSanity(query, true)
+  return fetchSanity(query, true, {processNeedAccess: true})
 }
 
 
@@ -2204,14 +2204,14 @@ export async function fetchTabData(
       ),
       length_in_seconds
     ),`
-  const filterWithRestrictions = await new FilterBuilder(filter, {}).buildFilter()
+  const filterWithRestrictions = await new FilterBuilder(filter, {bypassPermissions:true}).buildFilter()
   query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
     sortOrder: sortOrder,
     start: start,
     end: end
   })
 
-  let results = await fetchSanity(query, true);
+  let results = await fetchSanity(query, true, {processNeedAccess: true});
 
   if (['recent', 'incomplete', 'completed'].includes(progress) && results.entity.length > 1) {
     const orderMap = new Map(progressIds.map((id, index) => [id, index]))
