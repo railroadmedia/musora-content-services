@@ -118,8 +118,12 @@ export class FilterBuilder {
     if (this.userData.isABasicMember && this.allowsPullSongsContent) {
       requiredPermissions = [...requiredPermissions, plusMembershipPermissions]
     }
+    const permissionString = arrayToRawRepresentation(requiredPermissions)
+    // TODO BEH-1383 - Revert permissionV1 changes in MCS
+    const oldPermisisonQuery = `references(*[_type == 'permission' && railcontent_id in ${permissionString}])`
+    const newPermisisonQuery = `array::intersects(permission, ${permissionString}`
     this._andWhere(
-      `(!defined(permission) || array::intersects(permission, ${arrayToRawRepresentation(requiredPermissions)}))`
+      `(!defined(permission) || ${oldPermisisonQuery} || ${newPermisisonQuery})`
     )
     return this
   }

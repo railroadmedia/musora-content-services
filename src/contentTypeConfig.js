@@ -22,7 +22,8 @@ export const DEFAULT_FIELDS = [
   "'genre': genre[]->name",
   'status',
   "'slug' : slug.current",
-  "permission",
+  "permission", // TODO BEH-1383 - Revert permissionV1 changes in MCS
+  "'permission_v1': permission_v1[]->railcontent_id",
   'xp',
   'child_count',
 ]
@@ -33,6 +34,8 @@ export const DEFAULT_CHILD_FIELDS = [
   `"instructors": instructor[]->name`,
   `length_in_seconds`,
   `permission`,
+    // TODO BEH-1383 - Revert permissionV1 changes in MCS
+    "'permission_v1': permission_v1[]->railcontent_id",
 ]
 
 export const descriptionField = 'description[0].children[0].text'
@@ -269,6 +272,8 @@ export let contentTypeConfig = {
       '"lesson_count": child_count',
       'length_in_seconds',
       'permission',
+      // TODO BEH-1383 - Revert permissionV1 changes in MCS
+      "'permission_v1': permission_v1[]->railcontent_id",
       'popularity',
       'published_on',
       'railcontent_id',
