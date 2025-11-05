@@ -440,15 +440,10 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
  *   .catch(error => console.error(error));
  */
 export async function fetchByRailContentId(id, contentType) {
-  const fields = await getFieldsForContentTypeWithFilteredChildren(contentType, true)
-  let childFields = getChildFieldsForContentType(contentType)
-  if (!childFields) {
-    childFields = getChildFieldsForContentType(null)
-  }
+  const fields = await getFieldsForContentTypeWithFilteredChildren(contentType)
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const entityFieldsString = ` ${fields}
       'child_count': coalesce(count(child[${childrenFilter}]->), 0) ,
-      "children": child[${childrenFilter}]->{${childFields}},
       'length_in_seconds': coalesce(
       math::sum(
         select(

@@ -426,6 +426,7 @@ export let contentTypeConfig = {
         content._ref == ^._id
       ][0].badge.asset->url`,
     ],
+    includeChildFields: true,
   },
   'learning-path-course': {
     fields: [
