@@ -58,29 +58,18 @@ export async function updateActivePath(brand: string) {
 
 /** Fetches and organizes learning path lessons.
  *
- * @param {string} brand
- * @param userDate - format 2025-10-31
- * @param {number} contentId - The content ID for the current video.
  * @param {number} learningPathId - The learning path ID.
+ * @param {string} brand
+ * @param {Date} userDate - format 2025-10-31
  * @returns {Promise<Object>} result - The result object.
  * @returns {number} result.id - The learning path ID.
- * @returns {string} result.type - The type, always 'learning_path'.
  * @returns {string} [result.thumbnail] - Optional thumbnail URL for the learning path.
  * @returns {string} result.title - The title of the learning path.
- * @returns {boolean} result.isActive - Whether the learning path is currently active.
- * @returns {Array} result.lessons - Array of all lessons in the learning path.
- * @returns {Array} [result.completed] - Optional array of completed lessons.
- * @returns {Array} [result.upcoming] - Optional array of upcoming/additional lessons.
- * @returns {Array} [result.nextPath] - Optional array of next lessons to be taken.
- * @returns {Array} [result.today] - Optional array of today's lessons (max 3).
- * @returns {Object} [result.award] - Optional award information.
- * @returns {Array} [result.resources] - Optional array of resources.
- *
- * @example
- * // Fetch learning path lessons
- * fetchLearningPathLessons(12345, 67890)
- *   .then(result => console.log(result))
- *   .catch(error => console.error(error));
+ * @returns {boolean} result.is_active_learning_path - Whether the learning path is currently active.
+ * @returns {Array} [result.completed_lessons] - Array of completed lessons.
+ * @returns {Array} [result.upcoming_lessons] - Array of upcoming/additional lessons.
+ * @returns {Array} [result.next_learning_path_lessons] - Array of next lessons to be taken.
+ * @returns {Array} [result.todays_lessons] - Array of today's lessons (max 3).
  */
 export async function fetchLearningPathLessons(
   learningPathId: number,
@@ -96,8 +85,7 @@ export async function fetchLearningPathLessons(
     addProgressStatus: true,
     addProgressPercentage: true,
   }
-
-  const lessons = await addContextToContent(() => learningPath.lessons, addContextParameters)
+  const lessons = await addContextToContent(() => learningPath.children, addContextParameters)
   const isActiveLearningPath = (dailySession?.active_learning_path_id || 0) == learningPathId
   const todayContentIds = dailySession.daily_session[0]?.content_ids || []
   const nextContentIds = dailySession.daily_session[1]?.content_ids || []
@@ -139,7 +127,6 @@ export async function fetchLearningPathLessons(
 
   return {
     id: learningPathId,
-    type: 'learning_path',
     thumbnail: learningPath.thumbnail,
     title: learningPath.title || '',
     is_active_learning_path: isActiveLearningPath,

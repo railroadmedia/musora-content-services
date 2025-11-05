@@ -13,7 +13,7 @@ describe('learning-paths', function () {
   test('getlearningPathLessonsTestNew', async () => {
     await contentStatusCompleted(417105)
     const userDate = new Date('2025-10-31')
-    const results = await fetchLearningPathLessons(417140, 'drumeo', userDate)
+    const results = await fetchLearningPathLessons(422533, 'drumeo', userDate)
     console.log(results)
   })
 })

@@ -1,6 +1,6 @@
 //import {AWSUrl, CloudFrontURl} from "./services/config";
-import {LengthFilterOptions, Tabs} from "./contentMetaData.js";
-import {FilterBuilder} from "./filterBuilder.js";
+import { LengthFilterOptions, Tabs } from './contentMetaData.js'
+import { FilterBuilder } from './filterBuilder.js'
 
 export const AWSUrl = 'https://s3.us-east-1.amazonaws.com/musora-web-platform'
 export const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net'
@@ -9,8 +9,16 @@ export const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net'
 export const SONG_TYPES = ['song', 'play-along', 'jam-track', 'song-tutorial-children']
 // Oct 2025: It turns out content-meta categories are not really clear
 // THis is used for the page_type field as a post processor so we include parents and children
- // Duplicated in SanityGateway.php if you update this, update that
-export const SONG_TYPES_WITH_CHILDREN = ['song', 'song-part', 'play-along', 'play-along-part', 'jam-track', 'song-tutorial', 'song-tutorial-children']
+// Duplicated in SanityGateway.php if you update this, update that
+export const SONG_TYPES_WITH_CHILDREN = [
+  'song',
+  'song-part',
+  'play-along',
+  'play-along-part',
+  'jam-track',
+  'song-tutorial',
+  'song-tutorial-children',
+]
 // Single hierarchy refers to only one element in the hierarchy has video lessons, not that they have a single parent
 export const SINGLE_PARENT_TYPES = ['course-part', 'pack-bundle-lesson', 'song-tutorial-children']
 
@@ -175,16 +183,32 @@ export const childContentTypeConfig = {
   'song-tutorial': [`"genre": genre[]->name`, `difficulty_string`, `"type": _type`],
 }
 
-export const singleLessonTypes = ['quick-tips', 'rudiment'];
-export const practiceAlongsLessonTypes = ['workout']; // challenges ->workouts
-export const performancesLessonTypes = ['performance'];
-export const documentariesLessonTypes = ['tama','sonor','history-of-electronic-drums','paiste-cymbals', 'backstage-secret'];
-export const liveArchivesLessonTypes = ['podcast', 'coach-stream', 'question-and-answer', 'live-streams', 'live'];
-export const studentArchivesLessonTypes = ['student-review', 'student-focus','student-collaboration'];
-export const tutorialsLessonTypes = ['song-tutorial'];
-export const transcriptionsLessonTypes = ['song'];
-export const playAlongLessonTypes = ['play-along'];
-export const jamTrackLessonTypes = ['jam-track'];
+export const singleLessonTypes = ['quick-tips', 'rudiment']
+export const practiceAlongsLessonTypes = ['workout'] // challenges ->workouts
+export const performancesLessonTypes = ['performance']
+export const documentariesLessonTypes = [
+  'tama',
+  'sonor',
+  'history-of-electronic-drums',
+  'paiste-cymbals',
+  'backstage-secret',
+]
+export const liveArchivesLessonTypes = [
+  'podcast',
+  'coach-stream',
+  'question-and-answer',
+  'live-streams',
+  'live',
+]
+export const studentArchivesLessonTypes = [
+  'student-review',
+  'student-focus',
+  'student-collaboration',
+]
+export const tutorialsLessonTypes = ['song-tutorial']
+export const transcriptionsLessonTypes = ['song']
+export const playAlongLessonTypes = ['play-along']
+export const jamTrackLessonTypes = ['jam-track']
 
 export const individualLessonsTypes = [
   ...singleLessonTypes,
@@ -196,11 +220,10 @@ export const individualLessonsTypes = [
 export const coursesLessonTypes = [
   'course',
   'tiered-course', // TODO: new content type
-  'guided-course'];
-
-export const skillLessonTypes = [
-  'skill-pack'
+  'guided-course',
 ]
+
+export const skillLessonTypes = ['skill-pack']
 
 export const showsLessonTypes = [
   'boot-camp',
@@ -209,41 +232,44 @@ export const showsLessonTypes = [
   'in-rhythm',
   'rhythmic-adventures-of-captain-carson',
   'rhythms-from-another-planet',
-  'study-the-greats'];
+  'study-the-greats',
+]
 export const entertainmentLessonTypes = [
   'specials', // TODO: new type
   ...documentariesLessonTypes,
-  ...showsLessonTypes
-];
-export const collectionLessonTypes = [
-    ...coursesLessonTypes,
-    ...showsLessonTypes
-];
+  ...showsLessonTypes,
+]
+export const collectionLessonTypes = [...coursesLessonTypes, ...showsLessonTypes]
 
 export const lessonTypesMapping = {
-  'lessons': singleLessonTypes,
+  lessons: singleLessonTypes,
   'practice alongs': practiceAlongsLessonTypes,
   'live archives': liveArchivesLessonTypes,
   performances: performancesLessonTypes,
   'student archives': studentArchivesLessonTypes,
-  'documentaries': documentariesLessonTypes,
-  'courses': ['course'],
+  documentaries: documentariesLessonTypes,
+  courses: ['course'],
   'guided courses': ['guided-course'],
-  'tiered courses': ['tiered-course' ],
+  'tiered courses': ['tiered-course'],
   'skill packs': ['skill-pack'],
-  'specials': ['specials'],
-  'shows': showsLessonTypes,
-  'collections': collectionLessonTypes,
-  'individuals': individualLessonsTypes,
-  'tutorials': tutorialsLessonTypes,
-  'transcriptions': transcriptionsLessonTypes,
-  'tabs': transcriptionsLessonTypes,
+  specials: ['specials'],
+  shows: showsLessonTypes,
+  collections: collectionLessonTypes,
+  individuals: individualLessonsTypes,
+  tutorials: tutorialsLessonTypes,
+  transcriptions: transcriptionsLessonTypes,
+  tabs: transcriptionsLessonTypes,
   'sheet music': transcriptionsLessonTypes,
   'play-alongs': playAlongLessonTypes,
   'jam tracks': jamTrackLessonTypes,
-  'entertainment': entertainmentLessonTypes,
-  'single lessons': [...singleLessonTypes, ...liveArchivesLessonTypes, ...studentArchivesLessonTypes, ...practiceAlongsLessonTypes]
-};
+  entertainment: entertainmentLessonTypes,
+  'single lessons': [
+    ...singleLessonTypes,
+    ...liveArchivesLessonTypes,
+    ...studentArchivesLessonTypes,
+    ...practiceAlongsLessonTypes,
+  ],
+}
 
 export const getNextLessonLessonParentTypes = [
   'course',
@@ -285,8 +311,21 @@ export const songs = {
 }
 
 export const filterTypes = {
-  lessons: [...singleLessonTypes, ...practiceAlongsLessonTypes , ...liveArchivesLessonTypes, ...studentArchivesLessonTypes, ...coursesLessonTypes, ...skillLessonTypes , ...entertainmentLessonTypes],
-  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes, ...jamTrackLessonTypes],
+  lessons: [
+    ...singleLessonTypes,
+    ...practiceAlongsLessonTypes,
+    ...liveArchivesLessonTypes,
+    ...studentArchivesLessonTypes,
+    ...coursesLessonTypes,
+    ...skillLessonTypes,
+    ...entertainmentLessonTypes,
+  ],
+  songs: [
+    ...tutorialsLessonTypes,
+    ...transcriptionsLessonTypes,
+    ...playAlongLessonTypes,
+    ...jamTrackLessonTypes,
+  ],
 }
 
 export const recentTypes = {
@@ -657,9 +696,6 @@ export let contentTypeConfig = {
     }`,
   ],
   'method-intro': getIntroVideoFields(),
-  'learning-path-v2': {
-    includeChildFields: true,
-  },
 }
 
 export function getIntroVideoFields() {
@@ -668,10 +704,10 @@ export function getIntroVideoFields() {
     'brand',
     `"description": ${descriptionField}`,
     `"thumbnail": thumbnail.asset->url`,
-    "length_in_seconds",
-    "video_desktop",
-    "video_mobile",
-  ];
+    'length_in_seconds',
+    'video_desktop',
+    'video_mobile',
+  ]
 }
 
 export const plusMembershipPermissions = 92
@@ -837,7 +873,7 @@ export function getFieldsForContentType(contentType, asQueryString = true) {
  */
 function createTypeConditions(lessonTypes) {
   if (!lessonTypes || lessonTypes.length === 0) return ''
-  const conditions = lessonTypes.map(type => `_type == '${type}'`).join(' || ')
+  const conditions = lessonTypes.map((type) => `_type == '${type}'`).join(' || ')
   return conditions ? `(${conditions})` : ''
 }
 
@@ -892,8 +928,9 @@ const filterHandlers = {
 
   length: (value) => {
     // Find the matching length option by name
-    const lengthOption = Object.values(LengthFilterOptions)
-      .find(opt => typeof opt === 'object' && opt.name === value)
+    const lengthOption = Object.values(LengthFilterOptions).find(
+      (opt) => typeof opt === 'object' && opt.name === value
+    )
 
     if (!lengthOption) return ''
 
@@ -932,12 +969,12 @@ const filterHandlers = {
 export function filtersToGroq(filters = [], selectedFilters = [], pageName = '') {
   // Handle railcontent_id filters separately (they use different syntax)
   const railcontentIdFilters = filters
-    .filter(item => item.includes('railcontent_id in'))
-    .map(item => ` && ${item}`)
+    .filter((item) => item.includes('railcontent_id in'))
+    .map((item) => ` && ${item}`)
     .join('')
 
   // Remove railcontent_id filters from main processing
-  const regularFilters = filters.filter(item => !item.includes('railcontent_id in'))
+  const regularFilters = filters.filter((item) => !item.includes('railcontent_id in'))
 
   // Group filters by key
   const groupedFilters = groupFilters(regularFilters)
@@ -960,7 +997,7 @@ export function filtersToGroq(filters = [], selectedFilters = [], pageName = '')
 
       // Process each value with the appropriate handler
       const joinedValues = values
-        .map(value => {
+        .map((value) => {
           const handler = filterHandlers[key]
 
           if (handler) {
