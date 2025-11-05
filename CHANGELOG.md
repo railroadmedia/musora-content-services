@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.70.0](https://github.com/railroadmedia/musora-content-services/compare/v2.67.2...v2.70.0) (2025-11-05)
+
+
+### Features
+
+* add fields for learning path v2 ([#537](https://github.com/railroadmedia/musora-content-services/issues/537)) ([b2bcbd2](https://github.com/railroadmedia/musora-content-services/commit/b2bcbd2306afa730e5c61d6ee34fe082212dfdbb))
+
+
+### Bug Fixes
+
+* Add is_content and page_type to all content ([#507](https://github.com/railroadmedia/musora-content-services/issues/507)) ([174706b](https://github.com/railroadmedia/musora-content-services/commit/174706b736540b9d24ceaee11539df9203d2d135))
+
 ### [2.69.1](https://github.com/railroadmedia/musora-content-services/compare/v2.69.0...v2.69.1) (2025-11-04)
 
 
