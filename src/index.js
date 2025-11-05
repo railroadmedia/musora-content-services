@@ -13,6 +13,7 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	fetchLearningPathLessons,
 	getActivePath,
 	getDailySession,
 	updateActivePath,
@@ -458,6 +459,7 @@ export {
 	fetchInterests,
 	fetchLastInteractedChild,
 	fetchLatestThreads,
+	fetchLearningPathLessons,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
