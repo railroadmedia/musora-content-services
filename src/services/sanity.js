@@ -265,6 +265,7 @@ export async function fetchPlayAlongsCount(
  */
 export async function fetchRelatedSongs(brand, songId) {
   const now = getSanityDate(new Date())
+    // TODO BEH-1383 - Revert permissionV1 changes in MCS
   const query = `
       *[_type == "song" && railcontent_id == ${songId}]{
         "entity": array::unique([
@@ -276,7 +277,8 @@ export async function fetchRelatedSongs(brand, songId) {
             "published_on": published_on,
             status,
             "image": thumbnail.asset->url,
-            "permission_id": permission[]->railcontent_id,
+            permission,
+            "permission_v1": permission_v1[]->railcontent_id,
             "fields": [
               {
                 "key": "title",
@@ -302,7 +304,8 @@ export async function fetchRelatedSongs(brand, songId) {
             "id": railcontent_id,
             "url": web_url_path,
             "published_on": published_on,
-            "permission_id": permission[]->railcontent_id,
+            permission,
+            "permission_v1": permission_v1[]->railcontent_id,
             status,
             "fields": [
               {
@@ -349,6 +352,7 @@ export async function fetchNewReleases(
   const end = start + limit
   const sortOrder = getSortOrder(sort, brand)
   const filter = `_type in ${typesString} && brand == '${brand}' && show_in_new_feed == true`
+    // TODO BEH-1383 - Revert permissionV1 changes in MCS
   const fields = `
      "id": railcontent_id,
       title,
@@ -361,7 +365,8 @@ export async function fetchNewReleases(
       published_on,
       "type": _type,
       web_url_path,
-      "permission_id": permission[]->railcontent_id,
+      permission,
+      "permission_v1": permission_v1[]->railcontent_id,
       `
   const filterParams = { allowsPullSongsContent: false }
   const query = await buildQuery(filter, filterParams, fields, {
@@ -392,6 +397,7 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
   const now = getSanityDate(new Date())
   const start = (page - 1) * limit
   const end = start + limit
+    // TODO BEH-1383 - Revert permissionV1 changes in MCS
   const fields = `
         "id": railcontent_id,
         title,
@@ -404,7 +410,8 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         published_on,
         "type": _type,
         web_url_path,
-        "permission_id": permission[]->railcontent_id,
+        permission,
+        "permission_v1": permission_v1[]->railcontent_id,
         addevent_unique_key`
   const query = buildRawQuery(
     `_type in ${typesString} && brand == '${brand}' && published_on > '${now}' && status == 'scheduled'`,
@@ -441,6 +448,7 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
   const now = getSanityDate(new Date())
   const start = (page - 1) * limit
   const end = start + limit
+    // TODO BEH-1383 - Revert permissionV1 changes in MCS
   const query = `*[_type in [${typesString}] && brand == '${brand}' && status in ['published','scheduled'] && published_on > '${now}']{
       "id": railcontent_id,
       title,
@@ -453,7 +461,8 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
       published_on,
       "type": _type,
       web_url_path,
-      "permission_id": permission[]->railcontent_id,
+      permission,
+      "permission_v1": permission_v1[]->railcontent_id,
   } | order(published_on asc)[${start}...${end}]`
   return fetchSanity(query, true)
 }
@@ -1028,7 +1037,7 @@ export async function fetchFoundation(slug) {
  */
 export async function fetchMethod(brand, slug) {
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-
+    // TODO BEH-1383 - Revert permissionV1 changes in MCS
   const query = `*[_type == 'learning-path' && brand == "${brand}" && slug.current == "${slug}"] {
     "description": ${descriptionField},
     description_portable,
@@ -1048,7 +1057,8 @@ export async function fetchMethod(brand, slug) {
         "url": *[railcontent_id == ^.id][0].web_url_path
     } | order(length(url)),
     "type": _type,
-    "permission_id": permission[]->railcontent_id,
+    "permission_v1": permission_v1[]->railcontent_id,
+    permission,
     "levels": child[${childrenFilter}]->
       {
         "id": railcontent_id,
@@ -1278,7 +1288,8 @@ export async function fetchLessonContent(railContentId) {
           mp3_no_drums_yes_click_url,
           mp3_yes_drums_no_click_url,
           mp3_yes_drums_yes_click_url,
-          "permission_id": permission[]->railcontent_id,
+          "permission_v1": permission_v1[]->railcontent_id,
+          permission,
           "parent_content_data": parent_content_data[]{
             "id": id,
             "title": *[railcontent_id == ^.id][0].title,
@@ -1325,8 +1336,9 @@ export async function fetchRelatedLessons(railContentId, brand) {
     `_type=="song" && _type==^._type && brand == "${brand}" && references(^.genre[]->_id) && railcontent_id !=${railContentId}`
   ).buildFilter()
   const filterNeighbouringSiblings = await new FilterBuilder(`references(^._id)`).buildFilter()
+    // TODO BEH-1383 - Revert permissionV1 changes in MCS
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
+  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->, permission, 'permission_v1': permission_v1[]->railcontent_id, _type, "genre": genre[]->name`
   const queryFieldsWithSort = queryFields + ', sort'
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}"]{
    _type, parent_type, railcontent_id,
@@ -1391,7 +1403,8 @@ async function fetchRelatedLessonsSectionData(currentContent) {
  * @returns {Promise<string>}
  */
 async function buildRelatedLessonsQuery(currentContent) {
-  const defaultProjectionsAndSorting = `{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type,genre}|order(published_on desc, title asc)[0...10]`
+    // TODO BEH-1383 - Revert permissionV1 changes in MCS
+  const defaultProjectionsAndSorting = `{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->, permission, "permission_v1": permission_v1[]->railcontent_id, _type,genre}|order(published_on desc, title asc)[0...10]`
   const currentContentData = await getCurrentContentDataForQuery(currentContent)
   const tutorialQuery = await buildSubQueryForFetch(
     currentContentData.parentType,
@@ -2034,7 +2047,10 @@ function doesUserNeedAccessToContent(result, userPermissions, isAdmin) {
   if (isAdmin ?? false) {
     return false
   }
-  const permissions = new Set(result?.permission_id ?? [])
+  // TODO BEH-1383 - Revert permissionV1 changes in MCS
+  const oldPermissions = result?.permission_v1 ?? []
+  const newPermissions = result?.permission ?? []
+  const permissions = new Set([...oldPermissions, ...newPermissions])
   if (permissions.size === 0) {
     return false
   }
