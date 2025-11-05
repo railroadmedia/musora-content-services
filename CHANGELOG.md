@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.70.2](https://github.com/railroadmedia/musora-content-services/compare/v2.70.1...v2.70.2) (2025-11-05)
+
+
+### Bug Fixes
+
+* active user count endpoint ([#542](https://github.com/railroadmedia/musora-content-services/issues/542)) ([be65c1f](https://github.com/railroadmedia/musora-content-services/commit/be65c1f62b4c828772aade616ddd5d7063d83aa3))
+* **live-testing:** add email as optional parameter for user creation ([#539](https://github.com/railroadmedia/musora-content-services/issues/539)) ([2289707](https://github.com/railroadmedia/musora-content-services/commit/2289707702a8acbe88c2c7f2acbe97459f876451))
+* **live-testing:** post request url ([#543](https://github.com/railroadmedia/musora-content-services/issues/543)) ([b5463f9](https://github.com/railroadmedia/musora-content-services/commit/b5463f9627c11a4df6257995e1deec5a275ef2c8))
+* **T3PS-864:** Remove sneaky console.log ([19a22ee](https://github.com/railroadmedia/musora-content-services/commit/19a22ee560af64448b7a40a6784d4bba9d0794b4))
+* **T3Ps:** Update fetchCustomerPayments with paginate parameters ([c9c784d](https://github.com/railroadmedia/musora-content-services/commit/c9c784da6995f7ff836c0453c1d0ff353535a53e))
+
 ### [2.70.1](https://github.com/railroadmedia/musora-content-services/compare/v2.70.0...v2.70.1) (2025-11-05)
 
 
