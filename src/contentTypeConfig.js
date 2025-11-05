@@ -1,5 +1,5 @@
 //import {AWSUrl, CloudFrontURl} from "./services/config";
-import {Tabs} from "./contentMetaData.js";
+import {LengthFilterOptions, Tabs} from "./contentMetaData.js";
 import {FilterBuilder} from "./filterBuilder.js";
 
 export const AWSUrl = 'https://s3.us-east-1.amazonaws.com/musora-web-platform'
@@ -418,6 +418,7 @@ export let contentTypeConfig = {
   },
   'learning-path-v2': {
     fields: [
+      'intro_video',
       'total_skills',
       `"resource": ${resourcesField}`,
       `"badge": *[
@@ -635,11 +636,7 @@ export let contentTypeConfig = {
       "description": ${descriptionField},
       "thumbnail": thumbnail.asset->url,
       length_in_seconds,
-      "intro_video": intro_video->{
-        external_id,
-        hlsManifestUrl,
-        video_playback_endpoints
-      },
+      intro_video,
       child[]->{
         ${DEFAULT_FIELDS.join(',')}
       }
@@ -655,16 +652,8 @@ export function getIntroVideoFields() {
     `"description": ${descriptionField}`,
     `"thumbnail": thumbnail.asset->url`,
     "length_in_seconds",
-    `video_desktop {
-      external_id,
-      hlsManifestUrl,
-      video_playback_endpoints
-    }`,
-    `video_mobile {
-      external_id,
-      hlsManifestUrl,
-      video_playback_endpoints
-    }`
+    "video_desktop",
+    "video_mobile",
   ];
 }
 
@@ -823,136 +812,142 @@ export function getFieldsForContentType(contentType, asQueryString = true) {
 }
 
 /**
- * Takes the included fields array and returns a string that can be used in a groq query.
- * @param {Array<string>} filters - An array of strings that represent applied filters. This should be in the format of a key,value array. eg. ['difficulty,Intermediate',
- *     'genre,rock']
- * @returns {string} - A string that can be used in a groq query
+ * Helper function to create type conditions from content type arrays
  */
-export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
-  if (!filters) {
-    filters = []
-  }
+function createTypeConditions(lessonTypes) {
+  if (!lessonTypes || lessonTypes.length === 0) return ''
+  const conditions = lessonTypes.map(type => `_type == '${type}'`).join(' || ')
+  return conditions ? `(${conditions})` : ''
+}
 
-  //Account for multiple railcontent id's
-  let multipleIdFilters = ''
-  filters.forEach((item) => {
-    if (item.includes('railcontent_id in')) {
-      filters.pop(item)
-      multipleIdFilters += ` && ${item} `
+/**
+ * Filter handler registry - maps filter keys to their handler functions
+ */
+const filterHandlers = {
+  style: (value) => `"${value}" in genre[]->name`,
+
+  difficulty: (value) => {
+    if (value === 'Introductory') {
+      return `(difficulty_string == "Novice" || difficulty_string == "Introductory")`
     }
-  })
+    return `difficulty_string == "${value}"`
+  },
 
-  //Group All Other filters
-  const groupedFilters = groupFilters(filters)
+  tab: (value, pageName) => {
+    const valueLower = value.toLowerCase()
+    const tabMappings = {
+      [Tabs.Individuals.name.toLowerCase()]: individualLessonsTypes,
+      [Tabs.Collections.name.toLowerCase()]: collectionLessonTypes,
+      [Tabs.Tutorials.name.toLowerCase()]: tutorialsLessonTypes,
+      [Tabs.Transcriptions.name.toLowerCase()]: transcriptionsLessonTypes,
+      [Tabs.PlayAlongs.name.toLowerCase()]: playAlongLessonTypes,
+      [Tabs.JamTracks.name.toLowerCase()]: jamTrackLessonTypes,
+      [Tabs.ExploreAll.name.toLowerCase()]: filterTypes[pageName] || [],
+      [Tabs.RecentAll.name.toLowerCase()]: recentTypes[pageName] || [],
+      [Tabs.SingleLessons.name.toLowerCase()]: individualLessonsTypes,
+      [Tabs.Courses.name.toLowerCase()]: coursesLessonTypes,
+      [Tabs.SkillPacks.name.toLowerCase()]: skillLessonTypes,
+      [Tabs.Entertainment.name.toLowerCase()]: entertainmentLessonTypes,
+    }
 
-  //Format groupFilter itemsss
+    const lessonTypes = tabMappings[valueLower]
+    if (lessonTypes) {
+      return createTypeConditions(lessonTypes)
+    }
+
+    return `_type == "${value}"`
+  },
+
+  type: (value) => {
+    const typeKey = value.toLowerCase()
+    const lessonTypes = lessonTypesMapping[typeKey]
+
+    if (lessonTypes) {
+      return createTypeConditions(lessonTypes)
+    }
+
+    return `_type == "${value}"`
+  },
+
+  length: (value) => {
+    // Find the matching length option by name
+    const lengthOption = Object.values(LengthFilterOptions)
+      .find(opt => typeof opt === 'object' && opt.name === value)
+
+    if (!lengthOption) return ''
+
+    const optionValue = lengthOption.value
+
+    // Parse the value format: '<420', '420-900', '>1801'
+    if (optionValue.startsWith('<')) {
+      const max = parseInt(optionValue.substring(1), 10)
+      return `(length_in_seconds < ${max})`
+    }
+
+    if (optionValue.startsWith('>')) {
+      const min = parseInt(optionValue.substring(1), 10)
+      return `(length_in_seconds > ${min})`
+    }
+
+    if (optionValue.includes('-')) {
+      const [min, max] = optionValue.split('-').map(Number)
+      return `(length_in_seconds >= ${min} && length_in_seconds <= ${max})`
+    }
+
+    return ''
+  },
+
+  pageName: () => '', // pageName is meta, doesn't generate a query
+}
+
+/**
+ * Takes the included fields array and returns a string that can be used in the groq query.
+ * @param {Array<string>} filters - An array of strings that represent applied filters.
+ *                                  Format: ['difficulty,Intermediate', 'genre,rock']
+ * @param {Array<string>} selectedFilters - Filters to exclude from processing
+ * @param {string} pageName - Current page name for context-specific filtering
+ * @returns {string} - A GROQ query filter string
+ */
+export function filtersToGroq(filters = [], selectedFilters = [], pageName = '') {
+  // Handle railcontent_id filters separately (they use different syntax)
+  const railcontentIdFilters = filters
+    .filter(item => item.includes('railcontent_id in'))
+    .map(item => ` && ${item}`)
+    .join('')
+
+  // Remove railcontent_id filters from main processing
+  const regularFilters = filters.filter(item => !item.includes('railcontent_id in'))
+
+  // Group filters by key
+  const groupedFilters = groupFilters(regularFilters)
+
+  // Process each filter group
   const filterClauses = Object.entries(groupedFilters)
     .map(([key, values]) => {
+      // Skip empty filters
       if (!key || values.length === 0) return ''
+
+      // Handle boolean flags (is_*)
       if (key.startsWith('is_')) {
         return `&& ${key} == true`
       }
-      // Filter out values that exist in selectedFilters
+
+      // Skip if in selectedFilters
+      if (selectedFilters.includes(key)) {
+        return ''
+      }
+
+      // Process each value with the appropriate handler
       const joinedValues = values
-        .map((value) => {
-          if (key === 'bpm' && !selectedFilters.includes('bpm')) {
-            if (value.includes('-')) {
-              const [min, max] = value.split('-').map(Number)
-              return `(bpm > ${min} && bpm < ${max})`
-            } else if (value.includes('+')) {
-              const min = parseInt(value, 10)
-              return `(bpm > ${min})`
-            } else {
-              return `bpm == ${value}`
-            }
-          } else if (
-            ['creativity', 'essential', 'focus', 'genre', 'lifestyle', 'theory', 'topic'].includes(
-              key
-            ) &&
-            !selectedFilters.includes(key)
-          ) {
-            return `"${value}" in ${key}[]->name`
-          } else if (
-              ['style'].includes(
-                  key
-              ) &&
-              !selectedFilters.includes(key)
-          ) {
-            return `"${value}" in genre[]->name`
-          } else if (key === 'gear' && !selectedFilters.includes('gear')) {
-            return `gear match "${value}"`
-          } else if (key === 'instrumentless' && !selectedFilters.includes(key)) {
-            if (value === 'Full Song Only') {
-              return `(!instrumentless || instrumentless == null)`
-            } else if (value === 'Instrument Removed') {
-              return `instrumentless`
-            } else {
-              return `instrumentless == ${value}`
-            }
-          } else if (key === 'difficulty' && !selectedFilters.includes(key)) {
-            if(value === 'Introductory'){
-              return `(difficulty_string == "Novice" || difficulty_string == "Introductory" )`
-            }
-            return `difficulty_string == "${value}"`
-          } else if (key === 'tab' && !selectedFilters.includes(key)) {
-            if(value.toLowerCase() === Tabs.SingleLessons.name.toLowerCase()){
-              const conditions = individualLessonsTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.Courses.name.toLowerCase()){
-              const conditions = coursesLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.Entertainment.name.toLowerCase()){
-              const conditions = entertainmentLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.Tutorials.name.toLowerCase()){
-              const conditions = tutorialsLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.Transcriptions.name.toLowerCase()){
-              const conditions = transcriptionsLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.PlayAlongs.name.toLowerCase()){
-              const conditions = playAlongLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.JamTracks.name.toLowerCase()){
-              const conditions = jamTrackLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.ExploreAll.name.toLowerCase()){
-              var allLessons = filterTypes[pageName] || [];
-              const conditions = allLessons.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              if (conditions === "") return '';
-              return ` (${conditions})`;
-          }else if(value.toLowerCase() === Tabs.RecentAll.name.toLowerCase()){
-              var allLessons = recentTypes[pageName] || [];
-              const conditions = allLessons.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              if (conditions === "") return '';
-              return ` (${conditions})`;
-            }
-            return `_type == "${value}"`
-          } else if (key === 'type' && !selectedFilters.includes(key)) {
-            const typeKey = value.toLowerCase();
-            const lessonTypes = lessonTypesMapping[typeKey];
-            if (lessonTypes) {
-              const conditions = lessonTypes.map(
-                  (lessonType) => `_type == '${lessonType}'`
-              ).join(' || ');
-              return ` (${conditions})`;
-            }
-            return `_type == "${value}"`;
-          } else if (key === 'length_in_seconds') {
-            if (value.includes('-')) {
-              const [min, max] = value.split('-').map(Number)
-              return `(${key} > ${min} && ${key} < ${max})`
-            } else if (value.includes('+')) {
-              const min = parseInt(value, 10)
-              return `(${key} > ${min})`
-            } else {
-              return `${key} == ${value}`
-            }
-          } else if (key === 'pageName') {
-            return ` `
-          } else if (!selectedFilters.includes(key)) {
-            return ` ${key} == ${/^\d+$/.test(value) ? value : `"$${value}"`}`
+        .map(value => {
+          const handler = filterHandlers[key]
+
+          if (handler) {
+            return handler(value, pageName)
           }
+
+          // Default handler for unknown filters
+          return `${key} == ${/^\d+$/.test(value) ? value : `"${value}"`}`
         })
         .filter(Boolean)
         .join(' || ')
@@ -963,10 +958,14 @@ export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
     .filter(Boolean)
     .join(' ')
 
-  //Return
-  return `${multipleIdFilters} ${filterClauses}`
+  return `${railcontentIdFilters} ${filterClauses}`.trim()
 }
 
+/**
+ * Groups filters by category
+ * @param {Array<string>} filters - Array of 'key,value' strings
+ * @returns {Object} - Object with keys as categories and values as arrays
+ */
 function groupFilters(filters) {
   if (filters.length === 0) return {}
 
