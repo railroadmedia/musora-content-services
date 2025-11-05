@@ -27,5 +27,5 @@ export interface TestUser {
  */
 export function createTestUser(props: CreateTestUserProps): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<void>(`/api/testing/users/create`, props)
+  return httpClient.post<void>(`/api/testing/users`, props)
 }
