@@ -23,6 +23,7 @@ export const DEFAULT_FIELDS = [
   'status',
   "'slug' : slug.current",
   "'permission_id': permission[]->railcontent_id",
+  `permission_v2`,
   'xp',
   'child_count',
 ]
@@ -33,6 +34,7 @@ export const DEFAULT_CHILD_FIELDS = [
   `"instructors": instructor[]->name`,
   `length_in_seconds`,
   `'permission_id': permission[]->railcontent_id`,
+  `permission_v2`,
 ]
 
 export const descriptionField = 'description[0].children[0].text'

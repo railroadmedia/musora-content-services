@@ -265,6 +265,7 @@ export async function fetchPlayAlongsCount(
  */
 export async function fetchRelatedSongs(brand, songId) {
   const now = getSanityDate(new Date())
+    // TODO BEH-1383 - Revert permissionV1 changes in MCS
   const query = `
       *[_type == "song" && railcontent_id == ${songId}]{
         "entity": array::unique([
@@ -277,6 +278,7 @@ export async function fetchRelatedSongs(brand, songId) {
             status,
             "image": thumbnail.asset->url,
             "permission_id": permission[]->railcontent_id,
+            permission_v2,
             "fields": [
               {
                 "key": "title",
@@ -303,6 +305,7 @@ export async function fetchRelatedSongs(brand, songId) {
             "url": web_url_path,
             "published_on": published_on,
             "permission_id": permission[]->railcontent_id,
+            permission_v2,
             status,
             "fields": [
               {
@@ -362,6 +365,7 @@ export async function fetchNewReleases(
       "type": _type,
       web_url_path,
       "permission_id": permission[]->railcontent_id,
+      permission_v2,
       `
   const filterParams = { allowsPullSongsContent: false }
   const query = await buildQuery(filter, filterParams, fields, {
@@ -405,6 +409,7 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         "type": _type,
         web_url_path,
         "permission_id": permission[]->railcontent_id,
+        permission_v2,
         addevent_unique_key`
   const query = buildRawQuery(
     `_type in ${typesString} && brand == '${brand}' && published_on > '${now}' && status == 'scheduled'`,
@@ -454,6 +459,7 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
       "type": _type,
       web_url_path,
       "permission_id": permission[]->railcontent_id,
+      permission_v2,
   } | order(published_on asc)[${start}...${end}]`
   return fetchSanity(query, true)
 }
@@ -1279,6 +1285,7 @@ export async function fetchLessonContent(railContentId) {
           mp3_yes_drums_no_click_url,
           mp3_yes_drums_yes_click_url,
           "permission_id": permission[]->railcontent_id,
+          permission_v2,
           "parent_content_data": parent_content_data[]{
             "id": id,
             "title": *[railcontent_id == ^.id][0].title,
@@ -1326,7 +1333,7 @@ export async function fetchRelatedLessons(railContentId, brand) {
   ).buildFilter()
   const filterNeighbouringSiblings = await new FilterBuilder(`references(^._id)`).buildFilter()
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
+  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id, permission_v2, _type, "genre": genre[]->name`
   const queryFieldsWithSort = queryFields + ', sort'
   const query = `*[railcontent_id == ${railContentId} && brand == "${brand}"]{
    _type, parent_type, railcontent_id,
@@ -1391,7 +1398,7 @@ async function fetchRelatedLessonsSectionData(currentContent) {
  * @returns {Promise<string>}
  */
 async function buildRelatedLessonsQuery(currentContent) {
-  const defaultProjectionsAndSorting = `{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type,genre}|order(published_on desc, title asc)[0...10]`
+  const defaultProjectionsAndSorting = `{_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail_url":thumbnail.asset->url, length_in_seconds, web_url_path, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id, permission_v2, _type,genre}|order(published_on desc, title asc)[0...10]`
   const currentContentData = await getCurrentContentDataForQuery(currentContent)
   const tutorialQuery = await buildSubQueryForFetch(
     currentContentData.parentType,
@@ -2034,7 +2041,9 @@ function doesUserNeedAccessToContent(result, userPermissions, isAdmin) {
   if (isAdmin ?? false) {
     return false
   }
-  const permissions = new Set(result?.permission_id ?? [])
+  const oldPermissions = result?.permission_id ?? []
+  const newPermissions = result?.permission_v2 ?? []
+  const permissions = new Set([...oldPermissions, ...newPermissions])
   if (permissions.size === 0) {
     return false
   }
