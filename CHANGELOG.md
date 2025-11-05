@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.70.1](https://github.com/railroadmedia/musora-content-services/compare/v2.70.0...v2.70.1) (2025-11-05)
+
+
+### Bug Fixes
+
+* update video field for method objects ([#541](https://github.com/railroadmedia/musora-content-services/issues/541)) ([a2120f6](https://github.com/railroadmedia/musora-content-services/commit/a2120f63bfa99d9b9ae96712e879161ad4add441))
+
 ## [2.70.0](https://github.com/railroadmedia/musora-content-services/compare/v2.67.2...v2.70.0) (2025-11-05)
 
 
