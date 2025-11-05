@@ -3,7 +3,7 @@ import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2Structure } f
 import { addContextToContent } from '../contentAggregator.js'
 import { getProgressStateByIds } from '../contentProgress.js'
 /**
- * @module GuidedCourses
+ * @module LearningPaths
  */
 const BASE_PATH: string = `/api/content-org`
 
@@ -60,16 +60,16 @@ export async function updateActivePath(brand: string) {
  *
  * @param {number} learningPathId - The learning path ID.
  * @param {string} brand
- * @param {Date} userDate - format 2025-10-31
+ * @param {Date} userDate - Users local date - format 2025-10-31
  * @returns {Promise<Object>} result - The result object.
  * @returns {number} result.id - The learning path ID.
- * @returns {string} [result.thumbnail] - Optional thumbnail URL for the learning path.
+ * @returns {string} result.thumbnail - Optional thumbnail URL for the learning path.
  * @returns {string} result.title - The title of the learning path.
  * @returns {boolean} result.is_active_learning_path - Whether the learning path is currently active.
- * @returns {Array} [result.completed_lessons] - Array of completed lessons.
- * @returns {Array} [result.upcoming_lessons] - Array of upcoming/additional lessons.
- * @returns {Array} [result.next_learning_path_lessons] - Array of next lessons to be taken.
- * @returns {Array} [result.todays_lessons] - Array of today's lessons (max 3).
+ * @returns {Array} result.upcoming_lessons - Array of upcoming/additional lessons.
+ * @returns {Array} result.todays_lessons - Array of today's lessons (max 3).
+ * @returns {Array} result.next_learning_path_lessons - Array of next lessons to be taken.
+ * @returns {Array} result.completed_lessons - Array of completed lessons.
  */
 export async function fetchLearningPathLessons(
   learningPathId: number,

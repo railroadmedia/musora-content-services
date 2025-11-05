@@ -13,6 +13,7 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	fetchLearningPathLessons,
 	getActivePath,
 	getDailySession,
 	updateActivePath,
@@ -459,6 +460,7 @@ declare module 'musora-content-services' {
 		fetchInterests,
 		fetchLastInteractedChild,
 		fetchLatestThreads,
+		fetchLearningPathLessons,
 		fetchLeaving,
 		fetchLessonContent,
 		fetchLessonsFeaturingThisContent,
