@@ -2187,7 +2187,7 @@ export async function fetchTabData(
   let entityFieldsString = ''
   let filter = ''
 
-  filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
+  filter = `brand == "${brand}" && (defined(railcontent_id)) ${includedFieldsFilter} ${progressFilter}`
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const childrenFields = await getChildFieldsForContentType('tab-data')
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
