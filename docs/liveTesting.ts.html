@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>gamification/awards.ts - Documentation</title>
+    <title>liveTesting.ts - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">gamification/awards.ts</h1>
+    <h1 class="page-title">liveTesting.ts</h1>
     
 
     
@@ -45,114 +45,35 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @module Awards
- */
+            <pre class="prettyprint source linenums"><code>import { HttpClient } from '../infrastructure/http/HttpClient'
+import { HttpError } from '../infrastructure/http/interfaces/HttpError'
+import { globalConfig } from './config.js'
 
-import { HttpClient } from '../../infrastructure/http/HttpClient'
-import { PaginatedResponse } from '../api/types'
-import { globalConfig } from '../config'
-
-const baseUrl = `/api/gamification`
-
-export interface Award {
-  id: number
-  user_id: number
-  completed_at: string          // ISO-8601 timestamp
-  completion_data: Object
-  award_id: number
-  type: string
-  title: string
-  badge: string
-}
-
-export interface Certificate {
-  id: number
-  user_name: string
-  user_id: number
-  completed_at: string          // ISO-8601 timestamp
-  message: string
-  award_id: number
-  type: string
-  title: string
-  musora_logo: string
-  musora_logo_64: string
-  musora_bg_logo: string
-  musora_bg_logo_64: string
-  brand_logo: string
-  brand_logo_64: string
-  ribbon_image: string
-  ribbon_image_64: string
-  award_image: string
-  award_image_64: string
-  instructor_name: string
-  instructor_signature?: string
-  instructor_signature_64?: string
-}
-/**
- * Get awards for a specific user.
- *
- * NOTE: needs error handling for the response from http client
- * (Alexandre: I'm doing it in a different branch/PR: https://github.com/railroadmedia/musora-content-services/pull/349)
- * NOTE: This function still expects brand because FE passes the argument. It is ignored for now
- *
- * @param {number} userId - The user ID. If not provided, the authenticated user is used instead.
- * @param {string} _brand - The brand to fetch the awards for.
- * @param {number|null} [page=1] - Page attribute for pagination
- * @param {number|null} [limit=5] - Limit how many items to return
- * @returns {Promise&lt;PaginatedResponse&lt;Award>>} - The awards for the user.
- */
-export async function fetchAwardsForUser(
-  userId: number,
-  _brand: string,
-  page: number = 1,
-  limit: number = 5
-): Promise&lt;PaginatedResponse&lt;Award>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  const response = await httpClient.get&lt;PaginatedResponse&lt;Award>>(
-    `${baseUrl}/v1/users/${userId}/awards?limit=${limit}&amp;page=${page}`
-  )
-
-  return response
+export interface CreateTestUserProps {
+  productId?: number
+  createdAt?: Date
 }
 
 /**
- * Get award progress for the guided course lesson for the authorized user.
- *
- * NOTE: needs error handling for the response from http client
- * (Alexandre: I'm doing it in a different branch/PR: https://github.com/railroadmedia/musora-content-services/pull/349)
- * NOTE: This function still expects brand because FE passes the argument. It is ignored for now
- *
- * @param {number} guidedCourseLessonId - The guided course lesson Id
- * @returns {Promise&lt;Award>} - The award data for a given award and given user.
+ * @interface TestUser - Represents a test user object.
+ * @property {User} user - The user object containing user details.
+ * @property {string} brand - The brand associated with the test user.
+ * @property {string} verificationToken - The verification token for the test user.
  */
-export async function getAwardDataForGuidedContent(
-  guidedCourseLessonId,
-): Promise&lt;Award> {
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  const response = await httpClient.get&lt;Award>(
-    `${baseUrl}/v1/users/guided_course_award/${guidedCourseLessonId}`
-  )
-
-  return response
+export interface TestUser {
+  user: object
+  brand: string
+  verificationToken: string
 }
 
 /**
- * Get certificate data for a completed user award
- *
- * NOTE: needs error handling for the response from http client
- * (Alexandre: I'm doing it in a different branch/PR: https://github.com/railroadmedia/musora-content-services/pull/349)
- * NOTE: This function still expects brand because FE passes the argument. It is ignored for now
- *
- * @param {number} userAwardId - The user award progress id
- * @returns {Promise&lt;Certificate>} - The certificate data for the completed user award.
+ * @param {CreateTestUserProps} props - The parameters for creating a test user.
+ * @property {number} [productId] - The product ID to associate with the test user.
+ * @property {Date} [createdAt] - The creation date for the test user.
  */
-export async function fetchCertificate(userAwardId: number): Promise&lt;Certificate> {
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  const response = await httpClient.get&lt;Certificate>(
-    `${baseUrl}/v1/users/certificate/${userAwardId}`
-  )
-  return response
+export function createTestUser(props: CreateTestUserProps): Promise&lt;void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.post&lt;void>(`/api/testing/users/create`, props)
 }
 </code></pre>
         </article>
