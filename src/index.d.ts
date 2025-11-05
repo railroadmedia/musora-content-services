@@ -327,6 +327,7 @@ import {
 } from './services/user/notifications.js';
 
 import {
+	getOnboardingRecommendedContent,
 	startOnboarding,
 	updateOnboarding,
 	userOnboardingForBrand
@@ -536,6 +537,7 @@ declare module 'musora-content-services' {
 		getNavigateToForPlaylists,
 		getNewAndUpcoming,
 		getNextLesson,
+		getOnboardingRecommendedContent,
 		getPracticeNotes,
 		getPracticeSessions,
 		getProgressDateByIds,

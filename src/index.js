@@ -327,6 +327,7 @@ import {
 } from './services/user/notifications.js';
 
 import {
+	getOnboardingRecommendedContent,
 	startOnboarding,
 	updateOnboarding,
 	userOnboardingForBrand
@@ -535,6 +536,7 @@ export {
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
 	getNextLesson,
+	getOnboardingRecommendedContent,
 	getPracticeNotes,
 	getPracticeSessions,
 	getProgressDateByIds,
