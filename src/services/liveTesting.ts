@@ -3,6 +3,7 @@ import { HttpError } from '../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from './config.js'
 
 export interface CreateTestUserProps {
+  email?: string
   productId?: number
   createdAt?: Date
 }
