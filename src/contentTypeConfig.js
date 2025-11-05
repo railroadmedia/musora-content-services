@@ -418,6 +418,7 @@ export let contentTypeConfig = {
   },
   'learning-path-v2': {
     fields: [
+      'intro_video',
       'total_skills',
       `"resource": ${resourcesField}`,
       `"badge": *[
@@ -623,7 +624,7 @@ export let contentTypeConfig = {
     `"type":_type`,
     "title",
     "brand",
-    `"intro_video": intro_video->{ ${getIntroVideoFields().join(", ")} }`,
+    "intro_video",
     `child[]->{
       "resource": ${resourcesField},
       total_skills,
