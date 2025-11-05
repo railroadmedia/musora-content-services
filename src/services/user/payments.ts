@@ -67,7 +67,6 @@ export async function fetchCustomerPayments(
   if (options.cursor) {
     params.append('cursor', options.cursor)
   }
-  console.log(options)
   const queryString = params.toString()
   const url = queryString ? `/api/customer/orders/v1?${queryString}` : '/api/customer/orders/v1'
 
