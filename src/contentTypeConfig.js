@@ -635,11 +635,7 @@ export let contentTypeConfig = {
       "description": ${descriptionField},
       "thumbnail": thumbnail.asset->url,
       length_in_seconds,
-      "intro_video": intro_video->{
-        external_id,
-        hlsManifestUrl,
-        video_playback_endpoints
-      },
+      intro_video,
       child[]->{
         ${DEFAULT_FIELDS.join(',')}
       }
@@ -655,16 +651,8 @@ export function getIntroVideoFields() {
     `"description": ${descriptionField}`,
     `"thumbnail": thumbnail.asset->url`,
     "length_in_seconds",
-    `video_desktop {
-      external_id,
-      hlsManifestUrl,
-      video_playback_endpoints
-    }`,
-    `video_mobile {
-      external_id,
-      hlsManifestUrl,
-      video_playback_endpoints
-    }`
+    "video_desktop",
+    "video_mobile",
   ];
 }
 
