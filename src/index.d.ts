@@ -10,14 +10,14 @@ import {
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
 	unEnrollUserInGuidedCourse
-} from './services/content-org/guided-courses.ts';
+} from './services/content-org/guided-courses.js';
 
 import {
 	getActivePath,
 	getDailySession,
 	updateActivePath,
 	updateDailySession
-} from './services/content-org/learning-paths.ts';
+} from './services/content-org/learning-paths.js';
 
 import {
 	addItemToPlaylist,
@@ -99,11 +99,11 @@ import {
 	createForumCategory,
 	fetchForumCategories,
 	updateForumCategory
-} from './services/forums/categories.ts';
+} from './services/forums/categories.js';
 
 import {
 	getActiveDiscussions
-} from './services/forums/forums.ts';
+} from './services/forums/forums.js';
 
 import {
 	createPost,
@@ -115,7 +115,7 @@ import {
 	search,
 	unlikePost,
 	updatePost
-} from './services/forums/posts.ts';
+} from './services/forums/posts.js';
 
 import {
 	createThread,
@@ -130,13 +130,13 @@ import {
 	unlockThread,
 	unpinThread,
 	updateThread
-} from './services/forums/threads.ts';
+} from './services/forums/threads.js';
 
 import {
 	fetchAwardsForUser,
 	fetchCertificate,
 	getAwardDataForGuidedContent
-} from './services/gamification/awards.ts';
+} from './services/gamification/awards.js';
 
 import {
 	applyCloudflareWrapper,
@@ -152,7 +152,7 @@ import {
 
 import {
 	createTestUser
-} from './services/liveTesting.ts';
+} from './services/liveTesting.js';
 
 import {
 	assignModeratorToComment,
@@ -274,7 +274,7 @@ import {
 	sendPasswordResetEmail,
 	setupAccount,
 	status
-} from './services/user/account.ts';
+} from './services/user/account.js';
 
 import {
 	fetchChatSettings
@@ -309,7 +309,7 @@ import {
 	fetchRechargeTokens,
 	restorePurchases,
 	upgradeSubscription
-} from './services/user/memberships.ts';
+} from './services/user/memberships.js';
 
 import {
 	deleteNotification,
@@ -330,11 +330,11 @@ import {
 	startOnboarding,
 	updateOnboarding,
 	userOnboardingForBrand
-} from './services/user/onboarding.ts';
+} from './services/user/onboarding.js';
 
 import {
 	fetchCustomerPayments
-} from './services/user/payments.ts';
+} from './services/user/payments.js';
 
 import {
 	fetchUserPermissions,
@@ -378,11 +378,32 @@ import {
 } from './services/userActivity.js';
 
 import {
+	PermissionsAdapter,
+	PermissionsV1Adapter,
+	PermissionsV2Adapter,
+	getPermissionsAdapter,
+	resetAdapterInstance,
+	getPermissionsVersion,
+	isPermissionsV1,
+	isPermissionsV2
+} from './services/permissions/index.js';
+
+import type {
+	UserPermissions,
+	PermissionFilterOptions,
+	ContentItem,
+	PermissionsVersion
+} from './services/permissions/index.js';
+
+import {
 	 default as EventsAPI 
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
 	export {
+		PermissionsAdapter,
+		PermissionsV1Adapter,
+		PermissionsV2Adapter,
 		addContextToContent,
 		addItemToPlaylist,
 		applyCloudflareWrapper,
@@ -536,6 +557,8 @@ declare module 'musora-content-services' {
 		getNavigateToForPlaylists,
 		getNewAndUpcoming,
 		getNextLesson,
+		getPermissionsAdapter,
+		getPermissionsVersion,
 		getPracticeNotes,
 		getPracticeSessions,
 		getProgressDateByIds,
@@ -567,6 +590,8 @@ declare module 'musora-content-services' {
 		isContentLiked,
 		isContentLikedByIds,
 		isNextDay,
+		isPermissionsV1,
+		isPermissionsV2,
 		isSameDate,
 		isUsernameAvailable,
 		jumpToContinueContent,
@@ -612,6 +637,7 @@ declare module 'musora-content-services' {
 		reportPlaylist,
 		requestEmailChange,
 		reset,
+		resetAdapterInstance,
 		resetPassword,
 		restoreComment,
 		restoreItemFromPlaylist,
@@ -661,6 +687,12 @@ declare module 'musora-content-services' {
 		userOnboardingForBrand,
 		verifyImageSRC,
 		verifyLocalDataContext,
+	}
+	export type {
+		UserPermissions,
+		PermissionFilterOptions,
+		ContentItem,
+		PermissionsVersion
 	}
 }
 

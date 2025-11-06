@@ -12,6 +12,7 @@ export let globalConfig = {
   localStorage: null,
   isMA: false,
   localTimezoneString: null, // In format: America/Vancouver
+  permissionsVersion: 'v1', // 'v1' or 'v2'
 }
 
 /**
@@ -52,6 +53,7 @@ const excludeFromGeneratedIndex = []
  *   baseUrl: 'https://web-staging-one.musora.com',
  *   localStorage: localStorage,
  *   isMA: false,
+ *   permissionsVersion: 'v1', // Optional: 'v1' (default) or 'v2'
  * });
  */
 export function initializeService(config) {
@@ -62,4 +64,5 @@ export function initializeService(config) {
   globalConfig.localStorage = config.localStorage
   globalConfig.isMA = config.isMA || false
   globalConfig.localTimezoneString = config.localTimezoneString || null
+  globalConfig.permissionsVersion = config.permissionsVersion || 'v1'
 }

@@ -73,6 +73,11 @@ treeElements.forEach((treeNode) => {
   if (fs.lstatSync(filePath).isFile()) {
     addFunctionsToFileExports(filePath, treeNode)
   } else if (fs.lstatSync(filePath).isDirectory()) {
+    // Skip the permissions directory - it has its own index.ts barrel export
+    if (treeNode === 'permissions') {
+      return
+    }
+
     const subDir = fs.readdirSync(filePath)
     subDir.forEach((subFile) => {
       const filePath = path.join(servicesDir, treeNode, subFile)
@@ -89,9 +94,25 @@ Object.entries(fileExports).forEach(([file, functionNames]) => {
   content += `\nimport {\n\t${functionNames.join(',\n\t')}\n} from './services/${file}';\n`
 })
 
+// Add permissions barrel export
+// Note: UserPermissions, PermissionFilterOptions, ContentItem, and PermissionsVersion are TypeScript types only
+// They don't exist at runtime, so we only import the runtime values here
+content += `\nimport {\n\tPermissionsAdapter,\n\tPermissionsV1Adapter,\n\tPermissionsV2Adapter,\n\tgetPermissionsAdapter,\n\tresetAdapterInstance,\n\tgetPermissionsVersion,\n\tisPermissionsV1,\n\tisPermissionsV2\n} from './services/permissions/index.js';\n`
+
 content += `\nimport {\n\t default as EventsAPI \n} from './services/eventsAPI';\n`
 
-const allFunctionNames = Object.values(fileExports).flat().sort()
+const permissionsExports = [
+  'PermissionsAdapter',
+  'PermissionsV1Adapter',
+  'PermissionsV2Adapter',
+  'getPermissionsAdapter',
+  'resetAdapterInstance',
+  'getPermissionsVersion',
+  'isPermissionsV1',
+  'isPermissionsV2'
+]
+
+const allFunctionNames = Object.values(fileExports).flat().concat(permissionsExports).sort()
 content += '\nexport {\n'
 content += `\t${allFunctionNames.join(',\n\t')},\n`
 content += '};\n'
@@ -109,14 +130,30 @@ let dtsContent =
   '/*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/\n'
 
 Object.entries(fileExports).forEach(([file, functionNames]) => {
-  dtsContent += `\nimport {\n\t${functionNames.join(',\n\t')}\n} from './services/${file}';\n`
+  // Convert .ts extensions to .js for imports
+  const importPath = file.replace(/\.ts$/, '.js')
+  dtsContent += `\nimport {\n\t${functionNames.join(',\n\t')}\n} from './services/${importPath}';\n`
 })
+
+// Add permissions barrel export for .d.ts
+// For .d.ts files, we need to export both runtime values AND types
+dtsContent += `\nimport {\n\tPermissionsAdapter,\n\tPermissionsV1Adapter,\n\tPermissionsV2Adapter,\n\tgetPermissionsAdapter,\n\tresetAdapterInstance,\n\tgetPermissionsVersion,\n\tisPermissionsV1,\n\tisPermissionsV2\n} from './services/permissions/index.js';\n`
+
+// Import TypeScript types separately (these don't exist at runtime)
+dtsContent += `\nimport type {\n\tUserPermissions,\n\tPermissionFilterOptions,\n\tContentItem,\n\tPermissionsVersion\n} from './services/permissions/index.js';\n`
 
 dtsContent += `\nimport {\n\t default as EventsAPI \n} from './services/eventsAPI';\n`
 
 dtsContent += "\ndeclare module 'musora-content-services' {\n"
 dtsContent += '\texport {\n'
 dtsContent += `\t\t${allFunctionNames.join(',\n\t\t')},\n`
+dtsContent += '\t}\n'
+// Export TypeScript types
+dtsContent += '\texport type {\n'
+dtsContent += '\t\tUserPermissions,\n'
+dtsContent += '\t\tPermissionFilterOptions,\n'
+dtsContent += '\t\tContentItem,\n'
+dtsContent += '\t\tPermissionsVersion\n'
 dtsContent += '\t}\n'
 dtsContent += '}\n'
 

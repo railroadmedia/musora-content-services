@@ -378,10 +378,24 @@ import {
 } from './services/userActivity.js';
 
 import {
+	PermissionsAdapter,
+	PermissionsV1Adapter,
+	PermissionsV2Adapter,
+	getPermissionsAdapter,
+	resetAdapterInstance,
+	getPermissionsVersion,
+	isPermissionsV1,
+	isPermissionsV2
+} from './services/permissions/index.js';
+
+import {
 	 default as EventsAPI 
 } from './services/eventsAPI';
 
 export {
+	PermissionsAdapter,
+	PermissionsV1Adapter,
+	PermissionsV2Adapter,
 	addContextToContent,
 	addItemToPlaylist,
 	applyCloudflareWrapper,
@@ -535,6 +549,8 @@ export {
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
 	getNextLesson,
+	getPermissionsAdapter,
+	getPermissionsVersion,
 	getPracticeNotes,
 	getPracticeSessions,
 	getProgressDateByIds,
@@ -566,6 +582,8 @@ export {
 	isContentLiked,
 	isContentLikedByIds,
 	isNextDay,
+	isPermissionsV1,
+	isPermissionsV2,
 	isSameDate,
 	isUsernameAvailable,
 	jumpToContinueContent,
@@ -611,6 +629,7 @@ export {
 	reportPlaylist,
 	requestEmailChange,
 	reset,
+	resetAdapterInstance,
 	resetPassword,
 	restoreComment,
 	restoreItemFromPlaylist,
