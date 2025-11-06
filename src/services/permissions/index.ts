@@ -4,7 +4,7 @@
  * Permissions abstraction layer for Musora Content Services.
  *
  * This module provides a flexible abstraction that allows swapping between
- * different permission implementations (v1 and v2) without changing consumer code.
+ * different permission implementations (v1 and v2) without changing code.
  *
  * ## Quick Start
  *
@@ -21,14 +21,17 @@
  * const needsAccess = adapter.doesUserNeedAccess(content, permissions)
  *
  * // Generate GROQ filter for queries
- * const filter = adapter.generatePermissionsFilter(permissions, { allowsPullSongsContent: true })
+ * const filter = adapter.generatePermissionsFilter(permissions, {
+ *   prefix: '',
+ *   showMembershipRestrictedContent: false
+ * })
  * ```
  *
  * ## Switching Versions
  *
- * Set the `PERMISSIONS_VERSION` environment variable:
- * - `PERMISSIONS_VERSION=v1` - Use current permissions system (default)
- * - `PERMISSIONS_VERSION=v2` - Use new permissions system (when ready)
+ * Set `permissionsVersion` in `initializeService()`:
+ * - `permissionsVersion: 'v1'` - Use current permissions system (default)
+ * - `permissionsVersion: 'v2'` - Use new permissions system (when ready)
  *
  * ## Architecture
  *
@@ -55,10 +58,7 @@ export { PermissionsV2Adapter } from './PermissionsV2Adapter'
 // Export factory functions and version utilities (runtime values)
 export {
   getPermissionsAdapter,
-  resetAdapterInstance,
   getPermissionsVersion,
-  isPermissionsV1,
-  isPermissionsV2,
 } from './PermissionsAdapterFactory'
 
 // Export PermissionsVersion type only (not runtime value)

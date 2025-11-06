@@ -97,7 +97,7 @@ Object.entries(fileExports).forEach(([file, functionNames]) => {
 // Add permissions barrel export
 // Note: UserPermissions, PermissionFilterOptions, ContentItem, and PermissionsVersion are TypeScript types only
 // They don't exist at runtime, so we only import the runtime values here
-content += `\nimport {\n\tPermissionsAdapter,\n\tPermissionsV1Adapter,\n\tPermissionsV2Adapter,\n\tgetPermissionsAdapter,\n\tresetAdapterInstance,\n\tgetPermissionsVersion,\n\tisPermissionsV1,\n\tisPermissionsV2\n} from './services/permissions/index.js';\n`
+content += `\nimport {\n\tPermissionsAdapter,\n\tPermissionsV1Adapter,\n\tPermissionsV2Adapter,\n\tgetPermissionsAdapter,\n\tgetPermissionsVersion\n} from './services/permissions/index.js';\n`
 
 content += `\nimport {\n\t default as EventsAPI \n} from './services/eventsAPI';\n`
 
@@ -106,10 +106,7 @@ const permissionsExports = [
   'PermissionsV1Adapter',
   'PermissionsV2Adapter',
   'getPermissionsAdapter',
-  'resetAdapterInstance',
-  'getPermissionsVersion',
-  'isPermissionsV1',
-  'isPermissionsV2'
+  'getPermissionsVersion'
 ]
 
 const allFunctionNames = Object.values(fileExports).flat().concat(permissionsExports).sort()
@@ -130,14 +127,12 @@ let dtsContent =
   '/*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/\n'
 
 Object.entries(fileExports).forEach(([file, functionNames]) => {
-  // Convert .ts extensions to .js for imports
-  const importPath = file.replace(/\.ts$/, '.js')
-  dtsContent += `\nimport {\n\t${functionNames.join(',\n\t')}\n} from './services/${importPath}';\n`
+  dtsContent += `\nimport {\n\t${functionNames.join(',\n\t')}\n} from './services/${file}';\n`
 })
 
 // Add permissions barrel export for .d.ts
 // For .d.ts files, we need to export both runtime values AND types
-dtsContent += `\nimport {\n\tPermissionsAdapter,\n\tPermissionsV1Adapter,\n\tPermissionsV2Adapter,\n\tgetPermissionsAdapter,\n\tresetAdapterInstance,\n\tgetPermissionsVersion,\n\tisPermissionsV1,\n\tisPermissionsV2\n} from './services/permissions/index.js';\n`
+dtsContent += `\nimport {\n\tPermissionsAdapter,\n\tPermissionsV1Adapter,\n\tPermissionsV2Adapter,\n\tgetPermissionsAdapter,\n\tgetPermissionsVersion\n} from './services/permissions/index.js';\n`
 
 // Import TypeScript types separately (these don't exist at runtime)
 dtsContent += `\nimport type {\n\tUserPermissions,\n\tPermissionFilterOptions,\n\tContentItem,\n\tPermissionsVersion\n} from './services/permissions/index.js';\n`

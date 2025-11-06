@@ -384,10 +384,7 @@ import {
 	PermissionsV1Adapter,
 	PermissionsV2Adapter,
 	getPermissionsAdapter,
-	resetAdapterInstance,
-	getPermissionsVersion,
-	isPermissionsV1,
-	isPermissionsV2
+	getPermissionsVersion
 } from './services/permissions/index.js';
 
 import {
@@ -586,8 +583,6 @@ export {
 	isContentLiked,
 	isContentLikedByIds,
 	isNextDay,
-	isPermissionsV1,
-	isPermissionsV2,
 	isSameDate,
 	isUsernameAvailable,
 	jumpToContinueContent,
@@ -633,7 +628,6 @@ export {
 	reportPlaylist,
 	requestEmailChange,
 	reset,
-	resetAdapterInstance,
 	resetPassword,
 	restoreComment,
 	restoreItemFromPlaylist,

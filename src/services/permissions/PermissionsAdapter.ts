@@ -16,27 +16,19 @@ export interface UserPermissions {
   isAdmin: boolean
   /** Whether the user has basic membership */
   isABasicMember: boolean
-  /** User's access level (v2) */
+  /** User's access level (v2 - for future use) */
   access_level?: string
-  /** Whether user owns packs (v1, deprecated in v2) */
-  is_pack_owner?: boolean
-  /** Whether user owns challenges (v1, deprecated in v2) */
-  is_challenge_owner?: boolean
-  /** User's permission level (admin, etc.) */
-  permission_level?: string
 }
 
 /**
  * Options for generating permission filters
  */
 export interface PermissionFilterOptions {
-  /** Whether to allow basic members access to songs content */
-  allowsPullSongsContent?: boolean
   /** GROQ prefix for nested queries (e.g., '^.' for parent, '@->' for children) */
   prefix?: string
   /**
    * If true, show content that requires paid membership even if user doesn't have it.
-   * Used for upgrade prompts. V1: includes permission 92 (Plus). V2: shows content with membership_tier='Plus'
+   * Used for upgrade prompts. V1: includes permissions [91, 92]. V2: shows content with membership_tier='plus'|'basic'|'free'
    */
   showMembershipRestrictedContent?: boolean
 }
@@ -110,16 +102,5 @@ export abstract class PermissionsAdapter {
    */
   isAdmin(userPermissions: UserPermissions): boolean {
     return userPermissions?.isAdmin ?? false
-  }
-
-  /**
-   * Reset any cached permission data.
-   * Called when permissions need to be refreshed.
-   *
-   * @returns Promise that resolves when reset is complete
-   */
-  async reset(): Promise<void> {
-    // Default implementation does nothing
-    // Subclasses can override if they cache data
   }
 }

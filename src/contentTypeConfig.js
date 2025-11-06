@@ -712,6 +712,14 @@ export function getIntroVideoFields() {
 
 export const plusMembershipPermissions = 92
 
+/**
+ * Membership permission IDs for all membership tiers.
+ * Used for showing membership-restricted content in upgrade prompts.
+ * - 91: Basic membership
+ * - 92: Plus membership
+ */
+export const membershipPermissions = [91, 92]
+
 export function getNewReleasesTypes(brand) {
   const baseNewTypes = [
     'student-review',

@@ -35,7 +35,6 @@ const needsAccess = adapter.doesUserNeedAccess(content, permissions)
 
 // Generate GROQ filter for permissions
 const filter = adapter.generatePermissionsFilter(permissions, {
-  allowsPullSongsContent: true,
   prefix: '',
   showMembershipRestrictedContent: false,  // Set true to show membership-restricted content for upgrades
 })
@@ -43,14 +42,15 @@ const filter = adapter.generatePermissionsFilter(permissions, {
 
 ## Configuration
 
-Set `PERMISSIONS_VERSION` environment variable:
+Set `permissionsVersion` in `initializeService()`:
 
-```bash
-# Use v1 (default)
-export PERMISSIONS_VERSION=v1
+```javascript
+import { initializeService } from 'musora-content-services'
 
-# Use v2 (when ready)
-export PERMISSIONS_VERSION=v2
+initializeService({
+  // ... other config
+  permissionsVersion: 'v1', // 'v1' (default) or 'v2'
+})
 ```
 
 ## Documentation
@@ -78,13 +78,12 @@ All adapters must implement:
 - `generatePermissionsFilter(userPermissions, options)` - Generate GROQ filter
 - `getUserPermissionIds(userPermissions)` - Get permission IDs
 - `isAdmin(userPermissions)` - Check if user is admin
-- `reset()` - Reset cached data
 
 ## V1 Implementation
 
 Current permissions system:
 - Permission-based access using permission IDs
-- Basic members get access to songs (permission 92)
+- Basic members automatically get access to songs content (permission 92 added to their permissions)
 - Admins bypass all checks
 - Content with no permissions is accessible to all
 
@@ -105,8 +104,6 @@ This shows content requiring paid membership (permissions 91 for Basic, 92 for P
 ## V2 Implementation
 
 New permissions system (placeholder):
-- `is_pack_owner` and `is_challenge_owner` deprecated
-- New `is_content_owner` or `access_level` based system
 - Different permission structure (TBD)
 
 ## Testing
@@ -118,7 +115,7 @@ import { PermissionsAdapter, UserPermissions } from './services/permissions/Perm
 
 class MockAdapter extends PermissionsAdapter {
   async fetchUserPermissions(): Promise<UserPermissions> {
-    return { permissions: ['78', '91'], isAdmin: false, isABasicMember: false }
+    return { permissions: ['78', '91'], isAdmin: false, isABasicMember: true }
   }
 
   doesUserNeedAccess(content: any, userPermissions: UserPermissions): boolean {
@@ -134,19 +131,6 @@ class MockAdapter extends PermissionsAdapter {
 When implementing V2:
 
 1. Update `PermissionsV2Adapter.ts` with v2 logic
-2. Test with `PERMISSIONS_VERSION=v2`
+2. Test with `permissionsVersion: 'v2'` in `initializeService()`
 3. Update documentation
 4. Coordinate with frontend team for data structure changes
-
-## TypeScript Support
-
-All permissions modules are now written in TypeScript, providing:
-- Full type safety with interfaces for `UserPermissions`, `ContentItem`, and `PermissionFilterOptions`
-- IDE autocomplete and IntelliSense support
-- Compile-time type checking
-- Better refactoring capabilities
-
-Import with `.js` extension (standard for ESM TypeScript):
-```typescript
-import { getPermissionsAdapter, type UserPermissions } from './services/permissions/index.js'
-```

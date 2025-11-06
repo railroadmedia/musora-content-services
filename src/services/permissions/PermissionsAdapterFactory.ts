@@ -62,38 +62,10 @@ export function getPermissionsAdapter(): PermissionsAdapter {
 }
 
 /**
- * Reset the adapter instance.
- * Useful for testing or forcing a fresh adapter instance.
- */
-export function resetAdapterInstance(): void {
-  adapterInstance = null
-}
-
-/**
  * Get the current permissions version being used.
  *
  * @returns The permissions version ('v1' or 'v2')
  */
 export function getPermissionsVersion(): PermissionsVersion {
   return (globalConfig.permissionsVersion || 'v1') as PermissionsVersion
-}
-
-/**
- * Check if we're using v1 permissions.
- *
- * @returns True if using v1
- */
-export function isPermissionsV1(): boolean {
-  const version = globalConfig.permissionsVersion || 'v1'
-  return version.toLowerCase() === 'v1'
-}
-
-/**
- * Check if we're using v2 permissions.
- *
- * @returns True if using v2
- */
-export function isPermissionsV2(): boolean {
-  const version = globalConfig.permissionsVersion || 'v1'
-  return version.toLowerCase() === 'v2'
 }

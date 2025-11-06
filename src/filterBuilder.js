@@ -19,7 +19,6 @@ export class FilterBuilder {
       bypassStatuses = false,
       bypassPublishedDateRestriction = false,
       isSingle = false,
-      allowsPullSongsContent = true,
       isChildrenFilter = false,
       isParentFilter = false,
     } = {}
@@ -33,7 +32,6 @@ export class FilterBuilder {
     this.getFutureContentOnly = getFutureContentOnly
     this.getFutureScheduledContentsOnly = getFutureScheduledContentsOnly
     this.isSingle = isSingle
-    this.allowsPullSongsContent = allowsPullSongsContent
     this.filter = filter
     // this.debug = process.env.DEBUG === 'true' || false;
     this.debug = false
@@ -128,7 +126,6 @@ export class FilterBuilder {
 
     // Generate permissions filter using adapter
     const permissionsFilter = adapter.generatePermissionsFilter(this.userData, {
-      allowsPullSongsContent: this.allowsPullSongsContent,
       prefix: this.prefix,
       showMembershipRestrictedContent: this.showMembershipRestrictedContent,
     })

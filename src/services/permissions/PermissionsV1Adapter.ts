@@ -13,9 +13,8 @@ import {
 } from './PermissionsAdapter'
 import {
   fetchUserPermissions as fetchUserPermissionsV1,
-  reset as resetV1,
 } from '../user/permissions.js'
-import { plusMembershipPermissions } from '../../contentTypeConfig.js'
+import { plusMembershipPermissions, membershipPermissions } from '../../contentTypeConfig.js'
 import { arrayToRawRepresentation } from '../../filterBuilder.js'
 
 /**
@@ -23,23 +22,12 @@ import { arrayToRawRepresentation } from '../../filterBuilder.js'
  *
  * Logic:
  * - Content access based on permission IDs
- * - Basic members get access to songs content (permission 92)
  * - Admins bypass all checks
  * - Content with no permissions is accessible to all
  * - User needs at least ONE matching permission to access content
+ * - If showMembershipRestrictedContent: also show content that requires membership
  */
 export class PermissionsV1Adapter extends PermissionsAdapter {
-  /**
-   * Membership permission IDs that represent membership tiers.
-   * These are the standard membership-level permissions in the system.
-   *
-   * Common values:
-   * - 78: Basic membership (estimated)
-   * - 91: Edge membership (estimated)
-   * - 92: Plus membership (confirmed)
-   */
-  static readonly MEMBERSHIP_PERMISSION_IDS = [78, 91, 92]
-
   /**
    * Fetch user permissions data from v1 API.
    *
@@ -95,9 +83,8 @@ export class PermissionsV1Adapter extends PermissionsAdapter {
    *
    * V1 Logic:
    * - Admins bypass filter (return null)
-   * - Basic members get plus membership permissions for songs
    * - Filter: content has no permission OR references user's permissions
-   * - If showMembershipRestrictedContent: also show content with permission 92 (Plus membership)
+   * - If showMembershipRestrictedContent: also show content that requires membership
    *
    * @param userPermissions - The user's permissions
    * @param options - Options for filter generation
@@ -108,7 +95,6 @@ export class PermissionsV1Adapter extends PermissionsAdapter {
     options: PermissionFilterOptions = {}
   ): string | null {
     const {
-      allowsPullSongsContent = true,
       prefix = '',
       showMembershipRestrictedContent = false,
     } = options
@@ -120,11 +106,6 @@ export class PermissionsV1Adapter extends PermissionsAdapter {
 
     // Get user's permission IDs
     let requiredPermissions = this.getUserPermissionIds(userPermissions)
-
-    // Basic members get access to songs content (permission 92)
-    if (userPermissions?.isABasicMember && allowsPullSongsContent) {
-      requiredPermissions = [...requiredPermissions, String(plusMembershipPermissions)]
-    }
 
     // Generate GROQ filter
     // Content is accessible if:
@@ -154,9 +135,9 @@ export class PermissionsV1Adapter extends PermissionsAdapter {
     // This shows membership content to encourage upgrades
     if (showMembershipRestrictedContent) {
       if (isDerefencedContext) {
-        permissionFilter = `(${permissionFilter} || count((${prefix}permission[]._ref)[@ in *[_type == 'permission' && railcontent_id in [91, 92]]._id]) > 0)`
+        permissionFilter = `(${permissionFilter} || count((${prefix}permission[]._ref)[@ in *[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(membershipPermissions)}]._id]) > 0)`
       } else {
-        permissionFilter = `(${permissionFilter} || references(*[_type == 'permission' && railcontent_id in [91, 92]]._id))`
+        permissionFilter = `(${permissionFilter} || references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(membershipPermissions)}]._id))`
       }
     }
 
@@ -171,14 +152,5 @@ export class PermissionsV1Adapter extends PermissionsAdapter {
    */
   getUserPermissionIds(userPermissions: UserPermissions): string[] {
     return userPermissions?.permissions ?? []
-  }
-
-  /**
-   * Reset cached permission data.
-   *
-   * @returns Promise that resolves when reset is complete
-   */
-  async reset(): Promise<void> {
-    await resetV1()
   }
 }

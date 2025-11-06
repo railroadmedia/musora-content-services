@@ -5,8 +5,6 @@
  * This is a placeholder implementation to be completed when v2 is ready.
  *
  * Key differences from v1:
- * - is_pack_owner and is_challenge_owner are no longer valid
- * - Will be replaced with is_content_owner or use access_level
  * - New permission structure (to be defined)
  */
 
@@ -18,7 +16,6 @@ import {
 } from './PermissionsAdapter'
 import {
   fetchUserPermissions as fetchUserPermissionsV2,
-  reset as resetV2,
 } from '../user/permissions.js'
 
 /**
@@ -28,9 +25,8 @@ import {
  *
  * Expected changes:
  * - Different permission data structure
- * - New content ownership model (is_content_owner vs is_pack_owner/is_challenge_owner)
  * - Potentially different GROQ filter logic
- * - New API endpoints for fetching permissions
+ * - New API endpoints for fetching permissions ?
  */
 export class PermissionsV2Adapter extends PermissionsAdapter {
   /**
@@ -95,8 +91,7 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
    * - TBD based on v2 requirements
    * - May use different permission structure
    * - When showMembershipRestrictedContent is true:
-   *   * Show content where membership_tier == 'Plus'
-   *   * Never show content where membership_tier == 'None'
+   *   * Show content where membership_tier == 'Plus'|'Basic'|'Free'
    *   * This supports the membership upgrade modal
    *
    * @param userPermissions - The user's permissions
@@ -109,10 +104,8 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
   ): string | null {
     // TODO: Implement v2 GROQ filter generation
     // When options.showMembershipRestrictedContent === true:
-    // Filter should include content with membership_tier == 'Plus'
-    // Exclude content with membership_tier == 'None'
+    // Filter should include content with membership_tier == 'plus' || membership_tier == "basic" || membership_tier == "free"
     const {
-      allowsPullSongsContent = true,
       prefix = '',
       showMembershipRestrictedContent = false,
     } = options
@@ -123,7 +116,6 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
     }
 
     if (showMembershipRestrictedContent) {
-      // return ''
       return `(membership_tier == "plus" || membership_tier == "basic" || membership_tier == "free")`
     }
 
@@ -145,37 +137,4 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
     // TODO: Implement v2 permission ID retrieval
     // throw new Error('PermissionsV2Adapter.getUserPermissionIds() not yet implemented')
   }
-
-  /**
-   * Reset cached permission data.
-   *
-   * TODO: Implement v2 cache reset
-   *
-   * @returns Promise that resolves when reset is complete
-   */
-  async reset(): Promise<void> {
-    await resetV2()
-    // TODO: Implement v2 cache reset if needed
-    // throw new Error('PermissionsV2Adapter.reset() not yet implemented')
-  }
 }
-
-/**
- * Example implementation notes for when v2 is ready:
- *
- * 1. Update fetchUserPermissions() to call new API:
- *    - Endpoint: /api/v2/user/permissions
- *    - Response: { permissions: [...], access_level: "plus", is_content_owner: true, ... }
- *
- * 2. Update doesUserNeedAccess() with new logic:
- *    - Replace is_pack_owner/is_challenge_owner checks with is_content_owner
- *    - Adjust permission matching based on v2 structure
- *
- * 3. Update generatePermissionsFilter() for new GROQ:
- *    - Generate filters compatible with v2 Sanity schema
- *    - Handle new permission relationships
- *
- * 4. Update getUserPermissionIds() if IDs are still used:
- *    - Extract permission IDs from v2 structure
- *    - Or return empty array if v2 uses different approach
- */

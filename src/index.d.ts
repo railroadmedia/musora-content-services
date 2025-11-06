@@ -10,7 +10,7 @@ import {
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
 	unEnrollUserInGuidedCourse
-} from './services/content-org/guided-courses.js';
+} from './services/content-org/guided-courses.ts';
 
 import {
 	fetchLearningPathLessons,
@@ -18,7 +18,7 @@ import {
 	getDailySession,
 	updateActivePath,
 	updateDailySession
-} from './services/content-org/learning-paths.js';
+} from './services/content-org/learning-paths.ts';
 
 import {
 	addItemToPlaylist,
@@ -100,11 +100,11 @@ import {
 	createForumCategory,
 	fetchForumCategories,
 	updateForumCategory
-} from './services/forums/categories.js';
+} from './services/forums/categories.ts';
 
 import {
 	getActiveDiscussions
-} from './services/forums/forums.js';
+} from './services/forums/forums.ts';
 
 import {
 	createPost,
@@ -116,7 +116,7 @@ import {
 	search,
 	unlikePost,
 	updatePost
-} from './services/forums/posts.js';
+} from './services/forums/posts.ts';
 
 import {
 	createThread,
@@ -131,13 +131,13 @@ import {
 	unlockThread,
 	unpinThread,
 	updateThread
-} from './services/forums/threads.js';
+} from './services/forums/threads.ts';
 
 import {
 	fetchAwardsForUser,
 	fetchCertificate,
 	getAwardDataForGuidedContent
-} from './services/gamification/awards.js';
+} from './services/gamification/awards.ts';
 
 import {
 	applyCloudflareWrapper,
@@ -153,7 +153,7 @@ import {
 
 import {
 	createTestUser
-} from './services/liveTesting.js';
+} from './services/liveTesting.ts';
 
 import {
 	assignModeratorToComment,
@@ -275,7 +275,7 @@ import {
 	sendPasswordResetEmail,
 	setupAccount,
 	status
-} from './services/user/account.js';
+} from './services/user/account.ts';
 
 import {
 	fetchChatSettings
@@ -310,7 +310,7 @@ import {
 	fetchRechargeTokens,
 	restorePurchases,
 	upgradeSubscription
-} from './services/user/memberships.js';
+} from './services/user/memberships.ts';
 
 import {
 	deleteNotification,
@@ -332,11 +332,11 @@ import {
 	startOnboarding,
 	updateOnboarding,
 	userOnboardingForBrand
-} from './services/user/onboarding.js';
+} from './services/user/onboarding.ts';
 
 import {
 	fetchCustomerPayments
-} from './services/user/payments.js';
+} from './services/user/payments.ts';
 
 import {
 	fetchUserPermissions,
@@ -384,10 +384,7 @@ import {
 	PermissionsV1Adapter,
 	PermissionsV2Adapter,
 	getPermissionsAdapter,
-	resetAdapterInstance,
-	getPermissionsVersion,
-	isPermissionsV1,
-	isPermissionsV2
+	getPermissionsVersion
 } from './services/permissions/index.js';
 
 import type {
@@ -594,8 +591,6 @@ declare module 'musora-content-services' {
 		isContentLiked,
 		isContentLikedByIds,
 		isNextDay,
-		isPermissionsV1,
-		isPermissionsV2,
 		isSameDate,
 		isUsernameAvailable,
 		jumpToContinueContent,
@@ -641,7 +636,6 @@ declare module 'musora-content-services' {
 		reportPlaylist,
 		requestEmailChange,
 		reset,
-		resetAdapterInstance,
 		resetPassword,
 		restoreComment,
 		restoreItemFromPlaylist,
