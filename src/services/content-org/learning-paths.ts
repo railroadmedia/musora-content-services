@@ -66,6 +66,7 @@ export async function updateActivePath(brand: string) {
  * @returns {string} result.thumbnail - Optional thumbnail URL for the learning path.
  * @returns {string} result.title - The title of the learning path.
  * @returns {boolean} result.is_active_learning_path - Whether the learning path is currently active.
+ * @returns {Array} result.all_lessons - Array of all lessons.
  * @returns {Array} result.upcoming_lessons - Array of upcoming/additional lessons.
  * @returns {Array} result.todays_lessons - Array of today's lessons (max 3).
  * @returns {Array} result.next_learning_path_lessons - Array of next lessons to be taken.
@@ -130,6 +131,7 @@ export async function fetchLearningPathLessons(
     thumbnail: learningPath.thumbnail,
     title: learningPath.title || '',
     is_active_learning_path: isActiveLearningPath,
+    all_lessons: lessons,
     upcoming_lessons: upcomingLessons,
     todays_lessons: todaysLessons,
     next_learning_path_lessons: nextLPLessons,
