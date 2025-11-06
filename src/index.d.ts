@@ -561,7 +561,7 @@ declare module 'musora-content-services' {
 		getNewAndUpcoming,
 		getNextLesson,
 		getOnboardingRecommendedContent,
-                getPermissionsAdapter,
+		getPermissionsAdapter,
 		getPermissionsVersion,
 		getPracticeNotes,
 		getPracticeSessions,

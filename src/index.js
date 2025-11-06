@@ -553,7 +553,7 @@ export {
 	getNewAndUpcoming,
 	getNextLesson,
 	getOnboardingRecommendedContent,
-        getPermissionsAdapter,
+	getPermissionsAdapter,
 	getPermissionsVersion,
 	getPracticeNotes,
 	getPracticeSessions,
