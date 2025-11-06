@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.72.1](https://github.com/railroadmedia/musora-content-services/compare/v2.72.0...v2.72.1) (2025-11-06)
+
+
+### Bug Fixes
+
+* add all lessons to fetchLearningPathLessons endpoint ([#548](https://github.com/railroadmedia/musora-content-services/issues/548)) ([acdda67](https://github.com/railroadmedia/musora-content-services/commit/acdda67ffa9eb8e44f7239e3ac21c7bda96166b6))
+
 ## [2.72.0](https://github.com/railroadmedia/musora-content-services/compare/v2.71.0...v2.72.0) (2025-11-05)
 
 
