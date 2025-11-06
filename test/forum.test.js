@@ -1,6 +1,6 @@
 import { initializeTestService } from './initializeTests.js'
 import { getLessonContentRows, getTabResults } from '../src/services/content.js'
-import {getActiveDiscussions} from "../src/services/forum";
+import {getActiveDiscussions} from "../src/services/forums/forums";
 
 describe('forum', function () {
   beforeEach(() => {

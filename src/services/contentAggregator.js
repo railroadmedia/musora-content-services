@@ -82,7 +82,9 @@ export async function addContextToContent(dataPromise, ...dataArgs)
   if(!data) return false
 
   const items = extractItemsFromData(data, dataField, isDataAnArray, dataField_includeParent) ?? []
-  const ids = items.map(item => item?.id).filter(Boolean)
+  // Filter out null/undefined items (can happen when GROQ dereference doesn't match filter)
+  const validItems = items.filter(Boolean)
+  const ids = validItems.map(item => item?.id).filter(Boolean)
   if(ids.length === 0) return data
 
   const [progressData, isLikedData, resumeTimeData, lastInteractedChildData, nextLessonData, navigateToData] = await Promise.all([
@@ -90,8 +92,8 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
-    addNextLesson ? getNextLesson(items) : Promise.resolve(null),
-    addNavigateTo ? getNavigateTo(items) : Promise.resolve(null),
+    addNextLesson ? getNextLesson(validItems) : Promise.resolve(null),
+    addNavigateTo ? getNavigateTo(validItems) : Promise.resolve(null),
   ])
 
   const addContext = async (item) => ({

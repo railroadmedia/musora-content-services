@@ -32,7 +32,7 @@ import {
   fetchHandler,
 } from './railcontent.js'
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
-import { fetchUserPermissions } from './user/permissions.js'
+import { getPermissionsAdapter } from './permissions/index.js'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
 import {fetchRecentActivitiesActiveTabs} from "./userActivity.js";
 
@@ -532,8 +532,8 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
   if (pageName === 'lessons') pageName = 'lesson'
   if (pageName === 'songs') pageName = 'song'
   const rowString = contentRowSlug ? ` && slug.current == "${contentRowSlug.toLowerCase()}"` : ''
-  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`, {pullFutureContent: true}).buildFilter()
-  const childFilter = await new FilterBuilder('', {isChildrenFilter: true}).buildFilter()
+  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`, {pullFutureContent: true, showMembershipRestrictedContent: true}).buildFilter()
+  const childFilter = await new FilterBuilder('', {isChildrenFilter: true, showMembershipRestrictedContent: true}).buildFilter()
   const query = `*[_type == 'recommended-content-row' && brand == '${brand}' && type == '${pageName}'${rowString}]{
     brand,
     name,
@@ -546,7 +546,7 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
         'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     },
   }`
-  return fetchSanity(query, true)
+  return fetchSanity(query, true, {processNeedAccess: true})
 }
 
 
@@ -839,7 +839,9 @@ export async function fetchAllFilterOptions(
 
   const includedFieldsFilter = filters?.length ? filtersToGroq(filters) : undefined
   const progressFilter = progressIds ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
-  const isAdmin = (await fetchUserPermissions()).isAdmin
+  const adapter = getPermissionsAdapter()
+  const userPermissionsData = await adapter.fetchUserPermissions()
+  const isAdmin = adapter.isAdmin(userPermissionsData)
 
   const constructCommonFilter = (excludeFilter) => {
     const filterWithoutOption = excludeFilter
@@ -1800,13 +1802,13 @@ export async function fetchSanity(
       body: JSON.stringify({ query: query }),
     }
 
+    const adapter = getPermissionsAdapter()
     let promisesResult = await Promise.all([
       fetch(url, options),
-      processNeedAccess ? fetchUserPermissions() : null,
+      processNeedAccess ? adapter.fetchUserPermissions() : null,
     ])
     const response = promisesResult[0]
-    const userPermissions = promisesResult[1]?.permissions
-    const isAdmin = promisesResult[1]?.isAdmin
+    const userPermissions = promisesResult[1]
 
     if (!response.ok) {
       throw new Error(`Sanity API error: ${response.status} - ${response.statusText}`)
@@ -1818,7 +1820,7 @@ export async function fetchSanity(
         throw new Error('No results found')
       }
       results = processNeedAccess
-        ? await needsAccessDecorator(results, userPermissions, isAdmin)
+        ? await needsAccessDecorator(results, userPermissions)
         : results
       results = pageTypeDecorator(results)
       return customPostProcess ? customPostProcess(results) : results
@@ -1835,7 +1837,17 @@ function contentResultsDecorator(results, fieldName, callback)
 {
   if (Array.isArray(results)) {
     results.forEach((result) => {
-      result[fieldName] = callback(result)
+      // Check if this is a content row structure
+      if (result.content && Array.isArray(result.content)) {
+        // Content rows structure: array of rows, each with a content array
+        result.content.forEach((contentItem) => {
+          if (contentItem) {
+            contentItem[fieldName] = callback(contentItem)
+          }
+        })
+      } else {
+        result[fieldName] = callback(result)
+      }
     })
   } else if (results.entity && Array.isArray(results.entity)) {
     // Group By
@@ -1865,26 +1877,19 @@ function pageTypeDecorator(results)
 }
 
 
-function needsAccessDecorator(results, userPermissions, isAdmin) {
+function needsAccessDecorator(results, userPermissions) {
   if (globalConfig.sanityConfig.useDummyRailContentMethods) return results
-  userPermissions = new Set(userPermissions)
-  return contentResultsDecorator(results, 'need_access', function (content) { return doesUserNeedAccessToContent(content, userPermissions, isAdmin) })
+  const adapter = getPermissionsAdapter()
+  return contentResultsDecorator(results, 'need_access', function (content) {
+    return adapter.doesUserNeedAccess(content, userPermissions)
+  })
 }
 
-function doesUserNeedAccessToContent(result, userPermissions, isAdmin) {
-  if (isAdmin ?? false) {
-    return false
-  }
-  const permissions = new Set(result?.permission_id ?? [])
-  if (permissions.size === 0) {
-    return false
-  }
-  for (let permission of permissions) {
-    if (userPermissions.has(permission)) {
-      return false
-    }
-  }
-  return true
+function doesUserNeedAccessToContent(result, userPermissions) {
+  // Legacy function - now delegates to adapter
+  // Kept for backwards compatibility if used elsewhere
+  const adapter = getPermissionsAdapter()
+  return adapter.doesUserNeedAccess(result, userPermissions)
 }
 
 /**
@@ -2150,6 +2155,7 @@ export async function fetchTabData(
     includedFields = [],
     progressIds = undefined,
     progress = 'all',
+    showMembershipRestrictedContent = false,
   } = {}
 ) {
   const start = (page - 1) * limit
@@ -2186,7 +2192,7 @@ export async function fetchTabData(
   let filter = ''
 
   filter = `brand == "${brand}" && (defined(railcontent_id)) ${includedFieldsFilter} ${progressFilter}`
-  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true, showMembershipRestrictedContent: true }).buildFilter()
   const childrenFields = await getChildFieldsForContentType('tab-data')
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
   entityFieldsString =
@@ -2202,14 +2208,14 @@ export async function fetchTabData(
       ),
       length_in_seconds
     ),`
-  const filterWithRestrictions = await new FilterBuilder(filter, {}).buildFilter()
+  const filterWithRestrictions = await new FilterBuilder(filter, {showMembershipRestrictedContent: true}).buildFilter()
   query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
     sortOrder: sortOrder,
     start: start,
     end: end
   })
 
-  let results = await fetchSanity(query, true);
+  let results = await fetchSanity(query, true, {processNeedAccess: true});
 
   if (['recent', 'incomplete', 'completed'].includes(progress) && results.entity.length > 1) {
     const orderMap = new Map(progressIds.map((id, index) => [id, index]))
