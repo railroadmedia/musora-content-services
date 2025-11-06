@@ -127,11 +127,9 @@ export async function fetchLearningPathLessons(
   }
 
   return {
-    id: learningPathId,
-    thumbnail: learningPath.thumbnail,
-    title: learningPath.title || '',
+    ...learningPath,
     is_active_learning_path: isActiveLearningPath,
-    all_lessons: lessons,
+    children: lessons,
     upcoming_lessons: upcomingLessons,
     todays_lessons: todaysLessons,
     next_learning_path_lessons: nextLPLessons,
