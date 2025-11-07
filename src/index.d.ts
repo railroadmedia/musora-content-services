@@ -380,29 +380,11 @@ import {
 } from './services/userActivity.js';
 
 import {
-	PermissionsAdapter,
-	PermissionsV1Adapter,
-	PermissionsV2Adapter,
-	getPermissionsAdapter,
-	getPermissionsVersion
-} from './services/permissions/index.js';
-
-import type {
-	UserPermissions,
-	PermissionFilterOptions,
-	ContentItem,
-	PermissionsVersion
-} from './services/permissions/index.js';
-
-import {
 	 default as EventsAPI 
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
 	export {
-		PermissionsAdapter,
-		PermissionsV1Adapter,
-		PermissionsV2Adapter,
 		addContextToContent,
 		addItemToPlaylist,
 		applyCloudflareWrapper,
@@ -558,8 +540,6 @@ declare module 'musora-content-services' {
 		getNewAndUpcoming,
 		getNextLesson,
 		getOnboardingRecommendedContent,
-		getPermissionsAdapter,
-		getPermissionsVersion,
 		getPracticeNotes,
 		getPracticeSessions,
 		getProgressDateByIds,
@@ -685,12 +665,6 @@ declare module 'musora-content-services' {
 		userOnboardingForBrand,
 		verifyImageSRC,
 		verifyLocalDataContext,
-	}
-	export type {
-		UserPermissions,
-		PermissionFilterOptions,
-		ContentItem,
-		PermissionsVersion
 	}
 }
 

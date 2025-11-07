@@ -1,10 +1,12 @@
 # Permissions Module
 
-Abstraction layer for permissions in Musora Content Services.
+**Internal abstraction layer for permissions in Musora Content Services.**
 
 ## Purpose
 
-This module provides a flexible contract between content services and permissions implementations, enabling seamless switching between v1 and v2 without breaking consumer code.
+This module is **internal to MCS only** and provides a flexible contract between content services and permissions implementations, enabling seamless switching between v1 and v2.
+
+**Note:** This module is not exported from the package. External consumers should use `fetchUserPermissions()` if they need user permissions data.
 
 ## Files
 
@@ -14,10 +16,10 @@ This module provides a flexible contract between content services and permission
 - **`PermissionsV2Adapter.ts`** - V2 implementation (placeholder, TypeScript)
 - **`PermissionsAdapterFactory.ts`** - Factory for getting appropriate adapter (TypeScript)
 
-## Quick Usage
+## Usage (Internal MCS only)
 
 ```typescript
-import { getPermissionsAdapter } from './services/permissions/index.js'
+import { getPermissionsAdapter } from './permissions/index.js'
 
 // Get adapter (automatically selects v1 or v2 based on config)
 const adapter = getPermissionsAdapter()
@@ -60,7 +62,7 @@ For full details, see the inline documentation in each TypeScript file.
 ## Architecture
 
 ```
-Consumer Code
+Internal MCS Code
      ↓
 PermissionsAdapterFactory (getPermissionsAdapter)
      ↓
@@ -68,6 +70,7 @@ PermissionsV1Adapter OR PermissionsV2Adapter
      ↓
 V1/V2 Implementation
 ```
+
 
 ## Contract
 
@@ -111,7 +114,7 @@ New permissions system (placeholder):
 Mock the adapter for tests:
 
 ```typescript
-import { PermissionsAdapter, UserPermissions } from './services/permissions/PermissionsAdapter.js'
+import { PermissionsAdapter, UserPermissions } from './permissions/PermissionsAdapter.js'
 
 class MockAdapter extends PermissionsAdapter {
   async fetchUserPermissions(): Promise<UserPermissions> {
