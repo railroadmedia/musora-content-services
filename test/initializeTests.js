@@ -48,6 +48,6 @@ export async function initializeTestService(useLive = false, isAdmin = false) {
 
   // Mock user permissions
   let permissionsMock = jest.spyOn(railContentModule, 'fetchUserPermissionsData')
-  let permissionsData = { permissions: [78, 91, 92], isAdmin: isAdmin }
+  let permissionsData = { permissions: [108, 91, 92], isAdmin: isAdmin }
   permissionsMock.mockImplementation(() => permissionsData)
 }
