@@ -106,7 +106,6 @@ export async function fetchLearningPathLessons(
   const nextContentIds = dailySession.daily_session[1]?.content_ids || []
   const completedLessons = []
   let todaysLessons = []
-  let nextLPLessons = []
   const upcomingLessons = []
 
   manipulatedLessons.forEach((lesson: any) => {
@@ -128,7 +127,11 @@ export async function fetchLearningPathLessons(
       todayContentIds,
       addContextParameters
     )
-  } else if (nextContentIds.length > 0 && nextLPLessons.length == 0 && todaysLessons.length > 0) {
+  } else if (
+    nextContentIds.length > 0 &&
+    todaysLessons.length < 3 &&
+    upcomingLessons.length === 0
+  ) {
     // Daily sessions first lessons are the active learning path and the next lessons are not
     // load next lessons from next learning path
     nextLPLessons = await addContextToContent(
