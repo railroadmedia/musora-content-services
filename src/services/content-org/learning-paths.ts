@@ -1,10 +1,12 @@
+/**
+ * @module LearningPaths
+ */
+
 import { fetchHandler } from '../railcontent.js'
 import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2Structure } from '../sanity.js'
 import { addContextToContent } from '../contentAggregator.js'
 import { getProgressStateByIds } from '../contentProgress.js'
-/**
- * @module LearningPaths
- */
+
 const BASE_PATH: string = `/api/content-org`
 
 /**
@@ -153,16 +155,17 @@ export async function fetchLearningPathLessons(
     previous_learning_path_todays: previousLearnigPathTodays,
   }
 }
-import ProgressRepository from "../sync/repositories/content-progress";
-import {findIncompleteLesson} from "../userActivity";
+
+import ProgressRepository from '../sync/repositories/content-progress'
+import { findIncompleteLesson } from '../userActivity'
 
 interface DailySessionItem {
-  learningPathId: number,
+  learningPathId: number
   contentIds: number[]
 }
 
 interface NextLessonsResponse {
-  next: DailySessionItem[] | [],
+  next: DailySessionItem[] | []
   dailyComplete: boolean
 }
 
@@ -173,13 +176,12 @@ interface NextLessonsResponse {
  * @param dailySession
  */
 export async function getNextLearningPathLessonsForMethod(
-    progressData: object|null,
-    activePath: DailySessionItem|null, //turns out this is the right structure. this is not the cached value
-    dailySession: DailySessionItem[]|null,
-): Promise<NextLessonsResponse|null> {
+  progressData: object | null,
+  activePath: DailySessionItem | null, //turns out this is the right structure. this is not the cached value
+  dailySession: DailySessionItem[] | null
+): Promise<NextLessonsResponse | null> {
   if (!progressData || Object.keys(progressData).length === 0) {
     return null
-
   } else {
     const dailySessionIds = dailySession?.map((item: DailySessionItem) => item.contentIds).flat()
     const dailySessionProgress = dailySessionIds
@@ -189,14 +191,15 @@ export async function getNextLearningPathLessonsForMethod(
     const isDailyComplete = dailySessionProgress ? areAllCompleted(dailySessionProgress) : false
 
     if (!isDailyComplete) {
-      return {next: dailySession, dailyComplete: isDailyComplete}
-
+      return { next: dailySession, dailyComplete: isDailyComplete }
     } else {
       // active path is set if daily session is.
-      const learningPathProgress = Object.values(progressData).filter((item: any) => activePath.contentIds.includes(item.content_id))
+      const learningPathProgress = Object.values(progressData).filter((item: any) =>
+        activePath.contentIds.includes(item.content_id)
+      )
 
       if (areAllCompleted(learningPathProgress)) {
-        return {next: [], dailyComplete: isDailyComplete}
+        return { next: [], dailyComplete: isDailyComplete }
       }
 
       const nextLesson = findIncompleteLesson(learningPathProgress, null, 'learning-path')
@@ -204,43 +207,42 @@ export async function getNextLearningPathLessonsForMethod(
         next: [
           {
             learningPathId: activePath.learningPathId,
-            contentIds: [nextLesson]
-          }
+            contentIds: [nextLesson],
+          },
         ],
-        dailyComplete: isDailyComplete
+        dailyComplete: isDailyComplete,
       }
     }
   }
 }
 
-export function areAllCompleted(progress: any[]): boolean
-{
-  progress.forEach(item => {
+export function areAllCompleted(progress: any[]): boolean {
+  progress.forEach((item) => {
     if (item.status !== 'completed') {
       return false
     }
-  });
+  })
   return true
 }
 
-export function areNoneCompleted(progress: any[]): boolean
-{
-  progress.forEach(item => {
+export function areNoneCompleted(progress: any[]): boolean {
+  progress.forEach((item) => {
     if (item.status === 'completed') {
       return false
     }
-  });
+  })
   return true
 }
 
-export function isFirstLearningPathCompleted(progress: any[]): boolean
-{
+export function isFirstLearningPathCompleted(progress: any[]): boolean {
   let firstId: number
-  progress.forEach(item => {
-    if (!firstId) { firstId = item.learningPathId }
+  progress.forEach((item) => {
+    if (!firstId) {
+      firstId = item.learningPathId
+    }
     if (item.learningPathId === firstId && item.status !== 'completed') {
       return false
     }
-  });
+  })
   return true
 }
