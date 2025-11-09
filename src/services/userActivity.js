@@ -26,7 +26,6 @@ import {
   isNextDay,
   getTimeRemainingUntilLocal,
   toDayjs,
-  getToday,
 } from './dateUtils.js'
 import { globalConfig } from './config'
 import {
@@ -1066,78 +1065,13 @@ function generateContentsMap(contents, playlistsContents, methodProgressContents
 export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
   // TODO slice progress to a reasonable number, say 100
 
-  const [recentPlaylists, progressContents, methodProgressContents, userPinnedItem, methodCard] =
-    await Promise.all([
-      fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
-      getAllStartedOrCompleted({ onlyIds: false, brand: brand }),
-      getAllStartedOrCompleted({
-        onlyIds: false,
-        brand: brand,
-        //parentType: PARENT_TYPE_LEARNING_PATH,
-      }),
-      getUserPinnedItem(brand),
-      getMethodCard(brand),
-    ])
+  const [recentPlaylists, progressContents, userPinnedItem, methodCard] = await Promise.all([
+    fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
+    getAllStartedOrCompleted({ onlyIds: false, brand: brand }),
+    getUserPinnedItem(brand),
+    getMethodCard(brand),
+  ])
 
-  //Rob note: leaving the mock data as comments here
-
-  // activePathId = 422533
-
-  // methodStructure = {
-  //   "learningPaths": [
-  //     {
-  //       "children": [
-  //         417101,
-  //         422526
-  //       ],
-  //       "id": 422533
-  //     },
-  //     {
-  //       "children": [
-  //         417105,
-  //         417111,
-  //         417117,
-  //         417106,
-  //         417112,
-  //         417118,
-  //         417107,
-  //         417113,
-  //         417119,
-  //         416951,
-  //         417108,
-  //         416952,
-  //         417114,
-  //         416953,
-  //         417121,
-  //         416954,
-  //         417109,
-  //         416955,
-  //         417115,
-  //         416956,
-  //         417122,
-  //         416957
-  //       ],
-  //       "id": 417140
-  //     }
-  //   ],
-  //   "sanity_id": "6e2700ba-075f-46ff-a2f7-c8346919d394"
-  // }
-
-  // const userPinnedItem = {
-  //   id: 0,
-  //   progressType: 'method',
-  // }
-
-  // const methodProgressContents = {
-  // 417101: {
-  //   progress: '100',
-  //   status: 'completed',
-  //   brand: 'pianote',
-  //   collectionType: 'learning-path',
-  //   collectionId: 422533,
-  // }
-  // }
-  console.log('Method Card', methodCard)
   const playlists = recentPlaylists?.data || []
   const eligiblePlaylistItems = await getEligiblePlaylistItems(playlists)
   const playlistEngagedOnContents = eligiblePlaylistItems.map(
@@ -1150,7 +1084,7 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
     nonPlaylistContentIds.push(userPinnedItem.id)
   }
   //need to update addContextToContent to accept collection info
-  const [playlistsContents, contents, methodCardContents] = await Promise.all([
+  const [playlistsContents, contents] = await Promise.all([
     playlistEngagedOnContents
       ? addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
           addNextLesson: true,
@@ -1177,10 +1111,7 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
       : Promise.resolve([]),
   ])
 
-  // need to coalesce methodIds into one structure for going into the sort function. and give it a timestamp
-
-  //need to exclude standard progress copies that originated from a method
-  const contentsMap = generateContentsMap(contents, playlistsContents, methodProgressContents)
+  const contentsMap = generateContentsMap(contents, playlistsContents)
 
   let combined = await extractPinnedItemsAndSortAllItems(
     userPinnedItem,
@@ -1189,7 +1120,6 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
     methodCard,
     limit
   )
-  console.log('Combined', combined)
   const results = await Promise.all(
     combined.slice(0, limit).map((item) => {
       switch (item.type) {
@@ -1202,7 +1132,6 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
       }
     })
   )
-  console.log('Progress Row Cards', results)
   return {
     type: TabResponseType.PROGRESS_ROWS,
     displayBrowseAll: combined.length > limit,
@@ -1215,15 +1144,6 @@ async function getUserPinnedItem(brand) {
   const user = userRaw ? JSON.parse(userRaw) : {}
   user.brand_pinned_progress = user.brand_pinned_progress || {}
   return user.brand_pinned_progress[brand] ?? null
-}
-
-function getMethodActionCTA(item) {
-  return {
-    type: item.type,
-    brand: item.brand,
-    id: item.id,
-    slug: item.slug,
-  }
 }
 
 async function processContentItem(content) {
@@ -1310,25 +1230,6 @@ async function processContentItem(content) {
     },
     // *1000 is to match playlists which are saved in millisecond accuracy
     progressTimestamp: content.progressTimestamp * 1000,
-  }
-}
-
-function getMethodCardCTAText(content) {
-  const dailyComplete = content.dailyComplete
-  const noneCompleted = areNoneCompleted(content.content_ids)
-  const firstLPCompleted = isFirstLearningPathCompleted(content.content_ids)
-
-  if (!dailyComplete) {
-    if (noneCompleted || firstLPCompleted) {
-      return 'Start Session'
-    } else {
-      return 'Continue Session'
-    }
-  } else {
-    if (content.content_ids) {
-      return 'Start Next Lesson'
-    }
-    return 'Browse Lessons'
   }
 }
 
