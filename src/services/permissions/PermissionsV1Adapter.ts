@@ -85,6 +85,7 @@ export class PermissionsV1Adapter extends PermissionsAdapter {
    * - Admins bypass filter (return null)
    * - Filter: content has no permission OR references user's permissions
    * - If showMembershipRestrictedContent: also show content that requires membership
+   * - If showOnlyOwnedContent: exclude membership content (permissions 91, 92), show only purchased/owned content
    *
    * @param userPermissions - The user's permissions
    * @param options - Options for filter generation
@@ -97,6 +98,7 @@ export class PermissionsV1Adapter extends PermissionsAdapter {
     const {
       prefix = '',
       showMembershipRestrictedContent = false,
+      showOnlyOwnedContent = false,
     } = options
 
     // Admins bypass permission filter
@@ -104,44 +106,118 @@ export class PermissionsV1Adapter extends PermissionsAdapter {
       return null
     }
 
-    // Get user's permission IDs
-    let requiredPermissions = this.getUserPermissionIds(userPermissions)
+    const userPermissionIds = this.getUserPermissionIds(userPermissions)
+    const isDereferencedContext = prefix === '@->'
 
-    // Generate GROQ filter
-    // Content is accessible if:
-    // 1. It has no permissions defined, OR
-    // 2. It references a permission the user has
-
-    // Build the base filter
-    let permissionFilter = `!defined(${prefix}permission)`
-
-    // When we're in a dereferenced context (@->), we need to check the permission array directly
-    // rather than using the references() function which works on the reference itself
-    const isDerefencedContext = prefix === '@->'
-
-    // If user has permissions, add them to the filter
-    if (requiredPermissions.length > 0) {
-      if (isDerefencedContext) {
-        // In dereferenced context, check if any permission reference is in the allowed set
-        // We use count() with array filtering to check for intersection
-        permissionFilter = `(${permissionFilter} || count((${prefix}permission[]._ref)[@ in *[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id]) > 0)`
-      } else {
-        // In normal context, use references() function
-        permissionFilter = `(${permissionFilter} || references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id))`
-      }
+    if (showOnlyOwnedContent) {
+      return this.buildOwnedContentFilter(userPermissionIds, prefix, isDereferencedContext)
     }
 
-    // If showing membership-restricted content, also include content with permissions 91 (Basic) and 92 (Plus)
-    // This shows membership content to encourage upgrades
+    return this.buildStandardPermissionFilter(
+      userPermissionIds,
+      prefix,
+      isDereferencedContext,
+      showMembershipRestrictedContent
+    )
+  }
+
+  /**
+   * Build filter for owned content only (excluding membership content).
+   *
+   * @param userPermissionIds - User's permission IDs
+   * @param prefix - GROQ prefix for nested queries
+   * @param isDereferencedContext - Whether we're in a dereferenced context
+   * @returns GROQ filter string for owned content
+   */
+  private buildOwnedContentFilter(
+    userPermissionIds: string[],
+    prefix: string,
+    isDereferencedContext: boolean
+  ): string {
+    // Filter out membership permissions to get only owned permissions
+    const ownedPermissions = userPermissionIds.filter(
+      permId => !membershipPermissions.includes(parseInt(permId))
+    )
+
+    if (ownedPermissions.length === 0) {
+      // User has no owned permissions (only membership or none at all)
+      // Return filter that matches nothing - user can't see any owned content
+      return `${prefix}_id == null`
+    }
+
+    // Content must have at least one owned permission AND no membership permissions
+    if (isDereferencedContext) {
+      // In dereferenced context, check arrays directly
+      const hasOwnedPermission = `count((${prefix}permission[]._ref)[@ in *[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(ownedPermissions)}]._id]) > 0`
+      const hasMembershipPermission = `count((${prefix}permission[]._ref)[@ in *[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(membershipPermissions)}]._id]) > 0`
+      return `(${hasOwnedPermission} && !${hasMembershipPermission})`
+    }
+
+    // Non-dereferenced: use references() function
+    const hasOwnedPermissions = `references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(ownedPermissions)}]._id)`
+    const hasMembershipPermissions = `references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(membershipPermissions)}]._id)`
+    return `(${hasOwnedPermissions} && !${hasMembershipPermissions})`
+  }
+
+  /**
+   * Build standard permission filter (content with no permissions OR user has matching permissions).
+   *
+   * @param userPermissionIds - User's permission IDs
+   * @param prefix - GROQ prefix for nested queries
+   * @param isDereferencedContext - Whether we're in a dereferenced context
+   * @param showMembershipRestrictedContent - Whether to show membership-restricted content
+   * @returns GROQ filter string for standard permissions
+   */
+  private buildStandardPermissionFilter(
+    userPermissionIds: string[],
+    prefix: string,
+    isDereferencedContext: boolean,
+    showMembershipRestrictedContent: boolean
+  ): string {
+    const clauses: string[] = []
+
+    // Content with no permissions is accessible to all
+    clauses.push(`!defined(${prefix}permission)`)
+
+    // User has matching permissions
+    if (userPermissionIds.length > 0) {
+      clauses.push(this.buildPermissionCheck(userPermissionIds, prefix, isDereferencedContext))
+    }
+
+    // Include membership-restricted content
     if (showMembershipRestrictedContent) {
-      if (isDerefencedContext) {
-        permissionFilter = `(${permissionFilter} || count((${prefix}permission[]._ref)[@ in *[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(membershipPermissions)}]._id]) > 0)`
-      } else {
-        permissionFilter = `(${permissionFilter} || references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(membershipPermissions)}]._id))`
-      }
+      clauses.push(
+        this.buildPermissionCheck(
+          membershipPermissions.map(String),
+          prefix,
+          isDereferencedContext
+        )
+      )
     }
 
-    return permissionFilter
+    return `(${clauses.join(' || ')})`
+  }
+
+  /**
+   * Build GROQ permission check for given permissions.
+   * Handles both dereferenced and standard contexts.
+   *
+   * @param permissions - Permission IDs to check
+   * @param prefix - GROQ prefix for nested queries
+   * @param isDereferencedContext - Whether we're in a dereferenced context
+   * @returns GROQ filter string for permission check
+   */
+  private buildPermissionCheck(
+    permissions: string[],
+    prefix: string,
+    isDereferencedContext: boolean
+  ): string {
+    if (isDereferencedContext) {
+      // In dereferenced context, check the permission array directly
+      return `count((${prefix}permission[]._ref)[@ in *[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(permissions)}]._id]) > 0`
+    }
+    // In standard context, use references() function
+    return `references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(permissions)}]._id)`
   }
 
   /**

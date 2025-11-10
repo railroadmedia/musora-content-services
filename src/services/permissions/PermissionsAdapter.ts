@@ -31,6 +31,11 @@ export interface PermissionFilterOptions {
    * Used for upgrade prompts. V1: includes permissions [91, 92]. V2: shows content with membership_tier='plus'|'basic'|'free'
    */
   showMembershipRestrictedContent?: boolean
+  /**
+   * If true, show only content owned by user through purchases/entitlements, excluding membership content.
+   * V1: excludes permissions [91, 92]. V2: excludes content with membership_tier='plus'|'basic'
+   */
+  showOnlyOwnedContent?: boolean
 }
 
 /**

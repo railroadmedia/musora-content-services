@@ -546,7 +546,7 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
         'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     },
   }`
-  return fetchSanity(query, true, {processNeedAccess: true})
+  return fetchSanity(query, true, {processNeedAccess: false})  // Don't apply need_access for content rows
 }
 
 
@@ -1108,7 +1108,7 @@ export async function jumpToContinueContent(railcontentId) {
  *   .catch(error => console.error(error));
  */
 export async function fetchLessonContent(railContentId, { addParent = false } = {}) {
-  const filterParams = { isSingle: true, pullFutureContent: true }
+  const filterParams = { isSingle: true, pullFutureContent: true, showMembershipRestrictedContent: true }
 
   const parentQuery = addParent
     ? `"parent_content_data": *[railcontent_id in [...(^.parent_content_data[].id)]]{
@@ -1169,7 +1169,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
     return result
   }
 
-  return fetchSanity(query, false, { customPostProcess: chapterProcess })
+  return fetchSanity(query, false, { customPostProcess: chapterProcess, processNeedAccess: true })
 }
 
 /**
@@ -1260,14 +1260,19 @@ async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, cou
 export async function fetchSiblingContent(railContentId, brand= null)
 {
   const filterGetParent = await new FilterBuilder(`references(^._id) && _type == ^.parent_type`, {
-    pullFutureContent: true
+    pullFutureContent: true,
+    showMembershipRestrictedContent: true  // Show parent even without permissions
   }).buildFilter()
   const filterForParentList = await new FilterBuilder(`references(^._id) && _type == ^.parent_type`, {
     pullFutureContent: true,
     isParentFilter: true,
+    showMembershipRestrictedContent: true  // Show parent even without permissions
   }).buildFilter()
 
-  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+  const childrenFilter = await new FilterBuilder(``, {
+    isChildrenFilter: true,
+    showMembershipRestrictedContent: true  // Show all lessons in sidebar, need_access applied on individual page
+  }).buildFilter()
 
   const brandString = brand ? ` && brand == "${brand}"` : ''
   const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission[]->railcontent_id, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
@@ -1281,7 +1286,7 @@ export async function fetchSiblingContent(railContentId, brand= null)
     "related_lessons" : *[${filterGetParent}][0].child[${childrenFilter}]->{${queryFields}}
   }`
 
-  let result = await fetchSanity(query, false)
+  let result = await fetchSanity(query, false, { processNeedAccess: false })  // Don't apply need_access for sidebar lessons
 
   //there's no way in sanity to retrieve the index of an array, so we must calculate after fetch
   if (result['for-calculations'] && result['for-calculations']['parents-list']) {
@@ -2215,7 +2220,7 @@ export async function fetchTabData(
     end: end
   })
 
-  let results = await fetchSanity(query, true, {processNeedAccess: true});
+  let results = await fetchSanity(query, true, {processNeedAccess: false});
 
   if (['recent', 'incomplete', 'completed'].includes(progress) && results.entity.length > 1) {
     const orderMap = new Map(progressIds.map((id, index) => [id, index]))
@@ -2326,4 +2331,57 @@ export async function fetchMethodV2Structure(brand) {
     }
   }`;
   return await fetchSanity(query, false);
+}
+
+/**
+ * Fetch content owned by the user (excluding membership content).
+ * Shows only content accessible through purchases/entitlements, not through membership.
+ *
+ * @param {string} brand - The brand to filter content by
+ * @param {Object} options - Fetch options
+ * @param {Array<string>} options.type - Content type(s) to filter (optional array, default: [])
+ * @param {number} options.page - Page number (default: 1)
+ * @param {number} options.limit - Items per page (default: 10)
+ * @param {string} options.sort - Sort field and direction (default: '-published_on')
+ * @returns {Promise<Object>} Object with 'entity' (content array) and 'total' (count)
+ */
+export async function fetchOwnedContent(
+  brand,
+  {
+    type = [],
+    page = 1,
+    limit = 10,
+    sort = '-published_on',
+  } = {}
+) {
+  const start = (page - 1) * limit
+  const end = start + limit
+
+  // Determine the sort order
+  const sortOrder = getSortOrder(sort, brand)
+
+  // Build the type filter
+  let typeFilter = ''
+  if (type.length > 0) {
+    const typesString = type.map(t => `'${t}'`).join(', ')
+    typeFilter = `&& _type in [${typesString}]`
+  }
+
+  // Build the base filter
+  const filter = `brand == "${brand}" ${typeFilter}`
+
+  // Apply owned content filter
+  const filterWithRestrictions = await new FilterBuilder(filter, {
+    showOnlyOwnedContent: true,  // Key parameter: exclude membership content
+  }).buildFilter()
+
+  const fieldsString = DEFAULT_FIELDS.join(',')
+
+  const query = buildEntityAndTotalQuery(filterWithRestrictions, fieldsString, {
+    sortOrder: sortOrder,
+    start: start,
+    end: end,
+  })
+
+  return fetchSanity(query, true)
 }
