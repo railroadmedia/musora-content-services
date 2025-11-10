@@ -218,7 +218,7 @@ export async function getAllStartedOrCompleted({
         last_update: p.updated_at,
         progress: p.progress_percent,
         status: p.state,
-        brand: p.brand,
+        brand: p.content_brand,
       }]))
     })
   }

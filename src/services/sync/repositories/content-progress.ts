@@ -1,9 +1,6 @@
 import SyncRepository, { Q } from './base'
 import ContentProgress, { COLLECTION_TYPE, STATE } from '../models/ContentProgress'
 
-// note naming, assumes pessimistic (confirms with server) by default,
-// optimistic opt-in (reads locally (except if never once synced))
-
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
   async startedIds(limit?: number) {
     return this.queryAll(
@@ -45,7 +42,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     }
 
     if (opts.brand) {
-      clauses.push(Q.where('brand', opts.brand))
+      clauses.push(Q.where('content_brand', opts.brand))
     }
 
     return clauses
