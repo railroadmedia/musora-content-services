@@ -95,6 +95,9 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
    * - When showMembershipRestrictedContent is true:
    *   * Show content where membership_tier == 'Plus'|'Basic'|'Free'
    *   * This supports the membership upgrade modal
+   * - When showOnlyOwnedContent is true:
+   *   * Exclude content where membership_tier == 'Plus'|'Basic'
+   *   * Shows only purchased/owned content
    *
    * @param userPermissions - The user's permissions
    * @param options - Options for filter generation
@@ -110,6 +113,7 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
     const {
       prefix = '',
       showMembershipRestrictedContent = false,
+      showOnlyOwnedContent = false,
     } = options
 
     // Admins bypass permission filter
@@ -119,6 +123,12 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
 
     if (showMembershipRestrictedContent) {
       return `(membership_tier == "plus" || membership_tier == "basic" || membership_tier == "free")`
+    }
+
+    // If showOnlyOwnedContent, exclude membership content
+    if (showOnlyOwnedContent) {
+      //TODO: add logic for owned content
+      return `(!defined(membership_tier) || (membership_tier != "plus" && membership_tier != "basic" && membership_tier != "free"))`
     }
 
     // TODO: Implement v2 permission filter logic
