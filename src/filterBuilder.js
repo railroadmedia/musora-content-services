@@ -118,8 +118,10 @@ export class FilterBuilder {
     if (this.userData.isABasicMember && this.allowsPullSongsContent) {
       requiredPermissions = [...requiredPermissions, plusMembershipPermissions]
     }
+    const oldPermissionFilter = `references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id)`
+    const newPermissionFilter = `array::intersects(permission_v2, ${arrayToRawRepresentation(requiredPermissions)})`
     this._andWhere(
-      `(!defined(permission) || references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id))`
+      `((!defined(permission) && !defined(permission_v2)) || ${oldPermissionFilter} || ${newPermissionFilter})`
     )
     return this
   }
