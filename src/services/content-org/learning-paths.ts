@@ -58,6 +58,25 @@ export async function updateActivePath(brand: string) {
   return await fetchHandler(url, 'POST', null, body)
 }
 
+/**
+ * Starts a new learning path for the user.
+ * @param brand
+ * @param learningPathId
+ */
+export async function startLearningPath(brand: string, learningPathId: number) {
+  const url: string = `${BASE_PATH}/v1/user/learning-paths/start`
+  const body = { brand: brand, learning_path_id: learningPathId }
+  return await fetchHandler(url, 'POST', null, body)
+}
+
+/**
+ * Resets the user's learning path.
+ */
+export async function resetAllLearningPaths() {
+  const url: string = `${BASE_PATH}/v1/user/learning-paths/reset`
+  return await fetchHandler(url, 'POST', null, {})
+}
+
 /** Fetches and organizes learning path lessons.
  *
  * @param {number} learningPathId - The learning path ID.
@@ -154,95 +173,4 @@ export async function fetchLearningPathLessons(
     completed_lessons: completedLessons,
     previous_learning_path_todays: previousLearnigPathTodays,
   }
-}
-
-import ProgressRepository from '../sync/repositories/content-progress'
-import { findIncompleteLesson } from '../userActivity'
-
-interface DailySessionItem {
-  learningPathId: number
-  contentIds: number[]
-}
-
-interface NextLessonsResponse {
-  next: DailySessionItem[] | []
-  dailyComplete: boolean
-}
-
-/**
- * Get the next lessons for a method's learning path based on user progress and daily session, for method progress card
- * @param progressData - user progress data for all method content
- * @param activePath - the active path + children, from the method structure
- * @param dailySession
- */
-export async function getNextLearningPathLessonsForMethod(
-  progressData: object | null,
-  activePath: DailySessionItem | null, //turns out this is the right structure. this is not the cached value
-  dailySession: DailySessionItem[] | null
-): Promise<NextLessonsResponse | null> {
-  if (!progressData || Object.keys(progressData).length === 0) {
-    return null
-  } else {
-    const dailySessionIds = dailySession?.map((item: DailySessionItem) => item.contentIds).flat()
-    const dailySessionProgress = dailySessionIds
-      ? Object.values(progressData).filter((item: any) => dailySessionIds.includes(item.content_id))
-      : null
-
-    const isDailyComplete = dailySessionProgress ? areAllCompleted(dailySessionProgress) : false
-
-    if (!isDailyComplete) {
-      return { next: dailySession, dailyComplete: isDailyComplete }
-    } else {
-      // active path is set if daily session is.
-      const learningPathProgress = Object.values(progressData).filter((item: any) =>
-        activePath.contentIds.includes(item.content_id)
-      )
-
-      if (areAllCompleted(learningPathProgress)) {
-        return { next: [], dailyComplete: isDailyComplete }
-      }
-
-      const nextLesson = findIncompleteLesson(learningPathProgress, null, 'learning-path')
-      return {
-        next: [
-          {
-            learningPathId: activePath.learningPathId,
-            contentIds: [nextLesson],
-          },
-        ],
-        dailyComplete: isDailyComplete,
-      }
-    }
-  }
-}
-
-export function areAllCompleted(progress: any[]): boolean {
-  progress.forEach((item) => {
-    if (item.status !== 'completed') {
-      return false
-    }
-  })
-  return true
-}
-
-export function areNoneCompleted(progress: any[]): boolean {
-  progress.forEach((item) => {
-    if (item.status === 'completed') {
-      return false
-    }
-  })
-  return true
-}
-
-export function isFirstLearningPathCompleted(progress: any[]): boolean {
-  let firstId: number
-  progress.forEach((item) => {
-    if (!firstId) {
-      firstId = item.learningPathId
-    }
-    if (item.learningPathId === firstId && item.status !== 'completed') {
-      return false
-    }
-  })
-  return true
 }

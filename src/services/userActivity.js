@@ -41,13 +41,6 @@ import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { addContextToContent } from './contentAggregator.js'
-import {
-  areNoneCompleted,
-  getNextLearningPathLessonsForMethod,
-  isFirstLearningPathCompleted,
-  getDailySession,
-} from './content-org/learning-paths.ts'
-
 import { getMethodCard } from './progress-row/method-card.js'
 
 const DATA_KEY_PRACTICES = 'practices'
@@ -1196,7 +1189,7 @@ async function processContentItem(content) {
       ctaText = 'Revisit Show'
     }
   }
-
+  console.log('Progress Timestamp', content.progressTimestamp)
   return {
     id: content.id,
     progressType: 'content',
@@ -1271,6 +1264,8 @@ async function getCompletedChildren(content, contentType) {
 
 async function processPlaylistItem(item) {
   const playlist = item.playlist
+
+  console.log('Progress Timestamp', item.progressTimestamp)
   return {
     id: playlist.id,
     progressType: 'playlist',

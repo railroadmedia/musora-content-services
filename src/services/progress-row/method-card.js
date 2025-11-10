@@ -2,16 +2,24 @@
  * @module ProgressRow
  */
 
-import { getDailySession } from '../content-org/learning-paths.ts'
+import {
+  getDailySession,
+  resetAllLearningPaths,
+  startLearningPath,
+} from '../content-org/learning-paths.ts'
 import { getToday } from '../dateUtils.js'
 import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2IntroVideo } from '../sanity'
 import { addContextToContent } from '../contentAggregator.js'
 
 export async function getMethodCard(brand) {
   const dailySession = await getDailySession(brand, getToday())
-  const activeLearningPathId = dailySession.active_learning_path_id
+  const activeLearningPathId = dailySession?.active_learning_path_id
+  resetAllLearningPaths()
   if (!activeLearningPathId) {
+    // startLearningPath('drumeo', 422533)
+
     const introVideo = await fetchMethodV2IntroVideo(brand)
+    const timestamp = Math.floor(Date.now() / 1000)
     return {
       id: 0, // method card has no id
       type: 'method',
@@ -25,7 +33,7 @@ export async function getMethodCard(brand) {
         text: 'Get Started',
         action: getMethodActionCTA(introVideo),
       },
-      progressTimestamp: 0,
+      progressTimestamp: timestamp,
     }
   } else {
     const todayContentIds = dailySession.daily_session[0]?.content_ids || []
