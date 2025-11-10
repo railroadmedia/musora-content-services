@@ -89,10 +89,10 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.queryAll(...clauses)
   }
 
-  recordProgress(contentId: number, progressPct: number, resumeTime?: number) {
+  recordProgressRemotely(contentId: number, progressPct: number, resumeTime?: number) {
     const id = ProgressRepository.generateId(contentId, null)
 
-    return this.upsertOne(id, (r) => {
+    return this.upsertOneRemote(id, (r) => {
       r.content_id = contentId
       r.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
       r.progress_percent = progressPct
@@ -104,7 +104,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   }
 
   recordProgressesTentative(contentProgresses: Map<number, number>) {
-    this.upsertSomeTentative(
+    return this.upsertSomeTentative(
       Object.fromEntries(
         Array.from(contentProgresses, ([contentId, progressPct]) => [
           ProgressRepository.generateId(contentId, null),

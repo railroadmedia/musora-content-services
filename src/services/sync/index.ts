@@ -67,6 +67,12 @@ export type SyncWriteDTO<T extends BaseModel, TData extends SyncWriteData<T>> = 
   pushStatus: 'success' | 'pending' | 'failure'
 }
 
+export type SyncRemoteWriteDTO<T extends BaseModel> = {
+  data: ModelSerialized<T> | null
+  status: 'synced'
+  pushStatus: 'success'
+}
+
 export type ModelClass<T extends BaseModel = BaseModel> = {
   new (...args: any[]): T
   table: string

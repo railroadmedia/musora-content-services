@@ -198,6 +198,29 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
+  async upsertOneRemote(id: RecordId, builder: (record: TModel) => void, span?: Span) {
+    return await this.runScope.abortable(async () => {
+      let record: TModel
+      const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(r => r[0] || null)
+
+      if (existing) {
+        builder(existing)
+        record = existing
+      } else {
+        const attrs = new this.model(this.collection, { id })
+        attrs._isEditing = true
+        builder(attrs)
+        attrs._isEditing = false
+        record = this.collection.disposableFromDirtyRaw(attrs._raw)
+      }
+
+      return await this.pushCoalescer.push(
+        [record],
+        () => this.executePush([record], span)
+      )
+    })
+  }
+
   async upsertSome(builders: Record<RecordId, (record: TModel) => void>, span?: Span) {
     if (Object.keys(builders).length === 0) return []
 

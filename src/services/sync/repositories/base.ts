@@ -4,7 +4,7 @@ import BaseModel from '../models/Base'
 import { RecordId } from '@nozbe/watermelondb'
 import type { Span } from '../telemetry/index'
 
-import { SyncError, SyncExistsDTO, SyncReadDTO, SyncReadData, SyncWriteDTO, SyncWriteIdData, SyncWriteRecordData } from '..'
+import { SyncError, SyncExistsDTO, SyncReadDTO, SyncReadData, SyncWriteDTO, SyncWriteIdData, SyncWriteRecordData, SyncRemoteWriteDTO} from '..'
 import { SyncPushResponse } from '../fetch'
 
 import { Q } from '@nozbe/watermelondb'
@@ -73,6 +73,13 @@ export default class SyncRepository<TModel extends BaseModel> {
       data: ids.map((id) => map.has(id)),
     }
     return result
+  }
+
+  protected async upsertOneRemote(id: RecordId, builder: (record: TModel) => void) {
+    return this.store.telemetry.trace(
+      { name: `upsertOneRemote:${this.store.model.table}`, op: 'upsert' },
+      (span) => this._respondToRemoteWriteOne(() => this.store.upsertOneRemote(id, builder, span), id, span)
+    )
   }
 
   protected async upsertOne(id: RecordId, builder: (record: TModel) => void) {
@@ -152,6 +159,23 @@ export default class SyncRepository<TModel extends BaseModel> {
       data,
       status: response ? 'synced' : 'unsynced',
       pushStatus: response ? 'success' : 'pending',
+    }
+    return ret
+  }
+
+  private async _respondToRemoteWriteOne<T extends SyncPushResponse>(push: () => Promise<T>, id: RecordId, span?: Span) {
+    const response = await push()
+
+    if (!response.ok) {
+      throw new SyncError('Failed to push records', { response })
+    }
+
+    const data = await this.store.readOne(id)
+
+    const ret: SyncRemoteWriteDTO<TModel> = {
+      data,
+      status: 'synced',
+      pushStatus: 'success'
     }
     return ret
   }

@@ -311,35 +311,43 @@ export async function contentStatusReset(contentId) {
 }
 
 async function saveContentProgress(contentId, progress, currentSeconds) {
-  await db.contentProgress.recordProgress(contentId, progress, currentSeconds)
+  const response = await db.contentProgress.recordProgressRemotely(contentId, progress, currentSeconds)
 
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
 
   const bubbledProgresses = bubbleProgress(await fetchHierarchy(contentId), contentId)
-  return db.contentProgress.recordProgressesTentative(bubbledProgresses)
+  await db.contentProgress.recordProgressesTentative(bubbledProgresses)
+
+  return response
 }
 
 async function setStartedOrCompletedStatus(contentId, isCompleted) {
   const progress = isCompleted ? 100 : 0
-  await db.contentProgress.recordProgress(contentId, progress)
+  const response = await db.contentProgress.recordProgressRemotely(contentId, progress)
 
-  const hierarchy = await fetchHierarchy(contentId)
+  if (response.pushStatus === 'success') {
+    const hierarchy = await fetchHierarchy(contentId)
 
-  return Promise.all([
-    db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, progress)),
-    bubbleProgress(hierarchy, contentId).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses))
-  ])
+    await Promise.all([
+      db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, progress)),
+      bubbleProgress(hierarchy, contentId).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses))
+    ])
+  }
+
+  return response
 }
 
 async function resetStatus(contentId) {
-  await db.contentProgress.eraseProgress(contentId)
+  const response = await db.contentProgress.eraseProgress(contentId)
   const hierarchy = await fetchHierarchy(contentId)
 
-  return Promise.all([
+  await Promise.all([
     db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, 0)),
     bubbleProgress(hierarchy, contentId).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses))
   ])
+
+  return response
 }
 
 function trickleProgress(hierarchy, contentId, progress) {
