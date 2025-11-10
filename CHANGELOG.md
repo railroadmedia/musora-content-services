@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0](https://github.com/railroadmedia/musora-content-services/compare/v1.6.9...v1.7.0) (2025-11-10)
+
+
+### Features
+
+* support permissionV1 and V2 ([#546](https://github.com/railroadmedia/musora-content-services/issues/546)) ([6f8351a](https://github.com/railroadmedia/musora-content-services/commit/6f8351a77b9276b29104f7a34993a3879e6a4b29))
+
 ### [1.6.9](https://github.com/railroadmedia/musora-content-services/compare/v1.6.8...v1.6.9) (2025-11-04)
 
 ### [1.6.8](https://github.com/railroadmedia/musora-content-services/compare/v1.6.7...v1.6.8) (2025-10-02)
