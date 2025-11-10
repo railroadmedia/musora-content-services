@@ -1,14 +1,14 @@
 // dateUtils.js
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
-import isoWeek from 'dayjs/plugin/isoWeek';
+import isoWeek from 'dayjs/plugin/isoWeek'
 import isBetween from 'dayjs/plugin/isBetween'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 
-dayjs.extend(utc);
-dayjs.extend(timezone);
+dayjs.extend(utc)
+dayjs.extend(timezone)
 dayjs.extend(isSameOrAfter)
 dayjs.extend(isoWeek)
 dayjs.extend(isBetween)
@@ -19,7 +19,7 @@ export function toDayjs(date, timeZone = 'UTC') {
 }
 
 export function convertToTimeZone(date, timeZone) {
-  return dayjs(date).tz(timeZone).format('YYYY-MM-DD');
+  return dayjs(date).tz(timeZone).format('YYYY-MM-DD')
 }
 
 export function getMonday(date, timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone) {
@@ -42,32 +42,35 @@ export function isNextDay(date1, date2) {
   const d2 = dayjs(date2).startOf('day')
   return d2.diff(d1, 'day') === 1
 }
-export function getTimeRemainingUntilLocal(targetUtcIsoString, {withTotalSeconds} = {}) {
-  const targetUTC = new Date(targetUtcIsoString);
+export function getTimeRemainingUntilLocal(targetUtcIsoString, { withTotalSeconds } = {}) {
+  const targetUTC = new Date(targetUtcIsoString)
   if (isNaN(targetUTC.getTime())) {
-    return "00:00:00";
+    return '00:00:00'
   }
 
-  const now = new Date();
-  const diff = targetUTC.getTime() - now.getTime();
+  const now = new Date()
+  const diff = targetUTC.getTime() - now.getTime()
 
   if (diff <= 0) {
-    return "00:00:00";
+    return '00:00:00'
   }
 
-  const totalSeconds = Math.floor(diff / 1000);
-  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-  const seconds = String(totalSeconds % 60).padStart(2, '0');
-  if(withTotalSeconds) {
+  const totalSeconds = Math.floor(diff / 1000)
+  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0')
+  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0')
+  const seconds = String(totalSeconds % 60).padStart(2, '0')
+  if (withTotalSeconds) {
     return {
       totalSeconds,
-      formatted: `${hours}:${minutes}:${seconds}`
+      formatted: `${hours}:${minutes}:${seconds}`,
     }
   }
 
-  return `${hours}:${minutes}:${seconds}`;
+  return `${hours}:${minutes}:${seconds}`
 }
 
-
-
+export function getToday() {
+  const now = dayjs()
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  return dayjs().tz(timeZone).startOf('day')
+}
