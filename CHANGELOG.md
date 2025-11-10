@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.75.0](https://github.com/railroadmedia/musora-content-services/compare/v2.74.1...v2.75.0) (2025-11-10)
+
+
+### Features
+
+* method card progress row ([#553](https://github.com/railroadmedia/musora-content-services/issues/553)) ([a124cfc](https://github.com/railroadmedia/musora-content-services/commit/a124cfcedb4dacf3b6e6a4c435c4301b3eefa55e))
+
 ### [2.74.1](https://github.com/railroadmedia/musora-content-services/compare/v2.74.0...v2.74.1) (2025-11-07)
 
 
