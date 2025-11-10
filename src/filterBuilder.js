@@ -13,6 +13,7 @@ export class FilterBuilder {
       availableContentStatuses = [],
       bypassPermissions = false,
       showMembershipRestrictedContent = false,
+      showOnlyOwnedContent = false,
       pullFutureContent = false,
       getFutureContentOnly = false,
       getFutureScheduledContentsOnly = false,
@@ -26,6 +27,7 @@ export class FilterBuilder {
     this.availableContentStatuses = availableContentStatuses
     this.bypassPermissions = bypassPermissions
     this.showMembershipRestrictedContent = showMembershipRestrictedContent
+    this.showOnlyOwnedContent = showOnlyOwnedContent
     this.bypassStatuses = bypassStatuses
     this.bypassPublishedDateRestriction = bypassPublishedDateRestriction
     this.pullFutureContent = pullFutureContent
@@ -128,6 +130,7 @@ export class FilterBuilder {
     const permissionsFilter = adapter.generatePermissionsFilter(this.userData, {
       prefix: this.prefix,
       showMembershipRestrictedContent: this.showMembershipRestrictedContent,
+      showOnlyOwnedContent: this.showOnlyOwnedContent,
     })
 
     // If adapter returns a filter, apply it
