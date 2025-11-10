@@ -122,7 +122,6 @@ export async function fetchLearningPathLessons(
       children: manipulatedLessons,
     }
   }
-
   const todayContentIds = dailySession.daily_session[0]?.content_ids || []
   const nextContentIds = dailySession.daily_session[1]?.content_ids || []
   const completedLessons = []
@@ -149,6 +148,11 @@ export async function fetchLearningPathLessons(
       todayContentIds,
       addContextParameters
     )
+
+    const previousLearningPathId = dailySession.daily_session[0]?.learing_path_id
+    previousLearnigPathTodays = previousLearnigPathTodays.map((lesson: any) => {
+      return { ...lesson, type: 'learning-path-lesson-v2', parent_id: previousLearningPathId }
+    })
   } else if (
     nextContentIds.length > 0 &&
     todaysLessons.length < 3 &&
@@ -161,6 +165,10 @@ export async function fetchLearningPathLessons(
       nextContentIds,
       addContextParameters
     )
+    const nextLearningPathId = dailySession.daily_session[1]?.learing_path_id
+    nextLPLessons = nextLPLessons.map((lesson: any) => {
+      return { ...lesson, type: 'learning-path-lesson-v2', parent_id: nextLearningPathId }
+    })
   }
 
   return {

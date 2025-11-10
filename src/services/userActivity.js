@@ -1027,6 +1027,7 @@ function generateContentsMap(contents, playlistsContents, methodProgressContents
       parentIds.forEach((id) => contentsMap.delete(id))
     }
   }
+  //TODO:: remove method cards from progress rows
   // if (methodProgressContents && Object.keys(methodProgressContents).length) {
   //   for (const item of methodProgressContents) {
   //     const contentId = item.id
@@ -1045,9 +1046,6 @@ function generateContentsMap(contents, playlistsContents, methodProgressContents
  * @param {Object} [options={}] - Options for fetching progress rows.
  * @param {string|null} [options.brand=null] - The brand context for progress data.
  * @param {number} [options.limit=8] - Maximum number of progress rows to return.
- * @param {object|null} [options.methodStructure=null] - The user's active path.
- * @param {number|null} [options.activePathId=null] - The user's active path.
- * @param {dailySessionItem[]|null} [options.dailySession=null] - The user's daily session.
  * @returns {Promise<Object>} - A promise that resolves to an object containing progress rows formatted for UI.
  *
  * @example
@@ -1265,7 +1263,6 @@ async function getCompletedChildren(content, contentType) {
 async function processPlaylistItem(item) {
   const playlist = item.playlist
 
-  console.log('Progress Timestamp', item.progressTimestamp)
   return {
     id: playlist.id,
     progressType: 'playlist',

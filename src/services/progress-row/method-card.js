@@ -14,9 +14,9 @@ import { addContextToContent } from '../contentAggregator.js'
 export async function getMethodCard(brand) {
   const dailySession = await getDailySession(brand, getToday())
   const activeLearningPathId = dailySession?.active_learning_path_id
-  resetAllLearningPaths()
+  //resetAllLearningPaths()
   if (!activeLearningPathId) {
-    // startLearningPath('drumeo', 422533)
+    //startLearningPath('drumeo', 422533)
 
     const introVideo = await fetchMethodV2IntroVideo(brand)
     const timestamp = Math.floor(Date.now() / 1000)
@@ -61,10 +61,10 @@ export async function getMethodCard(brand) {
     const nextIncompleteLesson = todaysLessons.find(
       (lesson) => lesson.progressStatus !== 'completed'
     )
-    const maxProgressTimestamp = Math.max(
-      ...todaysLessons.map((lesson) => lesson.progressTimestamp)
-    )
-
+    let maxProgressTimestamp = Math.max(...todaysLessons.map((lesson) => lesson.progressTimestamp))
+    if (!maxProgressTimestamp) {
+      maxProgressTimestamp = dailySession.active_learning_path_created_at
+    }
     let ctaText, action
     if (noneCompleted) {
       ctaText = 'Start Session'
@@ -85,7 +85,7 @@ export async function getMethodCard(brand) {
           }
     }
     return {
-      id: 0, // method card has no id
+      id: 0,
       type: 'method',
       progressType: 'content',
       header: 'Method',
