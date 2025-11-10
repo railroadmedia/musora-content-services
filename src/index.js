@@ -1,7 +1,7 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 import {
@@ -174,10 +174,6 @@ import {
 	likeComment,
 	logUserPractice,
 	openComment,
-	postContentComplete,
-	postContentReset,
-	postContentRestore,
-	postContentStart,
 	postPlaylistContentEngaged,
 	replyToComment,
 	reportComment,
@@ -552,10 +548,6 @@ export {
 	pauseLiveEventPolling,
 	pinProgressRow,
 	pinThread,
-	postContentComplete,
-	postContentReset,
-	postContentRestore,
-	postContentStart,
 	postPlaylistContentEngaged,
 	rankCategories,
 	rankItems,

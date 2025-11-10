@@ -100,8 +100,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       r.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
       r.progress_percent = progressPct
 
-      if (resumeTime) {
-        // r.resume_time_seconds = resumeTime // todo - add column
+      if (typeof resumeTime != 'undefined') {
+        r.resume_time_seconds = Math.floor(resumeTime)
       }
     })
   }

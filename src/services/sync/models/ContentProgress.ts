@@ -12,16 +12,13 @@ export enum STATE {
 
 export default class ContentProgress extends BaseModel<{
   content_id: number
-  state: STATE
-  progress_percent: number
   collection_type: COLLECTION_TYPE | null
   collection_id: number | null
-  brand: string
+  state: STATE
+  progress_percent: number
+  resume_time_seconds: number
 }> {
   static table = SYNC_TABLES.CONTENT_PROGRESS
-
-  // todo add resume_time
-  // todo add brand, synced from railcontent_content's brand field (maybe status too while we're at it?)
 
   get content_id() {
     return this._getRaw('content_id') as number
@@ -38,10 +35,6 @@ export default class ContentProgress extends BaseModel<{
   get collection_id() {
     return (this._getRaw('collection_id') as number) || null
   }
-  get brand() {
-    return this._getRaw('brand') as string
-  }
-
   set content_id(value: number) {
     this._setRaw('content_id', value)
   }
@@ -57,9 +50,8 @@ export default class ContentProgress extends BaseModel<{
   set collection_id(value: number | null) {
     this._setRaw('collection_id', value)
   }
-  set brand(value: string) {
-    this._setRaw('brand', value)
+  set resume_time_seconds(value: number) {
+    this._setRaw('resume_time_seconds', value)
   }
-
 
 }

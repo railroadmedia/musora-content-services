@@ -6,6 +6,7 @@ import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 
 const STATE_STARTED = STATE.STARTED
 const STATE_COMPLETED = STATE.COMPLETED
+const MAX_DEPTH = 3
 
 let sessionData = []
 
@@ -18,7 +19,7 @@ export async function getProgressStateByIds(contentIds) {
 }
 
 export async function getResumeTimeSecondsByIds(contentIds) {
-  return getByIds(contentIds, 'resume_time_seconds', 0) // todo - add column!
+  return getByIds(contentIds, 'resume_time_seconds', 0)
 }
 
 export async function getNextLesson(data) {
@@ -336,13 +337,13 @@ async function resetStatus(contentId) {
   const hierarchy = await fetchHierarchy(contentId)
 
   return Promise.all([
-    db.contentProgress.recordProgressesTentative(getChildrenToDepth(contentId, hierarchy, 5)),
+    db.contentProgress.recordProgressesTentative(getChildrenToDepth(contentId, hierarchy, MAX_DEPTH)),
     bubbleProgress(hierarchy, contentId).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses))
   ])
 }
 
 function trickleProgress(hierarchy, contentId, progress) {
-  const descendantIds = getChildrenToDepth(contentId, hierarchy, 5)
+  const descendantIds = getChildrenToDepth(contentId, hierarchy, MAX_DEPTH)
   return Object.fromEntries(descendantIds.map(id => [id, progress]))
 }
 
@@ -352,11 +353,21 @@ async function bubbleProgress(hierarchy, contentId)     {
   return averageProgressesFor(hierarchy, contentId, progresses)
 }
 
-function getAncestorAndSiblingIds(hierarchy, contentId) {
+function getAncestorAndSiblingIds(hierarchy, contentId, depth = 1) {
+  if (depth > MAX_DEPTH) return []
+
   const parentId = hierarchy?.parents?.[contentId]
   if (!parentId) return []
 
-  return [...(hierarchy?.children?.[parentId] ?? []), ...getAncestorAndSiblingIds(hierarchy, parentId)]
+  if (parentId === contentId) {
+    console.error('Circular dependency detected for contentId', contentId)
+    return []
+  }
+
+  return [
+    ...(hierarchy?.children?.[parentId] ?? []),
+    ...getAncestorAndSiblingIds(hierarchy, parentId, depth + 1)
+  ]
 }
 
 function averageProgressesFor(hierarchy, contentId, progressData) {
@@ -366,10 +377,10 @@ function averageProgressesFor(hierarchy, contentId, progressData) {
   const parentChildProgress = hierarchy?.children?.[parentId]?.map(childId => {
     return progressData[childId] ?? 0
   })
-  const avgParentProgress = Math.round(parentChildProgress.reduce((a, b) => a + b, 0) / parentChildProgress.length)
+  const avgParentProgress = parentChildProgress.length > 0 ? Math.round(parentChildProgress.reduce((a, b) => a + b, 0) / parentChildProgress.length) : 0
 
   return {
-    ...bubbleProgress(hierarchy, parentId),
+    ...bubbleProgress(hierarchy, parentId), // tomfoolery - bad recursion...
     [parentId]: avgParentProgress,
   }
 }

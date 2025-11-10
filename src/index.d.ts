@@ -170,10 +170,6 @@ import {
 	likeComment,
 	logUserPractice,
 	openComment,
-	postContentComplete,
-	postContentReset,
-	postContentRestore,
-	postContentStart,
 	postPlaylistContentEngaged,
 	replyToComment,
 	reportComment,
@@ -353,7 +349,7 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
@@ -553,10 +549,6 @@ declare module 'musora-content-services' {
 		pauseLiveEventPolling,
 		pinProgressRow,
 		pinThread,
-		postContentComplete,
-		postContentReset,
-		postContentRestore,
-		postContentStart,
 		postPlaylistContentEngaged,
 		rankCategories,
 		rankItems,

@@ -10,10 +10,6 @@ import { fetchJSONHandler } from '../lib/httpHelper.js'
  * @type {string[]}
  */
 const excludeFromGeneratedIndex = [
-  'postRecordWatchSession',
-  'postContentStarted',
-  'postContentComplete',
-  'postContentReset',
   'fetchUserPermissionsData',
 ]
 
@@ -334,46 +330,6 @@ export async function fetchUserBadges(brand = null) {
   let brandParam = brand ? `?brand=${brand}` : ''
   let url = `/challenges/user_badges/get${brandParam}`
   return await fetchHandler(url, 'get')
-}
-
-/**
- * complete a content's progress for a given user
- * @param contentId
- * @returns {Promise<any|string|null>}
- */
-export async function postContentComplete(contentId) {
-  let url = `/api/content/v1/user/progress/complete/${contentId}`
-  return postDataHandler(url)
-}
-
-/**
- * start the user's progress on a content
- * @param contentId
- * @returns {Promise<any|string|null>}
- */
-export async function postContentStart(contentId) {
-  let url = `/api/content/v1/user/progress/start/${contentId}`
-  return postDataHandler(url)
-}
-
-/**
- * resets the user's progress on a content
- * @param contentId
- * @returns {Promise<any|string|null>}
- */
-export async function postContentReset(contentId) {
-  let url = `/api/content/v1/user/progress/reset/${contentId}`
-  return postDataHandler(url)
-}
-
-/**
- * restores the user's progress on a content
- * @param contentId
- * @returns {Promise<any|string|null>}
- */
-export async function postContentRestore(contentId) {
-  let url = `/api/content/v1/user/progress/restore/${contentId}`
-  return postDataHandler(url)
 }
 
 /**
