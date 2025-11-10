@@ -66,10 +66,12 @@ export async function updateActivePath(brand: string) {
  * @returns {string} result.thumbnail - Optional thumbnail URL for the learning path.
  * @returns {string} result.title - The title of the learning path.
  * @returns {boolean} result.is_active_learning_path - Whether the learning path is currently active.
+ * @returns {Array} result.children - Array of all lessons.
  * @returns {Array} result.upcoming_lessons - Array of upcoming/additional lessons.
  * @returns {Array} result.todays_lessons - Array of today's lessons (max 3).
  * @returns {Array} result.next_learning_path_lessons - Array of next lessons to be taken.
  * @returns {Array} result.completed_lessons - Array of completed lessons.
+ * @returns {Array} result.previous_learning_path_todays - Array of completed lessons.
  */
 export async function fetchLearningPathLessons(
   learningPathId: number,
@@ -85,21 +87,31 @@ export async function fetchLearningPathLessons(
     addProgressStatus: true,
     addProgressPercentage: true,
   }
+
   const lessons = await addContextToContent(() => learningPath.children, addContextParameters)
   const isActiveLearningPath = (dailySession?.active_learning_path_id || 0) == learningPathId
+  const manipulatedLessons = lessons.map((lesson: any) => {
+    return { ...lesson, type: 'learning-path-lesson-v2', parent_id: learningPathId }
+  })
+
+  if (!isActiveLearningPath) {
+    return {
+      ...learningPath,
+      is_active_learning_path: isActiveLearningPath,
+      children: manipulatedLessons,
+    }
+  }
+
   const todayContentIds = dailySession.daily_session[0]?.content_ids || []
   const nextContentIds = dailySession.daily_session[1]?.content_ids || []
   const completedLessons = []
   let todaysLessons = []
   let nextLPLessons = []
   const upcomingLessons = []
-  const lessonIds = lessons.map((lesson: any) => lesson.id).filter(Boolean)
 
-  lessons.forEach((lesson: any) => {
+  manipulatedLessons.forEach((lesson: any) => {
     if (todayContentIds.includes(lesson.id)) {
       todaysLessons.push(lesson)
-    } else if (nextContentIds.includes(lesson.id)) {
-      nextLPLessons.push(lesson)
     } else if (lesson.progressStatus === 'completed') {
       completedLessons.push(lesson)
     } else {
@@ -107,15 +119,20 @@ export async function fetchLearningPathLessons(
     }
   })
 
-  if (todaysLessons.length == 0 && nextLPLessons.length > 0) {
+  let previousLearnigPathTodays = []
+  if (todaysLessons.length == 0) {
     // Daily sessions first lessons are not part of the active learning path, but next lessons are
     // load todays lessons from previous learning path
-    todaysLessons = await addContextToContent(
+    previousLearnigPathTodays = await addContextToContent(
       fetchByRailContentIds,
       todayContentIds,
       addContextParameters
     )
-  } else if (nextContentIds.length > 0 && nextLPLessons.length == 0 && todaysLessons.length > 0) {
+  } else if (
+    nextContentIds.length > 0 &&
+    todaysLessons.length < 3 &&
+    upcomingLessons.length === 0
+  ) {
     // Daily sessions first lessons are the active learning path and the next lessons are not
     // load next lessons from next learning path
     nextLPLessons = await addContextToContent(
@@ -126,13 +143,13 @@ export async function fetchLearningPathLessons(
   }
 
   return {
-    id: learningPathId,
-    thumbnail: learningPath.thumbnail,
-    title: learningPath.title || '',
+    ...learningPath,
     is_active_learning_path: isActiveLearningPath,
+    children: manipulatedLessons,
     upcoming_lessons: upcomingLessons,
     todays_lessons: todaysLessons,
     next_learning_path_lessons: nextLPLessons,
     completed_lessons: completedLessons,
+    previous_learning_path_todays: previousLearnigPathTodays,
   }
 }

@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.74.1](https://github.com/railroadmedia/musora-content-services/compare/v2.74.0...v2.74.1) (2025-11-07)
+
+
+### Bug Fixes
+
+* fetch learning path lessons ([69ac2e1](https://github.com/railroadmedia/musora-content-services/commit/69ac2e1e0982289b26e7148cc17d19f1ba389484))
+
+## [2.74.0](https://github.com/railroadmedia/musora-content-services/compare/v2.73.0...v2.74.0) (2025-11-07)
+
+
+### Features
+
+* update fetch learning path lessons ([#551](https://github.com/railroadmedia/musora-content-services/issues/551)) ([a434076](https://github.com/railroadmedia/musora-content-services/commit/a434076a8281af61043c1ec3e09798e7981ff8f3))
+
+## [2.73.0](https://github.com/railroadmedia/musora-content-services/compare/v2.72.1...v2.73.0) (2025-11-06)
+
+
+### Features
+
+*  returning data updates in fetchLearningPathLessons ([#550](https://github.com/railroadmedia/musora-content-services/issues/550)) ([1753d75](https://github.com/railroadmedia/musora-content-services/commit/1753d754d620fafc387e700f114d67ec7fc9043f))
+
+### [2.72.1](https://github.com/railroadmedia/musora-content-services/compare/v2.72.0...v2.72.1) (2025-11-06)
+
+
+### Bug Fixes
+
+* add all lessons to fetchLearningPathLessons endpoint ([#548](https://github.com/railroadmedia/musora-content-services/issues/548)) ([acdda67](https://github.com/railroadmedia/musora-content-services/commit/acdda67ffa9eb8e44f7239e3ac21c7bda96166b6))
+
 ## [2.72.0](https://github.com/railroadmedia/musora-content-services/compare/v2.71.0...v2.72.0) (2025-11-05)
 
 
