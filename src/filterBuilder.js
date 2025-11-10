@@ -121,7 +121,7 @@ export class FilterBuilder {
     const oldPermissionFilter = `references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id)`
     const newPermissionFilter = `array::intersects(permission_v2, ${arrayToRawRepresentation(requiredPermissions)})`
     this._andWhere(
-      `(!defined(permission) || ${oldPermissionFilter} || ${newPermissionFilter})`
+      `((!defined(permission) && !defined(permission_v2)) || ${oldPermissionFilter} || ${newPermissionFilter})`
     )
     return this
   }
