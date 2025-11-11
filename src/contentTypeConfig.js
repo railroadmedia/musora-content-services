@@ -700,6 +700,7 @@ export let contentTypeConfig = {
 
 export function getIntroVideoFields(type) {
   const fields = [
+    `"id": railcontent_id`,
     'title',
     'brand',
     `"type": _type`,
