@@ -204,7 +204,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(r => r[0] || null)
 
       if (existing) {
+        existing._isEditing = true
         builder(existing)
+        existing._isEditing = false
         record = existing
       } else {
         const attrs = new this.model(this.collection, { id })
