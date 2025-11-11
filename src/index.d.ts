@@ -16,6 +16,8 @@ import {
 	fetchLearningPathLessons,
 	getActivePath,
 	getDailySession,
+	resetAllLearningPaths,
+	startLearningPath,
 	updateActivePath,
 	updateDailySession
 } from './services/content-org/learning-paths.ts';
@@ -91,6 +93,7 @@ import {
 	convertToTimeZone,
 	getMonday,
 	getTimeRemainingUntilLocal,
+	getToday,
 	getWeekNumber,
 	isNextDay,
 	isSameDate,
@@ -155,6 +158,10 @@ import {
 import {
 	createTestUser
 } from './services/liveTesting.ts';
+
+import {
+	getMethodCard
+} from './services/progress-row/method-card.js';
 
 import {
 	assignModeratorToComment,
@@ -537,6 +544,7 @@ declare module 'musora-content-services' {
 		getLastInteractedOf,
 		getLegacyMethods,
 		getLessonContentRows,
+		getMethodCard,
 		getMonday,
 		getNavigateTo,
 		getNavigateToForPlaylists,
@@ -562,6 +570,7 @@ declare module 'musora-content-services' {
 		getStartedOrCompletedProgressOnly,
 		getTabResults,
 		getTimeRemainingUntilLocal,
+		getToday,
 		getUserData,
 		getUserMonthlyStats,
 		getUserPractices,
@@ -620,6 +629,7 @@ declare module 'musora-content-services' {
 		reportPlaylist,
 		requestEmailChange,
 		reset,
+		resetAllLearningPaths,
 		resetPassword,
 		restoreComment,
 		restoreItemFromPlaylist,
@@ -634,6 +644,7 @@ declare module 'musora-content-services' {
 		setStudentViewForUser,
 		setUserSignature,
 		setupAccount,
+		startLearningPath,
 		startLiveEventPolling,
 		startOnboarding,
 		status,

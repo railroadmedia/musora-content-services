@@ -16,6 +16,8 @@ import {
 	fetchLearningPathLessons,
 	getActivePath,
 	getDailySession,
+	resetAllLearningPaths,
+	startLearningPath,
 	updateActivePath,
 	updateDailySession
 } from './services/content-org/learning-paths.ts';
@@ -91,6 +93,7 @@ import {
 	convertToTimeZone,
 	getMonday,
 	getTimeRemainingUntilLocal,
+	getToday,
 	getWeekNumber,
 	isNextDay,
 	isSameDate,
@@ -155,6 +158,10 @@ import {
 import {
 	createTestUser
 } from './services/liveTesting.ts';
+
+import {
+	getMethodCard
+} from './services/progress-row/method-card.js';
 
 import {
 	assignModeratorToComment,
@@ -536,6 +543,7 @@ export {
 	getLastInteractedOf,
 	getLegacyMethods,
 	getLessonContentRows,
+	getMethodCard,
 	getMonday,
 	getNavigateTo,
 	getNavigateToForPlaylists,
@@ -561,6 +569,7 @@ export {
 	getStartedOrCompletedProgressOnly,
 	getTabResults,
 	getTimeRemainingUntilLocal,
+	getToday,
 	getUserData,
 	getUserMonthlyStats,
 	getUserPractices,
@@ -619,6 +628,7 @@ export {
 	reportPlaylist,
 	requestEmailChange,
 	reset,
+	resetAllLearningPaths,
 	resetPassword,
 	restoreComment,
 	restoreItemFromPlaylist,
@@ -633,6 +643,7 @@ export {
 	setStudentViewForUser,
 	setUserSignature,
 	setupAccount,
+	startLearningPath,
 	startLiveEventPolling,
 	startOnboarding,
 	status,

@@ -1,10 +1,12 @@
+/**
+ * @module LearningPaths
+ */
+
 import { fetchHandler } from '../railcontent.js'
 import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2Structure } from '../sanity.js'
 import { addContextToContent } from '../contentAggregator.js'
 import { getProgressStateByIds } from '../contentProgress.js'
-/**
- * @module LearningPaths
- */
+
 const BASE_PATH: string = `/api/content-org`
 
 /**
@@ -56,6 +58,25 @@ export async function updateActivePath(brand: string) {
   return await fetchHandler(url, 'POST', null, body)
 }
 
+/**
+ * Starts a new learning path for the user.
+ * @param brand
+ * @param learningPathId
+ */
+export async function startLearningPath(brand: string, learningPathId: number) {
+  const url: string = `${BASE_PATH}/v1/user/learning-paths/start`
+  const body = { brand: brand, learning_path_id: learningPathId }
+  return await fetchHandler(url, 'POST', null, body)
+}
+
+/**
+ * Resets the user's learning path.
+ */
+export async function resetAllLearningPaths() {
+  const url: string = `${BASE_PATH}/v1/user/learning-paths/reset`
+  return await fetchHandler(url, 'POST', null, {})
+}
+
 /** Fetches and organizes learning path lessons.
  *
  * @param {number} learningPathId - The learning path ID.
@@ -101,7 +122,6 @@ export async function fetchLearningPathLessons(
       children: manipulatedLessons,
     }
   }
-
   const todayContentIds = dailySession.daily_session[0]?.content_ids || []
   const nextContentIds = dailySession.daily_session[1]?.content_ids || []
   const completedLessons = []
@@ -128,6 +148,11 @@ export async function fetchLearningPathLessons(
       todayContentIds,
       addContextParameters
     )
+
+    const previousLearningPathId = dailySession.daily_session[0]?.learing_path_id
+    previousLearnigPathTodays = previousLearnigPathTodays.map((lesson: any) => {
+      return { ...lesson, type: 'learning-path-lesson-v2', parent_id: previousLearningPathId }
+    })
   } else if (
     nextContentIds.length > 0 &&
     todaysLessons.length < 3 &&
@@ -140,6 +165,10 @@ export async function fetchLearningPathLessons(
       nextContentIds,
       addContextParameters
     )
+    const nextLearningPathId = dailySession.daily_session[1]?.learing_path_id
+    nextLPLessons = nextLPLessons.map((lesson: any) => {
+      return { ...lesson, type: 'learning-path-lesson-v2', parent_id: nextLearningPathId }
+    })
   }
 
   return {

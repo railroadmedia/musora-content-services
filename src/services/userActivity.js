@@ -11,9 +11,14 @@ import {
   fetchRecentUserActivities,
 } from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
-import { fetchByRailContentId, fetchByRailContentIds, fetchShows } from './sanity'
+import {
+  fetchByRailContentId,
+  fetchByRailContentIds,
+  fetchMethodV2IntroVideo,
+  fetchShows,
+} from './sanity'
 import { fetchPlaylist, fetchUserPlaylists } from './content-org/playlists'
-import {guidedCourses} from './content-org/guided-courses'
+import { guidedCourses } from './content-org/guided-courses'
 import {
   getMonday,
   getWeekNumber,
@@ -36,6 +41,7 @@ import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { addContextToContent } from './contentAggregator.js'
+import { getMethodCard } from './progress-row/method-card.js'
 
 const DATA_KEY_PRACTICES = 'practices'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
@@ -861,7 +867,8 @@ async function formatPracticeMeta(practices = []) {
   })
 
   return practices.map((practice) => {
-    const content = contents && contents.length > 0 ? contents.find((c) => c.id === practice.content_id) : {}
+    const content =
+      contents && contents.length > 0 ? contents.find((c) => c.id === practice.content_id) : {}
 
     return {
       id: practice.id,
@@ -950,12 +957,15 @@ async function extractPinnedItemsAndSortAllItems(
   userPinnedItem,
   contentsMap,
   eligiblePlaylistItems,
+  methodCard,
+  //method contents
   limit
 ) {
   let pinnedItem = await popPinnedItemFromContentsOrPlaylistMap(
     userPinnedItem,
     contentsMap,
-    eligiblePlaylistItems
+    eligiblePlaylistItems,
+    methodCard
   )
 
   let combined = []
@@ -965,18 +975,19 @@ async function extractPinnedItemsAndSortAllItems(
     combined.push(pinnedItem)
   }
 
+  if (!(pinnedItem && pinnedItem.progressType === 'method')) {
+    combined.push(methodCard)
+  }
+
   const progressList = Array.from(contentsMap.values())
+  //need another for methodContents?
+
   combined = [...combined, ...progressList, ...eligiblePlaylistItems]
   return mergeAndSortItems(combined, limit)
 }
 
-function generateContentsMap(contents, playlistsContents) {
-  const excludedTypes = new Set([
-    'pack-bundle',
-    'learning-path-course',
-    'learning-path-level',
-    'guided-course-part',
-  ])
+function generateContentsMap(contents, playlistsContents, methodProgressContents) {
+  const excludedTypes = new Set(['pack-bundle', 'guided-course-part'])
   const existingShows = new Set()
   const contentsMap = new Map()
   const childToParentMap = {}
@@ -1008,8 +1019,6 @@ function generateContentsMap(contents, playlistsContents) {
     }
   })
 
-  // TODO this doesn't work for guided courses as the GC card takes precedence over the playlist card
-  // https://musora.atlassian.net/browse/BEH-812
   if (playlistsContents) {
     for (const item of playlistsContents) {
       const contentId = item.id
@@ -1018,6 +1027,16 @@ function generateContentsMap(contents, playlistsContents) {
       parentIds.forEach((id) => contentsMap.delete(id))
     }
   }
+  //TODO:: remove method cards from progress rows
+  // if (methodProgressContents && Object.keys(methodProgressContents).length) {
+  //   for (const item of methodProgressContents) {
+  //     const contentId = item.id
+  //     contentsMap.delete(contentId)
+  //     const parentIds = item.parent_content_data || []
+  //     parentIds.forEach((id) => contentsMap.delete(id))
+  //   }
+  // }
+
   return contentsMap
 }
 
@@ -1034,15 +1053,15 @@ function generateContentsMap(contents, playlistsContents) {
  *   .then(data => console.log(data))
  *   .catch(error => console.error(error));
  */
-export async function getProgressRows({ brand = null, limit = 8 } = {}) {
+export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
   // TODO slice progress to a reasonable number, say 100
 
-  const [recentPlaylists, progressContents, userPinnedItem] =
-    await Promise.all([
-      fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
-      getAllStartedOrCompleted({ onlyIds: false, brand: brand }),
-      getUserPinnedItem(brand),
-    ])
+  const [recentPlaylists, progressContents, userPinnedItem, methodCard] = await Promise.all([
+    fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
+    getAllStartedOrCompleted({ onlyIds: false, brand: brand }),
+    getUserPinnedItem(brand),
+    getMethodCard(brand),
+  ])
 
   const playlists = recentPlaylists?.data || []
   const eligiblePlaylistItems = await getEligiblePlaylistItems(playlists)
@@ -1050,40 +1069,59 @@ export async function getProgressRows({ brand = null, limit = 8 } = {}) {
     (item) => item.playlist.last_engaged_on
   )
 
+  // todo post v2: refactor this once we migrate playlist progress tracking to new system
   const nonPlaylistContentIds = Object.keys(progressContents)
   if (userPinnedItem?.progressType === 'content') {
     nonPlaylistContentIds.push(userPinnedItem.id)
   }
-
+  //need to update addContextToContent to accept collection info
   const [playlistsContents, contents] = await Promise.all([
-    playlistEngagedOnContents ? addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
-      addNextLesson: true,
-      addNavigateTo: true,
-      addProgressStatus: true,
-      addProgressPercentage: true,
-      addProgressTimestamp: true,
-    }) : Promise.resolve([]),
-    nonPlaylistContentIds ? addContextToContent(fetchByRailContentIds, nonPlaylistContentIds, 'progress-tracker', brand, {
-      addNextLesson: true,
-      addNavigateTo: true,
-      addProgressStatus: true,
-      addProgressPercentage: true,
-      addProgressTimestamp: true,
-    }) : Promise.resolve([]),
+    playlistEngagedOnContents
+      ? addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
+          addNextLesson: true,
+          addNavigateTo: true,
+          addProgressStatus: true,
+          addProgressPercentage: true,
+          addProgressTimestamp: true,
+        })
+      : Promise.resolve([]),
+    nonPlaylistContentIds
+      ? addContextToContent(
+          fetchByRailContentIds,
+          nonPlaylistContentIds,
+          'progress-tracker',
+          brand,
+          {
+            addNextLesson: true,
+            addNavigateTo: true,
+            addProgressStatus: true,
+            addProgressPercentage: true,
+            addProgressTimestamp: true,
+          }
+        )
+      : Promise.resolve([]),
   ])
+
   const contentsMap = generateContentsMap(contents, playlistsContents)
+
   let combined = await extractPinnedItemsAndSortAllItems(
     userPinnedItem,
     contentsMap,
     eligiblePlaylistItems,
+    methodCard,
     limit
   )
   const results = await Promise.all(
-    combined
-      .slice(0, limit)
-      .map((item) =>
-        item.type === 'playlist' ? processPlaylistItem(item) : processContentItem(item)
-      )
+    combined.slice(0, limit).map((item) => {
+      switch (item.type) {
+        case 'playlist':
+          return processPlaylistItem(item)
+        case 'method':
+          return item
+        default:
+          return processContentItem(item)
+      }
+    })
   )
   return {
     type: TabResponseType.PROGRESS_ROWS,
@@ -1118,7 +1156,11 @@ async function processContentItem(content) {
       })
       content.time_remaining_seconds = timeRemaining.totalSeconds
       ctaText = 'Next lesson in ' + timeRemaining.formatted
-    } else if (!content.progressStatus || content.progressStatus === 'not-started' || content.progressPercentage === 0) {
+    } else if (
+      !content.progressStatus ||
+      content.progressStatus === 'not-started' ||
+      content.progressPercentage === 0
+    ) {
       ctaText = 'Start Course'
     }
   }
@@ -1136,6 +1178,7 @@ async function processContentItem(content) {
       content = shows.find((lesson) => lesson.id === nextByProgress)
       content.completed_children = completedShows
       content.progressTimestamp = progressTimestamp
+      content.progressTimestamp = progressTimestamp
       content.pinned = wasPinned
     }
     content.child_count = shows.length
@@ -1144,23 +1187,26 @@ async function processContentItem(content) {
       ctaText = 'Revisit Show'
     }
   }
-
+  console.log('Progress Timestamp', content.progressTimestamp)
   return {
-    id:                content.id,
-    progressType:      'content',
-    header:            contentType,
-    pinned:            content.pinned ?? false,
-    content:           content,
-    body:              {
+    id: content.id,
+    progressType: 'content',
+    header: contentType,
+    pinned: content.pinned ?? false,
+    content: content,
+    body: {
       progressPercent: isLive ? undefined : content.progressPercentage,
-      thumbnail:       content.thumbnail,
-      title:           content.title,
-      isLive:          isLive,
-      badge:           content.badge ?? null,
-      isLocked:        content.is_locked ?? false,
-      subtitle:        collectionLessonTypes.includes(content.type) || content.lesson_count > 1
-        ? `${content.completed_children} of ${content.lesson_count ?? content.child_count} Lessons Complete`
-        : (contentType === 'lesson' && isLive === false) ? `${content.progressPercentage}% Complete`: `${content.difficulty_string} • ${content.artist_name}`
+      thumbnail: content.thumbnail,
+      title: content.title,
+      isLive: isLive,
+      badge: content.badge ?? null,
+      isLocked: content.is_locked ?? false,
+      subtitle:
+        collectionLessonTypes.includes(content.type) || content.lesson_count > 1
+          ? `${content.completed_children} of ${content.lesson_count ?? content.child_count} Lessons Complete`
+          : contentType === 'lesson' && isLive === false
+            ? `${content.progressPercentage}% Complete`
+            : `${content.difficulty_string} • ${content.artist_name}`,
     },
     cta: {
       text: ctaText,
@@ -1216,6 +1262,7 @@ async function getCompletedChildren(content, contentType) {
 
 async function processPlaylistItem(item) {
   const playlist = item.playlist
+
   return {
     id: playlist.id,
     progressType: 'playlist',
@@ -1304,7 +1351,6 @@ function mergeAndSortItems(items, limit) {
     .sort((a, b) => {
       if (a.pinned && !b.pinned) return -1
       if (!a.pinned && b.pinned) return 1
-      // TODO pinned guided course should always be before user pinned item
       return b.progressTimestamp - a.progressTimestamp
     })
     .slice(0, limit + 5)
@@ -1312,7 +1358,7 @@ function mergeAndSortItems(items, limit) {
 
 export function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
   const ids = Object.keys(progressOnItems).map(Number)
-  if (contentType === 'guided-course') {
+  if (contentType === 'guided-course' || contentType === 'learning-path') {
     // Return first incomplete lesson
     return ids.find((id) => progressOnItems[id] !== 'completed') || ids.at(0)
   }
@@ -1331,11 +1377,16 @@ export function findIncompleteLesson(progressOnItems, currentContentId, contentT
   return ids[0]
 }
 
-async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playlistItems) {
+async function popPinnedItemFromContentsOrPlaylistMap(
+  pinned,
+  contentsMap,
+  playlistItems,
+  methodCard
+) {
   if (!pinned) return null
   const { id, pinnedAt } = pinned
   let item = null
-  const progressType = pinned.progressType ?? pinned.type;
+  const progressType = pinned.progressType ?? pinned.type
 
   if (progressType === 'content') {
     const pinnedId = parseInt(id)
@@ -1369,12 +1420,17 @@ async function popPinnedItemFromContentsOrPlaylistMap(pinned, contentsMap, playl
       }
     }
   }
+  if (progressType === 'method') {
+    // simply get method card and return
+    item = methodCard
+    //todo remove method card
+  }
   return item
 }
 
 function popContentAndRemoveChildrenFromContentsMap(content, contentsMap) {
-  if (!content.children || content.children.length === 0){
-    console.warn(`content ${content.id} has no children`, content);
+  if (!content.children || content.children.length === 0) {
+    console.warn(`content ${content.id} has no children`, content)
   } else {
     const children = content.children.map((child) => child.id)
     if (contentsMap.has(content.id)) {

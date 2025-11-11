@@ -55,6 +55,8 @@ import {fetchLastInteractedChild, fetchLikeCount} from "./railcontent"
  *
  */
 
+// need to add method support.
+// this means returning collection_type and collection_id
 export async function addContextToContent(dataPromise, ...dataArgs)
 {
   const lastArg = dataArgs[dataArgs.length - 1]
