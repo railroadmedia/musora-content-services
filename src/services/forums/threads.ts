@@ -75,6 +75,19 @@ export async function unfollowThread(threadId: number, brand: string): Promise<v
   return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}/follow?brand=${brand}`)
 }
 
+/**
+ * Marks a thread as read for the authenticated user.
+ *
+ * @param {number} threadId - The ID of the thread to mark as read.
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @return {Promise<void>} - A promise that resolves when the thread is marked as read.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function markThreadAsRead(threadId: number, brand: string): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.put<void>(`${baseUrl}/v1/threads/${threadId}/read?brand=${brand}`, {})
+}
+
 export interface FetchThreadParams {
   is_followed?: boolean,
   page?: number,
