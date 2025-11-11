@@ -67,7 +67,7 @@ export async function getNextLesson(data) {
         const lastInteractedStatus = childrenStates[lastInteracted]
 
         //different nextLesson behaviour for different content types
-        if (content.type === 'course' || content.type === 'pack-bundle') {
+        if (content.type === 'course' || content.type === 'pack-bundle' || content.type === 'skill-pack') {
           if (lastInteractedStatus === STATE_STARTED) {
             nextLessonData[content.id] = lastInteracted
           } else {
@@ -126,7 +126,7 @@ export async function getNavigateTo(data) {
         const lastInteracted = await getLastInteractedOf(childrenIds)
         const lastInteractedStatus = childrenStates[lastInteracted]
 
-        if (content.type === 'course' || content.type === 'pack-bundle') {
+        if (content.type === 'course' || content.type === 'pack-bundle' || content.type === 'skill-pack') {
           if (lastInteractedStatus === STATE_STARTED) {
             navigateToData[content.id] = buildNavigateTo(children.get(lastInteracted))
           } else {

@@ -277,6 +277,7 @@ export const getNextLessonLessonParentTypes = [
   'pack',
   'pack-bundle',
   'song-tutorial',
+  'skill-pack'
 ]
 
 export const progressTypesMapping = {
