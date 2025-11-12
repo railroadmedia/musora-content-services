@@ -91,7 +91,7 @@ export async function getLearningPath(learningPathId) {
     parent_id: learningPathId,
   }))
 
-  const lessons = await addContextToContent(() => learningPath.children, {
+  learningPath.children = await addContextToContent(() => learningPath.children, {
     addProgressStatus: true,
     addProgressPercentage: true,
     addProgressTimestamp: true,
