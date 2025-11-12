@@ -281,7 +281,8 @@ import {
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	setupAccount,
-	status
+	status,
+	toggleStudentView
 } from './services/user/account.ts';
 
 import {
@@ -646,6 +647,7 @@ export {
 	toDayjs,
 	togglePlaylistPrivate,
 	toggleSignaturePrivate,
+	toggleStudentView,
 	unEnrollUserInGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,
