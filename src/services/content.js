@@ -11,7 +11,7 @@ import {
   fetchUpcomingEvents,
   fetchScheduledReleases,
   fetchReturning,
-  fetchLeaving, fetchScheduledAndNewReleases, fetchContentRows
+  fetchLeaving, fetchScheduledAndNewReleases, fetchContentRows, fetchOwnedContent
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {recommendations, rankCategories, rankItems} from "./recommendations";
@@ -450,4 +450,60 @@ export async function getLegacyMethods(brand) {
       child_count: 12,
     },
   ]
+}
+
+/**
+ * Fetches content owned by the user (excluding membership content).
+ * Shows only content accessible through purchases/entitlements, not through membership.
+ *
+ * @param {string} brand - The brand for which to fetch owned content.
+ * @param {Object} [params={}] - Parameters for pagination and sorting.
+ * @param {Array<string>} [params.type=[]] - Content type(s) to filter (optional array).
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {number} [params.limit=10] - The number of items per page.
+ * @param {string} [params.sort='-published_on'] - The field to sort the data by.
+ * @returns {Promise<Object>} - The fetched owned content with entity array and total count.
+ *
+ * @example
+ * // Fetch all owned content with default pagination
+ * getOwnedContent('drumeo')
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Fetch owned content with custom pagination and sorting
+ * getOwnedContent('drumeo', {
+ *   page: 2,
+ *   limit: 20,
+ *   sort: '-published_on'
+ * })
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Fetch owned content filtered by types
+ * getOwnedContent('drumeo', {
+ *   type: ['course', 'pack'],
+ *   page: 1,
+ *   limit: 10
+ * })
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ */
+export async function getOwnedContent(brand, {
+  type = [],
+  page = 1,
+  limit = 10,
+  sort = '-published_on',
+} = {}) {
+  const data = await fetchOwnedContent(brand, { type, page, limit, sort });
+
+  if (!data) {
+    return {
+      entity: [],
+      total: 0
+    };
+  }
+
+  return data;
 }

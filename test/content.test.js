@@ -1,6 +1,11 @@
 import { initializeTestService } from './initializeTests.js'
 import {getContentRows, getNewAndUpcoming, getScheduleContentRows, getTabResults} from '../src/services/content.js'
 
+// Mock fetchContentProgress before other modules load
+jest.mock('../src/services/railcontent.js', () => ({
+  ...jest.requireActual('../src/services/railcontent.js'),
+  fetchContentProgress: jest.fn().mockResolvedValue({ version: 1, data: {} })
+}))
 
 const railContentModule = require('../src/services/railcontent.js')
 

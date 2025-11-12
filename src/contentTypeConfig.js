@@ -720,6 +720,14 @@ export function getIntroVideoFields(type) {
 
 export const plusMembershipPermissions = 92
 
+/**
+ * Membership permission IDs for all membership tiers.
+ * Used for showing membership-restricted content in upgrade prompts.
+ * - 91: Basic membership
+ * - 92: Plus membership
+ */
+export const membershipPermissions = [91, 92]
+
 export function getNewReleasesTypes(brand) {
   const baseNewTypes = [
     'student-review',
@@ -837,7 +845,10 @@ export async function getFieldsForContentTypeWithFilteredChildren(
   const childFields = getChildFieldsForContentType(contentType, true)
   const parentFields = getFieldsForContentType(contentType, false)
   if (childFields) {
-    const childFilter = await new FilterBuilder('', { isChildrenFilter: true }).buildFilter()
+    const childFilter = await new FilterBuilder('', {
+      isChildrenFilter: true,
+      showMembershipRestrictedContent: true  // Show all children in lists
+    }).buildFilter()
     parentFields.push(
       `"children": child[${childFilter}]->{
         ${childFields}
