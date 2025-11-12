@@ -74,6 +74,7 @@
  * @property {number} send_email_notifications
  * @property {number} use_legacy_video_player
  * @property {boolean} use_student_view
+ * @property {boolean} show_admin_toggle
  * @property {number} drumeo_ship_magazine
  * @property {string|null} magazine_shipping_address_id
  * @property {string|null} ios_latest_review_display_date
