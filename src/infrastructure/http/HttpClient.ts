@@ -30,23 +30,23 @@ export class HttpClient {
   }
 
   public async get<T>(url: string, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'get', dataVersion)
+    return this.request<T>(url, 'GET', dataVersion)
   }
 
   public async post<T>(url: string, data: any, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'post', dataVersion, data)
+    return this.request<T>(url, 'POST', dataVersion, data)
   }
 
   public async put<T>(url: string, data: any, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'put', dataVersion, data)
+    return this.request<T>(url, 'PUT', dataVersion, data)
   }
 
   public async patch<T>(url: string, data: any, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'patch', dataVersion, data)
+    return this.request<T>(url, 'PATCH', dataVersion, data)
   }
 
   public async delete<T>(url: string, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'delete', dataVersion)
+    return this.request<T>(url, 'DELETE', dataVersion)
   }
 
   private async request<T>(
