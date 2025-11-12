@@ -4,6 +4,7 @@
 
 import {
   getDailySession,
+  getActivePath,
   resetAllLearningPaths,
   startLearningPath,
   fetchLearningPathLessons,
@@ -17,7 +18,6 @@ export async function getMethodCard(brand) {
   const introVideo = await fetchMethodV2IntroVideo(brand)
   const introVideoProgressState = await getProgressState(introVideo.id)
   //resetAllLearningPaths()
-
   if (introVideoProgressState != 'completed') {
     //startLearningPath('drumeo', 422533)
     const timestamp = Math.floor(Date.now() / 1000)
@@ -37,23 +37,25 @@ export async function getMethodCard(brand) {
       progressTimestamp: timestamp,
     }
   } else {
-    const lessons = await fetchLearningPathLessons(
+    //TODO: Optimize loading of dailySessions/Path, should not need multiple requests
+    const activeLearningPath = await getActivePath(brand)
+    const learningPath = await fetchLearningPathLessons(
       activeLearningPath.active_learning_path_id,
       brand,
       getToday()
     )
 
-    const allCompleted = lessons?.todays_lessons.every(
+    const allCompleted = learningPath?.todays_lessons.every(
       (lesson) => lesson.progressStatus === 'completed'
     )
-    const anyCompleted = lessons?.todays_lessons.some(
+    const anyCompleted = learningPath?.todays_lessons.some(
       (lesson) => lesson.progressStatus === 'completed'
     )
-    const noneCompleted = lessons?.todays_lessons.every(
+    const noneCompleted = learningPath?.todays_lessons.every(
       (lesson) => lesson.progressStatus !== 'completed'
     )
 
-    const nextIncompleteLesson = lessons?.todays_lessons.find(
+    const nextIncompleteLesson = learningPath?.todays_lessons.find(
       (lesson) => lesson.progressStatus !== 'completed'
     )
     let ctaText,
@@ -76,10 +78,10 @@ export async function getMethodCard(brand) {
     }
 
     let maxProgressTimestamp = Math.max(
-      ...lessons?.children.map((lesson) => lesson.progressTimestamp)
+      ...learningPath?.children.map((lesson) => lesson.progressTimestamp)
     )
     if (!maxProgressTimestamp) {
-      maxProgressTimestamp = dailySession.active_learning_path_created_at
+      maxProgressTimestamp = learningPath.active_learning_path_created_at
     }
 
     return {
@@ -87,7 +89,7 @@ export async function getMethodCard(brand) {
       type: 'learning-path-v2',
       progressType: 'content',
       header: 'Method',
-      body: lessons,
+      body: learningPath,
       cta: {
         text: ctaText,
         action: action,

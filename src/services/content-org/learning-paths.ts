@@ -193,6 +193,8 @@ export async function fetchLearningPathLessons(
   return {
     ...learningPath,
     is_active_learning_path: isActiveLearningPath,
+    active_learning_path_id: dailySession?.active_learning_path_id,
+    active_learning_path_created_at: dailySession?.active_learning_path_created_at,
     upcoming_lessons: upcomingLessons,
     todays_lessons: todaysLessons,
     next_learning_path_lessons: nextLPLessons,
