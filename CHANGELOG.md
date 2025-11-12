@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.76.0](https://github.com/railroadmedia/musora-content-services/compare/v2.75.0...v2.76.0) (2025-11-12)
+
+
+### Features
+
+* **MU2-1211:** Add is_admin to UserResource ([c8ec392](https://github.com/railroadmedia/musora-content-services/commit/c8ec392bd56874dac495dc731118bcb3298aa80c))
+* **MU2-1211:** Add show_admin_toggle to user resource ([46e1d55](https://github.com/railroadmedia/musora-content-services/commit/46e1d5559badf8822d0351c3483d8a55b781be32))
+* **MU2-1211:** Update docs ([58e973e](https://github.com/railroadmedia/musora-content-services/commit/58e973e43125b1220d00aaf7d03c32639a0f3f64))
+* **MU2-1211:** Update HttpClient methods (get, post, etc.) to capitilized to alleviate browser/cors issue, adding use_student_view to usertype, function to toggle student/admin view ([a2662c2](https://github.com/railroadmedia/musora-content-services/commit/a2662c22f706ac924c755b5be8643fdd17f4ebe4))
+
+
+### Bug Fixes
+
+* changes to how learning path intro video is stored ([#556](https://github.com/railroadmedia/musora-content-services/issues/556)) ([d3ceb76](https://github.com/railroadmedia/musora-content-services/commit/d3ceb764394cd9450d05c0153aac475022822f48))
+
 ## [2.75.0](https://github.com/railroadmedia/musora-content-services/compare/v2.74.1...v2.75.0) (2025-11-10)
 
 
