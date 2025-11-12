@@ -172,6 +172,7 @@ export interface UserResource {
   last_name: string
   permission_level: string
   use_student_view: boolean
+  is_admin: boolean
   show_admin_toggle: boolean
   [key: string]: any // Allow additional properties from the API
 }
