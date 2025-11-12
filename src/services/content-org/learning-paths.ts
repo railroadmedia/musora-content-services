@@ -77,6 +77,48 @@ export async function resetAllLearningPaths() {
   return await fetchHandler(url, 'POST', null, {})
 }
 
+/**
+ * Returns learning path with lessons and progress data
+ * @param {number} learningPathId - The learning path ID
+ * @returns {Promise<Object>} Learning path with enriched lesson data
+ */
+export async function getLearningPath(learningPathId) {
+  //TODO: must be a cleaner way to do this
+  let learningPath = await fetchByRailContentId(learningPathId, 'learning-path-v2')
+  learningPath.children = learningPath.children.map((lesson) => ({
+    ...lesson,
+    type: 'learning-path-lesson-v2',
+    parent_id: learningPathId,
+  }))
+
+  const lessons = await addContextToContent(() => learningPath.children, {
+    addProgressStatus: true,
+    addProgressPercentage: true,
+    addProgressTimestamp: true,
+  })
+  learningPath = await addContextToContent(() => learningPath, { addNextLesson: true })
+  return learningPath
+}
+
+/**
+ * Get specific learning path lessons by content IDs
+ * @param {number[]} contentIds - Array of content IDs to filter
+ * @param {number} learningPathId - The learning path ID
+ * @returns {Promise<Array>} Filtered lessons
+ */
+export async function getLearningPathLessonsByIds(contentIds, learningPathId) {
+  // It is more efficient to load the entire learning path than individual lessons
+  // Also adds reliability check whether content is actually in the learning path
+  const learningPath = await getLearningPath(learningPathId)
+  return learningPath.children.filter((lesson) => contentIds.includes(lesson.id))
+}
+
+export function mapContentToParent(lessons, parentContentType, parentContentId) {
+  return lessons.map((lesson: any) => {
+    return { ...lesson, type: parentContentType, parent_id: parentContentId }
+  })
+}
+
 /** Fetches and organizes learning path lessons.
  *
  * @param {number} learningPathId - The learning path ID.
@@ -100,36 +142,28 @@ export async function fetchLearningPathLessons(
   userDate: Date
 ) {
   const [learningPath, dailySession] = await Promise.all([
-    fetchByRailContentId(learningPathId, 'learning-path-v2'),
+    getLearningPath(learningPathId),
     getDailySession(brand, userDate),
   ])
 
-  const addContextParameters = {
-    addProgressStatus: true,
-    addProgressPercentage: true,
-  }
-
-  const lessons = await addContextToContent(() => learningPath.children, addContextParameters)
   const isActiveLearningPath = (dailySession?.active_learning_path_id || 0) == learningPathId
-  const manipulatedLessons = lessons.map((lesson: any) => {
-    return { ...lesson, type: 'learning-path-lesson-v2', parent_id: learningPathId }
-  })
-
   if (!isActiveLearningPath) {
     return {
       ...learningPath,
       is_active_learning_path: isActiveLearningPath,
-      children: manipulatedLessons,
     }
   }
   const todayContentIds = dailySession.daily_session[0]?.content_ids || []
+  const previousLearningPathId = dailySession.daily_session[0]?.learning_path_id
   const nextContentIds = dailySession.daily_session[1]?.content_ids || []
+  const nextLearningPathId = dailySession.daily_session[1]?.learning_path_id
   const completedLessons = []
   let todaysLessons = []
   let nextLPLessons = []
+  let previousLearningPathTodays = []
   const upcomingLessons = []
 
-  manipulatedLessons.forEach((lesson: any) => {
+  learningPath.children.forEach((lesson: any) => {
     if (todayContentIds.includes(lesson.id)) {
       todaysLessons.push(lesson)
     } else if (lesson.progressStatus === 'completed') {
@@ -139,20 +173,13 @@ export async function fetchLearningPathLessons(
     }
   })
 
-  let previousLearnigPathTodays = []
   if (todaysLessons.length == 0) {
     // Daily sessions first lessons are not part of the active learning path, but next lessons are
     // load todays lessons from previous learning path
-    previousLearnigPathTodays = await addContextToContent(
-      fetchByRailContentIds,
+    previousLearningPathTodays = await getLearningPathLessonsByIds(
       todayContentIds,
-      addContextParameters
+      previousLearningPathId
     )
-
-    const previousLearningPathId = dailySession.daily_session[0]?.learing_path_id
-    previousLearnigPathTodays = previousLearnigPathTodays.map((lesson: any) => {
-      return { ...lesson, type: 'learning-path-lesson-v2', parent_id: previousLearningPathId }
-    })
   } else if (
     nextContentIds.length > 0 &&
     todaysLessons.length < 3 &&
@@ -160,25 +187,16 @@ export async function fetchLearningPathLessons(
   ) {
     // Daily sessions first lessons are the active learning path and the next lessons are not
     // load next lessons from next learning path
-    nextLPLessons = await addContextToContent(
-      fetchByRailContentIds,
-      nextContentIds,
-      addContextParameters
-    )
-    const nextLearningPathId = dailySession.daily_session[1]?.learing_path_id
-    nextLPLessons = nextLPLessons.map((lesson: any) => {
-      return { ...lesson, type: 'learning-path-lesson-v2', parent_id: nextLearningPathId }
-    })
+    nextLPLessons = await getLearningPathLessonsByIds(nextContentIds, nextLearningPathId)
   }
 
   return {
     ...learningPath,
     is_active_learning_path: isActiveLearningPath,
-    children: manipulatedLessons,
     upcoming_lessons: upcomingLessons,
     todays_lessons: todaysLessons,
     next_learning_path_lessons: nextLPLessons,
     completed_lessons: completedLessons,
-    previous_learning_path_todays: previousLearnigPathTodays,
+    previous_learning_path_todays: previousLearningPathTodays,
   }
 }

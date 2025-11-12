@@ -1055,12 +1055,11 @@ function generateContentsMap(contents, playlistsContents, methodProgressContents
  */
 export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
   // TODO slice progress to a reasonable number, say 100
-
-  const [recentPlaylists, progressContents, userPinnedItem, methodCard] = await Promise.all([
+  const methodCardPromise = getMethodCard(brand)
+  const [recentPlaylists, progressContents, userPinnedItem] = await Promise.all([
     fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
     getAllStartedOrCompleted({ onlyIds: false, brand: brand }),
     getUserPinnedItem(brand),
-    getMethodCard(brand),
   ])
 
   const playlists = recentPlaylists?.data || []
@@ -1103,7 +1102,7 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
   ])
 
   const contentsMap = generateContentsMap(contents, playlistsContents)
-
+  const methodCard = await methodCardPromise
   let combined = await extractPinnedItemsAndSortAllItems(
     userPinnedItem,
     contentsMap,
