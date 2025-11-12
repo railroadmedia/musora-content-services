@@ -2299,7 +2299,7 @@ export async function fetchShows(brand, type, sort = 'sort') {
 export async function fetchMethodV2IntroVideo(brand) {
   const type = "method-intro";
   const filter = `_type == '${type}' && brand == '${brand}'`;
-  const fields = getIntroVideoFields();
+  const fields = getIntroVideoFields('method');
 
   const query = `*[${filter}] { ${fields.join(", ")} }`;
   return fetchSanity(query, false);

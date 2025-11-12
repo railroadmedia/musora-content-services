@@ -479,7 +479,7 @@ export let contentTypeConfig = {
   },
   'learning-path-v2': {
     fields: [
-      'intro_video',
+      `"intro_video": intro_video->{ ${getIntroVideoFields('learning-path').join(', ')} }`,
       'total_skills',
       `"resource": ${resourcesField}`,
       `"badge": *[
@@ -678,7 +678,7 @@ export let contentTypeConfig = {
     `"type":_type`,
     'title',
     'brand',
-    `"intro_video": intro_video->{ ${getIntroVideoFields().join(', ')} }`,
+    `"intro_video": intro_video->{ ${getIntroVideoFields('method').join(', ')} }`,
     `child[]->{
       "resource": ${resourcesField},
       total_skills,
@@ -696,21 +696,26 @@ export let contentTypeConfig = {
       }
     }`,
   ],
-  'method-intro': getIntroVideoFields(),
 }
 
-export function getIntroVideoFields() {
-  return [
+export function getIntroVideoFields(type) {
+  const fields = [
+    `"id": railcontent_id`,
     'title',
     'brand',
     `"type": _type`,
-    "brand",
     `"description": ${descriptionField}`,
     `"thumbnail": thumbnail.asset->url`,
     'length_in_seconds',
-    'video_desktop',
-    'video_mobile',
   ]
+
+  if (type === 'method') {
+    fields.push(...['video_desktop', 'video_mobile'])
+  } else if (type === 'learning-path') {
+    fields.push('video')
+  }
+
+  return fields
 }
 
 export const plusMembershipPermissions = 92
