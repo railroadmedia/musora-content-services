@@ -324,6 +324,9 @@ async function saveContentProgress(contentId, progress, currentSeconds) {
 
 async function setStartedOrCompletedStatus(contentId, isCompleted) {
   const progress = isCompleted ? 100 : 0
+  // we explicitly pessimistically await a remote push here
+  // because awards may be generated (on server) on completion
+  // which we would want to toast the user about *in band*
   const response = await db.contentProgress.recordProgressRemotely(contentId, progress)
 
   if (response.pushStatus === 'success') {
