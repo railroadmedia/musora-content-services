@@ -182,3 +182,21 @@ export async function fetchLearningPathLessons(
     previous_learning_path_todays: previousLearnigPathTodays,
   }
 }
+
+export async function showLearningPathIntroVideo(
+  learningPathId: number
+) {
+  const introVideo = await addContextToContent(
+    fetchByRailContentId,
+    learningPathId,
+    {addProgressStatus: true}
+  )
+  if (!introVideo) {
+    return {}
+  }
+  if (introVideo.progressStatus !== 'completed') {
+    return introVideo
+  } else {
+    return {}
+  }
+}

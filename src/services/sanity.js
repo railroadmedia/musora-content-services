@@ -2306,6 +2306,20 @@ export async function fetchMethodV2IntroVideo(brand) {
 }
 
 /**
+ * Fetch the learning-path intro video of a given learning path.
+ * @param id
+ * @returns {Promise<*|null>}
+ */
+export async function fetchLearningPathIntroVideo(id) {
+  const type = "learning-path-intro";
+  const filter = `_type == '${type}' && railcontent_id == ${id}`;
+  const fields = getIntroVideoFields('learning-path');
+
+  const query = `*[${filter}] { ${fields.join(", ")} }`;
+  return fetchSanity(query, false);
+}
+
+/**
  * Fetch the structure (just ids) of the Method for a given brand.
  * @param brand
  * @returns {Promise<*|null>}
