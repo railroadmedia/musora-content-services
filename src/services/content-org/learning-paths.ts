@@ -85,11 +85,11 @@ export async function resetAllLearningPaths() {
 export async function getLearningPath(learningPathId) {
   //TODO: must be a cleaner way to do this
   let learningPath = await fetchByRailContentId(learningPathId, 'learning-path-v2')
-  learningPath.children = learningPath.children.map((lesson) => ({
-    ...lesson,
-    type: 'learning-path-lesson-v2',
-    parent_id: learningPathId,
-  }))
+  learningPath.children = mapContentToParent(
+    learningPath.children,
+    'learning-path-lesson-v2',
+    learningPathId
+  )
 
   learningPath.children = await addContextToContent(() => learningPath.children, {
     addProgressStatus: true,
