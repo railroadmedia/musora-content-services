@@ -44,37 +44,50 @@ export async function getMethodCard(brand) {
       addProgressPercentage: true,
       addProgressTimestamp: true,
     }
-    const todaysLessons = await addContextToContent(
-      fetchByRailContentIds,
-      todayContentIds,
-      addContextParameters
-    )
-    const nextLPLessons = await addContextToContent(
-      fetchByRailContentIds,
-      nextContentIds,
-      addContextParameters
-    )
-    const allCompleted = todaysLessons.every((lesson) => lesson.progressStatus === 'completed')
-    const anyCompleted = todaysLessons.some((lesson) => lesson.progressStatus === 'completed')
-    const noneCompleted = todaysLessons.every((lesson) => lesson.progressStatus !== 'completed')
+    const [todaysDailies, nextLPDailies] = await Promise.all([
+      todayContentIds
+        ? addContextToContent(
+          fetchByRailContentIds,
+          todayContentIds,
+          addContextParameters
+        )
+        : Promise.resolve([]),
+      nextContentIds
+        ? addContextToContent(
+          fetchByRailContentIds,
+          nextContentIds,
+          addContextParameters
+        )
+        : Promise.resolve([]),
+    ])
+    const allCompleted = todaysDailies.every((lesson) => lesson.progressStatus === 'completed')
+    const anyCompleted = todaysDailies.some((lesson) => lesson.progressStatus === 'completed')
+    const noneCompleted = todaysDailies.every((lesson) => lesson.progressStatus !== 'completed')
 
-    const nextIncompleteLesson = todaysLessons.find(
+    const nextIncompleteDaily = todaysDailies.find(
       (lesson) => lesson.progressStatus !== 'completed'
     )
-    let maxProgressTimestamp = Math.max(...todaysLessons.map((lesson) => lesson.progressTimestamp))
+    // todo max timestamp needs to be calc'd from all method progress timestamps, not just todays dailies
+    let maxProgressTimestamp = Math.max(...todaysDailies.map((lesson) => lesson.progressTimestamp))
     if (!maxProgressTimestamp) {
       maxProgressTimestamp = dailySession.active_learning_path_created_at
     }
     let ctaText, action
     if (noneCompleted) {
       ctaText = 'Start Session'
-      action = getMethodActionCTA(nextIncompleteLesson)
+      action = getMethodActionCTA(nextIncompleteDaily)
     } else if (anyCompleted && !allCompleted) {
       ctaText = 'Continue Session'
-      action = getMethodActionCTA(nextIncompleteLesson)
+      action = getMethodActionCTA(nextIncompleteDaily)
     } else if (allCompleted) {
-      //TODO:: get next lessons when all completed
-      const nextAvailableLesson = null
+      const activePathLessonsProgress = await addContextToContent(
+        fetchByRailContentId,
+        activeLearningPathId,
+        {...addContextParameters, dataField: 'child'},
+      )
+      const nextAvailableLesson = activePathLessonsProgress.child.find(
+        (lesson) => lesson.progressStatus !== 'completed'
+      )
 
       ctaText = nextAvailableLesson ? 'Start Next Lesson' : 'Browse Lessons'
       action = nextAvailableLesson
@@ -90,8 +103,8 @@ export async function getMethodCard(brand) {
       progressType: 'content',
       header: 'Method',
       body: {
-        todays_lessons: todaysLessons,
-        next_learning_path_lessons: nextLPLessons,
+        todays_lessons: todaysDailies,
+        next_learning_path_lessons: nextLPDailies,
       },
       cta: {
         text: ctaText,
@@ -105,7 +118,7 @@ export async function getMethodCard(brand) {
 
 function getMethodActionCTA(item) {
   return {
-    type: item.type,
+    type: 'learning-path-lesson-v2',
     brand: item.brand,
     id: item.id,
     slug: item.slug,

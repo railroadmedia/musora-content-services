@@ -958,7 +958,6 @@ async function extractPinnedItemsAndSortAllItems(
   contentsMap,
   eligiblePlaylistItems,
   methodCard,
-  //method contents
   limit
 ) {
   let pinnedItem = await popPinnedItemFromContentsOrPlaylistMap(
@@ -1187,7 +1186,6 @@ async function processContentItem(content) {
       ctaText = 'Revisit Show'
     }
   }
-  console.log('Progress Timestamp', content.progressTimestamp)
   return {
     id: content.id,
     progressType: 'content',
