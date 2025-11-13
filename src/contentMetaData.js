@@ -11,7 +11,7 @@ const LESSON_TYPE_FILTER = [
   },
   {
     title: 'Courses',
-    children: ['Courses', 'Guided Courses', 'Tiered Courses']
+    children: ['Courses', 'Guided Courses', 'Course Collections']
   },
   {
     title: 'Skill Packs',

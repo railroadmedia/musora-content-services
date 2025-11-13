@@ -244,8 +244,7 @@ export const lessonTypesMapping = {
   performances: performancesLessonTypes,
   'student archives': studentArchivesLessonTypes,
   documentaries: documentariesLessonTypes,
-  courses: ['course'],
-  'guided courses': ['guided-course'],
+  courses: ['course', 'guided-course', 'course-collection'],
   'skill packs': ['skill-pack'],
   specials: ['special'],
   shows: showsLessonTypes,
@@ -1022,7 +1021,7 @@ export function filtersToGroq(filters = [], selectedFilters = [], pageName = '')
         })
         .filter(Boolean)
         .join(' || ')
-
+      console.log('here adrian', {groupedFilters, values, joinedValues})
       // Return the constructed filter clause
       return joinedValues.length > 0 ? `&& (${joinedValues})` : ''
     })
