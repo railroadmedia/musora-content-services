@@ -13,6 +13,7 @@ export interface ForumPost {
   author: ForumUser | null
   like_count: number
   is_liked: boolean
+  thread?: { id: number; title?: string; slug?: string }
 }
 
 export interface ForumThread {
