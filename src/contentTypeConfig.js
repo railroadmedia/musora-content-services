@@ -705,6 +705,9 @@ export function getIntroVideoFields(type) {
     `"id": railcontent_id`,
     'title',
     'brand',
+    `"instructor": *[_type == "method-v2" && brand == ^.brand && references(^._id)][0].${instructorField}`,
+    `"difficulty": *[_type == "method-v2" && brand == ^.brand && references(^._id)][0].difficulty`,
+    `"difficulty_string": *[_type == "method-v2" && brand == ^.brand][0].difficulty_string`,
     `"type": _type`,
     'brand',
     `"description": ${descriptionField}`,
@@ -712,9 +715,9 @@ export function getIntroVideoFields(type) {
     'length_in_seconds',
   ]
 
-  if (type === 'method') {
+  if (type === 'method-v2') {
     fields.push(...['video_desktop', 'video_mobile'])
-  } else if (type === 'learning-path') {
+  } else if (type === 'learning-path-v2') {
     fields.push('video')
   }
 
