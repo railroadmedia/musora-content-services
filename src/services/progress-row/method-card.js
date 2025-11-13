@@ -16,19 +16,20 @@ import { getProgressState } from '../contentProgress'
 
 export async function getMethodCard(brand) {
   const introVideo = await fetchMethodV2IntroVideo(brand)
-  const introVideoProgressState = await getProgressState(introVideo.id)
+  const introVideoProgressState = await getProgressState(introVideo?.id)
   //resetAllLearningPaths()
   if (introVideoProgressState != 'completed') {
     //startLearningPath('drumeo', 422533)
     const timestamp = Math.floor(Date.now() / 1000)
     return {
-      id: 0, // method card has no id
+      id: 1, // method card has no id
       type: 'method',
       header: 'Method',
+      progressType: 'method',
       body: {
         thumbnail: introVideo.thumbnail,
         title: introVideo.title,
-        subtitle: `${introVideo.difficulty_string} • ${introVideo.artist_name}`,
+        subtitle: `${introVideo.difficulty_string} • ${introVideo.instructor?.[0]?.name}`,
       },
       cta: {
         text: 'Get Started',
@@ -85,9 +86,9 @@ export async function getMethodCard(brand) {
     }
 
     return {
-      id: 0,
+      id: 1,
       type: 'learning-path-v2',
-      progressType: 'content',
+      progressType: 'method',
       header: 'Method',
       body: learningPath,
       cta: {
