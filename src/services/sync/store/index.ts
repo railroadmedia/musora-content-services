@@ -172,31 +172,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return this.queryRecordId(...args)
   }
 
-  async updateOne(id: RecordId, builder: (record: TModel) => void, span?: Span) {
-    return await this.runScope.abortable(async () => {
-      let record: TModel | null = null
-
-      await this.telemeterizedWrite(span, async () => {
-        const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(
-          (records) => records[0] || null
-        )
-
-        // todo - verify if need deleted check
-        if (existing && existing._raw._status !== 'deleted') {
-          await existing.update(builder)
-          record = existing
-        }
-      })
-
-      this.emit('write', [record])
-
-      this.pushUnsyncedWithRetry(span)
-      await this.ensurePersistence()
-
-      return this.modelSerializer.toPlainObject(record!)
-    })
-  }
-
   async upsertOneRemote(id: RecordId, builder: (record: TModel) => void, span?: Span) {
     return await this.runScope.abortable(async () => {
       let record: TModel
