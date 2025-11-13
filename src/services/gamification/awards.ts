@@ -58,8 +58,8 @@ export interface Certificate {
  * (Alexandre: I'm doing it in a different branch/PR: https://github.com/railroadmedia/musora-content-services/pull/349)
  * NOTE: This function still expects brand because FE passes the argument. It is ignored for now
  *
- * @param {number} [userId] - The user ID. If not provided, the authenticated user is used instead.
- * @param {string} [_brand] - The brand to fetch the awards for.
+ * @param {number|null} [userId] - The user ID. If not provided, the authenticated user is used instead.
+ * @param {string|null} [_brand] - The brand to fetch the awards for.
  * @param {number|null} [page=1] - Page attribute for pagination
  * @param {number|null} [limit=5] - Limit how many items to return
  * @returns {Promise<PaginatedResponse<Award>>} - The awards for the user.
