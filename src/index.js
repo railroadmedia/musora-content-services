@@ -16,6 +16,9 @@ import {
 	fetchLearningPathLessons,
 	getActivePath,
 	getDailySession,
+	getLearningPath,
+	getLearningPathLessonsByIds,
+	mapContentToParent,
 	resetAllLearningPaths,
 	startLearningPath,
 	updateActivePath,
@@ -281,7 +284,8 @@ import {
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	setupAccount,
-	status
+	status,
+	toggleStudentView
 } from './services/user/account.ts';
 
 import {
@@ -538,6 +542,8 @@ export {
 	getContentRows,
 	getDailySession,
 	getLastInteractedOf,
+	getLearningPath,
+	getLearningPathLessonsByIds,
 	getLegacyMethods,
 	getLessonContentRows,
 	getMethodCard,
@@ -591,6 +597,7 @@ export {
 	logUserPractice,
 	login,
 	logout,
+	mapContentToParent,
 	markAllNotificationsAsRead,
 	markContentAsInterested,
 	markContentAsNotInterested,
@@ -646,6 +653,7 @@ export {
 	toDayjs,
 	togglePlaylistPrivate,
 	toggleSignaturePrivate,
+	toggleStudentView,
 	unEnrollUserInGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,

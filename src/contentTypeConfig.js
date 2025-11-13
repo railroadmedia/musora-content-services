@@ -277,6 +277,7 @@ export const getNextLessonLessonParentTypes = [
   'pack',
   'pack-bundle',
   'song-tutorial',
+  'learning-path-v2',
   'skill-pack'
 ]
 
@@ -297,8 +298,8 @@ export const progressTypesMapping = {
   songs: transcriptionsLessonTypes,
   'play along': playAlongLessonTypes,
   'guided course': ['guided-course'],
-  'pack': ['pack', 'semester-pack'],
-  'method': ['method-card', 'method-intro'],
+  pack: ['pack', 'semester-pack'],
+  method: ['method-card', 'method-intro'],
   'learning path': ['learning-path'],
   'jam track': jamTrackLessonTypes,
   'course video': ['course-part'],
@@ -480,7 +481,7 @@ export let contentTypeConfig = {
   },
   'learning-path-v2': {
     fields: [
-      'intro_video',
+      `"intro_video": intro_video->{ ${getIntroVideoFields('learning-path').join(', ')} }`,
       'total_skills',
       `"resource": ${resourcesField}`,
       `"badge": *[
@@ -679,7 +680,7 @@ export let contentTypeConfig = {
     `"type":_type`,
     'title',
     'brand',
-    `"intro_video": intro_video->{ ${getIntroVideoFields().join(', ')} }`,
+    `"intro_video": intro_video->{ ${getIntroVideoFields('method').join(', ')} }`,
     `child[]->{
       "resource": ${resourcesField},
       total_skills,
@@ -697,21 +698,27 @@ export let contentTypeConfig = {
       }
     }`,
   ],
-  'method-intro': getIntroVideoFields(),
 }
 
-export function getIntroVideoFields() {
-  return [
+export function getIntroVideoFields(type) {
+  const fields = [
+    `"id": railcontent_id`,
     'title',
     'brand',
     `"type": _type`,
-    "brand",
+    'brand',
     `"description": ${descriptionField}`,
     `"thumbnail": thumbnail.asset->url`,
     'length_in_seconds',
-    'video_desktop',
-    'video_mobile',
   ]
+
+  if (type === 'method') {
+    fields.push(...['video_desktop', 'video_mobile'])
+  } else if (type === 'learning-path') {
+    fields.push('video')
+  }
+
+  return fields
 }
 
 export const plusMembershipPermissions = 92

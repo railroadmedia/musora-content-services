@@ -1,6 +1,8 @@
 import { initializeTestService } from './initializeTests.js'
-import { fetchLearningPathLessons } from '../src/services/content-org/learning-paths.ts'
-import { fetchByRailContentId } from '../src/services/sanity.js'
+import {
+  fetchLearningPathLessons,
+  getLearningPath,
+} from '../src/services/content-org/learning-paths.ts'
 import { contentStatusCompleted } from '../src/services/contentProgress.js'
 describe('learning-paths', function () {
   beforeEach(async () => {
@@ -8,7 +10,7 @@ describe('learning-paths', function () {
   })
 
   test('getLearningPathsV2Test', async () => {
-    const results = await fetchByRailContentId(417140, 'learning-path-v2')
+    const results = await getLearningPath(417140)
   })
   test('getlearningPathLessonsTestNew', async () => {
     await contentStatusCompleted(417105)

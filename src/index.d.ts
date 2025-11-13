@@ -16,6 +16,9 @@ import {
 	fetchLearningPathLessons,
 	getActivePath,
 	getDailySession,
+	getLearningPath,
+	getLearningPathLessonsByIds,
+	mapContentToParent,
 	resetAllLearningPaths,
 	startLearningPath,
 	updateActivePath,
@@ -281,7 +284,8 @@ import {
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	setupAccount,
-	status
+	status,
+	toggleStudentView
 } from './services/user/account.ts';
 
 import {
@@ -539,6 +543,8 @@ declare module 'musora-content-services' {
 		getContentRows,
 		getDailySession,
 		getLastInteractedOf,
+		getLearningPath,
+		getLearningPathLessonsByIds,
 		getLegacyMethods,
 		getLessonContentRows,
 		getMethodCard,
@@ -592,6 +598,7 @@ declare module 'musora-content-services' {
 		logUserPractice,
 		login,
 		logout,
+		mapContentToParent,
 		markAllNotificationsAsRead,
 		markContentAsInterested,
 		markContentAsNotInterested,
@@ -647,6 +654,7 @@ declare module 'musora-content-services' {
 		toDayjs,
 		togglePlaylistPrivate,
 		toggleSignaturePrivate,
+		toggleStudentView,
 		unEnrollUserInGuidedCourse,
 		unassignModeratorToComment,
 		unblockUser,

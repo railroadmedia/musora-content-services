@@ -5,6 +5,7 @@ import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
 import { ForumPost } from './types'
 import { PaginatedResponse } from '../api/types'
+import { markThreadAsRead } from './threads'
 
 const baseUrl = `/api/forums`
 
@@ -47,6 +48,7 @@ export interface FetchPostParams {
 }
 /**
  * Fetches posts for the given thread.
+ * Automatically marks the thread as read when posts are fetched.
  *
  * @param {number} threadId - The ID of the forum thread.
  * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
@@ -71,6 +73,12 @@ export async function fetchPosts(
   const query = new URLSearchParams(queryObj).toString()
 
   const url = `${baseUrl}/v1/threads/${threadId}/posts?${query}`
+
+  // Mark thread as read in background (non-blocking)
+  markThreadAsRead(threadId, brand).catch(error => {
+    console.error('Failed to mark thread as read:', error)
+  })
+
   return httpClient.get<PaginatedResponse<ForumPost>>(url)
 }
 
@@ -165,6 +173,7 @@ export async function search(
 
 /**
  * Fetches posts for the given post, jumping to the post's location in the thread.
+ * Automatically marks the thread as read when posts are fetched.
  *
  * @param {number} postId - The ID of the forum post.
  * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
@@ -189,5 +198,15 @@ export async function jumpToPost(
   const query = new URLSearchParams(queryObj).toString()
 
   const url = `${baseUrl}/v1/posts/${postId}/jump?${query}`
-  return httpClient.get<PaginatedResponse<ForumPost>>(url)
+  const response = await httpClient.get<PaginatedResponse<ForumPost>>(url)
+
+  // Mark thread as read in background (non-blocking)
+  // Extract thread from first post if available
+  if (response.data.length > 0 && response.data[0].thread?.id) {
+    markThreadAsRead(response.data[0].thread.id, brand).catch(error => {
+      console.error('Failed to mark thread as read:', error)
+    })
+  }
+
+  return response
 }
