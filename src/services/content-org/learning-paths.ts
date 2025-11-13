@@ -227,7 +227,7 @@ export async function completeMethodIntroVideo(introVideoId: number, brand: stri
 
   response["intro_video_response"] = await completeIfNotCompleted(introVideoId)
 
-  const url: string = `${LEARNING_PATHS_PATH}/active-path/start`
+  const url: string = `${LEARNING_PATHS_PATH}/start`
   const body = { brand: brand }
   response["active_path_response"] = await fetchHandler(url, 'POST', null, body)
 
@@ -237,15 +237,25 @@ export async function completeMethodIntroVideo(introVideoId: number, brand: stri
 /**
  * Handles completion of learning path intro video and other related actions.
  * @param introVideoId
- * @param learningPathIdForReset
+ * @param learningPathId
+ * @param lessonsToImport
  */
-export async function completeLearningPathIntroVideo(introVideoId: number, learningPathIdForReset: number|null) {
+export async function completeLearningPathIntroVideo(introVideoId: number, learningPathId: number, lessonsToImport: number[] | null) {
   let response = []
 
   response["intro_video_response"] = await completeIfNotCompleted(introVideoId)
 
-  if (learningPathIdForReset) {
-    response["active_path_response"] = await contentStatusCompleted(learningPathIdForReset)
+  if (!lessonsToImport) {
+    // reset progress within the learning path
+    response["learning_path_reset_response"] = await contentStatusReset(learningPathId)
+  } else {
+    // import progress into teh LP from external sources.
+
+    //temporarily is missing collection info
+    // and also will be grouped into 1 call when watermelon
+    for (const contentId of lessonsToImport) {
+      response["learning_path_reset_response"][contentId] = await contentStatusCompleted(contentId)
+    }
   }
 
   return response
