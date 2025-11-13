@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.77.1](https://github.com/railroadmedia/musora-content-services/compare/v2.77.0...v2.77.1) (2025-11-13)
+
+
+### Bug Fixes
+
+* difficulty & instructor fields ([#559](https://github.com/railroadmedia/musora-content-services/issues/559)) ([bd12f4e](https://github.com/railroadmedia/musora-content-services/commit/bd12f4e825f89eca3476bd130a23710991dff7a9))
+
 ## [2.77.0](https://github.com/railroadmedia/musora-content-services/compare/v2.64.0...v2.77.0) (2025-11-13)
 
 
