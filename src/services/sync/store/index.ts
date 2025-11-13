@@ -12,7 +12,6 @@ import { default as Resolver, type SyncResolution, type SyncResolverComparator }
 import PushCoalescer from './push-coalescer'
 import { SyncTelemetry, Span } from '../telemetry/index'
 import { inBoundary } from '../errors/boundary'
-import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 import { BaseSessionProvider } from '../context/providers'
 import { dropThrottle, queueThrottle, createThrottleState, type ThrottleState } from '../utils'
 import { WriterInterface } from '@nozbe/watermelondb/Database/WorkQueue'
@@ -568,10 +567,11 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   // Avoid lazy persistence to IndexedDB
   // to eliminate data loss risk due to tab close/crash before flush to IndexedDB
+  // https://github.com/Nozbe/WatermelonDB/issues/1329
   // NOTE: does NOT go through watermelon, so this might be dangerous?
   private async ensurePersistence() {
     return new Promise<void>((resolve, reject) => {
-      if (this.db.adapter.underlyingAdapter instanceof LokiJSAdapter) {
+      if ('loki' in this.db.adapter.underlyingAdapter._driver) {
         this.db.adapter.underlyingAdapter._driver.loki.saveDatabase((err) => {
           if (err) {
             reject(err)
