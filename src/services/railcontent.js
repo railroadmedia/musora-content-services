@@ -381,41 +381,49 @@ export async function fetchUserBadges(brand = null) {
 /**
  * complete a content's progress for a given user
  * @param contentId
+ * @param collection
  * @returns {Promise<any|string|null>}
  */
-export async function postContentComplete(contentId) {
+export async function postContentComplete(contentId, collection) {
   let url = `/api/content/v1/user/progress/complete/${contentId}`
-  return postDataHandler(url)
+  const body = { collection: collection }
+  return postDataHandler(url, 'POST', null, body)
 }
 
 /**
  * start the user's progress on a content
  * @param contentId
+ * @param collection
  * @returns {Promise<any|string|null>}
  */
-export async function postContentStart(contentId) {
+export async function postContentStart(contentId, collection) {
   let url = `/api/content/v1/user/progress/start/${contentId}`
-  return postDataHandler(url)
+  const body = { collection: collection }
+  return postDataHandler(url, 'POST', null, body)
 }
 
 /**
  * resets the user's progress on a content
  * @param contentId
+ * @param collection
  * @returns {Promise<any|string|null>}
  */
-export async function postContentReset(contentId) {
+export async function postContentReset(contentId, collection) {
   let url = `/api/content/v1/user/progress/reset/${contentId}`
-  return postDataHandler(url)
+  const body = { collection: collection }
+  return postDataHandler(url, 'POST', null, body)
 }
 
 /**
  * restores the user's progress on a content
  * @param contentId
+ * @param collection
  * @returns {Promise<any|string|null>}
  */
-export async function postContentRestore(contentId) {
+export async function postContentRestore(contentId, collection) {
   let url = `/api/content/v1/user/progress/restore/${contentId}`
-  return postDataHandler(url)
+  const body = { collection: collection }
+  return postDataHandler(url, 'POST', null, body)
 }
 
 /**
