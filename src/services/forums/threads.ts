@@ -59,7 +59,7 @@ export async function updateThread(
  */
 export async function followThread(threadId: number, brand: string): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<void>(`${baseUrl}/v1/threads/${threadId}/follow`, { brand })
+  return httpClient.put<void>(`${baseUrl}/v1/threads/${threadId}/follow`, { brand })
 }
 
 /**
