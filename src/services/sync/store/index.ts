@@ -234,7 +234,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         return newBuilds
       })
 
-      this.emit('write', records)
+      this.emit('upserted', records)
 
       this.pushUnsyncedWithRetry(span)
       await this.ensurePersistence()
@@ -281,7 +281,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         }
       })
 
-      this.emit('write', [record])
+      this.emit('deleted', [id])
 
       this.pushUnsyncedWithRetry(span)
       await this.ensurePersistence()
@@ -302,8 +302,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         await writer.batch(...destroyedBuilds)
       })
 
-      // todo - can't communicate destroyed records via _raw - consider _preparedState on record?
-      // this.emit('write', [])
+      this.emit('deleted', ids)
 
       this.pushUnsyncedWithRetry(span)
       await this.ensurePersistence()
@@ -312,13 +311,16 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
-  async importRaw(recordRaws: TModel['_raw'][]) {
+  async importUpsert(recordRaws: TModel['_raw'][]) {
     await this.runScope.abortable(async () => {
-      await this.db.write(async () => {
+      await this.telemeterizedWrite(undefined, async writer => {
         const ids = recordRaws.map(r => r.id)
         const existingMap = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids))).then(records => {
           return records.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
         })
+
+        const mainBatch = []
+        const destroyBatch = []
 
         recordRaws.forEach(recordRaw => {
           const existing = existingMap.get(recordRaw.id)
@@ -326,37 +328,65 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
           if (existing) {
             if (existing._raw._status === 'deleted') {
               if (recordRaw._status !== 'deleted') {
-                // todo - resurrect
-              }
-            } else {
-              if (recordRaw._status === 'deleted') {
-                existing.prepareMarkAsDeleted()
-              } else {
-                existing.prepareUpdate((record) => {
+                destroyBatch.push(new this.model(this.collection, { id: recordRaw.id }).prepareDestroyPermanently());
+                mainBatch.push(this.collection.prepareCreate((record) => {
                   Object.keys(recordRaw).forEach((key) => {
                     record._raw[key] = recordRaw[key]
                   })
-                })
+                }));
+              }
+            } else {
+              if (recordRaw._status === 'deleted') {
+                mainBatch.push(existing.prepareMarkAsDeleted())
+              } else {
+                mainBatch.push(existing.prepareUpdate((record) => {
+                  Object.keys(recordRaw).forEach((key) => {
+                    record._raw[key] = recordRaw[key]
+                  })
+                }))
               }
             }
           } else {
             if (recordRaw._status === 'deleted') {
-              this.collection.prepareCreate((record) => {
+              mainBatch.push(this.collection.prepareCreate((record) => {
                 const now = this.generateTimestamp()
 
                 record._raw.id = recordRaw.id
                 record._raw.updated_at = now
                 record._raw._status = 'deleted'
-              })
+              }))
             } else {
-              this.collection.prepareCreate((record) => {
+              mainBatch.push(this.collection.prepareCreate((record) => {
                 Object.keys(recordRaw).forEach((key) => {
                   record._raw[key] = recordRaw[key]
                 })
-              })
+              }))
             }
           }
         });
+
+        await writer.batch(...destroyBatch)
+        await writer.batch(...mainBatch)
+      })
+    })
+  }
+  async importDeletion(ids: RecordId[]) {
+    await this.runScope.abortable(async () => {
+      await this.telemeterizedWrite(undefined, async writer => {
+        const existingMap = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids))).then(records => {
+          return records.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
+        })
+
+        const batch = []
+
+        ids.forEach(id => {
+          const existing = existingMap.get(id)
+          if (existing && existing._raw._status !== 'deleted') {
+            batch.push(existing.prepareMarkAsDeleted())
+          }
+        });
+
+        await writer.batch(...batch)
       })
     })
   }
