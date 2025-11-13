@@ -14,7 +14,8 @@ import { SyncTelemetry, Span } from '../telemetry/index'
 import { inBoundary } from '../errors/boundary'
 import { BaseSessionProvider } from '../context/providers'
 import { dropThrottle, queueThrottle, createThrottleState, type ThrottleState } from '../utils'
-import { WriterInterface } from '@nozbe/watermelondb/Database/WorkQueue'
+import { type WriterInterface } from '@nozbe/watermelondb/Database/WorkQueue'
+import type LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 
 type SyncPull = (
   session: BaseSessionProvider,
@@ -546,7 +547,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   // NOTE: does NOT go through watermelon, so this might be dangerous?
   private async ensurePersistence() {
     return new Promise<void>((resolve, reject) => {
-      if ('loki' in this.db.adapter.underlyingAdapter._driver) {
+      if (this.isLokiAdapter(this.db.adapter.underlyingAdapter)) {
         this.db.adapter.underlyingAdapter._driver.loki.saveDatabase((err) => {
           if (err) {
             reject(err)
@@ -708,5 +709,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   private generateTimestamp() {
     return Math.round(Date.now() / 1000) as EpochSeconds
+  }
+
+  private isLokiAdapter(adapter: any): adapter is LokiJSAdapter {
+    return adapter._driver && 'loki' in adapter._driver
   }
 }
