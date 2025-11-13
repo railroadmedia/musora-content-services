@@ -19,8 +19,6 @@ export const SONG_TYPES_WITH_CHILDREN = [
   'song-tutorial',
   'song-tutorial-children',
 ]
-// Single hierarchy refers to only one element in the hierarchy has video lessons, not that they have a single parent
-export const SINGLE_PARENT_TYPES = ['course-part', 'pack-bundle-lesson', 'song-tutorial-children']
 
 export const artistField = `select(
           defined(artist) => artist->{ 'name': name, 'thumbnail': thumbnail_url.asset->url},
@@ -171,6 +169,7 @@ export const coachLessonsTypes = [
   'coach-stream',
   'student-focus',
   'quick-tips',
+  'special',
   'pack',
   'semester-pack',
   'question-and-answer',
@@ -178,10 +177,6 @@ export const coachLessonsTypes = [
   'song-tutorial-children',
   'workout',
 ]
-
-export const childContentTypeConfig = {
-  'song-tutorial': [`"genre": genre[]->name`, `difficulty_string`, `"type": _type`],
-}
 
 export const singleLessonTypes = ['quick-tips', 'rudiment']
 export const practiceAlongsLessonTypes = ['workout'] // challenges ->workouts
@@ -219,7 +214,7 @@ export const individualLessonsTypes = [
 
 export const coursesLessonTypes = [
   'course',
-  'tiered-course', // TODO: new content type
+  'course-collection',
   'guided-course',
 ]
 
@@ -235,8 +230,9 @@ export const showsLessonTypes = [
   'study-the-greats',
 ]
 export const entertainmentLessonTypes = [
-  'specials', // TODO: new type
-  ...documentariesLessonTypes,
+  'documentary',
+  'documentary-lesson',
+  'special',
   ...showsLessonTypes,
 ]
 export const collectionLessonTypes = [...coursesLessonTypes, ...showsLessonTypes]
@@ -250,9 +246,8 @@ export const lessonTypesMapping = {
   documentaries: documentariesLessonTypes,
   courses: ['course'],
   'guided courses': ['guided-course'],
-  'tiered courses': ['tiered-course'],
   'skill packs': ['skill-pack'],
-  specials: ['specials'],
+  specials: ['special'],
   shows: showsLessonTypes,
   collections: collectionLessonTypes,
   individuals: individualLessonsTypes,
@@ -278,7 +273,8 @@ export const getNextLessonLessonParentTypes = [
   'pack-bundle',
   'song-tutorial',
   'learning-path-v2',
-  'skill-pack'
+  'skill-pack',
+  'documentary',
 ]
 
 export const progressTypesMapping = {
@@ -398,6 +394,9 @@ export let contentTypeConfig = {
     fields: [`"resources": ${resourcesField}`],
   },
   'guided-course': {
+    includeChildFields: true,
+  },
+  'documentary': {
     includeChildFields: true,
   },
   course: {
