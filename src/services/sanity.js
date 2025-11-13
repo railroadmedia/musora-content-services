@@ -9,6 +9,7 @@ import {
   descriptionField,
   resourcesField,
   contentTypeConfig,
+  getIntroVideoFields,
   DEFAULT_FIELDS,
   getFieldsForContentType,
   filtersToGroq,
@@ -19,6 +20,7 @@ import {
   getFieldsForContentTypeWithFilteredChildren,
   getChildFieldsForContentType,
   SONG_TYPES,
+  SONG_TYPES_WITH_CHILDREN,
 } from '../contentTypeConfig.js'
 import {fetchSimilarItems, recommendations} from './recommendations.js'
 import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
@@ -373,7 +375,7 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         live_event_end_time,
          "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}'`
   const query = buildRawQuery(
-    `defined(live_event_start_time) && (!defined(live_event_end_time) || live_event_end_time >= '${now}' ) && brand == '${brand}' && published_on > '${now}' && status == 'scheduled'`,
+    `defined(live_event_start_time) && live_event_start_time >= '${now}' && (!defined(live_event_end_time) || live_event_end_time >= '${now}' ) && brand == '${brand}' &&  status == 'scheduled'`,
     fields,
     {
       sortOrder: 'published_on asc',
@@ -438,13 +440,11 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
  *   .catch(error => console.error(error));
  */
 export async function fetchByRailContentId(id, contentType) {
-  const fields = await getFieldsForContentTypeWithFilteredChildren(contentType)
-  const lessonFields = getChildFieldsForContentType(contentType)
+  const fields = await getFieldsForContentTypeWithFilteredChildren(contentType, true)
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const entityFieldsString = ` ${fields}
-                                    'child_count': coalesce(count(child[${childrenFilter}]->), 0) ,
-                                    "lessons": child[${childrenFilter}]->{${lessonFields}},
-                                    'length_in_seconds': coalesce(
+      'child_count': coalesce(count(child[${childrenFilter}]->), 0) ,
+      'length_in_seconds': coalesce(
       math::sum(
         select(
           child[${childrenFilter}]->length_in_seconds
@@ -495,6 +495,8 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
     live_event_start_time,
     live_event_end_time,
   }`
+
+  console.log('ids query', query)
   const customPostProcess = (results) => {
     const now = getSanityDate(new Date(), false);
     const liveProcess = (result) => {
@@ -662,7 +664,7 @@ export async function fetchAll(
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': '/${brand}/${webUrlPath}/'+name+'?included_fieds[]=type,${type}',
                 'all_lessons_count': count(*[${lessonsFilterWithRestrictions}]._id),
-                'lessons': *[${lessonsFilterWithRestrictions}]{
+                'children': *[${lessonsFilterWithRestrictions}]{
                     ${fieldsString},
                     ${groupBy}
                 }[0...20]
@@ -682,7 +684,7 @@ export async function fetchAll(
                 'head_shot_picture_url': thumbnail_url.asset->url,
                 'web_url_path': select(defined(web_url_path)=> web_url_path +'?included_fieds[]=type,${type}',!defined(web_url_path)=> '/${brand}${webUrlPath}/'+name+'/${webUrlPathType}'),
                 'all_lessons_count': count(*[${lessonsFilterWithRestrictions}]._id),
-                'lessons': *[${lessonsFilterWithRestrictions}]{
+                'children': *[${lessonsFilterWithRestrictions}]{
                     ${fieldsString},
                      'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
                     ${groupBy}
@@ -692,8 +694,8 @@ export async function fetchAll(
     filter = `brand == "${brand}" ${typeFilter} ${searchFilter} ${includedFieldsFilter} ${progressFilter} ${customFilter}`
     const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
     entityFieldsString = ` ${fieldsString},
-                                    'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
-                                    'length_in_seconds': coalesce(
+      'lesson_count': coalesce(count(child[${childrenFilter}]->), 0) ,
+      'length_in_seconds': coalesce(
       math::sum(
         select(
           child[${childrenFilter}]->length_in_seconds
@@ -747,17 +749,17 @@ async function getProgressFilter(progress, progressIds) {
 }
 
 export function getSortOrder(sort = '-published_on', brand, groupBy) {
-  // Determine the sort order
+  const sanitizedSort = sort?.trim() || '-published_on'
+  let isDesc = sanitizedSort.startsWith('-')
+  const sortField = isDesc ? sanitizedSort.substring(1) : sanitizedSort
+
   let sortOrder = ''
-  let isDesc = sort.startsWith('-')
-  sort = isDesc ? sort.substring(1) : sort
-  switch (sort) {
+
+  switch (sortField) {
     case 'slug':
       sortOrder = groupBy ? 'name' : '!defined(title), lower(title)'
       break
-    case 'name':
-      sortOrder = sort
-      break
+
     case 'popularity':
       if (groupBy == 'artist' || groupBy == 'genre') {
         sortOrder = isDesc ? `coalesce(popularity.${brand}, -1)` : 'popularity'
@@ -765,15 +767,17 @@ export function getSortOrder(sort = '-published_on', brand, groupBy) {
         sortOrder = isDesc ? 'coalesce(popularity, -1)' : 'popularity'
       }
       break
+
     case 'recommended':
       sortOrder = 'published_on'
       isDesc = true
       break
-    case 'published_on':
+
     default:
-      sortOrder = 'published_on'
+      sortOrder = sortField
       break
   }
+
   sortOrder += isDesc ? ' desc' : ' asc'
   return sortOrder
 }
@@ -1139,8 +1143,8 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
       defined(live_event_start_time) => {
         "live_event_start_time": live_event_start_time,
         "live_event_end_time": live_event_end_time,
-        "live_event_youtube_id": live_event_youtube_id,
-        "videoId": coalesce(live_event_youtube_id, video.external_id),
+        "live_event_stream_id": live_event_stream_id,
+        "videoId": coalesce(live_event_stream_id, video.external_id),
         "live_event_is_global": live_global_event == true
       }
     )
@@ -1400,7 +1404,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
       'id': railcontent_id,
       live_event_start_time,
       live_event_end_time,
-      live_event_youtube_id,
+      live_event_stream_id,
       railcontent_id,
       published_on,
       'event_coach_url' : instructor[0]->web_url_path,
@@ -1410,14 +1414,14 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
       ${artistOrInstructorName()},
       difficulty_string,
       "instructors": ${instructorField},
-      'videoId': coalesce(live_event_youtube_id, video.external_id),
+      'videoId': coalesce(live_event_stream_id, video.external_id),
     } | order(live_event_start_time)[0...1]`
       : `*[status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}']{
       'slug': slug.current,
       'id': railcontent_id,
       live_event_start_time,
       live_event_end_time,
-      live_event_youtube_id,
+      live_event_stream_id,
       railcontent_id,
       published_on,
       'event_coach_url' : instructor[0]->web_url_path,
@@ -1430,7 +1434,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
             name,
             web_url_path,
           },
-      'videoId': coalesce(live_event_youtube_id, video.external_id),
+      'videoId': coalesce(live_event_stream_id, video.external_id),
     } | order(live_event_start_time)[0...1]`
 
   return await fetchSanity(query, false, { processNeedAccess: false })
@@ -1816,6 +1820,7 @@ export async function fetchSanity(
       results = processNeedAccess
         ? await needsAccessDecorator(results, userPermissions, isAdmin)
         : results
+      results = pageTypeDecorator(results)
       return customPostProcess ? customPostProcess(results) : results
     } else {
       throw new Error('No results found')
@@ -1826,35 +1831,44 @@ export async function fetchSanity(
   }
 }
 
-function needsAccessDecorator(results, userPermissions, isAdmin) {
-  if (globalConfig.sanityConfig.useDummyRailContentMethods) return results
-
-  userPermissions = new Set(userPermissions)
-
+function contentResultsDecorator(results, fieldName, callback)
+{
   if (Array.isArray(results)) {
     results.forEach((result) => {
-      result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin)
+      result[fieldName] = callback(result)
     })
   } else if (results.entity && Array.isArray(results.entity)) {
     // Group By
     results.entity.forEach((result) => {
       if (result.lessons) {
         result.lessons.forEach((lesson) => {
-          lesson['need_access'] = doesUserNeedAccessToContent(lesson, userPermissions, isAdmin) // Updated to check lesson access
+          lesson[fieldName] = callback(lesson) // Updated to check lesson access
         })
       } else {
-        result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin)
+        result[fieldName] = callback(result)
       }
     })
   } else if (results.related_lessons && Array.isArray(results.related_lessons)) {
     results.related_lessons.forEach((result) => {
-      result['need_access'] = doesUserNeedAccessToContent(result, userPermissions, isAdmin)
+      result[fieldName] = callback(result)
     })
   } else {
-    results['need_access'] = doesUserNeedAccessToContent(results, userPermissions, isAdmin)
+    results[fieldName] = callback(results)
   }
 
   return results
+}
+
+function pageTypeDecorator(results)
+{
+  return contentResultsDecorator(results, 'page_type', function(content) { return SONG_TYPES_WITH_CHILDREN.includes(content['type']) ? 'song' : 'lesson'})
+}
+
+
+function needsAccessDecorator(results, userPermissions, isAdmin) {
+  if (globalConfig.sanityConfig.useDummyRailContentMethods) return results
+  userPermissions = new Set(userPermissions)
+  return contentResultsDecorator(results, 'need_access', function (content) { return doesUserNeedAccessToContent(content, userPermissions, isAdmin) })
 }
 
 function doesUserNeedAccessToContent(result, userPermissions, isAdmin) {
@@ -2171,7 +2185,7 @@ export async function fetchTabData(
   let entityFieldsString = ''
   let filter = ''
 
-  filter = `brand == "${brand}" ${includedFieldsFilter} ${progressFilter}`
+  filter = `brand == "${brand}" && (defined(railcontent_id)) ${includedFieldsFilter} ${progressFilter}`
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const childrenFields = await getChildFieldsForContentType('tab-data')
   const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
@@ -2243,7 +2257,7 @@ export async function fetchScheduledAndNewReleases(
   const sortOrder = getSortOrder(sort, brand)
 
   const query = `
-    *[_type in [${typesString}] && brand == '${brand}' && ((status in ['published','scheduled'] && published_on > '${now}')||(show_in_new_feed == true)) ]
+    *[_type in [${typesString}] && brand == '${brand}' && ((status in ['published','scheduled'] )||(show_in_new_feed == true)) ]
     [${start}...${end}]
    | order(published_on asc) {
       "id": railcontent_id,
@@ -2275,4 +2289,35 @@ export async function fetchShows(brand, type, sort = 'sort') {
     end: 100, // Adrian: added for homepage progress rows, this should be handled gracefully
   })
   return fetchSanity(query, true)
+}
+
+/**
+ * Fetch the method intro video for a given brand.
+ * @param brand
+ * @returns {Promise<*|null>}
+ */
+export async function fetchMethodV2IntroVideo(brand) {
+  const type = "method-intro";
+  const filter = `_type == '${type}' && brand == '${brand}'`;
+  const fields = getIntroVideoFields('method-v2');
+
+  const query = `*[${filter}] { ${fields.join(", ")} }`;
+  return fetchSanity(query, false);
+}
+
+/**
+ * Fetch the structure (just ids) of the Method for a given brand.
+ * @param brand
+ * @returns {Promise<*|null>}
+ */
+export async function fetchMethodV2Structure(brand) {
+  const _type = "method-v2";
+  const query = `*[_type == '${_type}' && brand == '${brand}'][0...1]{
+    'sanity_id': _id,
+    'learningPaths': child[]->{
+      'id': railcontent_id,
+      'children': child[]->railcontent_id
+    }
+  }`;
+  return await fetchSanity(query, false);
 }

@@ -37,6 +37,11 @@ export async function fetchJSONHandler(
     } else {
       console.error(`Fetch error: ${method} ${url} ${response.status} ${response.statusText}`)
       console.log(response)
+      const contentType = response.headers.get('content-type')
+      if (contentType && contentType.indexOf('json') !== -1) {
+        const data = await response.json()
+        console.log(data)
+      }
     }
   } catch (error) {
     console.error('Fetch error:', error)

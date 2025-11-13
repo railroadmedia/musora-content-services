@@ -14,7 +14,6 @@ import {
   fetchLeaving, fetchScheduledAndNewReleases, fetchContentRows
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
-import {fetchHandler} from "./railcontent";
 import {recommendations, rankCategories, rankItems} from "./recommendations";
 import {addContextToContent} from "./contentAggregator.js";
 
@@ -90,7 +89,7 @@ export async function getTabResults(brand, pageName, tabName, {
     let temp = await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
 
     const [ranking, contextResults] = await Promise.all([
-      sort === 'recommended' ? rankItems(brand, temp.entity.map(e => e.railcontent_id)) : [],
+      sort === 'recommended' ? rankItems(brand, temp.entity.map(e => e.id)) : [],
       addContextToContent(() => temp.entity, {
         addNextLesson: true,
         addNavigateTo: true,
@@ -100,8 +99,8 @@ export async function getTabResults(brand, pageName, tabName, {
     ]);
 
     results = ranking.length === 0 ? contextResults : contextResults.sort((a, b) => {
-      const indexA = ranking.indexOf(a.railcontent_id);
-      const indexB = ranking.indexOf(b.railcontent_id);
+      const indexA = ranking.indexOf(a.id);
+      const indexB = ranking.indexOf(b.id);
       return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
     })
   }
@@ -421,9 +420,34 @@ export async function getRecommendedForYou(brand, rowId = null, {
 }
 
 
+/**
+ * Fetches legacy methods for a given brand by permission.
+ *
+ * @param {string} brand - The brand for which to fetch legacy methods.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing legacy methods.
+ *
+ * @example
+ * // Fetch legacy methods for a brand by permission
+ * getLegacyMethods('drumeo')
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ */
+export async function getLegacyMethods(brand) {
 
+  // TODO: Replace with real data from Sanity when available with permissions
 
-
-
-
-
+  return [
+    {
+      id: 1,
+      title: '2020 Method',
+      type: 'pack',
+      child_count: 12,
+    },
+    {
+      id: 2,
+      title: '2016 Foundations',
+      type: 'pack',
+      child_count: 12,
+    },
+  ]
+}

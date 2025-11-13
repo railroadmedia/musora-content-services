@@ -17,6 +17,19 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	fetchLearningPathLessons,
+	getActivePath,
+	getDailySession,
+	getLearningPath,
+	getLearningPathLessonsByIds,
+	mapContentToParent,
+	resetAllLearningPaths,
+	startLearningPath,
+	updateActivePath,
+	updateDailySession
+} from './services/content-org/learning-paths.ts';
+
+import {
 	addItemToPlaylist,
 	createPlaylist,
 	deleteItemsFromPlaylist,
@@ -36,6 +49,7 @@ import {
 
 import {
 	getContentRows,
+	getLegacyMethods,
 	getLessonContentRows,
 	getNewAndUpcoming,
 	getRecent,
@@ -82,6 +96,7 @@ import {
 	convertToTimeZone,
 	getMonday,
 	getTimeRemainingUntilLocal,
+	getToday,
 	getWeekNumber,
 	isNextDay,
 	isSameDate,
@@ -142,6 +157,14 @@ import {
 	isBucketUrl,
 	verifyImageSRC
 } from './services/imageSRCVerify.js';
+
+import {
+	createTestUser
+} from './services/liveTesting.ts';
+
+import {
+	getMethodCard
+} from './services/progress-row/method-card.js';
 
 import {
 	assignModeratorToComment,
@@ -216,6 +239,8 @@ import {
 	fetchMethodChildren,
 	fetchMethodChildrenIds,
 	fetchMethodPreviousNextLesson,
+	fetchMethodV2IntroVideo,
+	fetchMethodV2Structure,
 	fetchNewReleases,
 	fetchNextPreviousLesson,
 	fetchOtherSongVersions,
@@ -245,12 +270,14 @@ import {
 import {
 	confirmEmailChange,
 	deleteAccount,
+	numberOfActiveUsers,
 	requestEmailChange,
 	resetPassword,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	setupAccount,
-	status
+	status,
+	toggleStudentView
 } from './services/user/account.ts';
 
 import {
@@ -304,7 +331,10 @@ import {
 } from './services/user/notifications.js';
 
 import {
-	startOnboarding
+	getOnboardingRecommendedContent,
+	startOnboarding,
+	updateOnboarding,
+	userOnboardingForBrand
 } from './services/user/onboarding.ts';
 
 import {
@@ -373,6 +403,7 @@ export {
 	createPlaylist,
 	createPost,
 	createPracticeNotes,
+	createTestUser,
 	createThread,
 	deleteAccount,
 	deleteComment,
@@ -426,6 +457,7 @@ export {
 	fetchInterests,
 	fetchLastInteractedChild,
 	fetchLatestThreads,
+	fetchLearningPathLessons,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
@@ -438,6 +470,8 @@ export {
 	fetchMethodChildren,
 	fetchMethodChildrenIds,
 	fetchMethodPreviousNextLesson,
+	fetchMethodV2IntroVideo,
+	fetchMethodV2Structure,
 	fetchNewReleases,
 	fetchNextContentDataForParent,
 	fetchNextPreviousLesson,
@@ -486,18 +520,25 @@ export {
 	findIncompleteLesson,
 	followThread,
 	getActiveDiscussions,
+	getActivePath,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getAwardDataForGuidedContent,
 	getContentRows,
+	getDailySession,
 	getLastInteractedOf,
+	getLearningPath,
+	getLearningPathLessonsByIds,
+	getLegacyMethods,
 	getLessonContentRows,
+	getMethodCard,
 	getMonday,
 	getNavigateTo,
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
 	getNextLesson,
+	getOnboardingRecommendedContent,
 	getPracticeNotes,
 	getPracticeSessions,
 	getProgressDataByIds,
@@ -513,6 +554,7 @@ export {
 	getStartedOrCompletedProgressOnly,
 	getTabResults,
 	getTimeRemainingUntilLocal,
+	getToday,
 	getUserData,
 	getUserMonthlyStats,
 	getUserPractices,
@@ -538,11 +580,13 @@ export {
 	logUserPractice,
 	login,
 	logout,
+	mapContentToParent,
 	markAllNotificationsAsRead,
 	markContentAsInterested,
 	markContentAsNotInterested,
 	markNotificationAsRead,
 	markNotificationAsUnread,
+	numberOfActiveUsers,
 	openComment,
 	otherStats,
 	pauseLiveEventPolling,
@@ -563,6 +607,7 @@ export {
 	reportPlaylist,
 	requestEmailChange,
 	reset,
+	resetAllLearningPaths,
 	resetPassword,
 	restoreComment,
 	restoreItemFromPlaylist,
@@ -577,12 +622,14 @@ export {
 	setStudentViewForUser,
 	setUserSignature,
 	setupAccount,
+	startLearningPath,
 	startLiveEventPolling,
 	startOnboarding,
 	status,
 	toDayjs,
 	togglePlaylistPrivate,
 	toggleSignaturePrivate,
+	toggleStudentView,
 	unEnrollUserInGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,
@@ -595,9 +642,12 @@ export {
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
+	updateActivePath,
+	updateDailySession,
 	updateDisplayName,
 	updateForumCategory,
 	updateNotificationSetting,
+	updateOnboarding,
 	updatePlaylist,
 	updatePost,
 	updatePracticeNotes,
@@ -606,6 +656,7 @@ export {
 	upgradeSubscription,
 	uploadPicture,
 	uploadPictureFromS3,
+	userOnboardingForBrand,
 	verifyImageSRC,
 	verifyLocalDataContext,
 };

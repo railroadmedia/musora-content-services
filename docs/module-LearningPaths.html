@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>content-org/playlists.js - Documentation</title>
+    <title>LearningPaths - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,387 +35,1617 @@
 
 <div id="main">
     
-    <h1 class="page-title">content-org/playlists.js</h1>
+    <h1 class="page-title">LearningPaths</h1>
     
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @module Playlists
- */
-import { globalConfig } from '../config.js'
-import { fetchHandler } from '../railcontent.js'
-import { getNavigateToForPlaylists } from '../contentAggregator.js'
-import './playlists-types.js'
+        
+    
+</header>
 
-/**
- * Exported functions that are excluded from index generation.
- *
- * @type {string[]}
- */
-const excludeFromGeneratedIndex = []
+<article>
+    
+        <div class="container-overview">
+        
+            
 
-const BASE_PATH = `/api/content-org`
+            
+        
+        </div>
+    
 
-/**
- * Fetches user playlists for a specific brand.
- *
- * Allows optional pagination, sorting, and search parameters to control the result set.
- *
- * @param {string} brand - The brand identifier for which playlists are being fetched.
- * @param {number} [params.limit=10] - The maximum number of playlists to return per page (default is 10).
- * @param {number} [params.page=1] - The page number for pagination.
- * @param {string} [params.sort='-created_at'] - The sorting order for the playlists (default is by created_at in descending order).
- * @param {int|string} [params.content_id] - If content_id exists, the endpoint checks in each playlist if we have the content in the items.
- *
- * @returns {Promise&lt;Object|null>} - A promise that resolves to the response from the API, containing the user playlists data.
- *
- * @example
- * fetchUserPlaylists('drumeo', { page: 1, sort: 'name', searchTerm: 'rock' })
- *   .then(playlists => console.log(playlists))
- *   .catch(error => console.error(error));
- */
-export async function fetchUserPlaylists(
-  brand,
-  { page, limit, sort, content_id } = {}
-) {
-  const pageString = page ? `?page=${page}` : '?page=1'
-  const limitString = limit ? `&amp;limit=${limit}` : ''
-  const sortString = sort ? `&amp;sort=${sort}` : ''
-  const content = content_id ? `&amp;content_id=${content_id}` : ''
-  const brandString = brand ? `&amp;brand=${brand}` : ''
-  const url = `${BASE_PATH}/v1/user/playlists${pageString}${brandString}${limitString}${sortString}${content}`
-  return await getNavigateToForPlaylists(await fetchHandler(url), {dataField: 'data'})
-}
+    
 
-/**
- * Creates a new user playlist by sending a POST request with playlist data to the API.
- *
- * This function calls the `/playlists/playlist` endpoint, where the server validates the incoming data and associates
- * the new playlist with the authenticated user. The `name` field is required, while other fields are optional.
- *
- * @param {CreatePlaylistDTO} playlistData - An object containing data to create the playlist. The fields include:
- *  - `name` (string): The name of the new playlist (required, max 255 characters).
- *  - `description` (string): A description of the playlist (optional, max 1000 characters).
- *  - `category` (string): The category of the playlist.
- *  - `private` (boolean): Whether the playlist is private (optional, defaults to false).
- *  - `brand` (string): Brand identifier for the playlist.
- *
- * @returns {Promise&lt;Playlist>} - A promise that resolves to the created playlist data if successful, or an error response if validation fails.
- *
- * @example
- * createPlaylist({ name: "My Playlist", description: "A cool playlist", private: true })
- *   .then(response => console.log(response))
- *   .catch(error => console.error('Error creating playlist:', error));
- */
-export async function createPlaylist(playlistData) {
-  const url = `${BASE_PATH}/v1/user/playlists`
-  return await fetchHandler(url, 'POST', null, playlistData)
-}
+    
 
-/**
- * Soft deletes a playlist. Will cascade and also soft delete entries in other playlist tables (pinned, reported, liked,
- * playlist content) and last engaged that have this playlist id
- * @param {id} playlist - the id of the playlist you want to soft delete.
- * @returns {Promise&lt;any|string|null>}
- */
-export async function deletePlaylist(playlist) {
-  const url = `${BASE_PATH}/v1/user/playlists/delete/${playlist}`
-  return await fetchHandler(url, 'POST', null, playlist)
-}
+    
+    
+    
 
-/**
- * Soft restores a playlist. Will cascade and also soft restore entries in other playlist tables (pinned, reported, liked,
- * playlist content) and last engaged that have this playlist id
- * @param {id} playlist - the id of the playlist you want to soft restore.
- * @returns {Promise&lt;any|string|null>}
- */
-export async function undeletePlaylist(playlist) {
-  const url = `${BASE_PATH}/v1/user/playlists/undelete/${playlist}`
-  return await fetchHandler(url, 'POST', null, playlist)
-}
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="~fetchLearningPathLessons"><span class="type-signature type-signature-async, inner">(async, inner) </span>fetchLearningPathLessons<span class="signature">(learningPathId, brand, userDate)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>|number|string|string|boolean|Array|Array|Array|Array|Array|Array}</span></h4>
+
+    
 
 
-/**
- * Likes a playlist for the current user.
- *
- * @async
- * @function likePlaylist
- * @param {string|number} playlistId - The unique identifier of the playlist to like.
- *
- * @returns {Promise&lt;Object>}
- *
- * @example
- * // Like playlist with ID '123'
- * try {
- *   const response = await likePlaylist('123');
- *   console.log('Playlist liked successfully:', response);
- * } catch (error) {
- *   console.error('Failed to like playlist:', error);
- * }
- */
-export async function likePlaylist(playlistId) {
-  const url = `${BASE_PATH}/v1/user/playlists/like/${playlistId}`
-  return await fetchHandler(url, 'PUT')
-}
-
-/**
- * Unlikes a previously liked playlist.
- * @async
- * @function unlikePlaylist
- * @param {string|number} playlistId - The unique identifier of the playlist to unlike.
- *
- * @returns {Promise&lt;Object>}
- *
- *
- * @example
- * // Unlike playlist with ID '123'
- * try {
- *   const response = await unlikePlaylist('123');
- *   console.log('Playlist unliked successfully:', response);
- * } catch (error) {
- *   console.error('Failed to unlike playlist:', error);
- * }
- */
-export async function unlikePlaylist(playlistId) {
-  const url = `${BASE_PATH}/v1/user/playlists/like/${playlistId}`
-  return await fetchHandler(url, 'DELETE')
-}
-
-/**
- * Reports a playlist
- *
- * @async
- * @function reportPlaylist
- * @param {string|number} playlistId - The unique identifier of the playlist to report.
- *
- * @returns {Promise&lt;Object>}
- *
- * @example
- * // Report playlist with ID '123'
- * try {
- *   const response = await reportPlaylist('123');
- *   console.log('Playlist reported successfully:', response);
- * } catch (error) {
- *   console.error('Failed to report playlist:', error);
- * }
- */
-export async function reportPlaylist(playlistId) {
-  const url = `${BASE_PATH}/v1/user/playlists/report/${playlistId}`
-  return await fetchHandler(url, 'POST')
-}
-
-/**
- * Adds an item to one or more playlists
- *
- * @param {AddItemToPlaylistDTO} payload - The request payload containing necessary parameters.
- *
- * @returns {Promise&lt;Object|null>} - A promise that resolves to an object with the response data, including:
- *  - `added` (Array): Playlist ids that we were success
- *  - `limit_exceeded` (Array): A list of playlists where the item limit was exceeded, if any.
- *  - `unauthorized` (Array): A list of successfully added items (empty if none).
- *
- * Resolves to `null` if the request fails.
- * @throws {Error} - Throws an error if the request encounters issues during the operation.
- *
- * @example
- * const payload = {
- *     content_id: 123,
- *     playlist_id: [1, 2, 3],
- *     position: 2,
- *
- * };
- *
- * addItemToPlaylist(payload)
- *   .then(response => {
- *     if (response?.success) {
- *       console.log("Item(s) added to playlist successfully");
- *     }
- *     if (response?.limit_exceeded) {
- *       console.warn("Some playlists exceeded the item limit:", response.limit_exceeded);
- *     }
- *   })
- *   .catch(error => {
- *     console.error("Error adding item to playlist:", error);
- *   });
- */
-export async function addItemToPlaylist(payload) {
-  const url = `${BASE_PATH}/v1/user/playlists/items`
-  return await fetchHandler(url, 'POST', null, payload)
-}
-
-/**
- * Toggles a playlists public/private state
- *
- * @param {string|number} playlistId
- * @param {Boolean} is_private - flag for private/public
-
- * @returns {Promise&lt;Playlist>} - A promise that resolves to the updated playlist data if successful, or an error response if validation fails.
- *
- * @example
- * togglePlaylistPrivate(11541, true)
- *   .then(response => console.log(response))
- *   .catch(error => console.error('Error creating playlist:', error));
- */
-export async function togglePlaylistPrivate(playlistId, is_private)
-{
-  return await updatePlaylist(playlistId, {is_private})
-}
 
 
-/**
- * Updates a playlists values
- *
- * @param {string|number} playlistId
- * @param {UpdatePlaylistDTO} updateData  - An object containing fields to update on the playlist:
- *  - `name` (string): The name of the new playlist (required, max 255 characters).
- *  - `description` (string): A description of the playlist (optional, max 1000 characters).
- *  - `category` (string): The category of the playlist (optional).
- *  - `is_private` (boolean): Whether the playlist is private (optional, defaults to false).
- *  - `deleted_items` (array): List of playlist item IDs to delete (optional).
- *  - `item_order` (array): Updated order of playlist items (ids, not railcontent_ids) (optional).
- *
- * @returns {Promise&lt;object>} - A promise that resolves to the created playlist data and lessons if successful, or an error response if validation fails.
- *
- * The server response includes:
- *  - `playlist`: Playlist metadata (same as fetchPlaylist)
- *  - `lessons`: Updated list of plalyist lessons  (same as fetchPlaylistItems)
- *
- * @example
- * updatePlaylist(661113 { name: "My Playlist", description: "A cool playlist", is_private: true, deleted_items : [2189832, 221091] })
- *   .then(response => console.log(response.playlist); console.log(response.lessons))
- *   .catch(error => console.error('Error updating playlist:', error));
- */
-export async function updatePlaylist(playlistId, updateData)
-{
-  const { name, description, category, is_private, item_order, deleted_items } = updateData;
-  let data = {
-    ...name &amp;&amp; { name },
-    ...'description' in updateData &amp;&amp; { description },
-    ...'is_private' in updateData &amp;&amp; { private: is_private || false },
-    ...'category' in updateData &amp;&amp; { category },
-    ...deleted_items &amp;&amp; { deleted_items },
-    ...item_order &amp;&amp; { item_order },
-  }
-  const url = `${BASE_PATH}/v1/user/playlists/${playlistId}`
-  return await fetchHandler(url, 'PUT', null, data);
-}
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Fetches and organizes learning path lessons.</li></ul></dd>
+    
 
-/**
- * Delete Items from playlist
- *
- * @async
- * @function deleteItemsFromPlaylist
- * @param {string|number} playlistId - The unique identifier of the playlist to update.
- * @param {array} deleted_items - list of playlist ids to delete (user_playlist_item_id, not the railcontent_id)
- *
- * @returns {Promise&lt;Object>}
- *
- * @example
- * // Delete items 8462221 and 8462222 from playlist 81111
- * try {
- *   const response = await deleteItemsFromPlaylist(81111, [8462221, 8462222]);
- * } catch (error) {
- *   console.error('Failed to delete playlist items:', error);
- * }
- */
-export async function deleteItemsFromPlaylist(playlistId, deleted_items) {
-  return await updatePlaylist(playlistId, {deleted_items})
-}
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="content-org_learning-paths.ts.html">content-org/learning-paths.ts</a>, <a href="content-org_learning-paths.ts.html#line164">line 164</a>
+    </li></ul></dd>
+    
 
-/**
- * Restore items
- *
- * @async
- * @function restoreItemFromPlaylist
- * @param {string|number} playlistItemId - The unique identifier of the playlist ite to restore.
- *
- * @returns {Promise&lt;Object>}
- *
- * @example
- * // Restore item 8462221
- * try {
- *   const response = await restoreItemFromPlaylist(8462221);
- * } catch (error) {
- *   console.error('Failed to restore playlist item:', error);
- * }
- */
-export async function restoreItemFromPlaylist(playlistItemId) {
-  const url = `${BASE_PATH}/v1/user/playlists/items/undelete/${playlistItemId}`
-  return await fetchHandler(url, 'POST')
-}
+    
 
-/**
- * Duplicates a playlist and playlist items for the provided playlistID for the authorized user
- *
- * @param {string|number} playlistId
- * @param {DuplicatePlaylistDTO} playlistData - An object containing data to create the playlist. The fields include:
- *  - `name` (string): The name of the new playlist (required, max 255 characters).
- *  - `description` (string): A description of the playlist (optional, max 1000 characters).
- *  - `category` (string): The category of the playlist.
- *  - `private` (boolean): Whether the playlist is private (optional, defaults to false).
- *  - `brand` (string): Brand identifier for the playlist.
- *  - 'items' (array): List of playlist items to duplicate in updated order
- *
- * @returns {Promise&lt;Playlist>}
- * @example
- * duplicatePlaylist(81167, { name: "My Playlist (Duplicate)", description: "A cool playlist", private: true })
- *   .then(response => console.log(response))
- *   .catch(error => console.error('Error creating playlist:', error));
- */
-export async function duplicatePlaylist(playlistId, playlistData) {
-  const url = `${BASE_PATH}/v1/user/playlists/duplicate/${playlistId}`
-  return await fetchHandler(url, 'POST', null, playlistData)
-}
+    
 
-/**
- * Retrieves details of a specific playlist by its ID.
- *
- * This function sends a GET request to the `/playlists/playlist` endpoint with a specified playlist ID.
- * The server validates the user's access to the playlist and returns playlist details if the user is authorized.
- *
- * @param {string|number} playlistId - The unique identifier of the playlist to retrieve.
- *
- * @returns {Promise&lt;Object>} - A promise that resolves to the response from the API, containing:
- *  - `data` (Object): The playlist details, or an error message if access is denied or the playlist is not found.
- *
- * @example
- * fetchPlaylist(12345)
- *   .then(response => console.log(response.data))
- *   .catch(error => console.error('Error fetching playlist:', error));
- */
-export async function fetchPlaylist(playlistId) {
-  const url = `${BASE_PATH}/v1/user/playlists/${playlistId}`
-  return await getNavigateToForPlaylists(await fetchHandler(url))
-}
+    
 
-/**
- * Retrieves items within a specified playlist by playlist ID.
- *
- * This function sends a GET request to the `/playlists/playlist-lessons` endpoint to fetch items in the given playlist.
- * The server combines data from the playlist and additional metadata from Sanity to enhance item details.
- *
- * @param {string|number} playlistId - The unique identifier of the playlist whose items are to be fetched.
- *
- * @returns {Promise&lt;Array&lt;Object>>} - A promise that resolves to an array of playlist items
- *
- * @example
- * fetchPlaylistItems(12345)
- *   .then(items => console.log(items))
- *   .catch(error => console.error('Error fetching playlist items:', error));
- */
-export async function fetchPlaylistItems(playlistId) {
-  const url = `${BASE_PATH}/v1/user/playlists/items/${playlistId}`
-  return await fetchHandler(url, 'GET')
-}
-</code></pre>
-        </article>
-    </section>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>learningPathId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The learning path ID.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>brand</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userDate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Date</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Users local date - format 2025-10-31</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+<ul>
+        <li>
+<div class="param-desc">
+    result - The result object.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;Object></span>
+
+
+
+    </dd>
+</dl>
+</li>
+    
+        <li>
+<div class="param-desc">
+    result.id - The learning path ID.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">number</span>
+
+
+
+    </dd>
+</dl>
+</li>
+    
+        <li>
+<div class="param-desc">
+    result.thumbnail - Optional thumbnail URL for the learning path.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+</li>
+    
+        <li>
+<div class="param-desc">
+    result.title - The title of the learning path.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+</li>
+    
+        <li>
+<div class="param-desc">
+    result.is_active_learning_path - Whether the learning path is currently active.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+
+    </dd>
+</dl>
+</li>
+    
+        <li>
+<div class="param-desc">
+    result.children - Array of all lessons.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+
+    </dd>
+</dl>
+</li>
+    
+        <li>
+<div class="param-desc">
+    result.upcoming_lessons - Array of upcoming/additional lessons.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+
+    </dd>
+</dl>
+</li>
+    
+        <li>
+<div class="param-desc">
+    result.todays_lessons - Array of today's lessons (max 3).
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+
+    </dd>
+</dl>
+</li>
+    
+        <li>
+<div class="param-desc">
+    result.next_learning_path_lessons - Array of next lessons to be taken.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+
+    </dd>
+</dl>
+</li>
+    
+        <li>
+<div class="param-desc">
+    result.completed_lessons - Array of completed lessons.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+
+    </dd>
+</dl>
+</li>
+    
+        <li>
+<div class="param-desc">
+    result.previous_learning_path_todays - Array of completed lessons.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+
+    </dd>
+</dl>
+</li>
+    </ul>
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~getActivePath"><span class="type-signature type-signature-async, inner">(async, inner) </span>getActivePath<span class="signature">(brand)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Gets user's active learning path.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="content-org_learning-paths.ts.html">content-org/learning-paths.ts</a>, <a href="content-org_learning-paths.ts.html#line41">line 41</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>brand</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~getDailySession"><span class="type-signature type-signature-async, inner">(async, inner) </span>getDailySession<span class="signature">(brand, userDate)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Gets today's daily session for the user.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="content-org_learning-paths.ts.html">content-org/learning-paths.ts</a>, <a href="content-org_learning-paths.ts.html#line12">line 12</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>brand</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userDate</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~getLearningPath"><span class="type-signature type-signature-async, inner">(async, inner) </span>getLearningPath<span class="signature">(learningPathId)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Returns learning path with lessons and progress data</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="content-org_learning-paths.ts.html">content-org/learning-paths.ts</a>, <a href="content-org_learning-paths.ts.html#line80">line 80</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>learningPathId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The learning path ID</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    Learning path with enriched lesson data
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;Object></span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~getLearningPathLessonsByIds"><span class="type-signature type-signature-async, inner">(async, inner) </span>getLearningPathLessonsByIds<span class="signature">(contentIds, learningPathId)</span><span class="type-signature"> &rarr; {Promise.&lt;Array>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Get specific learning path lessons by content IDs</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="content-org_learning-paths.ts.html">content-org/learning-paths.ts</a>, <a href="content-org_learning-paths.ts.html#line103">line 103</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>contentIds</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;number></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Array of content IDs to filter</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>learningPathId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The learning path ID</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    Filtered lessons
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;Array></span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~resetAllLearningPaths"><span class="type-signature type-signature-async, inner">(async, inner) </span>resetAllLearningPaths<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Resets the user's learning path.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="content-org_learning-paths.ts.html">content-org/learning-paths.ts</a>, <a href="content-org_learning-paths.ts.html#line72">line 72</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~startLearningPath"><span class="type-signature type-signature-async, inner">(async, inner) </span>startLearningPath<span class="signature">(brand, learningPathId)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Starts a new learning path for the user.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="content-org_learning-paths.ts.html">content-org/learning-paths.ts</a>, <a href="content-org_learning-paths.ts.html#line61">line 61</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>brand</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>learningPathId</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~updateActivePath"><span class="type-signature type-signature-async, inner">(async, inner) </span>updateActivePath<span class="signature">(brand)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Updates user's active learning path.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="content-org_learning-paths.ts.html">content-org/learning-paths.ts</a>, <a href="content-org_learning-paths.ts.html#line51">line 51</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>brand</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~updateDailySession"><span class="type-signature type-signature-async, inner">(async, inner) </span>updateDailySession<span class="signature">(brand, userDate, keepFirstLearningPath)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Updates the daily session for the user. Optionally, keeps the first learning path's dailies from a matching day's session.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="content-org_learning-paths.ts.html">content-org/learning-paths.ts</a>, <a href="content-org_learning-paths.ts.html#line24">line 24</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>brand</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userDate</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">format 2025-10-31</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>keepFirstLearningPath</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 

@@ -151,3 +151,42 @@ export async function deleteAccount(userId: number): Promise<void> {
   return httpClient.delete(apiUrl)
 }
 
+/**
+ * Calls a public API endpoint to get the number of active users.
+ *
+ * @returns {Promise<number>} - A promise that resolves to the number of active users.
+ * @throws {HttpError} - Throws HttpError if the request fails.
+ */
+export async function numberOfActiveUsers(): Promise<number> {
+  const apiUrl = `/api/user-management-system/v1/accounts/active/count`
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  const response = await httpClient.get<{ active_users: number }>(apiUrl)
+  return response.active_users
+}
+
+export interface UserResource {
+  id: number
+  email: string
+  display_name: string
+  first_name: string
+  last_name: string
+  permission_level: string
+  use_student_view: boolean
+  is_admin: boolean
+  show_admin_toggle: boolean
+  [key: string]: any // Allow additional properties from the API
+}
+
+/**
+ * Toggles the student view mode for admin users.
+ * When enabled, admins see the platform as a regular student would.
+ *
+ * @param {boolean} useStudentView - Whether to enable student view mode (true) or admin view mode (false).
+ * @returns {Promise<UserResource>} - A promise that resolves to the updated user resource.
+ * @throws {HttpError} - Throws HttpError if the request fails or user is not an admin.
+ */
+export async function toggleStudentView(useStudentView: boolean): Promise<UserResource> {
+  const apiUrl = `/api/user-management-system/v1/user/student-view`
+  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
+  return httpClient.patch<UserResource>(apiUrl, { use_student_view: useStudentView })
+}
