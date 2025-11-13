@@ -245,10 +245,12 @@ export async function completeLearningPathIntroVideo(introVideoId: number, learn
 
   response["intro_video_response"] = await completeIfNotCompleted(introVideoId)
 
+  console.log('lessons', lessonsToImport)
   if (!lessonsToImport) {
     // reset progress within the learning path
     response["learning_path_reset_response"] = await contentStatusReset(learningPathId)
   } else {
+    response["learning_path_reset_response"] = []
     // import progress into teh LP from external sources.
 
     //temporarily is missing collection info
