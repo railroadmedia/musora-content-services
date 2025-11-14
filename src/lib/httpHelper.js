@@ -6,8 +6,7 @@ export async function fetchJSONHandler(
   baseUrl,
   method = 'get',
   dataVersion = null,
-  body = null,
-  abortSignal = null
+  body = null
 ) {
   const headers = {
     'Content-Type': 'application/json',
@@ -21,7 +20,7 @@ export async function fetchJSONHandler(
   }
 
   try {
-    const response = await fetchHandler(url, token, baseUrl, method, headers, dataVersion, body, abortSignal)
+    const response = await fetchHandler(url, token, baseUrl, method, headers, dataVersion, body)
 
     if (response.ok) {
       const contentType = response.headers.get('content-type')
@@ -56,8 +55,7 @@ export async function fetchHandler(
   method = 'get',
   headers = {},
   dataVersion = null,
-  body = null,
-  abortSignal = null
+  body = null
 ) {
   let reqHeaders = {
     ...headers,
@@ -77,6 +75,7 @@ export async function fetchHandler(
 
   if (globalConfig.localTimezoneString)
     reqHeaders['M-Client-Timezone'] = globalConfig.localTimezoneString
+  if (dataVersion) reqHeaders['Data-Version'] = dataVersion
   const options = {
     method,
     headers: reqHeaders,
@@ -85,8 +84,6 @@ export async function fetchHandler(
   if (body) options.body = body
   if (token) options.headers['Authorization'] = `Bearer ${token}`
   if (baseUrl && url.startsWith('/')) url = baseUrl + url
-  if (method === 'get' && dataVersion) url += `?since=${encodeURIComponent(dataVersion)}`
-  if (abortSignal) options.signal = abortSignal
   try {
     return fetch(url, options)
   } catch (error) {
