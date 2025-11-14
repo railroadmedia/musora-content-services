@@ -8,18 +8,18 @@ import { db } from './sync'
 const excludeFromGeneratedIndex = []
 
 export async function isContentLiked(contentId) {
-  return (await db.likes.isLikedOptimistic(contentId)).data
+  return (await db.likes.isLiked(contentId)).data
 }
 
 export async function isContentLikedByIds(contentIds) {
-  const existences = await db.likes.areLikedOptimistic(contentIds)
+  const existences = await db.likes.areLiked(contentIds)
   return Object.fromEntries(contentIds.map((id, i) => [id, existences.data[i]]))
 }
 
 export async function likeContent(contentId) {
-  return db.likes.likeOptimistic(contentId)
+  return db.likes.like(contentId)
 }
 
 export async function unlikeContent(contentId) {
-  return db.likes.unlikeOptimistic(contentId)
+  return db.likes.unlike(contentId)
 }
