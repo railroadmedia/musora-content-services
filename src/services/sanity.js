@@ -878,6 +878,7 @@ export async function fetchAllFilterOptions(
   return includeTabs ? { ...results, tabs, catalogName } : results
 }
 
+//Daniel Nov 14 2025 note - keeping this for when we migrate foundations to packs, so we know what fields to use.
 /**
  * Fetch the Foundations 2019.
  * @param {string} slug - The slug of the method.
