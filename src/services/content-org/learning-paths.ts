@@ -253,8 +253,7 @@ export async function completeLearningPathIntroVideo(introVideoId: number, learn
     response["learning_path_reset_response"] = []
     // import progress into teh LP from external sources.
 
-    //temporarily is missing collection info
-    // and also will be grouped into 1 call when watermelon
+    // todo: add collection context + optimize with bulk calls with watermelon
     for (const contentId of lessonsToImport) {
       response["learning_path_reset_response"][contentId] = await contentStatusCompleted(contentId)
     }
