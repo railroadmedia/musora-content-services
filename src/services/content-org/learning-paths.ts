@@ -198,6 +198,7 @@ export async function fetchLearningPathLessons(
     upcoming_lessons: upcomingLessons,
     todays_lessons: todaysLessons,
     next_learning_path_lessons: nextLPLessons,
+    next_learning_path_id: nextLearningPathId,
     completed_lessons: completedLessons,
     previous_learning_path_todays: previousLearningPathTodays,
   }
