@@ -231,7 +231,6 @@ export const showsLessonTypes = [
 ]
 export const entertainmentLessonTypes = [
   'documentary',
-  'documentary-lesson',
   'special',
   ...showsLessonTypes,
 ]
