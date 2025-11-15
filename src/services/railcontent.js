@@ -10,13 +10,6 @@ import { fetchJSONHandler } from '../lib/httpHelper.js'
  * @type {string[]}
  */
 const excludeFromGeneratedIndex = [
-  'fetchUserLikes',
-  'postContentLiked',
-  'postContentUnliked',
-  'postRecordWatchSession',
-  'postContentStarted',
-  'postContentComplete',
-  'postContentReset',
   'fetchUserPermissionsData',
 ]
 
@@ -275,12 +268,12 @@ export async function fetchUserPermissionsData() {
   return (await fetchHandler(url, 'get')) ?? []
 }
 
-async function fetchDataHandler(url, dataVersion, method = 'get') {
-  return fetchHandler(url, method, dataVersion)
+async function fetchDataHandler(url, dataVersion, method = 'get', signal = null) {
+  return fetchHandler(url, method, dataVersion, null, signal)
 }
 
-async function postDataHandler(url, data) {
-  return fetchHandler(url, 'post', null, data)
+async function postDataHandler(url, data, signal = null) {
+  return fetchHandler(url, 'post', null, data, signal)
 }
 
 async function patchDataHandler_depreciated(url, data) {
@@ -300,48 +293,9 @@ export async function fetchLikeCount(contendId) {
   return await fetchDataHandler(url)
 }
 
-export async function fetchUserLikes(currentVersion) {
-  let url = `/api/content/v1/user/likes`
-  return fetchDataHandler(url, currentVersion)
-}
-
-export async function postContentLiked(contentId) {
-  let url = `/api/content/v1/user/likes/${contentId}`
-  return await postDataHandler(url)
-}
-
-export async function postContentUnliked(contentId) {
-  let url = `/api/content/v1/user/likes/${contentId}`
-  return await deleteDataHandler(url)
-}
-
-export async function fetchContentProgress(currentVersion) {
-  let url = `/content/user/progress/all`
-  return fetchDataHandler(url, currentVersion)
-}
-
 export async function postPlaylistContentEngaged(playlistItemId) {
   let url = `/railtracker/v1/last-engaged/${playlistItemId}`
   return postDataHandler(url)
-}
-
-export async function postRecordWatchSession(
-  contentId,
-  mediaTypeId,
-  mediaLengthSeconds,
-  currentSeconds,
-  secondsPlayed,
-  sessionId
-) {
-  let url = `/railtracker/v2/media-playback-session`
-  return postDataHandler(url, {
-    content_id: contentId,
-    media_type_id: mediaTypeId,
-    media_length_seconds: mediaLengthSeconds,
-    current_second: currentSeconds,
-    seconds_played: secondsPlayed,
-    session_id: sessionId,
-  })
 }
 
 /**
@@ -376,46 +330,6 @@ export async function fetchUserBadges(brand = null) {
   let brandParam = brand ? `?brand=${brand}` : ''
   let url = `/challenges/user_badges/get${brandParam}`
   return await fetchHandler(url, 'get')
-}
-
-/**
- * complete a content's progress for a given user
- * @param contentId
- * @returns {Promise<any|string|null>}
- */
-export async function postContentComplete(contentId) {
-  let url = `/api/content/v1/user/progress/complete/${contentId}`
-  return postDataHandler(url)
-}
-
-/**
- * start the user's progress on a content
- * @param contentId
- * @returns {Promise<any|string|null>}
- */
-export async function postContentStart(contentId) {
-  let url = `/api/content/v1/user/progress/start/${contentId}`
-  return postDataHandler(url)
-}
-
-/**
- * resets the user's progress on a content
- * @param contentId
- * @returns {Promise<any|string|null>}
- */
-export async function postContentReset(contentId) {
-  let url = `/api/content/v1/user/progress/reset/${contentId}`
-  return postDataHandler(url)
-}
-
-/**
- * restores the user's progress on a content
- * @param contentId
- * @returns {Promise<any|string|null>}
- */
-export async function postContentRestore(contentId) {
-  let url = `/api/content/v1/user/progress/restore/${contentId}`
-  return postDataHandler(url)
 }
 
 /**
@@ -751,13 +665,14 @@ function fetchAbsolute(url, params) {
   }
   return fetch(url, params)
 }
-export async function fetchHandler(url, method = 'get', dataVersion = null, body = null) {
+export async function fetchHandler(url, method = 'get', dataVersion = null, body = null, signal = null) {
   return fetchJSONHandler(
     url,
     globalConfig.sessionConfig.token,
     globalConfig.baseUrl,
     method,
     dataVersion,
-    body
+    body,
+    signal
   )
 }

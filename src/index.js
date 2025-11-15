@@ -1,6 +1,10 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
+	 default as EventsAPI
+} from './services/eventsAPI';
+
+import {
 	globalConfig,
 	initializeService
 } from './services/config.js';
@@ -78,12 +82,9 @@ import {
 	getLastInteractedOf,
 	getNavigateTo,
 	getNextLesson,
-	getProgressDateByIds,
-	getProgressPercentage,
-	getProgressPercentageByIds,
+	getProgressDataByIds,
 	getProgressState,
 	getProgressStateByIds,
-	getResumeTimeSeconds,
 	getResumeTimeSecondsByIds,
 	getStartedOrCompletedProgressOnly,
 	recordWatchSession
@@ -183,7 +184,6 @@ import {
 	fetchCompletedState,
 	fetchContentInProgress,
 	fetchContentPageUserData,
-	fetchContentProgress,
 	fetchHandler,
 	fetchLastInteractedChild,
 	fetchLikeCount,
@@ -193,7 +193,6 @@ import {
 	fetchTopComment,
 	fetchUserAward,
 	fetchUserBadges,
-	fetchUserLikes,
 	fetchUserPermissionsData,
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
@@ -201,14 +200,7 @@ import {
 	likeComment,
 	logUserPractice,
 	openComment,
-	postContentComplete,
-	postContentLiked,
-	postContentReset,
-	postContentRestore,
-	postContentStart,
-	postContentUnliked,
 	postPlaylistContentEngaged,
-	postRecordWatchSession,
 	replyToComment,
 	reportComment,
 	restoreComment,
@@ -393,10 +385,6 @@ import {
 	updateUserPractice
 } from './services/userActivity.js';
 
-import {
-	 default as EventsAPI 
-} from './services/eventsAPI';
-
 export {
 	addContextToContent,
 	addItemToPlaylist,
@@ -462,7 +450,6 @@ export {
 	fetchCompletedState,
 	fetchContentInProgress,
 	fetchContentPageUserData,
-	fetchContentProgress,
 	fetchContentRows,
 	fetchCustomerPayments,
 	fetchEnrollmentPageMetadata,
@@ -529,7 +516,6 @@ export {
 	fetchUpcomingEvents,
 	fetchUserAward,
 	fetchUserBadges,
-	fetchUserLikes,
 	fetchUserPermissions,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
@@ -560,16 +546,13 @@ export {
 	getOnboardingRecommendedContent,
 	getPracticeNotes,
 	getPracticeSessions,
-	getProgressDateByIds,
-	getProgressPercentage,
-	getProgressPercentageByIds,
+	getProgressDataByIds,
 	getProgressRows,
 	getProgressState,
 	getProgressStateByIds,
 	getRecent,
 	getRecentActivity,
 	getRecommendedForYou,
-	getResumeTimeSeconds,
 	getResumeTimeSecondsByIds,
 	getScheduleContentRows,
 	getSortOrder,
@@ -615,14 +598,7 @@ export {
 	pauseLiveEventPolling,
 	pinProgressRow,
 	pinThread,
-	postContentComplete,
-	postContentLiked,
-	postContentReset,
-	postContentRestore,
-	postContentStart,
-	postContentUnliked,
 	postPlaylistContentEngaged,
-	postRecordWatchSession,
 	rankCategories,
 	rankItems,
 	recommendations,
