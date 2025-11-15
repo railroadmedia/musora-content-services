@@ -904,6 +904,7 @@ export async function fetchFoundation(slug) {
  * @param {string} slug - The slug of the method.
  * @returns {Promise<Object|null>} - The fetched methods data or null if not found.
  */
+//todo BEH-1446 depreciated. remove all old method functions
 export async function fetchMethod(brand, slug) {
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
 

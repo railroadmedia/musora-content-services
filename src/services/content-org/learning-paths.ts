@@ -5,9 +5,25 @@
 import { fetchHandler } from '../railcontent.js'
 import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2Structure } from '../sanity.js'
 import { addContextToContent } from '../contentAggregator.js'
-import { getProgressStateByIds } from '../contentProgress.js'
+import {
+  contentStatusCompleted,
+  contentStatusReset,
+  getProgressState,
+  getProgressStateByIds
+} from '../contentProgress.js'
 
 const BASE_PATH: string = `/api/content-org`
+const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
+
+interface ActiveLearningPathResponse {
+  user_id: number,
+  brand: string,
+  active_learning_path_id: number,
+}
+
+
+
+
 
 /**
  * Gets today's daily session for the user.
@@ -16,7 +32,7 @@ const BASE_PATH: string = `/api/content-org`
  */
 export async function getDailySession(brand: string, userDate: Date) {
   const stringDate = userDate.toISOString().split('T')[0]
-  const url: string = `${BASE_PATH}/v1/user/learning-paths/daily-session/get-or-create`
+  const url: string = `${LEARNING_PATHS_PATH}/daily-session/get-or-create`
   const body = { brand: brand, userDate: stringDate }
   return await fetchHandler(url, 'POST', null, body)
 }
@@ -33,7 +49,7 @@ export async function updateDailySession(
   keepFirstLearningPath: boolean
 ) {
   const stringDate = userDate.toISOString().split('T')[0]
-  const url: string = `${BASE_PATH}/v1/user/learning-paths/daily-session/update`
+  const url: string = `${LEARNING_PATHS_PATH}/daily-session/update`
   const body = { brand: brand, userDate: stringDate, keepFirstLearningPath: keepFirstLearningPath }
   return await fetchHandler(url, 'POST', null, body)
 }
@@ -43,17 +59,19 @@ export async function updateDailySession(
  * @param brand
  */
 export async function getActivePath(brand: string) {
-  const url: string = `${BASE_PATH}/v1/user/learning-paths/active-path/get-or-create`
+  const url: string = `${LEARNING_PATHS_PATH}/active-path/get-or-create`
   const body = { brand: brand }
   return await fetchHandler(url, 'POST', null, body)
 }
 
+// todo this should be removed once we handle active path gen only through
+//  finish method intro or complete current active path
 /**
  * Updates user's active learning path.
  * @param brand
  */
 export async function updateActivePath(brand: string) {
-  const url: string = `${BASE_PATH}/v1/user/learning-paths/active-path/update`
+  const url: string = `${LEARNING_PATHS_PATH}/active-path/update`
   const body = { brand: brand }
   return await fetchHandler(url, 'POST', null, body)
 }
@@ -64,7 +82,7 @@ export async function updateActivePath(brand: string) {
  * @param learningPathId
  */
 export async function startLearningPath(brand: string, learningPathId: number) {
-  const url: string = `${BASE_PATH}/v1/user/learning-paths/start`
+  const url: string = `${LEARNING_PATHS_PATH}/start`
   const body = { brand: brand, learning_path_id: learningPathId }
   return await fetchHandler(url, 'POST', null, body)
 }
@@ -73,7 +91,7 @@ export async function startLearningPath(brand: string, learningPathId: number) {
  * Resets the user's learning path.
  */
 export async function resetAllLearningPaths() {
-  const url: string = `${BASE_PATH}/v1/user/learning-paths/reset`
+  const url: string = `${LEARNING_PATHS_PATH}/reset`
   return await fetchHandler(url, 'POST', null, {})
 }
 
@@ -82,8 +100,8 @@ export async function resetAllLearningPaths() {
  * @param {number} learningPathId - The learning path ID
  * @returns {Promise<Object>} Learning path with enriched lesson data
  */
-export async function getLearningPath(learningPathId) {
-  //TODO: must be a cleaner way to do this
+export async function getEnrichedLearningPath(learningPathId) {
+  //TODO BEH-1410: refactor/cleanup
   let learningPath = await fetchByRailContentId(learningPathId, 'learning-path-v2')
   learningPath.children = mapContentToParent(
     learningPath.children,
@@ -109,10 +127,16 @@ export async function getLearningPath(learningPathId) {
 export async function getLearningPathLessonsByIds(contentIds, learningPathId) {
   // It is more efficient to load the entire learning path than individual lessons
   // Also adds reliability check whether content is actually in the learning path
-  const learningPath = await getLearningPath(learningPathId)
+  const learningPath = await getEnrichedLearningPath(learningPathId)
   return learningPath.children.filter((lesson) => contentIds.includes(lesson.id))
 }
 
+/**
+ * Maps content to its parent learning path - fixes multi-parent problems for cta when lessons have a special collection.
+ * @param lessons
+ * @param parentContentType
+ * @param parentContentId
+ */
 export function mapContentToParent(lessons, parentContentType, parentContentId) {
   return lessons.map((lesson: any) => {
     return { ...lesson, type: parentContentType, parent_id: parentContentId }
@@ -142,7 +166,7 @@ export async function fetchLearningPathLessons(
   userDate: Date
 ) {
   const [learningPath, dailySession] = await Promise.all([
-    getLearningPath(learningPathId),
+    getEnrichedLearningPath(learningPathId),
     getDailySession(brand, userDate),
   ])
 
@@ -202,4 +226,65 @@ export async function fetchLearningPathLessons(
     completed_lessons: completedLessons,
     previous_learning_path_todays: previousLearningPathTodays,
   }
+}
+
+interface completeMethodIntroVideo {
+  intro_video_response: Object | null,
+  active_path_response: ActiveLearningPathResponse
+}
+/**
+ * Handles completion of method intro video and other related actions.
+ * @param introVideoId - The intro video content ID.
+ * @param brand
+ * @returns {Promise<Array>} response - The response object.
+ * @returns {Promise<Object|null>} response.intro_video_response - The intro video completion response or null if already completed.
+ * @returns {Promise<Object>} response.active_path_response - The set active learning path response.
+ */
+export async function completeMethodIntroVideo(introVideoId: number, brand: string): Promise<completeMethodIntroVideo> {
+  let response = {} as completeMethodIntroVideo
+
+  response.intro_video_response = await completeIfNotCompleted(introVideoId)
+
+  const url: string = `${LEARNING_PATHS_PATH}/start`
+  const body = { brand: brand }
+  response.active_path_response = await fetchHandler(url, 'POST', null, body)
+
+  return response
+}
+
+interface completeLearningPathIntroVideo {
+  intro_video_response: Object | null,
+  learning_path_reset_response: void | Object[] | Object
+}
+/**
+ * Handles completion of learning path intro video and other related actions.
+ * @param introVideoId
+ * @param learningPathId
+ * @param lessonsToImport
+ */
+export async function completeLearningPathIntroVideo(introVideoId: number, learningPathId: number, lessonsToImport: number[] | null) {
+  let response = {} as completeLearningPathIntroVideo
+
+  response.intro_video_response = await completeIfNotCompleted(introVideoId)
+
+  if (!lessonsToImport) {
+    // reset progress within the learning path
+    response.learning_path_reset_response = await contentStatusReset(learningPathId)
+  } else {
+    response.learning_path_reset_response = null
+
+    // todo: add collection context + optimize with bulk calls with watermelon
+    for (const contentId of lessonsToImport) {
+      response.learning_path_reset_response[contentId] = await contentStatusCompleted(contentId)
+    }
+  }
+
+  return response
+}
+
+
+async function completeIfNotCompleted(contentId: number): Promise<Object | null> {
+  const introVideoStatus = await getProgressState(contentId)
+
+  return introVideoStatus !== 'completed' ? await contentStatusCompleted(contentId) : null
 }
