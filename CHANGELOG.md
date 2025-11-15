@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.78.0](https://github.com/railroadmedia/musora-content-services/compare/v2.77.2...v2.78.0) (2025-11-15)
+
+
+### Features
+
+* **BEH-1409:** complete intro video ([#566](https://github.com/railroadmedia/musora-content-services/issues/566)) ([fb2fa96](https://github.com/railroadmedia/musora-content-services/commit/fb2fa96f408948cf4c3501709dc2ec2c17f23163))
+
 ### [2.77.2](https://github.com/railroadmedia/musora-content-services/compare/v2.77.1...v2.77.2) (2025-11-14)
 
 ### [2.77.1](https://github.com/railroadmedia/musora-content-services/compare/v2.77.0...v2.77.1) (2025-11-13)
