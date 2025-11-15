@@ -30,6 +30,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     opts: {
       brand?: string
       updatedAfter?: number
+      limit?: number
     } = {}
   ) {
     const clauses: Q.Clause[] = [
@@ -43,6 +44,10 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
     if (opts.brand) {
       clauses.push(Q.where('content_brand', opts.brand))
+    }
+
+    if (opts.limit) {
+      clauses.push(Q.take(opts.limit))
     }
 
     return clauses

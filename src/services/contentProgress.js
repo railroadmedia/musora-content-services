@@ -199,12 +199,14 @@ export async function getAllCompleted(limit = null) {
 
 export async function getAllStartedOrCompleted({
   onlyIds = true,
-  brand = null
+  brand = null,
+  limit = null
 } = {}) {
   const agoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
   const filters = {
     brand: brand ?? undefined,
-    updatedAfter: agoInSeconds
+    updatedAfter: agoInSeconds,
+    limit: limit ?? undefined,
   }
 
   if (onlyIds) {

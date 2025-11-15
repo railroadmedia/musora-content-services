@@ -1058,7 +1058,7 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
   const methodCardPromise = getMethodCard(brand)
   const [recentPlaylists, progressContents, userPinnedItem] = await Promise.all([
     fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
-    getAllStartedOrCompleted({ onlyIds: false, brand: brand }),
+    getAllStartedOrCompleted({ onlyIds: false, brand: brand, limit }),
     getUserPinnedItem(brand),
   ])
 
