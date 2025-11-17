@@ -1,12 +1,14 @@
 import {
-  getLastInteractedOf, getNavigateTo,
-  getNextLesson, getProgressDateByIds,
+  getLastInteractedOf,
+  getNavigateTo,
+  getNextLesson,
+  getProgressDateByIds,
   getProgressPercentageByIds,
   getProgressStateByIds,
-  getResumeTimeSecondsByIds
-} from "./contentProgress"
-import {isContentLikedByIds} from "./contentLikes"
-import {fetchLastInteractedChild, fetchLikeCount} from "./railcontent"
+  getResumeTimeSecondsByIds,
+} from './contentProgress'
+import { isContentLikedByIds } from './contentLikes'
+import { fetchLastInteractedChild, fetchLikeCount } from './railcontent'
 
 /**
  * Combine sanity data with BE contextual data.
@@ -55,8 +57,9 @@ import {fetchLastInteractedChild, fetchLikeCount} from "./railcontent"
  *
  */
 
-export async function addContextToContent(dataPromise, ...dataArgs)
-{
+// need to add method support.
+// this means returning collection_type and collection_id
+export async function addContextToContent(dataPromise, ...dataArgs) {
   const lastArg = dataArgs[dataArgs.length - 1]
   const options = typeof lastArg === 'object' && !Array.isArray(lastArg) ? lastArg : {}
 
@@ -78,18 +81,27 @@ export async function addContextToContent(dataPromise, ...dataArgs)
 
   let data = await dataPromise(...dataParam)
   const isDataAnArray = Array.isArray(data)
-  if(isDataAnArray && data.length === 0) return data
-  if(!data) return false
+  if (isDataAnArray && data.length === 0) return data
+  if (!data) return false
 
   const items = extractItemsFromData(data, dataField, isDataAnArray, dataField_includeParent) ?? []
-  const ids = items.map(item => item?.id).filter(Boolean)
-  if(ids.length === 0) return data
+  const ids = items.map((item) => item?.id).filter(Boolean)
+  if (ids.length === 0) return data
 
-  const [progressData, isLikedData, resumeTimeData, lastInteractedChildData, nextLessonData, navigateToData] = await Promise.all([
-    addProgressPercentage || addProgressStatus || addProgressTimestamp ? getProgressDateByIds(ids) : Promise.resolve(null),
+  const [
+    progressData,
+    isLikedData,
+    resumeTimeData,
+    lastInteractedChildData,
+    nextLessonData,
+    navigateToData,
+  ] = await Promise.all([
+    addProgressPercentage || addProgressStatus || addProgressTimestamp
+      ? getProgressDateByIds(ids)
+      : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
-    addLastInteractedChild ? fetchLastInteractedChild(ids)  : Promise.resolve(null),
+    addLastInteractedChild ? fetchLastInteractedChild(ids) : Promise.resolve(null),
     addNextLesson ? getNextLesson(items) : Promise.resolve(null),
     addNavigateTo ? getNavigateTo(items) : Promise.resolve(null),
   ])
@@ -103,33 +115,40 @@ export async function addContextToContent(dataPromise, ...dataArgs)
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
     ...(addLastInteractedChild ? { lastInteractedChild: lastInteractedChildData?.[item.id] } : {}),
-    ...(addNextLesson ? { nextLesson: nextLessonData?.[item.id] } : {}),
+    ...(addNextLesson
+      ? {
+          nextLesson: nextLessonData?.[item.id], //deprecated
+          next_lesson_id: nextLessonData?.[item.id],
+          next_lesson: item?.children?.find((child) => child.id === nextLessonData?.[item.id]),
+        }
+      : {}),
     ...(addNavigateTo ? { navigateTo: navigateToData?.[item.id] } : {}),
   })
 
   return await processItems(data, addContext, dataField, isDataAnArray, dataField_includeParent)
 }
 
-export async function getNavigateToForPlaylists(data, {dataField = null} = {} )
-{
+export async function getNavigateToForPlaylists(data, { dataField = null } = {}) {
   let playlists = extractItemsFromData(data, dataField, false, false)
   let allIds = []
-  playlists.forEach((playlist) => allIds = [...allIds, ...playlist.items.map(a => a.content_id)])
-  const progressOnItems = await getProgressStateByIds(allIds);
+  playlists.forEach(
+    (playlist) => (allIds = [...allIds, ...playlist.items.map((a) => a.content_id)])
+  )
+  const progressOnItems = await getProgressStateByIds(allIds)
   const addContext = async (playlist) => {
-    const allItemsCompleted = playlist.items.every(i => {
-      const itemId = i.content_id;
-      const progress = progressOnItems[itemId];
-      return progress && progress === 'completed';
-    });
-    let nextItem = playlist.items[0] ?? null;
+    const allItemsCompleted = playlist.items.every((i) => {
+      const itemId = i.content_id
+      const progress = progressOnItems[itemId]
+      return progress && progress === 'completed'
+    })
+    let nextItem = playlist.items[0] ?? null
     if (!allItemsCompleted) {
-      const lastItemProgress = progressOnItems[playlist.last_engaged_on];
-      const index = playlist.items.findIndex(i => i.content_id === playlist.last_engaged_on);
+      const lastItemProgress = progressOnItems[playlist.last_engaged_on]
+      const index = playlist.items.findIndex((i) => i.content_id === playlist.last_engaged_on)
       if (lastItemProgress === 'completed') {
-        nextItem = playlist.items[index + 1] ?? nextItem;
+        nextItem = playlist.items[index + 1] ?? nextItem
       } else {
-        nextItem = playlist.items[index] ?? nextItem;
+        nextItem = playlist.items[index] ?? nextItem
       }
     }
     playlist.navigateTo = {
@@ -138,11 +157,10 @@ export async function getNavigateToForPlaylists(data, {dataField = null} = {} )
     }
     return playlist
   }
-  return await processItems(data, addContext, dataField, false, false,)
+  return await processItems(data, addContext, dataField, false, false)
 }
 
-function extractItemsFromData(data, dataField, isParentArray, includeParent)
-{
+function extractItemsFromData(data, dataField, isParentArray, includeParent) {
   let items = []
   if (dataField) {
     if (isParentArray) {
@@ -162,18 +180,17 @@ function extractItemsFromData(data, dataField, isParentArray, includeParent)
       }
     }
   } else if (Array.isArray(data)) {
-    items = data;
+    items = data
   } else if (data?.id) {
     items = [data]
   }
   return items
 }
 
-async function processItems(data, addContext, dataField, isParentArray, includeParent)
-{
+async function processItems(data, addContext, dataField, isParentArray, includeParent) {
   if (dataField) {
     if (isParentArray) {
-      for(let parent of data) {
+      for (let parent of data) {
         parent[dataField] = Array.isArray(parent[dataField])
           ? await Promise.all(parent[dataField].map(addContext))
           : await addContext(parent[dataField])
@@ -184,16 +201,10 @@ async function processItems(data, addContext, dataField, isParentArray, includeP
         : await addContext(data[dataField])
     }
     if (includeParent) {
-      data = isParentArray
-        ? await Promise.all(data.map(addContext))
-        : await addContext(data)
+      data = isParentArray ? await Promise.all(data.map(addContext)) : await addContext(data)
     }
     return data
   } else {
-    return Array.isArray(data)
-      ? await Promise.all(data.map(addContext))
-      : await addContext(data)
+    return Array.isArray(data) ? await Promise.all(data.map(addContext)) : await addContext(data)
   }
 }
-
-

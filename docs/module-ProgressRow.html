@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>user/payments.ts - Documentation</title>
+    <title>ProgressRow - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,93 +35,55 @@
 
 <div id="main">
     
-    <h1 class="page-title">user/payments.ts</h1>
+    <h1 class="page-title">ProgressRow</h1>
     
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @module Payments
- */
-import { HttpClient } from '../../infrastructure/http/HttpClient'
-import { globalConfig } from '../config.js'
+        
+    
+</header>
 
-interface CustomerOrder {
-  id: string
-  line_item_title: string
-  date: string
-  total_price: string
-  currency: string
-  status_url: string
-}
+<article>
+    
+        <div class="container-overview">
+        
+            
 
-interface PaginationMeta {
-  hasNextPage: boolean
-  hasPreviousPage: boolean
-  startCursor: string | null
-  endCursor: string | null
-}
+            
+        
+        </div>
+    
 
-interface CustomerOrdersResponse {
-  data: CustomerOrder[]
-  meta: {
-    pagination: PaginationMeta
-  }
-}
+    
 
-interface FetchCustomerPaymentsOptions {
-  perPage?: number
-  cursor?: string | null
-}
+    
 
-/**
- * Fetches a list of orders (from Shopify) for the authenticated user (customer).
- *
- * @param {FetchCustomerPaymentsOptions} options - Pagination options
- * @param {number} options.perPage - Number of orders per page (1-100, default: 40)
- * @param {string|null} options.cursor - Cursor for pagination
- * @returns {Promise&lt;CustomerOrdersResponse>} - A promise that resolves to customer orders with pagination metadata
- * @throws {HttpError} - Throws HttpError if the request fails.
- *
- * @example
- * // Fetch first page with default page size (40)
- * const response = await fetchCustomerPayments()
- *
- * @example
- * // Fetch first page with custom page size
- * const response = await fetchCustomerPayments({ perPage: 20 })
- *
- * @example
- * // Fetch next page using cursor from previous response
- * const response = await fetchCustomerPayments({
- *   perPage: 20,
- *   cursor: previousResponse.meta.pagination.endCursor
- * })
- */
-export async function fetchCustomerPayments(
-  options: FetchCustomerPaymentsOptions = {}
-): Promise&lt;CustomerOrdersResponse> {
-  const client = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.authToken)
-  const params = new URLSearchParams()
-  if (options.perPage) {
-    params.append('per_page', options.perPage.toString())
-  }
-  if (options.cursor) {
-    params.append('cursor', options.cursor)
-  }
-  const queryString = params.toString()
-  const url = queryString ? `/api/customer/orders/v1?${queryString}` : '/api/customer/orders/v1'
+    
+    
+    
 
-  return await client.get&lt;CustomerOrdersResponse>(url)
-}
-</code></pre>
-        </article>
-    </section>
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 

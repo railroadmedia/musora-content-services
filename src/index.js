@@ -13,9 +13,16 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
 	fetchLearningPathLessons,
 	getActivePath,
 	getDailySession,
+	getEnrichedLearningPath,
+	getLearningPathLessonsByIds,
+	mapContentToParent,
+	resetAllLearningPaths,
+	startLearningPath,
 	updateActivePath,
 	updateDailySession
 } from './services/content-org/learning-paths.ts';
@@ -90,6 +97,7 @@ import {
 	convertToTimeZone,
 	getMonday,
 	getTimeRemainingUntilLocal,
+	getToday,
 	getWeekNumber,
 	isNextDay,
 	isSameDate,
@@ -126,6 +134,7 @@ import {
 	fetchThreads,
 	followThread,
 	lockThread,
+	markThreadAsRead,
 	pinThread,
 	unfollowThread,
 	unlockThread,
@@ -154,6 +163,10 @@ import {
 import {
 	createTestUser
 } from './services/liveTesting.ts';
+
+import {
+	getMethodCard
+} from './services/progress-row/method-card.js';
 
 import {
 	assignModeratorToComment,
@@ -274,7 +287,8 @@ import {
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	setupAccount,
-	status
+	status,
+	toggleStudentView
 } from './services/user/account.ts';
 
 import {
@@ -394,6 +408,8 @@ export {
 	buildImageSRC,
 	calculateLongestStreaks,
 	closeComment,
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
 	confirmEmailChange,
 	contentStatusCompleted,
 	contentStatusReset,
@@ -530,9 +546,12 @@ export {
 	getAwardDataForGuidedContent,
 	getContentRows,
 	getDailySession,
+	getEnrichedLearningPath,
 	getLastInteractedOf,
+	getLearningPathLessonsByIds,
 	getLegacyMethods,
 	getLessonContentRows,
+	getMethodCard,
 	getMonday,
 	getNavigateTo,
 	getNavigateToForPlaylists,
@@ -557,6 +576,7 @@ export {
 	getStartedOrCompletedProgressOnly,
 	getTabResults,
 	getTimeRemainingUntilLocal,
+	getToday,
 	getUserData,
 	getUserMonthlyStats,
 	getUserPractices,
@@ -582,11 +602,13 @@ export {
 	logUserPractice,
 	login,
 	logout,
+	mapContentToParent,
 	markAllNotificationsAsRead,
 	markContentAsInterested,
 	markContentAsNotInterested,
 	markNotificationAsRead,
 	markNotificationAsUnread,
+	markThreadAsRead,
 	numberOfActiveUsers,
 	openComment,
 	otherStats,
@@ -615,6 +637,7 @@ export {
 	reportPlaylist,
 	requestEmailChange,
 	reset,
+	resetAllLearningPaths,
 	resetPassword,
 	restoreComment,
 	restoreItemFromPlaylist,
@@ -629,12 +652,14 @@ export {
 	setStudentViewForUser,
 	setUserSignature,
 	setupAccount,
+	startLearningPath,
 	startLiveEventPolling,
 	startOnboarding,
 	status,
 	toDayjs,
 	togglePlaylistPrivate,
 	toggleSignaturePrivate,
+	toggleStudentView,
 	unEnrollUserInGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,

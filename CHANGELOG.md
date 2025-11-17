@@ -2,6 +2,80 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.78.0](https://github.com/railroadmedia/musora-content-services/compare/v2.77.2...v2.78.0) (2025-11-15)
+
+
+### Features
+
+* **BEH-1409:** complete intro video ([#566](https://github.com/railroadmedia/musora-content-services/issues/566)) ([fb2fa96](https://github.com/railroadmedia/musora-content-services/commit/fb2fa96f408948cf4c3501709dc2ec2c17f23163))
+
+### [2.77.2](https://github.com/railroadmedia/musora-content-services/compare/v2.77.1...v2.77.2) (2025-11-14)
+
+### [2.77.1](https://github.com/railroadmedia/musora-content-services/compare/v2.77.0...v2.77.1) (2025-11-13)
+
+
+### Bug Fixes
+
+* difficulty & instructor fields ([#559](https://github.com/railroadmedia/musora-content-services/issues/559)) ([bd12f4e](https://github.com/railroadmedia/musora-content-services/commit/bd12f4e825f89eca3476bd130a23710991dff7a9))
+
+## [2.77.0](https://github.com/railroadmedia/musora-content-services/compare/v2.64.0...v2.77.0) (2025-11-13)
+
+
+### Features
+
+*  returning data updates in fetchLearningPathLessons ([#550](https://github.com/railroadmedia/musora-content-services/issues/550)) ([1753d75](https://github.com/railroadmedia/musora-content-services/commit/1753d754d620fafc387e700f114d67ec7fc9043f))
+* add fields for learning path v2 ([#537](https://github.com/railroadmedia/musora-content-services/issues/537)) ([b2bcbd2](https://github.com/railroadmedia/musora-content-services/commit/b2bcbd2306afa730e5c61d6ee34fe082212dfdbb))
+* Add learning path lessons endpoint ([#538](https://github.com/railroadmedia/musora-content-services/issues/538)) ([372a871](https://github.com/railroadmedia/musora-content-services/commit/372a8718eb354dfee6faef69077f00b7285a0a19))
+* **BEH-1377:** active path ([#533](https://github.com/railroadmedia/musora-content-services/issues/533)) ([1135271](https://github.com/railroadmedia/musora-content-services/commit/11352714d4228e21f5ac2974d59e6c2805fe900f))
+* **forums:** automatically mark threads as read when viewing posts ([7c721e8](https://github.com/railroadmedia/musora-content-services/commit/7c721e898c445076092bdad34b4df054b1d589f1))
+* legacy methods function with mock data ([#534](https://github.com/railroadmedia/musora-content-services/issues/534)) ([76f74d2](https://github.com/railroadmedia/musora-content-services/commit/76f74d255ab6b6b35ef6422a7952b4f75b551b8c))
+* method card progress row ([#553](https://github.com/railroadmedia/musora-content-services/issues/553)) ([a124cfc](https://github.com/railroadmedia/musora-content-services/commit/a124cfcedb4dacf3b6e6a4c435c4301b3eefa55e))
+* **MU2-1211:** Add is_admin to UserResource ([c8ec392](https://github.com/railroadmedia/musora-content-services/commit/c8ec392bd56874dac495dc731118bcb3298aa80c))
+* **MU2-1211:** Add show_admin_toggle to user resource ([46e1d55](https://github.com/railroadmedia/musora-content-services/commit/46e1d5559badf8822d0351c3483d8a55b781be32))
+* **MU2-1211:** Update docs ([58e973e](https://github.com/railroadmedia/musora-content-services/commit/58e973e43125b1220d00aaf7d03c32639a0f3f64))
+* **MU2-1211:** Update HttpClient methods (get, post, etc.) to capitilized to alleviate browser/cors issue, adding use_student_view to usertype, function to toggle student/admin view ([a2662c2](https://github.com/railroadmedia/musora-content-services/commit/a2662c22f706ac924c755b5be8643fdd17f4ebe4))
+* **MU2E1-168:** onboarding status function ([#530](https://github.com/railroadmedia/musora-content-services/issues/530)) ([1e1cf78](https://github.com/railroadmedia/musora-content-services/commit/1e1cf78afb452792a859ab808d3c0ff1d59ddc6f))
+* update children fields in fetchByRailContentId ([#544](https://github.com/railroadmedia/musora-content-services/issues/544)) ([8bdf7d6](https://github.com/railroadmedia/musora-content-services/commit/8bdf7d68b219f83a6e18fed439046e3ffca11642))
+* update fetch learning path lessons ([#551](https://github.com/railroadmedia/musora-content-services/issues/551)) ([a434076](https://github.com/railroadmedia/musora-content-services/commit/a434076a8281af61043c1ec3e09798e7981ff8f3))
+
+
+### Bug Fixes
+
+* active user count endpoint ([#542](https://github.com/railroadmedia/musora-content-services/issues/542)) ([be65c1f](https://github.com/railroadmedia/musora-content-services/commit/be65c1f62b4c828772aade616ddd5d7063d83aa3))
+* add all lessons to fetchLearningPathLessons endpoint ([#548](https://github.com/railroadmedia/musora-content-services/issues/548)) ([acdda67](https://github.com/railroadmedia/musora-content-services/commit/acdda67ffa9eb8e44f7239e3ac21c7bda96166b6))
+* Add is_content and page_type to all content ([#507](https://github.com/railroadmedia/musora-content-services/issues/507)) ([174706b](https://github.com/railroadmedia/musora-content-services/commit/174706b736540b9d24ceaee11539df9203d2d135))
+* Add skill-pack support for navigateTo and nextLesson functionality ([d1682d2](https://github.com/railroadmedia/musora-content-services/commit/d1682d237e548c14f9e3d9f90dea08f6dc752d93))
+* changes to how learning path intro video is stored ([#556](https://github.com/railroadmedia/musora-content-services/issues/556)) ([d3ceb76](https://github.com/railroadmedia/musora-content-services/commit/d3ceb764394cd9450d05c0153aac475022822f48))
+* endpoint for followThread ([719adc8](https://github.com/railroadmedia/musora-content-services/commit/719adc8fa73cdcfb7434d132445b93323ecf4b6e))
+* fetch learning path lessons ([69ac2e1](https://github.com/railroadmedia/musora-content-services/commit/69ac2e1e0982289b26e7148cc17d19f1ba389484))
+* **live-testing:** add email as optional parameter for user creation ([#539](https://github.com/railroadmedia/musora-content-services/issues/539)) ([2289707](https://github.com/railroadmedia/musora-content-services/commit/2289707702a8acbe88c2c7f2acbe97459f876451))
+* **live-testing:** post request url ([#543](https://github.com/railroadmedia/musora-content-services/issues/543)) ([b5463f9](https://github.com/railroadmedia/musora-content-services/commit/b5463f9627c11a4df6257995e1deec5a275ef2c8))
+* **T3PS-864:** Remove sneaky console.log ([19a22ee](https://github.com/railroadmedia/musora-content-services/commit/19a22ee560af64448b7a40a6784d4bba9d0794b4))
+* **T3Ps:** Update fetchCustomerPayments with paginate parameters ([c9c784d](https://github.com/railroadmedia/musora-content-services/commit/c9c784da6995f7ff836c0453c1d0ff353535a53e))
+* update video field for method objects ([#541](https://github.com/railroadmedia/musora-content-services/issues/541)) ([a2120f6](https://github.com/railroadmedia/musora-content-services/commit/a2120f63bfa99d9b9ae96712e879161ad4add441))
+
+## [2.76.0](https://github.com/railroadmedia/musora-content-services/compare/v2.75.0...v2.76.0) (2025-11-12)
+
+
+### Features
+
+* **MU2-1211:** Add is_admin to UserResource ([c8ec392](https://github.com/railroadmedia/musora-content-services/commit/c8ec392bd56874dac495dc731118bcb3298aa80c))
+* **MU2-1211:** Add show_admin_toggle to user resource ([46e1d55](https://github.com/railroadmedia/musora-content-services/commit/46e1d5559badf8822d0351c3483d8a55b781be32))
+* **MU2-1211:** Update docs ([58e973e](https://github.com/railroadmedia/musora-content-services/commit/58e973e43125b1220d00aaf7d03c32639a0f3f64))
+* **MU2-1211:** Update HttpClient methods (get, post, etc.) to capitilized to alleviate browser/cors issue, adding use_student_view to usertype, function to toggle student/admin view ([a2662c2](https://github.com/railroadmedia/musora-content-services/commit/a2662c22f706ac924c755b5be8643fdd17f4ebe4))
+
+
+### Bug Fixes
+
+* changes to how learning path intro video is stored ([#556](https://github.com/railroadmedia/musora-content-services/issues/556)) ([d3ceb76](https://github.com/railroadmedia/musora-content-services/commit/d3ceb764394cd9450d05c0153aac475022822f48))
+
+## [2.75.0](https://github.com/railroadmedia/musora-content-services/compare/v2.74.1...v2.75.0) (2025-11-10)
+
+
+### Features
+
+* method card progress row ([#553](https://github.com/railroadmedia/musora-content-services/issues/553)) ([a124cfc](https://github.com/railroadmedia/musora-content-services/commit/a124cfcedb4dacf3b6e6a4c435c4301b3eefa55e))
+
 ### [2.74.1](https://github.com/railroadmedia/musora-content-services/compare/v2.74.0...v2.74.1) (2025-11-07)
 
 

@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>user/payments.ts - Documentation</title>
+    <title>progress-row/method-card.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">user/payments.ts</h1>
+    <h1 class="page-title">progress-row/method-card.js</h1>
     
 
     
@@ -46,78 +46,115 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @module Payments
+ * @module ProgressRow
  */
-import { HttpClient } from '../../infrastructure/http/HttpClient'
-import { globalConfig } from '../config.js'
 
-interface CustomerOrder {
-  id: string
-  line_item_title: string
-  date: string
-  total_price: string
-  currency: string
-  status_url: string
-}
+import {
+  getDailySession,
+  getActivePath,
+  resetAllLearningPaths,
+  startLearningPath,
+  fetchLearningPathLessons,
+} from '../content-org/learning-paths'
+import { getToday } from '../dateUtils.js'
+import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2IntroVideo } from '../sanity'
+import { addContextToContent } from '../contentAggregator.js'
+import { getProgressState } from '../contentProgress'
 
-interface PaginationMeta {
-  hasNextPage: boolean
-  hasPreviousPage: boolean
-  startCursor: string | null
-  endCursor: string | null
-}
+export async function getMethodCard(brand) {
+  const introVideo = await fetchMethodV2IntroVideo(brand)
+  const introVideoProgressState = await getProgressState(introVideo?.id)
+  //resetAllLearningPaths()
+  if (introVideoProgressState != 'completed') {
+    //startLearningPath('drumeo', 422533)
+    const timestamp = Math.floor(Date.now() / 1000)
+    return {
+      id: 1, // method card has no id
+      type: 'method',
+      header: 'Method',
+      progressType: 'method',
+      body: {
+        thumbnail: introVideo.thumbnail,
+        title: introVideo.title,
+        subtitle: `${introVideo.difficulty_string} • ${introVideo.instructor?.[0]?.name}`,
+      },
+      cta: {
+        text: 'Get Started',
+        action: getMethodActionCTA(introVideo),
+      },
+      progressTimestamp: timestamp,
+    }
+  } else {
+    //TODO: Optimize loading of dailySessions/Path, should not need multiple requests
+    const activeLearningPath = await getActivePath(brand)
+    const learningPath = await fetchLearningPathLessons(
+      activeLearningPath.active_learning_path_id,
+      brand,
+      getToday()
+    )
 
-interface CustomerOrdersResponse {
-  data: CustomerOrder[]
-  meta: {
-    pagination: PaginationMeta
+    const allCompleted = learningPath?.todays_lessons.every(
+      (lesson) => lesson.progressStatus === 'completed'
+    )
+    const anyCompleted = learningPath?.todays_lessons.some(
+      (lesson) => lesson.progressStatus === 'completed'
+    )
+    const noneCompleted = learningPath?.todays_lessons.every(
+      (lesson) => lesson.progressStatus !== 'completed'
+    )
+
+    const nextIncompleteLesson = learningPath?.todays_lessons.find(
+      (lesson) => lesson.progressStatus !== 'completed'
+    )
+    let ctaText,
+      action,
+      nextLesson = null
+    if (noneCompleted) {
+      ctaText = 'Start Session'
+      action = getMethodActionCTA(nextIncompleteLesson)
+    } else if (anyCompleted &amp;&amp; !allCompleted) {
+      ctaText = 'Continue Session'
+      action = getMethodActionCTA(nextIncompleteLesson)
+    } else if (allCompleted) {
+      ctaText = learningPath.next_lesson ? 'Start Next Lesson' : 'Browse Lessons'
+      action = learningPath.next_lesson
+        ? getMethodActionCTA(learningPath.next_lesson)
+        : {
+            type: 'lessons',
+            brand: brand,
+          }
+    }
+
+    let maxProgressTimestamp = Math.max(
+      ...learningPath?.children.map((lesson) => lesson.progressTimestamp)
+    )
+    if (!maxProgressTimestamp) {
+      maxProgressTimestamp = learningPath.active_learning_path_created_at
+    }
+
+    return {
+      id: 1,
+      type: 'learning-path-v2',
+      progressType: 'method',
+      header: 'Method',
+      body: learningPath,
+      cta: {
+        text: ctaText,
+        action: action,
+      },
+      // *1000 is to match playlists which are saved in millisecond accuracy
+      progressTimestamp: maxProgressTimestamp * 1000,
+    }
   }
 }
 
-interface FetchCustomerPaymentsOptions {
-  perPage?: number
-  cursor?: string | null
-}
-
-/**
- * Fetches a list of orders (from Shopify) for the authenticated user (customer).
- *
- * @param {FetchCustomerPaymentsOptions} options - Pagination options
- * @param {number} options.perPage - Number of orders per page (1-100, default: 40)
- * @param {string|null} options.cursor - Cursor for pagination
- * @returns {Promise&lt;CustomerOrdersResponse>} - A promise that resolves to customer orders with pagination metadata
- * @throws {HttpError} - Throws HttpError if the request fails.
- *
- * @example
- * // Fetch first page with default page size (40)
- * const response = await fetchCustomerPayments()
- *
- * @example
- * // Fetch first page with custom page size
- * const response = await fetchCustomerPayments({ perPage: 20 })
- *
- * @example
- * // Fetch next page using cursor from previous response
- * const response = await fetchCustomerPayments({
- *   perPage: 20,
- *   cursor: previousResponse.meta.pagination.endCursor
- * })
- */
-export async function fetchCustomerPayments(
-  options: FetchCustomerPaymentsOptions = {}
-): Promise&lt;CustomerOrdersResponse> {
-  const client = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.authToken)
-  const params = new URLSearchParams()
-  if (options.perPage) {
-    params.append('per_page', options.perPage.toString())
+function getMethodActionCTA(item) {
+  return {
+    type: item.type,
+    brand: item.brand,
+    id: item.id,
+    slug: item.slug,
   }
-  if (options.cursor) {
-    params.append('cursor', options.cursor)
-  }
-  const queryString = params.toString()
-  const url = queryString ? `/api/customer/orders/v1?${queryString}` : '/api/customer/orders/v1'
-
-  return await client.get&lt;CustomerOrdersResponse>(url)
 }
 </code></pre>
         </article>
