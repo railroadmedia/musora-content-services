@@ -4,6 +4,8 @@
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from '../config.js'
+import { Onboarding } from './onboarding'
+import { AuthResponse } from './types'
 
 /**
  * @param {string} email - The email address to check the account status for.
@@ -41,6 +43,11 @@ export interface AccountSetupProps {
   deviceName?: string
 }
 
+export interface AccountSetupResponse {
+  auth: AuthResponse
+  onboarding: Onboarding
+}
+
 /**
  * @param {Object} props - The parameters for setting up the account.
  * @property {string} email - The email address for the account.
@@ -54,7 +61,7 @@ export interface AccountSetupProps {
  * @throws {Error} - Throws an error if required parameters are missing based on the environment.
  * @throws {HttpError} - Throws an HttpError if the HTTP request fails.
  */
-export async function setupAccount(props: AccountSetupProps): Promise<void> {
+export async function setupAccount(props: AccountSetupProps): Promise<AccountSetupResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   if (!globalConfig.isMA && !props.token) {
     throw new Error('Token is required for non-MA environments')
@@ -66,7 +73,7 @@ export async function setupAccount(props: AccountSetupProps): Promise<void> {
     throw new Error('Device name and RevenueCat App User ID are required for MA environments')
   }
 
-  return httpClient.post(`/api/user-management-system/v1/accounts`, {
+  return httpClient.post<AccountSetupResponse>(`/api/user-management-system/v1/accounts`, {
     email: props.email,
     password: props.password,
     password_confirmation: props.passwordConfirmation,
