@@ -1,4 +1,4 @@
-import { getPermissionsAdapter } from './services/permissions/index.js'
+import { getPermissionsAdapter } from './services/permissions/index.ts'
 
 export class FilterBuilder {
   STATUS_SCHEDULED = 'scheduled'
