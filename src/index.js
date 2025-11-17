@@ -13,9 +13,14 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
 	fetchLearningPathLessons,
 	getActivePath,
 	getDailySession,
+	getEnrichedLearningPath,
+	getLearningPathLessonsByIds,
+	mapContentToParent,
 	resetAllLearningPaths,
 	startLearningPath,
 	updateActivePath,
@@ -130,6 +135,7 @@ import {
 	fetchThreads,
 	followThread,
 	lockThread,
+	markThreadAsRead,
 	pinThread,
 	unfollowThread,
 	unlockThread,
@@ -283,7 +289,8 @@ import {
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	setupAccount,
-	status
+	status,
+	toggleStudentView
 } from './services/user/account.ts';
 
 import {
@@ -403,6 +410,8 @@ export {
 	buildImageSRC,
 	calculateLongestStreaks,
 	closeComment,
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
 	confirmEmailChange,
 	contentStatusCompleted,
 	contentStatusReset,
@@ -540,7 +549,9 @@ export {
 	getAwardDataForGuidedContent,
 	getContentRows,
 	getDailySession,
+	getEnrichedLearningPath,
 	getLastInteractedOf,
+	getLearningPathLessonsByIds,
 	getLegacyMethods,
 	getLessonContentRows,
 	getMethodCard,
@@ -595,11 +606,13 @@ export {
 	logUserPractice,
 	login,
 	logout,
+	mapContentToParent,
 	markAllNotificationsAsRead,
 	markContentAsInterested,
 	markContentAsNotInterested,
 	markNotificationAsRead,
 	markNotificationAsUnread,
+	markThreadAsRead,
 	numberOfActiveUsers,
 	openComment,
 	otherStats,
@@ -650,6 +663,7 @@ export {
 	toDayjs,
 	togglePlaylistPrivate,
 	toggleSignaturePrivate,
+	toggleStudentView,
 	unEnrollUserInGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,

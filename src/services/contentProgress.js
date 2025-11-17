@@ -70,7 +70,7 @@ export async function getNextLesson(data) {
         const lastInteractedStatus = childrenStates[lastInteracted]
 
         //different nextLesson behaviour for different content types
-        if (content.type === 'course' || content.type === 'pack-bundle') {
+        if (content.type === 'course' || content.type === 'pack-bundle' || content.type === 'skill-pack') {
           if (lastInteractedStatus === STATE_STARTED) {
             nextLessonData[content.id] = lastInteracted
           } else {
@@ -130,16 +130,13 @@ export async function getNavigateTo(data) {
         const firstChild = validChildren[0]
         let lastInteractedChildNavToData = await getNavigateTo([firstChild])
         lastInteractedChildNavToData = lastInteractedChildNavToData[firstChild.id] ?? null
-        navigateToData[content.id] = buildNavigateTo(
-          firstChild,
-          lastInteractedChildNavToData
-        )
+        navigateToData[content.id] = buildNavigateTo(firstChild, lastInteractedChildNavToData)
       } else {
         const childrenStates = await getProgressStateByIds(childrenIds)
         const lastInteracted = await getLastInteractedOf(childrenIds)
         const lastInteractedStatus = childrenStates[lastInteracted]
 
-        if (content.type === 'course' || content.type === 'pack-bundle') {
+        if (content.type === 'course' || content.type === 'pack-bundle' || content.type === 'skill-pack') {
           if (lastInteractedStatus === STATE_STARTED) {
             navigateToData[content.id] = buildNavigateTo(children.get(lastInteracted))
           } else {
@@ -278,7 +275,6 @@ export async function getAllCompleted(limit = null) {
   return ids
 }
 
-// todo: either refactor to use watermelon, or add method functionality to dataContext (more work overall)
 export async function getAllStartedOrCompleted({
   limit = null,
   onlyIds = true,
@@ -414,7 +410,12 @@ function startStatusInLocalContext(localContext, contentId, hierarchy) {
   setStartedOrCompletedStatusInLocalContext(localContext, contentId, false, hierarchy)
 }
 
-function setStartedOrCompletedStatusInLocalContext(localContext, contentId, isCompleted, hierarchy) {
+function setStartedOrCompletedStatusInLocalContext(
+  localContext,
+  contentId,
+  isCompleted,
+  hierarchy
+) {
   let data = localContext.data[contentId] ?? {}
   data[DATA_KEY_PROGRESS] = isCompleted ? 100 : 0
   data[DATA_KEY_STATUS] = isCompleted ? STATE_COMPLETED : STATE_STARTED

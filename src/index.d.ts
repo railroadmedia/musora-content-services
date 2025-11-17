@@ -13,9 +13,14 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
 	fetchLearningPathLessons,
 	getActivePath,
 	getDailySession,
+	getEnrichedLearningPath,
+	getLearningPathLessonsByIds,
+	mapContentToParent,
 	resetAllLearningPaths,
 	startLearningPath,
 	updateActivePath,
@@ -130,6 +135,7 @@ import {
 	fetchThreads,
 	followThread,
 	lockThread,
+	markThreadAsRead,
 	pinThread,
 	unfollowThread,
 	unlockThread,
@@ -283,7 +289,8 @@ import {
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	setupAccount,
-	status
+	status,
+	toggleStudentView
 } from './services/user/account.ts';
 
 import {
@@ -404,6 +411,8 @@ declare module 'musora-content-services' {
 		buildImageSRC,
 		calculateLongestStreaks,
 		closeComment,
+		completeLearningPathIntroVideo,
+		completeMethodIntroVideo,
 		confirmEmailChange,
 		contentStatusCompleted,
 		contentStatusReset,
@@ -541,7 +550,9 @@ declare module 'musora-content-services' {
 		getAwardDataForGuidedContent,
 		getContentRows,
 		getDailySession,
+		getEnrichedLearningPath,
 		getLastInteractedOf,
+		getLearningPathLessonsByIds,
 		getLegacyMethods,
 		getLessonContentRows,
 		getMethodCard,
@@ -596,11 +607,13 @@ declare module 'musora-content-services' {
 		logUserPractice,
 		login,
 		logout,
+		mapContentToParent,
 		markAllNotificationsAsRead,
 		markContentAsInterested,
 		markContentAsNotInterested,
 		markNotificationAsRead,
 		markNotificationAsUnread,
+		markThreadAsRead,
 		numberOfActiveUsers,
 		openComment,
 		otherStats,
@@ -651,6 +664,7 @@ declare module 'musora-content-services' {
 		toDayjs,
 		togglePlaylistPrivate,
 		toggleSignaturePrivate,
+		toggleStudentView,
 		unEnrollUserInGuidedCourse,
 		unassignModeratorToComment,
 		unblockUser,

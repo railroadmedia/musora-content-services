@@ -4,30 +4,32 @@
 
 import {
   getDailySession,
+  getActivePath,
   resetAllLearningPaths,
   startLearningPath,
-} from '../content-org/learning-paths.ts'
+  fetchLearningPathLessons,
+} from '../content-org/learning-paths'
 import { getToday } from '../dateUtils.js'
 import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2IntroVideo } from '../sanity'
 import { addContextToContent } from '../contentAggregator.js'
+import { getProgressState } from '../contentProgress'
 
 export async function getMethodCard(brand) {
-  const dailySession = await getDailySession(brand, getToday())
-  const activeLearningPathId = dailySession?.active_learning_path_id
+  const introVideo = await fetchMethodV2IntroVideo(brand)
+  const introVideoProgressState = await getProgressState(introVideo?.id)
   //resetAllLearningPaths()
-  if (!activeLearningPathId) {
+  if (introVideoProgressState != 'completed') {
     //startLearningPath('drumeo', 422533)
-
-    const introVideo = await fetchMethodV2IntroVideo(brand)
     const timestamp = Math.floor(Date.now() / 1000)
     return {
-      id: 0, // method card has no id
+      id: 1, // method card has no id
       type: 'method',
       header: 'Method',
+      progressType: 'method',
       body: {
         thumbnail: introVideo.thumbnail,
         title: introVideo.title,
-        subtitle: `${introVideo.difficulty_string} • ${introVideo.artist_name}`,
+        subtitle: `${introVideo.difficulty_string} • ${introVideo.instructor?.[0]?.name}`,
       },
       cta: {
         text: 'Get Started',
@@ -36,36 +38,30 @@ export async function getMethodCard(brand) {
       progressTimestamp: timestamp,
     }
   } else {
-    const todayContentIds = dailySession.daily_session[0]?.content_ids || []
-    const nextContentIds = dailySession.daily_session[1]?.content_ids || []
-
-    const addContextParameters = {
-      addProgressStatus: true,
-      addProgressPercentage: true,
-      addProgressTimestamp: true,
-    }
-    const todaysLessons = await addContextToContent(
-      fetchByRailContentIds,
-      todayContentIds,
-      addContextParameters
+    //TODO: Optimize loading of dailySessions/Path, should not need multiple requests
+    const activeLearningPath = await getActivePath(brand)
+    const learningPath = await fetchLearningPathLessons(
+      activeLearningPath.active_learning_path_id,
+      brand,
+      getToday()
     )
-    const nextLPLessons = await addContextToContent(
-      fetchByRailContentIds,
-      nextContentIds,
-      addContextParameters
-    )
-    const allCompleted = todaysLessons.every((lesson) => lesson.progressStatus === 'completed')
-    const anyCompleted = todaysLessons.some((lesson) => lesson.progressStatus === 'completed')
-    const noneCompleted = todaysLessons.every((lesson) => lesson.progressStatus !== 'completed')
 
-    const nextIncompleteLesson = todaysLessons.find(
+    const allCompleted = learningPath?.todays_lessons.every(
+      (lesson) => lesson.progressStatus === 'completed'
+    )
+    const anyCompleted = learningPath?.todays_lessons.some(
+      (lesson) => lesson.progressStatus === 'completed'
+    )
+    const noneCompleted = learningPath?.todays_lessons.every(
       (lesson) => lesson.progressStatus !== 'completed'
     )
-    let maxProgressTimestamp = Math.max(...todaysLessons.map((lesson) => lesson.progressTimestamp))
-    if (!maxProgressTimestamp) {
-      maxProgressTimestamp = dailySession.active_learning_path_created_at
-    }
-    let ctaText, action
+
+    const nextIncompleteLesson = learningPath?.todays_lessons.find(
+      (lesson) => lesson.progressStatus !== 'completed'
+    )
+    let ctaText,
+      action,
+      nextLesson = null
     if (noneCompleted) {
       ctaText = 'Start Session'
       action = getMethodActionCTA(nextIncompleteLesson)
@@ -73,26 +69,28 @@ export async function getMethodCard(brand) {
       ctaText = 'Continue Session'
       action = getMethodActionCTA(nextIncompleteLesson)
     } else if (allCompleted) {
-      //TODO:: get next lessons when all completed
-      const nextAvailableLesson = null
-
-      ctaText = nextAvailableLesson ? 'Start Next Lesson' : 'Browse Lessons'
-      action = nextAvailableLesson
-        ? getMethodActionCTA(nextAvailableLesson)
+      ctaText = learningPath.next_lesson ? 'Start Next Lesson' : 'Browse Lessons'
+      action = learningPath.next_lesson
+        ? getMethodActionCTA(learningPath.next_lesson)
         : {
             type: 'lessons',
             brand: brand,
           }
     }
+
+    let maxProgressTimestamp = Math.max(
+      ...learningPath?.children.map((lesson) => lesson.progressTimestamp)
+    )
+    if (!maxProgressTimestamp) {
+      maxProgressTimestamp = learningPath.active_learning_path_created_at
+    }
+
     return {
-      id: 0,
-      type: 'method',
-      progressType: 'content',
+      id: 1,
+      type: 'learning-path-v2',
+      progressType: 'method',
       header: 'Method',
-      body: {
-        todays_lessons: todaysLessons,
-        next_learning_path_lessons: nextLPLessons,
-      },
+      body: learningPath,
       cta: {
         text: ctaText,
         action: action,

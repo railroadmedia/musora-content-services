@@ -277,6 +277,8 @@ export const getNextLessonLessonParentTypes = [
   'pack',
   'pack-bundle',
   'song-tutorial',
+  'learning-path-v2',
+  'skill-pack'
 ]
 
 export const progressTypesMapping = {
@@ -296,9 +298,8 @@ export const progressTypesMapping = {
   songs: transcriptionsLessonTypes,
   'play along': playAlongLessonTypes,
   'guided course': ['guided-course'],
-  'pack': ['pack', 'semester-pack'],
-  'method': ['method-card', 'method-intro'],
-  'learning path': ['learning-path'],
+  pack: ['pack', 'semester-pack'],
+  'learning path': ['learning-path-v2'],
   'jam track': jamTrackLessonTypes,
   'course video': ['course-part'],
 }
@@ -344,7 +345,7 @@ export const recentTypes = {
     ...transcriptionsLessonTypes,
     ...playAlongLessonTypes,
     'guided-course',
-    'learning-path',
+    'learning-path-v2',
     'live',
     'course',
     'pack',
@@ -458,28 +459,9 @@ export let contentTypeConfig = {
       )`,
     ],
   },
-  method: {
-    fields: [
-      `"description": ${descriptionField}`,
-      'hide_from_recsys',
-      '"image": thumbnail.asset->url',
-      '"instructors":instructor[]->name',
-      '"lesson_count": child_count',
-      'length_in_seconds',
-      'permission',
-      'popularity',
-      'published_on',
-      'railcontent_id',
-      '"thumbnail_logo": logo_image_url.asset->url',
-      'title',
-      'total_xp',
-      '"type": _type',
-      'xp',
-    ],
-  },
   'learning-path-v2': {
     fields: [
-      'intro_video',
+      `"intro_video": intro_video->{ ${getIntroVideoFields('learning-path-v2').join(', ')} }`,
       'total_skills',
       `"resource": ${resourcesField}`,
       `"badge": *[
@@ -488,40 +470,6 @@ export let contentTypeConfig = {
       ][0].badge.asset->url`,
     ],
     includeChildFields: true,
-  },
-  'learning-path-course': {
-    fields: [
-      '"lesson_count": child_count',
-      '"instructors": instructor[]->name',
-      `"description": ${descriptionField}`,
-      `"resource": ${resourcesField}`,
-      'xp',
-      'total_xp',
-      `"lessons": child[]->{
-                "id": railcontent_id,
-                title,
-                "image": thumbnail.asset->url,
-                "instructors": instructor[]->name,
-                length_in_seconds,
-            }`,
-    ],
-  },
-  'learning-path-level': {
-    fields: [
-      '"lesson_count": child_count',
-      '"instructors": instructor[]->name',
-      `"description": ${descriptionField}`,
-      `"resource": ${resourcesField}`,
-      'xp',
-      'total_xp',
-      `"lessons": child[]->{
-                "id": railcontent_id,
-                title,
-                "image": thumbnail.asset->url,
-                "instructors": instructor[]->name,
-                length_in_seconds,
-            }`,
-    ],
   },
   workout: {
     fields: [artistOrInstructorNameAsArray()],
@@ -678,7 +626,7 @@ export let contentTypeConfig = {
     `"type":_type`,
     'title',
     'brand',
-    `"intro_video": intro_video->{ ${getIntroVideoFields().join(', ')} }`,
+    `"intro_video": intro_video->{ ${getIntroVideoFields('method-v2').join(', ')} }`,
     `child[]->{
       "resource": ${resourcesField},
       total_skills,
@@ -696,21 +644,30 @@ export let contentTypeConfig = {
       }
     }`,
   ],
-  'method-intro': getIntroVideoFields(),
 }
 
-export function getIntroVideoFields() {
-  return [
+export function getIntroVideoFields(type) {
+  const fields = [
+    `"id": railcontent_id`,
     'title',
     'brand',
+    `"instructor": *[_type == "method-v2" && brand == ^.brand && references(^._id)][0].${instructorField}`,
+    `"difficulty": *[_type == "method-v2" && brand == ^.brand && references(^._id)][0].difficulty`,
+    `"difficulty_string": *[_type == "method-v2" && brand == ^.brand][0].difficulty_string`,
     `"type": _type`,
-    "brand",
+    'brand',
     `"description": ${descriptionField}`,
     `"thumbnail": thumbnail.asset->url`,
     'length_in_seconds',
-    'video_desktop',
-    'video_mobile',
   ]
+
+  if (type === 'method-v2') {
+    fields.push(...['video_desktop', 'video_mobile'])
+  } else if (type === 'learning-path-v2') {
+    fields.push('video')
+  }
+
+  return fields
 }
 
 export const plusMembershipPermissions = 92
@@ -737,7 +694,6 @@ export function getNewReleasesTypes(brand) {
     'podcasts',
     'pack',
     'song',
-    'learning-path-level',
     'play-along',
     'course',
     'unit',
