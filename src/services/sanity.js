@@ -1288,7 +1288,7 @@ export async function fetchSiblingContent(railContentId, brand= null)
     "related_lessons" : *[${filterGetParent}][0].child[${childrenFilter}]->{${queryFields}}
   }`
 
-  let result = await fetchSanity(query, false, { processNeedAccess: false })  // Don't apply need_access for sidebar lessons
+  let result = await fetchSanity(query, false, { processNeedAccess: true }) 
 
   //there's no way in sanity to retrieve the index of an array, so we must calculate after fetch
   if (result['for-calculations'] && result['for-calculations']['parents-list']) {
