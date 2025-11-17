@@ -1,9 +1,6 @@
 import {
-  getLastInteractedOf,
   getNavigateTo,
-  getNextLesson,
   getProgressDateByIds,
-  getProgressPercentageByIds,
   getProgressStateByIds,
   getResumeTimeSecondsByIds,
 } from './contentProgress'
@@ -32,8 +29,7 @@ import { fetchLastInteractedChild, fetchLikeCount } from './railcontent'
  * @param options.addProgressStatus - add progressStatus field
  * @param options.addProgressTimestamp - add progressTimestamp field
  * @param options.addResumeTimeSeconds - add resumeTimeSeconds field
- * @param options.addLastInteractedChild - add lastInteractedChild field. This may be different from nextLesson
- * @param options.addNextLesson - add nextLesson field. For collection type content. each collection has different logic for calculating this data
+ * @param options.addLastInteractedChild - add lastInteractedChild field. This may be different from navigateTo.id
  *
  * @returns {Promise<{ data: Object[] } | false>} - A promise that resolves to the fetched content data + added data or `false` if no data is found.
  *
@@ -52,7 +48,7 @@ import { fetchLastInteractedChild, fetchLikeCount } from './railcontent'
  *     dataField_parentIsArray: true,
  *     addProgressStatus: true,
  *     addProgressPercentage: true,
- *     addNextLesson: true
+ *     addNavigateTo: true
  *   })
  *
  */
@@ -74,7 +70,6 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     addProgressTimestamp = false,
     addResumeTimeSeconds = false,
     addLastInteractedChild = false,
-    addNextLesson = false,
     addNavigateTo = false,
   } = options
 
@@ -94,7 +89,6 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     isLikedData,
     resumeTimeData,
     lastInteractedChildData,
-    nextLessonData,
     navigateToData,
   ] = await Promise.all([ //for now assume these all return `collection = {type, id}`. it will be so when watermelon here
     addProgressPercentage || addProgressStatus || addProgressTimestamp
@@ -102,7 +96,6 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     addIsLiked ? isContentLikedByIds(ids, collection) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids, collection) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids, collection) : Promise.resolve(null),
-    addNextLesson ? getNextLesson(items, collection) : Promise.resolve(null), //to be removed
     addNavigateTo ? getNavigateTo(items, collection) : Promise.resolve(null),
   ])
 
@@ -115,13 +108,6 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
     ...(addLastInteractedChild ? { lastInteractedChild: lastInteractedChildData?.[item.id] } : {}),
-    ...(addNextLesson
-      ? {
-          nextLesson: nextLessonData?.[item.id], //deprecated
-          next_lesson_id: nextLessonData?.[item.id],
-          next_lesson: item?.children?.find((child) => child.id === nextLessonData?.[item.id]),
-        }
-      : {}),
     ...(addNavigateTo ? { navigateTo: navigateToData?.[item.id] } : {}),
   })
 
