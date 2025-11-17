@@ -95,12 +95,17 @@ export async function getNextLesson(data) {
   return nextLessonData
 }
 
-export async function getNavigateTo(data) {
+export async function getNavigateTo(data, collection = null) {
   let navigateToData = {}
-  const twoDepthContentTypes = ['pack'] //TODO add method when we know what it's called
+
+  const twoDepthContentTypes = ['pack'] // not adding method because it has its own logic (with active path)
   //TODO add parent hierarchy upwards as well
   // data structure is the same but instead of child{} we use parent{}
   for (const content of data) {
+
+    // we may want to allow collection to be calculated by content type in future, so we
+    //  for lesson index page
+
     //only calculate nextLesson if needed, based on content type
     if (!getNextLessonLessonParentTypes.includes(content.type) || !content.children) {
       navigateToData[content.id] = null
@@ -112,31 +117,33 @@ export async function getNavigateTo(data) {
         children.set(child.id, child)
       })
       // return first child (or grand child) if parent-content is complete or no progress
-      const contentState = await getProgressState(content.id)
+      const contentState = await getProgressState(content.id, collection)
       if (contentState !== STATE_STARTED) {
         const firstChild = content.children[0]
         let lastInteractedChildNavToData = await getNavigateTo([firstChild])
         lastInteractedChildNavToData = lastInteractedChildNavToData[firstChild.id] ?? null
-        navigateToData[content.id] = buildNavigateTo(firstChild, lastInteractedChildNavToData)
+        navigateToData[content.id] = buildNavigateTo(firstChild, lastInteractedChildNavToData, collection) //no G-child for LP
       } else {
-        const childrenStates = await getProgressStateByIds(childrenIds)
-        const lastInteracted = await getLastInteractedOf(childrenIds)
+        const childrenStates = await getProgressStateByIds(childrenIds, collection)
+        const lastInteracted = await getLastInteractedOf(childrenIds, collection)
         const lastInteractedStatus = childrenStates[lastInteracted]
 
+        // learning path navigateTo logic is handled by its own service
         if (content.type === 'course' || content.type === 'pack-bundle' || content.type === 'skill-pack') {
           if (lastInteractedStatus === STATE_STARTED) {
-            navigateToData[content.id] = buildNavigateTo(children.get(lastInteracted))
+            navigateToData[content.id] = buildNavigateTo(children.get(lastInteracted), null, collection)
           } else {
             let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
-            navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild))
+            navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild), null, collection)
           }
         } else if (content.type === 'guided-course' || content.type === 'song-tutorial') {
           let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
-          navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild))
+          navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild), null, collection)
         } else if (twoDepthContentTypes.includes(content.type)) {
           const firstChildren = content.children ?? []
           const lastInteractedChildId = await getLastInteractedOf(
-            firstChildren.map((child) => child.id)
+            firstChildren.map((child) => child.id),
+            collection
           )
           if (childrenStates[lastInteractedChildId] === STATE_COMPLETED) {
             // TODO: packs have an extra situation where we need to jump to the next course if all lessons in the last engaged course are completed
@@ -145,7 +152,8 @@ export async function getNavigateTo(data) {
           lastInteractedChildNavToData = lastInteractedChildNavToData[lastInteractedChildId]
           navigateToData[content.id] = buildNavigateTo(
             children.get(lastInteractedChildId),
-            lastInteractedChildNavToData
+            lastInteractedChildNavToData,
+            collection
           )
         }
       }
@@ -154,7 +162,7 @@ export async function getNavigateTo(data) {
   return navigateToData
 }
 
-function buildNavigateTo(content, child = null) {
+function buildNavigateTo(content, child = null, collection = null) {
   if (!content) {
     return null
   }
@@ -167,6 +175,7 @@ function buildNavigateTo(content, child = null) {
     published_on: content.published_on ?? null,
     status: content.status ?? '',
     child: child,
+    collection: collection,
   }
 }
 

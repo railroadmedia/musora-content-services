@@ -64,6 +64,7 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
   const options = typeof lastArg === 'object' && !Array.isArray(lastArg) ? lastArg : {}
 
   const {
+    collection = null, // this is needed for different collection types like learning paths. has .id and .type
     dataField = null,
     dataField_includeParent = false,
     addProgressPercentage = false,
@@ -95,15 +96,14 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     lastInteractedChildData,
     nextLessonData,
     navigateToData,
-  ] = await Promise.all([
+  ] = await Promise.all([ //for now assume these all return `collection = {type, id}`. it will be so when watermelon here
     addProgressPercentage || addProgressStatus || addProgressTimestamp
-      ? getProgressDateByIds(ids)
-      : Promise.resolve(null),
-    addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
-    addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
-    addLastInteractedChild ? fetchLastInteractedChild(ids) : Promise.resolve(null),
-    addNextLesson ? getNextLesson(items) : Promise.resolve(null),
-    addNavigateTo ? getNavigateTo(items) : Promise.resolve(null),
+      ? getProgressDateByIds(ids, collection) : Promise.resolve(null),
+    addIsLiked ? isContentLikedByIds(ids, collection) : Promise.resolve(null),
+    addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids, collection) : Promise.resolve(null),
+    addLastInteractedChild ? fetchLastInteractedChild(ids, collection) : Promise.resolve(null),
+    addNextLesson ? getNextLesson(items, collection) : Promise.resolve(null), //to be removed
+    addNavigateTo ? getNavigateTo(items, collection) : Promise.resolve(null),
   ])
 
   const addContext = async (item) => ({
