@@ -546,7 +546,7 @@ export async function fetchContentRows(brand, pageName, contentRowSlug)
         'lesson_count': coalesce(count(*[${lessonCountFilter}]), 0),
     },
   }`
-  return fetchSanity(query, true, {processNeedAccess: false})  // Don't apply need_access for content rows
+  return fetchSanity(query, true, {processNeedAccess: true})
 }
 
 
@@ -2223,7 +2223,7 @@ export async function fetchTabData(
     end: end
   })
 
-  let results = await fetchSanity(query, true, {processNeedAccess: false});
+  let results = await fetchSanity(query, true, {processNeedAccess: true});
 
   if (['recent', 'incomplete', 'completed'].includes(progress) && results.entity.length > 1) {
     const orderMap = new Map(progressIds.map((id, index) => [id, index]))
