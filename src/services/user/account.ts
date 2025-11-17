@@ -57,7 +57,7 @@ export interface AccountSetupResponse {
  * @property {string} [revenuecatAppUserId] - The RevenueCat App User ID for MA environments. Required for MA requests
  * @property {string} [deviceName] - The device name for MA environments. Required for MA requests
  *
- * @returns {Promise<void>} - A promise that resolves when the account setup is complete or an HttpError if the request fails.
+ * @returns {Promise<AccountSetupResponse>} - A promise that resolves when the account setup is complete or an HttpError if the request fails.
  * @throws {Error} - Throws an error if required parameters are missing based on the environment.
  * @throws {HttpError} - Throws an HttpError if the HTTP request fails.
  */
