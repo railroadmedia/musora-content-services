@@ -5,10 +5,6 @@ import type { AwardDefinition, CompletionData } from '../../awards/types'
 import type { ModelSerialized } from '../serializers'
 
 export default class UserAwardProgressRepository extends SyncRepository<UserAwardProgress> {
-
-  /**
-   * Get all awards
-   */
   async getAll(options?: {
     limit?: number
     onlyCompleted?: boolean
@@ -28,16 +24,10 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
     return this.queryAll(...clauses as any)
   }
 
-  /**
-   * Get completed awards
-   */
   async getCompleted(limit?: number) {
     return this.getAll({ onlyCompleted: true, limit })
   }
 
-  /**
-   * Get in-progress awards
-   */
   async getInProgress(limit?: number) {
     const clauses: any[] = [
       Q.where('progress_percentage', Q.gt(0)),
@@ -52,27 +42,18 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
     return this.queryAll(...clauses)
   }
 
-  /**
-   * Get award by award_id
-   */
   async getByAwardId(awardId: string) {
     return this.readOne(awardId)
   }
 
-  /**
-   * Check if user has completed a specific award
-   */
   async hasCompletedAward(awardId: string): Promise<boolean> {
     const result = await this.readOne(awardId)
     return result.data?.isCompleted ?? false
   }
 
-  /**
-   * Get awards completed recently (for activity feed)
-   */
   async getRecentlyCompleted(options?: {
     limit?: number
-    since?: number // Unix timestamp
+    since?: number
   }) {
     const clauses: any[] = [
       Q.where('completed_at', Q.notEq(null))
@@ -91,10 +72,6 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
     return this.queryAll(...clauses)
   }
 
-  /**
-   * Create or update award progress
-   * Used when client detects award eligibility
-   */
   async recordAwardProgress(
     awardId: string,
     progressPercentage: number,
@@ -102,7 +79,7 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
       completedAt?: number | null
       progressData?: any
       completionData?: CompletionData | null
-      immediate?: boolean // If true, push immediately
+      immediate?: boolean
     }
   ) {
     const builder = (record: UserAwardProgress) => {
@@ -129,9 +106,6 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
     }
   }
 
-  /**
-   * Mark award as completed
-   */
   async completeAward(
     awardId: string,
     completionData: CompletionData
@@ -139,25 +113,18 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
     return this.recordAwardProgress(awardId, 100, {
       completedAt: Math.floor(Date.now() / 1000),
       completionData,
-      immediate: true // Push immediately for instant feedback
+      immediate: true
     })
   }
 
-  /**
-   * Get awards for a specific content ID
-   * Cross-references with Sanity definitions
-   */
   async getAwardsForContent(contentId: number): Promise<{
     definitions: AwardDefinition[]
     progress: Map<string, ModelSerialized<UserAwardProgress>>
   }> {
-    // Import dynamically to avoid circular dependencies
     const { awardDefinitions } = await import('../../awards/award-definitions')
 
-    // Get award definitions for this content
     const definitions = await awardDefinitions.getByContentId(contentId)
 
-    // Get user's progress for these awards
     const awardIds = definitions.map(d => d._id)
     const progressMap = new Map<string, ModelSerialized<UserAwardProgress>>()
 

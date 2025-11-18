@@ -6,6 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **musora-content-services** is an NPM package providing utility functions for fetching and managing content from Sanity Studio, Railcontent API, and user activity data. It serves as the primary content layer for all Musora brands (Drumeo, Pianote, Guitareo, Singeo). The package supports both web and React Native mobile applications with offline-first sync capabilities.
 
+## Code Style Standards
+Self-Documenting Code
+Write clear, descriptive function and variable names that eliminate the need for comments
+Never add comments explaining what code does - the code itself should be clear
+Never add comments about code history, updates, or previous states
+Only add comments when code logic is genuinely complex and cannot be simplified further
+If you need a comment, first consider refactoring to make the code clearer
+
 ## Development Setup
 
 This repository must be developed within the railenvironment Docker container:
