@@ -2,6 +2,7 @@ import { Q } from '@nozbe/watermelondb'
 import UserAwardProgress from '../models/UserAwardProgress'
 import SyncRepository from './base'
 import type { AwardDefinition, CompletionData } from '../../awards/types'
+import type { ModelSerialized } from '../serializers'
 
 export default class UserAwardProgressRepository extends SyncRepository<UserAwardProgress> {
 
@@ -148,7 +149,7 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
    */
   async getAwardsForContent(contentId: number): Promise<{
     definitions: AwardDefinition[]
-    progress: Map<string, UserAwardProgress>
+    progress: Map<string, ModelSerialized<UserAwardProgress>>
   }> {
     // Import dynamically to avoid circular dependencies
     const { awardDefinitions } = await import('../../awards/award-definitions')
@@ -158,7 +159,7 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
 
     // Get user's progress for these awards
     const awardIds = definitions.map(d => d._id)
-    const progressMap = new Map<string, UserAwardProgress>()
+    const progressMap = new Map<string, ModelSerialized<UserAwardProgress>>()
 
     for (const awardId of awardIds) {
       const result = await this.getByAwardId(awardId)

@@ -8,7 +8,7 @@
     "build-index": "node tools/generate-index.cjs",
     "release": "standard-version",
     "doc": "jsdoc -c jsdoc.json --verbose",
-    "test": "jest --setupFiles dotenv/config"
+    "test": "jest"
   },
   "repository": {
     "type": "git",

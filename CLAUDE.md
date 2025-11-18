@@ -132,7 +132,7 @@ initializeService({
 - Automatic retry with exponential backoff
 - Context-aware syncing (connectivity, visibility, session state)
 
-**Testing**: Tests use Jest with environment variables from `.env`. Live tests (hitting real APIs) are in `test/live/` and excluded by default via `jest.config.js`.
+**Testing**: See "Testing Framework" section below.
 
 ## Publishing Workflow
 
@@ -144,6 +144,99 @@ initializeService({
    - Publishes to NPM
 
 Version is auto-incremented in package.json and documented in CHANGELOG.md.
+
+## Testing Framework
+
+### Test Configuration
+- **Framework**: Jest with ts-jest preset for TypeScript support
+- **Config**: `jest.config.js` in project root
+- **Coverage**: Enabled by default, outputs to `coverage/` directory
+- **Environment variables**: Loaded from `.env` via `dotenv/config` in `setupFilesAfterEnv`
+
+### Test Structure
+```
+test/
+├── awards/                    # Award calculation tests
+├── live/                      # Live API tests (ignored by default)
+├── mockData/                  # Test fixtures and mock data
+├── lib/                       # Test utilities
+├── user/                      # User service tests
+├── initializeTests.js         # Test initialization helper
+├── localStorageMock.js        # LocalStorage mock implementation
+└── *.test.js                  # Unit tests for services
+```
+
+### Running Tests
+```bash
+npm test                       # Run all tests (excludes test/live/)
+npm test test/awards           # Run tests in specific directory
+npm test specific.test.js      # Run specific test file
+npm test -- -t="test name"     # Run tests matching name pattern
+npx jest --watch               # Run in watch mode
+```
+
+### Test Patterns
+
+**Initialization**: All tests use `initializeTestService()` from `test/initializeTests.js`:
+```javascript
+import { initializeTestService } from './initializeTests'
+
+beforeEach(() => {
+  initializeTestService()  // Mocked services
+})
+
+beforeEach(async () => {
+  await initializeTestService(true)  // Live API calls
+}, 1000000)
+```
+
+**Mocking**: Tests mock external dependencies using Jest spies:
+```javascript
+const railContentModule = require('../src/services/railcontent.js')
+const mock = jest.spyOn(railContentModule, 'fetchUserPermissionsData')
+mock.mockImplementation(() => ({ permissions: [78, 91, 92], isAdmin: false }))
+```
+
+**Unit Tests**: Pure calculation tests in `test/awards/` don't require service initialization:
+```javascript
+describe('ContentPractice Calculations', () => {
+  test('converts seconds to minutes correctly', () => {
+    const secondsToMinutes = (seconds) => Math.round(seconds / 60)
+    expect(secondsToMinutes(600)).toBe(10)
+  })
+})
+```
+
+**Integration Tests**: Service tests in `test/*.test.js` use initialized services and mock data:
+```javascript
+describe('contentProgressDataContext', () => {
+  beforeEach(() => {
+    initializeTestService()
+    const mock = jest.spyOn(dataContext, 'fetchData')
+    mock.mockImplementation(() => mockProgressData)
+  })
+
+  test('getProgressPercentage', async () => {
+    const result = await getProgressPercentage(234191)
+    expect(result).toBe(6)
+  })
+})
+```
+
+**Live Tests**: Tests in `test/live/` make real API calls (excluded by `modulePathIgnorePatterns`):
+- Require valid credentials in `.env`
+- Use `initializeTestService(true)` to authenticate
+- Longer timeouts (1000000ms) for API calls
+
+### Test Utilities
+- **LocalStorageMock** (`test/localStorageMock.js`): In-memory localStorage implementation
+- **initializeTestService**: Configures `globalConfig` with test credentials, mocks permissions
+- **Mock Data**: JSON fixtures in `test/mockData/` for consistent test scenarios
+
+### TypeScript Testing
+- TypeScript files (`.ts`) transformed via `ts-jest`
+- JavaScript files (`.js`) transformed via `babel-jest`
+- Type checking occurs during test runs for `.ts` files
 
 ## Important Notes
 
