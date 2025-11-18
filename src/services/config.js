@@ -25,11 +25,12 @@ const excludeFromGeneratedIndex = []
  * Initializes the service with the given configuration.
  * This function must be called before using any other functions in this library.
  * Automatically initializes award definitions with 24-hour cache in the background.
+ * For web applications (isMA: false), also initializes the sync system for offline-first data access.
  *
  * @param {Config} config - Configuration object containing API settings.
  *
- * @example
- * // Initialize the service in your app.js (synchronous - award init happens in background)
+ * @example Web Application
+ * // For web apps, pass browser's localStorage directly
  * initializeService({
  *   sanityConfig: {
  *     token: 'your-sanity-api-token',
@@ -43,21 +44,33 @@ const excludeFromGeneratedIndex = []
  *     token: 'your-user-api-token',
  *     userId: 'current-user-id',
  *     baseUrl: 'https://web-staging-one.musora.com',
- *     authToken 'your-auth-token',
+ *     authToken: 'your-auth-token',
  *   },
  *   sessionConfig: {
  *     token: 'your-user-api-token',
  *     userId: 'current-user-id',
- *     authToken 'your-auth-token',
+ *     authToken: 'your-auth-token',
  *   },
  *   baseUrl: 'https://web-staging-one.musora.com',
  *   localStorage: localStorage,
  *   isMA: false,
+ *   enableSync: true,
+ *   syncNamespace: 'musora',
  * });
  *
- * @example
- * // Or await it if you want to ensure awards are loaded before continuing
- * await initializeService({ ... });
+ * @example React Native Application
+ * // For React Native, pass AsyncStorage
+ * import AsyncStorage from '@react-native-async-storage/async-storage'
+ *
+ * initializeService({
+ *   sanityConfig: { ... },
+ *   railcontentConfig: { ... },
+ *   sessionConfig: { ... },
+ *   baseUrl: 'https://web-staging-one.musora.com',
+ *   localStorage: AsyncStorage,
+ *   isMA: true,
+ *   enableSync: false,
+ * });
  */
 export function initializeService(config) {
   globalConfig.sanityConfig = config.sanityConfig
@@ -74,5 +87,17 @@ export function initializeService(config) {
       .catch(error => {
         console.error('Failed to initialize award definitions:', error)
       })
+
+    if (!config.isMA && config.enableSync !== false) {
+      import('./sync/init-web')
+        .then(({ initializeSyncForWeb }) => {
+          const namespace = config.syncNamespace || 'musora'
+          initializeSyncForWeb(namespace)
+          console.log('[Sync] Initialized for web')
+        })
+        .catch(error => {
+          console.error('Failed to initialize sync system:', error)
+        })
+    }
   }
 }

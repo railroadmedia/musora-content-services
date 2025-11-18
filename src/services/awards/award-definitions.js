@@ -76,7 +76,7 @@ class AwardDefinitionsService {
     this.isFetching = true
 
     try {
-      const { default: sanityClient } = await import('../sanity')
+      const { fetchSanity } = await import('../sanity')
 
       const query = `*[_type == 'content-award'] {
         _id,
@@ -97,7 +97,7 @@ class AwardDefinitionsService {
         'child_ids': content->child[status != 'draft']->railcontent_id,
       }`
 
-      const awards = await sanityClient.fetch(query)
+      const awards = await fetchSanity(query, true, { processNeedAccess: false })
 
       this.definitions.clear()
       this.contentIndex.clear()
@@ -138,7 +138,9 @@ class AwardDefinitionsService {
         return
       }
 
-      const stored = await globalConfig.localStorage.getItem(STORAGE_KEY)
+      const stored = globalConfig.isMA
+        ? await globalConfig.localStorage.getItem(STORAGE_KEY)
+        : globalConfig.localStorage.getItem(STORAGE_KEY)
       if (stored) {
         const timestamp = parseInt(stored, 10)
         if (!isNaN(timestamp)) {
@@ -157,7 +159,11 @@ class AwardDefinitionsService {
         return
       }
 
-      await globalConfig.localStorage.setItem(STORAGE_KEY, this.lastFetch.toString())
+      if (globalConfig.isMA) {
+        await globalConfig.localStorage.setItem(STORAGE_KEY, this.lastFetch.toString())
+      } else {
+        globalConfig.localStorage.setItem(STORAGE_KEY, this.lastFetch.toString())
+      }
     } catch (error) {
       console.error('Failed to save lastFetch to storage:', error)
     }

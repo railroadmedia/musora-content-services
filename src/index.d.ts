@@ -697,4 +697,6 @@ declare module 'musora-content-services' {
 	}
 }
 
+export function initializeSyncForWeb(namespace?: string): () => Promise<void>
+
 export default EventsAPI

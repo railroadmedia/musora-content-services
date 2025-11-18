@@ -695,4 +695,6 @@ export {
 	verifyLocalDataContext,
 };
 
+export { initializeSyncForWeb } from './services/sync/init-web'
+
 export default EventsAPI
