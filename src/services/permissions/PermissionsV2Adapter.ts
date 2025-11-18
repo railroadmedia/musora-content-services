@@ -17,6 +17,7 @@ import {
 import {
   fetchUserPermissions as fetchUserPermissionsV2,
 } from '../user/permissions.js'
+import {arrayToRawRepresentation, arrayToStringRepresentation} from '../../filterBuilder.js'
 
 /**
  * V2 Permissions Adapter for the new permissions system.
@@ -125,14 +126,52 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
       return `(membership_tier == "plus" || membership_tier == "basic" || membership_tier == "free")`
     }
 
-    // If showOnlyOwnedContent, exclude membership content
+    // If showOnlyOwnedContent, show only purchased/owned content
     if (showOnlyOwnedContent) {
-      //TODO: add logic for owned content
-      return `(!defined(membership_tier) || (membership_tier != "plus" && membership_tier != "basic" && membership_tier != "free"))`
+      return this.buildOwnedContentFilter(userPermissions)
     }
 
     // TODO: Implement v2 permission filter logic
     return null // Placeholder return until implemented
+  }
+
+  /**
+   * Build filter for owned content only (a-la-carte purchases).
+   *
+   * In V2, owned content is identified by permission IDs >= 100000000.
+   * These permissions represent direct purchases of individual content items.
+   *
+   * Logic:
+   * 1. Extract user's permission IDs
+   * 2. Filter for IDs >= 100000000 (owned content permissions)
+   * 3. Convert permission IDs to content IDs: content_id = permission_id - 100000000
+   * 4. Filter content to show only items matching these content IDs
+   * 5. Exclude membership-tier content (plus, basic, free) ???
+   *
+   * @param userPermissions - The user's permissions
+   * @returns GROQ filter string for owned content
+   */
+  private buildOwnedContentFilter(userPermissions: UserPermissions): string {
+    const minContentPermissionId = 100000000
+    const userPermissionIds = this.getUserPermissionIds(userPermissions)
+
+    // Convert permission IDs to content IDs
+    // Permission ID format: 100000000 + railcontent_id
+    const ownedContentIds = userPermissionIds
+      .map((permissionId) => parseInt(permissionId) - minContentPermissionId)
+      .filter((contentId) => contentId > 0)
+
+    if (ownedContentIds.length === 0) {
+      // User has no owned content permissions
+      // Return filter that matches nothing
+      return `railcontent_id == null`
+    }
+
+    // Content must be in owned content IDs AND not have membership tier
+    const ownerContentFilter = `railcontent_id in ${arrayToRawRepresentation(ownedContentIds)}`
+  //const noMembershipTier = `(!defined(membership_tier) || (membership_tier != "plus" && membership_tier != "basic" && membership_tier != "free"))`
+
+    return ` ${ownerContentFilter} `
   }
 
   /**
@@ -146,7 +185,5 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
    */
   getUserPermissionIds(userPermissions: UserPermissions): string[] {
     return userPermissions?.permissions ?? []
-    // TODO: Implement v2 permission ID retrieval
-    // throw new Error('PermissionsV2Adapter.getUserPermissionIds() not yet implemented')
   }
 }
