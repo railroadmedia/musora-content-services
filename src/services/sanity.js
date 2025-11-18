@@ -1480,21 +1480,29 @@ export async function fetchByReference(
   return fetchSanity(query, true)
 }
 
+/**
+ *
+ * Return the top level parent content railcontent_id.
+ * Ignores learning-path-v2 parents.
+ * ex: if railcontentId is of type 'skill-pack-lesson', return the corresponding 'skill-pack' railcontent_id
+ *
+ * @param {int} railcontentId
+ * @returns {Promise<int|null>}
+ */
 export async function fetchTopLevelParentId(railcontentId) {
-  const parentCondition = "count(parent_content_data) > 0"
-  const parentFilter = "railcontent_id == ^.parent_content_data[0].id"
+  const parentFilter = "railcontent_id in [...(^.parent_content_data[].id)]"
   const statusFilter = "&& status in ['scheduled', 'published', 'archived', 'unlisted']"
 
   const query = `*[railcontent_id == ${railcontentId}]{
-      railcontent_id, 'parents': select(${parentCondition} => *[${parentFilter} ${statusFilter}]{
-        railcontent_id, 'parents': select(${parentCondition} => *[${parentFilter} ${statusFilter}]{
-          railcontent_id, 'parents': select(${parentCondition} => *[${parentFilter} ${statusFilter}]{
-            railcontent_id, 'parents': select(${parentCondition} => *[${parentFilter} ${statusFilter}]{
+      railcontent_id, 'parents': *[${parentFilter} ${statusFilter}]{
+        railcontent_id, 'parents': *[${parentFilter} ${statusFilter}]{
+          railcontent_id, 'parents': *[${parentFilter} ${statusFilter}]{
+            railcontent_id, 'parents': *[${parentFilter} ${statusFilter}]{
               railcontent_id
-            }, default => null)
-          }, default => null)
-        }, default => null)
-      }, default => null)
+            }
+          }
+        }
+      }
     }`
   let response = await fetchSanity(query, false, { processNeedAccess: false })
   if (!response) return null
