@@ -5,8 +5,7 @@ import { Q } from '@nozbe/watermelondb'
  * Calculates practice days and minutes from local WatermelonDB data
  *
  * Note: This function requires:
- * - awardDefinitions cache to be initialized
- * - getChildIds function from content service
+ * - awardDefinitions cache to be initialized with child_ids from Sanity
  * - db.contentProgress and db.contentPractices repositories
  *
  * @param {string} awardId - Award ID
@@ -14,34 +13,24 @@ import { Q } from '@nozbe/watermelondb'
  * @returns {Promise<import('./types').CompletionData>} Completion data
  */
 export async function generateCompletionData(awardId, courseContentId) {
-  // Import dynamically to avoid circular dependencies
   const { awardDefinitions } = await import('./award-definitions')
-  const { getChildIds } = await import('../content')
   const db = await import('../sync/repository-proxy')
 
-  // 1. Get award definition
   const awardDef = await awardDefinitions.getById(awardId)
 
   if (!awardDef) {
     throw new Error(`Award definition not found: ${awardId}`)
   }
 
-  // 2. Get all child content IDs for this course
-  let childIds = await getChildIds(courseContentId)
+  let childIds = awardDef.child_ids || []
 
-  // Exclude kickoff lesson if specified
   if (awardDef.has_kickoff && childIds.length > 0) {
     childIds = childIds.slice(1)
   }
 
-  // 3. Calculate days user practiced (from earliest start to now)
   const daysUserPracticed = await calculateDaysUserPracticed(childIds, db.default)
-
-  // 4. Calculate total practice minutes
   const practiceMinutes = await calculatePracticeMinutes(childIds, db.default)
-
-  // 5. Generate content title
-  const contentTitle = generateContentTitle(awardDef.name)
+  const contentTitle = awardDef.content_title || generateContentTitle(awardDef.name)
 
   return {
     content_title: contentTitle,

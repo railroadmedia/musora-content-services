@@ -5,13 +5,8 @@ import {
 } from './services/eventsAPI';
 
 import {
-	AwardsCollectionPage,
-	CourseAwardBadge,
-	CoursePromo,
-	LearningPathHeader,
-	LessonPlayer,
-	UserProfileAwards
-} from './services/awards/USAGE_EXAMPLES.md';
+	initializeAwardDefinitions
+} from './services/awards/award-definitions.js';
 
 import {
 	getAllUserAwardProgress,
@@ -21,15 +16,15 @@ import {
 	getCompletedAwards,
 	getInProgressAwards,
 	hasCompletedAward
-} from './services/awards/award-query.ts';
+} from './services/awards/award-query.js';
 
 import {
 	buildCertificateData
-} from './services/awards/certificate-builder.ts';
+} from './services/awards/certificate-builder.js';
 
 import {
 	generateCompletionData
-} from './services/awards/completion-data-generator.ts';
+} from './services/awards/completion-data-generator.js';
 
 import {
 	globalConfig,
@@ -411,12 +406,6 @@ import {
 } from './services/userActivity.js';
 
 export {
-	AwardsCollectionPage,
-	CourseAwardBadge,
-	CoursePromo,
-	LearningPathHeader,
-	LessonPlayer,
-	UserProfileAwards,
 	addContextToContent,
 	addItemToPlaylist,
 	applyCloudflareWrapper,
@@ -606,6 +595,7 @@ export {
 	globalConfig,
 	guidedCourses,
 	hasCompletedAward,
+	initializeAwardDefinitions,
 	initializeService,
 	isBucketUrl,
 	isContentLiked,

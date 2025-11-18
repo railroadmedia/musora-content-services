@@ -4,12 +4,14 @@ import db from '../sync/repository-proxy'
 /**
  * @typedef {Object} AwardStatus
  * @property {string} awardId
- * @property {string} name
- * @property {string} badgeImage
- * @property {string} certificateImage
- * @property {number} progressPercent
+ * @property {string} awardTitle
+ * @property {string} badge
+ * @property {string} award
+ * @property {string} brand
+ * @property {string} instructorName
+ * @property {number} progressPercentage
  * @property {boolean} isCompleted
- * @property {Date | null} completedAt
+ * @property {string | null} completedAt
  * @property {any} [completionData]
  */
 
@@ -38,12 +40,16 @@ export async function getAwardStatusForContent(contentId) {
 
       return {
         awardId: def._id,
-        name: def.name,
-        badgeImage: def.badge,
-        certificateImage: def.award,
-        progressPercent: userProgress?.progress_percentage ?? 0,
+        awardTitle: def.name,
+        badge: def.badge,
+        award: def.award,
+        brand: def.brand,
+        instructorName: def.instructor_name,
+        progressPercentage: userProgress?.progress_percentage ?? 0,
         isCompleted: userProgress?.isCompleted ?? false,
-        completedAt: userProgress?.completedAtDate ?? null,
+        completedAt: userProgress?.completed_at
+          ? new Date(userProgress.completed_at * 1000).toISOString()
+          : null,
         completionData: userProgress?.completion_data
       }
     })
@@ -61,7 +67,7 @@ export async function getAwardStatusForContent(contentId) {
   }
 }
 
-/** @returns {Promise<{progressPercent: number, isCompleted: boolean, completedAt: Date | null, completionData?: any} | null>} */
+/** @returns {Promise<{progressPercentage: number, isCompleted: boolean, completedAt: string | null, completionData?: any} | null>} */
 export async function getAwardProgress(awardId) {
   try {
     const result = await db.userAwardProgress.getByAwardId(awardId)
@@ -71,9 +77,11 @@ export async function getAwardProgress(awardId) {
     }
 
     return {
-      progressPercent: result.data.progress_percentage,
-      isCompleted: result.data.isCompleted,
-      completedAt: result.data.completedAtDate,
+      progressPercentage: result.data.progress_percentage,
+      isCompleted: result.data.progress_percentage === 100 && result.data.completed_at !== null,
+      completedAt: result.data.completed_at
+        ? new Date(result.data.completed_at * 1000).toISOString()
+        : null,
       completionData: result.data.completion_data
     }
   } catch (error) {
@@ -83,7 +91,7 @@ export async function getAwardProgress(awardId) {
 }
 
 /** @returns {Promise<AwardStatus[]>} */
-export async function getAllUserAwardProgress(options) {
+export async function getAllUserAwardProgress(brand = null, options = {}) {
   try {
     const result = await db.userAwardProgress.getAll({
       onlyCompleted: options?.onlyCompleted,
@@ -94,20 +102,32 @@ export async function getAllUserAwardProgress(options) {
       result.data.map(async (progress) => {
         const definition = await awardDefinitions.getById(progress.award_id)
 
+        if (!definition) {
+          return null
+        }
+
+        if (brand && definition.brand !== brand) {
+          return null
+        }
+
         return {
           awardId: progress.award_id,
-          name: definition?.name ?? 'Unknown Award',
-          badgeImage: definition?.badge ?? '',
-          certificateImage: definition?.award ?? '',
-          progressPercent: progress.progress_percentage,
-          isCompleted: progress.isCompleted,
-          completedAt: progress.completedAtDate,
+          awardTitle: definition.name,
+          badge: definition.badge,
+          award: definition.award,
+          brand: definition.brand,
+          instructorName: definition.instructor_name,
+          progressPercentage: progress.progress_percentage,
+          isCompleted: progress.progress_percentage === 100 && progress.completed_at !== null,
+          completedAt: progress.completed_at
+            ? new Date(progress.completed_at * 1000).toISOString()
+            : null,
           completionData: progress.completion_data
         }
       })
     )
 
-    return awards
+    return awards.filter(award => award !== null)
   } catch (error) {
     console.error('Failed to get all user award progress:', error)
     return []
@@ -115,31 +135,99 @@ export async function getAllUserAwardProgress(options) {
 }
 
 /** @returns {Promise<AwardStatus[]>} */
-export async function getCompletedAwards(limit) {
-  return getAllUserAwardProgress({ onlyCompleted: true, limit })
-}
-
-/** @returns {Promise<AwardStatus[]>} */
-export async function getInProgressAwards(limit) {
+export async function getCompletedAwards(brand = null, options = {}) {
   try {
-    const result = await db.userAwardProgress.getInProgress(limit)
+    const allProgress = await db.userAwardProgress.getAll()
+    const completed = allProgress.data.filter(p =>
+      p.progress_percentage === 100 && p.completed_at !== null
+    )
 
-    const awards = await Promise.all(
-      result.data.map(async (progress) => {
+    let awards = await Promise.all(
+      completed.map(async (progress) => {
         const definition = await awardDefinitions.getById(progress.award_id)
+
+        if (!definition) {
+          return null
+        }
+
+        if (brand && definition.brand !== brand) {
+          return null
+        }
 
         return {
           awardId: progress.award_id,
-          name: definition?.name ?? 'Unknown Award',
-          badgeImage: definition?.badge ?? '',
-          certificateImage: definition?.award ?? '',
-          progressPercent: progress.progress_percentage,
+          awardTitle: definition.name,
+          badge: definition.badge,
+          award: definition.award,
+          brand: definition.brand,
+          instructorName: definition.instructor_name,
+          progressPercentage: progress.progress_percentage,
+          isCompleted: true,
+          completedAt: new Date(progress.completed_at * 1000).toISOString(),
+          completionData: progress.completion_data
+        }
+      })
+    )
+
+    awards = awards.filter(award => award !== null)
+
+    awards.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
+
+    if (options.limit) {
+      const offset = options.offset || 0
+      awards = awards.slice(offset, offset + options.limit)
+    }
+
+    return awards
+  } catch (error) {
+    console.error('Failed to get completed awards:', error)
+    return []
+  }
+}
+
+/** @returns {Promise<AwardStatus[]>} */
+export async function getInProgressAwards(brand = null, options = {}) {
+  try {
+    const allProgress = await db.userAwardProgress.getAll()
+    const inProgress = allProgress.data.filter(p =>
+      p.progress_percentage > 0 && (p.progress_percentage < 100 || p.completed_at === null)
+    )
+
+    let awards = await Promise.all(
+      inProgress.map(async (progress) => {
+        const definition = await awardDefinitions.getById(progress.award_id)
+
+        if (!definition) {
+          return null
+        }
+
+        if (brand && definition.brand !== brand) {
+          return null
+        }
+
+        return {
+          awardId: progress.award_id,
+          awardTitle: definition.name,
+          badge: definition.badge,
+          award: definition.award,
+          brand: definition.brand,
+          instructorName: definition.instructor_name,
+          progressPercentage: progress.progress_percentage,
           isCompleted: false,
           completedAt: null,
           completionData: progress.completion_data
         }
       })
     )
+
+    awards = awards.filter(award => award !== null)
+
+    awards.sort((a, b) => b.progressPercentage - a.progressPercentage)
+
+    if (options.limit) {
+      const offset = options.offset || 0
+      awards = awards.slice(offset, offset + options.limit)
+    }
 
     return awards
   } catch (error) {
@@ -158,31 +246,45 @@ export async function hasCompletedAward(awardId) {
   }
 }
 
-/** @returns {Promise<{totalAvailable: number, completedCount: number, inProgressCount: number, completionRate: number}>} */
-export async function getAwardStatistics() {
+/** @returns {Promise<{totalAvailable: number, completed: number, inProgress: number, notStarted: number, completionPercentage: number}>} */
+export async function getAwardStatistics(brand = null) {
   try {
-    const allDefinitions = await awardDefinitions.getAll()
-    const completed = await db.userAwardProgress.getCompleted()
-    const inProgress = await db.userAwardProgress.getInProgress()
+    let allDefinitions = await awardDefinitions.getAll()
 
-    const completedCount = completed.data.length
+    if (brand) {
+      allDefinitions = allDefinitions.filter(def => def.brand === brand)
+    }
+
+    const allProgress = await db.userAwardProgress.getAll()
+
+    const completedCount = allProgress.data.filter(p =>
+      p.progress_percentage === 100 && p.completed_at !== null
+    ).length
+
+    const inProgressCount = allProgress.data.filter(p =>
+      p.progress_percentage > 0 && (p.progress_percentage < 100 || p.completed_at === null)
+    ).length
+
     const totalAvailable = allDefinitions.length
+    const notStarted = totalAvailable - completedCount - inProgressCount
 
     return {
       totalAvailable,
-      completedCount,
-      inProgressCount: inProgress.data.length,
-      completionRate: totalAvailable > 0
-        ? Math.round((completedCount / totalAvailable) * 100)
+      completed: completedCount,
+      inProgress: inProgressCount,
+      notStarted: notStarted > 0 ? notStarted : 0,
+      completionPercentage: totalAvailable > 0
+        ? Math.round((completedCount / totalAvailable) * 100 * 10) / 10
         : 0
     }
   } catch (error) {
     console.error('Failed to get award statistics:', error)
     return {
       totalAvailable: 0,
-      completedCount: 0,
-      inProgressCount: 0,
-      completionRate: 0
+      completed: 0,
+      inProgress: 0,
+      notStarted: 0,
+      completionPercentage: 0
     }
   }
 }
@@ -191,3 +293,4 @@ export { buildCertificateData } from './certificate-builder'
 export { awardManager, AwardManager } from './award-manager'
 export { awardEvents } from './award-events'
 export { awardDefinitions } from './award-definitions'
+export { contentProgressObserver } from './content-progress-observer'

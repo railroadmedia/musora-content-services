@@ -16,6 +16,11 @@ import { getProgressState } from '../contentProgress'
 
 export async function getMethodCard(brand) {
   const introVideo = await fetchMethodV2IntroVideo(brand)
+
+  if (!introVideo) {
+    return null
+  }
+
   const introVideoProgressState = await getProgressState(introVideo?.id)
   //resetAllLearningPaths()
   if (introVideoProgressState != 'completed') {

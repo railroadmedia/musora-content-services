@@ -24,11 +24,12 @@ const excludeFromGeneratedIndex = []
 /**
  * Initializes the service with the given configuration.
  * This function must be called before using any other functions in this library.
+ * Automatically initializes award definitions with 24-hour cache in the background.
  *
  * @param {Config} config - Configuration object containing API settings.
  *
  * @example
- * // Initialize the service in your app.js
+ * // Initialize the service in your app.js (synchronous - award init happens in background)
  * initializeService({
  *   sanityConfig: {
  *     token: 'your-sanity-api-token',
@@ -53,6 +54,10 @@ const excludeFromGeneratedIndex = []
  *   localStorage: localStorage,
  *   isMA: false,
  * });
+ *
+ * @example
+ * // Or await it if you want to ensure awards are loaded before continuing
+ * await initializeService({ ... });
  */
 export function initializeService(config) {
   globalConfig.sanityConfig = config.sanityConfig
@@ -62,4 +67,12 @@ export function initializeService(config) {
   globalConfig.localStorage = config.localStorage
   globalConfig.isMA = config.isMA || false
   globalConfig.localTimezoneString = config.localTimezoneString || null
+
+  if (config.localStorage) {
+    import('./awards/award-definitions')
+      .then(({ awardDefinitions }) => awardDefinitions.initialize())
+      .catch(error => {
+        console.error('Failed to initialize award definitions:', error)
+      })
+  }
 }

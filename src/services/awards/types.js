@@ -7,17 +7,20 @@
  * @typedef {Object} AwardDefinition
  * @property {string} _id - Sanity document ID
  * @property {string} name - Award name
+ * @property {string} logo - Logo image URL
  * @property {string} badge - Badge image URL
  * @property {string} award - Certificate image URL
  * @property {string} brand - Brand (drumeo, pianote, etc)
  * @property {boolean} [is_active] - Is award active
- * @property {number} [content_id] - Associated content ID
+ * @property {number} [content_id] - Associated railcontent ID
+ * @property {string} [content_type] - Content type from Sanity
+ * @property {string} [content_title] - Content title from Sanity
+ * @property {number[]} [child_ids] - Child lesson railcontent IDs (excludes drafts)
  * @property {boolean} [has_kickoff] - Has kickoff lesson to exclude
  * @property {string} [instructor_name] - Instructor name
  * @property {string} [instructor_signature] - Instructor signature image URL
  * @property {string} [award_custom_text] - Custom certificate text
- * @property {string} [description] - Award description
- * @property {string} [type] - Award type
+ * @property {string} [type] - Award type (content-award)
  */
 
 /**

@@ -45,9 +45,7 @@ export class AwardManager {
   /** @returns {Promise<boolean>} */
   async checkAwardEligibility(award, courseContentId) {
     try {
-      const { getChildIds } = await import('../content')
-
-      let childIds = await getChildIds(courseContentId)
+      let childIds = award.child_ids || []
 
       if (award.has_kickoff && childIds.length > 0) {
         childIds = childIds.slice(1)
@@ -108,12 +106,10 @@ export class AwardManager {
   /** @returns {Promise<void>} */
   async updateAwardProgress(awardId, courseContentId) {
     try {
-      const { getChildIds } = await import('../content')
-
       const award = await awardDefinitions.getById(awardId)
       if (!award) return
 
-      let childIds = await getChildIds(courseContentId)
+      let childIds = award.child_ids || []
 
       if (award.has_kickoff && childIds.length > 0) {
         childIds = childIds.slice(1)

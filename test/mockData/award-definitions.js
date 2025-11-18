@@ -1,0 +1,144 @@
+export const mockAwardDefinitions = [
+  {
+    _id: '0238b1e5-ebee-42b3-9390-91467d113575',
+    award: 'https://cdn.sanity.io/files/4032r8py/staging/309b154d38165788c47674e5c7607d66944d5dde.png',
+    award_custom_text: null,
+    badge: 'https://cdn.sanity.io/files/4032r8py/staging/309b154d38165788c47674e5c7607d66944d5dde.png',
+    brand: 'drumeo',
+    child_ids: [416447, 416448],
+    content_id: 416446,
+    content_title: 'Adrian Guided Course Test',
+    content_type: 'guided-course',
+    has_kickoff: true,
+    instructor_name: 'Aaron Graham',
+    instructor_signature: 'https://cdn.sanity.io/files/4032r8py/staging/2e89dcaea7b76bba8c499e80d660e45fe2c06a16.png',
+    is_active: true,
+    logo: null,
+    name: 'Adrian Guided Course Test Award',
+    type: 'content-award'
+  },
+  {
+    _id: '0f49cb6a-1b23-4628-968e-15df02ffad7f',
+    award: 'https://cdn.sanity.io/files/4032r8py/staging/d9bdc3a9a7ac688a114264b5804a7add117d6a0f.png',
+    award_custom_text: 'Huzzah congratz',
+    badge: 'https://cdn.sanity.io/files/4032r8py/staging/8fb18f7645f9b1820629f7ee643bdeb771da7e28.png',
+    brand: 'pianote',
+    child_ids: [417030, 417045, 417046, 417047, 417048],
+    content_id: 417049,
+    content_title: 'Enrolling w/ Kickoff, has product GC (EC)',
+    content_type: 'guided-course',
+    has_kickoff: true,
+    instructor_name: 'Lisa Witt',
+    instructor_signature: null,
+    is_active: true,
+    logo: 'https://cdn.sanity.io/images/4032r8py/staging/dca075e5107fddb33b78778d67f6fce03501f579-2000x1033.svg',
+    name: 'Enrolling w/ Kickoff, has product GC (EC)',
+    type: 'content-award'
+  },
+  {
+    _id: '1575d0df-63ff-4611-a472-230e3e688660',
+    award: 'https://cdn.sanity.io/files/4032r8py/staging/ac68a54931fd8952b8c86844ed341d76ebdc079c.png',
+    award_custom_text: null,
+    badge: 'https://cdn.sanity.io/files/4032r8py/staging/f3df910730c5722f52e777c8fc63d6a53bda91ec.png',
+    brand: 'drumeo',
+    child_ids: [
+      416465, 416467, 416468, 416469, 416470, 416471, 416472, 416473,
+      416474, 416475, 416476, 416477, 416478, 416479, 416480, 416481,
+      416482, 416483, 416484, 416485, 416486, 416487, 416488, 416489
+    ],
+    content_id: 416464,
+    content_title: '30-Day Drummer GC',
+    content_type: 'guided-course',
+    has_kickoff: true,
+    instructor_name: 'Domino Santantonio',
+    instructor_signature: null,
+    is_active: true,
+    logo: null,
+    name: '30 day drummer awardzz',
+    type: 'content-award'
+  },
+  {
+    _id: '361f3034-c6c9-45f7-bbfb-0d58dbe14411',
+    award: 'https://cdn.sanity.io/files/4032r8py/staging/20e9a8258d00818074f472700d2ca97d91956e80.png',
+    award_custom_text: 'AN AWARD!',
+    badge: 'https://cdn.sanity.io/files/4032r8py/staging/da59100c0b16e446700c9285e827b4545766a7b3.png',
+    brand: 'pianote',
+    child_ids: [
+      417105, 417111, 417117, 417106, 417112, 417118, 417107, 417113,
+      417119, 416951, 417108, 416952, 417114, 416953, 417121, 416954,
+      417109, 416955, 417115, 416956, 417122, 416957
+    ],
+    content_id: 417140,
+    content_title: 'Learn To Play The Drums',
+    content_type: 'learning-path-v2',
+    has_kickoff: null,
+    instructor_name: null,
+    instructor_signature: null,
+    is_active: true,
+    logo: null,
+    name: 'Learning Path 1 Award',
+    type: 'content-award'
+  },
+  {
+    _id: '7e54cfbd-1543-462f-944a-19f3efb96aa0',
+    award: 'https://cdn.sanity.io/files/4032r8py/staging/d20959255e9dbc5d955214b86b7dfe8db4cccde3.png',
+    award_custom_text: 'asadadsafaafafafad yay',
+    badge: 'https://cdn.sanity.io/files/4032r8py/staging/fdb15efdc07061a6ff54fdf7dd1b6101d4d6dd54.png',
+    brand: 'pianote',
+    child_ids: [417035, 417036, 417038],
+    content_id: 417039,
+    content_title: 'Enrolling w/o Kickoff, no product GC (LS101)',
+    content_type: 'guided-course',
+    has_kickoff: false,
+    instructor_name: 'Lisa Witt',
+    instructor_signature: null,
+    is_active: true,
+    logo: 'https://cdn.sanity.io/images/4032r8py/staging/6ad3b1671d072e866233ee6b471d12c69afff0d0-469x177.png',
+    name: 'Enrolling w/o Kickoff, no product GC (LS101)',
+    type: 'content-award'
+  },
+  {
+    _id: 'cae0d533-faeb-4a96-a6b5-07ef8c7861ab',
+    award: 'https://cdn.sanity.io/files/4032r8py/staging/2e791954fcf7b0fcf32b55bf194395ccdd7228f6.png',
+    award_custom_text: null,
+    badge: 'https://cdn.sanity.io/files/4032r8py/staging/1cef6272cc2fd7d1b948c80a995c29cf2a8b47b2.png',
+    brand: 'drumeo',
+    child_ids: [416451, 416453, 416454, 416456, 416457, 416458, 416459, 416460, 416461, 416463],
+    content_id: 416450,
+    content_title: '10-Day Fills GC',
+    content_type: 'guided-course',
+    has_kickoff: null,
+    instructor_name: 'Domino Santantonio',
+    instructor_signature: null,
+    is_active: true,
+    logo: null,
+    name: 'The Chris award',
+    type: 'content-award'
+  },
+  {
+    _id: 'f7743699-13e0-4c4e-bfec-94a816cfec3e',
+    award: 'https://cdn.sanity.io/files/4032r8py/staging/d20959255e9dbc5d955214b86b7dfe8db4cccde3.png',
+    award_custom_text: 'You did it!! Yaaay',
+    badge: 'https://cdn.sanity.io/files/4032r8py/staging/ccb12884b7acf0c2a1b0f5dc69be6e93d95228ed.png',
+    brand: 'drumeo',
+    child_ids: [417096, 416444, 416445],
+    content_id: 416442,
+    content_title: 'Development GC 1',
+    content_type: 'guided-course',
+    has_kickoff: true,
+    instructor_name: 'BABY BOY DRUMMER',
+    instructor_signature: 'https://cdn.sanity.io/files/4032r8py/staging/da66880e96fb8288e6d54ed0de3e7be4564c7989.pdf',
+    is_active: true,
+    logo: 'https://cdn.sanity.io/images/4032r8py/staging/d20959255e9dbc5d955214b86b7dfe8db4cccde3-722x834.png',
+    name: "Adrian's cool award",
+    type: 'content-award'
+  }
+]
+
+export const getAwardByContentId = (contentId) => {
+  return mockAwardDefinitions.find(award => award.content_id === contentId)
+}
+
+export const getAwardById = (awardId) => {
+  return mockAwardDefinitions.find(award => award._id === awardId)
+}
