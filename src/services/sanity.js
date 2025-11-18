@@ -1481,22 +1481,20 @@ export async function fetchByReference(
 }
 
 export async function fetchTopLevelParentId(railcontentId) {
+  const parentCondition = "count(parent_content_data) > 0"
+  const parentFilter = "railcontent_id == ^.parent_content_data[0].id"
   const statusFilter = "&& status in ['scheduled', 'published', 'archived', 'unlisted']"
 
   const query = `*[railcontent_id == ${railcontentId}]{
-      railcontent_id,
-      'parents': *[^._id in child[]._ref ${statusFilter}]{
-        railcontent_id,
-          'parents': *[^._id in child[]._ref ${statusFilter}]{
-            railcontent_id,
-            'parents': *[^._id in child[]._ref ${statusFilter}]{
-              railcontent_id,
-               'parents': *[^._id in child[]._ref ${statusFilter}]{
-                  railcontent_id,
-            }
-          }
-        }
-      }
+      railcontent_id, 'parents': select(${parentCondition} => *[${parentFilter} ${statusFilter}]{
+        railcontent_id, 'parents': select(${parentCondition} => *[${parentFilter} ${statusFilter}]{
+          railcontent_id, 'parents': select(${parentCondition} => *[${parentFilter} ${statusFilter}]{
+            railcontent_id, 'parents': select(${parentCondition} => *[${parentFilter} ${statusFilter}]{
+              railcontent_id
+            }, default => null)
+          }, default => null)
+        }, default => null)
+      }, default => null)
     }`
   let response = await fetchSanity(query, false, { processNeedAccess: false })
   if (!response) return null
