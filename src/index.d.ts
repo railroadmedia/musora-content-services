@@ -106,6 +106,7 @@ import {
 
 import {
 	createForumCategory,
+	deleteForumCategory,
 	fetchForumCategories,
 	updateForumCategory
 } from './services/forums/categories.ts';
@@ -425,6 +426,7 @@ declare module 'musora-content-services' {
 		createThread,
 		deleteAccount,
 		deleteComment,
+		deleteForumCategory,
 		deleteItemsFromPlaylist,
 		deleteNotification,
 		deletePicture,

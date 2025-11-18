@@ -106,6 +106,7 @@ import {
 
 import {
 	createForumCategory,
+	deleteForumCategory,
 	fetchForumCategories,
 	updateForumCategory
 } from './services/forums/categories.ts';
@@ -424,6 +425,7 @@ export {
 	createThread,
 	deleteAccount,
 	deleteComment,
+	deleteForumCategory,
 	deleteItemsFromPlaylist,
 	deleteNotification,
 	deletePicture,
