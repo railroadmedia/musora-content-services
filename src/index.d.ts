@@ -1,6 +1,33 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
+	AwardsCollectionPage,
+	CourseAwardBadge,
+	CoursePromo,
+	LearningPathHeader,
+	LessonPlayer,
+	UserProfileAwards
+} from './services/awards/USAGE_EXAMPLES.md';
+
+import {
+	getAllUserAwardProgress,
+	getAwardProgress,
+	getAwardStatistics,
+	getAwardStatusForContent,
+	getCompletedAwards,
+	getInProgressAwards,
+	hasCompletedAward
+} from './services/awards/award-query.ts';
+
+import {
+	buildCertificateData
+} from './services/awards/certificate-builder.ts';
+
+import {
+	generateCompletionData
+} from './services/awards/completion-data-generator.ts';
+
+import {
 	globalConfig,
 	initializeService
 } from './services/config.js';
@@ -129,6 +156,7 @@ import {
 	fetchThreads,
 	followThread,
 	lockThread,
+	markThreadAsRead,
 	pinThread,
 	unfollowThread,
 	unlockThread,
@@ -379,11 +407,17 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI
+	 default as EventsAPI 
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
 	export {
+		AwardsCollectionPage,
+		CourseAwardBadge,
+		CoursePromo,
+		LearningPathHeader,
+		LessonPlayer,
+		UserProfileAwards,
 		addContextToContent,
 		addItemToPlaylist,
 		applyCloudflareWrapper,
@@ -391,6 +425,7 @@ declare module 'musora-content-services' {
 		assignModeratorToComment,
 		blockUser,
 		blockedUsers,
+		buildCertificateData,
 		buildImageSRC,
 		calculateLongestStreaks,
 		closeComment,
@@ -520,14 +555,21 @@ declare module 'musora-content-services' {
 		fetchUserPractices,
 		findIncompleteLesson,
 		followThread,
+		generateCompletionData,
 		getActiveDiscussions,
 		getActivePath,
 		getAllCompleted,
 		getAllStarted,
 		getAllStartedOrCompleted,
+		getAllUserAwardProgress,
 		getAwardDataForGuidedContent,
+		getAwardProgress,
+		getAwardStatistics,
+		getAwardStatusForContent,
+		getCompletedAwards,
 		getContentRows,
 		getDailySession,
+		getInProgressAwards,
 		getLastInteractedOf,
 		getLearningPath,
 		getLearningPathLessonsByIds,
@@ -564,6 +606,7 @@ declare module 'musora-content-services' {
 		getWeekNumber,
 		globalConfig,
 		guidedCourses,
+		hasCompletedAward,
 		initializeService,
 		isBucketUrl,
 		isContentLiked,
@@ -587,6 +630,7 @@ declare module 'musora-content-services' {
 		markContentAsNotInterested,
 		markNotificationAsRead,
 		markNotificationAsUnread,
+		markThreadAsRead,
 		numberOfActiveUsers,
 		openComment,
 		otherStats,

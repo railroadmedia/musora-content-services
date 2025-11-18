@@ -3,7 +3,8 @@ import { appSchema, tableSchema } from '@nozbe/watermelondb'
 export const SYNC_TABLES = {
   CONTENT_LIKES: 'content_likes',
   CONTENT_PROGRESS: 'progress',
-  CONTENT_PRACTICES: 'practice'
+  CONTENT_PRACTICES: 'practice',
+  USER_AWARD_PROGRESS: 'user_award_progress'
 }
 
 const contentLikesTable = tableSchema({
@@ -32,16 +33,31 @@ const contentPracticesTable = tableSchema({
   name: SYNC_TABLES.CONTENT_PRACTICES,
   columns: [
     { name: 'content_id', type: 'number', isIndexed: true },
+    { name: 'duration_seconds', type: 'number' },
     { name: 'created_at', type: 'number' },
     { name: 'updated_at', type: 'number' }
   ]
 })
 
+const userAwardProgressTable = tableSchema({
+  name: SYNC_TABLES.USER_AWARD_PROGRESS,
+  columns: [
+    { name: 'award_id', type: 'string', isIndexed: true },
+    { name: 'progress_percentage', type: 'number' },
+    { name: 'completed_at', type: 'number', isOptional: true, isIndexed: true },
+    { name: 'progress_data', type: 'string', isOptional: true },
+    { name: 'completion_data', type: 'string', isOptional: true },
+    { name: 'created_at', type: 'number' },
+    { name: 'updated_at', type: 'number', isIndexed: true }
+  ]
+})
+
 export default appSchema({
-  version: 1,
+  version: 2, // Increment version for migration
   tables: [
     contentLikesTable,
     contentProgressTable,
-    contentPracticesTable
+    contentPracticesTable,
+    userAwardProgressTable
   ]
 })
