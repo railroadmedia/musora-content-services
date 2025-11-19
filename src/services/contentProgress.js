@@ -27,6 +27,7 @@ export let dataContext = new DataContext(ContentProgressVersionKey, fetchContent
 let sessionData = []
 
 export async function getProgressPercentage(contentId, collection = null) {
+  console.log('coll', collection)
   return getById(contentId, collection, DATA_KEY_PROGRESS, 0)
 }
 
@@ -170,6 +171,7 @@ export async function getProgressDateByIds(contentIds, collection = null) {
 async function getById(contentId, collection, dataKey, defaultValue) {
   let data = await dataContext.getData()
   const contentKey = generateRecordKey(contentId, collection)
+  console.log('key', contentKey, data[contentKey])
   return data[contentKey]?.[dataKey] ?? defaultValue
 }
 
@@ -591,7 +593,7 @@ function bubbleProgress(hierarchy, contentId, localContext) {
 }
 
 function generateRecordKey(contentId, collection) {
-  return collection ? `${contentId}_${collection.type}_${collection.id}` : contentId
+  return collection ? `${contentId}:${collection.type}:${collection.id}` : contentId
 }
 
 function extractContentIdFromRecordKey(key) {
