@@ -2319,6 +2319,23 @@ export async function fetchMethodV2Structure(brand) {
       'id': railcontent_id,
       'children': child[]->railcontent_id
     }
-  }`;
+  }`
+  return await fetchSanity(query, false);
+}
+
+/**
+ * Fetch the structure (just ids) of the Method of a given learning path or learning path lesson.
+ * @param contentId
+ * @returns {Promise<*|null>}
+ */
+export async function fetchMethodV2StructureFromId(contentId) {
+  const _type = "method-v2";
+  const query = `*[_type == '${_type}' && brand == *[railcontent_id == ${contentId}][0].brand][0...1]{
+    'sanity_id': _id,
+    'learningPaths': child[]->{
+      'id': railcontent_id,
+      'children': child[]->railcontent_id
+    }
+  }`
   return await fetchSanity(query, false);
 }
