@@ -7,11 +7,11 @@ import { fetchSanity, getSanityDate, getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
 
 export interface Artist {
-  id: string
-  lessonsCount: number
+  slug: string
   name: string
-  page_type: string
+  page_type?: string
   lessons?: Lesson[]
+  lessonsCount: number
 }
 
 /**
@@ -32,7 +32,7 @@ export async function fetchArtists(brand: string): Promise<Artist[] | null> {
   ).buildFilter()
   const query = `
   *[_type == "artist"]{
-    'id': _id,
+    "slug": slug.current,
     name,
     "lessonsCount": count(*[${filter}])
   }[lessonsCount > 0] |order(lower(name)) `
@@ -42,7 +42,7 @@ export async function fetchArtists(brand: string): Promise<Artist[] | null> {
 /**
  * Fetch a single artist by their Sanity ID.
  *
- * @param {string} name - The name of the artist to fetch.
+ * @param {string} slug - The name of the artist to fetch.
  * @param {string} [brand] - The brand for which to fetch the artist.
  * @returns {Promise<Artist|null>} - A promise that resolves to an artist objects or null if not found.
  *
@@ -51,13 +51,14 @@ export async function fetchArtists(brand: string): Promise<Artist[] | null> {
  *   .then(artists => console.log(artists))
  *   .catch(error => console.error(error));
  */
-export async function fetchArtist(name: string, brand?: string): Promise<Artist | null> {
+export async function fetchArtistBySlug(slug: string, brand?: string): Promise<Artist | null> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} _type == "artist" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
   const query = `
-  *[_type == "artist" && name == "${name}"]{
+  *[_type == "artist" && slug.current == "${slug}"]{
+    "slug": slug.current,
     name,
     "lessonsCount": count(*[${filter}])
   }[lessonsCount > 0] |order(lower(name)) `
@@ -80,7 +81,7 @@ export interface LessonsByArtistResponse {
 /**
  * Fetch the artist's lessons.
  * @param {string} brand - The brand for which to fetch lessons.
- * @param {string} name - The name of the artist
+ * @param {string} slug - The slug of the artist
  * @param {string} contentType - The type of the lessons we need to get from the artist. If not defined, groq will get lessons from all content types
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
@@ -98,7 +99,7 @@ export interface LessonsByArtistResponse {
  */
 export async function fetchArtistLessons(
   brand: string,
-  name: string,
+  slug: string,
   contentType: string,
   {
     sort = '-published_on',
@@ -128,7 +129,7 @@ export async function fetchArtistLessons(
   const now = getSanityDate(new Date())
   const query = `{
     "entity":
-      *[_type == 'artist' && name == '${name}']
+      *[_type == 'artist' && slug.current == '${slug}']
         {'type': _type, name, 'thumbnail':thumbnail_url.asset->url,
         'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]),
         'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
