@@ -1115,6 +1115,7 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
       switch (item.type) {
         case 'playlist':
           return processPlaylistItem(item)
+        case 'learning-path-v2':
         case 'method':
           return item
         default:
