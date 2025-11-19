@@ -12,7 +12,7 @@ import {
 } from './services/content/genre.ts';
 
 import {
-	fetchInstructorById,
+	fetchInstructorBySlug,
 	fetchInstructorLessons,
 	fetchInstructors
 } from './services/content/instructor.ts';
@@ -487,7 +487,7 @@ declare module 'musora-content-services' {
 		fetchGenres,
 		fetchHandler,
 		fetchHierarchy,
-		fetchInstructorById,
+		fetchInstructorBySlug,
 		fetchInstructorLessons,
 		fetchInstructors,
 		fetchInterests,

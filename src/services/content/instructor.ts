@@ -1,14 +1,13 @@
 /**
  * @module Instructor
  */
-
 import { FilterBuilder } from '../../filterBuilder.js'
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
 import { buildEntityAndTotalQuery, fetchSanity, getSortOrder } from '../sanity.js'
 
 export interface Instructor {
   lessonCount: number
-  railcontent_id: number
+  slug: string
   name: string
   short_bio: string
   thumbnail_url: string
@@ -33,34 +32,37 @@ export async function fetchInstructors(brand: string): Promise<Instructor[]> {
   const query = `
   *[_type == "instructor"] {
     name,
-    railcontent_id,
+    slug,
     "lessonsCount": count(*[${filter}])
   }[lessonsCount > 0] |order(lower(name)) `
   return fetchSanity(query, true, { processNeedAccess: false })
 }
 
 /**
- * Fetch a single instructor by their Railcontent ID.
+ * Fetch a single instructor by their name
  *
- * @param {number} id - The Railcontent ID of the instructor to fetch.
+ * @param {string} slug - The slug of the instructor to fetch.
  * @param {string} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
  * @returns {Promise<Instructor[]>} - A promise that resolves to an instructor object or null if not found.
  *
  * @example
- * fetchInstructorById('drumeo')
- *   .then(instructors => console.log(instructors))
+ * fetchInstructorBySlug('66samus', 'drumeo')
+ *   .then(instructor => console.log(instructor))
  *   .catch(error => console.error(error));
  */
-export async function fetchInstructorById(id: number, brand?: string): Promise<Instructor | null> {
+export async function fetchInstructorBySlug(
+  slug: string,
+  brand?: string
+): Promise<Instructor | null> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
 
   const query = `
-  *[_type == "instructor" && railcontent_id == ${id}][0] {
-    railcontent_id,
+  *[_type == "instructor" && slug.current == '${slug}'][0] {
     name,
+    "slug": slug.current,
     short_bio,
     'thumbnail_url': thumbnail_url.asset->url,
     "lessonsCount": count(*[${filter}])
@@ -108,7 +110,7 @@ export interface InstructorLesson {
 /**
  * Fetch the data needed for the instructor screen.
  * @param {string} brand - The brand for which to fetch instructor lessons
- * @param {string} id - The Railcontent ID of the instructor
+ * @param {string} slug - The slug of the instructor
  *
  * @param {FetchInstructorLessonsOptions} options - Parameters for pagination, filtering and sorting.
  * @param {string} [options.sortOrder="-published_on"] - The field to sort the lessons by.
@@ -124,7 +126,7 @@ export interface InstructorLesson {
  *   .catch(error => console.error(error));
  */
 export async function fetchInstructorLessons(
-  id: number,
+  slug: string,
   brand: string,
   {
     sortOrder = '-published_on',
@@ -139,7 +141,7 @@ export async function fetchInstructorLessons(
   const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
-  const filter = `brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='instructor' && railcontent_id == ${id}]._id)`
+  const filter = `brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='instructor' && slug.current == '${slug}']._id)`
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
   sortOrder = getSortOrder(sortOrder, brand)

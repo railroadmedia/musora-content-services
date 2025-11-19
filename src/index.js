@@ -12,7 +12,7 @@ import {
 } from './services/content/genre.ts';
 
 import {
-	fetchInstructorById,
+	fetchInstructorBySlug,
 	fetchInstructorLessons,
 	fetchInstructors
 } from './services/content/instructor.ts';
@@ -486,7 +486,7 @@ export {
 	fetchGenres,
 	fetchHandler,
 	fetchHierarchy,
-	fetchInstructorById,
+	fetchInstructorBySlug,
 	fetchInstructorLessons,
 	fetchInstructors,
 	fetchInterests,
