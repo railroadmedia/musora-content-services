@@ -30,6 +30,7 @@ import { fetchLastInteractedChild, fetchLikeCount } from './railcontent'
  * @param options.addProgressTimestamp - add progressTimestamp field
  * @param options.addResumeTimeSeconds - add resumeTimeSeconds field
  * @param options.addLastInteractedChild - add lastInteractedChild field. This may be different from navigateTo.id
+ * @param options.collection {object|null} - define collection parameter: collection = { id: <collection_id>, type: <collection_type> } . This is needed for different collection types like learning paths.
  *
  * @returns {Promise<{ data: Object[] } | false>} - A promise that resolves to the fetched content data + added data or `false` if no data is found.
  *
