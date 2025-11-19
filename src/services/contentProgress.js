@@ -397,7 +397,7 @@ function setStartedOrCompletedStatusInLocalContext(
 
   if (!hierarchy) return
 
-  if (collection.type === 'learning-path') {
+  if (collection && collection.type === 'learning-path') {
     bubbleOrTrickleLearningPathProgress(hierarchy, contentId, localContext, isCompleted, collection)
     return
   }
