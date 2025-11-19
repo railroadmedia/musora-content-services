@@ -6,7 +6,7 @@ import {
 } from './services/config.js';
 
 import {
-	fetchGenreByName,
+	fetchGenreBySlug,
 	fetchGenreLessons,
 	fetchGenres
 } from './services/content/genre.ts';
@@ -481,7 +481,7 @@ export {
 	fetchFollowedThreads,
 	fetchForumCategories,
 	fetchFoundation,
-	fetchGenreByName,
+	fetchGenreBySlug,
 	fetchGenreLessons,
 	fetchGenres,
 	fetchHandler,

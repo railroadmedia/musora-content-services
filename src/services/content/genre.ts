@@ -9,6 +9,7 @@ export interface Genre {
   lessons?: GenreLesson[]
   lessons_count: number
   name: string
+  slug: string
   thumbnail: string
   type: 'genre'
 }
@@ -33,6 +34,7 @@ export async function fetchGenres(brand: string): Promise<Genre[]> {
   *[_type == 'genre'] {
     'type': _type,
     name,
+    "slug": slug.current,
     'thumbnail': thumbnail_url.asset->url,
     "lessons_count": count(*[${filter}])
   } |order(lower(name)) `
@@ -40,26 +42,28 @@ export async function fetchGenres(brand: string): Promise<Genre[]> {
 }
 
 /**
- * Fetch a single genre by their name and brand
+ * Fetch a single genre by their slug and brand
  *
- * @param {string} name - The name of the genre to fetch.
+ * @param {string} slug - The slug of the genre to fetch.
  * @param {string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
  * @returns {Promise<Genre[]|null>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
- * fetchGenreByName('drumeo')
+ * fetchGenreBySlug('drumeo')
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenreByName(name: string, brand?: string): Promise<Genre | null> {
+export async function fetchGenreBySlug(slug: string, brand?: string): Promise<Genre | null> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
 
   const query = `
-  *[_type == 'genre' && name == '${name}'] {
+  *[_type == 'genre' && slug.current == '${slug}'] {
     'type': _type, name,
+    name,
+    "slug": slug.current,
     'thumbnail':thumbnail_url.asset->url,
     "lessonsCount": count(*[${filter}])
   }`
@@ -109,7 +113,7 @@ export interface GenreLesson {
 /**
  * Fetch the genre's lessons.
  * @param {string} brand - The brand for which to fetch lessons.
- * @param {string} name - The name of the genre
+ * @param {string} slug - The slug of the genre
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
  * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
@@ -126,7 +130,7 @@ export interface GenreLesson {
  */
 export async function fetchGenreLessons(
   brand: string,
-  name: string,
+  slug: string,
   contentType: string,
   {
     sort = '-published_on',
@@ -150,7 +154,7 @@ export async function fetchGenreLessons(
   const now = getSanityDate(new Date())
   const query = `{
     "entity":
-      *[_type == 'genre' && name == '${name}']
+      *[_type == 'genre' && slug.current == '${slug}']
         {'type': _type, name, 'thumbnail':thumbnail_url.asset->url,
         'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]),
         'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
