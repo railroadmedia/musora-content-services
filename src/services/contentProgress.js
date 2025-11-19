@@ -6,7 +6,7 @@ import {
   postRecordWatchSession,
 } from './railcontent.js'
 import { DataContext, ContentProgressVersionKey } from './dataContext.js'
-import { fetchHierarchy } from './sanity.js'
+import {fetchHierarchy, fetchMethodV2Structure} from './sanity.js'
 import { recordUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 
@@ -272,7 +272,7 @@ export async function getAllStartedOrCompleted({
 
   const excludedSet = new Set(excludedIds.map((id) => parseInt(id))) // ensure IDs are numbers
 
-  // Method related content ids
+  // Method related content ids - this removes both method lessons and a-la-cart instances of method lessons
   const methodStructure = await fetchMethodV2Structure(brand)
   const methodRelatedIds = []
   methodStructure?.learningPaths.map((item) => {
