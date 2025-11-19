@@ -32,11 +32,11 @@ export async function fetchArtists(brand: string): Promise<Artist[] | null> {
   ).buildFilter()
   const query = `
   *[_type == "artist"]{
-    "slug": slug.current,
     name,
+    "slug": slug.current,
     "lessonsCount": count(*[${filter}])
   }[lessonsCount > 0] |order(lower(name)) `
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false})
+  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
 /**
@@ -53,16 +53,16 @@ export async function fetchArtists(brand: string): Promise<Artist[] | null> {
  */
 export async function fetchArtistBySlug(slug: string, brand?: string): Promise<Artist | null> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
-  const filter = await new FilterBuilder(`${brandFilter} _type == "artist" && references(^._id)`, {
+  const filter = await new FilterBuilder(`${brandFilter} _type == "song" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
   const query = `
-  *[_type == "artist" && slug.current == "${slug}"]{
-    "slug": slug.current,
+  *[_type == "artist" && slug.current == '${slug}']{
     name,
+    "slug": slug.current,
     "lessonsCount": count(*[${filter}])
   }[lessonsCount > 0] |order(lower(name)) `
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false})
+  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
 export interface ArtistLessonOptions {

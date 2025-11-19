@@ -6,7 +6,7 @@ import {
 } from './services/config.js';
 
 import {
-	fetchArtist,
+	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists
 } from './services/content/artist.ts';
@@ -458,7 +458,7 @@ export {
 	fetchAllCompletedStates,
 	fetchAllFilterOptions,
 	fetchAllPacks,
-	fetchArtist,
+	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
 	fetchAwardsForUser,

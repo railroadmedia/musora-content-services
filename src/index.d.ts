@@ -6,7 +6,7 @@ import {
 } from './services/config.js';
 
 import {
-	fetchArtist,
+	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists
 } from './services/content/artist.ts';
@@ -459,7 +459,7 @@ declare module 'musora-content-services' {
 		fetchAllCompletedStates,
 		fetchAllFilterOptions,
 		fetchAllPacks,
-		fetchArtist,
+		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
 		fetchAwardsForUser,

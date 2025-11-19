@@ -11,7 +11,7 @@ export interface Instructor {
   slug: string
   name: string
   short_bio: string
-  thumbnail_url: string
+  thumbnail: string
 }
 
 /**
@@ -33,7 +33,7 @@ export async function fetchInstructors(brand: string): Promise<Instructor[]> {
   const query = `
   *[_type == "instructor"] {
     name,
-    slug,
+    "slug": slug.current,
     "lessonsCount": count(*[${filter}])
   }[lessonsCount > 0] |order(lower(name)) `
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
@@ -65,7 +65,7 @@ export async function fetchInstructorBySlug(
     name,
     "slug": slug.current,
     short_bio,
-    'thumbnail_url': thumbnail_url.asset->url,
+    'thumbnail': thumbnail_url.asset->url,
     "lessonsCount": count(*[${filter}])
   }`
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
