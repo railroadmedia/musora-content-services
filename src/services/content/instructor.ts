@@ -53,7 +53,7 @@ export async function fetchInstructors(brand: string): Promise<Instructor[]> {
  */
 export async function fetchInstructorById(id: number, brand?: string): Promise<Instructor | null> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
-  const filter = await new FilterBuilder(`${brandFilter} && references(^._id)`, {
+  const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
 
