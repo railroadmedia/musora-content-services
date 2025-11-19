@@ -64,5 +64,5 @@ export function initializeService(config) {
   globalConfig.localStorage = config.localStorage
   globalConfig.isMA = config.isMA || false
   globalConfig.localTimezoneString = config.localTimezoneString || null
-  globalConfig.permissionsVersion = config.permissionsVersion || 'v2'
+  globalConfig.permissionsVersion = config.permissionsVersion || 'v1'
 }

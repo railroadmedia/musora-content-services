@@ -51,7 +51,13 @@ export async function getLessonContentRows (brand='drumeo', pageName = 'lessons'
     items: recentContentIds || []
   })
 
-  return contentRows
+  const results = await Promise.all(
+    contentRows.map(async (row) => {
+      return { id: row.id, title: row.title, items:  row.items }
+    })
+  )
+
+  return results
 }
 
 /**
