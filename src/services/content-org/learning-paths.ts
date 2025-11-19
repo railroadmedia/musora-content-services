@@ -241,7 +241,7 @@ interface completeMethodIntroVideo {
 }
 /**
  * Handles completion of method intro video and other related actions.
- * @param introVideoId - The intro video content ID.
+ * @param introVideoId - The method intro video content ID.
  * @param brand
  * @returns {Promise<Array>} response - The response object.
  * @returns {Promise<Object|null>} response.intro_video_response - The intro video completion response or null if already completed.
@@ -252,8 +252,11 @@ export async function completeMethodIntroVideo(introVideoId: number, brand: stri
 
   response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
+  const methodStructure = await fetchMethodV2Structure(brand)
+  const learningPathId = methodStructure.learningPaths[0].id
+
   const url: string = `${LEARNING_PATHS_PATH}/start`
-  const body = { brand: brand }
+  const body = { learning_path_id: learningPathId, brand: brand }
   response.active_path_response = await fetchHandler(url, 'POST', null, body)
 
   return response
@@ -261,13 +264,18 @@ export async function completeMethodIntroVideo(introVideoId: number, brand: stri
 
 interface completeLearningPathIntroVideo {
   intro_video_response: Object | null,
-  learning_path_reset_response: void | Object[] | Object
+  learning_path_reset_response: void | null,
+  lesson_import_response: Object[] | null
 }
 /**
  * Handles completion of learning path intro video and other related actions.
- * @param introVideoId
- * @param learningPathId
- * @param lessonsToImport
+ * @param introVideoId - The learning path intro video content ID.
+ * @param learningPathId - The content_id of the learning path that this learning path intro video belongs to.
+ * @param lessonsToImport - content ids for all lessons with progress found during intro video progress check. empty if user chose not to keep learning path progress.
+ * @returns {Promise<Array>} response - The response object.
+ * @returns {Promise<Object|null>} response.intro_video_response - The intro video completion response or null if already completed.
+ * @returns {Promise<void>} response.learning_path_reset_response - The reset learning path response.
+ * @returns {Promise<Object[]>} response.lesson_import_response - The responses for completing each content_id within the learning path.
  */
 export async function completeLearningPathIntroVideo(introVideoId: number, learningPathId: number, lessonsToImport: number[] | null) {
   let response = {} as completeLearningPathIntroVideo
@@ -275,14 +283,13 @@ export async function completeLearningPathIntroVideo(introVideoId: number, learn
   response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
   if (!lessonsToImport) {
-    // reset progress within the learning path
+    // returns nothing now, but it will when watermelon comes 'round
     response.learning_path_reset_response = await contentStatusReset(learningPathId)
   } else {
-    response.learning_path_reset_response = null
 
     // todo: add collection context + optimize with bulk calls with watermelon
     for (const contentId of lessonsToImport) {
-      response.learning_path_reset_response[contentId] = await contentStatusCompleted(contentId)
+      response.lesson_import_response[contentId] = await contentStatusCompleted(contentId)
     }
   }
 

@@ -12,13 +12,13 @@ import {
 } from './services/content/artist.ts';
 
 import {
-	fetchGenreByName,
+	fetchGenreBySlug,
 	fetchGenreLessons,
 	fetchGenres
 } from './services/content/genre.ts';
 
 import {
-	fetchInstructorById,
+	fetchInstructorBySlug,
 	fetchInstructorLessons,
 	fetchInstructors
 } from './services/content/instructor.ts';
@@ -487,12 +487,12 @@ declare module 'musora-content-services' {
 		fetchFollowedThreads,
 		fetchForumCategories,
 		fetchFoundation,
-		fetchGenreByName,
+		fetchGenreBySlug,
 		fetchGenreLessons,
 		fetchGenres,
 		fetchHandler,
 		fetchHierarchy,
-		fetchInstructorById,
+		fetchInstructorBySlug,
 		fetchInstructorLessons,
 		fetchInstructors,
 		fetchInterests,
