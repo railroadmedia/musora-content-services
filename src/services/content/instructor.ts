@@ -5,6 +5,7 @@
 import { FilterBuilder } from '../../filterBuilder.js'
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
 import { buildEntityAndTotalQuery, fetchSanity, getSortOrder } from '../sanity.js'
+import { Lesson } from './content'
 
 export interface Instructor {
   lessonCount: number
@@ -77,32 +78,8 @@ export interface FetchInstructorLessonsOptions {
 }
 
 export interface InstructorLessonsResponse {
-  entity: InstructorLesson[]
+  entity: Lesson[]
   total: number
-}
-
-export interface InstructorLesson {
-  artist: string | null
-  artist_name: string
-  brand: string
-  child_count: number | null
-  difficulty: number | null
-  difficulty_string: string | null
-  genre: string | null
-  id: number
-  image: string
-  length_in_seconds: number
-  parent_id: number | null
-  permission_id: number[]
-  published_on: string
-  sanity_id: string
-  slug: string
-  status: string
-  thumbnail: string
-  title: string
-  type: string
-  need_access: boolean
-  page_type: string
 }
 
 /**

@@ -6,6 +6,12 @@ import {
 } from './services/config.js';
 
 import {
+	fetchArtist,
+	fetchArtistLessons,
+	fetchArtists
+} from './services/content/artist.ts';
+
+import {
 	fetchGenreByName,
 	fetchGenreLessons,
 	fetchGenres
@@ -241,8 +247,6 @@ import {
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPacks,
-	fetchArtistLessons,
-	fetchArtists,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -454,6 +458,7 @@ export {
 	fetchAllCompletedStates,
 	fetchAllFilterOptions,
 	fetchAllPacks,
+	fetchArtist,
 	fetchArtistLessons,
 	fetchArtists,
 	fetchAwardsForUser,

@@ -4,9 +4,10 @@
 import { DEFAULT_FIELDS, filtersToGroq } from '../../contentTypeConfig.js'
 import { fetchSanity, getSanityDate, getSortOrder } from '../sanity.js'
 import { FilterBuilder } from '../../filterBuilder.js'
+import { Lesson } from './content'
 
 export interface Genre {
-  lessons?: GenreLesson[]
+  lessons?: Lesson[]
   lessons_count: number
   name: string
   thumbnail: string
@@ -77,33 +78,6 @@ export interface FetchGenreLessonsOptions {
 
 export interface LessonsByGenreResponse {
   entity: Genre[]
-}
-
-export interface GenreLesson {
-  artist: {
-    name: string
-    thumbnail: string | null
-  } | null
-  artist_name: string
-  brand: string
-  child_count: number | null
-  difficulty: number | null
-  difficulty_string: string | null
-  genre: string[] // array of genre names
-  id: number
-  image: string
-  length_in_seconds: number
-  parent_id: number | null
-  permission_id: number[]
-  published_on: string // ISO timestamp string
-  sanity_id: string
-  slug: string
-  status: string // can narrow to "published" if consistent
-  thumbnail: string
-  title: string
-  type: string // e.g. "song"
-  need_access: boolean
-  page_type: string // e.g. "song"
 }
 
 /**

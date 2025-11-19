@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>Onboarding - Documentation</title>
+    <title>Artist - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Onboarding</h1>
+    <h1 class="page-title">Artist</h1>
     
 
     
@@ -84,7 +84,7 @@
 
     
 
-    <h4 class="name" id="~getOnboardingRecommendedContent"><span class="type-signature type-signature-async, inner">(async, inner) </span>getOnboardingRecommendedContent<span class="signature">(brand)</span><span class="type-signature"> &rarr; {Promise.&lt;OnboardingRecommendedContent>}</span></h4>
+    <h4 class="name" id="~fetchArtist"><span class="type-signature type-signature-async, inner">(async, inner) </span>fetchArtist<span class="signature">(name, brand<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(Artist|null)>}</span></h4>
 
     
 
@@ -94,13 +94,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li>Fetches recommended content for onboarding based on the specified brand.</li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li>Fetch a single artist by their Sanity ID.</li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="user_onboarding.ts.html">user/onboarding.ts</a>, <a href="user_onboarding.ts.html#line134">line 134</a>
+        <a href="content_artist.ts.html">content/artist.ts</a>, <a href="content_artist.ts.html#line42">line 42</a>
     </li></ul></dd>
     
 
@@ -143,6 +143,222 @@
 
 
 
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>fetchArtists('drumeo')
+  .then(artists => console.log(artists))
+  .catch(error => console.error(error));</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The name of the artist to fetch.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>brand</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The brand for which to fetch the artist.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    - A promise that resolves to an artist objects or null if not found.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;(Artist|null)></span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~fetchArtistLessons"><span class="type-signature type-signature-async, inner">(async, inner) </span>fetchArtistLessons<span class="signature">(brand, name, contentType, params)</span><span class="type-signature"> &rarr; {Promise.&lt;(LessonsByArtistResponse|null)>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Fetch the artist's lessons.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="content_artist.ts.html">content/artist.ts</a>, <a href="content_artist.ts.html#line80">line 80</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>fetchArtistLessons('drumeo', '10 Years', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
+  .then(lessons => console.log(lessons))
+  .catch(error => console.error(error));</code></pre>
 
 
 
@@ -189,151 +405,81 @@
 
             
 
-            <td class="description last">The brand identifier.</td>
+            <td class="description last">The brand for which to fetch lessons.</td>
         </tr>
 
     
-    </tbody>
-</table>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5 class="h5-throws">Throws:</h5>
-
-        
-
-<dl>
-    <dt>
-        <div class="param-desc usertext">
-        - If the HTTP request fails.
-        </div>
-    </dt>
-    <dd></dd>
-    <dt>
-        <dl class="param-type">
-            <dt>
-                Type
-            </dt>
-            <dd>
-                
-<span class="param-type">HttpError</span>
-
-
-
-            </dd>
-        </dl>
-    </dt>
-    <dd></dd>
-</dl>
-
-
-    
-
-
-<h5 class="h5-returns">Returns:</h5>
-
-        
-<div class="param-desc">
-    - A promise that resolves with the recommended content.
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;OnboardingRecommendedContent></span>
-
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
+        <tr>
+            
+                <td class="name"><code>name</code></td>
             
 
-    
-
-    <h4 class="name" id="~startOnboarding"><span class="type-signature type-signature-async, inner">(async, inner) </span>startOnboarding<span class="signature">(params)</span><span class="type-signature"> &rarr; {Promise.&lt;Onboarding>}</span></h4>
-
-    
-
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
 
 
 
-<dl class="details">
-    
+            
+            </td>
 
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="user_onboarding.ts.html">user/onboarding.ts</a>, <a href="user_onboarding.ts.html#line44">line 44</a>
-    </li></ul></dd>
-    
+            
+
+            
+
+            <td class="description last">The name of the artist</td>
+        </tr>
 
     
 
-    
+        <tr>
+            
+                <td class="name"><code>contentType</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The type of the lessons we need to get from the artist. If not defined, groq will get lessons from all content types</td>
+        </tr>
 
     
 
-    
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
 
 
 
+            
+            </td>
 
+            
 
+            
 
-
-
-
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
+            <td class="description last">Parameters for sorting, searching, pagination and filtering.
+                <h6>Properties</h6>
+                
 
 <table class="params">
     <thead>
@@ -345,7 +491,11 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -357,13 +507,13 @@
 
         <tr>
             
-                <td class="name"><code>params</code></td>
+                <td class="name"><code>sort</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">StartOnboardingParams</span>
+<span class="param-type">string</span>
 
 
 
@@ -371,10 +521,231 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last">The parameters for starting the onboarding process.</td>
+            
+                <td class="default">
+                
+                    <code>"-published_on"</code>
+                
+                </td>
+            
+
+            <td class="description last">The field to sort the lessons by.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>searchTerm</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>""</code>
+                
+                </td>
+            
+
+            <td class="description last">The search term to filter the lessons.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>page</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>1</code>
+                
+                </td>
+            
+
+            <td class="description last">The page number for pagination.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>limit</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>10</code>
+                
+                </td>
+            
+
+            <td class="description last">The number of items per page.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>includedFields</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>[]</code>
+                
+                </td>
+            
+
+            <td class="description last">Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>progressIds</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;number></span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The ids of the lessons that are in progress or completed</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -394,43 +765,13 @@
 
 
 
-<h5 class="h5-throws">Throws:</h5>
-
-        
-
-<dl>
-    <dt>
-        <div class="param-desc usertext">
-        - If the HTTP request fails.
-        </div>
-    </dt>
-    <dd></dd>
-    <dt>
-        <dl class="param-type">
-            <dt>
-                Type
-            </dt>
-            <dd>
-                
-<span class="param-type">HttpError</span>
-
-
-
-            </dd>
-        </dl>
-    </dt>
-    <dd></dd>
-</dl>
-
-
-    
 
 
 <h5 class="h5-returns">Returns:</h5>
 
         
 <div class="param-desc">
-    - A promise that resolves when the onboarding process is started.
+    - The lessons for the artist and some details about the artist (name and thumbnail).
 </div>
 
 
@@ -441,7 +782,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;Onboarding></span>
+<span class="param-type">Promise.&lt;(LessonsByArtistResponse|null)></span>
 
 
 
@@ -457,192 +798,7 @@
 
     
 
-    <h4 class="name" id="~updateOnboarding"><span class="type-signature type-signature-async, inner">(async, inner) </span>updateOnboarding<span class="signature">(params)</span><span class="type-signature"> &rarr; {Promise.&lt;Onboarding>}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="user_onboarding.ts.html">user/onboarding.ts</a>, <a href="user_onboarding.ts.html#line78">line 78</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>params</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">UpdateOnboardingParams</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The parameters for updating the onboarding process.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5 class="h5-throws">Throws:</h5>
-
-        
-
-<dl>
-    <dt>
-        <div class="param-desc usertext">
-        - If the HTTP request fails.
-        </div>
-    </dt>
-    <dd></dd>
-    <dt>
-        <dl class="param-type">
-            <dt>
-                Type
-            </dt>
-            <dd>
-                
-<span class="param-type">HttpError</span>
-
-
-
-            </dd>
-        </dl>
-    </dt>
-    <dd></dd>
-</dl>
-
-
-    
-
-
-<h5 class="h5-returns">Returns:</h5>
-
-        
-<div class="param-desc">
-    - A promise that resolves when the onboarding process is updated.
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;Onboarding></span>
-
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="~userOnboardingForBrand"><span class="type-signature type-signature-async, inner">(async, inner) </span>userOnboardingForBrand<span class="signature">(brand)</span><span class="type-signature"> &rarr; {Promise.&lt;Onboarding>}</span></h4>
+    <h4 class="name" id="~fetchArtists"><span class="type-signature type-signature-async, inner">(async, inner) </span>fetchArtists<span class="signature">(brand)</span><span class="type-signature"> &rarr; {Promise.&lt;(Array.&lt;Artist>|null)>}</span></h4>
 
     
 
@@ -652,13 +808,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li>Fetches the onboardings for the current user and specified brand.</li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li>Fetch all artists with lessons available for a specific brand.</li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="user_onboarding.ts.html">user/onboarding.ts</a>, <a href="user_onboarding.ts.html#line104">line 104</a>
+        <a href="content_artist.ts.html">content/artist.ts</a>, <a href="content_artist.ts.html#line17">line 17</a>
     </li></ul></dd>
     
 
@@ -701,6 +857,13 @@
 
 
 
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>fetchArtists('drumeo')
+  .then(artists => console.log(artists))
+  .catch(error => console.error(error));</code></pre>
 
 
 
@@ -747,7 +910,7 @@
 
             
 
-            <td class="description last">The brand identifier.</td>
+            <td class="description last">The brand for which to fetch artists.</td>
         </tr>
 
     
@@ -767,43 +930,13 @@
 
 
 
-<h5 class="h5-throws">Throws:</h5>
-
-        
-
-<dl>
-    <dt>
-        <div class="param-desc usertext">
-        - If the HTTP request fails.
-        </div>
-    </dt>
-    <dd></dd>
-    <dt>
-        <dl class="param-type">
-            <dt>
-                Type
-            </dt>
-            <dd>
-                
-<span class="param-type">HttpError</span>
-
-
-
-            </dd>
-        </dl>
-    </dt>
-    <dd></dd>
-</dl>
-
-
-    
 
 
 <h5 class="h5-returns">Returns:</h5>
 
         
 <div class="param-desc">
-    - A promise that resolves with the onboarding data.
+    - A promise that resolves to an array of artist objects or null if not found.
 </div>
 
 
@@ -814,7 +947,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;Onboarding></span>
+<span class="param-type">Promise.&lt;(Array.&lt;Artist>|null)></span>
 
 
 
