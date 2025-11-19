@@ -511,7 +511,7 @@ export async function fetchByRailContentIds(ids, contentType = undefined, brand 
     };
     return results.map(liveProcess);
   }
-  const results = await fetchSanity(query, true, { customPostProcess: customPostProcess })
+  const results = await fetchSanity(query, true, { customPostProcess: customPostProcess, processNeedAccess: true })
 
   const sortFuction = function compare(a, b) {
     const indexA = ids.indexOf(a['id'])
@@ -1288,7 +1288,7 @@ export async function fetchSiblingContent(railContentId, brand= null)
     "related_lessons" : *[${filterGetParent}][0].child[${childrenFilter}]->{${queryFields}}
   }`
 
-  let result = await fetchSanity(query, false, { processNeedAccess: true }) 
+  let result = await fetchSanity(query, false, { processNeedAccess: true })
 
   //there's no way in sanity to retrieve the index of an array, so we must calculate after fetch
   if (result['for-calculations'] && result['for-calculations']['parents-list']) {
@@ -1317,10 +1317,12 @@ export async function fetchRelatedLessons(railContentId)
   const defaultFilterFields = `_type==^._type && brand == ^.brand && railcontent_id != ${railContentId}`
 
   const filterSameArtist = await new FilterBuilder(
-    `${defaultFilterFields} && references(^.artist->_id)`
+    `${defaultFilterFields} && references(^.artist->_id)`,
+    { showMembershipRestrictedContent: true }
   ).buildFilter()
   const filterSameGenre = await new FilterBuilder(
-    `${defaultFilterFields} && references(^.genre[]->_id)`
+    `${defaultFilterFields} && references(^.genre[]->_id)`,
+    { showMembershipRestrictedContent: true }
   ).buildFilter()
 
   const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
@@ -1332,7 +1334,7 @@ export async function fetchRelatedLessons(railContentId)
       ...(*[${filterSameGenre}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
       ])[0...10]}`
 
-  return await fetchSanity(query, false)
+  return await fetchSanity(query, false, { processNeedAccess: true })
 }
 
 /**
