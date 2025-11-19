@@ -9,7 +9,6 @@ import { Lesson } from './content'
 export interface Artist {
   slug: string
   name: string
-  page_type?: string
   lessons?: Lesson[]
   lessonsCount: number
 }
