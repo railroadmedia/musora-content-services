@@ -313,15 +313,14 @@ export async function getStartedOrCompletedProgressOnly({
   const result = {}
 
   Object.entries(data).forEach(([key, item]) => {
-
     const id = extractContentIdFromRecordKey(key)
     const isRelevantStatus =
       item[DATA_KEY_STATUS] === STATE_STARTED || item[DATA_KEY_STATUS] === STATE_COMPLETED
     const isCorrectBrand = !brand || item.b === brand
     const matchesCollection =
       (!collection && !item[DATA_KEY_COLLECTION]) ||
-      (item[DATA_KEY_COLLECTION].type === collection.type &&
-        item[DATA_KEY_COLLECTION].id === collection.id)
+      (item[DATA_KEY_COLLECTION]?.type === collection?.type &&
+        item[DATA_KEY_COLLECTION]?.id === collection?.id)
 
     if (matchesCollection && isRelevantStatus && isCorrectBrand) {
       result[id] = item?.[DATA_KEY_PROGRESS] ?? 0
