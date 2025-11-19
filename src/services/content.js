@@ -16,27 +16,42 @@ import {
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {recommendations, rankCategories, rankItems} from "./recommendations";
 import {addContextToContent} from "./contentAggregator.js";
+import {globalConfig} from "./config";
+import {getUserData} from "./user/management";
+import {filterTypes, ownedContentTypes} from "../contentTypeConfig";
 
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
-  let [recentContentIds, contentRows] = await Promise.all([
+  const [recentContentIds, rawContentRows, userData] = await Promise.all([
     fetchRecent(brand, pageName, { progress: 'recent', limit: 10 }),
-    getContentRows(brand, pageName)
+    getContentRows(brand, pageName),
+    getUserData()
   ])
 
-  contentRows = Array.isArray(contentRows) ? contentRows : [];
+  const contentRows = Array.isArray(rawContentRows) ? rawContentRows : []
+
+  // Only fetch owned content if user has no active membership
+  if (!userData?.has_active_membership) {
+    const type = ownedContentTypes[pageName] || []
+    console.log('rox::: types pentru owned content rows', type, pageName)
+    const ownedContent = await fetchOwnedContent(brand, { type })
+    if (ownedContent?.entity && ownedContent.entity.length > 0) {
+      contentRows.unshift({
+        id: 'owned',
+        title: 'Owned ' + capitalizeFirstLetter(pageName),
+        items: ownedContent.entity
+      })
+    }
+  }
+
+  // Add recent content row
   contentRows.unshift({
     id: 'recent',
     title: 'Recent ' + capitalizeFirstLetter(pageName),
     items: recentContentIds || []
-  });
+  })
 
-  const results = await Promise.all(
-      contentRows.map(async (row) => {
-        return { id: row.id, title: row.title, items:  row.items }
-      })
-  )
-  return results
+  return contentRows
 }
 
 /**
@@ -213,6 +228,7 @@ export async function getContentRows(brand, pageName, contentRowSlug = null, {
     }
     slugNameMap[category.slug] = category.name
   }
+
   const start = (page - 1) * limit
   const end = start + limit
   const sortedData = await rankCategories(brand, recData)

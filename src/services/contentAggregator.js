@@ -108,9 +108,9 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
 
   const addContext = async (item) => ({
     ...item,
-    ...(addProgressPercentage ? { progressPercentage: progressData?.[item.id]['progress'] } : {}),
-    ...(addProgressStatus ? { progressStatus: progressData?.[item.id]['status'] } : {}),
-    ...(addProgressTimestamp ? { progressTimestamp: progressData?.[item.id]['last_update'] } : {}),
+    ...(addProgressPercentage ? { progressPercentage: progressData?.[item.id]?.progress } : {}),
+    ...(addProgressStatus ? { progressStatus: progressData?.[item.id]?.status } : {}),
+    ...(addProgressTimestamp ? { progressTimestamp: progressData?.[item.id]?.last_update } : {}),
     ...(addIsLiked ? { isLiked: isLikedData?.[item.id] } : {}),
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),

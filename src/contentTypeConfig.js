@@ -352,6 +352,25 @@ export const recentTypes = {
   ],
 }
 
+export const ownedContentTypes = {
+  lessons: [
+    ...singleLessonTypes,
+    ...practiceAlongsLessonTypes,
+    ...liveArchivesLessonTypes,
+    ...studentArchivesLessonTypes,
+    ...coursesLessonTypes,
+    ...skillLessonTypes,
+    ...entertainmentLessonTypes,
+    'pack',
+  ],
+  songs: [
+    ...tutorialsLessonTypes,
+    ...transcriptionsLessonTypes,
+    ...playAlongLessonTypes,
+    ...jamTrackLessonTypes,
+  ],
+}
+
 export let contentTypeConfig = {
   'tab-data': {
     fields: ['enrollment_start_time', 'enrollment_end_time'],
