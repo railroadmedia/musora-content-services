@@ -1469,45 +1469,6 @@ export async function fetchPackData(id) {
 
 /**
  * Fetch the data needed for the coach screen.
- * @param {string} brand - The brand for which to fetch coach lessons
- * @param {string} id - The Railcontent ID of the coach
- * @returns {Promise<Object|null>} - The lessons for the instructor or null if not found.
- * @param {Object} params - Parameters for pagination, filtering and sorting.
- * @param {string} [params.sortOrder="-published_on"] - The field to sort the lessons by.
- * @param {string} [params.searchTerm=""] - The search term to filter content by title.
- * @param {number} [params.page=1] - The page number for pagination.
- * @param {number} [params.limit=10] - The number of items per page.
- * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
- *
- * @example
- * fetchCoachLessons('coach123')
- *   .then(lessons => console.log(lessons))
- *   .catch(error => console.error(error));
- */
-export async function fetchCoachLessons(
-  brand,
-  id,
-  { sortOrder = '-published_on', searchTerm = '', page = 1, limit = 20, includedFields = [] } = {}
-) {
-  const fieldsString = getFieldsForContentType()
-  const start = (page - 1) * limit
-  const end = start + limit
-  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
-  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
-  const filter = `brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='instructor' && railcontent_id == ${id}]._id)`
-  const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
-
-  sortOrder = getSortOrder(sortOrder, brand)
-  const query = buildEntityAndTotalQuery(filterWithRestrictions, fieldsString, {
-    sortOrder: sortOrder,
-    start: start,
-    end: end,
-  })
-  return fetchSanity(query, true)
-}
-
-/**
- * Fetch the data needed for the coach screen.
  * @param {string} id - The Railcontent ID of the coach
  *
  * @returns {Promise<Object|null>} - The lessons for the instructor or null if not found.
@@ -1594,60 +1555,6 @@ export async function fetchArtistLessons(
         'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
       [${start}...${end}]}
       |order(${sortOrder})f
-  }`
-  return fetchSanity(query, true)
-}
-
-/**
- * Fetch the genre's lessons.
- * @param {string} brand - The brand for which to fetch lessons.
- * @param {string} name - The name of the genre
- * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
- * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
- * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
- * @param {number} [params.page=1] - The page number for pagination.
- * @param {number} [params.limit=10] - The number of items per page.
- * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
- * @param {Array<number>} [params.progressIds] - The ids of the lessons that are in progress or completed
- * @returns {Promise<Object|null>} - The lessons for the artist and some details about the artist (name and thumbnail).
- *
- * @example
- * fetchGenreLessons('drumeo', 'Blues', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
- *   .then(lessons => console.log(lessons))
- *   .catch(error => console.error(error));
- */
-export async function fetchGenreLessons(
-  brand,
-  name,
-  contentType,
-  {
-    sort = '-published_on',
-    searchTerm = '',
-    page = 1,
-    limit = 10,
-    includedFields = [],
-    progressIds = undefined,
-  } = {}
-) {
-  const fieldsString = DEFAULT_FIELDS.join(',')
-  const start = (page - 1) * limit
-  const end = start + limit
-  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
-  const sortOrder = getSortOrder(sort, brand)
-  const addType = contentType ? `_type == '${contentType}' && ` : ''
-  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
-  // limits the results to supplied progressIds for started & completed filters
-  const progressFilter =
-    progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
-  const now = getSanityDate(new Date())
-  const query = `{
-    "entity":
-      *[_type == 'genre' && name == '${name}']
-        {'type': _type, name, 'thumbnail':thumbnail_url.asset->url,
-        'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]),
-        'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
-      [${start}...${end}]}
-      |order(${sortOrder})
   }`
   return fetchSanity(query, true)
 }
@@ -1964,7 +1871,7 @@ function arrayJoinWithQuotes(array, delimiter = ',') {
   return wrapped.join(delimiter)
 }
 
-function getSanityDate(date, roundToHourForCaching = true) {
+export function getSanityDate(date, roundToHourForCaching = true) {
   if (roundToHourForCaching) {
     // We need to set the published on filter date to be a round time so that it doesn't bypass the query cache
     // with every request by changing the filter date every second. I've set it to one minute past the current hour

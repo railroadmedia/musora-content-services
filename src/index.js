@@ -6,6 +6,12 @@ import {
 } from './services/config.js';
 
 import {
+	fetchGenreByName,
+	fetchGenreLessons,
+	fetchGenres
+} from './services/content/genre.ts';
+
+import {
 	fetchInstructorById,
 	fetchInstructorLessons,
 	fetchInstructors
@@ -241,12 +247,10 @@ import {
 	fetchByRailContentIds,
 	fetchByReference,
 	fetchChatAndLiveEnvent,
-	fetchCoachLessons,
 	fetchComingSoon,
 	fetchCommentModContentData,
 	fetchContentRows,
 	fetchFoundation,
-	fetchGenreLessons,
 	fetchHierarchy,
 	fetchLeaving,
 	fetchLessonContent,
@@ -281,6 +285,7 @@ import {
 	fetchTabData,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
+	getSanityDate,
 	getSortOrder,
 	jumpToContinueContent
 } from './services/sanity.js';
@@ -459,7 +464,6 @@ export {
 	fetchCertificate,
 	fetchChatAndLiveEnvent,
 	fetchChatSettings,
-	fetchCoachLessons,
 	fetchComingSoon,
 	fetchComment,
 	fetchCommentModContentData,
@@ -477,7 +481,9 @@ export {
 	fetchFollowedThreads,
 	fetchForumCategories,
 	fetchFoundation,
+	fetchGenreByName,
 	fetchGenreLessons,
+	fetchGenres,
 	fetchHandler,
 	fetchHierarchy,
 	fetchInstructorById,
@@ -582,6 +588,7 @@ export {
 	getRecommendedForYou,
 	getResumeTimeSeconds,
 	getResumeTimeSecondsByIds,
+	getSanityDate,
 	getScheduleContentRows,
 	getSortOrder,
 	getStartedOrCompletedProgressOnly,

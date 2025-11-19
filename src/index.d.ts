@@ -6,6 +6,12 @@ import {
 } from './services/config.js';
 
 import {
+	fetchGenreByName,
+	fetchGenreLessons,
+	fetchGenres
+} from './services/content/genre.ts';
+
+import {
 	fetchInstructorById,
 	fetchInstructorLessons,
 	fetchInstructors
@@ -241,12 +247,10 @@ import {
 	fetchByRailContentIds,
 	fetchByReference,
 	fetchChatAndLiveEnvent,
-	fetchCoachLessons,
 	fetchComingSoon,
 	fetchCommentModContentData,
 	fetchContentRows,
 	fetchFoundation,
-	fetchGenreLessons,
 	fetchHierarchy,
 	fetchLeaving,
 	fetchLessonContent,
@@ -281,6 +285,7 @@ import {
 	fetchTabData,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
+	getSanityDate,
 	getSortOrder,
 	jumpToContinueContent
 } from './services/sanity.js';
@@ -460,7 +465,6 @@ declare module 'musora-content-services' {
 		fetchCertificate,
 		fetchChatAndLiveEnvent,
 		fetchChatSettings,
-		fetchCoachLessons,
 		fetchComingSoon,
 		fetchComment,
 		fetchCommentModContentData,
@@ -478,7 +482,9 @@ declare module 'musora-content-services' {
 		fetchFollowedThreads,
 		fetchForumCategories,
 		fetchFoundation,
+		fetchGenreByName,
 		fetchGenreLessons,
+		fetchGenres,
 		fetchHandler,
 		fetchHierarchy,
 		fetchInstructorById,
@@ -583,6 +589,7 @@ declare module 'musora-content-services' {
 		getRecommendedForYou,
 		getResumeTimeSeconds,
 		getResumeTimeSecondsByIds,
+		getSanityDate,
 		getScheduleContentRows,
 		getSortOrder,
 		getStartedOrCompletedProgressOnly,
