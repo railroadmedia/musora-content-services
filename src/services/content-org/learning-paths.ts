@@ -218,8 +218,11 @@ export async function fetchLearningPathLessons(
   ) {
     // Daily sessions first lessons are the active learning path and the next lessons are not
     // load next lessons from next learning path
+    // TODO: update item status to locked when the current learning path is not complete
     nextLPLessons = await getLearningPathLessonsByIds(nextContentIds, nextLearningPathId)
   }
+
+  
 
   return {
     ...learningPath,
