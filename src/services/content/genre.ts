@@ -39,7 +39,7 @@ export async function fetchGenres(brand: string): Promise<Genre[]> {
     'thumbnail': thumbnail_url.asset->url,
     "lessons_count": count(*[${filter}])
   } |order(lower(name)) `
-  return fetchSanity(query, true)
+  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false})
 }
 
 /**
@@ -68,7 +68,7 @@ export async function fetchGenreBySlug(slug: string, brand?: string): Promise<Ge
     'thumbnail':thumbnail_url.asset->url,
     "lessonsCount": count(*[${filter}])
   }`
-  return fetchSanity(query, true)
+  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false})
 }
 
 export interface FetchGenreLessonsOptions {

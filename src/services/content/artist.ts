@@ -36,7 +36,7 @@ export async function fetchArtists(brand: string): Promise<Artist[] | null> {
     name,
     "lessonsCount": count(*[${filter}])
   }[lessonsCount > 0] |order(lower(name)) `
-  return fetchSanity(query, true, { processNeedAccess: false })
+  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false})
 }
 
 /**
@@ -62,7 +62,7 @@ export async function fetchArtistBySlug(slug: string, brand?: string): Promise<A
     name,
     "lessonsCount": count(*[${filter}])
   }[lessonsCount > 0] |order(lower(name)) `
-  return fetchSanity(query, true, { processNeedAccess: false })
+  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false})
 }
 
 export interface ArtistLessonOptions {

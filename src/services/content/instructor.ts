@@ -36,7 +36,7 @@ export async function fetchInstructors(brand: string): Promise<Instructor[]> {
     slug,
     "lessonsCount": count(*[${filter}])
   }[lessonsCount > 0] |order(lower(name)) `
-  return fetchSanity(query, true, { processNeedAccess: false })
+  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
 /**
@@ -68,7 +68,7 @@ export async function fetchInstructorBySlug(
     'thumbnail_url': thumbnail_url.asset->url,
     "lessonsCount": count(*[${filter}])
   }`
-  return fetchSanity(query, true, { processNeedAccess: false })
+  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
 export interface FetchInstructorLessonsOptions {
