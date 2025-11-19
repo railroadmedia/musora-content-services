@@ -60,9 +60,9 @@ export async function fetchInstructorBySlug(
   }).buildFilter()
 
   const query = `
-  *[_type == "instructor" && slug == ${slug}][0] {
+  *[_type == "instructor" && slug.current == '${slug}'][0] {
     name,
-    slug,
+    "slug": slug.current,
     short_bio,
     'thumbnail_url': thumbnail_url.asset->url,
     "lessonsCount": count(*[${filter}])
@@ -141,7 +141,7 @@ export async function fetchInstructorLessons(
   const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
-  const filter = `brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='instructor' && slug == ${slug}]._id)`
+  const filter = `brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='instructor' && slug.current == '${slug}']._id)`
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
   sortOrder = getSortOrder(sortOrder, brand)
