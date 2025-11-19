@@ -39,6 +39,7 @@ export interface AccountSetupProps {
   token?: string
   revenuecatAppUserId?: string
   deviceName?: string
+  from?: string
 }
 
 /**
@@ -56,14 +57,8 @@ export interface AccountSetupProps {
  */
 export async function setupAccount(props: AccountSetupProps): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  if (!globalConfig.isMA && !props.token) {
+  if ((!globalConfig.isMA || props.from === 'mobile-ios-app') && !props.token) {
     throw new Error('Token is required for non-MA environments')
-  }
-
-  // NOTE: remove deviceName temporarily. It will be required late
-  // if (globalConfig.isMA && (!props.deviceName || !props.revenuecatAppUserId)) {
-  if (globalConfig.isMA && !props.revenuecatAppUserId) {
-    throw new Error('Device name and RevenueCat App User ID are required for MA environments')
   }
 
   return httpClient.post(`/api/user-management-system/v1/accounts`, {
@@ -71,8 +66,7 @@ export async function setupAccount(props: AccountSetupProps): Promise<void> {
     password: props.password,
     password_confirmation: props.passwordConfirmation,
     token: props.token,
-    revenuecat_origin_app_user_id: props.revenuecatAppUserId,
-    device_name: props.deviceName,
+    from: props.from,
   })
 }
 

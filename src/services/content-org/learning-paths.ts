@@ -101,21 +101,28 @@ export async function resetAllLearningPaths() {
  * @returns {Promise<Object>} Learning path with enriched lesson data
  */
 export async function getEnrichedLearningPath(learningPathId) {
-  //TODO BEH-1410: refactor/cleanup
-  let learningPath = await fetchByRailContentId(learningPathId, 'learning-path-v2')
-  learningPath.children = mapContentToParent(
-    learningPath.children,
+  // TODO: replace addNextLesson with addNaviageTo
+  const response = (await addContextToContent(
+    fetchByRailContentId,
+    learningPathId,
+    'learning-path-v2',
+    {
+      dataField: 'children',
+      dataField_includeParent: true,
+      addProgressStatus: true,
+      addProgressPercentage: true,
+      addProgressTimestamp: true,
+      addNextLesson: true,
+    }
+  )) as any
+  if (!response) return response
+  
+  response.children = mapContentToParent(
+    response.children,
     'learning-path-lesson-v2',
     learningPathId
   )
-
-  learningPath.children = await addContextToContent(() => learningPath.children, {
-    addProgressStatus: true,
-    addProgressPercentage: true,
-    addProgressTimestamp: true,
-  })
-  learningPath = await addContextToContent(() => learningPath, { addNextLesson: true })
-  return learningPath
+  return response
 }
 
 /**

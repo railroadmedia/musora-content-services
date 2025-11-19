@@ -43,7 +43,7 @@ export async function createForumCategory(
 
 export interface UpdateForumCategoryParams {
   id: number
-  brand: number
+  brand: string
   name: string
   weight: number
   description?: string
