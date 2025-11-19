@@ -27,7 +27,6 @@ export let dataContext = new DataContext(ContentProgressVersionKey, fetchContent
 let sessionData = []
 
 export async function getProgressPercentage(contentId, collection = null) {
-  console.log('coll', collection)
   return getById(contentId, collection, DATA_KEY_PROGRESS, 0)
 }
 
@@ -171,7 +170,6 @@ export async function getProgressDateByIds(contentIds, collection = null) {
 async function getById(contentId, collection, dataKey, defaultValue) {
   let data = await dataContext.getData()
   const contentKey = generateRecordKey(contentId, collection)
-  console.log('key', contentKey, data[contentKey])
   return data[contentKey]?.[dataKey] ?? defaultValue
 }
 
