@@ -8,8 +8,6 @@ import {
 import { DataContext, ContentProgressVersionKey } from './dataContext.js'
 import {
   fetchHierarchy,
-  fetchLearningPathParent,
-  fetchMethodV2Structure,
   fetchMethodV2StructureFromId
 } from './sanity.js'
 import { recordUserPractice, findIncompleteLesson } from './userActivity'
