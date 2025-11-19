@@ -6,6 +6,12 @@ import {
 } from './services/config.js';
 
 import {
+	fetchInstructorById,
+	fetchInstructorLessons,
+	fetchInstructors
+} from './services/content/instructor.ts';
+
+import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
@@ -225,6 +231,7 @@ import {
 } from './services/recommendations.js';
 
 import {
+	buildEntityAndTotalQuery,
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPacks,
@@ -406,6 +413,7 @@ declare module 'musora-content-services' {
 		assignModeratorToComment,
 		blockUser,
 		blockedUsers,
+		buildEntityAndTotalQuery,
 		buildImageSRC,
 		calculateLongestStreaks,
 		closeComment,
@@ -473,6 +481,9 @@ declare module 'musora-content-services' {
 		fetchGenreLessons,
 		fetchHandler,
 		fetchHierarchy,
+		fetchInstructorById,
+		fetchInstructorLessons,
+		fetchInstructors,
 		fetchInterests,
 		fetchLastInteractedChild,
 		fetchLatestThreads,

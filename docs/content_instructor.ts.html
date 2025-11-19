@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>content-org/playlists.js - Documentation</title>
+    <title>content/instructor.ts - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">content-org/playlists.js</h1>
+    <h1 class="page-title">content/instructor.ts</h1>
     
 
     
@@ -46,372 +46,156 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @module Playlists
+ * @module Instructor
  */
-import { globalConfig } from '../config.js'
-import { fetchHandler } from '../railcontent.js'
-import { getNavigateToForPlaylists } from '../contentAggregator.js'
-import './playlists-types.js'
+
+import { FilterBuilder } from '../../filterBuilder.js'
+import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
+import { buildEntityAndTotalQuery, fetchSanity, getSortOrder } from '../sanity.js'
+
+export interface Instructor {
+  lessonCount: number
+  railcontent_id: number
+  name: string
+  short_bio: string
+  thumbnail_url: string
+}
 
 /**
- * Exported functions that are excluded from index generation.
+ * Fetch all instructor with lessons available for a specific brand.
  *
- * @type {string[]}
- */
-const excludeFromGeneratedIndex = []
-
-const BASE_PATH = `/api/content-org`
-
-/**
- * Fetches user playlists for a specific brand.
- *
- * Allows optional pagination, sorting, and search parameters to control the result set.
- *
- * @param {string} brand - The brand identifier for which playlists are being fetched.
- * @param {number} [params.limit=10] - The maximum number of playlists to return per page (default is 10).
- * @param {number} [params.page=1] - The page number for pagination.
- * @param {string} [params.sort='-created_at'] - The sorting order for the playlists (default is by created_at in descending order).
- * @param {int|string} [params.content_id] - If content_id exists, the endpoint checks in each playlist if we have the content in the items.
- *
- * @returns {Promise&lt;Object|null>} - A promise that resolves to the response from the API, containing the user playlists data.
+ * @param {string} brand - The brand for which to fetch instructors.
+ * @returns {Promise&lt;Instructor[]>} - A promise that resolves to an array of instructor objects.
  *
  * @example
- * fetchUserPlaylists('drumeo', { page: 1, sort: 'name', searchTerm: 'rock' })
- *   .then(playlists => console.log(playlists))
+ * fetchInstructors('drumeo')
+ *   .then(instructors => console.log(instructors))
  *   .catch(error => console.error(error));
  */
-export async function fetchUserPlaylists(
-  brand,
-  { page, limit, sort, content_id } = {}
-) {
-  const pageString = page ? `?page=${page}` : '?page=1'
-  const limitString = limit ? `&amp;limit=${limit}` : ''
-  const sortString = sort ? `&amp;sort=${sort}` : ''
-  const content = content_id ? `&amp;content_id=${content_id}` : ''
-  const brandString = brand ? `&amp;brand=${brand}` : ''
-  const url = `${BASE_PATH}/v1/user/playlists${pageString}${brandString}${limitString}${sortString}${content}`
-  return await getNavigateToForPlaylists(await fetchHandler(url), {dataField: 'data'})
+export async function fetchInstructors(brand: string): Promise&lt;Instructor[]> {
+  const filter = await new FilterBuilder(`brand == "${brand}" &amp;&amp; references(^._id)`, {
+    bypassPermissions: true,
+  }).buildFilter()
+
+  const query = `
+  *[_type == "instructor"] {
+    name,
+    railcontent_id,
+    "lessonsCount": count(*[${filter}])
+  }[lessonsCount > 0] |order(lower(name)) `
+  return fetchSanity(query, true, { processNeedAccess: false })
 }
 
 /**
- * Creates a new user playlist by sending a POST request with playlist data to the API.
+ * Fetch a single instructor by their Railcontent ID.
  *
- * This function calls the `/playlists/playlist` endpoint, where the server validates the incoming data and associates
- * the new playlist with the authenticated user. The `name` field is required, while other fields are optional.
- *
- * @param {CreatePlaylistDTO} playlistData - An object containing data to create the playlist. The fields include:
- *  - `name` (string): The name of the new playlist (required, max 255 characters).
- *  - `description` (string): A description of the playlist (optional, max 1000 characters).
- *  - `category` (string): The category of the playlist.
- *  - `private` (boolean): Whether the playlist is private (optional, defaults to false).
- *  - `brand` (string): Brand identifier for the playlist.
- *
- * @returns {Promise&lt;Playlist>} - A promise that resolves to the created playlist data if successful, or an error response if validation fails.
+ * @param {number} id - The Railcontent ID of the instructor to fetch.
+ * @param {string} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
+ * @returns {Promise&lt;Instructor[]>} - A promise that resolves to an instructor object or null if not found.
  *
  * @example
- * createPlaylist({ name: "My Playlist", description: "A cool playlist", private: true })
- *   .then(response => console.log(response))
- *   .catch(error => console.error('Error creating playlist:', error));
+ * fetchInstructorById('drumeo')
+ *   .then(instructors => console.log(instructors))
+ *   .catch(error => console.error(error));
  */
-export async function createPlaylist(playlistData) {
-  const url = `${BASE_PATH}/v1/user/playlists`
-  return await fetchHandler(url, 'POST', null, playlistData)
+export async function fetchInstructorById(id: number, brand?: string): Promise&lt;Instructor | null> {
+  const brandFilter = brand ? `brand == "${brand}" &amp;&amp; ` : ''
+  const filter = await new FilterBuilder(`${brandFilter} &amp;&amp; references(^._id)`, {
+    bypassPermissions: true,
+  }).buildFilter()
+
+  const query = `
+  *[_type == "instructor" &amp;&amp; railcontent_id == ${id}][0] {
+    railcontent_id,
+    name,
+    short_bio,
+    'thumbnail_url': thumbnail_url.asset->url,
+    "lessonsCount": count(*[${filter}])
+  }`
+  return fetchSanity(query, true, { processNeedAccess: false })
+}
+
+export interface FetchInstructorLessonsOptions {
+  sortOrder?: string
+  searchTerm?: string
+  page?: number
+  limit?: number
+  includedFields?: Array&lt;string>
+}
+
+export interface InstructorLessonsResponse {
+  entity: InstructorLesson[]
+  total: number
+}
+
+export interface InstructorLesson {
+  artist: string | null
+  artist_name: string
+  brand: string
+  child_count: number | null
+  difficulty: number | null
+  difficulty_string: string | null
+  genre: string | null
+  id: number
+  image: string
+  length_in_seconds: number
+  parent_id: number | null
+  permission_id: number[]
+  published_on: string
+  sanity_id: string
+  slug: string
+  status: string
+  thumbnail: string
+  title: string
+  type: string
+  need_access: boolean
+  page_type: string
 }
 
 /**
- * Soft deletes a playlist. Will cascade and also soft delete entries in other playlist tables (pinned, reported, liked,
- * playlist content) and last engaged that have this playlist id
- * @param {id} playlist - the id of the playlist you want to soft delete.
- * @returns {Promise&lt;any|string|null>}
- */
-export async function deletePlaylist(playlist) {
-  const url = `${BASE_PATH}/v1/user/playlists/delete/${playlist}`
-  return await fetchHandler(url, 'POST', null, playlist)
-}
-
-/**
- * Soft restores a playlist. Will cascade and also soft restore entries in other playlist tables (pinned, reported, liked,
- * playlist content) and last engaged that have this playlist id
- * @param {id} playlist - the id of the playlist you want to soft restore.
- * @returns {Promise&lt;any|string|null>}
- */
-export async function undeletePlaylist(playlist) {
-  const url = `${BASE_PATH}/v1/user/playlists/undelete/${playlist}`
-  return await fetchHandler(url, 'POST', null, playlist)
-}
-
-
-/**
- * Likes a playlist for the current user.
+ * Fetch the data needed for the instructor screen.
+ * @param {string} brand - The brand for which to fetch instructor lessons
+ * @param {string} id - The Railcontent ID of the instructor
  *
- * @async
- * @function likePlaylist
- * @param {string|number} playlistId - The unique identifier of the playlist to like.
+ * @param {FetchInstructorLessonsOptions} options - Parameters for pagination, filtering and sorting.
+ * @param {string} [options.sortOrder="-published_on"] - The field to sort the lessons by.
+ * @param {string} [options.searchTerm=""] - The search term to filter content by title.
+ * @param {number} [options.page=1] - The page number for pagination.
+ * @param {number} [options.limit=10] - The number of items per page.
+ * @param {Array&lt;string>} [options.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  *
- * @returns {Promise&lt;Object>}
- *
+ * @returns {Promise&lt;InstructorLessonsResponse>} - The lessons for the instructor or null if not found.
  * @example
- * // Like playlist with ID '123'
- * try {
- *   const response = await likePlaylist('123');
- *   console.log('Playlist liked successfully:', response);
- * } catch (error) {
- *   console.error('Failed to like playlist:', error);
- * }
+ * fetchInstructorLessons('instructor123')
+ *   .then(lessons => console.log(lessons))
+ *   .catch(error => console.error(error));
  */
-export async function likePlaylist(playlistId) {
-  const url = `${BASE_PATH}/v1/user/playlists/like/${playlistId}`
-  return await fetchHandler(url, 'PUT')
-}
+export async function fetchInstructorLessons(
+  id: number,
+  brand: string,
+  {
+    sortOrder = '-published_on',
+    searchTerm = '',
+    page = 1,
+    limit = 20,
+    includedFields = [],
+  }: FetchInstructorLessonsOptions = {}
+): Promise&lt;InstructorLessonsResponse> {
+  const fieldsString = getFieldsForContentType() as string
+  const start = (page - 1) * limit
+  const end = start + limit
+  const searchFilter = searchTerm ? `&amp;&amp; title match "${searchTerm}*"` : ''
+  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
+  const filter = `brand == '${brand}' ${searchFilter} ${includedFieldsFilter} &amp;&amp; references(*[_type=='instructor' &amp;&amp; railcontent_id == ${id}]._id)`
+  const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
-/**
- * Unlikes a previously liked playlist.
- * @async
- * @function unlikePlaylist
- * @param {string|number} playlistId - The unique identifier of the playlist to unlike.
- *
- * @returns {Promise&lt;Object>}
- *
- *
- * @example
- * // Unlike playlist with ID '123'
- * try {
- *   const response = await unlikePlaylist('123');
- *   console.log('Playlist unliked successfully:', response);
- * } catch (error) {
- *   console.error('Failed to unlike playlist:', error);
- * }
- */
-export async function unlikePlaylist(playlistId) {
-  const url = `${BASE_PATH}/v1/user/playlists/like/${playlistId}`
-  return await fetchHandler(url, 'DELETE')
-}
-
-/**
- * Reports a playlist
- *
- * @async
- * @function reportPlaylist
- * @param {string|number} playlistId - The unique identifier of the playlist to report.
- *
- * @returns {Promise&lt;Object>}
- *
- * @example
- * // Report playlist with ID '123'
- * try {
- *   const response = await reportPlaylist('123');
- *   console.log('Playlist reported successfully:', response);
- * } catch (error) {
- *   console.error('Failed to report playlist:', error);
- * }
- */
-export async function reportPlaylist(playlistId) {
-  const url = `${BASE_PATH}/v1/user/playlists/report/${playlistId}`
-  return await fetchHandler(url, 'POST')
-}
-
-/**
- * Adds an item to one or more playlists
- *
- * @param {AddItemToPlaylistDTO} payload - The request payload containing necessary parameters.
- *
- * @returns {Promise&lt;Object|null>} - A promise that resolves to an object with the response data, including:
- *  - `added` (Array): Playlist ids that we were success
- *  - `limit_exceeded` (Array): A list of playlists where the item limit was exceeded, if any.
- *  - `unauthorized` (Array): A list of successfully added items (empty if none).
- *
- * Resolves to `null` if the request fails.
- * @throws {Error} - Throws an error if the request encounters issues during the operation.
- *
- * @example
- * const payload = {
- *     content_id: 123,
- *     playlist_id: [1, 2, 3],
- *     position: 2,
- *
- * };
- *
- * addItemToPlaylist(payload)
- *   .then(response => {
- *     if (response?.success) {
- *       console.log("Item(s) added to playlist successfully");
- *     }
- *     if (response?.limit_exceeded) {
- *       console.warn("Some playlists exceeded the item limit:", response.limit_exceeded);
- *     }
- *   })
- *   .catch(error => {
- *     console.error("Error adding item to playlist:", error);
- *   });
- */
-export async function addItemToPlaylist(payload) {
-  const url = `${BASE_PATH}/v1/user/playlists/items`
-  return await fetchHandler(url, 'POST', null, payload)
-}
-
-/**
- * Toggles a playlists public/private state
- *
- * @param {string|number} playlistId
- * @param {Boolean} is_private - flag for private/public
-
- * @returns {Promise&lt;Playlist>} - A promise that resolves to the updated playlist data if successful, or an error response if validation fails.
- *
- * @example
- * togglePlaylistPrivate(11541, true)
- *   .then(response => console.log(response))
- *   .catch(error => console.error('Error creating playlist:', error));
- */
-export async function togglePlaylistPrivate(playlistId, is_private)
-{
-  return await updatePlaylist(playlistId, {is_private})
-}
-
-
-/**
- * Updates a playlists values
- *
- * @param {string|number} playlistId
- * @param {UpdatePlaylistDTO} updateData  - An object containing fields to update on the playlist:
- *  - `name` (string): The name of the new playlist (required, max 255 characters).
- *  - `description` (string): A description of the playlist (optional, max 1000 characters).
- *  - `category` (string): The category of the playlist (optional).
- *  - `is_private` (boolean): Whether the playlist is private (optional, defaults to false).
- *  - `deleted_items` (array): List of playlist item IDs to delete (optional).
- *  - `item_order` (array): Updated order of playlist items (ids, not railcontent_ids) (optional).
- *
- * @returns {Promise&lt;object>} - A promise that resolves to the created playlist data and lessons if successful, or an error response if validation fails.
- *
- * The server response includes:
- *  - `playlist`: Playlist metadata (same as fetchPlaylist)
- *  - `lessons`: Updated list of plalyist lessons  (same as fetchPlaylistItems)
- *
- * @example
- * updatePlaylist(661113 { name: "My Playlist", description: "A cool playlist", is_private: true, deleted_items : [2189832, 221091] })
- *   .then(response => console.log(response.playlist); console.log(response.lessons))
- *   .catch(error => console.error('Error updating playlist:', error));
- */
-export async function updatePlaylist(playlistId, updateData)
-{
-  const { name, description, category, is_private, item_order, deleted_items } = updateData;
-  let data = {
-    ...name &amp;&amp; { name },
-    ...'description' in updateData &amp;&amp; { description },
-    ...'is_private' in updateData &amp;&amp; { private: is_private || false },
-    ...'category' in updateData &amp;&amp; { category },
-    ...deleted_items &amp;&amp; { deleted_items },
-    ...item_order &amp;&amp; { item_order },
-  }
-  const url = `${BASE_PATH}/v1/user/playlists/${playlistId}`
-  return await fetchHandler(url, 'PUT', null, data);
-}
-
-/**
- * Delete Items from playlist
- *
- * @async
- * @function deleteItemsFromPlaylist
- * @param {string|number} playlistId - The unique identifier of the playlist to update.
- * @param {array} deleted_items - list of playlist ids to delete (user_playlist_item_id, not the railcontent_id)
- *
- * @returns {Promise&lt;Object>}
- *
- * @example
- * // Delete items 8462221 and 8462222 from playlist 81111
- * try {
- *   const response = await deleteItemsFromPlaylist(81111, [8462221, 8462222]);
- * } catch (error) {
- *   console.error('Failed to delete playlist items:', error);
- * }
- */
-export async function deleteItemsFromPlaylist(playlistId, deleted_items) {
-  return await updatePlaylist(playlistId, {deleted_items})
-}
-
-/**
- * Restore items
- *
- * @async
- * @function restoreItemFromPlaylist
- * @param {string|number} playlistItemId - The unique identifier of the playlist ite to restore.
- *
- * @returns {Promise&lt;Object>}
- *
- * @example
- * // Restore item 8462221
- * try {
- *   const response = await restoreItemFromPlaylist(8462221);
- * } catch (error) {
- *   console.error('Failed to restore playlist item:', error);
- * }
- */
-export async function restoreItemFromPlaylist(playlistItemId) {
-  const url = `${BASE_PATH}/v1/user/playlists/items/undelete/${playlistItemId}`
-  return await fetchHandler(url, 'POST')
-}
-
-/**
- * Duplicates a playlist and playlist items for the provided playlistID for the authorized user
- *
- * @param {string|number} playlistId
- * @param {DuplicatePlaylistDTO} playlistData - An object containing data to create the playlist. The fields include:
- *  - `name` (string): The name of the new playlist (required, max 255 characters).
- *  - `description` (string): A description of the playlist (optional, max 1000 characters).
- *  - `category` (string): The category of the playlist.
- *  - `private` (boolean): Whether the playlist is private (optional, defaults to false).
- *  - `brand` (string): Brand identifier for the playlist.
- *  - 'items' (array): List of playlist items to duplicate in updated order
- *
- * @returns {Promise&lt;Playlist>}
- * @example
- * duplicatePlaylist(81167, { name: "My Playlist (Duplicate)", description: "A cool playlist", private: true })
- *   .then(response => console.log(response))
- *   .catch(error => console.error('Error creating playlist:', error));
- */
-export async function duplicatePlaylist(playlistId, playlistData) {
-  const url = `${BASE_PATH}/v1/user/playlists/duplicate/${playlistId}`
-  return await fetchHandler(url, 'POST', null, playlistData)
-}
-
-/**
- * Retrieves details of a specific playlist by its ID.
- *
- * This function sends a GET request to the `/playlists/playlist` endpoint with a specified playlist ID.
- * The server validates the user's access to the playlist and returns playlist details if the user is authorized.
- *
- * @param {string|number} playlistId - The unique identifier of the playlist to retrieve.
- *
- * @returns {Promise&lt;Object>} - A promise that resolves to the response from the API, containing:
- *  - `data` (Object): The playlist details, or an error message if access is denied or the playlist is not found.
- *
- * @example
- * fetchPlaylist(12345)
- *   .then(response => console.log(response.data))
- *   .catch(error => console.error('Error fetching playlist:', error));
- */
-export async function fetchPlaylist(playlistId) {
-  const url = `${BASE_PATH}/v1/user/playlists/${playlistId}`
-  return await getNavigateToForPlaylists(await fetchHandler(url))
-}
-
-/**
- * Retrieves items within a specified playlist by playlist ID.
- *
- * This function sends a GET request to the `/playlists/playlist-lessons` endpoint to fetch items in the given playlist.
- * The server combines data from the playlist and additional metadata from Sanity to enhance item details.
- *
- * @param {string|number} playlistId - The unique identifier of the playlist whose items are to be fetched.
- *
- * @returns {Promise&lt;Array&lt;Object>>} - A promise that resolves to an array of playlist items
- *
- * @example
- * fetchPlaylistItems(12345)
- *   .then(items => console.log(items))
- *   .catch(error => console.error('Error fetching playlist items:', error));
- */
-export async function fetchPlaylistItems(playlistId) {
-  const url = `${BASE_PATH}/v1/user/playlists/items/${playlistId}`
-  return await fetchHandler(url, 'GET')
+  sortOrder = getSortOrder(sortOrder, brand)
+  const query = buildEntityAndTotalQuery(filterWithRestrictions, fieldsString, {
+    sortOrder: sortOrder,
+    start: start,
+    end: end,
+  })
+  return fetchSanity(query, true)
 }
 </code></pre>
         </article>

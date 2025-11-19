@@ -6,6 +6,12 @@ import {
 } from './services/config.js';
 
 import {
+	fetchInstructorById,
+	fetchInstructorLessons,
+	fetchInstructors
+} from './services/content/instructor.ts';
+
+import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
@@ -225,6 +231,7 @@ import {
 } from './services/recommendations.js';
 
 import {
+	buildEntityAndTotalQuery,
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPacks,
@@ -405,6 +412,7 @@ export {
 	assignModeratorToComment,
 	blockUser,
 	blockedUsers,
+	buildEntityAndTotalQuery,
 	buildImageSRC,
 	calculateLongestStreaks,
 	closeComment,
@@ -472,6 +480,9 @@ export {
 	fetchGenreLessons,
 	fetchHandler,
 	fetchHierarchy,
+	fetchInstructorById,
+	fetchInstructorLessons,
+	fetchInstructors,
 	fetchInterests,
 	fetchLastInteractedChild,
 	fetchLatestThreads,
