@@ -123,7 +123,7 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
     }
 
     if (showMembershipRestrictedContent) {
-      return `(membership_tier == "plus" || membership_tier == "basic" || membership_tier == "free")`
+      return `(!defined(membership_tier) || membership_tier == "plus")`
     }
 
     // If showOnlyOwnedContent, show only purchased/owned content
@@ -171,6 +171,7 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
     const ownerContentFilter = `railcontent_id in ${arrayToRawRepresentation(ownedContentIds)}`
   //const noMembershipTier = `(!defined(membership_tier) || (membership_tier != "plus" && membership_tier != "basic" && membership_tier != "free"))`
 
+    console.log('rox::: V2Adapter buildOwnedContentFilter - final filter', ownerContentFilter)
     return ` ${ownerContentFilter} `
   }
 
