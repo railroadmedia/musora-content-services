@@ -13,6 +13,17 @@ export interface Genre {
   type: 'genre'
 }
 
+/**
+ * Fetch all genres with lessons available for a specific brand.
+ *
+ * @param {string} [brand] - The brand for which to fetch the genre for. Lesson count will be filtered by this brand if provided.
+ * @returns {Promise<Genre[]>} - A promise that resolves to an genre object or null if not found.
+ *
+ * @example
+ * fetchGenres('drumeo')
+ *   .then(genres => console.log(genres))
+ *   .catch(error => console.error(error));
+ */
 export async function fetchGenres(brand: string): Promise<Genre[]> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
@@ -32,15 +43,15 @@ export async function fetchGenres(brand: string): Promise<Genre[]> {
  * Fetch a single genre by their name and brand
  *
  * @param {string} name - The name of the genre to fetch.
- * @param {string} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Instructor[]>} - A promise that resolves to an instructor object or null if not found.
+ * @param {string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
+ * @returns {Promise<Genre[]|null>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenreByName('drumeo')
- *   .then(instructors => console.log(instructors))
+ *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenreByName(name: string, brand?: string): Promise<object> {
+export async function fetchGenreByName(name: string, brand?: string): Promise<Genre | null> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
     bypassPermissions: true,
