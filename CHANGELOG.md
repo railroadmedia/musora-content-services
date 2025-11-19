@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.79.1](https://github.com/railroadmedia/musora-content-services/compare/v2.79.0...v2.79.1) (2025-11-19)
+
+
+### Bug Fixes
+
+* **BEH-1409:** fix function to support the BE endpoint ([#569](https://github.com/railroadmedia/musora-content-services/issues/569)) ([9231bef](https://github.com/railroadmedia/musora-content-services/commit/9231beffad0ce9df9e7630e5b69d2c373d0f5190))
+
 ## [2.79.0](https://github.com/railroadmedia/musora-content-services/compare/v2.77.1...v2.79.0) (2025-11-18)
 
 
