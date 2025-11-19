@@ -6,7 +6,7 @@ import {
 } from './services/config.js';
 
 import {
-	fetchInstructorById,
+	fetchInstructorBySlug,
 	fetchInstructorLessons,
 	fetchInstructors
 } from './services/content/instructor.ts';
@@ -480,7 +480,7 @@ export {
 	fetchGenreLessons,
 	fetchHandler,
 	fetchHierarchy,
-	fetchInstructorById,
+	fetchInstructorBySlug,
 	fetchInstructorLessons,
 	fetchInstructors,
 	fetchInterests,
