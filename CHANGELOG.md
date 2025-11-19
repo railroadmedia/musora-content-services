@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.80.0](https://github.com/railroadmedia/musora-content-services/compare/v2.79.1...v2.80.0) (2025-11-19)
+
+
+### Features
+
+* **MU21E1-192:** artist functions ([#578](https://github.com/railroadmedia/musora-content-services/issues/578)) ([19240e4](https://github.com/railroadmedia/musora-content-services/commit/19240e42121f345d66e025d062e5ea06a3e2c42e))
+
 ### [2.79.1](https://github.com/railroadmedia/musora-content-services/compare/v2.79.0...v2.79.1) (2025-11-19)
 
 
