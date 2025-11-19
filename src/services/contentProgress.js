@@ -239,18 +239,17 @@ export async function getAllStartedOrCompleted({
   const oneMonthAgoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
 
   const excludedSet = new Set(excludedIds.map((id) => parseInt(id))) // ensure IDs are numbers
-
   let filtered = Object.entries(data)
     .filter(([key, item]) => {
       const isRelevantStatus =
         item[DATA_KEY_STATUS] === STATE_STARTED || item[DATA_KEY_STATUS] === STATE_COMPLETED
       const isRecent = item[DATA_KEY_LAST_UPDATED_TIME] >= oneMonthAgoInSeconds
       const isCorrectBrand = !brand || !item.b || item.b === brand
-      const isNotExcluded = !excludedSet.has(id)
+      const isNotExcluded = !excludedSet.has(extractContentIdFromRecordKey(key))
       const matchesCollection =
         (!collection && !item[DATA_KEY_COLLECTION]) ||
-        (item[DATA_KEY_COLLECTION].type === collection.type &&
-          item[DATA_KEY_COLLECTION].id === collection.id)
+        (item[DATA_KEY_COLLECTION]?.type === collection?.type &&
+          item[DATA_KEY_COLLECTION]?.id === collection?.id)
       return matchesCollection && isRelevantStatus && isCorrectBrand && isNotExcluded
     })
     .sort(([, a], [, b]) => {
@@ -268,19 +267,20 @@ export async function getAllStartedOrCompleted({
     }, {})
 
   if (limit) {
-    filtered = filtered.slice(0, limit)
+    filtered = Object.fromEntries(Object.entries(filtered).slice(0, limit))
   }
 
   if (onlyIds) {
-    return filtered.map(([key]) => parseInt(key))
+    return Object.entries(filtered).map(([key, data]) => parseInt(key))
   } else {
     const progress = {}
-    filtered.forEach(([key, item]) => {
+    Object.entries(filtered).forEach(([key, item]) => {
       const id = parseInt(key)
       progress[id] = {
         last_update: item?.[DATA_KEY_LAST_UPDATED_TIME] ?? 0,
         progress: item?.[DATA_KEY_PROGRESS] ?? 0,
         status: item?.[DATA_KEY_STATUS] ?? '',
+        collection: item?.[DATA_KEY_COLLECTION],
         brand: item?.b ?? '',
       }
     })
@@ -595,7 +595,7 @@ function generateRecordKey(contentId, collection) {
 }
 
 function extractContentIdFromRecordKey(key) {
-  return key.split(':')[0]
+  return parseInt(key.split(':')[0])
 }
 
 async function getContentHierarchy(contentId, collection = null) {
