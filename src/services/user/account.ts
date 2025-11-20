@@ -4,6 +4,8 @@
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from '../config.js'
+import { Onboarding } from './onboarding'
+import { AuthResponse } from './types'
 
 /**
  * @param {string} email - The email address to check the account status for.
@@ -42,6 +44,11 @@ export interface AccountSetupProps {
   from?: string
 }
 
+export interface AccountSetupResponse {
+  auth: AuthResponse
+  onboarding: Onboarding
+}
+
 /**
  * @param {Object} props - The parameters for setting up the account.
  * @property {string} email - The email address for the account.
@@ -51,11 +58,11 @@ export interface AccountSetupProps {
  * @property {string} [revenuecatAppUserId] - The RevenueCat App User ID for MA environments. Required for MA requests
  * @property {string} [deviceName] - The device name for MA environments. Required for MA requests
  *
- * @returns {Promise<void>} - A promise that resolves when the account setup is complete or an HttpError if the request fails.
+ * @returns {Promise<AccountSetupResponse>} - A promise that resolves when the account setup is complete or an HttpError if the request fails.
  * @throws {Error} - Throws an error if required parameters are missing based on the environment.
  * @throws {HttpError} - Throws an HttpError if the HTTP request fails.
  */
-export async function setupAccount(props: AccountSetupProps): Promise<void> {
+export async function setupAccount(props: AccountSetupProps): Promise<AccountSetupResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   if ((!globalConfig.isMA || props.from === 'mobile-ios-app') && !props.token) {
     throw new Error('Token is required for non-MA environments')
