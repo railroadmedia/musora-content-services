@@ -168,10 +168,20 @@ function extractItemsFromData(data, dataField, isParentArray, includeParent) {
   if (dataField) {
     if (isParentArray) {
       for (const parent of data) {
-        items = [...items, ...parent[dataField]]
+        const fieldValue = parent[dataField]
+        if (Array.isArray(fieldValue)) {
+          items = [...items, ...fieldValue]
+        } else if (fieldValue && typeof fieldValue === 'object') {
+          items = [...items, fieldValue]
+        }
       }
     } else {
-      items = data[dataField]
+      const fieldValue = data[dataField]
+      if (Array.isArray(fieldValue)) {
+        items = fieldValue
+      } else if (fieldValue && typeof fieldValue === 'object') {
+        items = [fieldValue]
+      }
     }
     if (includeParent) {
       if (isParentArray) {
@@ -194,14 +204,20 @@ async function processItems(data, addContext, dataField, isParentArray, includeP
   if (dataField) {
     if (isParentArray) {
       for (let parent of data) {
-        parent[dataField] = Array.isArray(parent[dataField])
-          ? await Promise.all(parent[dataField].map(addContext))
-          : await addContext(parent[dataField])
+        const fieldValue = parent[dataField]
+        if (Array.isArray(fieldValue)) {
+          parent[dataField] = await Promise.all(fieldValue.map(addContext))
+        } else if (fieldValue && typeof fieldValue === 'object') {
+          parent[dataField] = await addContext(fieldValue)
+        }
       }
     } else {
-      data[dataField] = Array.isArray(data[dataField])
-        ? await Promise.all(data[dataField].map(addContext))
-        : await addContext(data[dataField])
+      const fieldValue = data[dataField]
+      if (Array.isArray(fieldValue)) {
+        data[dataField] = await Promise.all(fieldValue.map(addContext))
+      } else if (fieldValue && typeof fieldValue === 'object') {
+        data[dataField] = await addContext(fieldValue)
+      }
     }
     if (includeParent) {
       data = isParentArray ? await Promise.all(data.map(addContext)) : await addContext(data)
