@@ -17,23 +17,19 @@ import {
 import {
   fetchUserPermissions as fetchUserPermissionsV2,
 } from '../user/permissions.js'
-import {arrayToRawRepresentation, arrayToStringRepresentation} from '../../filterBuilder.js'
+import {arrayToRawRepresentation} from '../../filterBuilder.js'
+import {plusMembershipPermissions} from "../../contentTypeConfig";
 
 /**
  * V2 Permissions Adapter for the new permissions system.
  *
- * TODO: Implement when v2 permissions are finalized.
- *
  * Expected changes:
  * - Different permission data structure
  * - Potentially different GROQ filter logic
- * - New API endpoints for fetching permissions ?
  */
 export class PermissionsV2Adapter extends PermissionsAdapter {
   /**
-   * Fetch user permissions data from v2 API.
-   *
-   * TODO: Implement v2 API call
+   * Fetch user permissions data from API.
    *
    * @returns The user's permissions data
    */
@@ -43,11 +39,6 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
 
   /**
    * Check if user needs access to specific content.
-   *
-   * TODO: Implement v2 access checking logic
-   *
-   * V2 Logic (to be defined):
-   * - TBD based on v2 requirements
    *
    * @param content - The content item
    * @param userPermissions - The user's permissions
@@ -81,8 +72,6 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
 
     // User doesn't have any required permissions
     return true
-    // TODO: Implement v2 access checking
-    // throw new Error('PermissionsV2Adapter.doesUserNeedAccess() not yet implemented')
   }
 
   /**
@@ -90,14 +79,11 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
    *
    * TODO: Implement v2 filter generation
    *
-   * V2 Logic (to be defined):
-   * - TBD based on v2 requirements
-   * - May use different permission structure
+   * V2 Logic:
    * - When showMembershipRestrictedContent is true:
-   *   * Show content where membership_tier == 'Plus'|'Basic'|'Free'
+   *   * Show content restricted by Plus Membership
    *   * This supports the membership upgrade modal
    * - When showOnlyOwnedContent is true:
-   *   * Exclude content where membership_tier == 'Plus'|'Basic'
    *   * Shows only purchased/owned content
    *
    * @param userPermissions - The user's permissions
@@ -108,9 +94,6 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
     userPermissions: UserPermissions,
     options: PermissionFilterOptions = {}
   ): string | null {
-    // TODO: Implement v2 GROQ filter generation
-    // When options.showMembershipRestrictedContent === true:
-    // Filter should include content with membership_tier == 'plus' || membership_tier == "basic" || membership_tier == "free"
     const {
       prefix = '',
       showMembershipRestrictedContent = false,
@@ -122,17 +105,26 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
       return null
     }
 
-    if (showMembershipRestrictedContent) {
-      return `(!defined(membership_tier) || membership_tier == "plus")`
-    }
-
     // If showOnlyOwnedContent, show only purchased/owned content
     if (showOnlyOwnedContent) {
       return this.buildOwnedContentFilter(userPermissions)
     }
 
-    // TODO: Implement v2 permission filter logic
-    return null // Placeholder return until implemented
+    let userPermissionIds = this.getUserPermissionIds(userPermissions)
+    const isDereferencedContext = prefix === '@->'
+
+    // If showing membership restricted content, add Plus Membership permission
+    if (showMembershipRestrictedContent) {
+      userPermissionIds = [...userPermissionIds, plusMembershipPermissions]
+    }
+
+    const filter = this.buildStandardPermissionFilter(
+      userPermissionIds,
+      prefix,
+      isDereferencedContext
+    )
+
+    return filter
   }
 
   /**
@@ -146,7 +138,6 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
    * 2. Filter for IDs >= 100000000 (owned content permissions)
    * 3. Convert permission IDs to content IDs: content_id = permission_id - 100000000
    * 4. Filter content to show only items matching these content IDs
-   * 5. Exclude membership-tier content (plus, basic, free) ???
    *
    * @param userPermissions - The user's permissions
    * @returns GROQ filter string for owned content
@@ -167,19 +158,64 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
       return `railcontent_id == null`
     }
 
-    // Content must be in owned content IDs AND not have membership tier
+    // Content must be in owned content IDs
     const ownerContentFilter = `railcontent_id in ${arrayToRawRepresentation(ownedContentIds)}`
-  //const noMembershipTier = `(!defined(membership_tier) || (membership_tier != "plus" && membership_tier != "basic" && membership_tier != "free"))`
-
-    console.log('rox::: V2Adapter buildOwnedContentFilter - final filter', ownerContentFilter)
     return ` ${ownerContentFilter} `
   }
 
   /**
-   * Get user's permission IDs.
+   * Build standard permission filter (content with no permissions OR user has matching permissions).
    *
-   * TODO: Implement v2 permission ID retrieval
-   * Note: V2 might not use permission IDs in the same way
+   * @param userPermissionIds - User's permission IDs
+   * @param prefix - GROQ prefix for nested queries
+   * @param isDereferencedContext - Whether we're in a dereferenced context
+   * @returns GROQ filter string for standard permissions
+   */
+  private buildStandardPermissionFilter(
+    userPermissionIds: string[],
+    prefix: string,
+    isDereferencedContext: boolean
+  ): string {
+    const clauses: string[] = []
+
+    // Content with no permissions is accessible to all
+    // A content has "no permissions" if BOTH permission and permission_v2 are empty/undefined
+    clauses.push(`((!defined(${prefix}permission) || count(${prefix}permission) == 0) && (!defined(${prefix}permission_v2) || count(${prefix}permission_v2) == 0))`)
+
+    // User has matching permissions
+    if (userPermissionIds.length > 0) {
+      clauses.push(this.buildPermissionCheck(userPermissionIds, prefix, isDereferencedContext))
+    }
+
+    return `(${clauses.join(' || ')})`
+  }
+
+  /**
+   * Build GROQ permission check for given permissions.
+   * Handles both dereferenced and standard contexts.
+   *
+   * @param permissions - Permission IDs to check
+   * @param prefix - GROQ prefix for nested queries
+   * @param isDereferencedContext - Whether we're in a dereferenced context
+   * @returns GROQ filter string for permission check
+   */
+  private buildPermissionCheck(
+    permissions: string[],
+    prefix: string,
+    isDereferencedContext: boolean
+  ): string {
+    if (isDereferencedContext) {
+      // In dereferenced context, check the permission array directly
+      return `((count((${prefix}permission[]._ref)[@ in *[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(permissions)}]._id]) > 0)
+      || count(array::intersects(${prefix}permission_v2, ${arrayToRawRepresentation(permissions)})) > 0)`
+    }
+    // In standard context, use references() function
+    return `(references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(permissions)}]._id) ||
+     count(array::intersects(permission_v2, ${arrayToRawRepresentation(permissions)})) > 0)`
+  }
+
+  /**
+   * Get user's permission IDs.
    *
    * @param userPermissions - The user's permissions
    * @returns Array of permission IDs
