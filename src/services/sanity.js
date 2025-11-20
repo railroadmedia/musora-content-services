@@ -878,6 +878,7 @@ export async function fetchAllFilterOptions(
   return includeTabs ? { ...results, tabs, catalogName } : results
 }
 
+//Daniel Nov 14 2025 note - keeping this for when we migrate foundations to packs, so we know what fields to use.
 /**
  * Fetch the Foundations 2019.
  * @param {string} slug - The slug of the method.
@@ -903,6 +904,7 @@ export async function fetchFoundation(slug) {
  * @param {string} slug - The slug of the method.
  * @returns {Promise<Object|null>} - The fetched methods data or null if not found.
  */
+//todo BEH-1446 depreciated. remove all old method functions
 export async function fetchMethod(brand, slug) {
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
 
