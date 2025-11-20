@@ -3,7 +3,7 @@
  */
 import { FilterBuilder } from '../../filterBuilder.js'
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
-import { buildEntityAndTotalQuery, fetchSanity, getSortOrder } from '../sanity.js'
+import { fetchSanity, getSanityDate, getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
 
 export interface Instructor {
@@ -80,8 +80,7 @@ export interface FetchInstructorLessonsOptions {
 }
 
 export interface InstructorLessonsResponse {
-  entity: Lesson[]
-  total: number
+  data: Lesson[]
 }
 
 /**
@@ -96,9 +95,9 @@ export interface InstructorLessonsResponse {
  * @param {number} [options.limit=10] - The number of items per page.
  * @param {Array<string>} [options.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  *
- * @returns {Promise<InstructorLessonsResponse>} - The lessons for the instructor or null if not found.
+ * @returns {Promise<InstructorLessonsResponse|null>} - The lessons for the instructor or null if not found.
  * @example
- * fetchInstructorLessons('instructor123')
+ * fetchInstructorLessons('instructor123', 'drumeo', { page: 2, limit: 10 })
  *   .then(lessons => console.log(lessons))
  *   .catch(error => console.error(error));
  */
@@ -112,20 +111,26 @@ export async function fetchInstructorLessons(
     limit = 20,
     includedFields = [],
   }: FetchInstructorLessonsOptions = {}
-): Promise<InstructorLessonsResponse> {
+): Promise<InstructorLessonsResponse | null> {
   const fieldsString = getFieldsForContentType() as string
   const start = (page - 1) * limit
   const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
-  const filter = `brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='instructor' && slug.current == '${slug}']._id)`
-  const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
   sortOrder = getSortOrder(sortOrder, brand)
-  const query = buildEntityAndTotalQuery(filterWithRestrictions, fieldsString, {
-    sortOrder: sortOrder,
-    start: start,
-    end: end,
-  })
-  return fetchSanity(query, true)
+  const now = getSanityDate(new Date())
+  const query = `{
+    "data":
+      *[_type == 'instructor' && slug.current == '${slug}']
+        {
+          'type': _type,
+          name,
+          'thumbnail': thumbnail_url.asset->url,
+          'lessons_count': count(*[brand == '${brand}' && references(^._id)]),
+          'lessons': *[brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter}]{${fieldsString}} [${start}...${end}]
+        }
+      |order(${sortOrder})
+  }`
+  return fetchSanity(query, true, { processPageType: false })
 }
