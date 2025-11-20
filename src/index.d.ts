@@ -35,10 +35,12 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
 	fetchLearningPathLessons,
 	getActivePath,
 	getDailySession,
-	getLearningPath,
+	getEnrichedLearningPath,
 	getLearningPathLessonsByIds,
 	mapContentToParent,
 	resetAllLearningPaths,
@@ -418,6 +420,8 @@ declare module 'musora-content-services' {
 		buildImageSRC,
 		calculateLongestStreaks,
 		closeComment,
+		completeLearningPathIntroVideo,
+		completeMethodIntroVideo,
 		confirmEmailChange,
 		contentStatusCompleted,
 		contentStatusReset,
@@ -558,9 +562,9 @@ declare module 'musora-content-services' {
 		getCompletedAwards,
 		getContentRows,
 		getDailySession,
+		getEnrichedLearningPath,
 		getInProgressAwards,
 		getLastInteractedOf,
-		getLearningPath,
 		getLearningPathLessonsByIds,
 		getLegacyMethods,
 		getLessonContentRows,

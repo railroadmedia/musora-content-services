@@ -39,10 +39,12 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
 	fetchLearningPathLessons,
 	getActivePath,
 	getDailySession,
-	getLearningPath,
+	getEnrichedLearningPath,
 	getLearningPathLessonsByIds,
 	mapContentToParent,
 	resetAllLearningPaths,
@@ -417,6 +419,8 @@ export {
 	buildImageSRC,
 	calculateLongestStreaks,
 	closeComment,
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
 	confirmEmailChange,
 	contentStatusCompleted,
 	contentStatusReset,
@@ -557,9 +561,9 @@ export {
 	getCompletedAwards,
 	getContentRows,
 	getDailySession,
+	getEnrichedLearningPath,
 	getInProgressAwards,
 	getLastInteractedOf,
-	getLearningPath,
 	getLearningPathLessonsByIds,
 	getLegacyMethods,
 	getLessonContentRows,

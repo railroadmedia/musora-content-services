@@ -268,12 +268,12 @@ export async function fetchUserPermissionsData() {
   return (await fetchHandler(url, 'get')) ?? []
 }
 
-async function fetchDataHandler(url, dataVersion, method = 'get', signal = null) {
-  return fetchHandler(url, method, dataVersion, null, signal)
+async function fetchDataHandler(url, dataVersion, method = 'get') {
+  return fetchHandler(url, method, dataVersion, null)
 }
 
-async function postDataHandler(url, data, signal = null) {
-  return fetchHandler(url, 'post', null, data, signal)
+async function postDataHandler(url, data) {
+  return fetchHandler(url, 'post', null, data)
 }
 
 async function patchDataHandler_depreciated(url, data) {
@@ -665,14 +665,13 @@ function fetchAbsolute(url, params) {
   }
   return fetch(url, params)
 }
-export async function fetchHandler(url, method = 'get', dataVersion = null, body = null, signal = null) {
+export async function fetchHandler(url, method = 'get', dataVersion = null, body = null) {
   return fetchJSONHandler(
     url,
     globalConfig.sessionConfig.token,
     globalConfig.baseUrl,
     method,
     dataVersion,
-    body,
-    signal
+    body
   )
 }
