@@ -6,7 +6,7 @@ import {
   postRecordWatchSession,
 } from './railcontent.js'
 import { DataContext, ContentProgressVersionKey } from './dataContext.js'
-import { fetchHierarchy } from './sanity.js'
+import {fetchHierarchy, fetchMethodV2Structure} from './sanity.js'
 import { recordUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 
@@ -269,18 +269,24 @@ export async function getAllStartedOrCompleted({
   excludedIds = [],
 } = {}) {
   const data = await dataContext.getData()
-  const oneMonthAgoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
 
   const excludedSet = new Set(excludedIds.map((id) => parseInt(id))) // ensure IDs are numbers
+
+  // Method related content ids - this removes both method lessons and a-la-cart instances of method lessons
+  const methodStructure = await fetchMethodV2Structure(brand)
+  const methodRelatedIds = []
+  methodStructure?.learningPaths.map((item) => {
+    methodRelatedIds.push(item.id)
+    methodRelatedIds.push(...item?.children)
+  })
 
   let filtered = Object.entries(data)
     .filter(([key, item]) => {
       const id = parseInt(key)
       const isRelevantStatus =
         item[DATA_KEY_STATUS] === STATE_STARTED || item[DATA_KEY_STATUS] === STATE_COMPLETED
-      const isRecent = item[DATA_KEY_LAST_UPDATED_TIME] >= oneMonthAgoInSeconds
       const isCorrectBrand = !brand || !item.b || item.b === brand
-      const isNotExcluded = !excludedSet.has(id)
+      const isNotExcluded = !excludedSet.has(id) && !methodRelatedIds.includes(id)
       return isRelevantStatus && isCorrectBrand && isNotExcluded
     })
     .sort(([, a], [, b]) => {
