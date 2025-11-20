@@ -132,5 +132,5 @@ export async function fetchInstructorLessons(
         }
       |order(${sortOrder})
   }`
-  return fetchSanity(query, true, { processPageType: false })
+  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }

@@ -135,5 +135,5 @@ export async function fetchArtistLessons(
       [${start}...${end}]}
       |order(${sortOrder})
   }`
-  return fetchSanity(query, true)
+  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
