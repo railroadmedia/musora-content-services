@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.81.0](https://github.com/railroadmedia/musora-content-services/compare/v2.80.0...v2.81.0) (2025-11-20)
+
+
+### Features
+
+* learning path v2 user activity for progress card ([8db1467](https://github.com/railroadmedia/musora-content-services/commit/8db1467adb0f6bbd092fd111f261315feec8ad24))
+* **MU2E1-186:** return onboarding info account setup ([#567](https://github.com/railroadmedia/musora-content-services/issues/567)) ([e900aea](https://github.com/railroadmedia/musora-content-services/commit/e900aea9f2ae356258a8f0a0cdd8708101e0d6b2))
+
 ## [2.80.0](https://github.com/railroadmedia/musora-content-services/compare/v2.79.1...v2.80.0) (2025-11-19)
 
 
