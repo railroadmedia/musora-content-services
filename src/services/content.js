@@ -33,7 +33,7 @@ export async function getLessonContentRows (brand='drumeo', pageName = 'lessons'
   // Only fetch owned content if user has no active membership
   if (!userData?.has_active_membership) {
     const type = ownedContentTypes[pageName] || []
-    console.log('rox::: types pentru owned content rows', type, pageName)
+
     const ownedContent = await fetchOwnedContent(brand, { type })
     if (ownedContent?.entity && ownedContent.entity.length > 0) {
       contentRows.unshift({

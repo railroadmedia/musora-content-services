@@ -1889,7 +1889,6 @@ function pageTypeDecorator(results)
 function needsAccessDecorator(results, userPermissions) {
   if (globalConfig.sanityConfig.useDummyRailContentMethods) return results
   const adapter = getPermissionsAdapter()
-console.log('rox::: in needsAccessDecorator ', userPermissions)
   return contentResultsDecorator(results, 'need_access', function (content) {
     return adapter.doesUserNeedAccess(content, userPermissions)
   })
