@@ -6,6 +6,24 @@ import {
 } from './services/config.js';
 
 import {
+	fetchArtistBySlug,
+	fetchArtistLessons,
+	fetchArtists
+} from './services/content/artist.ts';
+
+import {
+	fetchGenreBySlug,
+	fetchGenreLessons,
+	fetchGenres
+} from './services/content/genre.ts';
+
+import {
+	fetchInstructorBySlug,
+	fetchInstructorLessons,
+	fetchInstructors
+} from './services/content/instructor.ts';
+
+import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
@@ -13,10 +31,12 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
 	fetchLearningPathLessons,
 	getActivePath,
 	getDailySession,
-	getLearningPath,
+	getEnrichedLearningPath,
 	getLearningPathLessonsByIds,
 	mapContentToParent,
 	resetAllLearningPaths,
@@ -222,21 +242,18 @@ import {
 } from './services/recommendations.js';
 
 import {
+	buildEntityAndTotalQuery,
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPacks,
-	fetchArtistLessons,
-	fetchArtists,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
 	fetchChatAndLiveEnvent,
-	fetchCoachLessons,
 	fetchComingSoon,
 	fetchCommentModContentData,
 	fetchContentRows,
 	fetchFoundation,
-	fetchGenreLessons,
 	fetchHierarchy,
 	fetchLeaving,
 	fetchLessonContent,
@@ -272,6 +289,7 @@ import {
 	fetchTabData,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
+	getSanityDate,
 	getSortOrder,
 	jumpToContinueContent
 } from './services/sanity.js';
@@ -403,9 +421,12 @@ export {
 	assignModeratorToComment,
 	blockUser,
 	blockedUsers,
+	buildEntityAndTotalQuery,
 	buildImageSRC,
 	calculateLongestStreaks,
 	closeComment,
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
 	confirmEmailChange,
 	contentStatusCompleted,
 	contentStatusReset,
@@ -437,6 +458,7 @@ export {
 	fetchAllCompletedStates,
 	fetchAllFilterOptions,
 	fetchAllPacks,
+	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
 	fetchAwardsForUser,
@@ -447,7 +469,6 @@ export {
 	fetchCertificate,
 	fetchChatAndLiveEnvent,
 	fetchChatSettings,
-	fetchCoachLessons,
 	fetchComingSoon,
 	fetchComment,
 	fetchCommentModContentData,
@@ -465,9 +486,14 @@ export {
 	fetchFollowedThreads,
 	fetchForumCategories,
 	fetchFoundation,
+	fetchGenreBySlug,
 	fetchGenreLessons,
+	fetchGenres,
 	fetchHandler,
 	fetchHierarchy,
+	fetchInstructorBySlug,
+	fetchInstructorLessons,
+	fetchInstructors,
 	fetchInterests,
 	fetchLastInteractedChild,
 	fetchLatestThreads,
@@ -543,8 +569,8 @@ export {
 	getAwardDataForGuidedContent,
 	getContentRows,
 	getDailySession,
+	getEnrichedLearningPath,
 	getLastInteractedOf,
-	getLearningPath,
 	getLearningPathLessonsByIds,
 	getLegacyMethods,
 	getLessonContentRows,
@@ -567,6 +593,7 @@ export {
 	getRecommendedForYou,
 	getResumeTimeSeconds,
 	getResumeTimeSecondsByIds,
+	getSanityDate,
 	getScheduleContentRows,
 	getSortOrder,
 	getStartedOrCompletedProgressOnly,

@@ -123,19 +123,22 @@ export async function getNavigateToForPlaylists(data, { dataField = null } = {})
   )
   const progressOnItems = await getProgressStateByIds(allIds)
   const addContext = async (playlist) => {
-    const allItemsCompleted = playlist.items.every((i) => {
+    // Filter out locked items (where need_access === true) and scheduled content
+    const accessibleItems = playlist.items.filter((item) => !item.need_access && item.status !== 'scheduled')
+
+    const allItemsCompleted = accessibleItems.every((i) => {
       const itemId = i.content_id
       const progress = progressOnItems[itemId]
       return progress && progress === 'completed'
     })
-    let nextItem = playlist.items[0] ?? null
+    let nextItem = accessibleItems[0] ?? null
     if (!allItemsCompleted) {
       const lastItemProgress = progressOnItems[playlist.last_engaged_on]
-      const index = playlist.items.findIndex((i) => i.content_id === playlist.last_engaged_on)
+      const index = accessibleItems.findIndex((i) => i.content_id === playlist.last_engaged_on)
       if (lastItemProgress === 'completed') {
-        nextItem = playlist.items[index + 1] ?? nextItem
+        nextItem = accessibleItems[index + 1] ?? nextItem
       } else {
-        nextItem = playlist.items[index] ?? nextItem
+        nextItem = accessibleItems[index] ?? nextItem
       }
     }
     playlist.navigateTo = {

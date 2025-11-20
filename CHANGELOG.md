@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.80.0](https://github.com/railroadmedia/musora-content-services/compare/v2.79.1...v2.80.0) (2025-11-19)
+
+
+### Features
+
+* **MU21E1-192:** artist functions ([#578](https://github.com/railroadmedia/musora-content-services/issues/578)) ([19240e4](https://github.com/railroadmedia/musora-content-services/commit/19240e42121f345d66e025d062e5ea06a3e2c42e))
+
+### [2.79.1](https://github.com/railroadmedia/musora-content-services/compare/v2.79.0...v2.79.1) (2025-11-19)
+
+
+### Bug Fixes
+
+* **BEH-1409:** fix function to support the BE endpoint ([#569](https://github.com/railroadmedia/musora-content-services/issues/569)) ([9231bef](https://github.com/railroadmedia/musora-content-services/commit/9231beffad0ce9df9e7630e5b69d2c373d0f5190))
+
+## [2.79.0](https://github.com/railroadmedia/musora-content-services/compare/v2.77.1...v2.79.0) (2025-11-18)
+
+
+### Features
+
+* **BEH-1409:** complete intro video ([#566](https://github.com/railroadmedia/musora-content-services/issues/566)) ([fb2fa96](https://github.com/railroadmedia/musora-content-services/commit/fb2fa96f408948cf4c3501709dc2ec2c17f23163))
+
+
+### Bug Fixes
+
+* **awards:** see all function updates ([#561](https://github.com/railroadmedia/musora-content-services/issues/561)) ([68daed3](https://github.com/railroadmedia/musora-content-services/commit/68daed3ec7acf905768906af4dfb1b84b6ca325e))
+
+## [2.78.0](https://github.com/railroadmedia/musora-content-services/compare/v2.77.2...v2.78.0) (2025-11-15)
+
+
+### Features
+
+* **BEH-1409:** complete intro video ([#566](https://github.com/railroadmedia/musora-content-services/issues/566)) ([fb2fa96](https://github.com/railroadmedia/musora-content-services/commit/fb2fa96f408948cf4c3501709dc2ec2c17f23163))
+
 ### [2.77.2](https://github.com/railroadmedia/musora-content-services/compare/v2.77.1...v2.77.2) (2025-11-14)
 
 ### [2.77.1](https://github.com/railroadmedia/musora-content-services/compare/v2.77.0...v2.77.1) (2025-11-13)
