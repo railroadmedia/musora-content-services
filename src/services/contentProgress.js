@@ -50,7 +50,10 @@ export async function getNextLesson(data) {
   let nextLessonData = {}
 
   for (const content of data) {
-    const children = content.children?.map((child) => child.id) ?? []
+    // Skip null/undefined entries (can happen when GROQ dereference doesn't match filter)
+    if (!content) continue
+
+    const children = content.children?.filter(Boolean).map((child) => child.id) ?? []
     //only calculate nextLesson if needed, based on content type
     if (!getNextLessonLessonParentTypes.includes(content.type)) {
       nextLessonData[content.id] = null
@@ -101,20 +104,30 @@ export async function getNavigateTo(data) {
   //TODO add parent hierarchy upwards as well
   // data structure is the same but instead of child{} we use parent{}
   for (const content of data) {
+    // Skip null/undefined entries (can happen when GROQ dereference doesn't match filter)
+    if (!content) continue
+
     //only calculate nextLesson if needed, based on content type
     if (!getNextLessonLessonParentTypes.includes(content.type) || !content.children) {
       navigateToData[content.id] = null
     } else {
+      // Filter out null/undefined children (can happen with permission filters)
+      const validChildren = content.children.filter(Boolean)
+      if (validChildren.length === 0) {
+        navigateToData[content.id] = null
+        continue
+      }
+
       const children = new Map()
       const childrenIds = []
-      content.children.forEach((child) => {
+      validChildren.forEach((child) => {
         childrenIds.push(child.id)
         children.set(child.id, child)
       })
       // return first child (or grand child) if parent-content is complete or no progress
       const contentState = await getProgressState(content.id)
       if (contentState !== STATE_STARTED) {
-        const firstChild = content.children[0]
+        const firstChild = validChildren[0]
         let lastInteractedChildNavToData = await getNavigateTo([firstChild])
         lastInteractedChildNavToData = lastInteractedChildNavToData[firstChild.id] ?? null
         navigateToData[content.id] = buildNavigateTo(firstChild, lastInteractedChildNavToData)

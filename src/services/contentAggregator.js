@@ -108,9 +108,9 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
 
   const addContext = async (item) => ({
     ...item,
-    ...(addProgressPercentage ? { progressPercentage: progressData?.[item.id]['progress'] } : {}),
-    ...(addProgressStatus ? { progressStatus: progressData?.[item.id]['status'] } : {}),
-    ...(addProgressTimestamp ? { progressTimestamp: progressData?.[item.id]['last_update'] } : {}),
+    ...(addProgressPercentage ? { progressPercentage: progressData?.[item.id]?.progress } : {}),
+    ...(addProgressStatus ? { progressStatus: progressData?.[item.id]?.status } : {}),
+    ...(addProgressTimestamp ? { progressTimestamp: progressData?.[item.id]?.last_update } : {}),
     ...(addIsLiked ? { isLiked: isLikedData?.[item.id] } : {}),
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
@@ -144,7 +144,7 @@ export async function getNavigateToForPlaylists(data, { dataField = null } = {})
       const progress = progressOnItems[itemId]
       return progress && progress === 'completed'
     })
-    let nextItem = accessibleItems[0] ?? null
+    let nextItem = accessibleItems[0] ?? playlist.items[0] ?? null
     if (!allItemsCompleted) {
       const lastItemProgress = progressOnItems[playlist.last_engaged_on]
       const index = accessibleItems.findIndex((i) => i.content_id === playlist.last_engaged_on)
