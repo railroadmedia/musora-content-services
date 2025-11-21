@@ -1,8 +1,8 @@
 /**
  * @module Genre
  */
-import { DEFAULT_FIELDS, filtersToGroq } from '../../contentTypeConfig.js'
-import { fetchSanity, getSanityDate, getSortOrder } from '../sanity.js'
+import { DEFAULT_FIELDS, filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
+import { buildDataAndTotalQuery, fetchSanity, getSanityDate, getSortOrder } from '../sanity.js'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { Lesson } from './content'
 
@@ -115,28 +115,22 @@ export async function fetchGenreLessons(
     progressIds = [],
   }: FetchGenreLessonsOptions = {}
 ): Promise<LessonsByGenreResponse | null> {
-  const fieldsString = DEFAULT_FIELDS.join(',')
+  const fieldsString = getFieldsForContentType() as string
   const start = (page - 1) * limit
   const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
-  const sortOrder = getSortOrder(sort, brand)
-  const addType = contentType ? `_type == '${contentType}' && ` : ''
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
-  // limits the results to supplied progressIds for started & completed filters
+  const addType = contentType ? `_type == '${contentType}' && ` : ''
   const progressFilter =
     progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
-  const now = getSanityDate(new Date())
-  const query = `{
-    "data":
-      *[_type == 'genre' && slug.current == '${slug}']
-        {
-          'type': _type,
-          name,
-          'thumbnail': thumbnail_url.asset->url,
-          'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]),
-          'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}} [${start}...${end}]
-        }
-      |order(${sortOrder})
-  }`
+  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='genre' && slug.current == '${slug}']._id) ${progressFilter}`
+  const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
+
+  sort = getSortOrder(sort, brand)
+  const query = buildDataAndTotalQuery(filterWithRestrictions, fieldsString, {
+    sortOrder: sort,
+    start: start,
+    end: end,
+  })
   return fetchSanity(query, true)
 }

@@ -245,6 +245,7 @@ import {
 } from './services/recommendations.js';
 
 import {
+	buildDataAndTotalQuery,
 	buildEntityAndTotalQuery,
 	fetchAll,
 	fetchAllFilterOptions,
@@ -424,6 +425,7 @@ export {
 	assignModeratorToComment,
 	blockUser,
 	blockedUsers,
+	buildDataAndTotalQuery,
 	buildEntityAndTotalQuery,
 	buildImageSRC,
 	calculateLongestStreaks,

@@ -245,6 +245,7 @@ import {
 } from './services/recommendations.js';
 
 import {
+	buildDataAndTotalQuery,
 	buildEntityAndTotalQuery,
 	fetchAll,
 	fetchAllFilterOptions,
@@ -425,6 +426,7 @@ declare module 'musora-content-services' {
 		assignModeratorToComment,
 		blockUser,
 		blockedUsers,
+		buildDataAndTotalQuery,
 		buildEntityAndTotalQuery,
 		buildImageSRC,
 		calculateLongestStreaks,
