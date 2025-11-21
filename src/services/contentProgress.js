@@ -21,6 +21,7 @@ const DATA_KEY_RESUME_TIME = 't'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
 const DATA_KEY_BRAND = 'b'
 const DATA_KEY_COLLECTION = 'c'
+const DATA_CONTENT_ID = 'i'
 
 export let dataContext = new DataContext(ContentProgressVersionKey, fetchContentProgress)
 
@@ -393,6 +394,9 @@ function setStartedOrCompletedStatusInLocalContext(
   data[DATA_KEY_PROGRESS] = isCompleted ? 100 : 0
   data[DATA_KEY_STATUS] = isCompleted ? STATE_COMPLETED : STATE_STARTED
   data[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000)
+  data[DATA_KEY_COLLECTION] = collection
+  data[DATA_CONTENT_ID] = contentId
+
   localContext.data[key] = data
 
   if (!hierarchy) return
@@ -426,7 +430,7 @@ export async function contentStatusReset(contentId, collection = null) {
       resetStatusInLocalContext(localContext, contentId, hierarchy, collection)
     },
     async function () {
-      return postContentReset(contentId)
+      return postContentReset(contentId, collection)
     }
   )
 }
@@ -434,14 +438,15 @@ export async function contentStatusReset(contentId, collection = null) {
 function resetStatusInLocalContext(localContext, contentId, hierarchy, collection = null) {
   let keys = []
 
+  console.log('all', [localContext, contentId, hierarchy, collection])
   keys.push(generateRecordKey(contentId, collection))
 
   let allChildIds
-  let parentId = null
+  let learningPathId = null
   let childrenIds = []
-  if (collection && collection.type === 'learning-path' && hierarchy) {
-    [parentId, childrenIds] = findLearningPathParentAndChildren(hierarchy, contentId)
-    allChildIds = childrenIds
+  if (collection && collection.type === 'learning-path') {
+    [learningPathId, childrenIds] = findLearningPathAndChildren(hierarchy, contentId)
+    allChildIds = (learningPathId === contentId) ? childrenIds : []
   } else {
     allChildIds = getChildrenToDepth(contentId, hierarchy, 5)
   }
@@ -457,9 +462,10 @@ function resetStatusInLocalContext(localContext, contentId, hierarchy, collectio
       delete localContext.data[key]
     }
   })
-
-  if (collection && collection.type === 'learning-path' && hierarchy) {
-    resetStatusInLocalContext(localContext, parentId, null, collection)
+  if (collection && collection.type === 'learning-path') { // manual bubbling for LP
+    if (learningPathId !== contentId) {
+      bubbleLearningPathProgress(hierarchy, contentId, localContext, collection)
+    }
   } else {
     bubbleProgress(hierarchy, contentId, localContext)
   }
@@ -589,6 +595,33 @@ function bubbleProgress(hierarchy, contentId, localContext) {
   bubbleProgress(hierarchy, parentId, localContext)
 }
 
+function bubbleLearningPathProgress(hierarchy, contentId, localContext, collection) {
+  const [parentId, childrenIds] = findLearningPathAndChildren(hierarchy, contentId)
+
+  if (!parentId || parentId === contentId) return
+
+  const parentKey = generateRecordKey(parentId, collection)
+  let data = localContext.data[parentKey] ?? {}
+
+  let childProgress = childrenIds.map(function (childId) {
+    const childKey = generateRecordKey(childId, collection)
+    return localContext.data[childKey]?.[DATA_KEY_PROGRESS] ?? 0
+  })
+  let progress = Math.round(childProgress.reduce((a, b) => a + b, 0) / childProgress.length)
+
+  const contentKey = generateRecordKey(contentId, collection)
+  const brand = localContext.data[contentKey]?.[DATA_KEY_BRAND] ?? null
+
+  data[DATA_KEY_PROGRESS] = progress
+  data[DATA_KEY_STATUS] = progress === 100 ? STATE_COMPLETED : STATE_STARTED
+  data[DATA_KEY_LAST_UPDATED_TIME] = Math.round(new Date().getTime() / 1000)
+  data[DATA_KEY_BRAND] = brand
+  data[DATA_KEY_COLLECTION] = collection
+  data[DATA_CONTENT_ID] = parentId
+
+  localContext.data[parentKey] = data
+}
+
 function generateRecordKey(contentId, collection) {
   return collection ? `${contentId}:${collection.type}:${collection.id}` : contentId
 }
@@ -604,33 +637,33 @@ async function getContentHierarchy(contentId, collection = null) {
   return await fetchHierarchy(contentId)
 }
 
-function findLearningPathParentAndChildren(data, contentId) {
-  let parentId = null
+function findLearningPathAndChildren(data, contentId) {
+  let learningPathId = null
   let children = []
 
-  if (!data.learningPaths) return { parentId, children }
+  if (!data?.learningPaths) return [ learningPathId, children ]
 
   for (const lp of data.learningPaths) {
     if (lp.id === contentId) {
-      parentId = null
+      learningPathId = contentId
       children = lp.children ?? []
       break
     }
     if (Array.isArray(lp.children) && lp.children.includes(contentId)) {
-      parentId = lp.id
-      children = []
+      learningPathId = lp.id
+      children = lp.children ?? []
       break
     }
   }
 
-  return [parentId, children]
+  return [learningPathId, children]
 }
 
 function bubbleOrTrickleLearningPathProgress(hierarchy, contentId, localContext, isCompleted, collection) {
-  const [parentId, childrenIds] = findLearningPathParentAndChildren(hierarchy, contentId)
+  const [parentId, childrenIds] = findLearningPathAndChildren(hierarchy, contentId)
 
-  if (parentId) {
-    setStartedOrCompletedStatusInLocalContext(localContext, parentId, isCompleted, null, collection)
+  if (parentId !== contentId) { // if contentId is not a learning path
+    bubbleLearningPathProgress(hierarchy, contentId, localContext, collection)
     return
   }
 

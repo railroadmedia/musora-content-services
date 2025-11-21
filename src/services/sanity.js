@@ -478,7 +478,6 @@ export async function fetchByRailContentIds(
     live_event_end_time,
   }`
 
-  console.log('ids query', query)
   const customPostProcess = (results) => {
     const now = getSanityDate(new Date(), false)
     const liveProcess = (result) => {
