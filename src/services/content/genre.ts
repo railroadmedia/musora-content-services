@@ -82,6 +82,7 @@ export interface FetchGenreLessonsOptions {
 
 export interface LessonsByGenreResponse {
   data: Genre[]
+  total: number
 }
 
 /**
