@@ -81,8 +81,8 @@ export const playAlongMp3sField = `{
 `
 
 export const instructorField = `instructor[]->{
-            "id": railcontent_id,
             name,
+            slug,
             short_bio,
             "biography": short_bio[0].children[0].text,
             "coach_card_image": coach_card_image.asset->url,
@@ -278,7 +278,7 @@ export const getNextLessonLessonParentTypes = [
   'pack-bundle',
   'song-tutorial',
   'learning-path-v2',
-  'skill-pack'
+  'skill-pack',
 ]
 
 export const progressTypesMapping = {
