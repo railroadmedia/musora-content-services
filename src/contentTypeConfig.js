@@ -23,8 +23,8 @@ export const SONG_TYPES_WITH_CHILDREN = [
 export const SINGLE_PARENT_TYPES = ['course-part', 'pack-bundle-lesson', 'song-tutorial-children']
 
 export const artistField = `select(
-          defined(artist) => artist->{ 'name': name, 'thumbnail': thumbnail_url.asset->url},
-          defined(parent_content_data) => *[_type == ^.parent_content_data[0].type && railcontent_id == ^.parent_content_data[0].id][0].artist->{ 'name': name, 'thumbnail': thumbnail_url.asset->url}
+          defined(artist) => artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url},
+          defined(parent_content_data) => *[_type == ^.parent_content_data[0].type && railcontent_id == ^.parent_content_data[0].id][0].artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url}
         )`
 
 export const DEFAULT_FIELDS = [
@@ -82,7 +82,7 @@ export const playAlongMp3sField = `{
 
 export const instructorField = `instructor[]->{
             name,
-            slug,
+            'slug': slug.current,
             short_bio,
             "biography": short_bio[0].children[0].text,
             "coach_card_image": coach_card_image.asset->url,
@@ -819,7 +819,7 @@ export async function getFieldsForContentTypeWithFilteredChildren(
   if (childFields) {
     const childFilter = await new FilterBuilder('', {
       isChildrenFilter: true,
-      showMembershipRestrictedContent: true  // Show all children in lists
+      showMembershipRestrictedContent: true, // Show all children in lists
     }).buildFilter()
     parentFields.push(
       `"children": child[${childFilter}]->{
