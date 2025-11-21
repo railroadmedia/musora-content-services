@@ -289,6 +289,155 @@ export async function getAwardStatistics(brand = null) {
   }
 }
 
+/**
+ * Check if completing this content earned any new awards
+ * Call this after contentStatusCompleted() to get newly earned awards
+ * @param {number} contentId - Content ID that was just completed
+ * @returns {Promise<Array>} Array of newly earned Award objects
+ */
+export async function checkForNewAwards(contentId) {
+  try {
+    const definitions = await awardDefinitions.getByContentId(contentId)
+
+    if (!definitions || definitions.length === 0) {
+      return []
+    }
+
+    const newlyCompletedAwards = []
+    const { awardManager } = await import('./award-manager')
+
+    for (const definition of definitions) {
+      const awardId = definition._id
+
+      const wasAlreadyCompleted = await db.userAwardProgress.hasCompletedAward(awardId)
+      if (wasAlreadyCompleted) {
+        continue
+      }
+
+      const isEligible = await awardManager.isEligibleForAward(awardId, contentId)
+      if (!isEligible) {
+        continue
+      }
+
+      await awardManager.grantAward(awardId, contentId)
+
+      const progressResult = await db.userAwardProgress.getByAwardId(awardId)
+      const progress = progressResult.data
+
+      if (progress && progress.isCompleted) {
+        newlyCompletedAwards.push({
+          id: parseInt(awardId.split('-').join(''), 16) % 1000000,
+          name: definition.name,
+          badge: definition.badge,
+          completed_at: new Date(progress.completed_at * 1000).toISOString(),
+          completion_data: progress.completion_data
+        })
+      }
+    }
+
+    return newlyCompletedAwards
+  } catch (error) {
+    console.error('Error checking for new awards:', error)
+    return []
+  }
+}
+
+/**
+ * Fetch user's awards with pagination (matches FE API)
+ * @param {number} userId - User ID
+ * @param {string} brand - Brand identifier (drumeo, pianote, etc)
+ * @param {number} page - Page number (1-indexed)
+ * @param {number} limit - Number of awards per page
+ * @returns {Promise<{data: Array}>} Paginated award data
+ */
+export async function fetchAwardsForUser(userId, brand, page = 1, limit = 4) {
+  try {
+    const offset = (page - 1) * limit
+    const awards = await getCompletedAwards(brand, { limit, offset })
+
+    return {
+      data: awards.map(award => ({
+        id: parseInt(award.awardId.split('-').join(''), 16) % 1000000,
+        name: award.awardTitle,
+        badge: award.badge,
+        completed_at: award.completedAt,
+        completion_data: award.completionData ? {
+          completed_at: award.completedAt,
+          days_user_practiced: award.completionData.days_user_practiced || 0,
+          message: `Great job completing ${award.completionData.content_title || 'this content'}!`,
+          practice_minutes: award.completionData.practice_minutes || 0,
+          content_title: award.completionData.content_title || ''
+        } : undefined
+      }))
+    }
+  } catch (error) {
+    console.error('Error in fetchAwardsForUser:', error)
+    return { data: [] }
+  }
+}
+
+/**
+ * Get award data for any content (courses, learning paths, etc)
+ * @param {number} contentId - Content ID
+ * @returns {Promise<Object|null>} Award object with completion or incompletion data
+ */
+export async function getAwardForContent(contentId) {
+  try {
+    const { hasAwards, awards } = await getAwardStatusForContent(contentId)
+
+    if (!hasAwards || awards.length === 0) {
+      return null
+    }
+
+    const award = awards[0]
+    const awardDefinition = await awardDefinitions.getById(award.awardId)
+
+    if (!awardDefinition) {
+      return null
+    }
+
+    const baseAward = {
+      id: parseInt(award.awardId.split('-').join(''), 16) % 1000000,
+      name: award.awardTitle,
+      badge: award.badge,
+      completed_at: award.completedAt
+    }
+
+    if (award.isCompleted && award.completionData) {
+      return {
+        ...baseAward,
+        completion_data: {
+          completed_at: award.completedAt,
+          days_user_practiced: award.completionData.days_user_practiced || 0,
+          message: `Great job completing ${award.completionData.content_title || 'this content'}!`,
+          practice_minutes: award.completionData.practice_minutes || 0,
+          content_title: award.completionData.content_title || awardDefinition.name
+        }
+      }
+    }
+
+    let childIds = awardDefinition.child_ids || []
+    if (awardDefinition.has_kickoff && childIds.length > 0) {
+      childIds = childIds.slice(1)
+    }
+
+    const totalLessons = childIds.length
+    const completedLessons = Math.round((award.progressPercentage / 100) * totalLessons)
+    const incompleteLessons = totalLessons - completedLessons
+
+    return {
+      ...baseAward,
+      incompletion_data: {
+        content_title: awardDefinition.name,
+        incomplete_lessons: incompleteLessons > 0 ? incompleteLessons : 0
+      }
+    }
+  } catch (error) {
+    console.error('Error in getAwardDataForGuidedContent:', error)
+    return null
+  }
+}
+
 export { buildCertificateData } from './certificate-builder'
 export { awardManager, AwardManager } from './award-manager'
 export { awardEvents } from './award-events'

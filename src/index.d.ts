@@ -1,11 +1,21 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
+	registerAwardCallback,
+	registerProgressCallback,
+	unregisterAwardCallback,
+	unregisterProgressCallback
+} from './services/awards/award-callbacks.js';
+
+import {
 	initializeAwardDefinitions
 } from './services/awards/award-definitions.js';
 
 import {
+	checkForNewAwards,
+	fetchAwardsForUser,
 	getAllUserAwardProgress,
+	getAwardForContent,
 	getAwardProgress,
 	getAwardStatistics,
 	getAwardStatusForContent,
@@ -21,6 +31,11 @@ import {
 import {
 	generateCompletionData
 } from './services/awards/completion-data-generator.js';
+
+import {
+	urlMapToBase64,
+	urlToBase64
+} from './services/awards/image-utils.js';
 
 import {
 	globalConfig,
@@ -162,9 +177,7 @@ import {
 } from './services/forums/threads.ts';
 
 import {
-	fetchAwardsForUser,
-	fetchCertificate,
-	getAwardDataForGuidedContent
+	fetchCertificate
 } from './services/gamification/awards.ts';
 
 import {
@@ -419,6 +432,7 @@ declare module 'musora-content-services' {
 		buildCertificateData,
 		buildImageSRC,
 		calculateLongestStreaks,
+		checkForNewAwards,
 		closeComment,
 		completeLearningPathIntroVideo,
 		completeMethodIntroVideo,
@@ -555,7 +569,7 @@ declare module 'musora-content-services' {
 		getAllStarted,
 		getAllStartedOrCompleted,
 		getAllUserAwardProgress,
-		getAwardDataForGuidedContent,
+		getAwardForContent,
 		getAwardProgress,
 		getAwardStatistics,
 		getAwardStatusForContent,
@@ -638,6 +652,8 @@ declare module 'musora-content-services' {
 		recordUserActivity,
 		recordUserPractice,
 		recordWatchSession,
+		registerAwardCallback,
+		registerProgressCallback,
 		removeContentAsInterested,
 		removeContentAsNotInterested,
 		removeUserPractice,
@@ -681,6 +697,8 @@ declare module 'musora-content-services' {
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,
+		unregisterAwardCallback,
+		unregisterProgressCallback,
 		updateActivePath,
 		updateDailySession,
 		updateDisplayName,
@@ -695,12 +713,12 @@ declare module 'musora-content-services' {
 		upgradeSubscription,
 		uploadPicture,
 		uploadPictureFromS3,
+		urlMapToBase64,
+		urlToBase64,
 		userOnboardingForBrand,
 		verifyImageSRC,
 		verifyLocalDataContext,
 	}
 }
-
-export function initializeSyncForWeb(namespace?: string): () => Promise<void>
 
 export default EventsAPI

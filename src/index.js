@@ -5,11 +5,21 @@ import {
 } from './services/eventsAPI';
 
 import {
+	registerAwardCallback,
+	registerProgressCallback,
+	unregisterAwardCallback,
+	unregisterProgressCallback
+} from './services/awards/award-callbacks.js';
+
+import {
 	initializeAwardDefinitions
 } from './services/awards/award-definitions.js';
 
 import {
+	checkForNewAwards,
+	fetchAwardsForUser,
 	getAllUserAwardProgress,
+	getAwardForContent,
 	getAwardProgress,
 	getAwardStatistics,
 	getAwardStatusForContent,
@@ -25,6 +35,11 @@ import {
 import {
 	generateCompletionData
 } from './services/awards/completion-data-generator.js';
+
+import {
+	urlMapToBase64,
+	urlToBase64
+} from './services/awards/image-utils.js';
 
 import {
 	globalConfig,
@@ -166,9 +181,7 @@ import {
 } from './services/forums/threads.ts';
 
 import {
-	fetchAwardsForUser,
-	fetchCertificate,
-	getAwardDataForGuidedContent
+	fetchCertificate
 } from './services/gamification/awards.ts';
 
 import {
@@ -418,6 +431,7 @@ export {
 	buildCertificateData,
 	buildImageSRC,
 	calculateLongestStreaks,
+	checkForNewAwards,
 	closeComment,
 	completeLearningPathIntroVideo,
 	completeMethodIntroVideo,
@@ -554,7 +568,7 @@ export {
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getAllUserAwardProgress,
-	getAwardDataForGuidedContent,
+	getAwardForContent,
 	getAwardProgress,
 	getAwardStatistics,
 	getAwardStatusForContent,
@@ -637,6 +651,8 @@ export {
 	recordUserActivity,
 	recordUserPractice,
 	recordWatchSession,
+	registerAwardCallback,
+	registerProgressCallback,
 	removeContentAsInterested,
 	removeContentAsNotInterested,
 	removeUserPractice,
@@ -680,6 +696,8 @@ export {
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
+	unregisterAwardCallback,
+	unregisterProgressCallback,
 	updateActivePath,
 	updateDailySession,
 	updateDisplayName,
@@ -694,11 +712,11 @@ export {
 	upgradeSubscription,
 	uploadPicture,
 	uploadPictureFromS3,
+	urlMapToBase64,
+	urlToBase64,
 	userOnboardingForBrand,
 	verifyImageSRC,
 	verifyLocalDataContext,
 };
-
-export { initializeSyncForWeb } from './services/sync/init-web'
 
 export default EventsAPI
