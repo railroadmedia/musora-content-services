@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.83.0](https://github.com/railroadmedia/musora-content-services/compare/v2.82.0...v2.83.0) (2025-11-21)
+
+
+### Features
+
+* **MU2-1258:** New method for delete forum category ([#572](https://github.com/railroadmedia/musora-content-services/issues/572)) ([34e3423](https://github.com/railroadmedia/musora-content-services/commit/34e34237bb7cd55ef8242c1eab0beca3cd264a21))
+
 ## [2.82.0](https://github.com/railroadmedia/musora-content-services/compare/v2.79.0...v2.82.0) (2025-11-21)
 
 
