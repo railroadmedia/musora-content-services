@@ -73,6 +73,11 @@ treeElements.forEach((treeNode) => {
   if (fs.lstatSync(filePath).isFile()) {
     addFunctionsToFileExports(filePath, treeNode)
   } else if (fs.lstatSync(filePath).isDirectory()) {
+    // Skip the permissions directory - it has its own index.ts barrel export
+    if (treeNode === 'permissions') {
+      return
+    }
+
     const subDir = fs.readdirSync(filePath)
     subDir.forEach((subFile) => {
       const filePath = path.join(servicesDir, treeNode, subFile)
