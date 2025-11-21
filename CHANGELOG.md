@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.82.0](https://github.com/railroadmedia/musora-content-services/compare/v2.79.0...v2.82.0) (2025-11-21)
+
+
+### Features
+
+* add permissions abstraction layer with v1/v2 support ([1c82a73](https://github.com/railroadmedia/musora-content-services/commit/1c82a736cee4f191037a9a9c77c6cbd98eefd054))
+* learning path v2 user activity for progress card ([8db1467](https://github.com/railroadmedia/musora-content-services/commit/8db1467adb0f6bbd092fd111f261315feec8ad24))
+* **MU2-1210:** non-member experience with a permissions abstraction layer ([f760ebb](https://github.com/railroadmedia/musora-content-services/commit/f760ebbbfb0834a02b0fa5b2717639ab235d5e4a))
+* **MU21E1-192:** artist functions ([#578](https://github.com/railroadmedia/musora-content-services/issues/578)) ([19240e4](https://github.com/railroadmedia/musora-content-services/commit/19240e42121f345d66e025d062e5ea06a3e2c42e))
+* **MU2E1-186:** return onboarding info account setup ([#567](https://github.com/railroadmedia/musora-content-services/issues/567)) ([e900aea](https://github.com/railroadmedia/musora-content-services/commit/e900aea9f2ae356258a8f0a0cdd8708101e0d6b2))
+* Non-members should be able to access locked/non-accessible content ([efe1044](https://github.com/railroadmedia/musora-content-services/commit/efe1044f571bf171aeaea42e0bf077a40b3d86af))
+
+
+### Bug Fixes
+
+* **BEH-1409:** fix function to support the BE endpoint ([#569](https://github.com/railroadmedia/musora-content-services/issues/569)) ([9231bef](https://github.com/railroadmedia/musora-content-services/commit/9231beffad0ce9df9e7630e5b69d2c373d0f5190))
+
+## [2.81.0](https://github.com/railroadmedia/musora-content-services/compare/v2.80.0...v2.81.0) (2025-11-20)
+
+
+### Features
+
+* learning path v2 user activity for progress card ([8db1467](https://github.com/railroadmedia/musora-content-services/commit/8db1467adb0f6bbd092fd111f261315feec8ad24))
+* **MU2E1-186:** return onboarding info account setup ([#567](https://github.com/railroadmedia/musora-content-services/issues/567)) ([e900aea](https://github.com/railroadmedia/musora-content-services/commit/e900aea9f2ae356258a8f0a0cdd8708101e0d6b2))
+
+## [2.80.0](https://github.com/railroadmedia/musora-content-services/compare/v2.79.1...v2.80.0) (2025-11-19)
+
+
+### Features
+
+* **MU21E1-192:** artist functions ([#578](https://github.com/railroadmedia/musora-content-services/issues/578)) ([19240e4](https://github.com/railroadmedia/musora-content-services/commit/19240e42121f345d66e025d062e5ea06a3e2c42e))
+
+### [2.79.1](https://github.com/railroadmedia/musora-content-services/compare/v2.79.0...v2.79.1) (2025-11-19)
+
+
+### Bug Fixes
+
+* **BEH-1409:** fix function to support the BE endpoint ([#569](https://github.com/railroadmedia/musora-content-services/issues/569)) ([9231bef](https://github.com/railroadmedia/musora-content-services/commit/9231beffad0ce9df9e7630e5b69d2c373d0f5190))
+
 ## [2.79.0](https://github.com/railroadmedia/musora-content-services/compare/v2.77.1...v2.79.0) (2025-11-18)
 
 

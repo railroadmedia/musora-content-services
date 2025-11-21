@@ -4,6 +4,8 @@
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from '../config.js'
+import { Onboarding } from './onboarding'
+import { AuthResponse } from './types'
 
 /**
  * @param {string} email - The email address to check the account status for.
@@ -39,6 +41,12 @@ export interface AccountSetupProps {
   token?: string
   revenuecatAppUserId?: string
   deviceName?: string
+  from?: string
+}
+
+export interface AccountSetupResponse {
+  auth: AuthResponse
+  onboarding: Onboarding
 }
 
 /**
@@ -50,20 +58,14 @@ export interface AccountSetupProps {
  * @property {string} [revenuecatAppUserId] - The RevenueCat App User ID for MA environments. Required for MA requests
  * @property {string} [deviceName] - The device name for MA environments. Required for MA requests
  *
- * @returns {Promise<void>} - A promise that resolves when the account setup is complete or an HttpError if the request fails.
+ * @returns {Promise<AccountSetupResponse>} - A promise that resolves when the account setup is complete or an HttpError if the request fails.
  * @throws {Error} - Throws an error if required parameters are missing based on the environment.
  * @throws {HttpError} - Throws an HttpError if the HTTP request fails.
  */
-export async function setupAccount(props: AccountSetupProps): Promise<void> {
+export async function setupAccount(props: AccountSetupProps): Promise<AccountSetupResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  if (!globalConfig.isMA && !props.token) {
+  if ((!globalConfig.isMA || props.from === 'mobile-ios-app') && !props.token) {
     throw new Error('Token is required for non-MA environments')
-  }
-
-  // NOTE: remove deviceName temporarily. It will be required late
-  // if (globalConfig.isMA && (!props.deviceName || !props.revenuecatAppUserId)) {
-  if (globalConfig.isMA && !props.revenuecatAppUserId) {
-    throw new Error('Device name and RevenueCat App User ID are required for MA environments')
   }
 
   return httpClient.post(`/api/user-management-system/v1/accounts`, {
@@ -71,8 +73,7 @@ export async function setupAccount(props: AccountSetupProps): Promise<void> {
     password: props.password,
     password_confirmation: props.passwordConfirmation,
     token: props.token,
-    revenuecat_origin_app_user_id: props.revenuecatAppUserId,
-    device_name: props.deviceName,
+    from: props.from,
   })
 }
 

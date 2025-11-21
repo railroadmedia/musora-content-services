@@ -6,6 +6,24 @@ import {
 } from './services/config.js';
 
 import {
+	fetchArtistBySlug,
+	fetchArtistLessons,
+	fetchArtists
+} from './services/content/artist.ts';
+
+import {
+	fetchGenreBySlug,
+	fetchGenreLessons,
+	fetchGenres
+} from './services/content/genre.ts';
+
+import {
+	fetchInstructorBySlug,
+	fetchInstructorLessons,
+	fetchInstructors
+} from './services/content/instructor.ts';
+
+import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
@@ -50,6 +68,7 @@ import {
 	getLegacyMethods,
 	getLessonContentRows,
 	getNewAndUpcoming,
+	getOwnedContent,
 	getRecent,
 	getRecommendedForYou,
 	getScheduleContentRows,
@@ -226,21 +245,18 @@ import {
 } from './services/recommendations.js';
 
 import {
+	buildEntityAndTotalQuery,
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPacks,
-	fetchArtistLessons,
-	fetchArtists,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
 	fetchChatAndLiveEnvent,
-	fetchCoachLessons,
 	fetchComingSoon,
 	fetchCommentModContentData,
 	fetchContentRows,
 	fetchFoundation,
-	fetchGenreLessons,
 	fetchHierarchy,
 	fetchLeaving,
 	fetchLessonContent,
@@ -256,6 +272,7 @@ import {
 	fetchNewReleases,
 	fetchNextPreviousLesson,
 	fetchOtherSongVersions,
+	fetchOwnedContent,
 	fetchPackAll,
 	fetchPackData,
 	fetchPlayAlongsCount,
@@ -275,6 +292,7 @@ import {
 	fetchTabData,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
+	getSanityDate,
 	getSortOrder,
 	jumpToContinueContent
 } from './services/sanity.js';
@@ -406,6 +424,7 @@ export {
 	assignModeratorToComment,
 	blockUser,
 	blockedUsers,
+	buildEntityAndTotalQuery,
 	buildImageSRC,
 	calculateLongestStreaks,
 	closeComment,
@@ -443,6 +462,7 @@ export {
 	fetchAllCompletedStates,
 	fetchAllFilterOptions,
 	fetchAllPacks,
+	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
 	fetchAwardsForUser,
@@ -453,7 +473,6 @@ export {
 	fetchCertificate,
 	fetchChatAndLiveEnvent,
 	fetchChatSettings,
-	fetchCoachLessons,
 	fetchComingSoon,
 	fetchComment,
 	fetchCommentModContentData,
@@ -471,9 +490,14 @@ export {
 	fetchFollowedThreads,
 	fetchForumCategories,
 	fetchFoundation,
+	fetchGenreBySlug,
 	fetchGenreLessons,
+	fetchGenres,
 	fetchHandler,
 	fetchHierarchy,
+	fetchInstructorBySlug,
+	fetchInstructorLessons,
+	fetchInstructors,
 	fetchInterests,
 	fetchLastInteractedChild,
 	fetchLatestThreads,
@@ -498,6 +522,7 @@ export {
 	fetchNotificationSettings,
 	fetchNotifications,
 	fetchOtherSongVersions,
+	fetchOwnedContent,
 	fetchPackAll,
 	fetchPackData,
 	fetchPlayAlongsCount,
@@ -560,6 +585,7 @@ export {
 	getNewAndUpcoming,
 	getNextLesson,
 	getOnboardingRecommendedContent,
+	getOwnedContent,
 	getPracticeNotes,
 	getPracticeSessions,
 	getProgressDateByIds,
@@ -573,6 +599,7 @@ export {
 	getRecommendedForYou,
 	getResumeTimeSeconds,
 	getResumeTimeSecondsByIds,
+	getSanityDate,
 	getScheduleContentRows,
 	getSortOrder,
 	getStartedOrCompletedProgressOnly,
