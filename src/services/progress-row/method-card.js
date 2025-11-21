@@ -3,23 +3,18 @@
  */
 
 import {
-  getDailySession,
   getActivePath,
-  resetAllLearningPaths,
-  startLearningPath,
   fetchLearningPathLessons,
 } from '../content-org/learning-paths'
 import { getToday } from '../dateUtils.js'
-import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2IntroVideo } from '../sanity'
-import { addContextToContent } from '../contentAggregator.js'
+import { fetchMethodV2IntroVideo } from '../sanity'
 import { getProgressState } from '../contentProgress'
 
 export async function getMethodCard(brand) {
   const introVideo = await fetchMethodV2IntroVideo(brand)
   const introVideoProgressState = await getProgressState(introVideo?.id)
-  //resetAllLearningPaths()
-  if (introVideoProgressState != 'completed') {
-    //startLearningPath('drumeo', 422533)
+
+  if (introVideoProgressState !== 'completed') {
     const timestamp = Math.floor(Date.now() / 1000)
     return {
       id: 1, // method card has no id
@@ -71,7 +66,7 @@ export async function getMethodCard(brand) {
     } else if (allCompleted) {
       ctaText = learningPath.next_lesson ? 'Start Next Lesson' : 'Browse Lessons'
       action = learningPath.next_lesson
-        ? getMethodActionCTA(learningPath.next_lesson)
+        ? getMethodActionCTA(learningPath.next_lesson) // need to make into LP-lesson type
         : {
             type: 'lessons',
             brand: brand,
@@ -87,7 +82,7 @@ export async function getMethodCard(brand) {
 
     return {
       id: 1,
-      type: 'learning-path-v2',
+      type: 'method',
       progressType: 'method',
       header: 'Method',
       body: learningPath,

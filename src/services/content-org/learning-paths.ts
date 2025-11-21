@@ -3,13 +3,12 @@
  */
 
 import { fetchHandler } from '../railcontent.js'
-import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2Structure } from '../sanity.js'
+import { fetchByRailContentId, fetchMethodV2Structure } from '../sanity.js'
 import { addContextToContent } from '../contentAggregator.js'
 import {
   contentStatusCompleted,
   contentStatusReset,
   getProgressState,
-  getProgressStateByIds
 } from '../contentProgress.js'
 
 const BASE_PATH: string = `/api/content-org`
@@ -112,11 +111,15 @@ export async function getEnrichedLearningPath(learningPathId) {
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
-      addNextLesson: true,
+      addNavigateTo: true,
+      collection: {
+        type: 'learning-path',
+        id: learningPathId,
+      }
     }
   )) as any
   if (!response) return response
-  
+
   response.children = mapContentToParent(
     response.children,
     'learning-path-lesson-v2',
