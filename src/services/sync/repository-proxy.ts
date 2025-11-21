@@ -16,23 +16,30 @@ interface SyncRepositories {
 export default new Proxy({} as SyncRepositories, {
   get(target: SyncRepositories, prop: keyof SyncRepositories) {
     if (!target[prop]) {
-      const manager = SyncManager.getInstance()
+      try {
+        const manager = SyncManager.getInstance()
 
-      switch (prop) {
-        case 'likes':
-          target[prop] = new ContentLikesRepository(manager.getStore(ContentLike))
-          break
-        case 'contentProgress':
-          target[prop] = new ContentProgressRepository(manager.getStore(ContentProgress))
-          break
-        case 'contentPractices':
-          target[prop] = new ContentPracticeRepository(manager.getStore(ContentPractice))
-          break
-        case 'userAwardProgress':
-          target[prop] = new UserAwardProgressRepository(manager.getStore(UserAwardProgress))
-          break
-        default:
-          throw new SyncError(`Repository '${prop}' not found`)
+        switch (prop) {
+          case 'likes':
+            target[prop] = new ContentLikesRepository(manager.getStore(ContentLike))
+            break
+          case 'contentProgress':
+            target[prop] = new ContentProgressRepository(manager.getStore(ContentProgress))
+            break
+          case 'contentPractices':
+            target[prop] = new ContentPracticeRepository(manager.getStore(ContentPractice))
+            break
+          case 'userAwardProgress':
+            target[prop] = new UserAwardProgressRepository(manager.getStore(UserAwardProgress))
+            break
+          default:
+            throw new SyncError(`Repository '${prop}' not found`)
+        }
+      } catch (error) {
+        if (error instanceof SyncError) {
+          return undefined
+        }
+        throw error
       }
     }
     return target[prop]
