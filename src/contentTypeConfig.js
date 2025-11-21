@@ -698,6 +698,9 @@ export const plusMembershipPermissions = 92
  */
 export const membershipPermissions = [92]
 
+export const plusMembershipTier = 'plus'
+export const basicMembershipTier = 'basic'
+
 export function getNewReleasesTypes(brand) {
   const baseNewTypes = [
     'student-review',

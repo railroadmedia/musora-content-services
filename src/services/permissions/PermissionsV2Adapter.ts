@@ -17,8 +17,8 @@ import {
 import {
   fetchUserPermissions as fetchUserPermissionsV2,
 } from '../user/permissions.js'
-import {arrayToRawRepresentation} from '../../filterBuilder.js'
-import {plusMembershipPermissions} from "../../contentTypeConfig";
+import {arrayToRawRepresentation, arrayToStringRepresentation} from '../../filterBuilder.js'
+import {basicMembershipTier, plusMembershipPermissions, plusMembershipTier} from "../../contentTypeConfig";
 
 /**
  * V2 Permissions Adapter for the new permissions system.
@@ -113,9 +113,9 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
     let userPermissionIds = this.getUserPermissionIds(userPermissions)
     const isDereferencedContext = prefix === '@->'
 
-    // If showing membership restricted content, add Plus Membership permission
+    // If showing membership restricted content
     if (showMembershipRestrictedContent) {
-      userPermissionIds = [...userPermissionIds, plusMembershipPermissions]
+      return ` ${prefix}membership_tier in ${arrayToStringRepresentation([plusMembershipTier, basicMembershipTier])} `
     }
 
     const filter = this.buildStandardPermissionFilter(
