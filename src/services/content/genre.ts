@@ -1,10 +1,11 @@
 /**
  * @module Genre
  */
-import { DEFAULT_FIELDS, filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
-import { buildDataAndTotalQuery, fetchSanity, getSanityDate, getSortOrder } from '../sanity.js'
+import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
+import { fetchSanity, getSortOrder } from '../sanity.js'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { Lesson } from './content'
+import { buildDataAndTotalQuery } from '../../lib/sanity/query'
 
 export interface Genre {
   lessons?: Lesson[]

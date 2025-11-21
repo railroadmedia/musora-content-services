@@ -3,7 +3,7 @@
  */
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
 import { FilterBuilder } from '../../filterBuilder.js'
-import { buildDataAndTotalQuery } from '../../lib/sanity/query.js'
+import { buildDataAndTotalQuery } from '../../lib/sanity/query'
 import { fetchSanity, getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
 
