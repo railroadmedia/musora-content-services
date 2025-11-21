@@ -18,6 +18,7 @@ export const SONG_TYPES_WITH_CHILDREN = [
   'jam-track',
   'song-tutorial',
   'song-tutorial-children',
+  'routine',
 ]
 // Single hierarchy refers to only one element in the hierarchy has video lessons, not that they have a single parent
 export const SINGLE_PARENT_TYPES = ['course-part', 'pack-bundle-lesson', 'song-tutorial-children']
@@ -140,23 +141,20 @@ export const showsTypes = {
     'backstage-secret',
     'quick-tips',
     'question-and-answer',
+    'documentary-lesson',
     'live',
     'podcast',
     'solo',
     'boot-camp',
     'gear-guide',
     'performance',
-    'in-rhythm',
     'challenges',
     'on-the-road',
     'diy-drum-experiment',
-    'rhythmic-adventures-of-captain-carson',
     'study-the-greats',
-    'rhythms-from-another-planet',
     'tama',
     'paiste-cymbals',
     'behind-the-scenes',
-    'exploring-beats',
     'sonor',
   ],
   pianote: ['student-review', 'question-and-answer'],
@@ -183,7 +181,7 @@ export const childContentTypeConfig = {
   'song-tutorial': [`"genre": genre[]->name`, `difficulty_string`, `"type": _type`],
 }
 
-export const singleLessonTypes = ['quick-tips', 'rudiment']
+export const singleLessonTypes = ['quick-tips', 'rudiment', 'routine']
 export const practiceAlongsLessonTypes = ['workout'] // challenges ->workouts
 export const performancesLessonTypes = ['performance']
 export const documentariesLessonTypes = [
@@ -206,7 +204,7 @@ export const studentArchivesLessonTypes = [
   'student-collaboration',
 ]
 export const tutorialsLessonTypes = ['song-tutorial']
-export const transcriptionsLessonTypes = ['song']
+export const transcriptionsLessonTypes = ['song', 'routine']
 export const playAlongLessonTypes = ['play-along']
 export const jamTrackLessonTypes = ['jam-track']
 
@@ -228,14 +226,10 @@ export const skillLessonTypes = ['skill-pack']
 export const showsLessonTypes = [
   'boot-camp',
   'diy-drum-experiment',
-  'exploring-beats',
-  'in-rhythm',
-  'rhythmic-adventures-of-captain-carson',
-  'rhythms-from-another-planet',
   'study-the-greats',
 ]
 export const entertainmentLessonTypes = [
-  'specials', // TODO: new type
+  'special',
   ...documentariesLessonTypes,
   ...showsLessonTypes,
 ]
@@ -250,9 +244,9 @@ export const lessonTypesMapping = {
   documentaries: documentariesLessonTypes,
   courses: ['course'],
   'guided courses': ['guided-course'],
-  'tiered courses': ['tiered-course'],
+  'course collections': ['course-collection'],
   'skill packs': ['skill-pack'],
-  specials: ['specials'],
+  specials: ['special'],
   shows: showsLessonTypes,
   collections: collectionLessonTypes,
   individuals: individualLessonsTypes,
@@ -514,7 +508,7 @@ export let contentTypeConfig = {
     slug: 'rudiments',
   },
   routine: {
-    fields: [`"description": ${descriptionField}`, 'high_soundslice_slug', 'low_soundslice_slug'],
+    fields: [`"description": ${descriptionField}`, 'soundslice_slug'],
     slug: 'routines',
   },
   'pack-children': {
@@ -606,14 +600,10 @@ export let contentTypeConfig = {
   'on-the-road': contentWithInstructorsField,
   // content with just the added 'sort' field
   podcast: contentWithSortField,
-  'in-rhythm': contentWithSortField,
   'diy-drum-experiment': contentWithSortField,
-  'rhythmic-adventures-of-captain-carson': contentWithSortField,
   'study-the-greats': contentWithSortField,
-  'rhythms-from-another-planet': contentWithSortField,
   'paiste-cymbals': contentWithInstructorsField,
   'behind-the-scenes': contentWithSortField,
-  'exploring-beats': contentWithSortField,
   sonor: contentWithSortField,
   returning: {
     fields: [`quarter_published`, '"thumbnail": thumbnail.asset->url'],
@@ -703,17 +693,12 @@ export function getNewReleasesTypes(brand) {
         'solos',
         'gear-guides',
         'performances',
-        'in-rhythm',
-        'challenges',
         'on-the-road',
         'diy-drum-experiments',
-        'rhythmic-adventures-of-captain-carson',
         'study-the-greats',
-        'rhythms-from-another-planet',
         'tama-drums',
         'paiste-cymbals',
         'behind-the-scenes',
-        'exploring-beats',
         'sonor',
       ]
     case 'guitareo':
@@ -753,17 +738,13 @@ export function getUpcomingEventsTypes(brand) {
         'solos',
         'gear-guides',
         'performances',
-        'in-rhythm',
         'challenges',
         'on-the-road',
         'diy-drum-experiments',
-        'rhythmic-adventures-of-captain-carson',
         'study-the-greats',
-        'rhythms-from-another-planet',
         'tama-drums',
         'paiste-cymbals',
         'behind-the-scenes',
-        'exploring-beats',
         'sonor',
       ]
     case 'guitareo':
