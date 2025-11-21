@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.84.0](https://github.com/railroadmedia/musora-content-services/compare/v2.83.0...v2.84.0) (2025-11-21)
+
+
+### Features
+
+* add option to work with object data when datafield is provided in content aggregator ([#579](https://github.com/railroadmedia/musora-content-services/issues/579)) ([300f10a](https://github.com/railroadmedia/musora-content-services/commit/300f10a9e17b8a916af746e88b091cab6772cc28))
+
 ## [2.83.0](https://github.com/railroadmedia/musora-content-services/compare/v2.82.0...v2.83.0) (2025-11-21)
 
 
