@@ -1903,29 +1903,6 @@ export function buildEntityAndTotalQuery(
   return query
 }
 
-export function buildDataAndTotalQuery(
-  filter = '',
-  fields = '...',
-  {
-    sortOrder = 'published_on desc',
-    start = 0,
-    end = 10,
-    isSingle = false,
-    withoutPagination = false,
-  }
-) {
-  const sortString = sortOrder ? ` | order(${sortOrder})` : ''
-  const countString = isSingle ? '[0...1]' : withoutPagination ? `` : `[${start}...${end}]`
-  const query = `{
-      "data": *[${filter}]  ${sortString}${countString}
-      {
-        ${fields}
-      },
-      "total": 0
-    }`
-  return query
-}
-
 function getFilterOptions(option, commonFilter, contentType, brand) {
   let filterGroq = ''
   const types = Array.from(new Set([...coachLessonsTypes, ...showsTypes[brand]]))
