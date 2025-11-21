@@ -41,7 +41,7 @@ export const DEFAULT_FIELDS = [
   "'type': _type",
   "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
   'brand',
-  "'genre': genre[]->name",
+  `'genre': ${genreField}`,
   'status',
   "'slug' : slug.current",
   "'permission_id': permission[]->railcontent_id",
@@ -64,7 +64,7 @@ export const DEFAULT_CHILD_FIELDS = [
   "'type': _type",
   "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
   'brand',
-  "'genre': genre[]->name",
+  `'genre': ${genreField}`,
   'status',
   "'slug' : slug.current",
   "'permission_id': permission[]->railcontent_id",
@@ -88,6 +88,8 @@ export const instructorField = `instructor[]->{
             "coach_card_image": coach_card_image.asset->url,
             "coach_profile_image": thumbnail_url.asset->url
           }`
+
+export const genreField = `genre[]->{ name, 'slug': slug.current }`
 
 export const chapterField = `chapter[]{
                     chapter_description,
@@ -180,7 +182,7 @@ export const coachLessonsTypes = [
 ]
 
 export const childContentTypeConfig = {
-  'song-tutorial': [`"genre": genre[]->name`, `difficulty_string`, `"type": _type`],
+  'song-tutorial': [`"genre": ${genreField}`, `difficulty_string`, `"type": _type`],
 }
 
 export const singleLessonTypes = ['quick-tips', 'rudiment']
@@ -496,7 +498,7 @@ export let contentTypeConfig = {
   },
   'play-along': {
     fields: [
-      '"style": genre[]->name',
+      `"style": ${genreField}`,
       'mp3_no_drums_no_click_url',
       'mp3_yes_drums_yes_click_url',
       'mp3_no_drums_yes_click_url',
