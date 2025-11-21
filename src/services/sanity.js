@@ -1239,16 +1239,12 @@ export async function fetchSiblingContent(railContentId, brand = null) {
     pullFutureContent: true,
     showMembershipRestrictedContent: true  // Show parent even without permissions
   }).buildFilter()
-  const filterForParentList = await new FilterBuilder(`references(^._id) && _type == ^.parent_type`, {
-    pullFutureContent: true,
-    isParentFilter: true,
-    showMembershipRestrictedContent: true  // Show parent even without permissions
-  }).buildFilter()
   const filterForParentList = await new FilterBuilder(
     `references(^._id) && _type == ^.parent_type`,
     {
       pullFutureContent: true,
       isParentFilter: true,
+      showMembershipRestrictedContent: true  // Show parent even without permissions
     }
   ).buildFilter()
 
