@@ -14,11 +14,8 @@ class ContentProgressObserver {
   /** @returns {Promise<() => void>} */
   async start(database) {
     if (this.isObserving) {
-      console.warn('[ContentProgressObserver] Already observing')
       return () => {}
     }
-
-    console.log('[ContentProgressObserver] Starting observation')
 
     await awardDefinitions.refresh()
     const allAwards = await awardDefinitions.getAll()
@@ -31,18 +28,20 @@ class ContentProgressObserver {
     }
 
     if (allChildIds.size === 0) {
-      console.warn('[ContentProgressObserver] No child content IDs found in awards, not observing')
       return () => {}
     }
 
-    const contentProgressCollection = database.collections.get('content_progress')
+    const contentProgressCollection = database.collections.get('progress')
 
     this.subscription = contentProgressCollection
-      .query(Q.where('content_id', Q.oneOf(Array.from(allChildIds))))
+      .query(Q.where('state', Q.oneOf(['started', 'completed'])))
       .observeWithColumns(['state', 'progress_percent'])
       .subscribe(async (progressRecords) => {
         for (const record of progressRecords) {
-          await this.handleProgressChange(record)
+          const contentId = record.content_id
+          if (allChildIds.has(contentId)) {
+            await this.handleProgressChange(record)
+          }
         }
       })
 
@@ -114,7 +113,6 @@ class ContentProgressObserver {
     this.processingContentIds.clear()
 
     this.isObserving = false
-    console.log('[ContentProgressObserver] Stopped observation')
   }
 }
 

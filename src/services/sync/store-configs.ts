@@ -1,6 +1,7 @@
 import { SyncStoreConfig } from "./store"
 import ContentLike from "./models/ContentLike"
 import ContentProgress from "./models/ContentProgress"
+import UserAwardProgress from "./models/UserAwardProgress"
 import { handlePull, handlePush, makeFetchRequest } from "./fetch"
 import SyncStore from "./store"
 import BaseModel from "./models/Base"
@@ -24,6 +25,12 @@ export default function createStoresFromConfig(createStore: <TModel extends Base
       },
       pull: handlePull(makeFetchRequest('/content/user/progress')),
       push: handlePush(makeFetchRequest('/content/user/progress', { method: 'POST' })),
+    }),
+
+    createStore({
+      model: UserAwardProgress,
+      pull: handlePull(makeFetchRequest('/api/content/v1/user/awards')),
+      push: handlePush(makeFetchRequest('/api/content/v1/user/awards', { method: 'POST' })),
     })
   ] as unknown as SyncStore<BaseModel>[]
 }
