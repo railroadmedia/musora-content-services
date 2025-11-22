@@ -59,9 +59,9 @@ export async function updateDailySession(
  * @param brand
  */
 export async function getActivePath(brand: string) {
-  const url: string = `${LEARNING_PATHS_PATH}/active-path/get-or-create`
+  const url: string = `${LEARNING_PATHS_PATH}/active-path/get`
   const body = { brand: brand }
-  return await fetchHandler(url, 'POST', null, body)
+  return await fetchHandler(url, 'GET', null, body)
 }
 
 // todo this should be removed once we handle active path gen only through
@@ -82,7 +82,7 @@ export async function updateActivePath(brand: string) {
  * @param learningPathId
  */
 export async function startLearningPath(brand: string, learningPathId: number) {
-  const url: string = `${LEARNING_PATHS_PATH}/start`
+  const url: string = `${LEARNING_PATHS_PATH}/active-path/set`
   const body = { brand: brand, learning_path_id: learningPathId }
   return await fetchHandler(url, 'POST', null, body)
 }
@@ -116,7 +116,7 @@ export async function getEnrichedLearningPath(learningPathId) {
     }
   )) as any
   if (!response) return response
-  
+
   response.children = mapContentToParent(
     response.children,
     'learning-path-lesson-v2',
@@ -222,7 +222,7 @@ export async function fetchLearningPathLessons(
     nextLPLessons = await getLearningPathLessonsByIds(nextContentIds, nextLearningPathId)
   }
 
-  
+
 
   return {
     ...learningPath,
