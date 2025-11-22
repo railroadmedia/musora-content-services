@@ -352,6 +352,25 @@ export const recentTypes = {
   ],
 }
 
+export const ownedContentTypes = {
+  lessons: [
+    ...singleLessonTypes,
+    ...practiceAlongsLessonTypes,
+    ...liveArchivesLessonTypes,
+    ...studentArchivesLessonTypes,
+    ...coursesLessonTypes,
+    ...skillLessonTypes,
+    ...entertainmentLessonTypes,
+    'pack',
+  ],
+  songs: [
+    ...tutorialsLessonTypes,
+    ...transcriptionsLessonTypes,
+    ...playAlongLessonTypes,
+    ...jamTrackLessonTypes,
+  ],
+}
+
 export let contentTypeConfig = {
   'tab-data': {
     fields: ['enrollment_start_time', 'enrollment_end_time'],
@@ -672,6 +691,16 @@ export function getIntroVideoFields(type) {
 
 export const plusMembershipPermissions = 92
 
+/**
+ * Membership permission IDs for all membership tiers.
+ * Used for showing membership-restricted content in upgrade prompts.
+ * - 92: Plus membership
+ */
+export const membershipPermissions = [92]
+
+export const plusMembershipTier = 'plus'
+export const basicMembershipTier = 'basic'
+
 export function getNewReleasesTypes(brand) {
   const baseNewTypes = [
     'student-review',
@@ -788,7 +817,10 @@ export async function getFieldsForContentTypeWithFilteredChildren(
   const childFields = getChildFieldsForContentType(contentType, true)
   const parentFields = getFieldsForContentType(contentType, false)
   if (childFields) {
-    const childFilter = await new FilterBuilder('', { isChildrenFilter: true }).buildFilter()
+    const childFilter = await new FilterBuilder('', {
+      isChildrenFilter: true,
+      showMembershipRestrictedContent: true  // Show all children in lists
+    }).buildFilter()
     parentFields.push(
       `"children": child[${childFilter}]->{
         ${childFields}

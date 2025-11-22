@@ -74,13 +74,13 @@ export interface ArtistLessonOptions {
 }
 
 export interface LessonsByArtistResponse {
-  entity: Artist[]
+  data: Artist[]
 }
 
 /**
  * Fetch the artist's lessons.
- * @param {string} brand - The brand for which to fetch lessons.
  * @param {string} slug - The slug of the artist
+ * @param {string} brand - The brand for which to fetch lessons.
  * @param {string} contentType - The type of the lessons we need to get from the artist. If not defined, groq will get lessons from all content types
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
@@ -92,13 +92,13 @@ export interface LessonsByArtistResponse {
  * @returns {Promise<LessonsByArtistResponse|null>} - The lessons for the artist and some details about the artist (name and thumbnail).
  *
  * @example
- * fetchArtistLessons('drumeo', '10 Years', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
+ * fetchArtistLessons('10 Years', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
  *   .then(lessons => console.log(lessons))
  *   .catch(error => console.error(error));
  */
 export async function fetchArtistLessons(
-  brand: string,
   slug: string,
+  brand: string,
   contentType: string,
   {
     sort = '-published_on',
@@ -127,7 +127,7 @@ export async function fetchArtistLessons(
     progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
   const now = getSanityDate(new Date())
   const query = `{
-    "entity":
+    "data":
       *[_type == 'artist' && slug.current == '${slug}']
         {'type': _type, name, 'thumbnail':thumbnail_url.asset->url,
         'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]),
@@ -135,5 +135,5 @@ export async function fetchArtistLessons(
       [${start}...${end}]}
       |order(${sortOrder})
   }`
-  return fetchSanity(query, true)
+  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }

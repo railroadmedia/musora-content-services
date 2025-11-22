@@ -68,6 +68,7 @@ import {
 	getLegacyMethods,
 	getLessonContentRows,
 	getNewAndUpcoming,
+	getOwnedContent,
 	getRecent,
 	getRecommendedForYou,
 	getScheduleContentRows,
@@ -123,6 +124,7 @@ import {
 
 import {
 	createForumCategory,
+	deleteForumCategory,
 	fetchForumCategories,
 	updateForumCategory
 } from './services/forums/categories.ts';
@@ -270,6 +272,7 @@ import {
 	fetchNewReleases,
 	fetchNextPreviousLesson,
 	fetchOtherSongVersions,
+	fetchOwnedContent,
 	fetchPackAll,
 	fetchPackData,
 	fetchPlayAlongsCount,
@@ -442,6 +445,7 @@ declare module 'musora-content-services' {
 		createThread,
 		deleteAccount,
 		deleteComment,
+		deleteForumCategory,
 		deleteItemsFromPlaylist,
 		deleteNotification,
 		deletePicture,
@@ -520,6 +524,7 @@ declare module 'musora-content-services' {
 		fetchNotificationSettings,
 		fetchNotifications,
 		fetchOtherSongVersions,
+		fetchOwnedContent,
 		fetchPackAll,
 		fetchPackData,
 		fetchPlayAlongsCount,
@@ -581,6 +586,7 @@ declare module 'musora-content-services' {
 		getNavigateToForPlaylists,
 		getNewAndUpcoming,
 		getOnboardingRecommendedContent,
+		getOwnedContent,
 		getPracticeNotes,
 		getPracticeSessions,
 		getProgressDateByIds,

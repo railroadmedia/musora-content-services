@@ -39,7 +39,7 @@ export async function fetchGenres(brand: string): Promise<Genre[]> {
     'thumbnail': thumbnail_url.asset->url,
     "lessons_count": count(*[${filter}])
   } |order(lower(name)) `
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false})
+  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
 /**
@@ -68,7 +68,7 @@ export async function fetchGenreBySlug(slug: string, brand?: string): Promise<Ge
     'thumbnail':thumbnail_url.asset->url,
     "lessonsCount": count(*[${filter}])
   }`
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false})
+  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
 export interface FetchGenreLessonsOptions {
@@ -81,13 +81,13 @@ export interface FetchGenreLessonsOptions {
 }
 
 export interface LessonsByGenreResponse {
-  entity: Genre[]
+  data: Genre[]
 }
 
 /**
  * Fetch the genre's lessons.
- * @param {string} brand - The brand for which to fetch lessons.
  * @param {string} slug - The slug of the genre
+ * @param {string} brand - The brand for which to fetch lessons.
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
  * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
@@ -95,16 +95,16 @@ export interface LessonsByGenreResponse {
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  * @param {Array<number>} [params.progressIds=[]] - The ids of the lessons that are in progress or completed
- * @returns {Promise<LessonsByGenreResponse>} - The lessons for the artist and some details about the artist (name and thumbnail).
+ * @returns {Promise<LessonsByGenreResponse|null>} - The lessons for the artist and some details about the artist (name and thumbnail).
  *
  * @example
- * fetchGenreLessons('drumeo', 'Blues', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
+ * fetchGenreLessons('Blues', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
  *   .then(lessons => console.log(lessons))
  *   .catch(error => console.error(error));
  */
 export async function fetchGenreLessons(
-  brand: string,
   slug: string,
+  brand: string,
   contentType: string,
   {
     sort = '-published_on',
@@ -114,7 +114,7 @@ export async function fetchGenreLessons(
     includedFields = [],
     progressIds = [],
   }: FetchGenreLessonsOptions = {}
-): Promise<LessonsByGenreResponse> {
+): Promise<LessonsByGenreResponse | null> {
   const fieldsString = DEFAULT_FIELDS.join(',')
   const start = (page - 1) * limit
   const end = start + limit
@@ -127,12 +127,15 @@ export async function fetchGenreLessons(
     progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
   const now = getSanityDate(new Date())
   const query = `{
-    "entity":
+    "data":
       *[_type == 'genre' && slug.current == '${slug}']
-        {'type': _type, name, 'thumbnail':thumbnail_url.asset->url,
-        'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]),
-        'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
-      [${start}...${end}]}
+        {
+          'type': _type,
+          name,
+          'thumbnail': thumbnail_url.asset->url,
+          'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]),
+          'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}} [${start}...${end}]
+        }
       |order(${sortOrder})
   }`
   return fetchSanity(query, true)

@@ -102,9 +102,9 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
 
   const addContext = async (item) => ({
     ...item,
-    ...(addProgressPercentage ? { progressPercentage: progressData?.[item.id]['progress'] } : {}),
-    ...(addProgressStatus ? { progressStatus: progressData?.[item.id]['status'] } : {}),
-    ...(addProgressTimestamp ? { progressTimestamp: progressData?.[item.id]['last_update'] } : {}),
+    ...(addProgressPercentage ? { progressPercentage: progressData?.[item.id]?.progress } : {}),
+    ...(addProgressStatus ? { progressStatus: progressData?.[item.id]?.status } : {}),
+    ...(addProgressTimestamp ? { progressTimestamp: progressData?.[item.id]?.last_update } : {}),
     ...(addIsLiked ? { isLiked: isLikedData?.[item.id] } : {}),
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
@@ -131,7 +131,7 @@ export async function getNavigateToForPlaylists(data, { dataField = null } = {})
       const progress = progressOnItems[itemId]
       return progress && progress === 'completed'
     })
-    let nextItem = accessibleItems[0] ?? null
+    let nextItem = accessibleItems[0] ?? playlist.items[0] ?? null
     if (!allItemsCompleted) {
       const lastItemProgress = progressOnItems[playlist.last_engaged_on]
       const index = accessibleItems.findIndex((i) => i.content_id === playlist.last_engaged_on)
@@ -155,10 +155,20 @@ function extractItemsFromData(data, dataField, isParentArray, includeParent) {
   if (dataField) {
     if (isParentArray) {
       for (const parent of data) {
-        items = [...items, ...parent[dataField]]
+        const fieldValue = parent[dataField]
+        if (Array.isArray(fieldValue)) {
+          items = [...items, ...fieldValue]
+        } else if (fieldValue && typeof fieldValue === 'object') {
+          items = [...items, fieldValue]
+        }
       }
     } else {
-      items = data[dataField]
+      const fieldValue = data[dataField]
+      if (Array.isArray(fieldValue)) {
+        items = fieldValue
+      } else if (fieldValue && typeof fieldValue === 'object') {
+        items = [fieldValue]
+      }
     }
     if (includeParent) {
       if (isParentArray) {
@@ -181,14 +191,20 @@ async function processItems(data, addContext, dataField, isParentArray, includeP
   if (dataField) {
     if (isParentArray) {
       for (let parent of data) {
-        parent[dataField] = Array.isArray(parent[dataField])
-          ? await Promise.all(parent[dataField].map(addContext))
-          : await addContext(parent[dataField])
+        const fieldValue = parent[dataField]
+        if (Array.isArray(fieldValue)) {
+          parent[dataField] = await Promise.all(fieldValue.map(addContext))
+        } else if (fieldValue && typeof fieldValue === 'object') {
+          parent[dataField] = await addContext(fieldValue)
+        }
       }
     } else {
-      data[dataField] = Array.isArray(data[dataField])
-        ? await Promise.all(data[dataField].map(addContext))
-        : await addContext(data[dataField])
+      const fieldValue = data[dataField]
+      if (Array.isArray(fieldValue)) {
+        data[dataField] = await Promise.all(fieldValue.map(addContext))
+      } else if (fieldValue && typeof fieldValue === 'object') {
+        data[dataField] = await addContext(fieldValue)
+      }
     }
     if (includeParent) {
       data = isParentArray ? await Promise.all(data.map(addContext)) : await addContext(data)
