@@ -42,6 +42,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { addContextToContent } from './contentAggregator.js'
 import { getMethodCard } from './progress-row/method-card.js'
+import { db, Q } from './sync'
 
 const DATA_KEY_PRACTICES = 'practices'
 const DATA_KEY_LAST_UPDATED_TIME = 'u'
@@ -78,13 +79,26 @@ function getIndefiniteArticle(streak) {
 }
 
 export async function getUserPractices(userId = globalConfig.sessionConfig.userId) {
-  if (userId !== globalConfig.sessionConfig.userId) {
-    let data = await fetchUserPractices(0, { userId: userId })
-    return data?.['data']?.[DATA_KEY_PRACTICES] ?? {}
+  if (userId === globalConfig.sessionConfig.userId) {
+    return getOwnPractices()
   } else {
-    let data = await userActivityContext.getData()
-    return data?.[DATA_KEY_PRACTICES] ?? {}
+    let data = await fetchUserPractices(0, { userId })
+    return data?.['data']?.[DATA_KEY_PRACTICES] ?? {}
   }
+}
+
+async function getOwnPractices(...clauses) {
+  const query = await db.contentPractice.queryAll(...clauses)
+  const data = query.data.reduce((acc, practice) => {
+    acc[practice.day] = acc[practice.day] || []
+    acc[practice.day].push({
+      id: practice.id,
+      duration_seconds: practice.duration_seconds,
+    })
+    return acc
+  }, {})
+
+  return data
 }
 
 export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUserPractices)
@@ -102,20 +116,21 @@ export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUs
  */
 export async function getUserWeeklyStats() {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  let data = await userActivityContext.getData()
-  let practices = data?.[DATA_KEY_PRACTICES] ?? {}
-  let sortedPracticeDays = Object.keys(practices)
-    .map((date) => toDayjs(date)) // Convert to dayjs instance
-    .sort((a, b) => b.valueOf() - a.valueOf())
-  let today = dayjs()
-  let startOfWeek = getMonday(today, timeZone) // Get last Monday
+  const today = dayjs()
+  const startOfWeek = getMonday(today, timeZone)
+  const weekDays = Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, 'day').format('YYYY-MM-DD'))
+
+  const practices = await getOwnPractices(
+    Q.where('day', Q.oneOf(weekDays)),
+    Q.sortBy('day', 'desc')
+  )
+  const practiceDaysSet = new Set(Object.keys(practices))
   let dailyStats = []
   for (let i = 0; i < 7; i++) {
     const day = startOfWeek.add(i, 'day')
-    let hasPractice = sortedPracticeDays.some((practiceDate) =>
-      isSameDate(practiceDate, day.format('YYYY-MM-DD'))
-    )
-    let isActive = isSameDate(today.format(), day.format())
+    const dayStr = day.format('YYYY-MM-DD')
+    let hasPractice = practiceDaysSet.has(dayStr)
+    let isActive = isSameDate(today.format(), dayStr)
     let type = hasPractice ? 'tracked' : isActive ? 'active' : 'none'
     dailyStats.push({
       key: i,
@@ -123,7 +138,7 @@ export async function getUserWeeklyStats() {
       isActive,
       inStreak: hasPractice,
       type,
-      day: day.format('YYYY-MM-DD'),
+      day: dayStr,
     })
   }
 
@@ -651,21 +666,8 @@ function getStreaksAndMessage(practices) {
 }
 
 async function getUserPracticeIds(day = dayjs().format('YYYY-MM-DD'), userId = null) {
-  let practices = {}
-  if (userId !== globalConfig.sessionConfig.userId) {
-    let data = await fetchUserPractices(0, { userId: userId })
-    practices = data?.['data']?.[DATA_KEY_PRACTICES] ?? {}
-  } else {
-    let data = await userActivityContext.getData()
-    practices = data?.[DATA_KEY_PRACTICES] ?? {}
-  }
-  let userPracticesIds = []
-  Object.keys(practices).forEach((date) => {
-    if (date === day) {
-      practices[date].forEach((practice) => userPracticesIds.push(practice.id))
-    }
-  })
-  return userPracticesIds
+  const query = await db.contentPractice.queryAllIds(Q.where('day', Q.eq(day)))
+  return query.data
 }
 
 function buildQueryString(ids, paramName = 'practice_ids') {

@@ -2,7 +2,9 @@ import BaseModel from './Base'
 import { SYNC_TABLES } from '../schema'
 
 export enum COLLECTION_TYPE {
+  SKILL_PACK = 'skill-pack',
   LEARNING_PATH = 'learning-path',
+  PLAYLIST = 'playlist',
 }
 
 export enum STATE {

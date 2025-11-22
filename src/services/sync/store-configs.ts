@@ -1,9 +1,9 @@
 import { SyncStoreConfig } from "./store"
-import ContentLike from "./models/ContentLike"
-import ContentProgress from "./models/ContentProgress"
+import { ContentLike, ContentProgress, ContentPractice } from "./models"
 import { handlePull, handlePush, makeFetchRequest } from "./fetch"
-import SyncStore from "./store"
-import BaseModel from "./models/Base"
+
+import type SyncStore from "./store"
+import type BaseModel from "./models/Base"
 
 export default function createStoresFromConfig(createStore: <TModel extends BaseModel>(config: SyncStoreConfig<TModel>) => SyncStore<TModel>) {
   return [
@@ -24,6 +24,12 @@ export default function createStoresFromConfig(createStore: <TModel extends Base
       },
       pull: handlePull(makeFetchRequest('/content/user/progress')),
       push: handlePush(makeFetchRequest('/content/user/progress', { method: 'POST' })),
+    }),
+
+    createStore({
+      model: ContentPractice,
+      pull: handlePull(makeFetchRequest('/api/user/practices/v1')),
+      push: handlePush(makeFetchRequest('/api/user/practices/v1', { method: 'POST' })),
     })
   ] as unknown as SyncStore<BaseModel>[]
 }

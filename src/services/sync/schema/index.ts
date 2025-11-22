@@ -32,6 +32,9 @@ const contentPracticesTable = tableSchema({
   name: SYNC_TABLES.CONTENT_PRACTICES,
   columns: [
     { name: 'content_id', type: 'number', isIndexed: true },
+    { name: 'day', type: 'string', isIndexed: true },
+    { name: 'auto', type: 'boolean', isIndexed: true },
+    { name: 'duration_seconds', type: 'number' },
     { name: 'created_at', type: 'number' },
     { name: 'updated_at', type: 'number' }
   ]
