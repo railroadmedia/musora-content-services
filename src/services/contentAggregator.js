@@ -1,9 +1,6 @@
 import {
-  getLastInteractedOf,
   getNavigateTo,
-  getNextLesson,
   getProgressDateByIds,
-  getProgressPercentageByIds,
   getProgressStateByIds,
   getResumeTimeSecondsByIds,
 } from './contentProgress'
@@ -32,8 +29,8 @@ import { fetchLastInteractedChild, fetchLikeCount } from './railcontent'
  * @param options.addProgressStatus - add progressStatus field
  * @param options.addProgressTimestamp - add progressTimestamp field
  * @param options.addResumeTimeSeconds - add resumeTimeSeconds field
- * @param options.addLastInteractedChild - add lastInteractedChild field. This may be different from nextLesson
- * @param options.addNextLesson - add nextLesson field. For collection type content. each collection has different logic for calculating this data
+ * @param options.addLastInteractedChild - add lastInteractedChild field. This may be different from navigateTo.id
+ * @param options.collection {object|null} - define collection parameter: collection = { id: <collection_id>, type: <collection_type> } . This is needed for different collection types like learning paths.
  *
  * @returns {Promise<{ data: Object[] } | false>} - A promise that resolves to the fetched content data + added data or `false` if no data is found.
  *
@@ -52,7 +49,7 @@ import { fetchLastInteractedChild, fetchLikeCount } from './railcontent'
  *     dataField_parentIsArray: true,
  *     addProgressStatus: true,
  *     addProgressPercentage: true,
- *     addNextLesson: true
+ *     addNavigateTo: true
  *   })
  *
  */
@@ -64,6 +61,7 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
   const options = typeof lastArg === 'object' && !Array.isArray(lastArg) ? lastArg : {}
 
   const {
+    collection = null, // this is needed for different collection types like learning paths. has .id and .type
     dataField = null,
     dataField_includeParent = false,
     addProgressPercentage = false,
@@ -73,7 +71,6 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     addProgressTimestamp = false,
     addResumeTimeSeconds = false,
     addLastInteractedChild = false,
-    addNextLesson = false,
     addNavigateTo = false,
   } = options
 
@@ -93,17 +90,14 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     isLikedData,
     resumeTimeData,
     lastInteractedChildData,
-    nextLessonData,
     navigateToData,
-  ] = await Promise.all([
+  ] = await Promise.all([ //for now assume these all return `collection = {type, id}`. it will be so when watermelon here
     addProgressPercentage || addProgressStatus || addProgressTimestamp
-      ? getProgressDateByIds(ids)
-      : Promise.resolve(null),
-    addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
-    addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
-    addLastInteractedChild ? fetchLastInteractedChild(ids) : Promise.resolve(null),
-    addNextLesson ? getNextLesson(items) : Promise.resolve(null),
-    addNavigateTo ? getNavigateTo(items) : Promise.resolve(null),
+      ? getProgressDateByIds(ids, collection) : Promise.resolve(null),
+    addIsLiked ? isContentLikedByIds(ids, collection) : Promise.resolve(null),
+    addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids, collection) : Promise.resolve(null),
+    addLastInteractedChild ? fetchLastInteractedChild(ids, collection) : Promise.resolve(null),
+    addNavigateTo ? getNavigateTo(items, collection) : Promise.resolve(null),
   ])
 
   const addContext = async (item) => ({
@@ -115,13 +109,6 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
     ...(addLastInteractedChild ? { lastInteractedChild: lastInteractedChildData?.[item.id] } : {}),
-    ...(addNextLesson
-      ? {
-          nextLesson: nextLessonData?.[item.id], //deprecated
-          next_lesson_id: nextLessonData?.[item.id],
-          next_lesson: item?.children?.find((child) => child.id === nextLessonData?.[item.id]),
-        }
-      : {}),
     ...(addNavigateTo ? { navigateTo: navigateToData?.[item.id] } : {}),
   })
 

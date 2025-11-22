@@ -986,7 +986,7 @@ async function extractPinnedItemsAndSortAllItems(
   return mergeAndSortItems(combined, limit)
 }
 
-function generateContentsMap(contents, playlistsContents, methodProgressContents) {
+function generateContentsMap(contents, playlistsContents) {
   const excludedTypes = new Set(['pack-bundle', 'guided-course-part'])
   const existingShows = new Set()
   const contentsMap = new Map()
@@ -1027,15 +1027,6 @@ function generateContentsMap(contents, playlistsContents, methodProgressContents
       parentIds.forEach((id) => contentsMap.delete(id))
     }
   }
-  //TODO:: remove method cards from progress rows
-  // if (methodProgressContents && Object.keys(methodProgressContents).length) {
-  //   for (const item of methodProgressContents) {
-  //     const contentId = item.id
-  //     contentsMap.delete(contentId)
-  //     const parentIds = item.parent_content_data || []
-  //     parentIds.forEach((id) => contentsMap.delete(id))
-  //   }
-  // }
 
   return contentsMap
 }
@@ -1075,23 +1066,21 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
   }
   //need to update addContextToContent to accept collection info
   const [playlistsContents, contents] = await Promise.all([
-    playlistEngagedOnContents
+    (playlistEngagedOnContents.length > 0)
       ? addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
-          addNextLesson: true,
           addNavigateTo: true,
           addProgressStatus: true,
           addProgressPercentage: true,
           addProgressTimestamp: true,
         })
       : Promise.resolve([]),
-    nonPlaylistContentIds
+    (nonPlaylistContentIds.length > 0)
       ? addContextToContent(
           fetchByRailContentIds,
           nonPlaylistContentIds,
           'progress-tracker',
           brand,
           {
-            addNextLesson: true,
             addNavigateTo: true,
             addProgressStatus: true,
             addProgressPercentage: true,
