@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.85.0](https://github.com/railroadmedia/musora-content-services/compare/v2.84.0...v2.85.0) (2025-11-22)
+
+
+### Features
+
+* **BEH-1265:** add collection to addContextToContent ([#570](https://github.com/railroadmedia/musora-content-services/issues/570)) ([f05d85d](https://github.com/railroadmedia/musora-content-services/commit/f05d85d246dcd5bd5e80bfe262a29d79e79d0961))
+
 ## [2.84.0](https://github.com/railroadmedia/musora-content-services/compare/v2.83.0...v2.84.0) (2025-11-21)
 
 
