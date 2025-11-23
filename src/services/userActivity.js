@@ -74,12 +74,11 @@ function getIndefiniteArticle(streak) {
     : 'a'
 }
 
-export async function getUserPractices(userId = globalConfig.sessionConfig.userId) {
+async function getUserPractices(userId) {
   if (userId === globalConfig.sessionConfig.userId) {
     return getOwnPractices()
   } else {
-    let data = await fetchUserPractices(0, { userId })
-    return data?.['data']?.[DATA_KEY_PRACTICES] ?? {}
+    return await fetchUserPractices(userId)
   }
 }
 
@@ -97,7 +96,7 @@ async function getOwnPractices(...clauses) {
   return data
 }
 
-export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUserPractices)
+export let userActivityContext = new DataContext(UserActivityVersionKey, function() {})
 
 /**
  * Retrieves user activity statistics for the current week, including daily activity and streak messages.
@@ -415,20 +414,7 @@ export async function restoreUserPractice(id) {
  *   .catch(error => console.error("Delete failed:", error));
  */
 export async function deletePracticeSession(day) {
-  const userPracticesIds = await getUserPracticeIds(day)
-  if (!userPracticesIds.length) return []
-
-  const url = `/api/user/practices/v1/practices${buildQueryString(userPracticesIds)}`
-  await userActivityContext.update(
-    async function (localContext) {
-      if (localContext.data?.[DATA_KEY_PRACTICES]?.[day]) {
-        delete localContext.data[DATA_KEY_PRACTICES][day]
-      }
-    },
-    async function () {
-      return await fetchHandler(url, 'DELETE', null)
-    }
-  )
+  // todo
 }
 
 /**
@@ -499,13 +485,23 @@ export async function restorePracticeSession(date) {
  */
 export async function getPracticeSessions(params = {}) {
   const { day, userId = globalConfig.sessionConfig.userId } = params
-  const userPracticesIds = await getUserPracticeIds(day, userId)
-  if (!userPracticesIds.length) return { data: { practices: [], practiceDuration: 0 } }
 
-  const meta = await fetchUserPracticeMeta(userPracticesIds, userId)
-  if (!meta.data.length) return { data: { practices: [], practiceDuration: 0 } }
+  let data
 
-  const formattedMeta = await formatPracticeMeta(meta.data)
+  if (userId === globalConfig.sessionConfig.userId) {
+    const query = await db.contentPractice.queryAll(
+      Q.where('day', day),
+      Q.sortBy('created_at', 'asc')
+    )
+    data = query.data
+  } else {
+    const query = await fetchUserPracticeMeta(day, userId)
+    data = query.data
+  }
+
+  if (!data.length) return { data: { practices: [], practiceDuration: 0 } }
+
+  const formattedMeta = await formatPracticeMeta(data)
   const practiceDuration = formattedMeta.reduce(
     (total, practice) => total + (practice.duration || 0),
     0
@@ -608,11 +604,6 @@ function getStreaksAndMessage(practices) {
     currentWeeklyStreak,
     streakMessage,
   }
-}
-
-async function getUserPracticeIds(day = dayjs().format('YYYY-MM-DD'), userId = null) {
-  const query = await db.contentPractice.queryAllIds(Q.where('day', Q.eq(day)))
-  return query.data
 }
 
 function buildQueryString(ids, paramName = 'practice_ids') {
