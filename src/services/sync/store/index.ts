@@ -173,6 +173,24 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return this.queryRecordId(...args)
   }
 
+  async insertOne(builder: (record: TModel) => void, span?: Span) {
+    return await this.runScope.abortable(async () => {
+      const record = await this.telemeterizedWrite(span, async () => {
+        return this.collection.create(rec => {
+          builder(rec)
+        })
+      })
+      const records = [record]
+
+      this.emit('upserted', records)
+
+      this.pushUnsyncedWithRetry(span)
+      await this.ensurePersistence()
+
+      return records.map((record) => this.modelSerializer.toPlainObject(record))
+    })
+  }
+
   async upsertOneRemote(id: RecordId, builder: (record: TModel) => void, span?: Span) {
     return await this.runScope.abortable(async () => {
       let record: TModel

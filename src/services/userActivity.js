@@ -4,7 +4,6 @@
 
 import {
   fetchUserPractices,
-  logUserPractice,
   fetchUserPracticeMeta,
   fetchUserPracticeNotes,
   fetchHandler,
@@ -38,14 +37,11 @@ import {
 import { getAllStartedOrCompleted, getProgressStateByIds } from './contentProgress'
 import { TabResponseType } from '../contentMetaData'
 import dayjs from 'dayjs'
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
-import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { addContextToContent } from './contentAggregator.js'
 import { getMethodCard } from './progress-row/method-card.js'
 import { db, Q } from './sync'
 
 const DATA_KEY_PRACTICES = 'practices'
-const DATA_KEY_LAST_UPDATED_TIME = 'u'
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
@@ -311,40 +307,8 @@ export async function getUserMonthlyStats(params = {}) {
  *   .catch(error => console.error(error));
  */
 export async function recordUserPractice(practiceDetails) {
-  practiceDetails.auto = 0
-  practiceDetails.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  if (practiceDetails.content_id) {
-    practiceDetails.auto = 1
-  }
-
-  await userActivityContext.update(
-    async function (localContext) {
-      let userData = localContext.data ?? { [DATA_KEY_PRACTICES]: {} }
-      localContext.data = userData
-    },
-    async function () {
-      const response = await logUserPractice(practiceDetails)
-      if (response) {
-        await userActivityContext.updateLocal(async function (localContext) {
-          const newPractices = response.data ?? []
-          newPractices.forEach((newPractice) => {
-            const { date } = newPractice
-            if (!localContext.data[DATA_KEY_PRACTICES][date]) {
-              localContext.data[DATA_KEY_PRACTICES][date] = []
-            }
-            localContext.data[DATA_KEY_PRACTICES][date][DATA_KEY_LAST_UPDATED_TIME] = Math.round(
-              new Date().getTime() / 1000
-            )
-            localContext.data[DATA_KEY_PRACTICES][date].push({
-              id: newPractice.id,
-              duration_seconds: newPractice.duration_seconds, // Add the new practice for this date
-            })
-          })
-        })
-      }
-      return response
-    }
-  )
+  practiceDetails.auto = practiceDetails.content_id ? 1 : 0
+  await db.contentPractice.recordPractice(practiceDetails)
 }
 /**
  * Updates a user's practice session with new details and syncs the changes remotely.
@@ -387,26 +351,7 @@ export async function updateUserPractice(id, practiceDetails) {
  *   .catch(error => console.error(error));
  */
 export async function removeUserPractice(id) {
-  let url = `/api/user/practices/v1/practices${buildQueryString([id])}`
-  await userActivityContext.update(
-    async function (localContext) {
-      if (localContext.data?.[DATA_KEY_PRACTICES]) {
-        Object.keys(localContext.data[DATA_KEY_PRACTICES]).forEach((date) => {
-          const filtered = localContext.data[DATA_KEY_PRACTICES][date].filter(
-            (practice) => practice.id !== id
-          )
-          if (filtered.length > 0) {
-            localContext.data[DATA_KEY_PRACTICES][date] = filtered
-          } else {
-            delete localContext.data[DATA_KEY_PRACTICES][date]
-          }
-        })
-      }
-    },
-    async function () {
-      return await fetchHandler(url, 'delete')
-    }
-  )
+  return await db.contentPractice.deleteOne(id)
 }
 
 /**

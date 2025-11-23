@@ -559,10 +559,6 @@ export async function fetchUserPractices(currentVersion = 0, { userId } = {}) {
   }
 }
 
-export async function logUserPractice(practiceDetails) {
-  const url = `/api/user/practices/v1/practices`
-  return await fetchHandler(url, 'POST', null, practiceDetails)
-}
 export async function fetchUserPracticeMeta(practiceIds, userId = null) {
   if (practiceIds.length == 0) {
     return []

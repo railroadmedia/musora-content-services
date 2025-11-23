@@ -75,6 +75,13 @@ export default class SyncRepository<TModel extends BaseModel> {
     return result
   }
 
+  protected async insertOne(builder: (record: TModel) => void) {
+    return this.store.telemetry.trace(
+      { name: `insertOne:${this.store.model.table}`, op: 'insert' },
+      (span) => this._respondToWrite(() => this.store.insertOne(builder, span), span)
+    )
+  }
+
   protected async upsertOneRemote(id: RecordId, builder: (record: TModel) => void) {
     return this.store.telemetry.trace(
       { name: `upsertOneRemote:${this.store.model.table}`, op: 'upsert' },
