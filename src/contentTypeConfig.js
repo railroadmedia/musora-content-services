@@ -22,6 +22,22 @@ export const SONG_TYPES_WITH_CHILDREN = [
 // Single hierarchy refers to only one element in the hierarchy has video lessons, not that they have a single parent
 export const SINGLE_PARENT_TYPES = ['course-part', 'pack-bundle-lesson', 'song-tutorial-children']
 
+export const genreField = `genre[]->{
+  name,
+  'slug': slug.current,
+  'thumbnail': thumbnail_url.asset->url,
+}`
+
+export const instructorField = `instructor[]->{
+  name,
+  'slug': slug.current,
+  short_bio,
+  'thumbnail': thumbnail_url.asset->url,
+  "biography": short_bio[0].children[0].text,
+  "coach_card_image": coach_card_image.asset->url,
+  "coach_profile_image": thumbnail_url.asset->url
+}`
+
 export const artistField = `select(
           defined(artist) => artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url},
           defined(parent_content_data) => *[_type == ^.parent_content_data[0].type && railcontent_id == ^.parent_content_data[0].id][0].artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url}
@@ -41,6 +57,7 @@ export const DEFAULT_FIELDS = [
   "'type': _type",
   "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
   'brand',
+  `"instructor": ${instructorField}`,
   `'genre': ${genreField}`,
   'status',
   "'slug' : slug.current",
@@ -79,22 +96,6 @@ export const playAlongMp3sField = `{
       'mp3_yes_drums_yes_click_url':    mp3_yes_drums_yes_click_url,
 }
 `
-
-export const instructorField = `instructor[]->{
-            name,
-            'slug': slug.current,
-            short_bio,
-            'thumbnail': thumbnail_url.asset->url,
-            "biography": short_bio[0].children[0].text,
-            "coach_card_image": coach_card_image.asset->url,
-            "coach_profile_image": thumbnail_url.asset->url
-          }`
-
-export const genreField = `genre[]->{
-  name,
-  'slug': slug.current,
-  'thumbnail': thumbnail_url.asset->url,
-}`
 
 export const chapterField = `chapter[]{
                     chapter_description,
