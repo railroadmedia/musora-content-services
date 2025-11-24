@@ -16,6 +16,7 @@ import { BaseSessionProvider } from '../context/providers'
 import { dropThrottle, queueThrottle, createThrottleState, type ThrottleState } from '../utils'
 import { type WriterInterface } from '@nozbe/watermelondb/Database/WorkQueue'
 import type LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
+import { SyncError } from '../errors'
 
 type SyncPull = (
   session: BaseSessionProvider,
@@ -180,14 +181,32 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
           builder(rec)
         })
       })
-      const records = [record]
-
-      this.emit('upserted', records)
+      this.emit('upserted', [record])
 
       this.pushUnsyncedWithRetry(span)
       await this.ensurePersistence()
 
-      return records.map((record) => this.modelSerializer.toPlainObject(record))
+      return this.modelSerializer.toPlainObject(record)
+    })
+  }
+
+  async updateOneId(id: RecordId, builder: (record: TModel) => void, span?: Span) {
+    return await this.runScope.abortable(async () => {
+      const found = await this.findRecord(id)
+
+      if (!found) {
+        throw new SyncError('Record not found', { id })
+      }
+
+      const record = await this.telemeterizedWrite(span, async () => {
+        return found.update(builder)
+      })
+      this.emit('upserted', [record])
+
+      this.pushUnsyncedWithRetry(span)
+      await this.ensurePersistence()
+
+      return this.modelSerializer.toPlainObject(record)
     })
   }
 
@@ -308,16 +327,12 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
-  async deleteSomeTentative(ids: RecordId[], span?: Span) {
+  async deleteSome(ids: RecordId[], span?: Span) {
     return this.runScope.abortable(async () => {
       await this.telemeterizedWrite(span, async writer => {
-        const existing = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))
+        const existing = await this.queryRecords(Q.where('id', Q.oneOf(ids)))
 
-        const destroyedBuilds = existing.filter(record => record._raw._status === 'deleted').map(record => {
-          return new this.model(this.collection, { id: record.id }).prepareDestroyPermanently()
-        })
-
-        await writer.batch(...destroyedBuilds)
+        await writer.batch(...existing.map(record => record.prepareMarkAsDeleted()))
       })
 
       this.emit('deleted', ids)

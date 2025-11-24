@@ -1,5 +1,6 @@
 import SyncRepository from "./base";
 import ContentPractice from "../models/ContentPractice";
+import { RecordId } from "@nozbe/watermelondb";
 
 export default class PracticeRepository extends SyncRepository<ContentPractice> {
   async recordPractice(details: {
@@ -26,7 +27,17 @@ export default class PracticeRepository extends SyncRepository<ContentPractice> 
     });
   }
 
+  async updateDetails(id: RecordId, details: {
+    duration_seconds: number;
+    title: string;
+  }) {
+    return await this.updateOneId(id, r => {
+      r.duration_seconds = details.duration_seconds;
+      r.title = details.title;
+    })
+  }
+
   private static generateAutoId(contentId: number, day: string) {
-    return [contentId.toString(), day].join(':');
+    return ['auto', contentId.toString(), day].join(':');
   }
 }

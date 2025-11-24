@@ -307,7 +307,7 @@ export async function getUserMonthlyStats(params = {}) {
  */
 export async function recordUserPractice(practiceDetails) {
   practiceDetails.auto = practiceDetails.content_id ? 1 : 0
-  await db.contentPractice.recordPractice(practiceDetails)
+  return await db.contentPractice.recordPractice(practiceDetails)
 }
 /**
  * Updates a user's practice session with new details and syncs the changes remotely.
@@ -333,8 +333,7 @@ export async function recordUserPractice(practiceDetails) {
  *   .catch(error => console.error(error));
  */
 export async function updateUserPractice(id, practiceDetails) {
-  const url = `/api/user/practices/v1/practices/${id}`
-  return await fetchHandler(url, 'PUT', null, practiceDetails)
+  return await db.contentPractice.updateDetails(id, practiceDetails)
 }
 
 /**
@@ -414,7 +413,8 @@ export async function restoreUserPractice(id) {
  *   .catch(error => console.error("Delete failed:", error));
  */
 export async function deletePracticeSession(day) {
-  // todo
+  const ids = await db.contentPractice.queryAllIds(Q.where('day', day))
+  return await db.contentPractice.deleteSome(ids.data)
 }
 
 /**
