@@ -268,10 +268,6 @@ export async function fetchUserPermissionsData() {
   return (await fetchHandler(url, 'get')) ?? []
 }
 
-async function fetchDataHandler(url, dataVersion, method = 'get') {
-  return fetchHandler(url, method, dataVersion, null)
-}
-
 async function postDataHandler(url, data) {
   return fetchHandler(url, 'post', null, data)
 }
@@ -290,7 +286,7 @@ async function deleteDataHandler(url, data) {
 
 export async function fetchLikeCount(contendId) {
   const url = `/api/content/v1/content/like_count/${contendId}`
-  return await fetchDataHandler(url)
+  return await fetchHandler(url)
 }
 
 export async function postPlaylistContentEngaged(playlistItemId) {
@@ -526,16 +522,13 @@ export async function fetchComment(commentId) {
   return comment.parent ? comment.parent : comment
 }
 
-export async function fetchUserPractices(currentVersion = 0, { userId } = {}) {
-  const params = new URLSearchParams()
-  if (userId) params.append('user_id', userId)
-  const query = params.toString() ? `?${params.toString()}` : ''
-  const url = `/api/user/practices/v1/practices${query}`
-  const response = await fetchDataHandler(url, currentVersion)
-  const { data, version } = response
+export async function fetchUserPractices(userId) {
+  const url = `/api/user/practices/v1/practices?user_id=${userId}`
+  const response = await fetchHandler(url)
+  const { data } = response
   const userPractices = data
   if (!userPractices) {
-    return { data: { practices: {} }, version }
+    return {}
   }
 
   const formattedPractices = userPractices.reduce((acc, practice) => {
@@ -551,29 +544,11 @@ export async function fetchUserPractices(currentVersion = 0, { userId } = {}) {
     return acc
   }, {})
 
-  return {
-    data: {
-      practices: formattedPractices,
-    },
-    version,
-  }
+  return formattedPractices
 }
 
-export async function logUserPractice(practiceDetails) {
-  const url = `/api/user/practices/v1/practices`
-  return await fetchHandler(url, 'POST', null, practiceDetails)
-}
-export async function fetchUserPracticeMeta(practiceIds, userId = null) {
-  if (practiceIds.length == 0) {
-    return []
-  }
-  const params = new URLSearchParams()
-  practiceIds.forEach((id) => params.append('practice_ids[]', id))
-
-  if (userId !== null) {
-    params.append('user_id', userId)
-  }
-  const url = `/api/user/practices/v1/practices?${params.toString()}`
+export async function fetchUserPracticeMeta(day, userId) {
+  const url = `/api/user/practices/v1/practices?user_id=${userId}&day=${day}`
   return await fetchHandler(url, 'GET', null)
 }
 

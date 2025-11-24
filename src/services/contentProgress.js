@@ -1,14 +1,12 @@
 import { fetchHierarchy } from './sanity.js'
 import { db } from './sync'
 import { STATE } from './sync/models/ContentProgress'
-import { recordUserPractice, findIncompleteLesson } from './userActivity'
+import { trackUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 
 const STATE_STARTED = STATE.STARTED
 const STATE_COMPLETED = STATE.COMPLETED
 const MAX_DEPTH = 3
-
-let sessionData = []
 
 export async function getProgressState(contentId) {
   return getById(contentId, 'state', '')
@@ -176,6 +174,7 @@ export async function getProgressDataByIds(contentIds) {
 }
 
 async function getById(contentId, dataKey, defaultValue) {
+  if (!contentId) return defaultValue
   return db.contentProgress.getOneProgressByContentId(contentId).then(r => r.data?.[dataKey] ?? defaultValue)
 }
 
@@ -250,8 +249,6 @@ export async function getStartedOrCompletedProgressOnly({ brand = undefined } = 
  * Record watch session
  * @return {string} sessionId - provide in future calls to update progress
  * @param {int} contentId
- * @param {string} mediaType - options are video, assignment, practice
- * @param {string} mediaCategory - options are youtube, vimeo, soundslice, play-alongs
  * @param {int} mediaLengthSeconds
  * @param {int} currentSeconds
  * @param {int} secondsPlayed
@@ -261,42 +258,40 @@ export async function getStartedOrCompletedProgressOnly({ brand = undefined } = 
  */
 export async function recordWatchSession(
   contentId,
-  mediaType,
-  mediaCategory,
   mediaLengthSeconds,
   currentSeconds,
   secondsPlayed,
-  sessionId = null,
+  prevSession = null,
   instrumentId = null,
   categoryId = null
 ) {
-  if (!sessionId) {
-    sessionId = uuidv4()
-  }
+  const [session] = await Promise.all([
+    trackPractice(contentId, secondsPlayed, prevSession, { instrumentId, categoryId }),
+    trackProgress(contentId, currentSeconds, mediaLengthSeconds),
+  ])
 
-  try {
-    //TODO: Good enough for Alpha, Refine in reliability improvements
-    sessionData[sessionId] = sessionData[sessionId] || {}
-    const secondsSinceLastUpdate = Math.ceil(
-      secondsPlayed - (sessionData[sessionId][contentId] ?? 0)
-    )
-    await recordUserPractice({
-      content_id: contentId,
-      duration_seconds: secondsSinceLastUpdate,
-      instrument_id: instrumentId,
-    })
-  } catch (error) {
-    console.error('Failed to record user practice:', error)
-  }
-  sessionData[sessionId][contentId] = secondsPlayed
+  return session
+}
 
-  let progress = Math.min(
+async function trackPractice(contentId, secondsPlayed, prevSession, details = {}) {
+  const session = prevSession || new Map()
+
+  const secondsSinceLastUpdate = Math.ceil(
+    secondsPlayed - (session.get(contentId) ?? 0)
+  )
+  session.set(contentId, secondsPlayed)
+
+  await trackUserPractice(contentId, secondsSinceLastUpdate, details)
+
+  return session
+}
+
+async function trackProgress(contentId, currentSeconds, mediaLengthSeconds) {
+  const progress = Math.min(
     99,
     Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds)) * 100)
   )
-  await saveContentProgress(contentId, progress, currentSeconds)
-
-  return sessionId
+  return saveContentProgress(contentId, progress, currentSeconds)
 }
 
 export async function contentStatusCompleted(contentId) {
@@ -405,12 +400,3 @@ function getChildrenToDepth(parentId, hierarchy, depth = 1) {
   })
   return allChildrenIds
 }
-
-function uuidv4() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    var r = (Math.random() * 16) | 0,
-      v = c === 'x' ? r : (r & 0x3) | 0x8
-    return v.toString(16)
-  })
-}
-

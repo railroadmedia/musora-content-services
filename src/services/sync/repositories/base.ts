@@ -75,6 +75,20 @@ export default class SyncRepository<TModel extends BaseModel> {
     return result
   }
 
+  protected async insertOne(builder: (record: TModel) => void) {
+    return this.store.telemetry.trace(
+      { name: `insertOne:${this.store.model.table}`, op: 'insert' },
+      (span) => this._respondToWrite(() => this.store.insertOne(builder, span), span)
+    )
+  }
+
+  protected async updateOneId(id: RecordId, builder: (record: TModel) => void) {
+    return this.store.telemetry.trace(
+      { name: `updateOne:${this.store.model.table}`, op: 'update' },
+      (span) => this._respondToWrite(() => this.store.updateOneId(id, builder, span), span)
+    )
+  }
+
   protected async upsertOneRemote(id: RecordId, builder: (record: TModel) => void) {
     return this.store.telemetry.trace(
       { name: `upsertOneRemote:${this.store.model.table}`, op: 'upsert' },
@@ -116,10 +130,11 @@ export default class SyncRepository<TModel extends BaseModel> {
       (span) => this._respondToWriteIds(() => this.store.deleteOne(id, span), span)
     )
   }
-  protected async deleteSomeTentative(ids: RecordId[]) {
+
+  protected async deleteSome(ids: RecordId[]) {
     return this.store.telemetry.trace(
-      { name: `deleteSomeTentative:${this.store.model.table}`, op: 'delete' },
-      (span) => this._respondToWriteIds(() => this.store.deleteSomeTentative(ids, span), span)
+      { name: `deleteSome:${this.store.model.table}`, op: 'delete' },
+      (span) => this._respondToWriteIds(() => this.store.deleteSome(ids, span), span)
     )
   }
 
