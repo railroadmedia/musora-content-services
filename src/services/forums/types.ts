@@ -3,6 +3,7 @@ export interface ForumUser {
   display_name: string
   profile_picture_url: string | null
   access_level: string
+  signature: string | null
 }
 
 export interface ForumPost {
