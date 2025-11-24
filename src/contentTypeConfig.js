@@ -84,12 +84,17 @@ export const instructorField = `instructor[]->{
             name,
             'slug': slug.current,
             short_bio,
+            'thumbnail': thumbnail_url.asset->url,
             "biography": short_bio[0].children[0].text,
             "coach_card_image": coach_card_image.asset->url,
             "coach_profile_image": thumbnail_url.asset->url
           }`
 
-export const genreField = `genre[]->{ name, 'slug': slug.current }`
+export const genreField = `genre[]->{
+  name,
+  'slug': slug.current,
+  'thumbnail': thumbnail_url.asset->url,
+}`
 
 export const chapterField = `chapter[]{
                     chapter_description,
