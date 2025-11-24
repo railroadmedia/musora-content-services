@@ -173,7 +173,7 @@ function extractItemsFromData(data, dataField, isParentArray, includeParent) {
     if (includeParent) {
       if (isParentArray) {
         for (const parent of data) {
-          items = [...items, ...parent]
+          items = [...items, parent]
         }
       } else {
         items = [...items, data]
