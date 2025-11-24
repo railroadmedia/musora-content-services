@@ -1,7 +1,7 @@
 import { SYNC_TABLES } from '../schema'
 import BaseModel from './Base'
 
-export default class ContentPractice extends BaseModel<{
+export default class Practice extends BaseModel<{
   manual_id: string | null
   content_id: number | null
   day: string
@@ -9,7 +9,7 @@ export default class ContentPractice extends BaseModel<{
   duration_seconds: number
   title: string | null
 }> {
-  static table = SYNC_TABLES.CONTENT_PRACTICES
+  static table = SYNC_TABLES.PRACTICES
 
   get manual_id() {
     return this._getRaw('manual_id') as string | null

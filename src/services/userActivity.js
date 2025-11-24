@@ -83,7 +83,7 @@ async function getUserPractices(userId) {
 }
 
 async function getOwnPractices(...clauses) {
-  const query = await db.contentPractice.queryAll(...clauses)
+  const query = await db.practices.queryAll(...clauses)
   const data = query.data.reduce((acc, practice) => {
     acc[practice.day] = acc[practice.day] || []
     acc[practice.day].push({
@@ -295,7 +295,7 @@ export async function recordUserPractice(practiceDetails) {
   const day = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD wall clock date in user's timezone
   const durationSeconds = practiceDetails.duration_seconds
 
-  return await db.contentPractice.recordManualPractice(day, durationSeconds, {
+  return await db.practices.recordManualPractice(day, durationSeconds, {
     title: practiceDetails.title ?? null,
     category_id: practiceDetails.category_id ?? null,
     thumbnail_url: practiceDetails.thumbnail_url ?? null,
@@ -305,7 +305,7 @@ export async function recordUserPractice(practiceDetails) {
 
 export async function trackUserPractice(contentId, incSeconds) {
   const day = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD wall clock date in user's timezone
-  return await db.contentPractice.trackAutoPractice(contentId, day, incSeconds);
+  return await db.practices.trackAutoPractice(contentId, day, incSeconds);
 }
 
 /**
@@ -328,7 +328,7 @@ export async function trackUserPractice(contentId, incSeconds) {
  *
  */
 export async function updateUserPractice(id, practiceDetails) {
-  return await db.contentPractice.updateDetails(id, practiceDetails)
+  return await db.practices.updateDetails(id, practiceDetails)
 }
 
 /**
@@ -344,7 +344,7 @@ export async function updateUserPractice(id, practiceDetails) {
  *   .catch(error => console.error(error));
  */
 export async function removeUserPractice(id) {
-  return await db.contentPractice.deleteOne(id)
+  return await db.practices.deleteOne(id)
 }
 
 /**
@@ -408,8 +408,8 @@ export async function restoreUserPractice(id) {
  *   .catch(error => console.error("Delete failed:", error));
  */
 export async function deletePracticeSession(day) {
-  const ids = await db.contentPractice.queryAllIds(Q.where('day', day))
-  return await db.contentPractice.deleteSome(ids.data)
+  const ids = await db.practices.queryAllIds(Q.where('day', day))
+  return await db.practices.deleteSome(ids.data)
 }
 
 /**
@@ -484,7 +484,7 @@ export async function getPracticeSessions(params = {}) {
   let data
 
   if (userId === globalConfig.sessionConfig.userId) {
-    const query = await db.contentPractice.queryAll(
+    const query = await db.practices.queryAll(
       Q.where('day', day),
       Q.sortBy('created_at', 'asc')
     )
