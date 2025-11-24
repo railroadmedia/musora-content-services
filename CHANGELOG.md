@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.85.1](https://github.com/railroadmedia/musora-content-services/compare/v2.85.0...v2.85.1) (2025-11-24)
+
+
+### Bug Fixes
+
+* update endpoint in lockThread  method ([9d6a351](https://github.com/railroadmedia/musora-content-services/commit/9d6a351ff5bc1187e635d53b3178420dbbcc4172))
+* update endpoint in lockThread  method ([5c5b935](https://github.com/railroadmedia/musora-content-services/commit/5c5b935821bf4029c0131a6b265d711ac3b30db0))
+
 ## [2.85.0](https://github.com/railroadmedia/musora-content-services/compare/v2.84.0...v2.85.0) (2025-11-22)
 
 
