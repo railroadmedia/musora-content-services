@@ -1347,7 +1347,7 @@ function mergeAndSortItems(items, limit) {
 
 export function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
   const ids = Object.keys(progressOnItems).map(Number)
-  if (contentType === 'guided-course' || contentType === 'learning-path') {
+  if (contentType === 'guided-course' || contentType === 'learning-path-v2') {
     // Return first incomplete lesson
     return ids.find((id) => progressOnItems[id] !== 'completed') || ids.at(0)
   }
