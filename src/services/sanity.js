@@ -1494,27 +1494,20 @@ export async function fetchTopLevelParentId(railcontentId) {
   const statusFilter = "&& status in ['scheduled', 'published', 'archived', 'unlisted']"
 
   const query = `*[railcontent_id == ${railcontentId}]{
-      railcontent_id, 'parents': *[${parentFilter} ${statusFilter}]{
-        railcontent_id, 'parents': *[${parentFilter} ${statusFilter}]{
-          railcontent_id, 'parents': *[${parentFilter} ${statusFilter}]{
-            railcontent_id, 'parents': *[${parentFilter} ${statusFilter}]{
-              railcontent_id
-            }
-          }
-        }
+      railcontent_id,
+      'parents': *[${parentFilter} ${statusFilter}]{
+        railcontent_id
       }
     }`
   let response = await fetchSanity(query, false, { processNeedAccess: false })
   if (!response) return null
-  let currentLevel = response
-  for (let i = 0; i < 4; i++) {
-    if (currentLevel['parents'].length > 0) {
-      currentLevel = currentLevel['parents'][0]
-    } else {
-      return currentLevel['railcontent_id']
-    }
+  let parents = response['parents']
+  let parentsLength = parents ? response['parents'].length : 0
+  if (parentsLength > 0) {
+    // return the last parent
+    return parents[parentsLength - 1]['railcontent_id']
   }
-  return null
+  return response['railcontent_id']
 }
 
 export async function fetchHierarchy(railcontentId) {
