@@ -37,6 +37,9 @@ const practicesTable = tableSchema({
     { name: 'auto', type: 'boolean', isIndexed: true },
     { name: 'duration_seconds', type: 'number' },
     { name: 'title', type: 'string', isOptional: true },
+    { name: 'thumbnail_url', type: 'string', isOptional: true },
+    { name: 'category_id', type: 'number', isOptional: true },
+    { name: 'instrument_id', type: 'number', isOptional: true },
     { name: 'created_at', type: 'number' },
     { name: 'updated_at', type: 'number' }
   ]
