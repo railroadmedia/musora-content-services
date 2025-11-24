@@ -106,7 +106,7 @@ export async function getEnrichedLearningPath(learningPathId) {
     learningPathId,
     'learning-path-v2',
     {
-      collection: { id: learningPathId, type: 'learning-path' },
+      collection: { id: learningPathId, type: 'learning-path-v2' },
       dataField: 'children',
       dataField_includeParent: true,
       addProgressStatus: true,

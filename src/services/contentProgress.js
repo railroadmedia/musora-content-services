@@ -410,7 +410,7 @@ function setStartedOrCompletedStatusInLocalContext(
 
   if (!hierarchy) return
 
-  if (collection && collection.type === 'learning-path') {
+  if (collection && collection.type === 'learning-path-v2') {
     bubbleOrTrickleLearningPathProgress(hierarchy, contentId, localContext, isCompleted, collection)
     return
   }
@@ -453,7 +453,7 @@ function resetStatusInLocalContext(localContext, contentId, hierarchy, collectio
   let allChildIds
   let learningPathId = null
   let childrenIds = []
-  if (collection && collection.type === 'learning-path') {
+  if (collection && collection.type === 'learning-path-v2') {
     [learningPathId, childrenIds] = findLearningPathAndChildren(hierarchy, contentId)
     allChildIds = (learningPathId === contentId) ? childrenIds : []
   } else {
@@ -471,7 +471,7 @@ function resetStatusInLocalContext(localContext, contentId, hierarchy, collectio
       delete localContext.data[key]
     }
   })
-  if (collection && collection.type === 'learning-path') { // manual bubbling for LP
+  if (collection && collection.type === 'learning-path-v2') { // manual bubbling for LP
     if (learningPathId !== contentId) {
       bubbleLearningPathProgress(hierarchy, contentId, localContext, collection)
     }
@@ -492,7 +492,7 @@ function resetStatusInLocalContext(localContext, contentId, hierarchy, collectio
  * @param {string} sessionId - This function records a sessionId to pass into future updates to progress on the same video
  * @param {int} instrumentId - enum value of instrument id
  * @param {int} categoryId - enum value of category id
- * @param {object|null} collection - optional collection info { type: 'learning-path', id: 123 }
+ * @param {object|null} collection - optional collection info { type: 'learning-path-v2', id: 123 }
  */
 // NOTE: have not set up collection because its not super important for testing and this will change soon with watermelon
 export async function recordWatchSession(
@@ -507,7 +507,7 @@ export async function recordWatchSession(
   categoryId = null,
   collection = null
 ) {
-  if (collection && collection.type === 'learning-path') {
+  if (collection && collection.type === 'learning-path-v2') {
     console.log('Learning Path lesson watch sessions are not set up yet without watermelon')
     return sessionId
   }
@@ -640,7 +640,7 @@ function extractContentIdFromRecordKey(key) {
 }
 
 async function getContentHierarchy(contentId, collection = null) {
-  if (collection && collection.type === 'learning-path') {
+  if (collection && collection.type === 'learning-path-v2') {
     return fetchMethodV2StructureFromId(contentId)
   }
   return await fetchHierarchy(contentId)
