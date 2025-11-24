@@ -1,16 +1,17 @@
 /**
  * @module Artist
  */
-import { DEFAULT_FIELDS, filtersToGroq } from '../../contentTypeConfig.js'
+import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
 import { FilterBuilder } from '../../filterBuilder.js'
-import { fetchSanity, getSanityDate, getSortOrder } from '../sanity.js'
+import { buildDataAndTotalQuery } from '../../lib/sanity/query'
+import { fetchSanity, getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
 
 export interface Artist {
   slug: string
   name: string
   lessons?: Lesson[]
-  lessonsCount: number
+  lessonCount: number
 }
 
 /**
@@ -33,8 +34,8 @@ export async function fetchArtists(brand: string): Promise<Artist[] | null> {
   *[_type == "artist"]{
     name,
     "slug": slug.current,
-    "lessonsCount": count(*[${filter}])
-  }[lessonsCount > 0] |order(lower(name)) `
+    "lessonCount": count(*[${filter}])
+  }[lessonCount > 0] |order(lower(name)) `
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
@@ -59,8 +60,8 @@ export async function fetchArtistBySlug(slug: string, brand?: string): Promise<A
   *[_type == "artist" && slug.current == '${slug}']{
     name,
     "slug": slug.current,
-    "lessonsCount": count(*[${filter}])
-  }[lessonsCount > 0] |order(lower(name)) `
+    "lessonCount": count(*[${filter}])
+  }[lessonCount > 0] |order(lower(name)) `
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
@@ -75,6 +76,7 @@ export interface ArtistLessonOptions {
 
 export interface LessonsByArtistResponse {
   data: Artist[]
+  total: number
 }
 
 /**
@@ -109,31 +111,22 @@ export async function fetchArtistLessons(
     progressIds = undefined,
   }: ArtistLessonOptions = {}
 ): Promise<LessonsByArtistResponse | null> {
-  const fieldsString = DEFAULT_FIELDS.join(',')
+  const fieldsString = getFieldsForContentType() as string
   const start = (page - 1) * limit
   const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
-  const sortOrder = getSortOrder(sort, brand)
-  const addType =
-    contentType && Array.isArray(contentType)
-      ? `_type in ['${contentType.join("', '")}'] &&`
-      : contentType
-        ? `_type == '${contentType}' && `
-        : ''
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
-
-  // limits the results to supplied progressIds for started & completed filters
+  const addType = contentType ? `_type == '${contentType}' && ` : ''
   const progressFilter =
     progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
-  const now = getSanityDate(new Date())
-  const query = `{
-    "data":
-      *[_type == 'artist' && slug.current == '${slug}']
-        {'type': _type, name, 'thumbnail':thumbnail_url.asset->url,
-        'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]),
-        'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
-      [${start}...${end}]}
-      |order(${sortOrder})
-  }`
+  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='artist' && slug.current == '${slug}']._id) ${progressFilter}`
+  const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
+
+  sort = getSortOrder(sort, brand)
+  const query = buildDataAndTotalQuery(filterWithRestrictions, fieldsString, {
+    sort,
+    start: start,
+    end: end,
+  })
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
