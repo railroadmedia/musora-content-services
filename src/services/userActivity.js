@@ -274,41 +274,40 @@ export async function getUserMonthlyStats(params = {}) {
 }
 
 /**
- * Records user practice data and updates both the remote and local activity context.
+ * Records a manual user practice data, updating the local database and syncing with remote.
  *
  * @param {Object} practiceDetails - The details of the practice session.
  * @param {number} practiceDetails.duration_seconds - The duration of the practice session in seconds.
- * @param {boolean} [practiceDetails.auto=true] - Whether the session was automatically logged.
- * @param {number} [practiceDetails.content_id] - The ID of the practiced content (if available).
- * @param {number} [practiceDetails.category_id] - The ID of the associated category (if available).
  * @param {string} [practiceDetails.title] - The title of the practice session (max 64 characters).
+ * @param {number} [practiceDetails.category_id] - The ID of the associated category (if available).
  * @param {string} [practiceDetails.thumbnail_url] - The URL of the session's thumbnail (max 255 characters).
+ * @param {number} [practiceDetails.instrument_id] - The ID of the associated instrument (if available).
  * @returns {Promise<Object>} - A promise that resolves to the response from logging the user practice.
  *
  * @example
- * // Record an auto practice session with content ID
- * recordUserPractice({ content_id: 123, duration_seconds: 300 })
+ * // Record a manual practice session with a title
+ * recordUserPractice({ title: "Some title", duration_seconds: 300 })
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  *
- * @example
- * // Record a custom practice session with additional details
- * recordUserPractice({
- *   duration_seconds: 600,
- *   auto: false,
- *   category_id: 5,
- *   title: "Guitar Warm-up",
- *   thumbnail_url: "https://example.com/thumbnail.jpg",
- *   instrument_id: 1,
- *   instrument_id: 2,
- * })
- *   .then(response => console.log(response))
- *   .catch(error => console.error(error));
  */
 export async function recordUserPractice(practiceDetails) {
-  practiceDetails.auto = practiceDetails.content_id ? 1 : 0
-  return await db.contentPractice.recordPractice(practiceDetails)
+  const day = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD wall clock date in user's timezone
+  const durationSeconds = practiceDetails.duration_seconds
+
+  return await db.contentPractice.recordManualPractice(day, durationSeconds, {
+    title: practiceDetails.title ?? null,
+    category_id: practiceDetails.category_id ?? null,
+    thumbnail_url: practiceDetails.thumbnail_url ?? null,
+    instrument_id: practiceDetails.instrument_id ?? null,
+  })
 }
+
+export async function trackUserPractice(contentId, incSeconds) {
+  const day = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD wall clock date in user's timezone
+  return await db.contentPractice.trackAutoPractice(contentId, day, incSeconds);
+}
+
 /**
  * Updates a user's practice session with new details and syncs the changes remotely.
  *
@@ -318,6 +317,7 @@ export async function recordUserPractice(practiceDetails) {
  * @param {number} [practiceDetails.category_id] - The ID of the associated category (if available).
  * @param {string} [practiceDetails.title] - The title of the practice session (max 64 characters).
  * @param {string} [practiceDetails.thumbnail_url] - The URL of the session's thumbnail (max 255 characters).
+ * @param {number} [practiceDetails.instrument_id] - The ID of the associated instrument (if available).
  * @returns {Promise<Object>} - A promise that resolves to the response from updating the user practice.
  *
  * @example
@@ -326,11 +326,6 @@ export async function recordUserPractice(practiceDetails) {
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  *
- * @example
- * // Change a practice session to manual and update its category
- * updateUserPractice(456, { auto: false, category_id: 8 })
- *   .then(response => console.log(response))
- *   .catch(error => console.error(error));
  */
 export async function updateUserPractice(id, practiceDetails) {
   return await db.contentPractice.updateDetails(id, practiceDetails)
