@@ -101,7 +101,6 @@ export async function resetAllLearningPaths() {
  * @returns {Promise<Object>} Learning path with enriched lesson data
  */
 export async function getEnrichedLearningPath(learningPathId) {
-  // TODO: replace addNextLesson with addNaviageTo
   const response = (await addContextToContent(
     fetchByRailContentId,
     learningPathId,
@@ -113,7 +112,7 @@ export async function getEnrichedLearningPath(learningPathId) {
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
-      addNextLesson: true,
+      addNaviageTo: true,
     }
   )) as any
   if (!response) return response
