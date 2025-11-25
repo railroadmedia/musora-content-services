@@ -112,11 +112,11 @@ export async function getEnrichedLearningPath(learningPathId) {
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
-      addNaviageTo: true,
+      addNavigateTo: true,
     }
   )) as any
   if (!response) return response
-  
+
   response.children = mapContentToParent(
     response.children,
     'learning-path-lesson-v2',
@@ -222,7 +222,7 @@ export async function fetchLearningPathLessons(
     nextLPLessons = await getLearningPathLessonsByIds(nextContentIds, nextLearningPathId)
   }
 
-  
+
 
   return {
     ...learningPath,
