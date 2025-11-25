@@ -478,7 +478,6 @@ export async function fetchByRailContentIds(
     live_event_end_time,
   }`
 
-  console.log('ids query', query)
   const customPostProcess = (results) => {
     const now = getSanityDate(new Date(), false)
     const liveProcess = (result) => {
@@ -1481,35 +1480,34 @@ export async function fetchByReference(
   return fetchSanity(query, true)
 }
 
+/**
+ *
+ * Return the top level parent content railcontent_id.
+ * Ignores learning-path-v2 parents.
+ * ex: if railcontentId is of type 'skill-pack-lesson', return the corresponding 'skill-pack' railcontent_id
+ *
+ * @param {int} railcontentId
+ * @returns {Promise<int|null>}
+ */
 export async function fetchTopLevelParentId(railcontentId) {
+  const parentFilter = "railcontent_id in [...(^.parent_content_data[].id)]"
   const statusFilter = "&& status in ['scheduled', 'published', 'archived', 'unlisted']"
 
   const query = `*[railcontent_id == ${railcontentId}]{
       railcontent_id,
-      'parents': *[^._id in child[]._ref ${statusFilter}]{
-        railcontent_id,
-          'parents': *[^._id in child[]._ref ${statusFilter}]{
-            railcontent_id,
-            'parents': *[^._id in child[]._ref ${statusFilter}]{
-              railcontent_id,
-               'parents': *[^._id in child[]._ref ${statusFilter}]{
-                  railcontent_id,
-            }
-          }
-        }
+      'parents': *[${parentFilter} ${statusFilter}]{
+        railcontent_id
       }
     }`
   let response = await fetchSanity(query, false, { processNeedAccess: false })
   if (!response) return null
-  let currentLevel = response
-  for (let i = 0; i < 4; i++) {
-    if (currentLevel['parents'].length > 0) {
-      currentLevel = currentLevel['parents'][0]
-    } else {
-      return currentLevel['railcontent_id']
-    }
+  let parents = response['parents']
+  let parentsLength = parents ? response['parents'].length : 0
+  if (parentsLength > 0) {
+    // return the last parent
+    return parents[parentsLength - 1]['railcontent_id']
   }
-  return null
+  return response['railcontent_id']
 }
 
 export async function fetchHierarchy(railcontentId) {
@@ -2165,12 +2163,29 @@ export async function fetchMethodV2Structure(brand) {
   const _type = 'method-v2'
   const query = `*[_type == '${_type}' && brand == '${brand}'][0...1]{
     'sanity_id': _id,
-    'learningPaths': child[]->{
+    'learning_paths': child[]->{
       'id': railcontent_id,
       'children': child[]->railcontent_id
     }
   }`
   return await fetchSanity(query, false)
+}
+
+/**
+ * Fetch the structure (just ids) of the Method of a given learning path or learning path lesson.
+ * @param contentId
+ * @returns {Promise<*|null>}
+ */
+export async function fetchMethodV2StructureFromId(contentId) {
+  const _type = "method-v2";
+  const query = `*[_type == '${_type}' && brand == *[railcontent_id == ${contentId}][0].brand][0...1]{
+    'sanity_id': _id,
+    'learning_paths': child[]->{
+      'id': railcontent_id,
+      'children': child[]->railcontent_id
+    }
+  }`
+  return await fetchSanity(query, false);
 }
 
 /**
