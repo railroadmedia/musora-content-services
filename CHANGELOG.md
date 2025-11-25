@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.86.1](https://github.com/railroadmedia/musora-content-services/compare/v2.86.0...v2.86.1) (2025-11-25)
+
+
+### Bug Fixes
+
+* **AGI:** update agi function queries ([97e197d](https://github.com/railroadmedia/musora-content-services/commit/97e197d405b8a79dc93f6287700083f0657c3979))
+
 ## [2.86.0](https://github.com/railroadmedia/musora-content-services/compare/v2.85.1...v2.86.0) (2025-11-25)
 
 

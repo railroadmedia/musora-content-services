@@ -13,6 +13,12 @@ export interface ArtistObject {
   thumbnail: string | null
 }
 
+export interface Genre {
+  name: string
+  slug: string
+  thumbnail: string | null
+}
+
 export interface Lesson {
   artist: ArtistObject | string | null
   artist_name: string
@@ -20,7 +26,7 @@ export interface Lesson {
   child_count: number | null
   difficulty: number | null
   difficulty_string: string | null
-  genre: string[] | string | null
+  genre: Genre | string | null
   id: number
   image: string
   length_in_seconds: number
