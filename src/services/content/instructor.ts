@@ -6,6 +6,7 @@ import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.
 import { fetchSanity, getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
 import { buildDataAndTotalQuery } from '../../lib/sanity/query'
+import { Brand } from '../../lib/brands'
 
 export interface Instructor {
   lessonCount: number
@@ -35,6 +36,7 @@ export async function fetchInstructors(brand: string): Promise<Instructor[]> {
   *[_type == "instructor"] {
     name,
     "slug": slug.current,
+    'thumbnail': thumbnail_url.asset->url,
     "lessonCount": count(*[${filter}])
   }[lessonCount > 0] |order(lower(name)) `
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
@@ -105,7 +107,7 @@ export interface InstructorLessonsResponse {
  */
 export async function fetchInstructorLessons(
   slug: string,
-  brand: string,
+  brand: Brand,
   {
     sortOrder = '-published_on',
     searchTerm = '',

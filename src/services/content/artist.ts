@@ -34,6 +34,7 @@ export async function fetchArtists(brand: string): Promise<Artist[] | null> {
   *[_type == "artist"]{
     name,
     "slug": slug.current,
+    'thumbnail': thumbnail_url.asset->url,
     "lessonCount": count(*[${filter}])
   }[lessonCount > 0] |order(lower(name)) `
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
