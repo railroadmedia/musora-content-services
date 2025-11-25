@@ -1,18 +1,18 @@
 /**
  * @module Genre
  */
-import { DEFAULT_FIELDS, filtersToGroq } from '../../contentTypeConfig.js'
-import { fetchSanity, getSanityDate, getSortOrder } from '../sanity.js'
+import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
+import { fetchSanity, getSortOrder } from '../sanity.js'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { Lesson } from './content'
+import { buildDataAndTotalQuery } from '../../lib/sanity/query'
+import { Brand } from '../../lib/brands'
 
 export interface Genre {
-  lessons?: Lesson[]
-  lessons_count: number
   name: string
   slug: string
+  lessons_count: number
   thumbnail: string
-  type: 'genre'
 }
 
 /**
@@ -26,7 +26,7 @@ export interface Genre {
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenres(brand: string): Promise<Genre[]> {
+export async function fetchGenres(brand: Brand): Promise<Genre[]> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
@@ -46,7 +46,7 @@ export async function fetchGenres(brand: string): Promise<Genre[]> {
  * Fetch a single genre by their slug and brand
  *
  * @param {string} slug - The slug of the genre to fetch.
- * @param {string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
+ * @param {Brand} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
  * @returns {Promise<Genre[]|null>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
@@ -54,7 +54,7 @@ export async function fetchGenres(brand: string): Promise<Genre[]> {
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenreBySlug(slug: string, brand?: string): Promise<Genre | null> {
+export async function fetchGenreBySlug(slug: string, brand?: Brand): Promise<Genre | null> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
     bypassPermissions: true,
@@ -81,13 +81,14 @@ export interface FetchGenreLessonsOptions {
 }
 
 export interface LessonsByGenreResponse {
-  data: Genre[]
+  data: Lesson[]
+  total: number
 }
 
 /**
  * Fetch the genre's lessons.
  * @param {string} slug - The slug of the genre
- * @param {string} brand - The brand for which to fetch lessons.
+ * @param {Brand} brand - The brand for which to fetch lessons.
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
  * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
@@ -95,7 +96,7 @@ export interface LessonsByGenreResponse {
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  * @param {Array<number>} [params.progressIds=[]] - The ids of the lessons that are in progress or completed
- * @returns {Promise<LessonsByGenreResponse|null>} - The lessons for the artist and some details about the artist (name and thumbnail).
+ * @returns {Promise<LessonsByGenreResponse|null>} - The lessons for the genre
  *
  * @example
  * fetchGenreLessons('Blues', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
@@ -104,8 +105,8 @@ export interface LessonsByGenreResponse {
  */
 export async function fetchGenreLessons(
   slug: string,
-  brand: string,
-  contentType: string,
+  brand: Brand,
+  contentType?: string,
   {
     sort = '-published_on',
     searchTerm = '',
@@ -115,28 +116,22 @@ export async function fetchGenreLessons(
     progressIds = [],
   }: FetchGenreLessonsOptions = {}
 ): Promise<LessonsByGenreResponse | null> {
-  const fieldsString = DEFAULT_FIELDS.join(',')
+  const fieldsString = getFieldsForContentType(contentType) as string
   const start = (page - 1) * limit
   const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
-  const sortOrder = getSortOrder(sort, brand)
-  const addType = contentType ? `_type == '${contentType}' && ` : ''
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
-  // limits the results to supplied progressIds for started & completed filters
+  const addType = contentType ? `_type == '${contentType}' && ` : ''
   const progressFilter =
-    progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
-  const now = getSanityDate(new Date())
-  const query = `{
-    "data":
-      *[_type == 'genre' && slug.current == '${slug}']
-        {
-          'type': _type,
-          name,
-          'thumbnail': thumbnail_url.asset->url,
-          'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]),
-          'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}} [${start}...${end}]
-        }
-      |order(${sortOrder})
-  }`
-  return fetchSanity(query, true)
+    progressIds.length > 0 ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
+  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='genre' && slug.current == '${slug}']._id) ${progressFilter}`
+  const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
+
+  sort = getSortOrder(sort, brand)
+  const query = buildDataAndTotalQuery(filterWithRestrictions, fieldsString, {
+    sort: sort,
+    start: start,
+    end: end,
+  })
+  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
