@@ -3,7 +3,8 @@ import { appSchema, tableSchema } from '@nozbe/watermelondb'
 export const SYNC_TABLES = {
   CONTENT_LIKES: 'content_likes',
   CONTENT_PROGRESS: 'progress',
-  PRACTICES: 'practice',
+  PRACTICES: 'practices',
+  PRACTICE_DAY_NOTES: 'practice_day_notes',
   USER_AWARD_PROGRESS: 'user_award_progress'
 }
 
@@ -34,7 +35,7 @@ const practicesTable = tableSchema({
   columns: [
     { name: 'manual_id', type: 'string', isOptional: true },
     { name: 'content_id', type: 'number', isOptional: true, isIndexed: true },
-    { name: 'day', type: 'string', isIndexed: true },
+    { name: 'date', type: 'string', isIndexed: true },
     { name: 'auto', type: 'boolean', isIndexed: true },
     { name: 'duration_seconds', type: 'number' },
     { name: 'title', type: 'string', isOptional: true },
@@ -42,7 +43,16 @@ const practicesTable = tableSchema({
     { name: 'category_id', type: 'number', isOptional: true },
     { name: 'instrument_id', type: 'number', isOptional: true },
     { name: 'created_at', type: 'number' },
-    { name: 'updated_at', type: 'number' }
+    { name: 'updated_at', type: 'number', isIndexed: true }
+  ]
+})
+const practiceDayNotesTable = tableSchema({
+  name: SYNC_TABLES.PRACTICE_DAY_NOTES,
+  columns: [
+    { name: 'date', type: 'string', isIndexed: true },
+    { name: 'notes', type: 'string' },
+    { name: 'created_at', type: 'number' },
+    { name: 'updated_at', type: 'number', isIndexed: true }
   ]
 })
 
@@ -65,6 +75,7 @@ export default appSchema({
     contentLikesTable,
     contentProgressTable,
     practicesTable,
+    practiceDayNotesTable,
     userAwardProgressTable
   ]
 })

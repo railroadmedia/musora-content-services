@@ -116,8 +116,8 @@ export async function getUserWeeklyStats() {
   const weekDays = Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, 'day').format('YYYY-MM-DD'))
 
   const practices = await getOwnPractices(
-    Q.where('day', Q.oneOf(weekDays)),
-    Q.sortBy('day', 'desc')
+    Q.where('date', Q.oneOf(weekDays)),
+    Q.sortBy('date', 'desc')
   )
   const practiceDaysSet = new Set(Object.keys(practices))
   let dailyStats = []
@@ -311,7 +311,7 @@ export async function trackUserPractice(contentId, incSeconds) {
 /**
  * Updates a user's practice session with new details and syncs the changes remotely.
  *
- * @param {number} id - The unique identifier of the practice session to update.
+ * @param {string} id - The unique identifier of the practice session to update.
  * @param {Object} practiceDetails - The updated details of the practice session.
  * @param {number} [practiceDetails.duration_seconds] - The duration of the practice session in seconds.
  * @param {number} [practiceDetails.category_id] - The ID of the associated category (if available).
@@ -408,7 +408,7 @@ export async function restoreUserPractice(id) {
  *   .catch(error => console.error("Delete failed:", error));
  */
 export async function deletePracticeSession(day) {
-  const ids = await db.practices.queryAllIds(Q.where('day', day))
+  const ids = await db.practices.queryAllIds(Q.where('date', day))
   return await db.practices.deleteSome(ids.data)
 }
 
@@ -485,7 +485,7 @@ export async function getPracticeSessions(params = {}) {
 
   if (userId === globalConfig.sessionConfig.userId) {
     const query = await db.practices.queryAll(
-      Q.where('day', day),
+      Q.where('date', day),
       Q.sortBy('created_at', 'asc')
     )
     data = query.data
@@ -518,9 +518,8 @@ export async function getPracticeSessions(params = {}) {
  *   .then(({ data }) => console.log("Practice notes:", data))
  *   .catch(error => console.error("Failed to get notes:", error));
  */
-export async function getPracticeNotes(day) {
-  const notes = await fetchUserPracticeNotes(day)
-  return { data: notes }
+export async function getPracticeNotes(date) {
+  return await db.practiceDayNotes.queryOne(Q.where('date', date))
 }
 
 /**
@@ -569,8 +568,10 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
  *   .catch(error => console.error(error));
  */
 export async function createPracticeNotes(payload) {
-  const url = `/api/user/practices/v1/notes`
-  return await fetchHandler(url, 'POST', null, payload)
+  return await db.practiceDayNotes.upsertOne(payload.date, r => {
+    r.date = payload.date
+    r.notes = payload.notes
+  })
 }
 
 /**
@@ -587,8 +588,9 @@ export async function createPracticeNotes(payload) {
  *   .catch(error => console.error(error));
  */
 export async function updatePracticeNotes(payload) {
-  const url = `/api/user/practices/v1/notes`
-  return await fetchHandler(url, 'PUT', null, payload)
+  return await db.practiceDayNotes.updateOneId(payload.date, r => {
+    r.notes = payload.notes
+  })
 }
 
 function getStreaksAndMessage(practices) {
