@@ -82,7 +82,7 @@ export interface FetchGenreLessonsOptions {
 }
 
 export interface LessonsByGenreResponse {
-  data: Genre[]
+  data: Lesson[]
   total: number
 }
 
@@ -97,7 +97,7 @@ export interface LessonsByGenreResponse {
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  * @param {Array<number>} [params.progressIds=[]] - The ids of the lessons that are in progress or completed
- * @returns {Promise<LessonsByGenreResponse|null>} - The lessons for the artist and some details about the artist (name and thumbnail).
+ * @returns {Promise<LessonsByGenreResponse|null>} - The lessons for the genre
  *
  * @example
  * fetchGenreLessons('Blues', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
@@ -117,7 +117,7 @@ export async function fetchGenreLessons(
     progressIds = [],
   }: FetchGenreLessonsOptions = {}
 ): Promise<LessonsByGenreResponse | null> {
-  const fieldsString = getFieldsForContentType() as string
+  const fieldsString = getFieldsForContentType(contentType) as string
   const start = (page - 1) * limit
   const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
