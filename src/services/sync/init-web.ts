@@ -10,7 +10,7 @@ import {
   NullTabsProvider,
   BaseDurabilityProvider
 } from './context/providers'
-import { ContentProgress, ContentLike, ContentPractice, UserAwardProgress } from './models'
+import { ContentProgress, ContentLike, Practice, UserAwardProgress } from './models'
 import { InitialStrategy, PollingStrategy } from './strategies'
 
 class WebSessionProvider extends BaseSessionProvider {
@@ -103,14 +103,14 @@ export function initializeSyncForWeb(namespace: string = 'musora'): () => Promis
     const adapter = createAdapter()
     return new Database({
       adapter,
-      modelClasses: [ContentProgress, ContentLike, ContentPractice, UserAwardProgress]
+      modelClasses: [ContentProgress, ContentLike, Practice, UserAwardProgress]
     })
   }
 
   const manager = new SyncManager(context, initDatabase)
 
   manager.syncStoresWithStrategies(
-    manager.storesForModels([ContentProgress, ContentLike, ContentPractice, UserAwardProgress]),
+    manager.storesForModels([ContentProgress, ContentLike, Practice, UserAwardProgress]),
     [
       manager.createStrategy(InitialStrategy),
       manager.createStrategy(PollingStrategy, 5 * 60 * 1000)

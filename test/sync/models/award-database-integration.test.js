@@ -3,7 +3,7 @@ import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 import { Q } from '@nozbe/watermelondb'
 import schema, { SYNC_TABLES } from '../../../src/services/sync/schema'
 import ContentProgress from '../../../src/services/sync/models/ContentProgress'
-import ContentPractice from '../../../src/services/sync/models/Practice'
+import Practice from '../../../src/services/sync/models/Practice'
 import ContentLike from '../../../src/services/sync/models/ContentLike'
 import UserAwardProgress from '../../../src/services/sync/models/UserAwardProgress'
 
@@ -26,7 +26,7 @@ describe('Award System - Direct Database Integration', () => {
 
     database = new Database({
       adapter,
-      modelClasses: [ContentProgress, ContentPractice, ContentLike, UserAwardProgress]
+      modelClasses: [ContentProgress, Practice, ContentLike, UserAwardProgress]
     })
 
     progressCollection = database.collections.get(SYNC_TABLES.CONTENT_PROGRESS)

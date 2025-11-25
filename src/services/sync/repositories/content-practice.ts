@@ -1,8 +1,8 @@
 import { Q } from '@nozbe/watermelondb'
-import ContentPractice from '../models/ContentPractice'
+import Practice from '../models/Practice'
 import SyncRepository from './base'
 
-export default class ContentPracticeRepository extends SyncRepository<ContentPractice> {
+export default class ContentPracticeRepository extends SyncRepository<Practice> {
 
   /**
    * Get total practice minutes for given content IDs
