@@ -9,12 +9,10 @@ import { buildDataAndTotalQuery } from '../../lib/sanity/query'
 import { Brand } from '../../lib/brands'
 
 export interface Genre {
-  lessons?: Lesson[]
-  lessons_count: number
   name: string
   slug: string
+  lessons_count: number
   thumbnail: string
-  type: 'genre'
 }
 
 /**

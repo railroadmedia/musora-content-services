@@ -11,7 +11,7 @@ import { Brand } from '../../lib/brands'
 export interface Artist {
   slug: string
   name: string
-  lessons?: Lesson[]
+  thumbnail: string
   lessonCount: number
 }
 
