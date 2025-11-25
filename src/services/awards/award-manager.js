@@ -3,6 +3,7 @@ import { awardEvents } from './award-events'
 import { generateCompletionData } from './completion-data-generator'
 import { AwardMessageGenerator } from './message-generator'
 import db from '../sync/repository-proxy'
+import { Q } from '@nozbe/watermelondb'
 
 export class AwardManager {
   /** @returns {Promise<void>} */
@@ -58,7 +59,7 @@ export class AwardManager {
       const completionChecks = await Promise.all(
         childIds.map(async (id) => {
           const progress = await db.contentProgress.queryOne(
-            Q => Q.where('content_id', id)
+            Q.where('content_id', id)
           )
           return progress.data?.state === 'completed'
         })
@@ -85,6 +86,33 @@ export class AwardManager {
       courseContentId
     )
 
+    let childIds = definition.child_ids || []
+    if (definition.has_kickoff && childIds.length > 0) {
+      childIds = childIds.slice(1)
+    }
+
+    const completionChecks = await Promise.all(
+      childIds.map(async (id) => {
+        const progress = await db.contentProgress.queryOne(
+          Q.where('content_id', id)
+        )
+        return {
+          id,
+          completed: progress.data?.state === 'completed'
+        }
+      })
+    )
+
+    const completedLessonIds = completionChecks
+      .filter(check => check.completed)
+      .map(check => check.id)
+
+    const progressData = {
+      completedLessonIds,
+      totalLessons: childIds.length,
+      completedCount: completedLessonIds.length
+    }
+
     const awardType = this.determineAwardType(definition)
 
     const popupMessage = AwardMessageGenerator.generatePopupMessage(
@@ -92,7 +120,12 @@ export class AwardManager {
       completionData
     )
 
-    await db.userAwardProgress.completeAward(awardId, completionData)
+    await db.userAwardProgress.recordAwardProgress(awardId, 100, {
+      completedAt: Math.floor(Date.now() / 1000),
+      completionData,
+      progressData,
+      immediate: true
+    })
 
     awardEvents.emitAwardGranted({
       awardId,
@@ -120,16 +153,31 @@ export class AwardManager {
       const completionChecks = await Promise.all(
         childIds.map(async (id) => {
           const progress = await db.contentProgress.queryOne(
-            Q => Q.where('content_id', id)
+            Q.where('content_id', id)
           )
-          return progress.data?.state === 'completed'
+          return {
+            id,
+            completed: progress.data?.state === 'completed'
+          }
         })
       )
 
-      const completedCount = completionChecks.filter(Boolean).length
+      const completedLessonIds = completionChecks
+        .filter(check => check.completed)
+        .map(check => check.id)
+
+      const completedCount = completedLessonIds.length
       const progressPercentage = Math.round((completedCount / childIds.length) * 100)
 
-      await db.userAwardProgress.recordAwardProgress(awardId, progressPercentage)
+      const progressData = {
+        completedLessonIds,
+        totalLessons: childIds.length,
+        completedCount
+      }
+
+      await db.userAwardProgress.recordAwardProgress(awardId, progressPercentage, {
+        progressData
+      })
 
       awardEvents.emitAwardProgress({
         awardId,

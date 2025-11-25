@@ -4,7 +4,6 @@
 
 import {
   fetchUserPractices,
-  logUserPractice,
   fetchUserPracticeMeta,
   fetchUserPracticeNotes,
   fetchHandler,
@@ -38,13 +37,11 @@ import {
 import { getAllStartedOrCompleted, getProgressStateByIds } from './contentProgress'
 import { TabResponseType } from '../contentMetaData'
 import dayjs from 'dayjs'
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
-import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { addContextToContent } from './contentAggregator.js'
 import { getMethodCard } from './progress-row/method-card.js'
+import { db, Q } from './sync'
 
 const DATA_KEY_PRACTICES = 'practices'
-const DATA_KEY_LAST_UPDATED_TIME = 'u'
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
@@ -77,17 +74,29 @@ function getIndefiniteArticle(streak) {
     : 'a'
 }
 
-export async function getUserPractices(userId = globalConfig.sessionConfig.userId) {
-  if (userId !== globalConfig.sessionConfig.userId) {
-    let data = await fetchUserPractices(0, { userId: userId })
-    return data?.['data']?.[DATA_KEY_PRACTICES] ?? {}
+async function getUserPractices(userId) {
+  if (userId === globalConfig.sessionConfig.userId) {
+    return getOwnPractices()
   } else {
-    let data = await userActivityContext.getData()
-    return data?.[DATA_KEY_PRACTICES] ?? {}
+    return await fetchUserPractices(userId)
   }
 }
 
-export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUserPractices)
+async function getOwnPractices(...clauses) {
+  const query = await db.practices.queryAll(...clauses)
+  const data = query.data.reduce((acc, practice) => {
+    acc[practice.day] = acc[practice.day] || []
+    acc[practice.day].push({
+      id: practice.id,
+      duration_seconds: practice.duration_seconds,
+    })
+    return acc
+  }, {})
+
+  return data
+}
+
+export let userActivityContext = new DataContext(UserActivityVersionKey, function() {})
 
 /**
  * Retrieves user activity statistics for the current week, including daily activity and streak messages.
@@ -102,20 +111,21 @@ export let userActivityContext = new DataContext(UserActivityVersionKey, fetchUs
  */
 export async function getUserWeeklyStats() {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  let data = await userActivityContext.getData()
-  let practices = data?.[DATA_KEY_PRACTICES] ?? {}
-  let sortedPracticeDays = Object.keys(practices)
-    .map((date) => toDayjs(date)) // Convert to dayjs instance
-    .sort((a, b) => b.valueOf() - a.valueOf())
-  let today = dayjs()
-  let startOfWeek = getMonday(today, timeZone) // Get last Monday
+  const today = dayjs()
+  const startOfWeek = getMonday(today, timeZone)
+  const weekDays = Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, 'day').format('YYYY-MM-DD'))
+
+  const practices = await getOwnPractices(
+    Q.where('day', Q.oneOf(weekDays)),
+    Q.sortBy('day', 'desc')
+  )
+  const practiceDaysSet = new Set(Object.keys(practices))
   let dailyStats = []
   for (let i = 0; i < 7; i++) {
     const day = startOfWeek.add(i, 'day')
-    let hasPractice = sortedPracticeDays.some((practiceDate) =>
-      isSameDate(practiceDate, day.format('YYYY-MM-DD'))
-    )
-    let isActive = isSameDate(today.format(), day.format())
+    const dayStr = day.format('YYYY-MM-DD')
+    let hasPractice = practiceDaysSet.has(dayStr)
+    let isActive = isSameDate(today.format(), dayStr)
     let type = hasPractice ? 'tracked' : isActive ? 'active' : 'none'
     dailyStats.push({
       key: i,
@@ -123,7 +133,7 @@ export async function getUserWeeklyStats() {
       isActive,
       inStreak: hasPractice,
       type,
-      day: day.format('YYYY-MM-DD'),
+      day: dayStr,
     })
   }
 
@@ -264,73 +274,40 @@ export async function getUserMonthlyStats(params = {}) {
 }
 
 /**
- * Records user practice data and updates both the remote and local activity context.
+ * Records a manual user practice data, updating the local database and syncing with remote.
  *
  * @param {Object} practiceDetails - The details of the practice session.
  * @param {number} practiceDetails.duration_seconds - The duration of the practice session in seconds.
- * @param {boolean} [practiceDetails.auto=true] - Whether the session was automatically logged.
- * @param {number} [practiceDetails.content_id] - The ID of the practiced content (if available).
- * @param {number} [practiceDetails.category_id] - The ID of the associated category (if available).
  * @param {string} [practiceDetails.title] - The title of the practice session (max 64 characters).
+ * @param {number} [practiceDetails.category_id] - The ID of the associated category (if available).
  * @param {string} [practiceDetails.thumbnail_url] - The URL of the session's thumbnail (max 255 characters).
+ * @param {number} [practiceDetails.instrument_id] - The ID of the associated instrument (if available).
  * @returns {Promise<Object>} - A promise that resolves to the response from logging the user practice.
  *
  * @example
- * // Record an auto practice session with content ID
- * recordUserPractice({ content_id: 123, duration_seconds: 300 })
+ * // Record a manual practice session with a title
+ * recordUserPractice({ title: "Some title", duration_seconds: 300 })
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  *
- * @example
- * // Record a custom practice session with additional details
- * recordUserPractice({
- *   duration_seconds: 600,
- *   auto: false,
- *   category_id: 5,
- *   title: "Guitar Warm-up",
- *   thumbnail_url: "https://example.com/thumbnail.jpg",
- *   instrument_id: 1,
- *   instrument_id: 2,
- * })
- *   .then(response => console.log(response))
- *   .catch(error => console.error(error));
  */
 export async function recordUserPractice(practiceDetails) {
-  practiceDetails.auto = 0
-  practiceDetails.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  if (practiceDetails.content_id) {
-    practiceDetails.auto = 1
-  }
+  const day = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD wall clock date in user's timezone
+  const durationSeconds = practiceDetails.duration_seconds
 
-  await userActivityContext.update(
-    async function (localContext) {
-      let userData = localContext.data ?? { [DATA_KEY_PRACTICES]: {} }
-      localContext.data = userData
-    },
-    async function () {
-      const response = await logUserPractice(practiceDetails)
-      if (response) {
-        await userActivityContext.updateLocal(async function (localContext) {
-          const newPractices = response.data ?? []
-          newPractices.forEach((newPractice) => {
-            const { date } = newPractice
-            if (!localContext.data[DATA_KEY_PRACTICES][date]) {
-              localContext.data[DATA_KEY_PRACTICES][date] = []
-            }
-            localContext.data[DATA_KEY_PRACTICES][date][DATA_KEY_LAST_UPDATED_TIME] = Math.round(
-              new Date().getTime() / 1000
-            )
-            localContext.data[DATA_KEY_PRACTICES][date].push({
-              id: newPractice.id,
-              duration_seconds: newPractice.duration_seconds, // Add the new practice for this date
-            })
-          })
-        })
-      }
-      return response
-    }
-  )
+  return await db.practices.recordManualPractice(day, durationSeconds, {
+    title: practiceDetails.title ?? null,
+    category_id: practiceDetails.category_id ?? null,
+    thumbnail_url: practiceDetails.thumbnail_url ?? null,
+    instrument_id: practiceDetails.instrument_id ?? null,
+  })
 }
+
+export async function trackUserPractice(contentId, incSeconds) {
+  const day = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD wall clock date in user's timezone
+  return await db.practices.trackAutoPractice(contentId, day, incSeconds);
+}
+
 /**
  * Updates a user's practice session with new details and syncs the changes remotely.
  *
@@ -340,6 +317,7 @@ export async function recordUserPractice(practiceDetails) {
  * @param {number} [practiceDetails.category_id] - The ID of the associated category (if available).
  * @param {string} [practiceDetails.title] - The title of the practice session (max 64 characters).
  * @param {string} [practiceDetails.thumbnail_url] - The URL of the session's thumbnail (max 255 characters).
+ * @param {number} [practiceDetails.instrument_id] - The ID of the associated instrument (if available).
  * @returns {Promise<Object>} - A promise that resolves to the response from updating the user practice.
  *
  * @example
@@ -348,15 +326,9 @@ export async function recordUserPractice(practiceDetails) {
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  *
- * @example
- * // Change a practice session to manual and update its category
- * updateUserPractice(456, { auto: false, category_id: 8 })
- *   .then(response => console.log(response))
- *   .catch(error => console.error(error));
  */
 export async function updateUserPractice(id, practiceDetails) {
-  const url = `/api/user/practices/v1/practices/${id}`
-  return await fetchHandler(url, 'PUT', null, practiceDetails)
+  return await db.practices.updateDetails(id, practiceDetails)
 }
 
 /**
@@ -372,26 +344,7 @@ export async function updateUserPractice(id, practiceDetails) {
  *   .catch(error => console.error(error));
  */
 export async function removeUserPractice(id) {
-  let url = `/api/user/practices/v1/practices${buildQueryString([id])}`
-  await userActivityContext.update(
-    async function (localContext) {
-      if (localContext.data?.[DATA_KEY_PRACTICES]) {
-        Object.keys(localContext.data[DATA_KEY_PRACTICES]).forEach((date) => {
-          const filtered = localContext.data[DATA_KEY_PRACTICES][date].filter(
-            (practice) => practice.id !== id
-          )
-          if (filtered.length > 0) {
-            localContext.data[DATA_KEY_PRACTICES][date] = filtered
-          } else {
-            delete localContext.data[DATA_KEY_PRACTICES][date]
-          }
-        })
-      }
-    },
-    async function () {
-      return await fetchHandler(url, 'delete')
-    }
-  )
+  return await db.practices.deleteOne(id)
 }
 
 /**
@@ -455,20 +408,8 @@ export async function restoreUserPractice(id) {
  *   .catch(error => console.error("Delete failed:", error));
  */
 export async function deletePracticeSession(day) {
-  const userPracticesIds = await getUserPracticeIds(day)
-  if (!userPracticesIds.length) return []
-
-  const url = `/api/user/practices/v1/practices${buildQueryString(userPracticesIds)}`
-  await userActivityContext.update(
-    async function (localContext) {
-      if (localContext.data?.[DATA_KEY_PRACTICES]?.[day]) {
-        delete localContext.data[DATA_KEY_PRACTICES][day]
-      }
-    },
-    async function () {
-      return await fetchHandler(url, 'DELETE', null)
-    }
-  )
+  const ids = await db.practices.queryAllIds(Q.where('day', day))
+  return await db.practices.deleteSome(ids.data)
 }
 
 /**
@@ -539,13 +480,23 @@ export async function restorePracticeSession(date) {
  */
 export async function getPracticeSessions(params = {}) {
   const { day, userId = globalConfig.sessionConfig.userId } = params
-  const userPracticesIds = await getUserPracticeIds(day, userId)
-  if (!userPracticesIds.length) return { data: { practices: [], practiceDuration: 0 } }
 
-  const meta = await fetchUserPracticeMeta(userPracticesIds, userId)
-  if (!meta.data.length) return { data: { practices: [], practiceDuration: 0 } }
+  let data
 
-  const formattedMeta = await formatPracticeMeta(meta.data)
+  if (userId === globalConfig.sessionConfig.userId) {
+    const query = await db.practices.queryAll(
+      Q.where('day', day),
+      Q.sortBy('created_at', 'asc')
+    )
+    data = query.data
+  } else {
+    const query = await fetchUserPracticeMeta(day, userId)
+    data = query.data
+  }
+
+  if (!data.length) return { data: { practices: [], practiceDuration: 0 } }
+
+  const formattedMeta = await formatPracticeMeta(data)
   const practiceDuration = formattedMeta.reduce(
     (total, practice) => total + (practice.duration || 0),
     0
@@ -648,24 +599,6 @@ function getStreaksAndMessage(practices) {
     currentWeeklyStreak,
     streakMessage,
   }
-}
-
-async function getUserPracticeIds(day = dayjs().format('YYYY-MM-DD'), userId = null) {
-  let practices = {}
-  if (userId !== globalConfig.sessionConfig.userId) {
-    let data = await fetchUserPractices(0, { userId: userId })
-    practices = data?.['data']?.[DATA_KEY_PRACTICES] ?? {}
-  } else {
-    let data = await userActivityContext.getData()
-    practices = data?.[DATA_KEY_PRACTICES] ?? {}
-  }
-  let userPracticesIds = []
-  Object.keys(practices).forEach((date) => {
-    if (date === day) {
-      practices[date].forEach((practice) => userPracticesIds.push(practice.id))
-    }
-  })
-  return userPracticesIds
 }
 
 function buildQueryString(ids, paramName = 'practice_ids') {

@@ -49,6 +49,11 @@ export async function generateCompletionData(awardId, courseContentId) {
 async function calculateDaysUserPracticed(contentIds, db) {
   if (contentIds.length === 0) return 0
 
+  if (!db.contentProgress || typeof db.contentProgress.queryAll !== 'function') {
+    console.warn('contentProgress repository not available, returning 1 day')
+    return 1
+  }
+
   // Get all progress records for these lessons
   const progressRecords = await db.contentProgress.queryAll(
     Q.where('content_id', Q.oneOf(contentIds)),

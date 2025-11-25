@@ -1,11 +1,21 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
+	registerAwardCallback,
+	registerProgressCallback,
+	unregisterAwardCallback,
+	unregisterProgressCallback
+} from './services/awards/award-callbacks.js';
+
+import {
 	initializeAwardDefinitions
 } from './services/awards/award-definitions.js';
 
 import {
+	checkForNewAwards,
+	fetchAwardsForUser,
 	getAllUserAwardProgress,
+	getAwardForContent,
 	getAwardProgress,
 	getAwardStatistics,
 	getAwardStatusForContent,
@@ -23,6 +33,11 @@ import {
 } from './services/awards/completion-data-generator.js';
 
 import {
+	urlMapToBase64,
+	urlToBase64
+} from './services/awards/image-utils.js';
+
+import {
 	globalConfig,
 	initializeService
 } from './services/config.js';
@@ -35,10 +50,12 @@ import {
 } from './services/content-org/guided-courses.ts';
 
 import {
+	completeLearningPathIntroVideo,
+	completeMethodIntroVideo,
 	fetchLearningPathLessons,
 	getActivePath,
 	getDailySession,
-	getLearningPath,
+	getEnrichedLearningPath,
 	getLearningPathLessonsByIds,
 	mapContentToParent,
 	resetAllLearningPaths,
@@ -160,9 +177,7 @@ import {
 } from './services/forums/threads.ts';
 
 import {
-	fetchAwardsForUser,
-	fetchCertificate,
-	getAwardDataForGuidedContent
+	fetchCertificate
 } from './services/gamification/awards.ts';
 
 import {
@@ -214,7 +229,6 @@ import {
 	fetchUserPracticeNotes,
 	fetchUserPractices,
 	likeComment,
-	logUserPractice,
 	openComment,
 	postPlaylistContentEngaged,
 	replyToComment,
@@ -387,7 +401,6 @@ import {
 	getProgressRows,
 	getRecentActivity,
 	getUserMonthlyStats,
-	getUserPractices,
 	getUserWeeklyStats,
 	pinProgressRow,
 	recordUserActivity,
@@ -417,7 +430,10 @@ declare module 'musora-content-services' {
 		buildCertificateData,
 		buildImageSRC,
 		calculateLongestStreaks,
+		checkForNewAwards,
 		closeComment,
+		completeLearningPathIntroVideo,
+		completeMethodIntroVideo,
 		confirmEmailChange,
 		contentStatusCompleted,
 		contentStatusReset,
@@ -551,16 +567,16 @@ declare module 'musora-content-services' {
 		getAllStarted,
 		getAllStartedOrCompleted,
 		getAllUserAwardProgress,
-		getAwardDataForGuidedContent,
+		getAwardForContent,
 		getAwardProgress,
 		getAwardStatistics,
 		getAwardStatusForContent,
 		getCompletedAwards,
 		getContentRows,
 		getDailySession,
+		getEnrichedLearningPath,
 		getInProgressAwards,
 		getLastInteractedOf,
-		getLearningPath,
 		getLearningPathLessonsByIds,
 		getLegacyMethods,
 		getLessonContentRows,
@@ -589,7 +605,6 @@ declare module 'musora-content-services' {
 		getToday,
 		getUserData,
 		getUserMonthlyStats,
-		getUserPractices,
 		getUserSignature,
 		getUserWeeklyStats,
 		getWeekNumber,
@@ -611,7 +626,6 @@ declare module 'musora-content-services' {
 		likePlaylist,
 		likePost,
 		lockThread,
-		logUserPractice,
 		login,
 		logout,
 		mapContentToParent,
@@ -634,6 +648,8 @@ declare module 'musora-content-services' {
 		recordUserActivity,
 		recordUserPractice,
 		recordWatchSession,
+		registerAwardCallback,
+		registerProgressCallback,
 		removeContentAsInterested,
 		removeContentAsNotInterested,
 		removeUserPractice,
@@ -677,6 +693,8 @@ declare module 'musora-content-services' {
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,
+		unregisterAwardCallback,
+		unregisterProgressCallback,
 		updateActivePath,
 		updateDailySession,
 		updateDisplayName,
@@ -691,12 +709,12 @@ declare module 'musora-content-services' {
 		upgradeSubscription,
 		uploadPicture,
 		uploadPictureFromS3,
+		urlMapToBase64,
+		urlToBase64,
 		userOnboardingForBrand,
 		verifyImageSRC,
 		verifyLocalDataContext,
 	}
 }
-
-export function initializeSyncForWeb(namespace?: string): () => Promise<void>
 
 export default EventsAPI

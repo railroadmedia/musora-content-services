@@ -127,10 +127,6 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return this.deleteOne(ProgressRepository.generateId(contentId, null))
   }
 
-  eraseProgressesTentative(contentIds: number[]) {
-    return this.deleteSomeTentative(contentIds.map(id => ProgressRepository.generateId(id, null)))
-  }
-
   private static generateId(
     contentId: number,
     collection: { type: COLLECTION_TYPE; id: number } | null
