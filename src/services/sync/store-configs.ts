@@ -36,6 +36,12 @@ export default function createStoresFromConfig(createStore: <TModel extends Base
       model: PracticeDayNote,
       pull: handlePull(makeFetchRequest('/api/user/practices/v1/notes')),
       push: handlePush(makeFetchRequest('/api/user/practices/v1/notes', { method: 'POST' })),
+    }),
+
+    createStore({
+      model: UserAwardProgress,
+      pull: handlePull(makeFetchRequest('/api/content/v1/user/awards')),
+      push: handlePush(makeFetchRequest('/api/content/v1/user/awards', { method: 'POST' })),
     })
   ] as unknown as SyncStore<BaseModel>[]
 }
