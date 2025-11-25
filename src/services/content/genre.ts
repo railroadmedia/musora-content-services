@@ -117,7 +117,7 @@ export async function fetchGenreLessons(
     progressIds = [],
   }: FetchGenreLessonsOptions = {}
 ): Promise<LessonsByGenreResponse | null> {
-  const fieldsString = getFieldsForContentType() as string
+  const fieldsString = getFieldsForContentType(contentType) as string
   const start = (page - 1) * limit
   const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
