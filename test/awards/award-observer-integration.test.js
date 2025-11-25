@@ -21,7 +21,6 @@ jest.mock('../../src/services/sync/repository-proxy', () => {
     userAwardProgress: {
       hasCompletedAward: jest.fn(),
       recordAwardProgress: jest.fn(),
-      completeAward: jest.fn(),
       getByAwardId: jest.fn()
     }
   }
@@ -51,7 +50,6 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     db.contentPractices.sumPracticeMinutesForContent = jest.fn().mockResolvedValue(200)
     db.userAwardProgress.hasCompletedAward = jest.fn().mockResolvedValue(false)
     db.userAwardProgress.recordAwardProgress = jest.fn().mockResolvedValue({ data: {}, status: 'synced' })
-    db.userAwardProgress.completeAward = jest.fn().mockResolvedValue({ data: {}, status: 'synced' })
 
     db.contentProgress.queryAll = jest.fn().mockResolvedValue({
       data: [{ created_at: Math.floor(Date.now() / 1000) - 86400 * 10 }]
@@ -98,7 +96,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     test('starts observing content progress with correct query', async () => {
       await contentProgressObserver.start(mockDatabase)
 
-      expect(mockDatabase.collections.get).toHaveBeenCalledWith('content_progress')
+      expect(mockDatabase.collections.get).toHaveBeenCalledWith('progress')
       expect(mockCollection.query).toHaveBeenCalled()
       expect(mockQuery.observeWithColumns).toHaveBeenCalledWith(['state', 'progress_percent'])
     })
@@ -192,7 +190,10 @@ describe('Award Observer Integration - E2E Scenarios', () => {
 
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
         testAward._id,
-        50
+        50,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
       )
     })
   })
@@ -305,7 +306,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
         content_id: 999999,
         state: 'completed',
         progress_percent: 100
-      },
+      }
 
       await progressSubscriber([nonAwardLesson])
 
@@ -344,7 +345,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
         content_id: 416447,
         state: 'completed',
         progress_percent: 100
-      },
+      }
 
       await progressSubscriber([kickoffLesson])
 
@@ -352,7 +353,10 @@ describe('Award Observer Integration - E2E Scenarios', () => {
 
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
         testAward._id,
-        0
+        0,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
       )
     })
   })
@@ -383,7 +387,11 @@ describe('Award Observer Integration - E2E Scenarios', () => {
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).not.toHaveBeenCalled()
-      expect(db.userAwardProgress.completeAward).not.toHaveBeenCalled()
+      expect(db.userAwardProgress.recordAwardProgress).not.toHaveBeenCalledWith(
+        expect.anything(),
+        100,
+        expect.objectContaining({ immediate: true })
+      )
     })
   })
 
@@ -433,7 +441,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
         content_id: 417105,
         state: 'completed',
         progress_percent: 100
-      },
+      }
 
       await progressSubscriber([lessonProgress])
 
@@ -466,13 +474,13 @@ describe('Award Observer Integration - E2E Scenarios', () => {
         content_id: 416447,
         state: 'completed',
         progress_percent: 100
-      },
+      }
 
       const course2Lesson = {
         content_id: 417030,
         state: 'completed',
         progress_percent: 100
-      },
+      }
 
       await progressSubscriber([course1Lesson])
       await new Promise(resolve => setTimeout(resolve, 100))

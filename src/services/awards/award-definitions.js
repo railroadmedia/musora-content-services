@@ -209,3 +209,10 @@ export const awardDefinitions = new AwardDefinitionsService()
 export async function initializeAwardDefinitions() {
   await awardDefinitions.initialize()
 }
+
+export function getEligibleChildIds(award) {
+  const childIds = award.child_ids || []
+  return (award.has_kickoff && childIds.length > 0)
+    ? childIds.slice(1)
+    : childIds
+}

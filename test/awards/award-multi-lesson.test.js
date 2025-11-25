@@ -22,7 +22,6 @@ jest.mock('../../src/services/sync/repository-proxy', () => {
     userAwardProgress: {
       hasCompletedAward: jest.fn(),
       recordAwardProgress: jest.fn(),
-      completeAward: jest.fn(),
       getByAwardId: jest.fn()
     }
   }
@@ -46,7 +45,6 @@ describe('Award Multi-Lesson Course Handling - E2E Scenarios', () => {
     db.contentPractices.sumPracticeMinutesForContent = jest.fn().mockResolvedValue(200)
     db.userAwardProgress.hasCompletedAward = jest.fn().mockResolvedValue(false)
     db.userAwardProgress.recordAwardProgress = jest.fn().mockResolvedValue({ data: {}, status: 'synced' })
-    db.userAwardProgress.completeAward = jest.fn().mockResolvedValue({ data: {}, status: 'synced' })
 
     db.contentProgress.queryAll.mockResolvedValue({
       data: [{ created_at: Math.floor(Date.now() / 1000) - 86400 * 10 }]
@@ -75,7 +73,16 @@ describe('Award Multi-Lesson Course Handling - E2E Scenarios', () => {
 
       await awardManager.onContentCompleted(courseId)
 
-      expect(db.userAwardProgress.completeAward).toHaveBeenCalled()
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        expect.any(String),
+        100,
+        expect.objectContaining({
+          completedAt: expect.any(Number),
+          completionData: expect.any(Object),
+          progressData: expect.any(Object),
+          immediate: true
+        })
+      )
       expect(awardGrantedListener).toHaveBeenCalledTimes(1)
     })
 
@@ -88,7 +95,10 @@ describe('Award Multi-Lesson Course Handling - E2E Scenarios', () => {
 
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
         testAward._id,
-        0
+        0,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
       )
     })
   })
@@ -106,7 +116,16 @@ describe('Award Multi-Lesson Course Handling - E2E Scenarios', () => {
 
       await awardManager.onContentCompleted(courseId)
 
-      expect(db.userAwardProgress.completeAward).toHaveBeenCalled()
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        expect.any(String),
+        100,
+        expect.objectContaining({
+          completedAt: expect.any(Number),
+          completionData: expect.any(Object),
+          progressData: expect.any(Object),
+          immediate: true
+        })
+      )
       expect(awardGrantedListener).toHaveBeenCalledTimes(1)
     })
 

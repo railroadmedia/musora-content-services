@@ -22,7 +22,6 @@ jest.mock('../../src/services/sync/repository-proxy', () => {
     userAwardProgress: {
       hasCompletedAward: jest.fn(),
       recordAwardProgress: jest.fn(),
-      completeAward: jest.fn(),
       getByAwardId: jest.fn()
     }
   }
@@ -47,7 +46,6 @@ describe('Award Progress Tracking - E2E Scenarios', () => {
     db.contentPractices.sumPracticeMinutesForContent = jest.fn().mockResolvedValue(180)
     db.userAwardProgress.hasCompletedAward = jest.fn().mockResolvedValue(false)
     db.userAwardProgress.recordAwardProgress = jest.fn().mockResolvedValue({ data: {}, status: 'synced' })
-    db.userAwardProgress.completeAward = jest.fn().mockResolvedValue({ data: {}, status: 'synced' })
 
     db.contentProgress.queryAll = jest.fn().mockResolvedValue({
       data: [{ created_at: Math.floor(Date.now() / 1000) - 86400 * 10 }]

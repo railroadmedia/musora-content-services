@@ -1,5 +1,7 @@
-import { awardDefinitions } from './award-definitions'
+import { awardDefinitions, getEligibleChildIds } from './award-definitions'
 import db from '../sync/repository-proxy'
+
+const NUMERIC_ID_MODULO = 1000000
 
 /**
  * @typedef {Object} AwardStatus
@@ -290,12 +292,12 @@ export async function getAwardStatistics(brand = null) {
 }
 
 /**
- * Check if completing this content earned any new awards
+ * Get awards that were newly earned by completing this content
  * Call this after contentStatusCompleted() to get newly earned awards
  * @param {number} contentId - Content ID that was just completed
  * @returns {Promise<Array>} Array of newly earned Award objects
  */
-export async function checkForNewAwards(contentId) {
+export async function getNewlyEarnedAwards(contentId) {
   try {
     const definitions = await awardDefinitions.getByContentId(contentId)
 
@@ -326,7 +328,7 @@ export async function checkForNewAwards(contentId) {
 
       if (progress && progress.isCompleted) {
         newlyCompletedAwards.push({
-          id: parseInt(awardId.split('-').join(''), 16) % 1000000,
+          id: parseInt(awardId.split('-').join(''), 16) % NUMERIC_ID_MODULO,
           name: definition.name,
           badge: definition.badge,
           completed_at: new Date(progress.completed_at * 1000).toISOString(),
@@ -343,6 +345,11 @@ export async function checkForNewAwards(contentId) {
 }
 
 /**
+ * @deprecated Use getNewlyEarnedAwards instead
+ */
+export const checkForNewAwards = getNewlyEarnedAwards
+
+/**
  * Fetch user's awards with pagination (matches FE API)
  * @param {number} userId - User ID
  * @param {string} brand - Brand identifier (drumeo, pianote, etc)
@@ -357,7 +364,7 @@ export async function fetchAwardsForUser(userId, brand, page = 1, limit = 4) {
 
     return {
       data: awards.map(award => ({
-        id: parseInt(award.awardId.split('-').join(''), 16) % 1000000,
+        id: parseInt(award.awardId.split('-').join(''), 16) % NUMERIC_ID_MODULO,
         name: award.awardTitle,
         badge: award.badge,
         completed_at: award.completedAt,
@@ -397,7 +404,7 @@ export async function getAwardForContent(contentId) {
     }
 
     const baseAward = {
-      id: parseInt(award.awardId.split('-').join(''), 16) % 1000000,
+      id: parseInt(award.awardId.split('-').join(''), 16) % NUMERIC_ID_MODULO,
       name: award.awardTitle,
       badge: award.badge,
       completed_at: award.completedAt
@@ -416,10 +423,7 @@ export async function getAwardForContent(contentId) {
       }
     }
 
-    let childIds = awardDefinition.child_ids || []
-    if (awardDefinition.has_kickoff && childIds.length > 0) {
-      childIds = childIds.slice(1)
-    }
+    const childIds = getEligibleChildIds(awardDefinition)
 
     const totalLessons = childIds.length
     const completedLessons = Math.round((award.progressPercentage / 100) * totalLessons)

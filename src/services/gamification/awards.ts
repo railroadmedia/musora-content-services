@@ -32,9 +32,6 @@ export interface Certificate {
   instructor_signature_64?: string
 }
 
-// Note: fetchAwardsForUser and getAwardDataForGuidedContent have been moved to awards/award-query.js
-// and now use WatermelonDB instead of API calls
-
 /**
  * Get certificate data for a completed user award
  *

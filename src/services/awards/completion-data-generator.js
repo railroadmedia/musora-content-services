@@ -1,13 +1,6 @@
 import { Q } from '@nozbe/watermelondb'
 
 /**
- * Generate completion data when user earns an award
- * Calculates practice days and minutes from local WatermelonDB data
- *
- * Note: This function requires:
- * - awardDefinitions cache to be initialized with child_ids from Sanity
- * - db.contentProgress and db.contentPractices repositories
- *
  * @param {string} awardId - Award ID
  * @param {number} courseContentId - Course content ID
  * @returns {Promise<import('./types').CompletionData>} Completion data

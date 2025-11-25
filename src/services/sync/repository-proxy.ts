@@ -27,23 +27,24 @@ export default new Proxy({} as SyncRepositories, {
       try {
         const manager = SyncManager.getInstance()
 
-      const manager = SyncManager.getInstance()
-
-      switch (prop) {
-        case 'likes':
-          target[prop] = new ContentLikesRepository(manager.getStore(ContentLike))
-          break
-        case 'contentProgress':
-          target[prop] = new ContentProgressRepository(manager.getStore(ContentProgress))
-          break
-        case 'practices':
+        switch (prop) {
+          case 'likes':
+            target[prop] = new ContentLikesRepository(manager.getStore(ContentLike))
+            break
+          case 'contentProgress':
+            target[prop] = new ContentProgressRepository(manager.getStore(ContentProgress))
+            break
+          case 'practices':
             target[prop] = new PracticesRepository(manager.getStore(Practice))
-          break
-        case 'userAwardProgress':
+            break
+          case 'userAwardProgress':
             target[prop] = new UserAwardProgressRepository(manager.getStore(UserAwardProgress))
-          break
-        default:
-          throw new SyncError(`Repository '${prop}' not found`)
+            break
+          default:
+            throw new SyncError(`Repository '${prop}' not found`)
+        }
+      } catch (error) {
+        throw new SyncError(`Failed to initialize repository '${prop}': ${error.message}`)
       }
     }
     return target[prop]

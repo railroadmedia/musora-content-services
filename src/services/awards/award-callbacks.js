@@ -1,6 +1,8 @@
 import { awardEvents } from './award-events'
 import { awardDefinitions } from './award-definitions'
 
+const NUMERIC_ID_MODULO = 1000000
+
 let awardGrantedCallback = null
 let progressUpdateCallback = null
 
@@ -20,7 +22,7 @@ export function registerAwardCallback(callback) {
     const { awardId, definition, completionData, popupMessage } = payload
 
     const award = {
-      id: parseInt(awardId.split('-').join(''), 16) % 1000000,
+      id: parseInt(awardId.split('-').join(''), 16) % NUMERIC_ID_MODULO,
       award_id: awardId,
       name: definition.name,
       badge: definition.badge,

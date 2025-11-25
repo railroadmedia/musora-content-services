@@ -1,11 +1,11 @@
 import { Database } from '@nozbe/watermelondb'
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 import { Q } from '@nozbe/watermelondb'
-import schema, { SYNC_TABLES } from '../../src/services/sync/schema'
-import ContentProgress from '../../src/services/sync/models/ContentProgress'
-import ContentPractice from '../../src/services/sync/models/ContentPractice'
-import ContentLike from '../../src/services/sync/models/ContentLike'
-import UserAwardProgress from '../../src/services/sync/models/UserAwardProgress'
+import schema, { SYNC_TABLES } from '../../../src/services/sync/schema'
+import ContentProgress from '../../../src/services/sync/models/ContentProgress'
+import ContentPractice from '../../../src/services/sync/models/Practice'
+import ContentLike from '../../../src/services/sync/models/ContentLike'
+import UserAwardProgress from '../../../src/services/sync/models/UserAwardProgress'
 
 describe('Award System - Direct Database Integration', () => {
   let database
@@ -30,7 +30,7 @@ describe('Award System - Direct Database Integration', () => {
     })
 
     progressCollection = database.collections.get(SYNC_TABLES.CONTENT_PROGRESS)
-    practiceCollection = database.collections.get(SYNC_TABLES.CONTENT_PRACTICES)
+    practiceCollection = database.collections.get(SYNC_TABLES.PRACTICES)
     awardProgressCollection = database.collections.get(SYNC_TABLES.USER_AWARD_PROGRESS)
   })
 

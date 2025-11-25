@@ -1,12 +1,25 @@
-import { awardDefinitions } from './award-definitions'
+import { awardDefinitions, getEligibleChildIds } from './award-definitions'
 import { awardEvents } from './award-events'
 import { generateCompletionData } from './completion-data-generator'
 import { AwardMessageGenerator } from './message-generator'
 import db from '../sync/repository-proxy'
 import { Q } from '@nozbe/watermelondb'
 
+async function getCompletionStates(contentIds) {
+  return Promise.all(
+    contentIds.map(async (id) => {
+      const progress = await db.contentProgress.queryOne(
+        Q => Q.where('content_id', id)
+      )
+      return {
+        id,
+        completed: progress.data?.state === 'completed'
+      }
+    })
+  )
+}
+
 export class AwardManager {
-  /** @returns {Promise<void>} */
   async onContentCompleted(contentId) {
     try {
       const awards = await awardDefinitions.getByContentId(contentId)
@@ -16,15 +29,14 @@ export class AwardManager {
       }
 
       for (const award of awards) {
-        await this.checkAndGrantAward(award, contentId)
+        await this.evaluateAward(award, contentId)
       }
     } catch (error) {
       console.error('Error checking awards for completed content:', error)
     }
   }
 
-  /** @returns {Promise<void>} */
-  async checkAndGrantAward(award, courseContentId) {
+  async evaluateAward(award, courseContentId) {
     try {
       const hasCompleted = await db.userAwardProgress.hasCompletedAward(award._id)
       if (hasCompleted) {
@@ -43,36 +55,22 @@ export class AwardManager {
     }
   }
 
-  /** @returns {Promise<boolean>} */
   async checkAwardEligibility(award, courseContentId) {
     try {
-      let childIds = award.child_ids || []
-
-      if (award.has_kickoff && childIds.length > 0) {
-        childIds = childIds.slice(1)
-      }
+      const childIds = getEligibleChildIds(award)
 
       if (childIds.length === 0) {
         return false
       }
 
-      const completionChecks = await Promise.all(
-        childIds.map(async (id) => {
-          const progress = await db.contentProgress.queryOne(
-            Q.where('content_id', id)
-          )
-          return progress.data?.state === 'completed'
-        })
-      )
-
-      return completionChecks.every(completed => completed)
+      const completionStates = await getCompletionStates(childIds)
+      return completionStates.every(state => state.completed)
     } catch (error) {
       console.error('Error checking award eligibility:', error)
       return false
     }
   }
 
-  /** @returns {Promise<void>} */
   async grantAward(awardId, courseContentId) {
     const definition = await awardDefinitions.getById(awardId)
 
@@ -86,26 +84,12 @@ export class AwardManager {
       courseContentId
     )
 
-    let childIds = definition.child_ids || []
-    if (definition.has_kickoff && childIds.length > 0) {
-      childIds = childIds.slice(1)
-    }
+    const childIds = getEligibleChildIds(definition)
+    const completionStates = await getCompletionStates(childIds)
 
-    const completionChecks = await Promise.all(
-      childIds.map(async (id) => {
-        const progress = await db.contentProgress.queryOne(
-          Q.where('content_id', id)
-        )
-        return {
-          id,
-          completed: progress.data?.state === 'completed'
-        }
-      })
-    )
-
-    const completedLessonIds = completionChecks
-      .filter(check => check.completed)
-      .map(check => check.id)
+    const completedLessonIds = completionStates
+      .filter(state => state.completed)
+      .map(state => state.id)
 
     const progressData = {
       completedLessonIds,
@@ -136,35 +120,20 @@ export class AwardManager {
     })
   }
 
-  /** @returns {Promise<void>} */
   async updateAwardProgress(awardId, courseContentId) {
     try {
       const award = await awardDefinitions.getById(awardId)
       if (!award) return
 
-      let childIds = award.child_ids || []
-
-      if (award.has_kickoff && childIds.length > 0) {
-        childIds = childIds.slice(1)
-      }
+      const childIds = getEligibleChildIds(award)
 
       if (childIds.length === 0) return
 
-      const completionChecks = await Promise.all(
-        childIds.map(async (id) => {
-          const progress = await db.contentProgress.queryOne(
-            Q.where('content_id', id)
-          )
-          return {
-            id,
-            completed: progress.data?.state === 'completed'
-          }
-        })
-      )
+      const completionStates = await getCompletionStates(childIds)
 
-      const completedLessonIds = completionChecks
-        .filter(check => check.completed)
-        .map(check => check.id)
+      const completedLessonIds = completionStates
+        .filter(state => state.completed)
+        .map(state => state.id)
 
       const completedCount = completedLessonIds.length
       const progressPercentage = Math.round((completedCount / childIds.length) * 100)
@@ -189,7 +158,6 @@ export class AwardManager {
     }
   }
 
-  /** @returns {'guided-course' | 'learning-path'} */
   determineAwardType(definition) {
     if (definition.content_type === 'learning-path-v2') {
       return 'learning-path'
@@ -201,7 +169,6 @@ export class AwardManager {
     return 'guided-course'
   }
 
-  /** @returns {Promise<void>} */
   async refreshDefinitions() {
     await awardDefinitions.refresh()
   }

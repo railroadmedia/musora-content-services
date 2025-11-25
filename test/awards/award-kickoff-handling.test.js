@@ -21,7 +21,6 @@ jest.mock('../../src/services/sync/repository-proxy', () => {
     userAwardProgress: {
       hasCompletedAward: jest.fn(),
       recordAwardProgress: jest.fn(),
-      completeAward: jest.fn(),
       getByAwardId: jest.fn()
     }
   }
@@ -69,8 +68,12 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
       db.contentProgress.queryOne.mockImplementation((queryFn) => {
         const mockQ = { where: jest.fn().mockReturnThis() }
         queryFn(mockQ)
+        const contentId = mockQ.where.mock.calls[0][1]
+
         return Promise.resolve({
-          data: { state: 'started', created_at: Math.floor(Date.now() / 1000) }
+          data: contentId === 416447
+            ? { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
+            : { state: 'started', created_at: Math.floor(Date.now() / 1000) }
         })
       })
 
@@ -78,7 +81,10 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
 
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
         testAward._id,
-        0
+        0,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
       )
     })
 
@@ -99,7 +105,14 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
 
       await awardManager.onContentCompleted(courseId)
 
-      expect(db.userAwardProgress.completeAward).toHaveBeenCalled()
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        expect.any(String),
+        100,
+        expect.objectContaining({
+          completedAt: expect.any(Number),
+          immediate: true
+        })
+      )
       expect(awardGrantedListener).toHaveBeenCalledTimes(1)
     })
 
@@ -147,7 +160,10 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
 
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
         testAward._id,
-        25
+        25,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
       )
     })
 
@@ -170,7 +186,10 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
 
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
         testAward._id,
-        50
+        50,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
       )
     })
 
@@ -193,7 +212,14 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
 
       await awardManager.onContentCompleted(courseId)
 
-      expect(db.userAwardProgress.completeAward).toHaveBeenCalled()
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        expect.any(String),
+        100,
+        expect.objectContaining({
+          completedAt: expect.any(Number),
+          immediate: true
+        })
+      )
       expect(awardGrantedListener).toHaveBeenCalledTimes(1)
     })
   })
@@ -220,7 +246,10 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
 
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
         testAward._id,
-        0
+        0,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
       )
     })
 
@@ -243,7 +272,10 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
 
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
         testAward._id,
-        52
+        52,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
       )
     })
 
@@ -264,7 +296,14 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
 
       await awardManager.onContentCompleted(courseId)
 
-      expect(db.userAwardProgress.completeAward).toHaveBeenCalled()
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        expect.any(String),
+        100,
+        expect.objectContaining({
+          completedAt: expect.any(Number),
+          immediate: true
+        })
+      )
       expect(awardGrantedListener).toHaveBeenCalledTimes(1)
     })
   })
@@ -292,7 +331,10 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
 
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
         testAward._id,
-        33
+        33,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
       )
     })
 
@@ -305,7 +347,14 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
 
       await awardManager.onContentCompleted(courseId)
 
-      expect(db.userAwardProgress.completeAward).toHaveBeenCalled()
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        expect.any(String),
+        100,
+        expect.objectContaining({
+          completedAt: expect.any(Number),
+          immediate: true
+        })
+      )
     })
   })
 
@@ -320,7 +369,14 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
 
       await awardManager.onContentCompleted(courseId)
 
-      expect(db.userAwardProgress.completeAward).toHaveBeenCalled()
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        expect.any(String),
+        100,
+        expect.objectContaining({
+          completedAt: expect.any(Number),
+          immediate: true
+        })
+      )
     })
   })
 })

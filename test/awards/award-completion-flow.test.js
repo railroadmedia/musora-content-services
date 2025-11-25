@@ -21,7 +21,6 @@ jest.mock('../../src/services/sync/repository-proxy', () => {
     userAwardProgress: {
       hasCompletedAward: jest.fn(),
       recordAwardProgress: jest.fn(),
-      completeAward: jest.fn(),
       getByAwardId: jest.fn()
     }
   }
@@ -47,7 +46,6 @@ describe('Award Completion Flow - E2E Scenarios', () => {
     db.contentPractices.sumPracticeMinutesForContent = jest.fn().mockResolvedValue(180)
     db.userAwardProgress.hasCompletedAward = jest.fn().mockResolvedValue(false)
     db.userAwardProgress.recordAwardProgress = jest.fn().mockResolvedValue({ data: {}, status: 'synced' })
-    db.userAwardProgress.completeAward = jest.fn().mockResolvedValue({ data: {}, status: 'synced' })
 
     await awardDefinitions.refresh()
 
@@ -78,12 +76,18 @@ describe('Award Completion Flow - E2E Scenarios', () => {
 
       await awardManager.onContentCompleted(courseId)
 
-      expect(db.userAwardProgress.completeAward).toHaveBeenCalledWith(
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
         testAward._id,
+        100,
         expect.objectContaining({
-          content_title: testAward.content_title.replace(/^Complete\s+/i, '').replace(/\s+(Course|Learning Path)$/i, '').trim(),
-          days_user_practiced: expect.any(Number),
-          practice_minutes: 180
+          completedAt: expect.any(Number),
+          completionData: expect.objectContaining({
+            content_title: expect.any(String),
+            days_user_practiced: expect.any(Number),
+            practice_minutes: 180
+          }),
+          progressData: expect.any(Object),
+          immediate: true
         })
       )
 
@@ -128,9 +132,13 @@ describe('Award Completion Flow - E2E Scenarios', () => {
     test('award is immediately synced to backend', async () => {
       await awardManager.onContentCompleted(courseId)
 
-      expect(db.userAwardProgress.completeAward).toHaveBeenCalledWith(
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
         testAward._id,
-        expect.any(Object)
+        100,
+        expect.objectContaining({
+          completedAt: expect.any(Number),
+          immediate: true
+        })
       )
     })
 
@@ -185,11 +193,13 @@ describe('Award Completion Flow - E2E Scenarios', () => {
 
       await awardManager.onContentCompleted(multiLessonCourseId)
 
-      expect(db.userAwardProgress.completeAward).not.toHaveBeenCalled()
       expect(awardGrantedListener).not.toHaveBeenCalled()
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
         multiLessonAward._id,
-        50
+        50,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
       )
     })
 
@@ -237,7 +247,6 @@ describe('Award Completion Flow - E2E Scenarios', () => {
         awardManager.onContentCompleted(nonExistentCourseId)
       ).resolves.not.toThrow()
 
-      expect(db.userAwardProgress.completeAward).not.toHaveBeenCalled()
       expect(awardGrantedListener).not.toHaveBeenCalled()
     })
   })
@@ -256,7 +265,6 @@ describe('Award Completion Flow - E2E Scenarios', () => {
 
       await awardManager.onContentCompleted(courseId)
 
-      expect(db.userAwardProgress.completeAward).not.toHaveBeenCalled()
       expect(awardGrantedListener).not.toHaveBeenCalled()
     })
 
