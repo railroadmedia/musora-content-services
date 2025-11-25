@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.86.0](https://github.com/railroadmedia/musora-content-services/compare/v2.85.1...v2.86.0) (2025-11-25)
+
+
+### Features
+
+* **BEH-1266:** Update fetchHierarchy to use parent_content_data ([#586](https://github.com/railroadmedia/musora-content-services/issues/586)) ([4d44fea](https://github.com/railroadmedia/musora-content-services/commit/4d44fea55c5094fd35bbac98f282a996d455be03))
+
+
+### Bug Fixes
+
+* content aggregator and fetch learnig path ([#587](https://github.com/railroadmedia/musora-content-services/issues/587)) ([f8af202](https://github.com/railroadmedia/musora-content-services/commit/f8af2024f147680b60b66e440c164cfd6ff0922b))
+
 ### [2.85.1](https://github.com/railroadmedia/musora-content-services/compare/v2.85.0...v2.85.1) (2025-11-24)
 
 
