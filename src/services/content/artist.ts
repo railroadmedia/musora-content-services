@@ -75,7 +75,7 @@ export interface ArtistLessonOptions {
 }
 
 export interface LessonsByArtistResponse {
-  data: Artist[]
+  data: Lesson[]
   total: number
 }
 
