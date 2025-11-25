@@ -108,7 +108,7 @@ export async function fetchArtistLessons(
     page = 1,
     limit = 10,
     includedFields = [],
-    progressIds = undefined,
+    progressIds = [],
   }: ArtistLessonOptions = {}
 ): Promise<LessonsByArtistResponse | null> {
   const fieldsString = getFieldsForContentType(contentType) as string
@@ -118,7 +118,7 @@ export async function fetchArtistLessons(
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
   const addType = contentType ? `_type == '${contentType}' && ` : ''
   const progressFilter =
-    progressIds !== undefined ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
+    progressIds.length > 0 ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
   const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='artist' && slug.current == '${slug}']._id) ${progressFilter}`
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
