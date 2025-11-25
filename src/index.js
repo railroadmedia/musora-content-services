@@ -41,7 +41,6 @@ import {
 	mapContentToParent,
 	resetAllLearningPaths,
 	startLearningPath,
-	updateActivePath,
 	updateDailySession
 } from './services/content-org/learning-paths.ts';
 
@@ -413,7 +412,7 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 export {
@@ -701,7 +700,6 @@ export {
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
-	updateActivePath,
 	updateDailySession,
 	updateDisplayName,
 	updateForumCategory,

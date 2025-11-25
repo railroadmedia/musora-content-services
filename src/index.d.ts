@@ -41,7 +41,6 @@ import {
 	mapContentToParent,
 	resetAllLearningPaths,
 	startLearningPath,
-	updateActivePath,
 	updateDailySession
 } from './services/content-org/learning-paths.ts';
 
@@ -413,7 +412,7 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
@@ -702,7 +701,6 @@ declare module 'musora-content-services' {
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,
-		updateActivePath,
 		updateDailySession,
 		updateDisplayName,
 		updateForumCategory,
