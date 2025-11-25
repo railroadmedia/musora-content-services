@@ -548,7 +548,7 @@ export async function fetchUserPractices(userId) {
 }
 
 export async function fetchUserPracticeMeta(day, userId) {
-  const url = `/api/user/practices/v1/practices?user_id=${userId}&day=${day}`
+  const url = `/api/user/practices/v1/practices?user_id=${userId}&date=${date}`
   return await fetchHandler(url, 'GET', null)
 }
 

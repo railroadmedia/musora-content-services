@@ -34,7 +34,7 @@ const practicesTable = tableSchema({
   columns: [
     { name: 'manual_id', type: 'string', isOptional: true },
     { name: 'content_id', type: 'number', isOptional: true, isIndexed: true },
-    { name: 'day', type: 'string', isIndexed: true },
+    { name: 'date', type: 'string', isIndexed: true },
     { name: 'auto', type: 'boolean', isIndexed: true },
     { name: 'duration_seconds', type: 'number' },
     { name: 'title', type: 'string', isOptional: true },

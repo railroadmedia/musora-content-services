@@ -116,8 +116,8 @@ export async function getUserWeeklyStats() {
   const weekDays = Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, 'day').format('YYYY-MM-DD'))
 
   const practices = await getOwnPractices(
-    Q.where('day', Q.oneOf(weekDays)),
-    Q.sortBy('day', 'desc')
+    Q.where('date', Q.oneOf(weekDays)),
+    Q.sortBy('date', 'desc')
   )
   const practiceDaysSet = new Set(Object.keys(practices))
   let dailyStats = []
@@ -408,7 +408,7 @@ export async function restoreUserPractice(id) {
  *   .catch(error => console.error("Delete failed:", error));
  */
 export async function deletePracticeSession(day) {
-  const ids = await db.practices.queryAllIds(Q.where('day', day))
+  const ids = await db.practices.queryAllIds(Q.where('date', day))
   return await db.practices.deleteSome(ids.data)
 }
 
@@ -485,7 +485,7 @@ export async function getPracticeSessions(params = {}) {
 
   if (userId === globalConfig.sessionConfig.userId) {
     const query = await db.practices.queryAll(
-      Q.where('day', day),
+      Q.where('date', day),
       Q.sortBy('created_at', 'asc')
     )
     data = query.data

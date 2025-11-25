@@ -4,7 +4,7 @@ import BaseModel from './Base'
 export default class Practice extends BaseModel<{
   manual_id: string | null
   content_id: number | null
-  day: string
+  date: string
   auto: boolean
   duration_seconds: number
   title: string | null
@@ -20,8 +20,8 @@ export default class Practice extends BaseModel<{
   get content_id() {
     return this._getRaw('content_id') as number | null
   }
-  get day() {
-    return this._getRaw('day') as string
+  get date() {
+    return this._getRaw('date') as string
   }
   get auto() {
     return this._getRaw('auto') as boolean
@@ -48,8 +48,8 @@ export default class Practice extends BaseModel<{
   set content_id(value: number | null) {
     this._setRaw('content_id', value)
   }
-  set day(value: string) {
-    this._setRaw('day', value)
+  set date(value: string) {
+    this._setRaw('date', value)
   }
   set auto(value: boolean) {
     this._setRaw('auto', value)
