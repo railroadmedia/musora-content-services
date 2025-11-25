@@ -4,18 +4,21 @@ import { SyncError } from "./errors"
 import {
   ContentLikesRepository,
   ContentProgressRepository,
-  PracticesRepository
+  PracticesRepository,
+  PracticeDayNotesRepository
 } from "./repositories"
 import {
   ContentLike,
   ContentProgress,
-  Practice
+  Practice,
+  PracticeDayNote
 } from "./models"
 
 interface SyncRepositories {
  likes: ContentLikesRepository
  contentProgress: ContentProgressRepository
  practices: PracticesRepository
+ practiceDayNotes: PracticeDayNotesRepository
 }
 
 export default new Proxy({} as SyncRepositories, {
@@ -31,7 +34,10 @@ export default new Proxy({} as SyncRepositories, {
           target[prop] = new ContentProgressRepository(manager.getStore(ContentProgress))
           break
         case 'practices':
-            target[prop] = new PracticesRepository(manager.getStore(Practice))
+          target[prop] = new PracticesRepository(manager.getStore(Practice))
+          break
+        case 'practiceDayNotes':
+          target[prop] = new PracticeDayNotesRepository(manager.getStore(PracticeDayNote))
           break
         default:
           throw new SyncError(`Repository '${prop}' not found`)

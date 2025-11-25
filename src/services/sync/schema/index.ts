@@ -3,7 +3,8 @@ import { appSchema, tableSchema } from '@nozbe/watermelondb'
 export const SYNC_TABLES = {
   CONTENT_LIKES: 'content_likes',
   CONTENT_PROGRESS: 'progress',
-  PRACTICES: 'practice'
+  PRACTICES: 'practices',
+  PRACTICE_DAY_NOTES: 'practice_day_notes'
 }
 
 const contentLikesTable = tableSchema({
@@ -41,7 +42,16 @@ const practicesTable = tableSchema({
     { name: 'category_id', type: 'number', isOptional: true },
     { name: 'instrument_id', type: 'number', isOptional: true },
     { name: 'created_at', type: 'number' },
-    { name: 'updated_at', type: 'number' }
+    { name: 'updated_at', type: 'number', isIndexed: true }
+  ]
+})
+const practiceDayNotesTable = tableSchema({
+  name: SYNC_TABLES.PRACTICE_DAY_NOTES,
+  columns: [
+    { name: 'date', type: 'string', isIndexed: true },
+    { name: 'notes', type: 'string' },
+    { name: 'created_at', type: 'number' },
+    { name: 'updated_at', type: 'number', isIndexed: true }
   ]
 })
 
@@ -50,6 +60,7 @@ export default appSchema({
   tables: [
     contentLikesTable,
     contentProgressTable,
-    practicesTable
+    practicesTable,
+    practiceDayNotesTable
   ]
 })
