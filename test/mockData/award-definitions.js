@@ -88,7 +88,7 @@ export const mockAwardDefinitions = [
     child_ids: [417035, 417036, 417038],
     content_id: 417039,
     content_title: 'Enrolling w/o Kickoff, no product GC (LS101)',
-    content_type: 'guided-course',
+    content_type: 'course',
     has_kickoff: false,
     instructor_name: 'Lisa Witt',
     instructor_signature: null,

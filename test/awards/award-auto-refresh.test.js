@@ -4,10 +4,11 @@ import { awardDefinitions } from '../../src/services/awards/award-definitions'
 jest.mock('../../src/services/sanity', () => ({
   default: {
     fetch: jest.fn()
-  }
+  },
+  fetchSanity: jest.fn()
 }))
 
-import sanityClient from '../../src/services/sanity'
+import sanityClient, { fetchSanity } from '../../src/services/sanity'
 
 describe('Award Auto-Refresh', () => {
   let mockLocalStorage
@@ -21,7 +22,7 @@ describe('Award Auto-Refresh', () => {
       setItem: jest.fn().mockResolvedValue(undefined)
     }
 
-    sanityClient.fetch = jest.fn().mockResolvedValue([
+    const mockAwards = [
       {
         _id: 'test-award-1',
         name: 'Test Award',
@@ -29,7 +30,10 @@ describe('Award Auto-Refresh', () => {
         content_id: 12345,
         is_active: true
       }
-    ])
+    ]
+
+    sanityClient.fetch = jest.fn().mockResolvedValue(mockAwards)
+    fetchSanity.mockResolvedValue(mockAwards)
   })
 
   afterEach(() => {

@@ -3,7 +3,8 @@ import { mockAwardDefinitions } from '../mockData/award-definitions'
 jest.mock('../../src/services/sanity', () => ({
   default: {
     fetch: jest.fn()
-  }
+  },
+  fetchSanity: jest.fn()
 }))
 
 jest.mock('../../src/services/sync/repository-proxy', () => {
@@ -16,7 +17,7 @@ jest.mock('../../src/services/sync/repository-proxy', () => {
   return { default: mockFns, ...mockFns }
 })
 
-import sanityClient from '../../src/services/sanity'
+import sanityClient, { fetchSanity } from '../../src/services/sanity'
 import db from '../../src/services/sync/repository-proxy'
 import { awardDefinitions } from '../../src/services/awards/award-definitions'
 import { getCompletedAwards, getInProgressAwards, getAwardStatistics } from '../../src/services/awards/award-query'
@@ -26,6 +27,7 @@ describe('Award User Collection - E2E Scenarios', () => {
     jest.clearAllMocks()
 
     sanityClient.fetch = jest.fn().mockResolvedValue(mockAwardDefinitions)
+    fetchSanity.mockResolvedValue(mockAwardDefinitions)
     db.userAwardProgress.getAll = jest.fn()
     db.userAwardProgress.getByAwardId = jest.fn()
 
@@ -136,7 +138,8 @@ describe('Award User Collection - E2E Scenarios', () => {
             progress_percentage: 20,
             completed_at: null,
             completion_data: null
-          }
+          },
+  fetchSanity: jest.fn()
         ]
       })
     })
@@ -184,7 +187,8 @@ describe('Award User Collection - E2E Scenarios', () => {
               completed_at: new Date(Date.now() - 86400 * 1000).toISOString(),
               days_user_practiced: 14,
               practice_minutes: 180
-            }
+            },
+  fetchSanity: jest.fn()
           },
           {
             award_id: '0f49cb6a-1b23-4628-968e-15df02ffad7f',
@@ -201,8 +205,10 @@ describe('Award User Collection - E2E Scenarios', () => {
               completed_at: new Date(Date.now() - 86400 * 10 * 1000).toISOString(),
               days_user_practiced: 60,
               practice_minutes: 1200
-            }
-          }
+            },
+  fetchSanity: jest.fn()
+          },
+  fetchSanity: jest.fn()
         ]
       })
     })
@@ -251,7 +257,8 @@ describe('Award User Collection - E2E Scenarios', () => {
               completed_at: new Date().toISOString(),
               days_user_practiced: 14,
               practice_minutes: 180
-            }
+            },
+  fetchSanity: jest.fn()
           },
           {
             award_id: '361f3034-c6c9-45f7-bbfb-0d58dbe14411',
@@ -262,8 +269,10 @@ describe('Award User Collection - E2E Scenarios', () => {
               completed_at: new Date().toISOString(),
               days_user_practiced: 60,
               practice_minutes: 1200
-            }
-          }
+            },
+  fetchSanity: jest.fn()
+          },
+  fetchSanity: jest.fn()
         ]
       })
     })
@@ -334,7 +343,8 @@ describe('Award User Collection - E2E Scenarios', () => {
           completed_at: new Date(Date.now() - 86400 * i * 1000).toISOString(),
           days_user_practiced: 10,
           practice_minutes: 100
-        }
+        },
+  fetchSanity: jest.fn()
       }))
 
       db.userAwardProgress.getAll.mockResolvedValue({
@@ -371,7 +381,8 @@ describe('Award User Collection - E2E Scenarios', () => {
               completed_at: new Date().toISOString(),
               days_user_practiced: 14,
               practice_minutes: 180
-            }
+            },
+  fetchSanity: jest.fn()
           },
           {
             award_id: 'non-existent-award-id',
@@ -382,8 +393,10 @@ describe('Award User Collection - E2E Scenarios', () => {
               completed_at: new Date().toISOString(),
               days_user_practiced: 5,
               practice_minutes: 50
-            }
-          }
+            },
+  fetchSanity: jest.fn()
+          },
+  fetchSanity: jest.fn()
         ]
       })
     })

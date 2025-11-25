@@ -16,7 +16,7 @@
  * @property {string} [content_type] - Content type from Sanity
  * @property {string} [content_title] - Content title from Sanity
  * @property {number[]} [child_ids] - Child lesson railcontent IDs (excludes drafts)
- * @property {boolean} [has_kickoff] - Has kickoff lesson to exclude
+ * @property {boolean} [has_kickoff] - Dynamically set: true for 'guided-course', false otherwise
  * @property {string} [instructor_name] - Instructor name
  * @property {string} [instructor_signature] - Instructor signature image URL
  * @property {string} [award_custom_text] - Custom certificate text

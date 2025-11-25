@@ -143,10 +143,13 @@ export class AwardManager {
 
   /** @returns {'guided-course' | 'learning-path'} */
   determineAwardType(definition) {
-    if (definition.name.toLowerCase().includes('learning path')) {
+    if (definition.content_type === 'learning-path-v2') {
       return 'learning-path'
     }
-
+    if (definition.content_type === 'guided-course') {
+      return 'guided-course'
+    }
+    console.warn(`Unknown content_type for award: ${definition.content_type}, defaulting to 'guided-course'`)
     return 'guided-course'
   }
 

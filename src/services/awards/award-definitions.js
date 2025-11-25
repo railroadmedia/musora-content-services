@@ -89,7 +89,6 @@ class AwardDefinitionsService {
         'content_type': content->_type,
         'type': _type,
         brand,
-        'has_kickoff': content->has_kickoff_video,
         'content_title': content->title,
         award_custom_text,
         'instructor_signature': content->instructor[0]->signature.asset->url,
@@ -103,6 +102,8 @@ class AwardDefinitionsService {
       this.contentIndex.clear()
 
       awards.forEach(award => {
+        award.has_kickoff = award.content_type === 'guided-course'
+
         this.definitions.set(award._id, award)
 
         if (award.content_id) {

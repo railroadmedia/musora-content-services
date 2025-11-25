@@ -1,6 +1,7 @@
 import { AWARD_ASSETS } from '../../constants/award-assets'
 import { AwardMessageGenerator } from './message-generator'
 import { globalConfig } from '../config'
+import { awardManager } from './award-manager'
 
 /** @returns {Promise<import('./types').CertificateData>} */
 export async function buildCertificateData(awardId) {
@@ -21,7 +22,7 @@ export async function buildCertificateData(awardId) {
   }
 
   const completionData = userProgress.data.completion_data
-  const awardType = determineAwardType(awardDef)
+  const awardType = awardManager.determineAwardType(awardDef)
 
   const popupMessage = AwardMessageGenerator.generatePopupMessage(
     awardType,
@@ -60,39 +61,7 @@ export async function buildCertificateData(awardId) {
   }
 }
 
-/**
- * Get brand logo from constants
- * @param {string} brand - Brand name
- * @returns {string} Brand logo URL
- */
 function getBrandLogo(brand) {
   const normalizedBrand = brand.toLowerCase()
-
   return AWARD_ASSETS.brandLogos[normalizedBrand] || AWARD_ASSETS.musoraLogo
-}
-
-/**
- * Determine award type from definition
- *
- * Options:
- * 1. Read from Sanity field (if you add award_type to schema)
- * 2. Infer from content type
- * 3. Default based on name patterns
- *
- * @param {import('./types').AwardDefinition} awardDef - Award definition
- * @returns {'guided-course' | 'learning-path'} Award type
- */
-function determineAwardType(awardDef) {
-  // Option 1: If Sanity has award_type field
-  // if (awardDef.award_type) {
-  //   return awardDef.award_type
-  // }
-
-  // Option 2: Infer from name
-  if (awardDef.name.toLowerCase().includes('learning path')) {
-    return 'learning-path'
-  }
-
-  // Option 3: Default to guided-course (safest)
-  return 'guided-course'
 }

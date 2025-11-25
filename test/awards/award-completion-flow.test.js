@@ -5,7 +5,8 @@ import { mockAwardDefinitions, getAwardByContentId } from '../mockData/award-def
 jest.mock('../../src/services/sanity', () => ({
   default: {
     fetch: jest.fn()
-  }
+  },
+  fetchSanity: jest.fn()
 }))
 
 jest.mock('../../src/services/sync/repository-proxy', () => {
@@ -27,7 +28,7 @@ jest.mock('../../src/services/sync/repository-proxy', () => {
   return { default: mockFns, ...mockFns }
 })
 
-import sanityClient from '../../src/services/sanity'
+import sanityClient, { fetchSanity } from '../../src/services/sanity'
 import db from '../../src/services/sync/repository-proxy'
 import { awardDefinitions } from '../../src/services/awards/award-definitions'
 
@@ -41,6 +42,7 @@ describe('Award Completion Flow - E2E Scenarios', () => {
     awardEvents.removeAllListeners()
 
     sanityClient.fetch = jest.fn().mockResolvedValue(mockAwardDefinitions)
+    fetchSanity.mockResolvedValue(mockAwardDefinitions)
 
     db.contentPractices.sumPracticeMinutesForContent = jest.fn().mockResolvedValue(180)
     db.userAwardProgress.hasCompletedAward = jest.fn().mockResolvedValue(false)

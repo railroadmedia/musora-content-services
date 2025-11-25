@@ -5,7 +5,8 @@ import { globalConfig } from '../../src/services/config'
 jest.mock('../../src/services/sanity', () => ({
   default: {
     fetch: jest.fn()
-  }
+  },
+  fetchSanity: jest.fn()
 }))
 
 jest.mock('../../src/services/user/management', () => ({
@@ -21,7 +22,7 @@ jest.mock('../../src/services/sync/repository-proxy', () => {
   return { default: mockFns, ...mockFns }
 })
 
-import sanityClient from '../../src/services/sanity'
+import sanityClient, { fetchSanity } from '../../src/services/sanity'
 import { getUserData } from '../../src/services/user/management'
 import db from '../../src/services/sync/repository-proxy'
 import { awardDefinitions } from '../../src/services/awards/award-definitions'
@@ -39,6 +40,7 @@ describe('Award Certificate Display - E2E Scenarios', () => {
     }
 
     sanityClient.fetch = jest.fn().mockResolvedValue(mockAwardDefinitions)
+    fetchSanity.mockResolvedValue(mockAwardDefinitions)
 
     db.userAwardProgress = {
       getByAwardId: jest.fn()
@@ -70,8 +72,8 @@ describe('Award Certificate Display - E2E Scenarios', () => {
             completed_at: new Date().toISOString(),
             days_user_practiced: 14,
             practice_minutes: 180
-          }
-        }
+          },
+        },
       })
     })
 
@@ -163,8 +165,8 @@ describe('Award Certificate Display - E2E Scenarios', () => {
             completed_at: new Date().toISOString(),
             days_user_practiced: 10,
             practice_minutes: 200
-          }
-        }
+          },
+        },
       })
     })
 
@@ -191,8 +193,8 @@ describe('Award Certificate Display - E2E Scenarios', () => {
             completed_at: new Date().toISOString(),
             days_user_practiced: 5,
             practice_minutes: 100
-          }
-        }
+          },
+        },
       })
     })
 
@@ -223,8 +225,8 @@ describe('Award Certificate Display - E2E Scenarios', () => {
             completed_at: new Date().toISOString(),
             days_user_practiced: 7,
             practice_minutes: 150
-          }
-        }
+          },
+        },
       })
     })
 
@@ -254,8 +256,8 @@ describe('Award Certificate Display - E2E Scenarios', () => {
             completed_at: new Date().toISOString(),
             days_user_practiced: 3,
             practice_minutes: 90
-          }
-        }
+          },
+        },
       })
     })
 
@@ -290,7 +292,7 @@ describe('Award Certificate Display - E2E Scenarios', () => {
           progress_percentage: 100,
           completed_at: Math.floor(Date.now() / 1000),
           completion_data: null
-        }
+        },
       })
 
       await expect(
@@ -313,8 +315,8 @@ describe('Award Certificate Display - E2E Scenarios', () => {
             completed_at: new Date().toISOString(),
             days_user_practiced: 30,
             practice_minutes: 600
-          }
-        }
+          },
+        },
       })
     })
 
