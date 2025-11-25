@@ -111,7 +111,7 @@ export async function fetchArtistLessons(
     progressIds = undefined,
   }: ArtistLessonOptions = {}
 ): Promise<LessonsByArtistResponse | null> {
-  const fieldsString = getFieldsForContentType() as string
+  const fieldsString = getFieldsForContentType(contentType) as string
   const start = (page - 1) * limit
   const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
