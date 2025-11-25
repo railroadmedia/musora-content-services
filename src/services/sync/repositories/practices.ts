@@ -1,8 +1,23 @@
-import SyncRepository from "./base";
+import SyncRepository, { Q } from "./base";
 import Practice from "../models/Practice";
 import { RecordId } from "@nozbe/watermelondb";
 
 export default class PracticesRepository extends SyncRepository<Practice> {
+  async sumPracticeMinutesForContent(contentIds: number[]): Promise<number> {
+    if (contentIds.length === 0) return 0
+
+    const practices = await this.queryAll(
+      Q.where('content_id', Q.oneOf(contentIds))
+    )
+
+    const totalSeconds = practices.data.reduce(
+      (sum, practice) => sum + practice.duration_seconds,
+      0
+    )
+
+    return Math.round(totalSeconds / 60)
+  }
+
   async trackAutoPractice(contentId: number, date: string, incrementalDurationSeconds: number) {
     return await this.upsertOne(PracticesRepository.generateAutoId(contentId, date), r => {
       r._raw.id = PracticesRepository.generateAutoId(contentId, date);

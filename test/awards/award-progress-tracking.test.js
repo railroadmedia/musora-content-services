@@ -16,7 +16,7 @@ jest.mock('../../src/services/sync/repository-proxy', () => {
       queryOne: jest.fn(),
       queryAll: jest.fn()
     },
-    contentPractices: {
+    practices: {
       sumPracticeMinutesForContent: jest.fn()
     },
     userAwardProgress: {
@@ -43,7 +43,7 @@ describe('Award Progress Tracking - E2E Scenarios', () => {
     sanityClient.fetch = jest.fn().mockResolvedValue(mockAwardDefinitions)
     fetchSanity.mockResolvedValue(mockAwardDefinitions)
 
-    db.contentPractices.sumPracticeMinutesForContent = jest.fn().mockResolvedValue(180)
+    db.practices.sumPracticeMinutesForContent = jest.fn().mockResolvedValue(180)
     db.userAwardProgress.hasCompletedAward = jest.fn().mockResolvedValue(false)
     db.userAwardProgress.recordAwardProgress = jest.fn().mockResolvedValue({ data: {}, status: 'synced' })
 

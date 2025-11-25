@@ -9,7 +9,7 @@ async function getCompletionStates(contentIds) {
   return Promise.all(
     contentIds.map(async (id) => {
       const progress = await db.contentProgress.queryOne(
-        Q => Q.where('content_id', id)
+        Q.where('content_id', id)
       )
       return {
         id,

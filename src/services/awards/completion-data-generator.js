@@ -76,14 +76,14 @@ async function calculateDaysUserPracticed(contentIds, db) {
 async function calculatePracticeMinutes(contentIds, db) {
   if (contentIds.length === 0) return 0
 
-  // Check if contentPractices repository exists and has the sumPracticeMinutesForContent method
-  if (!db.contentPractices || typeof db.contentPractices.sumPracticeMinutesForContent !== 'function') {
-    console.warn('contentPractices repository not available, returning 0 practice minutes')
+  // Check if practices repository exists and has the sumPracticeMinutesForContent method
+  if (!db.practices || typeof db.practices.sumPracticeMinutesForContent !== 'function') {
+    console.warn('practices repository not available, returning 0 practice minutes')
     return 0
   }
 
   // Use repository method to sum practice minutes
-  const totalMinutes = await db.contentPractices.sumPracticeMinutesForContent(contentIds)
+  const totalMinutes = await db.practices.sumPracticeMinutesForContent(contentIds)
 
   return totalMinutes
 }
