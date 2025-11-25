@@ -340,6 +340,7 @@ export async function getStartedOrCompletedProgressOnly({
   return result
 }
 
+// todo add LP special logic to these 3 functions (actually not reset lol)
 export async function contentStatusCompleted(contentId, collection = null) {
   return await dataContext.update(
     async function (localContext) {
