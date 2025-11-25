@@ -80,14 +80,13 @@ export async function report<T extends ReportableType>(params: ReportParams<T>):
     reportable_type: params.type,
     reportable_id: params.id,
     issue: params.issue,
+    brand: params.brand,
   }
 
+  // Add details only when provided (required for 'other' issue)
   if (params.details) {
     requestBody.details = params.details
   }
-
-  // Brand is always required
-  requestBody.brand = params.brand
 
   const response = await httpClient.post<ReportResponse>(
     '/api/user-reports/v1/reports',
