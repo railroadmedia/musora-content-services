@@ -15,6 +15,7 @@ import {
   IssueTypeMap,
   ReportIssueOption,
 } from './types'
+import {Brand} from "../../lib/brands";
 
 /**
  * Parameters for submitting a report with type-safe issue values
@@ -29,7 +30,7 @@ export type ReportParams<T extends ReportableType = ReportableType> = {
   /** Details about the issue - required when issue is 'other', not sent otherwise */
   details?: string
   /** Brand context (required: drumeo, pianote, guitareo, singeo, playbass) */
-  brand: string
+  brand: Brand
 }
 
 /**
