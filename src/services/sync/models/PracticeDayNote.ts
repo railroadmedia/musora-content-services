@@ -3,7 +3,7 @@ import BaseModel from './Base'
 
 export default class PracticeDayNote extends BaseModel<{
   date: string
-  note: string
+  notes: string
 }> {
   static table = SYNC_TABLES.PRACTICE_DAY_NOTES
 
