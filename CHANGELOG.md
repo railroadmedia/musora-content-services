@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.88.3](https://github.com/railroadmedia/musora-content-services/compare/v2.88.1...v2.88.3) (2025-11-26)
+
+
+### Bug Fixes
+
+* dailes param ([#594](https://github.com/railroadmedia/musora-content-services/issues/594)) ([c5d8857](https://github.com/railroadmedia/musora-content-services/commit/c5d88575d34336a0ca1d962ea3f38252d7b54a48))
+
+### [2.88.2](https://github.com/railroadmedia/musora-content-services/compare/v2.88.1...v2.88.2) (2025-11-26)
+
 ### [2.88.1](https://github.com/railroadmedia/musora-content-services/compare/v2.88.0...v2.88.1) (2025-11-26)
 
 
