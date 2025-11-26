@@ -139,7 +139,8 @@ const recommendedContentCache: { [brand: string]: OnboardingRecommendedContent }
     difficulty: 'Beginner',
     lesson_count: 12,
     skill_count: 1,
-    badge: 'https://cdn.sanity.io/files/4032r8py/staging/drumeo_badge.png',
+    badge:
+      'https://cdn.sanity.io/files/4032r8py/staging/9470587f03479b7c1f8019c3cbcbdfe12aa267f3.png',
     description:
       'Start your drumming journey with essential techniques and rhythms to get you playing quickly.',
     video: {
@@ -172,7 +173,8 @@ const recommendedContentCache: { [brand: string]: OnboardingRecommendedContent }
     difficulty: 'Beginner',
     lesson_count: 6,
     skill_count: 5,
-    badge: 'https://cdn.sanity.io/files/4032r8py/staging/guitareo_badge.png',
+    badge:
+      'https://cdn.sanity.io/files/4032r8py/staging/9470587f03479b7c1f8019c3cbcbdfe12aa267f3.png',
     description:
       'New to the acoustic guitar? Then this Course is for you! Learn everything you need to get started on the acoustic guitar, and start playing music as fast as possible!',
     video: {
@@ -188,7 +190,8 @@ const recommendedContentCache: { [brand: string]: OnboardingRecommendedContent }
     difficulty: 'Beginner',
     lesson_count: 5,
     skill_count: 4,
-    badge: 'https://cdn.sanity.io/files/4032r8py/staging/singeo_badge.png',
+    badge:
+      'https://cdn.sanity.io/files/4032r8py/staging/9470587f03479b7c1f8019c3cbcbdfe12aa267f3.png',
     description:
       'Welcome to the Singing Starter Kit! This course will teach you everything you need to know to sound better when you sing! You will learn how your unique voice works so that you can develop vocal strength, accurate pitch, and find confidence singing your favorite songs. You can sing, and the Singing Starter Kit is the perfect way to start your singing journey.',
     video: {
@@ -204,7 +207,8 @@ const recommendedContentCache: { [brand: string]: OnboardingRecommendedContent }
     difficulty: 'Beginner',
     lesson_count: 6,
     skill_count: 5,
-    badge: 'https://cdn.sanity.io/files/4032r8py/staging/guitareo_badge.png',
+    badge:
+      'https://cdn.sanity.io/files/4032r8py/staging/9470587f03479b7c1f8019c3cbcbdfe12aa267f3.png',
     description:
       'New to the acoustic guitar? Then this Course is for you! Learn everything you need to get started on the acoustic guitar, and start playing music as fast as possible!',
     video: {
