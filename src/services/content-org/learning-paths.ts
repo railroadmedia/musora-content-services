@@ -27,7 +27,7 @@ interface ActiveLearningPathResponse {
  */
 export async function getDailySession(brand: string, userDate: Date) {
   const stringDate = userDate.toISOString().split('T')[0]
-  const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${userDate}`
+  const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${stringDate}`
   return await fetchHandler(url, 'GET', null, null)
 }
 
