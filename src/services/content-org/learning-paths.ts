@@ -247,9 +247,8 @@ export async function completeMethodIntroVideo(introVideoId: number, brand: stri
   const methodStructure = await fetchMethodV2Structure(brand)
   const learningPathId = methodStructure.learningPaths[0].id
 
-  const url: string = `${LEARNING_PATHS_PATH}/start`
-  const body = { learning_path_id: learningPathId, brand: brand }
-  response.active_path_response = await fetchHandler(url, 'POST', null, body)
+  response.active_path_response = await startLearningPath(brand, learningPathId)
+
 
   return response
 }
@@ -274,14 +273,15 @@ export async function completeLearningPathIntroVideo(introVideoId: number, learn
 
   response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
+  const collection = { id: learningPathId, type: 'learning-path-v2' }
+
   if (!lessonsToImport) {
     // returns nothing now, but it will when watermelon comes 'round
-    response.learning_path_reset_response = await contentStatusReset(learningPathId)
-  } else {
+    response.learning_path_reset_response = await contentStatusReset(learningPathId, collection)
 
-    // todo: add collection context + optimize with bulk calls with watermelon
+  } else {
     for (const contentId of lessonsToImport) {
-      response.lesson_import_response[contentId] = await contentStatusCompleted(contentId)
+      response.lesson_import_response[contentId] = await contentStatusCompleted(contentId, collection)
     }
   }
 
