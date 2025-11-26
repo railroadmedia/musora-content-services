@@ -12,11 +12,11 @@ import {
 } from './services/awards/award-callbacks.js';
 
 import {
+	getEligibleChildIds,
 	initializeAwardDefinitions
 } from './services/awards/award-definitions.js';
 
 import {
-	checkForNewAwards,
 	fetchAwardsForUser,
 	getAllUserAwardProgress,
 	getAwardForContent,
@@ -25,6 +25,7 @@ import {
 	getAwardStatusForContent,
 	getCompletedAwards,
 	getInProgressAwards,
+	getNewlyEarnedAwards,
 	hasCompletedAward
 } from './services/awards/award-query.js';
 
@@ -413,6 +414,7 @@ import {
 	restorePracticeSession,
 	restoreUserActivity,
 	restoreUserPractice,
+	trackUserPractice,
 	unpinProgressRow,
 	updatePracticeNotes,
 	updateUserPractice
@@ -429,7 +431,6 @@ export {
 	buildCertificateData,
 	buildImageSRC,
 	calculateLongestStreaks,
-	checkForNewAwards,
 	closeComment,
 	completeLearningPathIntroVideo,
 	completeMethodIntroVideo,
@@ -573,6 +574,7 @@ export {
 	getCompletedAwards,
 	getContentRows,
 	getDailySession,
+	getEligibleChildIds,
 	getEnrichedLearningPath,
 	getInProgressAwards,
 	getLastInteractedOf,
@@ -584,6 +586,7 @@ export {
 	getNavigateTo,
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
+	getNewlyEarnedAwards,
 	getNextLesson,
 	getOnboardingRecommendedContent,
 	getPracticeNotes,
@@ -680,6 +683,7 @@ export {
 	togglePlaylistPrivate,
 	toggleSignaturePrivate,
 	toggleStudentView,
+	trackUserPractice,
 	unEnrollUserInGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,

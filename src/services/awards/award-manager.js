@@ -40,12 +40,14 @@ export class AwardManager {
     try {
       const hasCompleted = await db.userAwardProgress.hasCompletedAward(award._id)
       if (hasCompleted) {
+        console.log(`Award ${award._id} already completed, skipping evaluation`)
         return
       }
 
       const isEligible = await this.checkAwardEligibility(award, courseContentId)
 
       if (isEligible) {
+        console.log(`Award ${award._id} is now eligible, granting award`)
         await this.grantAward(award._id, courseContentId)
       } else {
         await this.updateAwardProgress(award._id, courseContentId)

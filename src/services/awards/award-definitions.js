@@ -109,6 +109,15 @@ class AwardDefinitionsService {
           const existing = this.contentIndex.get(award.content_id) || []
           this.contentIndex.set(award.content_id, [...existing, award._id])
         }
+
+        if (award.child_ids && Array.isArray(award.child_ids)) {
+          award.child_ids.forEach(childId => {
+            if (childId) {
+              const existing = this.contentIndex.get(childId) || []
+              this.contentIndex.set(childId, [...existing, award._id])
+            }
+          })
+        }
       })
 
       this.lastFetch = Date.now()

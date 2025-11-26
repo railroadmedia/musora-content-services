@@ -8,11 +8,11 @@ import {
 } from './services/awards/award-callbacks.js';
 
 import {
+	getEligibleChildIds,
 	initializeAwardDefinitions
 } from './services/awards/award-definitions.js';
 
 import {
-	checkForNewAwards,
 	fetchAwardsForUser,
 	getAllUserAwardProgress,
 	getAwardForContent,
@@ -21,6 +21,7 @@ import {
 	getAwardStatusForContent,
 	getCompletedAwards,
 	getInProgressAwards,
+	getNewlyEarnedAwards,
 	hasCompletedAward
 } from './services/awards/award-query.js';
 
@@ -409,6 +410,7 @@ import {
 	restorePracticeSession,
 	restoreUserActivity,
 	restoreUserPractice,
+	trackUserPractice,
 	unpinProgressRow,
 	updatePracticeNotes,
 	updateUserPractice
@@ -430,7 +432,6 @@ declare module 'musora-content-services' {
 		buildCertificateData,
 		buildImageSRC,
 		calculateLongestStreaks,
-		checkForNewAwards,
 		closeComment,
 		completeLearningPathIntroVideo,
 		completeMethodIntroVideo,
@@ -574,6 +575,7 @@ declare module 'musora-content-services' {
 		getCompletedAwards,
 		getContentRows,
 		getDailySession,
+		getEligibleChildIds,
 		getEnrichedLearningPath,
 		getInProgressAwards,
 		getLastInteractedOf,
@@ -585,6 +587,7 @@ declare module 'musora-content-services' {
 		getNavigateTo,
 		getNavigateToForPlaylists,
 		getNewAndUpcoming,
+		getNewlyEarnedAwards,
 		getNextLesson,
 		getOnboardingRecommendedContent,
 		getPracticeNotes,
@@ -681,6 +684,7 @@ declare module 'musora-content-services' {
 		togglePlaylistPrivate,
 		toggleSignaturePrivate,
 		toggleStudentView,
+		trackUserPractice,
 		unEnrollUserInGuidedCourse,
 		unassignModeratorToComment,
 		unblockUser,
