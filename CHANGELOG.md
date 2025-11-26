@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.88.0](https://github.com/railroadmedia/musora-content-services/compare/v2.86.1...v2.88.0) (2025-11-26)
+
+
+### Features
+
+* **BEH-1418:** refactor learning path endpoints ([#589](https://github.com/railroadmedia/musora-content-services/issues/589)) ([e3637f6](https://github.com/railroadmedia/musora-content-services/commit/e3637f6359ddf8f4295eead890de6457b942b4ea))
+* Implement unified user reporting system ([7aa42ab](https://github.com/railroadmedia/musora-content-services/commit/7aa42ab8dcee09ce3f293d9fbb1a203dcbe94414))
+* **MU2-1250:** Implement unified user reporting system ([3303282](https://github.com/railroadmedia/musora-content-services/commit/33032829b729efa9f9b1e40f31179127c8c74f9d))
+
 ## [2.87.0](https://github.com/railroadmedia/musora-content-services/compare/v2.86.1...v2.87.0) (2025-11-26)
 
 
