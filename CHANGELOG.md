@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.88.4](https://github.com/railroadmedia/musora-content-services/compare/v2.88.3...v2.88.4) (2025-11-26)
+
+
+### Bug Fixes
+
+* **onboarding:** fix hardcoded recommended content badges ([ff5dd81](https://github.com/railroadmedia/musora-content-services/commit/ff5dd814bb8c26c29a5fc55b51ebeb925ac462fa))
+
 ### [2.88.3](https://github.com/railroadmedia/musora-content-services/compare/v2.88.1...v2.88.3) (2025-11-26)
 
 
