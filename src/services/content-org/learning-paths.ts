@@ -90,7 +90,6 @@ export async function resetAllLearningPaths() {
  */
 export async function getEnrichedLearningPath(learningPathId) {
   // TODO: replace addNextLesson with addNaviageTo
-  // add intro video to here.
   const response = (await addContextToContent(
     fetchByRailContentId,
     learningPathId,
