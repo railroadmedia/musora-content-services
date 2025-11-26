@@ -8,6 +8,7 @@ import { addContextToContent } from '../contentAggregator.js'
 import {
   contentStatusCompleted,
   contentStatusReset,
+  getAllCompletedByIds,
   getProgressState,
 } from '../contentProgress.js'
 
@@ -217,6 +218,34 @@ export async function fetchLearningPathLessons(
     next_learning_path_id: nextLearningPathId,
     completed_lessons: completedLessons,
     previous_learning_path_todays: previousLearningPathTodays,
+  }
+}
+
+/**
+ * For an array of contentIds, fetch any content progress with state=completed,
+ * including other learning paths and a la carte progress.
+ *
+ * @param contentIds The array of content IDs within the learning path
+ * @param learningPathId The learning path ID
+ * @returns {Promise<Object>} Response object
+ * @returns {Array} result.lessons - Array of all learning path lesson contentIds.
+ * @returns {Array} result.completed_lessons - Array of learning path lesson contentIds that are completed.
+ * @returns {Array} result.lessons_count - Count of learning path lessons.
+ * @returns {Array} result.completed_lessons_count - Count of learning path completed lessons.
+ */
+export async function fetchLearningPathProgressCheckLessons(
+  contentIds: number[],
+  learningPathId: number
+): Promise<object> {
+  let completedContentIds = await getAllCompletedByIds(contentIds, {
+    id: learningPathId,
+    type: 'learning-path-v2',
+  })
+  return {
+    lessons: contentIds,
+    completed_lessons: completedContentIds,
+    lessons_count: contentIds.length,
+    completed_lessons_count: completedContentIds.length,
   }
 }
 
