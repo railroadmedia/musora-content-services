@@ -243,6 +243,11 @@ import {
 } from './services/recommendations.js';
 
 import {
+	getReportIssueOptions,
+	report
+} from './services/reporting/reporting.ts';
+
+import {
 	buildEntityAndTotalQuery,
 	fetchAll,
 	fetchAllFilterOptions,
@@ -597,6 +602,7 @@ declare module 'musora-content-services' {
 		getRecent,
 		getRecentActivity,
 		getRecommendedForYou,
+		getReportIssueOptions,
 		getResumeTimeSeconds,
 		getResumeTimeSecondsByIds,
 		getSanityDate,
@@ -662,6 +668,7 @@ declare module 'musora-content-services' {
 		removeContentAsNotInterested,
 		removeUserPractice,
 		replyToComment,
+		report,
 		reportComment,
 		reportPlaylist,
 		requestEmailChange,
