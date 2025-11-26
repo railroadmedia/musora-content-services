@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.87.0](https://github.com/railroadmedia/musora-content-services/compare/v2.86.1...v2.87.0) (2025-11-26)
+
+
+### Features
+
+* **BEH-1418:** refactor learning path endpoints ([#589](https://github.com/railroadmedia/musora-content-services/issues/589)) ([e3637f6](https://github.com/railroadmedia/musora-content-services/commit/e3637f6359ddf8f4295eead890de6457b942b4ea))
+
 ### [2.86.1](https://github.com/railroadmedia/musora-content-services/compare/v2.86.0...v2.86.1) (2025-11-25)
 
 
