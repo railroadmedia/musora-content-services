@@ -56,7 +56,6 @@ export async function buildCertificateData(awardId) {
     brandLogo: getBrandLogo(awardDef.brand),
     musoraLogo: AWARD_ASSETS.musoraLogo,
     musoraBgLogo: AWARD_ASSETS.musoraBgLogo,
-    instructorSignature: awardDef.instructor_signature,
     instructorName: awardDef.instructor_name
   }
 }

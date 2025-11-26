@@ -91,7 +91,6 @@ class AwardDefinitionsService {
         brand,
         'content_title': content->title,
         award_custom_text,
-        'instructor_signature': content->instructor[0]->signature.asset->url,
         'instructor_name': content->instructor[0]->name,
         'child_ids': content->child[status != 'draft']->railcontent_id,
       }`

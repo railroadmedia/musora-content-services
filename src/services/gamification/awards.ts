@@ -9,12 +9,11 @@ import { globalConfig } from '../config'
 const baseUrl = `/api/gamification`
 
 export interface Certificate {
-  id: number
+  award_id: string
   user_name: string
   user_id: number
-  completed_at: string // ISO-8601 timestamp
+  completed_at: string
   message: string
-  award_id: number
   type: string
   title: string
   musora_logo: string
@@ -38,17 +37,15 @@ export interface Certificate {
  * Uses local WatermelonDB data and converts all images to base64 format
  * for certificate generation in the frontend.
  *
- * @param {number|string} awardId - The award ID (string Sanity ID like "abc-def-123")
+ * @param {string} awardId - The Sanity award ID (e.g., "abc-def-123")
  * @returns {Promise<Certificate>} - The certificate data with base64-encoded images
  * @throws {Error} - If the award is not found or not completed
  */
-export async function fetchCertificate(awardId: number | string): Promise<Certificate> {
+export async function fetchCertificate(awardId: string): Promise<Certificate> {
   const { buildCertificateData } = await import('../awards/certificate-builder')
   const { urlMapToBase64 } = await import('../awards/image-utils')
 
-  const stringAwardId = typeof awardId === 'string' ? awardId : awardId.toString()
-
-  const certData = await buildCertificateData(stringAwardId)
+  const certData = await buildCertificateData(awardId)
 
   const imageMap = {
     ribbon_image_64: certData.ribbonImage,
@@ -61,17 +58,12 @@ export async function fetchCertificate(awardId: number | string): Promise<Certif
 
   const base64Images = await urlMapToBase64(imageMap)
 
-  const numericId = typeof awardId === 'number'
-    ? awardId
-    : parseInt(stringAwardId.split('-').join(''), 16) % 1000000
-
   return {
-    id: numericId,
+    award_id: awardId,
     user_name: certData.userName,
     user_id: certData.userId,
     completed_at: certData.completedAt,
     message: certData.certificateMessage,
-    award_id: numericId,
     type: certData.awardType,
     title: certData.awardTitle,
     musora_logo: certData.musoraLogo,

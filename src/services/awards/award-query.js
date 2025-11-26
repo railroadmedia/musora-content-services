@@ -1,8 +1,6 @@
 import { awardDefinitions, getEligibleChildIds } from './award-definitions'
 import db from '../sync/repository-proxy'
 
-const NUMERIC_ID_MODULO = 1000000
-
 /**
  * @typedef {Object} AwardStatus
  * @property {string} awardId
@@ -328,7 +326,7 @@ export async function getNewlyEarnedAwards(contentId) {
 
       if (progress && progress.isCompleted) {
         newlyCompletedAwards.push({
-          id: parseInt(awardId.split('-').join(''), 16) % NUMERIC_ID_MODULO,
+          awardId: awardId,
           name: definition.name,
           badge: definition.badge,
           completed_at: new Date(progress.completed_at * 1000).toISOString(),
@@ -364,7 +362,7 @@ export async function fetchAwardsForUser(userId, brand, page = 1, limit = 4) {
 
     return {
       data: awards.map(award => ({
-        id: parseInt(award.awardId.split('-').join(''), 16) % NUMERIC_ID_MODULO,
+        awardId: award.awardId,
         name: award.awardTitle,
         badge: award.badge,
         completed_at: award.completedAt,
@@ -404,7 +402,7 @@ export async function getAwardForContent(contentId) {
     }
 
     const baseAward = {
-      id: parseInt(award.awardId.split('-').join(''), 16) % NUMERIC_ID_MODULO,
+      awardId: award.awardId,
       name: award.awardTitle,
       badge: award.badge,
       completed_at: award.completedAt
