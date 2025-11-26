@@ -32,9 +32,9 @@ interface ActiveLearningPathResponse {
  */
 export async function getDailySession(brand: string, userDate: Date) {
   const stringDate = userDate.toISOString().split('T')[0]
-  const url: string = `${LEARNING_PATHS_PATH}/daily-session/get-or-create`
+  const url: string = `${LEARNING_PATHS_PATH}/daily-session/get`
   const body = { brand: brand, userDate: stringDate }
-  return await fetchHandler(url, 'POST', null, body)
+  return await fetchHandler(url, 'GET', null, body)
 }
 
 /**
@@ -49,7 +49,7 @@ export async function updateDailySession(
   keepFirstLearningPath: boolean
 ) {
   const stringDate = userDate.toISOString().split('T')[0]
-  const url: string = `${LEARNING_PATHS_PATH}/daily-session/update`
+  const url: string = `${LEARNING_PATHS_PATH}/daily-session/create`
   const body = { brand: brand, userDate: stringDate, keepFirstLearningPath: keepFirstLearningPath }
   return await fetchHandler(url, 'POST', null, body)
 }
@@ -59,30 +59,18 @@ export async function updateDailySession(
  * @param brand
  */
 export async function getActivePath(brand: string) {
-  const url: string = `${LEARNING_PATHS_PATH}/active-path/get-or-create`
+  const url: string = `${LEARNING_PATHS_PATH}/active-path/get`
   const body = { brand: brand }
-  return await fetchHandler(url, 'POST', null, body)
-}
-
-// todo this should be removed once we handle active path gen only through
-//  finish method intro or complete current active path
-/**
- * Updates user's active learning path.
- * @param brand
- */
-export async function updateActivePath(brand: string) {
-  const url: string = `${LEARNING_PATHS_PATH}/active-path/update`
-  const body = { brand: brand }
-  return await fetchHandler(url, 'POST', null, body)
+  return await fetchHandler(url, 'GET', null, body)
 }
 
 /**
- * Starts a new learning path for the user.
+ * Sets a new learning path as the user's active learning path.
  * @param brand
  * @param learningPathId
  */
 export async function startLearningPath(brand: string, learningPathId: number) {
-  const url: string = `${LEARNING_PATHS_PATH}/start`
+  const url: string = `${LEARNING_PATHS_PATH}/active-path/set`
   const body = { brand: brand, learning_path_id: learningPathId }
   return await fetchHandler(url, 'POST', null, body)
 }
@@ -172,10 +160,11 @@ export async function fetchLearningPathLessons(
   brand: string,
   userDate: Date
 ) {
-  const [learningPath, dailySession] = await Promise.all([
-    getEnrichedLearningPath(learningPathId),
-    getDailySession(brand, userDate),
-  ])
+  const learningPath = await getEnrichedLearningPath(learningPathId)
+  let dailySession = await getDailySession(brand, userDate)
+  if (!dailySession) {
+    dailySession = await updateDailySession(brand, userDate, false)
+  }
 
   const isActiveLearningPath = (dailySession?.active_learning_path_id || 0) == learningPathId
   if (!isActiveLearningPath) {
