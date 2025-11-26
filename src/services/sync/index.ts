@@ -15,6 +15,7 @@ export { default as SyncContext } from './context'
 export { SyncError } from './errors'
 
 export type SyncToken = EpochSeconds
+export type SyncGrabQuery = Q.Clause[]
 
 export type SyncSyncable<TModel extends BaseModel = BaseModel, TRecordKey extends string = 'id'> = {
   [K in TRecordKey]: RecordId

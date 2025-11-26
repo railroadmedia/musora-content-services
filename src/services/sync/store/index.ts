@@ -1,7 +1,7 @@
 import { Database, Q, type Collection, type RecordId } from '@nozbe/watermelondb'
 import { RawSerializer, ModelSerializer } from '../serializers'
-import { ModelClass, SyncToken, SyncEntry,  SyncContext } from '..'
-import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
+import { ModelClass, SyncToken, SyncGrabQuery, SyncEntry,  SyncContext } from '..'
+import { SyncPullResponse, SyncGrabResponse, SyncPushResponse, PushPayload, SyncGrabNotImplementedResponse } from '../fetch'
 import type SyncRetry from '../retry'
 import type SyncRunScope from '../run-scope'
 import EventEmitter from '../utils/event-emitter'
@@ -23,6 +23,11 @@ type SyncPull = (
   previousFetchToken: SyncToken | null,
   signal: AbortSignal
 ) => Promise<SyncPullResponse>
+type SyncGrab = (
+  session: BaseSessionProvider,
+  query: SyncGrabQuery,
+  signal: AbortSignal
+) => Promise<SyncGrabResponse>
 type SyncPush = (
   session: BaseSessionProvider,
   payload: PushPayload,
@@ -33,6 +38,7 @@ export type SyncStoreConfig<TModel extends BaseModel> = {
   model: ModelClass<TModel>
   comparator?: TModel extends BaseModel ? SyncResolverComparator<TModel> : SyncResolverComparator
   pull: SyncPull
+  grab?: SyncGrab
   push: SyncPush
 }
 
@@ -53,6 +59,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   readonly modelSerializer: ModelSerializer<TModel>
 
   readonly puller: SyncPull
+  readonly grabber?: SyncGrab
   readonly pusher: SyncPush
 
   private pullThrottleState: ThrottleState<SyncPullResponse>
@@ -64,7 +71,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private lastFetchTokenKey: string
 
   constructor(
-    { model, comparator, pull, push }: SyncStoreConfig<TModel>,
+    { model, comparator, pull, grab, push }: SyncStoreConfig<TModel>,
     context: SyncContext,
     db: Database,
     retry: SyncRetry,
@@ -87,6 +94,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.pullThrottleState = createThrottleState(SyncStore.PULL_THROTTLE_INTERVAL)
 
     this.puller = pull
+    this.grabber = grab
     this.pusher = push
     this.lastFetchTokenKey = `last_fetch_token:${this.model.table}`
 
@@ -139,6 +147,35 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         return this.executePush(records, span)
       })
     )
+  }
+
+  async grabRecords(query: SyncGrabQuery) {
+    if (!this.grabber) {
+      const response: SyncGrabNotImplementedResponse = {
+        kind: 'grab',
+        ok: false,
+        implemented: false
+      }
+      return response
+    }
+
+    return this.telemetry.trace(
+      {
+        name: `grab:${this.model.table}:run`,
+        op: 'grab:run',
+        attributes: { table: this.model.table, query: JSON.stringify(query) },
+      },
+      async (span) => {
+        const response = await this.grabber!(this.context.session, query, this.runScope.signal);
+
+        if (response.ok) {
+          await this.writeEntries(response.entries, false, span);
+
+          this.emit('grabCompleted');
+        }
+
+        return response
+      });
   }
 
   async readAll() {
@@ -662,6 +699,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private async buildWriteBatchesFromEntries(entries: SyncEntry[], freshSync: boolean) {
     // if this is a fresh sync and there are no existing records, we can skip more sophisticated conflict resolution
     if (freshSync) {
+      // always check that there are indeed no existing records (grabs may have created some)
       if ((await this.queryMaybeDeletedRecords()).length === 0) {
         const resolver = new Resolver(this.resolverComparator)
         entries

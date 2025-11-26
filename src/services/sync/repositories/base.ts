@@ -5,9 +5,10 @@ import { RecordId } from '@nozbe/watermelondb'
 import type { Span } from '../telemetry/index'
 
 import { SyncError, SyncExistsDTO, SyncReadDTO, SyncReadData, SyncWriteDTO, SyncWriteIdData, SyncWriteRecordData, SyncRemoteWriteDTO} from '..'
-import { SyncPushResponse } from '../fetch'
+import { SyncGrabResponse, SyncPullResponse, SyncPushResponse } from '../fetch'
 
 import { Q } from '@nozbe/watermelondb'
+import firstSuccessful from '../utils/first-successful'
 export { Q }
 
 export default class SyncRepository<TModel extends BaseModel> {
@@ -20,11 +21,11 @@ export default class SyncRepository<TModel extends BaseModel> {
   }
 
   protected async readOne(id: RecordId) {
-    return this._respondToRead(() => this.store.readOne(id))
+    return this._respondToRead(() => this.store.readOne(id), Q.where('id', id))
   }
 
   protected async readSome(ids: RecordId[]) {
-    return this._respondToRead(() => this.store.readSome(ids))
+    return this._respondToRead(() => this.store.readSome(ids), Q.where('id', Q.oneOf(ids)))
   }
 
   protected async readAll() {
@@ -32,19 +33,19 @@ export default class SyncRepository<TModel extends BaseModel> {
   }
 
   protected async queryOne(...args: Q.Clause[]) {
-    return this._respondToRead(() => this.store.queryOne(...args))
+    return this._respondToRead(() => this.store.queryOne(...args), args)
   }
 
   protected async queryOneId(...args: Q.Clause[]) {
-    return this._respondToRead(() => this.store.queryOneId(...args))
+    return this._respondToRead(() => this.store.queryOneId(...args), args)
   }
 
   protected async queryAll(...args: Q.Clause[]) {
-    return this._respondToRead(() => this.store.queryAll(...args))
+    return this._respondToRead(() => this.store.queryAll(...args), args)
   }
 
   protected async queryAllIds(...args: Q.Clause[]) {
-    return this._respondToRead(() => this.store.queryAllIds(...args))
+    return this._respondToRead(() => this.store.queryAllIds(...args), args)
   }
 
   protected async fetchOne(id: RecordId) {
@@ -196,15 +197,34 @@ export default class SyncRepository<TModel extends BaseModel> {
   }
 
   // read from local db, but pull (and throw (!) if it fails) if it's never been synced before
-  private async _respondToRead<T extends SyncReadData<TModel>>(query: () => Promise<T>) {
+  private async _respondToRead<T extends SyncReadData<TModel>>(query: () => Promise<T>, grabParams?: Q.Clause[]) {
     const fetchToken = await this.store.getLastFetchToken()
     const everPulled = !!fetchToken
-    let pull: Awaited<ReturnType<typeof this.store.pullRecords>> | null = null
+
+    let pull: Awaited<SyncPullResponse> | null = null
+    let grab: Awaited<SyncGrabResponse> | null = null
 
     if (!everPulled) {
-      pull = await this.store.pullRecords()
-      if (!pull.ok) {
-        throw new SyncError('Failed to pull records', { pull })
+      if (grabParams) {
+        try {
+          const first = await firstSuccessful<SyncPullResponse | SyncGrabResponse>([
+            this.store.grabRecords(grabParams).then(g => { if (g.ok) return g; throw g; }),
+            this.store.pullRecords().then(p => { if (p.ok) return p; throw p; }),
+          ]);
+
+          if (first.kind === 'grab') {
+            grab = first
+          } else {
+            pull = first
+          }
+        } catch {
+          throw new SyncError('Failed to pull records', { pull, grab })
+        }
+      } else {
+        pull = await this.store.pullRecords()
+        if (!pull.ok) {
+          throw new SyncError('Failed to pull records', { pull })
+        }
       }
     }
 
@@ -212,8 +232,8 @@ export default class SyncRepository<TModel extends BaseModel> {
 
     const result: SyncReadDTO<TModel, T> = {
       data,
-      status: pull?.ok ? 'fresh' : 'stale',
-      pullStatus: pull?.ok ? 'success' : 'failure',
+      status: grab?.ok || pull?.ok ? 'fresh' : 'stale',
+      pullStatus: pull ? pull.ok ? 'success' : 'failure' : 'pending',
       lastFetchToken: fetchToken,
     }
     return result

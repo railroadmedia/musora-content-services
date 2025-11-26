@@ -1,6 +1,7 @@
 import { SyncStoreConfig } from "./store"
 import { ContentLike, ContentProgress, Practice, PracticeDayNote } from "./models"
-import { handlePull, handlePush, makeFetchRequest } from "./fetch"
+import { handlePull, handleGrab, handlePush, makeFetchRequest } from "./fetch"
+import { Q } from "@nozbe/watermelondb"
 
 import type SyncStore from "./store"
 import type BaseModel from "./models/Base"
@@ -24,6 +25,14 @@ export default function createStoresFromConfig(createStore: <TModel extends Base
       },
       pull: handlePull(makeFetchRequest('/content/user/progress')),
       push: handlePush(makeFetchRequest('/content/user/progress', { method: 'POST' })),
+
+      grab: handleGrab(makeFetchRequest('/content/user/progress/grab'), (query, { flattenConditions }) => {
+        return flattenConditions(query).every(clause => {
+          return clause.type === 'take'
+            || clause.type === 'sortBy'
+            || (clause.type === 'where' && ['state', 'content_brand', 'updated_at'].includes(clause.left))
+        })
+      }),
     }),
 
     createStore({
@@ -39,3 +48,4 @@ export default function createStoresFromConfig(createStore: <TModel extends Base
     })
   ] as unknown as SyncStore<BaseModel>[]
 }
+

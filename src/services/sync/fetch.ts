@@ -1,10 +1,11 @@
-import { SyncToken, SyncEntry, SyncSyncable } from "./index"
+import { SyncToken, SyncGrabQuery, SyncEntry, SyncSyncable } from "./index"
 import { EpochSeconds } from "./utils/epoch.js"
 
 import { globalConfig } from '../config.js'
 import { RecordId } from "@nozbe/watermelondb"
 import BaseModel from "./models/Base"
 import { BaseSessionProvider } from "./context/providers"
+import { Q } from "@nozbe/watermelondb"
 
 interface RawPullResponse {
   meta: {
@@ -15,6 +16,11 @@ interface RawPullResponse {
   entries: SyncEntry<BaseModel, 'client_record_id'>[]
 }
 
+interface RawGrabResponse {
+  meta: {}
+  entries: SyncEntry<BaseModel, 'client_record_id'>[]
+}
+
 interface RawPushResponse {
   meta: {
     timestamp: EpochSeconds
@@ -22,7 +28,7 @@ interface RawPushResponse {
   results: SyncStorePushResult<'client_record_id'>[]
 }
 
-export type SyncResponse = SyncPushResponse | SyncPullResponse
+export type SyncResponse = SyncPushResponse | SyncPullResponse | SyncGrabResponse
 
 export type SyncPushResponse = SyncPushSuccessResponse | SyncPushFailureResponse
 
@@ -35,7 +41,7 @@ type SyncPushFailureResponse = SyncPushResponseBase & {
   originalError: Error
 }
 interface SyncPushResponseBase extends SyncResponseBase {
-
+  kind: 'push'
 }
 
 type SyncStorePushResult<TRecordKey extends string = 'id'> = SyncStorePushResultSuccess<TRecordKey> | SyncStorePushResultFailure<TRecordKey>
@@ -74,7 +80,31 @@ type SyncPullFailureResponse = SyncPullResponseBase & {
   originalError: Error
 }
 interface SyncPullResponseBase extends SyncResponseBase {
+  kind: 'pull'
+}
 
+export type SyncGrabResponse = SyncGrabSuccessResponse | SyncGrabUnfulfillableResponse | SyncGrabFailureResponse | SyncGrabNotImplementedResponse
+
+type SyncGrabSuccessResponse = SyncGrabResponseBase & {
+  ok: true
+  implemented: true,
+  entries: SyncEntry[]
+}
+type SyncGrabUnfulfillableResponse = SyncGrabResponseBase & {
+  ok: false
+  implemented: true,
+}
+type SyncGrabFailureResponse = SyncGrabResponseBase & {
+  ok: false,
+  implemented: true,
+  originalError: Error
+}
+export type SyncGrabNotImplementedResponse = SyncGrabResponseBase & {
+  ok: false,
+  implemented: false
+}
+interface SyncGrabResponseBase extends SyncResponseBase {
+  kind: 'grab'
 }
 export interface SyncResponseBase {
   ok: boolean
@@ -157,10 +187,59 @@ export function handlePull(callback: (session: BaseSessionProvider) => Request) 
     const entries = data.entries
 
     return {
+      kind: 'pull',
       ok: true,
       entries,
       token,
       previousToken
+    }
+  }
+}
+
+export function handleGrab(
+  callback: (session: BaseSessionProvider) => Request,
+  isImplementable: (
+    query: SyncGrabQuery,
+    opts: { flattenConditions: (clauses: Q.Clause[]) => Q.Clause[] }
+  ) => boolean
+){
+  return async function(session: BaseSessionProvider, query: SyncGrabQuery, signal?: AbortSignal): Promise<SyncGrabResponse> {
+    if (!isImplementable(query, { flattenConditions })) {
+      return {
+        kind: 'grab',
+        ok: false,
+        implemented: false
+      }
+    }
+
+    const generatedRequest = callback(session)
+    const url = serializeGrabUrlQuery(generatedRequest.url, query)
+    const request = new Request(url, {
+      credentials: 'include',
+      headers: generatedRequest.headers,
+      signal
+    });
+
+    let response: Response | null = null
+    try {
+      response = await performFetch(request)
+    } catch (e) {
+      return {
+        kind: 'grab',
+        ok: false,
+        originalError: e
+      }
+    }
+
+    const json = await response.json() as RawGrabResponse
+    const data = deserializeGrabResponse(json)
+
+    const entries = data.entries
+
+    return {
+      kind: 'grab',
+      ok: true,
+      entries
     }
   }
 }
@@ -180,6 +259,7 @@ export function handlePush(callback: (session: BaseSessionProvider) => Request) 
       response = await performFetch(request)
     } catch (e) {
       return {
+        kind: 'push',
         ok: false,
         originalError: e
       }
@@ -189,6 +269,7 @@ export function handlePush(callback: (session: BaseSessionProvider) => Request) 
     const data = deserializePushResponse(json)
 
     return {
+      kind: 'push',
       ok: true,
       results: data.results
     }
@@ -216,6 +297,30 @@ function serializePullUrlQuery(url: string, fetchToken: SyncToken | null) {
 }
 
 function deserializePullResponse(response: RawPullResponse) {
+  return {
+    ...response,
+    entries: response.entries.map(entry => {
+      return {
+        ...entry,
+        record: deserializeRecord(entry.record),
+        meta: {
+          ...entry.meta,
+          ids: deserializeIds(entry.meta.ids)
+        }
+      }
+    })
+  }
+}
+
+function serializeGrabUrlQuery(url: string, query: SyncGrabQuery) {
+  const queryString = url.replace(/^[^?]*\??/, '');
+  const searchParams = new URLSearchParams(queryString);
+  searchParams.set('query', JSON.stringify(query))
+
+  return url + '?' + searchParams.toString()
+}
+
+function deserializeGrabResponse(response: RawGrabResponse) {
   return {
     ...response,
     entries: response.entries.map(entry => {
@@ -307,4 +412,15 @@ function deserializeIds(ids: { client_record_id: RecordId }): { id: RecordId } {
   return {
     id: ids.client_record_id
   }
+}
+
+function flattenConditions(clauses: Q.Clause[]): Q.Clause[] {
+  return clauses.reduce((acc, clause) => {
+    if (clause.type === 'and' || clause.type === 'or') {
+      return acc.concat(flattenConditions(clause.conditions))
+    } else {
+      acc.push(clause)
+      return acc
+    }
+  }, [] as Q.Clause[])
 }
