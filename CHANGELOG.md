@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.88.1](https://github.com/railroadmedia/musora-content-services/compare/v2.88.0...v2.88.1) (2025-11-26)
+
+
+### Bug Fixes
+
+* add queries in get daily session and get active path ([#593](https://github.com/railroadmedia/musora-content-services/issues/593)) ([91f3974](https://github.com/railroadmedia/musora-content-services/commit/91f3974c530ca695fa87f5bfe14066e5a473db79))
+
 ## [2.88.0](https://github.com/railroadmedia/musora-content-services/compare/v2.86.1...v2.88.0) (2025-11-26)
 
 
