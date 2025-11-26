@@ -3,13 +3,12 @@
  */
 
 import { fetchHandler } from '../railcontent.js'
-import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2Structure } from '../sanity.js'
+import { fetchByRailContentId, fetchMethodV2Structure } from '../sanity.js'
 import { addContextToContent } from '../contentAggregator.js'
 import {
   contentStatusCompleted,
   contentStatusReset,
   getProgressState,
-  getProgressStateByIds
 } from '../contentProgress.js'
 
 const BASE_PATH: string = `/api/content-org`
@@ -21,10 +20,6 @@ interface ActiveLearningPathResponse {
   active_learning_path_id: number,
 }
 
-
-
-
-
 /**
  * Gets today's daily session for the user.
  * @param brand
@@ -32,9 +27,8 @@ interface ActiveLearningPathResponse {
  */
 export async function getDailySession(brand: string, userDate: Date) {
   const stringDate = userDate.toISOString().split('T')[0]
-  const url: string = `${LEARNING_PATHS_PATH}/daily-session/get`
-  const body = { brand: brand, userDate: stringDate }
-  return await fetchHandler(url, 'GET', null, body)
+  const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${userDate}`
+  return await fetchHandler(url, 'GET', null, null)
 }
 
 /**
@@ -59,9 +53,8 @@ export async function updateDailySession(
  * @param brand
  */
 export async function getActivePath(brand: string) {
-  const url: string = `${LEARNING_PATHS_PATH}/active-path/get`
-  const body = { brand: brand }
-  return await fetchHandler(url, 'GET', null, body)
+  const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
+  return await fetchHandler(url, 'GET', null, null)
 }
 
 /**
