@@ -140,7 +140,7 @@ interface ReportIssueOption {
 import { getReportIssueOptions } from 'musora-content-services'
 
 // Get content issue options for web
-const contentOptions = getReportIssueOptions('content')
+const options = getReportIssueOptions('content')
 // Returns:
 // [
 //   { value: 'incorrect_metadata', label: 'The lesson image, title or description is incorrect' },
@@ -148,12 +148,16 @@ const contentOptions = getReportIssueOptions('content')
 //   { value: 'assignment_issue', label: 'An issue with lesson assignment' },
 //   { value: 'other', label: 'Other' }
 // ]
+  options.map(opt => ({
+    ...opt,
+    label: t(`report.${opt.value}`)
+  }))
 ```
 
 **Example - Mobile App:**
 ```typescript
 // Get content issue options for mobile app (includes download option)
-const contentOptions = getReportIssueOptions('content', true)
+const options = getReportIssueOptions('content', true)
 // Returns:
 // [
 //   { value: 'incorrect_metadata', label: 'The lesson image, title or description is incorrect' },
@@ -162,6 +166,10 @@ const contentOptions = getReportIssueOptions('content', true)
 //   { value: 'assignment_issue', label: 'An issue with lesson assignment' },
 //   { value: 'other', label: 'Other' }
 // ]
+ options.map(opt => ({
+    ...opt,
+    label: t(`report.${opt.value}`)
+  }))
 ```
 
 **Example - Comment Issues:**
