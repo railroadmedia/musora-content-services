@@ -19,14 +19,15 @@ const baseURL = 'https://recommender.musora.com'
  *
  * @param {integer} content_id - The ID of the content to find similar items for
  * @param {brand} brand - brand of the content to filter
- * @param {integer} count - number of items to return
+ * @param {integer} limit - number of items to return
+ * @param {integer} page - number of items to return
  * @returns {Promise<Object|null>} - Returns the content_ids sorted by rank (most significant first)
  * @example
  * rankItems('drumeo', 1113)
  *   .then(status => console.log(status))
  *   .catch(error => console.error(error));
  */
-export async function fetchSimilarItems(content_id, brand, count = 10) {
+export async function fetchSimilarItems(content_id, brand, limit = 10, page = 1) {
   if (!content_id) {
     return []
   }
@@ -34,14 +35,16 @@ export async function fetchSimilarItems(content_id, brand, count = 10) {
   let data = {
     brand: brand,
     content_ids: content_id,
-    num_similar: count + 1, // because the content itself is sometimes returned
+    limit: page * limit,
+    page: page,
+    num_similar: limit,
   }
   const url = `/similar_items/`
   try {
     const httpClient = new HttpClient(baseURL)
     const response = await httpClient.post(url, data)
-    // we requested count + 1 then filtered out the extra potential value, so we need slice to the correct size if necessary
-    return response['similar_items'].filter((item) => item !== content_id).slice(0, count)
+    console.log(response)
+    return response['similar_items']
   } catch (error) {
     console.error('Fetch error:', error)
     return null
