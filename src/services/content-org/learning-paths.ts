@@ -95,6 +95,13 @@ export async function resetAllLearningPaths() {
   return await fetchHandler(url, 'POST', null, {})
 }
 
+export async function completeLearningPathTangentActions(contentId: number) {
+  // FETCH: method structure by id to get learning path IDs & brand & video ids
+  // GET: active learning path of brand
+  // POST: BE endpoint to set next as active
+  // MELON: reset progress of active LP's intro video
+}
+
 /**
  * Returns learning path with lessons and progress data
  * @param {number} learningPathId - The learning path ID

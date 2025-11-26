@@ -179,7 +179,7 @@ async function getById(contentId, dataKey, defaultValue) {
   return db.contentProgress.getOneProgressByContentId(contentId).then(r => r.data?.[dataKey] ?? defaultValue)
 }
 
-async function getByIds(contentIds, dataKey, defaultValue) {
+async function getByIds(contentIds, dataKey, defaultValue, collection = null) {
   const progress = Object.fromEntries(contentIds.map(id => [id, defaultValue]))
   await db.contentProgress.getSomeProgressByContentIds(contentIds).then(r => {
     r.data.forEach(p => {
@@ -309,16 +309,31 @@ export async function contentStatusReset(contentId) {
   return resetStatus(contentId)
 }
 
-async function saveContentProgress(contentId, progress, currentSeconds) {
+async function saveContentProgress(contentId, progress, currentSeconds, collection = null) {
   const response = await db.contentProgress.recordProgressRemotely(contentId, progress, currentSeconds)
 
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
 
-  const bubbledProgresses = bubbleProgress(await fetchHierarchy(contentId), contentId)
+  const bubbledProgresses = bubbleProgress(await fetchHierarchy(contentId), contentId, collection)
   await db.contentProgress.recordProgressesTentative(bubbledProgresses)
 
+  for (const [content, progress] of Object.entries(bubbledProgresses)) {
+    const contentId = parseInt(content)
+
+    if (isLearningPathCompleted(contentId, collection, progress)) {
+      completeLearningPathTangentActions(contentId)
+    }
+  }
+
   return response
+}
+
+function isLearningPathCompleted(contentId, collection, progress) {
+  return progress === 100
+    && collection
+    && collection.type === "learning-path-v2"
+    && contentId === collection.id
 }
 
 async function setStartedOrCompletedStatus(contentId, isCompleted) {
@@ -357,9 +372,9 @@ function trickleProgress(hierarchy, contentId, progress) {
   return Object.fromEntries(descendantIds.map(id => [id, progress]))
 }
 
-async function bubbleProgress(hierarchy, contentId)     {
+async function bubbleProgress(hierarchy, contentId, collection = null)     {
   const ids = getAncestorAndSiblingIds(hierarchy, contentId)
-  const progresses = await getByIds(ids, 'progress_percent', 0)
+  const progresses = await getByIds(ids, 'progress_percent', 0, collection)
   return averageProgressesFor(hierarchy, contentId, progresses)
 }
 
