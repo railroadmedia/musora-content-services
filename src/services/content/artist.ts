@@ -7,7 +7,7 @@ import { buildDataAndTotalQuery, getSortOrder } from '../../lib/sanity/query'
 import { Lesson } from './content'
 import { Brands } from '../../lib/brands'
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
-import { DocumentTypes } from '../../lib/documents.js'
+import { DocumentTypes } from '../../lib/documents'
 
 const contentClient = new ContentClient()
 

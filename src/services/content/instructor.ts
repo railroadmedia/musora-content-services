@@ -5,7 +5,7 @@ import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.
 import { FilterBuilder } from '../../filterBuilder.js'
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
 import { Brands } from '../../lib/brands'
-import { DocumentTypes } from '../../lib/documents.js'
+import { DocumentTypes } from '../../lib/documents'
 import { buildDataAndTotalQuery, getSortOrder } from '../../lib/sanity/query'
 import { Lesson } from './content'
 
