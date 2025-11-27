@@ -83,7 +83,7 @@ async function getUserPractices(userId) {
 }
 
 async function getOwnPractices(...clauses) {
-  const query = await db.practices.queryAll(...clauses)
+  const query = await db.practices.queryAll(clauses)
   const data = query.data.reduce((acc, practice) => {
     acc[practice.day] = acc[practice.day] || []
     acc[practice.day].push({
@@ -408,7 +408,7 @@ export async function restoreUserPractice(id) {
  *   .catch(error => console.error("Delete failed:", error));
  */
 export async function deletePracticeSession(day) {
-  const ids = await db.practices.queryAllIds(Q.where('date', day))
+  const ids = await db.practices.queryAllIds([Q.where('date', day)])
   return await db.practices.deleteSome(ids.data)
 }
 
@@ -484,10 +484,10 @@ export async function getPracticeSessions(params = {}) {
   let data
 
   if (userId === globalConfig.sessionConfig.userId) {
-    const query = await db.practices.queryAll(
+    const query = await db.practices.queryAll([
       Q.where('date', day),
       Q.sortBy('created_at', 'asc')
-    )
+    ])
     data = query.data
   } else {
     const query = await fetchUserPracticeMeta(day, userId)
@@ -519,7 +519,7 @@ export async function getPracticeSessions(params = {}) {
  *   .catch(error => console.error("Failed to get notes:", error));
  */
 export async function getPracticeNotes(date) {
-  return await db.practiceDayNotes.queryOne(Q.where('date', date))
+  return await db.practiceDayNotes.queryOne([Q.where('date', date)])
 }
 
 /**

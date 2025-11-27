@@ -21,31 +21,31 @@ export default class SyncRepository<TModel extends BaseModel> {
   }
 
   protected async readOne(id: RecordId) {
-    return this._respondToRead(() => this.store.readOne(id), Q.where('id', id))
+    return this._respondToRead(() => this.store.readOne(id), [Q.where('id', id)])
   }
 
   protected async readSome(ids: RecordId[]) {
-    return this._respondToRead(() => this.store.readSome(ids), Q.where('id', Q.oneOf(ids)))
+    return this._respondToRead(() => this.store.readSome(ids), [Q.where('id', Q.oneOf(ids))])
   }
 
   protected async readAll() {
     return this._respondToRead(() => this.store.readAll())
   }
 
-  protected async queryOne(...args: Q.Clause[]) {
-    return this._respondToRead(() => this.store.queryOne(...args), args)
+  protected async queryOne(clauses: Q.Clause[], eager = true) {
+    return this._respondToRead(() => this.store.queryOne(...clauses), eager ? clauses : undefined)
   }
 
-  protected async queryOneId(...args: Q.Clause[]) {
-    return this._respondToRead(() => this.store.queryOneId(...args), args)
+  protected async queryOneId(clauses: Q.Clause[], eager = true) {
+    return this._respondToRead(() => this.store.queryOneId(...clauses), eager ? clauses : undefined)
   }
 
-  protected async queryAll(...args: Q.Clause[]) {
-    return this._respondToRead(() => this.store.queryAll(...args), args)
+  protected async queryAll(clauses: Q.Clause[], eager = false) {
+    return this._respondToRead(() => this.store.queryAll(...clauses), eager ? clauses : undefined)
   }
 
-  protected async queryAllIds(...args: Q.Clause[]) {
-    return this._respondToRead(() => this.store.queryAllIds(...args), args)
+  protected async queryAllIds(clauses: Q.Clause[], eager = false) {
+    return this._respondToRead(() => this.store.queryAllIds(...clauses), eager ? clauses : undefined)
   }
 
   protected async fetchOne(id: RecordId) {
@@ -204,7 +204,7 @@ export default class SyncRepository<TModel extends BaseModel> {
     let pull: Awaited<SyncPullResponse> | null = null
     let grab: Awaited<SyncGrabResponse> | null = null
 
-    if (!everPulled) {
+    if (!everPulled || true) { // todo - debug
       if (grabParams) {
         try {
           const first = await firstSuccessful<SyncPullResponse | SyncGrabResponse>([

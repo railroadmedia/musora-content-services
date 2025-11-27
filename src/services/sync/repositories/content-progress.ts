@@ -3,27 +3,27 @@ import ContentProgress, { COLLECTION_TYPE, STATE } from '../models/ContentProgre
 
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
   async startedIds(limit?: number) {
-    return this.queryAll(
+    return this.queryAll([
       Q.where('state', STATE.STARTED),
       Q.sortBy('updated_at', 'desc'),
       Q.take(limit || Infinity)
-    )
+    ])
   }
 
   async completedIds(limit?: number) {
-    return this.queryAllIds(
+    return this.queryAllIds([
       Q.where('state', STATE.COMPLETED),
       Q.sortBy('updated_at', 'desc'),
       Q.take(limit || Infinity)
-    )
+    ])
   }
 
   async startedOrCompleted(opts: Parameters<typeof this.startedOrCompletedClauses>[0] = {}) {
-    return this.queryAll(...this.startedOrCompletedClauses(opts))
+    return this.queryAll(this.startedOrCompletedClauses(opts), opts.limit ? true : false) // eager if limit is set
   }
 
   async startedOrCompletedIds(opts: Parameters<typeof this.startedOrCompletedClauses>[0] = {}) {
-    return this.queryAllIds(...this.startedOrCompletedClauses(opts))
+    return this.queryAllIds(this.startedOrCompletedClauses(opts), opts.limit ? true : false) // eager if limit is set
   }
 
   private startedOrCompletedClauses(
@@ -54,10 +54,10 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   }
 
   async mostRecentlyUpdatedId(contentIds: number[]) {
-    return this.queryOneId(
+    return this.queryOneId([
       Q.where('content_id', Q.oneOf(contentIds)),
       Q.sortBy('updated_at', 'desc')
-    )
+    ])
   }
 
   async getOneProgressByContentId(
@@ -74,7 +74,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       )
     }
 
-    return await this.queryOne(...clauses)
+    return await this.queryOne(clauses)
   }
 
   async getSomeProgressByContentIds(
@@ -91,7 +91,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       )
     }
 
-    return await this.queryAll(...clauses)
+    return await this.queryAll(clauses)
   }
 
   recordProgressRemotely(contentId: number, progressPct: number, resumeTime?: number) {
