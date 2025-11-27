@@ -115,8 +115,8 @@ function buildNavigateTo(content, child = null, collection = null) {
  * @param {object|null} collection
  * @returns {Promise<number>}
  */
-export async function getLastInteractedOf(contentIds) {
-  return db.contentProgress.mostRecentlyUpdatedId(contentIds).then(r => r.data ? parseInt(r.data) : undefined)
+export async function getLastInteractedOf(contentIds, collection = null) {
+  return db.contentProgress.mostRecentlyUpdatedId(contentIds, collection).then(r => r.data ? parseInt(r.data) : undefined)
 }
 
 export async function getProgressDataByIds(contentIds, collection) {
@@ -224,6 +224,7 @@ export async function getStartedOrCompletedProgressOnly({ brand = undefined } = 
  */
 export async function recordWatchSession(
   contentId,
+  collection = null,
   mediaLengthSeconds,
   currentSeconds,
   secondsPlayed,
@@ -233,7 +234,7 @@ export async function recordWatchSession(
 ) {
   const [session] = await Promise.all([
     trackPractice(contentId, secondsPlayed, prevSession, { instrumentId, categoryId }),
-    trackProgress(contentId, currentSeconds, mediaLengthSeconds),
+    trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds),
   ])
 
   return session
@@ -252,75 +253,77 @@ async function trackPractice(contentId, secondsPlayed, prevSession, details = {}
   return session
 }
 
-async function trackProgress(contentId, currentSeconds, mediaLengthSeconds) {
+async function trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds) {
   const progress = Math.min(
     99,
     Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds)) * 100)
   )
-  return saveContentProgress(contentId, progress, currentSeconds)
+  return saveContentProgress(contentId, collection, progress, currentSeconds)
 }
 
-export async function contentStatusCompleted(contentId) {
-  return setStartedOrCompletedStatus(contentId, true)
+export async function contentStatusCompleted(contentId, collection = null) {
+  return setStartedOrCompletedStatus(contentId, collection, true)
 }
-export async function contentStatusStarted(contentId) {
-  return setStartedOrCompletedStatus(contentId, false)
+export async function contentStatusStarted(contentId, collection = null) {
+  return setStartedOrCompletedStatus(contentId, collection, false)
 }
-export async function contentStatusReset(contentId) {
-  return resetStatus(contentId)
+export async function contentStatusReset(contentId, collection = null) {
+  return resetStatus(contentId, collection)
 }
 
-async function saveContentProgress(contentId, progress, currentSeconds) {
-  const response = await db.contentProgress.recordProgressRemotely(contentId, progress, currentSeconds)
+async function saveContentProgress(contentId, collection, progress, currentSeconds) {
+  const response = await db.contentProgress.recordProgressRemotely(contentId, collection, progress, currentSeconds)
 
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
 
-  const bubbledProgresses = bubbleProgress(await fetchHierarchy(contentId), contentId)
+  const bubbledProgresses = bubbleProgress(await fetchHierarchy(contentId), contentId, collection)
   await db.contentProgress.recordProgressesTentative(bubbledProgresses)
 
   return response
 }
 
-async function setStartedOrCompletedStatus(contentId, isCompleted) {
+async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
   const progress = isCompleted ? 100 : 0
   // we explicitly pessimistically await a remote push here
   // because awards may be generated (on server) on completion
   // which we would want to toast the user about *in band*
-  const response = await db.contentProgress.recordProgressRemotely(contentId, progress)
+  const response = await db.contentProgress.recordProgressRemotely(contentId, collection, progress)
 
   if (response.pushStatus === 'success') {
     const hierarchy = await fetchHierarchy(contentId)
 
     await Promise.all([
-      db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, progress)),
-      bubbleProgress(hierarchy, contentId).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses))
+      db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, collection, progress)),
+      bubbleProgress(hierarchy, contentId, collection).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses))
     ])
   }
 
   return response
 }
 
-async function resetStatus(contentId) {
-  const response = await db.contentProgress.eraseProgress(contentId)
+async function resetStatus(contentId, collection = null) {
+  const response = await db.contentProgress.eraseProgress(contentId, collection)
   const hierarchy = await fetchHierarchy(contentId)
 
   await Promise.all([
-    db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, 0)),
-    bubbleProgress(hierarchy, contentId).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses))
+    db.contentProgress.recordProgressesTentative(collection, trickleProgress(hierarchy, contentId, collection, 0)),
+    bubbleProgress(hierarchy, contentId, collection).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(collection, bubbledProgresses))
   ])
 
   return response
 }
 
-function trickleProgress(hierarchy, contentId, progress) {
+// agnostic to collection - makes returned data structure simpler,
+// as long as callers remember to pass collection where needed
+function trickleProgress(hierarchy, contentId, _collection, progress) {
   const descendantIds = getChildrenToDepth(contentId, hierarchy, MAX_DEPTH)
   return Object.fromEntries(descendantIds.map(id => [id, progress]))
 }
 
-async function bubbleProgress(hierarchy, contentId)     {
+async function bubbleProgress(hierarchy, contentId, collection = null)     {
   const ids = getAncestorAndSiblingIds(hierarchy, contentId)
-  const progresses = await getByIds(ids, 'progress_percent', 0)
+  const progresses = await getByIds(ids, collection, 'progress_percent', 0)
   return averageProgressesFor(hierarchy, contentId, progresses)
 }
 
@@ -341,6 +344,8 @@ function getAncestorAndSiblingIds(hierarchy, contentId, depth = 1) {
   ]
 }
 
+// doesn't accept collection - assumes progresses are already filtered appropriately
+// caller would do well to remember this, i doth say
 function averageProgressesFor(hierarchy, contentId, progressData, depth = 1) {
   if (depth > MAX_DEPTH) return {}
 

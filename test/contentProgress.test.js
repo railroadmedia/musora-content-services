@@ -101,15 +101,15 @@ describe('contentProgressDataContext', function () {
   test('progressBubbling', async () => {
     let progress = await getProgressPercentage(241250) //force load context
 
-    await recordWatchSession(241250, 'video', 'vimeo', 100, 50, 50)
+    await recordWatchSession(241250, null, 'video', 'vimeo', 100, 50, 50)
     serverVersion++
-    await recordWatchSession(241251, 'video', 'vimeo', 100, 50, 50)
+    await recordWatchSession(241251, null, 'video', 'vimeo', 100, 50, 50)
     serverVersion++
-    await recordWatchSession(241252, 'video', 'vimeo', 100, 50, 50)
+    await recordWatchSession(241252, null, 'video', 'vimeo', 100, 50, 50)
     serverVersion++
-    await recordWatchSession(241260, 'video', 'vimeo', 100, 100, 100)
+    await recordWatchSession(241260, null, 'video', 'vimeo', 100, 100, 100)
     serverVersion++
-    await recordWatchSession(241261, 'video', 'vimeo', 100, 100, 100)
+    await recordWatchSession(241261, null, 'video', 'vimeo', 100, 100, 100)
     serverVersion++
     progress = await getProgressPercentage(241250)
 
