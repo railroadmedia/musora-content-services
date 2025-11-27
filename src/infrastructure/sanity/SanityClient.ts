@@ -20,17 +20,15 @@ export class SanityClient {
   }
 
   /**
-   * Execute a GROQ query and return a single result
+   * Execute a GROQ query and return the first item in the result
    */
-  public async fetchSingle<T>(query: string, params?: Record<string, any>): Promise<T | null> {
+  public async fetchFirst<T>(query: string, params?: Record<string, any>): Promise<T | null> {
     try {
       const sanityQuery: SanityQuery = { query, params }
       const response = await this.queryExecutor.execute<T[]>(sanityQuery, this.getConfig())
 
       if (response.result && Array.isArray(response.result) && response.result.length > 0) {
         return response.result[0]
-      } else if (response.result && !Array.isArray(response.result)) {
-        return response.result
       }
 
       return null
@@ -40,9 +38,9 @@ export class SanityClient {
   }
 
   /**
-   * Execute a GROQ query and return a result
+   * Execute a GROQ query and return a result as a single object
    */
-  public async fetchRaw<T>(query: string, params?: Record<string, any>): Promise<T | null> {
+  public async fetchSingle<T>(query: string, params?: Record<string, any>): Promise<T | null> {
     try {
       const sanityQuery: SanityQuery = { query, params }
       const response = await this.queryExecutor.execute<T>(sanityQuery, this.getConfig())

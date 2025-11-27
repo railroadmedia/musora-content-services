@@ -4,8 +4,8 @@
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
-import { Brand } from '../../lib/brands'
-import { DocumentType } from '../../lib/contentTypes'
+import { Brands } from '../../lib/brands'
+import { DocumentTypes } from '../../lib/documents.js'
 import { buildDataAndTotalQuery, getSortOrder } from '../../lib/sanity/query'
 import { Lesson } from './content'
 
@@ -22,7 +22,7 @@ export interface Instructor {
 /**
  * Fetch all instructor with lessons available for a specific brand.
  *
- * @param {Brand} brand - The brand for which to fetch instructors.
+ * @param {Brands} brand - The brand for which to fetch instructors.
  * @returns {Promise<Instructor[]>} - A promise that resolves to an array of instructor objects.
  *
  * @example
@@ -30,12 +30,12 @@ export interface Instructor {
  *   .then(instructors => console.log(instructors))
  *   .catch(error => console.error(error));
  */
-export async function fetchInstructors(brand: Brand): Promise<Instructor[]> {
+export async function fetchInstructors(brand: Brands): Promise<Instructor[]> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
 
-  return contentClient.fetchByTypeAndBrand<Instructor>(DocumentType.Instructor, brand, {
+  return contentClient.fetchByTypeAndBrand<Instructor>(DocumentTypes.Instructor, brand, {
     fields: [
       'name',
       `'slug': slug.current`,
@@ -49,7 +49,7 @@ export async function fetchInstructors(brand: Brand): Promise<Instructor[]> {
  * Fetch a single instructor by their name
  *
  * @param {string} slug - The slug of the instructor to fetch.
- * @param {Brand} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
+ * @param {Brands} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
  * @returns {Promise<Instructor | null>} - A promise that resolves to an instructor object or null if not found.
  *
  * @example
@@ -59,7 +59,7 @@ export async function fetchInstructors(brand: Brand): Promise<Instructor[]> {
  */
 export async function fetchInstructorBySlug(
   slug: string,
-  brand?: Brand
+  brand?: Brands
 ): Promise<Instructor | null> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
@@ -67,7 +67,7 @@ export async function fetchInstructorBySlug(
   }).buildFilter()
 
   const query = `
-    *[_type == "${DocumentType.Instructor}" && slug.current == '${slug}'][0] {
+    *[_type == "${DocumentTypes.Instructor}" && slug.current == '${slug}'][0] {
       name,
       "slug": slug.current,
       short_bio,
@@ -75,7 +75,7 @@ export async function fetchInstructorBySlug(
       "lessonCount": count(*[${filter}])
     }
   `
-  return contentClient.fetchSingle<Instructor>(query)
+  return contentClient.fetchFirst<Instructor>(query)
 }
 
 export interface FetchInstructorLessonsOptions {
@@ -94,8 +94,8 @@ export interface InstructorLessonsResponse {
 /**
  * Fetch the data needed for the instructor screen.
  * @param {string} slug - The slug of the instructor
- * @param {Brand} brand - The brand for which to fetch instructor lessons
- * @param {DocumentType} contentType - The content type to filter lessons by.
+ * @param {Brands} brand - The brand for which to fetch instructor lessons
+ * @param {DocumentTypes} contentType - The content type to filter lessons by.
  * @param {FetchInstructorLessonsOptions} options - Parameters for pagination, filtering and sorting.
  * @param {string} [options.sortOrder="-published_on"] - The field to sort the lessons by.
  * @param {string} [options.searchTerm=""] - The search term to filter content by title.
@@ -111,8 +111,8 @@ export interface InstructorLessonsResponse {
  */
 export async function fetchInstructorLessons(
   slug: string,
-  brand: Brand,
-  contentType: DocumentType,
+  brand: Brands,
+  contentType: DocumentTypes,
   {
     sortOrder = '-published_on',
     searchTerm = '',
@@ -127,7 +127,7 @@ export async function fetchInstructorLessons(
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
   const addType = contentType ? `_type == '${contentType}' && ` : ''
-  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='${DocumentType.Instructor}' && slug.current == '${slug}']._id)`
+  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='${DocumentTypes.Instructor}' && slug.current == '${slug}']._id)`
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
   sortOrder = getSortOrder(sortOrder, brand)
@@ -138,6 +138,6 @@ export async function fetchInstructorLessons(
   })
 
   return contentClient
-    .fetchRaw<InstructorLessonsResponse>(query)
+    .fetchSingle<InstructorLessonsResponse>(query)
     .then((res) => res || { data: [], total: 0 })
 }

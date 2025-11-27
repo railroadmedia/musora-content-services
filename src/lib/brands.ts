@@ -1,4 +1,4 @@
-export enum Brand {
+export enum Brands {
   musora = 'musora',
   drumeo = 'drumeo',
   pianote = 'pianote',
@@ -6,5 +6,3 @@ export enum Brand {
   singeo = 'singeo',
   playbass = 'playbass',
 }
-
-export type Brands = keyof typeof Brand

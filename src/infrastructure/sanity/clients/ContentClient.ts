@@ -2,7 +2,7 @@ import { SanityClient } from '../SanityClient'
 import { FetchByIdOptions } from '../interfaces/FetchByIdOptions'
 import { ConfigProvider } from '../interfaces/ConfigProvider'
 import { QueryExecutor } from '../interfaces/QueryExecutor'
-import { ContentTypes } from '../../../lib/contentTypes'
+import { ContentTypes } from '../../../lib/documents'
 
 /**
  * ContentClient extends SanityClient with content-specific methods
@@ -29,7 +29,7 @@ export class ContentClient extends SanityClient {
       // Complete the query
       query += `{${fieldsString}}[0]`
 
-      return await this.fetchSingle<T>(query)
+      return await this.fetchFirst<T>(query)
     } catch (error: any) {
       return this.handleContentError(error, `fetchById(${JSON.stringify(options)})`)
     }

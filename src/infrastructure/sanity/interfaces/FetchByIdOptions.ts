@@ -1,4 +1,4 @@
-import { ContentTypes } from '../../../lib/contentTypes'
+import { ContentTypes } from '../../../lib/documents'
 
 export interface FetchByIdOptions {
   type: ContentTypes
@@ -6,4 +6,3 @@ export interface FetchByIdOptions {
   fields?: string[]
   includeChildren?: boolean
 }
-

@@ -4,8 +4,8 @@
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
-import { Brand } from '../../lib/brands'
-import { DocumentType } from '../../lib/contentTypes.js'
+import { Brands } from '../../lib/brands'
+import { DocumentTypes } from '../../lib/documents.js'
 import { buildDataAndTotalQuery, getSortOrder } from '../../lib/sanity/query'
 import { Lesson } from './content'
 
@@ -29,12 +29,12 @@ export interface Genre {
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenres(brand: Brand): Promise<Genre[]> {
+export async function fetchGenres(brand: Brands): Promise<Genre[]> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
 
-  return contentClient.fetchByTypeAndBrand<Genre>(DocumentType.Genre, brand, {
+  return contentClient.fetchByTypeAndBrand<Genre>(DocumentTypes.Genre, brand, {
     fields: [
       `name`,
       `'slug': slug.current`,
@@ -48,7 +48,7 @@ export async function fetchGenres(brand: Brand): Promise<Genre[]> {
  * Fetch a single genre by their slug and brand
  *
  * @param {string} slug - The slug of the genre to fetch.
- * @param {Brand} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
+ * @param {Brands} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
  * @returns {Promise<Genre[]|null>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
@@ -56,20 +56,20 @@ export async function fetchGenres(brand: Brand): Promise<Genre[]> {
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenreBySlug(slug: string, brand?: Brand): Promise<Genre | null> {
+export async function fetchGenreBySlug(slug: string, brand?: Brands): Promise<Genre | null> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
 
   const query = `
-  *[_type == '${DocumentType.Genre}' && slug.current == '${slug}'] {
+  *[_type == '${DocumentTypes.Genre}' && slug.current == '${slug}'] {
     name,
     "slug": slug.current,
     'thumbnail':thumbnail_url.asset->url,
     "lessonsCount": count(*[${filter}])
   }`
-  return contentClient.fetchSingle<Genre>(query)
+  return contentClient.fetchFirst<Genre>(query)
 }
 
 export interface FetchGenreLessonsOptions {
@@ -89,8 +89,8 @@ export interface LessonsByGenreResponse {
 /**
  * Fetch the genre's lessons.
  * @param {string} slug - The slug of the genre
- * @param {Brand} brand - The brand for which to fetch lessons.
- * @param {DocumentType} contentType - The content type to filter lessons by.
+ * @param {Brands} brand - The brand for which to fetch lessons.
+ * @param {DocumentTypes} contentType - The content type to filter lessons by.
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
  * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
@@ -107,8 +107,8 @@ export interface LessonsByGenreResponse {
  */
 export async function fetchGenreLessons(
   slug: string,
-  brand: Brand,
-  contentType?: DocumentType,
+  brand: Brands,
+  contentType?: DocumentTypes,
   {
     sort = '-published_on',
     searchTerm = '',
@@ -126,7 +126,7 @@ export async function fetchGenreLessons(
   const addType = contentType ? `_type == '${contentType}' && ` : ''
   const progressFilter =
     progressIds.length > 0 ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
-  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='${DocumentType.Genre}' && slug.current == '${slug}']._id) ${progressFilter}`
+  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='${DocumentTypes.Genre}' && slug.current == '${slug}']._id) ${progressFilter}`
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
   sort = getSortOrder(sort, brand)
@@ -137,6 +137,6 @@ export async function fetchGenreLessons(
   })
 
   return contentClient
-    .fetchRaw<LessonsByGenreResponse>(query)
+    .fetchSingle<LessonsByGenreResponse>(query)
     .then((res) => res || { data: [], total: 0 })
 }
