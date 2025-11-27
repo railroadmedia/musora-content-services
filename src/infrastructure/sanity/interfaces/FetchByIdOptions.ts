@@ -1,6 +1,9 @@
+import { ContentTypes } from '../../../lib/contentTypes'
+
 export interface FetchByIdOptions {
-  type: string
+  type: ContentTypes
   id: number | string
   fields?: string[]
   includeChildren?: boolean
-} 
+}
+

@@ -26,15 +26,34 @@ export class SanityClient {
     try {
       const sanityQuery: SanityQuery = { query, params }
       const response = await this.queryExecutor.execute<T[]>(sanityQuery, this.getConfig())
-      
+
       if (response.result && Array.isArray(response.result) && response.result.length > 0) {
         return response.result[0]
+      } else if (response.result && !Array.isArray(response.result)) {
+        return response.result
       }
-      
+
       return null
     } catch (error: any) {
-      this.handleError(error, query)
+      return this.handleError(error, query)
+    }
+  }
+
+  /**
+   * Execute a GROQ query and return a result
+   */
+  public async fetchRaw<T>(query: string, params?: Record<string, any>): Promise<T | null> {
+    try {
+      const sanityQuery: SanityQuery = { query, params }
+      const response = await this.queryExecutor.execute<T>(sanityQuery, this.getConfig())
+
+      if (response.result) {
+        return response.result
+      }
+
       return null
+    } catch (error: any) {
+      return this.handleError(error, query)
     }
   }
 
@@ -45,11 +64,10 @@ export class SanityClient {
     try {
       const sanityQuery: SanityQuery = { query, params }
       const response = await this.queryExecutor.execute<T[]>(sanityQuery, this.getConfig())
-      
+
       return response.result || []
     } catch (error: any) {
-      this.handleError(error, query)
-      return []
+      return this.handleError(error, query)
     }
   }
 
@@ -60,15 +78,12 @@ export class SanityClient {
     try {
       const sanityQuery: SanityQuery = { query, params }
       const response = await this.queryExecutor.execute<T>(sanityQuery, this.getConfig())
-      
+
       return response.result
     } catch (error: any) {
-      this.handleError(error, query)
-      return null
+      return this.handleError(error, query)
     }
   }
-
-
 
   /**
    * Get configuration, loading it if necessary
@@ -103,6 +118,4 @@ export class SanityClient {
   public refreshConfig(): void {
     this.config = null
   }
-
-
-} 
+}

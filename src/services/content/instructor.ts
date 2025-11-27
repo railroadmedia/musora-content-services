@@ -1,18 +1,21 @@
 /**
  * @module Instructor
  */
-import { FilterBuilder } from '../../filterBuilder.js'
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
-import { fetchSanity, getSortOrder } from '../sanity.js'
-import { Lesson } from './content'
-import { buildDataAndTotalQuery } from '../../lib/sanity/query'
+import { FilterBuilder } from '../../filterBuilder.js'
+import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
 import { Brand } from '../../lib/brands'
+import { DocumentType } from '../../lib/contentTypes'
+import { buildDataAndTotalQuery, getSortOrder } from '../../lib/sanity/query'
+import { Lesson } from './content'
+
+const contentClient = new ContentClient()
 
 export interface Instructor {
   lessonCount: number
   slug: string
   name: string
-  short_bio: string
+  short_bio?: string
   thumbnail: string
 }
 
@@ -32,14 +35,14 @@ export async function fetchInstructors(brand: Brand): Promise<Instructor[]> {
     bypassPermissions: true,
   }).buildFilter()
 
-  const query = `
-  *[_type == "instructor"] {
-    name,
-    "slug": slug.current,
-    'thumbnail': thumbnail_url.asset->url,
-    "lessonCount": count(*[${filter}])
-  }[lessonCount > 0] |order(lower(name)) `
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+  return contentClient.fetchByTypeAndBrand<Instructor>(DocumentType.Instructor, brand, {
+    fields: [
+      'name',
+      `'slug': slug.current`,
+      `'thumbnail': thumbnail_url.asset->url`,
+      `'lessonCount': count(*[${filter}])`,
+    ],
+  })
 }
 
 /**
@@ -47,7 +50,7 @@ export async function fetchInstructors(brand: Brand): Promise<Instructor[]> {
  *
  * @param {string} slug - The slug of the instructor to fetch.
  * @param {Brand} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Instructor[]>} - A promise that resolves to an instructor object or null if not found.
+ * @returns {Promise<Instructor | null>} - A promise that resolves to an instructor object or null if not found.
  *
  * @example
  * fetchInstructorBySlug('66samus', 'drumeo')
@@ -64,14 +67,15 @@ export async function fetchInstructorBySlug(
   }).buildFilter()
 
   const query = `
-  *[_type == "instructor" && slug.current == '${slug}'][0] {
-    name,
-    "slug": slug.current,
-    short_bio,
-    'thumbnail': thumbnail_url.asset->url,
-    "lessonCount": count(*[${filter}])
-  }`
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+    *[_type == "${DocumentType.Instructor}" && slug.current == '${slug}'][0] {
+      name,
+      "slug": slug.current,
+      short_bio,
+      'thumbnail': thumbnail_url.asset->url,
+      "lessonCount": count(*[${filter}])
+    }
+  `
+  return contentClient.fetchSingle<Instructor>(query)
 }
 
 export interface FetchInstructorLessonsOptions {
@@ -79,7 +83,7 @@ export interface FetchInstructorLessonsOptions {
   searchTerm?: string
   page?: number
   limit?: number
-  includedFields?: Array<string>
+  includedFields?: string[]
 }
 
 export interface InstructorLessonsResponse {
@@ -89,9 +93,9 @@ export interface InstructorLessonsResponse {
 
 /**
  * Fetch the data needed for the instructor screen.
- * @param {string} brand - The brand for which to fetch instructor lessons
  * @param {string} slug - The slug of the instructor
- *
+ * @param {Brand} brand - The brand for which to fetch instructor lessons
+ * @param {DocumentType} contentType - The content type to filter lessons by.
  * @param {FetchInstructorLessonsOptions} options - Parameters for pagination, filtering and sorting.
  * @param {string} [options.sortOrder="-published_on"] - The field to sort the lessons by.
  * @param {string} [options.searchTerm=""] - The search term to filter content by title.
@@ -108,6 +112,7 @@ export interface InstructorLessonsResponse {
 export async function fetchInstructorLessons(
   slug: string,
   brand: Brand,
+  contentType: DocumentType,
   {
     sortOrder = '-published_on',
     searchTerm = '',
@@ -121,7 +126,8 @@ export async function fetchInstructorLessons(
   const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
-  const filter = `brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='instructor' && slug.current == '${slug}']._id)`
+  const addType = contentType ? `_type == '${contentType}' && ` : ''
+  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='${DocumentType.Instructor}' && slug.current == '${slug}']._id)`
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
   sortOrder = getSortOrder(sortOrder, brand)
@@ -130,5 +136,8 @@ export async function fetchInstructorLessons(
     start: start,
     end: end,
   })
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+
+  return contentClient
+    .fetchRaw<InstructorLessonsResponse>(query)
+    .then((res) => res || { data: [], total: 0 })
 }

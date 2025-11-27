@@ -2,6 +2,7 @@ import { SanityClient } from '../SanityClient'
 import { FetchByIdOptions } from '../interfaces/FetchByIdOptions'
 import { ConfigProvider } from '../interfaces/ConfigProvider'
 import { QueryExecutor } from '../interfaces/QueryExecutor'
+import { ContentTypes } from '../../../lib/contentTypes'
 
 /**
  * ContentClient extends SanityClient with content-specific methods
@@ -18,20 +19,19 @@ export class ContentClient extends SanityClient {
   public async fetchById<T>(options: FetchByIdOptions): Promise<T | null> {
     try {
       const { type, id, fields, includeChildren = false } = options
-      
+
       // Build the base query
       let query = `*[railcontent_id == ${id} && _type == '${type}']`
-      
+
       // Build fields string
       let fieldsString = this.buildFieldsString(type, fields, includeChildren)
-      
+
       // Complete the query
       query += `{${fieldsString}}[0]`
-      
+
       return await this.fetchSingle<T>(query)
     } catch (error: any) {
-      this.handleContentError(error, `fetchById(${JSON.stringify(options)})`)
-      return null
+      return this.handleContentError(error, `fetchById(${JSON.stringify(options)})`)
     }
   }
 
@@ -40,7 +40,7 @@ export class ContentClient extends SanityClient {
    */
   public async fetchByIds<T>(
     ids: (number | string)[],
-    type?: string,
+    type?: ContentTypes,
     brand?: string,
     fields?: string[]
   ): Promise<T[]> {
@@ -52,7 +52,7 @@ export class ContentClient extends SanityClient {
       const idsString = ids.join(',')
       const typeFilter = type ? ` && _type == '${type}'` : ''
       const brandFilter = brand ? ` && brand == "${brand}"` : ''
-      const fieldsString = this.buildFieldsString(type || '', fields, false)
+      const fieldsString = this.buildFieldsString(type, fields, false)
 
       const query = `*[railcontent_id in [${idsString}]${typeFilter}${brandFilter}]{${fieldsString}}`
 
@@ -64,18 +64,17 @@ export class ContentClient extends SanityClient {
         const indexB = ids.indexOf(b.id || b.railcontent_id)
         return indexA - indexB
       })
-          } catch (error: any) {
-        this.handleContentError(error, `fetchByIds([${ids.join(',')}])`)
-        return []
-      }
+    } catch (error: any) {
+      return this.handleContentError(error, `fetchByIds([${ids.join(',')}])`)
+    }
   }
 
   /**
    * Fetch content by brand and type with basic filtering
    */
-  public async fetchByBrandAndType<T>(
-    brand: string,
-    type: string,
+  public async fetchByTypeAndBrand<T>(
+    type: ContentTypes,
+    brand?: string,
     options: {
       limit?: number
       offset?: number
@@ -84,22 +83,26 @@ export class ContentClient extends SanityClient {
     } = {}
   ): Promise<T[]> {
     try {
+      const brandFilter = brand ? `brand == "${brand}" && ` : ''
       const { limit = 10, offset = 0, sortBy = 'published_on desc', fields } = options
       const fieldsString = this.buildFieldsString(type, fields, false)
 
-      const query = `*[brand == "${brand}" && _type == "${type}"] | order(${sortBy})[${offset}...${offset + limit}]{${fieldsString}}`
+      const query = `*[${brandFilter} _type == "${type}"] | order(${sortBy})[${offset}...${offset + limit}]{${fieldsString}}`
 
       return await this.fetchList<T>(query)
     } catch (error: any) {
-      this.handleContentError(error, `fetchByBrandAndType(${brand}, ${type})`)
-      return []
+      return this.handleContentError(error, `fetchByBrandAndType(${brand}, ${type})`)
     }
   }
 
   /**
    * Build fields string for queries based on content type and options
    */
-  private buildFieldsString(type: string, customFields?: string[], includeChildren: boolean = false): string {
+  private buildFieldsString(
+    type?: ContentTypes,
+    customFields?: string[],
+    includeChildren: boolean = false
+  ): string {
     // Default fields that are commonly used
     const defaultFields = [
       "'sanity_id': _id",
@@ -120,7 +123,7 @@ export class ContentClient extends SanityClient {
       "'permission_id': permission[]->railcontent_id",
       'length_in_seconds',
       "'artist': artist->name",
-      "'instructors': instructor[]->name"
+      "'instructors': instructor[]->name",
     ]
 
     // Use custom fields if provided, otherwise use defaults
@@ -138,7 +141,7 @@ export class ContentClient extends SanityClient {
           "instructors": instructor[]->name,
           length_in_seconds,
           web_url_path
-        }`
+        }`,
       ]
     }
 
@@ -161,4 +164,4 @@ export class ContentClient extends SanityClient {
       originalError: error,
     }
   }
-} 
+}

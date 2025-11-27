@@ -3,10 +3,13 @@
  */
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
 import { FilterBuilder } from '../../filterBuilder.js'
-import { buildDataAndTotalQuery } from '../../lib/sanity/query'
-import { fetchSanity, getSortOrder } from '../sanity.js'
+import { buildDataAndTotalQuery, getSortOrder } from '../../lib/sanity/query'
 import { Lesson } from './content'
 import { Brand } from '../../lib/brands'
+import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
+import { DocumentType } from '../../lib/contentTypes.js'
+
+const contentClient = new ContentClient()
 
 export interface Artist {
   slug: string
@@ -31,14 +34,15 @@ export async function fetchArtists(brand: Brand): Promise<Artist[] | null> {
     `_type == "song" && brand == "${brand}" && references(^._id)`,
     { bypassPermissions: true }
   ).buildFilter()
-  const query = `
-  *[_type == "artist"]{
-    name,
-    "slug": slug.current,
-    'thumbnail': thumbnail_url.asset->url,
-    "lessonCount": count(*[${filter}])
-  }[lessonCount > 0] |order(lower(name)) `
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+
+  return contentClient.fetchByTypeAndBrand<Artist>(DocumentType.Artist, brand, {
+    fields: [
+      `name`,
+      `'slug': slug.current`,
+      `'thumbnail': thumbnail_url.asset->url`,
+      `'lessonCount': count(*[${filter}])`,
+    ],
+  })
 }
 
 /**
@@ -59,12 +63,14 @@ export async function fetchArtistBySlug(slug: string, brand?: Brand): Promise<Ar
     bypassPermissions: true,
   }).buildFilter()
   const query = `
-  *[_type == "artist" && slug.current == '${slug}']{
-    name,
-    "slug": slug.current,
-    "lessonCount": count(*[${filter}])
-  }[lessonCount > 0] |order(lower(name)) `
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+    *[_type == '${DocumentType.Artist}' && slug.current == '${slug}']{
+      name,
+      "slug": slug.current,
+      "lessonCount": count(*[${filter}])
+    }[lessonCount > 0] |order(lower(name))
+  `
+
+  return contentClient.fetchSingle<Artist>(query)
 }
 
 export interface ArtistLessonOptions {
@@ -85,7 +91,7 @@ export interface LessonsByArtistResponse {
  * Fetch the artist's lessons.
  * @param {string} slug - The slug of the artist
  * @param {Brand} brand - The brand for which to fetch lessons.
- * @param {string} contentType - The type of the lessons we need to get from the artist. If not defined, groq will get lessons from all content types
+ * @param {DocumentType} contentType - The type of the lessons we need to get from the artist. If not defined, groq will get lessons from all content types
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
  * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
@@ -93,7 +99,7 @@ export interface LessonsByArtistResponse {
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  * @param {Array<number>} [params.progressId=[]] - The ids of the lessons that are in progress or completed
- * @returns {Promise<LessonsByArtistResponse|null>} - The lessons for the artist
+ * @returns {Promise<LessonsByArtistResponse>} - The lessons for the artist
  *
  * @example
  * fetchArtistLessons('10 Years', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
@@ -103,7 +109,7 @@ export interface LessonsByArtistResponse {
 export async function fetchArtistLessons(
   slug: string,
   brand: Brand,
-  contentType: string,
+  contentType: DocumentType,
   {
     sort = '-published_on',
     searchTerm = '',
@@ -112,7 +118,7 @@ export async function fetchArtistLessons(
     includedFields = [],
     progressIds = [],
   }: ArtistLessonOptions = {}
-): Promise<LessonsByArtistResponse | null> {
+): Promise<LessonsByArtistResponse> {
   const fieldsString = getFieldsForContentType(contentType) as string
   const start = (page - 1) * limit
   const end = start + limit
@@ -121,7 +127,7 @@ export async function fetchArtistLessons(
   const addType = contentType ? `_type == '${contentType}' && ` : ''
   const progressFilter =
     progressIds.length > 0 ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
-  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='artist' && slug.current == '${slug}']._id) ${progressFilter}`
+  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='${DocumentType.Artist}' && slug.current == '${slug}']._id) ${progressFilter}`
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
   sort = getSortOrder(sort, brand)
@@ -130,5 +136,8 @@ export async function fetchArtistLessons(
     start: start,
     end: end,
   })
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+
+  return contentClient
+    .fetchRaw<LessonsByArtistResponse>(query)
+    .then((res) => res || { data: [], total: 0 })
 }
