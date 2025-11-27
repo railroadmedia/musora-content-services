@@ -121,8 +121,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
         progressPercent: progressPct,
         progressStatus,
         bubble: true,
-        collectionType: null,
-        collectionId: null,
+        collectionType: 'guided-course', // testing only, todo: update when FE is done
+        collectionId: 416442, // testing only, todo: update when FE is done
         resumeTimeSeconds: resumeTime ?? null,
         timestamp: Date.now()
       })
