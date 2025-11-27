@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.90.0](https://github.com/railroadmedia/musora-content-services/compare/v2.89.0...v2.90.0) (2025-11-27)
+
+
+### Features
+
+* method learning path child fields ([#597](https://github.com/railroadmedia/musora-content-services/issues/597)) ([71654ea](https://github.com/railroadmedia/musora-content-services/commit/71654ea29cb1c46f354ed878dab261e93cb01e7c))
+
+## [2.89.0](https://github.com/railroadmedia/musora-content-services/compare/v2.88.4...v2.89.0) (2025-11-27)
+
+
+### Features
+
+* add collection ([#592](https://github.com/railroadmedia/musora-content-services/issues/592)) ([3acd884](https://github.com/railroadmedia/musora-content-services/commit/3acd884475c0359eb7fcee09e8a02ab8415e3927))
+
+### [2.88.4](https://github.com/railroadmedia/musora-content-services/compare/v2.88.3...v2.88.4) (2025-11-26)
+
+
+### Bug Fixes
+
+* **onboarding:** fix hardcoded recommended content badges ([ff5dd81](https://github.com/railroadmedia/musora-content-services/commit/ff5dd814bb8c26c29a5fc55b51ebeb925ac462fa))
+
 ### [2.88.3](https://github.com/railroadmedia/musora-content-services/compare/v2.88.1...v2.88.3) (2025-11-26)
 
 
