@@ -171,12 +171,8 @@ describe('Award Completion Flow - E2E Scenarios', () => {
       const completedLessonIds = [417045, 417046]
       const allNonKickoffLessonIds = [417045, 417046, 417047, 417048]
 
-      db.contentProgress.queryOne.mockImplementation((queryFn) => {
-        const mockQ = {
-          where: jest.fn().mockReturnThis()
-        }
-        queryFn(mockQ)
-        const contentId = mockQ.where.mock.calls[0][1]
+      db.contentProgress.queryOne.mockImplementation((whereClause) => {
+        const contentId = whereClause?.comparison?.right?.value
 
         return Promise.resolve({
           data: completedLessonIds.includes(contentId)
@@ -207,12 +203,8 @@ describe('Award Completion Flow - E2E Scenarios', () => {
       const progressListener = jest.fn()
       const completedLessonIds = [417045, 417046]
 
-      db.contentProgress.queryOne.mockImplementation((queryFn) => {
-        const mockQ = {
-          where: jest.fn().mockReturnThis()
-        }
-        queryFn(mockQ)
-        const contentId = mockQ.where.mock.calls[0][1]
+      db.contentProgress.queryOne.mockImplementation((whereClause) => {
+        const contentId = whereClause?.comparison?.right?.value
 
         return Promise.resolve({
           data: completedLessonIds.includes(contentId)

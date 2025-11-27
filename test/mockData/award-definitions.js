@@ -132,6 +132,42 @@ export const mockAwardDefinitions = [
     logo: 'https://cdn.sanity.io/images/4032r8py/staging/d20959255e9dbc5d955214b86b7dfe8db4cccde3-722x834.png',
     name: "Adrian's cool award",
     type: 'content-award'
+  },
+  {
+    _id: 'skill-pack-award-1',
+    award: 'https://cdn.sanity.io/files/4032r8py/staging/test-skill-pack-award.png',
+    award_custom_text: null,
+    badge: 'https://cdn.sanity.io/files/4032r8py/staging/test-skill-pack-badge.png',
+    brand: 'drumeo',
+    child_ids: [555001, 555002, 555003],
+    content_id: 555000,
+    content_title: 'Test Skill Pack',
+    content_type: 'skill-pack',
+    has_kickoff: false,
+    instructor_name: 'Test Instructor',
+    instructor_signature: null,
+    is_active: true,
+    logo: null,
+    name: 'Skill Pack Award',
+    type: 'content-award'
+  },
+  {
+    _id: 'learning-path-award-1',
+    award: 'https://cdn.sanity.io/files/4032r8py/staging/test-learning-path-award.png',
+    award_custom_text: null,
+    badge: 'https://cdn.sanity.io/files/4032r8py/staging/test-learning-path-badge.png',
+    brand: 'drumeo',
+    child_ids: [555003, 555004, 555005],
+    content_id: 666000,
+    content_title: 'Test Learning Path',
+    content_type: 'learning-path-v2',
+    has_kickoff: false,
+    instructor_name: 'Test Instructor',
+    instructor_signature: null,
+    is_active: true,
+    logo: null,
+    name: 'Learning Path Award',
+    type: 'content-award'
   }
 ]
 

@@ -36,11 +36,13 @@ class ContentProgressObserver {
 
     this.progressEventUnsubscribe = onProgressSaved((event) => {
       if (this.allChildIds.has(event.contentId)) {
-        console.log(`[ContentProgressObserver] UserContentProgressSaved event: userId=${event.userId}, contentId=${event.contentId}, status=${event.progressStatus}, progress=${event.progressPercent}%`)
+        console.log(`[ContentProgressObserver] UserContentProgressSaved event: userId=${event.userId}, contentId=${event.contentId}, status=${event.progressStatus}, progress=${event.progressPercent}%, collectionType=${event.collectionType}, collectionId=${event.collectionId}`)
         this.handleProgressChange({
           content_id: event.contentId,
           state: event.progressStatus,
-          progress_percent: event.progressPercent
+          progress_percent: event.progressPercent,
+          collection_type: event.collectionType,
+          collection_id: event.collectionId
         })
       }
     })
@@ -54,15 +56,37 @@ class ContentProgressObserver {
   async handleProgressChange(progressRecord) {
     try {
       const childContentId = progressRecord.content_id
+      const collectionType = progressRecord.collection_type
+      const collectionId = progressRecord.collection_id
+
+      if (!collectionType || !collectionId) {
+        console.log(`[ContentProgressObserver] No collection context for content ${childContentId}, skipping award checks`)
+        return
+      }
 
       const allAwards = await awardDefinitions.getAll()
-      const parentAwards = allAwards.filter(award =>
-        award.child_ids && award.child_ids.includes(childContentId)
-      )
+
+      const parentAwards = allAwards.filter(award => {
+        if (!award.child_ids || !award.child_ids.includes(childContentId)) {
+          return false
+        }
+
+        const contentTypeMatch = award.content_type === collectionType
+        const contentIdMatch = award.content_id === collectionId
+
+        if (!contentTypeMatch || !contentIdMatch) {
+          console.log(`[ContentProgressObserver] Skipping award ${award.name}: collection mismatch (expected ${collectionType}:${collectionId}, got ${award.content_type}:${award.content_id})`)
+          return false
+        }
+
+        return true
+      })
 
       if (parentAwards.length > 0) {
-        console.log(`[ContentProgressObserver] Found ${parentAwards.length} parent award(s) for content ${childContentId}:`,
-          parentAwards.map(a => `${a.name} (content_id: ${a.content_id})`).join(', '))
+        console.log(`[ContentProgressObserver] Found ${parentAwards.length} matching award(s) for content ${childContentId} in collection ${collectionType}:${collectionId}:`,
+          parentAwards.map(a => `${a.name} (${a.content_type}:${a.content_id})`).join(', '))
+      } else {
+        console.log(`[ContentProgressObserver] No awards found for content ${childContentId} in collection ${collectionType}:${collectionId}`)
       }
 
       for (const award of parentAwards) {

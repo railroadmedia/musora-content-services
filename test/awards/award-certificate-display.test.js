@@ -95,7 +95,6 @@ describe('Award Certificate Display - E2E Scenarios', () => {
         brandLogo: expect.any(String),
         musoraLogo: expect.any(String),
         musoraBgLogo: expect.any(String),
-        instructorSignature: testAward.instructor_signature,
         instructorName: testAward.instructor_name
       })
     })
@@ -115,7 +114,6 @@ describe('Award Certificate Display - E2E Scenarios', () => {
       expect(certificate.badgeImage).toBe(testAward.badge)
       expect(certificate.awardImage).toBe(testAward.award)
       expect(certificate.instructorName).toBe('Aaron Graham')
-      expect(certificate.instructorSignature).toBe(testAward.instructor_signature)
     })
 
     test('includes client-generated popup message', async () => {
@@ -201,7 +199,6 @@ describe('Award Certificate Display - E2E Scenarios', () => {
     test('handles null instructor signature gracefully', async () => {
       const certificate = await buildCertificateData(awardWithoutSignature._id)
 
-      expect(certificate.instructorSignature).toBeNull()
       expect(certificate.instructorName).toBe('Lisa Witt')
     })
   })

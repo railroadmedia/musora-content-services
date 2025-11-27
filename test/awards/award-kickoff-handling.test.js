@@ -65,10 +65,8 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
     const courseId = 416446
 
     test('kickoff lesson does not count toward progress', async () => {
-      db.contentProgress.queryOne.mockImplementation((queryFn) => {
-        const mockQ = { where: jest.fn().mockReturnThis() }
-        queryFn(mockQ)
-        const contentId = mockQ.where.mock.calls[0][1]
+      db.contentProgress.queryOne.mockImplementation((whereClause) => {
+        const contentId = whereClause?.comparison?.right?.value
 
         return Promise.resolve({
           data: contentId === 416447
@@ -89,10 +87,8 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
     })
 
     test('completing only lesson 2 (after kickoff) shows 100% and grants award', async () => {
-      db.contentProgress.queryOne.mockImplementation((queryFn) => {
-        const mockQ = { where: jest.fn().mockReturnThis() }
-        queryFn(mockQ)
-        const contentId = mockQ.where.mock.calls[0][1]
+      db.contentProgress.queryOne.mockImplementation((whereClause) => {
+        const contentId = whereClause?.comparison?.right?.value
 
         return Promise.resolve({
           data: contentId === 416448
@@ -117,10 +113,8 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
     })
 
     test('award granted after completing lesson 2, regardless of kickoff status', async () => {
-      db.contentProgress.queryOne.mockImplementation((queryFn) => {
-        const mockQ = { where: jest.fn().mockReturnThis() }
-        queryFn(mockQ)
-        const contentId = mockQ.where.mock.calls[0][1]
+      db.contentProgress.queryOne.mockImplementation((whereClause) => {
+        const contentId = whereClause?.comparison?.right?.value
 
         return Promise.resolve({
           data: contentId === 416448
@@ -144,10 +138,8 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
     test('completing kickoff + 1 lesson shows 25% progress (1 of 4 after kickoff)', async () => {
       const completedLessonIds = [417045]
 
-      db.contentProgress.queryOne.mockImplementation((queryFn) => {
-        const mockQ = { where: jest.fn().mockReturnThis() }
-        queryFn(mockQ)
-        const contentId = mockQ.where.mock.calls[0][1]
+      db.contentProgress.queryOne.mockImplementation((whereClause) => {
+        const contentId = whereClause?.comparison?.right?.value
 
         return Promise.resolve({
           data: completedLessonIds.includes(contentId)
@@ -170,10 +162,8 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
     test('completing kickoff + 2 lessons shows 50% progress', async () => {
       const completedLessonIds = [417045, 417046]
 
-      db.contentProgress.queryOne.mockImplementation((queryFn) => {
-        const mockQ = { where: jest.fn().mockReturnThis() }
-        queryFn(mockQ)
-        const contentId = mockQ.where.mock.calls[0][1]
+      db.contentProgress.queryOne.mockImplementation((whereClause) => {
+        const contentId = whereClause?.comparison?.right?.value
 
         return Promise.resolve({
           data: completedLessonIds.includes(contentId)
@@ -196,10 +186,8 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
     test('must complete all 4 non-kickoff lessons to earn award', async () => {
       const completedLessonIds = [417045, 417046, 417047, 417048]
 
-      db.contentProgress.queryOne.mockImplementation((queryFn) => {
-        const mockQ = { where: jest.fn().mockReturnThis() }
-        queryFn(mockQ)
-        const contentId = mockQ.where.mock.calls[0][1]
+      db.contentProgress.queryOne.mockImplementation((whereClause) => {
+        const contentId = whereClause?.comparison?.right?.value
 
         return Promise.resolve({
           data: completedLessonIds.includes(contentId)
@@ -234,9 +222,7 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
     ]
 
     test('completing only kickoff shows 0% progress', async () => {
-      db.contentProgress.queryOne.mockImplementation((queryFn) => {
-        const mockQ = { where: jest.fn().mockReturnThis() }
-        queryFn(mockQ)
+      db.contentProgress.queryOne.mockImplementation(() => {
         return Promise.resolve({
           data: { state: 'started', created_at: Math.floor(Date.now() / 1000) }
         })
@@ -256,10 +242,8 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
     test('completing 12 of 23 non-kickoff lessons shows ~52% progress', async () => {
       const completedLessonIds = nonKickoffLessons.slice(0, 12)
 
-      db.contentProgress.queryOne.mockImplementation((queryFn) => {
-        const mockQ = { where: jest.fn().mockReturnThis() }
-        queryFn(mockQ)
-        const contentId = mockQ.where.mock.calls[0][1]
+      db.contentProgress.queryOne.mockImplementation((whereClause) => {
+        const contentId = whereClause?.comparison?.right?.value
 
         return Promise.resolve({
           data: completedLessonIds.includes(contentId)
@@ -280,10 +264,8 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
     })
 
     test('must complete all 23 non-kickoff lessons to earn award', async () => {
-      db.contentProgress.queryOne.mockImplementation((queryFn) => {
-        const mockQ = { where: jest.fn().mockReturnThis() }
-        queryFn(mockQ)
-        const contentId = mockQ.where.mock.calls[0][1]
+      db.contentProgress.queryOne.mockImplementation((whereClause) => {
+        const contentId = whereClause?.comparison?.right?.value
 
         return Promise.resolve({
           data: nonKickoffLessons.includes(contentId)
@@ -315,10 +297,8 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
     test('first lesson counts toward progress when no kickoff', async () => {
       const completedLessonIds = [417035]
 
-      db.contentProgress.queryOne.mockImplementation((queryFn) => {
-        const mockQ = { where: jest.fn().mockReturnThis() }
-        queryFn(mockQ)
-        const contentId = mockQ.where.mock.calls[0][1]
+      db.contentProgress.queryOne.mockImplementation((whereClause) => {
+        const contentId = whereClause?.comparison?.right?.value
 
         return Promise.resolve({
           data: completedLessonIds.includes(contentId)
