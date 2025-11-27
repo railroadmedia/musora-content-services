@@ -12,114 +12,78 @@ export async function getProgressState(contentId) {
   return getById(contentId, 'state', '')
 }
 
-export async function getProgressStateByIds(contentIds) {
-  return getByIds(contentIds, 'state', '')
+export async function getProgressStateByIds(contentIds, collection = null) {
+  return getByIds(contentIds, collection, 'state', '')
 }
 
-export async function getResumeTimeSecondsByIds(contentIds) {
-  return getByIds(contentIds, 'resume_time_seconds', 0)
+export async function getResumeTimeSecondsByIds(contentIds, collection = null) {
+  return getByIds(contentIds, collection, 'resume_time_seconds', 0)
 }
 
-export async function getNextLesson(data) {
-  let nextLessonData = {}
-
-  for (const content of data) {
-    const children = content.children?.map((child) => child.id) ?? []
-    //only calculate nextLesson if needed, based on content type
-    if (!getNextLessonLessonParentTypes.includes(content.type)) {
-      nextLessonData[content.id] = null
-    } else {
-      //return first child if parent-content is complete or no progress
-      const contentState = await getProgressState(content.id)
-      if (contentState !== STATE_STARTED) {
-        nextLessonData[content.id] = children[0]
-      } else {
-        const childrenStates = await getProgressStateByIds(children)
-
-        //calculate last_engaged
-        const lastInteracted = await getLastInteractedOf(children)
-        const lastInteractedStatus = childrenStates[lastInteracted]
-
-        //different nextLesson behaviour for different content types
-        if (content.type === 'course' || content.type === 'pack-bundle' || content.type === 'skill-pack') {
-          if (lastInteractedStatus === STATE_STARTED) {
-            nextLessonData[content.id] = lastInteracted
-          } else {
-            nextLessonData[content.id] = findIncompleteLesson(
-              childrenStates,
-              lastInteracted,
-              content.type
-            )
-          }
-        } else if (content.type === 'guided-course' || content.type === 'song-tutorial') {
-          nextLessonData[content.id] = findIncompleteLesson(
-            childrenStates,
-            lastInteracted,
-            content.type
-          )
-        } else if (content.type === 'pack') {
-          const packBundles = content.children ?? []
-          const packBundleProgressData = await getNextLesson(packBundles)
-          const parentId = await getLastInteractedOf(packBundles.map((bundle) => bundle.id))
-          nextLessonData[content.id] = packBundleProgressData[parentId]
-        }
-      }
-    }
-  }
-  return nextLessonData
-}
-
-export async function getNavigateTo(data) {
+export async function getNavigateTo(data, collection = null) {
   let navigateToData = {}
-  const twoDepthContentTypes = ['pack'] //TODO add method when we know what it's called
+
+  const twoDepthContentTypes = ['pack'] // not adding method because it has its own logic (with active path)
   //TODO add parent hierarchy upwards as well
   // data structure is the same but instead of child{} we use parent{}
   for (const content of data) {
+    // Skip null/undefined entries (can happen when GROQ dereference doesn't match filter)
+    if (!content) continue
+
     //only calculate nextLesson if needed, based on content type
     if (!getNextLessonLessonParentTypes.includes(content.type) || !content.children) {
       navigateToData[content.id] = null
     } else {
+      // Filter out null/undefined children (can happen with permission filters)
+      const validChildren = content.children.filter(Boolean)
+      if (validChildren.length === 0) {
+        navigateToData[content.id] = null
+        continue
+      }
+
       const children = new Map()
       const childrenIds = []
-      content.children.forEach((child) => {
+      validChildren.forEach((child) => {
         childrenIds.push(child.id)
         children.set(child.id, child)
       })
       // return first child (or grand child) if parent-content is complete or no progress
-      const contentState = await getProgressState(content.id)
+      const contentState = await getProgressState(content.id, collection)
       if (contentState !== STATE_STARTED) {
-        const firstChild = content.children[0]
-        let lastInteractedChildNavToData = await getNavigateTo([firstChild])
+        const firstChild = validChildren[0]
+        let lastInteractedChildNavToData = await getNavigateTo([firstChild], collection)
         lastInteractedChildNavToData = lastInteractedChildNavToData[firstChild.id] ?? null
-        navigateToData[content.id] = buildNavigateTo(firstChild, lastInteractedChildNavToData)
+        navigateToData[content.id] = buildNavigateTo(firstChild, lastInteractedChildNavToData, collection) //no G-child for LP
       } else {
-        const childrenStates = await getProgressStateByIds(childrenIds)
-        const lastInteracted = await getLastInteractedOf(childrenIds)
+        const childrenStates = await getProgressStateByIds(childrenIds, collection)
+        const lastInteracted = await getLastInteractedOf(childrenIds, collection)
         const lastInteractedStatus = childrenStates[lastInteracted]
 
-        if (content.type === 'course' || content.type === 'pack-bundle' || content.type === 'skill-pack') {
-          if (lastInteractedStatus === STATE_STARTED) {
-            navigateToData[content.id] = buildNavigateTo(children.get(lastInteracted))
-          } else {
+        if (['course', 'pack-bundle', 'skill-pack'].includes(content.type)) {
+          if (lastInteractedStatus === STATE_STARTED) { // send to last interacted
+            navigateToData[content.id] = buildNavigateTo(children.get(lastInteracted), null, collection)
+          } else { // send to first incomplete after last interacted
             let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
-            navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild))
+            navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild), null, collection)
           }
-        } else if (content.type === 'guided-course' || content.type === 'song-tutorial') {
+        } else if (['song-tutorial', 'guided-course', 'learning-path-v2'].includes(content.type)) { // send to first incomplete
           let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
-          navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild))
-        } else if (twoDepthContentTypes.includes(content.type)) {
+          navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild), null, collection)
+        } else if (twoDepthContentTypes.includes(content.type)) { // send to navigateTo child of last interacted child
           const firstChildren = content.children ?? []
           const lastInteractedChildId = await getLastInteractedOf(
-            firstChildren.map((child) => child.id)
+            firstChildren.map((child) => child.id),
+            collection
           )
           if (childrenStates[lastInteractedChildId] === STATE_COMPLETED) {
             // TODO: packs have an extra situation where we need to jump to the next course if all lessons in the last engaged course are completed
           }
-          let lastInteractedChildNavToData = await getNavigateTo(firstChildren)
+          let lastInteractedChildNavToData = await getNavigateTo(firstChildren, collection)
           lastInteractedChildNavToData = lastInteractedChildNavToData[lastInteractedChildId]
           navigateToData[content.id] = buildNavigateTo(
             children.get(lastInteractedChildId),
-            lastInteractedChildNavToData
+            lastInteractedChildNavToData,
+            collection
           )
         }
       }
@@ -128,7 +92,7 @@ export async function getNavigateTo(data) {
   return navigateToData
 }
 
-function buildNavigateTo(content, child = null) {
+function buildNavigateTo(content, child = null, collection = null) {
   if (!content) {
     return null
   }
@@ -141,26 +105,28 @@ function buildNavigateTo(content, child = null) {
     published_on: content.published_on ?? null,
     status: content.status ?? '',
     child: child,
+    collection: collection,
   }
 }
 
 /**
  * filter through contents, only keeping the most recent
  * @param {array} contentIds
+ * @param {object|null} collection
  * @returns {Promise<number>}
  */
 export async function getLastInteractedOf(contentIds) {
   return db.contentProgress.mostRecentlyUpdatedId(contentIds).then(r => r.data ? parseInt(r.data) : undefined)
 }
 
-export async function getProgressDataByIds(contentIds) {
+export async function getProgressDataByIds(contentIds, collection) {
   const progress = Object.fromEntries(contentIds.map(id => [id, {
     last_update: 0,
     progress: 0,
     status: '',
   }]))
 
-  await db.contentProgress.getSomeProgressByContentIds(contentIds).then(r => {
+  await db.contentProgress.getSomeProgressByContentIds(contentIds, collection).then(r => {
     r.data.forEach(p => {
       progress[p.content_id] = {
         last_update: p.updated_at,
@@ -178,9 +144,9 @@ async function getById(contentId, dataKey, defaultValue) {
   return db.contentProgress.getOneProgressByContentId(contentId).then(r => r.data?.[dataKey] ?? defaultValue)
 }
 
-async function getByIds(contentIds, dataKey, defaultValue) {
+async function getByIds(contentIds, collection, dataKey, defaultValue) {
   const progress = Object.fromEntries(contentIds.map(id => [id, defaultValue]))
-  await db.contentProgress.getSomeProgressByContentIds(contentIds).then(r => {
+  await db.contentProgress.getSomeProgressByContentIds(contentIds, collection).then(r => {
     r.data.forEach(p => {
       progress[p.content_id] = p[dataKey] ?? defaultValue
     })

@@ -79,7 +79,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
   async getSomeProgressByContentIds(
     contentIds: number[],
-    { collection }: { collection?: { type: COLLECTION_TYPE; id: number } | null } = {}
+    collection: { type: COLLECTION_TYPE; id: number } | null = null
   ) {
     const clauses = [Q.where('content_id', Q.oneOf(contentIds))]
     if (typeof collection != 'undefined') {

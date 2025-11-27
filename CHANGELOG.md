@@ -2,6 +2,151 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.89.0](https://github.com/railroadmedia/musora-content-services/compare/v2.88.4...v2.89.0) (2025-11-27)
+
+
+### Features
+
+* add collection ([#592](https://github.com/railroadmedia/musora-content-services/issues/592)) ([3acd884](https://github.com/railroadmedia/musora-content-services/commit/3acd884475c0359eb7fcee09e8a02ab8415e3927))
+
+### [2.88.4](https://github.com/railroadmedia/musora-content-services/compare/v2.88.3...v2.88.4) (2025-11-26)
+
+
+### Bug Fixes
+
+* **onboarding:** fix hardcoded recommended content badges ([ff5dd81](https://github.com/railroadmedia/musora-content-services/commit/ff5dd814bb8c26c29a5fc55b51ebeb925ac462fa))
+
+### [2.88.3](https://github.com/railroadmedia/musora-content-services/compare/v2.88.1...v2.88.3) (2025-11-26)
+
+
+### Bug Fixes
+
+* dailes param ([#594](https://github.com/railroadmedia/musora-content-services/issues/594)) ([c5d8857](https://github.com/railroadmedia/musora-content-services/commit/c5d88575d34336a0ca1d962ea3f38252d7b54a48))
+
+### [2.88.2](https://github.com/railroadmedia/musora-content-services/compare/v2.88.1...v2.88.2) (2025-11-26)
+
+### [2.88.1](https://github.com/railroadmedia/musora-content-services/compare/v2.88.0...v2.88.1) (2025-11-26)
+
+
+### Bug Fixes
+
+* add queries in get daily session and get active path ([#593](https://github.com/railroadmedia/musora-content-services/issues/593)) ([91f3974](https://github.com/railroadmedia/musora-content-services/commit/91f3974c530ca695fa87f5bfe14066e5a473db79))
+
+## [2.88.0](https://github.com/railroadmedia/musora-content-services/compare/v2.86.1...v2.88.0) (2025-11-26)
+
+
+### Features
+
+* **BEH-1418:** refactor learning path endpoints ([#589](https://github.com/railroadmedia/musora-content-services/issues/589)) ([e3637f6](https://github.com/railroadmedia/musora-content-services/commit/e3637f6359ddf8f4295eead890de6457b942b4ea))
+* Implement unified user reporting system ([7aa42ab](https://github.com/railroadmedia/musora-content-services/commit/7aa42ab8dcee09ce3f293d9fbb1a203dcbe94414))
+* **MU2-1250:** Implement unified user reporting system ([3303282](https://github.com/railroadmedia/musora-content-services/commit/33032829b729efa9f9b1e40f31179127c8c74f9d))
+
+## [2.87.0](https://github.com/railroadmedia/musora-content-services/compare/v2.86.1...v2.87.0) (2025-11-26)
+
+
+### Features
+
+* **BEH-1418:** refactor learning path endpoints ([#589](https://github.com/railroadmedia/musora-content-services/issues/589)) ([e3637f6](https://github.com/railroadmedia/musora-content-services/commit/e3637f6359ddf8f4295eead890de6457b942b4ea))
+
+### [2.86.1](https://github.com/railroadmedia/musora-content-services/compare/v2.86.0...v2.86.1) (2025-11-25)
+
+
+### Bug Fixes
+
+* **AGI:** update agi function queries ([97e197d](https://github.com/railroadmedia/musora-content-services/commit/97e197d405b8a79dc93f6287700083f0657c3979))
+
+## [2.86.0](https://github.com/railroadmedia/musora-content-services/compare/v2.85.1...v2.86.0) (2025-11-25)
+
+
+### Features
+
+* **BEH-1266:** Update fetchHierarchy to use parent_content_data ([#586](https://github.com/railroadmedia/musora-content-services/issues/586)) ([4d44fea](https://github.com/railroadmedia/musora-content-services/commit/4d44fea55c5094fd35bbac98f282a996d455be03))
+
+
+### Bug Fixes
+
+* content aggregator and fetch learnig path ([#587](https://github.com/railroadmedia/musora-content-services/issues/587)) ([f8af202](https://github.com/railroadmedia/musora-content-services/commit/f8af2024f147680b60b66e440c164cfd6ff0922b))
+
+### [2.85.1](https://github.com/railroadmedia/musora-content-services/compare/v2.85.0...v2.85.1) (2025-11-24)
+
+
+### Bug Fixes
+
+* update endpoint in lockThread  method ([9d6a351](https://github.com/railroadmedia/musora-content-services/commit/9d6a351ff5bc1187e635d53b3178420dbbcc4172))
+* update endpoint in lockThread  method ([5c5b935](https://github.com/railroadmedia/musora-content-services/commit/5c5b935821bf4029c0131a6b265d711ac3b30db0))
+
+## [2.85.0](https://github.com/railroadmedia/musora-content-services/compare/v2.84.0...v2.85.0) (2025-11-22)
+
+
+### Features
+
+* **BEH-1265:** add collection to addContextToContent ([#570](https://github.com/railroadmedia/musora-content-services/issues/570)) ([f05d85d](https://github.com/railroadmedia/musora-content-services/commit/f05d85d246dcd5bd5e80bfe262a29d79e79d0961))
+
+## [2.84.0](https://github.com/railroadmedia/musora-content-services/compare/v2.83.0...v2.84.0) (2025-11-21)
+
+
+### Features
+
+* add option to work with object data when datafield is provided in content aggregator ([#579](https://github.com/railroadmedia/musora-content-services/issues/579)) ([300f10a](https://github.com/railroadmedia/musora-content-services/commit/300f10a9e17b8a916af746e88b091cab6772cc28))
+
+## [2.83.0](https://github.com/railroadmedia/musora-content-services/compare/v2.82.0...v2.83.0) (2025-11-21)
+
+
+### Features
+
+* **MU2-1258:** New method for delete forum category ([#572](https://github.com/railroadmedia/musora-content-services/issues/572)) ([34e3423](https://github.com/railroadmedia/musora-content-services/commit/34e34237bb7cd55ef8242c1eab0beca3cd264a21))
+
+## [2.82.0](https://github.com/railroadmedia/musora-content-services/compare/v2.79.0...v2.82.0) (2025-11-21)
+
+
+### Features
+
+* add permissions abstraction layer with v1/v2 support ([1c82a73](https://github.com/railroadmedia/musora-content-services/commit/1c82a736cee4f191037a9a9c77c6cbd98eefd054))
+* learning path v2 user activity for progress card ([8db1467](https://github.com/railroadmedia/musora-content-services/commit/8db1467adb0f6bbd092fd111f261315feec8ad24))
+* **MU2-1210:** non-member experience with a permissions abstraction layer ([f760ebb](https://github.com/railroadmedia/musora-content-services/commit/f760ebbbfb0834a02b0fa5b2717639ab235d5e4a))
+* **MU21E1-192:** artist functions ([#578](https://github.com/railroadmedia/musora-content-services/issues/578)) ([19240e4](https://github.com/railroadmedia/musora-content-services/commit/19240e42121f345d66e025d062e5ea06a3e2c42e))
+* **MU2E1-186:** return onboarding info account setup ([#567](https://github.com/railroadmedia/musora-content-services/issues/567)) ([e900aea](https://github.com/railroadmedia/musora-content-services/commit/e900aea9f2ae356258a8f0a0cdd8708101e0d6b2))
+* Non-members should be able to access locked/non-accessible content ([efe1044](https://github.com/railroadmedia/musora-content-services/commit/efe1044f571bf171aeaea42e0bf077a40b3d86af))
+
+
+### Bug Fixes
+
+* **BEH-1409:** fix function to support the BE endpoint ([#569](https://github.com/railroadmedia/musora-content-services/issues/569)) ([9231bef](https://github.com/railroadmedia/musora-content-services/commit/9231beffad0ce9df9e7630e5b69d2c373d0f5190))
+
+## [2.81.0](https://github.com/railroadmedia/musora-content-services/compare/v2.80.0...v2.81.0) (2025-11-20)
+
+
+### Features
+
+* learning path v2 user activity for progress card ([8db1467](https://github.com/railroadmedia/musora-content-services/commit/8db1467adb0f6bbd092fd111f261315feec8ad24))
+* **MU2E1-186:** return onboarding info account setup ([#567](https://github.com/railroadmedia/musora-content-services/issues/567)) ([e900aea](https://github.com/railroadmedia/musora-content-services/commit/e900aea9f2ae356258a8f0a0cdd8708101e0d6b2))
+
+## [2.80.0](https://github.com/railroadmedia/musora-content-services/compare/v2.79.1...v2.80.0) (2025-11-19)
+
+
+### Features
+
+* **MU21E1-192:** artist functions ([#578](https://github.com/railroadmedia/musora-content-services/issues/578)) ([19240e4](https://github.com/railroadmedia/musora-content-services/commit/19240e42121f345d66e025d062e5ea06a3e2c42e))
+
+### [2.79.1](https://github.com/railroadmedia/musora-content-services/compare/v2.79.0...v2.79.1) (2025-11-19)
+
+
+### Bug Fixes
+
+* **BEH-1409:** fix function to support the BE endpoint ([#569](https://github.com/railroadmedia/musora-content-services/issues/569)) ([9231bef](https://github.com/railroadmedia/musora-content-services/commit/9231beffad0ce9df9e7630e5b69d2c373d0f5190))
+
+## [2.79.0](https://github.com/railroadmedia/musora-content-services/compare/v2.77.1...v2.79.0) (2025-11-18)
+
+
+### Features
+
+* **BEH-1409:** complete intro video ([#566](https://github.com/railroadmedia/musora-content-services/issues/566)) ([fb2fa96](https://github.com/railroadmedia/musora-content-services/commit/fb2fa96f408948cf4c3501709dc2ec2c17f23163))
+
+
+### Bug Fixes
+
+* **awards:** see all function updates ([#561](https://github.com/railroadmedia/musora-content-services/issues/561)) ([68daed3](https://github.com/railroadmedia/musora-content-services/commit/68daed3ec7acf905768906af4dfb1b84b6ca325e))
+
 ## [2.78.0](https://github.com/railroadmedia/musora-content-services/compare/v2.77.2...v2.78.0) (2025-11-15)
 
 

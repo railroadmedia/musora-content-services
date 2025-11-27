@@ -3,6 +3,7 @@
     "include": [
       "src/services/user",
       "src/services/content-org",
+      "src/services/content",
       "src/services/gamification",
       "src/services/api",
       "src/services/progress-row",

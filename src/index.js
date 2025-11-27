@@ -48,6 +48,24 @@ import {
 } from './services/config.js';
 
 import {
+	fetchArtistBySlug,
+	fetchArtistLessons,
+	fetchArtists
+} from './services/content/artist.ts';
+
+import {
+	fetchGenreBySlug,
+	fetchGenreLessons,
+	fetchGenres
+} from './services/content/genre.ts';
+
+import {
+	fetchInstructorBySlug,
+	fetchInstructorLessons,
+	fetchInstructors
+} from './services/content/instructor.ts';
+
+import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
@@ -65,7 +83,6 @@ import {
 	mapContentToParent,
 	resetAllLearningPaths,
 	startLearningPath,
-	updateActivePath,
 	updateDailySession
 } from './services/content-org/learning-paths.ts';
 
@@ -92,6 +109,7 @@ import {
 	getLegacyMethods,
 	getLessonContentRows,
 	getNewAndUpcoming,
+	getOwnedContent,
 	getRecent,
 	getRecommendedForYou,
 	getScheduleContentRows,
@@ -119,7 +137,6 @@ import {
 	getAllStartedOrCompleted,
 	getLastInteractedOf,
 	getNavigateTo,
-	getNextLesson,
 	getProgressDataByIds,
 	getProgressState,
 	getProgressStateByIds,
@@ -145,6 +162,7 @@ import {
 
 import {
 	createForumCategory,
+	deleteForumCategory,
 	fetchForumCategories,
 	updateForumCategory
 } from './services/forums/categories.ts';
@@ -257,21 +275,23 @@ import {
 } from './services/recommendations.js';
 
 import {
+	getReportIssueOptions,
+	report
+} from './services/reporting/reporting.ts';
+
+import {
+	buildEntityAndTotalQuery,
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPacks,
-	fetchArtistLessons,
-	fetchArtists,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
 	fetchChatAndLiveEnvent,
-	fetchCoachLessons,
 	fetchComingSoon,
 	fetchCommentModContentData,
 	fetchContentRows,
 	fetchFoundation,
-	fetchGenreLessons,
 	fetchHierarchy,
 	fetchLeaving,
 	fetchLessonContent,
@@ -284,9 +304,11 @@ import {
 	fetchMethodPreviousNextLesson,
 	fetchMethodV2IntroVideo,
 	fetchMethodV2Structure,
+	fetchMethodV2StructureFromId,
 	fetchNewReleases,
 	fetchNextPreviousLesson,
 	fetchOtherSongVersions,
+	fetchOwnedContent,
 	fetchPackAll,
 	fetchPackData,
 	fetchPlayAlongsCount,
@@ -306,6 +328,7 @@ import {
 	fetchTabData,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
+	getSanityDate,
 	getSortOrder,
 	jumpToContinueContent
 } from './services/sanity.js';
@@ -434,6 +457,7 @@ export {
 	blockUser,
 	blockedUsers,
 	buildCertificateData,
+	buildEntityAndTotalQuery,
 	buildImageSRC,
 	calculateLongestStreaks,
 	closeComment,
@@ -453,6 +477,7 @@ export {
 	createThread,
 	deleteAccount,
 	deleteComment,
+	deleteForumCategory,
 	deleteItemsFromPlaylist,
 	deleteNotification,
 	deletePicture,
@@ -471,6 +496,7 @@ export {
 	fetchAllCompletedStates,
 	fetchAllFilterOptions,
 	fetchAllPacks,
+	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
 	fetchAwardsForUser,
@@ -481,7 +507,6 @@ export {
 	fetchCertificate,
 	fetchChatAndLiveEnvent,
 	fetchChatSettings,
-	fetchCoachLessons,
 	fetchComingSoon,
 	fetchComment,
 	fetchCommentModContentData,
@@ -498,9 +523,14 @@ export {
 	fetchFollowedThreads,
 	fetchForumCategories,
 	fetchFoundation,
+	fetchGenreBySlug,
 	fetchGenreLessons,
+	fetchGenres,
 	fetchHandler,
 	fetchHierarchy,
+	fetchInstructorBySlug,
+	fetchInstructorLessons,
+	fetchInstructors,
 	fetchInterests,
 	fetchLastInteractedChild,
 	fetchLatestThreads,
@@ -519,12 +549,14 @@ export {
 	fetchMethodPreviousNextLesson,
 	fetchMethodV2IntroVideo,
 	fetchMethodV2Structure,
+	fetchMethodV2StructureFromId,
 	fetchNewReleases,
 	fetchNextContentDataForParent,
 	fetchNextPreviousLesson,
 	fetchNotificationSettings,
 	fetchNotifications,
 	fetchOtherSongVersions,
+	fetchOwnedContent,
 	fetchPackAll,
 	fetchPackData,
 	fetchPlayAlongsCount,
@@ -595,6 +627,7 @@ export {
 	getNewlyEarnedAwards,
 	getNextLesson,
 	getOnboardingRecommendedContent,
+	getOwnedContent,
 	getPracticeNotes,
 	getPracticeSessions,
 	getProgressDataByIds,
@@ -604,7 +637,9 @@ export {
 	getRecent,
 	getRecentActivity,
 	getRecommendedForYou,
+	getReportIssueOptions,
 	getResumeTimeSecondsByIds,
+	getSanityDate,
 	getScheduleContentRows,
 	getSortOrder,
 	getStartedOrCompletedProgressOnly,
@@ -663,6 +698,7 @@ export {
 	removeContentAsNotInterested,
 	removeUserPractice,
 	replyToComment,
+	report,
 	reportComment,
 	reportPlaylist,
 	requestEmailChange,
