@@ -1,12 +1,11 @@
 import { Database, Q, type Collection, type RecordId } from '@nozbe/watermelondb'
 import { RawSerializer, ModelSerializer } from '../serializers'
-import { ModelClass, SyncToken, SyncEntry,  SyncContext } from '..'
+import { ModelClass, SyncToken, SyncEntry,  SyncContext, EpochMs } from '..'
 import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
 import type SyncRetry from '../retry'
 import type SyncRunScope from '../run-scope'
 import EventEmitter from '../utils/event-emitter'
 import BaseModel from '../models/Base'
-import { EpochSeconds } from '../utils/epoch'
 import { sanitizedRaw } from '@nozbe/watermelondb/RawRecord'
 import { default as Resolver, type SyncResolution, type SyncResolverComparator } from '../resolver'
 import PushCoalescer from './push-coalescer'
@@ -771,7 +770,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   private generateTimestamp() {
-    return Math.round(Date.now() / 1000) as EpochSeconds
+    return Date.now() as EpochMs
   }
 
   private isLokiAdapter(adapter: any): adapter is LokiJSAdapter {

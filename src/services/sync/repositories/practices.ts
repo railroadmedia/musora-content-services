@@ -49,12 +49,11 @@ export default class PracticesRepository extends SyncRepository<Practice> {
 
   async updateDetails(id: RecordId, details: Partial<Pick<Practice, 'duration_seconds' | 'title' | 'thumbnail_url' | 'category_id' | 'instrument_id'>>) {
     return await this.updateOneId(id, r => {
-      ['duration_seconds', 'title', 'thumbnail_url', 'category_id', 'instrument_id'].forEach(key => {
-        const value = details[key as keyof typeof details];
-        if (value !== undefined) {
-          (r as any)[key] = value;
-        }
-      })
+      r.duration_seconds = Math.min(details.duration_seconds, 59999) ?? r.duration_seconds;
+      r.title = details.title ?? r.title;
+      r.thumbnail_url = details.thumbnail_url ?? r.thumbnail_url;
+      r.category_id = details.category_id ?? r.category_id;
+      r.instrument_id = details.instrument_id ?? r.instrument_id;
     })
   }
 

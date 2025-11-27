@@ -532,11 +532,11 @@ export async function fetchUserPractices(userId) {
   }
 
   const formattedPractices = userPractices.reduce((acc, practice) => {
-    if (!acc[practice.day]) {
-      acc[practice.day] = []
+    if (!acc[practice.date]) {
+      acc[practice.date] = []
     }
 
-    acc[practice.day].push({
+    acc[practice.date].push({
       id: practice.id,
       duration_seconds: practice.duration_seconds,
     })

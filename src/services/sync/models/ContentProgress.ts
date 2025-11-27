@@ -40,6 +40,10 @@ export default class ContentProgress extends BaseModel<{
   get collection_id() {
     return (this._getRaw('collection_id') as number) || null
   }
+  get resume_time_seconds() {
+    return this._getRaw('resume_time_seconds') as number
+  }
+
   set content_id(value: number) {
     this._setRaw('content_id', value)
   }
