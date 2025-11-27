@@ -1,5 +1,8 @@
 import { Brands } from '../../../lib/brands'
 import { DocumentTypes } from '../../../lib/documents'
+import { needsAccessDecorator, pageTypeDecorator } from '../../../lib/sanity/decorators'
+import { Lesson } from '../../../services/content/content'
+import { getPermissionsAdapter } from '../../../services/permissions'
 import { SanityClient, ContentClient } from '../index'
 
 /**
@@ -82,7 +85,7 @@ export async function fetchSongsExample(brand: Brands, page: number = 1, limit: 
 // Example: Execute a complex query that returns custom structure
 export async function fetchSongsWithCountExample(brand: Brands) {
   const query = `{
-    "songs": *[_type == "${DocumentTypes.Song}" && brand == "${brand}"] | order(published_on desc)[0...10]{
+    "data": *[_type == "${DocumentTypes.Song}" && brand == "${brand}"] | order(published_on desc)[0...10]{
       "id": railcontent_id,
       title,
       "artist": artist->name
@@ -109,4 +112,46 @@ export async function fetchSingleSongWithParamsExample(songId: number) {
   const query = `*[_type == "${DocumentTypes.Song}" && railcontent_id == ${songId}][0]`
 
   return await sanityClient.fetchSingle(query, { songId })
+}
+
+// Example: Compose page type decorator with fetchSingle
+export async function fetchSongWithPageType(songId: number): Promise<Lesson | null> {
+  // Note: Sanity GROQ doesn't support parameterized queries like SQL
+  // Parameters would be used for client-side processing if needed
+  const query = `*[_type == "${DocumentTypes.Song}" && railcontent_id == ${songId}][0]`
+  return sanityClient.fetchSingle<Lesson>(query, { songId }).then((res) => pageTypeDecorator(res))
+}
+
+// Example: Execute a complex query that returns custom structure
+export async function fetchSongsWithPermissions(brand: Brands) {
+  const query = `{
+    "data": *[_type == "${DocumentTypes.Song}" && brand == "${brand}"] | order(published_on desc)[0...10]{
+      "id": railcontent_id,
+      title,
+      "artist": artist->name
+    },
+    "total": count(*[_type == "${DocumentTypes.Song}" && brand == "${brand}"])
+  }`
+
+  const adapter = getPermissionsAdapter()
+  return Promise.all([sanityClient.executeQuery(query), adapter.fetchUserPermissions()]).then(
+    ([res, perms]) => needsAccessDecorator(res, perms, adapter)
+  )
+}
+//
+// Example: Execute a complex query that returns custom structure
+export async function fetchSongsWithPermissionsAndPageType(brand: Brands) {
+  const query = `{
+    "data": *[_type == "${DocumentTypes.Song}" && brand == "${brand}"] | order(published_on desc)[0...10]{
+      "id": railcontent_id,
+      title,
+      "artist": artist->name
+    },
+    "total": count(*[_type == "${DocumentTypes.Song}" && brand == "${brand}"])
+  }`
+
+  const adapter = getPermissionsAdapter()
+  return Promise.all([sanityClient.executeQuery(query), adapter.fetchUserPermissions()])
+    .then(([res, perms]) => needsAccessDecorator(res, perms, adapter))
+    .then(pageTypeDecorator)
 }
