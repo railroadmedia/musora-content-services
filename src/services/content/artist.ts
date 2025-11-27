@@ -3,11 +3,11 @@
  */
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
 import { FilterBuilder } from '../../filterBuilder.js'
+import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
+import { Brands } from '../../lib/brands'
+import { DocumentTypes } from '../../lib/documents'
 import { buildDataAndTotalQuery, getSortOrder } from '../../lib/sanity/query'
 import { Lesson } from './content'
-import { Brands } from '../../lib/brands'
-import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
-import { DocumentTypes } from '../../lib/documents'
 
 const contentClient = new ContentClient()
 

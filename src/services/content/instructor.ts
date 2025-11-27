@@ -6,9 +6,7 @@ import { FilterBuilder } from '../../filterBuilder.js'
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
 import { Brands } from '../../lib/brands'
 import { DocumentTypes } from '../../lib/documents'
-import { needsAccessDecorator, pageTypeDecorator } from '../../lib/sanity/decorators.js'
 import { buildDataAndTotalQuery, getSortOrder } from '../../lib/sanity/query'
-import { getPermissionsAdapter } from '../permissions/index.js'
 import { Lesson } from './content'
 
 const contentClient = new ContentClient()
