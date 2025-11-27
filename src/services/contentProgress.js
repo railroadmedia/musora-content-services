@@ -12,12 +12,12 @@ export async function getProgressState(contentId) {
   return getById(contentId, 'state', '')
 }
 
-export async function getProgressStateByIds(contentIds) {
-  return getByIds(contentIds, 'state', '')
+export async function getProgressStateByIds(contentIds, collection = null) {
+  return getByIds(contentIds, collection, 'state', '')
 }
 
-export async function getResumeTimeSecondsByIds(contentIds) {
-  return getByIds(contentIds, 'resume_time_seconds', 0)
+export async function getResumeTimeSecondsByIds(contentIds, collection = null) {
+  return getByIds(contentIds, collection, 'resume_time_seconds', 0)
 }
 
 export async function getNavigateTo(data, collection = null) {
@@ -51,7 +51,7 @@ export async function getNavigateTo(data, collection = null) {
       const contentState = await getProgressState(content.id, collection)
       if (contentState !== STATE_STARTED) {
         const firstChild = validChildren[0]
-        let lastInteractedChildNavToData = await getNavigateTo([firstChild])
+        let lastInteractedChildNavToData = await getNavigateTo([firstChild], collection)
         lastInteractedChildNavToData = lastInteractedChildNavToData[firstChild.id] ?? null
         navigateToData[content.id] = buildNavigateTo(firstChild, lastInteractedChildNavToData, collection) //no G-child for LP
       } else {
@@ -78,7 +78,7 @@ export async function getNavigateTo(data, collection = null) {
           if (childrenStates[lastInteractedChildId] === STATE_COMPLETED) {
             // TODO: packs have an extra situation where we need to jump to the next course if all lessons in the last engaged course are completed
           }
-          let lastInteractedChildNavToData = await getNavigateTo(firstChildren)
+          let lastInteractedChildNavToData = await getNavigateTo(firstChildren, collection)
           lastInteractedChildNavToData = lastInteractedChildNavToData[lastInteractedChildId]
           navigateToData[content.id] = buildNavigateTo(
             children.get(lastInteractedChildId),
@@ -119,14 +119,14 @@ export async function getLastInteractedOf(contentIds) {
   return db.contentProgress.mostRecentlyUpdatedId(contentIds).then(r => r.data ? parseInt(r.data) : undefined)
 }
 
-export async function getProgressDataByIds(contentIds) {
+export async function getProgressDataByIds(contentIds, collection) {
   const progress = Object.fromEntries(contentIds.map(id => [id, {
     last_update: 0,
     progress: 0,
     status: '',
   }]))
 
-  await db.contentProgress.getSomeProgressByContentIds(contentIds).then(r => {
+  await db.contentProgress.getSomeProgressByContentIds(contentIds, collection).then(r => {
     r.data.forEach(p => {
       progress[p.content_id] = {
         last_update: p.updated_at,
@@ -144,9 +144,9 @@ async function getById(contentId, dataKey, defaultValue) {
   return db.contentProgress.getOneProgressByContentId(contentId).then(r => r.data?.[dataKey] ?? defaultValue)
 }
 
-async function getByIds(contentIds, dataKey, defaultValue) {
+async function getByIds(contentIds, collection, dataKey, defaultValue) {
   const progress = Object.fromEntries(contentIds.map(id => [id, defaultValue]))
-  await db.contentProgress.getSomeProgressByContentIds(contentIds).then(r => {
+  await db.contentProgress.getSomeProgressByContentIds(contentIds, collection).then(r => {
     r.data.forEach(p => {
       progress[p.content_id] = p[dataKey] ?? defaultValue
     })
