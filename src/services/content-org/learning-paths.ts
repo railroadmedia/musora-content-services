@@ -273,6 +273,7 @@ export async function completeLearningPathIntroVideo(introVideoId: number, learn
     response.learning_path_reset_response = await contentStatusReset(learningPathId, collection)
 
   } else {
+      response.lesson_import_response = {}
     for (const contentId of lessonsToImport) {
       response.lesson_import_response[contentId] = await contentStatusCompleted(contentId, collection)
     }
