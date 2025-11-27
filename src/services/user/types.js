@@ -73,6 +73,8 @@
  * @property {number} send_mobile_app_push_notifications
  * @property {number} send_email_notifications
  * @property {number} use_legacy_video_player
+ * @property {boolean} use_student_view
+ * @property {boolean} show_admin_toggle
  * @property {number} drumeo_ship_magazine
  * @property {string|null} magazine_shipping_address_id
  * @property {string|null} ios_latest_review_display_date
@@ -134,3 +136,17 @@
  * @property {number} forum_post_likes
  * @property {number} experience_points
  */
+
+/**
+ * @typedef {Object} BlockedUsersDTO
+ *
+ * @property {number} id
+ * @property {string} display_name
+ * @property {string|null} profile_picture_url
+ */
+
+/**
+ * @typedef {Object} SetUserSignatureParams
+ * @property {string} signature - The signature text to set for the user.
+ */
+

@@ -1,18 +1,32 @@
 import { globalConfig, initializeService } from '../src'
 import { LocalStorageMock } from './localStorageMock'
-
 const railContentModule = require('../src/services/railcontent.js')
 let token = null
 let userId = process.env.RAILCONTENT_USER_ID ?? null
 
 export async function initializeTestService(useLive = false, isAdmin = false) {
+  let token, userId
   if (useLive && !token && process.env.RAILCONTENT_BASE_URL) {
-    let data = await fetchLoginToken(
-      process.env.RAILCONTENT_EMAIL,
-      process.env.RAILCONTENT_PASSWORD
-    )
+    const baseUrl = `${process.env.RAILCONTENT_BASE_URL}/api/user-management-system`
+    const response = await fetch(`${baseUrl}/v1/sessions`, {
+      method: 'POST',
+      headers: {
+        'X-Client-Platform': 'mobile',
+        'Content-Type': 'application/json',
+        Authorization: null,
+      },
+      body: JSON.stringify({
+        email: process.env.RAILCONTENT_EMAIL,
+        password: process.env.RAILCONTENT_PASSWORD,
+        device_name: 'test',
+        device_token: '',
+        platform: '',
+      }),
+    })
+
+    let data = await response.json() // Parse the JSON body
     token = data['token']
-    userId = data['userId']
+    userId = data['user']['id']
   }
 
   const config = {
@@ -25,46 +39,15 @@ export async function initializeTestService(useLive = false, isAdmin = false) {
       debug: process.env.DEBUG === 'true' || false,
       useDummyRailContentMethods: true,
     },
-    sessionConfig: {
-      token: token,
-      userId: userId,
-      authToken: token,
-    },
+    sessionConfig: { token: token, userId: userId, authToken: token },
     baseUrl: process.env.RAILCONTENT_BASE_URL,
     localStorage: new LocalStorageMock(),
     isMA: true,
-    recommendationsConfig: {
-      token: process.env.HUGGINGFACE_TOKEN,
-      baseUrl: process.env.HUGGINGFACE_URL,
-    },
   }
   initializeService(config)
 
-  let mock = jest.spyOn(railContentModule, 'fetchUserPermissionsData')
-  let testData = { permissions: [78, 91, 92], isAdmin: isAdmin }
-  mock.mockImplementation(() => testData)
-}
-
-async function fetchLoginToken(email, password) {
-  try {
-    const url = `${process.env.RAILCONTENT_BASE_URL}/user-management-system/login/token`
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email: email, password: password, device_name: 'test' }),
-    })
-    if (response.ok) {
-      let data = await response.json()
-      return { token: data.token, userId: data.user.id }
-    } else {
-      console.log('fetch error:', response.status)
-      console.log(response)
-    }
-  } catch (error) {
-    console.error('Fetch error:', error)
-  }
-  return null
+  // Mock user permissions
+  let permissionsMock = jest.spyOn(railContentModule, 'fetchUserPermissionsData')
+  let permissionsData = { permissions: [108, 91, 92], isAdmin: isAdmin }
+  permissionsMock.mockImplementation(() => permissionsData)
 }

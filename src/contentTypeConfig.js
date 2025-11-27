@@ -1,47 +1,107 @@
 //import {AWSUrl, CloudFrontURl} from "./services/config";
-import {Tabs} from "./contentMetaData.js";
+import { LengthFilterOptions, Tabs } from './contentMetaData.js'
+import { FilterBuilder } from './filterBuilder.js'
 
 export const AWSUrl = 'https://s3.us-east-1.amazonaws.com/musora-web-platform'
 export const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net'
 
+// This is used to pull related content by license, so we only show "consumable" content
 export const SONG_TYPES = ['song', 'play-along', 'jam-track', 'song-tutorial-children']
-// Challenges are excluded for the moment as they're still in design flex
+// Oct 2025: It turns out content-meta categories are not really clear
+// THis is used for the page_type field as a post processor so we include parents and children
+// Duplicated in SanityGateway.php if you update this, update that
+export const SONG_TYPES_WITH_CHILDREN = [
+  'song',
+  'song-part',
+  'play-along',
+  'play-along-part',
+  'jam-track',
+  'song-tutorial',
+  'song-tutorial-children',
+]
 // Single hierarchy refers to only one element in the hierarchy has video lessons, not that they have a single parent
 export const SINGLE_PARENT_TYPES = ['course-part', 'pack-bundle-lesson', 'song-tutorial-children']
+
+export const genreField = `genre[]->{
+  name,
+  'slug': slug.current,
+  'thumbnail': thumbnail_url.asset->url,
+}`
+
+export const instructorField = `instructor[]->{
+  name,
+  'slug': slug.current,
+  short_bio,
+  'thumbnail': thumbnail_url.asset->url,
+  "biography": short_bio[0].children[0].text,
+  "coach_card_image": coach_card_image.asset->url,
+  "coach_profile_image": thumbnail_url.asset->url
+}`
+
+export const artistField = `select(
+          defined(artist) => artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url},
+          defined(parent_content_data) => *[_type == ^.parent_content_data[0].type && railcontent_id == ^.parent_content_data[0].id][0].artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url}
+        )`
 
 export const DEFAULT_FIELDS = [
   "'sanity_id' : _id",
   "'id': railcontent_id",
-  'railcontent_id',
   artistOrInstructorName(),
-  'artist',
+  `'artist': ${artistField}`,
   'title',
   "'image': thumbnail.asset->url",
   "'thumbnail': thumbnail.asset->url",
   'difficulty',
   'difficulty_string',
-  'web_url_path',
-  "'url': web_url_path",
   'published_on',
   "'type': _type",
-  'progress_percent',
   "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
   'brand',
-  "'genre': genre[]->name",
+  `"instructor": ${instructorField}`,
+  `'genre': ${genreField}`,
   'status',
   "'slug' : slug.current",
   "'permission_id': permission[]->railcontent_id",
-  'xp',
   'child_count',
-  '"lesson_count": coalesce(count(child[]->.child[]->), child_count)',
+  '"parent_id": parent_content_data[0].id',
 ]
+
+// these are identical... why
 export const DEFAULT_CHILD_FIELDS = [
-  `"id": railcontent_id`,
-  `title`,
-  `"image": thumbnail.asset->url`,
-  `"instructors": instructor[]->name`,
-  `length_in_seconds`,
+  "'sanity_id' : _id",
+  "'id': railcontent_id",
+  artistOrInstructorName(),
+  `'artist': ${artistField}`,
+  'title',
+  "'image': thumbnail.asset->url",
+  "'thumbnail': thumbnail.asset->url",
+  'difficulty',
+  'difficulty_string',
+  'published_on',
+  "'type': _type",
+  "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
+  'brand',
+  `'genre': ${genreField}`,
+  'status',
+  "'slug' : slug.current",
+  "'permission_id': permission[]->railcontent_id",
+  'child_count',
+  '"parent_id": parent_content_data[0].id',
 ]
+
+export const playAlongMp3sField = `{
+      'mp3_no_drums_no_click_url':      mp3_no_drums_no_click_url,
+      'mp3_no_drums_yes_click_url':     mp3_no_drums_yes_click_url,
+      'mp3_yes_drums_no_click_url':     mp3_yes_drums_no_click_url,
+      'mp3_yes_drums_yes_click_url':    mp3_yes_drums_yes_click_url,
+}
+`
+
+export const chapterField = `chapter[]{
+                    chapter_description,
+                    chapter_timecode,
+                    "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
+                }`
 
 export const descriptionField = 'description[0].children[0].text'
 // this pulls both any defined resources for the document as well as any resources in the parent document
@@ -88,7 +148,6 @@ export const showsTypes = {
     'backstage-secret',
     'quick-tips',
     'question-and-answer',
-    'student-collaboration',
     'live',
     'podcast',
     'solo',
@@ -111,6 +170,7 @@ export const showsTypes = {
   pianote: ['student-review', 'question-and-answer'],
   guitareo: ['student-review', 'question-and-answer', 'archives', 'recording'],
   singeo: ['student-review', 'question-and-answer'],
+  playbass: ['student-review', 'question-and-answer'],
 }
 
 export const coachLessonsTypes = [
@@ -128,91 +188,208 @@ export const coachLessonsTypes = [
 ]
 
 export const childContentTypeConfig = {
-  'song-tutorial': [
-    `"genre": genre[]->name`,
-    `difficulty_string`,
-    `"type": _type`,
-  ]
+  'song-tutorial': [`"genre": ${genreField}`, `difficulty_string`, `"type": _type`],
 }
 
-export const singleLessonTypes = ['quick-tips', 'rudiment', 'coach-lessons'];
-export const practiceAlongsLessonTypes = ['workout', 'boot-camp','challenges'];
-export const performancesLessonTypes = ['performance','solo','drum-fest-international-2022'];
-export const documentariesLessonTypes = ['tama','sonor','history-of-electronic-drums','paiste-cymbals'];
-export const liveArchivesLessonTypes = ['podcast', 'coach-stream', 'question-and-answer', 'live-streams'];
-export const studentArchivesLessonTypes = ['student-review', 'student-focus','student-collaboration'];
-export const tutorialsLessonTypes = ['song-tutorial'];
-export const transcriptionsLessonTypes = ['song'];
-export const playAlongLessonTypes = ['play-along'];
+export const singleLessonTypes = ['quick-tips', 'rudiment']
+export const practiceAlongsLessonTypes = ['workout'] // challenges ->workouts
+export const performancesLessonTypes = ['performance']
+export const documentariesLessonTypes = [
+  'tama',
+  'sonor',
+  'history-of-electronic-drums',
+  'paiste-cymbals',
+  'backstage-secret',
+]
+export const liveArchivesLessonTypes = [
+  'podcast',
+  'coach-stream',
+  'question-and-answer',
+  'live-streams',
+  'live',
+]
+export const studentArchivesLessonTypes = [
+  'student-review',
+  'student-focus',
+  'student-collaboration',
+]
+export const tutorialsLessonTypes = ['song-tutorial']
+export const transcriptionsLessonTypes = ['song']
+export const playAlongLessonTypes = ['play-along']
+export const jamTrackLessonTypes = ['jam-track']
 
 export const individualLessonsTypes = [
   ...singleLessonTypes,
   ...practiceAlongsLessonTypes,
-  ...performancesLessonTypes,
-  ...documentariesLessonTypes,
   ...liveArchivesLessonTypes,
-  ...studentArchivesLessonTypes
-];
+  ...studentArchivesLessonTypes,
+]
 
-export const coursesLessonTypes = ['course', 'pack','spotlight'];
-export const showsLessonTypes = ['diy-drum-experiment','exploring-beats','in-rhythm',  'rhythmic-adventures-of-captain-carson','rhythms-from-another-planet','study-the-greats'];
-export const collectionLessonTypes = [
-    ...coursesLessonTypes,
-    ...showsLessonTypes
-];
+export const coursesLessonTypes = [
+  'course',
+  'tiered-course', // TODO: new content type
+  'guided-course',
+]
+
+export const skillLessonTypes = ['skill-pack']
+
+export const showsLessonTypes = [
+  'boot-camp',
+  'diy-drum-experiment',
+  'exploring-beats',
+  'in-rhythm',
+  'rhythmic-adventures-of-captain-carson',
+  'rhythms-from-another-planet',
+  'study-the-greats',
+]
+export const entertainmentLessonTypes = [
+  'specials', // TODO: new type
+  ...documentariesLessonTypes,
+  ...showsLessonTypes,
+]
+export const collectionLessonTypes = [...coursesLessonTypes, ...showsLessonTypes]
 
 export const lessonTypesMapping = {
-  'single lessons': singleLessonTypes,
+  lessons: singleLessonTypes,
   'practice alongs': practiceAlongsLessonTypes,
   'live archives': liveArchivesLessonTypes,
-  'performances': performancesLessonTypes,
+  performances: performancesLessonTypes,
   'student archives': studentArchivesLessonTypes,
-  'documentaries': documentariesLessonTypes,
-  'courses': coursesLessonTypes,
-  'shows': showsLessonTypes,
-  'collections': collectionLessonTypes,
-  'individuals': individualLessonsTypes,
-  'tutorials': tutorialsLessonTypes,
-  'transcriptions': transcriptionsLessonTypes,
-  'tabs': transcriptionsLessonTypes,
+  documentaries: documentariesLessonTypes,
+  courses: ['course'],
+  'guided courses': ['guided-course'],
+  'tiered courses': ['tiered-course'],
+  'skill packs': ['skill-pack'],
+  specials: ['specials'],
+  shows: showsLessonTypes,
+  collections: collectionLessonTypes,
+  individuals: individualLessonsTypes,
+  tutorials: tutorialsLessonTypes,
+  transcriptions: transcriptionsLessonTypes,
+  tabs: transcriptionsLessonTypes,
   'sheet music': transcriptionsLessonTypes,
   'play-alongs': playAlongLessonTypes,
-  'jam tracks': ['jam-track'],
-};
+  'jam tracks': jamTrackLessonTypes,
+  entertainment: entertainmentLessonTypes,
+  'single lessons': [
+    ...singleLessonTypes,
+    ...liveArchivesLessonTypes,
+    ...studentArchivesLessonTypes,
+    ...practiceAlongsLessonTypes,
+  ],
+}
+
+export const getNextLessonLessonParentTypes = [
+  'course',
+  'guided-course',
+  'pack',
+  'pack-bundle',
+  'song-tutorial',
+  'learning-path-v2',
+  'skill-pack',
+]
 
 export const progressTypesMapping = {
-  'lesson': [...singleLessonTypes,...practiceAlongsLessonTypes, ...liveArchivesLessonTypes, ...performancesLessonTypes, ...studentArchivesLessonTypes, ...documentariesLessonTypes, 'live'],
-  'course': ['course'],
-  'show': showsLessonTypes,
-  'song tutorial': tutorialsLessonTypes,
-  'songs': transcriptionsLessonTypes,
-  'play-along': playAlongLessonTypes,
-  'guided course': ['challenge'],
-  'pack': ['pack', 'semester-pack'],
-  'method': ['learning-path']
-};
+  lesson: [
+    ...singleLessonTypes,
+    ...practiceAlongsLessonTypes,
+    ...liveArchivesLessonTypes,
+    ...performancesLessonTypes,
+    ...studentArchivesLessonTypes,
+    ...documentariesLessonTypes,
+    'live',
+    'pack-bundle-lesson',
+  ],
+  course: ['course'],
+  show: showsLessonTypes,
+  'song tutorial': [...tutorialsLessonTypes, 'song-tutorial-children'],
+  songs: transcriptionsLessonTypes,
+  'play along': playAlongLessonTypes,
+  'guided course': ['guided-course'],
+  pack: ['pack', 'semester-pack'],
+  'learning path': ['learning-path-v2'],
+  'jam track': jamTrackLessonTypes,
+  'course video': ['course-part'],
+}
 
 export const songs = {
   drumeo: 'transcription',
   guitareo: 'tab',
   pianote: 'sheet music',
   singeo: 'sheet music',
+  playbass: 'tab',
 }
 
 export const filterTypes = {
-  lessons: [...individualLessonsTypes, ...collectionLessonTypes],
-  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes, 'jam-track'],
+  lessons: [
+    ...singleLessonTypes,
+    ...practiceAlongsLessonTypes,
+    ...liveArchivesLessonTypes,
+    ...studentArchivesLessonTypes,
+    ...coursesLessonTypes,
+    ...skillLessonTypes,
+    ...entertainmentLessonTypes,
+  ],
+  songs: [
+    ...tutorialsLessonTypes,
+    ...transcriptionsLessonTypes,
+    ...playAlongLessonTypes,
+    ...jamTrackLessonTypes,
+  ],
 }
 
 export const recentTypes = {
-  lessons: [...individualLessonsTypes],
-  songs: [...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes],
-  home: [...individualLessonsTypes, ...tutorialsLessonTypes, ...transcriptionsLessonTypes, ...playAlongLessonTypes]
+  lessons: [
+    ...individualLessonsTypes,
+    'course-part',
+    'pack-bundle-lesson',
+    'guided-course-part',
+    'quick-tips',
+  ],
+  songs: [...SONG_TYPES],
+  home: [
+    ...individualLessonsTypes,
+    ...tutorialsLessonTypes,
+    ...transcriptionsLessonTypes,
+    ...playAlongLessonTypes,
+    'guided-course',
+    'learning-path-v2',
+    'live',
+    'course',
+    'pack',
+  ],
+}
+
+export const ownedContentTypes = {
+  lessons: [
+    ...singleLessonTypes,
+    ...practiceAlongsLessonTypes,
+    ...liveArchivesLessonTypes,
+    ...studentArchivesLessonTypes,
+    ...coursesLessonTypes,
+    ...skillLessonTypes,
+    ...entertainmentLessonTypes,
+    'pack',
+  ],
+  songs: [
+    ...tutorialsLessonTypes,
+    ...transcriptionsLessonTypes,
+    ...playAlongLessonTypes,
+    ...jamTrackLessonTypes,
+  ],
 }
 
 export let contentTypeConfig = {
+  'tab-data': {
+    fields: ['enrollment_start_time', 'enrollment_end_time'],
+    includeChildFields: true,
+  },
   'progress-tracker': {
-    fields: ['"parent_content_data": parent_content_data[].id','"badge" : badge.asset->url','"lessons": child[]->{"id": railcontent_id, "slug":slug.current, "brand":brand, "type": _type, "lessons": child[]->{"id":railcontent_id, "slug":slug.current,  "type": _type,"brand":brand}}'],
+    fields: [
+      '"parent_content_data": parent_content_data[].id',
+      '"badge" : *[references(^._id) && _type == "content-award"][0].badge.asset->url',
+    ],
+    includeChildFields: true,
   },
   song: {
     fields: ['album', 'soundslice', 'instrumentless', `"resources": ${resourcesField}`],
@@ -226,7 +403,7 @@ export let contentTypeConfig = {
   'song-tutorial': {
     fields: [
       '"lesson_count": child_count',
-      `"lessons": child[]->{
+      `"children": child[]->{
                 "id": railcontent_id,
                 title,
                 "image": thumbnail.asset->url,
@@ -236,6 +413,7 @@ export let contentTypeConfig = {
             }`,
       '"instructors": instructor[]->name',
     ],
+    includeChildFields: true,
     relationships: {
       artist: {
         isOneToOne: true,
@@ -245,41 +423,8 @@ export let contentTypeConfig = {
   'song-tutorial-children': {
     fields: [`"resources": ${resourcesField}`],
   },
-  challenge: {
-    fields: [
-      'enrollment_start_time',
-      'enrollment_end_time',
-      "'registration_url': '/' + brand + '/enrollment/' + slug.current",
-      '"lesson_count": child_count',
-      '"primary_cta_text": select(dateTime(published_on) > dateTime(now()) && dateTime(enrollment_start_time) > dateTime(now()) => "Notify Me", "Start Challenge")',
-      'challenge_state',
-      'challenge_state_text',
-      `"description": ${descriptionField}`,
-      'total_xp',
-      'xp',
-      '"instructors": instructor[]->name',
-      '"instructor_signature": instructor[0]->signature.asset->url',
-      '"header_image_url": thumbnail.asset->url',
-      '"logo_image_url": logo_image_url.asset->url',
-      '"award": award.asset->url',
-      'award_custom_text',
-      '"gold_award": gold_award.asset->url',
-      '"silver_award": silver_award.asset->url',
-      '"bronze_award": bronze_award.asset->url',
-      'is_solo',
-      `"lessons": child[]->{
-                    "id": railcontent_id,
-                    title,
-                    "image": thumbnail.asset->url,
-                    "instructors": instructor[]->name,
-                    length_in_seconds,
-                    difficulty_string,
-                    difficulty,
-                    "type": _type,
-                    is_always_unlocked_for_challenge,
-                    is_bonus_content_for_challenge,
-                }`,
-    ],
+  'guided-course': {
+    includeChildFields: true,
   },
   course: {
     fields: [
@@ -299,102 +444,59 @@ export let contentTypeConfig = {
     ],
     slug: 'courses',
   },
-  'parent-download': {
+  download: {
     fields: [
-      '"lesson_count": child_count',
-      '"instructors": instructor[]->name',
-      `"description": ${descriptionField}`,
       `"resource": ${resourcesField}`,
-      'xp',
-      'total_xp',
-      '"thumbnail_url":thumbnail.asset->url',
-      `"lessons": child[]->{
-                "id": railcontent_id,
-                title,
-                published_on,
-                "type":_type,
-                "image": thumbnail.asset->url,
-                "instructors": instructor[]->name,
-                length_in_seconds,
-                "resources": ${resourcesField},
-                difficulty,
-                difficulty_string,
-                artist->,
-                "thumbnail_url":thumbnail.asset->url,
-                "description": description[0].children[0].text,
-                "chapters": chapter[]{
-                    chapter_description,
-                    chapter_timecode,
-                    "chapter_thumbnail_url": chapter_thumbnail_url.asset->url
-                },
-                "instructors":instructor[]->name,
-                "instructor": instructor[]->{
-                    "id":railcontent_id,
-                    name,
-                    short_bio,
-                    "biography": short_bio[0].children[0].text,
-                    web_url_path,
-                    "coach_card_image": coach_card_image.asset->url,
-                    "coach_profile_image":thumbnail_url.asset->url
-                },
-                ${assignmentsField}
-                video,
-                parent_content_data,
-            }`,
-    ],
-  },
-  method: {
-    fields: [
+      'soundslice',
+      'instrumentless',
       `"description": ${descriptionField}`,
-      'hide_from_recsys',
-      '"image": thumbnail.asset->url',
+      `"chapters": ${chapterField}`,
       '"instructors":instructor[]->name',
-      '"lesson_count": child_count',
-      'length_in_seconds',
-      'permission',
-      'popularity',
-      'published_on',
-      'railcontent_id',
-      '"thumbnail_logo": logo_image_url.asset->url',
-      'title',
-      'total_xp',
-      '"type": _type',
-      'xp',
+      `"instructor": ${instructorField}`,
+      'video',
+      `"play_along_mp3s": ${playAlongMp3sField}`,
+      `...select(
+        defined(live_event_start_time) => {
+          "live_event_start_time": live_event_start_time,
+          "live_event_end_time": live_event_end_time,
+          "live_event_stream_id": live_event_stream_id,
+          "videoId": coalesce(live_event_stream_id, video.external_id),
+          "live_event_is_global": live_global_event == true
+        }
+      )`,
+    ],
+    childFields: [
+      `"resource": ${resourcesField}`,
+      'soundslice',
+      'instrumentless',
+      `"description": ${descriptionField}`,
+      `"chapters": ${chapterField}`,
+      '"instructors":instructor[]->name',
+      `"instructor": ${instructorField}`,
+      'video',
+      `"play_along_mp3s": ${playAlongMp3sField}`,
+      `...select(
+        defined(live_event_start_time) => {
+          "live_event_start_time": live_event_start_time,
+          "live_event_end_time": live_event_end_time,
+          "live_event_stream_id": live_event_stream_id,
+          "videoId": coalesce(live_event_stream_id, video.external_id),
+          "live_event_is_global": live_global_event == true
+        }
+      )`,
     ],
   },
-  'learning-path-course': {
+  'learning-path-v2': {
     fields: [
-      '"lesson_count": child_count',
-      '"instructors": instructor[]->name',
-      `"description": ${descriptionField}`,
+      `"intro_video": intro_video->{ ${getIntroVideoFields('learning-path-v2').join(', ')} }`,
+      'total_skills',
       `"resource": ${resourcesField}`,
-      'xp',
-      'total_xp',
-      `"lessons": child[]->{
-                "id": railcontent_id,
-                title,
-                "image": thumbnail.asset->url,
-                "instructors": instructor[]->name,
-                length_in_seconds,
-            }`,
+      `"badge": *[
+        _type == "content-award" &&
+        content._ref == ^._id
+      ][0].badge.asset->url`,
     ],
-  },
-  'learning-path-level': {
-    fields: [
-      '"lesson_count": child_count',
-      '"instructors": instructor[]->name',
-      `"description": ${descriptionField}`,
-      `"resource": ${resourcesField}`,
-      'xp',
-      'total_xp',
-      `"lessons": child[]->{
-                "id": railcontent_id,
-                title,
-                "image": thumbnail.asset->url,
-                "instructors": instructor[]->name,
-                length_in_seconds,
-            }`,
-    ],
+    includeChildFields: true,
   },
   workout: {
     fields: [artistOrInstructorNameAsArray()],
@@ -402,7 +504,7 @@ export let contentTypeConfig = {
   },
   'play-along': {
     fields: [
-      '"style": genre[]->name',
+      `"style": ${genreField}`,
       'mp3_no_drums_no_click_url',
       'mp3_yes_drums_yes_click_url',
       'mp3_no_drums_yes_click_url',
@@ -416,19 +518,22 @@ export let contentTypeConfig = {
       '"lesson_count": coalesce(count(child[]->.child[]->), 0)',
       'xp',
       `"description": ${descriptionField}`,
-      '"instructors": instructor[]->name',
+      '"instructors": instructor[]->{ "id": railcontent_id, name, "thumbnail_url": thumbnail_url.asset->url }',
       '"logo_image_url": logo_image_url.asset->url',
       'total_xp',
-      `"children": child[]->{
-                "description": ${descriptionField},
-                "lesson_count": child_count,
-                ${getFieldsForContentType()}
-            }`,
       `"resources": ${resourcesField}`,
       '"thumbnail": thumbnail.asset->url',
-      '"light_logo": light_mode_logo_url.asset->url',
-      '"dark_logo": dark_mode_logo_url.asset->url',
+      '"light_mode_logo": light_mode_logo_url.asset->url',
+      '"dark_mode_logo": dark_mode_logo_url.asset->url',
       `"description": ${descriptionField}`,
+    ],
+    childFields: [
+      `'description': ${descriptionField}`,
+      "'lesson_count': child_count",
+      `'instructors': select(
+        instructor != null => instructor[]->name,
+        ^.instructor[]->name
+      )`,
     ],
   },
   rudiment: {
@@ -442,18 +547,15 @@ export let contentTypeConfig = {
   'pack-children': {
     fields: [
       'child_count',
-      `"children": child[]->{
-                "description": ${descriptionField},
-                ${getFieldsForContentType()}
-            }`,
       `"resources": ${resourcesField}`,
       '"image": logo_image_url.asset->url',
       '"thumbnail": thumbnail.asset->url',
-      '"light_logo": light_mode_logo_url.asset->url',
-      '"dark_logo": dark_mode_logo_url.asset->url',
+      '"light_mode_logo": light_mode_logo_url.asset->url',
+      '"dark_mode_logo": dark_mode_logo_url.asset->url',
       `"description": ${descriptionField}`,
       'total_xp',
     ],
+    childFields: [`"description": ${descriptionField}`],
   },
   'pack-bundle-lesson': {
     fields: [`"resources": ${resourcesField}`],
@@ -541,14 +643,71 @@ export let contentTypeConfig = {
   'exploring-beats': contentWithSortField,
   sonor: contentWithSortField,
   returning: {
-    fields: [
-      `quarter_published`,
-      '"thumbnail": thumbnail.asset->url',
-    ]
+    fields: [`quarter_published`, '"thumbnail": thumbnail.asset->url'],
+  },
+  leaving: {
+    fields: [`quarter_removed`, '"thumbnail": thumbnail.asset->url'],
+  },
+  'method-v2': [
+    `"id":_id`,
+    `"type":_type`,
+    'title',
+    'brand',
+    `"intro_video": intro_video->{ ${getIntroVideoFields('method-v2').join(', ')} }`,
+    `child[]->{
+      "resource": ${resourcesField},
+      total_skills,
+      difficulty,
+      published_on,
+      "type":_type,
+      brand,
+      title,
+      "description": ${descriptionField},
+      "thumbnail": thumbnail.asset->url,
+      length_in_seconds,
+      intro_video,
+      child[]->{
+        ${DEFAULT_FIELDS.join(',')}
+      }
+    }`,
+  ],
+}
+
+export function getIntroVideoFields(type) {
+  const fields = [
+    `"id": railcontent_id`,
+    'title',
+    'brand',
+    `"instructor": *[_type == "method-v2" && brand == ^.brand && references(^._id)][0].${instructorField}`,
+    `"difficulty": *[_type == "method-v2" && brand == ^.brand && references(^._id)][0].difficulty`,
+    `"difficulty_string": *[_type == "method-v2" && brand == ^.brand][0].difficulty_string`,
+    `"type": _type`,
+    'brand',
+    `"description": ${descriptionField}`,
+    `"thumbnail": thumbnail.asset->url`,
+    'length_in_seconds',
+  ]
+
+  if (type === 'method-v2') {
+    fields.push(...['video_desktop', 'video_mobile'])
+  } else if (type === 'learning-path-v2') {
+    fields.push('video')
   }
+
+  return fields
 }
 
 export const plusMembershipPermissions = 92
+
+/**
+ * Membership permission IDs for all membership tiers.
+ * Used for showing membership-restricted content in upgrade prompts.
+ * - 92: Plus membership
+ */
+export const membershipPermissions = [92]
+
+export const plusMembershipTier = 'plus'
+export const basicMembershipTier = 'basic'
 
 export function getNewReleasesTypes(brand) {
   const baseNewTypes = [
@@ -561,12 +720,9 @@ export function getNewReleasesTypes(brand) {
     'boot-camps',
     'quick-tips',
     'workout',
-    'challenge',
-    'challenge-part',
     'podcasts',
     'pack',
     'song',
-    'learning-path-level',
     'play-along',
     'course',
     'unit',
@@ -601,6 +757,7 @@ export function getNewReleasesTypes(brand) {
       return [...baseNewTypes, 'archives', 'recording', 'chords-and-scales']
     case 'pianote':
     case 'singeo':
+    case 'playbass':
     default:
       return baseNewTypes
   }
@@ -648,8 +805,6 @@ export function getUpcomingEventsTypes(brand) {
       ]
     case 'guitareo':
       return [...baseLiveTypes, 'archives']
-    case 'pianote':
-    case 'singeo':
     default:
       return baseLiveTypes
   }
@@ -663,6 +818,48 @@ export function artistOrInstructorNameAsArray(key = 'artists') {
   return `'${key}': select(artist->name != null => [artist->name], instructor[]->name)`
 }
 
+export async function getFieldsForContentTypeWithFilteredChildren(
+  contentType,
+  asQueryString = true
+) {
+  const childFields = getChildFieldsForContentType(contentType, true)
+  const parentFields = getFieldsForContentType(contentType, false)
+  if (childFields) {
+    const childFilter = await new FilterBuilder('', {
+      isChildrenFilter: true,
+      showMembershipRestrictedContent: true, // Show all children in lists
+    }).buildFilter()
+    parentFields.push(
+      `"children": child[${childFilter}]->{
+        ${childFields}
+        "children": child[${childFilter}]->{
+          ${childFields}
+        },
+      }`
+    )
+  }
+  return asQueryString ? parentFields.toString() + ',' : parentFields
+}
+
+export function getChildFieldsForContentType(contentType, asQueryString = true) {
+  // When contentType is undefined/null, return DEFAULT_CHILD_FIELDS to support mixed-type queries (e.g., from Algolia)
+  if (!contentType) {
+    return asQueryString ? DEFAULT_CHILD_FIELDS.toString() + ',' : DEFAULT_CHILD_FIELDS
+  }
+
+  if (
+    contentTypeConfig[contentType]?.childFields ||
+    contentTypeConfig[contentType]?.includeChildFields
+  ) {
+    const childFields = contentType
+      ? DEFAULT_CHILD_FIELDS.concat(contentTypeConfig?.[contentType]?.childFields ?? [])
+      : DEFAULT_CHILD_FIELDS
+    return asQueryString ? childFields.toString() + ',' : childFields
+  } else {
+    return asQueryString ? '' : []
+  }
+}
+
 export function getFieldsForContentType(contentType, asQueryString = true) {
   const fields = contentType
     ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? [])
@@ -670,138 +867,144 @@ export function getFieldsForContentType(contentType, asQueryString = true) {
   return asQueryString ? fields.toString() + ',' : fields
 }
 
-export function getChildFieldsForContentType(contentType, asQueryString = true) {
-  const fields = contentType
-    ? DEFAULT_CHILD_FIELDS.concat(childContentTypeConfig?.[contentType] ?? [])
-    : DEFAULT_CHILD_FIELDS
-  return asQueryString ? fields.toString() + ',' : fields
+/**
+ * Helper function to create type conditions from content type arrays
+ */
+function createTypeConditions(lessonTypes) {
+  if (!lessonTypes || lessonTypes.length === 0) return ''
+  const conditions = lessonTypes.map((type) => `_type == '${type}'`).join(' || ')
+  return conditions ? `(${conditions})` : ''
 }
 
 /**
- * Takes the included fields array and returns a string that can be used in a groq query.
- * @param {Array<string>} filters - An array of strings that represent applied filters. This should be in the format of a key,value array. eg. ['difficulty,Intermediate',
- *     'genre,rock']
- * @returns {string} - A string that can be used in a groq query
+ * Filter handler registry - maps filter keys to their handler functions
  */
-export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
-  if (!filters) {
-    filters = []
-  }
+const filterHandlers = {
+  style: (value) => `"${value}" in genre[]->name`,
 
-  //Account for multiple railcontent id's
-  let multipleIdFilters = ''
-  filters.forEach((item) => {
-    if (item.includes('railcontent_id in')) {
-      filters.pop(item)
-      multipleIdFilters += ` && ${item} `
+  difficulty: (value) => {
+    if (value === 'Introductory') {
+      return `(difficulty_string == "Novice" || difficulty_string == "Introductory")`
     }
-  })
+    return `difficulty_string == "${value}"`
+  },
 
-  //Group All Other filters
-  const groupedFilters = groupFilters(filters)
+  tab: (value, pageName) => {
+    const valueLower = value.toLowerCase()
+    const tabMappings = {
+      [Tabs.Individuals.name.toLowerCase()]: individualLessonsTypes,
+      [Tabs.Collections.name.toLowerCase()]: collectionLessonTypes,
+      [Tabs.Tutorials.name.toLowerCase()]: tutorialsLessonTypes,
+      [Tabs.Transcriptions.name.toLowerCase()]: transcriptionsLessonTypes,
+      [Tabs.PlayAlongs.name.toLowerCase()]: playAlongLessonTypes,
+      [Tabs.JamTracks.name.toLowerCase()]: jamTrackLessonTypes,
+      [Tabs.ExploreAll.name.toLowerCase()]: filterTypes[pageName] || [],
+      [Tabs.RecentAll.name.toLowerCase()]: recentTypes[pageName] || [],
+      [Tabs.SingleLessons.name.toLowerCase()]: individualLessonsTypes,
+      [Tabs.Courses.name.toLowerCase()]: coursesLessonTypes,
+      [Tabs.SkillPacks.name.toLowerCase()]: skillLessonTypes,
+      [Tabs.Entertainment.name.toLowerCase()]: entertainmentLessonTypes,
+    }
 
-  //Format groupFilter itemsss
+    const lessonTypes = tabMappings[valueLower]
+    if (lessonTypes) {
+      return createTypeConditions(lessonTypes)
+    }
+
+    return `_type == "${value}"`
+  },
+
+  type: (value) => {
+    const typeKey = value.toLowerCase()
+    const lessonTypes = lessonTypesMapping[typeKey]
+
+    if (lessonTypes) {
+      return createTypeConditions(lessonTypes)
+    }
+
+    return `_type == "${value}"`
+  },
+
+  length: (value) => {
+    // Find the matching length option by name
+    const lengthOption = Object.values(LengthFilterOptions).find(
+      (opt) => typeof opt === 'object' && opt.name === value
+    )
+
+    if (!lengthOption) return ''
+
+    const optionValue = lengthOption.value
+
+    // Parse the value format: '<420', '420-900', '>1801'
+    if (optionValue.startsWith('<')) {
+      const max = parseInt(optionValue.substring(1), 10)
+      return `(length_in_seconds < ${max})`
+    }
+
+    if (optionValue.startsWith('>')) {
+      const min = parseInt(optionValue.substring(1), 10)
+      return `(length_in_seconds > ${min})`
+    }
+
+    if (optionValue.includes('-')) {
+      const [min, max] = optionValue.split('-').map(Number)
+      return `(length_in_seconds >= ${min} && length_in_seconds <= ${max})`
+    }
+
+    return ''
+  },
+
+  pageName: () => '', // pageName is meta, doesn't generate a query
+}
+
+/**
+ * Takes the included fields array and returns a string that can be used in the groq query.
+ * @param {Array<string>} filters - An array of strings that represent applied filters.
+ *                                  Format: ['difficulty,Intermediate', 'genre,rock']
+ * @param {Array<string>} selectedFilters - Filters to exclude from processing
+ * @param {string} pageName - Current page name for context-specific filtering
+ * @returns {string} - A GROQ query filter string
+ */
+export function filtersToGroq(filters = [], selectedFilters = [], pageName = '') {
+  // Handle railcontent_id filters separately (they use different syntax)
+  const railcontentIdFilters = filters
+    .filter((item) => item.includes('railcontent_id in'))
+    .map((item) => ` && ${item}`)
+    .join('')
+
+  // Remove railcontent_id filters from main processing
+  const regularFilters = filters.filter((item) => !item.includes('railcontent_id in'))
+
+  // Group filters by key
+  const groupedFilters = groupFilters(regularFilters)
+
+  // Process each filter group
   const filterClauses = Object.entries(groupedFilters)
     .map(([key, values]) => {
+      // Skip empty filters
       if (!key || values.length === 0) return ''
+
+      // Handle boolean flags (is_*)
       if (key.startsWith('is_')) {
         return `&& ${key} == true`
       }
-      // Filter out values that exist in selectedFilters
+
+      // Skip if in selectedFilters
+      if (selectedFilters.includes(key)) {
+        return ''
+      }
+
+      // Process each value with the appropriate handler
       const joinedValues = values
         .map((value) => {
-          if (key === 'bpm' && !selectedFilters.includes('bpm')) {
-            if (value.includes('-')) {
-              const [min, max] = value.split('-').map(Number)
-              return `(bpm > ${min} && bpm < ${max})`
-            } else if (value.includes('+')) {
-              const min = parseInt(value, 10)
-              return `(bpm > ${min})`
-            } else {
-              return `bpm == ${value}`
-            }
-          } else if (
-            ['creativity', 'essential', 'focus', 'genre', 'lifestyle', 'theory', 'topic'].includes(
-              key
-            ) &&
-            !selectedFilters.includes(key)
-          ) {
-            return `"${value}" in ${key}[]->name`
-          } else if (
-              ['style'].includes(
-                  key
-              ) &&
-              !selectedFilters.includes(key)
-          ) {
-            return `"${value}" in genre[]->name`
-          } else if (key === 'gear' && !selectedFilters.includes('gear')) {
-            return `gear match "${value}"`
-          } else if (key === 'instrumentless' && !selectedFilters.includes(key)) {
-            if (value === 'Full Song Only') {
-              return `(!instrumentless || instrumentless == null)`
-            } else if (value === 'Instrument Removed') {
-              return `instrumentless`
-            } else {
-              return `instrumentless == ${value}`
-            }
-          } else if (key === 'difficulty' && !selectedFilters.includes(key)) {
-            if(value === 'Introductory'){
-              return `(difficulty_string == "Novice" || difficulty_string == "Introductory" )`
-            }
-            return `difficulty_string == "${value}"`
-          } else if (key === 'tab' && !selectedFilters.includes(key)) {
-            if(value.toLowerCase() === Tabs.Individuals.name.toLowerCase()){
-              const conditions = individualLessonsTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.Collections.name.toLowerCase()){
-              const conditions = collectionLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.Tutorials.name.toLowerCase()){
-              const conditions = tutorialsLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.Transcriptions.name.toLowerCase()){
-              const conditions = transcriptionsLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.PlayAlongs.name.toLowerCase()){
-              const conditions = playAlongLessonTypes.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              return ` (${conditions})`;
-            } else if(value.toLowerCase() === Tabs.ExploreAll.name.toLowerCase()){
-              var allLessons = filterTypes[pageName] || [];
-              const conditions = allLessons.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              if (conditions === "") return '';
-              return ` (${conditions})`;
-          }else if(value.toLowerCase() === Tabs.RecentAll.name.toLowerCase()){
-              var allLessons = recentTypes[pageName] || [];
-              const conditions = allLessons.map(lessonType => `_type == '${lessonType}'`).join(' || ');
-              if (conditions === "") return '';
-              return ` (${conditions})`;
-            }
-            return `_type == "${value}"`
-          } else if (key === 'type' && !selectedFilters.includes(key)) {
-            const typeKey = value.toLowerCase();
-            const lessonTypes = lessonTypesMapping[typeKey];
-            if (lessonTypes) {
-              const conditions = lessonTypes.map(
-                  (lessonType) => `_type == '${lessonType}'`
-              ).join(' || ');
-              return ` (${conditions})`;
-            }
-            return `_type == "${value}"`;
-          } else if (key === 'length_in_seconds') {
-            if (value.includes('-')) {
-              const [min, max] = value.split('-').map(Number)
-              return `(${key} > ${min} && ${key} < ${max})`
-            } else if (value.includes('+')) {
-              const min = parseInt(value, 10)
-              return `(${key} > ${min})`
-            } else {
-              return `${key} == ${value}`
-            }
-          } else if (key === 'pageName') {
-            return ` `
-          } else if (!selectedFilters.includes(key)) {
-            return ` ${key} == ${/^\d+$/.test(value) ? value : `"$${value}"`}`
+          const handler = filterHandlers[key]
+
+          if (handler) {
+            return handler(value, pageName)
           }
+
+          // Default handler for unknown filters
+          return `${key} == ${/^\d+$/.test(value) ? value : `"${value}"`}`
         })
         .filter(Boolean)
         .join(' || ')
@@ -812,10 +1015,14 @@ export function filtersToGroq(filters, selectedFilters = [], pageName = '') {
     .filter(Boolean)
     .join(' ')
 
-  //Return
-  return `${multipleIdFilters} ${filterClauses}`
+  return `${railcontentIdFilters} ${filterClauses}`.trim()
 }
 
+/**
+ * Groups filters by category
+ * @param {Array<string>} filters - Array of 'key,value' strings
+ * @returns {Object} - Object with keys as categories and values as arrays
+ */
 function groupFilters(filters) {
   if (filters.length === 0) return {}
 

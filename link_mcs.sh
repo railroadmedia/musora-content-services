@@ -10,6 +10,7 @@ MUSORA_PLATFORM_FE_DIR="../musora-platform-frontend"
 # Navigate to the musora-content-services directory and create a symlink
 echo "Linking musora-content-services..."
 cd "$MUSORA_CONTENT_SERVICES_DIR" || { echo "Directory not found: $MUSORA_CONTENT_SERVICES_DIR"; exit 1; }
+npm install
 npm link
 
 # Navigate to the musora-platform-frontend directory and link the package

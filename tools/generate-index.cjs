@@ -73,6 +73,11 @@ treeElements.forEach((treeNode) => {
   if (fs.lstatSync(filePath).isFile()) {
     addFunctionsToFileExports(filePath, treeNode)
   } else if (fs.lstatSync(filePath).isDirectory()) {
+    // Skip the permissions directory - it has its own index.ts barrel export
+    if (treeNode === 'permissions') {
+      return
+    }
+
     const subDir = fs.readdirSync(filePath)
     subDir.forEach((subFile) => {
       const filePath = path.join(servicesDir, treeNode, subFile)
@@ -89,10 +94,14 @@ Object.entries(fileExports).forEach(([file, functionNames]) => {
   content += `\nimport {\n\t${functionNames.join(',\n\t')}\n} from './services/${file}';\n`
 })
 
+content += `\nimport {\n\t default as EventsAPI \n} from './services/eventsAPI';\n`
+
 const allFunctionNames = Object.values(fileExports).flat().sort()
 content += '\nexport {\n'
 content += `\t${allFunctionNames.join(',\n\t')},\n`
 content += '};\n'
+
+content += '\nexport default EventsAPI\n'
 
 // write the generated content to index.js
 const outputPath = path.join(__dirname, '../src/index.js')
@@ -108,11 +117,15 @@ Object.entries(fileExports).forEach(([file, functionNames]) => {
   dtsContent += `\nimport {\n\t${functionNames.join(',\n\t')}\n} from './services/${file}';\n`
 })
 
+dtsContent += `\nimport {\n\t default as EventsAPI \n} from './services/eventsAPI';\n`
+
 dtsContent += "\ndeclare module 'musora-content-services' {\n"
 dtsContent += '\texport {\n'
 dtsContent += `\t\t${allFunctionNames.join(',\n\t\t')},\n`
 dtsContent += '\t}\n'
 dtsContent += '}\n'
+
+dtsContent += '\nexport default EventsAPI\n'
 
 // write the generated content to index.d.ts
 const outputDtsPath = path.join(__dirname, '../src/index.d.ts')

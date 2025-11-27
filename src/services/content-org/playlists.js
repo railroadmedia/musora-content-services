@@ -3,6 +3,7 @@
  */
 import { globalConfig } from '../config.js'
 import { fetchHandler } from '../railcontent.js'
+import { getNavigateToForPlaylists } from '../contentAggregator.js'
 import './playlists-types.js'
 
 /**
@@ -42,7 +43,7 @@ export async function fetchUserPlaylists(
   const content = content_id ? `&content_id=${content_id}` : ''
   const brandString = brand ? `&brand=${brand}` : ''
   const url = `${BASE_PATH}/v1/user/playlists${pageString}${brandString}${limitString}${sortString}${content}`
-  return await fetchHandler(url)
+  return await getNavigateToForPlaylists(await fetchHandler(url), {dataField: 'data'})
 }
 
 /**
@@ -70,11 +71,23 @@ export async function createPlaylist(playlistData) {
   return await fetchHandler(url, 'POST', null, playlistData)
 }
 
+/**
+ * Soft deletes a playlist. Will cascade and also soft delete entries in other playlist tables (pinned, reported, liked,
+ * playlist content) and last engaged that have this playlist id
+ * @param {id} playlist - the id of the playlist you want to soft delete.
+ * @returns {Promise<any|string|null>}
+ */
 export async function deletePlaylist(playlist) {
   const url = `${BASE_PATH}/v1/user/playlists/delete/${playlist}`
   return await fetchHandler(url, 'POST', null, playlist)
 }
 
+/**
+ * Soft restores a playlist. Will cascade and also soft restore entries in other playlist tables (pinned, reported, liked,
+ * playlist content) and last engaged that have this playlist id
+ * @param {id} playlist - the id of the playlist you want to soft restore.
+ * @returns {Promise<any|string|null>}
+ */
 export async function undeletePlaylist(playlist) {
   const url = `${BASE_PATH}/v1/user/playlists/undelete/${playlist}`
   return await fetchHandler(url, 'POST', null, playlist)
@@ -212,12 +225,13 @@ export async function togglePlaylistPrivate(playlistId, is_private)
  * Updates a playlists values
  *
  * @param {string|number} playlistId
- * @param {Object} updateData - An object containing fields to update on the playlist:
+ * @param {UpdatePlaylistDTO} updateData  - An object containing fields to update on the playlist:
  *  - `name` (string): The name of the new playlist (required, max 255 characters).
  *  - `description` (string): A description of the playlist (optional, max 1000 characters).
- *  - `category` (string): The category of the playlist.
- * + *  - `deleted_items` (array): List of playlist item IDs to delete.
- * + *  - `item_order` (array): Updated order of playlist items (ids, not railcontent_ids).
+ *  - `category` (string): The category of the playlist (optional).
+ *  - `is_private` (boolean): Whether the playlist is private (optional, defaults to false).
+ *  - `deleted_items` (array): List of playlist item IDs to delete (optional).
+ *  - `item_order` (array): Updated order of playlist items (ids, not railcontent_ids) (optional).
  *
  * @returns {Promise<object>} - A promise that resolves to the created playlist data and lessons if successful, or an error response if validation fails.
  *
@@ -230,16 +244,14 @@ export async function togglePlaylistPrivate(playlistId, is_private)
  *   .then(response => console.log(response.playlist); console.log(response.lessons))
  *   .catch(error => console.error('Error updating playlist:', error));
  */
-export async function updatePlaylist(playlistId, {
-  name = null, description = null,  is_private = null, brand = null, category = null, deleted_items = null, item_order = null
-})
+export async function updatePlaylist(playlistId, updateData)
 {
-  const data = {
+  const { name, description, category, is_private, item_order, deleted_items } = updateData;
+  let data = {
     ...name && { name },
-    ...description && { description },
-    ...is_private !== null && { private: is_private},
-    ...brand && { brand },
-    ...category && { category},
+    ...'description' in updateData && { description },
+    ...'is_private' in updateData && { private: is_private || false },
+    ...'category' in updateData && { category },
     ...deleted_items && { deleted_items },
     ...item_order && { item_order },
   }
@@ -251,7 +263,7 @@ export async function updatePlaylist(playlistId, {
  * Delete Items from playlist
  *
  * @async
- * @function togglePlaylistPrivate
+ * @function deleteItemsFromPlaylist
  * @param {string|number} playlistId - The unique identifier of the playlist to update.
  * @param {array} deleted_items - list of playlist ids to delete (user_playlist_item_id, not the railcontent_id)
  *
@@ -270,15 +282,38 @@ export async function deleteItemsFromPlaylist(playlistId, deleted_items) {
 }
 
 /**
+ * Restore items
+ *
+ * @async
+ * @function restoreItemFromPlaylist
+ * @param {string|number} playlistItemId - The unique identifier of the playlist ite to restore.
+ *
+ * @returns {Promise<Object>}
+ *
+ * @example
+ * // Restore item 8462221
+ * try {
+ *   const response = await restoreItemFromPlaylist(8462221);
+ * } catch (error) {
+ *   console.error('Failed to restore playlist item:', error);
+ * }
+ */
+export async function restoreItemFromPlaylist(playlistItemId) {
+  const url = `${BASE_PATH}/v1/user/playlists/items/undelete/${playlistItemId}`
+  return await fetchHandler(url, 'POST')
+}
+
+/**
  * Duplicates a playlist and playlist items for the provided playlistID for the authorized user
  *
  * @param {string|number} playlistId
- * @param {CreatePlaylistDTO} playlistData - An object containing data to create the playlist. The fields include:
+ * @param {DuplicatePlaylistDTO} playlistData - An object containing data to create the playlist. The fields include:
  *  - `name` (string): The name of the new playlist (required, max 255 characters).
  *  - `description` (string): A description of the playlist (optional, max 1000 characters).
  *  - `category` (string): The category of the playlist.
  *  - `private` (boolean): Whether the playlist is private (optional, defaults to false).
  *  - `brand` (string): Brand identifier for the playlist.
+ *  - 'items' (array): List of playlist items to duplicate in updated order
  *
  * @returns {Promise<Playlist>}
  * @example
@@ -309,7 +344,7 @@ export async function duplicatePlaylist(playlistId, playlistData) {
  */
 export async function fetchPlaylist(playlistId) {
   const url = `${BASE_PATH}/v1/user/playlists/${playlistId}`
-  return await fetchHandler(url, 'GET')
+  return await getNavigateToForPlaylists(await fetchHandler(url))
 }
 
 /**
