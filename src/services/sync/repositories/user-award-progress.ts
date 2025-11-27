@@ -99,7 +99,6 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
       }
     }
 
-    // Always write to local DB first, then sync to remote via normal sync system
     return this.upsertOne(awardId, builder)
   }
 

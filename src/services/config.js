@@ -25,12 +25,10 @@ const excludeFromGeneratedIndex = []
  * Initializes the service with the given configuration.
  * This function must be called before using any other functions in this library.
  * Automatically initializes award definitions with 24-hour cache in the background.
- * For web applications (isMA: false), also initializes the sync system for offline-first data access.
  *
  * @param {Config} config - Configuration object containing API settings.
  *
  * @example Web Application
- * // For web apps, pass browser's localStorage directly
  * initializeService({
  *   sanityConfig: {
  *     token: 'your-sanity-api-token',
@@ -54,12 +52,9 @@ const excludeFromGeneratedIndex = []
  *   baseUrl: 'https://web-staging-one.musora.com',
  *   localStorage: localStorage,
  *   isMA: false,
- *   enableSync: true,
- *   syncNamespace: 'musora',
  * });
  *
  * @example React Native Application
- * // For React Native, pass AsyncStorage
  * import AsyncStorage from '@react-native-async-storage/async-storage'
  *
  * initializeService({
@@ -69,7 +64,6 @@ const excludeFromGeneratedIndex = []
  *   baseUrl: 'https://web-staging-one.musora.com',
  *   localStorage: AsyncStorage,
  *   isMA: true,
- *   enableSync: false,
  * });
  */
 export function initializeService(config) {
@@ -87,17 +81,5 @@ export function initializeService(config) {
       .catch(error => {
         console.error('Failed to initialize award definitions:', error)
       })
-
-    if (!config.isMA && config.enableSync !== false) {
-      import('./sync/init-web')
-        .then(({ initializeSyncForWeb }) => {
-          const namespace = config.syncNamespace || 'musora'
-          initializeSyncForWeb(namespace)
-          console.log('[Sync] Initialized for web')
-        })
-        .catch(error => {
-          console.error('Failed to initialize sync system:', error)
-        })
-    }
   }
 }
