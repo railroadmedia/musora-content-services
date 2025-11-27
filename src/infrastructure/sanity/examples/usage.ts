@@ -94,7 +94,16 @@ export async function fetchSongsWithCountExample(brand: string) {
 }
 
 // Example: Using with parameters (though GROQ doesn't support parameters like SQL)
-export async function fetchSongWithParamsExample(songId: number) {
+export async function fetchFirstSongWithParamsExample(songId: number) {
+  // Note: Sanity GROQ doesn't support parameterized queries like SQL
+  // Parameters would be used for client-side processing if needed
+  const query = `*[_type == "song" && railcontent_id == ${songId}]`
+
+  return await sanityClient.fetchFirst(query, { songId })
+}
+
+// Example: Using with parameters (though GROQ doesn't support parameters like SQL)
+export async function fetchSingleSongWithParamsExample(songId: number) {
   // Note: Sanity GROQ doesn't support parameterized queries like SQL
   // Parameters would be used for client-side processing if needed
   const query = `*[_type == "song" && railcontent_id == ${songId}][0]`
