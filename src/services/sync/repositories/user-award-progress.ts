@@ -99,11 +99,8 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
       }
     }
 
-    if (options?.immediate) {
-      return this.upsertOneRemote(awardId, builder)
-    } else {
-      return this.upsertOne(awardId, builder)
-    }
+    // Always write to local DB first, then sync to remote via normal sync system
+    return this.upsertOne(awardId, builder)
   }
 
   async completeAward(

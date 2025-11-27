@@ -138,19 +138,30 @@ export async function getAllUserAwardProgress(brand = null, options = {}) {
 export async function getCompletedAwards(brand = null, options = {}) {
   try {
     const allProgress = await db.userAwardProgress.getAll()
+    console.log('[getCompletedAwards] Total progress records:', allProgress.data?.length || 0)
+    if (allProgress.data?.length > 0) {
+      console.log('[getCompletedAwards] Sample record:', JSON.stringify(allProgress.data[0]))
+    }
+
     const completed = allProgress.data.filter(p =>
       p.progress_percentage === 100 && p.completed_at !== null
     )
+    console.log('[getCompletedAwards] Completed awards after filter:', completed.length)
+    if (completed.length > 0) {
+      console.log('[getCompletedAwards] Sample completed record:', JSON.stringify(completed[0]))
+    }
 
     let awards = await Promise.all(
       completed.map(async (progress) => {
         const definition = await awardDefinitions.getById(progress.award_id)
 
         if (!definition) {
+          console.log('[getCompletedAwards] No definition found for award_id:', progress.award_id)
           return null
         }
 
         if (brand && definition.brand !== brand) {
+          console.log('[getCompletedAwards] Brand mismatch - wanted:', brand, 'got:', definition.brand)
           return null
         }
 
@@ -170,14 +181,18 @@ export async function getCompletedAwards(brand = null, options = {}) {
     )
 
     awards = awards.filter(award => award !== null)
+    console.log('[getCompletedAwards] Awards after filtering nulls:', awards.length)
 
     awards.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
 
     if (options.limit) {
       const offset = options.offset || 0
+      console.log('[getCompletedAwards] Applying pagination - offset:', offset, 'limit:', options.limit, 'before slice:', awards.length)
       awards = awards.slice(offset, offset + options.limit)
+      console.log('[getCompletedAwards] After slice:', awards.length)
     }
 
+    console.log('[getCompletedAwards] Returning', awards.length, 'awards')
     return awards
   } catch (error) {
     console.error('Failed to get completed awards:', error)
@@ -348,23 +363,25 @@ export async function getNewlyEarnedAwards(contentId) {
 export const checkForNewAwards = getNewlyEarnedAwards
 
 /**
- * Fetch user's awards with pagination (matches FE API)
- * @param {number} userId - User ID
- * @param {string} brand - Brand identifier (drumeo, pianote, etc)
+ * Fetch user's awards from ALL brands with pagination
+ * @param {number} userId - User ID (not currently used but kept for API compatibility)
  * @param {number} page - Page number (1-indexed)
  * @param {number} limit - Number of awards per page
- * @returns {Promise<{data: Array}>} Paginated award data
+ * @returns {Promise<{data: Array}>} Paginated award data from all brands
  */
-export async function fetchAwardsForUser(userId, brand, page = 1, limit = 4) {
+export async function fetchAwardsForUser(userId, page = 1, limit = 15) {
   try {
+    console.log('[fetchAwardsForUser] Called with userId:', userId, 'page:', page, 'limit:', limit)
     const offset = (page - 1) * limit
-    const awards = await getCompletedAwards(brand, { limit, offset })
+    const awards = await getCompletedAwards(null, { limit, offset })
+    console.log('[fetchAwardsForUser] Received', awards.length, 'awards from getCompletedAwards')
 
-    return {
+    const result = {
       data: awards.map(award => ({
         awardId: award.awardId,
         name: award.awardTitle,
         badge: award.badge,
+        brand: award.brand,
         completed_at: award.completedAt,
         completion_data: award.completionData ? {
           completed_at: award.completedAt,
@@ -375,6 +392,8 @@ export async function fetchAwardsForUser(userId, brand, page = 1, limit = 4) {
         } : undefined
       }))
     }
+    console.log('[fetchAwardsForUser] Returning', result.data.length, 'awards')
+    return result
   } catch (error) {
     console.error('Error in fetchAwardsForUser:', error)
     return { data: [] }

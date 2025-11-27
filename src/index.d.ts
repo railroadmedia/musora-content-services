@@ -198,6 +198,11 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	emitProgressSaved,
+	onProgressSaved
+} from './services/progress-events.js';
+
+import {
 	getMethodCard
 } from './services/progress-row/method-card.js';
 
@@ -460,6 +465,7 @@ declare module 'musora-content-services' {
 		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
+		emitProgressSaved,
 		enrollUserInGuidedCourse,
 		extractSanityUrl,
 		fetchAll,
@@ -639,6 +645,7 @@ declare module 'musora-content-services' {
 		markNotificationAsUnread,
 		markThreadAsRead,
 		numberOfActiveUsers,
+		onProgressSaved,
 		openComment,
 		otherStats,
 		pauseLiveEventPolling,

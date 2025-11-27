@@ -1,14 +1,17 @@
 import { Q } from '@nozbe/watermelondb'
 import { awardManager } from './award-manager'
 import { awardDefinitions } from './award-definitions'
+import { onProgressSaved } from '../progress-events'
 
 class ContentProgressObserver {
   constructor() {
     this.subscription = null
+    this.progressEventUnsubscribe = null
     this.isObserving = false
     this.processingContentIds = new Set()
     this.debounceTimers = new Map()
     this.debounceMs = 50
+    this.allChildIds = new Set()
   }
 
   /** @returns {Promise<() => void>} */
@@ -20,30 +23,27 @@ class ContentProgressObserver {
     await awardDefinitions.refresh()
     const allAwards = await awardDefinitions.getAll()
 
-    const allChildIds = new Set()
+    this.allChildIds.clear()
     for (const award of allAwards) {
       if (award.child_ids) {
-        award.child_ids.forEach(childId => allChildIds.add(childId))
+        award.child_ids.forEach(childId => this.allChildIds.add(childId))
       }
     }
 
-    if (allChildIds.size === 0) {
+    if (this.allChildIds.size === 0) {
       return () => {}
     }
 
-    const contentProgressCollection = database.collections.get('progress')
-
-    this.subscription = contentProgressCollection
-      .query(Q.where('state', Q.oneOf(['started', 'completed'])))
-      .observeWithColumns(['state', 'progress_percent'])
-      .subscribe(async (progressRecords) => {
-        for (const record of progressRecords) {
-          const contentId = record.content_id
-          if (allChildIds.has(contentId)) {
-            await this.handleProgressChange(record)
-          }
-        }
-      })
+    this.progressEventUnsubscribe = onProgressSaved((event) => {
+      if (this.allChildIds.has(event.contentId)) {
+        console.log(`[ContentProgressObserver] UserContentProgressSaved event: userId=${event.userId}, contentId=${event.contentId}, status=${event.progressStatus}, progress=${event.progressPercent}%`)
+        this.handleProgressChange({
+          content_id: event.contentId,
+          state: event.progressStatus,
+          progress_percent: event.progressPercent
+        })
+      }
+    })
 
     this.isObserving = true
 
@@ -59,6 +59,11 @@ class ContentProgressObserver {
       const parentAwards = allAwards.filter(award =>
         award.child_ids && award.child_ids.includes(childContentId)
       )
+
+      if (parentAwards.length > 0) {
+        console.log(`[ContentProgressObserver] Found ${parentAwards.length} parent award(s) for content ${childContentId}:`,
+          parentAwards.map(a => `${a.name} (content_id: ${a.content_id})`).join(', '))
+      }
 
       for (const award of parentAwards) {
         if (!award.content_id) continue
@@ -101,9 +106,9 @@ class ContentProgressObserver {
   }
 
   stop() {
-    if (this.subscription) {
-      this.subscription.unsubscribe()
-      this.subscription = null
+    if (this.progressEventUnsubscribe) {
+      this.progressEventUnsubscribe()
+      this.progressEventUnsubscribe = null
     }
 
     for (const timerId of this.debounceTimers.values()) {
@@ -111,6 +116,7 @@ class ContentProgressObserver {
     }
     this.debounceTimers.clear()
     this.processingContentIds.clear()
+    this.allChildIds.clear()
 
     this.isObserving = false
   }

@@ -96,16 +96,41 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
   recordProgressRemotely(contentId: number, progressPct: number, resumeTime?: number) {
     const id = ProgressRepository.generateId(contentId, null)
+    const progressStatus = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
 
-    return this.upsertOneRemote(id, (r) => {
+    const result = this.upsertOneRemote(id, (r) => {
       r.content_id = contentId
-      r.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
+      r.state = progressStatus
       r.progress_percent = progressPct
 
       if (typeof resumeTime != 'undefined') {
         r.resume_time_seconds = Math.floor(resumeTime)
       }
     })
+
+    // Emit event AFTER database write completes
+    result.then(() => {
+      return Promise.all([
+        import('../../progress-events'),
+        import('../../config')
+      ])
+    }).then(([progressEventsModule, { globalConfig }]) => {
+      progressEventsModule.emitProgressSaved({
+        userId: globalConfig.railcontentConfig?.userId || 0,
+        contentId,
+        progressPercent: progressPct,
+        progressStatus,
+        bubble: true,
+        collectionType: null,
+        collectionId: null,
+        resumeTimeSeconds: resumeTime ?? null,
+        timestamp: Date.now()
+      })
+    }).catch(error => {
+      console.error('Failed to emit progress saved event:', error)
+    })
+
+    return result
   }
 
   recordProgressesTentative(contentProgresses: Map<number, number>) {

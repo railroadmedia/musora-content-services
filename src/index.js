@@ -202,6 +202,11 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	emitProgressSaved,
+	onProgressSaved
+} from './services/progress-events.js';
+
+import {
 	getMethodCard
 } from './services/progress-row/method-card.js';
 
@@ -459,6 +464,7 @@ export {
 	deleteUserActivity,
 	duplicatePlaylist,
 	editComment,
+	emitProgressSaved,
 	enrollUserInGuidedCourse,
 	extractSanityUrl,
 	fetchAll,
@@ -638,6 +644,7 @@ export {
 	markNotificationAsUnread,
 	markThreadAsRead,
 	numberOfActiveUsers,
+	onProgressSaved,
 	openComment,
 	otherStats,
 	pauseLiveEventPolling,
