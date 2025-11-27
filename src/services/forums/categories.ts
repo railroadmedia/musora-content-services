@@ -43,7 +43,7 @@ export async function createForumCategory(
 
 export interface UpdateForumCategoryParams {
   id: number
-  brand: number
+  brand: string
   name: string
   weight: number
   description?: string
@@ -62,4 +62,23 @@ export async function updateForumCategory(
 ): Promise<ForumCategory> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.put<ForumCategory>(`${baseUrl}/v1/categories/${params.id}`, params)
+}
+
+export interface DeleteForumCategoryParams {
+  id: number
+  brand: string
+}
+
+/**
+ * Deletes a forum category.
+ *
+ * @param {DeleteForumCategoryParams} params - The parameters for deleting the forum category.
+ * @returns {Promise<void>} - A promise that resolves when the category is deleted.
+ * @throws {HttpError} - If the request fails.
+ */
+export async function deleteForumCategory(
+  params: DeleteForumCategoryParams
+): Promise<void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.delete<void>(`${baseUrl}/v1/categories/${params.id}?brand=${params.brand}`)
 }

@@ -73,10 +73,17 @@ treeElements.forEach((treeNode) => {
   if (fs.lstatSync(filePath).isFile()) {
     addFunctionsToFileExports(filePath, treeNode)
   } else if (fs.lstatSync(filePath).isDirectory()) {
+
+    // Check for .indexignore file to skip this directory
     if (fs.existsSync(path.join(filePath, '.indexignore'))) {
       console.log(`Skipping directory: ${treeNode} due to .indexignore`)
       return
     }
+    // Skip the permissions directory - it has its own index.ts barrel export
+    if (treeNode === 'permissions') {
+      return
+    }
+
     const subDir = fs.readdirSync(filePath)
     subDir.forEach((subFile) => {
       const subFilePath = path.join(servicesDir, treeNode, subFile)

@@ -1,7 +1,6 @@
 import {
   getNavigateTo,
-  getNextLesson,
-  getProgressDataByIds,
+  getProgressDateByIds,
   getProgressStateByIds,
   getResumeTimeSecondsByIds,
 } from './contentProgress'
@@ -30,8 +29,8 @@ import { fetchLastInteractedChild, fetchLikeCount } from './railcontent'
  * @param options.addProgressStatus - add progressStatus field
  * @param options.addProgressTimestamp - add progressTimestamp field
  * @param options.addResumeTimeSeconds - add resumeTimeSeconds field
- * @param options.addLastInteractedChild - add lastInteractedChild field. This may be different from nextLesson
- * @param options.addNextLesson - add nextLesson field. For collection type content. each collection has different logic for calculating this data
+ * @param options.addLastInteractedChild - add lastInteractedChild field. This may be different from navigateTo.id
+ * @param options.collection {object|null} - define collection parameter: collection = { id: <collection_id>, type: <collection_type> } . This is needed for different collection types like learning paths.
  *
  * @returns {Promise<{ data: Object[] } | false>} - A promise that resolves to the fetched content data + added data or `false` if no data is found.
  *
@@ -50,7 +49,7 @@ import { fetchLastInteractedChild, fetchLikeCount } from './railcontent'
  *     dataField_parentIsArray: true,
  *     addProgressStatus: true,
  *     addProgressPercentage: true,
- *     addNextLesson: true
+ *     addNavigateTo: true
  *   })
  *
  */
@@ -62,6 +61,7 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
   const options = typeof lastArg === 'object' && !Array.isArray(lastArg) ? lastArg : {}
 
   const {
+    collection = null, // this is needed for different collection types like learning paths. has .id and .type
     dataField = null,
     dataField_includeParent = false,
     addProgressPercentage = false,
@@ -71,7 +71,6 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     addProgressTimestamp = false,
     addResumeTimeSeconds = false,
     addLastInteractedChild = false,
-    addNextLesson = false,
     addNavigateTo = false,
   } = options
 
@@ -91,35 +90,25 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     isLikedData,
     resumeTimeData,
     lastInteractedChildData,
-    nextLessonData,
     navigateToData,
-  ] = await Promise.all([
+  ] = await Promise.all([ //for now assume these all return `collection = {type, id}`. it will be so when watermelon here
     addProgressPercentage || addProgressStatus || addProgressTimestamp
-      ? getProgressDataByIds(ids)
-      : Promise.resolve(null),
-    addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
-    addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
-    addLastInteractedChild ? fetchLastInteractedChild(ids) : Promise.resolve(null),
-    addNextLesson ? getNextLesson(items) : Promise.resolve(null),
-    addNavigateTo ? getNavigateTo(items) : Promise.resolve(null),
+      ? getProgressDateByIds(ids, collection) : Promise.resolve(null),
+    addIsLiked ? isContentLikedByIds(ids, collection) : Promise.resolve(null),
+    addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids, collection) : Promise.resolve(null),
+    addLastInteractedChild ? fetchLastInteractedChild(ids, collection) : Promise.resolve(null),
+    addNavigateTo ? getNavigateTo(items, collection) : Promise.resolve(null),
   ])
 
   const addContext = async (item) => ({
     ...item,
-    ...(addProgressPercentage ? { progressPercentage: progressData?.[item.id]['progress'] } : {}),
-    ...(addProgressStatus ? { progressStatus: progressData?.[item.id]['status'] } : {}),
-    ...(addProgressTimestamp ? { progressTimestamp: progressData?.[item.id]['last_update'] } : {}),
+    ...(addProgressPercentage ? { progressPercentage: progressData?.[item.id]?.progress } : {}),
+    ...(addProgressStatus ? { progressStatus: progressData?.[item.id]?.status } : {}),
+    ...(addProgressTimestamp ? { progressTimestamp: progressData?.[item.id]?.last_update } : {}),
     ...(addIsLiked ? { isLiked: isLikedData?.[item.id] } : {}),
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
     ...(addLastInteractedChild ? { lastInteractedChild: lastInteractedChildData?.[item.id] } : {}),
-    ...(addNextLesson
-      ? {
-          nextLesson: nextLessonData?.[item.id], //deprecated
-          next_lesson_id: nextLessonData?.[item.id],
-          next_lesson: item?.children?.find((child) => child.id === nextLessonData?.[item.id]),
-        }
-      : {}),
     ...(addNavigateTo ? { navigateTo: navigateToData?.[item.id] } : {}),
   })
 
@@ -134,19 +123,22 @@ export async function getNavigateToForPlaylists(data, { dataField = null } = {})
   )
   const progressOnItems = await getProgressStateByIds(allIds)
   const addContext = async (playlist) => {
-    const allItemsCompleted = playlist.items.every((i) => {
+    // Filter out locked items (where need_access === true) and scheduled content
+    const accessibleItems = playlist.items.filter((item) => !item.need_access && item.status !== 'scheduled')
+
+    const allItemsCompleted = accessibleItems.every((i) => {
       const itemId = i.content_id
       const progress = progressOnItems[itemId]
       return progress && progress === 'completed'
     })
-    let nextItem = playlist.items[0] ?? null
+    let nextItem = accessibleItems[0] ?? playlist.items[0] ?? null
     if (!allItemsCompleted) {
       const lastItemProgress = progressOnItems[playlist.last_engaged_on]
-      const index = playlist.items.findIndex((i) => i.content_id === playlist.last_engaged_on)
+      const index = accessibleItems.findIndex((i) => i.content_id === playlist.last_engaged_on)
       if (lastItemProgress === 'completed') {
-        nextItem = playlist.items[index + 1] ?? nextItem
+        nextItem = accessibleItems[index + 1] ?? nextItem
       } else {
-        nextItem = playlist.items[index] ?? nextItem
+        nextItem = accessibleItems[index] ?? nextItem
       }
     }
     playlist.navigateTo = {
@@ -163,15 +155,29 @@ function extractItemsFromData(data, dataField, isParentArray, includeParent) {
   if (dataField) {
     if (isParentArray) {
       for (const parent of data) {
-        items = [...items, ...parent[dataField]]
+        const fieldValue = parent[dataField]
+        if (Array.isArray(fieldValue)) {
+          items = [...items, ...fieldValue]
+        } else if (fieldValue && typeof fieldValue === 'object') {
+          items = [...items, fieldValue]
+        }
       }
     } else {
-      items = data[dataField]
+      const fieldValue = data[dataField]
+      if (Array.isArray(fieldValue)) {
+        items = fieldValue
+      } else if (fieldValue && typeof fieldValue === 'object') {
+        items = [fieldValue]
+      }
     }
     if (includeParent) {
       if (isParentArray) {
         for (const parent of data) {
-          items = [...items, ...parent]
+          if(Array.isArray(parent)){
+            items = [...items, ...parent]
+          } else {
+            items = [...items, parent]
+          }
         }
       } else {
         items = [...items, data]
@@ -189,14 +195,20 @@ async function processItems(data, addContext, dataField, isParentArray, includeP
   if (dataField) {
     if (isParentArray) {
       for (let parent of data) {
-        parent[dataField] = Array.isArray(parent[dataField])
-          ? await Promise.all(parent[dataField].map(addContext))
-          : await addContext(parent[dataField])
+        const fieldValue = parent[dataField]
+        if (Array.isArray(fieldValue)) {
+          parent[dataField] = await Promise.all(fieldValue.map(addContext))
+        } else if (fieldValue && typeof fieldValue === 'object') {
+          parent[dataField] = await addContext(fieldValue)
+        }
       }
     } else {
-      data[dataField] = Array.isArray(data[dataField])
-        ? await Promise.all(data[dataField].map(addContext))
-        : await addContext(data[dataField])
+      const fieldValue = data[dataField]
+      if (Array.isArray(fieldValue)) {
+        data[dataField] = await Promise.all(fieldValue.map(addContext))
+      } else if (fieldValue && typeof fieldValue === 'object') {
+        data[dataField] = await addContext(fieldValue)
+      }
     }
     if (includeParent) {
       data = isParentArray ? await Promise.all(data.map(addContext)) : await addContext(data)

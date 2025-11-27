@@ -1,13 +1,31 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
-	 default as EventsAPI
+	 default as EventsAPI 
 } from './services/eventsAPI';
 
 import {
 	globalConfig,
 	initializeService
 } from './services/config.js';
+
+import {
+	fetchArtistBySlug,
+	fetchArtistLessons,
+	fetchArtists
+} from './services/content/artist.ts';
+
+import {
+	fetchGenreBySlug,
+	fetchGenreLessons,
+	fetchGenres
+} from './services/content/genre.ts';
+
+import {
+	fetchInstructorBySlug,
+	fetchInstructorLessons,
+	fetchInstructors
+} from './services/content/instructor.ts';
 
 import {
 	enrollUserInGuidedCourse,
@@ -27,7 +45,6 @@ import {
 	mapContentToParent,
 	resetAllLearningPaths,
 	startLearningPath,
-	updateActivePath,
 	updateDailySession
 } from './services/content-org/learning-paths.ts';
 
@@ -54,6 +71,7 @@ import {
 	getLegacyMethods,
 	getLessonContentRows,
 	getNewAndUpcoming,
+	getOwnedContent,
 	getRecent,
 	getRecommendedForYou,
 	getScheduleContentRows,
@@ -74,19 +92,33 @@ import {
 
 import {
 	contentStatusCompleted,
+	contentStatusCompleted,
+	contentStatusReset,
 	contentStatusReset,
 	contentStatusStarted,
+	contentStatusStarted,
 	getAllCompleted,
+	getAllCompleted,
+	getAllStarted,
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getLastInteractedOf,
+	getLastInteractedOf,
 	getNavigateTo,
-	getNextLesson,
 	getProgressDataByIds,
+	getProgressDateByIds,
+	getProgressPercentage,
+	getProgressPercentageByIds,
+	getProgressState,
 	getProgressState,
 	getProgressStateByIds,
+	getProgressStateByIds,
+	getResumeTimeSeconds,
+	getResumeTimeSecondsByIds,
 	getResumeTimeSecondsByIds,
 	getStartedOrCompletedProgressOnly,
+	getStartedOrCompletedProgressOnly,
+	recordWatchSession,
 	recordWatchSession
 } from './services/contentProgress.js';
 
@@ -107,6 +139,7 @@ import {
 
 import {
 	createForumCategory,
+	deleteForumCategory,
 	fetchForumCategories,
 	updateForumCategory
 } from './services/forums/categories.ts';
@@ -199,6 +232,10 @@ import {
 	fetchUserPractices,
 	likeComment,
 	openComment,
+	postContentComplete,
+	postContentReset,
+	postContentRestore,
+	postContentStart,
 	postPlaylistContentEngaged,
 	replyToComment,
 	reportComment,
@@ -216,21 +253,23 @@ import {
 } from './services/recommendations.js';
 
 import {
+	getReportIssueOptions,
+	report
+} from './services/reporting/reporting.ts';
+
+import {
+	buildEntityAndTotalQuery,
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPacks,
-	fetchArtistLessons,
-	fetchArtists,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
 	fetchChatAndLiveEnvent,
-	fetchCoachLessons,
 	fetchComingSoon,
 	fetchCommentModContentData,
 	fetchContentRows,
 	fetchFoundation,
-	fetchGenreLessons,
 	fetchHierarchy,
 	fetchLeaving,
 	fetchLessonContent,
@@ -243,9 +282,11 @@ import {
 	fetchMethodPreviousNextLesson,
 	fetchMethodV2IntroVideo,
 	fetchMethodV2Structure,
+	fetchMethodV2StructureFromId,
 	fetchNewReleases,
 	fetchNextPreviousLesson,
 	fetchOtherSongVersions,
+	fetchOwnedContent,
 	fetchPackAll,
 	fetchPackData,
 	fetchPlayAlongsCount,
@@ -265,6 +306,7 @@ import {
 	fetchTabData,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
+	getSanityDate,
 	getSortOrder,
 	jumpToContinueContent
 } from './services/sanity.js';
@@ -378,6 +420,7 @@ import {
 	restorePracticeSession,
 	restoreUserActivity,
 	restoreUserPractice,
+	trackUserPractice,
 	unpinProgressRow,
 	updatePracticeNotes,
 	updateUserPractice
@@ -391,6 +434,7 @@ export {
 	assignModeratorToComment,
 	blockUser,
 	blockedUsers,
+	buildEntityAndTotalQuery,
 	buildImageSRC,
 	calculateLongestStreaks,
 	closeComment,
@@ -398,7 +442,10 @@ export {
 	completeMethodIntroVideo,
 	confirmEmailChange,
 	contentStatusCompleted,
+	contentStatusCompleted,
 	contentStatusReset,
+	contentStatusReset,
+	contentStatusStarted,
 	contentStatusStarted,
 	convertToTimeZone,
 	createComment,
@@ -410,6 +457,7 @@ export {
 	createThread,
 	deleteAccount,
 	deleteComment,
+	deleteForumCategory,
 	deleteItemsFromPlaylist,
 	deleteNotification,
 	deletePicture,
@@ -427,6 +475,7 @@ export {
 	fetchAllCompletedStates,
 	fetchAllFilterOptions,
 	fetchAllPacks,
+	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
 	fetchAwardsForUser,
@@ -437,7 +486,6 @@ export {
 	fetchCertificate,
 	fetchChatAndLiveEnvent,
 	fetchChatSettings,
-	fetchCoachLessons,
 	fetchComingSoon,
 	fetchComment,
 	fetchCommentModContentData,
@@ -454,9 +502,14 @@ export {
 	fetchFollowedThreads,
 	fetchForumCategories,
 	fetchFoundation,
+	fetchGenreBySlug,
 	fetchGenreLessons,
+	fetchGenres,
 	fetchHandler,
 	fetchHierarchy,
+	fetchInstructorBySlug,
+	fetchInstructorLessons,
+	fetchInstructors,
 	fetchInterests,
 	fetchLastInteractedChild,
 	fetchLatestThreads,
@@ -475,12 +528,14 @@ export {
 	fetchMethodPreviousNextLesson,
 	fetchMethodV2IntroVideo,
 	fetchMethodV2Structure,
+	fetchMethodV2StructureFromId,
 	fetchNewReleases,
 	fetchNextContentDataForParent,
 	fetchNextPreviousLesson,
 	fetchNotificationSettings,
 	fetchNotifications,
 	fetchOtherSongVersions,
+	fetchOwnedContent,
 	fetchPackAll,
 	fetchPackData,
 	fetchPlayAlongsCount,
@@ -525,12 +580,15 @@ export {
 	getActiveDiscussions,
 	getActivePath,
 	getAllCompleted,
+	getAllCompleted,
+	getAllStarted,
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getAwardDataForGuidedContent,
 	getContentRows,
 	getDailySession,
 	getEnrichedLearningPath,
+	getLastInteractedOf,
 	getLastInteractedOf,
 	getLearningPathLessonsByIds,
 	getLegacyMethods,
@@ -540,20 +598,30 @@ export {
 	getNavigateTo,
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
-	getNextLesson,
 	getOnboardingRecommendedContent,
+	getOwnedContent,
 	getPracticeNotes,
 	getPracticeSessions,
 	getProgressDataByIds,
+	getProgressDateByIds,
+	getProgressPercentage,
+	getProgressPercentageByIds,
 	getProgressRows,
 	getProgressState,
+	getProgressState,
+	getProgressStateByIds,
 	getProgressStateByIds,
 	getRecent,
 	getRecentActivity,
 	getRecommendedForYou,
+	getReportIssueOptions,
+	getResumeTimeSeconds,
 	getResumeTimeSecondsByIds,
+	getResumeTimeSecondsByIds,
+	getSanityDate,
 	getScheduleContentRows,
 	getSortOrder,
+	getStartedOrCompletedProgressOnly,
 	getStartedOrCompletedProgressOnly,
 	getTabResults,
 	getTimeRemainingUntilLocal,
@@ -594,6 +662,10 @@ export {
 	pauseLiveEventPolling,
 	pinProgressRow,
 	pinThread,
+	postContentComplete,
+	postContentReset,
+	postContentRestore,
+	postContentStart,
 	postPlaylistContentEngaged,
 	rankCategories,
 	rankItems,
@@ -601,10 +673,12 @@ export {
 	recordUserActivity,
 	recordUserPractice,
 	recordWatchSession,
+	recordWatchSession,
 	removeContentAsInterested,
 	removeContentAsNotInterested,
 	removeUserPractice,
 	replyToComment,
+	report,
 	reportComment,
 	reportPlaylist,
 	requestEmailChange,
@@ -632,6 +706,7 @@ export {
 	togglePlaylistPrivate,
 	toggleSignaturePrivate,
 	toggleStudentView,
+	trackUserPractice,
 	unEnrollUserInGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,
@@ -644,7 +719,6 @@ export {
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
-	updateActivePath,
 	updateDailySession,
 	updateDisplayName,
 	updateForumCategory,

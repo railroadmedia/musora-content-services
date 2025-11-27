@@ -1,5 +1,4 @@
-import { fetchUserPermissions } from './services/user/permissions.js'
-import { plusMembershipPermissions } from './contentTypeConfig.js'
+import { getPermissionsAdapter } from './services/permissions/index.ts'
 
 export class FilterBuilder {
   STATUS_SCHEDULED = 'scheduled'
@@ -13,26 +12,28 @@ export class FilterBuilder {
     {
       availableContentStatuses = [],
       bypassPermissions = false,
+      showMembershipRestrictedContent = false,
+      showOnlyOwnedContent = false,
       pullFutureContent = false,
       getFutureContentOnly = false,
       getFutureScheduledContentsOnly = false,
       bypassStatuses = false,
       bypassPublishedDateRestriction = false,
       isSingle = false,
-      allowsPullSongsContent = true,
       isChildrenFilter = false,
       isParentFilter = false,
     } = {}
   ) {
     this.availableContentStatuses = availableContentStatuses
     this.bypassPermissions = bypassPermissions
+    this.showMembershipRestrictedContent = showMembershipRestrictedContent
+    this.showOnlyOwnedContent = showOnlyOwnedContent
     this.bypassStatuses = bypassStatuses
     this.bypassPublishedDateRestriction = bypassPublishedDateRestriction
     this.pullFutureContent = pullFutureContent
     this.getFutureContentOnly = getFutureContentOnly
     this.getFutureScheduledContentsOnly = getFutureScheduledContentsOnly
     this.isSingle = isSingle
-    this.allowsPullSongsContent = allowsPullSongsContent
     this.filter = filter
     // this.debug = process.env.DEBUG === 'true' || false;
     this.debug = false
@@ -57,7 +58,8 @@ export class FilterBuilder {
   }
 
   async buildFilter() {
-    this.userData = await fetchUserPermissions()
+    const adapter = getPermissionsAdapter()
+    this.userData = await adapter.fetchUserPermissions()
     if (this.debug) console.log('baseFilter', this.filter)
     const filter = this._applyContentStatuses()
       ._applyPermissions()
@@ -119,14 +121,22 @@ export class FilterBuilder {
   }
 
   _applyPermissions() {
-    if (this.bypassPermissions || this.userData.isAdmin) return this
-    let requiredPermissions = this._getUserPermissions()
-    if (this.userData.isABasicMember && this.allowsPullSongsContent) {
-      requiredPermissions = [...requiredPermissions, plusMembershipPermissions]
+    if (this.bypassPermissions) return this
+    const adapter = getPermissionsAdapter()
+    // Check if admin (admins bypass permissions)
+    if (adapter.isAdmin(this.userData)) return this
+
+    // Generate permissions filter using adapter
+    const permissionsFilter = adapter.generatePermissionsFilter(this.userData, {
+      prefix: this.prefix,
+      showMembershipRestrictedContent: this.showMembershipRestrictedContent,
+      showOnlyOwnedContent: this.showOnlyOwnedContent,
+    })
+
+    // If adapter returns a filter, apply it
+    if (permissionsFilter) {
+      this._andWhere(permissionsFilter)
     }
-    this._andWhere(
-      `(!defined(permission) || references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(requiredPermissions)}]._id))`
-    )
     return this
   }
 
