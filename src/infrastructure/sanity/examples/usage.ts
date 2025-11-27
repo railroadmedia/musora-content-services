@@ -17,7 +17,7 @@ const contentClient = new ContentClient()
 // Example: Fetch a single song by ID using the ContentClient
 export async function fetchSongExample(songId: number) {
   return await contentClient.fetchById({
-    type: 'song',
+    type: DocumentTypes.Song,
     id: songId,
   })
 }
@@ -25,7 +25,7 @@ export async function fetchSongExample(songId: number) {
 // Example: Fetch a single song by ID with custom fields
 export async function fetchSongWithCustomFieldsExample(songId: number) {
   return await contentClient.fetchById({
-    type: 'song',
+    type: DocumentTypes.Song,
     id: songId,
     fields: [
       "'id': railcontent_id",
@@ -43,7 +43,7 @@ export async function fetchSongWithCustomFieldsExample(songId: number) {
 // Example: Fetch a course with its children/lessons
 export async function fetchCourseWithLessonsExample(courseId: number) {
   return await contentClient.fetchById({
-    type: 'course',
+    type: DocumentTypes.Course,
     id: courseId,
     includeChildren: true,
   })
@@ -51,7 +51,7 @@ export async function fetchCourseWithLessonsExample(courseId: number) {
 
 // Example: Fetch multiple content items by IDs
 export async function fetchMultipleSongsExample(songIds: number[]) {
-  return await contentClient.fetchByIds(songIds, 'song', 'drumeo')
+  return await contentClient.fetchByIds(songIds, DocumentTypes.Song, Brands.drumeo)
 }
 
 // Example: Fetch content by brand and type
@@ -63,11 +63,11 @@ export async function fetchDrumeoSongsExample() {
 }
 
 // Example: Fetch multiple songs with pagination
-export async function fetchSongsExample(brand: string, page: number = 1, limit: number = 10) {
+export async function fetchSongsExample(brand: Brands, page: number = 1, limit: number = 10) {
   const start = (page - 1) * limit
   const end = start + limit
 
-  const query = `*[_type == "song" && brand == "${brand}"] | order(published_on desc)[${start}...${end}]{
+  const query = `*[_type == "${DocumentTypes.Song}" && brand == "${brand}"] | order(published_on desc)[${start}...${end}]{
     "id": railcontent_id,
     title,
     "artist": artist->name,
@@ -80,14 +80,14 @@ export async function fetchSongsExample(brand: string, page: number = 1, limit: 
 }
 
 // Example: Execute a complex query that returns custom structure
-export async function fetchSongsWithCountExample(brand: string) {
+export async function fetchSongsWithCountExample(brand: Brands) {
   const query = `{
-    "songs": *[_type == "song" && brand == "${brand}"] | order(published_on desc)[0...10]{
+    "songs": *[_type == "${DocumentTypes.Song}" && brand == "${brand}"] | order(published_on desc)[0...10]{
       "id": railcontent_id,
       title,
       "artist": artist->name
     },
-    "total": count(*[_type == "song" && brand == "${brand}"])
+    "total": count(*[_type == "${DocumentTypes.Song}" && brand == "${brand}"])
   }`
 
   return await sanityClient.executeQuery(query)
@@ -97,7 +97,7 @@ export async function fetchSongsWithCountExample(brand: string) {
 export async function fetchFirstSongWithParamsExample(songId: number) {
   // Note: Sanity GROQ doesn't support parameterized queries like SQL
   // Parameters would be used for client-side processing if needed
-  const query = `*[_type == "song" && railcontent_id == ${songId}]`
+  const query = `*[_type == "${DocumentTypes.Song}" && railcontent_id == ${songId}]`
 
   return await sanityClient.fetchFirst(query, { songId })
 }
@@ -106,7 +106,7 @@ export async function fetchFirstSongWithParamsExample(songId: number) {
 export async function fetchSingleSongWithParamsExample(songId: number) {
   // Note: Sanity GROQ doesn't support parameterized queries like SQL
   // Parameters would be used for client-side processing if needed
-  const query = `*[_type == "song" && railcontent_id == ${songId}][0]`
+  const query = `*[_type == "${DocumentTypes.Song}" && railcontent_id == ${songId}][0]`
 
   return await sanityClient.fetchSingle(query, { songId })
 }
