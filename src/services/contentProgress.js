@@ -3,6 +3,7 @@ import { db } from './sync'
 import { STATE } from './sync/models/ContentProgress'
 import { recordUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
+import {completeLearningPathTangentActions} from "./content-org/learning-paths.js";
 
 const STATE_STARTED = STATE.STARTED
 const STATE_COMPLETED = STATE.COMPLETED
@@ -322,7 +323,7 @@ async function saveContentProgress(contentId, progress, currentSeconds, collecti
     const contentId = parseInt(content)
 
     if (isLearningPathCompleted(contentId, collection, progress)) {
-      completeLearningPathTangentActions(contentId)
+      await completeLearningPathTangentActions(contentId)
     }
   }
 
