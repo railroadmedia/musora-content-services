@@ -31,3 +31,13 @@ export async function otherStats(userId = globalConfig.sessionConfig.userId) {
     total_practice_time: longestStreaks.totalPracticeSeconds,
   }
 }
+
+/**
+ * Delete profile picture for the authenticated user
+ *
+ * @returns {Promise<void>}
+ */
+export async function deleteProfilePicture() {
+  const url = `${baseUrl}/v1/users/profile_picture`
+  await fetchHandler(url, 'DELETE')
+}

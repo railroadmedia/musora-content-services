@@ -13,6 +13,10 @@ export class DefaultHeaderProvider implements HeaderProvider {
       headers['M-Client-Timezone'] = globalConfig.localTimezoneString
     }
 
+    if (globalConfig.isMA) {
+      headers['X-Client-Platform'] = 'mobile'
+    }
+
     return headers
   }
 }

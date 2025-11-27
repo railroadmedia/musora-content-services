@@ -32,6 +32,7 @@ export async function login(email, password, deviceName, deviceToken, platform) 
   return fetch(`${baseUrl}/v1/sessions`, {
     method: 'POST',
     headers: {
+      'X-Client-Platform': 'mobile',
       'Content-Type': 'application/json',
       Authorization: null,
     },
@@ -44,6 +45,36 @@ export async function login(email, password, deviceName, deviceToken, platform) 
     }),
   })
 }
+//Removing 3rdParty OAuth2 for now => https://musora.atlassian.net/browse/BEH-624?focusedCommentId=21492
+/*export async function loginWithProvider(provider, providerIdToken, deviceToken, deviceName, platform) {
+  const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
+
+  try {
+    const response = await fetch(`${baseUrl}/v1/auth/${provider}/mobile`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Client-Platform': 'mobile',
+      },
+      body: JSON.stringify({
+        id_token: providerIdToken,
+        device_name: deviceName,
+        firebase_token: deviceToken,
+        platform,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({}))
+      throw new Error(errorBody.error || `Login failed with status ${response.status}`)
+    }
+
+    return await response.json()
+  } catch (err) {
+    console.error('loginWithProvider failed', err)
+    throw err
+  }
+}*/
 
 /**
  * Logs the user out of the current session.

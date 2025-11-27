@@ -11,36 +11,59 @@ import {
   fetchUpcomingEvents,
   fetchScheduledReleases,
   fetchReturning,
-  fetchLeaving, fetchScheduledAndNewReleases
+  fetchLeaving, fetchScheduledAndNewReleases, fetchContentRows, fetchOwnedContent
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
-import {fetchHandler} from "./railcontent";
-import {recommendations} from "./recommendations";
+import {recommendations, rankCategories, rankItems} from "./recommendations";
+import {addContextToContent} from "./contentAggregator.js";
+import {globalConfig} from "./config";
+import {getUserData} from "./user/management";
+import {filterTypes, ownedContentTypes} from "../contentTypeConfig";
 
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
-  let recentContentIds = await fetchRecent(brand, pageName, { progress: 'recent' });
+  const [recentContentIds, rawContentRows, userData] = await Promise.all([
+    fetchRecent(brand, pageName, { progress: 'recent', limit: 10 }),
+    getContentRows(brand, pageName),
+    getUserData()
+  ])
 
-  let contentRows = await getContentRows(brand, pageName);
-  contentRows = Array.isArray(contentRows) ? contentRows : [];
+  const contentRows = Array.isArray(rawContentRows) ? rawContentRows : []
+
+  // Only fetch owned content if user has no active membership
+  if (!userData?.has_active_membership) {
+    const type = ownedContentTypes[pageName] || []
+
+    const ownedContent = await fetchOwnedContent(brand, { type })
+    if (ownedContent?.entity && ownedContent.entity.length > 0) {
+      contentRows.unshift({
+        id: 'owned',
+        title: 'Owned ' + capitalizeFirstLetter(pageName),
+        items: ownedContent.entity
+      })
+    }
+  }
+
+  // Add recent content row
   contentRows.unshift({
     id: 'recent',
     title: 'Recent ' + capitalizeFirstLetter(pageName),
     items: recentContentIds || []
-  });
+  })
 
   const results = await Promise.all(
-      contentRows.map(async (row) => {
-        return { id: row.id, title: row.title, items:  row.items }
-      })
+    contentRows.map(async (row) => {
+      return { id: row.id, title: row.title, items:  row.items }
+    })
   )
+
   return results
 }
 
 /**
  * Get data that should be displayed for a specific tab with pagination
  * @param {string} brand - The brand for which to fetch data.
- * @param {string} pageName - The page name (e.g., 'lessons', 'songs','challenges).
+ * @param {string} pageName - The page name (e.g., 'lessons', 'songs').
  * @param {string} tabName - The name for the selected tab. Should be same name received from fetchMetadata (e.g., 'Individuals', 'Collections','For You').
  * @param {Object} params - Parameters for pagination, sorting, and filter.
  * @param {number} [params.page=1] - The page number for pagination.
@@ -65,7 +88,6 @@ export async function getTabResults(brand, pageName, tabName, {
   sort = 'recommended',
   selectedFilters = []
 } = {}) {
-
   // Extract and handle 'progress' filter separately
   const progressFilter = selectedFilters.find(f => f.startsWith('progress,')) || 'progress,all';
   const progressValue = progressFilter.split(',')[1].toLowerCase();
@@ -75,9 +97,35 @@ export async function getTabResults(brand, pageName, tabName, {
   const mergedIncludedFields = [...filteredSelectedFilters, `tab,${tabName.toLowerCase()}`];
 
   // Fetch data
-  const results = tabName === Tabs.ForYou.name
-      ? { entity: await getLessonContentRows(brand, pageName) }
-      : await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
+  let results
+  if( tabName === Tabs.ForYou.name ) {
+    results = await addContextToContent(getLessonContentRows, brand, pageName, {
+      dataField: 'items',
+      addNextLesson: true,
+      addNavigateTo: true,
+      addProgressPercentage: true,
+      addProgressStatus: true
+    })
+  } else {
+    let temp = await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
+
+    const [ranking, contextResults] = await Promise.all([
+      sort === 'recommended' ? rankItems(brand, temp.entity.map(e => e.id)) : [],
+      addContextToContent(() => temp.entity, {
+        addNextLesson: true,
+        addNavigateTo: true,
+        addProgressPercentage: true,
+        addProgressStatus: true
+      })
+    ]);
+
+    results = ranking.length === 0 ? contextResults : contextResults.sort((a, b) => {
+      const indexA = ranking.indexOf(a.id);
+      const indexB = ranking.indexOf(b.id);
+      return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
+    })
+  }
+
 
   // Fetch metadata
   const metaData = await fetchMetadata(brand, pageName);
@@ -107,7 +155,7 @@ export async function getTabResults(brand, pageName, tabName, {
 
   return {
     type: tabName === Tabs.ForYou.name ? TabResponseType.SECTIONS : TabResponseType.CATALOG,
-    data: results.entity,
+    data: results,
     meta: { filters, sort: sortOptions }
   };
 }
@@ -149,11 +197,11 @@ export async function getRecent(brand, pageName, tabName = 'all', {
 }
 
 /**
- * Fetches content rows for a given brand and page with optional filtering by content row id.
+ * Fetches content rows for a given brand and page with optional filtering by content row slug.
  *
  * @param {string} brand - The brand for which to fetch content rows.
- * @param {string} pageName - The page name (e.g., 'lessons', 'songs', 'challenges').
- * @param {string} [contentRowId] - The specific content row ID to fetch.
+ * @param {string} pageName - The page name (e.g., 'lessons', 'songs').
+ * @param {string|null} contentRowSlug - The specific content row ID to fetch.
  * @param {Object} params - Parameters for pagination.
  * @param {number} [params.page=1] - The page number for pagination.
  * @param {number} [params.limit=10] - The maximum number of content items per row.
@@ -168,32 +216,43 @@ export async function getRecent(brand, pageName, tabName = 'all', {
  *   .then(content => console.log(content))
  *   .catch(error => console.error(error));
  */
-export async function getContentRows(brand, pageName, contentRowId , {
+export async function getContentRows(brand, pageName, contentRowSlug = null, {
   page = 1,
-  limit = 10,
+  limit = 10
 } = {}) {
-  const contentRow = contentRowId ? `&content_row_id=${contentRowId}` : ''
-  const url = `/api/content/v1/rows?brand=${brand}&page_name=${pageName}${contentRow}&page=${page}&limit=${limit}`;
-  const contentRows =  await fetchHandler(url, 'get', null) || [];
-  const results = await Promise.all(
-    contentRows.map(async (row) => {
-      if (row.content.length === 0){
-        return { id: row.id, title: row.title, items: [] }
-      }
-      const data = await fetchByRailContentIds(row.content)
-      return { id: row.id, title: row.title, items: data }
-    })
-  )
-
-  if (contentRowId) {
-    return {
-      type: TabResponseType.CATALOG,
-      data: results[0].items,
-      meta: {}
-    };
+  const sanityData = await fetchContentRows(brand, pageName, contentRowSlug)
+  if (!sanityData) {
+    return []
+  }
+  let contentMap = {}
+  let recData = {}
+  let slugNameMap = {}
+  for (const category of sanityData) {
+    recData[category.slug] = category.content.map(item => item.id)
+    for (const content of category.content) {
+      contentMap[content.id] = content
+    }
+    slugNameMap[category.slug] = category.name
   }
 
-  return results
+  const start = (page - 1) * limit
+  const end = start + limit
+  const sortedData = await rankCategories(brand, recData)
+  let finalData = []
+  for (const category of sortedData) {
+    finalData.push( {
+      id: category.slug,
+      title: slugNameMap[category.slug],
+      items: category.items.slice(start, end).map(id => contentMap[id])})
+  }
+
+  return contentRowSlug ?
+    {
+      type: TabResponseType.CATALOG,
+      data: finalData[0].items,
+      meta: {}
+    }
+    : finalData
 }
 
 /**
@@ -358,7 +417,7 @@ export async function getRecommendedForYou(brand, rowId = null, {
   limit = 10,
 } = {}) {
   const requiredItems = page * limit;
-  const data = await recommendations(brand, {limit: requiredItems});
+  const data = await recommendations( brand, {limit: requiredItems})
   if (!data || !data.length) {
     return { id: 'recommended', title: 'Recommended For You', items: [] };
   }
@@ -366,14 +425,11 @@ export async function getRecommendedForYou(brand, rowId = null, {
   // Apply pagination before calling fetchByRailContentIds
   const startIndex = (page - 1) * limit;
   const paginatedData = data.slice(startIndex, startIndex + limit);
-
-  const contents = await fetchByRailContentIds(paginatedData);
-  const result = {
-    id: 'recommended',
-    title: 'Recommended For You',
-    items: contents
-  };
-
+  const contents = await addContextToContent(fetchByRailContentIds, paginatedData, 'tab-data', brand, true,
+    {
+      addNextLesson: true,
+      addNavigateTo: true,
+    })
   if (rowId) {
     return {
       type: TabResponseType.CATALOG,
@@ -386,9 +442,90 @@ export async function getRecommendedForYou(brand, rowId = null, {
 }
 
 
+/**
+ * Fetches legacy methods for a given brand by permission.
+ *
+ * @param {string} brand - The brand for which to fetch legacy methods.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing legacy methods.
+ *
+ * @example
+ * // Fetch legacy methods for a brand by permission
+ * getLegacyMethods('drumeo')
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ */
+export async function getLegacyMethods(brand) {
 
+  // TODO: Replace with real data from Sanity when available with permissions
 
+  return [
+    {
+      id: 1,
+      title: '2020 Method',
+      type: 'pack',
+      child_count: 12,
+    },
+    {
+      id: 2,
+      title: '2016 Foundations',
+      type: 'pack',
+      child_count: 12,
+    },
+  ]
+}
 
+/**
+ * Fetches content owned by the user (excluding membership content).
+ * Shows only content accessible through purchases/entitlements, not through membership.
+ *
+ * @param {string} brand - The brand for which to fetch owned content.
+ * @param {Object} [params={}] - Parameters for pagination and sorting.
+ * @param {Array<string>} [params.type=[]] - Content type(s) to filter (optional array).
+ * @param {number} [params.page=1] - The page number for pagination.
+ * @param {number} [params.limit=10] - The number of items per page.
+ * @param {string} [params.sort='-published_on'] - The field to sort the data by.
+ * @returns {Promise<Object>} - The fetched owned content with entity array and total count.
+ *
+ * @example
+ * // Fetch all owned content with default pagination
+ * getOwnedContent('drumeo')
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Fetch owned content with custom pagination and sorting
+ * getOwnedContent('drumeo', {
+ *   page: 2,
+ *   limit: 20,
+ *   sort: '-published_on'
+ * })
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ *
+ * @example
+ * // Fetch owned content filtered by types
+ * getOwnedContent('drumeo', {
+ *   type: ['course', 'pack'],
+ *   page: 1,
+ *   limit: 10
+ * })
+ *   .then(content => console.log(content))
+ *   .catch(error => console.error(error));
+ */
+export async function getOwnedContent(brand, {
+  type = [],
+  page = 1,
+  limit = 10,
+  sort = '-published_on',
+} = {}) {
+  const data = await fetchOwnedContent(brand, { type, page, limit, sort });
 
+  if (!data) {
+    return {
+      entity: [],
+      total: 0
+    };
+  }
 
-
+  return data;
+}

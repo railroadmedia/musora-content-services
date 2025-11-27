@@ -30,21 +30,14 @@
  */
 
 /**
- * @typedef {object} RecommendationsConfig - Configuration for recommendation services.
- *
- * @property {string} token - The token for authenticating recommendation requests.
- * @property {string} baseUrl - The url for the recommendation server.
- */
-
-/**
  * @typedef {object} Config
  *
  * @property {SanityConfig} sanityConfig
  * @property {RailcontentConfig} railcontentConfig - DEPRECATED use sessionConfig and baseUrl instead.
  * @property {SessionConfig} sessionConfig
- * @property {RecommendationsConfig} recommendationsConfig
  * @property {string} baseUrl - The url for the environment.
  * @property {Object} localStorage - Cache to use for localStorage
  * @property {boolean} isMA - Variable that tells if the library is used by MA or FEW
  * @property {string} localTimezoneString - The local timezone string in format: America/Vancouver
+ * @property {('v1'|'v2')} [permissionsVersion='v1'] - Permissions system version to use ('v1' or 'v2')
  */
