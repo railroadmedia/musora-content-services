@@ -2,14 +2,19 @@ import SyncRepository, { Q } from './base'
 import ContentProgress, { COLLECTION_TYPE, STATE } from '../models/ContentProgress'
 
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
+  // null collection only
   async startedIds(limit?: number) {
     return this.queryAll(
+      Q.where('collection_type', null),
+      Q.where('collection_id', null),
+
       Q.where('state', STATE.STARTED),
       Q.sortBy('updated_at', 'desc'),
       Q.take(limit || Infinity)
     )
   }
 
+  // null collection only
   async completedIds(limit?: number) {
     return this.queryAllIds(
       Q.where('state', STATE.COMPLETED),
@@ -18,14 +23,17 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     )
   }
 
+  // null collection only
   async startedOrCompleted(opts: Parameters<typeof this.startedOrCompletedClauses>[0] = {}) {
     return this.queryAll(...this.startedOrCompletedClauses(opts))
   }
 
+  // null collection only
   async startedOrCompletedIds(opts: Parameters<typeof this.startedOrCompletedClauses>[0] = {}) {
     return this.queryAllIds(...this.startedOrCompletedClauses(opts))
   }
 
+  // null collection only
   private startedOrCompletedClauses(
     opts: {
       brand?: string
@@ -34,6 +42,9 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     } = {}
   ) {
     const clauses: Q.Clause[] = [
+      Q.where('collection_type', null),
+      Q.where('collection_id', null),
+
       Q.or(Q.where('state', STATE.STARTED), Q.where('state', STATE.COMPLETED)),
       Q.sortBy('updated_at', 'desc'),
     ]
@@ -53,9 +64,12 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return clauses
   }
 
-  async mostRecentlyUpdatedId(contentIds: number[]) {
+  async mostRecentlyUpdatedId(contentIds: number[], collection: { type: COLLECTION_TYPE; id: number } | null = null) {
     return this.queryOneId(
       Q.where('content_id', Q.oneOf(contentIds)),
+      Q.where('collection_type', collection?.type ?? null),
+      Q.where('collection_id', collection?.id ?? null),
+
       Q.sortBy('updated_at', 'desc')
     )
   }
@@ -94,13 +108,15 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.queryAll(...clauses)
   }
 
-  recordProgressRemotely(contentId: number, progressPct: number, resumeTime?: number) {
-    const id = ProgressRepository.generateId(contentId, null)
-    const progressStatus = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
+  recordProgressRemotely(contentId: number, collection: { type: COLLECTION_TYPE; id: number } | null, progressPct: number, resumeTime?: number) {
+    const id = ProgressRepository.generateId(contentId, collection)
 
     const result = this.upsertOneRemote(id, (r) => {
       r.content_id = contentId
-      r.state = progressStatus
+      r.collection_type = collection?.type ?? null
+      r.collection_id = collection?.id ?? null
+
+      r.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
       r.progress_percent = progressPct
 
       if (typeof resumeTime != 'undefined') {
@@ -119,10 +135,10 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
         userId: globalConfig.railcontentConfig?.userId || 0,
         contentId,
         progressPercent: progressPct,
-        progressStatus,
+        progressStatus: progressPct === 100 ? STATE.COMPLETED : STATE.STARTED,
         bubble: true,
-        collectionType: 'guided-course', // testing only, todo: update when FE is done
-        collectionId: 416442, // testing only, todo: update when FE is done
+        collectionType: collection?.type ?? null,
+        collectionId: collection?.id ?? null,
         resumeTimeSeconds: resumeTime ?? null,
         timestamp: Date.now()
       })
@@ -133,13 +149,16 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return result
   }
 
-  recordProgressesTentative(contentProgresses: Map<number, number>) {
+  recordProgressesTentative(contentProgresses: Map<number, number>, collection: { type: COLLECTION_TYPE; id: number } | null) {
     return this.upsertSomeTentative(
       Object.fromEntries(
         Array.from(contentProgresses, ([contentId, progressPct]) => [
           ProgressRepository.generateId(contentId, null),
           (r) => {
             r.content_id = contentId
+            r.collection_type = collection?.type ?? null
+            r.collection_id = collection?.id ?? null
+
             r.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
             r.progress_percent = progressPct
           },
@@ -148,8 +167,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     )
   }
 
-  eraseProgress(contentId: number) {
-    return this.deleteOne(ProgressRepository.generateId(contentId, null))
+  eraseProgress(contentId: number, collection: { type: COLLECTION_TYPE; id: number } | null) {
+    return this.deleteOne(ProgressRepository.generateId(contentId, collection))
   }
 
   private static generateId(
