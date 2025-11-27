@@ -2,7 +2,6 @@ import './telemetry/index'
 
 import { Q, RecordId } from "@nozbe/watermelondb"
 import { type ModelSerialized, type RawSerialized } from "./serializers"
-import { EpochSeconds } from "./utils/epoch"
 import BaseModel from "./models/Base"
 
 export { default as db } from './repository-proxy'
@@ -14,7 +13,9 @@ export { default as SyncManager } from './manager'
 export { default as SyncContext } from './context'
 export { SyncError } from './errors'
 
-export type SyncToken = EpochSeconds
+type Branded<T, B extends string> = T & { __brand: B }
+export type EpochMs = Branded<number, 'EpochMs'>
+export type SyncToken = EpochMs
 
 export type SyncSyncable<TModel extends BaseModel = BaseModel, TRecordKey extends string = 'id'> = {
   [K in TRecordKey]: RecordId
@@ -25,9 +26,9 @@ export type SyncEntry<TModel extends BaseModel = BaseModel, TRecordKey extends s
   meta: {
     ids: { [K in TRecordKey]: RecordId }
     lifecycle: {
-      created_at: EpochSeconds
-      updated_at: EpochSeconds
-      deleted_at: EpochSeconds | null
+      created_at: EpochMs
+      updated_at: EpochMs
+      deleted_at: EpochMs | null
     }
   }
 }
@@ -36,8 +37,8 @@ export type SyncEntryNonDeleted<TModel extends BaseModel = BaseModel, TRecordKey
   meta: {
     ids: { [K in TRecordKey]: RecordId }
     lifecycle: {
-      created_at: EpochSeconds
-      updated_at: EpochSeconds
+      created_at: EpochMs
+      updated_at: EpochMs
       deleted_at: null
     }
   }

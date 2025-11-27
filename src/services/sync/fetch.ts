@@ -1,5 +1,5 @@
 import { SyncToken, SyncEntry, SyncSyncable } from "./index"
-import { EpochSeconds } from "./utils/epoch.js"
+import { EpochMs } from "."
 
 import { globalConfig } from '../config.js'
 import { RecordId } from "@nozbe/watermelondb"
@@ -8,16 +8,16 @@ import { BaseSessionProvider } from "./context/providers"
 
 interface RawPullResponse {
   meta: {
-    since: EpochSeconds | null
-    max_updated_at: EpochSeconds | null
-    timestamp: EpochSeconds
+    since: EpochMs | null
+    max_updated_at: EpochMs | null
+    timestamp: EpochMs
   }
   entries: SyncEntry<BaseModel, 'client_record_id'>[]
 }
 
 interface RawPushResponse {
   meta: {
-    timestamp: EpochSeconds
+    timestamp: EpochMs
   }
   results: SyncStorePushResult<'client_record_id'>[]
 }

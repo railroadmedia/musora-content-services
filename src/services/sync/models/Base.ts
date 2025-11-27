@@ -1,18 +1,18 @@
 import { Model, Collection, RawRecord } from '@nozbe/watermelondb'
-import { EpochSeconds } from '../utils/epoch'
+import { EpochMs } from '..'
 
 export default abstract class BaseModel<ExtraRaw extends object = {}> extends Model {
   declare _raw: RawRecord & ExtraRaw & {
-    created_at: EpochSeconds
-    updated_at: EpochSeconds
+    created_at: EpochMs
+    updated_at: EpochMs
   }
 
   get created_at() {
-    return this._getRaw('created_at') as EpochSeconds
+    return this._getRaw('created_at') as EpochMs
   }
 
   get updated_at() {
-    return this._getRaw('updated_at') as EpochSeconds
+    return this._getRaw('updated_at') as EpochMs
   }
 
   static _prepareCreate(
@@ -20,7 +20,7 @@ export default abstract class BaseModel<ExtraRaw extends object = {}> extends Mo
     recordBuilder: (record: Model) => void
   ) {
     return super._prepareCreate(collection, (record: Model) => {
-      const now = Math.round(Date.now() / 1000) as EpochSeconds
+      const now = Date.now() as EpochMs
       record._raw['created_at'] = now
       record._raw['updated_at'] = now
       recordBuilder(record)
@@ -29,7 +29,7 @@ export default abstract class BaseModel<ExtraRaw extends object = {}> extends Mo
 
   prepareUpdate(recordBuilder: ((record: this) => void) | undefined) {
     return super.prepareUpdate((record: this) => {
-      record._raw['updated_at'] = Math.round(Date.now() / 1000) as EpochSeconds
+      record._raw['updated_at'] = Date.now() as EpochMs
       if (recordBuilder) recordBuilder(record)
     })
   }
@@ -40,7 +40,7 @@ export default abstract class BaseModel<ExtraRaw extends object = {}> extends Mo
         return
       }
 
-      record._raw['updated_at'] = Math.round(Date.now() / 1000) as EpochSeconds
+      record._raw['updated_at'] = Date.now() as EpochMs
       record._raw._status = 'deleted'
     })
   }

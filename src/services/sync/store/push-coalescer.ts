@@ -1,13 +1,13 @@
 import BaseModel from "../models/Base"
 import { RecordId } from "@nozbe/watermelondb"
-import { EpochSeconds } from "../utils/epoch"
+import { EpochMs } from ".."
 import { SyncPushResponse } from "../fetch"
 
 type PushIntent = {
   promise: Promise<SyncPushResponse>
   records: {
     id: RecordId
-    updatedAt: EpochSeconds
+    updatedAt: EpochMs
   }[]
 }
 
