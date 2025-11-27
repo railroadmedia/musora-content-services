@@ -85,8 +85,8 @@ async function getUserPractices(userId) {
 async function getOwnPractices(...clauses) {
   const query = await db.practices.queryAll(...clauses)
   const data = query.data.reduce((acc, practice) => {
-    acc[practice.day] = acc[practice.day] || []
-    acc[practice.day].push({
+    acc[practice.date] = acc[practice.date] || []
+    acc[practice.date].push({
       id: practice.id,
       duration_seconds: practice.duration_seconds,
     })
