@@ -100,8 +100,7 @@ export type RestorePurchasesResponse =
  *   .catch(error => console.error(error));
  */
 export async function fetchMemberships(): Promise<Either<HttpError, Membership[]>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<Membership[]>(`${baseUrl}/v1`)
+  return HttpClient.client().get<Membership[]>(`${baseUrl}/v1`)
 }
 
 /**
@@ -121,8 +120,7 @@ export async function fetchMemberships(): Promise<Either<HttpError, Membership[]
  *   .catch(error => console.error(error));
  */
 export async function fetchRechargeTokens(): Promise<Either<HttpError, RechargeTokens>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<RechargeTokens>(`${baseUrl}/v1/subscriptions-tokens`)
+  return HttpClient.client().get<RechargeTokens>(`${baseUrl}/v1/subscriptions-tokens`)
 }
 
 /**
@@ -145,8 +143,7 @@ export async function fetchRechargeTokens(): Promise<Either<HttpError, RechargeT
 export async function upgradeSubscription(): Promise<
   Either<HttpError, UpgradeSubscriptionResponse>
 > {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<UpgradeSubscriptionResponse>(`${baseUrl}/v1/update-subscription`)
+  return HttpClient.client().get<UpgradeSubscriptionResponse>(`${baseUrl}/v1/update-subscription`)
 }
 
 /**
@@ -216,6 +213,8 @@ export async function restorePurchases(
     requestBody.email = email
   }
 
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<RestorePurchasesResponse>(`${baseUrl}/v1/revenuecat/restore`, requestBody)
+  return HttpClient.client().post<RestorePurchasesResponse>(
+    `${baseUrl}/v1/revenuecat/restore`,
+    requestBody
+  )
 }

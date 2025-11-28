@@ -40,6 +40,5 @@ interface FetchCustomerPaymentsOptions {
  * @returns {Promise<Either<HttpError, CustomerOrder[]>>} - A promise that resolves to an array of customer order objects.
  */
 export async function fetchCustomerPayments(): Promise<Either<HttpError, CustomerOrder[]>> {
-  const client = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.authToken)
-  return client.get<CustomerOrder[]>('/api/customer/orders/v1')
+  return HttpClient.client().get<CustomerOrder[]>('/api/customer/orders/v1')
 }

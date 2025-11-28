@@ -15,8 +15,7 @@ const baseUrl = `/api/user-management-system`
  */
 export async function blockedUsers() {
   const url = `${baseUrl}/v1/users/${globalConfig.sessionConfig.userId}/blocked`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.get(url)
+  return HttpClient.client().get(url)
 }
 
 /**
@@ -131,8 +130,7 @@ export async function getUserData(userId = globalConfig.sessionConfig.userId) {
  */
 export async function isUsernameAvailable(userName) {
   const apiUrl = `${baseUrl}/v1/users/usernames/available?username=${encodeURIComponent(userName)}`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.get(apiUrl)
+  return HttpClient.client().get(apiUrl)
 }
 
 /**
@@ -141,8 +139,7 @@ export async function isUsernameAvailable(userName) {
  */
 export async function updateDisplayName(newDisplayName) {
   const apiUrl = `${baseUrl}/v1/users/${globalConfig.sessionConfig.userId}/display-name`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.put(apiUrl, { display_name: newDisplayName })
+  return HttpClient.client().put(apiUrl, { display_name: newDisplayName })
 }
 
 /**
@@ -153,8 +150,7 @@ export async function updateDisplayName(newDisplayName) {
  */
 export async function setUserSignature(params) {
   const apiUrl = `/api/forums/v1/signature`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.post(apiUrl, params)
+  return HttpClient.client().post(apiUrl, params)
 }
 
 /**
@@ -164,8 +160,7 @@ export async function setUserSignature(params) {
  */
 export async function getUserSignature() {
   const apiUrl = `/api/forums/v1/signature`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.get(apiUrl)
+  return HttpClient.client().get(apiUrl)
 }
 
 /**
@@ -176,9 +171,5 @@ export async function getUserSignature() {
  */
 export async function toggleSignaturePrivate(showSignature = true) {
   const apiUrl = `/api/forums/v1/signature/toggle`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.put(apiUrl, { show_signature: showSignature })
+  return HttpClient.client().put(apiUrl, { show_signature: showSignature })
 }
-
-
-

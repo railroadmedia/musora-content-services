@@ -57,8 +57,7 @@ export async function startOnboarding({
   steps = {},
   marketingOptIn = false,
 }: StartOnboardingParams): Promise<Either<HttpError, Onboarding>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<Onboarding>(`/api/user-management-system/v1/onboardings`, {
+  return HttpClient.client().post<Onboarding>(`/api/user-management-system/v1/onboardings`, {
     email,
     brand,
     flow,
@@ -93,8 +92,7 @@ export async function updateOnboarding({
   is_completed = false,
   marketingOptIn = false,
 }: UpdateOnboardingParams): Promise<Either<HttpError, Onboarding>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.put<Onboarding>(`/api/user-management-system/v1/onboardings/${id}`, {
+  return HttpClient.client().put<Onboarding>(`/api/user-management-system/v1/onboardings/${id}`, {
     email,
     brand,
     flow,
@@ -115,8 +113,7 @@ export async function updateOnboarding({
 export async function userOnboardingForBrand(
   brand: string
 ): Promise<Either<HttpError, Onboarding>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<Onboarding>(
+  return HttpClient.client().get<Onboarding>(
     `/api/user-management-system/v1/users/${globalConfig.sessionConfig.userId}/onboardings/brand/${encodeURIComponent(brand)}`
   )
 }

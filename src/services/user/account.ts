@@ -17,11 +17,9 @@ export interface AccountStatus {
  * @returns {Promise<Either<HttpError|AccountStatus>>} - A promise that resolves to an object indicating whether account setup is required, or an HttpError if the request fails.
  */
 export async function status(email: string): Promise<Either<HttpError, AccountStatus>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  const response = await httpClient.get<{ requires_setup: boolean }>(
+  return HttpClient.client().get<{ requires_setup: boolean }>(
     `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status`
   )
-  return response
 }
 
 /**
@@ -29,8 +27,7 @@ export async function status(email: string): Promise<Either<HttpError, AccountSt
  * @returns {Promise<Either<HttpError, void>>} - A promise that resolves when the email is sent or an HttpError if the request fails.
  */
 export async function sendAccountSetupEmail(email: string): Promise<Either<HttpError, void>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<void>(
+  return HttpClient.client().post<void>(
     `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/send-setup-email`,
     {}
   )
@@ -79,8 +76,7 @@ export async function setupAccount({
  * @throws {HttpError} - Throws HttpError if the request fails.
  */
 export async function sendPasswordResetEmail(email: string): Promise<Either<HttpError, void>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post(`/api/user-management-system/v1/accounts/password/reset-email`, {
+  return HttpClient.client().post(`/api/user-management-system/v1/accounts/password/reset-email`, {
     email,
   })
 }
@@ -124,8 +120,7 @@ export async function requestEmailChange(
   password: string
 ): Promise<Either<HttpError, void>> {
   const apiUrl = `/api/user-management-system/v1/accounts/${globalConfig.sessionConfig.userId}/email-change`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.post(apiUrl, { email, password })
+  return HttpClient.client().post(apiUrl, { email, password })
 }
 
 /**
@@ -134,8 +129,7 @@ export async function requestEmailChange(
  */
 export async function confirmEmailChange(token: string): Promise<Either<HttpError, void>> {
   const apiUrl = `/api/user-management-system/v1/accounts/email-change/confirm`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.post(apiUrl, { token })
+  return HttpClient.client().post(apiUrl, { token })
 }
 
 /**
@@ -144,8 +138,7 @@ export async function confirmEmailChange(token: string): Promise<Either<HttpErro
  */
 export async function deleteAccount(userId: number): Promise<Either<HttpError, void>> {
   const apiUrl = `/api/user-management-system/v1/users/${userId}`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.delete(apiUrl)
+  return HttpClient.client().delete<void>(apiUrl)
 }
 
 /**
@@ -156,8 +149,7 @@ export async function deleteAccount(userId: number): Promise<Either<HttpError, v
  */
 export async function numberOfActiveUsers(): Promise<Either<HttpError, number>> {
   const apiUrl = `/api/user-management-system/v1/accounts/active/count`
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  const response = await httpClient.get<{ active_users: number }>(apiUrl)
+  const response = await HttpClient.client().get<{ active_users: number }>(apiUrl)
   return response.map((data) => data.active_users)
 }
 
@@ -186,6 +178,5 @@ export async function toggleStudentView(
   useStudentView: boolean
 ): Promise<Either<HttpError, UserResource>> {
   const apiUrl = `/api/user-management-system/v1/user/student-view`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.patch<UserResource>(apiUrl, { use_student_view: useStudentView })
+  return HttpClient.client().patch<UserResource>(apiUrl, { use_student_view: useStudentView })
 }

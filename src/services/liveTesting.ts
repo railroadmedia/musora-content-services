@@ -27,6 +27,5 @@ export interface TestUser {
  * @property {Date} [createdAt] - The creation date for the test user.
  */
 export function createTestUser(props: CreateTestUserProps): Promise<Either<HttpError, void>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<void>(`/api/testing/users`, props)
+  return HttpClient.client().post<void>(`/api/testing/users`, props)
 }

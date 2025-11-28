@@ -1,24 +1,25 @@
-import { HttpClient } from '../../infrastructure/http/HttpClient'
-import { PaginatedResponse } from '../api/types'
-import { ForumThread } from './types'
-import { globalConfig } from '../config.js'
-
-const baseUrl = `/api/forums`
-
 /**
  * @namespace Forums
  * @property {module:Categories} Categories
  * @property {module:Threads} Threads
  */
+import { Either } from '../../core/types/ads/either'
+import { HttpClient } from '../../infrastructure/http/HttpClient'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
+import { PaginatedResponse } from '../api/types'
+import { ForumThread } from './types'
 
-export async function getActiveDiscussions(brand: string, { page = 1, limit = 10 } = {}) {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  const latestDiscussions = await httpClient.get<PaginatedResponse<ForumThread>>(
-    `${baseUrl}/v1/threads/latest?brand=${brand}&page=${page}&limit=${limit}`
-  )
+const baseUrl = `/api/forums`
 
-  // Transform the response
-  return transformLatestDiscussions(latestDiscussions)
+export async function getActiveDiscussions(
+  brand: string,
+  { page = 1, limit = 10 } = {}
+): Promise<Either<HttpError, TransformedResponse>> {
+  return HttpClient.client()
+    .get<PaginatedResponse<ForumThread>>(
+      `${baseUrl}/v1/threads/latest?brand=${brand}&page=${page}&limit=${limit}`
+    )
+    .then((r) => r.map(transformLatestDiscussions))
 }
 
 interface TransformedDiscussion {

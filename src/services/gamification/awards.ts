@@ -77,12 +77,9 @@ export async function fetchAwardsForUser(
     userId = Number.parseInt(globalConfig.sessionConfig.userId)
   }
 
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  const response = await httpClient.get<PaginatedResponse<Award>>(
+  return HttpClient.client().get<PaginatedResponse<Award>>(
     `${baseUrl}/v1/users/${userId}/awards?limit=${limit}&page=${page}`
   )
-
-  return response
 }
 
 /**
@@ -99,12 +96,9 @@ export async function fetchAwardsForUser(
 export async function getAwardDataForGuidedContent(
   guidedCourseLessonId: number
 ): Promise<Either<HttpError, Award>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  const response = await httpClient.get<Award>(
+  return HttpClient.client().get<Award>(
     `${baseUrl}/v1/users/guided_course_award/${guidedCourseLessonId}`
   )
-
-  return response
 }
 
 /**
@@ -121,9 +115,5 @@ export async function getAwardDataForGuidedContent(
 export async function fetchCertificate(
   userAwardId: number
 ): Promise<Either<HttpError, Certificate>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  const response = await httpClient.get<Certificate>(
-    `${baseUrl}/v1/users/certificate/${userAwardId}`
-  )
-  return response
+  return HttpClient.client().get<Certificate>(`${baseUrl}/v1/users/certificate/${userAwardId}`)
 }

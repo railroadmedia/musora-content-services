@@ -154,12 +154,15 @@ export async function recommendations(brand, { section = '' } = {}) {
   section = section.toUpperCase().replace('-', '_')
   const sectionString = section ? `&section=${section}` : ''
   const url = `/api/content/v1/recommendations?brand=${brand}${sectionString}`
-  const data = await new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token).get(url)
-  return data.fold(
-    (err) => {
-      console.error('Recommendations fetch error:', err)
-      return []
-    },
-    (data) => data
-  )
+  return HttpClient.client()
+    .get(url)
+    .then((data) =>
+      data.fold(
+        (err) => {
+          console.error('Recommendations fetch error:', err)
+          return []
+        },
+        (data) => data
+      )
+    )
 }

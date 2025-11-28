@@ -19,8 +19,7 @@ const baseUrl = `/api/forums`
 export async function fetchForumCategories(
   brand: string
 ): Promise<Either<HttpError, ForumCategory>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<ForumCategory>(`${baseUrl}/v1/categories?brand=${brand}`)
+  return HttpClient.client().get<ForumCategory>(`${baseUrl}/v1/categories?brand=${brand}`)
 }
 
 export interface CreateForumCategoryParams {
@@ -41,8 +40,7 @@ export interface CreateForumCategoryParams {
 export async function createForumCategory(
   params: CreateForumCategoryParams
 ): Promise<Either<HttpError, ForumCategory>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<ForumCategory>(`${baseUrl}/v1/categories`, params)
+  return HttpClient.client().post<ForumCategory>(`${baseUrl}/v1/categories`, params)
 }
 
 export interface UpdateForumCategoryParams {
@@ -64,8 +62,7 @@ export interface UpdateForumCategoryParams {
 export async function updateForumCategory(
   params: UpdateForumCategoryParams
 ): Promise<Either<HttpError, ForumCategory>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.put<ForumCategory>(`${baseUrl}/v1/categories/${params.id}`, params)
+  return HttpClient.client().put<ForumCategory>(`${baseUrl}/v1/categories/${params.id}`, params)
 }
 
 export interface DeleteForumCategoryParams {
@@ -83,6 +80,7 @@ export interface DeleteForumCategoryParams {
 export async function deleteForumCategory(
   params: DeleteForumCategoryParams
 ): Promise<Either<HttpError, void>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.delete<void>(`${baseUrl}/v1/categories/${params.id}?brand=${params.brand}`)
+  return HttpClient.client().delete<void>(
+    `${baseUrl}/v1/categories/${params.id}?brand=${params.brand}`
+  )
 }
