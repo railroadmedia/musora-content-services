@@ -162,6 +162,20 @@ export async function getAllCompleted(limit = null) {
   return db.contentProgress.completedIds(limit).then(r => r.data.map(id => parseInt(id)))
 }
 
+/**
+ *
+ * @param {array} contentIds List of content children within learning path
+ * @param {object} collection Learning path object
+ * @returns {Promise<array>} Filtered list of contentIds that are completed
+ */
+export async function getAllCompletedByIds(contentIds, collection) {
+  // TODO - implement collection filtering
+  return db.contentProgress.queryAllIds(
+    Q.whereIn('content_id', contentIds),
+    Q.where('state', STATE_COMPLETED)
+  )
+}
+
 export async function getAllStartedOrCompleted({
   onlyIds = true,
   brand = null,
