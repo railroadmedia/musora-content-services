@@ -5,6 +5,7 @@ import { HttpError } from './interfaces/HttpError'
 import { NetworkError } from './interfaces/NetworkError'
 import { DefaultHeaderProvider } from './providers/DefaultHeaderProvider'
 import { FetchRequestExecutor } from './executors/FetchRequestExecutor'
+import { Either } from '../../core/types/ads/either'
 import { globalConfig } from '../../services/config'
 
 export class HttpClient {
@@ -12,6 +13,8 @@ export class HttpClient {
   private token: string | null
   private headerProvider: HeaderProvider
   private requestExecutor: RequestExecutor
+
+  private static instance: HttpClient | null = null
 
   constructor(
     baseUrl: string,
@@ -25,28 +28,61 @@ export class HttpClient {
     this.requestExecutor = requestExecutor
   }
 
+  public static client(
+    headerProvider: HeaderProvider = new DefaultHeaderProvider(),
+    requestExecutor: RequestExecutor = new FetchRequestExecutor()
+  ): HttpClient {
+    if (!HttpClient.instance) {
+      HttpClient.instance = new HttpClient(
+        globalConfig.baseUrl,
+        globalConfig.sessionConfig.token,
+        headerProvider,
+        requestExecutor
+      )
+    }
+    return HttpClient.instance
+  }
+
   public setToken(token: string): void {
     this.token = token
   }
 
-  public async get<T>(url: string, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'GET', dataVersion)
+  public async get<T>(
+    url: string,
+    dataVersion: string | null = null
+  ): Promise<Either<HttpError, T>> {
+    return this.request<T>(url, 'get', dataVersion)
   }
 
-  public async post<T>(url: string, data: any, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'POST', dataVersion, data)
+  public async post<T>(
+    url: string,
+    data: any,
+    dataVersion: string | null = null
+  ): Promise<Either<HttpError, T>> {
+    return this.request<T>(url, 'post', dataVersion, data)
   }
 
-  public async put<T>(url: string, data: any, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'PUT', dataVersion, data)
+  public async put<T>(
+    url: string,
+    data: any,
+    dataVersion: string | null = null
+  ): Promise<Either<HttpError, T>> {
+    return this.request<T>(url, 'put', dataVersion, data)
   }
 
-  public async patch<T>(url: string, data: any, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'PATCH', dataVersion, data)
+  public async patch<T>(
+    url: string,
+    data: any,
+    dataVersion: string | null = null
+  ): Promise<Either<HttpError, T>> {
+    return this.request<T>(url, 'patch', dataVersion, data)
   }
 
-  public async delete<T>(url: string, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'DELETE', dataVersion)
+  public async delete<T>(
+    url: string,
+    dataVersion: string | null = null
+  ): Promise<Either<HttpError, T>> {
+    return this.request<T>(url, 'delete', dataVersion)
   }
 
   private async request<T>(
@@ -54,13 +90,13 @@ export class HttpClient {
     method: string,
     dataVersion: string | null = null,
     body: any = null
-  ): Promise<T> {
+  ): Promise<Either<HttpError, T>> {
     try {
       const headers = this.buildHeaders(dataVersion)
       const options = this.buildRequestOptions(method, headers, body)
       const fullUrl = this.resolveUrl(url)
 
-      return await this.requestExecutor.execute<T>(fullUrl, options)
+      return Either.right(await this.requestExecutor.execute<T>(fullUrl, options))
     } catch (error: any) {
       return this.handleError(error, url, method)
     }
@@ -105,10 +141,10 @@ export class HttpClient {
     return url.startsWith('/') ? this.baseUrl + url : url
   }
 
-  private handleError(error: any, url: string, method: string): never {
+  private handleError(error: any, url: string, method: string): Either<HttpError, never> {
     if ('status' in error) {
       // This is our formatted HTTP error from above
-      throw error as HttpError
+      return Either.left(error as HttpError)
     }
 
     // Network or other errors

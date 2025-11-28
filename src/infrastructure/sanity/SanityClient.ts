@@ -7,6 +7,7 @@ import { DefaultConfigProvider } from './providers/DefaultConfigProvider'
 import { FetchQueryExecutor } from './executors/FetchQueryExecutor'
 import { SanityListResponse } from './interfaces/SanityResponse'
 import { buildDataAndTotalQuery, BuildQueryOptions } from '../../lib/sanity/query'
+import { Either } from '../../core/types/ads/either'
 
 export class SanityClient {
   private configProvider: ConfigProvider
@@ -24,16 +25,19 @@ export class SanityClient {
   /**
    * Execute a GROQ query and return the first item in the result
    */
-  public async fetchFirst<T>(query: string, params?: Record<string, any>): Promise<T | null> {
+  public async fetchFirst<T>(
+    query: string,
+    params?: Record<string, any>
+  ): Promise<Either<SanityError, T | null>> {
     try {
       const sanityQuery: SanityQuery = { query, params }
       const response = await this.queryExecutor.execute<T[]>(sanityQuery, this.getConfig())
 
       if (response.result && Array.isArray(response.result) && response.result.length > 0) {
-        return response.result[0]
+        return Either.right(response.result[0])
       }
 
-      return null
+      return Either.right(null)
     } catch (error: any) {
       return this.handleError(error, query)
     }
@@ -42,16 +46,19 @@ export class SanityClient {
   /**
    * Execute a GROQ query and return a result as a single object
    */
-  public async fetchSingle<T>(query: string, params?: Record<string, any>): Promise<T | null> {
+  public async fetchSingle<T>(
+    query: string,
+    params?: Record<string, any>
+  ): Promise<Either<SanityError, T | null>> {
     try {
       const sanityQuery: SanityQuery = { query, params }
       const response = await this.queryExecutor.execute<T>(sanityQuery, this.getConfig())
 
       if (response.result) {
-        return response.result
+        return Either.right(response.result)
       }
 
-      return null
+      return Either.right(null)
     } catch (error: any) {
       return this.handleError(error, query)
     }
@@ -65,7 +72,7 @@ export class SanityClient {
     fields: string,
     options: BuildQueryOptions,
     params?: Record<string, any>
-  ): Promise<SanityListResponse<T>> {
+  ): Promise<Either<SanityError, SanityListResponse<T>>> {
     const query = buildDataAndTotalQuery(filter, fields, options)
     try {
       const sanityQuery: SanityQuery = { query, params }
@@ -74,7 +81,7 @@ export class SanityClient {
         this.getConfig()
       )
 
-      return response.result || { data: [], total: 0 }
+      return Either.right(response.result || { data: [], total: 0 })
     } catch (error: any) {
       return this.handleError(error, query)
     }
@@ -83,12 +90,15 @@ export class SanityClient {
   /**
    * Execute a raw GROQ query and return the full response
    */
-  public async executeQuery<T>(query: string, params?: Record<string, any>): Promise<T | null> {
+  public async executeQuery<T>(
+    query: string,
+    params?: Record<string, any>
+  ): Promise<Either<SanityError, T | null>> {
     try {
       const sanityQuery: SanityQuery = { query, params }
       const response = await this.queryExecutor.execute<T>(sanityQuery, this.getConfig())
 
-      return response.result
+      return Either.right(response.result)
     } catch (error: any) {
       return this.handleError(error, query)
     }
@@ -107,18 +117,18 @@ export class SanityClient {
   /**
    * Handle and rethrow errors
    */
-  private handleError(error: any, query: string): never {
+  private handleError(error: any, query: string): Either<SanityError, never> {
     if ('message' in error && 'query' in error) {
       // This is already a SanityError
-      throw error as SanityError
+      return Either.left(error as SanityError)
     }
 
     // Convert to SanityError
-    throw {
+    return Either.left({
       message: error.message || 'Sanity query failed',
       query,
       originalError: error,
-    } as SanityError
+    } as SanityError)
   }
 
   /**

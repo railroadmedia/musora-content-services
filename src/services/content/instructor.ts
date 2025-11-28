@@ -2,9 +2,11 @@
  * @module Instructor
  */
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
+import { Either } from '../../core/types/ads/either'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse.js'
+import { SanityError } from '../../infrastructure/sanity/interfaces/SanityError'
 import { Brands } from '../../lib/brands'
 import { DocumentTypes } from '../../lib/documents'
 import { getSortOrder } from '../../lib/sanity/query'
@@ -31,7 +33,9 @@ export interface Instructor {
  *   .then(instructors => console.log(instructors))
  *   .catch(error => console.error(error));
  */
-export async function fetchInstructors(brand: Brands): Promise<SanityListResponse<Instructor>> {
+export async function fetchInstructors(
+  brand: Brands
+): Promise<Either<SanityError, SanityListResponse<Instructor>>> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
@@ -61,7 +65,7 @@ export async function fetchInstructors(brand: Brands): Promise<SanityListRespons
 export async function fetchInstructorBySlug(
   slug: string,
   brand?: Brands
-): Promise<Instructor | null> {
+): Promise<Either<SanityError, Instructor | null>> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
     bypassPermissions: true,
@@ -121,7 +125,7 @@ export async function fetchInstructorLessons(
     limit = 20,
     includedFields = [],
   }: FetchInstructorLessonsOptions = {}
-): Promise<InstructorLessonsResponse> {
+): Promise<Either<SanityError, InstructorLessonsResponse>> {
   const fieldsString = getFieldsForContentType() as string
   const start = (page - 1) * limit
   const end = start + limit
@@ -132,9 +136,11 @@ export async function fetchInstructorLessons(
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
   sort = getSortOrder(sort, brand)
 
-  return contentClient.fetchList<Lesson>(filterWithRestrictions, fieldsString, {
-    sort,
-    start,
-    end,
-  })
+  return contentClient
+    .fetchList<Lesson>(filterWithRestrictions, fieldsString, {
+      sort,
+      start,
+      end,
+    })
+    .then((res) => res.map((r) => r || { data: [], total: 0 }))
 }

@@ -2,12 +2,14 @@
  * @module Genre
  */
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
+import { Either } from '../../core/types/ads/either'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
+import { SanityError } from '../../infrastructure/sanity/interfaces/SanityError'
 import { Brands } from '../../lib/brands'
 import { DocumentTypes } from '../../lib/documents'
-import { buildDataAndTotalQuery, getSortOrder } from '../../lib/sanity/query'
+import { getSortOrder } from '../../lib/sanity/query'
 import { Lesson } from './content'
 
 const contentClient = new ContentClient()
@@ -30,7 +32,9 @@ export interface Genre {
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenres(brand: Brands): Promise<SanityListResponse<Genre>> {
+export async function fetchGenres(
+  brand: Brands
+): Promise<Either<SanityError, SanityListResponse<Genre>>> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
@@ -57,7 +61,10 @@ export async function fetchGenres(brand: Brands): Promise<SanityListResponse<Gen
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenreBySlug(slug: string, brand?: Brands): Promise<Genre | null> {
+export async function fetchGenreBySlug(
+  slug: string,
+  brand?: Brands
+): Promise<Either<SanityError, Genre | null>> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
     bypassPermissions: true,
@@ -118,7 +125,7 @@ export async function fetchGenreLessons(
     includedFields = [],
     progressIds = [],
   }: FetchGenreLessonsOptions = {}
-): Promise<LessonsByGenreResponse> {
+): Promise<Either<SanityError, LessonsByGenreResponse>> {
   const fieldsString = getFieldsForContentType(contentType) as string
   const start = (page - 1) * limit
   const end = start + limit
@@ -131,5 +138,7 @@ export async function fetchGenreLessons(
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
   sort = getSortOrder(sort, brand)
 
-  return contentClient.fetchList<Lesson>(filterWithRestrictions, fieldsString, { sort, start, end })
+  return contentClient
+    .fetchList<Lesson>(filterWithRestrictions, fieldsString, { sort, start, end })
+    .then((res) => res.map((r) => r || { data: [], total: 0 }))
 }

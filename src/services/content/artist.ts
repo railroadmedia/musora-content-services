@@ -2,8 +2,11 @@
  * @module Artist
  */
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
+import { Either } from '../../core/types/ads/either'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
+import { SanityError } from '../../infrastructure/sanity/interfaces/SanityError'
+import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse.js'
 import { Brands } from '../../lib/brands'
 import { DocumentTypes } from '../../lib/documents'
 import { buildDataAndTotalQuery, getSortOrder } from '../../lib/sanity/query'
@@ -29,7 +32,9 @@ export interface Artist {
  *   .then(artists => console.log(artists))
  *   .catch(error => console.error(error));
  */
-export async function fetchArtists(brand: Brands): Promise<Artist[] | null> {
+export async function fetchArtists(
+  brand: Brands
+): Promise<Either<SanityError, SanityListResponse<Artist>>> {
   const filter = await new FilterBuilder(
     `_type == "song" && brand == "${brand}" && references(^._id)`,
     { bypassPermissions: true }
@@ -57,7 +62,10 @@ export async function fetchArtists(brand: Brands): Promise<Artist[] | null> {
  *   .then(artists => console.log(artists))
  *   .catch(error => console.error(error));
  */
-export async function fetchArtistBySlug(slug: string, brand?: Brands): Promise<Artist | null> {
+export async function fetchArtistBySlug(
+  slug: string,
+  brand?: Brands
+): Promise<Either<SanityError, Artist | null>> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} _type == "song" && references(^._id)`, {
     bypassPermissions: true,
@@ -118,7 +126,7 @@ export async function fetchArtistLessons(
     includedFields = [],
     progressIds = [],
   }: ArtistLessonOptions = {}
-): Promise<LessonsByArtistResponse> {
+): Promise<Either<SanityError, LessonsByArtistResponse>> {
   const fieldsString = getFieldsForContentType(contentType) as string
   const start = (page - 1) * limit
   const end = start + limit
@@ -139,5 +147,5 @@ export async function fetchArtistLessons(
 
   return contentClient
     .fetchSingle<LessonsByArtistResponse>(query)
-    .then((res) => res || { data: [], total: 0 })
+    .then((res) => res.map((r) => r || { data: [], total: 0 }))
 }
