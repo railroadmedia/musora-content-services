@@ -92,11 +92,6 @@ export interface FetchInstructorLessonsOptions {
   includedFields?: string[]
 }
 
-export interface InstructorLessonsResponse {
-  data: Lesson[]
-  total: number
-}
-
 /**
  * Fetch the data needed for the instructor screen.
  * @param {string} slug - The slug of the instructor
@@ -109,7 +104,7 @@ export interface InstructorLessonsResponse {
  * @param {number} [options.limit=10] - The number of items per page.
  * @param {Array<string>} [options.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  *
- * @returns {Promise<InstructorLessonsResponse>} - The lessons for the instructor or null if not found.
+ * @returns {Promise<Either<SanityError, SanityListResponse<Lesson>>>} - The lessons for the instructor or null if not found.
  * @example
  * fetchInstructorLessons('instructor123')
  *   .then(lessons => console.log(lessons))
@@ -126,7 +121,7 @@ export async function fetchInstructorLessons(
     limit = 20,
     includedFields = [],
   }: FetchInstructorLessonsOptions = {}
-): Promise<Either<SanityError, InstructorLessonsResponse>> {
+): Promise<Either<SanityError, SanityListResponse<Lesson>>> {
   const fieldsString = getFieldsForContentType() as string
   const start = (page - 1) * limit
   const end = start + limit
@@ -137,12 +132,10 @@ export async function fetchInstructorLessons(
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
   sort = getSortOrder(sort, brand)
 
-  return contentClient
-    .fetchList<Lesson>(filterWithRestrictions, fieldsString, {
-      sort,
-      start,
-      end,
-      paginated: false,
-    })
-    .then((res) => res.map((r) => r || { data: [], total: 0 }))
+  return contentClient.fetchList<Lesson>(filterWithRestrictions, fieldsString, {
+    sort,
+    start,
+    end,
+    paginated: false,
+  })
 }

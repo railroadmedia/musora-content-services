@@ -90,11 +90,6 @@ export interface FetchGenreLessonsOptions {
   progressIds?: Array<number>
 }
 
-export interface LessonsByGenreResponse {
-  data: Lesson[]
-  total: number
-}
-
 /**
  * Fetch the genre's lessons.
  * @param {string} slug - The slug of the genre
@@ -107,7 +102,7 @@ export interface LessonsByGenreResponse {
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  * @param {Array<number>} [params.progressIds=[]] - The ids of the lessons that are in progress or completed
- * @returns {Promise<LessonsByGenreResponse>} - The lessons for the genre
+ * @returns {Promise<Either<SanityError, SanityListResponse<Lesson>>>} - The lessons for the genre
  *
  * @example
  * fetchGenreLessons('Blues', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
@@ -126,7 +121,7 @@ export async function fetchGenreLessons(
     includedFields = [],
     progressIds = [],
   }: FetchGenreLessonsOptions = {}
-): Promise<Either<SanityError, LessonsByGenreResponse>> {
+): Promise<Either<SanityError, SanityListResponse<Lesson>>> {
   const fieldsString = getFieldsForContentType(contentType) as string
   const start = (page - 1) * limit
   const end = start + limit
@@ -139,12 +134,10 @@ export async function fetchGenreLessons(
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
   sort = getSortOrder(sort, brand)
 
-  return contentClient
-    .fetchList<Lesson>(filterWithRestrictions, fieldsString, {
-      sort,
-      start,
-      end,
-      paginated: false,
-    })
-    .then((res) => res.map((r) => r || { data: [], total: 0 }))
+  return contentClient.fetchList<Lesson>(filterWithRestrictions, fieldsString, {
+    sort,
+    start,
+    end,
+    paginated: false,
+  })
 }

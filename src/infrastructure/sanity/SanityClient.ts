@@ -81,16 +81,12 @@ export class SanityClient {
         this.getConfig()
       )
 
-      return Either.right(
-        {
-          ...response.result,
-          ...options,
-        } || {
-          data: [],
-          total: 0,
-          ...options,
-        }
-      )
+      const result = response.result ? response.result : { data: [], total: 0 }
+
+      return Either.right({
+        ...result,
+        ...options,
+      })
     } catch (error: any) {
       return this.handleError(error, query)
     }
