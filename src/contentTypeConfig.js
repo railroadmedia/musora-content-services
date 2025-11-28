@@ -497,6 +497,12 @@ export let contentTypeConfig = {
       ][0].badge.asset->url`,
     ],
     includeChildFields: true,
+    childFields: [
+      `"parent_data": parent_content_data[0] {
+        "id": id,
+        "title": *[railcontent_id == ^.id][0].title,
+    }`,
+    ],
   },
   workout: {
     fields: [artistOrInstructorNameAsArray()],

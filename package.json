@@ -1,6 +1,6 @@
 {
   "name": "musora-content-services",
-  "version": "2.89.0",
+  "version": "2.92.3",
   "description": "A package for Musoras content services ",
   "main": "src/index.js",
   "type": "module",
@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/railroadmedia/musora-content-services#readme",
   "devDependencies": {
+    "@babel/preset-env": "^7.25.3",
     "@babel/plugin-transform-class-properties": "^7.27.1",
     "@babel/plugin-transform-object-rest-spread": "^7.28.0",
     "@babel/preset-env": "^7.25.3",

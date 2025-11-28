@@ -162,6 +162,20 @@ export async function getAllCompleted(limit = null) {
   return db.contentProgress.completedIds(limit).then(r => r.data.map(id => parseInt(id)))
 }
 
+/**
+ *
+ * @param {array} contentIds List of content children within learning path
+ * @param {object} collection Learning path object
+ * @returns {Promise<array>} Filtered list of contentIds that are completed
+ */
+export async function getAllCompletedByIds(contentIds, collection) {
+  // TODO - implement collection filtering
+  return db.contentProgress.queryAllIds(
+    Q.whereIn('content_id', contentIds),
+    Q.where('state', STATE_COMPLETED)
+  )
+}
+
 export async function getAllStartedOrCompleted({
   onlyIds = true,
   brand = null,
@@ -278,7 +292,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   // (only to siblings/parents via le bubbles)
 
   const bubbledProgresses = bubbleProgress(await fetchHierarchy(contentId), contentId, collection)
-  await db.contentProgress.recordProgressesTentative(bubbledProgresses)
+  await db.contentProgress.recordProgressesTentative(bubbledProgresses, collection)
 
   return response
 }
@@ -294,8 +308,8 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
     const hierarchy = await fetchHierarchy(contentId)
 
     await Promise.all([
-      db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, collection, progress)),
-      bubbleProgress(hierarchy, contentId, collection).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses))
+      db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, collection, progress), collection),
+      bubbleProgress(hierarchy, contentId, collection).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses, collection))
     ])
   }
 
@@ -307,8 +321,8 @@ async function resetStatus(contentId, collection = null) {
   const hierarchy = await fetchHierarchy(contentId)
 
   await Promise.all([
-    db.contentProgress.recordProgressesTentative(collection, trickleProgress(hierarchy, contentId, collection, 0)),
-    bubbleProgress(hierarchy, contentId, collection).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(collection, bubbledProgresses))
+    db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, collection, 0), collection),
+    bubbleProgress(hierarchy, contentId, collection).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses, collection))
   ])
 
   return response

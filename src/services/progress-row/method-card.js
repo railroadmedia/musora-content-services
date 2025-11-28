@@ -112,5 +112,6 @@ function getMethodActionCTA(item) {
     brand: item.brand,
     id: item.id,
     slug: item.slug,
+    parent_id: item.parent_id,
   }
 }

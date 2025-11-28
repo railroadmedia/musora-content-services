@@ -70,7 +70,7 @@ const userAwardProgressTable = tableSchema({
 })
 
 export default appSchema({
-  version: 2, // Increment version for migration
+  version: 1,
   tables: [
     contentLikesTable,
     contentProgressTable,
