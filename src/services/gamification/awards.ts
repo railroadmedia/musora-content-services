@@ -32,18 +32,65 @@ export interface Certificate {
 }
 
 /**
- * Get certificate data for a completed user award
+ * Fetch certificate data for a completed award with all images converted to base64.
+ * Returns certificate information ready for rendering in a PDF or image format.
+ * All image URLs (logos, signatures, ribbons) are converted to base64 strings for offline use.
  *
- * Uses local WatermelonDB data and converts all images to base64 format
- * for certificate generation in the frontend.
+ * @param {string} awardId - Unique Sanity award ID
  *
- * @param {string} awardId - The Sanity award ID (e.g., "abc-def-123")
- * @returns {Promise<Certificate>} - The certificate data with base64-encoded images
- * @throws {Error} - If the award is not found or not completed
+ * @returns {Promise<Certificate>} Certificate object with base64-encoded images:
+ *   - award_id {string} - Sanity award ID
+ *   - user_name {string} - User's display name
+ *   - user_id {number} - User's ID
+ *   - completed_at {string} - ISO timestamp of completion
+ *   - message {string} - Certificate message for display
+ *   - type {string} - Award type (e.g., 'content-award')
+ *   - title {string} - Award title/name
+ *   - musora_logo {string} - URL to Musora logo
+ *   - musora_logo_64 {string} - Base64-encoded Musora logo
+ *   - musora_bg_logo {string} - URL to Musora background logo
+ *   - musora_bg_logo_64 {string} - Base64-encoded background logo
+ *   - brand_logo {string} - URL to brand logo
+ *   - brand_logo_64 {string} - Base64-encoded brand logo
+ *   - ribbon_image {string} - URL to ribbon decoration
+ *   - ribbon_image_64 {string} - Base64-encoded ribbon image
+ *   - award_image {string} - URL to award image
+ *   - award_image_64 {string} - Base64-encoded award image
+ *   - instructor_name {string} - Instructor's name
+ *   - instructor_signature {string|undefined} - URL to signature (if available)
+ *   - instructor_signature_64 {string|undefined} - Base64-encoded signature
+ *
+ * @throws {Error} If award is not found or not completed
+ *
+ * @example Generate certificate PDF
+ * const cert = await fetchCertificate('abc-123')
+ * generatePDF({
+ *   userName: cert.user_name,
+ *   awardTitle: cert.title,
+ *   completedAt: new Date(cert.completed_at).toLocaleDateString(),
+ *   message: cert.message,
+ *   brandLogo: `data:image/png;base64,${cert.brand_logo_64}`,
+ *   signature: cert.instructor_signature_64
+ *     ? `data:image/png;base64,${cert.instructor_signature_64}`
+ *     : null
+ * })
+ *
+ * @example Display certificate preview
+ * const cert = await fetchCertificate(awardId)
+ * return (
+ *   <CertificatePreview
+ *     userName={cert.user_name}
+ *     awardTitle={cert.title}
+ *     message={cert.message}
+ *     awardImage={`data:image/png;base64,${cert.award_image_64}`}
+ *     instructorName={cert.instructor_name}
+ *     signature={cert.instructor_signature_64}
+ *   />
+ * )
  */
 export async function fetchCertificate(awardId: string): Promise<Certificate> {
-  const { buildCertificateData } = await import('../awards/certificate-builder')
-  const { urlMapToBase64 } = await import('../awards/image-utils')
+  const { buildCertificateData } = await import('../awards/internal/certificate-builder')
+  const { urlMapToBase64 } = await import('../awards/internal/image-utils')
 
   const certData = await buildCertificateData(awardId)
 

@@ -6,41 +6,15 @@ import {
 
 import {
 	registerAwardCallback,
-	registerProgressCallback,
-	unregisterAwardCallback,
-	unregisterProgressCallback
+	registerProgressCallback
 } from './services/awards/award-callbacks.js';
 
 import {
-	getEligibleChildIds,
-	initializeAwardDefinitions
-} from './services/awards/award-definitions.js';
-
-import {
-	fetchAwardsForUser,
-	getAllUserAwardProgress,
-	getAwardForContent,
-	getAwardProgress,
 	getAwardStatistics,
-	getAwardStatusForContent,
 	getCompletedAwards,
-	getInProgressAwards,
-	getNewlyEarnedAwards,
-	hasCompletedAward
+	getContentAwards,
+	getInProgressAwards
 } from './services/awards/award-query.js';
-
-import {
-	buildCertificateData
-} from './services/awards/certificate-builder.js';
-
-import {
-	generateCompletionData
-} from './services/awards/completion-data-generator.js';
-
-import {
-	urlMapToBase64,
-	urlToBase64
-} from './services/awards/image-utils.js';
 
 import {
 	globalConfig,
@@ -456,7 +430,6 @@ export {
 	assignModeratorToComment,
 	blockUser,
 	blockedUsers,
-	buildCertificateData,
 	buildEntityAndTotalQuery,
 	buildImageSRC,
 	calculateLongestStreaks,
@@ -499,7 +472,6 @@ export {
 	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
-	fetchAwardsForUser,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -598,21 +570,16 @@ export {
 	fetchUserPractices,
 	findIncompleteLesson,
 	followThread,
-	generateCompletionData,
 	getActiveDiscussions,
 	getActivePath,
 	getAllCompleted,
 	getAllStarted,
 	getAllStartedOrCompleted,
-	getAllUserAwardProgress,
-	getAwardForContent,
-	getAwardProgress,
 	getAwardStatistics,
-	getAwardStatusForContent,
 	getCompletedAwards,
+	getContentAwards,
 	getContentRows,
 	getDailySession,
-	getEligibleChildIds,
 	getEnrichedLearningPath,
 	getInProgressAwards,
 	getLastInteractedOf,
@@ -624,7 +591,6 @@ export {
 	getNavigateTo,
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
-	getNewlyEarnedAwards,
 	getOnboardingRecommendedContent,
 	getOwnedContent,
 	getPracticeNotes,
@@ -652,8 +618,6 @@ export {
 	getWeekNumber,
 	globalConfig,
 	guidedCourses,
-	hasCompletedAward,
-	initializeAwardDefinitions,
 	initializeService,
 	isBucketUrl,
 	isContentLiked,
@@ -738,8 +702,6 @@ export {
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
-	unregisterAwardCallback,
-	unregisterProgressCallback,
 	updateDailySession,
 	updateDisplayName,
 	updateForumCategory,
@@ -753,8 +715,6 @@ export {
 	upgradeSubscription,
 	uploadPicture,
 	uploadPictureFromS3,
-	urlMapToBase64,
-	urlToBase64,
 	userOnboardingForBrand,
 	verifyImageSRC,
 	verifyLocalDataContext,

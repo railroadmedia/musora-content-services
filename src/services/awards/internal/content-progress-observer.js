@@ -1,7 +1,12 @@
+/**
+ * 
+ */
+
 import { Q } from '@nozbe/watermelondb'
 import { awardManager } from './award-manager'
 import { awardDefinitions } from './award-definitions'
-import { onProgressSaved } from '../progress-events'
+import { onProgressSaved } from '../../progress-events'
+
 
 class ContentProgressObserver {
   constructor() {
@@ -145,5 +150,6 @@ class ContentProgressObserver {
     this.isObserving = false
   }
 }
+
 
 export const contentProgressObserver = new ContentProgressObserver()

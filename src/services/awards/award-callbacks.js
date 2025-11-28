@@ -1,13 +1,53 @@
-import { awardEvents } from './award-events'
-import { awardDefinitions } from './award-definitions'
+/**
+ * @module Awards
+ */
+
+import { awardEvents } from './internal/award-events'
 
 let awardGrantedCallback = null
 let progressUpdateCallback = null
 
 /**
- * Register a callback for when awards are granted
- * @param {Function} callback - Called with Award object when user earns an award
- * @returns {Function} Cleanup function to unregister
+ * Register a callback function to be notified when the user earns a new award.
+ * The callback receives an award object with completion data, badge URLs, and practice statistics.
+ * Returns a cleanup function to unregister the callback when no longer needed.
+ *
+ * @param {Function} callback - Function called with award data when an award is earned.
+ *   Receives an award object with properties:
+ *   - awardId {string} - Unique Sanity award ID
+ *   - name {string} - Display name of the award
+ *   - badge {string} - URL to badge image
+ *   - completed_at {string} - ISO timestamp of completion
+ *   - completion_data {Object} - Practice statistics
+ *     - completed_at {string} - ISO timestamp
+ *     - days_user_practiced {number} - Days spent practicing
+ *     - practice_minutes {number} - Total practice time in minutes
+ *     - content_title {string} - Title of completed content
+ *     - message {string} - Congratulations message
+ *
+ * @returns {Function} Cleanup function to unregister this callback
+ *
+ * @example Display award notification
+ * const cleanup = registerAwardCallback((award) => {
+ *   showNotification({
+ *     title: award.name,
+ *     message: award.completion_data.message,
+ *     image: award.badge
+ *   })
+ * })
+ *
+ * // Later, when component unmounts:
+ * cleanup()
+ *
+ * @example Track award analytics
+ * registerAwardCallback((award) => {
+ *   analytics.track('Award Earned', {
+ *     awardId: award.awardId,
+ *     awardName: award.name,
+ *     practiceMinutes: award.completion_data.practice_minutes,
+ *     completedAt: award.completed_at
+ *   })
+ * })
  */
 export function registerAwardCallback(callback) {
   if (typeof callback !== 'function') {
@@ -41,10 +81,7 @@ export function registerAwardCallback(callback) {
   return unregisterAwardCallback
 }
 
-/**
- * Unregister the award granted callback
- */
-export function unregisterAwardCallback() {
+function unregisterAwardCallback() {
   if (awardGrantedCallback) {
     awardEvents.off('awardGranted', awardGrantedCallback)
     awardGrantedCallback = null
@@ -52,9 +89,38 @@ export function unregisterAwardCallback() {
 }
 
 /**
- * Register a callback for award progress updates
- * @param {Function} callback - Called with { awardId, progressPercentage }
- * @returns {Function} Cleanup function to unregister
+ * Register a callback function to be notified when award progress updates.
+ * Use this to display progress bars or update UI as the user completes content toward an award.
+ * Returns a cleanup function to unregister the callback when no longer needed.
+ *
+ * @param {Function} callback - Function called with progress data when award progress changes.
+ *   Receives an object with properties:
+ *   - awardId {string} - Unique Sanity award ID
+ *   - progressPercentage {number} - Completion percentage (0-100)
+ *
+ * @returns {Function} Cleanup function to unregister this callback
+ *
+ * @example Update progress bar
+ * const cleanup = registerProgressCallback(({ awardId, progressPercentage }) => {
+ *   const progressBar = document.getElementById(`award-${awardId}`)
+ *   if (progressBar) {
+ *     progressBar.style.width = `${progressPercentage}%`
+ *     progressBar.textContent = `${progressPercentage}% Complete`
+ *   }
+ * })
+ *
+ * // Cleanup on unmount
+ * return () => cleanup()
+ *
+ * @example React state update
+ * useEffect(() => {
+ *   return registerProgressCallback(({ awardId, progressPercentage }) => {
+ *     setAwardProgress(prev => ({
+ *       ...prev,
+ *       [awardId]: progressPercentage
+ *     }))
+ *   })
+ * }, [])
  */
 export function registerProgressCallback(callback) {
   if (typeof callback !== 'function') {
@@ -75,10 +141,7 @@ export function registerProgressCallback(callback) {
   return unregisterProgressCallback
 }
 
-/**
- * Unregister the progress update callback
- */
-export function unregisterProgressCallback() {
+function unregisterProgressCallback() {
   if (progressUpdateCallback) {
     awardEvents.off('awardProgress', progressUpdateCallback)
     progressUpdateCallback = null

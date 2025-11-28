@@ -1,13 +1,21 @@
+/**
+ * @module Awards
+ */
+
+
 import { AWARD_ASSETS } from '../../constants/award-assets'
 import { AwardMessageGenerator } from './message-generator'
-import { globalConfig } from '../config'
+import { globalConfig } from '../../config'
 import { awardManager } from './award-manager'
 
-/** @returns {Promise<import('./types').CertificateData>} */
+/**
+ * 
+ * @returns {Promise<import('./types').CertificateData>}
+ */
 export async function buildCertificateData(awardId) {
   const { awardDefinitions } = await import('./award-definitions')
-  const { getUserData } = await import('../user/management')
-  const db = await import('../sync/repository-proxy')
+  const { getUserData } = await import('../../user/management')
+  const db = await import('../../sync/repository-proxy')
 
   const awardDef = await awardDefinitions.getById(awardId)
 

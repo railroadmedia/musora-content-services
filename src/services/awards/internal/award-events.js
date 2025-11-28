@@ -1,35 +1,15 @@
 /**
+ * 
  * Event-driven system for award notifications
  * Allows frontend to display popups and UI updates when awards are earned
  */
 
-/**
- * @typedef {Object} AwardGrantedPayload
- * @property {string} awardId - Award ID
- * @property {import('./types').AwardDefinition} definition - Award definition from Sanity
- * @property {import('./types').CompletionData} completionData - Completion metrics
- * @property {string} popupMessage - Client-generated popup message
- * @property {number} timestamp - Event timestamp
- */
 
-/**
- * @typedef {Object} AwardProgressPayload
- * @property {string} awardId - Award ID
- * @property {number} progressPercentage - Progress percentage (0-100)
- * @property {number} timestamp - Event timestamp
- */
+/**  @typedef {Object} AwardGrantedPayload */
+/**  @typedef {Object} AwardProgressPayload */
+/**  @callback AwardGrantedListener */
+/**  @callback AwardProgressListener */
 
-/**
- * @callback AwardGrantedListener
- * @param {AwardGrantedPayload} payload
- * @returns {void}
- */
-
-/**
- * @callback AwardProgressListener
- * @param {AwardProgressPayload} payload
- * @returns {void}
- */
 
 class AwardEventsService {
   constructor() {
@@ -138,8 +118,7 @@ class AwardEventsService {
   }
 }
 
-// Singleton instance
+
 export const awardEvents = new AwardEventsService()
 
-// Export types for documentation
 export default {}

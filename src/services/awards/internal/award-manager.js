@@ -1,8 +1,12 @@
+/**
+ * 
+ */
+
 import { awardDefinitions, getEligibleChildIds } from './award-definitions'
 import { awardEvents } from './award-events'
 import { generateCompletionData } from './completion-data-generator'
 import { AwardMessageGenerator } from './message-generator'
-import db from '../sync/repository-proxy'
+import db from '../../sync/repository-proxy'
 import { Q } from '@nozbe/watermelondb'
 
 async function getCompletionStates(contentIds) {
@@ -18,6 +22,7 @@ async function getCompletionStates(contentIds) {
     })
   )
 }
+
 
 export class AwardManager {
   async onContentCompleted(contentId) {
@@ -179,5 +184,6 @@ export class AwardManager {
     awardDefinitions.clear()
   }
 }
+
 
 export const awardManager = new AwardManager()

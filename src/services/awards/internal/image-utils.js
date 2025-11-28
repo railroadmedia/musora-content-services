@@ -1,7 +1,12 @@
 /**
- * Convert image URL to base64 string
- * @param {string} url - Image URL
- * @returns {Promise<string>} Base64-encoded image (without data URI prefix)
+ * @module Awards
+ */
+
+
+/**
+ * 
+ * @param {string} url
+ * @returns {Promise<string>}
  */
 export async function urlToBase64(url) {
   try {
@@ -41,9 +46,9 @@ export async function urlToBase64(url) {
 }
 
 /**
- * Convert multiple image URLs to base64 in parallel
- * @param {Object<string, string>} urlMap - Object with keys as field names and values as URLs
- * @returns {Promise<Object<string, string>>} Object with same keys and base64 values
+ * 
+ * @param {Object<string, string>} urlMap
+ * @returns {Promise<Object<string, string>>}
  */
 export async function urlMapToBase64(urlMap) {
   const entries = Object.entries(urlMap)

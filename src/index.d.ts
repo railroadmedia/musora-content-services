@@ -2,41 +2,15 @@
 
 import {
 	registerAwardCallback,
-	registerProgressCallback,
-	unregisterAwardCallback,
-	unregisterProgressCallback
+	registerProgressCallback
 } from './services/awards/award-callbacks.js';
 
 import {
-	getEligibleChildIds,
-	initializeAwardDefinitions
-} from './services/awards/award-definitions.js';
-
-import {
-	fetchAwardsForUser,
-	getAllUserAwardProgress,
-	getAwardForContent,
-	getAwardProgress,
 	getAwardStatistics,
-	getAwardStatusForContent,
 	getCompletedAwards,
-	getInProgressAwards,
-	getNewlyEarnedAwards,
-	hasCompletedAward
+	getContentAwards,
+	getInProgressAwards
 } from './services/awards/award-query.js';
-
-import {
-	buildCertificateData
-} from './services/awards/certificate-builder.js';
-
-import {
-	generateCompletionData
-} from './services/awards/completion-data-generator.js';
-
-import {
-	urlMapToBase64,
-	urlToBase64
-} from './services/awards/image-utils.js';
 
 import {
 	globalConfig,
@@ -457,7 +431,6 @@ declare module 'musora-content-services' {
 		assignModeratorToComment,
 		blockUser,
 		blockedUsers,
-		buildCertificateData,
 		buildEntityAndTotalQuery,
 		buildImageSRC,
 		calculateLongestStreaks,
@@ -500,7 +473,6 @@ declare module 'musora-content-services' {
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
-		fetchAwardsForUser,
 		fetchByRailContentId,
 		fetchByRailContentIds,
 		fetchByReference,
@@ -599,21 +571,16 @@ declare module 'musora-content-services' {
 		fetchUserPractices,
 		findIncompleteLesson,
 		followThread,
-		generateCompletionData,
 		getActiveDiscussions,
 		getActivePath,
 		getAllCompleted,
 		getAllStarted,
 		getAllStartedOrCompleted,
-		getAllUserAwardProgress,
-		getAwardForContent,
-		getAwardProgress,
 		getAwardStatistics,
-		getAwardStatusForContent,
 		getCompletedAwards,
+		getContentAwards,
 		getContentRows,
 		getDailySession,
-		getEligibleChildIds,
 		getEnrichedLearningPath,
 		getInProgressAwards,
 		getLastInteractedOf,
@@ -625,7 +592,6 @@ declare module 'musora-content-services' {
 		getNavigateTo,
 		getNavigateToForPlaylists,
 		getNewAndUpcoming,
-		getNewlyEarnedAwards,
 		getOnboardingRecommendedContent,
 		getOwnedContent,
 		getPracticeNotes,
@@ -653,8 +619,6 @@ declare module 'musora-content-services' {
 		getWeekNumber,
 		globalConfig,
 		guidedCourses,
-		hasCompletedAward,
-		initializeAwardDefinitions,
 		initializeService,
 		isBucketUrl,
 		isContentLiked,
@@ -739,8 +703,6 @@ declare module 'musora-content-services' {
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,
-		unregisterAwardCallback,
-		unregisterProgressCallback,
 		updateDailySession,
 		updateDisplayName,
 		updateForumCategory,
@@ -754,8 +716,6 @@ declare module 'musora-content-services' {
 		upgradeSubscription,
 		uploadPicture,
 		uploadPictureFromS3,
-		urlMapToBase64,
-		urlToBase64,
 		userOnboardingForBrand,
 		verifyImageSRC,
 		verifyLocalDataContext,

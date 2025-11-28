@@ -1,5 +1,10 @@
-/** @typedef {Map<string, import('./types').AwardDefinition>} AwardDefinitionsMap */
-/** @typedef {Map<number, string[]>} ContentToAwardsMap */
+/**
+ * @module Awards
+ */
+
+
+/**  @typedef {Map} AwardDefinitionsMap */
+/**  @typedef {Map} ContentToAwardsMap */
 
 const STORAGE_KEY = 'musora_award_definitions_last_fetch'
 
@@ -212,12 +217,22 @@ class AwardDefinitionsService {
   }
 }
 
+
 export const awardDefinitions = new AwardDefinitionsService()
 
+/**
+ * 
+ * @returns {Promise<void>}
+ */
 export async function initializeAwardDefinitions() {
   await awardDefinitions.initialize()
 }
 
+/**
+ * 
+ * @param {import('./types').AwardDefinition} award
+ * @returns {number[]}
+ */
 export function getEligibleChildIds(award) {
   const childIds = award.child_ids || []
   return (award.has_kickoff && childIds.length > 0)

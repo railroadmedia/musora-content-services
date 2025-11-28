@@ -1,13 +1,19 @@
+/**
+ * @module Awards
+ */
+
+
 import { Q } from '@nozbe/watermelondb'
 
 /**
- * @param {string} awardId - Award ID
- * @param {number} courseContentId - Course content ID
- * @returns {Promise<import('./types').CompletionData>} Completion data
+ * 
+ * @param {string} awardId
+ * @param {number} courseContentId
+ * @returns {Promise<import('./types').CompletionData>}
  */
 export async function generateCompletionData(awardId, courseContentId) {
   const { awardDefinitions } = await import('./award-definitions')
-  const db = await import('../sync/repository-proxy')
+  const db = await import('../../sync/repository-proxy')
 
   const awardDef = await awardDefinitions.getById(awardId)
 
@@ -34,10 +40,10 @@ export async function generateCompletionData(awardId, courseContentId) {
 }
 
 /**
- * Calculate days between first lesson start and now
- * @param {number[]} contentIds - Array of content IDs
- * @param {any} db - Database repository proxy
- * @returns {Promise<number>} Days practiced
+ * 
+ * @param {number[]} contentIds
+ * @param {any} db
+ * @returns {Promise<number>}
  */
 async function calculateDaysUserPracticed(contentIds, db) {
   if (contentIds.length === 0) return 0
@@ -68,6 +74,7 @@ async function calculateDaysUserPracticed(contentIds, db) {
 }
 
 /**
+ * 
  * Calculate total practice minutes from WatermelonDB practice sessions
  * @param {number[]} contentIds - Array of content IDs
  * @param {any} db - Database repository proxy
@@ -89,6 +96,7 @@ async function calculatePracticeMinutes(contentIds, db) {
 }
 
 /**
+ * 
  * Generate display title from award name
  * "Complete Blues Foundations Course" → "Blues Foundations"
  * @param {string} awardName - Award name from Sanity

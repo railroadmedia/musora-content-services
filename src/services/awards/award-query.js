@@ -1,28 +1,42 @@
-import { awardDefinitions, getEligibleChildIds } from './award-definitions'
+/**
+ * @module Awards
+ */
+
+import { awardDefinitions } from './internal/award-definitions'
 import db from '../sync/repository-proxy'
 
 /**
- * @typedef {Object} AwardStatus
- * @property {string} awardId
- * @property {string} awardTitle
- * @property {string} badge
- * @property {string} award
- * @property {string} brand
- * @property {string} instructorName
- * @property {number} progressPercentage
- * @property {boolean} isCompleted
- * @property {string | null} completedAt
- * @property {any} [completionData]
+ * Get all awards for a content item with their current progress.
+ * Returns whether awards exist and an array of award status objects.
+ * Use this on content detail pages to show award progress and badges.
+ *
+ * @param {number} contentId - Railcontent ID of the content item
+ * @returns {Promise<Object>} Status object with award information
+ *
+ * @example Check if content has awards
+ * const { hasAwards, awards } = await getContentAwards(234567)
+ * if (hasAwards) {
+ *   awards.forEach(award => {
+ *     console.log(`${award.awardTitle}: ${award.progressPercentage}%`)
+ *   })
+ * }
+ *
+ * @example Display award progress on course page
+ * const { awards } = await getContentAwards(courseId)
+ * return (
+ *   <div>
+ *     {awards.map(award => (
+ *       <AwardProgressBar
+ *         key={award.awardId}
+ *         title={award.awardTitle}
+ *         progress={award.progressPercentage}
+ *         badge={award.isCompleted ? award.badge : null}
+ *       />
+ *     ))}
+ *   </div>
+ * )
  */
-
-/**
- * @typedef {Object} ContentAwardStatus
- * @property {boolean} hasAwards
- * @property {AwardStatus[]} awards
- */
-
-/** @returns {Promise<ContentAwardStatus>} */
-export async function getAwardStatusForContent(contentId) {
+export async function getContentAwards(contentId) {
   try {
     const hasAwards = await awardDefinitions.hasAwards(contentId)
 
@@ -67,101 +81,62 @@ export async function getAwardStatusForContent(contentId) {
   }
 }
 
-/** @returns {Promise<{progressPercentage: number, isCompleted: boolean, completedAt: string | null, completionData?: any} | null>} */
-export async function getAwardProgress(awardId) {
-  try {
-    const result = await db.userAwardProgress.getByAwardId(awardId)
-
-    if (!result.data) {
-      return null
-    }
-
-    return {
-      progressPercentage: result.data.progress_percentage,
-      isCompleted: result.data.progress_percentage === 100 && result.data.completed_at !== null,
-      completedAt: result.data.completed_at
-        ? new Date(result.data.completed_at * 1000).toISOString()
-        : null,
-      completionData: result.data.completion_data
-    }
-  } catch (error) {
-    console.error(`Failed to get award progress for ${awardId}:`, error)
-    return null
-  }
-}
-
-/** @returns {Promise<AwardStatus[]>} */
-export async function getAllUserAwardProgress(brand = null, options = {}) {
-  try {
-    const result = await db.userAwardProgress.getAll({
-      onlyCompleted: options?.onlyCompleted,
-      limit: options?.limit
-    })
-
-    const awards = await Promise.all(
-      result.data.map(async (progress) => {
-        const definition = await awardDefinitions.getById(progress.award_id)
-
-        if (!definition) {
-          return null
-        }
-
-        if (brand && definition.brand !== brand) {
-          return null
-        }
-
-        return {
-          awardId: progress.award_id,
-          awardTitle: definition.name,
-          badge: definition.badge,
-          award: definition.award,
-          brand: definition.brand,
-          instructorName: definition.instructor_name,
-          progressPercentage: progress.progress_percentage,
-          isCompleted: progress.progress_percentage === 100 && progress.completed_at !== null,
-          completedAt: progress.completed_at
-            ? new Date(progress.completed_at * 1000).toISOString()
-            : null,
-          completionData: progress.completion_data
-        }
-      })
-    )
-
-    return awards.filter(award => award !== null)
-  } catch (error) {
-    console.error('Failed to get all user award progress:', error)
-    return []
-  }
-}
-
-/** @returns {Promise<AwardStatus[]>} */
+/**
+ * Get all completed awards for the current user, sorted by completion date (newest first).
+ * Supports brand filtering and pagination. Only returns awards that are 100% complete
+ * with a completion timestamp. Use this for awards collection pages and profile displays.
+ *
+ * @param {string} [brand=null] - Brand to filter by (drumeo, pianote, guitareo, singeo), or null for all brands
+ * @param {Object} [options={}] - Optional pagination and filtering:
+ *   - limit {number} - Maximum number of results to return
+ *   - offset {number} - Number of results to skip for pagination (default: 0)
+ * @returns {Promise<Object[]>} Array of completed award objects sorted by completion date
+ *
+ * @example Display completed awards gallery
+ * const awards = await getCompletedAwards()
+ * return (
+ *   <AwardsGallery>
+ *     <h2>My Achievements ({awards.length})</h2>
+ *     {awards.map(award => (
+ *       <Badge
+ *         key={award.awardId}
+ *         image={award.badge}
+ *         title={award.awardTitle}
+ *         date={new Date(award.completedAt).toLocaleDateString()}
+ *       />
+ *     ))}
+ *   </AwardsGallery>
+ * )
+ *
+ * @example Paginated awards list
+ * const [page, setPage] = useState(0)
+ * const pageSize = 12
+ * const awards = await getCompletedAwards('drumeo', {
+ *   limit: pageSize,
+ *   offset: page * pageSize
+ * })
+ *
+ * @example Filter by brand
+ * const pianoAwards = await getCompletedAwards('pianote')
+ * console.log(`You've earned ${pianoAwards.length} piano awards!`)
+ */
 export async function getCompletedAwards(brand = null, options = {}) {
   try {
     const allProgress = await db.userAwardProgress.getAll()
-    console.log('[getCompletedAwards] Total progress records:', allProgress.data?.length || 0)
-    if (allProgress.data?.length > 0) {
-      console.log('[getCompletedAwards] Sample record:', JSON.stringify(allProgress.data[0]))
-    }
 
     const completed = allProgress.data.filter(p =>
       p.progress_percentage === 100 && p.completed_at !== null
     )
-    console.log('[getCompletedAwards] Completed awards after filter:', completed.length)
-    if (completed.length > 0) {
-      console.log('[getCompletedAwards] Sample completed record:', JSON.stringify(completed[0]))
-    }
 
     let awards = await Promise.all(
       completed.map(async (progress) => {
         const definition = await awardDefinitions.getById(progress.award_id)
 
         if (!definition) {
-          console.log('[getCompletedAwards] No definition found for award_id:', progress.award_id)
           return null
         }
 
         if (brand && definition.brand !== brand) {
-          console.log('[getCompletedAwards] Brand mismatch - wanted:', brand, 'got:', definition.brand)
           return null
         }
 
@@ -181,18 +156,14 @@ export async function getCompletedAwards(brand = null, options = {}) {
     )
 
     awards = awards.filter(award => award !== null)
-    console.log('[getCompletedAwards] Awards after filtering nulls:', awards.length)
 
     awards.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
 
     if (options.limit) {
       const offset = options.offset || 0
-      console.log('[getCompletedAwards] Applying pagination - offset:', offset, 'limit:', options.limit, 'before slice:', awards.length)
       awards = awards.slice(offset, offset + options.limit)
-      console.log('[getCompletedAwards] After slice:', awards.length)
     }
 
-    console.log('[getCompletedAwards] Returning', awards.length, 'awards')
     return awards
   } catch (error) {
     console.error('Failed to get completed awards:', error)
@@ -200,7 +171,46 @@ export async function getCompletedAwards(brand = null, options = {}) {
   }
 }
 
-/** @returns {Promise<AwardStatus[]>} */
+/**
+ * Get all in-progress awards for the current user, sorted by progress percentage (highest first).
+ * Returns awards that have been started but not yet completed. Use this to show users
+ * what they're currently working toward and encourage completion.
+ *
+ * @param {string} [brand=null] - Brand to filter by (drumeo, pianote, guitareo, singeo), or null for all brands
+ * @param {Object} [options={}] - Optional pagination options:
+ *   - limit {number} - Maximum number of results to return
+ *   - offset {number} - Number of results to skip for pagination (default: 0)
+ * @returns {Promise<Object[]>} Array of in-progress award objects sorted by progress
+ *
+ * @example Display in-progress awards dashboard
+ * const inProgress = await getInProgressAwards()
+ * return (
+ *   <div>
+ *     <h2>Keep Going! ({inProgress.length})</h2>
+ *     {inProgress.map(award => (
+ *       <ProgressCard
+ *         key={award.awardId}
+ *         title={award.awardTitle}
+ *         progress={award.progressPercentage}
+ *         badge={award.badge}
+ *       />
+ *     ))}
+ *   </div>
+ * )
+ *
+ * @example Show closest to completion
+ * const inProgress = await getInProgressAwards(null, { limit: 3 })
+ * console.log('Awards closest to completion:')
+ * inProgress.forEach(award => {
+ *   console.log(`${award.awardTitle}: ${award.progressPercentage}% complete`)
+ * })
+ *
+ * @example Filter by brand with pagination
+ * const guitarAwards = await getInProgressAwards('guitareo', {
+ *   limit: 10,
+ *   offset: 0
+ * })
+ */
 export async function getInProgressAwards(brand = null, options = {}) {
   try {
     const allProgress = await db.userAwardProgress.getAll()
@@ -251,17 +261,29 @@ export async function getInProgressAwards(brand = null, options = {}) {
   }
 }
 
-/** @returns {Promise<boolean>} */
-export async function hasCompletedAward(awardId) {
-  try {
-    return await db.userAwardProgress.hasCompletedAward(awardId)
-  } catch (error) {
-    console.error(`Failed to check if award ${awardId} is completed:`, error)
-    return false
-  }
-}
-
-/** @returns {Promise<{totalAvailable: number, completed: number, inProgress: number, notStarted: number, completionPercentage: number}>} */
+/**
+ * Get overall statistics about user's award progress across all or specific brand.
+ * Returns counts for total available, completed, in-progress, and not started awards,
+ * plus an overall completion percentage. Use this for dashboard widgets and stats pages.
+ *
+ * @param {string} [brand=null] - Brand to filter by (drumeo, pianote, guitareo, singeo), or null for all brands
+ * @returns {Promise<Object>} Statistics object with award counts and completion percentage
+ *
+ * @example Display stats widget
+ * const stats = await getAwardStatistics('drumeo')
+ * return (
+ *   <StatsWidget>
+ *     <Stat label="Earned" value={stats.completed} />
+ *     <Stat label="In Progress" value={stats.inProgress} />
+ *     <Stat label="Completion" value={`${stats.completionPercentage}%`} />
+ *   </StatsWidget>
+ * )
+ *
+ * @example Progress bar
+ * const stats = await getAwardStatistics()
+ * console.log(`${stats.completed}/${stats.totalAvailable} awards earned`)
+ * console.log(`${stats.completionPercentage}% complete`)
+ */
 export async function getAwardStatistics(brand = null) {
   try {
     let allDefinitions = await awardDefinitions.getAll()
@@ -303,164 +325,3 @@ export async function getAwardStatistics(brand = null) {
     }
   }
 }
-
-/**
- * Get awards that were newly earned by completing this content
- * Call this after contentStatusCompleted() to get newly earned awards
- * @param {number} contentId - Content ID that was just completed
- * @returns {Promise<Array>} Array of newly earned Award objects
- */
-export async function getNewlyEarnedAwards(contentId) {
-  try {
-    const definitions = await awardDefinitions.getByContentId(contentId)
-
-    if (!definitions || definitions.length === 0) {
-      return []
-    }
-
-    const newlyCompletedAwards = []
-    const { awardManager } = await import('./award-manager')
-
-    for (const definition of definitions) {
-      const awardId = definition._id
-
-      const wasAlreadyCompleted = await db.userAwardProgress.hasCompletedAward(awardId)
-      if (wasAlreadyCompleted) {
-        continue
-      }
-
-      const isEligible = await awardManager.isEligibleForAward(awardId, contentId)
-      if (!isEligible) {
-        continue
-      }
-
-      await awardManager.grantAward(awardId, contentId)
-
-      const progressResult = await db.userAwardProgress.getByAwardId(awardId)
-      const progress = progressResult.data
-
-      if (progress && progress.isCompleted) {
-        newlyCompletedAwards.push({
-          awardId: awardId,
-          name: definition.name,
-          badge: definition.badge,
-          completed_at: new Date(progress.completed_at * 1000).toISOString(),
-          completion_data: progress.completion_data
-        })
-      }
-    }
-
-    return newlyCompletedAwards
-  } catch (error) {
-    console.error('Error checking for new awards:', error)
-    return []
-  }
-}
-
-/**
- * @deprecated Use getNewlyEarnedAwards instead
- */
-export const checkForNewAwards = getNewlyEarnedAwards
-
-/**
- * Fetch user's awards from ALL brands with pagination
- * @param {number} userId - User ID (not currently used but kept for API compatibility)
- * @param {number} page - Page number (1-indexed)
- * @param {number} limit - Number of awards per page
- * @returns {Promise<{data: Array}>} Paginated award data from all brands
- */
-export async function fetchAwardsForUser(userId, page = 1, limit = 15) {
-  try {
-    console.log('[fetchAwardsForUser] Called with userId:', userId, 'page:', page, 'limit:', limit)
-    const offset = (page - 1) * limit
-    const awards = await getCompletedAwards(null, { limit, offset })
-    console.log('[fetchAwardsForUser] Received', awards.length, 'awards from getCompletedAwards')
-
-    const result = {
-      data: awards.map(award => ({
-        awardId: award.awardId,
-        name: award.awardTitle,
-        badge: award.badge,
-        brand: award.brand,
-        completed_at: award.completedAt,
-        completion_data: award.completionData ? {
-          completed_at: award.completedAt,
-          days_user_practiced: award.completionData.days_user_practiced || 0,
-          message: `Great job completing ${award.completionData.content_title || 'this content'}!`,
-          practice_minutes: award.completionData.practice_minutes || 0,
-          content_title: award.completionData.content_title || ''
-        } : undefined
-      }))
-    }
-    console.log('[fetchAwardsForUser] Returning', result.data.length, 'awards')
-    return result
-  } catch (error) {
-    console.error('Error in fetchAwardsForUser:', error)
-    return { data: [] }
-  }
-}
-
-/**
- * Get award data for any content (courses, learning paths, etc)
- * @param {number} contentId - Content ID
- * @returns {Promise<Object|null>} Award object with completion or incompletion data
- */
-export async function getAwardForContent(contentId) {
-  try {
-    const { hasAwards, awards } = await getAwardStatusForContent(contentId)
-
-    if (!hasAwards || awards.length === 0) {
-      return null
-    }
-
-    const award = awards[0]
-    const awardDefinition = await awardDefinitions.getById(award.awardId)
-
-    if (!awardDefinition) {
-      return null
-    }
-
-    const baseAward = {
-      awardId: award.awardId,
-      name: award.awardTitle,
-      badge: award.badge,
-      completed_at: award.completedAt
-    }
-
-    if (award.isCompleted && award.completionData) {
-      return {
-        ...baseAward,
-        completion_data: {
-          completed_at: award.completedAt,
-          days_user_practiced: award.completionData.days_user_practiced || 0,
-          message: `Great job completing ${award.completionData.content_title || 'this content'}!`,
-          practice_minutes: award.completionData.practice_minutes || 0,
-          content_title: award.completionData.content_title || awardDefinition.name
-        }
-      }
-    }
-
-    const childIds = getEligibleChildIds(awardDefinition)
-
-    const totalLessons = childIds.length
-    const completedLessons = Math.round((award.progressPercentage / 100) * totalLessons)
-    const incompleteLessons = totalLessons - completedLessons
-
-    return {
-      ...baseAward,
-      incompletion_data: {
-        content_title: awardDefinition.name,
-        incomplete_lessons: incompleteLessons > 0 ? incompleteLessons : 0
-      }
-    }
-  } catch (error) {
-    console.error('Error in getAwardDataForGuidedContent:', error)
-    return null
-  }
-}
-
-export { buildCertificateData } from './certificate-builder'
-export { awardManager, AwardManager } from './award-manager'
-export { awardEvents } from './award-events'
-export { awardDefinitions } from './award-definitions'
-export { contentProgressObserver } from './content-progress-observer'
