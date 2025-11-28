@@ -81,7 +81,7 @@ export async function fetchInstructorBySlug(
       "lessonCount": count(*[${filter}])
     }
   `
-  return contentClient.fetchFirst<Instructor>(query)
+  return contentClient.fetchSingle<Instructor>(query)
 }
 
 export interface FetchInstructorLessonsOptions {

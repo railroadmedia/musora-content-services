@@ -78,7 +78,7 @@ export async function fetchGenreBySlug(
     'thumbnail':thumbnail_url.asset->url,
     "lessonsCount": count(*[${filter}])
   }`
-  return contentClient.fetchFirst<Genre>(query)
+  return contentClient.fetchSingle<Genre>(query)
 }
 
 export interface FetchGenreLessonsOptions {

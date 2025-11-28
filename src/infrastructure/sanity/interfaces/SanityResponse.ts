@@ -10,5 +10,5 @@ export interface SanityListResponse<T = any> {
   sort?: string
   start?: number
   end?: number
-  pagination?: boolean
+  paginated?: boolean
 }

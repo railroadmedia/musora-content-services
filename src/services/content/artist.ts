@@ -9,7 +9,7 @@ import { SanityError } from '../../infrastructure/sanity/interfaces/SanityError'
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse.js'
 import { Brands } from '../../lib/brands'
 import { DocumentTypes } from '../../lib/documents'
-import { buildDataAndTotalQuery, getSortOrder } from '../../lib/sanity/query'
+import { getSortOrder } from '../../lib/sanity/query'
 import { Lesson } from './content'
 
 const contentClient = new ContentClient()
@@ -79,7 +79,7 @@ export async function fetchArtistBySlug(
     }[lessonCount > 0] |order(lower(name))
   `
 
-  return contentClient.fetchFirst<Artist>(query)
+  return contentClient.fetchSingle<Artist>(query)
 }
 
 export interface ArtistLessonOptions {
@@ -140,7 +140,7 @@ export async function fetchArtistLessons(
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
   sort = getSortOrder(sort, brand)
-  const query = buildDataAndTotalQuery(filterWithRestrictions, fieldsString, {
+  return contentClient.fetchList(filterWithRestrictions, fieldsString, {
     sort,
     start: start,
     end: end,
