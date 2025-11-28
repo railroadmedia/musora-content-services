@@ -3,6 +3,7 @@ import { FetchByIdOptions } from '../interfaces/FetchByIdOptions'
 import { ConfigProvider } from '../interfaces/ConfigProvider'
 import { QueryExecutor } from '../interfaces/QueryExecutor'
 import { DocumentTypes } from '../../../lib/documents'
+import { SanityListResponse } from '../interfaces/SanityResponse'
 
 /**
  * ContentClient extends SanityClient with content-specific methods
@@ -43,10 +44,10 @@ export class ContentClient extends SanityClient {
     type?: DocumentTypes,
     brand?: string,
     fields?: string[]
-  ): Promise<T[]> {
+  ): Promise<SanityListResponse<T>> {
     try {
       if (!ids || ids.length === 0) {
-        return []
+        return { data: [], total: 0 }
       }
 
       const idsString = ids.join(',')
@@ -54,15 +55,12 @@ export class ContentClient extends SanityClient {
       const brandFilter = brand ? ` && brand == "${brand}"` : ''
       const fieldsString = this.buildFieldsString(type, fields, false)
 
-      const query = `*[railcontent_id in [${idsString}]${typeFilter}${brandFilter}]{${fieldsString}}`
+      const query = `*[railcontent_id in [${idsString}]${typeFilter}${brandFilter}]`
 
-      const results = await this.fetchList<T>(query)
-
-      // Sort results to match the order of input IDs
-      return results.sort((a: any, b: any) => {
-        const indexA = ids.indexOf(a.id || a.railcontent_id)
-        const indexB = ids.indexOf(b.id || b.railcontent_id)
-        return indexA - indexB
+      return this.fetchList<T>(query, fieldsString, {
+        sort: '-railcontent_id',
+        start: 0,
+        end: ids.length,
       })
     } catch (error: any) {
       return this.handleContentError(error, `fetchByIds([${ids.join(',')}])`)
@@ -81,15 +79,19 @@ export class ContentClient extends SanityClient {
       sortBy?: string
       fields?: string[]
     } = {}
-  ): Promise<T[]> {
+  ): Promise<SanityListResponse<T>> {
     try {
       const brandFilter = brand ? `brand == "${brand}" && ` : ''
       const { limit = 10, offset = 0, sortBy = 'published_on desc', fields } = options
       const fieldsString = this.buildFieldsString(type, fields, false)
 
-      const query = `*[${brandFilter} _type == "${type}"] | order(${sortBy})[${offset}...${offset + limit}]{${fieldsString}}`
+      const query = `*[${brandFilter} _type == "${type}"] | order(${sortBy})[${offset}...${offset + limit}]`
 
-      return await this.fetchList<T>(query)
+      return await this.fetchList<T>(query, fieldsString, {
+        sort: sortBy,
+        start: offset,
+        end: offset + limit,
+      })
     } catch (error: any) {
       return this.handleContentError(error, `fetchByBrandAndType(${brand}, ${type})`)
     }

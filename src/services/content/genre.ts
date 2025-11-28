@@ -4,6 +4,7 @@
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
+import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
 import { Brands } from '../../lib/brands'
 import { DocumentTypes } from '../../lib/documents'
 import { buildDataAndTotalQuery, getSortOrder } from '../../lib/sanity/query'
@@ -29,7 +30,7 @@ export interface Genre {
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenres(brand: Brands): Promise<Genre[]> {
+export async function fetchGenres(brand: Brands): Promise<SanityListResponse<Genre>> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
@@ -128,15 +129,7 @@ export async function fetchGenreLessons(
     progressIds.length > 0 ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
   const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='${DocumentTypes.Genre}' && slug.current == '${slug}']._id) ${progressFilter}`
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
-
   sort = getSortOrder(sort, brand)
-  const query = buildDataAndTotalQuery(filterWithRestrictions, fieldsString, {
-    sort: sort,
-    start: start,
-    end: end,
-  })
 
-  return contentClient
-    .fetchSingle<LessonsByGenreResponse>(query)
-    .then((res) => res || { data: [], total: 0 })
+  return contentClient.fetchList<Lesson>(filterWithRestrictions, fieldsString, { sort, start, end })
 }
