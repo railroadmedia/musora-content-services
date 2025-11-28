@@ -4,9 +4,10 @@
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
+import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
 import { Brands } from '../../lib/brands'
 import { DocumentTypes } from '../../lib/documents'
-import { buildDataAndTotalQuery, getSortOrder } from '../../lib/sanity/query'
+import { getSortOrder } from '../../lib/sanity/query'
 import { Lesson } from './content'
 
 const contentClient = new ContentClient()
@@ -29,7 +30,7 @@ export interface Artist {
  *   .then(artists => console.log(artists))
  *   .catch(error => console.error(error));
  */
-export async function fetchArtists(brand: Brands): Promise<Artist[] | null> {
+export async function fetchArtists(brand: Brands): Promise<SanityListResponse<Artist>> {
   const filter = await new FilterBuilder(
     `_type == "song" && brand == "${brand}" && references(^._id)`,
     { bypassPermissions: true }
@@ -42,6 +43,7 @@ export async function fetchArtists(brand: Brands): Promise<Artist[] | null> {
       `'thumbnail': thumbnail_url.asset->url`,
       `'lessonCount': count(*[${filter}])`,
     ],
+    paginated: false,
   })
 }
 
@@ -118,7 +120,7 @@ export async function fetchArtistLessons(
     includedFields = [],
     progressIds = [],
   }: ArtistLessonOptions = {}
-): Promise<LessonsByArtistResponse> {
+): Promise<SanityListResponse<Lesson>> {
   const fieldsString = getFieldsForContentType(contentType) as string
   const start = (page - 1) * limit
   const end = start + limit
@@ -131,13 +133,10 @@ export async function fetchArtistLessons(
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
   sort = getSortOrder(sort, brand)
-  const query = buildDataAndTotalQuery(filterWithRestrictions, fieldsString, {
+  return contentClient.fetchList(filterWithRestrictions, fieldsString, {
     sort,
     start: start,
     end: end,
+    paginated: false,
   })
-
-  return contentClient
-    .fetchSingle<LessonsByArtistResponse>(query)
-    .then((res) => res || { data: [], total: 0 })
 }

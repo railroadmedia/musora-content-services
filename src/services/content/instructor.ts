@@ -43,6 +43,7 @@ export async function fetchInstructors(brand: Brands): Promise<SanityListRespons
       `'thumbnail': thumbnail_url.asset->url`,
       `'lessonCount': count(*[${filter}])`,
     ],
+    paginated: false,
   })
 }
 
@@ -136,5 +137,6 @@ export async function fetchInstructorLessons(
     sort,
     start,
     end,
+    paginated: false,
   })
 }

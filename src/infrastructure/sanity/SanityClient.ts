@@ -74,7 +74,16 @@ export class SanityClient {
         this.getConfig()
       )
 
-      return response.result || { data: [], total: 0 }
+      return (
+        {
+          ...response.result,
+          ...options,
+        } || {
+          data: [],
+          total: 0,
+          ...options,
+        }
+      )
     } catch (error: any) {
       return this.handleError(error, query)
     }

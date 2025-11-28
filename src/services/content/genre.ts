@@ -7,7 +7,7 @@ import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
 import { Brands } from '../../lib/brands'
 import { DocumentTypes } from '../../lib/documents'
-import { buildDataAndTotalQuery, getSortOrder } from '../../lib/sanity/query'
+import { getSortOrder } from '../../lib/sanity/query'
 import { Lesson } from './content'
 
 const contentClient = new ContentClient()
@@ -42,6 +42,7 @@ export async function fetchGenres(brand: Brands): Promise<SanityListResponse<Gen
       `'thumbnail': thumbnail_url.asset->url`,
       `'lessons_count': count(*[${filter}])`,
     ],
+    paginated: false,
   })
 }
 
@@ -131,5 +132,10 @@ export async function fetchGenreLessons(
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
   sort = getSortOrder(sort, brand)
 
-  return contentClient.fetchList<Lesson>(filterWithRestrictions, fieldsString, { sort, start, end })
+  return contentClient.fetchList<Lesson>(filterWithRestrictions, fieldsString, {
+    sort,
+    start,
+    end,
+    paginated: false,
+  })
 }

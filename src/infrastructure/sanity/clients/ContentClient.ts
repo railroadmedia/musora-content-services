@@ -61,6 +61,7 @@ export class ContentClient extends SanityClient {
         sort: '-railcontent_id',
         start: 0,
         end: ids.length,
+        paginated: false,
       })
     } catch (error: any) {
       return this.handleContentError(error, `fetchByIds([${ids.join(',')}])`)
@@ -78,19 +79,27 @@ export class ContentClient extends SanityClient {
       offset?: number
       sortBy?: string
       fields?: string[]
+      paginated?: boolean
     } = {}
   ): Promise<SanityListResponse<T>> {
     try {
       const brandFilter = brand ? `brand == "${brand}" && ` : ''
-      const { limit = 10, offset = 0, sortBy = 'published_on desc', fields } = options
+      const {
+        limit = 10,
+        offset = 0,
+        sortBy = 'published_on desc',
+        fields,
+        paginated = false,
+      } = options
       const fieldsString = this.buildFieldsString(type, fields, false)
 
       const filter = `${brandFilter} _type == "${type}"`
 
-      return await this.fetchList<T>(filter, fieldsString, {
+      return this.fetchList<T>(filter, fieldsString, {
         sort: sortBy,
         start: offset,
         end: offset + limit,
+        paginated,
       })
     } catch (error: any) {
       return this.handleContentError(error, `fetchByBrandAndType(${brand}, ${type})`)
