@@ -2,9 +2,11 @@
  * @module Instructor
  */
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
+import { Either } from '../../core/types/ads/either'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse.js'
+import { SanityError } from '../../infrastructure/sanity/interfaces/SanityError'
 import { Brands } from '../../lib/brands'
 import { DocumentTypes } from '../../lib/documents'
 import { getSortOrder } from '../../lib/sanity/query'
@@ -31,7 +33,9 @@ export interface Instructor {
  *   .then(instructors => console.log(instructors))
  *   .catch(error => console.error(error));
  */
-export async function fetchInstructors(brand: Brands): Promise<SanityListResponse<Instructor>> {
+export async function fetchInstructors(
+  brand: Brands
+): Promise<Either<SanityError, SanityListResponse<Instructor>>> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
@@ -62,7 +66,7 @@ export async function fetchInstructors(brand: Brands): Promise<SanityListRespons
 export async function fetchInstructorBySlug(
   slug: string,
   brand?: Brands
-): Promise<Instructor | null> {
+): Promise<Either<SanityError, Instructor | null>> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
     bypassPermissions: true,
@@ -88,11 +92,6 @@ export interface FetchInstructorLessonsOptions {
   includedFields?: string[]
 }
 
-export interface InstructorLessonsResponse {
-  data: Lesson[]
-  total: number
-}
-
 /**
  * Fetch the data needed for the instructor screen.
  * @param {string} slug - The slug of the instructor
@@ -105,7 +104,7 @@ export interface InstructorLessonsResponse {
  * @param {number} [options.limit=10] - The number of items per page.
  * @param {Array<string>} [options.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  *
- * @returns {Promise<InstructorLessonsResponse>} - The lessons for the instructor or null if not found.
+ * @returns {Promise<Either<SanityError, SanityListResponse<Lesson>>>} - The lessons for the instructor or null if not found.
  * @example
  * fetchInstructorLessons('instructor123')
  *   .then(lessons => console.log(lessons))
@@ -122,7 +121,7 @@ export async function fetchInstructorLessons(
     limit = 20,
     includedFields = [],
   }: FetchInstructorLessonsOptions = {}
-): Promise<InstructorLessonsResponse> {
+): Promise<Either<SanityError, SanityListResponse<Lesson>>> {
   const fieldsString = getFieldsForContentType() as string
   const start = (page - 1) * limit
   const end = start + limit

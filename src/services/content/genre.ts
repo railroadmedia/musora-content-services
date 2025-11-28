@@ -2,9 +2,11 @@
  * @module Genre
  */
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
+import { Either } from '../../core/types/ads/either'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
+import { SanityError } from '../../infrastructure/sanity/interfaces/SanityError'
 import { Brands } from '../../lib/brands'
 import { DocumentTypes } from '../../lib/documents'
 import { getSortOrder } from '../../lib/sanity/query'
@@ -30,7 +32,9 @@ export interface Genre {
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenres(brand: Brands): Promise<SanityListResponse<Genre>> {
+export async function fetchGenres(
+  brand: Brands
+): Promise<Either<SanityError, SanityListResponse<Genre>>> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
@@ -58,7 +62,10 @@ export async function fetchGenres(brand: Brands): Promise<SanityListResponse<Gen
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenreBySlug(slug: string, brand?: Brands): Promise<Genre | null> {
+export async function fetchGenreBySlug(
+  slug: string,
+  brand?: Brands
+): Promise<Either<SanityError, Genre | null>> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
     bypassPermissions: true,
@@ -83,11 +90,6 @@ export interface FetchGenreLessonsOptions {
   progressIds?: Array<number>
 }
 
-export interface LessonsByGenreResponse {
-  data: Lesson[]
-  total: number
-}
-
 /**
  * Fetch the genre's lessons.
  * @param {string} slug - The slug of the genre
@@ -100,7 +102,7 @@ export interface LessonsByGenreResponse {
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  * @param {Array<number>} [params.progressIds=[]] - The ids of the lessons that are in progress or completed
- * @returns {Promise<LessonsByGenreResponse>} - The lessons for the genre
+ * @returns {Promise<Either<SanityError, SanityListResponse<Lesson>>>} - The lessons for the genre
  *
  * @example
  * fetchGenreLessons('Blues', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
@@ -119,7 +121,7 @@ export async function fetchGenreLessons(
     includedFields = [],
     progressIds = [],
   }: FetchGenreLessonsOptions = {}
-): Promise<LessonsByGenreResponse> {
+): Promise<Either<SanityError, SanityListResponse<Lesson>>> {
   const fieldsString = getFieldsForContentType(contentType) as string
   const start = (page - 1) * limit
   const end = start + limit

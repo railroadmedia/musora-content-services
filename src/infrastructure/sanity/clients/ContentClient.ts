@@ -4,6 +4,8 @@ import { ConfigProvider } from '../interfaces/ConfigProvider'
 import { QueryExecutor } from '../interfaces/QueryExecutor'
 import { DocumentTypes } from '../../../lib/documents'
 import { SanityListResponse } from '../interfaces/SanityResponse'
+import { SanityError } from '../interfaces/SanityError'
+import { Either } from '../../../core/types/ads/either'
 
 /**
  * ContentClient extends SanityClient with content-specific methods
@@ -17,7 +19,7 @@ export class ContentClient extends SanityClient {
   /**
    * Fetch content by type and ID (similar to fetchByRailContentId)
    */
-  public async fetchById<T>(options: FetchByIdOptions): Promise<T | null> {
+  public async fetchById<T>(options: FetchByIdOptions): Promise<Either<SanityError, T | null>> {
     try {
       const { type, id, fields, includeChildren = false } = options
 
@@ -30,7 +32,7 @@ export class ContentClient extends SanityClient {
       // Complete the query
       query += `{${fieldsString}}[0]`
 
-      return await this.fetchFirst<T>(query)
+      return this.fetchFirst<T>(query)
     } catch (error: any) {
       return this.handleContentError(error, `fetchById(${JSON.stringify(options)})`)
     }
@@ -44,10 +46,10 @@ export class ContentClient extends SanityClient {
     type?: DocumentTypes,
     brand?: string,
     fields?: string[]
-  ): Promise<SanityListResponse<T>> {
+  ): Promise<Either<SanityError, SanityListResponse<T>>> {
     try {
       if (!ids || ids.length === 0) {
-        return { data: [], total: 0 }
+        return Either.right({ data: [], total: 0 })
       }
 
       const idsString = ids.join(',')
@@ -81,7 +83,7 @@ export class ContentClient extends SanityClient {
       fields?: string[]
       paginated?: boolean
     } = {}
-  ): Promise<SanityListResponse<T>> {
+  ): Promise<Either<SanityError, SanityListResponse<T>>> {
     try {
       const brandFilter = brand ? `brand == "${brand}" && ` : ''
       const {
@@ -162,17 +164,17 @@ export class ContentClient extends SanityClient {
   /**
    * Handle and rethrow errors with additional context
    */
-  private handleContentError(error: any, context: string): never {
+  private handleContentError(error: any, context: string): Either<SanityError, never> {
     if ('message' in error && 'query' in error) {
       // This is already a SanityError
-      throw error
+      return Either.left(error)
     }
 
     // Convert to SanityError with context
-    throw {
+    return Either.left({
       message: error.message || `ContentClient operation failed: ${context}`,
       query: context,
       originalError: error,
-    }
+    })
   }
 }

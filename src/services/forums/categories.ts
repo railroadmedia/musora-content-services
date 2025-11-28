@@ -1,7 +1,9 @@
 /**
  * @module Forums
  */
+import { Either } from '../../core/types/ads/either'
 import { HttpClient } from '../../infrastructure/http/HttpClient'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from '../config.js'
 import { ForumCategory } from './types'
 
@@ -14,9 +16,10 @@ const baseUrl = `/api/forums`
  * @returns {Promise<ForumCategory>} - A promise that resolves to the list of forum categories.
  * @throws {HttpError} - If the request fails.
  */
-export async function fetchForumCategories(brand: string): Promise<ForumCategory> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<ForumCategory>(`${baseUrl}/v1/categories?brand=${brand}`)
+export async function fetchForumCategories(
+  brand: string
+): Promise<Either<HttpError, ForumCategory>> {
+  return HttpClient.client().get<ForumCategory>(`${baseUrl}/v1/categories?brand=${brand}`)
 }
 
 export interface CreateForumCategoryParams {
@@ -36,9 +39,8 @@ export interface CreateForumCategoryParams {
  */
 export async function createForumCategory(
   params: CreateForumCategoryParams
-): Promise<ForumCategory> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<ForumCategory>(`${baseUrl}/v1/categories`, params)
+): Promise<Either<HttpError, ForumCategory>> {
+  return HttpClient.client().post<ForumCategory>(`${baseUrl}/v1/categories`, params)
 }
 
 export interface UpdateForumCategoryParams {
@@ -59,9 +61,8 @@ export interface UpdateForumCategoryParams {
  */
 export async function updateForumCategory(
   params: UpdateForumCategoryParams
-): Promise<ForumCategory> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.put<ForumCategory>(`${baseUrl}/v1/categories/${params.id}`, params)
+): Promise<Either<HttpError, ForumCategory>> {
+  return HttpClient.client().put<ForumCategory>(`${baseUrl}/v1/categories/${params.id}`, params)
 }
 
 export interface DeleteForumCategoryParams {
@@ -78,7 +79,8 @@ export interface DeleteForumCategoryParams {
  */
 export async function deleteForumCategory(
   params: DeleteForumCategoryParams
-): Promise<void> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.delete<void>(`${baseUrl}/v1/categories/${params.id}?brand=${params.brand}`)
+): Promise<Either<HttpError, void>> {
+  return HttpClient.client().delete<void>(
+    `${baseUrl}/v1/categories/${params.id}?brand=${params.brand}`
+  )
 }

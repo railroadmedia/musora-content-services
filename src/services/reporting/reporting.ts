@@ -8,14 +8,10 @@
  */
 
 import { HttpClient } from '../../infrastructure/http/HttpClient'
-import { globalConfig } from '../config.js'
-import {
-  ReportResponse,
-  ReportableType,
-  IssueTypeMap,
-  ReportIssueOption,
-} from './types'
-import {Brand} from "../../lib/brands";
+import { ReportResponse, ReportableType, IssueTypeMap, ReportIssueOption } from './types'
+import { Brands } from '../../lib/brands'
+import { Either } from '../../core/types/ads/either'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 
 /**
  * Parameters for submitting a report with type-safe issue values
@@ -30,7 +26,7 @@ export type ReportParams<T extends ReportableType = ReportableType> = {
   /** Details about the issue - required when issue is 'other', not sent otherwise */
   details?: string
   /** Brand context (required: drumeo, pianote, guitareo, singeo, playbass) */
-  brand: Brand
+  brand: Brands
 }
 
 /**
@@ -73,9 +69,9 @@ export type ReportParams<T extends ReportableType = ReportableType> = {
  *   brand: 'drumeo'
  * })
  */
-export async function report<T extends ReportableType>(params: ReportParams<T>): Promise<ReportResponse> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-
+export async function report<T extends ReportableType>(
+  params: ReportParams<T>
+): Promise<Either<HttpError, ReportResponse>> {
   // Build request body
   const requestBody: any = {
     reportable_type: params.type,
@@ -89,12 +85,7 @@ export async function report<T extends ReportableType>(params: ReportParams<T>):
     requestBody.details = params.details
   }
 
-  const response = await httpClient.post<ReportResponse>(
-    '/api/user-reports/v1/reports',
-    requestBody
-  )
-
-  return response
+  return HttpClient.client().post<ReportResponse>('/api/user-reports/v1/reports', requestBody)
 }
 
 /**
@@ -125,7 +116,10 @@ export async function report<T extends ReportableType>(params: ReportParams<T>):
  * //   { value: 'other', label: 'Other' }
  * // ]
  */
-export function getReportIssueOptions(type: ReportableType, isMobileApp: boolean = false): ReportIssueOption[] {
+export function getReportIssueOptions(
+  type: ReportableType,
+  isMobileApp: boolean = false
+): ReportIssueOption[] {
   switch (type) {
     case 'forum_post':
       return [
@@ -147,7 +141,10 @@ export function getReportIssueOptions(type: ReportableType, isMobileApp: boolean
 
     case 'content':
       const contentOptions = [
-        { value: 'incorrect_metadata', label: 'The lesson image, title or description is incorrect' },
+        {
+          value: 'incorrect_metadata',
+          label: 'The lesson image, title or description is incorrect',
+        },
         { value: 'video_issue', label: 'Video issue' },
       ]
 
@@ -165,7 +162,10 @@ export function getReportIssueOptions(type: ReportableType, isMobileApp: boolean
 
     case 'playlist':
       const playlistOptions = [
-        { value: 'incorrect_metadata', label: 'The lesson image, title or description is incorrect' },
+        {
+          value: 'incorrect_metadata',
+          label: 'The lesson image, title or description is incorrect',
+        },
         { value: 'video_issue', label: 'Video issue' },
       ]
 
@@ -182,8 +182,6 @@ export function getReportIssueOptions(type: ReportableType, isMobileApp: boolean
       return playlistOptions
 
     default:
-      return [
-        { value: 'other', label: 'Other' },
-      ]
+      return [{ value: 'other', label: 'Other' }]
   }
 }

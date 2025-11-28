@@ -190,6 +190,31 @@ async function getByIds(contentIds, collection, dataKey, defaultValue) {
   return progress
 }
 
+/**
+ *
+ * @param {array} contentIds List of content children within learning path
+ * @param {object} collection Learning path object
+ * @returns {Promise<array>} Filtered list of contentIds that are completed
+ */
+export async function getAllCompletedByIds(contentIds, collection) {
+  let data = await dataContext.getData()
+  // let data = db.contentProgress.get('content_id').query(
+  //   Q.whereIn('content_id', contentIds),
+  //   Q.where('state', STATE_COMPLETED)
+  // ).fetch()
+  return contentIds?.filter(function (id) {
+    // TODO: shortcoming of this right now is it assumes there can only be content progress
+    // within a given learning path or non-learning path progress.
+    // In reality, there could be other learning paths with progress we'll have to check.
+    // The above watermelon query should work. Then "collection" parameter can be removed.
+    let status = data[generateRecordKey(id, collection)]?.[DATA_KEY_STATUS] ?? null;
+    if (status !== STATE_COMPLETED) {
+      status = data[generateRecordKey(id, null)]?.[DATA_KEY_STATUS] ?? null;
+    }
+    return status === STATE_COMPLETED;
+  })
+}
+
 export async function getAllStarted(limit = null, collection = null) {
   const data = await dataContext.getData()
 

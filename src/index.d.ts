@@ -34,6 +34,7 @@ import {
 	completeLearningPathIntroVideo,
 	completeMethodIntroVideo,
 	fetchLearningPathLessons,
+	fetchLearningPathProgressCheckLessons,
 	getActivePath,
 	getDailySession,
 	getEnrichedLearningPath,
@@ -383,7 +384,7 @@ import {
 import {
 	deleteProfilePicture,
 	otherStats
-} from './services/user/profile.js';
+} from './services/user/profile.ts';
 
 import {
 	login,
@@ -507,6 +508,7 @@ declare module 'musora-content-services' {
 		fetchLastInteractedChild,
 		fetchLatestThreads,
 		fetchLearningPathLessons,
+		fetchLearningPathProgressCheckLessons,
 		fetchLeaving,
 		fetchLessonContent,
 		fetchLessonsFeaturingThisContent,
