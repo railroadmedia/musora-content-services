@@ -14,7 +14,7 @@ export interface AccountStatus {
 
 /**
  * @param {string} email - The email address to check the account status for.
- * @returns {Promise<Either<HttpError|AccountStatus>>} - A promise that resolves to an object indicating whether account setup is required, or an HttpError if the request fails.
+ * @returns {Promise<Either<HttpError, AccountStatus>>} - A promise that resolves to an object indicating whether account setup is required, or an HttpError if the request fails.
  */
 export async function status(email: string): Promise<Either<HttpError, AccountStatus>> {
   return HttpClient.client().get<{ requires_setup: boolean }>(
@@ -54,7 +54,7 @@ export interface AccountSetupResponse {
  * @property {string} password - The new password for the account.
  * @property {string} passwordConfirmation - The confirmation of the new password.
  * @property {string} token - The token sent to the user's email for verification.
- * @returns {Promise<Either<HttpError, void>} - A promise that resolves when the account setup is complete or an HttpError if the request fails.
+ * @returns {Promise<Either<HttpError, void>>} - A promise that resolves when the account setup is complete or an HttpError if the request fails.
  */
 export async function setupAccount({
   email,
@@ -72,8 +72,7 @@ export async function setupAccount({
 
 /**
  * @param {string} email - The email address to send the password reset email to.
- * @returns {Promise<void>} - A promise that resolves when the email change request is made.
- * @throws {HttpError} - Throws HttpError if the request fails.
+ * @returns {Promise<Either<HttpError, void>>} - A promise that resolves when the email change request is made.
  */
 export async function sendPasswordResetEmail(email: string): Promise<Either<HttpError, void>> {
   return HttpClient.client().post(`/api/user-management-system/v1/accounts/password/reset-email`, {
@@ -112,8 +111,7 @@ export async function resetPassword({
 /**
  * @param {string} email - The new email address to set for the user.
  * @param {string} password - The current password of the user for verification.
- * @returns {Promise<void>} - A promise that resolves when the email change request is made.
- * @throws {HttpError} - Throws HttpError if the request fails.
+ * @returns {Promise<Either<HttpError, void>>} - A promise that resolves when the email change request is made.
  */
 export async function requestEmailChange(
   email: string,
@@ -134,7 +132,7 @@ export async function confirmEmailChange(token: string): Promise<Either<HttpErro
 
 /**
  * @param {number} userId - The ID of the user account to delete.
- * @returns {Promise<void>} - A promise that resolves with the anonymized user data or an HttpError if the request fails.
+ * @returns {Promise<Either<HttpError, void>>} - A promise that resolves with the anonymized user data or an HttpError if the request fails.
  */
 export async function deleteAccount(userId: number): Promise<Either<HttpError, void>> {
   const apiUrl = `/api/user-management-system/v1/users/${userId}`
@@ -144,8 +142,7 @@ export async function deleteAccount(userId: number): Promise<Either<HttpError, v
 /**
  * Calls a public API endpoint to get the number of active users.
  *
- * @returns {Promise<number>} - A promise that resolves to the number of active users.
- * @throws {HttpError} - Throws HttpError if the request fails.
+ * @returns {Promise<Either<HttpError, number>>} - A promise that resolves to the number of active users.
  */
 export async function numberOfActiveUsers(): Promise<Either<HttpError, number>> {
   const apiUrl = `/api/user-management-system/v1/accounts/active/count`
@@ -171,8 +168,7 @@ export interface UserResource {
  * When enabled, admins see the platform as a regular student would.
  *
  * @param {boolean} useStudentView - Whether to enable student view mode (true) or admin view mode (false).
- * @returns {Promise<UserResource>} - A promise that resolves to the updated user resource.
- * @throws {HttpError} - Throws HttpError if the request fails or user is not an admin.
+ * @returns {Promise<Either<HttpError, UserResource>>} - A promise that resolves to the updated user resource.
  */
 export async function toggleStudentView(
   useStudentView: boolean
