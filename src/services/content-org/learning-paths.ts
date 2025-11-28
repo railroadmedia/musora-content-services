@@ -237,10 +237,11 @@ export async function fetchLearningPathProgressCheckLessons(
   contentIds: number[],
   learningPathId: number
 ): Promise<object> {
-  let completedContentIds = await getAllCompletedByIds(contentIds, {
+  let query = await getAllCompletedByIds(contentIds, {
     id: learningPathId,
     type: 'learning-path-v2',
   })
+  let completedContentIds = query.data
   return {
     lessons: contentIds,
     completed_lessons: completedContentIds,

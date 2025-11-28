@@ -10,13 +10,6 @@ import { fetchJSONHandler } from '../lib/httpHelper.js'
  * @type {string[]}
  */
 const excludeFromGeneratedIndex = [
-  'fetchUserLikes',
-  'postContentLiked',
-  'postContentUnliked',
-  'postRecordWatchSession',
-  'postContentStarted',
-  'postContentComplete',
-  'postContentReset',
   'fetchUserPermissionsData',
 ]
 
@@ -275,10 +268,6 @@ export async function fetchUserPermissionsData() {
   return (await fetchHandler(url, 'get')) ?? []
 }
 
-async function fetchDataHandler(url, dataVersion, method = 'get') {
-  return fetchHandler(url, method, dataVersion)
-}
-
 async function postDataHandler(url, data) {
   return fetchHandler(url, 'post', null, data)
 }
@@ -297,51 +286,12 @@ async function deleteDataHandler(url, data) {
 
 export async function fetchLikeCount(contendId) {
   const url = `/api/content/v1/content/like_count/${contendId}`
-  return await fetchDataHandler(url)
-}
-
-export async function fetchUserLikes(currentVersion) {
-  let url = `/api/content/v1/user/likes`
-  return fetchDataHandler(url, currentVersion)
-}
-
-export async function postContentLiked(contentId) {
-  let url = `/api/content/v1/user/likes/${contentId}`
-  return await postDataHandler(url)
-}
-
-export async function postContentUnliked(contentId) {
-  let url = `/api/content/v1/user/likes/${contentId}`
-  return await deleteDataHandler(url)
-}
-
-export async function fetchContentProgress(currentVersion) {
-  let url = `/content/user/progress/all`
-  return fetchDataHandler(url, currentVersion)
+  return await fetchHandler(url)
 }
 
 export async function postPlaylistContentEngaged(playlistItemId) {
   let url = `/railtracker/v1/last-engaged/${playlistItemId}`
   return postDataHandler(url)
-}
-
-export async function postRecordWatchSession(
-  contentId,
-  mediaTypeId,
-  mediaLengthSeconds,
-  currentSeconds,
-  secondsPlayed,
-  sessionId
-) {
-  let url = `/railtracker/v2/media-playback-session`
-  return postDataHandler(url, {
-    content_id: contentId,
-    media_type_id: mediaTypeId,
-    media_length_seconds: mediaLengthSeconds,
-    current_second: currentSeconds,
-    seconds_played: secondsPlayed,
-    session_id: sessionId,
-  })
 }
 
 /**
@@ -376,58 +326,6 @@ export async function fetchUserBadges(brand = null) {
   let brandParam = brand ? `?brand=${brand}` : ''
   let url = `/challenges/user_badges/get${brandParam}`
   return await fetchHandler(url, 'get')
-}
-
-/**
- * complete a content's progress for a given user
- * @param contentId
- * @param collection {object|null} - the collection context of the progress. null is normal content progress
- * @param collection.type - the type of collection. options: ["learning-path"]
- * @param collection.id - the content_id of collection.
- * @returns {Promise<any|string|null>}
- */
-export async function postContentComplete(contentId, collection = null) {
-  let url = `/api/content/v1/user/progress/complete/${contentId}`
-  const body = {collection: collection}
-  return postDataHandler(url, body)
-}
-
-/**
- * start the user's progress on a content
- * @param contentId
- * @param collection {object|null} - the collection context of the progress. null is normal content progress
- * @param collection.type - the type of collection. options: ["learning-path"]
- * @param collection.id - the content_id of collection.
- * @returns {Promise<any|string|null>}
- */
-export async function postContentStart(contentId, collection = null) {
-  let url = `/api/content/v1/user/progress/start/${contentId}`
-  const body = {collection: collection}
-  return postDataHandler(url, body)
-}
-
-/**
- * resets the user's progress on a content
- * @param contentId
- * @param collection {object|null} - the collection context of the progress. null is normal content progress
- * @param collection.type - the type of collection. options: ["learning-path"]
- * @param collection.id - the content_id of collection.
- * @returns {Promise<any|string|null>}
- */
-export async function postContentReset(contentId, collection = null) {
-  let url = `/api/content/v1/user/progress/reset/${contentId}`
-  const body = {collection: collection}
-  return postDataHandler(url, body)
-}
-
-/**
- * restores the user's progress on a content
- * @param contentId
- * @returns {Promise<any|string|null>}
- */
-export async function postContentRestore(contentId) {
-  let url = `/api/content/v1/user/progress/restore/${contentId}`
-  return postDataHandler(url)
 }
 
 /**
@@ -624,24 +522,21 @@ export async function fetchComment(commentId) {
   return comment.parent ? comment.parent : comment
 }
 
-export async function fetchUserPractices(currentVersion = 0, { userId } = {}) {
-  const params = new URLSearchParams()
-  if (userId) params.append('user_id', userId)
-  const query = params.toString() ? `?${params.toString()}` : ''
-  const url = `/api/user/practices/v1/practices${query}`
-  const response = await fetchDataHandler(url, currentVersion)
-  const { data, version } = response
+export async function fetchUserPractices(userId) {
+  const url = `/api/user/practices/v1/practices?user_id=${userId}`
+  const response = await fetchHandler(url)
+  const { data } = response
   const userPractices = data
   if (!userPractices) {
-    return { data: { practices: {} }, version }
+    return {}
   }
 
   const formattedPractices = userPractices.reduce((acc, practice) => {
-    if (!acc[practice.day]) {
-      acc[practice.day] = []
+    if (!acc[practice.date]) {
+      acc[practice.date] = []
     }
 
-    acc[practice.day].push({
+    acc[practice.date].push({
       id: practice.id,
       duration_seconds: practice.duration_seconds,
     })
@@ -649,29 +544,11 @@ export async function fetchUserPractices(currentVersion = 0, { userId } = {}) {
     return acc
   }, {})
 
-  return {
-    data: {
-      practices: formattedPractices,
-    },
-    version,
-  }
+  return formattedPractices
 }
 
-export async function logUserPractice(practiceDetails) {
-  const url = `/api/user/practices/v1/practices`
-  return await fetchHandler(url, 'POST', null, practiceDetails)
-}
-export async function fetchUserPracticeMeta(practiceIds, userId = null) {
-  if (practiceIds.length == 0) {
-    return []
-  }
-  const params = new URLSearchParams()
-  practiceIds.forEach((id) => params.append('practice_ids[]', id))
-
-  if (userId !== null) {
-    params.append('user_id', userId)
-  }
-  const url = `/api/user/practices/v1/practices?${params.toString()}`
+export async function fetchUserPracticeMeta(day, userId) {
+  const url = `/api/user/practices/v1/practices?user_id=${userId}&date=${date}`
   return await fetchHandler(url, 'GET', null)
 }
 

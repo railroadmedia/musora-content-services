@@ -1,6 +1,10 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
+	 default as EventsAPI 
+} from './services/eventsAPI';
+
+import {
 	globalConfig,
 	initializeService
 } from './services/config.js';
@@ -96,12 +100,9 @@ import {
 	getAllStartedOrCompleted,
 	getLastInteractedOf,
 	getNavigateTo,
-	getProgressDateByIds,
-	getProgressPercentage,
-	getProgressPercentageByIds,
+	getProgressDataByIds,
 	getProgressState,
 	getProgressStateByIds,
-	getResumeTimeSeconds,
 	getResumeTimeSecondsByIds,
 	getStartedOrCompletedProgressOnly,
 	recordWatchSession
@@ -202,7 +203,6 @@ import {
 	fetchCompletedState,
 	fetchContentInProgress,
 	fetchContentPageUserData,
-	fetchContentProgress,
 	fetchHandler,
 	fetchLastInteractedChild,
 	fetchLikeCount,
@@ -212,22 +212,13 @@ import {
 	fetchTopComment,
 	fetchUserAward,
 	fetchUserBadges,
-	fetchUserLikes,
 	fetchUserPermissionsData,
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
 	fetchUserPractices,
 	likeComment,
-	logUserPractice,
 	openComment,
-	postContentComplete,
-	postContentLiked,
-	postContentReset,
-	postContentRestore,
-	postContentStart,
-	postContentUnliked,
 	postPlaylistContentEngaged,
-	postRecordWatchSession,
 	replyToComment,
 	reportComment,
 	restoreComment,
@@ -403,7 +394,6 @@ import {
 	getProgressRows,
 	getRecentActivity,
 	getUserMonthlyStats,
-	getUserPractices,
 	getUserWeeklyStats,
 	pinProgressRow,
 	recordUserActivity,
@@ -412,14 +402,11 @@ import {
 	restorePracticeSession,
 	restoreUserActivity,
 	restoreUserPractice,
+	trackUserPractice,
 	unpinProgressRow,
 	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
-
-import {
-	 default as EventsAPI
-} from './services/eventsAPI';
 
 export {
 	addContextToContent,
@@ -488,7 +475,6 @@ export {
 	fetchCompletedState,
 	fetchContentInProgress,
 	fetchContentPageUserData,
-	fetchContentProgress,
 	fetchContentRows,
 	fetchCustomerPayments,
 	fetchEnrollmentPageMetadata,
@@ -563,7 +549,6 @@ export {
 	fetchUpcomingEvents,
 	fetchUserAward,
 	fetchUserBadges,
-	fetchUserLikes,
 	fetchUserPermissions,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
@@ -594,9 +579,7 @@ export {
 	getOwnedContent,
 	getPracticeNotes,
 	getPracticeSessions,
-	getProgressDateByIds,
-	getProgressPercentage,
-	getProgressPercentageByIds,
+	getProgressDataByIds,
 	getProgressRows,
 	getProgressState,
 	getProgressStateByIds,
@@ -604,7 +587,6 @@ export {
 	getRecentActivity,
 	getRecommendedForYou,
 	getReportIssueOptions,
-	getResumeTimeSeconds,
 	getResumeTimeSecondsByIds,
 	getSanityDate,
 	getScheduleContentRows,
@@ -615,7 +597,6 @@ export {
 	getToday,
 	getUserData,
 	getUserMonthlyStats,
-	getUserPractices,
 	getUserSignature,
 	getUserWeeklyStats,
 	getWeekNumber,
@@ -635,7 +616,6 @@ export {
 	likePlaylist,
 	likePost,
 	lockThread,
-	logUserPractice,
 	login,
 	logout,
 	mapContentToParent,
@@ -651,14 +631,7 @@ export {
 	pauseLiveEventPolling,
 	pinProgressRow,
 	pinThread,
-	postContentComplete,
-	postContentLiked,
-	postContentReset,
-	postContentRestore,
-	postContentStart,
-	postContentUnliked,
 	postPlaylistContentEngaged,
-	postRecordWatchSession,
 	rankCategories,
 	rankItems,
 	recommendations,
@@ -697,6 +670,7 @@ export {
 	togglePlaylistPrivate,
 	toggleSignaturePrivate,
 	toggleStudentView,
+	trackUserPractice,
 	unEnrollUserInGuidedCourse,
 	unassignModeratorToComment,
 	unblockUser,
