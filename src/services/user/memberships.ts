@@ -1,9 +1,11 @@
 /**
  * @module UserMemberships
  */
-import './types.js'
+import { Either } from '../../core/types/ads/either'
 import { HttpClient } from '../../infrastructure/http/HttpClient'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from '../config'
+import './types.js'
 
 const baseUrl = `/api/user-memberships`
 
@@ -97,7 +99,7 @@ export type RestorePurchasesResponse =
  *   .then(memberships => console.log(memberships))
  *   .catch(error => console.error(error));
  */
-export async function fetchMemberships(): Promise<Membership[]> {
+export async function fetchMemberships(): Promise<Either<HttpError, Membership[]>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.get<Membership[]>(`${baseUrl}/v1`)
 }
@@ -118,7 +120,7 @@ export async function fetchMemberships(): Promise<Membership[]> {
  *   .then(tokens => console.log(tokens))
  *   .catch(error => console.error(error));
  */
-export async function fetchRechargeTokens(): Promise<RechargeTokens> {
+export async function fetchRechargeTokens(): Promise<Either<HttpError, RechargeTokens>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.get<RechargeTokens>(`${baseUrl}/v1/subscriptions-tokens`)
 }
@@ -140,7 +142,9 @@ export async function fetchRechargeTokens(): Promise<RechargeTokens> {
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
-export async function upgradeSubscription(): Promise<UpgradeSubscriptionResponse> {
+export async function upgradeSubscription(): Promise<
+  Either<HttpError, UpgradeSubscriptionResponse>
+> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.get<UpgradeSubscriptionResponse>(`${baseUrl}/v1/update-subscription`)
 }
@@ -197,14 +201,14 @@ export async function upgradeSubscription(): Promise<UpgradeSubscriptionResponse
  */
 export async function restorePurchases(
   originalAppUserId: string,
-  email?: string|null
-): Promise<RestorePurchasesResponse> {
+  email?: string | null
+): Promise<Either<HttpError, RestorePurchasesResponse>> {
   if (!originalAppUserId) {
     throw new Error('originalAppUserId is a required parameter')
   }
 
   const requestBody: { original_app_user_id: string; email?: string } = {
-    original_app_user_id: originalAppUserId
+    original_app_user_id: originalAppUserId,
   }
 
   // Only include email if it has a valid value
@@ -213,8 +217,5 @@ export async function restorePurchases(
   }
 
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<RestorePurchasesResponse>(
-    `${baseUrl}/v1/revenuecat/restore`,
-    requestBody
-  )
+  return httpClient.post<RestorePurchasesResponse>(`${baseUrl}/v1/revenuecat/restore`, requestBody)
 }

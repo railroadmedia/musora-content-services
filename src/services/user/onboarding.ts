@@ -1,9 +1,11 @@
 /**
  * @module Onboarding
  */
+import { Either } from '../../core/types/ads/either.js'
 import { HttpClient } from '../../infrastructure/http/HttpClient'
-import { Brand } from '../../lib/brands'
-import { globalConfig } from '../config.js'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError.js'
+import { Brands } from '../../lib/brands'
+import { globalConfig } from '../config'
 
 export interface OnboardingSteps {
   email?: string
@@ -25,7 +27,7 @@ export interface OnboardingSteps {
 
 export interface StartOnboardingParams {
   email: string
-  brand: string
+  brand: Brands
   flow: string
   marketingOptIn: boolean
   steps?: OnboardingSteps
@@ -34,7 +36,7 @@ export interface StartOnboardingParams {
 export interface Onboarding {
   id: number
   email: string
-  brand: string
+  brand: Brands
   flow: string
   steps: OnboardingSteps
   is_completed: boolean
@@ -54,7 +56,7 @@ export async function startOnboarding({
   flow,
   steps = {},
   marketingOptIn = false,
-}: StartOnboardingParams): Promise<Onboarding> {
+}: StartOnboardingParams): Promise<Either<HttpError, Onboarding>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<Onboarding>(`/api/user-management-system/v1/onboardings`, {
     email,
@@ -90,7 +92,7 @@ export async function updateOnboarding({
   steps,
   is_completed = false,
   marketingOptIn = false,
-}: UpdateOnboardingParams): Promise<Onboarding> {
+}: UpdateOnboardingParams): Promise<Either<HttpError, Onboarding>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.put<Onboarding>(`/api/user-management-system/v1/onboardings/${id}`, {
     email,
@@ -110,7 +112,9 @@ export async function updateOnboarding({
  * @returns {Promise<Onboarding>} - A promise that resolves with the onboarding data.
  * @throws {HttpError} - If the HTTP request fails.
  */
-export async function userOnboardingForBrand(brand: string): Promise<Onboarding> {
+export async function userOnboardingForBrand(
+  brand: string
+): Promise<Either<HttpError, Onboarding>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.get<Onboarding>(
     `/api/user-management-system/v1/users/${globalConfig.sessionConfig.userId}/onboardings/brand/${encodeURIComponent(brand)}`
@@ -230,14 +234,14 @@ const recommendedContentCache: { [brand: string]: OnboardingRecommendedContent }
  */
 export async function getOnboardingRecommendedContent(
   email: string,
-  brand: Brand
-): Promise<OnboardingRecommendedContent> {
+  brand: Brands
+): Promise<Either<HttpError, OnboardingRecommendedContent>> {
   // TODO: Replace with real API call when available
   if (recommendedContentCache[brand]) {
-    return recommendedContentCache[brand]
+    return Either.right(recommendedContentCache[brand])
   }
 
-  return {
+  return Either.right({
     id: 412405,
     title: 'Getting Started On The Piano',
     difficulty: 'Beginner',
@@ -253,5 +257,5 @@ export async function getOnboardingRecommendedContent(
         'https://player.vimeo.com/external/1001267395.m3u8?s=8f8d8a8a762f688058e6e6fd6704c402baf1b797&oauth2_token_id=1284792283',
       type: 'vimeo-video',
     },
-  }
+  })
 }

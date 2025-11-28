@@ -1,3 +1,4 @@
+import { Either } from '../core/types/ads/either'
 import { HttpClient } from '../infrastructure/http/HttpClient'
 import { HttpError } from '../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from './config.js'
@@ -25,7 +26,7 @@ export interface TestUser {
  * @property {number} [productId] - The product ID to associate with the test user.
  * @property {Date} [createdAt] - The creation date for the test user.
  */
-export function createTestUser(props: CreateTestUserProps): Promise<void> {
+export function createTestUser(props: CreateTestUserProps): Promise<Either<HttpError, void>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<void>(`/api/testing/users`, props)
 }

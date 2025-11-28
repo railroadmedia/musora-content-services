@@ -2,7 +2,9 @@
  * @module Awards
  */
 
+import { Either } from '../../core/types/ads/either'
 import { HttpClient } from '../../infrastructure/http/HttpClient'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { PaginatedResponse } from '../api/types'
 import { globalConfig } from '../config'
 
@@ -70,7 +72,7 @@ export async function fetchAwardsForUser(
   _brand?: string,
   page: number = 1,
   limit: number = 5
-): Promise<PaginatedResponse<Award>> {
+): Promise<Either<HttpError, PaginatedResponse<Award>>> {
   if (!userId) {
     userId = Number.parseInt(globalConfig.sessionConfig.userId)
   }
@@ -94,7 +96,9 @@ export async function fetchAwardsForUser(
  * @returns {Promise<Award>} - The award data for a given award and given user.
  * @throws {HttpError} - If the HTTP request fails.
  */
-export async function getAwardDataForGuidedContent(guidedCourseLessonId: number): Promise<Award> {
+export async function getAwardDataForGuidedContent(
+  guidedCourseLessonId: number
+): Promise<Either<HttpError, Award>> {
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   const response = await httpClient.get<Award>(
     `${baseUrl}/v1/users/guided_course_award/${guidedCourseLessonId}`
@@ -114,7 +118,9 @@ export async function getAwardDataForGuidedContent(guidedCourseLessonId: number)
  * @returns {Promise<Certificate>} - The certificate data for the completed user award.
  * @throws {HttpError} - If the HTTP request fails.
  */
-export async function fetchCertificate(userAwardId: number): Promise<Certificate> {
+export async function fetchCertificate(
+  userAwardId: number
+): Promise<Either<HttpError, Certificate>> {
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   const response = await httpClient.get<Certificate>(
     `${baseUrl}/v1/users/certificate/${userAwardId}`

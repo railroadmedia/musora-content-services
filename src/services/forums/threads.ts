@@ -3,8 +3,10 @@
  */
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
-import { ForumCategory, ForumThread } from './types'
+import { ForumThread } from './types'
 import { PaginatedResponse } from '../api/types'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
+import { Either } from '../../core/types/ads/either'
 
 const baseUrl = `/api/forums`
 
@@ -24,7 +26,7 @@ export interface CreateThreadParams {
 export async function createThread(
   categoryId: number,
   params: CreateThreadParams
-): Promise<ForumThread> {
+): Promise<Either<HttpError, ForumThread>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<ForumThread>(`${baseUrl}/v1/categories/${categoryId}/threads`, params)
 }
@@ -44,7 +46,7 @@ export interface UpdateThreadParams {
 export async function updateThread(
   threadId: number,
   params: UpdateThreadParams
-): Promise<ForumThread> {
+): Promise<Either<HttpError, ForumThread>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.put<ForumThread>(`${baseUrl}/v1/threads/${threadId}`, params)
 }
@@ -89,9 +91,9 @@ export async function markThreadAsRead(threadId: number, brand: string): Promise
 }
 
 export interface FetchThreadParams {
-  is_followed?: boolean,
-  page?: number,
-  limit?: number,
+  is_followed?: boolean
+  page?: number
+  limit?: number
   sort?: '-last_post_published_on' | string
 }
 /**
@@ -109,9 +111,14 @@ export async function fetchThreads(
   params: FetchThreadParams = {}
 ): Promise<PaginatedResponse<ForumThread>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  const queryObj: Record<string, string> = { brand, ...Object.fromEntries(
-      Object.entries(params).filter(([_, v]) => v !== undefined && v !== null).map(([k, v]) => [k, String(v)])
-    )}
+  const queryObj: Record<string, string> = {
+    brand,
+    ...Object.fromEntries(
+      Object.entries(params)
+        .filter(([_, v]) => v !== undefined && v !== null)
+        .map(([k, v]) => [k, String(v)])
+    ),
+  }
   const query = new URLSearchParams(queryObj).toString()
 
   const url = `${baseUrl}/v1/categories/${categoryId}/threads?${query}`
@@ -179,7 +186,7 @@ export async function unlockThread(threadId: number, brand: string): Promise<voi
  */
 export async function fetchFollowedThreads(
   brand: string
-): Promise<PaginatedResponse<ForumThread>> {
+): Promise<Either<HttpError, PaginatedResponse<ForumThread>>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.get<PaginatedResponse<ForumThread>>(`${baseUrl}/v1/threads?brand=${brand}`)
 }
@@ -193,9 +200,11 @@ export async function fetchFollowedThreads(
  */
 export async function fetchLatestThreads(
   brand: string
-): Promise<PaginatedResponse<ForumThread>> {
+): Promise<Either<HttpError, PaginatedResponse<ForumThread>>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<PaginatedResponse<ForumThread>>(`${baseUrl}/v1/threads/latest?brand=${brand}`)
+  return httpClient.get<PaginatedResponse<ForumThread>>(
+    `${baseUrl}/v1/threads/latest?brand=${brand}`
+  )
 }
 
 /**
@@ -206,7 +215,10 @@ export async function fetchLatestThreads(
  * @return {Promise<void>} - A promise that resolves when the thread is deleted.
  * @throws {HttpError} - If the request fails.
  */
-export async function deleteThread(threadId: number, brand: string): Promise<void> {
+export async function deleteThread(
+  threadId: number,
+  brand: string
+): Promise<Either<HttpError, void>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.delete<void>(`${baseUrl}/v1/threads/${threadId}?brand=${brand}`)
 }
