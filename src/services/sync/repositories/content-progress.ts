@@ -78,15 +78,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     contentId: number,
     { collection }: { collection?: { type: COLLECTION_TYPE; id: number } | null } = {}
   ) {
-    const clauses = [Q.where('content_id', contentId)]
-    if (typeof collection != 'undefined') {
-      clauses.push(
-        ...[
-          Q.where('collection_type', collection?.type ?? null),
-          Q.where('collection_id', collection?.id ?? null),
-        ]
-      )
-    }
+    const clauses = [
+      Q.where('content_id', contentId),
+      Q.where('collection_type', collection?.type ?? null),
+      Q.where('collection_id', collection?.id ?? null),
+    ]
 
     return await this.queryOne(...clauses)
   }
@@ -95,15 +91,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     contentIds: number[],
     collection: { type: COLLECTION_TYPE; id: number } | null = null
   ) {
-    const clauses = [Q.where('content_id', Q.oneOf(contentIds))]
-    if (typeof collection != 'undefined') {
-      clauses.push(
-        ...[
-          Q.where('collection_type', collection?.type ?? null),
-          Q.where('collection_id', collection?.id ?? null),
-        ]
-      )
-    }
+    const clauses = [
+      Q.where('content_id', Q.oneOf(contentIds)),
+      Q.where('collection_type', collection?.type ?? null),
+      Q.where('collection_id', collection?.id ?? null),
+    ]
 
     return await this.queryAll(...clauses)
   }
