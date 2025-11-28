@@ -6,7 +6,7 @@ import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from '../config.js'
 import { Onboarding } from './onboarding'
-import { AuthResponse } from './types'
+import { AuthResponse, User } from './types'
 
 export interface AccountStatus {
   requires_setup: boolean
@@ -150,29 +150,14 @@ export async function numberOfActiveUsers(): Promise<Either<HttpError, number>> 
   return response.map((data) => data.active_users)
 }
 
-export interface UserResource {
-  id: number
-  email: string
-  display_name: string
-  first_name: string
-  last_name: string
-  permission_level: string
-  use_student_view: boolean
-  is_admin: boolean
-  show_admin_toggle: boolean
-  [key: string]: any // Allow additional properties from the API
-}
-
 /**
  * Toggles the student view mode for admin users.
  * When enabled, admins see the platform as a regular student would.
  *
  * @param {boolean} useStudentView - Whether to enable student view mode (true) or admin view mode (false).
- * @returns {Promise<Either<HttpError, UserResource>>} - A promise that resolves to the updated user resource.
+ * @returns {Promise<Either<HttpError, User>>} - A promise that resolves to the updated user resource.
  */
-export async function toggleStudentView(
-  useStudentView: boolean
-): Promise<Either<HttpError, UserResource>> {
+export async function toggleStudentView(useStudentView: boolean): Promise<Either<HttpError, User>> {
   const apiUrl = `/api/user-management-system/v1/user/student-view`
-  return HttpClient.client().patch<UserResource>(apiUrl, { use_student_view: useStudentView })
+  return HttpClient.client().patch<User>(apiUrl, { use_student_view: useStudentView })
 }
