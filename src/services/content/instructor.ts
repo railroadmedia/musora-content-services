@@ -47,6 +47,7 @@ export async function fetchInstructors(
       `'thumbnail': thumbnail_url.asset->url`,
       `'lessonCount': count(*[${filter}])`,
     ],
+    paginated: false,
   })
 }
 
@@ -141,6 +142,7 @@ export async function fetchInstructorLessons(
       sort,
       start,
       end,
+      paginated: false,
     })
     .then((res) => res.map((r) => r || { data: [], total: 0 }))
 }

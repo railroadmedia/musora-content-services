@@ -47,6 +47,7 @@ export async function fetchArtists(
       `'thumbnail': thumbnail_url.asset->url`,
       `'lessonCount': count(*[${filter}])`,
     ],
+    paginated: false,
   })
 }
 
@@ -143,6 +144,7 @@ export async function fetchArtistLessons(
     sort,
     start: start,
     end: end,
+    paginated: false,
   })
 
   return contentClient

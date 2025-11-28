@@ -46,6 +46,7 @@ export async function fetchGenres(
       `'thumbnail': thumbnail_url.asset->url`,
       `'lessons_count': count(*[${filter}])`,
     ],
+    paginated: false,
   })
 }
 
@@ -139,6 +140,11 @@ export async function fetchGenreLessons(
   sort = getSortOrder(sort, brand)
 
   return contentClient
-    .fetchList<Lesson>(filterWithRestrictions, fieldsString, { sort, start, end })
+    .fetchList<Lesson>(filterWithRestrictions, fieldsString, {
+      sort,
+      start,
+      end,
+      paginated: false,
+    })
     .then((res) => res.map((r) => r || { data: [], total: 0 }))
 }
