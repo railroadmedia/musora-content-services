@@ -142,7 +142,7 @@ export async function confirmEmailChange(token: string): Promise<Either<HttpErro
  * @param {number} userId - The ID of the user account to delete.
  * @returns {Promise<void>} - A promise that resolves with the anonymized user data or an HttpError if the request fails.
  */
-export async function deleteAccount(userId: number): Promise<void> {
+export async function deleteAccount(userId: number): Promise<Either<HttpError, void>> {
   const apiUrl = `/api/user-management-system/v1/users/${userId}`
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   return httpClient.delete(apiUrl)
@@ -154,11 +154,11 @@ export async function deleteAccount(userId: number): Promise<void> {
  * @returns {Promise<number>} - A promise that resolves to the number of active users.
  * @throws {HttpError} - Throws HttpError if the request fails.
  */
-export async function numberOfActiveUsers(): Promise<number> {
+export async function numberOfActiveUsers(): Promise<Either<HttpError, number>> {
   const apiUrl = `/api/user-management-system/v1/accounts/active/count`
   const httpClient = new HttpClient(globalConfig.baseUrl)
   const response = await httpClient.get<{ active_users: number }>(apiUrl)
-  return response.active_users
+  return response.map((data) => data.active_users)
 }
 
 export interface UserResource {
@@ -182,7 +182,9 @@ export interface UserResource {
  * @returns {Promise<UserResource>} - A promise that resolves to the updated user resource.
  * @throws {HttpError} - Throws HttpError if the request fails or user is not an admin.
  */
-export async function toggleStudentView(useStudentView: boolean): Promise<UserResource> {
+export async function toggleStudentView(
+  useStudentView: boolean
+): Promise<Either<HttpError, UserResource>> {
   const apiUrl = `/api/user-management-system/v1/user/student-view`
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
   return httpClient.patch<UserResource>(apiUrl, { use_student_view: useStudentView })

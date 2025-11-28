@@ -3,8 +3,8 @@
  */
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
-import { HttpClient, HttpError } from '../../infrastructure/http'
 import { Either } from '../../core/types/ads/either'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 
 interface CustomerOrder {
   id: string

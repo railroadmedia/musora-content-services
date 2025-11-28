@@ -87,9 +87,9 @@ export class ContentClient extends SanityClient {
       const { limit = 10, offset = 0, sortBy = 'published_on desc', fields } = options
       const fieldsString = this.buildFieldsString(type, fields, false)
 
-      const query = `*[${brandFilter} _type == "${type}"] | order(${sortBy})[${offset}...${offset + limit}]`
+      const filter = `*[${brandFilter} _type == "${type}"]`
 
-      return this.fetchList<T>(query, fieldsString, {
+      return this.fetchList<T>(filter, fieldsString, {
         sort: sortBy,
         start: offset,
         end: offset + limit,
