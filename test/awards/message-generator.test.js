@@ -1,4 +1,4 @@
-import { AwardMessageGenerator } from '../../src/services/awards/message-generator'
+import { AwardMessageGenerator } from '../../src/services/awards/internal/message-generator'
 
 describe('AwardMessageGenerator', () => {
   const mockCompletionData = {

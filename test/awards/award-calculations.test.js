@@ -1,4 +1,4 @@
-import { awardDefinitions } from '../../src/services/awards/award-definitions'
+import { awardDefinitions } from '../../src/services/awards/internal/award-definitions'
 import { mockAwardDefinitions, getAwardByContentId } from '../mockData/award-definitions'
 
 jest.mock('../../src/services/sanity', () => ({

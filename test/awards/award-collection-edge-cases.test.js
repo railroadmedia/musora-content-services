@@ -1,5 +1,5 @@
-import { contentProgressObserver } from '../../src/services/awards/content-progress-observer'
-import { awardEvents } from '../../src/services/awards/award-events'
+import { contentProgressObserver } from '../../src/services/awards/internal/content-progress-observer'
+import { awardEvents } from '../../src/services/awards/internal/award-events'
 import { emitProgressSaved } from '../../src/services/progress-events'
 import { mockAwardDefinitions } from '../mockData/award-definitions'
 
@@ -30,7 +30,7 @@ jest.mock('../../src/services/sync/repository-proxy', () => {
 
 import sanityClient, { fetchSanity } from '../../src/services/sanity'
 import db from '../../src/services/sync/repository-proxy'
-import { awardDefinitions } from '../../src/services/awards/award-definitions'
+import { awardDefinitions } from '../../src/services/awards/internal/award-definitions'
 
 describe('Award Collection Filtering - Edge Cases', () => {
   let awardProgressListener

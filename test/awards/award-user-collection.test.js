@@ -19,7 +19,7 @@ jest.mock('../../src/services/sync/repository-proxy', () => {
 
 import sanityClient, { fetchSanity } from '../../src/services/sanity'
 import db from '../../src/services/sync/repository-proxy'
-import { awardDefinitions } from '../../src/services/awards/award-definitions'
+import { awardDefinitions } from '../../src/services/awards/internal/award-definitions'
 import { getCompletedAwards, getInProgressAwards, getAwardStatistics } from '../../src/services/awards/award-query'
 
 describe('Award User Collection - E2E Scenarios', () => {

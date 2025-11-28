@@ -1,5 +1,5 @@
-import { awardManager } from '../../src/services/awards/award-manager'
-import { awardEvents } from '../../src/services/awards/award-events'
+import { awardManager } from '../../src/services/awards/internal/award-manager'
+import { awardEvents } from '../../src/services/awards/internal/award-events'
 import { mockAwardDefinitions, getAwardByContentId } from '../mockData/award-definitions'
 
 jest.mock('../../src/services/sanity', () => ({
@@ -30,7 +30,7 @@ jest.mock('../../src/services/sync/repository-proxy', () => {
 
 import sanityClient, { fetchSanity } from '../../src/services/sanity'
 import db from '../../src/services/sync/repository-proxy'
-import { awardDefinitions } from '../../src/services/awards/award-definitions'
+import { awardDefinitions } from '../../src/services/awards/internal/award-definitions'
 
 describe('Award Multi-Lesson Course Handling - E2E Scenarios', () => {
   let awardGrantedListener

@@ -1,4 +1,4 @@
-import { buildCertificateData } from '../../src/services/awards/certificate-builder'
+import { buildCertificateData } from '../../src/services/awards/internal/certificate-builder'
 import { mockAwardDefinitions, getAwardById } from '../mockData/award-definitions'
 import { globalConfig } from '../../src/services/config'
 
@@ -25,7 +25,7 @@ jest.mock('../../src/services/sync/repository-proxy', () => {
 import sanityClient, { fetchSanity } from '../../src/services/sanity'
 import { getUserData } from '../../src/services/user/management'
 import db from '../../src/services/sync/repository-proxy'
-import { awardDefinitions } from '../../src/services/awards/award-definitions'
+import { awardDefinitions } from '../../src/services/awards/internal/award-definitions'
 
 describe('Award Certificate Display - E2E Scenarios', () => {
   const testAward = getAwardById('0238b1e5-ebee-42b3-9390-91467d113575')

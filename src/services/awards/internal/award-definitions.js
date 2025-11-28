@@ -81,7 +81,7 @@ class AwardDefinitionsService {
     this.isFetching = true
 
     try {
-      const { fetchSanity } = await import('../sanity')
+      const { fetchSanity } = await import('../../sanity')
 
       const query = `*[_type == 'content-award'] {
         _id,
@@ -147,7 +147,7 @@ class AwardDefinitionsService {
 
   async loadLastFetchFromStorage() {
     try {
-      const { globalConfig } = await import('../config')
+      const { globalConfig } = await import('../../config')
       if (!globalConfig.localStorage) {
         return
       }
@@ -168,7 +168,7 @@ class AwardDefinitionsService {
 
   async saveLastFetchToStorage() {
     try {
-      const { globalConfig } = await import('../config')
+      const { globalConfig } = await import('../../config')
       if (!globalConfig.localStorage) {
         return
       }

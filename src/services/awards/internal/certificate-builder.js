@@ -3,7 +3,7 @@
  */
 
 
-import { AWARD_ASSETS } from '../../constants/award-assets'
+import { AWARD_ASSETS } from '../../../constants/award-assets'
 import { AwardMessageGenerator } from './message-generator'
 import { globalConfig } from '../../config'
 import { awardManager } from './award-manager'
