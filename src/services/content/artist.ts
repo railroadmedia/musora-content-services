@@ -72,7 +72,7 @@ export async function fetchArtistBySlug(slug: string, brand?: Brands): Promise<A
     }[lessonCount > 0] |order(lower(name))
   `
 
-  return contentClient.fetchFirst<Artist>(query)
+  return contentClient.fetchSingle<Artist>(query)
 }
 
 export interface ArtistLessonOptions {

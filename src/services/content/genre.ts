@@ -71,7 +71,7 @@ export async function fetchGenreBySlug(slug: string, brand?: Brands): Promise<Ge
     'thumbnail':thumbnail_url.asset->url,
     "lessonsCount": count(*[${filter}])
   }`
-  return contentClient.fetchFirst<Genre>(query)
+  return contentClient.fetchSingle<Genre>(query)
 }
 
 export interface FetchGenreLessonsOptions {
