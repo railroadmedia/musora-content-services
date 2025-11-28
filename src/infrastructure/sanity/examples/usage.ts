@@ -70,16 +70,17 @@ export async function fetchSongsExample(brand: Brands, page: number = 1, limit: 
   const start = (page - 1) * limit
   const end = start + limit
 
-  const query = `*[_type == "${DocumentTypes.Song}" && brand == "${brand}"] | order(published_on desc)[${start}...${end}]{
+  const query = `*[_type == "${DocumentTypes.Song}" && brand == "${brand}"] | order(published_on desc)[${start}...${end}]`
+  const fields = `
     "id": railcontent_id,
     title,
     "artist": artist->name,
     "thumbnail": thumbnail.asset->url,
     difficulty_string,
     published_on
-  }`
+  `
 
-  return await sanityClient.fetchList(query)
+  return await sanityClient.fetchList(query, fields, { sort: 'published_on desc', start, end })
 }
 
 // Example: Execute a complex query that returns custom structure

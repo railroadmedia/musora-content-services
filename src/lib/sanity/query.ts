@@ -4,8 +4,8 @@ export interface BuildQueryOptions {
   sort: string
   start: number
   end: number
+  paginated: boolean
   isSingle?: boolean
-  withoutPagination?: boolean
 }
 
 export function buildDataAndTotalQuery(
@@ -16,11 +16,11 @@ export function buildDataAndTotalQuery(
     start = 0,
     end = 10,
     isSingle = false,
-    withoutPagination = false,
+    paginated = true,
   }: BuildQueryOptions
 ): string {
   const sortString = sort ? ` | order(${sort})` : ''
-  const countString = isSingle ? '[0...1]' : withoutPagination ? `` : `[${start}...${end}]`
+  const countString = isSingle ? '[0...1]' : paginated ? `[${start}...${end}]` : ``
   const query = `{
       "data": *[${filter}]  ${sortString}${countString}
       {
