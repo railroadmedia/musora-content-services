@@ -1,6 +1,16 @@
 import SyncRepository, { Q } from './base'
 import ContentProgress, { COLLECTION_TYPE, STATE } from '../models/ContentProgress'
 
+interface ContentIdCollectionTuple {
+  contentId: number,
+  collection: { type: COLLECTION_TYPE; id: number } | null,
+}
+
+interface CollectionParameter {
+  type: COLLECTION_TYPE,
+  id: number,
+}
+
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
   async startedIds(limit?: number) {
     return this.queryAll(
@@ -62,7 +72,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
   async getOneProgressByContentId(
     contentId: number,
-    { collection }: { collection?: { type: COLLECTION_TYPE; id: number } | null } = {}
+    { collection }: { collection?: CollectionParameter | null } = {}
   ) {
     const clauses = [Q.where('content_id', contentId)]
     if (typeof collection != 'undefined') {
@@ -79,7 +89,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
   async getSomeProgressByContentIds(
     contentIds: number[],
-    collection: { type: COLLECTION_TYPE; id: number } | null = null
+    collection: CollectionParameter | null = null
   ) {
     const clauses = [Q.where('content_id', Q.oneOf(contentIds))]
     if (typeof collection != 'undefined') {
@@ -92,6 +102,28 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     }
 
     return await this.queryAll(...clauses)
+  }
+
+  async getSomeProgressByContentIdsAndCollection(tuples: ContentIdCollectionTuple[]) {
+    const clauses = []
+
+    tuples.forEach((tuple) => {
+      clauses.push(
+        ...(tuple === tuples[0])
+          ? tupleClauses(tuple)
+          : [Q.or(...tupleClauses(tuple))]
+      )
+    })
+
+    return await this.queryAll(...clauses)
+
+    function tupleClauses(tuple: ContentIdCollectionTuple) {
+      return [
+        Q.where('content_id', tuple.contentId),
+        Q.where('collection_type', tuple.collection?.type ?? null),
+        Q.where('collection_id', tuple.collection?.id ?? null)
+      ]
+    }
   }
 
   recordProgressRemotely(contentId: number, progressPct: number, resumeTime?: number) {
@@ -129,7 +161,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
   private static generateId(
     contentId: number,
-    collection: { type: COLLECTION_TYPE; id: number } | null
+    collection: CollectionParameter | null
   ) {
     if (collection) {
       return `${contentId}:${collection.type}:${collection.id}`
