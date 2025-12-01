@@ -219,7 +219,7 @@ export async function fetchRelatedSongs(brand, songId) {
             "published_on": published_on,
             status,
             "image": thumbnail.asset->url,
-            "permission_id": permission[]->railcontent_id,
+            "permission_id": permission_v2,
             "fields": [
               {
                 "key": "title",
@@ -245,7 +245,7 @@ export async function fetchRelatedSongs(brand, songId) {
             "id": railcontent_id,
             "url": web_url_path,
             "published_on": published_on,
-            "permission_id": permission[]->railcontent_id,
+            "permission_id": permission_v2,
             status,
             "fields": [
               {
@@ -306,7 +306,7 @@ export async function fetchNewReleases(
       published_on,
       "type": _type,
       web_url_path,
-      "permission_id": permission[]->railcontent_id,
+      "permission_id": permission_v2,
       `
   const query = buildRawQuery(filter, fields, { sortOrder: sortOrder, start, end: end })
   return fetchSanity(query, true)
@@ -343,7 +343,7 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         published_on,
         "type": _type,
         web_url_path,
-        "permission_id": permission[]->railcontent_id,
+        "permission_id": permission_v2,
         live_event_start_time,
         live_event_end_time,
          "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}'`
@@ -395,7 +395,7 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
       published_on,
       "type": _type,
       web_url_path,
-      "permission_id": permission[]->railcontent_id,
+      "permission_id": permission_v2,
   } | order(published_on asc)[${start}...${end}]`
   return fetchSanity(query, true)
 }
@@ -911,7 +911,7 @@ export async function fetchMethod(brand, slug) {
         "url": *[railcontent_id == ^.id][0].web_url_path
     } | order(length(url)),
     "type": _type,
-    "permission_id": permission[]->railcontent_id,
+    "permission_id": permission_v2,
     "levels": child[${childrenFilter}]->
       {
         "id": railcontent_id,
@@ -1128,7 +1128,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
     mp3_no_drums_yes_click_url,
     mp3_yes_drums_no_click_url,
     mp3_yes_drums_yes_click_url,
-    "permission_id": permission[]->railcontent_id,
+    "permission_id": permission_v2,
     ${parentQuery}
     ...select(
       defined(live_event_start_time) => {
@@ -1266,7 +1266,7 @@ export async function fetchSiblingContent(railContentId, brand = null) {
   }).buildFilter()
 
   const brandString = brand ? ` && brand == "${brand}"` : ''
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission[]->railcontent_id, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
+  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission_v2, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
 
   const query = `*[railcontent_id == ${railContentId}${brandString}]{
    _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
@@ -1313,7 +1313,7 @@ export async function fetchRelatedLessons(railContentId) {
     { showMembershipRestrictedContent: true }
   ).buildFilter()
 
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
+  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission_v2,_type, "genre": genre[]->name`
 
   const query = `*[railcontent_id == ${railContentId} && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
@@ -2134,7 +2134,7 @@ export async function fetchScheduledAndNewReleases(
       published_on,
       "type": _type,
       show_in_new_feed,
-      "permission_id": permission[]->railcontent_id,
+      "permission_id": permission_v2,
       "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}',
   }`
 
