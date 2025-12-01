@@ -19,7 +19,7 @@ export interface Instructor {
 /**
  * Fetch all instructor with lessons available for a specific brand.
  *
- * @param {Brand} brand - The brand for which to fetch instructors.
+ * @param {Brand|string} brand - The brand for which to fetch instructors.
  * @returns {Promise<Instructor[]>} - A promise that resolves to an array of instructor objects.
  *
  * @example
@@ -27,7 +27,7 @@ export interface Instructor {
  *   .then(instructors => console.log(instructors))
  *   .catch(error => console.error(error));
  */
-export async function fetchInstructors(brand: Brand): Promise<Instructor[]> {
+export async function fetchInstructors(brand: Brand | string): Promise<Instructor[]> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
@@ -46,7 +46,7 @@ export async function fetchInstructors(brand: Brand): Promise<Instructor[]> {
  * Fetch a single instructor by their name
  *
  * @param {string} slug - The slug of the instructor to fetch.
- * @param {Brand} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
+ * @param {Brand|string} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
  * @returns {Promise<Instructor[]>} - A promise that resolves to an instructor object or null if not found.
  *
  * @example
@@ -56,7 +56,7 @@ export async function fetchInstructors(brand: Brand): Promise<Instructor[]> {
  */
 export async function fetchInstructorBySlug(
   slug: string,
-  brand?: Brand
+  brand?: Brand | string
 ): Promise<Instructor | null> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
@@ -89,8 +89,8 @@ export interface InstructorLessonsResponse {
 
 /**
  * Fetch the data needed for the instructor screen.
- * @param {string} brand - The brand for which to fetch instructor lessons
  * @param {string} slug - The slug of the instructor
+ * @param {Brand|string} brand - The brand for which to fetch instructor lessons
  *
  * @param {FetchInstructorLessonsOptions} options - Parameters for pagination, filtering and sorting.
  * @param {string} [options.sortOrder="-published_on"] - The field to sort the lessons by.
@@ -107,7 +107,7 @@ export interface InstructorLessonsResponse {
  */
 export async function fetchInstructorLessons(
   slug: string,
-  brand: Brand,
+  brand: Brand | string,
   {
     sortOrder = '-published_on',
     searchTerm = '',

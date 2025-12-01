@@ -1,8 +1,8 @@
 export enum Brand {
-  MUSORA = 'musora',
-  DRUMEO = 'drumeo',
-  PIANOTE = 'pianote',
-  GUITAREO = 'guitareo',
-  SINGEO = 'singeo',
-  PLAYBASS = 'playbass',
+  Musora = 'musora',
+  Drumeo = 'drumeo',
+  Pianote = 'pianote',
+  Guitareo = 'guitareo',
+  Singeo = 'singeo',
+  Playbass = 'playbass',
 }
