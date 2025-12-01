@@ -268,7 +268,7 @@ export async function completeMethodIntroVideo(introVideoId: number, brand: stri
   response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
   const methodStructure = await fetchMethodV2Structure(brand)
-  const learningPathId = methodStructure.learningPaths[0].id
+  const learningPathId = methodStructure.learning_paths[0].id
 
   response.active_path_response = await startLearningPath(brand, learningPathId)
 
@@ -279,7 +279,7 @@ export async function completeMethodIntroVideo(introVideoId: number, brand: stri
 interface completeLearningPathIntroVideo {
   intro_video_response: Object | null,
   learning_path_reset_response: void | null,
-  lesson_import_response: Object[] | null
+  lesson_import_response: Object | null
 }
 /**
  * Handles completion of learning path intro video and other related actions.
@@ -299,12 +299,12 @@ export async function completeLearningPathIntroVideo(introVideoId: number, learn
   const collection = { id: learningPathId, type: 'learning-path-v2' }
 
   if (!lessonsToImport) {
-    // returns nothing now, but it will when watermelon comes 'round
     response.learning_path_reset_response = await contentStatusReset(learningPathId, collection)
 
   } else {
       response.lesson_import_response = {}
     for (const contentId of lessonsToImport) {
+      // todo: create bulk complete endpoint with bubbling. and set up watermelon method bubbling
       response.lesson_import_response[contentId] = await contentStatusCompleted(contentId, collection)
     }
   }
