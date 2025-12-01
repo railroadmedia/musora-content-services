@@ -117,7 +117,7 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
     definitions: AwardDefinition[]
     progress: Map<string, ModelSerialized<UserAwardProgress>>
   }> {
-    const { awardDefinitions } = await import('../../awards/award-definitions')
+    const { awardDefinitions } = await import('../../awards/internal/award-definitions')
 
     const definitions = await awardDefinitions.getByContentId(contentId)
 

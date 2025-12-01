@@ -12,7 +12,7 @@ import { SyncConcurrencySafetyMechanism } from './concurrency-safety'
 import { SyncTelemetry } from './telemetry/index'
 import { inBoundary } from './errors/boundary'
 import createStoresFromConfig from './store-configs'
-import { contentProgressObserver } from '../awards/content-progress-observer'
+import { contentProgressObserver } from '../awards/internal/content-progress-observer'
 
 export default class SyncManager {
   private static instance: SyncManager | null = null

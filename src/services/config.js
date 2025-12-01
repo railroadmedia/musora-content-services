@@ -79,7 +79,7 @@ export function initializeService(config) {
   globalConfig.permissionsVersion = config.permissionsVersion || 'v2'
 
   if (config.localStorage) {
-    import('./awards/award-definitions')
+    import('./awards/internal/award-definitions')
       .then(({ awardDefinitions }) => awardDefinitions.initialize())
       .catch(error => {
         console.error('Failed to initialize award definitions:', error)
