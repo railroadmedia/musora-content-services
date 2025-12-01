@@ -6,7 +6,7 @@ import { fetchSanity, getSortOrder } from '../sanity.js'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { Lesson } from './content'
 import { buildDataAndTotalQuery } from '../../lib/sanity/query'
-import { Brand } from '../../lib/brands'
+import { Brands } from '../../lib/brands'
 
 export interface Genre {
   name: string
@@ -18,7 +18,7 @@ export interface Genre {
 /**
  * Fetch all genres with lessons available for a specific brand.
  *
- * @param {Brand|string} [brand] - The brand for which to fetch the genre for. Lesson count will be filtered by this brand if provided.
+ * @param {Brands|string} [brand] - The brand for which to fetch the genre for. Lesson count will be filtered by this brand if provided.
  * @returns {Promise<Genre[]>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
@@ -26,7 +26,7 @@ export interface Genre {
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenres(brand: Brand | string): Promise<Genre[]> {
+export async function fetchGenres(brand: Brands | string): Promise<Genre[]> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
@@ -46,7 +46,7 @@ export async function fetchGenres(brand: Brand | string): Promise<Genre[]> {
  * Fetch a single genre by their slug and brand
  *
  * @param {string} slug - The slug of the genre to fetch.
- * @param {Brand|string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
+ * @param {Brands|string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
  * @returns {Promise<Genre[]|null>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
@@ -56,7 +56,7 @@ export async function fetchGenres(brand: Brand | string): Promise<Genre[]> {
  */
 export async function fetchGenreBySlug(
   slug: string,
-  brand?: Brand | string
+  brand?: Brands | string
 ): Promise<Genre | null> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
@@ -91,7 +91,7 @@ export interface LessonsByGenreResponse {
 /**
  * Fetch the genre's lessons.
  * @param {string} slug - The slug of the genre
- * @param {Brand|string} brand - The brand for which to fetch lessons.
+ * @param {Brands|string} brand - The brand for which to fetch lessons.
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
  * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
@@ -108,7 +108,7 @@ export interface LessonsByGenreResponse {
  */
 export async function fetchGenreLessons(
   slug: string,
-  brand: Brand | string,
+  brand: Brands | string,
   contentType?: string,
   {
     sort = '-published_on',

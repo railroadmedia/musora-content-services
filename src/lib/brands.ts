@@ -1,4 +1,4 @@
-export enum Brand {
+export enum Brands {
   Musora = 'musora',
   Drumeo = 'drumeo',
   Pianote = 'pianote',
