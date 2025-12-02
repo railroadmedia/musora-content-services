@@ -2,16 +2,9 @@
  * @module ProgressRow
  */
 
-import {
-  getDailySession,
-  getActivePath,
-  resetAllLearningPaths,
-  startLearningPath,
-  fetchLearningPathLessons,
-} from '../content-org/learning-paths'
+import { getActivePath, fetchLearningPathLessons } from '../content-org/learning-paths'
 import { getToday } from '../dateUtils.js'
-import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2IntroVideo } from '../sanity'
-import { addContextToContent } from '../contentAggregator.js'
+import { fetchMethodV2IntroVideo } from '../sanity'
 import { getProgressState } from '../contentProgress'
 
 export async function getMethodCard(brand) {
@@ -21,6 +14,10 @@ export async function getMethodCard(brand) {
   if (introVideoProgressState !== 'completed') {
     //startLearningPath('drumeo', 422533)
     const timestamp = Math.floor(Date.now() / 1000)
+    const instructorText =
+      introVideo.instructor?.length > 1
+        ? 'Multiple Instructors'
+        : introVideo.instructor?.[0]?.name || ''
     return {
       id: 1, // method card has no id
       type: 'method',
@@ -29,7 +26,7 @@ export async function getMethodCard(brand) {
       body: {
         thumbnail: introVideo.thumbnail,
         title: introVideo.title,
-        subtitle: `${introVideo.difficulty_string} • ${introVideo.instructor?.[0]?.name}`,
+        subtitle: `${introVideo.difficulty_string} • ${instructorText}`,
       },
       cta: {
         text: 'Get Started',
@@ -59,9 +56,7 @@ export async function getMethodCard(brand) {
     const nextIncompleteLesson = learningPath?.todays_lessons.find(
       (lesson) => lesson.progressStatus !== 'completed'
     )
-    let ctaText,
-      action,
-      nextLesson = null
+    let ctaText, action
     if (noneCompleted) {
       ctaText = 'Start Session'
       action = getMethodActionCTA(nextIncompleteLesson)
