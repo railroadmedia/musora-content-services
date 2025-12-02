@@ -125,6 +125,28 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     })
   }
 
+  recordProgressesRemotely(
+    contentIds: number[],
+    collection: { type: COLLECTION_TYPE; id: number } | null,
+    progressPct: number
+  ) {
+    return this.upsertSomeRemote(
+      Object.fromEntries(
+        contentIds.map((contentId) => [
+          ProgressRepository.generateId(contentId, collection),
+          (r: ContentProgress) => {
+            r.content_id = contentId
+            r.collection_type = collection?.type ?? null
+            r.collection_id = collection?.id ?? null
+
+            r.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
+            r.progress_percent = progressPct
+          },
+        ])
+      )
+    )
+  }
+
   recordProgressesTentative(contentProgresses: Map<number, number>, collection: { type: COLLECTION_TYPE; id: number } | null) {
     return this.upsertSomeTentative(
       Object.fromEntries(

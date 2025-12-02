@@ -1,4 +1,4 @@
-import { fetchHierarchy } from './sanity.js'
+import { fetchHierarchy, fetchLearningPathHierarchy } from './sanity.js'
 import { db } from './sync'
 import { STATE } from './sync/models/ContentProgress'
 import { trackUserPractice, findIncompleteLesson } from './userActivity'
@@ -278,6 +278,11 @@ async function trackProgress(contentId, collection, currentSeconds, mediaLengthS
 export async function contentStatusCompleted(contentId, collection = null) {
   return setStartedOrCompletedStatus(contentId, collection, true)
 }
+
+export async function contentsStatusCompleted(contentIds, collection = null) {
+  return setStartedOrCompletedStatuses(contentIds, collection, true)
+}
+
 export async function contentStatusStarted(contentId, collection = null) {
   return setStartedOrCompletedStatus(contentId, collection, false)
 }
@@ -291,7 +296,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
 
-  const bubbledProgresses = bubbleProgress(await fetchHierarchy(contentId), contentId, collection)
+  const bubbledProgresses = bubbleProgress(await getHierarchy(contentId, collection), contentId, collection)
   await db.contentProgress.recordProgressesTentative(bubbledProgresses, collection)
 
   return response
@@ -303,10 +308,12 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
   // because awards may be generated (on server) on completion
   // which we would want to toast the user about *in band*
   const response = await db.contentProgress.recordProgressRemotely(contentId, collection, progress)
+  console.log(response)
 
   if (response.pushStatus === 'success') {
-    const hierarchy = await fetchHierarchy(contentId)
+    const hierarchy = await getHierarchy(contentId, collection)
 
+    console.log(hierarchy)
     await Promise.all([
       db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, collection, progress), collection),
       bubbleProgress(hierarchy, contentId, collection).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses, collection))
@@ -316,9 +323,46 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
   return response
 }
 
+async function getHierarchy(contentId, collection) {
+  if (collection && collection.type === 'learning-path-v2') {
+    return await fetchLearningPathHierarchy(contentId, collection)
+  } else {
+    return await fetchHierarchy(contentId)
+  }
+}
+
+async function setStartedOrCompletedStatuses(contentIds, collection, isCompleted) {
+  const progress = isCompleted ? 100 : 0
+  // we explicitly pessimistically await a remote push here
+  // because awards may be generated (on server) on completion
+  // which we would want to toast the user about *in band*
+  console.log(contentIds, collection, progress)
+  const response = await db.contentProgress.recordProgressesRemotely(contentIds, collection, progress)
+
+  if (response.pushStatus === 'success') {
+    // we assume this is used only for contents within the same hierarchy
+    const hierarchy = await getHierarchy(contentIds[0], collection)
+
+    let ids = {}
+    for (const contentId of contentIds) {
+      ids = {
+        ...ids,
+        ...trickleProgress(hierarchy, contentId, collection, progress),
+        ...await bubbleProgress(hierarchy, contentId, collection)
+      }
+    }
+
+    await Promise.all([
+      db.contentProgress.recordProgressesTentative(ids, collection),
+    ]);
+  }
+
+  return response
+}
+
 async function resetStatus(contentId, collection = null) {
   const response = await db.contentProgress.eraseProgress(contentId, collection)
-  const hierarchy = await fetchHierarchy(contentId)
+  const hierarchy = await getHierarchy(contentId, collection)
 
   await Promise.all([
     db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, collection, 0), collection),

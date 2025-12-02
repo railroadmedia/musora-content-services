@@ -96,6 +96,13 @@ export default class SyncRepository<TModel extends BaseModel> {
     )
   }
 
+  protected async upsertSomeRemote(builders: Record<RecordId, (record: TModel) => void>) {
+    return this.store.telemetry.trace(
+      { name: `upsertSomeRemote:${this.store.model.table}`, op: 'upsert' },
+      (span) => this._respondToRemoteWriteSome(() => this.store.upsertSomeRemote(builders, span), Object.keys(builders), span)
+    )
+  }
+
   protected async upsertOne(id: RecordId, builder: (record: TModel) => void) {
     return this.store.telemetry.trace(
       { name: `upsertOne:${this.store.model.table}`, op: 'upsert' },
@@ -191,6 +198,24 @@ export default class SyncRepository<TModel extends BaseModel> {
       data,
       status: 'synced',
       pushStatus: 'success'
+    }
+    return ret
+  }
+
+  private async _respondToRemoteWriteSome<T extends SyncPushResponse>(push: () => Promise<T>, ids: RecordId[], span?: Span) {
+    const response = await push()
+
+    if (!response.ok) {
+      throw new SyncError('Failed to push records', { response })
+    }
+
+    const data = await this.store.readSome(ids)
+
+    // not sure what removing type will do here but there's a type error
+    const ret = {
+      data,
+      status: 'synced' as const,
+      pushStatus: 'success' as const
     }
     return ret
   }

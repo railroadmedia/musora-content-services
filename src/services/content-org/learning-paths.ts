@@ -7,6 +7,7 @@ import { fetchByRailContentId, fetchMethodV2Structure } from '../sanity.js'
 import { addContextToContent } from '../contentAggregator.js'
 import {
   contentStatusCompleted,
+  contentsStatusCompleted,
   contentStatusReset,
   getAllCompletedByIds,
   getProgressState,
@@ -157,6 +158,7 @@ export async function fetchLearningPathLessons(
   const learningPath = await getEnrichedLearningPath(learningPathId)
   let dailySession = await getDailySession(brand, userDate)
   if (!dailySession) {
+    console.log('creating daily from fetch LP', [brand, userDate, false]) // for testing
     dailySession = await updateDailySession(brand, userDate, false)
   }
 
@@ -302,11 +304,7 @@ export async function completeLearningPathIntroVideo(introVideoId: number, learn
     response.learning_path_reset_response = await contentStatusReset(learningPathId, collection)
 
   } else {
-      response.lesson_import_response = {}
-    for (const contentId of lessonsToImport) {
-      // todo: create bulk complete endpoint with bubbling. and set up watermelon method bubbling
-      response.lesson_import_response[contentId] = await contentStatusCompleted(contentId, collection)
-    }
+    response.lesson_import_response = await contentsStatusCompleted(lessonsToImport, collection)
   }
 
   return response
