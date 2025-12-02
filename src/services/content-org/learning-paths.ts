@@ -11,6 +11,7 @@ import {
   getAllCompletedByIds,
   getProgressState,
 } from '../contentProgress.js'
+import { STATE } from '../sync/models/ContentProgress'
 
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
@@ -222,28 +223,25 @@ export async function fetchLearningPathLessons(
 }
 
 /**
- * For an array of lessons, update with completion data from
- * other learning paths or any a la carte progress.
+ * For an array of contentIds, fetch any content progress with state=completed,
+ * including other learning paths and a la carte progress.
  *
- * @param {Array<Object>} children
- * @returns {Promise<Array<Object>>} Response object
+ * @param {number[]} contentIds The array of content IDs within the learning path
+ * @returns {Promise<Object>} Object with content IDs as keys and the progress state as values
  */
-export async function fetchLearningPathProgressCheckLessons(children: Object[]): Promise<Array<object>> {
-  let contentIds = children.map((child) => child['id'])
+export async function fetchLearningPathProgressCheckLessons(contentIds: number[]): Promise<Object> {
   let query = await getAllCompletedByIds(contentIds)
-  let completedLessons = query.data.reduce((obj, lesson) => {
-    obj[lesson.id] = lesson
+  console.log(query)
+  let completedLessons = query.data.map(lesson => lesson.content_id)
+  console.log(completedLessons)
+
+  let response = contentIds.reduce((obj, contentId) => {
+    let lessonIsCompleted = completedLessons.includes(contentId)
+    obj[contentId] = lessonIsCompleted ? STATE.COMPLETED : ""
     return obj
   }, {})
-  if (!completedLessons) return children
-
-  return children.map((child) => {
-    if (child['id'] in completedLessons) {
-      child['progressStatus'] = completedLessons[child['id']].state
-      child['progressPercentage'] = 100
-    }
-    return child
-  })
+  console.log(response)
+  return response
 }
 
 interface completeMethodIntroVideo {
