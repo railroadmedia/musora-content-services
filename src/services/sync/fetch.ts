@@ -1,10 +1,10 @@
-import { SyncToken, SyncEntry, SyncSyncable } from "./index"
-import { EpochMs } from "."
+import { SyncToken, SyncEntry, SyncSyncable } from './index'
+import { EpochMs } from '.'
 
 import { globalConfig } from '../config.js'
-import { RecordId } from "@nozbe/watermelondb"
-import BaseModel from "./models/Base"
-import { BaseSessionProvider } from "./context/providers"
+import { RecordId } from '@nozbe/watermelondb'
+import BaseModel from './models/Base'
+import { BaseSessionProvider } from './context/providers'
 
 interface RawPullResponse {
   meta: {
@@ -31,28 +31,33 @@ type SyncPushSuccessResponse = SyncPushResponseBase & {
   results: SyncStorePushResult[]
 }
 type SyncPushFailureResponse = SyncPushResponseBase & {
-  ok: false,
+  ok: false
   originalError: Error
 }
-interface SyncPushResponseBase extends SyncResponseBase {
+interface SyncPushResponseBase extends SyncResponseBase {}
 
-}
-
-type SyncStorePushResult<TRecordKey extends string = 'id'> = SyncStorePushResultSuccess<TRecordKey> | SyncStorePushResultFailure<TRecordKey>
+type SyncStorePushResult<TRecordKey extends string = 'id'> =
+  | SyncStorePushResultSuccess<TRecordKey>
+  | SyncStorePushResultFailure<TRecordKey>
 type SyncStorePushResultSuccess<TRecordKey extends string = 'id'> = SyncStorePushResultBase & {
   type: 'success'
   entry: SyncEntry<BaseModel, TRecordKey>
 }
-type SyncStorePushResultFailure<TRecordKey extends string = 'id'> = SyncStorePushResultProcessingFailure<TRecordKey> | SyncStorePushResultValidationFailure<TRecordKey>
-type SyncStorePushResultProcessingFailure<TRecordKey extends string = 'id'> = SyncStorePushResultFailureBase<TRecordKey> & {
-  failureType: 'processing'
-  error: any
-}
-type SyncStorePushResultValidationFailure<TRecordKey extends string = 'id'> = SyncStorePushResultFailureBase<TRecordKey> & {
-  failureType: 'validation'
-  errors: Record<string, string[]>
-}
-interface SyncStorePushResultFailureBase<TRecordKey extends string = 'id'> extends SyncStorePushResultBase {
+type SyncStorePushResultFailure<TRecordKey extends string = 'id'> =
+  | SyncStorePushResultProcessingFailure<TRecordKey>
+  | SyncStorePushResultValidationFailure<TRecordKey>
+type SyncStorePushResultProcessingFailure<TRecordKey extends string = 'id'> =
+  SyncStorePushResultFailureBase<TRecordKey> & {
+    failureType: 'processing'
+    error: any
+  }
+type SyncStorePushResultValidationFailure<TRecordKey extends string = 'id'> =
+  SyncStorePushResultFailureBase<TRecordKey> & {
+    failureType: 'validation'
+    errors: Record<string, string[]>
+  }
+interface SyncStorePushResultFailureBase<TRecordKey extends string = 'id'>
+  extends SyncStorePushResultBase {
   type: 'failure'
   failureType: string
   ids: { [K in TRecordKey]: RecordId }
@@ -70,34 +75,35 @@ type SyncPullSuccessResponse = SyncPullResponseBase & {
   previousToken: SyncToken | null
 }
 type SyncPullFailureResponse = SyncPullResponseBase & {
-  ok: false,
+  ok: false
   originalError: Error
 }
-interface SyncPullResponseBase extends SyncResponseBase {
-
-}
+interface SyncPullResponseBase extends SyncResponseBase {}
 export interface SyncResponseBase {
   ok: boolean
 }
 
 export type PushPayload = {
-  entries: ({
-    record: SyncSyncable
-    meta: {
-      ids: {
-        id: RecordId
+  entries: (
+    | {
+        record: SyncSyncable
+        meta: {
+          ids: {
+            id: RecordId
+          }
+          deleted: false
+        }
       }
-      deleted: false
-    }
-  } | {
-    record: null
-    meta: {
-      ids: {
-        id: RecordId
+    | {
+        record: null
+        meta: {
+          ids: {
+            id: RecordId
+          }
+          deleted: true
+        }
       }
-      deleted: true
-    }
-  })[]
+  )[]
 }
 
 interface ServerPushPayload {
@@ -106,35 +112,48 @@ interface ServerPushPayload {
     meta: {
       ids: {
         client_record_id: RecordId
-      },
+      }
       deleted: boolean
     }
   }[]
 }
 
-export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (session: BaseSessionProvider) => Request {
-  return (session) => new Request(globalConfig.baseUrl + input, {
-    ...init,
-    headers: {
-      ...init?.headers,
-      'Content-Type': 'application/json',
-      'X-Sync-Client-Id': session.getClientId(),
-      ...(session.getSessionId() ? {
-        'X-Sync-Client-Session-Id': session.getSessionId()!
-      } : {})
-    }
-  })
+export function makeFetchRequest(
+  input: RequestInfo,
+  init?: RequestInit
+): (session: BaseSessionProvider) => Request {
+  return (session) =>
+    new Request(globalConfig.baseUrl + input, {
+      ...init,
+      headers: {
+        ...init?.headers,
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${globalConfig?.sessionConfig?.token}`,
+        'X-Sync-Client-Id': session.getClientId(),
+        ...(session.getSessionId()
+          ? {
+              'X-Sync-Client-Session-Id': session.getSessionId()!,
+            }
+          : {}),
+      },
+    })
 }
 
 export function handlePull(callback: (session: BaseSessionProvider) => Request) {
-  return async function(session: BaseSessionProvider, lastFetchToken: SyncToken | null, signal?: AbortSignal): Promise<SyncPullResponse> {
+  return async function (
+    session: BaseSessionProvider,
+    lastFetchToken: SyncToken | null,
+    signal?: AbortSignal
+  ): Promise<SyncPullResponse> {
     const generatedRequest = callback(session)
+    console.log(generatedRequest)
+    console.log(lastFetchToken)
     const url = serializePullUrlQuery(generatedRequest.url, lastFetchToken)
     const request = new Request(url, {
       credentials: 'include',
       headers: generatedRequest.headers,
-      signal
-    });
+      signal,
+    })
 
     let response: Response | null = null
     try {
@@ -142,11 +161,11 @@ export function handlePull(callback: (session: BaseSessionProvider) => Request) 
     } catch (e) {
       return {
         ok: false,
-        originalError: e
+        originalError: e,
       }
     }
 
-    const json = await response.json() as RawPullResponse
+    const json = (await response.json()) as RawPullResponse
     const data = deserializePullResponse(json)
 
     // if no max_updated_at, at least use the server's timestamp
@@ -160,19 +179,23 @@ export function handlePull(callback: (session: BaseSessionProvider) => Request) 
       ok: true,
       entries,
       token,
-      previousToken
+      previousToken,
     }
   }
 }
 
 export function handlePush(callback: (session: BaseSessionProvider) => Request) {
-  return async function(session: BaseSessionProvider, payload: PushPayload, signal?: AbortSignal): Promise<SyncPushResponse> {
+  return async function (
+    session: BaseSessionProvider,
+    payload: PushPayload,
+    signal?: AbortSignal
+  ): Promise<SyncPushResponse> {
     const generatedRequest = callback(session)
     const serverPayload = serializePushPayload(payload)
     const request = new Request(generatedRequest, {
       credentials: 'include',
       body: JSON.stringify(serverPayload),
-      signal
+      signal,
     })
 
     let response: Response | null = null
@@ -181,23 +204,26 @@ export function handlePush(callback: (session: BaseSessionProvider) => Request) 
     } catch (e) {
       return {
         ok: false,
-        originalError: e
+        originalError: e,
       }
     }
 
-    const json = await response.json() as RawPushResponse
+    const json = (await response.json()) as RawPushResponse
     const data = deserializePushResponse(json)
 
     return {
       ok: true,
-      results: data.results
+      results: data.results,
     }
   }
 }
 
 async function performFetch(request: Request) {
   const response = await fetch(request)
-  const isRetryable = (response.status >= 500 && response.status < 504) || response.status === 429 || response.status === 408
+  const isRetryable =
+    (response.status >= 500 && response.status < 504) ||
+    response.status === 429 ||
+    response.status === 408
 
   if (isRetryable) {
     throw new Error(`Server returned ${response.status}`)
@@ -207,8 +233,8 @@ async function performFetch(request: Request) {
 }
 
 function serializePullUrlQuery(url: string, fetchToken: SyncToken | null) {
-  const queryString = url.replace(/^[^?]*\??/, '');
-  const searchParams = new URLSearchParams(queryString);
+  const queryString = url.replace(/^[^?]*\??/, '')
+  const searchParams = new URLSearchParams(queryString)
   if (fetchToken) {
     searchParams.set('since', fetchToken.toString())
   }
@@ -216,39 +242,40 @@ function serializePullUrlQuery(url: string, fetchToken: SyncToken | null) {
 }
 
 function deserializePullResponse(response: RawPullResponse) {
+  console.log(response)
   return {
     ...response,
-    entries: response.entries.map(entry => {
+    entries: response.entries.map((entry) => {
       return {
         ...entry,
         record: deserializeRecord(entry.record),
         meta: {
           ...entry.meta,
-          ids: deserializeIds(entry.meta.ids)
-        }
+          ids: deserializeIds(entry.meta.ids),
+        },
       }
-    })
+    }),
   }
 }
 
 function serializePushPayload(payload: PushPayload): ServerPushPayload {
   return {
     ...payload,
-    entries: payload.entries.map(entry => {
+    entries: payload.entries.map((entry) => {
       return {
         record: serializeRecord(entry.record),
         meta: {
           ...entry.meta,
-          ids: serializeIds(entry.meta.ids)
-        }
+          ids: serializeIds(entry.meta.ids),
+        },
       }
-    })
+    }),
   }
 }
 
 function deserializePushResponse(response: RawPushResponse) {
   return {
-    results: response.results.map(result => {
+    results: response.results.map((result) => {
       if (result.type === 'success') {
         const entry = result.entry
 
@@ -259,26 +286,28 @@ function deserializePushResponse(response: RawPushResponse) {
             record: deserializeRecord(entry.record),
             meta: {
               ...entry.meta,
-              ids: deserializeIds(entry.meta.ids)
-            }
-          }
+              ids: deserializeIds(entry.meta.ids),
+            },
+          },
         }
       } else {
         return {
           ...result,
-          ids: deserializeIds(result.ids)
+          ids: deserializeIds(result.ids),
         }
       }
-    })
+    }),
   }
 }
 
-function serializeRecord(record: SyncSyncable<BaseModel, 'id'> | null): SyncSyncable<BaseModel, 'client_record_id'> | null {
+function serializeRecord(
+  record: SyncSyncable<BaseModel, 'id'> | null
+): SyncSyncable<BaseModel, 'client_record_id'> | null {
   if (record) {
     const { id, ...rest } = record
     return {
       ...rest,
-      client_record_id: id
+      client_record_id: id,
     }
   }
 
@@ -287,16 +316,18 @@ function serializeRecord(record: SyncSyncable<BaseModel, 'id'> | null): SyncSync
 
 function serializeIds(ids: { id: RecordId }): { client_record_id: RecordId } {
   return {
-    client_record_id: ids.id
+    client_record_id: ids.id,
   }
 }
 
-function deserializeRecord(record: SyncSyncable<BaseModel, 'client_record_id'> | null): SyncSyncable<BaseModel, 'id'> | null {
+function deserializeRecord(
+  record: SyncSyncable<BaseModel, 'client_record_id'> | null
+): SyncSyncable<BaseModel, 'id'> | null {
   if (record) {
     const { client_record_id: id, ...rest } = record
     return {
       ...rest,
-      id
+      id,
     }
   }
 
@@ -305,6 +336,6 @@ function deserializeRecord(record: SyncSyncable<BaseModel, 'client_record_id'> |
 
 function deserializeIds(ids: { client_record_id: RecordId }): { id: RecordId } {
   return {
-    id: ids.client_record_id
+    id: ids.client_record_id,
   }
 }

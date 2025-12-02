@@ -1,14 +1,11 @@
 import { Q } from '@nozbe/watermelondb'
 import UserAwardProgress from '../models/UserAwardProgress'
 import SyncRepository from './base'
-import type { AwardDefinition, CompletionData } from '../../awards/types'
+import type { AwardDefinition, CompletionData } from '../../awards/internal/types'
 import type { ModelSerialized } from '../serializers'
 
 export default class UserAwardProgressRepository extends SyncRepository<UserAwardProgress> {
-  async getAll(options?: {
-    limit?: number
-    onlyCompleted?: boolean
-  }) {
+  async getAll(options?: { limit?: number; onlyCompleted?: boolean }) {
     const clauses = []
 
     if (options?.onlyCompleted) {
@@ -21,7 +18,7 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
       clauses.push(Q.take(options.limit))
     }
 
-    return this.queryAll(...clauses as any)
+    return this.queryAll(...(clauses as any))
   }
 
   async getCompleted(limit?: number) {
@@ -32,7 +29,7 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
     const clauses: any[] = [
       Q.where('progress_percentage', Q.gt(0)),
       Q.where('completed_at', Q.eq(null)),
-      Q.sortBy('progress_percentage', Q.desc)
+      Q.sortBy('progress_percentage', Q.desc),
     ]
 
     if (limit) {
@@ -51,13 +48,8 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
     return result.data?.isCompleted ?? false
   }
 
-  async getRecentlyCompleted(options?: {
-    limit?: number
-    since?: number
-  }) {
-    const clauses: any[] = [
-      Q.where('completed_at', Q.notEq(null))
-    ]
+  async getRecentlyCompleted(options?: { limit?: number; since?: number }) {
+    const clauses: any[] = [Q.where('completed_at', Q.notEq(null))]
 
     if (options?.since) {
       clauses.push(Q.where('completed_at', Q.gte(options.since)))
@@ -102,14 +94,11 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
     return this.upsertOne(awardId, builder)
   }
 
-  async completeAward(
-    awardId: string,
-    completionData: CompletionData
-  ) {
+  async completeAward(awardId: string, completionData: CompletionData) {
     return this.recordAwardProgress(awardId, 100, {
       completedAt: Math.floor(Date.now() / 1000),
       completionData,
-      immediate: true
+      immediate: true,
     })
   }
 
@@ -121,7 +110,7 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
 
     const definitions = await awardDefinitions.getByContentId(contentId)
 
-    const awardIds = definitions.map(d => d._id)
+    const awardIds = definitions.map((d) => d._id)
     const progressMap = new Map<string, ModelSerialized<UserAwardProgress>>()
 
     for (const awardId of awardIds) {

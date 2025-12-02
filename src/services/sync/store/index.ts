@@ -1,6 +1,6 @@
 import { Database, Q, type Collection, type RecordId } from '@nozbe/watermelondb'
 import { RawSerializer, ModelSerializer } from '../serializers'
-import { ModelClass, SyncToken, SyncEntry,  SyncContext, EpochMs } from '..'
+import { ModelClass, SyncToken, SyncEntry, SyncContext, EpochMs } from '..'
 import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
 import type SyncRetry from '../retry'
 import type SyncRunScope from '../run-scope'
@@ -97,28 +97,31 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private emit = this.emitter.emit.bind(this.emitter)
 
   async requestSync(reason: string) {
-    inBoundary(ctx => {
-      this.telemetry.trace(
-        { name: `sync:${this.model.table}`, op: 'sync', attributes: ctx },
-        async span => {
-          let pushError: any = null
+    inBoundary(
+      (ctx) => {
+        this.telemetry.trace(
+          { name: `sync:${this.model.table}`, op: 'sync', attributes: ctx },
+          async (span) => {
+            let pushError: any = null
 
-          try {
-            await this.pushUnsyncedWithRetry(span)
-          } catch (err) {
-            pushError = err
+            try {
+              await this.pushUnsyncedWithRetry(span)
+            } catch (err) {
+              pushError = err
+            }
+
+            // will return records that we just saw in push response, but we can't
+            // be sure there were no other changes before the push
+            await this.pullRecordsWithRetry(span)
+
+            if (pushError) {
+              throw pushError
+            }
           }
-
-          // will return records that we just saw in push response, but we can't
-          // be sure there were no other changes before the push
-          await this.pullRecordsWithRetry(span)
-
-          if (pushError) {
-            throw pushError
-          }
-        }
-      )
-    }, { table: this.model.table, reason })
+        )
+      },
+      { table: this.model.table, reason }
+    )
   }
 
   async getLastFetchToken() {
@@ -176,7 +179,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   async insertOne(builder: (record: TModel) => void, span?: Span) {
     return await this.runScope.abortable(async () => {
       const record = await this.telemeterizedWrite(span, async () => {
-        return this.collection.create(rec => {
+        return this.collection.create((rec) => {
           builder(rec)
         })
       })
@@ -212,7 +215,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   async upsertOneRemote(id: RecordId, builder: (record: TModel) => void, span?: Span) {
     return await this.runScope.abortable(async () => {
       let record: TModel
-      const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(r => r[0] || null)
+      const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(
+        (r) => r[0] || null
+      )
 
       if (existing) {
         existing._isEditing = true
@@ -227,10 +232,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         record = this.collection.disposableFromDirtyRaw(attrs._raw)
       }
 
-      return await this.pushCoalescer.push(
-        [record],
-        () => this.executePush([record], span)
-      )
+      return await this.pushCoalescer.push([record], () => this.executePush([record], span))
     })
   }
 
@@ -240,54 +242,73 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return await this.runScope.abortable(async () => {
       const ids = Object.keys(builders)
 
-      const records = await this.telemeterizedWrite(span, async writer => {
+      const records = await this.telemeterizedWrite(span, async (writer) => {
         const existing = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))
-        const existingMap = existing.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
+        const existingMap = existing.reduce(
+          (map, record) => map.set(record.id, record),
+          new Map<RecordId, TModel>()
+        )
 
         const destroyedBuilds = []
-        const recreateBuilds: Array<{ id: RecordId; created_at: number; builder: (record: TModel) => void }> = []
+        const recreateBuilds: Array<{
+          id: RecordId
+          created_at: number
+          builder: (record: TModel) => void
+        }> = []
 
-        existing.forEach(record => {
+        existing.forEach((record) => {
           if (record._raw._status === 'deleted') {
-            destroyedBuilds.push(new this.model(this.collection, { id: record.id }).prepareDestroyPermanently())
+            destroyedBuilds.push(
+              new this.model(this.collection, { id: record.id }).prepareDestroyPermanently()
+            )
           } else if (record._raw._status === 'created' && builders[record.id]) {
             // Workaround for WatermelonDB bug: prepareUpdate() doesn't commit field changes
             // for records with _status='created'. Destroy and recreate to ensure updates persist.
-            destroyedBuilds.push(new this.model(this.collection, { id: record.id }).prepareDestroyPermanently())
+            destroyedBuilds.push(
+              new this.model(this.collection, { id: record.id }).prepareDestroyPermanently()
+            )
             recreateBuilds.push({
               id: record.id,
               created_at: record._raw.created_at as number,
-              builder: builders[record.id]
+              builder: builders[record.id],
             })
           }
         })
 
-        const newBuilds = Object.entries(builders).map(([id, builder]) => {
-          const existing = existingMap.get(id)
-          const recreate = recreateBuilds.find(r => r.id === id)
+        const newBuilds = Object.entries(builders)
+          .map(([id, builder]) => {
+            const existing = existingMap.get(id)
+            const recreate = recreateBuilds.find((r) => r.id === id)
 
-          if (recreate) {
-            return this.collection.prepareCreate(record => {
-              record._raw.id = id
-              record._raw.created_at = recreate.created_at
-              record._raw.updated_at = this.generateTimestamp()
-              record._raw._status = 'created'
-              builder(record)
-            })
-          } else if (existing && existing._raw._status !== 'deleted' && existing._raw._status !== 'created') {
-            return existing.prepareUpdate(builder)
-          } else if (!existing || existing._raw._status === 'deleted') {
-            return this.collection.prepareCreate(record => {
-              const now = this.generateTimestamp()
+            if (recreate) {
+              return this.collection.prepareCreate((record) => {
+                record._raw.id = id
+                record._raw.created_at = recreate.created_at as EpochMs
+                record._raw.updated_at = this.generateTimestamp()
+                record._raw._status = 'created'
+                builder(record)
+              })
+            } else if (
+              existing &&
+              existing._raw._status !== 'deleted' &&
+              existing._raw._status !== 'created'
+            ) {
+              return existing.prepareUpdate(builder)
+            } else if (!existing || existing._raw._status === 'deleted') {
+              return this.collection.prepareCreate((record) => {
+                const now = this.generateTimestamp()
 
-              record._raw.id = id
-              record._raw.created_at = now
-              record._raw.updated_at = now
-              builder(record)
-            })
-          }
-          return null
-        }).filter((build): build is ReturnType<typeof this.collection.prepareCreate> => build !== null)
+                record._raw.id = id
+                record._raw.created_at = now
+                record._raw.updated_at = now
+                builder(record)
+              })
+            }
+            return null
+          })
+          .filter(
+            (build): build is ReturnType<typeof this.collection.prepareCreate> => build !== null
+          )
 
         await writer.batch(...destroyedBuilds)
         await writer.batch(...newBuilds)
@@ -305,18 +326,26 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   async upsertSomeTentative(builders: Record<RecordId, (record: TModel) => void>, span?: Span) {
-    return this.upsertSome(Object.fromEntries(Object.entries(builders).map(([id, builder]) => [id, record => {
-      builder(record)
-      record._raw._status = 'synced'
-    }])), span)
+    return this.upsertSome(
+      Object.fromEntries(
+        Object.entries(builders).map(([id, builder]) => [
+          id,
+          (record) => {
+            builder(record)
+            record._raw._status = 'synced'
+          },
+        ])
+      ),
+      span
+    )
   }
 
   async upsertOne(id: RecordId, builder: (record: TModel) => void, span?: Span) {
-    return this.upsertSome({ [id]: builder }, span).then(r => r[0])
+    return this.upsertSome({ [id]: builder }, span).then((r) => r[0])
   }
 
   async upsertOneTentative(id: string, builder: (record: TModel) => void, span?: Span) {
-    return this.upsertSomeTentative({ [id]: builder }, span).then(r => r[0])
+    return this.upsertSomeTentative({ [id]: builder }, span).then((r) => r[0])
   }
 
   async deleteOne(id: RecordId, span?: Span) {
@@ -353,10 +382,10 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   async deleteSome(ids: RecordId[], span?: Span) {
     return this.runScope.abortable(async () => {
-      await this.telemeterizedWrite(span, async writer => {
+      await this.telemeterizedWrite(span, async (writer) => {
         const existing = await this.queryRecords(Q.where('id', Q.oneOf(ids)))
 
-        await writer.batch(...existing.map(record => record.prepareMarkAsDeleted()))
+        await writer.batch(...existing.map((record) => record.prepareMarkAsDeleted()))
       })
 
       this.emit('deleted', ids)
@@ -370,57 +399,72 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   async importUpsert(recordRaws: TModel['_raw'][]) {
     await this.runScope.abortable(async () => {
-      await this.telemeterizedWrite(undefined, async writer => {
-        const ids = recordRaws.map(r => r.id)
-        const existingMap = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids))).then(records => {
-          return records.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
-        })
+      await this.telemeterizedWrite(undefined, async (writer) => {
+        const ids = recordRaws.map((r) => r.id)
+        const existingMap = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids))).then(
+          (records) => {
+            return records.reduce(
+              (map, record) => map.set(record.id, record),
+              new Map<RecordId, TModel>()
+            )
+          }
+        )
 
         const mainBatch = []
         const destroyBatch = []
 
-        recordRaws.forEach(recordRaw => {
+        recordRaws.forEach((recordRaw) => {
           const existing = existingMap.get(recordRaw.id)
 
           if (existing) {
             if (existing._raw._status === 'deleted') {
               if (recordRaw._status !== 'deleted') {
-                destroyBatch.push(new this.model(this.collection, { id: recordRaw.id }).prepareDestroyPermanently());
-                mainBatch.push(this.collection.prepareCreate((record) => {
-                  Object.keys(recordRaw).forEach((key) => {
-                    record._raw[key] = recordRaw[key]
+                destroyBatch.push(
+                  new this.model(this.collection, { id: recordRaw.id }).prepareDestroyPermanently()
+                )
+                mainBatch.push(
+                  this.collection.prepareCreate((record) => {
+                    Object.keys(recordRaw).forEach((key) => {
+                      record._raw[key] = recordRaw[key]
+                    })
                   })
-                }));
+                )
               }
             } else {
               if (recordRaw._status === 'deleted') {
                 mainBatch.push(existing.prepareMarkAsDeleted())
               } else {
-                mainBatch.push(existing.prepareUpdate((record) => {
-                  Object.keys(recordRaw).forEach((key) => {
-                    record._raw[key] = recordRaw[key]
+                mainBatch.push(
+                  existing.prepareUpdate((record) => {
+                    Object.keys(recordRaw).forEach((key) => {
+                      record._raw[key] = recordRaw[key]
+                    })
                   })
-                }))
+                )
               }
             }
           } else {
             if (recordRaw._status === 'deleted') {
-              mainBatch.push(this.collection.prepareCreate((record) => {
-                const now = this.generateTimestamp()
+              mainBatch.push(
+                this.collection.prepareCreate((record) => {
+                  const now = this.generateTimestamp()
 
-                record._raw.id = recordRaw.id
-                record._raw.updated_at = now
-                record._raw._status = 'deleted'
-              }))
-            } else {
-              mainBatch.push(this.collection.prepareCreate((record) => {
-                Object.keys(recordRaw).forEach((key) => {
-                  record._raw[key] = recordRaw[key]
+                  record._raw.id = recordRaw.id
+                  record._raw.updated_at = now
+                  record._raw._status = 'deleted'
                 })
-              }))
+              )
+            } else {
+              mainBatch.push(
+                this.collection.prepareCreate((record) => {
+                  Object.keys(recordRaw).forEach((key) => {
+                    record._raw[key] = recordRaw[key]
+                  })
+                })
+              )
             }
           }
-        });
+        })
 
         await writer.batch(...destroyBatch)
         await writer.batch(...mainBatch)
@@ -429,19 +473,24 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
   async importDeletion(ids: RecordId[]) {
     await this.runScope.abortable(async () => {
-      await this.telemeterizedWrite(undefined, async writer => {
-        const existingMap = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids))).then(records => {
-          return records.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
-        })
+      await this.telemeterizedWrite(undefined, async (writer) => {
+        const existingMap = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids))).then(
+          (records) => {
+            return records.reduce(
+              (map, record) => map.set(record.id, record),
+              new Map<RecordId, TModel>()
+            )
+          }
+        )
 
         const batch = []
 
-        ids.forEach(id => {
+        ids.forEach((id) => {
           const existing = existingMap.get(id)
           if (existing && existing._raw._status !== 'deleted') {
             batch.push(existing.prepareMarkAsDeleted())
           }
-        });
+        })
 
         await writer.batch(...batch)
       })
@@ -585,11 +634,17 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   private async queryRecord(...args: Q.Clause[]) {
-    return await this.collection.query(Q.take(1), ...args).fetch().then((records) => records[0] as TModel | null)
+    return await this.collection
+      .query(Q.take(1), ...args)
+      .fetch()
+      .then((records) => records[0] as TModel | null)
   }
 
   private async queryRecordId(...args: Q.Clause[]) {
-    return await this.collection.query(Q.take(1), ...args).fetchIds().then((ids) => ids[0] as RecordId | null)
+    return await this.collection
+      .query(Q.take(1), ...args)
+      .fetchIds()
+      .then((ids) => ids[0] as RecordId | null)
   }
 
   private async findRecord(id: RecordId) {
@@ -655,7 +710,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return this.telemetry.trace(
       { name: `write:${this.model.table}`, op: 'write', parentSpan },
       (writeSpan) => {
-        return this.db.write(writer =>
+        return this.db.write((writer) =>
           this.telemetry.trace(
             {
               name: `write:generate:${this.model.table}`,

@@ -4,7 +4,16 @@ import BaseModel from '../models/Base'
 import { RecordId } from '@nozbe/watermelondb'
 import type { Span } from '../telemetry/index'
 
-import { SyncError, SyncExistsDTO, SyncReadDTO, SyncReadData, SyncWriteDTO, SyncWriteIdData, SyncWriteRecordData, SyncRemoteWriteDTO} from '..'
+import {
+  SyncError,
+  SyncExistsDTO,
+  SyncReadDTO,
+  SyncReadData,
+  SyncWriteDTO,
+  SyncWriteIdData,
+  SyncWriteRecordData,
+  SyncRemoteWriteDTO,
+} from '..'
 import { SyncPushResponse } from '../fetch'
 
 import { Q } from '@nozbe/watermelondb'
@@ -59,7 +68,7 @@ export default class SyncRepository<TModel extends BaseModel> {
     const r = await this.readOne(id)
     return {
       ...r,
-      data: r.data !== null
+      data: r.data !== null,
     }
   }
 
@@ -92,7 +101,8 @@ export default class SyncRepository<TModel extends BaseModel> {
   protected async upsertOneRemote(id: RecordId, builder: (record: TModel) => void) {
     return this.store.telemetry.trace(
       { name: `upsertOneRemote:${this.store.model.table}`, op: 'upsert' },
-      (span) => this._respondToRemoteWriteOne(() => this.store.upsertOneRemote(id, builder, span), id, span)
+      (span) =>
+        this._respondToRemoteWriteOne(() => this.store.upsertOneRemote(id, builder, span), id, span)
     )
   }
 
@@ -138,12 +148,18 @@ export default class SyncRepository<TModel extends BaseModel> {
     )
   }
 
-  private async _respondToWrite<T extends SyncWriteRecordData<TModel>>(create: () => Promise<T>, span?: Span) {
+  private async _respondToWrite<T extends SyncWriteRecordData<TModel>>(
+    create: () => Promise<T>,
+    span?: Span
+  ) {
     const data = await create()
 
     let response: SyncPushResponse | null = null
     if (!this.context.durability.getValue()) {
-      response = await this.store.pushRecordIdsImpatiently('id' in data ? [data.id] : data.map(r => r.id), span)
+      response = await this.store.pushRecordIdsImpatiently(
+        'id' in data ? [data.id] : data.map((r) => r.id),
+        span
+      )
 
       if (!response.ok) {
         throw new SyncError('Failed to push records', { response })
@@ -158,12 +174,18 @@ export default class SyncRepository<TModel extends BaseModel> {
     return ret
   }
 
-  private async _respondToWriteIds<T extends SyncWriteIdData<TModel>>(create: () => Promise<T>, span?: Span) {
+  private async _respondToWriteIds<T extends SyncWriteIdData<TModel>>(
+    create: () => Promise<T>,
+    span?: Span
+  ) {
     const data = await create()
 
     let response: SyncPushResponse | null = null
     if (!this.context.durability.getValue()) {
-      response = await this.store.pushRecordIdsImpatiently(typeof data === 'string' ? [data] : data, span)
+      response = await this.store.pushRecordIdsImpatiently(
+        typeof data === 'string' ? [data] : data,
+        span
+      )
 
       if (!response.ok) {
         throw new SyncError('Failed to push records', { response })
@@ -178,7 +200,11 @@ export default class SyncRepository<TModel extends BaseModel> {
     return ret
   }
 
-  private async _respondToRemoteWriteOne<T extends SyncPushResponse>(push: () => Promise<T>, id: RecordId, span?: Span) {
+  private async _respondToRemoteWriteOne<T extends SyncPushResponse>(
+    push: () => Promise<T>,
+    id: RecordId,
+    span?: Span
+  ) {
     const response = await push()
 
     if (!response.ok) {
@@ -190,7 +216,7 @@ export default class SyncRepository<TModel extends BaseModel> {
     const ret: SyncRemoteWriteDTO<TModel> = {
       data,
       status: 'synced',
-      pushStatus: 'success'
+      pushStatus: 'success',
     }
     return ret
   }
@@ -203,6 +229,7 @@ export default class SyncRepository<TModel extends BaseModel> {
 
     if (!everPulled) {
       pull = await this.store.pullRecords()
+      console.log(pull)
       if (!pull.ok) {
         throw new SyncError('Failed to pull records', { pull })
       }

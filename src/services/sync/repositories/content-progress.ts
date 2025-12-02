@@ -64,7 +64,10 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return clauses
   }
 
-  async mostRecentlyUpdatedId(contentIds: number[], collection: { type: COLLECTION_TYPE; id: number } | null = null) {
+  async mostRecentlyUpdatedId(
+    contentIds: number[],
+    collection: { type: COLLECTION_TYPE; id: number } | null = null
+  ) {
     return this.queryOneId(
       Q.where('content_id', Q.oneOf(contentIds)),
       Q.where('collection_type', collection?.type ?? null),
@@ -100,7 +103,12 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.queryAll(...clauses)
   }
 
-  recordProgressRemotely(contentId: number, collection: { type: COLLECTION_TYPE; id: number } | null, progressPct: number, resumeTime?: number) {
+  recordProgressRemotely(
+    contentId: number,
+    collection: { type: COLLECTION_TYPE; id: number } | null,
+    progressPct: number,
+    resumeTime?: number
+  ) {
     const id = ProgressRepository.generateId(contentId, collection)
 
     const result = this.upsertOneRemote(id, (r) => {
@@ -117,31 +125,34 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     })
 
     // Emit event AFTER database write completes
-    result.then(() => {
-      return Promise.all([
-        import('../../progress-events'),
-        import('../../config')
-      ])
-    }).then(([progressEventsModule, { globalConfig }]) => {
-      progressEventsModule.emitProgressSaved({
-        userId: globalConfig.railcontentConfig?.userId || 0,
-        contentId,
-        progressPercent: progressPct,
-        progressStatus: progressPct === 100 ? STATE.COMPLETED : STATE.STARTED,
-        bubble: true,
-        collectionType: collection?.type ?? null,
-        collectionId: collection?.id ?? null,
-        resumeTimeSeconds: resumeTime ?? null,
-        timestamp: Date.now()
+    result
+      .then(() => {
+        return Promise.all([import('../../progress-events'), import('../../config')])
       })
-    }).catch(error => {
-      console.error('Failed to emit progress saved event:', error)
-    })
-
+      .then(([progressEventsModule, { globalConfig }]) => {
+        progressEventsModule.emitProgressSaved({
+          userId: globalConfig.railcontentConfig?.userId || 0,
+          contentId,
+          progressPercent: progressPct,
+          progressStatus: progressPct === 100 ? STATE.COMPLETED : STATE.STARTED,
+          bubble: true,
+          collectionType: collection?.type ?? null,
+          collectionId: collection?.id ?? null,
+          resumeTimeSeconds: resumeTime ?? null,
+          timestamp: Date.now(),
+        })
+      })
+      .catch((error) => {
+        console.error('Failed to emit progress saved event:', error)
+      })
+    console.log(result)
     return result
   }
 
-  recordProgressesTentative(contentProgresses: Map<number, number>, collection: { type: COLLECTION_TYPE; id: number } | null) {
+  recordProgressesTentative(
+    contentProgresses: Map<number, number>,
+    collection: { type: COLLECTION_TYPE; id: number } | null
+  ) {
     return this.upsertSomeTentative(
       Object.fromEntries(
         Array.from(contentProgresses, ([contentId, progressPct]) => [

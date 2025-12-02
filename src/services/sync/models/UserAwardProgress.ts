@@ -1,6 +1,6 @@
 import BaseModel from './Base'
 import { SYNC_TABLES } from '../schema'
-import type { CompletionData } from '../../awards/types'
+import type { CompletionData } from '../../awards/internal/types'
 
 export default class UserAwardProgress extends BaseModel<{
   award_id: string
