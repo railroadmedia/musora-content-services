@@ -222,32 +222,28 @@ export async function fetchLearningPathLessons(
 }
 
 /**
- * For an array of contentIds, fetch any content progress with state=completed,
- * including other learning paths and a la carte progress.
+ * For an array of lessons, update with completion data from
+ * other learning paths or any a la carte progress.
  *
- * @param contentIds The array of content IDs within the learning path
- * @param learningPathId The learning path ID
- * @returns {Promise<Object>} Response object
- * @returns {Array} result.lessons - Array of all learning path lesson contentIds.
- * @returns {Array} result.completed_lessons - Array of learning path lesson contentIds that are completed.
- * @returns {Array} result.lessons_count - Count of learning path lessons.
- * @returns {Array} result.completed_lessons_count - Count of learning path completed lessons.
+ * @param {Array<Object>} children
+ * @returns {Promise<Array<Object>>} Response object
  */
-export async function fetchLearningPathProgressCheckLessons(
-  contentIds: number[],
-  learningPathId: number
-): Promise<object> {
-  let query = await getAllCompletedByIds(contentIds, {
-    id: learningPathId,
-    type: 'learning-path-v2',
+export async function fetchLearningPathProgressCheckLessons(children: Object[]): Promise<Array<object>> {
+  let contentIds = children.map((child) => child['id'])
+  let query = await getAllCompletedByIds(contentIds)
+  let completedLessons = query.data.reduce((obj, lesson) => {
+    obj[lesson.id] = lesson
+    return obj
+  }, {})
+  if (!completedLessons) return children
+
+  return children.map((child) => {
+    if (child['id'] in completedLessons) {
+      child['progressStatus'] = completedLessons[child['id']].state
+      child['progressPercentage'] = 100
+    }
+    return child
   })
-  let completedContentIds = query.data
-  return {
-    lessons: contentIds,
-    completed_lessons: completedContentIds,
-    lessons_count: contentIds.length,
-    completed_lessons_count: completedContentIds.length,
-  }
 }
 
 interface completeMethodIntroVideo {

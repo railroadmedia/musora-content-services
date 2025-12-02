@@ -23,6 +23,13 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     )
   }
 
+  async completedByContentIds(contentIds: number[]) {
+    return this.queryAll(
+      Q.where('content_id', Q.oneOf(contentIds)),
+      Q.where('state', STATE.COMPLETED)
+    )
+  }
+
   // null collection only
   async startedOrCompleted(opts: Parameters<typeof this.startedOrCompletedClauses>[0] = {}) {
     return this.queryAll(...this.startedOrCompletedClauses(opts))
