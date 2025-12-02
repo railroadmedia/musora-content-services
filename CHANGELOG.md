@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.93.0](https://github.com/railroadmedia/musora-content-services/compare/v2.92.7...v2.93.0) (2025-12-02)
+
+
+### Features
+
+* **BEH-1192:** revise fetchLearningPathProgressCheckLessons ([#604](https://github.com/railroadmedia/musora-content-services/issues/604)) ([db8cb70](https://github.com/railroadmedia/musora-content-services/commit/db8cb70ed70f4341fdd4651cdd3fea2b8047dc21))
+
+
+### Bug Fixes
+
+* method progress card subtitle ([#608](https://github.com/railroadmedia/musora-content-services/issues/608)) ([3bbfb56](https://github.com/railroadmedia/musora-content-services/commit/3bbfb56fce08e0753e7708bdf2d1356000b1c398))
+* Pull in permission_v2 ([#602](https://github.com/railroadmedia/musora-content-services/issues/602)) ([289e32d](https://github.com/railroadmedia/musora-content-services/commit/289e32d08bd3a6448191b9f6034801e4cf8d40e5))
+
 ### [2.92.7](https://github.com/railroadmedia/musora-content-services/compare/v2.92.6...v2.92.7) (2025-12-02)
 
 
