@@ -13,6 +13,8 @@ import {
   getProgressState,
 } from '../contentProgress.js'
 import {COLLECTION_TYPE} from "../sync/models/ContentProgress";
+import {SyncWriteDTO} from "../sync";
+import {ContentProgress} from "../sync/models";
 
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
@@ -23,6 +25,20 @@ interface ActiveLearningPathResponse {
   active_learning_path_id: number,
 }
 
+interface DailySessionResponse {
+  user_id: number,
+  brand: string,
+  user_date: string
+  daily_session: DailySession[],
+  active_learning_path_id: number,
+  active_learning_path_created_at: string,
+}
+
+interface DailySession {
+  content_ids: number[],
+  learning_path_id: number,
+}
+
 /**
  * Gets today's daily session for the user.
  * @param brand
@@ -31,7 +47,7 @@ interface ActiveLearningPathResponse {
 export async function getDailySession(brand: string, userDate: Date) {
   const stringDate = userDate.toISOString().split('T')[0]
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${stringDate}`
-  return await fetchHandler(url, 'GET', null, null)
+  return await fetchHandler(url, 'GET', null, null) as DailySessionResponse
 }
 
 /**
@@ -48,7 +64,7 @@ export async function updateDailySession(
   const stringDate = userDate.toISOString().split('T')[0]
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/create`
   const body = { brand: brand, userDate: stringDate, keepFirstLearningPath: keepFirstLearningPath }
-  return await fetchHandler(url, 'POST', null, body)
+  return await fetchHandler(url, 'POST', null, body) as DailySessionResponse
 }
 
 /**
@@ -57,7 +73,7 @@ export async function updateDailySession(
  */
 export async function getActivePath(brand: string) {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
-  return await fetchHandler(url, 'GET', null, null)
+  return await fetchHandler(url, 'GET', null, null) as ActiveLearningPathResponse
 }
 
 /**
@@ -68,7 +84,7 @@ export async function getActivePath(brand: string) {
 export async function startLearningPath(brand: string, learningPathId: number) {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/set`
   const body = { brand: brand, learning_path_id: learningPathId }
-  return await fetchHandler(url, 'POST', null, body)
+  return await fetchHandler(url, 'POST', null, body) as ActiveLearningPathResponse
 }
 
 /**
@@ -253,7 +269,7 @@ export async function fetchLearningPathProgressCheckLessons(
 }
 
 interface completeMethodIntroVideo {
-  intro_video_response: Object | null,
+  intro_video_response: SyncWriteDTO<ContentProgress, any> | null,
   active_path_response: ActiveLearningPathResponse
 }
 /**
@@ -279,9 +295,9 @@ export async function completeMethodIntroVideo(introVideoId: number, brand: stri
 }
 
 interface completeLearningPathIntroVideo {
-  intro_video_response: Object | null,
-  learning_path_reset_response: void | null,
-  lesson_import_response: Object | null
+  intro_video_response: SyncWriteDTO<ContentProgress, any> | null,
+  learning_path_reset_response: SyncWriteDTO<ContentProgress, any> | null,
+  lesson_import_response: SyncWriteDTO<ContentProgress, any> | null
 }
 /**
  * Handles completion of learning path intro video and other related actions.
@@ -311,7 +327,7 @@ export async function completeLearningPathIntroVideo(introVideoId: number, learn
 }
 
 
-async function completeIfNotCompleted(contentId: number): Promise<Object | null> {
+async function completeIfNotCompleted(contentId: number): Promise<SyncWriteDTO<ContentProgress, any> | null> {
   const introVideoStatus = await getProgressState(contentId)
 
   return introVideoStatus !== 'completed' ? await contentStatusCompleted(contentId) : null
