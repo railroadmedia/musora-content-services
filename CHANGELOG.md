@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.92.6](https://github.com/railroadmedia/musora-content-services/compare/v2.92.5...v2.92.6) (2025-12-02)
+
+### [2.92.5](https://github.com/railroadmedia/musora-content-services/compare/v2.92.3...v2.92.5) (2025-12-02)
+
+
+### Bug Fixes
+
+* fixes to get things working with watermelon. added todos for subsequent commits ([#601](https://github.com/railroadmedia/musora-content-services/issues/601)) ([ed83230](https://github.com/railroadmedia/musora-content-services/commit/ed83230006c1fc3a79dfd1a4955fb3785651bf1b))
+
+### [2.92.4](https://github.com/railroadmedia/musora-content-services/compare/v2.92.3...v2.92.4) (2025-12-02)
+
+
+### Bug Fixes
+
+* fixes to get things working with watermelon. added todos for subsequent commits ([#601](https://github.com/railroadmedia/musora-content-services/issues/601)) ([ed83230](https://github.com/railroadmedia/musora-content-services/commit/ed83230006c1fc3a79dfd1a4955fb3785651bf1b))
+
 ### [2.92.3](https://github.com/railroadmedia/musora-content-services/compare/v2.92.2...v2.92.3) (2025-11-28)
 
 ### [2.92.2](https://github.com/railroadmedia/musora-content-services/compare/v2.92.0...v2.92.2) (2025-11-28)
