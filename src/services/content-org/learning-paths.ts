@@ -231,17 +231,13 @@ export async function fetchLearningPathLessons(
  */
 export async function fetchLearningPathProgressCheckLessons(contentIds: number[]): Promise<Object> {
   let query = await getAllCompletedByIds(contentIds)
-  console.log(query)
   let completedLessons = query.data.map(lesson => lesson.content_id)
-  console.log(completedLessons)
 
-  let response = contentIds.reduce((obj, contentId) => {
+  return contentIds.reduce((obj, contentId) => {
     let lessonIsCompleted = completedLessons.includes(contentId)
     obj[contentId] = lessonIsCompleted ? STATE.COMPLETED : ""
     return obj
   }, {})
-  console.log(response)
-  return response
 }
 
 interface completeMethodIntroVideo {
