@@ -4,7 +4,7 @@
 
 import { globalConfig } from './config.js'
 import { HttpClient } from '../infrastructure/http/HttpClient'
-import { Either } from '../core/types/ads/either.js'
+import { Either } from '../core/types/ads/either'
 
 /**
  * Exported functions that are excluded from index generation.

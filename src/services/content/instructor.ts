@@ -5,7 +5,7 @@ import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.
 import { Either } from '../../core/types/ads/either'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
-import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse.js'
+import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
 import { SanityError } from '../../infrastructure/sanity/interfaces/SanityError'
 import { Brand } from '../../lib/brands'
 import { DocumentType } from '../../lib/documents'
