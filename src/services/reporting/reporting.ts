@@ -9,9 +9,9 @@
 
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { ReportResponse, ReportableType, IssueTypeMap, ReportIssueOption } from './types'
-import { Brands } from '../../lib/brands'
 import { Either } from '../../core/types/ads/either'
 import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
+import { Brand } from '../../lib/brands'
 
 /**
  * Parameters for submitting a report with type-safe issue values
@@ -26,7 +26,7 @@ export type ReportParams<T extends ReportableType = ReportableType> = {
   /** Details about the issue - required when issue is 'other', not sent otherwise */
   details?: string
   /** Brand context (required: drumeo, pianote, guitareo, singeo, playbass) */
-  brand: Brands | string
+  brand: Brand | string
 }
 
 /**

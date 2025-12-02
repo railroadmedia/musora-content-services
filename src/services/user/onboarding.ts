@@ -1,11 +1,11 @@
 /**
  * @module Onboarding
  */
-import { Either } from '../../core/types/ads/either.js'
+import { Either } from '../../core/types/ads/either'
 import { HttpClient } from '../../infrastructure/http/HttpClient'
-import { HttpError } from '../../infrastructure/http/interfaces/HttpError.js'
-import { Brands } from '../../lib/brands'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from '../config'
+import { Brand } from '../../lib/brands'
 
 export interface OnboardingSteps {
   email?: string
@@ -27,7 +27,7 @@ export interface OnboardingSteps {
 
 export interface StartOnboardingParams {
   email: string
-  brand: Brands
+  brand: Brand
   flow: string
   marketingOptIn: boolean
   steps?: OnboardingSteps
@@ -36,7 +36,7 @@ export interface StartOnboardingParams {
 export interface Onboarding {
   id: number
   email: string
-  brand: Brands
+  brand: Brand
   flow: string
   steps: OnboardingSteps
   is_completed: boolean
@@ -225,13 +225,13 @@ const recommendedContentCache: { [brand: string]: OnboardingRecommendedContent }
  * Fetches recommended content for onboarding based on the specified brand.
  *
  * @param {string} email - The user's email address.
- * @param {Brands|string} brand - The brand identifier.
+ * @param {Brand|string} brand - The brand identifier.
  * @returns {Promise<OnboardingRecommendedContent>} - A promise that resolves with the recommended content.
  * @throws {HttpError} - If the HTTP request fails.
  */
 export async function getOnboardingRecommendedContent(
   email: string,
-  brand: Brands | string
+  brand: Brand | string
 ): Promise<Either<HttpError, OnboardingRecommendedContent>> {
   // TODO: Replace with real API call when available
   if (recommendedContentCache[brand]) {

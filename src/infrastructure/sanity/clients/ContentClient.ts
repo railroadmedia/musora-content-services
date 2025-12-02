@@ -2,7 +2,7 @@ import { SanityClient } from '../SanityClient'
 import { FetchByIdOptions } from '../interfaces/FetchByIdOptions'
 import { ConfigProvider } from '../interfaces/ConfigProvider'
 import { QueryExecutor } from '../interfaces/QueryExecutor'
-import { DocumentTypes } from '../../../lib/documents'
+import { DocumentType } from '../../../lib/documents'
 import { SanityListResponse } from '../interfaces/SanityResponse'
 import { SanityError } from '../interfaces/SanityError'
 import { Either } from '../../../core/types/ads/either'
@@ -43,7 +43,7 @@ export class ContentClient extends SanityClient {
    */
   public async fetchByIds<T>(
     ids: (number | string)[],
-    type?: DocumentTypes,
+    type?: DocumentType,
     brand?: string,
     fields?: string[]
   ): Promise<Either<SanityError, SanityListResponse<T>>> {
@@ -74,7 +74,7 @@ export class ContentClient extends SanityClient {
    * Fetch content by brand and type with basic filtering
    */
   public async fetchByTypeAndBrand<T>(
-    type: DocumentTypes,
+    type: DocumentType,
     brand?: string,
     options: {
       limit?: number
@@ -112,7 +112,7 @@ export class ContentClient extends SanityClient {
    * Build fields string for queries based on content type and options
    */
   private buildFieldsString(
-    type?: DocumentTypes,
+    type?: DocumentType,
     customFields?: string[],
     includeChildren: boolean = false
   ): string {
