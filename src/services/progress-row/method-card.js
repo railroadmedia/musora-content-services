@@ -23,7 +23,7 @@ export async function getMethodCard(brand) {
 
   const introVideoProgressState = await getProgressState(introVideo?.id)
   //resetAllLearningPaths()
-  if (introVideoProgressState != 'completed') {
+  if (introVideoProgressState !== 'completed') {
     //startLearningPath('drumeo', 422533)
     const timestamp = Math.floor(Date.now() / 1000)
     return {
