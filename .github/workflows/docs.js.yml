@@ -39,14 +39,6 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies for v1
-        working-directory: main-content
-        run: npm ci
-
-      - name: Generate v1 documentation
-        working-directory: main-content
-        run: npm run doc
-
       - name: Install dependencies for v2
         working-directory: v2-content
         run: npm ci
@@ -58,8 +50,11 @@ jobs:
       - name: Combine v1 and v2 docs into deployment structure
         run: |
           mkdir -p _site
-          # Copy v1 docs to root
-          cp -r main-content/docs/* _site/
+          # Copy existing v1 docs from main branch (already committed)
+          if [ -d "main-content/docs" ]; then
+            cp -r main-content/docs/* _site/
+            echo "✅ Copied existing v1 docs from main branch"
+          fi
           # Copy v2 docs to /v2/ subdirectory
           mkdir -p _site/v2
           cp -r v2-content/docs/* _site/v2/
