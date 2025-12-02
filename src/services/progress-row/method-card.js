@@ -6,6 +6,7 @@ import { getActivePath, fetchLearningPathLessons } from '../content-org/learning
 import { getToday } from '../dateUtils.js'
 import { fetchMethodV2IntroVideo } from '../sanity'
 import { getProgressState } from '../contentProgress'
+import {COLLECTION_TYPE} from "../sync/models/ContentProgress.js";
 
 export async function getMethodCard(brand) {
   const introVideo = await fetchMethodV2IntroVideo(brand)
@@ -82,7 +83,7 @@ export async function getMethodCard(brand) {
 
     return {
       id: 1,
-      type: 'learning-path-v2',
+      type: COLLECTION_TYPE.LEARNING_PATH,
       progressType: 'method',
       header: 'Method',
       body: learningPath,

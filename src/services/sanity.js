@@ -1523,6 +1523,25 @@ export async function fetchTopLevelParentId(railcontentId) {
   return response['railcontent_id']
 }
 
+export async function fetchLearningPathHierarchy(railcontentId, collection) {
+  if (!collection) {
+    return null
+  }
+
+  const topLevelId = collection.id
+
+  let response = await fetchByRailContentId(topLevelId, collection.type)
+  if (!response) return null
+
+  let data = {
+    topLevelId: topLevelId,
+    parents: {},
+    children: {},
+  }
+  populateHierarchyLookups(response, data, null)
+  return data
+}
+
 export async function fetchHierarchy(railcontentId) {
   let topLevelId = await fetchTopLevelParentId(railcontentId)
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
@@ -1557,12 +1576,14 @@ export async function fetchHierarchy(railcontentId) {
 }
 
 function populateHierarchyLookups(currentLevel, data, parentId) {
-  let contentId = currentLevel['railcontent_id']
+  const railcontentIdField = currentLevel.railcontent_id ? "railcontent_id" : "id";
+
+  let contentId = currentLevel[railcontentIdField]
   let children = currentLevel['children']
 
   data.parents[contentId] = parentId
   if (children) {
-    data.children[contentId] = children.map((child) => child['railcontent_id'])
+    data.children[contentId] = children.map((child) => child[railcontentIdField])
     for (let i = 0; i < children.length; i++) {
       populateHierarchyLookups(children[i], data, contentId)
     }
@@ -1572,7 +1593,7 @@ function populateHierarchyLookups(currentLevel, data, parentId) {
 
   let assignments = currentLevel['assignments']
   if (assignments) {
-    let assignmentIds = assignments.map((assignment) => assignment['railcontent_id'])
+    let assignmentIds = assignments.map((assignment) => assignment[railcontentIdField])
     data.children[contentId] = (data.children[contentId] ?? []).concat(assignmentIds)
     assignmentIds.forEach((assignmentId) => {
       data.parents[assignmentId] = contentId

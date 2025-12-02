@@ -40,6 +40,7 @@ import dayjs from 'dayjs'
 import { addContextToContent } from './contentAggregator.js'
 import { getMethodCard } from './progress-row/method-card.js'
 import { db, Q } from './sync'
+import {COLLECTION_TYPE} from "./sync/models/ContentProgress.js";
 
 const DATA_KEY_PRACTICES = 'practices'
 
@@ -1039,7 +1040,7 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
       switch (item.type) {
         case 'playlist':
           return processPlaylistItem(item)
-        case 'learning-path-v2':
+        case COLLECTION_TYPE.LEARNING_PATH:
         case 'method':
           return item
         default:
@@ -1282,7 +1283,7 @@ function mergeAndSortItems(items, limit) {
 
 export function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
   const ids = Object.keys(progressOnItems).map(Number)
-  if (contentType === 'guided-course' || contentType === 'learning-path-v2') {
+  if (contentType === 'guided-course' || contentType === COLLECTION_TYPE.LEARNING_PATH) {
     // Return first incomplete lesson
     return ids.find((id) => progressOnItems[id] !== 'completed') || ids.at(0)
   }
