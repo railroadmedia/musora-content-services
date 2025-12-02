@@ -24,7 +24,7 @@ export interface Instructor {
  * Fetch all instructor with lessons available for a specific brand.
  *
  * @param {Brands|string} brand - The brand for which to fetch instructors.
- * @returns {Promise<Instructor[]>} - A promise that resolves to an array of instructor objects.
+ * @returns {Promise<SanityListResponse<Instructor>>} - A promise that resolves to an array of instructor objects.
  *
  * @example
  * fetchInstructors('drumeo')
@@ -90,10 +90,7 @@ export interface FetchInstructorLessonsOptions {
   includedFields?: string[]
 }
 
-export interface InstructorLessonsResponse {
-  data: Lesson[]
-  total: number
-}
+export interface InstructorLessons extends SanityListResponse<Lesson> {}
 
 /**
  * Fetch the data needed for the instructor screen.
@@ -107,7 +104,7 @@ export interface InstructorLessonsResponse {
  * @param {number} [options.limit=10] - The number of items per page.
  * @param {Array<string>} [options.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  *
- * @returns {Promise<InstructorLessonsResponse>} - The lessons for the instructor or null if not found.
+ * @returns {Promise<InstructorLessons>} - The lessons for the instructor or null if not found.
  * @example
  * fetchInstructorLessons('instructor123')
  *   .then(lessons => console.log(lessons))
@@ -124,7 +121,7 @@ export async function fetchInstructorLessons(
     limit = 20,
     includedFields = [],
   }: FetchInstructorLessonsOptions = {}
-): Promise<InstructorLessonsResponse> {
+): Promise<InstructorLessons> {
   const fieldsString = getFieldsForContentType() as string
   const start = (page - 1) * limit
   const end = start + limit

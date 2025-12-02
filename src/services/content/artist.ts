@@ -23,7 +23,7 @@ export interface Artist {
  * Fetch all artists with lessons available for a specific brand.
  *
  * @param {Brands|string} brand - The brand for which to fetch artists.
- * @returns {Promise<Artist[]|null>} - A promise that resolves to an array of artist objects or null if not found.
+ * @returns {Promise<SanityListResponse<Artist>>} - A promise that resolves to an array of artist objects or null if not found.
  *
  * @example
  * fetchArtists('drumeo')
@@ -87,10 +87,7 @@ export interface ArtistLessonOptions {
   progressIds?: Array<number>
 }
 
-export interface LessonsByArtistResponse {
-  data: Lesson[]
-  total: number
-}
+export interface ArtistLessons extends SanityListResponse<Lesson> {}
 
 /**
  * Fetch the artist's lessons.
@@ -104,7 +101,7 @@ export interface LessonsByArtistResponse {
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  * @param {Array<number>} [params.progressId=[]] - The ids of the lessons that are in progress or completed
- * @returns {Promise<LessonsByArtistResponse>} - The lessons for the artist
+ * @returns {Promise<ArtistLessons>} - The lessons for the artist
  *
  * @example
  * fetchArtistLessons('10 Years', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
@@ -123,7 +120,7 @@ export async function fetchArtistLessons(
     includedFields = [],
     progressIds = [],
   }: ArtistLessonOptions = {}
-): Promise<SanityListResponse<Lesson>> {
+): Promise<ArtistLessons> {
   const fieldsString = getFieldsForContentType(contentType) as string
   const start = (page - 1) * limit
   const end = start + limit

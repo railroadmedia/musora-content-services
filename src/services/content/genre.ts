@@ -23,7 +23,7 @@ export interface Genre {
  * Fetch all genres with lessons available for a specific brand.
  *
  * @param {Brands|string} [brand] - The brand for which to fetch the genre for. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Genre[]>} - A promise that resolves to an genre object or null if not found.
+ * @returns {Promise<SanityListResponse<Genre>>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenres('drumeo')
@@ -51,7 +51,7 @@ export async function fetchGenres(brand: Brands | string): Promise<SanityListRes
  *
  * @param {string} slug - The slug of the genre to fetch.
  * @param {Brands|string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Genre[]|null>} - A promise that resolves to an genre object or null if not found.
+ * @returns {Promise<Genre|null>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenreBySlug('drumeo')
@@ -86,10 +86,7 @@ export interface FetchGenreLessonsOptions {
   progressIds?: Array<number>
 }
 
-export interface LessonsByGenreResponse {
-  data: Lesson[]
-  total: number
-}
+export interface GenreLessons extends SanityListResponse<Lesson> {}
 
 /**
  * Fetch the genre's lessons.
@@ -103,7 +100,7 @@ export interface LessonsByGenreResponse {
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  * @param {Array<number>} [params.progressIds=[]] - The ids of the lessons that are in progress or completed
- * @returns {Promise<LessonsByGenreResponse>} - The lessons for the genre
+ * @returns {Promise<GenreLessons>} - The lessons for the genre
  *
  * @example
  * fetchGenreLessons('Blues', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
@@ -122,7 +119,7 @@ export async function fetchGenreLessons(
     includedFields = [],
     progressIds = [],
   }: FetchGenreLessonsOptions = {}
-): Promise<LessonsByGenreResponse> {
+): Promise<GenreLessons> {
   const fieldsString = getFieldsForContentType(contentType) as string
   const start = (page - 1) * limit
   const end = start + limit
