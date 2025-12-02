@@ -1,4 +1,4 @@
-import { Brands } from '../brands'
+import { Brand } from '../brands'
 
 export interface BuildQueryOptions {
   sort: string
@@ -31,7 +31,7 @@ export function buildDataAndTotalQuery(
   return query
 }
 
-export function getSortOrder(sort = '-published_on', brand: Brands, groupBy?: string): string {
+export function getSortOrder(sort = '-published_on', brand: Brand, groupBy?: string): string {
   const sanitizedSort = sort?.trim() || '-published_on'
   let isDesc = sanitizedSort.startsWith('-')
   const sortField = isDesc ? sanitizedSort.substring(1) : sanitizedSort

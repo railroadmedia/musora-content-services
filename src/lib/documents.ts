@@ -1,4 +1,4 @@
-export enum DocumentTypes {
+export enum DocumentType {
   Artist = 'artist',
   BackstageSecret = 'backstage-secret',
   BannerCard = 'banner-card',

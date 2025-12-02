@@ -2,7 +2,7 @@
  * @module Onboarding
  */
 import { HttpClient } from '../../infrastructure/http/HttpClient'
-import { Brands } from '../../lib/brands'
+import { Brand } from '../../lib/brands'
 import { globalConfig } from '../config.js'
 
 export interface OnboardingSteps {
@@ -224,13 +224,13 @@ const recommendedContentCache: { [brand: string]: OnboardingRecommendedContent }
  * Fetches recommended content for onboarding based on the specified brand.
  *
  * @param {string} email - The user's email address.
- * @param {Brands} brand - The brand identifier.
+ * @param {Brand} brand - The brand identifier.
  * @returns {Promise<OnboardingRecommendedContent>} - A promise that resolves with the recommended content.
  * @throws {HttpError} - If the HTTP request fails.
  */
 export async function getOnboardingRecommendedContent(
   email: string,
-  brand: Brands
+  brand: Brand | string
 ): Promise<OnboardingRecommendedContent> {
   // TODO: Replace with real API call when available
   if (recommendedContentCache[brand]) {
