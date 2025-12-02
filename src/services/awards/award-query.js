@@ -3,7 +3,27 @@
  */
 
 import { awardDefinitions } from './internal/award-definitions'
+import { AwardMessageGenerator } from './internal/message-generator'
 import db from '../sync/repository-proxy'
+
+function determineAwardType(definition) {
+  if (definition.content_type === 'learning-path-v2') {
+    return 'learning-path'
+  }
+  if (definition.content_type === 'guided-course') {
+    return 'guided-course'
+  }
+  return 'guided-course'
+}
+
+function enhanceCompletionData(completionData, awardType) {
+  if (!completionData) return null
+
+  return {
+    ...completionData,
+    message: AwardMessageGenerator.generatePopupMessage(awardType, completionData)
+  }
+}
 
 /**
  * Get all awards for a content item with their current progress.
@@ -51,6 +71,8 @@ export async function getContentAwards(contentId) {
 
     const awards = definitions.map(def => {
       const userProgress = progress.get(def._id)
+      const awardType = determineAwardType(def)
+      const completionData = enhanceCompletionData(userProgress?.completion_data, awardType)
 
       return {
         awardId: def._id,
@@ -64,7 +86,7 @@ export async function getContentAwards(contentId) {
         completedAt: userProgress?.completed_at
           ? new Date(userProgress.completed_at * 1000).toISOString()
           : null,
-        completionData: userProgress?.completion_data
+        completionData
       }
     })
 
@@ -140,6 +162,9 @@ export async function getCompletedAwards(brand = null, options = {}) {
           return null
         }
 
+        const awardType = determineAwardType(definition)
+        const completionData = enhanceCompletionData(progress.completion_data, awardType)
+
         return {
           awardId: progress.award_id,
           awardTitle: definition.name,
@@ -150,7 +175,7 @@ export async function getCompletedAwards(brand = null, options = {}) {
           progressPercentage: progress.progress_percentage,
           isCompleted: true,
           completedAt: new Date(progress.completed_at * 1000).toISOString(),
-          completionData: progress.completion_data
+          completionData
         }
       })
     )
@@ -230,6 +255,9 @@ export async function getInProgressAwards(brand = null, options = {}) {
           return null
         }
 
+        const awardType = determineAwardType(definition)
+        const completionData = enhanceCompletionData(progress.completion_data, awardType)
+
         return {
           awardId: progress.award_id,
           awardTitle: definition.name,
@@ -240,7 +268,7 @@ export async function getInProgressAwards(brand = null, options = {}) {
           progressPercentage: progress.progress_percentage,
           isCompleted: false,
           completedAt: null,
-          completionData: progress.completion_data
+          completionData
         }
       })
     )
