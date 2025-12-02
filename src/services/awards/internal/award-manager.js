@@ -112,7 +112,7 @@ export class AwardManager {
     )
 
     await db.userAwardProgress.recordAwardProgress(awardId, 100, {
-      completedAt: Math.floor(Date.now() / 1000),
+      completedAt: Date.now(),
       completionData,
       progressData,
       immediate: true

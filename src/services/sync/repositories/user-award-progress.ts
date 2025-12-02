@@ -107,7 +107,7 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
     completionData: CompletionData
   ) {
     return this.recordAwardProgress(awardId, 100, {
-      completedAt: Math.floor(Date.now() / 1000),
+      completedAt: Date.now(),
       completionData,
       immediate: true
     })

@@ -62,6 +62,6 @@ export default class UserAwardProgress extends BaseModel<{
   }
 
   get completedAtDate(): Date | null {
-    return this.completed_at ? new Date(this.completed_at * 1000) : null
+    return this.completed_at ? new Date(this.completed_at) : null
   }
 }
