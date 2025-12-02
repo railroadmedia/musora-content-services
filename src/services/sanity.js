@@ -1503,7 +1503,7 @@ export async function fetchByReference(
  * @returns {Promise<int|null>}
  */
 export async function fetchTopLevelParentId(railcontentId) {
-  const parentFilter = "railcontent_id in [...(^.parent_content_data[].id)]"
+  const parentFilter = 'railcontent_id in [...(^.parent_content_data[].id)]'
   const statusFilter = "&& status in ['scheduled', 'published', 'archived', 'unlisted']"
 
   const query = `*[railcontent_id == ${railcontentId}]{
@@ -1556,13 +1556,34 @@ export async function fetchHierarchy(railcontentId) {
   return data
 }
 
+export async function fetchLearningPathHierarchy(railcontentId, collection) {
+  if (!collection) {
+    return null
+  }
+
+  const topLevelId = collection.id
+
+  let response = await fetchByRailContentId(topLevelId, collection.type)
+  if (!response) return null
+  console.log('fetchLearningPathHirearchy', response)
+  let data = {
+    topLevelId: topLevelId,
+    parents: {},
+    children: {},
+  }
+  populateHierarchyLookups(response, data, null)
+  return data
+}
+
 function populateHierarchyLookups(currentLevel, data, parentId) {
-  let contentId = currentLevel['railcontent_id']
+  const railcontentIdField = currentLevel.railcontent_id ? 'railcontent_id' : 'id'
+
+  let contentId = currentLevel[railcontentIdField]
   let children = currentLevel['children']
 
   data.parents[contentId] = parentId
   if (children) {
-    data.children[contentId] = children.map((child) => child['railcontent_id'])
+    data.children[contentId] = children.map((child) => child[railcontentIdField])
     for (let i = 0; i < children.length; i++) {
       populateHierarchyLookups(children[i], data, contentId)
     }
@@ -1572,7 +1593,7 @@ function populateHierarchyLookups(currentLevel, data, parentId) {
 
   let assignments = currentLevel['assignments']
   if (assignments) {
-    let assignmentIds = assignments.map((assignment) => assignment['railcontent_id'])
+    let assignmentIds = assignments.map((assignment) => assignment[railcontentIdField])
     data.children[contentId] = (data.children[contentId] ?? []).concat(assignmentIds)
     assignmentIds.forEach((assignmentId) => {
       data.parents[assignmentId] = contentId
@@ -2190,7 +2211,7 @@ export async function fetchMethodV2Structure(brand) {
  * @returns {Promise<*|null>}
  */
 export async function fetchMethodV2StructureFromId(contentId) {
-  const _type = "method-v2";
+  const _type = 'method-v2'
   const query = `*[_type == '${_type}' && brand == *[railcontent_id == ${contentId}][0].brand][0...1]{
     'sanity_id': _id,
     'learning_paths': child[]->{
@@ -2198,7 +2219,7 @@ export async function fetchMethodV2StructureFromId(contentId) {
       'children': child[]->railcontent_id
     }
   }`
-  return await fetchSanity(query, false);
+  return await fetchSanity(query, false)
 }
 
 /**

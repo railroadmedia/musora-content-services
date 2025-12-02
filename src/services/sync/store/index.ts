@@ -218,7 +218,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(
         (r) => r[0] || null
       )
-
+      console.log('existing', existing)
       if (existing) {
         existing._isEditing = true
         builder(existing)
@@ -229,6 +229,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         attrs._isEditing = true
         builder(attrs)
         attrs._isEditing = false
+        console.log(attrs)
         record = this.collection.disposableFromDirtyRaw(attrs._raw)
       }
 

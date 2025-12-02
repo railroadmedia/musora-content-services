@@ -25,14 +25,14 @@ describe('learning-paths', function () {
   // })
   //
   test('learningPathCompletion', async () => {
-    await contentStatusReset(435526)
-    await contentStatusReset(435481)
-
-    const learningPath = await getEnrichedLearningPath(435526)
-
-    const response = await contentStatusCompleted(435481, { type: 'learning-path-v2', id: 435526 })
-    console.log(response)
-    const result = await getProgressDataByIds([435481, 435526])
-    console.log(result)
+    const learningPathId = 435527
+    const contentId = 436574
+    await contentStatusReset(contentId)
+    await contentStatusReset(learningPathId)
+    const collection = { type: 'learning-path-v2', id: learningPathId }
+    // const learningPath = await getEnrichedLearningPath(435526)
+    await contentStatusCompleted(contentId, collection)
+    console.log(await getProgressDataByIds([contentId], collection))
+    console.log(await getProgressDataByIds([learningPathId], collection))
   })
 })

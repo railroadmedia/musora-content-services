@@ -52,7 +52,8 @@ export default class SyncManager {
     this.telemetry = SyncTelemetry.getInstance()!
     this.context = context
 
-    this.database = initDatabase()
+    this.database = this.telemetry.trace({ name: 'db:init' }, () => inBoundary(initDatabase))
+
     this.runScope = new SyncRunScope()
     this.retry = new SyncRetry(this.context, this.telemetry)
 

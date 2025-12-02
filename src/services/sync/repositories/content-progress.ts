@@ -103,15 +103,15 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.queryAll(...clauses)
   }
 
-  recordProgressRemotely(
+  recordProgress(
     contentId: number,
     collection: { type: COLLECTION_TYPE; id: number } | null,
     progressPct: number,
     resumeTime?: number
   ) {
     const id = ProgressRepository.generateId(contentId, collection)
-
-    const result = this.upsertOneRemote(id, (r) => {
+    console.log(collection)
+    const result = this.upsertOne(id, (r) => {
       r.content_id = contentId
       r.collection_type = collection?.type ?? null
       r.collection_id = collection?.id ?? null
@@ -150,26 +150,27 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   }
 
   recordProgressesTentative(
-    contentProgresses: Map<number, number>,
+    contentProgresses: Record<string, number>, // Accept plain object
     collection: { type: COLLECTION_TYPE; id: number } | null
   ) {
-    return this.upsertSomeTentative(
-      Object.fromEntries(
-        Array.from(contentProgresses, ([contentId, progressPct]) => [
-          ProgressRepository.generateId(contentId, null),
-          (r) => {
-            r.content_id = contentId
-            r.collection_type = collection?.type ?? null
-            r.collection_id = collection?.id ?? null
-
-            r.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
-            r.progress_percent = progressPct
+    const data = Object.fromEntries(
+      Object.entries(contentProgresses).map(([contentId, progressPct]) => {
+        const generatedId = ProgressRepository.generateId(Number(contentId), collection)
+        console.log('Processing:', { contentId, progressPct, generatedId, collection })
+        return [
+          generatedId,
+          (record: ContentProgress) => {
+            record.content_id = Number(contentId)
+            record.collection_type = collection?.type ?? null
+            record.collection_id = collection?.id ?? null
+            record.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
+            record.progress_percent = progressPct
           },
-        ])
-      )
+        ]
+      })
     )
+    return this.upsertSomeTentative(data)
   }
-
   eraseProgress(contentId: number, collection: { type: COLLECTION_TYPE; id: number } | null) {
     return this.deleteOne(ProgressRepository.generateId(contentId, collection))
   }
