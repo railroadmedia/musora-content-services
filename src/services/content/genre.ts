@@ -2,9 +2,11 @@
  * @module Genre
  */
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
+import { Either } from '../../core/types/ads/either'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
+import { SanityError } from '../../infrastructure/sanity/interfaces/SanityError'
 import { Brand } from '../../lib/brands'
 import { DocumentType } from '../../lib/documents'
 import { getSortOrder } from '../../lib/sanity/query'
@@ -23,14 +25,16 @@ export interface Genre {
  * Fetch all genres with lessons available for a specific brand.
  *
  * @param {Brand|string} [brand] - The brand for which to fetch the genre for. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<SanityListResponse<Genre>>} - A promise that resolves to an genre object or null if not found.
+ * @returns {Promise<Either<SanityError, SanityListResponse<Genre>>>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenres('drumeo')
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenres(brand: Brand | string): Promise<SanityListResponse<Genre>> {
+export async function fetchGenres(
+  brand: Brand | string
+): Promise<Either<SanityError, SanityListResponse<Genre>>> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
@@ -51,7 +55,7 @@ export async function fetchGenres(brand: Brand | string): Promise<SanityListResp
  *
  * @param {string} slug - The slug of the genre to fetch.
  * @param {Brand|string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Genre|null>} - A promise that resolves to an genre object or null if not found.
+ * @returns {Promise<Either<SanityError, Genre | null>>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenreBySlug('drumeo')
@@ -61,7 +65,7 @@ export async function fetchGenres(brand: Brand | string): Promise<SanityListResp
 export async function fetchGenreBySlug(
   slug: string,
   brand?: Brand | string
-): Promise<Genre | null> {
+): Promise<Either<SanityError, Genre | null>> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
     bypassPermissions: true,
@@ -100,7 +104,7 @@ export interface GenreLessons extends SanityListResponse<Lesson> {}
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  * @param {Array<number>} [params.progressIds=[]] - The ids of the lessons that are in progress or completed
- * @returns {Promise<GenreLessons>} - The lessons for the genre
+ * @returns {Promise<Either<SanityError, GenreLessons>>} - The lessons for the genre
  *
  * @example
  * fetchGenreLessons('Blues', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
@@ -119,7 +123,7 @@ export async function fetchGenreLessons(
     includedFields = [],
     progressIds = [],
   }: FetchGenreLessonsOptions = {}
-): Promise<GenreLessons> {
+): Promise<Either<SanityError, GenreLessons>> {
   const fieldsString = getFieldsForContentType(contentType) as string
   const start = (page - 1) * limit
   const end = start + limit

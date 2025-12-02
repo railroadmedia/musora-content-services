@@ -2,9 +2,11 @@
  * @module Instructor
  */
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
+import { Either } from '../../core/types/ads/either'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse.js'
+import { SanityError } from '../../infrastructure/sanity/interfaces/SanityError'
 import { Brand } from '../../lib/brands'
 import { DocumentType } from '../../lib/documents'
 import { getSortOrder } from '../../lib/sanity/query'
@@ -23,8 +25,8 @@ export interface Instructor {
 /**
  * Fetch all instructor with lessons available for a specific brand.
  *
- * @param {BrandValues} brand - The brand for which to fetch instructors.
- * @returns {Promise<SanityListResponse<Instructor>>} - A promise that resolves to an array of instructor objects.
+ * @param {Brand|string} brand - The brand for which to fetch instructors.
+ * @returns {Promise<Either<SanityError, SanityListResponse<Instructor>>>} - A promise that resolves to an array of instructor objects.
  *
  * @example
  * fetchInstructors('drumeo')
@@ -33,7 +35,7 @@ export interface Instructor {
  */
 export async function fetchInstructors(
   brand: Brand | string
-): Promise<SanityListResponse<Instructor>> {
+): Promise<Either<SanityError, SanityListResponse<Instructor>>> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
@@ -54,7 +56,7 @@ export async function fetchInstructors(
  *
  * @param {string} slug - The slug of the instructor to fetch.
  * @param {Brand|string} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Instructor | null>} - A promise that resolves to an instructor object or null if not found.
+ * @returns {Promise<Either<SanityError, Instructor | null>>} - A promise that resolves to an instructor object or null if not found.
  *
  * @example
  * fetchInstructorBySlug('66samus', 'drumeo')
@@ -64,7 +66,7 @@ export async function fetchInstructors(
 export async function fetchInstructorBySlug(
   slug: string,
   brand?: Brand | string
-): Promise<Instructor | null> {
+): Promise<Either<SanityError, Instructor | null>> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
     bypassPermissions: true,
@@ -104,7 +106,7 @@ export interface InstructorLessons extends SanityListResponse<Lesson> {}
  * @param {number} [options.limit=10] - The number of items per page.
  * @param {Array<string>} [options.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  *
- * @returns {Promise<InstructorLessons>} - The lessons for the instructor or null if not found.
+ * @returns {Promise<Either<SanityError, InstructorLessons>>} - The lessons for the instructor or null if not found.
  * @example
  * fetchInstructorLessons('instructor123')
  *   .then(lessons => console.log(lessons))
@@ -121,7 +123,7 @@ export async function fetchInstructorLessons(
     limit = 20,
     includedFields = [],
   }: FetchInstructorLessonsOptions = {}
-): Promise<InstructorLessons> {
+): Promise<Either<SanityError, InstructorLessons>> {
   const fieldsString = getFieldsForContentType() as string
   const start = (page - 1) * limit
   const end = start + limit

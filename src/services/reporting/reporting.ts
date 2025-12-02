@@ -8,8 +8,9 @@
  */
 
 import { HttpClient } from '../../infrastructure/http/HttpClient'
-import { globalConfig } from '../config.js'
 import { ReportResponse, ReportableType, IssueTypeMap, ReportIssueOption } from './types'
+import { Either } from '../../core/types/ads/either'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { Brand } from '../../lib/brands'
 
 /**
@@ -70,9 +71,7 @@ export type ReportParams<T extends ReportableType = ReportableType> = {
  */
 export async function report<T extends ReportableType>(
   params: ReportParams<T>
-): Promise<ReportResponse> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-
+): Promise<Either<HttpError, ReportResponse>> {
   // Build request body
   const requestBody: any = {
     reportable_type: params.type,
@@ -86,12 +85,7 @@ export async function report<T extends ReportableType>(
     requestBody.details = params.details
   }
 
-  const response = await httpClient.post<ReportResponse>(
-    '/api/user-reports/v1/reports',
-    requestBody
-  )
-
-  return response
+  return HttpClient.client().post<ReportResponse>('/api/user-reports/v1/reports', requestBody)
 }
 
 /**
