@@ -150,7 +150,7 @@ export function handlePull(callback: (session: BaseSessionProvider) => Request) 
       }
     }
 
-    if (response.status < 200 || response.status >= 300) {
+    if (response.ok === false) {
       return {
         ok: false,
         isRetryable: (response.status >= 500 && response.status < 504) || response.status === 429 || response.status === 408
@@ -196,7 +196,7 @@ export function handlePush(callback: (session: BaseSessionProvider) => Request) 
       }
     }
 
-    if (response.status < 200 || response.status >= 300) {
+    if (response.ok === false) {
       return {
         ok: false,
         isRetryable: (response.status >= 500 && response.status < 504) || response.status === 429 || response.status === 408
