@@ -193,7 +193,6 @@ export default class SyncRepository<TModel extends BaseModel> {
     }
 
     const data = await this.store.readOne(id)
-    debugger
 
     const ret: SyncRemoteWriteDTO<TModel> = {
       data,
