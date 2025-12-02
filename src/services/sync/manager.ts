@@ -48,7 +48,7 @@ export default class SyncManager {
     this.telemetry = SyncTelemetry.getInstance()!
     this.context = context
 
-    this.database = this.telemetry.trace({ name: 'db:init' }, () => inBoundary(initDatabase))
+    this.database = this.telemetry.trace({ name: 'db:init' }, () => inBoundary(initDatabase)) // todo - can cause undefined??
 
     this.runScope = new SyncRunScope()
     this.retry = new SyncRetry(this.context, this.telemetry)
