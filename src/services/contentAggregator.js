@@ -1,6 +1,6 @@
 import {
   getNavigateTo,
-  getProgressDateByIds,
+  getProgressDataByIds,
   getProgressStateByIds,
   getResumeTimeSecondsByIds,
 } from './contentProgress'
@@ -93,7 +93,7 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     navigateToData,
   ] = await Promise.all([ //for now assume these all return `collection = {type, id}`. it will be so when watermelon here
     addProgressPercentage || addProgressStatus || addProgressTimestamp
-      ? getProgressDateByIds(ids, collection) : Promise.resolve(null),
+      ? getProgressDataByIds(ids, collection) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(ids, collection) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids, collection) : Promise.resolve(null),
     addLastInteractedChild ? fetchLastInteractedChild(ids, collection) : Promise.resolve(null),

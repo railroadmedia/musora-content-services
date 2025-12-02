@@ -25,8 +25,8 @@ export interface Instructor {
 /**
  * Fetch all instructor with lessons available for a specific brand.
  *
- * @param {Brands} brand - The brand for which to fetch instructors.
- * @returns {Promise<Instructor[]>} - A promise that resolves to an array of instructor objects.
+ * @param {Brands|string} brand - The brand for which to fetch instructors.
+ * @returns {Promise<Either<SanityError, SanityListResponse<Instructor>>>} - A promise that resolves to an array of instructor objects.
  *
  * @example
  * fetchInstructors('drumeo')
@@ -34,7 +34,7 @@ export interface Instructor {
  *   .catch(error => console.error(error));
  */
 export async function fetchInstructors(
-  brand: Brands
+  brand: Brands | string
 ): Promise<Either<SanityError, SanityListResponse<Instructor>>> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
@@ -55,8 +55,8 @@ export async function fetchInstructors(
  * Fetch a single instructor by their name
  *
  * @param {string} slug - The slug of the instructor to fetch.
- * @param {Brands} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Instructor | null>} - A promise that resolves to an instructor object or null if not found.
+ * @param {Brands|string} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
+ * @returns {Promise<Either<SanityError, Instructor | null>>} - A promise that resolves to an instructor object or null if not found.
  *
  * @example
  * fetchInstructorBySlug('66samus', 'drumeo')
@@ -65,7 +65,7 @@ export async function fetchInstructors(
  */
 export async function fetchInstructorBySlug(
   slug: string,
-  brand?: Brands
+  brand?: Brands | string
 ): Promise<Either<SanityError, Instructor | null>> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
@@ -95,7 +95,7 @@ export interface FetchInstructorLessonsOptions {
 /**
  * Fetch the data needed for the instructor screen.
  * @param {string} slug - The slug of the instructor
- * @param {Brands} brand - The brand for which to fetch instructor lessons
+ * @param {Brands|string} brand - The brand for which to fetch instructor lessons
  * @param {DocumentTypes} contentType - The content type to filter lessons by.
  * @param {FetchInstructorLessonsOptions} options - Parameters for pagination, filtering and sorting.
  * @param {string} [options.sortOrder="-published_on"] - The field to sort the lessons by.
@@ -112,7 +112,7 @@ export interface FetchInstructorLessonsOptions {
  */
 export async function fetchInstructorLessons(
   slug: string,
-  brand: Brands,
+  brand: Brands | string,
   contentType: DocumentTypes,
   {
     sortOrder: sort = '-published_on',
@@ -130,7 +130,7 @@ export async function fetchInstructorLessons(
   const addType = contentType ? `_type == '${contentType}' && ` : ''
   const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='${DocumentTypes.Instructor}' && slug.current == '${slug}']._id)`
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
-  sort = getSortOrder(sort, brand)
+  sort = getSortOrder(sort, brand as Brands)
 
   return contentClient.fetchList<Lesson>(filterWithRestrictions, fieldsString, {
     sort,

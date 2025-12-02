@@ -225,13 +225,13 @@ const recommendedContentCache: { [brand: string]: OnboardingRecommendedContent }
  * Fetches recommended content for onboarding based on the specified brand.
  *
  * @param {string} email - The user's email address.
- * @param {Brand} brand - The brand identifier.
+ * @param {Brands|string} brand - The brand identifier.
  * @returns {Promise<OnboardingRecommendedContent>} - A promise that resolves with the recommended content.
  * @throws {HttpError} - If the HTTP request fails.
  */
 export async function getOnboardingRecommendedContent(
   email: string,
-  brand: Brands
+  brand: Brands | string
 ): Promise<Either<HttpError, OnboardingRecommendedContent>> {
   // TODO: Replace with real API call when available
   if (recommendedContentCache[brand]) {

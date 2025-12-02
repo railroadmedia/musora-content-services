@@ -24,8 +24,8 @@ export interface Genre {
 /**
  * Fetch all genres with lessons available for a specific brand.
  *
- * @param {string} [brand] - The brand for which to fetch the genre for. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Genre[]>} - A promise that resolves to an genre object or null if not found.
+ * @param {Brands|string} [brand] - The brand for which to fetch the genre for. Lesson count will be filtered by this brand if provided.
+ * @returns {Promise<Either<SanityError, SanityListResponse<Genre>>>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenres('drumeo')
@@ -33,7 +33,7 @@ export interface Genre {
  *   .catch(error => console.error(error));
  */
 export async function fetchGenres(
-  brand: Brands
+  brand: Brands | string
 ): Promise<Either<SanityError, SanityListResponse<Genre>>> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
@@ -54,8 +54,8 @@ export async function fetchGenres(
  * Fetch a single genre by their slug and brand
  *
  * @param {string} slug - The slug of the genre to fetch.
- * @param {Brands} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Genre[]|null>} - A promise that resolves to an genre object or null if not found.
+ * @param {Brands|string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
+ * @returns {Promise<Either<SanityError, Genre | null>>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenreBySlug('drumeo')
@@ -64,7 +64,7 @@ export async function fetchGenres(
  */
 export async function fetchGenreBySlug(
   slug: string,
-  brand?: Brands
+  brand?: Brands | string
 ): Promise<Either<SanityError, Genre | null>> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
@@ -93,7 +93,7 @@ export interface FetchGenreLessonsOptions {
 /**
  * Fetch the genre's lessons.
  * @param {string} slug - The slug of the genre
- * @param {Brands} brand - The brand for which to fetch lessons.
+ * @param {Brands|string} brand - The brand for which to fetch lessons.
  * @param {DocumentTypes} contentType - The content type to filter lessons by.
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
@@ -111,7 +111,7 @@ export interface FetchGenreLessonsOptions {
  */
 export async function fetchGenreLessons(
   slug: string,
-  brand: Brands,
+  brand: Brands | string,
   contentType?: DocumentTypes,
   {
     sort = '-published_on',
@@ -132,7 +132,7 @@ export async function fetchGenreLessons(
     progressIds.length > 0 ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
   const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='${DocumentTypes.Genre}' && slug.current == '${slug}']._id) ${progressFilter}`
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
-  sort = getSortOrder(sort, brand)
+  sort = getSortOrder(sort, brand as Brands)
 
   return contentClient.fetchList<Lesson>(filterWithRestrictions, fieldsString, {
     sort,
