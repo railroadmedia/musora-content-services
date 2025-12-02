@@ -12,6 +12,7 @@ import {
   getAllCompletedByIds,
   getProgressState,
 } from '../contentProgress.js'
+import {COLLECTION_TYPE} from "../sync/models/ContentProgress";
 
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
@@ -87,9 +88,9 @@ export async function getEnrichedLearningPath(learningPathId) {
   const response = (await addContextToContent(
     fetchByRailContentId,
     learningPathId,
-    'learning-path-v2',
+    COLLECTION_TYPE.LEARNING_PATH,
     {
-      collection: { id: learningPathId, type: 'learning-path-v2' },
+      collection: { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH },
       dataField: 'children',
       dataField_includeParent: true,
       addProgressStatus: true,
@@ -241,7 +242,7 @@ export async function fetchLearningPathProgressCheckLessons(
 ): Promise<object> {
   let query = await getAllCompletedByIds(contentIds, {
     id: learningPathId,
-    type: 'learning-path-v2',
+    type: COLLECTION_TYPE.LEARNING_PATH,
   })
   let completedContentIds = query.data
   return {
@@ -298,7 +299,7 @@ export async function completeLearningPathIntroVideo(introVideoId: number, learn
 
   response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
-  const collection = { id: learningPathId, type: 'learning-path-v2' }
+  const collection = { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH }
 
   if (!lessonsToImport) {
     response.learning_path_reset_response = await contentStatusReset(learningPathId, collection)

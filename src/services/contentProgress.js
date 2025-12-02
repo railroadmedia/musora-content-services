@@ -1,6 +1,6 @@
 import { fetchHierarchy, fetchLearningPathHierarchy } from './sanity.js'
 import { db } from './sync'
-import { STATE } from './sync/models/ContentProgress'
+import {COLLECTION_TYPE, STATE} from './sync/models/ContentProgress'
 import { trackUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 
@@ -66,7 +66,7 @@ export async function getNavigateTo(data, collection = null) {
             let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
             navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild), null, collection)
           }
-        } else if (['song-tutorial', 'guided-course', 'learning-path-v2'].includes(content.type)) { // send to first incomplete
+        } else if (['song-tutorial', 'guided-course', COLLECTION_TYPE.LEARNING_PATH].includes(content.type)) { // send to first incomplete
           let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
           navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild), null, collection)
         } else if (twoDepthContentTypes.includes(content.type)) { // send to navigateTo child of last interacted child
@@ -320,7 +320,7 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
 }
 
 async function getHierarchy(contentId, collection) {
-  if (collection && collection.type === 'learning-path-v2') {
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
     return await fetchLearningPathHierarchy(contentId, collection)
   } else {
     return await fetchHierarchy(contentId)
