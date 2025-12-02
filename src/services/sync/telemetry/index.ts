@@ -55,18 +55,16 @@ export class SyncTelemetry {
         userId: this.userId,
       },
     }
-    if (this.Sentry) {
-      return this.Sentry.startSpan<T>(options, (span) => {
-        let desc = span['_spanId'].slice(0, 4)
-        desc += span['_parentSpanId'] ? ` (< ${span['_parentSpanId'].slice(0, 4)})` : ''
+    return this.Sentry.startSpan<T>(options, (span) => {
+      let desc = span['_spanId'].slice(0, 4)
+      desc += span['_parentSpanId'] ? ` (< ${span['_parentSpanId'].slice(0, 4)})` : ''
 
-        this.debug(`[trace:start] ${options.name} (${desc})`)
-        const result = callback(span)
-        Promise.resolve(result).finally(() => this.debug(`[trace:end] ${options.name} (${desc})`))
+      this.debug(`[trace:start] ${options.name} (${desc})`)
+      const result = callback(span)
+      Promise.resolve(result).finally(() => this.debug(`[trace:end] ${options.name} (${desc})`))
 
-        return result
-      })
-    }
+      return result
+    })
   }
 
   capture(err: SyncError) {
@@ -93,7 +91,7 @@ export class SyncTelemetry {
   }
 
   debug(...messages: any[]) {
-    console.debug(...this.formattedConsoleMessages(...messages))
+    // console.debug(...this.formattedConsoleMessages(...messages))
     this.recordBreadcrumb('debug', ...messages)
   }
 
