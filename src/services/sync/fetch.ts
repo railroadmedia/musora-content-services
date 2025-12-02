@@ -117,6 +117,9 @@ export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (sessi
     ...init,
     headers: {
       ...init?.headers,
+      ...globalConfig.sessionConfig?.token ? {
+        'Authorization': `Bearer ${globalConfig.sessionConfig.token}`
+      } : {},
       'Content-Type': 'application/json',
       'X-Sync-Client-Id': session.getClientId(),
       ...(session.getSessionId() ? {
