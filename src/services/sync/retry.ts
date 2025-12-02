@@ -56,8 +56,14 @@ export default class SyncRetry {
         this.resetBackoff()
         return result
       } else {
-        this.scheduleBackoff()
-        if (attempt >= this.MAX_ATTEMPTS) return result
+        const isRetryable = 'isRetryable' in result ? result.isRetryable : false
+
+        if (isRetryable) {
+          this.scheduleBackoff()
+          if (attempt >= this.MAX_ATTEMPTS) return result
+        } else {
+          return result
+        }
       }
     }
   }

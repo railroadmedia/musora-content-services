@@ -424,19 +424,21 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   private async setLastFetchToken(token: SyncToken | null) {
-    await this.db.write(async () => {
-      if (token) {
-        const storedValue = await this.getLastFetchToken()
+    await this.runScope.abortable(async () => {
+      await this.db.write(async () => {
+        if (token) {
+          const storedValue = await this.getLastFetchToken()
 
-        // avoids thrashing if we get and compare first before setting
-        if (storedValue !== token) {
-          this.telemetry.debug(`[store:${this.model.table}] Setting last fetch token: ${token}`)
-          return this.db.localStorage.set(this.lastFetchTokenKey, token)
+          // avoids thrashing if we get and compare first before setting
+          if (storedValue !== token) {
+            this.telemetry.debug(`[store:${this.model.table}] Setting last fetch token: ${token}`)
+            return this.db.localStorage.set(this.lastFetchTokenKey, token)
+          }
+        } else {
+          this.telemetry.debug(`[store:${this.model.table}] Removing last fetch token`)
+          return this.db.localStorage.remove(this.lastFetchTokenKey)
         }
-      } else {
-        this.telemetry.debug(`[store:${this.model.table}] Removing last fetch token`)
-        return this.db.localStorage.remove(this.lastFetchTokenKey)
-      }
+      })
     })
   }
 
