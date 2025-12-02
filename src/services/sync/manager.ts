@@ -14,6 +14,7 @@ import { inBoundary } from './errors/boundary'
 import createStoresFromConfig from './store-configs'
 
 export default class SyncManager {
+  private static counter = 0
   private static instance: SyncManager | null = null
 
   public static assignAndSetupInstance(instance: SyncManager) {
@@ -23,8 +24,8 @@ export default class SyncManager {
     SyncManager.instance = instance
     const teardown = instance.setup()
     return async () => {
-      await teardown()
       SyncManager.instance = null
+      await teardown()
     }
   }
 
@@ -35,6 +36,7 @@ export default class SyncManager {
     return SyncManager.instance
   }
 
+  private id: string
   public telemetry: SyncTelemetry
   private database: Database
   private context: SyncContext
@@ -45,6 +47,8 @@ export default class SyncManager {
   private safetyMap: { stores: SyncStore<any>[]; mechanisms: (() => void)[] }[]
 
   constructor(context: SyncContext, initDatabase: () => Database) {
+    this.id = (SyncManager.counter++).toString()
+
     this.telemetry = SyncTelemetry.getInstance()!
     this.context = context
 
@@ -57,6 +61,13 @@ export default class SyncManager {
 
     this.strategyMap = []
     this.safetyMap = []
+  }
+
+  /**
+   * Useful as a cache key (if user logs in and out multiple times, creating multiple managers)
+   */
+  getId() {
+    return this.id
   }
 
   createStore<TModel extends BaseModel>(config: SyncStoreConfig<TModel>) {
