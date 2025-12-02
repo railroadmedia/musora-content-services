@@ -108,10 +108,10 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.queryAll(...clauses)
   }
 
-  recordProgressRemotely(contentId: number, collection: { type: COLLECTION_TYPE; id: number } | null, progressPct: number, resumeTime?: number) {
+  recordProgress(contentId: number, collection: { type: COLLECTION_TYPE; id: number } | null, progressPct: number, resumeTime?: number) {
     const id = ProgressRepository.generateId(contentId, collection)
 
-    return this.upsertOneRemote(id, (r) => {
+    return this.upsertOne(id, (r) => {
       r.content_id = contentId
       r.collection_type = collection?.type ?? null
       r.collection_id = collection?.id ?? null
@@ -125,12 +125,12 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     })
   }
 
-  recordProgressesRemotely(
+  recordProgresses(
     contentIds: number[],
     collection: { type: COLLECTION_TYPE; id: number } | null,
     progressPct: number
   ) {
-    return this.upsertSomeRemote(
+    return this.upsertSome(
       Object.fromEntries(
         contentIds.map((contentId) => [
           ProgressRepository.generateId(contentId, collection),

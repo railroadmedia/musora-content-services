@@ -291,7 +291,7 @@ export async function contentStatusReset(contentId, collection = null) {
 }
 
 async function saveContentProgress(contentId, collection, progress, currentSeconds) {
-  const response = await db.contentProgress.recordProgressRemotely(contentId, collection, progress, currentSeconds)
+  const response = await db.contentProgress.recordProgress(contentId, collection, progress, currentSeconds)
 
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
@@ -307,18 +307,14 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
   // we explicitly pessimistically await a remote push here
   // because awards may be generated (on server) on completion
   // which we would want to toast the user about *in band*
-  const response = await db.contentProgress.recordProgressRemotely(contentId, collection, progress)
-  console.log(response)
+  const response = await db.contentProgress.recordProgress(contentId, collection, progress)
 
-  if (response.pushStatus === 'success') {
-    const hierarchy = await getHierarchy(contentId, collection)
+  const hierarchy = await getHierarchy(contentId, collection)
 
-    console.log(hierarchy)
-    await Promise.all([
-      db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, collection, progress), collection),
-      bubbleProgress(hierarchy, contentId, collection).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses, collection))
-    ])
-  }
+  await Promise.all([
+    db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, collection, progress), collection),
+    bubbleProgress(hierarchy, contentId, collection).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses, collection))
+  ])
 
   return response
 }
@@ -336,26 +332,23 @@ async function setStartedOrCompletedStatuses(contentIds, collection, isCompleted
   // we explicitly pessimistically await a remote push here
   // because awards may be generated (on server) on completion
   // which we would want to toast the user about *in band*
-  console.log(contentIds, collection, progress)
-  const response = await db.contentProgress.recordProgressesRemotely(contentIds, collection, progress)
+  const response = await db.contentProgress.recordProgresses(contentIds, collection, progress)
 
-  if (response.pushStatus === 'success') {
-    // we assume this is used only for contents within the same hierarchy
-    const hierarchy = await getHierarchy(contentIds[0], collection)
+  // we assume this is used only for contents within the same hierarchy
+  const hierarchy = await getHierarchy(contentIds[0], collection)
 
-    let ids = {}
-    for (const contentId of contentIds) {
-      ids = {
-        ...ids,
-        ...trickleProgress(hierarchy, contentId, collection, progress),
-        ...await bubbleProgress(hierarchy, contentId, collection)
-      }
+  let ids = {}
+  for (const contentId of contentIds) {
+    ids = {
+      ...ids,
+      ...trickleProgress(hierarchy, contentId, collection, progress),
+      ...await bubbleProgress(hierarchy, contentId, collection)
     }
-
-    await Promise.all([
-      db.contentProgress.recordProgressesTentative(ids, collection),
-    ]);
   }
+
+  await Promise.all([
+    db.contentProgress.recordProgressesTentative(ids, collection),
+  ]);
 
   return response
 }
