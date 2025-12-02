@@ -158,7 +158,6 @@ export async function fetchLearningPathLessons(
   const learningPath = await getEnrichedLearningPath(learningPathId)
   let dailySession = await getDailySession(brand, userDate)
   if (!dailySession) {
-    console.log('creating daily from fetch LP', [brand, userDate, false]) // for testing
     dailySession = await updateDailySession(brand, userDate, false)
   }
 
