@@ -11,6 +11,7 @@ import {
   getAllCompletedByIds,
   getProgressState,
 } from '../contentProgress.js'
+import { STATE } from '../sync/models/ContentProgress'
 
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
@@ -225,29 +226,18 @@ export async function fetchLearningPathLessons(
  * For an array of contentIds, fetch any content progress with state=completed,
  * including other learning paths and a la carte progress.
  *
- * @param contentIds The array of content IDs within the learning path
- * @param learningPathId The learning path ID
- * @returns {Promise<Object>} Response object
- * @returns {Array} result.lessons - Array of all learning path lesson contentIds.
- * @returns {Array} result.completed_lessons - Array of learning path lesson contentIds that are completed.
- * @returns {Array} result.lessons_count - Count of learning path lessons.
- * @returns {Array} result.completed_lessons_count - Count of learning path completed lessons.
+ * @param {number[]} contentIds The array of content IDs within the learning path
+ * @returns {Promise<Object>} Object with content IDs as keys and the progress state as values
  */
-export async function fetchLearningPathProgressCheckLessons(
-  contentIds: number[],
-  learningPathId: number
-): Promise<object> {
-  let query = await getAllCompletedByIds(contentIds, {
-    id: learningPathId,
-    type: 'learning-path-v2',
-  })
-  let completedContentIds = query.data
-  return {
-    lessons: contentIds,
-    completed_lessons: completedContentIds,
-    lessons_count: contentIds.length,
-    completed_lessons_count: completedContentIds.length,
-  }
+export async function fetchLearningPathProgressCheckLessons(contentIds: number[]): Promise<Object> {
+  let query = await getAllCompletedByIds(contentIds)
+  let completedLessons = query.data.map(lesson => lesson.content_id)
+
+  return contentIds.reduce((obj, contentId) => {
+    let lessonIsCompleted = completedLessons.includes(contentId)
+    obj[contentId] = lessonIsCompleted ? STATE.COMPLETED : ""
+    return obj
+  }, {})
 }
 
 interface completeMethodIntroVideo {
