@@ -234,40 +234,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
-  async upsertSomeRemote(builders: Record<RecordId, (record: TModel) => void>, span?: Span) {
-    if (Object.keys(builders).length === 0) return { ok: true, results: [] } as SyncPushResponse
-
-    return await this.runScope.abortable(async () => {
-      const ids = Object.keys(builders)
-      const records: TModel[] = []
-
-      const existing = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))
-      const existingMap = existing.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
-
-      Object.entries(builders).forEach(([id, builder]) => {
-        const existingRecord = existingMap.get(id)
-
-        if (existingRecord) {
-          existingRecord._isEditing = true
-          builder(existingRecord)
-          existingRecord._isEditing = false
-          records.push(existingRecord)
-        } else {
-          const attrs = new this.model(this.collection, { id })
-          attrs._isEditing = true
-          builder(attrs)
-          attrs._isEditing = false
-          records.push(this.collection.disposableFromDirtyRaw(attrs._raw))
-        }
-      })
-
-      return await this.pushCoalescer.push(
-        records,
-        () => this.executePush(records, span)
-      )
-    })
-  }
-
   async upsertSome(builders: Record<RecordId, (record: TModel) => void>, span?: Span) {
     if (Object.keys(builders).length === 0) return []
 
