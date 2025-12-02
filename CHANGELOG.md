@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.93.2](https://github.com/railroadmedia/musora-content-services/compare/v2.93.1...v2.93.2) (2025-12-02)
+
+
+### Bug Fixes
+
+* progress fixes and features with watermelon ([#607](https://github.com/railroadmedia/musora-content-services/issues/607)) ([005403c](https://github.com/railroadmedia/musora-content-services/commit/005403c9bbaeebe8c5ecb5315754de4448bcbf43))
+
 ### [2.93.1](https://github.com/railroadmedia/musora-content-services/compare/v2.93.0...v2.93.1) (2025-12-02)
 
 ## [2.93.0](https://github.com/railroadmedia/musora-content-services/compare/v2.92.7...v2.93.0) (2025-12-02)
