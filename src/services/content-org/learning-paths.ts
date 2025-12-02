@@ -8,6 +8,7 @@ import { addContextToContent } from '../contentAggregator.js'
 import {
   contentStatusCompleted,
   contentStatusReset,
+  getAllCompletedByIds,
   getProgressState,
 } from '../contentProgress.js'
 
@@ -220,6 +221,35 @@ export async function fetchLearningPathLessons(
   }
 }
 
+/**
+ * For an array of contentIds, fetch any content progress with state=completed,
+ * including other learning paths and a la carte progress.
+ *
+ * @param contentIds The array of content IDs within the learning path
+ * @param learningPathId The learning path ID
+ * @returns {Promise<Object>} Response object
+ * @returns {Array} result.lessons - Array of all learning path lesson contentIds.
+ * @returns {Array} result.completed_lessons - Array of learning path lesson contentIds that are completed.
+ * @returns {Array} result.lessons_count - Count of learning path lessons.
+ * @returns {Array} result.completed_lessons_count - Count of learning path completed lessons.
+ */
+export async function fetchLearningPathProgressCheckLessons(
+  contentIds: number[],
+  learningPathId: number
+): Promise<object> {
+  let query = await getAllCompletedByIds(contentIds, {
+    id: learningPathId,
+    type: 'learning-path-v2',
+  })
+  let completedContentIds = query.data
+  return {
+    lessons: contentIds,
+    completed_lessons: completedContentIds,
+    lessons_count: contentIds.length,
+    completed_lessons_count: completedContentIds.length,
+  }
+}
+
 interface completeMethodIntroVideo {
   intro_video_response: Object | null,
   active_path_response: ActiveLearningPathResponse
@@ -238,7 +268,7 @@ export async function completeMethodIntroVideo(introVideoId: number, brand: stri
   response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
   const methodStructure = await fetchMethodV2Structure(brand)
-  const learningPathId = methodStructure.learningPaths[0].id
+  const learningPathId = methodStructure.learning_paths[0].id
 
   response.active_path_response = await startLearningPath(brand, learningPathId)
 
@@ -249,7 +279,7 @@ export async function completeMethodIntroVideo(introVideoId: number, brand: stri
 interface completeLearningPathIntroVideo {
   intro_video_response: Object | null,
   learning_path_reset_response: void | null,
-  lesson_import_response: Object[] | null
+  lesson_import_response: Object | null
 }
 /**
  * Handles completion of learning path intro video and other related actions.
@@ -269,11 +299,12 @@ export async function completeLearningPathIntroVideo(introVideoId: number, learn
   const collection = { id: learningPathId, type: 'learning-path-v2' }
 
   if (!lessonsToImport) {
-    // returns nothing now, but it will when watermelon comes 'round
     response.learning_path_reset_response = await contentStatusReset(learningPathId, collection)
 
   } else {
+      response.lesson_import_response = {}
     for (const contentId of lessonsToImport) {
+      // todo: create bulk complete endpoint with bubbling. and set up watermelon method bubbling
       response.lesson_import_response[contentId] = await contentStatusCompleted(contentId, collection)
     }
   }

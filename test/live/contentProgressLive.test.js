@@ -18,7 +18,7 @@ describe('contentProgressDataContextLocal', function () {
     let contentId = 241250
     await contentStatusReset(contentId)
 
-    await recordWatchSession(contentId, 'video', 'vimeo', 100, 50, 50)
+    await recordWatchSession(contentId, null, 'video', 'vimeo', 100, 50, 50)
 
     let result = await getProgressPercentage(contentId)
     expect(result).toBe(50)
@@ -35,7 +35,7 @@ describe('contentProgressDataContextLocal', function () {
     let result = await getProgressState(contentId)
     expect(result).toBe('')
 
-    await recordWatchSession(contentId, 'video', 'vimeo', 100, 50, 50)
+    await recordWatchSession(contentId, null, 'video', 'vimeo', 100, 50, 50)
 
     result = await getProgressState(contentId)
     expect(result).toBe('started')
@@ -107,33 +107,4 @@ describe('contentProgressDataContextLocal', function () {
       expect(state).toBe('completed')
     }
   }, 100000)
-
-  //
-  // test('progressBubbling', async () => {
-  //     let serverVersion = 2;
-  //     let mock2 = jest.spyOn(railContentModule, 'postRecordWatchSession');
-  //     mock2.mockImplementation(() => JSON.parse(`{"version": ${serverVersion}}`));
-  //     let progress = await getProgressPercentage(241250); //force load context
-  //
-  //     await recordWatchSession(241250, "video", "vimeo", 100, 50, 50);
-  //     serverVersion++;
-  //     await recordWatchSession(241251, "video", "vimeo", 100, 50, 50);
-  //     serverVersion++;
-  //     await recordWatchSession(241252, "video", "vimeo", 100, 50, 50);
-  //     serverVersion++;
-  //     await recordWatchSession(241260, "video", "vimeo", 100, 100, 100);
-  //     serverVersion++;
-  //     await recordWatchSession(241261, "video", "vimeo", 100, 100, 100);
-  //     serverVersion++;
-  //     progress = await getProgressPercentage(241250);
-  //
-  //     expect(progress).toBe(50);
-  //     let progress241249 = await getProgressPercentage(241249);
-  //     expect(progress241249).toBe(15);
-  //     let progress241248 = await getProgressPercentage(241248);
-  //     expect(progress241248).toBe(7);
-  //     let progress241247 = await getProgressPercentage(241247);
-  //     expect(progress241247).toBe(1);
-  //
-  // }, 100000);
 })

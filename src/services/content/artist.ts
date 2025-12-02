@@ -22,7 +22,7 @@ export interface Artist {
 /**
  * Fetch all artists with lessons available for a specific brand.
  *
- * @param {Brands} brand - The brand for which to fetch artists.
+ * @param {Brands|string} brand - The brand for which to fetch artists.
  * @returns {Promise<Artist[]|null>} - A promise that resolves to an array of artist objects or null if not found.
  *
  * @example
@@ -30,7 +30,7 @@ export interface Artist {
  *   .then(artists => console.log(artists))
  *   .catch(error => console.error(error));
  */
-export async function fetchArtists(brand: Brands): Promise<SanityListResponse<Artist>> {
+export async function fetchArtists(brand: Brands | string): Promise<SanityListResponse<Artist>> {
   const filter = await new FilterBuilder(
     `_type == "song" && brand == "${brand}" && references(^._id)`,
     { bypassPermissions: true }
@@ -51,7 +51,7 @@ export async function fetchArtists(brand: Brands): Promise<SanityListResponse<Ar
  * Fetch a single artist by their Sanity ID.
  *
  * @param {string} slug - The name of the artist to fetch.
- * @param {Brands} [brand] - The brand for which to fetch the artist.
+ * @param {Brands|string} [brand] - The brand for which to fetch the artist.
  * @returns {Promise<Artist|null>} - A promise that resolves to an artist objects or null if not found.
  *
  * @example
@@ -59,7 +59,10 @@ export async function fetchArtists(brand: Brands): Promise<SanityListResponse<Ar
  *   .then(artists => console.log(artists))
  *   .catch(error => console.error(error));
  */
-export async function fetchArtistBySlug(slug: string, brand?: Brands): Promise<Artist | null> {
+export async function fetchArtistBySlug(
+  slug: string,
+  brand?: Brands | string
+): Promise<Artist | null> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} _type == "song" && references(^._id)`, {
     bypassPermissions: true,
@@ -92,7 +95,7 @@ export interface LessonsByArtistResponse {
 /**
  * Fetch the artist's lessons.
  * @param {string} slug - The slug of the artist
- * @param {Brands} brand - The brand for which to fetch lessons.
+ * @param {Brands|string} brand - The brand for which to fetch lessons.
  * @param {DocumentTypes} contentType - The type of the lessons we need to get from the artist. If not defined, groq will get lessons from all content types
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
@@ -110,7 +113,7 @@ export interface LessonsByArtistResponse {
  */
 export async function fetchArtistLessons(
   slug: string,
-  brand: Brands,
+  brand: Brands | string,
   contentType: DocumentTypes,
   {
     sort = '-published_on',
@@ -132,7 +135,7 @@ export async function fetchArtistLessons(
   const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='${DocumentTypes.Artist}' && slug.current == '${slug}']._id) ${progressFilter}`
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
-  sort = getSortOrder(sort, brand)
+  sort = getSortOrder(sort, brand as Brands)
   return contentClient.fetchList(filterWithRestrictions, fieldsString, {
     sort,
     start: start,

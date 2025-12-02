@@ -134,3 +134,6 @@ dist
 
 # Ignore yarn.lock
 yarn.lock
+
+# Generated documentation
+/docs/
