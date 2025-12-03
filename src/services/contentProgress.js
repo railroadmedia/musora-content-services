@@ -286,6 +286,7 @@ export async function contentStatusReset(contentId, collection = null) {
 }
 
 async function saveContentProgress(contentId, collection, progress, currentSeconds) {
+  console.log('saveProgress', [contentId, collection, progress, currentSeconds])
   const response = await db.contentProgress.recordProgress(contentId, collection, progress, currentSeconds)
 
   // note - previous implementation explicitly did not trickle progress to children here
@@ -299,6 +300,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
     let exportIds = bubbledProgresses
     exportIds[contentId] = progress
+    console.log('exportIds', exportIds)
     await duplicateLearningPathProgressToExternalContents(exportIds, collection, hierarchy)
   }
 
@@ -319,22 +321,28 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
   await db.contentProgress.recordProgressesTentative(ids, collection)
 
   if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
-    let exportedIds = ids
-    exportedIds[contentId] = progress
-    await duplicateLearningPathProgressToExternalContents(exportedIds, collection, hierarchy)
+    let exportIds = ids
+    exportIds[contentId] = progress
+    console.log('exportIds', exportIds)
+    await duplicateLearningPathProgressToExternalContents(exportIds, collection, hierarchy)
   }
 
   return response
 }
 
 async function duplicateLearningPathProgressToExternalContents(ids, collection, hierarchy) {
-  // we dont want to duplicate to LP's' while we dont have a-la-cart LP's set up.
-  ids.filter((id) => {
-    return hierarchy.parents[id] !== null && hierarchy.parents[id] === collection.id
-  })
+  // filter out LPs. we dont want to duplicate to LP's while we dont have a-la-cart LP's set up.
+  console.log('hierarchy', hierarchy)
+  const filteredIds = Object.fromEntries(
+    Object.entries(ids).filter((id) => {
+      return hierarchy.parents[id] !== null
+    })
+  )
+  console.log('ids', filteredIds)
 
   // each handles its own bubbling.
-  Object.entries(ids).forEach(([id, pct]) => {
+  Object.entries(filteredIds).forEach(([id, pct]) => {
+    console.log('id,pct', [id, pct])
     saveContentProgress(parseInt(id), null, pct)
   })
 }
@@ -371,6 +379,7 @@ async function setStartedOrCompletedStatuses(contentIds, collection, isCompleted
     let exportIds = ids
     for (const contentId of contentIds){
       exportIds[contentId] = progress
+      console.log('exportIds', exportIds)
     }
     await duplicateLearningPathProgressToExternalContents(exportIds, collection, hierarchy)
   }
