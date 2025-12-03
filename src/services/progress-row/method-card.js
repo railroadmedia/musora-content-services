@@ -6,7 +6,7 @@ import { getActivePath, fetchLearningPathLessons } from '../content-org/learning
 import { getToday } from '../dateUtils.js'
 import { fetchMethodV2IntroVideo } from '../sanity'
 import { getProgressState } from '../contentProgress'
-import {COLLECTION_TYPE} from "../sync/models/ContentProgress";
+import { COLLECTION_TYPE } from '../sync/models/ContentProgress'
 
 export async function getMethodCard(brand) {
   const introVideo = await fetchMethodV2IntroVideo(brand)
