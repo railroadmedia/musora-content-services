@@ -242,6 +242,9 @@ export async function recordWatchSession(
   instrumentId = null,
   categoryId = null
 ) {
+  contentId = normalizeContentId(contentId)
+  collection = normalizeCollection(collection)
+
   const [session] = await Promise.all([
     trackPractice(contentId, secondsPlayed, prevSession, { instrumentId, categoryId }),
     trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds),
