@@ -27,10 +27,6 @@ function enhanceCompletionData(completionData, awardType) {
 }
 
 /**
- * Get all awards for a content item with their current progress.
- * Returns whether awards exist and an array of award status objects.
- * Use this on content detail pages to show award progress and badges.
- *
  * @param {number} contentId - Railcontent ID of the content item
  * @returns {Promise<ContentAwardsResponse>} Status object with award information
  *
@@ -105,10 +101,6 @@ export async function getContentAwards(contentId) {
 }
 
 /**
- * Get all completed awards for the current user, sorted by completion date (newest first).
- * Supports brand filtering and pagination. Only returns awards that are 100% complete
- * with a completion timestamp. Use this for awards collection pages and profile displays.
- *
  * @param {string} [brand=null] - Brand to filter by (drumeo, pianote, guitareo, singeo), or null for all brands
  * @param {AwardPaginationOptions} [options={}] - Optional pagination and filtering
  * @returns {Promise<AwardInfo[]>} Array of completed award objects sorted by completion date
@@ -196,10 +188,6 @@ export async function getCompletedAwards(brand = null, options = {}) {
 }
 
 /**
- * Get all in-progress awards for the current user, sorted by progress percentage (highest first).
- * Returns awards that have been started but not yet completed. Use this to show users
- * what they're currently working toward and encourage completion.
- *
  * @param {string} [brand=null] - Brand to filter by (drumeo, pianote, guitareo, singeo), or null for all brands
  * @param {AwardPaginationOptions} [options={}] - Optional pagination options
  * @returns {Promise<AwardInfo[]>} Array of in-progress award objects sorted by progress
@@ -287,10 +275,6 @@ export async function getInProgressAwards(brand = null, options = {}) {
 }
 
 /**
- * Get overall statistics about user's award progress across all or specific brand.
- * Returns counts for total available, completed, in-progress, and not started awards,
- * plus an overall completion percentage. Use this for dashboard widgets and stats pages.
- *
  * @param {string} [brand=null] - Brand to filter by (drumeo, pianote, guitareo, singeo), or null for all brands
  * @returns {Promise<AwardStatistics>} Statistics object with award counts and completion percentage
  *

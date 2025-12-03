@@ -19,12 +19,7 @@
  * @property {BrandLogos} brandLogos - Brand-specific logo URLs
  */
 
-/**
- * Static award certificate assets.
- * URLs for images used in award certificates and badges.
- *
- * @type {AwardAssets}
- */
+/** @type {AwardAssets} */
 export const AWARD_ASSETS = {
   ribbon: "https://d3fzm1tzeyr5n3.cloudfront.net/challenges/gold_ribbon.png",
   musoraLogo: "https://d3fzm1tzeyr5n3.cloudfront.net/challenges/on_musora.png",

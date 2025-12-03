@@ -18,9 +18,6 @@
 const listeners = new Set()
 
 /**
- * Register a listener to be notified when content progress is saved.
- * Use this to react to progress changes across the application.
- *
  * @param {ProgressSavedListener} listener - Function called when progress is saved
  * @returns {function(): void} Cleanup function to unregister the listener
  *
@@ -41,9 +38,6 @@ export function onProgressSaved(listener) {
 }
 
 /**
- * Emit a progress saved event to all registered listeners.
- * Called internally when content progress is updated.
- *
  * @param {ProgressSavedEvent} event - The progress event to emit
  * @returns {void}
  */

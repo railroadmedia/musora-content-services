@@ -220,16 +220,12 @@ class AwardDefinitionsService {
 
 export const awardDefinitions = new AwardDefinitionsService()
 
-/**
- * 
- * @returns {Promise<void>}
- */
+/** @returns {Promise<void>} */
 export async function initializeAwardDefinitions() {
   await awardDefinitions.initialize()
 }
 
 /**
- * 
  * @param {import('./types').AwardDefinition} award
  * @returns {number[]}
  */

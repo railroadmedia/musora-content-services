@@ -4,7 +4,6 @@
 
 
 /**
- * 
  * @param {string} url
  * @returns {Promise<string>}
  */
@@ -46,7 +45,6 @@ export async function urlToBase64(url) {
 }
 
 /**
- * 
  * @param {Object<string, string>} urlMap
  * @returns {Promise<Object<string, string>>}
  */

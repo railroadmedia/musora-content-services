@@ -6,7 +6,6 @@
 import { Q } from '@nozbe/watermelondb'
 
 /**
- * 
  * @param {string} awardId
  * @param {number} courseContentId
  * @returns {Promise<import('./types').CompletionData>}
@@ -40,7 +39,6 @@ export async function generateCompletionData(awardId, courseContentId) {
 }
 
 /**
- * 
  * @param {number[]} contentIds
  * @param {any} db
  * @returns {Promise<number>}

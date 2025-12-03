@@ -8,10 +8,7 @@ import { AwardMessageGenerator } from './message-generator'
 import { globalConfig } from '../../config'
 import { awardManager } from './award-manager'
 
-/**
- * 
- * @returns {Promise<import('./types').CertificateData>}
- */
+/** @returns {Promise<import('./types').CertificateData>} */
 export async function buildCertificateData(awardId) {
   const { awardDefinitions } = await import('./award-definitions')
   const { getUserData } = await import('../../user/management')

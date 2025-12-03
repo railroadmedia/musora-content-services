@@ -10,12 +10,66 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Do not run tests or try to run tests with npm test unless explicitly asked.
 
 ## Code Style Standards
-Self-Documenting Code
-Write clear, descriptive function and variable names that eliminate the need for comments
-Never add comments explaining what code does - the code itself should be clear
-Never add comments about code history, updates, or previous states
-Only add comments when code logic is genuinely complex and cannot be simplified further
-If you need a comment, first consider refactoring to make the code clearer
+
+### Self-Documenting Code
+- Write clear, descriptive function and variable names that eliminate the need for comments
+- Never add comments explaining what code does - the code itself should be clear
+- Never add comments about code history, updates, or previous states
+- Only add comments when code logic is genuinely complex and cannot be simplified further
+- If you need a comment, first consider refactoring to make the code clearer
+
+### Inline Comments
+- Never add comments that explain what code does - the code should be self-explanatory
+- Use descriptive variable and function names instead of comments
+- Only add comments for genuinely complex logic that cannot be simplified
+
+**Bad:**
+```javascript
+// Check if user has completed the award
+if (progress === 100 && completedAt !== null) {
+
+// Loop through all awards and filter completed ones
+const completed = awards.filter(a => a.done)
+
+// Calculate the percentage
+const pct = (count / total) * 100
+```
+
+**Good:**
+```javascript
+const isAwardCompleted = progress === 100 && completedAt !== null
+if (isAwardCompleted) {
+
+const completedAwards = awards.filter(award => award.isCompleted)
+
+const progressPercentage = (completedCount / totalCount) * 100
+```
+
+### JSDoc Guidelines
+- Keep JSDoc blocks minimal - only include `@param`, `@returns`, `@throws`, `@example`, and type annotations
+- Never add explainer text or descriptions before the first `@` tag
+- Never add empty lines like `* ` at the start of JSDoc blocks
+- Let function names be self-documenting; don't repeat what the name already says
+
+**Bad:**
+```javascript
+/**
+ * Register a callback function to be notified when the user earns a new award.
+ * The callback receives an award object with completion data, badge URLs, and practice statistics.
+ * Returns a cleanup function to unregister the callback when no longer needed.
+ *
+ * @param {Function} callback - The callback function
+ * @returns {Function} Cleanup function
+ */
+```
+
+**Good:**
+```javascript
+/**
+ * @param {Function} callback - The callback function
+ * @returns {Function} Cleanup function
+ */
+```
 
 ## Development Setup
 

@@ -9,10 +9,6 @@ let awardGrantedCallback = null
 let progressUpdateCallback = null
 
 /**
- * Register a callback function to be notified when the user earns a new award.
- * The callback receives an award object with completion data, badge URLs, and practice statistics.
- * Returns a cleanup function to unregister the callback when no longer needed.
- *
  * @param {AwardCallbackFunction} callback - Function called with award data when an award is earned
  * @returns {UnregisterFunction} Cleanup function to unregister this callback
  *
@@ -78,10 +74,6 @@ function unregisterAwardCallback() {
 }
 
 /**
- * Register a callback function to be notified when award progress updates.
- * Use this to display progress bars or update UI as the user completes content toward an award.
- * Returns a cleanup function to unregister the callback when no longer needed.
- *
  * @param {ProgressCallbackFunction} callback - Function called with progress data when award progress changes
  * @returns {UnregisterFunction} Cleanup function to unregister this callback
  *
