@@ -29,7 +29,7 @@ export function inBoundary<T, TContext extends Record<string, any>>(fn: (context
     if (result instanceof Promise) {
       return result.catch((err: unknown) => {
         const wrapped = err instanceof SyncError ? err : new SyncUnexpectedError((err as Error).message, context);
-        SyncTelemetry.getInstance().capture(wrapped)
+        SyncTelemetry.getInstance()?.capture(wrapped)
 
         throw wrapped;
       });
@@ -38,7 +38,7 @@ export function inBoundary<T, TContext extends Record<string, any>>(fn: (context
     return result;
   } catch (err: unknown) {
     const wrapped = err instanceof SyncError ? err : new SyncUnexpectedError((err as Error).message, context);
-    SyncTelemetry.getInstance().capture(wrapped);
+    SyncTelemetry.getInstance()?.capture(wrapped);
 
     throw wrapped;
   }

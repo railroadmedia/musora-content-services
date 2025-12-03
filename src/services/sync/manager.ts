@@ -15,6 +15,7 @@ import createStoresFromConfig from './store-configs'
 import { contentProgressObserver } from '../awards/internal/content-progress-observer'
 
 export default class SyncManager {
+  private static counter = 0
   private static instance: SyncManager | null = null
 
   public static assignAndSetupInstance(instance: SyncManager) {
@@ -24,8 +25,8 @@ export default class SyncManager {
     SyncManager.instance = instance
     const teardown = instance.setup()
     return async () => {
-      await teardown()
       SyncManager.instance = null
+      await teardown()
     }
   }
 
@@ -36,6 +37,7 @@ export default class SyncManager {
     return SyncManager.instance
   }
 
+  private id: string
   public telemetry: SyncTelemetry
   private database: Database
   private context: SyncContext
@@ -46,10 +48,12 @@ export default class SyncManager {
   private safetyMap: { stores: SyncStore<any>[]; mechanisms: (() => void)[] }[]
 
   constructor(context: SyncContext, initDatabase: () => Database) {
+    this.id = (SyncManager.counter++).toString()
+
     this.telemetry = SyncTelemetry.getInstance()!
     this.context = context
 
-    this.database = this.telemetry.trace({ name: 'db:init' }, () => inBoundary(initDatabase))
+    this.database = this.telemetry.trace({ name: 'db:init' }, () => inBoundary(initDatabase)) // todo - can cause undefined??
 
     this.runScope = new SyncRunScope()
     this.retry = new SyncRetry(this.context, this.telemetry)
@@ -58,6 +62,13 @@ export default class SyncManager {
 
     this.strategyMap = []
     this.safetyMap = []
+  }
+
+  /**
+   * Useful as a cache key (if user logs in and out multiple times, creating multiple managers)
+   */
+  getId() {
+    return this.id
   }
 
   createStore<TModel extends BaseModel>(config: SyncStoreConfig<TModel>) {
