@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.94.1](https://github.com/railroadmedia/musora-content-services/compare/v2.94.0...v2.94.1) (2025-12-03)
+
+## [2.94.0](https://github.com/railroadmedia/musora-content-services/compare/v2.92.6...v2.94.0) (2025-12-03)
+
+
+### Features
+
+* **BEH-1192:** revise fetchLearningPathProgressCheckLessons ([#604](https://github.com/railroadmedia/musora-content-services/issues/604)) ([db8cb70](https://github.com/railroadmedia/musora-content-services/commit/db8cb70ed70f4341fdd4651cdd3fea2b8047dc21))
+
+
+### Bug Fixes
+
+* **agi:** make brand parameter less strict for now ([#603](https://github.com/railroadmedia/musora-content-services/issues/603)) ([b440b92](https://github.com/railroadmedia/musora-content-services/commit/b440b92ae1b4aab80d7e5ac5238c1e386cf09db8))
+* method progress card subtitle ([#608](https://github.com/railroadmedia/musora-content-services/issues/608)) ([3bbfb56](https://github.com/railroadmedia/musora-content-services/commit/3bbfb56fce08e0753e7708bdf2d1356000b1c398))
+* progress fixes and features with watermelon ([#607](https://github.com/railroadmedia/musora-content-services/issues/607)) ([005403c](https://github.com/railroadmedia/musora-content-services/commit/005403c9bbaeebe8c5ecb5315754de4448bcbf43))
+* Pull in permission_v2 ([#602](https://github.com/railroadmedia/musora-content-services/issues/602)) ([289e32d](https://github.com/railroadmedia/musora-content-services/commit/289e32d08bd3a6448191b9f6034801e4cf8d40e5))
+
 ### [2.93.2](https://github.com/railroadmedia/musora-content-services/compare/v2.93.1...v2.93.2) (2025-12-02)
 
 
