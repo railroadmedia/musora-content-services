@@ -419,7 +419,10 @@ function getChildrenToDepth(parentId, hierarchy, depth = 1) {
 }
 
 function normalizeContentId(contentId) {
-  return +contentId
+  if (typeof contentId === 'string' && isNaN(+contentId)) {
+    throw new Error(`Invalid content id: ${contentId}`)
+  }
+  return typeof contentId === 'string' ? +contentId : contentId
 }
 
 function normalizeContentIds(contentIds) {
@@ -428,6 +431,14 @@ function normalizeContentIds(contentIds) {
 
 function normalizeCollection(collection) {
   if (!collection) return null
+
+  if (COLLECTION_TYPE.indexOf(collection.type) === -1) {
+    throw new Error(`Invalid collection type: ${collection.type}`)
+  }
+  if (typeof collection.id === 'string' && isNaN(+collection.id)) {
+    throw new Error(`Invalid collection id: ${collection.id}`)
+  }
+
   return {
     type: collection.type,
     id: typeof collection.id === 'string' ? +collection.id : collection.id,
