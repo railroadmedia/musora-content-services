@@ -51,9 +51,7 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
     }
 
     // Get content's required permissions
-    const oldPermissions = content?.permission_id ?? []
-    const newPermissions = content?.permission_v2 ?? []
-    const contentPermissions = new Set([...oldPermissions, ...newPermissions])
+    const contentPermissions = new Set(content?.permission_id ?? [])
 
     // Content with no permissions is accessible to all
     if (contentPermissions.size === 0) {

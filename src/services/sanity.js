@@ -219,7 +219,7 @@ export async function fetchRelatedSongs(brand, songId) {
             "published_on": published_on,
             status,
             "image": thumbnail.asset->url,
-            "permission_id": permission[]->railcontent_id,
+            "permission_id": permission_v2,
             "fields": [
               {
                 "key": "title",
@@ -245,7 +245,7 @@ export async function fetchRelatedSongs(brand, songId) {
             "id": railcontent_id,
             "url": web_url_path,
             "published_on": published_on,
-            "permission_id": permission[]->railcontent_id,
+            "permission_id": permission_v2,
             status,
             "fields": [
               {
@@ -299,6 +299,7 @@ export async function fetchNewReleases(
       "image": thumbnail.asset->url,
       "thumbnail": thumbnail.asset->url,
       ${artistOrInstructorName()},
+      "instructor": ${instructorField},
       "artists": instructor[]->name,
       difficulty,
       difficulty_string,
@@ -306,7 +307,7 @@ export async function fetchNewReleases(
       published_on,
       "type": _type,
       web_url_path,
-      "permission_id": permission[]->railcontent_id,
+      "permission_id": permission_v2,
       `
   const query = buildRawQuery(filter, fields, { sortOrder: sortOrder, start, end: end })
   return fetchSanity(query, true)
@@ -337,13 +338,14 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         "thumbnail": thumbnail.asset->url,
         ${artistOrInstructorName()},
         "artists": instructor[]->name,
+        "instructor": ${instructorField},
         difficulty,
         difficulty_string,
         length_in_seconds,
         published_on,
         "type": _type,
         web_url_path,
-        "permission_id": permission[]->railcontent_id,
+        "permission_id": permission_v2,
         live_event_start_time,
         live_event_end_time,
          "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}'`
@@ -388,6 +390,7 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
       "image": thumbnail.asset->url,
       "thumbnail": thumbnail.asset->url,
       ${artistOrInstructorName()},
+      "instructor": ${instructorField},
       "artists": instructor[]->name,
       difficulty,
       difficulty_string,
@@ -395,7 +398,7 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
       published_on,
       "type": _type,
       web_url_path,
-      "permission_id": permission[]->railcontent_id,
+      "permission_id": permission_v2,
   } | order(published_on asc)[${start}...${end}]`
   return fetchSanity(query, true)
 }
@@ -911,7 +914,7 @@ export async function fetchMethod(brand, slug) {
         "url": *[railcontent_id == ^.id][0].web_url_path
     } | order(length(url)),
     "type": _type,
-    "permission_id": permission[]->railcontent_id,
+    "permission_id": permission_v2,
     "levels": child[${childrenFilter}]->
       {
         "id": railcontent_id,
@@ -1128,7 +1131,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
     mp3_no_drums_yes_click_url,
     mp3_yes_drums_no_click_url,
     mp3_yes_drums_yes_click_url,
-    "permission_id": permission[]->railcontent_id,
+    "permission_id": permission_v2,
     ${parentQuery}
     ...select(
       defined(live_event_start_time) => {
@@ -1266,7 +1269,7 @@ export async function fetchSiblingContent(railContentId, brand = null) {
   }).buildFilter()
 
   const brandString = brand ? ` && brand == "${brand}"` : ''
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission[]->railcontent_id, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
+  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission_v2, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
 
   const query = `*[railcontent_id == ${railContentId}${brandString}]{
    _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
@@ -1313,7 +1316,7 @@ export async function fetchRelatedLessons(railContentId) {
     { showMembershipRestrictedContent: true }
   ).buildFilter()
 
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission[]->railcontent_id,_type, "genre": genre[]->name`
+  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission_v2,_type, "genre": genre[]->name`
 
   const query = `*[railcontent_id == ${railContentId} && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
@@ -1523,6 +1526,25 @@ export async function fetchTopLevelParentId(railcontentId) {
   return response['railcontent_id']
 }
 
+export async function fetchLearningPathHierarchy(railcontentId, collection) {
+  if (!collection) {
+    return null
+  }
+
+  const topLevelId = collection.id
+
+  let response = await fetchByRailContentId(topLevelId, collection.type)
+  if (!response) return null
+
+  let data = {
+    topLevelId: topLevelId,
+    parents: {},
+    children: {},
+  }
+  populateHierarchyLookups(response, data, null)
+  return data
+}
+
 export async function fetchHierarchy(railcontentId) {
   let topLevelId = await fetchTopLevelParentId(railcontentId)
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
@@ -1557,12 +1579,14 @@ export async function fetchHierarchy(railcontentId) {
 }
 
 function populateHierarchyLookups(currentLevel, data, parentId) {
-  let contentId = currentLevel['railcontent_id']
+  const railcontentIdField = currentLevel.railcontent_id ? "railcontent_id" : "id";
+
+  let contentId = currentLevel[railcontentIdField]
   let children = currentLevel['children']
 
   data.parents[contentId] = parentId
   if (children) {
-    data.children[contentId] = children.map((child) => child['railcontent_id'])
+    data.children[contentId] = children.map((child) => child[railcontentIdField])
     for (let i = 0; i < children.length; i++) {
       populateHierarchyLookups(children[i], data, contentId)
     }
@@ -1572,7 +1596,7 @@ function populateHierarchyLookups(currentLevel, data, parentId) {
 
   let assignments = currentLevel['assignments']
   if (assignments) {
-    let assignmentIds = assignments.map((assignment) => assignment['railcontent_id'])
+    let assignmentIds = assignments.map((assignment) => assignment[railcontentIdField])
     data.children[contentId] = (data.children[contentId] ?? []).concat(assignmentIds)
     assignmentIds.forEach((assignmentId) => {
       data.parents[assignmentId] = contentId
@@ -2134,7 +2158,7 @@ export async function fetchScheduledAndNewReleases(
       published_on,
       "type": _type,
       show_in_new_feed,
-      "permission_id": permission[]->railcontent_id,
+      "permission_id": permission_v2,
       "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}',
   }`
 

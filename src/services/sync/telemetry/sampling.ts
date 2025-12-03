@@ -4,7 +4,7 @@ import { SyncError } from '../errors'
 type ReturnsUndefined<T extends (...args: any[]) => any> = (...args: Parameters<T>) => ReturnType<T> | undefined
 
 export const syncSentryBeforeSend: ReturnsUndefined<NonNullable<SentryBrowserOptions['beforeSend']>> = (event, hint) => {
-  if (event.logger === 'console' && SyncTelemetry.getInstance().shouldIgnoreConsole()) {
+  if (event.logger === 'console' && SyncTelemetry.getInstance()?.shouldIgnoreConsole()) {
     return null
   }
 

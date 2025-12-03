@@ -61,7 +61,7 @@ export const DEFAULT_FIELDS = [
   `'genre': ${genreField}`,
   'status',
   "'slug' : slug.current",
-  "'permission_id': permission[]->railcontent_id",
+  "'permission_id': permission_v2",
   'child_count',
   '"parent_id": parent_content_data[0].id',
 ]
@@ -84,7 +84,7 @@ export const DEFAULT_CHILD_FIELDS = [
   `'genre': ${genreField}`,
   'status',
   "'slug' : slug.current",
-  "'permission_id': permission[]->railcontent_id",
+  "'permission_id': permission_v2",
   'child_count',
   '"parent_id": parent_content_data[0].id',
 ]
