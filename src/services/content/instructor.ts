@@ -20,20 +20,20 @@ export interface Instructor {
   thumbnail: string
 }
 
+export interface Instructors extends SanityListResponse<Instructor> {}
+
 /**
  * Fetch all instructor with lessons available for a specific brand.
  *
- * @param {BrandValues} brand - The brand for which to fetch instructors.
- * @returns {Promise<SanityListResponse<Instructor>>} - A promise that resolves to an array of instructor objects.
+ * @param {Brand | string} brand - The brand for which to fetch instructors.
+ * @returns {Promise<Instructors>} - A promise that resolves to an array of instructor objects.
  *
  * @example
  * fetchInstructors('drumeo')
  *   .then(instructors => console.log(instructors))
  *   .catch(error => console.error(error));
  */
-export async function fetchInstructors(
-  brand: Brand | string
-): Promise<SanityListResponse<Instructor>> {
+export async function fetchInstructors(brand: Brand | string): Promise<Instructors> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()

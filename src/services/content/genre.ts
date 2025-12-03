@@ -19,18 +19,20 @@ export interface Genre {
   thumbnail: string
 }
 
+export interface Genres extends SanityListResponse<Genre> {}
+
 /**
  * Fetch all genres with lessons available for a specific brand.
  *
  * @param {Brand|string} [brand] - The brand for which to fetch the genre for. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<SanityListResponse<Genre>>} - A promise that resolves to an genre object or null if not found.
+ * @returns {Promise<Genres>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenres('drumeo')
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenres(brand: Brand | string): Promise<SanityListResponse<Genre>> {
+export async function fetchGenres(brand: Brand | string): Promise<Genres> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()

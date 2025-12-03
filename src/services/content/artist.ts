@@ -19,18 +19,20 @@ export interface Artist {
   lessonCount: number
 }
 
+export interface Artists extends SanityListResponse<Artist> {}
+
 /**
  * Fetch all artists with lessons available for a specific brand.
  *
  * @param {Brand|string} brand - The brand for which to fetch artists.
- * @returns {Promise<SanityListResponse<Artist>>} - A promise that resolves to an array of artist objects or null if not found.
+ * @returns {Promise<Artists>} - A promise that resolves to an array of artist objects or null if not found.
  *
  * @example
  * fetchArtists('drumeo')
  *   .then(artists => console.log(artists))
  *   .catch(error => console.error(error));
  */
-export async function fetchArtists(brand: Brand | string): Promise<SanityListResponse<Artist>> {
+export async function fetchArtists(brand: Brand | string): Promise<Artists> {
   const filter = await new FilterBuilder(
     `_type == "song" && brand == "${brand}" && references(^._id)`,
     { bypassPermissions: true }
