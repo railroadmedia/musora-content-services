@@ -6,14 +6,9 @@
 export class AwardMessageGenerator {
   /** @returns {string} */
   static generatePopupMessage(awardType, completionData) {
-    const { days_user_practiced, practice_minutes } = completionData
+    const { days_user_practiced, practice_minutes, content_title } = completionData
 
-    if (awardType === 'guided-course') {
-      const typeName = 'guided course'
-      return `Great job on finishing this ${typeName}! You've worked hard. In the last ${days_user_practiced} days, you've put in ${practice_minutes} minutes of practice. Nice!`
-    }
-
-    return `Congratulations on completing this learning path! You've worked hard. Over the last ${days_user_practiced} days, you've put in ${practice_minutes} minutes of practice. Amazing work!`
+    return `You received this award for completing ${content_title}! You practiced a total of ${practice_minutes} minutes over the past ${days_user_practiced} days.`
   }
 
   /** @returns {string} */
