@@ -11,8 +11,10 @@ import { COLLECTION_TYPE } from '../sync/models/ContentProgress'
 export async function getMethodCard(brand) {
   const introVideo = await fetchMethodV2IntroVideo(brand)
   const introVideoProgressState = await getProgressState(introVideo?.id)
-  //resetAllLearningPaths()
-  if (introVideoProgressState !== 'completed') {
+
+  const activeLearningPath = await getActivePath(brand)
+
+  if (introVideoProgressState !== 'completed' || !activeLearningPath) {
     //startLearningPath('drumeo', 422533)
     const timestamp = Math.floor(Date.now() / 1000)
     const instructorText =
@@ -37,7 +39,6 @@ export async function getMethodCard(brand) {
     }
   } else {
     //TODO: Optimize loading of dailySessions/Path, should not need multiple requests
-    const activeLearningPath = await getActivePath(brand)
     const learningPath = await fetchLearningPathLessons(
       activeLearningPath.active_learning_path_id,
       brand,
