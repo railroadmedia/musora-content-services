@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.94.5](https://github.com/railroadmedia/musora-content-services/compare/v2.94.4...v2.94.5) (2025-12-03)
+
+
+### Bug Fixes
+
+* refactor fetchLearningPathProgressCheckLessons to exclude duplicates ([#615](https://github.com/railroadmedia/musora-content-services/issues/615)) ([0f0f51e](https://github.com/railroadmedia/musora-content-services/commit/0f0f51e2148a9e611bb3cbc9d103f12952e00056))
+* watermelon fixes for content progress ([#614](https://github.com/railroadmedia/musora-content-services/issues/614)) ([2c2fa8e](https://github.com/railroadmedia/musora-content-services/commit/2c2fa8e68d5b3174ca62c8b9a900370947e44725))
+
 ### [2.94.4](https://github.com/railroadmedia/musora-content-services/compare/v2.94.3...v2.94.4) (2025-12-03)
 
 ### [2.94.3](https://github.com/railroadmedia/musora-content-services/compare/v2.94.2...v2.94.3) (2025-12-03)
