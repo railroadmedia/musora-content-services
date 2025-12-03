@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.94.3](https://github.com/railroadmedia/musora-content-services/compare/v2.94.2...v2.94.3) (2025-12-03)
+
+
+### Bug Fixes
+
+* fallback for method card when no activ epath ([#610](https://github.com/railroadmedia/musora-content-services/issues/610)) ([8458d97](https://github.com/railroadmedia/musora-content-services/commit/8458d9754d293ae28cb134546305264e638c8bbd))
+
 ### [2.94.2](https://github.com/railroadmedia/musora-content-services/compare/v2.94.1...v2.94.2) (2025-12-03)
 
 
