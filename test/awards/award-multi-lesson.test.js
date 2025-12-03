@@ -129,7 +129,7 @@ describe('Award Multi-Lesson Course Handling - E2E Scenarios', () => {
       expect(awardGrantedListener).toHaveBeenCalledTimes(1)
     })
 
-    test('popup message says "learning path" not "guided course"', async () => {
+    test('popup message includes content title and practice stats', async () => {
       db.contentProgress.queryOne.mockResolvedValue({
         data: { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
       })
@@ -139,8 +139,9 @@ describe('Award Multi-Lesson Course Handling - E2E Scenarios', () => {
       await awardManager.onContentCompleted(courseId)
 
       const payload = awardGrantedListener.mock.calls[0][0]
-      expect(payload.popupMessage).toContain('learning path')
-      expect(payload.popupMessage).not.toContain('guided course')
+      expect(payload.popupMessage).toContain('Learn To Play The Drums')
+      expect(payload.popupMessage).toContain('minutes')
+      expect(payload.popupMessage).toContain('days')
     })
   })
 })

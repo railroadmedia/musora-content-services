@@ -71,10 +71,9 @@ describe('Award Query Message Generation', () => {
 
       expect(awards).toHaveLength(1)
       expect(awards[0].completionData).toHaveProperty('message')
-      expect(awards[0].completionData.message).toContain('guided course')
+      expect(awards[0].completionData.message).toContain('Blues Foundations')
       expect(awards[0].completionData.message).toContain('14 days')
       expect(awards[0].completionData.message).toContain('180 minutes')
-      expect(awards[0].completionData.message).toContain('Great job')
     })
 
     test('includes message in completionData for learning path awards', async () => {
@@ -110,10 +109,9 @@ describe('Award Query Message Generation', () => {
 
       expect(awards).toHaveLength(1)
       expect(awards[0].completionData).toHaveProperty('message')
-      expect(awards[0].completionData.message).toContain('learning path')
+      expect(awards[0].completionData.message).toContain('Jazz Essentials')
       expect(awards[0].completionData.message).toContain('30 days')
       expect(awards[0].completionData.message).toContain('450 minutes')
-      expect(awards[0].completionData.message).toContain('Congratulations')
     })
 
     test('uses correct practice statistics in message', async () => {
@@ -334,7 +332,7 @@ describe('Award Query Message Generation', () => {
   })
 
   describe('Award type determination', () => {
-    test('correctly identifies guided-course type', async () => {
+    test('generates message with content title for guided-course type', async () => {
       const mockProgress = [{
         award_id: 'gc-award',
         progress_percentage: 100,
@@ -365,10 +363,10 @@ describe('Award Query Message Generation', () => {
 
       const awards = await getCompletedAwards()
 
-      expect(awards[0].completionData.message).toContain('guided course')
+      expect(awards[0].completionData.message).toContain('Test Course')
     })
 
-    test('correctly identifies learning-path-v2 type', async () => {
+    test('generates message with content title for learning-path-v2 type', async () => {
       const mockProgress = [{
         award_id: 'lp-award',
         progress_percentage: 100,
@@ -399,10 +397,10 @@ describe('Award Query Message Generation', () => {
 
       const awards = await getCompletedAwards()
 
-      expect(awards[0].completionData.message).toContain('learning path')
+      expect(awards[0].completionData.message).toContain('Test Path')
     })
 
-    test('defaults to guided-course for unknown types', async () => {
+    test('generates message for unknown content types', async () => {
       const mockProgress = [{
         award_id: 'unknown-award',
         progress_percentage: 100,
@@ -433,7 +431,7 @@ describe('Award Query Message Generation', () => {
 
       const awards = await getCompletedAwards()
 
-      expect(awards[0].completionData.message).toContain('guided course')
+      expect(awards[0].completionData.message).toContain('Test Content')
     })
   })
 })

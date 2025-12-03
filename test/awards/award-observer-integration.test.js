@@ -295,8 +295,9 @@ describe('Award Observer Integration - E2E Scenarios', () => {
       await new Promise(resolve => setTimeout(resolve, 100))
 
       const payload = awardGrantedListener.mock.calls[0][0]
-      expect(payload.popupMessage).toContain('learning path')
-      expect(payload.popupMessage).not.toContain('guided course')
+      expect(payload.popupMessage).toContain('Learn To Play The Drums')
+      expect(payload.popupMessage).toContain('minutes')
+      expect(payload.popupMessage).toContain('days')
     })
   })
 

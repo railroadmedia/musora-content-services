@@ -113,7 +113,7 @@ describe('Award Completion Flow - E2E Scenarios', () => {
           days_user_practiced: expect.any(Number),
           practice_minutes: 180
         }),
-        popupMessage: expect.stringContaining('Great job'),
+        popupMessage: expect.stringContaining('Adrian Guided Course Test'),
         timestamp: expect.any(Number)
       })
     })
@@ -126,7 +126,7 @@ describe('Award Completion Flow - E2E Scenarios', () => {
       const payload = awardGrantedListener.mock.calls[0][0]
 
       expect(payload.popupMessage).toContain('180 minutes')
-      expect(payload.popupMessage).toContain('guided course')
+      expect(payload.popupMessage).toContain('Adrian Guided Course Test')
     })
 
     test('award is immediately synced to backend', async () => {

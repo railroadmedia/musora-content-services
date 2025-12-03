@@ -119,7 +119,7 @@ describe('Award Certificate Display - E2E Scenarios', () => {
     test('includes client-generated popup message', async () => {
       const certificate = await buildCertificateData(awardId)
 
-      expect(certificate.popupMessage).toContain('Great job')
+      expect(certificate.popupMessage).toContain('Adrian Guided Course Test')
       expect(certificate.popupMessage).toContain('180 minutes')
       expect(certificate.popupMessage).toContain('14 days')
     })
@@ -320,9 +320,9 @@ describe('Award Certificate Display - E2E Scenarios', () => {
     test('generates learning path message for learning path award', async () => {
       const certificate = await buildCertificateData(learningPathAward._id)
 
-      expect(certificate.popupMessage).toContain('learning path')
-      expect(certificate.popupMessage).toContain('Congratulations')
-      expect(certificate.popupMessage).not.toContain('guided course')
+      expect(certificate.popupMessage).toContain('Learn To Play The Drums')
+      expect(certificate.popupMessage).toContain('600 minutes')
+      expect(certificate.popupMessage).toContain('30 days')
     })
   })
 })

@@ -9,28 +9,15 @@ describe('AwardMessageGenerator', () => {
   }
 
   describe('generatePopupMessage', () => {
-    test('generates correct message for guided course', () => {
+    test('generates correct message with content title', () => {
       const message = AwardMessageGenerator.generatePopupMessage(
         'guided-course',
         mockCompletionData
       )
 
-      expect(message).toContain('guided course')
+      expect(message).toContain('Blues Foundations')
       expect(message).toContain('14 days')
       expect(message).toContain('180 minutes')
-      expect(message).toContain('Great job')
-    })
-
-    test('generates correct message for learning path', () => {
-      const message = AwardMessageGenerator.generatePopupMessage(
-        'learning-path',
-        mockCompletionData
-      )
-
-      expect(message).toContain('learning path')
-      expect(message).toContain('14 days')
-      expect(message).toContain('180 minutes')
-      expect(message).toContain('Congratulations')
     })
 
     test('uses correct practice time in message', () => {
