@@ -14,7 +14,7 @@ export async function getMethodCard(brand) {
 
   const activeLearningPath = await getActivePath(brand)
 
-  if (introVideoProgressState !== 'completed' && !activeLearningPath) {
+  if (introVideoProgressState !== 'completed' || !activeLearningPath) {
     //startLearningPath('drumeo', 422533)
     const timestamp = Math.floor(Date.now() / 1000)
     const instructorText =
