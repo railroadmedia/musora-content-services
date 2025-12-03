@@ -110,7 +110,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   recordProgress(contentId: number, collection: { type: COLLECTION_TYPE; id: number } | null, progressPct: number, resumeTime?: number) {
     const id = ProgressRepository.generateId(contentId, collection)
 
-const result = this.upsertOne(id, (r) => {
+    const result = this.upsertOne(id, (r) => {
       r.content_id = contentId
       r.collection_type = collection?.type ?? null
       r.collection_id = collection?.id ?? null

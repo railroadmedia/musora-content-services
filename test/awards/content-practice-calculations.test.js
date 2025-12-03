@@ -1,8 +1,3 @@
-/**
- * Tests for ContentPractice calculation logic
- * These test the mathematical calculations without requiring full database setup
- */
-
 describe('ContentPractice Calculations', () => {
   describe('practice minutes calculation', () => {
     test('converts seconds to minutes correctly', () => {

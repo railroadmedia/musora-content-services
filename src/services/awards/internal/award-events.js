@@ -120,5 +120,3 @@ class AwardEventsService {
 
 
 export const awardEvents = new AwardEventsService()
-
-export default {}

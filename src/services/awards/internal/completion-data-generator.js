@@ -53,7 +53,6 @@ async function calculateDaysUserPracticed(contentIds, db) {
     return 1
   }
 
-  // Get all progress records for these lessons
   const progressRecords = await db.contentProgress.queryAll(
     Q.where('content_id', Q.oneOf(contentIds)),
     Q.sortBy('created_at', Q.asc)
@@ -61,46 +60,36 @@ async function calculateDaysUserPracticed(contentIds, db) {
 
   if (progressRecords.data.length === 0) return 0
 
-  // Get earliest start date (using created_at since started_on may not exist)
   const earliestRecord = progressRecords.data[0]
-  const earliestStartDate = earliestRecord.created_at * 1000 // Convert epoch seconds to ms
+  const earliestStartDate = earliestRecord.created_at * 1000
 
-  // Calculate days from then to now
   const now = Date.now()
   const daysDiff = Math.floor((now - earliestStartDate) / (1000 * 60 * 60 * 24))
 
-  // Return at least 1 day
   return Math.max(daysDiff, 1)
 }
 
 /**
- * 
- * Calculate total practice minutes from WatermelonDB practice sessions
- * @param {number[]} contentIds - Array of content IDs
- * @param {any} db - Database repository proxy
- * @returns {Promise<number>} Total practice minutes
+ * @param {number[]} contentIds
+ * @param {any} db
+ * @returns {Promise<number>}
  */
 async function calculatePracticeMinutes(contentIds, db) {
   if (contentIds.length === 0) return 0
 
-  // Check if practices repository exists and has the sumPracticeMinutesForContent method
   if (!db.practices || typeof db.practices.sumPracticeMinutesForContent !== 'function') {
     console.warn('practices repository not available, returning 0 practice minutes')
     return 0
   }
 
-  // Use repository method to sum practice minutes
   const totalMinutes = await db.practices.sumPracticeMinutesForContent(contentIds)
 
   return totalMinutes
 }
 
 /**
- * 
- * Generate display title from award name
- * "Complete Blues Foundations Course" → "Blues Foundations"
- * @param {string} awardName - Award name from Sanity
- * @returns {string} Formatted content title
+ * @param {string} awardName
+ * @returns {string}
  */
 function generateContentTitle(awardName) {
   return awardName
