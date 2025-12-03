@@ -178,7 +178,7 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
 
     // Content with no permissions is accessible to all
     // A content has "no permissions" if BOTH permission and permission_v2 are empty/undefined
-    clauses.push(`((!defined(${prefix}permission) || count(${prefix}permission) == 0) && (!defined(${prefix}permission_v2) || count(${prefix}permission_v2) == 0))`)
+    clauses.push(`(!defined(${prefix}permission_v2) || count(${prefix}permission_v2) == 0)`)
 
     // User has matching permissions
     if (userPermissionIds.length > 0) {
@@ -204,12 +204,10 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
   ): string {
     if (isDereferencedContext) {
       // In dereferenced context, check the permission array directly
-      return `((count((${prefix}permission[]._ref)[@ in *[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(permissions)}]._id]) > 0)
-      || count(array::intersects(${prefix}permission_v2, ${arrayToRawRepresentation(permissions)})) > 0)`
+      return `count(array::intersects(${prefix}permission_v2, ${arrayToRawRepresentation(permissions)})) > 0`
     }
     // In standard context, use references() function
-    return `(references(*[_type == 'permission' && railcontent_id in ${arrayToRawRepresentation(permissions)}]._id) ||
-     count(array::intersects(permission_v2, ${arrayToRawRepresentation(permissions)})) > 0)`
+    return `count(array::intersects(permission_v2, ${arrayToRawRepresentation(permissions)})) > 0`
   }
 
   /**
