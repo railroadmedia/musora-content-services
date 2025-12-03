@@ -159,20 +159,17 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     collection: { type: COLLECTION_TYPE; id: number } | null
   ) {
     const data = Object.fromEntries(
-      Object.entries(contentProgresses).map(([contentId, progressPct]) => {
-        const generatedId = ProgressRepository.generateId(Number(contentId), collection)
-        console.log('Processing:', { contentId, progressPct, generatedId, collection })
-        return [
-          generatedId,
-          (record: ContentProgress) => {
-            record.content_id = Number(contentId)
-            record.collection_type = collection?.type ?? null
-            record.collection_id = collection?.id ?? null
-            record.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
-            record.progress_percent = progressPct
-          },
-        ]
-      })
+      Object.entries(contentProgresses).map(([contentId, progressPct]) => [
+        ProgressRepository.generateId(+contentId, collection),
+        (r: ContentProgress) => {
+          r.content_id = +contentId
+          r.collection_type = collection?.type ?? null
+          r.collection_id = collection?.id ?? null
+
+          r.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
+          r.progress_percent = progressPct
+        },
+      ])
     )
     return this.upsertSomeTentative(data)
   }

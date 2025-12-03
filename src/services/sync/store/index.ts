@@ -241,7 +241,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       const ids = Object.keys(builders)
 
       const records = await this.telemeterizedWrite(span, async writer => {
-        const existing = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))
+        const existing = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids))))
         const existingMap = existing.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
 
         const destroyedBuilds = existing.filter(record => record._raw._status === 'deleted').map(record => {
@@ -298,8 +298,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return await this.runScope.abortable(async () => {
       let record: TModel | null = null
 
-      await this.telemeterizedWrite(span, async () => {
-        const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(
+      await this.telemeterizedWrite(span, async writer => {
+        const existing = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', id))).then(
           (records) => records[0] || null
         )
 
@@ -347,7 +347,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     await this.runScope.abortable(async () => {
       await this.telemeterizedWrite(undefined, async writer => {
         const ids = recordRaws.map(r => r.id)
-        const existingMap = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids))).then(records => {
+        const existingMap = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))).then(records => {
           return records.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
         })
 
@@ -405,7 +405,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   async importDeletion(ids: RecordId[]) {
     await this.runScope.abortable(async () => {
       await this.telemeterizedWrite(undefined, async writer => {
-        const existingMap = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids))).then(records => {
+        const existingMap = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))).then(records => {
           return records.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
         })
 
@@ -576,32 +576,56 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       .then((records) => records[0] as TModel | null)
   }
 
+  /**
+   * Query records including ones marked as deleted
+   * WatermelonDB by default excludes deleted records from queries
+   */
   private async queryMaybeDeletedRecords(...args: Q.Clause[]) {
-    const serializedQuery = this.collection.query(...args).serialize()
-    const adjustedQuery = {
-      ...serializedQuery,
-      description: {
-        ...serializedQuery.description,
-        where: serializedQuery.description.where.filter(
-          (w) =>
-            !(
-              w.type === 'where' &&
-              w.left === '_status' &&
-              w.comparison &&
-              w.comparison.operator === 'notEq' &&
-              w.comparison.right &&
-              'value' in w.comparison.right &&
-              w.comparison.right.value === 'deleted'
-            )
-        ),
-      },
-    }
+    return this.db.read(async () => {
+      const undeletedRecords = await this.collection.query(...args).fetch()
 
-    return (await this.db.adapter.unsafeQueryRaw(adjustedQuery)).map((raw) => {
-      return new this.model(
-        this.collection,
-        sanitizedRaw(raw, this.db.schema.tables[this.collection.table])
-      )
+      const serializedQuery = this.collection.query(...args).serialize()
+      const adjustedQuery = {
+        ...serializedQuery,
+        description: {
+          ...serializedQuery.description,
+          where: [
+            // remove the default "not deleted" clause added by WatermelonDB
+            ...serializedQuery.description.where.filter(
+              (w) =>
+                !(
+                  w.type === 'where' &&
+                  w.left === '_status' &&
+                  w.comparison &&
+                  w.comparison.operator === 'notEq' &&
+                  w.comparison.right &&
+                  'value' in w.comparison.right &&
+                  w.comparison.right.value === 'deleted'
+                )
+            ),
+
+            // and add our own "include deleted" clause
+            Q.where('_status', Q.eq('deleted'))
+          ],
+        },
+      }
+
+      // NOTE: constructing models in this way is a bit of a hack,
+      // but since deleted records aren't "resurrectable" in WatermelonDB anyway,
+      // this should be fine for our use cases of mostly just reading _raw values
+      // **If you try to use this pattern to construct records that you intend
+      // to call `.update()` on, this won't work like you're expecting**
+      const deletedRecords = (await this.db.adapter.unsafeQueryRaw(adjustedQuery)).map((raw) => {
+        return new this.model(
+          this.collection,
+          sanitizedRaw(raw, this.db.schema.tables[this.collection.table])
+        )
+      })
+
+      return [
+        ...undeletedRecords,
+        ...deletedRecords,
+      ]
     })
   }
 
@@ -649,7 +673,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private async writeEntries(entries: SyncEntry[], freshSync: boolean = false, parentSpan?: Span) {
     await this.runScope.abortable(async () => {
       return this.telemeterizedWrite(parentSpan, async (writer) => {
-        const batches = await this.buildWriteBatchesFromEntries(entries, freshSync)
+        const batches = await this.buildWriteBatchesFromEntries(writer, entries, freshSync)
 
         for (const batch of batches) {
           if (batch.length) {
@@ -660,10 +684,10 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
-  private async buildWriteBatchesFromEntries(entries: SyncEntry[], freshSync: boolean) {
+  private async buildWriteBatchesFromEntries(writer: WriterInterface, entries: SyncEntry[], freshSync: boolean) {
     // if this is a fresh sync and there are no existing records, we can skip more sophisticated conflict resolution
     if (freshSync) {
-      if ((await this.queryMaybeDeletedRecords()).length === 0) {
+      if ((await writer.callReader(() => this.queryMaybeDeletedRecords())).length === 0) {
         const resolver = new Resolver(this.resolverComparator)
         entries
           .filter((e) => !e.meta.lifecycle.deleted_at)
@@ -676,7 +700,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     const entryIds = entries.map((e) => e.meta.ids.id)
     const existingRecordsMap = new Map<RecordId, TModel>()
 
-    const existingRecords = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(entryIds)))
+    const existingRecords = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(entryIds))))
     existingRecords.forEach((record) => existingRecordsMap.set(record.id, record))
 
     const resolver = new Resolver(this.resolverComparator)
