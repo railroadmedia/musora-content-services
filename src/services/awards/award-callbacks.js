@@ -16,7 +16,7 @@ let progressUpdateCallback = null
  * @param {AwardCallbackFunction} callback - Function called with award data when an award is earned
  * @returns {UnregisterFunction} Cleanup function to unregister this callback
  *
- * @example Display award notification
+ * @example // Display award notification
  * const cleanup = registerAwardCallback((award) => {
  *   showNotification({
  *     title: award.name,
@@ -28,7 +28,7 @@ let progressUpdateCallback = null
  * // Later, when component unmounts:
  * cleanup()
  *
- * @example Track award analytics
+ * @example // Track award analytics
  * registerAwardCallback((award) => {
  *   analytics.track('Award Earned', {
  *     awardId: award.awardId,
@@ -85,7 +85,7 @@ function unregisterAwardCallback() {
  * @param {ProgressCallbackFunction} callback - Function called with progress data when award progress changes
  * @returns {UnregisterFunction} Cleanup function to unregister this callback
  *
- * @example Update progress bar
+ * @example // Update progress bar
  * const cleanup = registerProgressCallback(({ awardId, progressPercentage }) => {
  *   const progressBar = document.getElementById(`award-${awardId}`)
  *   if (progressBar) {
@@ -97,7 +97,7 @@ function unregisterAwardCallback() {
  * // Cleanup on unmount
  * return () => cleanup()
  *
- * @example React state update
+ * @example // React state update
  * useEffect(() => {
  *   return registerProgressCallback(({ awardId, progressPercentage }) => {
  *     setAwardProgress(prev => ({

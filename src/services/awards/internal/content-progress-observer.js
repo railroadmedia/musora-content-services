@@ -1,7 +1,3 @@
-/**
- * 
- */
-
 import { Q } from '@nozbe/watermelondb'
 import { awardManager } from './award-manager'
 import { awardDefinitions } from './award-definitions'

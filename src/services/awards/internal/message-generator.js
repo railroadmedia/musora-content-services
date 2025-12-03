@@ -1,8 +1,3 @@
-/**
- * 
- */
-
-
 export class AwardMessageGenerator {
   /** @returns {string} */
   static generatePopupMessage(awardType, completionData) {

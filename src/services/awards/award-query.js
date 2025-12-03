@@ -34,7 +34,7 @@ function enhanceCompletionData(completionData, awardType) {
  * @param {number} contentId - Railcontent ID of the content item
  * @returns {Promise<ContentAwardsResponse>} Status object with award information
  *
- * @example Check if content has awards
+ * @example // Check if content has awards
  * const { hasAwards, awards } = await getContentAwards(234567)
  * if (hasAwards) {
  *   awards.forEach(award => {
@@ -42,7 +42,7 @@ function enhanceCompletionData(completionData, awardType) {
  *   })
  * }
  *
- * @example Display award progress on course page
+ * @example // Display award progress on course page
  * const { awards } = await getContentAwards(courseId)
  * return (
  *   <div>
@@ -113,7 +113,7 @@ export async function getContentAwards(contentId) {
  * @param {AwardPaginationOptions} [options={}] - Optional pagination and filtering
  * @returns {Promise<AwardInfo[]>} Array of completed award objects sorted by completion date
  *
- * @example Display completed awards gallery
+ * @example // Display completed awards gallery
  * const awards = await getCompletedAwards()
  * return (
  *   <AwardsGallery>
@@ -129,7 +129,7 @@ export async function getContentAwards(contentId) {
  *   </AwardsGallery>
  * )
  *
- * @example Paginated awards list
+ * @example // Paginated awards list
  * const [page, setPage] = useState(0)
  * const pageSize = 12
  * const awards = await getCompletedAwards('drumeo', {
@@ -137,7 +137,7 @@ export async function getContentAwards(contentId) {
  *   offset: page * pageSize
  * })
  *
- * @example Filter by brand
+ * @example // Filter by brand
  * const pianoAwards = await getCompletedAwards('pianote')
  * console.log(`You've earned ${pianoAwards.length} piano awards!`)
  */
@@ -204,7 +204,7 @@ export async function getCompletedAwards(brand = null, options = {}) {
  * @param {AwardPaginationOptions} [options={}] - Optional pagination options
  * @returns {Promise<AwardInfo[]>} Array of in-progress award objects sorted by progress
  *
- * @example Display in-progress awards dashboard
+ * @example // Display in-progress awards dashboard
  * const inProgress = await getInProgressAwards()
  * return (
  *   <div>
@@ -220,14 +220,14 @@ export async function getCompletedAwards(brand = null, options = {}) {
  *   </div>
  * )
  *
- * @example Show closest to completion
+ * @example // Show closest to completion
  * const inProgress = await getInProgressAwards(null, { limit: 3 })
  * console.log('Awards closest to completion:')
  * inProgress.forEach(award => {
  *   console.log(`${award.awardTitle}: ${award.progressPercentage}% complete`)
  * })
  *
- * @example Filter by brand with pagination
+ * @example // Filter by brand with pagination
  * const guitarAwards = await getInProgressAwards('guitareo', {
  *   limit: 10,
  *   offset: 0
@@ -294,7 +294,7 @@ export async function getInProgressAwards(brand = null, options = {}) {
  * @param {string} [brand=null] - Brand to filter by (drumeo, pianote, guitareo, singeo), or null for all brands
  * @returns {Promise<AwardStatistics>} Statistics object with award counts and completion percentage
  *
- * @example Display stats widget
+ * @example // Display stats widget
  * const stats = await getAwardStatistics('drumeo')
  * return (
  *   <StatsWidget>
@@ -304,7 +304,7 @@ export async function getInProgressAwards(brand = null, options = {}) {
  *   </StatsWidget>
  * )
  *
- * @example Progress bar
+ * @example // Progress bar
  * const stats = await getAwardStatistics()
  * console.log(`${stats.completed}/${stats.totalAvailable} awards earned`)
  * console.log(`${stats.completionPercentage}% complete`)

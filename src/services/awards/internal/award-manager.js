@@ -1,7 +1,3 @@
-/**
- * 
- */
-
 import { awardDefinitions, getEligibleChildIds } from './award-definitions'
 import { awardEvents } from './award-events'
 import { generateCompletionData } from './completion-data-generator'

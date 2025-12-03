@@ -1,10 +1,3 @@
-/**
- * 
- * Event-driven system for award notifications
- * Allows frontend to display popups and UI updates when awards are earned
- */
-
-
 /**  @typedef {Object} AwardGrantedPayload */
 /**  @typedef {Object} AwardProgressPayload */
 /**  @callback AwardGrantedListener */
@@ -21,7 +14,6 @@ class AwardEventsService {
   }
 
   /**
-   * Subscribe to award granted events
    * @param {'awardGranted' | 'awardProgress'} event - Event name
    * @param {AwardGrantedListener | AwardProgressListener} listener - Listener function
    * @returns {Function} Unsubscribe function
@@ -38,7 +30,6 @@ class AwardEventsService {
   }
 
   /**
-   * Subscribe once to award granted event
    * @param {'awardGranted' | 'awardProgress'} event - Event name
    * @param {AwardGrantedListener | AwardProgressListener} listener - Listener function
    * @returns {void}
@@ -52,7 +43,6 @@ class AwardEventsService {
   }
 
   /**
-   * Unsubscribe from award events
    * @param {'awardGranted' | 'awardProgress'} event - Event name
    * @param {AwardGrantedListener | AwardProgressListener} listener - Listener function
    * @returns {void}
@@ -66,8 +56,6 @@ class AwardEventsService {
   }
 
   /**
-   * Emit award granted event
-   * Called internally when an award is completed
    * @param {AwardGrantedPayload} payload - Event payload
    * @returns {void}
    */
@@ -82,8 +70,6 @@ class AwardEventsService {
   }
 
   /**
-   * Emit award progress event
-   * Called internally when award progress updates
    * @param {AwardProgressPayload} payload - Event payload
    * @returns {void}
    */
@@ -97,19 +83,13 @@ class AwardEventsService {
     })
   }
 
-  /**
-   * Remove all listeners
-   * @returns {void}
-   */
+  /** @returns {void} */
   removeAllListeners() {
     this.awardGrantedListeners.clear()
     this.awardProgressListeners.clear()
   }
 
-  /**
-   * Get listener counts (for debugging)
-   * @returns {Object} Listener counts
-   */
+  /** @returns {Object} Listener counts */
   getListenerCounts() {
     return {
       awardGranted: this.awardGrantedListeners.size,
