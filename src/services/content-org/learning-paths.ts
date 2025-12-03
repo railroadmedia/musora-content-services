@@ -349,4 +349,9 @@ export async function onContentCompletedLearningPathListener(event) {
   }
 
   await startLearningPath(brand, nextLearningPath.id)
+
+  const nextLearningPath = await getEnrichedLearningPath(nextLearningPath.id)
+  nextLearningPath.intro_video_id
+
+  contentStatusReset(nextLearningPath.intro_video.id)
 }
