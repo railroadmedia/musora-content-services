@@ -160,7 +160,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   ) {
     const data = Object.fromEntries(
       Object.entries(contentProgresses).map(([contentId, progressPct]) => [
-        ProgressRepository.generateId(+contentId, null),
+        ProgressRepository.generateId(+contentId, collection),
         (r) => {
           r.content_id = +contentId
           r.collection_type = collection?.type ?? null
