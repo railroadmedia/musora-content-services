@@ -204,10 +204,10 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
   ): string {
     if (isDereferencedContext) {
       // In dereferenced context, check the permission array directly
-      return `count(array::intersects(${prefix}permission_v2, ${arrayToRawRepresentation(permissions)})) > 0`
+      return `array::intersects(${prefix}permission_v2, ${arrayToRawRepresentation(permissions)})`
     }
     // In standard context, use references() function
-    return `count(array::intersects(permission_v2, ${arrayToRawRepresentation(permissions)})) > 0`
+    return `array::intersects(permission_v2, ${arrayToRawRepresentation(permissions)})`
   }
 
   /**
