@@ -3,6 +3,7 @@ import { db } from './sync'
 import {COLLECTION_TYPE, STATE} from './sync/models/ContentProgress'
 import { trackUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
+import { emitContentCompleted } from './progress-events'
 
 const STATE_STARTED = STATE.STARTED
 const STATE_COMPLETED = STATE.COMPLETED
@@ -303,14 +304,23 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
 async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
   const progress = isCompleted ? 100 : 0
   const response = await db.contentProgress.recordProgress(contentId, collection, progress)
-
+  if (progress == 100) emitContentCompleted(contentId, collection)
   const hierarchy = await getHierarchy(contentId, collection)
-
   await Promise.all([
-    db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, collection, progress), collection),
-    bubbleProgress(hierarchy, contentId, collection).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses, collection))
+    db.contentProgress.recordProgressesTentative(
+      trickleProgress(hierarchy, contentId, collection, progress),
+      collection
+    ),
+    bubbleProgress(hierarchy, contentId, collection).then(async (bubbledProgresses) => {
+      await db.contentProgress.recordProgressesTentative(bubbledProgresses, collection)
+      // Emit events for any completed content from bubbling
+      for (const [bubbledContentId, bubbledProgress] of Object.entries(bubbledProgresses)) {
+        if (bubbledProgress === 100) {
+          emitContentCompleted(Number(bubbledContentId), collection)
+        }
+      }
+    }),
   ])
-
   return response
 }
 

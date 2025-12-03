@@ -12,31 +12,31 @@ import {
   getAllCompletedByIds,
   getProgressState,
 } from '../contentProgress.js'
-import { COLLECTION_TYPE, STATE } from "../sync/models/ContentProgress";
-import { SyncWriteDTO } from "../sync";
-import { ContentProgress } from "../sync/models";
+import { COLLECTION_TYPE, STATE } from '../sync/models/ContentProgress'
+import { SyncWriteDTO } from '../sync'
+import { ContentProgress } from '../sync/models'
 
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
 
 interface ActiveLearningPathResponse {
-  user_id: number,
-  brand: string,
-  active_learning_path_id: number,
+  user_id: number
+  brand: string
+  active_learning_path_id: number
 }
 
 interface DailySessionResponse {
-  user_id: number,
-  brand: string,
+  user_id: number
+  brand: string
   user_date: string
-  daily_session: DailySession[],
-  active_learning_path_id: number,
-  active_learning_path_created_at: string,
+  daily_session: DailySession[]
+  active_learning_path_id: number
+  active_learning_path_created_at: string
 }
 
 interface DailySession {
-  content_ids: number[],
-  learning_path_id: number,
+  content_ids: number[]
+  learning_path_id: number
 }
 
 /**
@@ -47,7 +47,7 @@ interface DailySession {
 export async function getDailySession(brand: string, userDate: Date) {
   const stringDate = userDate.toISOString().split('T')[0]
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${stringDate}`
-  return await fetchHandler(url, 'GET', null, null) as DailySessionResponse
+  return (await fetchHandler(url, 'GET', null, null)) as DailySessionResponse
 }
 
 /**
@@ -64,7 +64,7 @@ export async function updateDailySession(
   const stringDate = userDate.toISOString().split('T')[0]
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/create`
   const body = { brand: brand, userDate: stringDate, keepFirstLearningPath: keepFirstLearningPath }
-  return await fetchHandler(url, 'POST', null, body) as DailySessionResponse
+  return (await fetchHandler(url, 'POST', null, body)) as DailySessionResponse
 }
 
 /**
@@ -73,7 +73,7 @@ export async function updateDailySession(
  */
 export async function getActivePath(brand: string) {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
-  return await fetchHandler(url, 'GET', null, null) as ActiveLearningPathResponse
+  return (await fetchHandler(url, 'GET', null, null)) as ActiveLearningPathResponse
 }
 
 /**
@@ -84,7 +84,7 @@ export async function getActivePath(brand: string) {
 export async function startLearningPath(brand: string, learningPathId: number) {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/set`
   const body = { brand: brand, learning_path_id: learningPathId }
-  return await fetchHandler(url, 'POST', null, body) as ActiveLearningPathResponse
+  return (await fetchHandler(url, 'POST', null, body)) as ActiveLearningPathResponse
 }
 
 /**
@@ -223,8 +223,6 @@ export async function fetchLearningPathLessons(
     nextLPLessons = await getLearningPathLessonsByIds(nextContentIds, nextLearningPathId)
   }
 
-
-
   return {
     ...learningPath,
     is_active_learning_path: isActiveLearningPath,
@@ -246,14 +244,16 @@ export async function fetchLearningPathLessons(
  * @param {number[]} contentIds The array of content IDs within the learning path
  * @returns {Promise<number[]>} Array with completed content IDs
  */
-export async function fetchLearningPathProgressCheckLessons(contentIds: number[]): Promise<number[]> {
+export async function fetchLearningPathProgressCheckLessons(
+  contentIds: number[]
+): Promise<number[]> {
   let query = await getAllCompletedByIds(contentIds)
   let completedProgress = query.data.map(progress => progress.content_id)
   return contentIds.filter(contentId => completedProgress.includes(contentId))
 }
 
 interface completeMethodIntroVideo {
-  intro_video_response: SyncWriteDTO<ContentProgress, any> | null,
+  intro_video_response: SyncWriteDTO<ContentProgress, any> | null
   active_path_response: ActiveLearningPathResponse
 }
 /**
@@ -264,7 +264,10 @@ interface completeMethodIntroVideo {
  * @returns {Promise<Object|null>} response.intro_video_response - The intro video completion response or null if already completed.
  * @returns {Promise<Object>} response.active_path_response - The set active learning path response.
  */
-export async function completeMethodIntroVideo(introVideoId: number, brand: string): Promise<completeMethodIntroVideo> {
+export async function completeMethodIntroVideo(
+  introVideoId: number,
+  brand: string
+): Promise<completeMethodIntroVideo> {
   let response = {} as completeMethodIntroVideo
 
   response.intro_video_response = await completeIfNotCompleted(introVideoId)
@@ -274,13 +277,12 @@ export async function completeMethodIntroVideo(introVideoId: number, brand: stri
 
   response.active_path_response = await startLearningPath(brand, learningPathId)
 
-
   return response
 }
 
 interface completeLearningPathIntroVideo {
-  intro_video_response: SyncWriteDTO<ContentProgress, any> | null,
-  learning_path_reset_response: SyncWriteDTO<ContentProgress, any> | null,
+  intro_video_response: SyncWriteDTO<ContentProgress, any> | null
+  learning_path_reset_response: SyncWriteDTO<ContentProgress, any> | null
   lesson_import_response: SyncWriteDTO<ContentProgress, any> | null
 }
 /**
@@ -293,7 +295,11 @@ interface completeLearningPathIntroVideo {
  * @returns {Promise<void>} response.learning_path_reset_response - The reset learning path response.
  * @returns {Promise<Object[]>} response.lesson_import_response - The responses for completing each content_id within the learning path.
  */
-export async function completeLearningPathIntroVideo(introVideoId: number, learningPathId: number, lessonsToImport: number[] | null) {
+export async function completeLearningPathIntroVideo(
+  introVideoId: number,
+  learningPathId: number,
+  lessonsToImport: number[] | null
+) {
   let response = {} as completeLearningPathIntroVideo
 
   response.intro_video_response = await completeIfNotCompleted(introVideoId)
@@ -302,7 +308,6 @@ export async function completeLearningPathIntroVideo(introVideoId: number, learn
 
   if (!lessonsToImport) {
     response.learning_path_reset_response = await contentStatusReset(learningPathId, collection)
-
   } else {
     response.lesson_import_response = await contentsStatusCompleted(lessonsToImport, collection)
   }
@@ -310,9 +315,38 @@ export async function completeLearningPathIntroVideo(introVideoId: number, learn
   return response
 }
 
-
-async function completeIfNotCompleted(contentId: number): Promise<SyncWriteDTO<ContentProgress, any> | null> {
+async function completeIfNotCompleted(
+  contentId: number
+): Promise<SyncWriteDTO<ContentProgress, any> | null> {
   const introVideoStatus = await getProgressState(contentId)
 
   return introVideoStatus !== 'completed' ? await contentStatusCompleted(contentId) : null
+}
+
+export async function onContentCompletedLearningPathListener(event) {
+  if (event?.collection?.type !== 'learning-path-v2') return
+  if (event.contentId !== event?.collection?.id) return
+
+  const learningPathId = event.contentId
+  const learningPath = await getEnrichedLearningPath(learningPathId)
+  const brand = learningPath.brand
+  const activeLearningPath = await getActivePath(brand)
+
+  if (activeLearningPath.active_learning_path_id !== learningPathId) return
+
+  const method = await fetchMethodV2Structure(brand)
+
+  const currentIndex = method.learning_paths.findIndex((lp) => lp.id === learningPathId)
+  if (currentIndex === -1) {
+    console.error(`Learning path ${learningPathId} not found in method`)
+    return
+  }
+
+  const nextLearningPath = method.learning_paths[currentIndex + 1]
+
+  if (!nextLearningPath) {
+    return
+  }
+
+  await startLearningPath(brand, nextLearningPath.id)
 }
