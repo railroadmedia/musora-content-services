@@ -9,7 +9,7 @@ const STATE_COMPLETED = STATE.COMPLETED
 const MAX_DEPTH = 3
 
 export async function getProgressState(contentId) {
-  return getById(contentId, 'state', '')
+  return getById(normalizeContentId(contentId), 'state', '')
 }
 
 export async function getProgressStateByIds(contentIds, collection = null) {
@@ -296,7 +296,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   const bubbledProgresses = await bubbleProgress(hierarchy, contentId, collection)
   await db.contentProgress.recordProgressesTentative(bubbledProgresses, collection)
 
-  if (collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
     let exportIds = bubbledProgresses
     exportIds[contentId] = progress
     await duplicateLearningPathProgressToExternalContents(exportIds, collection, hierarchy)
@@ -318,7 +318,7 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
   }
   await db.contentProgress.recordProgressesTentative(ids, collection)
 
-  if (collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
     let exportedIds = ids
     exportedIds[contentId] = progress
     await duplicateLearningPathProgressToExternalContents(exportedIds, collection, hierarchy)
@@ -367,7 +367,7 @@ async function setStartedOrCompletedStatuses(contentIds, collection, isCompleted
   }
   await db.contentProgress.recordProgressesTentative(ids, collection)
 
-  if (collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
     let exportIds = ids
     for (const contentId of contentIds){
       exportIds[contentId] = progress
@@ -390,7 +390,7 @@ async function resetStatus(contentId, collection = null) {
   }
   await db.contentProgress.recordProgressesTentative(ids, collection)
 
-  if (collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
     ids[contentId] = progress
     await duplicateLearningPathProgressToExternalContents(ids, collection, hierarchy)
   }
@@ -470,7 +470,7 @@ function normalizeContentIds(contentIds) {
 function normalizeCollection(collection) {
   if (!collection) return null
 
-  if (COLLECTION_TYPE.indexOf(collection.type) === -1) {
+  if (!Object.values(COLLECTION_TYPE).includes(collection.type)) {
     throw new Error(`Invalid collection type: ${collection.type}`)
   }
   if (typeof collection.id === 'string' && isNaN(+collection.id)) {
