@@ -3,6 +3,7 @@ import { db } from './sync'
 import { STATE } from './sync/models/ContentProgress'
 import { trackUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
+import { emitContentCompleted } from './progress-events'
 
 const STATE_STARTED = STATE.STARTED
 const STATE_COMPLETED = STATE.COMPLETED
@@ -342,22 +343,23 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
   // because awards may be generated (on server) on completion
   // which we would want to toast the user about *in band*
   const response = await db.contentProgress.recordProgress(contentId, collection, progress)
-
+  if (progress == 100) emitContentCompleted(contentId, collection)
   const hierarchy = await getHierarchy(contentId, collection)
-
-  console.log('hierarchy', hierarchy)
-  console.log('trickle', trickleProgress(hierarchy, contentId, collection, progress))
   await Promise.all([
     db.contentProgress.recordProgressesTentative(
       trickleProgress(hierarchy, contentId, collection, progress),
       collection
     ),
-    bubbleProgress(hierarchy, contentId, collection).then((bubbledProgresses) => {
-      console.log('bubbledProgress', bubbledProgresses)
-      db.contentProgress.recordProgressesTentative(bubbledProgresses, collection)
+    bubbleProgress(hierarchy, contentId, collection).then(async (bubbledProgresses) => {
+      await db.contentProgress.recordProgressesTentative(bubbledProgresses, collection)
+      // Emit events for any completed content from bubbling
+      for (const [bubbledContentId, bubbledProgress] of Object.entries(bubbledProgresses)) {
+        if (bubbledProgress === 100) {
+          emitContentCompleted(Number(bubbledContentId), collection)
+        }
+      }
     }),
   ])
-
   return response
 }
 
@@ -395,12 +397,8 @@ function trickleProgress(hierarchy, contentId, _collection, progress) {
 
 async function bubbleProgress(hierarchy, contentId, collection = null) {
   const ids = getAncestorAndSiblingIds(hierarchy, contentId)
-  console.log('bubbleProgress ids', ids)
   const progresses = await getByIds(ids, collection, 'progress_percent', 0)
-  console.log(collection)
-  console.log(progresses)
   const data = averageProgressesFor(hierarchy, contentId, progresses)
-  console.log('data', data)
   return data
 }
 

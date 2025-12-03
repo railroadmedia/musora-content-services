@@ -324,6 +324,32 @@ async function completeIfNotCompleted(contentId: number): Promise<Object | null>
   return introVideoStatus !== 'completed' ? await contentStatusCompleted(contentId) : null
 }
 
-export async function onProgressSavedLearningPaths(event) {
-  console.log('onProgressSavedLearningPaths Event Fired', event)
+export async function onContentCompletedLearningPathListener(event) {
+  if (event?.collection?.type !== 'learning-path-v2') return
+  if (event.contentId !== event?.collection?.id) return
+
+  const learningPathId = event.contentId
+  const learningPath = await getEnrichedLearningPath(learningPathId)
+  const brand = learningPath.brand
+  const activeLearningPath = await getActivePath(brand)
+
+  if (activeLearningPath.active_learning_path_id !== learningPathId) return
+
+  const method = await fetchMethodV2Structure(brand)
+
+  const currentIndex = method.learning_paths.findIndex((lp) => lp.id === learningPathId)
+  if (currentIndex === -1) {
+    console.error(`Learning path ${learningPathId} not found in method`)
+    return
+  }
+
+  const nextLearningPath = method.learning_paths[currentIndex + 1]
+
+  if (!nextLearningPath) {
+    console.log('No more learning paths - method completed!')
+    return
+  }
+
+  await startLearningPath(brand, nextLearningPath.id)
+  console.log(`Started next learning path: ${nextLearningPath.id}`)
 }

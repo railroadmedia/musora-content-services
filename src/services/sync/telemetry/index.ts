@@ -92,17 +92,17 @@ export class SyncTelemetry {
 
   debug(...messages: any[]) {
     // console.debug(...this.formattedConsoleMessages(...messages))
-    this.recordBreadcrumb('debug', ...messages)
+    // this.recordBreadcrumb('debug', ...messages)
   }
 
   info(...messages: any[]) {
-    console.info(...this.formattedConsoleMessages(...messages))
-    this.recordBreadcrumb('info', ...messages)
+    // console.info(...this.formattedConsoleMessages(...messages))
+    // this.recordBreadcrumb('info', ...messages)
   }
 
   log(...messages: any[]) {
-    console.log(...this.formattedConsoleMessages(...messages))
-    this.recordBreadcrumb('log', ...messages)
+    // console.log(...this.formattedConsoleMessages(...messages))
+    // this.recordBreadcrumb('log', ...messages)
   }
 
   warn(...messages: any[]) {

@@ -110,7 +110,6 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     resumeTime?: number
   ) {
     const id = ProgressRepository.generateId(contentId, collection)
-    console.log(collection)
     const result = this.upsertOne(id, (r) => {
       r.content_id = contentId
       r.collection_type = collection?.type ?? null
@@ -145,7 +144,6 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       .catch((error) => {
         console.error('Failed to emit progress saved event:', error)
       })
-    console.log(result)
     return result
   }
 
@@ -156,7 +154,6 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     const data = Object.fromEntries(
       Object.entries(contentProgresses).map(([contentId, progressPct]) => {
         const generatedId = ProgressRepository.generateId(Number(contentId), collection)
-        console.log('Processing:', { contentId, progressPct, generatedId, collection })
         return [
           generatedId,
           (record: ContentProgress) => {
@@ -169,7 +166,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
         ]
       })
     )
-    return this.upsertSomeTentative(data)
+    return this.upsertSome(data)
   }
   eraseProgress(contentId: number, collection: { type: COLLECTION_TYPE; id: number } | null) {
     return this.deleteOne(ProgressRepository.generateId(contentId, collection))

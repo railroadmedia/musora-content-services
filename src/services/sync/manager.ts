@@ -14,8 +14,8 @@ import { inBoundary } from './errors/boundary'
 import createStoresFromConfig from './store-configs'
 import { contentProgressObserver } from '../awards/internal/content-progress-observer'
 
-import { onProgressSaved } from '../progress-events'
-import { onProgressSavedLearningPaths } from '../content-org/learning-paths'
+import { onProgressSaved, onContentCompleted } from '../progress-events'
+import { onContentCompletedLearningPathListener } from '../content-org/learning-paths'
 
 export default class SyncManager {
   private static instance: SyncManager | null = null
@@ -122,7 +122,7 @@ export default class SyncManager {
     contentProgressObserver.start(this.database).catch((error) => {
       this.telemetry.error('[SyncManager] Failed to start contentProgressObserver', error)
     })
-    onProgressSaved(onProgressSavedLearningPaths)
+    onContentCompleted(onContentCompletedLearningPathListener)
 
     const teardown = async () => {
       this.telemetry.debug('[SyncManager] Tearing down')

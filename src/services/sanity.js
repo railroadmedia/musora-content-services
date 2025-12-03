@@ -1565,7 +1565,6 @@ export async function fetchLearningPathHierarchy(railcontentId, collection) {
 
   let response = await fetchByRailContentId(topLevelId, collection.type)
   if (!response) return null
-  console.log('fetchLearningPathHirearchy', response)
   let data = {
     topLevelId: topLevelId,
     parents: {},

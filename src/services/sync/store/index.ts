@@ -327,6 +327,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   async upsertSomeTentative(builders: Record<RecordId, (record: TModel) => void>, span?: Span) {
+    console.log('updsertSomeTentative', builders)
     return this.upsertSome(
       Object.fromEntries(
         Object.entries(builders).map(([id, builder]) => [
