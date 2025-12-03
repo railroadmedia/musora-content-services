@@ -62,7 +62,10 @@ export interface Certificate {
  *
  * @throws {Error} If award is not found or not completed
  *
- * @example Generate certificate PDF
+ * @platform Web only - This function uses browser-only APIs (FileReader, Blob).
+ * For React Native implementation, see the React Native section below.
+ *
+ * @example Generate certificate PDF (Web)
  * const cert = await fetchCertificate('abc-123')
  * generatePDF({
  *   userName: cert.user_name,
@@ -75,7 +78,7 @@ export interface Certificate {
  *     : null
  * })
  *
- * @example Display certificate preview
+ * @example Display certificate preview (Web)
  * const cert = await fetchCertificate(awardId)
  * return (
  *   <CertificatePreview
@@ -87,6 +90,27 @@ export interface Certificate {
  *     signature={cert.instructor_signature_64}
  *   />
  * )
+ *
+ * @example React Native Implementation
+ * // This function is NOT compatible with React Native due to FileReader/Blob APIs.
+ * // For React Native, implement certificate generation using:
+ * //
+ * // 1. Use react-native-blob-util for base64 image conversion:
+ * //    import ReactNativeBlobUtil from 'react-native-blob-util'
+ * //    const base64 = await ReactNativeBlobUtil.fetch('GET', imageUrl)
+ * //      .then(res => res.base64())
+ * //
+ * // 2. Use react-native-html-to-pdf for PDF generation:
+ * //    import RNHTMLtoPDF from 'react-native-html-to-pdf'
+ * //    const pdf = await RNHTMLtoPDF.convert({
+ * //      html: certificateHtmlTemplate,
+ * //      fileName: `certificate-${awardId}`,
+ * //      directory: 'Documents',
+ * //    })
+ * //
+ * // 3. Build certificate data using getContentAwards() or getCompletedAwards()
+ * //    which ARE React Native compatible, then handle image conversion
+ * //    and PDF generation in your RN app layer.
  */
 export async function fetchCertificate(awardId: string): Promise<Certificate> {
   const { buildCertificateData } = await import('../awards/internal/certificate-builder')
