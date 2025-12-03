@@ -286,8 +286,16 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
 
-  const bubbledProgresses = bubbleProgress(await getHierarchy(contentId, collection), contentId, collection)
+  const hierarchy = await getHierarchy(contentId, collection)
+
+  const bubbledProgresses = await bubbleProgress(hierarchy, contentId, collection)
   await db.contentProgress.recordProgressesTentative(bubbledProgresses, collection)
+
+  if (collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+    let exportIds = bubbledProgresses
+    exportIds[contentId] = progress
+    await duplicateLearningPathProgressToExternalContents(exportIds, collection, hierarchy)
+  }
 
   return response
 }
@@ -301,12 +309,32 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
 
   const hierarchy = await getHierarchy(contentId, collection)
 
-  await Promise.all([
-    db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, collection, progress), collection),
-    bubbleProgress(hierarchy, contentId, collection).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses, collection))
-  ])
+  let ids = {}
+  ids = {
+    ...trickleProgress(hierarchy, contentId, collection, progress),
+    ...await bubbleProgress(hierarchy, contentId, collection)
+  }
+  await db.contentProgress.recordProgressesTentative(ids, collection)
+
+  if (collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+    let exportedIds = ids
+    exportedIds[contentId] = progress
+    await duplicateLearningPathProgressToExternalContents(exportedIds, collection, hierarchy)
+  }
 
   return response
+}
+
+async function duplicateLearningPathProgressToExternalContents(ids, collection, hierarchy) {
+  // we dont want to duplicate to LP's' while we dont have a-la-cart LP's set up.
+  ids.filter((id) => {
+    return hierarchy.parents[id] !== null && hierarchy.parents[id] === collection.id
+  })
+
+  // each handles its own bubbling.
+  Object.entries(ids).forEach(([id, pct]) => {
+    saveContentProgress(parseInt(id), null, pct)
+  })
 }
 
 async function getHierarchy(contentId, collection) {
@@ -335,22 +363,35 @@ async function setStartedOrCompletedStatuses(contentIds, collection, isCompleted
       ...await bubbleProgress(hierarchy, contentId, collection)
     }
   }
+  await db.contentProgress.recordProgressesTentative(ids, collection)
 
-  await Promise.all([
-    db.contentProgress.recordProgressesTentative(ids, collection),
-  ]);
+  if (collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+    let exportIds = ids
+    for (const contentId of contentIds){
+      exportIds[contentId] = progress
+    }
+    await duplicateLearningPathProgressToExternalContents(exportIds, collection, hierarchy)
+  }
 
   return response
 }
 
 async function resetStatus(contentId, collection = null) {
+  const progress = 0
   const response = await db.contentProgress.eraseProgress(contentId, collection)
   const hierarchy = await getHierarchy(contentId, collection)
 
-  await Promise.all([
-    db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, collection, 0), collection),
-    bubbleProgress(hierarchy, contentId, collection).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses, collection))
-  ])
+  let ids = {}
+  ids = {
+    ...trickleProgress(hierarchy, contentId, collection, progress),
+    ...await bubbleProgress(hierarchy, contentId, collection)
+  }
+  await db.contentProgress.recordProgressesTentative(ids, collection)
+
+  if (collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+    ids[contentId] = progress
+    await duplicateLearningPathProgressToExternalContents(ids, collection, hierarchy)
+  }
 
   return response
 }
