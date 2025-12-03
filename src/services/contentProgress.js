@@ -335,7 +335,7 @@ async function duplicateLearningPathProgressToExternalContents(ids, collection, 
   console.log('hierarchy', hierarchy)
   const filteredIds = Object.fromEntries(
     Object.entries(ids).filter((id) => {
-      return hierarchy.parents[id] !== null
+      return hierarchy.parents[parseInt(id)] !== null
     })
   )
   console.log('ids', filteredIds)
