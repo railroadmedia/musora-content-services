@@ -2,6 +2,7 @@
  * @module Awards
  */
 
+import './types.js'
 import { awardEvents } from './internal/award-events'
 
 let awardGrantedCallback = null
@@ -12,20 +13,8 @@ let progressUpdateCallback = null
  * The callback receives an award object with completion data, badge URLs, and practice statistics.
  * Returns a cleanup function to unregister the callback when no longer needed.
  *
- * @param {Function} callback - Function called with award data when an award is earned.
- *   Receives an award object with properties:
- *   - awardId {string} - Unique Sanity award ID
- *   - name {string} - Display name of the award
- *   - badge {string} - URL to badge image
- *   - completed_at {string} - ISO timestamp of completion
- *   - completion_data {Object} - Practice statistics
- *     - completed_at {string} - ISO timestamp
- *     - days_user_practiced {number} - Days spent practicing
- *     - practice_minutes {number} - Total practice time in minutes
- *     - content_title {string} - Title of completed content
- *     - message {string} - Congratulations message
- *
- * @returns {Function} Cleanup function to unregister this callback
+ * @param {AwardCallbackFunction} callback - Function called with award data when an award is earned
+ * @returns {UnregisterFunction} Cleanup function to unregister this callback
  *
  * @example Display award notification
  * const cleanup = registerAwardCallback((award) => {
@@ -93,12 +82,8 @@ function unregisterAwardCallback() {
  * Use this to display progress bars or update UI as the user completes content toward an award.
  * Returns a cleanup function to unregister the callback when no longer needed.
  *
- * @param {Function} callback - Function called with progress data when award progress changes.
- *   Receives an object with properties:
- *   - awardId {string} - Unique Sanity award ID
- *   - progressPercentage {number} - Completion percentage (0-100)
- *
- * @returns {Function} Cleanup function to unregister this callback
+ * @param {ProgressCallbackFunction} callback - Function called with progress data when award progress changes
+ * @returns {UnregisterFunction} Cleanup function to unregister this callback
  *
  * @example Update progress bar
  * const cleanup = registerProgressCallback(({ awardId, progressPercentage }) => {

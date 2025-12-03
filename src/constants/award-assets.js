@@ -1,6 +1,29 @@
 /**
- * Static award certificate assets
- * Migrated from BaseAward::getImageValues()
+ * @module AwardAssets
+ */
+
+/**
+ * @typedef {Object} BrandLogos
+ * @property {string} drumeo - Drumeo brand logo URL
+ * @property {string} singeo - Singeo brand logo URL
+ * @property {string} guitareo - Guitareo brand logo URL
+ * @property {string} pianote - Pianote brand logo URL
+ * @property {string} musora - Musora brand logo URL
+ */
+
+/**
+ * @typedef {Object} AwardAssets
+ * @property {string} ribbon - Gold ribbon image URL for certificates
+ * @property {string} musoraLogo - Musora logo URL
+ * @property {string} musoraBgLogo - Musora background logo URL for certificates
+ * @property {BrandLogos} brandLogos - Brand-specific logo URLs
+ */
+
+/**
+ * Static award certificate assets.
+ * URLs for images used in award certificates and badges.
+ *
+ * @type {AwardAssets}
  */
 export const AWARD_ASSETS = {
   ribbon: "https://d3fzm1tzeyr5n3.cloudfront.net/challenges/gold_ribbon.png",

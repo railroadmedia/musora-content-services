@@ -2,6 +2,7 @@
  * @module Awards
  */
 
+import './types.js'
 import { awardDefinitions } from './internal/award-definitions'
 import { AwardMessageGenerator } from './internal/message-generator'
 import db from '../sync/repository-proxy'
@@ -31,7 +32,7 @@ function enhanceCompletionData(completionData, awardType) {
  * Use this on content detail pages to show award progress and badges.
  *
  * @param {number} contentId - Railcontent ID of the content item
- * @returns {Promise<Object>} Status object with award information
+ * @returns {Promise<ContentAwardsResponse>} Status object with award information
  *
  * @example Check if content has awards
  * const { hasAwards, awards } = await getContentAwards(234567)
@@ -109,10 +110,8 @@ export async function getContentAwards(contentId) {
  * with a completion timestamp. Use this for awards collection pages and profile displays.
  *
  * @param {string} [brand=null] - Brand to filter by (drumeo, pianote, guitareo, singeo), or null for all brands
- * @param {Object} [options={}] - Optional pagination and filtering:
- *   - limit {number} - Maximum number of results to return
- *   - offset {number} - Number of results to skip for pagination (default: 0)
- * @returns {Promise<Object[]>} Array of completed award objects sorted by completion date
+ * @param {AwardPaginationOptions} [options={}] - Optional pagination and filtering
+ * @returns {Promise<AwardInfo[]>} Array of completed award objects sorted by completion date
  *
  * @example Display completed awards gallery
  * const awards = await getCompletedAwards()
@@ -202,10 +201,8 @@ export async function getCompletedAwards(brand = null, options = {}) {
  * what they're currently working toward and encourage completion.
  *
  * @param {string} [brand=null] - Brand to filter by (drumeo, pianote, guitareo, singeo), or null for all brands
- * @param {Object} [options={}] - Optional pagination options:
- *   - limit {number} - Maximum number of results to return
- *   - offset {number} - Number of results to skip for pagination (default: 0)
- * @returns {Promise<Object[]>} Array of in-progress award objects sorted by progress
+ * @param {AwardPaginationOptions} [options={}] - Optional pagination options
+ * @returns {Promise<AwardInfo[]>} Array of in-progress award objects sorted by progress
  *
  * @example Display in-progress awards dashboard
  * const inProgress = await getInProgressAwards()
@@ -295,7 +292,7 @@ export async function getInProgressAwards(brand = null, options = {}) {
  * plus an overall completion percentage. Use this for dashboard widgets and stats pages.
  *
  * @param {string} [brand=null] - Brand to filter by (drumeo, pianote, guitareo, singeo), or null for all brands
- * @returns {Promise<Object>} Statistics object with award counts and completion percentage
+ * @returns {Promise<AwardStatistics>} Statistics object with award counts and completion percentage
  *
  * @example Display stats widget
  * const stats = await getAwardStatistics('drumeo')
