@@ -13,14 +13,15 @@ export async function getProgressState(contentId) {
 }
 
 export async function getProgressStateByIds(contentIds, collection = null) {
-  return getByIds(contentIds, collection, 'state', '')
+  return getByIds(normalizeContentIds(contentIds), normalizeCollection(collection), 'state', '')
 }
 
 export async function getResumeTimeSecondsByIds(contentIds, collection = null) {
-  return getByIds(contentIds, collection, 'resume_time_seconds', 0)
+  return getByIds(normalizeContentIds(contentIds), normalizeCollection(collection), 'resume_time_seconds', 0)
 }
 
 export async function getNavigateTo(data, collection = null) {
+  collection = normalizeCollection(collection)
   let navigateToData = {}
 
   const twoDepthContentTypes = ['pack'] // not adding method because it has its own logic (with active path)
@@ -116,10 +117,13 @@ function buildNavigateTo(content, child = null, collection = null) {
  * @returns {Promise<number>}
  */
 export async function getLastInteractedOf(contentIds, collection = null) {
-  return db.contentProgress.mostRecentlyUpdatedId(contentIds, collection).then(r => r.data ? parseInt(r.data) : undefined)
+  return db.contentProgress.mostRecentlyUpdatedId(normalizeContentIds(contentIds), normalizeCollection(collection)).then(r => r.data ? parseInt(r.data) : undefined)
 }
 
 export async function getProgressDataByIds(contentIds, collection) {
+  contentIds = normalizeContentIds(contentIds)
+  collection = normalizeCollection(collection)
+
   const progress = Object.fromEntries(contentIds.map(id => [id, {
     last_update: 0,
     progress: 0,
@@ -145,6 +149,8 @@ async function getById(contentId, dataKey, defaultValue) {
 }
 
 async function getByIds(contentIds, collection, dataKey, defaultValue) {
+  if (contentIds.length === 0) return {}
+
   const progress = Object.fromEntries(contentIds.map(id => [id, defaultValue]))
   await db.contentProgress.getSomeProgressByContentIds(contentIds, collection).then(r => {
     r.data.forEach(p => {
@@ -163,7 +169,7 @@ export async function getAllCompleted(limit = null) {
 }
 
 export async function getAllCompletedByIds(contentIds) {
-  return db.contentProgress.completedByContentIds(contentIds)
+  return db.contentProgress.completedByContentIds(normalizeContentIds(contentIds))
 }
 
 export async function getAllStartedOrCompleted({
@@ -236,6 +242,9 @@ export async function recordWatchSession(
   instrumentId = null,
   categoryId = null
 ) {
+  contentId = normalizeContentId(contentId)
+  collection = normalizeCollection(collection)
+
   const [session] = await Promise.all([
     trackPractice(contentId, secondsPlayed, prevSession, { instrumentId, categoryId }),
     trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds),
@@ -253,7 +262,6 @@ async function trackPractice(contentId, secondsPlayed, prevSession, details = {}
   session.set(contentId, secondsPlayed)
 
   await trackUserPractice(contentId, secondsSinceLastUpdate, details)
-
   return session
 }
 
@@ -266,15 +274,15 @@ async function trackProgress(contentId, collection, currentSeconds, mediaLengthS
 }
 
 export async function contentStatusCompleted(contentId, collection = null) {
-  return setStartedOrCompletedStatus(contentId, collection, true)
+  return setStartedOrCompletedStatus(normalizeContentId(contentId), normalizeCollection(collection), true)
 }
 
 export async function contentsStatusCompleted(contentIds, collection = null) {
-  return setStartedOrCompletedStatuses(contentIds, collection, true)
+  return setStartedOrCompletedStatuses(normalizeContentIds(contentIds), normalizeCollection(collection), true)
 }
 
 export async function contentStatusStarted(contentId, collection = null) {
-  return setStartedOrCompletedStatus(contentId, collection, false)
+  return setStartedOrCompletedStatus(normalizeContentId(contentId), normalizeCollection(collection), false)
 }
 export async function contentStatusReset(contentId, collection = null) {
   return resetStatus(contentId, collection)
@@ -408,4 +416,20 @@ function getChildrenToDepth(parentId, hierarchy, depth = 1) {
     allChildrenIds = allChildrenIds.concat(getChildrenToDepth(id, hierarchy, depth - 1))
   })
   return allChildrenIds
+}
+
+function normalizeContentId(contentId) {
+  return +contentId
+}
+
+function normalizeContentIds(contentIds) {
+  return contentIds.map(id => normalizeContentId(id))
+}
+
+function normalizeCollection(collection) {
+  if (!collection) return null
+  return {
+    type: collection.type,
+    id: typeof collection.id === 'string' ? +collection.id : collection.id,
+  }
 }
