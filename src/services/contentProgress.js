@@ -286,7 +286,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
 
-  const bubbledProgresses = bubbleProgress(await getHierarchy(contentId, collection), contentId, collection)
+  const bubbledProgresses = await bubbleProgress(await getHierarchy(contentId, collection), contentId, collection)
   await db.contentProgress.recordProgressesTentative(bubbledProgresses, collection)
 
   return response
@@ -294,9 +294,6 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
 
 async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
   const progress = isCompleted ? 100 : 0
-  // we explicitly pessimistically await a remote push here
-  // because awards may be generated (on server) on completion
-  // which we would want to toast the user about *in band*
   const response = await db.contentProgress.recordProgress(contentId, collection, progress)
 
   const hierarchy = await getHierarchy(contentId, collection)
