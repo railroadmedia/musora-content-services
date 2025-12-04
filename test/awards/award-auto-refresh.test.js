@@ -57,6 +57,13 @@ describe('Award Definitions Cache', () => {
 
     expect(fetchSanity).toHaveBeenCalled()
     expect(awards).toHaveLength(1)
+
+    fetchSanity.mockClear()
+
+    const cachedAwards = await awardDefinitions.getAll()
+
+    expect(fetchSanity).not.toHaveBeenCalled()
+    expect(cachedAwards).toHaveLength(1)
   })
 
   test('does not refetch when called rapidly within cache window', async () => {
