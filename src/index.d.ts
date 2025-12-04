@@ -34,6 +34,7 @@ import {
 	completeLearningPathIntroVideo,
 	completeMethodIntroVideo,
 	fetchLearningPathLessons,
+	fetchLearningPathProgressCheckLessons,
 	getActivePath,
 	getDailySession,
 	getEnrichedLearningPath,
@@ -76,7 +77,6 @@ import {
 
 import {
 	addContextToContent,
-	addContextToMethodContent,
 	getNavigateToForPlaylists
 } from './services/contentAggregator.js';
 
@@ -91,18 +91,17 @@ import {
 	contentStatusCompleted,
 	contentStatusReset,
 	contentStatusStarted,
+	contentsStatusCompleted,
 	getAllCompleted,
+	getAllCompletedByIds,
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getLastInteractedOf,
 	getNavigateTo,
-	getNavigateToForMethod,
 	getProgressDataByIds,
-	getProgressDataByIdsAndCollections,
 	getProgressState,
 	getProgressStateByIds,
 	getResumeTimeSecondsByIds,
-	getResumeTimeSecondsByIdsAndCollections,
 	getStartedOrCompletedProgressOnly,
 	recordWatchSession
 } from './services/contentProgress.js';
@@ -252,6 +251,7 @@ import {
 	fetchContentRows,
 	fetchFoundation,
 	fetchHierarchy,
+	fetchLearningPathHierarchy,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
@@ -414,7 +414,6 @@ import {
 declare module 'musora-content-services' {
 	export {
 		addContextToContent,
-		addContextToMethodContent,
 		addItemToPlaylist,
 		applyCloudflareWrapper,
 		applySanityTransformations,
@@ -431,6 +430,7 @@ declare module 'musora-content-services' {
 		contentStatusCompleted,
 		contentStatusReset,
 		contentStatusStarted,
+		contentsStatusCompleted,
 		convertToTimeZone,
 		createComment,
 		createForumCategory,
@@ -497,7 +497,9 @@ declare module 'musora-content-services' {
 		fetchInterests,
 		fetchLastInteractedChild,
 		fetchLatestThreads,
+		fetchLearningPathHierarchy,
 		fetchLearningPathLessons,
+		fetchLearningPathProgressCheckLessons,
 		fetchLeaving,
 		fetchLessonContent,
 		fetchLessonsFeaturingThisContent,
@@ -564,6 +566,7 @@ declare module 'musora-content-services' {
 		getActiveDiscussions,
 		getActivePath,
 		getAllCompleted,
+		getAllCompletedByIds,
 		getAllStarted,
 		getAllStartedOrCompleted,
 		getAwardDataForGuidedContent,
@@ -577,7 +580,6 @@ declare module 'musora-content-services' {
 		getMethodCard,
 		getMonday,
 		getNavigateTo,
-		getNavigateToForMethod,
 		getNavigateToForPlaylists,
 		getNewAndUpcoming,
 		getOnboardingRecommendedContent,
@@ -585,7 +587,6 @@ declare module 'musora-content-services' {
 		getPracticeNotes,
 		getPracticeSessions,
 		getProgressDataByIds,
-		getProgressDataByIdsAndCollections,
 		getProgressRows,
 		getProgressState,
 		getProgressStateByIds,
@@ -594,7 +595,6 @@ declare module 'musora-content-services' {
 		getRecommendedForYou,
 		getReportIssueOptions,
 		getResumeTimeSecondsByIds,
-		getResumeTimeSecondsByIdsAndCollections,
 		getSanityDate,
 		getScheduleContentRows,
 		getSortOrder,

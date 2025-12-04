@@ -38,6 +38,7 @@ import {
 	completeLearningPathIntroVideo,
 	completeMethodIntroVideo,
 	fetchLearningPathLessons,
+	fetchLearningPathProgressCheckLessons,
 	getActivePath,
 	getDailySession,
 	getEnrichedLearningPath,
@@ -80,7 +81,6 @@ import {
 
 import {
 	addContextToContent,
-	addContextToMethodContent,
 	getNavigateToForPlaylists
 } from './services/contentAggregator.js';
 
@@ -95,18 +95,17 @@ import {
 	contentStatusCompleted,
 	contentStatusReset,
 	contentStatusStarted,
+	contentsStatusCompleted,
 	getAllCompleted,
+	getAllCompletedByIds,
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getLastInteractedOf,
 	getNavigateTo,
-	getNavigateToForMethod,
 	getProgressDataByIds,
-	getProgressDataByIdsAndCollections,
 	getProgressState,
 	getProgressStateByIds,
 	getResumeTimeSecondsByIds,
-	getResumeTimeSecondsByIdsAndCollections,
 	getStartedOrCompletedProgressOnly,
 	recordWatchSession
 } from './services/contentProgress.js';
@@ -256,6 +255,7 @@ import {
 	fetchContentRows,
 	fetchFoundation,
 	fetchHierarchy,
+	fetchLearningPathHierarchy,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
@@ -413,7 +413,6 @@ import {
 
 export {
 	addContextToContent,
-	addContextToMethodContent,
 	addItemToPlaylist,
 	applyCloudflareWrapper,
 	applySanityTransformations,
@@ -430,6 +429,7 @@ export {
 	contentStatusCompleted,
 	contentStatusReset,
 	contentStatusStarted,
+	contentsStatusCompleted,
 	convertToTimeZone,
 	createComment,
 	createForumCategory,
@@ -496,7 +496,9 @@ export {
 	fetchInterests,
 	fetchLastInteractedChild,
 	fetchLatestThreads,
+	fetchLearningPathHierarchy,
 	fetchLearningPathLessons,
+	fetchLearningPathProgressCheckLessons,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
@@ -563,6 +565,7 @@ export {
 	getActiveDiscussions,
 	getActivePath,
 	getAllCompleted,
+	getAllCompletedByIds,
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getAwardDataForGuidedContent,
@@ -576,7 +579,6 @@ export {
 	getMethodCard,
 	getMonday,
 	getNavigateTo,
-	getNavigateToForMethod,
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
 	getOnboardingRecommendedContent,
@@ -584,7 +586,6 @@ export {
 	getPracticeNotes,
 	getPracticeSessions,
 	getProgressDataByIds,
-	getProgressDataByIdsAndCollections,
 	getProgressRows,
 	getProgressState,
 	getProgressStateByIds,
@@ -593,7 +594,6 @@ export {
 	getRecommendedForYou,
 	getReportIssueOptions,
 	getResumeTimeSecondsByIds,
-	getResumeTimeSecondsByIdsAndCollections,
 	getSanityDate,
 	getScheduleContentRows,
 	getSortOrder,

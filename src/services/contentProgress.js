@@ -1,10 +1,8 @@
-import { fetchHierarchy } from './sanity.js'
+import { fetchHierarchy, fetchLearningPathHierarchy } from './sanity.js'
 import { db } from './sync'
-import { STATE } from './sync/models/ContentProgress'
+import {COLLECTION_TYPE, STATE} from './sync/models/ContentProgress'
 import { trackUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
-import {getDailySession} from "./content-org/learning-paths.js";
-import {getToday} from "./dateUtils.js";
 
 const STATE_STARTED = STATE.STARTED
 const STATE_COMPLETED = STATE.COMPLETED
@@ -15,95 +13,15 @@ export async function getProgressState(contentId) {
 }
 
 export async function getProgressStateByIds(contentIds, collection = null) {
-  return getByIds(contentIds, collection, 'state', '')
+  return getByIds(normalizeContentIds(contentIds), normalizeCollection(collection), 'state', '')
 }
 
 export async function getResumeTimeSecondsByIds(contentIds, collection = null) {
-  return getByIds(contentIds, collection, 'resume_time_seconds', 0)
-}
-
-export async function getResumeTimeSecondsByIdsAndCollections(tuples) {
-  return getByIdsAndCollections(tuples, 'resume_time_seconds', 0)
-}
-
-export async function getNavigateToForMethod(data) {
-  let navigateToData = {}
-
-  const brand = data[0].content.brand || null
-  const dailySessionResponse = await getDailySession(brand, getToday())
-  const dailySession = dailySessionResponse?.daily_session || null
-  const activeLearningPathId = dailySessionResponse?.active_learning_path_id || null
-
-  for (const tuple of data) {
-    if (!tuple) continue
-
-    const {content, collection} = tuple
-
-    if (content.type === 'method-v2') {
-      const dailiesIds = dailySession ? dailySession.map(item => item.content_ids).flat() : []
-      const activeLearningPath = content.learning_paths?.find(lp => lp?.id === activeLearningPathId) || null
-      const activeLearningPathCollection = {type: 'learning-path-v2', id: activeLearningPathId}
-
-      const dailiesProgresses = await getProgressStateByIds(dailiesIds, activeLearningPathCollection)
-
-      let navigateToId = dailiesProgresses.find(id => dailiesProgresses[id] !== STATE_COMPLETED) || null
-      if (navigateToId) {
-        const navigateTo = activeLearningPath?.children.find(child => child.id === parseInt(navigateToId)) || null
-        navigateToData[content.id || 0] = buildNavigateTo(activeLearningPath, navigateTo, activeLearningPathCollection)
-      } else {
-        const childrenIds = activeLearningPath?.children.map(child => child.id) || []
-        const childrenProgresses = await getProgressStateByIds(childrenIds, collection)
-        let navigateToId = childrenProgresses.find(id => childrenProgresses[id] !== STATE_COMPLETED) || null
-
-        if (navigateToId) {
-          const navigateTo = activeLearningPath?.children.find(child => child.id === parseInt(navigateToId)) || null
-          navigateToData[content.id || 0] = buildNavigateTo(activeLearningPath, navigateTo, activeLearningPathCollection)
-        } else {
-          navigateToData[content.id || 0] = null
-        }
-
-      }
-    } else if (content.type === 'learning-path-v2') {
-        if (content.id === activeLearningPathId) {
-          const dailiesIds = dailySession ? dailySession.map(item => item.content_ids).flat() : []
-          const dailiesProgresses = await getProgressStateByIds(dailiesIds, collection)
-
-          let navigateToId = dailiesProgresses.find(id => dailiesProgresses[id] !== STATE_COMPLETED) || null
-          if (navigateToId) {
-            const navigateTo = content?.children.find(child => child.id === parseInt(navigateToId)) || null
-            navigateToData[content.id] = buildNavigateTo(content, navigateTo, collection)
-          } else {
-            const childrenIds = content?.children.map(child => child.id) || []
-            const childrenProgresses = await getProgressStateByIds(childrenIds, collection)
-            let navigateToId = childrenProgresses.find(id => childrenProgresses[id] !== STATE_COMPLETED) || null
-
-            if (navigateToId) {
-              const navigateTo = content?.children.find(child => child.id === parseInt(navigateToId)) || null
-              navigateToData[content.id] = buildNavigateTo(content, navigateTo, collection)
-            } else {
-              navigateToData[content.id] = null
-            }
-          }
-        } else {
-          const childrenIds = content?.children.map(child => child.id) || []
-          const childrenProgresses = await getProgressStateByIds(childrenIds, collection)
-          let navigateToId = childrenProgresses.find(id => childrenProgresses[id] !== STATE_COMPLETED) || null
-
-          if (navigateToId) {
-            const navigateTo = content?.children.find(child => child.id === parseInt(navigateToId)) || null
-            navigateToData[content.id] = buildNavigateTo(content, navigateTo, collection)
-          } else {
-            navigateToData[content.id] = null
-          }
-        }
-    } else {
-      navigateToData[content.id] = null
-    }
-  }
-  return navigateToData
+  return getByIds(normalizeContentIds(contentIds), normalizeCollection(collection), 'resume_time_seconds', 0)
 }
 
 export async function getNavigateTo(data, collection = null) {
+  collection = normalizeCollection(collection)
   let navigateToData = {}
 
   const twoDepthContentTypes = ['pack'] // not adding method because it has its own logic (with active path)
@@ -149,7 +67,7 @@ export async function getNavigateTo(data, collection = null) {
             let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
             navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild), null, collection)
           }
-        } else if (['song-tutorial', 'guided-course', 'learning-path-v2'].includes(content.type)) { // send to first incomplete
+        } else if (['song-tutorial', 'guided-course', COLLECTION_TYPE.LEARNING_PATH].includes(content.type)) { // send to first incomplete
           let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
           navigateToData[content.id] = buildNavigateTo(children.get(incompleteChild), null, collection)
         } else if (twoDepthContentTypes.includes(content.type)) { // send to navigateTo child of last interacted child
@@ -198,11 +116,14 @@ function buildNavigateTo(content, child = null, collection = null) {
  * @param {object|null} collection
  * @returns {Promise<number>}
  */
-export async function getLastInteractedOf(contentIds) {
-  return db.contentProgress.mostRecentlyUpdatedId(contentIds).then(r => r.data ? parseInt(r.data) : undefined)
+export async function getLastInteractedOf(contentIds, collection = null) {
+  return db.contentProgress.mostRecentlyUpdatedId(normalizeContentIds(contentIds), normalizeCollection(collection)).then(r => r.data ? parseInt(r.data) : undefined)
 }
 
 export async function getProgressDataByIds(contentIds, collection) {
+  contentIds = normalizeContentIds(contentIds)
+  collection = normalizeCollection(collection)
+
   const progress = Object.fromEntries(contentIds.map(id => [id, {
     last_update: 0,
     progress: 0,
@@ -222,67 +143,16 @@ export async function getProgressDataByIds(contentIds, collection) {
   return progress
 }
 
-/**
- * Get progress data for multiple content IDs, each with their own collection context.
- * Useful when fetching progress for tuples that belong to different collections.
- *
- * @param {Array<{contentId: number, collection: {type: string, id: number}|null}>} tuples - Array of objects with contentId and collection
- * @returns {Promise<Object>} - Object mapping content IDs to progress data
- *
- * @example
- * const tuples = [
- *   { contentId: 123, collection: { id: 456, type: 'learning-path-v2' } },
- *   { contentId: 789, collection: { id: 101, type: 'learning-path-v2' } },
- *   { contentId: 111, collection: null }
- * ]
- * const progress = await getProgressDataByIdsAndCollections(tuples)
- * // Returns: { 123: { progress: 50, status: 'started', last_update: 123456 }, ... }
- */
-
-// todo: warning: this doesnt work with having 2 items with same contentId but different collection, because
-//  of the response structure here with contentId as key
-export async function getProgressDataByIdsAndCollections(tuples) {
-  const progress = Object.fromEntries(tuples.map(item => [item.contentId, {
-    last_update: 0,
-    progress: 0,
-    status: '',
-    collection: null,
-  }]))
-
-  await db.contentProgress.getSomeProgressByContentIdsAndCollection(tuples).then(r => {
-    r.data.forEach(p => {
-      progress[p.content_id] = {
-        last_update: p.updated_at,
-        progress: p.progress_percent,
-        status: p.state,
-        collection: {type: p.collection_type, id: p.collection_id}
-      }
-    })
-  })
-
-  return progress
-}
-
-
-
 async function getById(contentId, dataKey, defaultValue) {
   if (!contentId) return defaultValue
   return db.contentProgress.getOneProgressByContentId(contentId).then(r => r.data?.[dataKey] ?? defaultValue)
 }
 
 async function getByIds(contentIds, collection, dataKey, defaultValue) {
+  if (contentIds.length === 0) return {}
+
   const progress = Object.fromEntries(contentIds.map(id => [id, defaultValue]))
   await db.contentProgress.getSomeProgressByContentIds(contentIds, collection).then(r => {
-    r.data.forEach(p => {
-      progress[p.content_id] = p[dataKey] ?? defaultValue
-    })
-  })
-  return progress
-}
-
-async function getByIdsAndCollections(tuples, dataKey, defaultValue) {
-  const progress = Object.fromEntries(tuples.map(tuple => [tuple.contentId, defaultValue]))
-  await db.contentProgress.getSomeProgressByContentIdsAndCollection(tuples).then(r => {
     r.data.forEach(p => {
       progress[p.content_id] = p[dataKey] ?? defaultValue
     })
@@ -296,6 +166,10 @@ export async function getAllStarted(limit = null) {
 
 export async function getAllCompleted(limit = null) {
   return db.contentProgress.completedIds(limit).then(r => r.data.map(id => parseInt(id)))
+}
+
+export async function getAllCompletedByIds(contentIds) {
+  return db.contentProgress.completedByContentIds(normalizeContentIds(contentIds))
 }
 
 export async function getAllStartedOrCompleted({
@@ -360,6 +234,7 @@ export async function getStartedOrCompletedProgressOnly({ brand = undefined } = 
  */
 export async function recordWatchSession(
   contentId,
+  collection = null,
   mediaLengthSeconds,
   currentSeconds,
   secondsPlayed,
@@ -367,9 +242,12 @@ export async function recordWatchSession(
   instrumentId = null,
   categoryId = null
 ) {
+  contentId = normalizeContentId(contentId)
+  collection = normalizeCollection(collection)
+
   const [session] = await Promise.all([
     trackPractice(contentId, secondsPlayed, prevSession, { instrumentId, categoryId }),
-    trackProgress(contentId, currentSeconds, mediaLengthSeconds),
+    trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds),
   ])
 
   return session
@@ -384,79 +262,114 @@ async function trackPractice(contentId, secondsPlayed, prevSession, details = {}
   session.set(contentId, secondsPlayed)
 
   await trackUserPractice(contentId, secondsSinceLastUpdate, details)
-
   return session
 }
 
-async function trackProgress(contentId, currentSeconds, mediaLengthSeconds) {
+async function trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds) {
   const progress = Math.min(
     99,
     Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds)) * 100)
   )
-  return saveContentProgress(contentId, progress, currentSeconds)
+  return saveContentProgress(contentId, collection, progress, currentSeconds)
 }
 
-export async function contentStatusCompleted(contentId) {
-  return setStartedOrCompletedStatus(contentId, true)
-}
-export async function contentStatusStarted(contentId) {
-  return setStartedOrCompletedStatus(contentId, false)
-}
-export async function contentStatusReset(contentId) {
-  return resetStatus(contentId)
+export async function contentStatusCompleted(contentId, collection = null) {
+  return setStartedOrCompletedStatus(normalizeContentId(contentId), normalizeCollection(collection), true)
 }
 
-async function saveContentProgress(contentId, progress, currentSeconds) {
-  const response = await db.contentProgress.recordProgressRemotely(contentId, progress, currentSeconds)
+export async function contentsStatusCompleted(contentIds, collection = null) {
+  return setStartedOrCompletedStatuses(normalizeContentIds(contentIds), normalizeCollection(collection), true)
+}
+
+export async function contentStatusStarted(contentId, collection = null) {
+  return setStartedOrCompletedStatus(normalizeContentId(contentId), normalizeCollection(collection), false)
+}
+export async function contentStatusReset(contentId, collection = null) {
+  return resetStatus(contentId, collection)
+}
+
+async function saveContentProgress(contentId, collection, progress, currentSeconds) {
+  const response = await db.contentProgress.recordProgress(contentId, collection, progress, currentSeconds)
 
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
 
-  const bubbledProgresses = bubbleProgress(await fetchHierarchy(contentId), contentId)
-  await db.contentProgress.recordProgressesTentative(bubbledProgresses)
+  const bubbledProgresses = await bubbleProgress(await getHierarchy(contentId, collection), contentId, collection)
+  await db.contentProgress.recordProgressesTentative(bubbledProgresses, collection)
 
   return response
 }
 
-async function setStartedOrCompletedStatus(contentId, isCompleted) {
+async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
   const progress = isCompleted ? 100 : 0
-  // we explicitly pessimistically await a remote push here
-  // because awards may be generated (on server) on completion
-  // which we would want to toast the user about *in band*
-  const response = await db.contentProgress.recordProgressRemotely(contentId, progress)
+  const response = await db.contentProgress.recordProgress(contentId, collection, progress)
 
-  if (response.pushStatus === 'success') {
-    const hierarchy = await fetchHierarchy(contentId)
-
-    await Promise.all([
-      db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, progress)),
-      bubbleProgress(hierarchy, contentId).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses))
-    ])
-  }
-
-  return response
-}
-
-async function resetStatus(contentId) {
-  const response = await db.contentProgress.eraseProgress(contentId)
-  const hierarchy = await fetchHierarchy(contentId)
+  const hierarchy = await getHierarchy(contentId, collection)
 
   await Promise.all([
-    db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, 0)),
-    bubbleProgress(hierarchy, contentId).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses))
+    db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, collection, progress), collection),
+    bubbleProgress(hierarchy, contentId, collection).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses, collection))
   ])
 
   return response
 }
 
-function trickleProgress(hierarchy, contentId, progress) {
+async function getHierarchy(contentId, collection) {
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+    return await fetchLearningPathHierarchy(contentId, collection)
+  } else {
+    return await fetchHierarchy(contentId)
+  }
+}
+
+async function setStartedOrCompletedStatuses(contentIds, collection, isCompleted) {
+  const progress = isCompleted ? 100 : 0
+  // we explicitly pessimistically await a remote push here
+  // because awards may be generated (on server) on completion
+  // which we would want to toast the user about *in band*
+  const response = await db.contentProgress.recordProgresses(contentIds, collection, progress)
+
+  // we assume this is used only for contents within the same hierarchy
+  const hierarchy = await getHierarchy(contentIds[0], collection)
+
+  let ids = {}
+  for (const contentId of contentIds) {
+    ids = {
+      ...ids,
+      ...trickleProgress(hierarchy, contentId, collection, progress),
+      ...await bubbleProgress(hierarchy, contentId, collection)
+    }
+  }
+
+  await Promise.all([
+    db.contentProgress.recordProgressesTentative(ids, collection),
+  ]);
+
+  return response
+}
+
+async function resetStatus(contentId, collection = null) {
+  const response = await db.contentProgress.eraseProgress(contentId, collection)
+  const hierarchy = await getHierarchy(contentId, collection)
+
+  await Promise.all([
+    db.contentProgress.recordProgressesTentative(trickleProgress(hierarchy, contentId, collection, 0), collection),
+    bubbleProgress(hierarchy, contentId, collection).then(bubbledProgresses => db.contentProgress.recordProgressesTentative(bubbledProgresses, collection))
+  ])
+
+  return response
+}
+
+// agnostic to collection - makes returned data structure simpler,
+// as long as callers remember to pass collection where needed
+function trickleProgress(hierarchy, contentId, _collection, progress) {
   const descendantIds = getChildrenToDepth(contentId, hierarchy, MAX_DEPTH)
   return Object.fromEntries(descendantIds.map(id => [id, progress]))
 }
 
-async function bubbleProgress(hierarchy, contentId)     {
+async function bubbleProgress(hierarchy, contentId, collection = null)     {
   const ids = getAncestorAndSiblingIds(hierarchy, contentId)
-  const progresses = await getByIds(ids, 'progress_percent', 0)
+  const progresses = await getByIds(ids, collection, 'progress_percent', 0)
   return averageProgressesFor(hierarchy, contentId, progresses)
 }
 
@@ -477,6 +390,8 @@ function getAncestorAndSiblingIds(hierarchy, contentId, depth = 1) {
   ]
 }
 
+// doesn't accept collection - assumes progresses are already filtered appropriately
+// caller would do well to remember this, i doth say
 function averageProgressesFor(hierarchy, contentId, progressData, depth = 1) {
   if (depth > MAX_DEPTH) return {}
 
@@ -501,4 +416,31 @@ function getChildrenToDepth(parentId, hierarchy, depth = 1) {
     allChildrenIds = allChildrenIds.concat(getChildrenToDepth(id, hierarchy, depth - 1))
   })
   return allChildrenIds
+}
+
+function normalizeContentId(contentId) {
+  if (typeof contentId === 'string' && isNaN(+contentId)) {
+    throw new Error(`Invalid content id: ${contentId}`)
+  }
+  return typeof contentId === 'string' ? +contentId : contentId
+}
+
+function normalizeContentIds(contentIds) {
+  return contentIds.map(id => normalizeContentId(id))
+}
+
+function normalizeCollection(collection) {
+  if (!collection) return null
+
+  if (COLLECTION_TYPE.indexOf(collection.type) === -1) {
+    throw new Error(`Invalid collection type: ${collection.type}`)
+  }
+  if (typeof collection.id === 'string' && isNaN(+collection.id)) {
+    throw new Error(`Invalid collection id: ${collection.id}`)
+  }
+
+  return {
+    type: collection.type,
+    id: typeof collection.id === 'string' ? +collection.id : collection.id,
+  }
 }

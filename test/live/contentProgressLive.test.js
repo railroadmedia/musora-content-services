@@ -18,7 +18,7 @@ describe('contentProgressDataContextLocal', function () {
     let contentId = 241250
     await contentStatusReset(contentId)
 
-    await recordWatchSession(contentId, 'video', 'vimeo', 100, 50, 50)
+    await recordWatchSession(contentId, null, 'video', 'vimeo', 100, 50, 50)
 
     let result = await getProgressPercentage(contentId)
     expect(result).toBe(50)
@@ -35,7 +35,7 @@ describe('contentProgressDataContextLocal', function () {
     let result = await getProgressState(contentId)
     expect(result).toBe('')
 
-    await recordWatchSession(contentId, 'video', 'vimeo', 100, 50, 50)
+    await recordWatchSession(contentId, null, 'video', 'vimeo', 100, 50, 50)
 
     result = await getProgressState(contentId)
     expect(result).toBe('started')

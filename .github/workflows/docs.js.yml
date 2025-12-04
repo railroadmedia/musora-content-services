@@ -1,61 +1,73 @@
-name: Sync V2 Docs to Main
+name: Deploy Docs to GitHub Pages
 on:
   push:
-    branches: [project-v2]
+    branches: [main, project-v2]
+
+# Required permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  sync-docs:
+  deploy-docs:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout project-v2 branch
-        uses: actions/checkout@v4
-        with:
-          ref: project-v2
-          path: project-v2-content
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
+    steps:
       - name: Checkout main branch
         uses: actions/checkout@v4
         with:
           ref: main
           path: main-content
-          token: ${{ secrets.PROJECT_V2_DOCS_TOKEN }}  #use separate token to trigger other actions
 
-      - name: Copy docs from project-v2 to main
+      - name: Checkout project-v2 branch
+        uses: actions/checkout@v4
+        with:
+          ref: project-v2
+          path: v2-content
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies for v2
+        working-directory: v2-content
+        run: npm ci
+
+      - name: Generate v2 documentation
+        working-directory: v2-content
+        run: npm run doc
+
+      - name: Combine v1 and v2 docs into deployment structure
         run: |
-          # Create the target directory if it doesn't exist
-          mkdir -p main-content/docs/v2
-
-          # Remove existing v2 docs to ensure clean copy
-          rm -rf main-content/docs/v2/*
-
-          # Copy docs from project-v2 to main/docs/v2
-          if [ -d "project-v2-content/docs" ]; then
-            cp -r project-v2-content/docs/* main-content/docs/v2/
-            echo "✅ Copied docs from project-v2 to main/docs/v2"
-          else
-            echo "⚠️ No docs folder found in project-v2 branch"
-            exit 1
+          mkdir -p _site
+          # Copy existing v1 docs from main branch (already committed)
+          if [ -d "main-content/docs" ]; then
+            cp -r main-content/docs/* _site/
+            echo "✅ Copied existing v1 docs from main branch"
           fi
+          # Copy v2 docs to /v2/ subdirectory
+          mkdir -p _site/v2
+          cp -r v2-content/docs/* _site/v2/
+          echo "✅ Combined v1 (root) and v2 (/v2/) documentation"
 
-      - name: Commit and push changes to main
-        id: commit
-        run: |
-          cd main-content
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v4
 
-          # Check if there are any changes
-          if [ -n "$(git status --porcelain)" ]; then
-            git add docs/v2/
-            git commit -m "🔄 Auto-sync: Update v2 docs from project-v2 branch
+      - name: Upload combined documentation artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './_site'
 
-            - Synced from project-v2/docs
-            - Triggered by commit: ${{ github.sha }}
-            - Date: $(date)"
-            git push
-            echo "✅ Successfully pushed updated docs to main branch"
-            echo "changes=true" >> $GITHUB_OUTPUT
-          else
-            echo "ℹ️ No changes detected in docs"
-            echo "changes=false" >> $GITHUB_OUTPUT
-          fi
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

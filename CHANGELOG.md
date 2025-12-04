@@ -2,6 +2,130 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.94.6](https://github.com/railroadmedia/musora-content-services/compare/v2.94.5...v2.94.6) (2025-12-03)
+
+
+### Bug Fixes
+
+* Patch permissions filter (round 2) ([#616](https://github.com/railroadmedia/musora-content-services/issues/616)) ([f8509a5](https://github.com/railroadmedia/musora-content-services/commit/f8509a5178dfdd17ac06f5779a39960ae1a8130b))
+
+### [2.94.5](https://github.com/railroadmedia/musora-content-services/compare/v2.94.4...v2.94.5) (2025-12-03)
+
+
+### Bug Fixes
+
+* refactor fetchLearningPathProgressCheckLessons to exclude duplicates ([#615](https://github.com/railroadmedia/musora-content-services/issues/615)) ([0f0f51e](https://github.com/railroadmedia/musora-content-services/commit/0f0f51e2148a9e611bb3cbc9d103f12952e00056))
+* watermelon fixes for content progress ([#614](https://github.com/railroadmedia/musora-content-services/issues/614)) ([2c2fa8e](https://github.com/railroadmedia/musora-content-services/commit/2c2fa8e68d5b3174ca62c8b9a900370947e44725))
+
+### [2.94.4](https://github.com/railroadmedia/musora-content-services/compare/v2.94.3...v2.94.4) (2025-12-03)
+
+### [2.94.3](https://github.com/railroadmedia/musora-content-services/compare/v2.94.2...v2.94.3) (2025-12-03)
+
+
+### Bug Fixes
+
+* fallback for method card when no activ epath ([#610](https://github.com/railroadmedia/musora-content-services/issues/610)) ([8458d97](https://github.com/railroadmedia/musora-content-services/commit/8458d9754d293ae28cb134546305264e638c8bbd))
+
+### [2.94.2](https://github.com/railroadmedia/musora-content-services/compare/v2.94.1...v2.94.2) (2025-12-03)
+
+
+### Bug Fixes
+
+* bad import ([#611](https://github.com/railroadmedia/musora-content-services/issues/611)) ([ac9ee7b](https://github.com/railroadmedia/musora-content-services/commit/ac9ee7bb8d9617e319dcdedb47c5d7e3c7973732))
+
+### [2.94.1](https://github.com/railroadmedia/musora-content-services/compare/v2.94.0...v2.94.1) (2025-12-03)
+
+## [2.94.0](https://github.com/railroadmedia/musora-content-services/compare/v2.92.6...v2.94.0) (2025-12-03)
+
+
+### Features
+
+* **BEH-1192:** revise fetchLearningPathProgressCheckLessons ([#604](https://github.com/railroadmedia/musora-content-services/issues/604)) ([db8cb70](https://github.com/railroadmedia/musora-content-services/commit/db8cb70ed70f4341fdd4651cdd3fea2b8047dc21))
+
+
+### Bug Fixes
+
+* **agi:** make brand parameter less strict for now ([#603](https://github.com/railroadmedia/musora-content-services/issues/603)) ([b440b92](https://github.com/railroadmedia/musora-content-services/commit/b440b92ae1b4aab80d7e5ac5238c1e386cf09db8))
+* method progress card subtitle ([#608](https://github.com/railroadmedia/musora-content-services/issues/608)) ([3bbfb56](https://github.com/railroadmedia/musora-content-services/commit/3bbfb56fce08e0753e7708bdf2d1356000b1c398))
+* progress fixes and features with watermelon ([#607](https://github.com/railroadmedia/musora-content-services/issues/607)) ([005403c](https://github.com/railroadmedia/musora-content-services/commit/005403c9bbaeebe8c5ecb5315754de4448bcbf43))
+* Pull in permission_v2 ([#602](https://github.com/railroadmedia/musora-content-services/issues/602)) ([289e32d](https://github.com/railroadmedia/musora-content-services/commit/289e32d08bd3a6448191b9f6034801e4cf8d40e5))
+
+### [2.93.2](https://github.com/railroadmedia/musora-content-services/compare/v2.93.1...v2.93.2) (2025-12-02)
+
+
+### Bug Fixes
+
+* progress fixes and features with watermelon ([#607](https://github.com/railroadmedia/musora-content-services/issues/607)) ([005403c](https://github.com/railroadmedia/musora-content-services/commit/005403c9bbaeebe8c5ecb5315754de4448bcbf43))
+
+### [2.93.1](https://github.com/railroadmedia/musora-content-services/compare/v2.93.0...v2.93.1) (2025-12-02)
+
+## [2.93.0](https://github.com/railroadmedia/musora-content-services/compare/v2.92.7...v2.93.0) (2025-12-02)
+
+
+### Features
+
+* **BEH-1192:** revise fetchLearningPathProgressCheckLessons ([#604](https://github.com/railroadmedia/musora-content-services/issues/604)) ([db8cb70](https://github.com/railroadmedia/musora-content-services/commit/db8cb70ed70f4341fdd4651cdd3fea2b8047dc21))
+
+
+### Bug Fixes
+
+* method progress card subtitle ([#608](https://github.com/railroadmedia/musora-content-services/issues/608)) ([3bbfb56](https://github.com/railroadmedia/musora-content-services/commit/3bbfb56fce08e0753e7708bdf2d1356000b1c398))
+* Pull in permission_v2 ([#602](https://github.com/railroadmedia/musora-content-services/issues/602)) ([289e32d](https://github.com/railroadmedia/musora-content-services/commit/289e32d08bd3a6448191b9f6034801e4cf8d40e5))
+
+### [2.92.7](https://github.com/railroadmedia/musora-content-services/compare/v2.92.6...v2.92.7) (2025-12-02)
+
+
+### Bug Fixes
+
+* **agi:** make brand parameter less strict for now ([#603](https://github.com/railroadmedia/musora-content-services/issues/603)) ([b440b92](https://github.com/railroadmedia/musora-content-services/commit/b440b92ae1b4aab80d7e5ac5238c1e386cf09db8))
+
+### [2.92.6](https://github.com/railroadmedia/musora-content-services/compare/v2.92.5...v2.92.6) (2025-12-02)
+
+### [2.92.5](https://github.com/railroadmedia/musora-content-services/compare/v2.92.3...v2.92.5) (2025-12-02)
+
+
+### Bug Fixes
+
+* fixes to get things working with watermelon. added todos for subsequent commits ([#601](https://github.com/railroadmedia/musora-content-services/issues/601)) ([ed83230](https://github.com/railroadmedia/musora-content-services/commit/ed83230006c1fc3a79dfd1a4955fb3785651bf1b))
+
+### [2.92.4](https://github.com/railroadmedia/musora-content-services/compare/v2.92.3...v2.92.4) (2025-12-02)
+
+
+### Bug Fixes
+
+* fixes to get things working with watermelon. added todos for subsequent commits ([#601](https://github.com/railroadmedia/musora-content-services/issues/601)) ([ed83230](https://github.com/railroadmedia/musora-content-services/commit/ed83230006c1fc3a79dfd1a4955fb3785651bf1b))
+
+### [2.92.3](https://github.com/railroadmedia/musora-content-services/compare/v2.92.2...v2.92.3) (2025-11-28)
+
+### [2.92.2](https://github.com/railroadmedia/musora-content-services/compare/v2.92.0...v2.92.2) (2025-11-28)
+
+### [2.92.1](https://github.com/railroadmedia/musora-content-services/compare/v2.92.0...v2.92.1) (2025-11-28)
+
+## [2.92.0](https://github.com/railroadmedia/musora-content-services/compare/v2.90.0...v2.92.0) (2025-11-28)
+
+
+### Features
+
+* add parent id in method progress card cta([#598](https://github.com/railroadmedia/musora-content-services/issues/598)) ([857b311](https://github.com/railroadmedia/musora-content-services/commit/857b311182f090d4af11f6ae96496c068215b201))
+* **BEH-1192:** add fetchLearningPathProgressCheckLessons method ([#595](https://github.com/railroadmedia/musora-content-services/issues/595)) ([3f3f0ea](https://github.com/railroadmedia/musora-content-services/commit/3f3f0ea05bfbf6e44d816fa0edee0402636a1165))
+* **TP-1038:** makes it rain :watermelon:  ([e81537c](https://github.com/railroadmedia/musora-content-services/commit/e81537cd5d331f81be413b9e1c71d82a9b410dfa))
+
+## [2.91.0](https://github.com/railroadmedia/musora-content-services/compare/v2.90.0...v2.91.0) (2025-11-28)
+
+
+### Features
+
+* add parent id in method progress card cta([#598](https://github.com/railroadmedia/musora-content-services/issues/598)) ([857b311](https://github.com/railroadmedia/musora-content-services/commit/857b311182f090d4af11f6ae96496c068215b201))
+* **BEH-1192:** add fetchLearningPathProgressCheckLessons method ([#595](https://github.com/railroadmedia/musora-content-services/issues/595)) ([3f3f0ea](https://github.com/railroadmedia/musora-content-services/commit/3f3f0ea05bfbf6e44d816fa0edee0402636a1165))
+* **TP-1038:** makes it rain :watermelon:  ([e81537c](https://github.com/railroadmedia/musora-content-services/commit/e81537cd5d331f81be413b9e1c71d82a9b410dfa))
+
+## [2.90.0](https://github.com/railroadmedia/musora-content-services/compare/v2.89.0...v2.90.0) (2025-11-27)
+
+
+### Features
+
+* method learning path child fields ([#597](https://github.com/railroadmedia/musora-content-services/issues/597)) ([71654ea](https://github.com/railroadmedia/musora-content-services/commit/71654ea29cb1c46f354ed878dab261e93cb01e7c))
+
 ## [2.89.0](https://github.com/railroadmedia/musora-content-services/compare/v2.88.4...v2.89.0) (2025-11-27)
 
 
