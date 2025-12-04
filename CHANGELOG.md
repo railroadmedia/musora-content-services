@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.1](https://github.com/railroadmedia/musora-content-services/compare/v1.7.0...v1.7.1) (2025-12-04)
+
+
+### Bug Fixes
+
+* **BR-330:** Update sanity query to use double quotation around the artists name, URL encoding was not the issue as Laravel sanitizes it ([b41283c](https://github.com/railroadmedia/musora-content-services/commit/b41283c504760cc9f6ff014ffb1d374736701056))
+
 ## [1.7.0](https://github.com/railroadmedia/musora-content-services/compare/v1.6.9...v1.7.0) (2025-11-10)
 
 
