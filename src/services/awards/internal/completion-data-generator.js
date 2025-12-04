@@ -20,11 +20,7 @@ export async function generateCompletionData(awardId, courseContentId) {
     throw new Error(`Award definition not found: ${awardId}`)
   }
 
-  let childIds = awardDef.child_ids || []
-
-  if (awardDef.has_kickoff && childIds.length > 0) {
-    childIds = childIds.slice(1)
-  }
+  const childIds = awardDef.child_ids || []
 
   const daysUserPracticed = await calculateDaysUserPracticed(childIds, db.default)
   const practiceMinutes = await calculatePracticeMinutes(childIds, db.default)

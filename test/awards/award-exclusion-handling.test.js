@@ -1,12 +1,19 @@
 import { awardManager } from '../../src/services/awards/internal/award-manager'
 import { awardEvents } from '../../src/services/awards/internal/award-events'
 import { mockAwardDefinitions, getAwardByContentId } from '../mockData/award-definitions'
+import { globalConfig } from '../../src/services/config'
+import { LocalStorageMock } from '../localStorageMock'
 
 jest.mock('../../src/services/sanity', () => ({
   default: {
     fetch: jest.fn()
   },
   fetchSanity: jest.fn()
+}))
+
+jest.mock('../../src/services/railcontent', () => ({
+  ...jest.requireActual('../../src/services/railcontent'),
+  fetchUserPermissionsData: jest.fn().mockResolvedValue({ permissions: [108, 91, 92], isAdmin: false })
 }))
 
 jest.mock('../../src/services/sync/repository-proxy', () => {
@@ -31,11 +38,12 @@ import sanityClient, { fetchSanity } from '../../src/services/sanity'
 import db from '../../src/services/sync/repository-proxy'
 import { awardDefinitions } from '../../src/services/awards/internal/award-definitions'
 
-describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
+describe('Award Content Exclusion Handling - E2E Scenarios', () => {
   let awardGrantedListener
 
   beforeEach(async () => {
     jest.clearAllMocks()
+    globalConfig.localStorage = new LocalStorageMock()
     awardEvents.removeAllListeners()
 
     sanityClient.fetch = jest.fn().mockResolvedValue(mockAwardDefinitions)
@@ -60,41 +68,18 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
     awardDefinitions.clear()
   })
 
-  describe('Scenario: Course with has_kickoff=true and 2 lessons (416447=kickoff, 416448=regular)', () => {
+  describe('Scenario: Guided course with excluded intro video (416446 - 1 eligible lesson)', () => {
     const testAward = getAwardByContentId(416446)
     const courseId = 416446
 
-    test('kickoff lesson does not count toward progress', async () => {
-      db.contentProgress.queryOne.mockImplementation((whereClause) => {
-        const contentId = whereClause?.comparison?.right?.value
-
-        return Promise.resolve({
-          data: contentId === 416447
-            ? { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
-            : { state: 'started', created_at: Math.floor(Date.now() / 1000) }
-        })
-      })
-
-      await awardManager.onContentCompleted(courseId)
-
-      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
-        testAward._id,
-        0,
-        expect.objectContaining({
-          progressData: expect.any(Object)
-        })
-      )
+    test('child_ids only contains eligible content (intro video excluded by Sanity)', () => {
+      expect(testAward.child_ids).toEqual([416448])
+      expect(testAward.child_ids).not.toContain(416447)
     })
 
-    test('completing only lesson 2 (after kickoff) shows 100% and grants award', async () => {
-      db.contentProgress.queryOne.mockImplementation((whereClause) => {
-        const contentId = whereClause?.comparison?.right?.value
-
-        return Promise.resolve({
-          data: contentId === 416448
-            ? { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
-            : { state: 'started', created_at: Math.floor(Date.now() / 1000) }
-        })
+    test('completing the single eligible lesson grants award at 100%', async () => {
+      db.contentProgress.queryOne.mockResolvedValue({
+        data: { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
       })
 
       awardEvents.on('awardGranted', awardGrantedListener)
@@ -112,30 +97,34 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
       expect(awardGrantedListener).toHaveBeenCalledTimes(1)
     })
 
-    test('award granted after completing lesson 2, regardless of kickoff status', async () => {
-      db.contentProgress.queryOne.mockImplementation((whereClause) => {
-        const contentId = whereClause?.comparison?.right?.value
-
-        return Promise.resolve({
-          data: contentId === 416448
-            ? { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
-            : { state: 'started', created_at: Math.floor(Date.now() / 1000) }
-        })
+    test('shows 0% progress when eligible lesson not completed', async () => {
+      db.contentProgress.queryOne.mockResolvedValue({
+        data: { state: 'started', created_at: Math.floor(Date.now() / 1000) }
       })
-
-      awardEvents.on('awardGranted', awardGrantedListener)
 
       await awardManager.onContentCompleted(courseId)
 
-      expect(awardGrantedListener).toHaveBeenCalledTimes(1)
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        testAward._id,
+        0,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
+      )
     })
   })
 
-  describe('Scenario: Course with has_kickoff=true and 5 lessons (417030=kickoff, 4 non-kickoff)', () => {
+  describe('Scenario: Course with 4 eligible lessons (417049 - intro excluded)', () => {
     const testAward = getAwardByContentId(417049)
     const courseId = 417049
 
-    test('completing kickoff + 1 lesson shows 25% progress (1 of 4 after kickoff)', async () => {
+    test('child_ids contains only 4 eligible lessons (intro 417030 excluded by Sanity)', () => {
+      expect(testAward.child_ids).toEqual([417045, 417046, 417047, 417048])
+      expect(testAward.child_ids).not.toContain(417030)
+      expect(testAward.child_ids.length).toBe(4)
+    })
+
+    test('completing 1 of 4 lessons shows 25% progress', async () => {
       const completedLessonIds = [417045]
 
       db.contentProgress.queryOne.mockImplementation((whereClause) => {
@@ -159,7 +148,7 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
       )
     })
 
-    test('completing kickoff + 2 lessons shows 50% progress', async () => {
+    test('completing 2 of 4 lessons shows 50% progress', async () => {
       const completedLessonIds = [417045, 417046]
 
       db.contentProgress.queryOne.mockImplementation((whereClause) => {
@@ -183,7 +172,7 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
       )
     })
 
-    test('must complete all 4 non-kickoff lessons to earn award', async () => {
+    test('must complete all 4 eligible lessons to earn award', async () => {
       const completedLessonIds = [417045, 417046, 417047, 417048]
 
       db.contentProgress.queryOne.mockImplementation((whereClause) => {
@@ -212,16 +201,22 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
     })
   })
 
-  describe('Scenario: Large course with has_kickoff=true and 24 lessons (416465=kickoff, 23 non-kickoff)', () => {
+  describe('Scenario: Large course with 23 eligible lessons (416464 - intro excluded)', () => {
     const testAward = getAwardByContentId(416464)
     const courseId = 416464
-    const nonKickoffLessons = [
+    const eligibleLessons = [
       416467, 416468, 416469, 416470, 416471, 416472, 416473,
       416474, 416475, 416476, 416477, 416478, 416479, 416480, 416481,
       416482, 416483, 416484, 416485, 416486, 416487, 416488, 416489
     ]
 
-    test('completing only kickoff shows 0% progress', async () => {
+    test('child_ids contains 23 eligible lessons (intro 416465 excluded by Sanity)', () => {
+      expect(testAward.child_ids).toEqual(eligibleLessons)
+      expect(testAward.child_ids).not.toContain(416465)
+      expect(testAward.child_ids.length).toBe(23)
+    })
+
+    test('shows 0% progress when no eligible lessons completed', async () => {
       db.contentProgress.queryOne.mockImplementation(() => {
         return Promise.resolve({
           data: { state: 'started', created_at: Math.floor(Date.now() / 1000) }
@@ -239,8 +234,8 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
       )
     })
 
-    test('completing 12 of 23 non-kickoff lessons shows ~52% progress', async () => {
-      const completedLessonIds = nonKickoffLessons.slice(0, 12)
+    test('completing 12 of 23 lessons shows ~52% progress', async () => {
+      const completedLessonIds = eligibleLessons.slice(0, 12)
 
       db.contentProgress.queryOne.mockImplementation((whereClause) => {
         const contentId = whereClause?.comparison?.right?.value
@@ -263,12 +258,12 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
       )
     })
 
-    test('must complete all 23 non-kickoff lessons to earn award', async () => {
+    test('must complete all 23 eligible lessons to earn award', async () => {
       db.contentProgress.queryOne.mockImplementation((whereClause) => {
         const contentId = whereClause?.comparison?.right?.value
 
         return Promise.resolve({
-          data: nonKickoffLessons.includes(contentId)
+          data: eligibleLessons.includes(contentId)
             ? { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
             : { state: 'started', created_at: Math.floor(Date.now() / 1000) }
         })
@@ -290,11 +285,16 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
     })
   })
 
-  describe('Scenario: Course with has_kickoff=false should count all lessons', () => {
+  describe('Scenario: Course type without excluded content (417039 - all 3 lessons count)', () => {
     const testAward = getAwardByContentId(417039)
     const courseId = 417039
 
-    test('first lesson counts toward progress when no kickoff', async () => {
+    test('all lessons are eligible when none are excluded', () => {
+      expect(testAward.child_ids).toEqual([417035, 417036, 417038])
+      expect(testAward.child_ids.length).toBe(3)
+    })
+
+    test('first lesson counts toward progress', async () => {
       const completedLessonIds = [417035]
 
       db.contentProgress.queryOne.mockImplementation((whereClause) => {
@@ -338,25 +338,59 @@ describe('Award Kickoff Lesson Handling - E2E Scenarios', () => {
     })
   })
 
-  describe('Scenario: Edge case - course with only kickoff lesson', () => {
-    const testAward = getAwardByContentId(416446)
-    const courseId = 416446
+  describe('Scenario: Learning path content type (417140)', () => {
+    const testAward = getAwardByContentId(417140)
+    const courseId = 417140
 
-    test('course 416446 actually has 2 lessons (kickoff + 1 regular), so completing both grants award', async () => {
-      db.contentProgress.queryOne.mockResolvedValue({
-        data: { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
+    test('learning paths use same exclusion logic as courses', () => {
+      expect(testAward.content_type).toBe('learning-path-v2')
+      expect(testAward.child_ids.length).toBe(22)
+    })
+
+    test('all child content counts toward progress', async () => {
+      const completedLessonIds = testAward.child_ids.slice(0, 11)
+
+      db.contentProgress.queryOne.mockImplementation((whereClause) => {
+        const contentId = whereClause?.comparison?.right?.value
+
+        return Promise.resolve({
+          data: completedLessonIds.includes(contentId)
+            ? { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
+            : { state: 'started', created_at: Math.floor(Date.now() / 1000) }
+        })
       })
 
       await awardManager.onContentCompleted(courseId)
 
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
-        expect.any(String),
-        100,
+        testAward._id,
+        50,
         expect.objectContaining({
-          completedAt: expect.any(Number),
-          immediate: true
+          progressData: expect.any(Object)
         })
       )
+    })
+  })
+
+  describe('Scenario: Skill pack content type (555000)', () => {
+    const testAward = getAwardByContentId(555000)
+    const courseId = 555000
+
+    test('skill packs use same exclusion logic as other content types', () => {
+      expect(testAward.content_type).toBe('skill-pack')
+      expect(testAward.child_ids).toEqual([555001, 555002, 555003])
+    })
+
+    test('completing all lessons grants award', async () => {
+      db.contentProgress.queryOne.mockResolvedValue({
+        data: { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
+      })
+
+      awardEvents.on('awardGranted', awardGrantedListener)
+
+      await awardManager.onContentCompleted(courseId)
+
+      expect(awardGrantedListener).toHaveBeenCalledTimes(1)
     })
   })
 })

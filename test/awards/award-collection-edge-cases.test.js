@@ -161,8 +161,7 @@ describe('Award Collection Filtering - Edge Cases', () => {
         content_id: 777000,
         content_type: 'learning-path-v2',
         name: 'Multi Award 1',
-        brand: 'drumeo',
-        has_kickoff: false
+        brand: 'drumeo'
       }
 
       const award2 = {
@@ -171,8 +170,7 @@ describe('Award Collection Filtering - Edge Cases', () => {
         content_id: 777000,
         content_type: 'learning-path-v2',
         name: 'Multi Award 2',
-        brand: 'drumeo',
-        has_kickoff: false
+        brand: 'drumeo'
       }
 
       fetchSanity.mockResolvedValue([...mockAwardDefinitions, award1, award2])
@@ -231,7 +229,7 @@ describe('Award Collection Filtering - Edge Cases', () => {
     test('rapid completion of children in different collections processes separately', async () => {
       emitProgressWithCollection(555001, 'skill-pack', 555000)
       emitProgressWithCollection(555004, 'learning-path-v2', 666000)
-      emitProgressWithCollection(416447, 'guided-course', 416446)
+      emitProgressWithCollection(416448, 'guided-course', 416446)
 
       await new Promise(resolve => setTimeout(resolve, 100))
 

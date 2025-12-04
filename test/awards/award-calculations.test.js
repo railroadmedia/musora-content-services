@@ -86,30 +86,35 @@ describe('Award Calculations - Pure Logic Tests', () => {
     })
   })
 
-  describe('Kickoff Lesson Handling', () => {
-    test('excludes kickoff lesson from progress calculation', () => {
+  describe('Content Exclusion via Sanity Query', () => {
+    test('child_ids only contains eligible content (excluded content filtered by Sanity)', () => {
       const award = getAwardByContentId(417049)
-      expect(award.has_kickoff).toBe(true)
-      expect(award.child_ids.length).toBe(5)
-
-      let childIds = award.child_ids || []
-      if (award.has_kickoff && childIds.length > 0) {
-        childIds = childIds.slice(1)
-      }
-
-      expect(childIds.length).toBe(4)
-      expect(childIds).not.toContain(417030)
+      expect(award.child_ids.length).toBe(4)
+      expect(award.child_ids).not.toContain(417030)
     })
 
-    test('does not exclude lessons when no kickoff', () => {
-      const award = { child_ids: [1, 2, 3, 4], has_kickoff: false }
+    test('all child_ids count toward progress when no content excluded', () => {
+      const award = getAwardByContentId(417039)
+      expect(award.child_ids).toEqual([417035, 417036, 417038])
+      expect(award.child_ids.length).toBe(3)
+    })
 
-      let childIds = award.child_ids || []
-      if (award.has_kickoff && childIds.length > 0) {
-        childIds = childIds.slice(1)
-      }
+    test('getEligibleChildIds returns all child_ids directly', () => {
+      const { getEligibleChildIds } = require('../../src/services/awards/internal/award-definitions')
+      const award = { child_ids: [1, 2, 3, 4] }
+      expect(getEligibleChildIds(award)).toEqual([1, 2, 3, 4])
+    })
 
-      expect(childIds.length).toBe(4)
+    test('getEligibleChildIds handles empty child_ids', () => {
+      const { getEligibleChildIds } = require('../../src/services/awards/internal/award-definitions')
+      const award = { child_ids: [] }
+      expect(getEligibleChildIds(award)).toEqual([])
+    })
+
+    test('getEligibleChildIds handles undefined child_ids', () => {
+      const { getEligibleChildIds } = require('../../src/services/awards/internal/award-definitions')
+      const award = {}
+      expect(getEligibleChildIds(award)).toEqual([])
     })
   })
 

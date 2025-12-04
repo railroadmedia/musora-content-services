@@ -82,6 +82,13 @@ class AwardDefinitionsService {
 
     try {
       const { fetchSanity } = await import('../../sanity')
+      const { FilterBuilder } = await import('../../../filterBuilder')
+
+      const childFilter = await new FilterBuilder('@->exclude_from_awards_calculation != true', {
+        isChildrenFilter: true,
+        bypassPublishedDateRestriction: true,
+        bypassPermissions: true,
+      }).buildFilter()
 
       const query = `*[_type == 'content-award'] {
         _id,
@@ -97,7 +104,7 @@ class AwardDefinitionsService {
         'content_title': content->title,
         award_custom_text,
         'instructor_name': content->instructor[0]->name,
-        'child_ids': content->child[status != 'draft']->railcontent_id,
+        'child_ids': content->child[${childFilter}]->railcontent_id,
       }`
 
       const awards = await fetchSanity(query, true, { processNeedAccess: false })
@@ -106,8 +113,6 @@ class AwardDefinitionsService {
       this.contentIndex.clear()
 
       awards.forEach(award => {
-        award.has_kickoff = award.content_type === 'guided-course'
-
         this.definitions.set(award._id, award)
 
         if (award.content_id) {
@@ -230,8 +235,5 @@ export async function initializeAwardDefinitions() {
  * @returns {number[]}
  */
 export function getEligibleChildIds(award) {
-  const childIds = award.child_ids || []
-  return (award.has_kickoff && childIds.length > 0)
-    ? childIds.slice(1)
-    : childIds
+  return award.child_ids || []
 }

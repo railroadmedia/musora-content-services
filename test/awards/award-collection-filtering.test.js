@@ -105,7 +105,7 @@ describe('Award Collection Filtering', () => {
     })
 
     test('child in guided-course triggers only guided-course award', async () => {
-      emitProgressWithCollection(416447, 'guided-course', 416446)
+      emitProgressWithCollection(416448, 'guided-course', 416446)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).toHaveBeenCalledWith(

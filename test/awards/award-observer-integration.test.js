@@ -124,7 +124,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
 
     test('emits awardProgress event when lesson completed', async () => {
-      emitProgressWithCollection(417030, 'guided-course', 417049)
+      emitProgressWithCollection(417045, 'guided-course', 417049)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardProgressListener).toHaveBeenCalled()
@@ -146,7 +146,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
         })
       })
 
-      emitProgressWithCollection(417030, 'guided-course', 417049)
+      emitProgressWithCollection(417045, 'guided-course', 417049)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
@@ -163,7 +163,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     const testAward = getAwardByContentId(417049)
 
     test('emits awardGranted event when all lessons completed', async () => {
-      emitProgressWithCollection(417030, 'guided-course', 417049)
+      emitProgressWithCollection(417045, 'guided-course', 417049)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).toHaveBeenCalledTimes(1)
@@ -174,7 +174,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
 
     test('includes completion data in granted event', async () => {
-      emitProgressWithCollection(417030, 'guided-course', 417049)
+      emitProgressWithCollection(417045, 'guided-course', 417049)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       const payload = awardGrantedListener.mock.calls[0][0]
@@ -230,26 +230,12 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
   })
 
-  describe('Scenario: Kickoff lesson progress', () => {
-    const testAward = getAwardByContentId(416446)
-
-    test('kickoff lesson completion triggers but shows 0% progress', async () => {
-      db.contentProgress.queryOne.mockImplementation(() => {
-        return Promise.resolve({
-          data: { state: 'started', created_at: Math.floor(Date.now() / 1000) }
-        })
-      })
-
+  describe('Scenario: Excluded content progress', () => {
+    test('excluded content (not in child_ids) does not trigger award progress', async () => {
       emitProgressWithCollection(416447, 'guided-course', 416446)
       await new Promise(resolve => setTimeout(resolve, 100))
 
-      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
-        testAward._id,
-        0,
-        expect.objectContaining({
-          progressData: expect.any(Object)
-        })
-      )
+      expect(db.userAwardProgress.recordAwardProgress).not.toHaveBeenCalled()
     })
   })
 
@@ -261,7 +247,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
 
     test('does not re-grant already completed award', async () => {
-      emitProgressWithCollection(417030, 'guided-course', 417049)
+      emitProgressWithCollection(417045, 'guided-course', 417049)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).not.toHaveBeenCalled()
@@ -280,7 +266,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
 
     test('clears debounce timers on stop', async () => {
-      emitProgressWithCollection(417030, 'guided-course', 417049)
+      emitProgressWithCollection(417045, 'guided-course', 417049)
       contentProgressObserver.stop()
 
       expect(contentProgressObserver.debounceTimers.size).toBe(0)
@@ -314,10 +300,10 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
 
     test('tracks progress for multiple courses independently', async () => {
-      emitProgressWithCollection(416447, 'guided-course', 416446)
+      emitProgressWithCollection(416448, 'guided-course', 416446)
       await new Promise(resolve => setTimeout(resolve, 100))
 
-      emitProgressWithCollection(417030, 'guided-course', 417049)
+      emitProgressWithCollection(417045, 'guided-course', 417049)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardProgressListener).toHaveBeenCalledTimes(2)

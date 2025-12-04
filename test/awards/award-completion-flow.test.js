@@ -164,12 +164,12 @@ describe('Award Completion Flow - E2E Scenarios', () => {
   })
 
   describe('Scenario: User completes only some lessons (using 4-lesson course)', () => {
-    const multiLessonAward = { _id: '0f49cb6a-1b23-4628-968e-15df02ffad7f', child_ids: [417030, 417045, 417046, 417047, 417048], has_kickoff: true }
+    const multiLessonAward = { _id: '0f49cb6a-1b23-4628-968e-15df02ffad7f', child_ids: [417045, 417046, 417047, 417048] }
     const multiLessonCourseId = 417049
 
-    test('progress updates to 50% when 2 of 4 non-kickoff lessons completed', async () => {
+    test('progress updates to 50% when 2 of 4 lessons completed', async () => {
       const completedLessonIds = [417045, 417046]
-      const allNonKickoffLessonIds = [417045, 417046, 417047, 417048]
+      const allEligibleLessonIds = [417045, 417046, 417047, 417048]
 
       db.contentProgress.queryOne.mockImplementation((whereClause) => {
         const contentId = whereClause?.comparison?.right?.value
