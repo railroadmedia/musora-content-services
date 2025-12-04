@@ -979,7 +979,7 @@ export async function fetchAllFilterOptions(
 
     return coachId
       ? `brand == '${brand}' && status == "published" && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${filterWithoutOption || ''} ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}`
-      : `_type == '${contentType}' && brand == "${brand}"${includeStatusFilter ? statusFilter : ''}${style && excludeFilter !== 'style' ? ` && '${style}' in genre[]->name` : ''}${artist && excludeFilter !== 'artist' ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${filterWithoutOption || ''} ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}`
+      : `_type == '${contentType}' && brand == "${brand}"${includeStatusFilter ? statusFilter : ''}${style && excludeFilter !== 'style' ? ` && '${style}' in genre[]->name` : ''}${artist && excludeFilter !== 'artist' ? ` && artist->name == "${artist}"` : ''} ${progressFilter} ${filterWithoutOption || ''} ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}`
   }
 
   const metaData = processMetadata(brand, contentType, true)
@@ -1743,7 +1743,7 @@ export async function fetchArtistLessons(
   const now = getSanityDate(new Date())
   const query = `{
     "entity": 
-      *[_type == 'artist' && name == '${name}']
+      *[_type == 'artist' && name == "${name}"]
         {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
         'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]), 
         'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
@@ -1797,7 +1797,7 @@ export async function fetchGenreLessons(
   const now = getSanityDate(new Date())
   const query = `{
     "entity": 
-      *[_type == 'genre' && name == '${name}']
+      *[_type == 'genre' && name == "${name}"]
         {'type': _type, name, 'thumbnail_url':thumbnail_url.asset->url, 
         'lessons_count': count(*[${addType} brand == '${brand}' && references(^._id)]), 
         'lessons': *[${addType} brand == '${brand}' && references(^._id) && (status in ['published'] || (status == 'scheduled' && defined(published_on) && published_on >= '${now}')) ${searchFilter} ${includedFieldsFilter} ${progressFilter}]{${fieldsString}}
