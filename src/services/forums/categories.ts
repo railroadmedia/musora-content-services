@@ -38,7 +38,8 @@ export async function createForumCategory(
   params: CreateForumCategoryParams
 ): Promise<ForumCategory> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<ForumCategory>(`${baseUrl}/v1/categories`, params)
+  const { name: title, ...rest } = params
+  return httpClient.post<ForumCategory>(`${baseUrl}/v1/categories`, { title, ...rest })
 }
 
 export interface UpdateForumCategoryParams {
@@ -61,7 +62,8 @@ export async function updateForumCategory(
   params: UpdateForumCategoryParams
 ): Promise<ForumCategory> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.put<ForumCategory>(`${baseUrl}/v1/categories/${params.id}`, params)
+  const { name: title, ...rest } = params
+  return httpClient.put<ForumCategory>(`${baseUrl}/v1/categories/${params.id}`, { title, ...rest })
 }
 
 export interface DeleteForumCategoryParams {
