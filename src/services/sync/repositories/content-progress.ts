@@ -17,6 +17,9 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   // null collection only
   async completedIds(limit?: number) {
     return this.queryAllIds(
+      Q.where('collection_type', null),
+      Q.where('collection_id', null),
+
       Q.where('state', STATE.COMPLETED),
       Q.sortBy('updated_at', 'desc'),
       Q.take(limit || Infinity)
