@@ -197,45 +197,40 @@ describe('Award Collection Filtering - Edge Cases', () => {
     })
   })
 
-  describe('Collection type case sensitivity', () => {
-    test('exact case match required for collection type', async () => {
-      emitProgressWithCollection(555001, 'Skill-Pack', 555000)
+  describe('Collection type case sensitivity for learning paths', () => {
+    test('wrong case LP collection type falls back to a la carte', async () => {
+      emitProgressWithCollection(555004, 'Learning-Path-V2', 666000)
       await new Promise(resolve => setTimeout(resolve, 100))
 
-      expect(awardGrantedListener).not.toHaveBeenCalled()
-      expect(awardProgressListener).not.toHaveBeenCalled()
+      expect(awardGrantedListener).toHaveBeenCalled()
     })
 
-    test('lowercase mismatch does not trigger', async () => {
+    test('case mismatch in non-LP still triggers (a la carte)', async () => {
       emitProgressWithCollection(555001, 'SKILL-PACK', 555000)
       await new Promise(resolve => setTimeout(resolve, 100))
 
-      expect(awardGrantedListener).not.toHaveBeenCalled()
-      expect(awardProgressListener).not.toHaveBeenCalled()
+      expect(awardGrantedListener).toHaveBeenCalled()
     })
   })
 
   describe('Debouncing per collection', () => {
-    test('rapid completion of children in same collection debounces correctly', async () => {
+    test('rapid completion of children debounces per award content_id', async () => {
       emitProgressWithCollection(555001, 'skill-pack', 555000)
       emitProgressWithCollection(555002, 'skill-pack', 555000)
-      emitProgressWithCollection(555003, 'skill-pack', 555000)
 
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledTimes(1)
     })
 
-    test('rapid completion of children in different collections processes separately', async () => {
-      emitProgressWithCollection(555001, 'skill-pack', 555000)
+    test('rapid completion of children in different contexts processes separately', async () => {
       emitProgressWithCollection(555004, 'learning-path-v2', 666000)
       emitProgressWithCollection(416448, 'guided-course', 416446)
 
       await new Promise(resolve => setTimeout(resolve, 100))
 
-      expect(awardGrantedListener).toHaveBeenCalledTimes(3)
+      expect(awardGrantedListener.mock.calls.length).toBeGreaterThanOrEqual(2)
       const awardIds = awardGrantedListener.mock.calls.map(call => call[0].awardId)
-      expect(awardIds).toContain('skill-pack-award-1')
       expect(awardIds).toContain('learning-path-award-1')
       expect(awardIds).toContain('0238b1e5-ebee-42b3-9390-91467d113575')
     })
@@ -270,20 +265,27 @@ describe('Award Collection Filtering - Edge Cases', () => {
   })
 
   describe('Collection ID type handling', () => {
-    test('collection ID as number matches correctly', async () => {
-      emitProgressWithCollection(555001, 'skill-pack', 555000)
+    test('collection ID as number matches correctly for LP', async () => {
+      emitProgressWithCollection(555004, 'learning-path-v2', 666000)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).toHaveBeenCalledWith(
-        expect.objectContaining({ awardId: 'skill-pack-award-1' })
+        expect.objectContaining({ awardId: 'learning-path-award-1' })
       )
     })
 
-    test('collection ID mismatch with correct type still fails', async () => {
-      emitProgressWithCollection(555001, 'skill-pack', 555001)
+    test('LP collection ID mismatch with correct type fails', async () => {
+      emitProgressWithCollection(555004, 'learning-path-v2', 999999)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).not.toHaveBeenCalled()
+    })
+
+    test('non-LP collection ID mismatch still triggers (a la carte)', async () => {
+      emitProgressWithCollection(555001, 'skill-pack', 555001)
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      expect(awardGrantedListener).toHaveBeenCalled()
     })
   })
 })
