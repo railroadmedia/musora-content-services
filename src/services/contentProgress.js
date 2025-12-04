@@ -10,8 +10,8 @@ const STATE_STARTED = STATE.STARTED
 const STATE_COMPLETED = STATE.COMPLETED
 const MAX_DEPTH = 3
 
-export async function getProgressState(contentId) {
-  return getById(contentId, 'state', '')
+export async function getProgressState(contentId, collection = null) {
+  return getById(contentId, collection, 'state', '')
 }
 
 export async function getProgressStateByIds(contentIds, collection = null) {
@@ -267,9 +267,9 @@ export async function getProgressDataByIdsAndCollections(tuples) {
   return progress
 }
 
-async function getById(contentId, dataKey, defaultValue) {
+async function getById(contentId, collection, dataKey, defaultValue) {
   if (!contentId) return defaultValue
-  return db.contentProgress.getOneProgressByContentId(contentId).then(r => r.data?.[dataKey] ?? defaultValue)
+  return db.contentProgress.getOneProgressByContentId(contentId, collection).then(r => r.data?.[dataKey] ?? defaultValue)
 }
 
 async function getByIds(contentIds, collection, dataKey, defaultValue) {

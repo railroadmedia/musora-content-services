@@ -80,7 +80,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return clauses
   }
 
-  async mostRecentlyUpdatedId(contentIds: number[], collection: { type: COLLECTION_TYPE; id: number } | null = null) {
+  async mostRecentlyUpdatedId(contentIds: number[], collection: CollectionParameter | null = null) {
     return this.queryOneId(
       Q.where('content_id', Q.oneOf(contentIds)),
       Q.where('collection_type', collection?.type ?? null),
@@ -92,7 +92,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
   async getOneProgressByContentId(
     contentId: number,
-    { collection }: { collection?: { type: COLLECTION_TYPE; id: number } | null } = {}
+    { collection }: { collection?: CollectionParameter | null } = {}
   ) {
     const clauses = [Q.where('content_id', contentId)]
     if (typeof collection != 'undefined') {
@@ -109,7 +109,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
   async getSomeProgressByContentIds(
     contentIds: number[],
-    collection: { type: COLLECTION_TYPE; id: number } | null = null
+    collection: CollectionParameter | null = null
   ) {
     const clauses = [Q.where('content_id', Q.oneOf(contentIds))]
     if (typeof collection != 'undefined') {
@@ -146,7 +146,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     }
   }
 
-  recordProgress(contentId: number, collection: { type: COLLECTION_TYPE; id: number } | null, progressPct: number, resumeTime?: number) {
+  recordProgress(contentId: number, collection: CollectionParameter | null, progressPct: number, resumeTime?: number) {
     const id = ProgressRepository.generateId(contentId, collection)
 
     return this.upsertOne(id, (r) => {
@@ -165,7 +165,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
   recordProgresses(
     contentIds: number[],
-    collection: { type: COLLECTION_TYPE; id: number } | null,
+    collection: CollectionParameter | null,
     progressPct: number
   ) {
     return this.upsertSome(
@@ -187,7 +187,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
   recordProgressesTentative(
     contentProgresses: Record<string, number>, // Accept plain object
-    collection: { type: COLLECTION_TYPE; id: number } | null
+    collection: CollectionParameter | null
   ) {
     const data = Object.fromEntries(
       Object.entries(contentProgresses).map(([contentId, progressPct]) => [
@@ -205,13 +205,13 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return this.upsertSomeTentative(data)
   }
 
-  eraseProgress(contentId: number, collection: { type: COLLECTION_TYPE; id: number } | null) {
+  eraseProgress(contentId: number, collection: CollectionParameter | null) {
     return this.deleteOne(ProgressRepository.generateId(contentId, collection))
   }
 
   private static generateId(
     contentId: number,
-    collection: { type: COLLECTION_TYPE; id: number } | null
+    collection: CollectionParameter | null
   ) {
     if (collection) {
       return `${contentId}:${collection.type}:${collection.id}`
