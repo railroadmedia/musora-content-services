@@ -39,6 +39,17 @@ describe('Award Definitions Cache', () => {
     expect(awards[0]._id).toBe('test-award-1')
   })
 
+  test('uses cached definitions within refresh window', async () => {
+    await awardDefinitions.getAll()
+
+    fetchSanity.mockClear()
+
+    const awards = await awardDefinitions.getAll()
+
+    expect(fetchSanity).not.toHaveBeenCalled()
+    expect(awards).toHaveLength(1)
+  })
+
   test('refreshes award definitions when cache expires', async () => {
     awardDefinitions.lastFetch = Date.now() - (25 * 60 * 60 * 1000)
 
@@ -46,5 +57,20 @@ describe('Award Definitions Cache', () => {
 
     expect(fetchSanity).toHaveBeenCalled()
     expect(awards).toHaveLength(1)
+  })
+
+  test('does not refetch when called rapidly within cache window', async () => {
+    await awardDefinitions.getAll()
+    const callCountAfterFirst = fetchSanity.mock.calls.length
+
+    await Promise.all([
+      awardDefinitions.getAll(),
+      awardDefinitions.getAll(),
+      awardDefinitions.getAll(),
+      awardDefinitions.getAll(),
+      awardDefinitions.getAll()
+    ])
+
+    expect(fetchSanity.mock.calls.length).toBe(callCountAfterFirst)
   })
 })

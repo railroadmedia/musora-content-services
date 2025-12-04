@@ -125,7 +125,7 @@ describe('AwardMessageGenerator', () => {
       expect(certMessage).toContain('0 minutes')
     })
 
-    test('handles single day practiced', () => {
+    test('handles single day practiced with correct grammar', () => {
       const oneDayData = {
         ...mockCompletionData,
         days_user_practiced: 1
@@ -133,7 +133,8 @@ describe('AwardMessageGenerator', () => {
 
       const message = AwardMessageGenerator.generatePopupMessage(oneDayData)
 
-      expect(message).toContain('1 days')
+      expect(message).toContain('1 day')
+      expect(message).not.toContain('1 days')
     })
 
     test('handles very large practice times', () => {
@@ -145,6 +146,17 @@ describe('AwardMessageGenerator', () => {
       const message = AwardMessageGenerator.generateCertificateMessage(largeData)
 
       expect(message).toContain('10000 minutes')
+    })
+
+    test('handles zero days practiced', () => {
+      const zeroDaysData = {
+        ...mockCompletionData,
+        days_user_practiced: 0
+      }
+
+      const popupMessage = AwardMessageGenerator.generatePopupMessage(zeroDaysData)
+
+      expect(popupMessage).toContain('0 days')
     })
   })
 })

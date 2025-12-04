@@ -1,7 +1,7 @@
 import { contentProgressObserver } from '../../src/services/awards/internal/content-progress-observer'
 import { awardEvents } from '../../src/services/awards/internal/award-events'
 import { emitProgressSaved } from '../../src/services/progress-events'
-import { mockAwardDefinitions, getAwardByContentId, getAwardById } from '../mockData/award-definitions'
+import { mockAwardDefinitions } from '../mockData/award-definitions'
 
 jest.mock('../../src/services/sanity', () => ({
   default: {
@@ -87,20 +87,20 @@ describe('Award Collection Filtering', () => {
 
   describe('Collection type matching', () => {
     test('child in learning-path-v2 triggers only learning-path-v2 award', async () => {
-      emitProgressWithCollection(555004, 'learning-path-v2', 666000)
+      emitProgressWithCollection(418004, 'learning-path-v2', 418010)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).toHaveBeenCalledWith(
-        expect.objectContaining({ awardId: 'learning-path-award-1' })
+        expect.objectContaining({ awardId: 'b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e' })
       )
     })
 
     test('child in skill-pack triggers only skill-pack award', async () => {
-      emitProgressWithCollection(555001, 'skill-pack', 555000)
+      emitProgressWithCollection(418001, 'skill-pack', 418000)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).toHaveBeenCalledWith(
-        expect.objectContaining({ awardId: 'skill-pack-award-1' })
+        expect.objectContaining({ awardId: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d' })
       )
     })
 
@@ -116,50 +116,50 @@ describe('Award Collection Filtering', () => {
 
   describe('Collection ID matching', () => {
     test('same content_type but different content_id does not trigger', async () => {
-      emitProgressWithCollection(555004, 'learning-path-v2', 999999)
+      emitProgressWithCollection(418004, 'learning-path-v2', 999999)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).not.toHaveBeenCalled()
     })
 
     test('both type and ID must match to trigger award', async () => {
-      emitProgressWithCollection(555001, 'skill-pack', 555000)
+      emitProgressWithCollection(418001, 'skill-pack', 418000)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       const call = awardGrantedListener.mock.calls[0]
       expect(call).toBeDefined()
       expect(call[0].definition.content_type).toBe('skill-pack')
-      expect(call[0].definition.content_id).toBe(555000)
+      expect(call[0].definition.content_id).toBe(418000)
     })
   })
 
   describe('Overlapping children', () => {
-    test('child 555003 in non-LP context triggers all matching awards (a la carte)', async () => {
-      emitProgressWithCollection(555003, 'skill-pack', 555000)
+    test('shared child in non-LP context triggers all matching awards (a la carte)', async () => {
+      emitProgressWithCollection(418003, 'skill-pack', 418000)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).toHaveBeenCalledWith(
-        expect.objectContaining({ awardId: 'skill-pack-award-1' })
+        expect.objectContaining({ awardId: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d' })
       )
       expect(awardGrantedListener).toHaveBeenCalledWith(
-        expect.objectContaining({ awardId: 'learning-path-award-1' })
+        expect.objectContaining({ awardId: 'b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e' })
       )
     })
 
-    test('child 555003 in learning-path-v2 context triggers only learning-path award', async () => {
-      emitProgressWithCollection(555003, 'learning-path-v2', 666000)
+    test('shared child in learning-path-v2 context triggers only learning-path award', async () => {
+      emitProgressWithCollection(418003, 'learning-path-v2', 418010)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).toHaveBeenCalledWith(
-        expect.objectContaining({ awardId: 'learning-path-award-1' })
+        expect.objectContaining({ awardId: 'b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e' })
       )
       expect(awardGrantedListener).not.toHaveBeenCalledWith(
-        expect.objectContaining({ awardId: 'skill-pack-award-1' })
+        expect.objectContaining({ awardId: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d' })
       )
     })
 
     test('non-LP context triggers all awards, LP context triggers only matching LP award', async () => {
-      emitProgressWithCollection(555003, 'skill-pack', 555000)
+      emitProgressWithCollection(418003, 'skill-pack', 418000)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).toHaveBeenCalledTimes(2)
@@ -167,7 +167,7 @@ describe('Award Collection Filtering', () => {
       awardGrantedListener.mockClear()
       db.userAwardProgress.hasCompletedAward.mockResolvedValue(true)
 
-      emitProgressWithCollection(555003, 'learning-path-v2', 666000)
+      emitProgressWithCollection(418003, 'learning-path-v2', 418010)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).not.toHaveBeenCalled()
@@ -176,21 +176,21 @@ describe('Award Collection Filtering', () => {
 
   describe('A la carte collection context', () => {
     test('collectionType null and collectionId null triggers awards (a la carte)', async () => {
-      emitProgressWithCollection(555001, null, null)
+      emitProgressWithCollection(418001, null, null)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).toHaveBeenCalled()
     })
 
     test('collectionType present but collectionId null triggers awards (a la carte)', async () => {
-      emitProgressWithCollection(555001, 'skill-pack', null)
+      emitProgressWithCollection(418001, 'skill-pack', null)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).toHaveBeenCalled()
     })
 
     test('collectionType null but collectionId present triggers awards (a la carte)', async () => {
-      emitProgressWithCollection(555001, null, 555000)
+      emitProgressWithCollection(418001, null, 418000)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).toHaveBeenCalled()
@@ -199,10 +199,7 @@ describe('Award Collection Filtering', () => {
 
   describe('Direct string comparison', () => {
     test('learning-path-v2 matches learning-path-v2 exactly', async () => {
-      const learningPathAward = getAwardById('learning-path-award-1')
-      expect(learningPathAward.content_type).toBe('learning-path-v2')
-
-      emitProgressWithCollection(555004, 'learning-path-v2', 666000)
+      emitProgressWithCollection(418004, 'learning-path-v2', 418010)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).toHaveBeenCalledWith(
@@ -215,10 +212,7 @@ describe('Award Collection Filtering', () => {
     })
 
     test('skill-pack matches skill-pack exactly', async () => {
-      const skillPackAward = getAwardById('skill-pack-award-1')
-      expect(skillPackAward.content_type).toBe('skill-pack')
-
-      emitProgressWithCollection(555001, 'skill-pack', 555000)
+      emitProgressWithCollection(418001, 'skill-pack', 418000)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).toHaveBeenCalledWith(
@@ -234,7 +228,7 @@ describe('Award Collection Filtering', () => {
 
   describe('Non-matching collection context', () => {
     test('LP child in wrong LP collection ID ignores award', async () => {
-      emitProgressWithCollection(555004, 'learning-path-v2', 999999)
+      emitProgressWithCollection(418004, 'learning-path-v2', 999999)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).not.toHaveBeenCalled()
@@ -242,14 +236,14 @@ describe('Award Collection Filtering', () => {
     })
 
     test('non-LP child with wrong collection still triggers (a la carte)', async () => {
-      emitProgressWithCollection(555001, 'skill-pack', 666000)
+      emitProgressWithCollection(418001, 'skill-pack', 418010)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).toHaveBeenCalled()
     })
 
     test('child not in any award ignores completely', async () => {
-      emitProgressWithCollection(999999, 'skill-pack', 555000)
+      emitProgressWithCollection(999999, 'skill-pack', 418000)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).not.toHaveBeenCalled()

@@ -72,11 +72,6 @@ describe('Award Content Exclusion Handling - E2E Scenarios', () => {
     const testAward = getAwardByContentId(416446)
     const courseId = 416446
 
-    test('child_ids only contains eligible content (intro video excluded by Sanity)', () => {
-      expect(testAward.child_ids).toEqual([416448])
-      expect(testAward.child_ids).not.toContain(416447)
-    })
-
     test('completing the single eligible lesson grants award at 100%', async () => {
       db.contentProgress.queryOne.mockResolvedValue({
         data: { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
@@ -117,12 +112,6 @@ describe('Award Content Exclusion Handling - E2E Scenarios', () => {
   describe('Scenario: Course with 4 eligible lessons (417049 - intro excluded)', () => {
     const testAward = getAwardByContentId(417049)
     const courseId = 417049
-
-    test('child_ids contains only 4 eligible lessons (intro 417030 excluded by Sanity)', () => {
-      expect(testAward.child_ids).toEqual([417045, 417046, 417047, 417048])
-      expect(testAward.child_ids).not.toContain(417030)
-      expect(testAward.child_ids.length).toBe(4)
-    })
 
     test('completing 1 of 4 lessons shows 25% progress', async () => {
       const completedLessonIds = [417045]
@@ -210,12 +199,6 @@ describe('Award Content Exclusion Handling - E2E Scenarios', () => {
       416482, 416483, 416484, 416485, 416486, 416487, 416488, 416489
     ]
 
-    test('child_ids contains 23 eligible lessons (intro 416465 excluded by Sanity)', () => {
-      expect(testAward.child_ids).toEqual(eligibleLessons)
-      expect(testAward.child_ids).not.toContain(416465)
-      expect(testAward.child_ids.length).toBe(23)
-    })
-
     test('shows 0% progress when no eligible lessons completed', async () => {
       db.contentProgress.queryOne.mockImplementation(() => {
         return Promise.resolve({
@@ -289,11 +272,6 @@ describe('Award Content Exclusion Handling - E2E Scenarios', () => {
     const testAward = getAwardByContentId(417039)
     const courseId = 417039
 
-    test('all lessons are eligible when none are excluded', () => {
-      expect(testAward.child_ids).toEqual([417035, 417036, 417038])
-      expect(testAward.child_ids.length).toBe(3)
-    })
-
     test('first lesson counts toward progress', async () => {
       const completedLessonIds = [417035]
 
@@ -342,11 +320,6 @@ describe('Award Content Exclusion Handling - E2E Scenarios', () => {
     const testAward = getAwardByContentId(417140)
     const courseId = 417140
 
-    test('learning paths use same exclusion logic as courses', () => {
-      expect(testAward.content_type).toBe('learning-path-v2')
-      expect(testAward.child_ids.length).toBe(22)
-    })
-
     test('all child content counts toward progress', async () => {
       const completedLessonIds = testAward.child_ids.slice(0, 11)
 
@@ -372,14 +345,9 @@ describe('Award Content Exclusion Handling - E2E Scenarios', () => {
     })
   })
 
-  describe('Scenario: Skill pack content type (555000)', () => {
-    const testAward = getAwardByContentId(555000)
-    const courseId = 555000
-
-    test('skill packs use same exclusion logic as other content types', () => {
-      expect(testAward.content_type).toBe('skill-pack')
-      expect(testAward.child_ids).toEqual([555001, 555002, 555003])
-    })
+  describe('Scenario: Skill pack content type (418000)', () => {
+    const testAward = getAwardByContentId(418000)
+    const courseId = 418000
 
     test('completing all lessons grants award', async () => {
       db.contentProgress.queryOne.mockResolvedValue({

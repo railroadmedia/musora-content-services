@@ -288,13 +288,16 @@ export async function getAwardStatistics(brand = null) {
       allDefinitions = allDefinitions.filter(def => def.brand === brand)
     }
 
-    const allProgress = await db.userAwardProgress.getAll()
+    const definitionIds = new Set(allDefinitions.map(def => def._id))
 
-    const completedCount = allProgress.data.filter(p =>
+    const allProgress = await db.userAwardProgress.getAll()
+    const filteredProgress = allProgress.data.filter(p => definitionIds.has(p.award_id))
+
+    const completedCount = filteredProgress.filter(p =>
       p.progress_percentage === 100 && p.completed_at !== null
     ).length
 
-    const inProgressCount = allProgress.data.filter(p =>
+    const inProgressCount = filteredProgress.filter(p =>
       p.progress_percentage > 0 && (p.progress_percentage < 100 || p.completed_at === null)
     ).length
 

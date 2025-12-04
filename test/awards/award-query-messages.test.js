@@ -182,7 +182,8 @@ describe('Award Query Message Generation', () => {
       const awards = await getCompletedAwards()
 
       expect(awards[0].completionData.message).toContain('0 minutes')
-      expect(awards[0].completionData.message).toContain('1 days')
+      expect(awards[0].completionData.message).toContain('1 day')
+      expect(awards[0].completionData.message).not.toContain('1 days')
     })
   })
 

@@ -230,6 +230,38 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
   })
 
+  describe('Scenario: Non-completed progress status', () => {
+    beforeEach(() => {
+      db.contentProgress.queryOne.mockResolvedValue({
+        data: { state: 'started', created_at: Math.floor(Date.now() / 1000) }
+      })
+    })
+
+    test('does not trigger award granted when lessons not completed in DB', async () => {
+      emitProgressWithCollection(417045, 'guided-course', 417049, 50)
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      expect(awardGrantedListener).not.toHaveBeenCalled()
+    })
+
+    test('started progress state in DB does not grant award', async () => {
+      emitProgressSaved({
+        userId: 123,
+        contentId: 417045,
+        progressPercent: 75,
+        progressStatus: 'started',
+        bubble: true,
+        collectionType: 'guided-course',
+        collectionId: 417049,
+        resumeTimeSeconds: null,
+        timestamp: Date.now()
+      })
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      expect(awardGrantedListener).not.toHaveBeenCalled()
+    })
+  })
+
   describe('Scenario: Excluded content progress', () => {
     test('excluded content (not in child_ids) does not trigger award progress', async () => {
       emitProgressWithCollection(416447, 'guided-course', 416446)

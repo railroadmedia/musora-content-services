@@ -163,13 +163,12 @@ describe('Award Completion Flow - E2E Scenarios', () => {
     })
   })
 
-  describe('Scenario: User completes only some lessons (using 4-lesson course)', () => {
+  describe('Scenario: Parent course completed but children incomplete', () => {
     const multiLessonAward = { _id: '0f49cb6a-1b23-4628-968e-15df02ffad7f', child_ids: [417045, 417046, 417047, 417048] }
-    const multiLessonCourseId = 417049
+    const parentCourseId = 417049
 
-    test('progress updates to 50% when 2 of 4 lessons completed', async () => {
+    test('does not grant award when parent completed but only 2 of 4 children completed', async () => {
       const completedLessonIds = [417045, 417046]
-      const allEligibleLessonIds = [417045, 417046, 417047, 417048]
 
       db.contentProgress.queryOne.mockImplementation((whereClause) => {
         const contentId = whereClause?.comparison?.right?.value
@@ -187,7 +186,7 @@ describe('Award Completion Flow - E2E Scenarios', () => {
 
       awardEvents.on('awardGranted', awardGrantedListener)
 
-      await awardManager.onContentCompleted(multiLessonCourseId)
+      await awardManager.onContentCompleted(parentCourseId)
 
       expect(awardGrantedListener).not.toHaveBeenCalled()
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
@@ -199,7 +198,7 @@ describe('Award Completion Flow - E2E Scenarios', () => {
       )
     })
 
-    test('awardProgress event fires with progress percentage', async () => {
+    test('emits awardProgress event with partial progress when parent completed', async () => {
       const progressListener = jest.fn()
       const completedLessonIds = [417045, 417046]
 
@@ -219,7 +218,7 @@ describe('Award Completion Flow - E2E Scenarios', () => {
 
       awardEvents.on('awardProgress', progressListener)
 
-      await awardManager.onContentCompleted(multiLessonCourseId)
+      await awardManager.onContentCompleted(parentCourseId)
 
       expect(progressListener).toHaveBeenCalledWith(
         expect.objectContaining({

@@ -256,11 +256,11 @@ describe('Award User Collection - E2E Scenarios', () => {
             }
           },
           {
-            award_id: '361f3034-c6c9-45f7-bbfb-0d58dbe14411',
+            award_id: '0f49cb6a-1b23-4628-968e-15df02ffad7f',
             progress_percentage: 100,
             completed_at: Math.floor(Date.now() / 1000),
             completion_data: {
-              content_title: 'Learn To Play The Drums',
+              content_title: 'Enrolling w/ Kickoff, has product GC (EC)',
               completed_at: new Date().toISOString(),
               days_user_practiced: 60,
               practice_minutes: 1200
@@ -283,12 +283,18 @@ describe('Award User Collection - E2E Scenarios', () => {
       expect(singeoAwards).toHaveLength(0)
     })
 
-    test('calculates brand-specific statistics', async () => {
+    test('calculates brand-specific statistics including completed count', async () => {
       const drumeoStats = await getAwardStatistics('drumeo')
       const drumeoAwardsCount = mockAwardDefinitions.filter(a => a.brand === 'drumeo').length
 
       expect(drumeoStats.totalAvailable).toBe(drumeoAwardsCount)
-      expect(drumeoStats.completed).toBe(2)
+      expect(drumeoStats.completed).toBe(1)
+
+      const pianoteStats = await getAwardStatistics('pianote')
+      const pianoteAwardsCount = mockAwardDefinitions.filter(a => a.brand === 'pianote').length
+
+      expect(pianoteStats.totalAvailable).toBe(pianoteAwardsCount)
+      expect(pianoteStats.completed).toBe(1)
     })
   })
 
@@ -400,7 +406,7 @@ describe('Award User Collection - E2E Scenarios', () => {
     test('statistics only count awards with valid definitions', async () => {
       const stats = await getAwardStatistics()
 
-      expect(stats.completed).toBe(2)
+      expect(stats.completed).toBe(1)
     })
   })
 })

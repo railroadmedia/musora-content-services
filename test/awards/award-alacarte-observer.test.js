@@ -148,7 +148,7 @@ describe('Award Observer - A La Carte Progress (null collection)', () => {
 
   describe('A la carte progress matches multiple awards', () => {
     test('finds all awards containing the child content id', async () => {
-      const sharedChildId = 555003
+      const sharedChildId = 418003
 
       db.contentProgress.queryOne.mockResolvedValue({
         data: { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
@@ -236,7 +236,7 @@ describe('Award Observer - A La Carte Progress (null collection)', () => {
     test('LP collection context requires matching collection', async () => {
       awardGrantedListener.mockClear()
 
-      emitProgressWithCollection(555004, 'learning-path-v2', 999999)
+      emitProgressWithCollection(418004, 'learning-path-v2', 999999)
       await new Promise(resolve => setTimeout(resolve, 100))
 
       expect(awardGrantedListener).not.toHaveBeenCalled()
