@@ -1,6 +1,15 @@
 import SyncRepository, { Q } from './base'
 import ContentProgress, { COLLECTION_TYPE, STATE } from '../models/ContentProgress'
 
+interface ContentIdCollectionTuple {
+  contentId: number,
+  collection: CollectionParameter | null,
+}
+
+export interface CollectionParameter {
+  type: COLLECTION_TYPE,
+  id: number,
+}
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
   // null collection only
   async startedIds(limit?: number) {
@@ -113,6 +122,28 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     }
 
     return await this.queryAll(...clauses)
+  }
+
+  async getSomeProgressByContentIdsAndCollection(tuples: ContentIdCollectionTuple[]) {
+    const clauses = []
+
+    tuples.forEach((tuple) => {
+      clauses.push(
+          ...(tuple === tuples[0])
+              ? tupleClauses(tuple)
+              : [Q.or(...tupleClauses(tuple))]
+      )
+    })
+
+    return await this.queryAll(...clauses)
+
+    function tupleClauses(tuple: ContentIdCollectionTuple) {
+      return [
+        Q.where('content_id', tuple.contentId),
+        Q.where('collection_type', tuple.collection?.type ?? null),
+        Q.where('collection_id', tuple.collection?.id ?? null)
+      ]
+    }
   }
 
   recordProgress(contentId: number, collection: { type: COLLECTION_TYPE; id: number } | null, progressPct: number, resumeTime?: number) {

@@ -187,6 +187,8 @@ export async function addContextToMethodContent(dataPromise, ...dataArgs) {
 
   const justIds = ids.map(obj => obj.contentId)
 
+  return [data, items, ids, justIds]
+
   const [
     progressData,
     isLikedData,
