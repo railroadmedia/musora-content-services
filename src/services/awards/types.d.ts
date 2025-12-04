@@ -1,3 +1,27 @@
+export interface AwardDefinition {
+  _id: string
+  is_active: boolean
+  name: string
+  logo: string | null
+  badge: string
+  award: string
+  content_id: number
+  content_type: string
+  type: string
+  brand: string
+  content_title: string
+  award_custom_text: string | null
+  instructor_name: string | null
+  child_ids: number[]
+}
+
+export interface CompletionData {
+  content_title: string
+  completed_at: string
+  days_user_practiced: number
+  practice_minutes: number
+}
+
 export interface AwardCompletionData {
   completed_at: string
   days_user_practiced: number

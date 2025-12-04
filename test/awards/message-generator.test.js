@@ -10,10 +10,7 @@ describe('AwardMessageGenerator', () => {
 
   describe('generatePopupMessage', () => {
     test('generates correct message with content title', () => {
-      const message = AwardMessageGenerator.generatePopupMessage(
-        'guided-course',
-        mockCompletionData
-      )
+      const message = AwardMessageGenerator.generatePopupMessage(mockCompletionData)
 
       expect(message).toContain('Blues Foundations')
       expect(message).toContain('14 days')
@@ -26,10 +23,7 @@ describe('AwardMessageGenerator', () => {
         practice_minutes: 450
       }
 
-      const message = AwardMessageGenerator.generatePopupMessage(
-        'guided-course',
-        customData
-      )
+      const message = AwardMessageGenerator.generatePopupMessage(customData)
 
       expect(message).toContain('450 minutes')
       expect(message).not.toContain('180 minutes')
@@ -41,10 +35,7 @@ describe('AwardMessageGenerator', () => {
         days_user_practiced: 30
       }
 
-      const message = AwardMessageGenerator.generatePopupMessage(
-        'learning-path',
-        customData
-      )
+      const message = AwardMessageGenerator.generatePopupMessage(customData)
 
       expect(message).toContain('30 days')
       expect(message).not.toContain('14 days')
@@ -127,10 +118,7 @@ describe('AwardMessageGenerator', () => {
         practice_minutes: 0
       }
 
-      const popupMessage = AwardMessageGenerator.generatePopupMessage(
-        'guided-course',
-        zeroData
-      )
+      const popupMessage = AwardMessageGenerator.generatePopupMessage(zeroData)
       const certMessage = AwardMessageGenerator.generateCertificateMessage(zeroData)
 
       expect(popupMessage).toContain('0 minutes')
@@ -143,10 +131,7 @@ describe('AwardMessageGenerator', () => {
         days_user_practiced: 1
       }
 
-      const message = AwardMessageGenerator.generatePopupMessage(
-        'learning-path',
-        oneDayData
-      )
+      const message = AwardMessageGenerator.generatePopupMessage(oneDayData)
 
       expect(message).toContain('1 days')
     })

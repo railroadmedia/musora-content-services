@@ -1,4 +1,30 @@
 /**
+ * @typedef {Object} AwardDefinition
+ * @property {string} _id - Unique Sanity award ID
+ * @property {boolean} is_active - Whether the award is active
+ * @property {string} name - Display name of the award
+ * @property {string|null} logo - URL to logo image
+ * @property {string} badge - URL to badge image
+ * @property {string} award - URL to award image
+ * @property {number} content_id - Railcontent ID of the parent content
+ * @property {string} content_type - Type of content (guided-course, learning-path-v2, etc.)
+ * @property {string} type - Sanity document type
+ * @property {string} brand - Brand (drumeo, pianote, guitareo, singeo)
+ * @property {string} content_title - Title of the associated content
+ * @property {string|null} award_custom_text - Custom text for the award
+ * @property {string|null} instructor_name - Name of the instructor
+ * @property {number[]} child_ids - Array of child content IDs required for completion
+ */
+
+/**
+ * @typedef {Object} CompletionData
+ * @property {string} content_title - Title of the completed content
+ * @property {string} completed_at - ISO timestamp of completion
+ * @property {number} days_user_practiced - Number of days the user practiced
+ * @property {number} practice_minutes - Total practice time in minutes
+ */
+
+/**
  * @typedef {Object} AwardCompletionData
  * @property {string} completed_at - ISO timestamp of completion
  * @property {number} days_user_practiced - Number of days the user practiced

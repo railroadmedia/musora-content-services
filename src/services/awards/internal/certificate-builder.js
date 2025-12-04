@@ -6,7 +6,6 @@
 import { AWARD_ASSETS } from '../../../constants/award-assets'
 import { AwardMessageGenerator } from './message-generator'
 import { globalConfig } from '../../config'
-import { awardManager } from './award-manager'
 
 /** @returns {Promise<import('./types').CertificateData>} */
 export async function buildCertificateData(awardId) {
@@ -27,12 +26,8 @@ export async function buildCertificateData(awardId) {
   }
 
   const completionData = userProgress.data.completion_data
-  const awardType = awardManager.determineAwardType(awardDef)
 
-  const popupMessage = AwardMessageGenerator.generatePopupMessage(
-    awardType,
-    completionData
-  )
+  const popupMessage = AwardMessageGenerator.generatePopupMessage(completionData)
 
   const certificateMessage = AwardMessageGenerator.generateCertificateMessage(
     completionData,

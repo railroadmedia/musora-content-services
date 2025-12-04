@@ -1,6 +1,6 @@
 export class AwardMessageGenerator {
   /** @returns {string} */
-  static generatePopupMessage(awardType, completionData) {
+  static generatePopupMessage(completionData) {
     const { days_user_practiced, practice_minutes, content_title } = completionData
 
     return `You received this award for completing ${content_title}! You practiced a total of ${practice_minutes} minutes over the past ${days_user_practiced} days.`

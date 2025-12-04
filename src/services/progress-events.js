@@ -4,9 +4,15 @@
 
 /**
  * @typedef {Object} ProgressSavedEvent
+ * @property {number} userId - User ID
  * @property {number} contentId - Railcontent ID of the content item
- * @property {string} state - Progress state (started, completed)
  * @property {number} progressPercent - Completion percentage (0-100)
+ * @property {string} progressStatus - Progress state (started, completed)
+ * @property {boolean} bubble - Whether to bubble the event up to parent content
+ * @property {string|null} collectionType - Collection type (learning-path, guided-course, etc.)
+ * @property {number|null} collectionId - Collection ID if within a collection context
+ * @property {number|null} resumeTimeSeconds - Resume position in seconds for video content
+ * @property {number} timestamp - Unix timestamp when the event occurred
  */
 
 /**

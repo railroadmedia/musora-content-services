@@ -100,12 +100,7 @@ export class AwardManager {
       completedCount: completedLessonIds.length
     }
 
-    const awardType = this.determineAwardType(definition)
-
-    const popupMessage = AwardMessageGenerator.generatePopupMessage(
-      awardType,
-      completionData
-    )
+    const popupMessage = AwardMessageGenerator.generatePopupMessage(completionData)
 
     await db.userAwardProgress.recordAwardProgress(awardId, 100, {
       completedAt: Date.now(),
@@ -159,17 +154,6 @@ export class AwardManager {
     } catch (error) {
       console.error('Error updating award progress:', error)
     }
-  }
-
-  determineAwardType(definition) {
-    if (definition.content_type === 'learning-path-v2') {
-      return 'learning-path'
-    }
-    if (definition.content_type === 'guided-course') {
-      return 'guided-course'
-    }
-    console.warn(`Unknown content_type for award: ${definition.content_type}, defaulting to 'guided-course'`)
-    return 'guided-course'
   }
 
   async refreshDefinitions() {
