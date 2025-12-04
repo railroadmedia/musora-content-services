@@ -48,9 +48,11 @@ export async function getMethodCard(brand) {
     const allCompleted = learningPath?.todays_lessons.every(
       (lesson) => lesson.progressStatus === 'completed'
     )
+
     const anyCompleted = learningPath?.todays_lessons.some(
       (lesson) => lesson.progressStatus === 'completed'
     )
+
     const noneCompleted = learningPath?.todays_lessons.every(
       (lesson) => lesson.progressStatus !== 'completed'
     )
@@ -58,6 +60,13 @@ export async function getMethodCard(brand) {
     const nextIncompleteLesson = learningPath?.todays_lessons.find(
       (lesson) => lesson.progressStatus !== 'completed'
     )
+
+    // get the first incomplete lesson from upcoming and next learning path lessons
+    const nextLesson = [
+      ...learningPath?.upcoming_lessons,
+      ...learningPath?.next_learning_path_lessons,
+    ]?.find((lesson) => lesson.progressStatus !== 'completed')
+
     let ctaText, action
     if (noneCompleted) {
       ctaText = 'Start Session'
@@ -66,9 +75,9 @@ export async function getMethodCard(brand) {
       ctaText = 'Continue Session'
       action = getMethodActionCTA(nextIncompleteLesson)
     } else if (allCompleted) {
-      ctaText = learningPath.next_lesson ? 'Start Next Lesson' : 'Browse Lessons'
-      action = learningPath.next_lesson
-        ? getMethodActionCTA(learningPath.next_lesson)
+      ctaText = nextLesson ? 'Start Next Lesson' : 'Browse Lessons'
+      action = nextLesson
+        ? getMethodActionCTA(nextLesson)
         : {
             type: 'lessons',
             brand: brand,
@@ -78,6 +87,7 @@ export async function getMethodCard(brand) {
     let maxProgressTimestamp = Math.max(
       ...learningPath?.children.map((lesson) => lesson.progressTimestamp)
     )
+    
     if (!maxProgressTimestamp) {
       maxProgressTimestamp = learningPath.active_learning_path_created_at
     }
