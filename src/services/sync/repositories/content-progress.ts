@@ -4,7 +4,7 @@ import ContentProgress, { COLLECTION_TYPE, STATE } from '../models/ContentProgre
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
   // null collection only
   async startedIds(limit?: number) {
-    return this.queryAll(
+    return this.queryAllIds(
       Q.where('collection_type', null),
       Q.where('collection_id', null),
 
