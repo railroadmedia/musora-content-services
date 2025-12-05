@@ -248,8 +248,8 @@ export async function fetchLearningPathProgressCheckLessons(
   contentIds: number[]
 ): Promise<number[]> {
   let query = await getAllCompletedByIds(contentIds)
-  let completedProgress = query.data.map(progress => progress.content_id)
-  return contentIds.filter(contentId => completedProgress.includes(contentId))
+  let completedProgress = query.data.map((progress) => progress.content_id)
+  return contentIds.filter((contentId) => completedProgress.includes(contentId))
 }
 
 interface completeMethodIntroVideo {
@@ -350,8 +350,7 @@ export async function onContentCompletedLearningPathListener(event) {
 
   await startLearningPath(brand, nextLearningPath.id)
 
-  const nextLearningPath = await getEnrichedLearningPath(nextLearningPath.id)
-  nextLearningPath.intro_video_id
+  const nextLearningPathData = await getEnrichedLearningPath(nextLearningPath.id)
 
   contentStatusReset(nextLearningPath.intro_video.id)
 }

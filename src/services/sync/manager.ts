@@ -130,7 +130,7 @@ export default class SyncManager {
       })
     })
 
-    contentProgressObserver.start(this.database).catch(error => {
+    contentProgressObserver.start(this.database).catch((error) => {
       this.telemetry.error('[SyncManager] Failed to start contentProgressObserver', error)
     })
     onContentCompleted(onContentCompletedLearningPathListener)
@@ -138,8 +138,10 @@ export default class SyncManager {
     const teardown = async () => {
       this.telemetry.debug('[SyncManager] Tearing down')
       this.runScope.abort()
-      this.strategyMap.forEach(({ strategies }) => strategies.forEach(strategy => strategy.stop()))
-      this.safetyMap.forEach(({ mechanisms }) => mechanisms.forEach(mechanism => mechanism()))
+      this.strategyMap.forEach(({ strategies }) =>
+        strategies.forEach((strategy) => strategy.stop())
+      )
+      this.safetyMap.forEach(({ mechanisms }) => mechanisms.forEach((mechanism) => mechanism()))
       contentProgressObserver.stop()
       this.retry.stop()
       this.context.stop()

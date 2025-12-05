@@ -23,13 +23,14 @@ describe('learning-paths', function () {
     const userDate = new Date('2025-10-31')
     const results = await fetchLearningPathLessons(422533, 'drumeo', userDate)
     console.log(results)
+  })
   // test('getlearningPathLessonsTestNew', async () => {
   //   await contentStatusCompleted(417105)
   //   const userDate = new Date('2025-10-31')
   //   const results = await fetchLearningPathLessons(422533, 'drumeo', userDate)
   //   console.log(results)
   // })
-  //
+
   test('learningPathCompletion', async () => {
     const learningPathId = 435527
     await contentStatusReset(learningPathId)
