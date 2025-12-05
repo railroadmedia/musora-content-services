@@ -6,21 +6,19 @@ export const AWSUrl = 'https://s3.us-east-1.amazonaws.com/musora-web-platform'
 export const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net'
 
 // This is used to pull related content by license, so we only show "consumable" content
-export const SONG_TYPES = ['song', 'play-along', 'jam-track', 'song-tutorial-children']
+export const SONG_TYPES = ['song', 'play-along', 'jam-track', 'song-tutorial-lesson']
 // Oct 2025: It turns out content-meta categories are not really clear
 // THis is used for the page_type field as a post processor so we include parents and children
 // Duplicated in SanityGateway.php if you update this, update that
 export const SONG_TYPES_WITH_CHILDREN = [
   'song',
-  'song-part',
   'play-along',
-  'play-along-part',
   'jam-track',
   'song-tutorial',
-  'song-tutorial-children',
+  'song-tutorial-lesson',
 ]
 // Single hierarchy refers to only one element in the hierarchy has video lessons, not that they have a single parent
-export const SINGLE_PARENT_TYPES = ['course-part', 'pack-bundle-lesson', 'song-tutorial-children']
+export const SINGLE_PARENT_TYPES = ['course-lesson', 'pack-bundle-lesson', 'song-tutorial-lesson']
 
 export const genreField = `genre[]->{
   name,
@@ -175,7 +173,7 @@ export const showsTypes = {
 
 export const coachLessonsTypes = [
   'course',
-  'course-part',
+  'course-lesson',
   'coach-stream',
   'student-focus',
   'quick-tips',
@@ -183,7 +181,7 @@ export const coachLessonsTypes = [
   'semester-pack',
   'question-and-answer',
   'song-tutorial',
-  'song-tutorial-children',
+  'song-tutorial-lesson',
   'workout',
 ]
 
@@ -192,15 +190,8 @@ export const childContentTypeConfig = {
 }
 
 export const singleLessonTypes = ['quick-tips', 'rudiment']
-export const practiceAlongsLessonTypes = ['workout'] // challenges ->workouts
+export const practiceAlongsLessonTypes = ['workout']
 export const performancesLessonTypes = ['performance']
-export const documentariesLessonTypes = [
-  'tama',
-  'sonor',
-  'history-of-electronic-drums',
-  'paiste-cymbals',
-  'backstage-secret',
-]
 export const liveArchivesLessonTypes = [
   'podcast',
   'coach-stream',
@@ -235,16 +226,18 @@ export const skillLessonTypes = ['skill-pack']
 
 export const showsLessonTypes = [
   'boot-camp',
-  'diy-drum-experiment',
-  'exploring-beats',
-  'in-rhythm',
-  'rhythmic-adventures-of-captain-carson',
-  'rhythms-from-another-planet',
   'study-the-greats',
+  // TODO these require clearing the information with Chris, they weren't part of the old system, but are part of the migration document as SHOWS
+  // 'gear-guide',
+  // 'odd-times',
+  // 'podcast',
+  // 'spotlight',
+  // 'study-the-greats',
+  // 'performance',
 ]
 export const entertainmentLessonTypes = [
-  'specials', // TODO: new type
-  ...documentariesLessonTypes,
+  'special',
+  'documentary-lesson',
   ...showsLessonTypes,
 ]
 export const collectionLessonTypes = [...coursesLessonTypes, ...showsLessonTypes]
@@ -255,7 +248,7 @@ export const lessonTypesMapping = {
   'live archives': liveArchivesLessonTypes,
   performances: performancesLessonTypes,
   'student archives': studentArchivesLessonTypes,
-  documentaries: documentariesLessonTypes,
+  documentaries: ['documentary-lesson'],
   courses: ['course'],
   'guided courses': ['guided-course'],
   'tiered courses': ['tiered-course'],
@@ -296,20 +289,20 @@ export const progressTypesMapping = {
     ...liveArchivesLessonTypes,
     ...performancesLessonTypes,
     ...studentArchivesLessonTypes,
-    ...documentariesLessonTypes,
+    'documentary-lesson',
     'live',
     'pack-bundle-lesson',
   ],
   course: ['course'],
   show: showsLessonTypes,
-  'song tutorial': [...tutorialsLessonTypes, 'song-tutorial-children'],
+  'song tutorial': [...tutorialsLessonTypes, 'song-tutorial-lesson'],
   songs: transcriptionsLessonTypes,
   'play along': playAlongLessonTypes,
   'guided course': ['guided-course'],
   pack: ['pack', 'semester-pack'],
   'learning path': ['learning-path-v2'],
   'jam track': jamTrackLessonTypes,
-  'course video': ['course-part'],
+  'course video': ['course-lesson'],
 }
 
 export const songs = {
@@ -341,9 +334,9 @@ export const filterTypes = {
 export const recentTypes = {
   lessons: [
     ...individualLessonsTypes,
-    'course-part',
+    'course-lesson',
     'pack-bundle-lesson',
-    'guided-course-part',
+    'guided-course-lesson',
     'quick-tips',
   ],
   songs: [...SONG_TYPES],
@@ -420,7 +413,7 @@ export let contentTypeConfig = {
       },
     },
   },
-  'song-tutorial-children': {
+  'song-tutorial-lesson': {
     fields: [`"resources": ${resourcesField}`],
   },
   'guided-course': {
@@ -633,7 +626,7 @@ export let contentTypeConfig = {
   live: { ...contentWithInstructorsField, slug: 'live-streams' },
   solo: { ...contentWithInstructorsField, slug: 'solos' },
   'boot-camp': contentWithInstructorsField,
-  'gear-guids': contentWithInstructorsField,
+  'gear-guide': contentWithInstructorsField,
   performance: contentWithInstructorsField,
   challenges: contentWithInstructorsField,
   'on-the-road': contentWithInstructorsField,
