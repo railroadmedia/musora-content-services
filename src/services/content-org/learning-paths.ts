@@ -213,9 +213,7 @@ export async function fetchLearningPathLessons(
       previousLearningPathId
     )
   } else if (
-    nextContentIds.length > 0 &&
-    todaysLessons.length < 3 &&
-    upcomingLessons.length === 0
+    nextContentIds.length > 0
   ) {
     // Daily sessions first lessons are the active learning path and the next lessons are not
     // load next lessons from next learning path
