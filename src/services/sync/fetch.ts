@@ -31,10 +31,12 @@ type SyncPushSuccessResponse = SyncResponseBase & {
 }
 type SyncPushFetchFailureResponse = SyncResponseBase & {
   ok: false,
+  failureType: 'fetch'
   isRetryable: boolean
 }
 type SyncPushFailureResponse = SyncResponseBase & {
   ok: false,
+  failureType: 'error'
   originalError: Error
 }
 
@@ -69,12 +71,14 @@ type SyncPullSuccessResponse = SyncResponseBase & {
   token: SyncToken
   previousToken: SyncToken | null
 }
-type SyncPullFailureResponse = SyncResponseBase & {
-  ok: false,
-  isRetryable: boolean
-}
 type SyncPullFetchFailureResponse = SyncResponseBase & {
   ok: false,
+  failureType: 'fetch'
+  isRetryable: boolean
+}
+type SyncPullFailureResponse = SyncResponseBase & {
+  ok: false,
+  failureType: 'error'
   originalError: Error
 }
 export interface SyncResponseBase {
@@ -146,6 +150,7 @@ export function handlePull(callback: (session: BaseSessionProvider) => Request) 
     } catch (e) {
       return {
         ok: false,
+        failureType: 'error',
         originalError: e as Error
       }
     }
@@ -153,6 +158,7 @@ export function handlePull(callback: (session: BaseSessionProvider) => Request) 
     if (response.ok === false) {
       return {
         ok: false,
+        failureType: 'fetch',
         isRetryable: (response.status >= 500 && response.status < 504) || response.status === 429 || response.status === 408
       }
     }
@@ -192,6 +198,7 @@ export function handlePush(callback: (session: BaseSessionProvider) => Request) 
     } catch (e) {
       return {
         ok: false,
+        failureType: 'error',
         originalError: e as Error
       }
     }
@@ -199,6 +206,7 @@ export function handlePush(callback: (session: BaseSessionProvider) => Request) 
     if (response.ok === false) {
       return {
         ok: false,
+        failureType: 'fetch',
         isRetryable: (response.status >= 500 && response.status < 504) || response.status === 429 || response.status === 408
       }
     }

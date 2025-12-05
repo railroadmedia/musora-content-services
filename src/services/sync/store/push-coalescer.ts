@@ -4,7 +4,7 @@ import { EpochMs } from ".."
 import { SyncPushResponse } from "../fetch"
 
 type PushIntent = {
-  promise: Promise<SyncPushResponse>
+  promise: Promise<void | SyncPushResponse>
   records: {
     id: RecordId
     updatedAt: EpochMs
@@ -18,7 +18,7 @@ export default class PushCoalescer {
     this.intents = []
   }
 
-  push(records: BaseModel[], pusher: (records: BaseModel[]) => Promise<SyncPushResponse>) {
+  push(records: BaseModel[], pusher: (records: BaseModel[]) => Promise<void | SyncPushResponse>) {
     const found = this.find(records)
 
     if (found) {
@@ -28,7 +28,7 @@ export default class PushCoalescer {
     return this.add(pusher(records), records)
   }
 
-  private add(promise: Promise<SyncPushResponse>, records: BaseModel[]) {
+  private add(promise: Promise<void | SyncPushResponse>, records: BaseModel[]) {
     const intent = {
       promise,
       records: records.map(record => ({

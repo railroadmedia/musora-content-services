@@ -25,7 +25,7 @@ const contentProgressTable = tableSchema({
     { name: 'collection_id', type: 'number', isOptional: true, isIndexed: true },
     { name: 'state', type: 'string', isIndexed: true },
     { name: 'progress_percent', type: 'number' },
-    { name: 'resume_time_seconds', type: 'number' },
+    { name: 'resume_time_seconds', type: 'number', isOptional: true },
     { name: 'created_at', type: 'number' },
     { name: 'updated_at', type: 'number', isIndexed: true }
   ]
