@@ -923,7 +923,7 @@ async function extractPinnedItemsAndSortAllItems(
 }
 
 function generateContentsMap(contents, playlistsContents) {
-  const excludedTypes = new Set(['pack-bundle', 'guided-course-part'])
+  const excludedTypes = new Set(['pack-bundle', 'guided-course-lesson'])
   const existingShows = new Set()
   const contentsMap = new Map()
   const childToParentMap = {}
