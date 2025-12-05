@@ -85,15 +85,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     contentId: number,
     { collection }: { collection?: { type: COLLECTION_TYPE; id: number } | null } = {}
   ) {
-    const clauses = [Q.where('content_id', contentId)]
-    if (typeof collection != 'undefined') {
-      clauses.push(
-        ...[
-          Q.where('collection_type', collection?.type ?? null),
-          Q.where('collection_id', collection?.id ?? null),
-        ]
-      )
-    }
+    const clauses = [
+      Q.where('content_id', contentId),
+      Q.where('collection_type', collection?.type ?? null),
+      Q.where('collection_id', collection?.id ?? null),
+    ]
 
     return await this.queryOne(...clauses)
   }
@@ -102,15 +98,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     contentIds: number[],
     collection: { type: COLLECTION_TYPE; id: number } | null = null
   ) {
-    const clauses = [Q.where('content_id', Q.oneOf(contentIds))]
-    if (typeof collection != 'undefined') {
-      clauses.push(
-        ...[
-          Q.where('collection_type', collection?.type ?? null),
-          Q.where('collection_id', collection?.id ?? null),
-        ]
-      )
-    }
+    const clauses = [
+      Q.where('content_id', Q.oneOf(contentIds)),
+      Q.where('collection_type', collection?.type ?? null),
+      Q.where('collection_id', collection?.id ?? null),
+    ]
 
     return await this.queryAll(...clauses)
   }
@@ -118,7 +110,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   recordProgress(contentId: number, collection: { type: COLLECTION_TYPE; id: number } | null, progressPct: number, resumeTime?: number) {
     const id = ProgressRepository.generateId(contentId, collection)
 
-    return this.upsertOne(id, (r) => {
+    const result = this.upsertOne(id, (r) => {
       r.content_id = contentId
       r.collection_type = collection?.type ?? null
       r.collection_id = collection?.id ?? null
@@ -130,6 +122,30 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
         r.resume_time_seconds = Math.floor(resumeTime)
       }
     })
+
+    // Emit event AFTER database write completes
+    result.then(() => {
+      return Promise.all([
+        import('../../progress-events'),
+        import('../../config')
+      ])
+    }).then(([progressEventsModule, { globalConfig }]) => {
+      progressEventsModule.emitProgressSaved({
+        userId: globalConfig.railcontentConfig?.userId || 0,
+        contentId,
+        progressPercent: progressPct,
+        progressStatus: progressPct === 100 ? STATE.COMPLETED : STATE.STARTED,
+        bubble: true,
+        collectionType: collection?.type ?? null,
+        collectionId: collection?.id ?? null,
+        resumeTimeSeconds: resumeTime ?? null,
+        timestamp: Date.now()
+      })
+    }).catch(error => {
+      console.error('Failed to emit progress saved event:', error)
+    })
+
+    return result
   }
 
   recordProgresses(

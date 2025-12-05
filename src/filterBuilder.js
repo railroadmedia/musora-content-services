@@ -58,8 +58,13 @@ export class FilterBuilder {
   }
 
   async buildFilter() {
-    const adapter = getPermissionsAdapter()
-    this.userData = await adapter.fetchUserPermissions()
+    if (this.bypassPermissions) {
+      this.userData = { permissions: [], isAdmin: false }
+    } else {
+      const adapter = getPermissionsAdapter()
+      this.userData = await adapter.fetchUserPermissions()
+    }
+
     if (this.debug) console.log('baseFilter', this.filter)
     const filter = this._applyContentStatuses()
       ._applyPermissions()

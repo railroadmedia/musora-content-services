@@ -7,10 +7,12 @@ import {
   PracticesRepository,
   PracticeDayNotesRepository
 } from "./repositories"
+import UserAwardProgressRepository from "./repositories/user-award-progress"
 import {
   ContentLike,
   ContentProgress,
   Practice,
+  UserAwardProgress,
   PracticeDayNote
 } from "./models"
 
@@ -19,6 +21,7 @@ interface SyncRepositories {
   likes: ContentLikesRepository;
   contentProgress: ContentProgressRepository;
   practices: PracticesRepository;
+  userAwardProgress: UserAwardProgressRepository;
   practiceDayNotes: PracticeDayNotesRepository;
 }
 
@@ -46,6 +49,9 @@ const proxy = new Proxy({} as SyncRepositories, {
           break;
         case 'practices':
           cache.practices = new PracticesRepository(manager.getStore(Practice));
+          break;
+        case 'userAwardProgress':
+          cache.userAwardProgress = new UserAwardProgressRepository(manager.getStore(UserAwardProgress));
           break;
         case 'practiceDayNotes':
           cache.practiceDayNotes = new PracticeDayNotesRepository(manager.getStore(PracticeDayNote));

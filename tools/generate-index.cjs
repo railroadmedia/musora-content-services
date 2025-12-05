@@ -87,6 +87,15 @@ treeElements.forEach((treeNode) => {
     const subDir = fs.readdirSync(filePath)
     subDir.forEach((subFile) => {
       const subFilePath = path.join(servicesDir, treeNode, subFile)
+
+      // Skip directories and check for .indexignore in nested directories
+      if (fs.lstatSync(subFilePath).isDirectory()) {
+        if (fs.existsSync(path.join(subFilePath, '.indexignore'))) {
+          console.log(`Skipping nested directory: ${treeNode}/${subFile} due to .indexignore`)
+        }
+        return
+      }
+
       addFunctionsToFileExports(subFilePath, treeNode + '/' + subFile)
     })
   }

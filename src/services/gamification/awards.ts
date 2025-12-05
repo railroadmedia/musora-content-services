@@ -8,32 +8,12 @@ import { globalConfig } from '../config'
 
 const baseUrl = `/api/gamification`
 
-export interface Award {
-  id: number
-  user_id: number
-  completed_at: string // ISO-8601 timestamp
-  completion_data: {
-    message?: string
-    message_certificate?: string
-    content_title?: string
-    completed_at?: Date
-    days_user_practiced?: number
-    practice_minutes?: number
-    [key: string]: any
-  }
-  award_id: number
-  type: string
-  title: string
-  badge: string
-}
-
 export interface Certificate {
-  id: number
+  award_id: string
   user_name: string
   user_id: number
-  completed_at: string // ISO-8601 timestamp
+  completed_at: string
   message: string
-  award_id: number
   type: string
   title: string
   musora_logo: string
@@ -52,72 +32,123 @@ export interface Certificate {
 }
 
 /**
- * Get awards for a specific user.
+ * Fetch certificate data for a completed award with all images converted to base64.
+ * Returns certificate information ready for rendering in a PDF or image format.
+ * All image URLs (logos, signatures, ribbons) are converted to base64 strings for offline use.
  *
- * NOTE: needs error handling for the response from http client
- * (Alexandre: I'm doing it in a different branch/PR: https://github.com/railroadmedia/musora-content-services/pull/349)
- * NOTE: This function still expects brand because FE passes the argument. It is ignored for now
+ * @param {string} awardId - Unique Sanity award ID
  *
- * @param {number|null} [userId] - The user ID. If not provided, the authenticated user is used instead.
- * @param {string|null} [_brand] - The brand to fetch the awards for.
- * @param {number|null} [page=1] - Page attribute for pagination
- * @param {number|null} [limit=5] - Limit how many items to return
- * @returns {Promise<PaginatedResponse<Award>>} - The awards for the user.
- * @throws {HttpError} - If the HTTP request fails.
+ * @returns {Promise<Certificate>} Certificate object with base64-encoded images:
+ *   - award_id {string} - Sanity award ID
+ *   - user_name {string} - User's display name
+ *   - user_id {number} - User's ID
+ *   - completed_at {string} - ISO timestamp of completion
+ *   - message {string} - Certificate message for display
+ *   - type {string} - Award type (e.g., 'content-award')
+ *   - title {string} - Award title/name
+ *   - musora_logo {string} - URL to Musora logo
+ *   - musora_logo_64 {string} - Base64-encoded Musora logo
+ *   - musora_bg_logo {string} - URL to Musora background logo
+ *   - musora_bg_logo_64 {string} - Base64-encoded background logo
+ *   - brand_logo {string} - URL to brand logo
+ *   - brand_logo_64 {string} - Base64-encoded brand logo
+ *   - ribbon_image {string} - URL to ribbon decoration
+ *   - ribbon_image_64 {string} - Base64-encoded ribbon image
+ *   - award_image {string} - URL to award image
+ *   - award_image_64 {string} - Base64-encoded award image
+ *   - instructor_name {string} - Instructor's name
+ *   - instructor_signature {string|undefined} - URL to signature (if available)
+ *   - instructor_signature_64 {string|undefined} - Base64-encoded signature
+ *
+ * @throws {Error} If award is not found or not completed
+ *
+ * @platform Web only - This function uses browser-only APIs (FileReader, Blob).
+ * For React Native implementation, see the React Native section below.
+ *
+ * @example Generate certificate PDF (Web)
+ * const cert = await fetchCertificate('abc-123')
+ * generatePDF({
+ *   userName: cert.user_name,
+ *   awardTitle: cert.title,
+ *   completedAt: new Date(cert.completed_at).toLocaleDateString(),
+ *   message: cert.message,
+ *   brandLogo: `data:image/png;base64,${cert.brand_logo_64}`,
+ *   signature: cert.instructor_signature_64
+ *     ? `data:image/png;base64,${cert.instructor_signature_64}`
+ *     : null
+ * })
+ *
+ * @example Display certificate preview (Web)
+ * const cert = await fetchCertificate(awardId)
+ * return (
+ *   <CertificatePreview
+ *     userName={cert.user_name}
+ *     awardTitle={cert.title}
+ *     message={cert.message}
+ *     awardImage={`data:image/png;base64,${cert.award_image_64}`}
+ *     instructorName={cert.instructor_name}
+ *     signature={cert.instructor_signature_64}
+ *   />
+ * )
+ *
+ * @example React Native Implementation
+ * // This function is NOT compatible with React Native due to FileReader/Blob APIs.
+ * // For React Native, implement certificate generation using:
+ * //
+ * // 1. Use react-native-blob-util for base64 image conversion:
+ * //    import ReactNativeBlobUtil from 'react-native-blob-util'
+ * //    const base64 = await ReactNativeBlobUtil.fetch('GET', imageUrl)
+ * //      .then(res => res.base64())
+ * //
+ * // 2. Use react-native-html-to-pdf for PDF generation:
+ * //    import RNHTMLtoPDF from 'react-native-html-to-pdf'
+ * //    const pdf = await RNHTMLtoPDF.convert({
+ * //      html: certificateHtmlTemplate,
+ * //      fileName: `certificate-${awardId}`,
+ * //      directory: 'Documents',
+ * //    })
+ * //
+ * // 3. Build certificate data using getContentAwards() or getCompletedAwards()
+ * //    which ARE React Native compatible, then handle image conversion
+ * //    and PDF generation in your RN app layer.
  */
-export async function fetchAwardsForUser(
-  userId?: number,
-  _brand?: string,
-  page: number = 1,
-  limit: number = 5
-): Promise<PaginatedResponse<Award>> {
-  if (!userId) {
-    userId = Number.parseInt(globalConfig.sessionConfig.userId)
+export async function fetchCertificate(awardId: string): Promise<Certificate> {
+  const { buildCertificateData } = await import('../awards/internal/certificate-builder')
+  const { urlMapToBase64 } = await import('../awards/internal/image-utils')
+
+  const certData = await buildCertificateData(awardId)
+
+  const imageMap = {
+    ribbon_image_64: certData.ribbonImage,
+    award_image_64: certData.awardImage,
+    musora_bg_logo_64: certData.musoraBgLogo,
+    brand_logo_64: certData.brandLogo,
+    musora_logo_64: certData.musoraLogo,
+    ...(certData.instructorSignature && { instructor_signature_64: certData.instructorSignature })
   }
 
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  const response = await httpClient.get<PaginatedResponse<Award>>(
-    `${baseUrl}/v1/users/${userId}/awards?limit=${limit}&page=${page}`
-  )
+  const base64Images = await urlMapToBase64(imageMap)
 
-  return response
-}
-
-/**
- * Get award progress for the guided course lesson for the authorized user.
- *
- * NOTE: needs error handling for the response from http client
- * (Alexandre: I'm doing it in a different branch/PR: https://github.com/railroadmedia/musora-content-services/pull/349)
- * NOTE: This function still expects brand because FE passes the argument. It is ignored for now
- *
- * @param {number} guidedCourseLessonId - The guided course lesson Id
- * @returns {Promise<Award>} - The award data for a given award and given user.
- * @throws {HttpError} - If the HTTP request fails.
- */
-export async function getAwardDataForGuidedContent(guidedCourseLessonId: number): Promise<Award> {
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  const response = await httpClient.get<Award>(
-    `${baseUrl}/v1/users/guided_course_award/${guidedCourseLessonId}`
-  )
-
-  return response
-}
-
-/**
- * Get certificate data for a completed user award
- *
- * NOTE: needs error handling for the response from http client
- * (Alexandre: I'm doing it in a different branch/PR: https://github.com/railroadmedia/musora-content-services/pull/349)
- * NOTE: This function still expects brand because FE passes the argument. It is ignored for now
- *
- * @param {number} userAwardId - The user award progress id
- * @returns {Promise<Certificate>} - The certificate data for the completed user award.
- * @throws {HttpError} - If the HTTP request fails.
- */
-export async function fetchCertificate(userAwardId: number): Promise<Certificate> {
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  const response = await httpClient.get<Certificate>(
-    `${baseUrl}/v1/users/certificate/${userAwardId}`
-  )
-  return response
+  return {
+    award_id: awardId,
+    user_name: certData.userName,
+    user_id: certData.userId,
+    completed_at: certData.completedAt,
+    message: certData.certificateMessage,
+    type: certData.awardType,
+    title: certData.awardTitle,
+    musora_logo: certData.musoraLogo,
+    musora_logo_64: base64Images.musora_logo_64,
+    musora_bg_logo: certData.musoraBgLogo,
+    musora_bg_logo_64: base64Images.musora_bg_logo_64,
+    brand_logo: certData.brandLogo,
+    brand_logo_64: base64Images.brand_logo_64,
+    ribbon_image: certData.ribbonImage,
+    ribbon_image_64: base64Images.ribbon_image_64,
+    award_image: certData.awardImage,
+    award_image_64: base64Images.award_image_64,
+    instructor_name: certData.instructorName,
+    instructor_signature: certData.instructorSignature,
+    instructor_signature_64: base64Images.instructor_signature_64
+  }
 }
