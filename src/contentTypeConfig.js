@@ -190,15 +190,8 @@ export const childContentTypeConfig = {
 }
 
 export const singleLessonTypes = ['quick-tips', 'rudiment']
-export const practiceAlongsLessonTypes = ['workout'] // challenges ->workouts
+export const practiceAlongsLessonTypes = ['workout']
 export const performancesLessonTypes = ['performance']
-export const documentariesLessonTypes = [
-  'tama',
-  'sonor',
-  'history-of-electronic-drums',
-  'paiste-cymbals',
-  'backstage-secret',
-]
 export const liveArchivesLessonTypes = [
   'podcast',
   'coach-stream',
@@ -233,16 +226,18 @@ export const skillLessonTypes = ['skill-pack']
 
 export const showsLessonTypes = [
   'boot-camp',
-  'diy-drum-experiment',
-  'exploring-beats',
-  'in-rhythm',
-  'rhythmic-adventures-of-captain-carson',
-  'rhythms-from-another-planet',
   'study-the-greats',
+  // TODO these require clearing the information with Chris, they weren't part of the old system, but are part of the migration document as SHOWS
+  // 'gear-guide',
+  // 'odd-times',
+  // 'podcast',
+  // 'spotlight',
+  // 'study-the-greats',
+  // 'performance',
 ]
 export const entertainmentLessonTypes = [
-  'specials', // TODO: new type
-  ...documentariesLessonTypes,
+  'special',
+  'documentary-lesson',
   ...showsLessonTypes,
 ]
 export const collectionLessonTypes = [...coursesLessonTypes, ...showsLessonTypes]
@@ -253,7 +248,7 @@ export const lessonTypesMapping = {
   'live archives': liveArchivesLessonTypes,
   performances: performancesLessonTypes,
   'student archives': studentArchivesLessonTypes,
-  documentaries: documentariesLessonTypes,
+  documentaries: ['documentary-lesson'],
   courses: ['course'],
   'guided courses': ['guided-course'],
   'tiered courses': ['tiered-course'],
@@ -294,7 +289,7 @@ export const progressTypesMapping = {
     ...liveArchivesLessonTypes,
     ...performancesLessonTypes,
     ...studentArchivesLessonTypes,
-    ...documentariesLessonTypes,
+    'documentary-lesson',
     'live',
     'pack-bundle-lesson',
   ],
@@ -631,7 +626,7 @@ export let contentTypeConfig = {
   live: { ...contentWithInstructorsField, slug: 'live-streams' },
   solo: { ...contentWithInstructorsField, slug: 'solos' },
   'boot-camp': contentWithInstructorsField,
-  'gear-guids': contentWithInstructorsField,
+  'gear-guide': contentWithInstructorsField,
   performance: contentWithInstructorsField,
   challenges: contentWithInstructorsField,
   'on-the-road': contentWithInstructorsField,
