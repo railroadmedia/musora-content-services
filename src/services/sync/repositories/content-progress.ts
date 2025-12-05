@@ -23,9 +23,14 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     )
   }
 
-  async completedByContentIds(contentIds: number[]) {
+  async completedByContentIds(
+    contentIds: number[],
+    collection: { type: COLLECTION_TYPE; id: number } | null = null
+  ) {
     return this.queryAll(
       Q.where('content_id', Q.oneOf(contentIds)),
+      Q.where('collection_type', collection?.type ?? null),
+      Q.where('collection_id', collection?.id ?? null),
       Q.where('state', STATE.COMPLETED)
     )
   }
@@ -131,7 +136,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       ])
     }).then(([progressEventsModule, { globalConfig }]) => {
       progressEventsModule.emitProgressSaved({
-        userId: globalConfig.railcontentConfig?.userId || 0,
+        userId: Number(globalConfig.railcontentConfig?.userId) || 0,
         contentId,
         progressPercent: progressPct,
         progressStatus: progressPct === 100 ? STATE.COMPLETED : STATE.STARTED,
