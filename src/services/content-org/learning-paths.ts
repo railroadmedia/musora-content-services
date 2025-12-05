@@ -244,17 +244,12 @@ export async function fetchLearningPathLessons(
  * including other learning paths and a la carte progress.
  *
  * @param {number[]} contentIds The array of content IDs within the learning path
- * @returns {Promise<Object>} Object with content IDs as keys and the progress state as values
+ * @returns {Promise<number[]>} Array with completed content IDs
  */
-export async function fetchLearningPathProgressCheckLessons(contentIds: number[]): Promise<Object> {
+export async function fetchLearningPathProgressCheckLessons(contentIds: number[]): Promise<number[]> {
   let query = await getAllCompletedByIds(contentIds)
-  let completedLessons = query.data.map(lesson => lesson.content_id)
-
-  return contentIds.reduce((obj, contentId) => {
-    let lessonIsCompleted = completedLessons.includes(contentId)
-    obj[contentId] = lessonIsCompleted ? STATE.COMPLETED : ""
-    return obj
-  }, {})
+  let completedProgress = query.data.map(progress => progress.content_id)
+  return contentIds.filter(contentId => completedProgress.includes(contentId))
 }
 
 interface completeMethodIntroVideo {

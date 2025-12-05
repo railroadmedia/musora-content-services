@@ -40,7 +40,7 @@ import dayjs from 'dayjs'
 import { addContextToContent } from './contentAggregator.js'
 import { getMethodCard } from './progress-row/method-card.js'
 import { db, Q } from './sync'
-import {COLLECTION_TYPE} from "./sync/models/ContentProgress.js";
+import {COLLECTION_TYPE} from "./sync/models/ContentProgress";
 
 const DATA_KEY_PRACTICES = 'practices'
 

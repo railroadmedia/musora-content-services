@@ -12,7 +12,7 @@ export let globalConfig = {
   localStorage: null,
   isMA: false,
   localTimezoneString: null, // In format: America/Vancouver
-  permissionsVersion: 'v1', // 'v1' or 'v2'
+  permissionsVersion: 'v2', // 'v1' or 'v2'
 }
 
 /**
