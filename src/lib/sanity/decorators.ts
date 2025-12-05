@@ -8,6 +8,14 @@ const enum FieldName {
   PageType = 'page_type',
 }
 
+export interface PageTypeDecorated {
+  [FieldName.PageType]?: string
+}
+
+export interface NeedAccessDecorated {
+  [FieldName.NeedAccess]?: boolean
+}
+
 export function contentDecorator<T>(
   result: T,
   fieldName: FieldName,
@@ -46,12 +54,13 @@ export function contentListDecorator<T>(
   return results as SanityListResponse<T & { [key in FieldName]?: any }>
 }
 
-export function pageTypeDecorator<T>(results: T): T & { [FieldName.PageType]?: string }
+export function pageTypeDecorator<T>(results: T): T & PageTypeDecorated
 export function pageTypeDecorator<T>(
   results: SanityListResponse<T> | T
-):
-  | SanityListResponse<T & { [FieldName.PageType]?: string }>
-  | (T & { [FieldName.PageType]?: string }) {
+): SanityListResponse<T & PageTypeDecorated>
+export function pageTypeDecorator<T>(
+  results: SanityListResponse<T> | T
+): SanityListResponse<T & PageTypeDecorated> | (T & PageTypeDecorated) {
   const decorator = function (content: any): string {
     return SONG_TYPES_WITH_CHILDREN.includes(content['type']) ? 'song' : 'lesson'
   }
@@ -60,25 +69,26 @@ export function pageTypeDecorator<T>(
     return contentListDecorator(results as SanityListResponse<T>, FieldName.PageType, decorator)
   }
 
-  return contentDecorator(results, FieldName.PageType, decorator) as T & {
-    [FieldName.PageType]?: string
-  }
+  return contentDecorator(results, FieldName.PageType, decorator) as T & PageTypeDecorated
 }
 
 export function needsAccessDecorator<T>(
   results: SanityListResponse<T> | T,
   userPermissions: UserPermissions,
   adapter: PermissionsAdapter
-): T & { [FieldName.NeedAccess]?: boolean }
+): T & NeedAccessDecorated
+export function needsAccessDecorator<T>(
+  results: SanityListResponse<T>,
+  userPermissions: UserPermissions,
+  adapter: PermissionsAdapter
+): SanityListResponse<T & NeedAccessDecorated>
 export function needsAccessDecorator<T>(
   results: SanityListResponse<T> | T,
   userPermissions: UserPermissions,
   adapter: PermissionsAdapter
-):
-  | SanityListResponse<T & { [FieldName.NeedAccess]?: boolean }>
-  | (T & { [FieldName.NeedAccess]?: boolean }) {
+): SanityListResponse<T & { [FieldName.NeedAccess]?: boolean }> | (T & NeedAccessDecorated) {
   if (globalConfig.sanityConfig.useDummyRailContentMethods) {
-    return results as T & { [FieldName.NeedAccess]?: boolean }
+    return results as T & NeedAccessDecorated
   }
 
   const decorator = function (content: any) {
