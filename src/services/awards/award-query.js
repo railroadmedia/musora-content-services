@@ -6,6 +6,7 @@ import './types.js'
 import { awardDefinitions } from './internal/award-definitions'
 import { AwardMessageGenerator } from './internal/message-generator'
 import db from '../sync/repository-proxy'
+import UserAwardProgressRepository from '../sync/repositories/user-award-progress'
 
 function enhanceCompletionData(completionData) {
   if (!completionData) return null
@@ -68,9 +69,9 @@ export async function getContentAwards(contentId) {
         brand: def.brand,
         instructorName: def.instructor_name,
         progressPercentage: userProgress?.progress_percentage ?? 0,
-        isCompleted: userProgress?.isCompleted ?? false,
+        isCompleted: userProgress ? UserAwardProgressRepository.isCompleted(userProgress) : false,
         completedAt: userProgress?.completed_at
-          ? new Date(userProgress.completed_at * 1000).toISOString()
+          ? new Date(userProgress.completed_at).toISOString()
           : null,
         completionData
       }

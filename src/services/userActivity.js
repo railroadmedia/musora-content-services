@@ -17,7 +17,6 @@ import {
   fetchShows,
 } from './sanity'
 import { fetchPlaylist, fetchUserPlaylists } from './content-org/playlists'
-import { guidedCourses } from './content-org/guided-courses'
 import {
   getMonday,
   getWeekNumber,

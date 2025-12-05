@@ -52,16 +52,4 @@ export default class UserAwardProgress extends BaseModel<{
   set completion_data(value: CompletionData | null) {
     this._setRaw('completion_data', value ? JSON.stringify(value) : null)
   }
-
-  get isCompleted(): boolean {
-    return this.completed_at !== null && this.progress_percentage === 100
-  }
-
-  get isInProgress(): boolean {
-    return this.progress_percentage > 0 && !this.isCompleted
-  }
-
-  get completedAtDate(): Date | null {
-    return this.completed_at ? new Date(this.completed_at) : null
-  }
 }

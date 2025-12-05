@@ -1,7 +1,7 @@
-import { Q } from '@nozbe/watermelondb'
 import { awardManager } from './award-manager'
 import { awardDefinitions } from './award-definitions'
 import { onProgressSaved } from '../../progress-events'
+import { COLLECTION_TYPE } from '../../sync/models/ContentProgress'
 
 
 class ContentProgressObserver {
@@ -26,6 +26,9 @@ class ContentProgressObserver {
 
     this.allChildIds.clear()
     for (const award of allAwards) {
+      if (award.content_id) {
+        this.allChildIds.add(award.content_id)
+      }
       if (award.child_ids) {
         award.child_ids.forEach(childId => this.allChildIds.add(childId))
       }
@@ -62,7 +65,7 @@ class ContentProgressObserver {
       const allAwards = await awardDefinitions.getAll()
       let parentAwards = []
 
-      const isLearningPathContext = collectionType === 'learning-path-v2' && collectionId
+      const isLearningPathContext = collectionType === COLLECTION_TYPE.LEARNING_PATH && collectionId
       if (isLearningPathContext) {
         parentAwards = allAwards.filter(award => {
           return award.child_ids?.includes(childContentId) &&
