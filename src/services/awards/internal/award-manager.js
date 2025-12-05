@@ -3,26 +3,23 @@ import { awardEvents } from './award-events'
 import { generateCompletionData } from './completion-data-generator'
 import { AwardMessageGenerator } from './message-generator'
 import db from '../../sync/repository-proxy'
-import { COLLECTION_TYPE } from '../../sync/models/ContentProgress'
+import { STATE, COLLECTION_TYPE } from '../../sync/models/ContentProgress'
+import {getProgressStateByIds} from "../../contentProgress.js";
 
 async function getCompletionStates(contentIds, collection = null) {
-  return Promise.all(
-    contentIds.map(async (id) => {
-      const progress = await db.contentProgress.getOneProgressByContentId(id, { collection })
-      return {
-        id,
-        completed: progress.data?.state === 'completed'
-      }
-    })
-  )
+  const progress = await getProgressStateByIds(contentIds, collection)
+
+  return contentIds.map(id => {
+    return {
+      id,
+      completed: progress[id] === STATE.COMPLETED
+    }
+  })
 }
 
 function getCollectionFromAward(award) {
   if (award.content_type === COLLECTION_TYPE.LEARNING_PATH && award.content_id) {
     return { type: COLLECTION_TYPE.LEARNING_PATH, id: award.content_id }
-  }
-  if (award.content_type === COLLECTION_TYPE.GUIDED_COURSE && award.content_id) {
-    return { type: COLLECTION_TYPE.GUIDED_COURSE, id: award.content_id }
   }
   return null
 }

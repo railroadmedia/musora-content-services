@@ -1,9 +1,5 @@
 import { emitProgressSaved } from '../../../src/services/progress-events'
-
-export const COLLECTION_TYPE = {
-  LEARNING_PATH: 'learning-path-v2',
-  GUIDED_COURSE: 'guided-course'
-}
+import { COLLECTION_TYPE } from '../../../src/services/sync/models/ContentProgress'
 
 export const emitProgress = ({
   contentId,
@@ -30,15 +26,6 @@ export const emitLearningPathProgress = (contentId, learningPathId, progressPerc
     contentId,
     collectionType: COLLECTION_TYPE.LEARNING_PATH,
     collectionId: learningPathId,
-    progressPercent
-  })
-}
-
-export const emitGuidedCourseProgress = (contentId, courseId, progressPercent = 100) => {
-  emitProgress({
-    contentId,
-    collectionType: COLLECTION_TYPE.GUIDED_COURSE,
-    collectionId: courseId,
     progressPercent
   })
 }
