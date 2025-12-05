@@ -10,6 +10,11 @@ import { COLLECTION_TYPE } from '../sync/models/ContentProgress'
 
 export async function getMethodCard(brand) {
   const introVideo = await fetchMethodV2IntroVideo(brand)
+
+  if (!introVideo) {
+    return null
+  }
+
   const introVideoProgressState = await getProgressState(introVideo?.id)
 
   const activeLearningPath = await getActivePath(brand)

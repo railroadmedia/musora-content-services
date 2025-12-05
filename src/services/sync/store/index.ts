@@ -244,15 +244,39 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         const existing = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids))))
         const existingMap = existing.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
 
-        const destroyedBuilds = existing.filter(record => record._raw._status === 'deleted').map(record => {
-          return new this.model(this.collection, { id: record.id }).prepareDestroyPermanently()
+        const destroyedBuilds = []
+        const recreateBuilds: Array<{ id: RecordId; created_at: number; builder: (record: TModel) => void }> = []
+
+        existing.forEach(record => {
+          if (record._raw._status === 'deleted') {
+            destroyedBuilds.push(new this.model(this.collection, { id: record.id }).prepareDestroyPermanently())
+          } else if (record._raw._status === 'created' && builders[record.id]) {
+            // Workaround for WatermelonDB bug: prepareUpdate() doesn't commit field changes
+            // for records with _status='created'. Destroy and recreate to ensure updates persist.
+            destroyedBuilds.push(new this.model(this.collection, { id: record.id }).prepareDestroyPermanently())
+            recreateBuilds.push({
+              id: record.id,
+              created_at: record._raw.created_at as number,
+              builder: builders[record.id]
+            })
+          }
         })
+
         const newBuilds = Object.entries(builders).map(([id, builder]) => {
           const existing = existingMap.get(id)
+          const recreate = recreateBuilds.find(r => r.id === id)
 
-          if (existing && existing._raw._status !== 'deleted') {
+          if (recreate) {
+            return this.collection.prepareCreate(record => {
+              record._raw.id = id
+              record._raw.created_at = recreate.created_at
+              record._raw.updated_at = this.generateTimestamp()
+              record._raw._status = 'created'
+              builder(record)
+            })
+          } else if (existing && existing._raw._status !== 'deleted' && existing._raw._status !== 'created') {
             return existing.prepareUpdate(builder)
-          } else {
+          } else if (!existing || existing._raw._status === 'deleted') {
             return this.collection.prepareCreate(record => {
               const now = this.generateTimestamp()
 
@@ -262,7 +286,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
               builder(record)
             })
           }
-        })
+          return null
+        }).filter((build): build is ReturnType<typeof this.collection.prepareCreate> => build !== null)
 
         await writer.batch(...destroyedBuilds)
         await writer.batch(...newBuilds)
