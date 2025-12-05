@@ -2,11 +2,15 @@
  * @module Genre
  */
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
-import { fetchSanity, getSortOrder } from '../sanity.js'
 import { FilterBuilder } from '../../filterBuilder.js'
+import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
+import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
+import { Brand } from '../../lib/brands'
+import { DocumentType } from '../../lib/documents'
+import { getSortOrder } from '../../lib/sanity/query'
 import { Lesson } from './content'
-import { buildDataAndTotalQuery } from '../../lib/sanity/query'
-import { Brands } from '../../lib/brands'
+
+const contentClient = new ContentClient()
 
 export interface Genre {
   name: string
@@ -15,39 +19,41 @@ export interface Genre {
   thumbnail: string
 }
 
+export interface Genres extends SanityListResponse<Genre> {}
+
 /**
  * Fetch all genres with lessons available for a specific brand.
  *
- * @param {Brands|string} [brand] - The brand for which to fetch the genre for. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Genre[]>} - A promise that resolves to an genre object or null if not found.
+ * @param {Brand|string} [brand] - The brand for which to fetch the genre for. Lesson count will be filtered by this brand if provided.
+ * @returns {Promise<Genres>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenres('drumeo')
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenres(brand: Brands | string): Promise<Genre[]> {
+export async function fetchGenres(brand: Brand | string): Promise<Genres> {
   const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
 
-  const query = `
-  *[_type == 'genre'] {
-    'type': _type,
-    name,
-    "slug": slug.current,
-    'thumbnail': thumbnail_url.asset->url,
-    "lessons_count": count(*[${filter}])
-  } |order(lower(name)) `
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+  return contentClient.fetchByTypeAndBrand<Genre>(DocumentType.Genre, brand, {
+    fields: [
+      `name`,
+      `'slug': slug.current`,
+      `'thumbnail': thumbnail_url.asset->url`,
+      `'lessons_count': count(*[${filter}])`,
+    ],
+    paginated: false,
+  })
 }
 
 /**
  * Fetch a single genre by their slug and brand
  *
  * @param {string} slug - The slug of the genre to fetch.
- * @param {Brands|string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Genre[]|null>} - A promise that resolves to an genre object or null if not found.
+ * @param {Brand|string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
+ * @returns {Promise<Genre|null>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenreBySlug('drumeo')
@@ -56,7 +62,7 @@ export async function fetchGenres(brand: Brands | string): Promise<Genre[]> {
  */
 export async function fetchGenreBySlug(
   slug: string,
-  brand?: Brands | string
+  brand?: Brand | string
 ): Promise<Genre | null> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
@@ -64,14 +70,13 @@ export async function fetchGenreBySlug(
   }).buildFilter()
 
   const query = `
-  *[_type == 'genre' && slug.current == '${slug}'] {
-    'type': _type, name,
+  *[_type == '${DocumentType.Genre}' && slug.current == '${slug}'] {
     name,
     "slug": slug.current,
     'thumbnail':thumbnail_url.asset->url,
     "lessonsCount": count(*[${filter}])
   }`
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+  return contentClient.fetchSingle<Genre>(query)
 }
 
 export interface FetchGenreLessonsOptions {
@@ -83,15 +88,13 @@ export interface FetchGenreLessonsOptions {
   progressIds?: Array<number>
 }
 
-export interface LessonsByGenreResponse {
-  data: Lesson[]
-  total: number
-}
+export interface GenreLessons extends SanityListResponse<Lesson> {}
 
 /**
  * Fetch the genre's lessons.
  * @param {string} slug - The slug of the genre
- * @param {Brands|string} brand - The brand for which to fetch lessons.
+ * @param {Brand|string} brand - The brand for which to fetch lessons.
+ * @param {DocumentType} contentType - The content type to filter lessons by.
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
  * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
@@ -99,7 +102,7 @@ export interface LessonsByGenreResponse {
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  * @param {Array<number>} [params.progressIds=[]] - The ids of the lessons that are in progress or completed
- * @returns {Promise<LessonsByGenreResponse|null>} - The lessons for the genre
+ * @returns {Promise<GenreLessons>} - The lessons for the genre
  *
  * @example
  * fetchGenreLessons('Blues', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
@@ -108,8 +111,8 @@ export interface LessonsByGenreResponse {
  */
 export async function fetchGenreLessons(
   slug: string,
-  brand: Brands | string,
-  contentType?: string,
+  brand: Brand | string,
+  contentType?: DocumentType,
   {
     sort = '-published_on',
     searchTerm = '',
@@ -118,7 +121,7 @@ export async function fetchGenreLessons(
     includedFields = [],
     progressIds = [],
   }: FetchGenreLessonsOptions = {}
-): Promise<LessonsByGenreResponse | null> {
+): Promise<GenreLessons> {
   const fieldsString = getFieldsForContentType(contentType) as string
   const start = (page - 1) * limit
   const end = start + limit
@@ -127,14 +130,14 @@ export async function fetchGenreLessons(
   const addType = contentType ? `_type == '${contentType}' && ` : ''
   const progressFilter =
     progressIds.length > 0 ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
-  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='genre' && slug.current == '${slug}']._id) ${progressFilter}`
+  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='${DocumentType.Genre}' && slug.current == '${slug}']._id) ${progressFilter}`
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
+  sort = getSortOrder(sort, brand as Brand)
 
-  sort = getSortOrder(sort, brand)
-  const query = buildDataAndTotalQuery(filterWithRestrictions, fieldsString, {
-    sort: sort,
-    start: start,
-    end: end,
+  return contentClient.fetchList<Lesson>(filterWithRestrictions, fieldsString, {
+    sort,
+    start,
+    end,
+    paginated: false,
   })
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
