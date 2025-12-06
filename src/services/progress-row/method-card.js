@@ -84,15 +84,15 @@ export async function getMethodCard(brand) {
       action = nextLesson
         ? getMethodActionCTA(nextLesson)
         : {
-            type: 'lessons',
-            brand: brand,
+            type: 'method',
+            brand,
           }
     }
 
     let maxProgressTimestamp = Math.max(
       ...learningPath?.children.map((lesson) => lesson.progressTimestamp)
     )
-    
+
     if (!maxProgressTimestamp) {
       maxProgressTimestamp = learningPath.active_learning_path_created_at
     }
