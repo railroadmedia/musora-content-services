@@ -58,12 +58,16 @@ export async function fetchGenres(
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
+export interface GenreBySlug {
+  data: Genre | null
+}
+
 /**
  * Fetch a single genre by their slug and brand
  *
  * @param {string} slug - The slug of the genre to fetch.
  * @param {Brands|string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Genre[]|null>} - A promise that resolves to an genre object or null if not found.
+ * @returns {Promise<GenreBySlug>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenreBySlug('drumeo')
@@ -73,7 +77,7 @@ export async function fetchGenres(
 export async function fetchGenreBySlug(
   slug: string,
   brand?: Brands | string
-): Promise<Genre | null> {
+): Promise<GenreBySlug> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
     bypassPermissions: true,
@@ -92,16 +96,13 @@ export async function fetchGenreBySlug(
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
-export interface FetchGenreLessonsOptions {
-  sort?: string
+export interface GenreLessonsOptions extends BuildQueryOptions {
   searchTerm?: string
-  page?: number
-  limit?: number
   includedFields?: Array<string>
   progressIds?: Array<number>
 }
 
-export interface LessonsByGenreResponse {
+export interface GenreLessons {
   data: Lesson[]
   total: number
 }
@@ -117,7 +118,7 @@ export interface LessonsByGenreResponse {
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  * @param {Array<number>} [params.progressIds=[]] - The ids of the lessons that are in progress or completed
- * @returns {Promise<LessonsByGenreResponse|null>} - The lessons for the genre
+ * @returns {Promise<GenreLessons|null>} - The lessons for the genre
  *
  * @example
  * fetchGenreLessons('Blues', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
@@ -131,15 +132,14 @@ export async function fetchGenreLessons(
   {
     sort = '-published_on',
     searchTerm = '',
-    page = 1,
+    offset = 1,
     limit = 10,
     includedFields = [],
     progressIds = [],
-  }: FetchGenreLessonsOptions = {}
-): Promise<LessonsByGenreResponse | null> {
+    paginated = false,
+  }: GenreLessonsOptions = {}
+): Promise<GenreLessons> {
   const fieldsString = getFieldsForContentType(contentType) as string
-  const start = (page - 1) * limit
-  const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
   const addType = contentType ? `_type == '${contentType}' && ` : ''
@@ -150,9 +150,10 @@ export async function fetchGenreLessons(
 
   sort = getSortOrder(sort, brand)
   const query = buildDataAndTotalQuery(filterWithRestrictions, fieldsString, {
-    sort: sort,
-    start: start,
-    end: end,
+    sort,
+    offset,
+    limit,
+    paginated,
   })
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }

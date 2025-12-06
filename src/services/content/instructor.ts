@@ -64,12 +64,16 @@ export async function fetchInstructors(
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
+export interface FetchInstructorBySlug {
+  data: Instructor | null
+}
+
 /**
  * Fetch a single instructor by their name
  *
  * @param {string} slug - The slug of the instructor to fetch.
  * @param {Brands|string} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Instructor[]>} - A promise that resolves to an instructor object or null if not found.
+ * @returns {Promise<Instructor>} - A promise that resolves to an instructor object or null if not found.
  *
  * @example
  * fetchInstructorBySlug('66samus', 'drumeo')
@@ -79,7 +83,7 @@ export async function fetchInstructors(
 export async function fetchInstructorBySlug(
   slug: string,
   brand?: Brands | string
-): Promise<Instructor | null> {
+): Promise<FetchInstructorBySlug> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
     bypassPermissions: true,
@@ -98,15 +102,12 @@ export async function fetchInstructorBySlug(
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
-export interface FetchInstructorLessonsOptions {
-  sortOrder?: string
+export interface InstructorLessonsOptions extends BuildQueryOptions {
   searchTerm?: string
-  page?: number
-  limit?: number
   includedFields?: Array<string>
 }
 
-export interface InstructorLessonsResponse {
+export interface InstructorLessons {
   data: Lesson[]
   total: number
 }
@@ -123,7 +124,7 @@ export interface InstructorLessonsResponse {
  * @param {number} [options.limit=10] - The number of items per page.
  * @param {Array<string>} [options.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  *
- * @returns {Promise<InstructorLessonsResponse>} - The lessons for the instructor or null if not found.
+ * @returns {Promise<InstructorLessons>} - The lessons for the instructor or null if not found.
  * @example
  * fetchInstructorLessons('instructor123')
  *   .then(lessons => console.log(lessons))
@@ -133,26 +134,26 @@ export async function fetchInstructorLessons(
   slug: string,
   brand: Brands | string,
   {
-    sortOrder = '-published_on',
+    sort = '-published_on',
     searchTerm = '',
-    page = 1,
+    offset = 1,
     limit = 20,
     includedFields = [],
-  }: FetchInstructorLessonsOptions = {}
-): Promise<InstructorLessonsResponse> {
+    paginated = false,
+  }: InstructorLessonsOptions = {}
+): Promise<InstructorLessons> {
   const fieldsString = getFieldsForContentType() as string
-  const start = (page - 1) * limit
-  const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
   const filter = `brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='instructor' && slug.current == '${slug}']._id)`
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
-  sortOrder = getSortOrder(sortOrder, brand)
+  sort = getSortOrder(sort, brand)
   const query = buildDataAndTotalQuery(filterWithRestrictions, fieldsString, {
-    sort: sortOrder,
-    start: start,
-    end: end,
+    sort,
+    offset,
+    limit,
+    paginated,
   })
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }

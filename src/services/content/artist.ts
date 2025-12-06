@@ -89,11 +89,8 @@ export async function fetchArtistBySlug(
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
-export interface ArtistLessonOptions {
-  sort?: string
+export interface ArtistLessonOptions extends BuildQueryOptions {
   searchTerm?: string
-  page?: number
-  limit?: number
   includedFields?: Array<string>
   progressIds?: Array<number>
 }
@@ -129,15 +126,14 @@ export async function fetchArtistLessons(
   {
     sort = '-published_on',
     searchTerm = '',
-    page = 1,
+    offset = 1,
     limit = 10,
     includedFields = [],
     progressIds = [],
+    paginated = false,
   }: ArtistLessonOptions = {}
 ): Promise<LessonsByArtistResponse | null> {
   const fieldsString = getFieldsForContentType(contentType) as string
-  const start = (page - 1) * limit
-  const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
   const addType = contentType ? `_type == '${contentType}' && ` : ''
@@ -149,8 +145,9 @@ export async function fetchArtistLessons(
   sort = getSortOrder(sort, brand)
   const query = buildDataAndTotalQuery(filterWithRestrictions, fieldsString, {
     sort,
-    start: start,
-    end: end,
+    offset,
+    limit,
+    paginated,
   })
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }

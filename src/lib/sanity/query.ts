@@ -1,7 +1,7 @@
 export interface BuildQueryOptions {
   sort?: string
-  start?: number
-  end?: number
+  offset?: number
+  limit?: number
   paginated?: boolean
   postQuery?: string
 }
@@ -41,8 +41,8 @@ export class QueryHelper {
   }
 
   static paginate(options: BuildQueryOptions): string {
-    return options.start && options.end && options.paginated
-      ? `[${options.start}...${options.start + options.end}]`
+    return options.offset && options.limit && options.paginated
+      ? `[${options.offset}...${options.offset + options.limit}]`
       : ``
   }
 
