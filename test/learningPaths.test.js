@@ -3,6 +3,8 @@ import {
   fetchLearningPathLessons,
   getEnrichedLearningPath,
   startLearningPath,
+  resetAllLearningPaths,
+  getActivePath,
 } from '../src/services/content-org/learning-paths.ts'
 import {
   contentStatusCompleted,
@@ -38,7 +40,7 @@ describe('learning-paths', function () {
   test('learningPathCompletion', async () => {
     const learningPathId = 435527
     await contentStatusReset(learningPathId)
-
+    await resetAllLearningPaths()
     await startLearningPath('drumeo', learningPathId)
     const collection = { type: 'learning-path-v2', id: learningPathId }
     const learningPath = await getEnrichedLearningPath(learningPathId)
@@ -61,5 +63,8 @@ describe('learning-paths', function () {
     expect(finalParentProgress[learningPathId]?.status).toBe('completed')
 
     await new Promise((resolve) => setTimeout(resolve, 5000))
-  })
+
+    const activePath = await getActivePath('drumeo')
+    expect(activePath.active_learning_path_id).toBe(435563)
+  }, 15000)
 })
