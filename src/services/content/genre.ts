@@ -5,7 +5,7 @@ import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.
 import { fetchSanity, getSortOrder } from '../sanity.js'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { Lesson } from './content'
-import { buildDataAndTotalQuery } from '../../lib/sanity/query'
+import { buildDataAndTotalQuery, BuildQueryOptions, QueryHelper } from '../../lib/sanity/query'
 import { Brands } from '../../lib/brands'
 
 export interface Genre {
@@ -26,19 +26,35 @@ export interface Genre {
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenres(brand: Brands | string): Promise<Genre[]> {
-  const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
+export async function fetchGenres(
+  brand: Brands | string,
+  options: BuildQueryOptions
+): Promise<Genre[]> {
+  const defaultOptions: BuildQueryOptions = {
+    sort: 'lower(name) asc',
+  }
+  options = { ...defaultOptions, ...options }
+
+  const lessonFilter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
 
+  const filter = `*[_type == "genre"]`
+
   const query = `
-  *[_type == 'genre'] {
-    'type': _type,
-    name,
-    "slug": slug.current,
-    'thumbnail': thumbnail_url.asset->url,
-    "lessons_count": count(*[${filter}])
-  } |order(lower(name)) `
+  {
+    "data": ${filter} {
+      name,
+      "slug": slug.current,
+      'thumbnail': thumbnail_url.asset->url,
+      "lessonCount": count(*[${lessonFilter}])
+    } [lessonCount > 0]
+    | ${QueryHelper.sort(options)} ${QueryHelper.paginate(options)},
+    "total": count(${filter} {
+        "lessonCount": count(*[${lessonFilter}])
+      } [lessonCount > 0]
+    )
+  }`
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
@@ -64,12 +80,14 @@ export async function fetchGenreBySlug(
   }).buildFilter()
 
   const query = `
-  *[_type == 'genre' && slug.current == '${slug}'] {
-    'type': _type, name,
-    name,
-    "slug": slug.current,
-    'thumbnail':thumbnail_url.asset->url,
-    "lessonsCount": count(*[${filter}])
+  {
+    "data": *[_type == 'genre' && slug.current == '${slug}'][0] {
+      'type': _type, name,
+      name,
+      "slug": slug.current,
+      'thumbnail':thumbnail_url.asset->url,
+      "lessonsCount": count(*[${filter}])
+    }
   }`
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }

@@ -3,7 +3,7 @@
  */
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
 import { FilterBuilder } from '../../filterBuilder.js'
-import { buildDataAndTotalQuery } from '../../lib/sanity/query'
+import { buildDataAndTotalQuery, BuildQueryOptions, QueryHelper } from '../../lib/sanity/query'
 import { fetchSanity, getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
 import { Brands } from '../../lib/brands'
@@ -26,18 +26,35 @@ export interface Artist {
  *   .then(artists => console.log(artists))
  *   .catch(error => console.error(error));
  */
-export async function fetchArtists(brand: Brands | string): Promise<Artist[] | null> {
-  const filter = await new FilterBuilder(
-    `_type == "song" && brand == "${brand}" && references(^._id)`,
-    { bypassPermissions: true }
-  ).buildFilter()
+export async function fetchArtists(
+  brand: Brands | string,
+  options: BuildQueryOptions
+): Promise<Artist[] | null> {
+  const defaultOptions: BuildQueryOptions = {
+    sort: 'lower(name) asc',
+  }
+  options = { ...defaultOptions, ...options }
+
+  const lessonFilter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
+    bypassPermissions: true,
+  }).buildFilter()
+
+  const filter = `*[_type == "artist"]`
+
   const query = `
-  *[_type == "artist"]{
-    name,
-    "slug": slug.current,
-    'thumbnail': thumbnail_url.asset->url,
-    "lessonCount": count(*[${filter}])
-  }[lessonCount > 0] |order(lower(name)) `
+  {
+    "data": ${filter} {
+      name,
+      "slug": slug.current,
+      'thumbnail': thumbnail_url.asset->url,
+      "lessonCount": count(*[${lessonFilter}])
+    } [lessonCount > 0]
+    | ${QueryHelper.sort(options)} ${QueryHelper.paginate(options)},
+    "total": count(${filter} {
+        "lessonCount": count(*[${lessonFilter}])
+      } [lessonCount > 0]
+    )
+  }`
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
@@ -62,11 +79,13 @@ export async function fetchArtistBySlug(
     bypassPermissions: true,
   }).buildFilter()
   const query = `
-  *[_type == "artist" && slug.current == '${slug}']{
-    name,
-    "slug": slug.current,
-    "lessonCount": count(*[${filter}])
-  }[lessonCount > 0] |order(lower(name)) `
+  {
+    "data": *[_type == "artist" && slug.current == '${slug}'][0] {
+      name,
+      "slug": slug.current,
+      "lessonCount": count(*[${filter}])
+    }
+  }`
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 

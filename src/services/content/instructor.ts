@@ -5,7 +5,7 @@ import { FilterBuilder } from '../../filterBuilder.js'
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
 import { fetchSanity, getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
-import { buildDataAndTotalQuery } from '../../lib/sanity/query'
+import { buildDataAndTotalQuery, BuildQueryOptions, QueryHelper } from '../../lib/sanity/query'
 import { Brands } from '../../lib/brands'
 
 export interface Instructor {
@@ -16,29 +16,51 @@ export interface Instructor {
   thumbnail: string
 }
 
+export interface Instructors {
+  data: Instructor[]
+  total: number
+}
+
 /**
  * Fetch all instructor with lessons available for a specific brand.
  *
  * @param {Brands|string} brand - The brand for which to fetch instructors.
- * @returns {Promise<Instructor[]>} - A promise that resolves to an array of instructor objects.
+ * @returns {Promise<Instructors>} - A promise that resolves to an array of instructor objects.
  *
  * @example
  * fetchInstructors('drumeo')
  *   .then(instructors => console.log(instructors))
  *   .catch(error => console.error(error));
  */
-export async function fetchInstructors(brand: Brands | string): Promise<Instructor[]> {
-  const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
+export async function fetchInstructors(
+  brand: Brands | string,
+  options: BuildQueryOptions
+): Promise<Instructor[]> {
+  const defaultOptions: BuildQueryOptions = {
+    sort: 'lower(name) asc',
+  }
+  options = { ...defaultOptions, ...options }
+  const lessonFilter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
 
+  const filter = `*[_type == "instructor"]`
+
   const query = `
-  *[_type == "instructor"] {
-    name,
-    "slug": slug.current,
-    'thumbnail': thumbnail_url.asset->url,
-    "lessonCount": count(*[${filter}])
-  }[lessonCount > 0] |order(lower(name)) `
+  {
+    "data": ${filter} {
+      name,
+      "slug": slug.current,
+      'thumbnail': thumbnail_url.asset->url,
+      "lessonCount": count(*[${lessonFilter}])
+    } [lessonCount > 0]
+    | ${QueryHelper.sort(options)} ${QueryHelper.paginate(options)},
+    "total": count(${filter} {
+        "lessonCount": count(*[${lessonFilter}])
+      } [lessonCount > 0]
+    )
+  }`
+
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
@@ -64,12 +86,14 @@ export async function fetchInstructorBySlug(
   }).buildFilter()
 
   const query = `
-  *[_type == "instructor" && slug.current == '${slug}'][0] {
-    name,
-    "slug": slug.current,
-    short_bio,
-    'thumbnail': thumbnail_url.asset->url,
-    "lessonCount": count(*[${filter}])
+  {
+    "data": *[_type == "instructor" && slug.current == '${slug}'][0] {
+      name,
+      "slug": slug.current,
+      short_bio,
+      'thumbnail': thumbnail_url.asset->url,
+      "lessonCount": count(*[${filter}])
+    }
   }`
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
