@@ -92,7 +92,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
   async getOneProgressByContentId(
     contentId: number,
-    { collection }: { collection?: CollectionParameter | null } = {}
+    collection: CollectionParameter | null = null
   ) {
     const clauses = [Q.where('content_id', contentId)]
     if (typeof collection != 'undefined') {
@@ -127,15 +127,9 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   async getSomeProgressByContentIdsAndCollection(tuples: ContentIdCollectionTuple[]) {
     const clauses = []
 
-    tuples.forEach((tuple) => {
-      clauses.push(
-          ...(tuple === tuples[0])
-              ? tupleClauses(tuple)
-              : [Q.or(...tupleClauses(tuple))]
-      )
-    })
+    clauses.push(...tuples.map(tuple => Q.and(...tupleClauses(tuple))))
 
-    return await this.queryAll(...clauses)
+    return await this.queryAll(Q.or(...clauses))
 
     function tupleClauses(tuple: ContentIdCollectionTuple) {
       return [

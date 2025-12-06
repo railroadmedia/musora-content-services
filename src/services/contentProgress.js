@@ -87,7 +87,7 @@ export async function getNavigateToForMethod(data) {
       } else {
         const childrenIds = content?.children.map(child => child.id) || []
         const childrenProgresses = await getProgressStateByIds(childrenIds, collection)
-        let navigateToId = childrenProgresses.find(id => childrenProgresses[id] !== STATE_COMPLETED) || null
+        let navigateToId = Object.keys(childrenProgresses).find(id => childrenProgresses[id] !== STATE_COMPLETED) || null
 
         if (navigateToId) {
           const navigateTo = content?.children.find(child => child.id === parseInt(navigateToId)) || null
@@ -246,11 +246,12 @@ export async function getProgressDataByIds(contentIds, collection) {
 // todo: warning: this doesnt work with having 2 items with same contentId but different collection, because
 //  of the response structure here with contentId as key
 export async function getProgressDataByIdsAndCollections(tuples) {
+  tuples = tuples.map(t => ({contentId: normalizeContentId(t.contentId), collection: normalizeCollection(t.collection)}))
   const progress = Object.fromEntries(tuples.map(item => [item.contentId, {
     last_update: 0,
     progress: 0,
     status: '',
-    collection: null,
+    collection: {},
   }]))
 
   await db.contentProgress.getSomeProgressByContentIdsAndCollection(tuples).then(r => {
@@ -259,7 +260,7 @@ export async function getProgressDataByIdsAndCollections(tuples) {
         last_update: p.updated_at,
         progress: p.progress_percent,
         status: p.state,
-        collection: {type: p.collection_type, id: p.collection_id}
+        collection: (p.collection_type && p.collection_id) ? {type: p.collection_type, id: p.collection_id} : null
       }
     })
   })
@@ -285,7 +286,9 @@ async function getByIds(contentIds, collection, dataKey, defaultValue) {
 }
 
 async function getByIdsAndCollections(tuples, dataKey, defaultValue) {
+  tuples = tuples.map(t => ({contentId: normalizeContentId(t.contentId), collection: normalizeCollection(t.collection)}))
   const progress = Object.fromEntries(tuples.map(tuple => [tuple.contentId, defaultValue]))
+
   await db.contentProgress.getSomeProgressByContentIdsAndCollection(tuples).then(r => {
     r.data.forEach(p => {
       progress[p.content_id] = p[dataKey] ?? defaultValue
@@ -566,7 +569,7 @@ function normalizeContentIds(contentIds) {
 function normalizeCollection(collection) {
   if (!collection) return null
 
-  if (COLLECTION_TYPE.indexOf(collection.type) === -1) {
+  if (!Object.values(COLLECTION_TYPE).includes(collection.type)) {
     throw new Error(`Invalid collection type: ${collection.type}`)
   }
   if (typeof collection.id === 'string' && isNaN(+collection.id)) {

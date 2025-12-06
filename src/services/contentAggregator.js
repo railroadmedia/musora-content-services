@@ -61,6 +61,7 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
   const lastArg = dataArgs[dataArgs.length - 1]
   const options = typeof lastArg === 'object' && !Array.isArray(lastArg) ? lastArg : {}
 
+  // todo: merge addProgressData with addResumeTimeSeconds to one watermelon call
   const {
     collection = null, // this is needed for different collection types like learning paths. has .id and .type
     dataField = null,
@@ -154,6 +155,7 @@ export async function addContextToMethodContent(dataPromise, ...dataArgs) {
   const lastArg = dataArgs[dataArgs.length - 1]
   const options = typeof lastArg === 'object' && !Array.isArray(lastArg) ? lastArg : {}
 
+  // todo: merge addProgressData with addResumeTimeSeconds to one watermelon call
   const {
     collection = null, // need only for when children ids are passed in. otherwise i'd remove
     dataField = null,
@@ -186,8 +188,6 @@ export async function addContextToMethodContent(dataPromise, ...dataArgs) {
   ).filter(obj => obj.contentId)
 
   const justIds = ids.map(obj => obj.contentId)
-
-  return [data, items, ids, justIds]
 
   const [
     progressData,
