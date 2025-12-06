@@ -28,13 +28,8 @@ export interface Genre {
  */
 export async function fetchGenres(
   brand: Brands | string,
-  options: BuildQueryOptions
+  options: BuildQueryOptions = { sort: 'lower(name) asc' }
 ): Promise<Genre[]> {
-  const defaultOptions: BuildQueryOptions = {
-    sort: 'lower(name) asc',
-  }
-  options = { ...defaultOptions, ...options }
-
   const lessonFilter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
