@@ -33,6 +33,10 @@ export default class SyncManager {
     }
   }
 
+  public static getInstanceOrNull() {
+    return SyncManager.instance
+  }
+
   public static getInstance(): SyncManager {
     if (!SyncManager.instance) {
       throw new SyncError('SyncManager not initialized')
