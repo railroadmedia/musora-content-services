@@ -173,7 +173,7 @@ export async function fetchLearningPathLessons(
   userDate: Date
 ) {
   const learningPath = await getEnrichedLearningPath(learningPathId)
-  let dailySession = await getDailySession(brand, userDate)
+  let dailySession = await getDailySession(brand, userDate) // what if the call just fails, and a DS does exist?
   if (!dailySession) {
     dailySession = await updateDailySession(brand, userDate, false)
   }
@@ -185,19 +185,22 @@ export async function fetchLearningPathLessons(
       is_active_learning_path: isActiveLearningPath,
     }
   }
+  // this assumes that the first entry is active_path, based on user flows
   const todayContentIds = dailySession.daily_session[0]?.content_ids || []
-  const previousLearningPathId = dailySession.daily_session[0]?.learning_path_id
+  const todayLearningPathId = dailySession.daily_session[0]?.learning_path_id
+
   const nextContentIds = dailySession.daily_session[1]?.content_ids || []
   const nextLearningPathId = dailySession.daily_session[1]?.learning_path_id
+
   const completedLessons = []
-  let todaysLessons = []
-  let nextLPLessons = []
+  let thisLPDailies = []
+  let nextLPDailies = []
   let previousLearningPathTodays = []
   const upcomingLessons = []
 
   learningPath.children.forEach((lesson: any) => {
     if (todayContentIds.includes(lesson.id)) {
-      todaysLessons.push(lesson)
+      thisLPDailies.push(lesson)
     } else if (lesson.progressStatus === 'completed') {
       completedLessons.push(lesson)
     } else {
@@ -205,20 +208,23 @@ export async function fetchLearningPathLessons(
     }
   })
 
-  if (todaysLessons.length == 0) {
+  if (thisLPDailies.length == 0) {
     // Daily sessions first lessons are not part of the active learning path, but next lessons are
     // load todays lessons from previous learning path
     previousLearningPathTodays = await getLearningPathLessonsByIds(
       todayContentIds,
-      previousLearningPathId
+      todayLearningPathId
     )
-  } else if (
+  } else if ( // show next LP dailies if they exist
     nextContentIds.length > 0
   ) {
     // Daily sessions first lessons are the active learning path and the next lessons are not
     // load next lessons from next learning path
-    // TODO: update item status to locked when the current learning path is not complete
-    nextLPLessons = await getLearningPathLessonsByIds(nextContentIds, nextLearningPathId)
+    const lessons = await getLearningPathLessonsByIds(nextContentIds, nextLearningPathId)
+    nextLPDailies = lessons.map(lesson => ({
+      ...lesson,
+      in_next_learning_path: STATE.COMPLETED === learningPath.progressStatus
+    }))
   }
 
 
@@ -229,8 +235,8 @@ export async function fetchLearningPathLessons(
     active_learning_path_id: dailySession?.active_learning_path_id,
     active_learning_path_created_at: dailySession?.active_learning_path_created_at,
     upcoming_lessons: upcomingLessons,
-    todays_lessons: todaysLessons,
-    next_learning_path_lessons: nextLPLessons,
+    todays_lessons: thisLPDailies,
+    next_learning_path_lessons: nextLPDailies,
     next_learning_path_id: nextLearningPathId,
     completed_lessons: completedLessons,
     previous_learning_path_todays: previousLearningPathTodays,
