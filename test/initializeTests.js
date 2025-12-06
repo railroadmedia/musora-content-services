@@ -1,5 +1,6 @@
 import { globalConfig, initializeService } from '../src'
 import { LocalStorageMock } from './localStorageMock'
+import { initializeSyncManager } from './sync/initialize-sync-manager'
 const railContentModule = require('../src/services/railcontent.js')
 let token = null
 let userId = process.env.RAILCONTENT_USER_ID ?? null
@@ -43,7 +44,7 @@ export async function initializeTestService(useLive = false, isAdmin = false) {
       baseUrl: process.env.RAILCONTENT_BASE_URL || 'https://test.musora.com',
       token: token,
       userId: userId,
-      authToken: token
+      authToken: token,
     },
     sessionConfig: { token: token, userId: userId, authToken: token },
     baseUrl: process.env.RAILCONTENT_BASE_URL,
@@ -51,9 +52,10 @@ export async function initializeTestService(useLive = false, isAdmin = false) {
     isMA: true,
   }
   initializeService(config)
-
   // Mock user permissions
   let permissionsMock = jest.spyOn(railContentModule, 'fetchUserPermissionsData')
   let permissionsData = { permissions: [108, 91, 92], isAdmin: isAdmin }
   permissionsMock.mockImplementation(() => permissionsData)
+
+  initializeSyncManager(userId)
 }
