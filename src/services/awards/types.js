@@ -6,14 +6,14 @@
  * @property {string|null} logo - URL to logo image
  * @property {string} badge - URL to badge image
  * @property {string} award - URL to award image
- * @property {number} content_id - Railcontent ID of the parent content
- * @property {string} content_type - Type of content (guided-course, learning-path-v2, etc.)
+ * @property {number} content_id - Railcontent ID of the parent content (e.g., the learning path ID)
+ * @property {string} content_type - Type of parent content ('learning-path-v2', 'guided-course', etc.). Used with content_id to determine collection context for award evaluation.
  * @property {string} type - Sanity document type
  * @property {string} brand - Brand (drumeo, pianote, guitareo, singeo)
  * @property {string} content_title - Title of the associated content
  * @property {string|null} award_custom_text - Custom text for the award
  * @property {string|null} instructor_name - Name of the instructor
- * @property {number[]} child_ids - Array of child content IDs required for completion
+ * @property {number[]} child_ids - Array of child content IDs (lessons) that must be completed to earn this award
  */
 
 /**
@@ -41,7 +41,7 @@
  * @property {string} award - URL to award image
  * @property {string} brand - Brand (drumeo, pianote, guitareo, singeo)
  * @property {string} instructorName - Name of the instructor
- * @property {number} progressPercentage - Completion percentage (0-100)
+ * @property {number} progressPercentage - Completion percentage (0-100). Progress is tracked per collection context for learning paths.
  * @property {boolean} isCompleted - Whether the award is fully completed
  * @property {string|null} completedAt - ISO timestamp of completion, or null if not completed
  * @property {AwardCompletionData|null} completionData - Practice statistics, or null if not started
@@ -50,7 +50,7 @@
 /**
  * @typedef {Object} ContentAwardsResponse
  * @property {boolean} hasAwards - Whether the content has any associated awards
- * @property {AwardInfo[]} awards - Array of award objects with progress information
+ * @property {AwardInfo[]} awards - Array of award objects with progress information. For learning paths, progress is scoped to the specific learning path context.
  */
 
 /**
