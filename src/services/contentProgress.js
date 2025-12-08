@@ -349,7 +349,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
     progress,
     currentSeconds
   )
-  if (progress == 100) emitContentCompleted(contentId, collection)
+  if (progress === 100) emitContentCompleted(contentId, collection)
 
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
@@ -372,7 +372,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
 async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
   const progress = isCompleted ? 100 : 0
   const response = await db.contentProgress.recordProgress(contentId, collection, progress)
-  if (progress == 100) emitContentCompleted(contentId, collection)
+  if (progress === 100) emitContentCompleted(contentId, collection)
   const hierarchy = await getHierarchy(contentId, collection)
   await Promise.all([
     db.contentProgress.recordProgressesTentative(
