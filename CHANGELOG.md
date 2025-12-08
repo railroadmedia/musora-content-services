@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.95.0](https://github.com/railroadmedia/musora-content-services/compare/v2.94.8...v2.95.0) (2025-12-08)
+
+
+### Features
+
+* **BEH-1195:** Awards System ([#606](https://github.com/railroadmedia/musora-content-services/issues/606)) ([a6ffd92](https://github.com/railroadmedia/musora-content-services/commit/a6ffd92ae518c8e530d4ef743f2649725fddb285))
+
+
+### Bug Fixes
+
+* **BR-330:** Wraps artists name in double quotes where its interpolated in the query ([8787399](https://github.com/railroadmedia/musora-content-services/commit/8787399e032d3522e5126ea9506f28cc5cdac22a))
+* duplicate awards from wrong collection type handling ([#627](https://github.com/railroadmedia/musora-content-services/issues/627)) ([f6dfbf7](https://github.com/railroadmedia/musora-content-services/commit/f6dfbf778ad8e7d37d8e0f66ecd1aa5bec323330))
+* method progress card cta ([#622](https://github.com/railroadmedia/musora-content-services/issues/622)) ([6788b48](https://github.com/railroadmedia/musora-content-services/commit/6788b48353d4122e1ca674a5fdd32abbfa8bb642))
+* show next learning path lesson logic for fetch learning path lessons ([#626](https://github.com/railroadmedia/musora-content-services/issues/626)) ([2925a5b](https://github.com/railroadmedia/musora-content-services/commit/2925a5be42715af7f77720209ef78f118ae95bf4))
+* watermelon fixes round [#4](https://github.com/railroadmedia/musora-content-services/issues/4) ([#621](https://github.com/railroadmedia/musora-content-services/issues/621)) ([aa1e834](https://github.com/railroadmedia/musora-content-services/commit/aa1e834dbb287e4b581b67690038e086eb7a4d55))
+
 ### [2.94.8](https://github.com/railroadmedia/musora-content-services/compare/v2.94.7...v2.94.8) (2025-12-04)
 
 
