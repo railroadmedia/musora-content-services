@@ -4,25 +4,31 @@ import ContentProgress, { COLLECTION_TYPE, STATE } from '../models/ContentProgre
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
   // null collection only
   async startedIds(limit?: number) {
-    return this.queryAll(
+    return this.queryAllIds(...[
       Q.where('collection_type', null),
       Q.where('collection_id', null),
 
       Q.where('state', STATE.STARTED),
       Q.sortBy('updated_at', 'desc'),
-      Q.take(limit || Infinity)
-    )
+
+      ...(limit ? [Q.take(limit)] : []),
+    ])
   }
 
   // null collection only
   async completedIds(limit?: number) {
-    return this.queryAllIds(
+    return this.queryAllIds(...[
+      Q.where('collection_type', null),
+      Q.where('collection_id', null),
+
       Q.where('state', STATE.COMPLETED),
       Q.sortBy('updated_at', 'desc'),
-      Q.take(limit || Infinity)
-    )
+
+      ...(limit ? [Q.take(limit)] : []),
+    ])
   }
 
+  //this _specifically_ needs to get content_ids from ALL collection_types (including null)
   async completedByContentIds(contentIds: number[]) {
     return this.queryAll(
       Q.where('content_id', Q.oneOf(contentIds)),
@@ -131,7 +137,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       ])
     }).then(([progressEventsModule, { globalConfig }]) => {
       progressEventsModule.emitProgressSaved({
-        userId: globalConfig.railcontentConfig?.userId || 0,
+        userId: Number(globalConfig.railcontentConfig?.userId) || 0,
         contentId,
         progressPercent: progressPct,
         progressStatus: progressPct === 100 ? STATE.COMPLETED : STATE.STARTED,

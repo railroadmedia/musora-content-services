@@ -1,17 +1,19 @@
 import { awardManager } from '../../src/services/awards/internal/award-manager'
 import { awardEvents } from '../../src/services/awards/internal/award-events'
 import { mockAwardDefinitions, getAwardByContentId } from '../mockData/award-definitions'
+import { setupDefaultMocks, setupAwardEventListeners } from './helpers'
+import { mockCompletionStates, mockAllCompleted } from './helpers/completion-mock'
 
 jest.mock('../../src/services/sanity', () => ({
-  default: {
-    fetch: jest.fn()
-  },
+  default: { fetch: jest.fn() },
   fetchSanity: jest.fn()
 }))
 
 jest.mock('../../src/services/sync/repository-proxy', () => {
   const mockFns = {
     contentProgress: {
+      getOneProgressByContentId: jest.fn(),
+      getSomeProgressByContentIds: jest.fn(),
       queryOne: jest.fn(),
       queryAll: jest.fn()
     },
@@ -32,7 +34,7 @@ import db from '../../src/services/sync/repository-proxy'
 import { awardDefinitions } from '../../src/services/awards/internal/award-definitions'
 
 describe('Award Completion Flow - E2E Scenarios', () => {
-  let awardGrantedListener
+  let listeners
   const testAward = getAwardByContentId(416446)
   const courseId = 416446
 
@@ -41,15 +43,11 @@ describe('Award Completion Flow - E2E Scenarios', () => {
     awardEvents.removeAllListeners()
 
     sanityClient.fetch = jest.fn().mockResolvedValue(mockAwardDefinitions)
-    fetchSanity.mockResolvedValue(mockAwardDefinitions)
-
-    db.practices.sumPracticeMinutesForContent = jest.fn().mockResolvedValue(180)
-    db.userAwardProgress.hasCompletedAward = jest.fn().mockResolvedValue(false)
-    db.userAwardProgress.recordAwardProgress = jest.fn().mockResolvedValue({ data: {}, status: 'synced' })
+    setupDefaultMocks(db, fetchSanity, { practiceMinutes: 180 })
 
     await awardDefinitions.refresh()
 
-    awardGrantedListener = jest.fn()
+    listeners = setupAwardEventListeners(awardEvents)
   })
 
   afterEach(() => {
@@ -59,21 +57,10 @@ describe('Award Completion Flow - E2E Scenarios', () => {
 
   describe('Scenario: User completes all lessons in course', () => {
     beforeEach(() => {
-      db.contentProgress.queryOne.mockResolvedValue({
-        data: {
-          state: 'completed',
-          created_at: Math.floor(Date.now() / 1000) - 86400 * 14
-        }
-      })
-
-      db.contentProgress.queryAll.mockResolvedValue({
-        data: [{ created_at: Math.floor(Date.now() / 1000) - 86400 * 14 }]
-      })
+      mockAllCompleted(db)
     })
 
     test('award is granted with 100% progress', async () => {
-      awardEvents.on('awardGranted', awardGrantedListener)
-
       await awardManager.onContentCompleted(courseId)
 
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
@@ -91,15 +78,13 @@ describe('Award Completion Flow - E2E Scenarios', () => {
         })
       )
 
-      expect(awardGrantedListener).toHaveBeenCalledTimes(1)
+      expect(listeners.granted).toHaveBeenCalledTimes(1)
     })
 
     test('awardGranted event contains complete payload', async () => {
-      awardEvents.on('awardGranted', awardGrantedListener)
-
       await awardManager.onContentCompleted(courseId)
 
-      const payload = awardGrantedListener.mock.calls[0][0]
+      const payload = listeners.granted.mock.calls[0][0]
 
       expect(payload).toMatchObject({
         awardId: testAward._id,
@@ -119,11 +104,9 @@ describe('Award Completion Flow - E2E Scenarios', () => {
     })
 
     test('popup message contains correct practice data', async () => {
-      awardEvents.on('awardGranted', awardGrantedListener)
-
       await awardManager.onContentCompleted(courseId)
 
-      const payload = awardGrantedListener.mock.calls[0][0]
+      const payload = listeners.granted.mock.calls[0][0]
 
       expect(payload.popupMessage).toContain('180 minutes')
       expect(payload.popupMessage).toContain('Adrian Guided Course Test')
@@ -164,31 +147,15 @@ describe('Award Completion Flow - E2E Scenarios', () => {
   })
 
   describe('Scenario: Parent course completed but children incomplete', () => {
-    const multiLessonAward = { _id: '0f49cb6a-1b23-4628-968e-15df02ffad7f', child_ids: [417045, 417046, 417047, 417048] }
+    const multiLessonAward = getAwardByContentId(417049)
     const parentCourseId = 417049
 
     test('does not grant award when parent completed but only 2 of 4 children completed', async () => {
-      const completedLessonIds = [417045, 417046]
-
-      db.contentProgress.queryOne.mockImplementation((whereClause) => {
-        const contentId = whereClause?.comparison?.right?.value
-
-        return Promise.resolve({
-          data: completedLessonIds.includes(contentId)
-            ? { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
-            : { state: 'started', created_at: Math.floor(Date.now() / 1000) }
-        })
-      })
-
-      db.contentProgress.queryAll.mockResolvedValue({
-        data: [{ created_at: Math.floor(Date.now() / 1000) }]
-      })
-
-      awardEvents.on('awardGranted', awardGrantedListener)
+      mockCompletionStates(db, [417045, 417046])
 
       await awardManager.onContentCompleted(parentCourseId)
 
-      expect(awardGrantedListener).not.toHaveBeenCalled()
+      expect(listeners.granted).not.toHaveBeenCalled()
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
         multiLessonAward._id,
         50,
@@ -199,28 +166,11 @@ describe('Award Completion Flow - E2E Scenarios', () => {
     })
 
     test('emits awardProgress event with partial progress when parent completed', async () => {
-      const progressListener = jest.fn()
-      const completedLessonIds = [417045, 417046]
-
-      db.contentProgress.queryOne.mockImplementation((whereClause) => {
-        const contentId = whereClause?.comparison?.right?.value
-
-        return Promise.resolve({
-          data: completedLessonIds.includes(contentId)
-            ? { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
-            : { state: 'started', created_at: Math.floor(Date.now() / 1000) }
-        })
-      })
-
-      db.contentProgress.queryAll.mockResolvedValue({
-        data: [{ created_at: Math.floor(Date.now() / 1000) }]
-      })
-
-      awardEvents.on('awardProgress', progressListener)
+      mockCompletionStates(db, [417045, 417046])
 
       await awardManager.onContentCompleted(parentCourseId)
 
-      expect(progressListener).toHaveBeenCalledWith(
+      expect(listeners.progress).toHaveBeenCalledWith(
         expect.objectContaining({
           awardId: multiLessonAward._id,
           progressPercentage: 50,
@@ -238,25 +188,20 @@ describe('Award Completion Flow - E2E Scenarios', () => {
         awardManager.onContentCompleted(nonExistentCourseId)
       ).resolves.not.toThrow()
 
-      expect(awardGrantedListener).not.toHaveBeenCalled()
+      expect(listeners.granted).not.toHaveBeenCalled()
     })
   })
 
   describe('Scenario: User already earned the award', () => {
     beforeEach(() => {
       db.userAwardProgress.hasCompletedAward.mockResolvedValue(true)
-
-      db.contentProgress.queryOne.mockResolvedValue({
-        data: { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
-      })
+      mockAllCompleted(db)
     })
 
     test('does not grant award again', async () => {
-      awardEvents.on('awardGranted', awardGrantedListener)
-
       await awardManager.onContentCompleted(courseId)
 
-      expect(awardGrantedListener).not.toHaveBeenCalled()
+      expect(listeners.granted).not.toHaveBeenCalled()
     })
 
     test('does not update progress', async () => {
