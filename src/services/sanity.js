@@ -2200,7 +2200,7 @@ export async function fetchMethodV2Structure(brand) {
   const _type = 'method-v2'
   const query = `*[_type == '${_type}' && brand == '${brand}'][0...1]{
     'sanity_id': _id,
-    'brand',
+    brand,
     'intro_video_id': intro_video->railcontent_id,
     'learning_paths': child[]->{
       'id': railcontent_id,
@@ -2220,8 +2220,11 @@ export async function fetchMethodV2StructureFromId(contentId) {
   const _type = "method-v2";
   const query = `*[_type == '${_type}' && brand == *[railcontent_id == ${contentId}][0].brand][0...1]{
     'sanity_id': _id,
+    brand,
+    'intro_video_id': intro_video->railcontent_id,
     'learning_paths': child[]->{
       'id': railcontent_id,
+      'intro_video_id': intro_video->railcontent_id,
       'children': child[]->railcontent_id
     }
   }`
