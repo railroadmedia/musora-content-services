@@ -93,7 +93,8 @@ export async function fetchInstructorBySlug(
   }).buildFilter()
 
   const q = query()
-    .and(`_type == "instructor" && slug.current == "${slug}"`)
+    .and(`_type == "instructor"`)
+    .and(`slug.current == "${slug}"`)
     .select(
       'name',
       `"slug": slug.current`,

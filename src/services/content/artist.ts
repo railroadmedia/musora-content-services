@@ -83,8 +83,14 @@ export async function fetchArtistBySlug(
   }).buildFilter()
 
   const q = query()
-    .and(`_type == "artist" && slug.current == '${slug}'`)
-    .select('name', `"slug": slug.current`, `"lessonCount": count(*[${filter}])`)
+    .and(`_type == "artist"`)
+    .and(`&& slug.current == '${slug}'`)
+    .select(
+      'name',
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lessonCount": count(*[${filter}])`
+    )
     .first()
     .build()
 
@@ -97,7 +103,7 @@ export interface ArtistLessonOptions extends BuildQueryOptions {
   progressIds?: Array<number>
 }
 
-export interface LessonsByArtistResponse {
+export interface ArtistLessons {
   data: Lesson[]
   total: number
 }
@@ -114,7 +120,7 @@ export interface LessonsByArtistResponse {
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  * @param {Array<number>} [params.progressId=[]] - The ids of the lessons that are in progress or completed
- * @returns {Promise<LessonsByArtistResponse|null>} - The lessons for the artist
+ * @returns {Promise<ArtistLessons>} - The lessons for the artist
  *
  * @example
  * fetchArtistLessons('10 Years', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
@@ -133,7 +139,7 @@ export async function fetchArtistLessons(
     includedFields = [],
     progressIds = [],
   }: ArtistLessonOptions = {}
-): Promise<LessonsByArtistResponse | null> {
+): Promise<ArtistLessons> {
   const fieldsString = getFieldsForContentType(contentType) as string
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''

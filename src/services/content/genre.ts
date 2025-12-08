@@ -87,7 +87,8 @@ export async function fetchGenreBySlug(
   }).buildFilter()
 
   const q = query()
-    .and(`_type == "genre" && slug.current == "${slug}"`)
+    .and(`_type == "genre"`)
+    .and(`slug.current == "${slug}"`)
     .select(
       'name',
       `"slug": slug.current`,
