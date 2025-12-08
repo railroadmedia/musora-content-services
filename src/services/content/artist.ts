@@ -55,7 +55,7 @@ export async function fetchArtists(
 
   const q = `{
     "data": ${data},
-    "total": ${total}
+    "total": count(${total})
   }`
 
   return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
@@ -162,7 +162,7 @@ export async function fetchArtistLessons(
 
   const q = `{
     "data": ${data},
-    "total": ${total}
+    "total": count(${total})
   }`
 
   return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })

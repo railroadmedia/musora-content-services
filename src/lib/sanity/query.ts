@@ -1,5 +1,4 @@
 import { Monoid } from '../ads/monoid'
-import { Semigroup } from '../ads/semigroup'
 
 export interface BuildQueryOptions {
   sort?: string
@@ -50,8 +49,9 @@ const slice: Monoid<string> = {
   concat: (a, b) => b || a,
 }
 
-const project: Semigroup<string> = {
-  concat: (a, b) => `${a}, ${b}`,
+const project: Monoid<string> = {
+  empty: '',
+  concat: (a, b) => (!a ? b : !b ? a : `${a}, ${b}`),
 }
 
 export const query = (): QueryBuilder => {
@@ -59,7 +59,7 @@ export const query = (): QueryBuilder => {
     filter: and.empty,
     ordering: order.empty,
     slice: slice.empty,
-    projection: '_id',
+    projection: project.empty,
     postFilter: and.empty,
   }
 
@@ -113,7 +113,7 @@ export const query = (): QueryBuilder => {
         *[${filter}]
           ${ordering}
           ${slice}
-        { ${projection} }
+        ${projection.length > 0 ? `{ ${projection} }` : ''}
         ${state.postFilter ? `[${state.postFilter}]` : ''}
       `.trim()
     },

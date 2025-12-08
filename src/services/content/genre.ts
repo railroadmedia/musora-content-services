@@ -55,7 +55,7 @@ export async function fetchGenres(
 
   const q = `{
     "data": ${data},
-    "total": ${total}
+    "total": count(${total})
   }`
 
   return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
@@ -151,7 +151,6 @@ export async function fetchGenreLessons(
   sort = getSortOrder(sort, brand)
   const data = query()
     .and(filterWithRestrictions)
-    .and(`brand == ${brand}`)
     .order(sort)
     .slice(offset, offset + limit)
     .select(...(fieldsString ? [fieldsString] : []))
@@ -161,7 +160,7 @@ export async function fetchGenreLessons(
 
   const q = `{
     "data": ${data},
-    "total": ${total}
+    "total": count(${total})
   }`
 
   return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
