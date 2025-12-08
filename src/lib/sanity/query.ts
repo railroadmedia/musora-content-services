@@ -49,12 +49,17 @@ const slice: Monoid<string> = {
   concat: (a, b) => b || a,
 }
 
+const project: Monoid<Projection> = {
+  empty: [],
+  concat: (a, b) => [...a, ...b],
+}
+
 export const query = (): QueryBuilder => {
   let state: QueryBuilderState = {
     filter: and.empty,
     ordering: order.empty,
     slice: slice.empty,
-    projection: [],
+    projection: project.empty,
     postFilter: and.empty,
   }
 
@@ -91,7 +96,7 @@ export const query = (): QueryBuilder => {
 
     // projection
     select(...fields: string[]) {
-      state.projection.push(...fields)
+      state.projection = project.concat(state.projection, fields)
       return builder
     },
 
