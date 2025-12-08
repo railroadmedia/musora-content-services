@@ -3,7 +3,7 @@
  */
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
 import { FilterBuilder } from '../../filterBuilder.js'
-import { buildDataAndTotalQuery, BuildQueryOptions, QueryHelper } from '../../lib/sanity/query'
+import { BuildQueryOptions, query } from '../../lib/sanity/query'
 import { fetchSanity, getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
 import { Brands } from '../../lib/brands'
@@ -34,23 +34,31 @@ export async function fetchArtists(
     bypassPermissions: true,
   }).buildFilter()
 
-  const filter = `*[_type == "artist"]`
-
-  const query = `
-  {
-    "data": ${filter} {
-      name,
-      "slug": slug.current,
-      'thumbnail': thumbnail_url.asset->url,
-      "lessonCount": count(*[${lessonFilter}])
-    } [lessonCount > 0]
-    | ${QueryHelper.sort(options)} ${QueryHelper.paginate(options)},
-    "total": count(${filter} {
-        "lessonCount": count(*[${lessonFilter}])
-      } [lessonCount > 0]
+  const data = query()
+    .and(`_type == "artist"`)
+    .order(options.sort || 'lower(name) asc')
+    .slice(options.offset || 0, (options.offset || 0) + (options.limit || 20))
+    .select(
+      'name',
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lessonCount": count(*[${lessonFilter}])`
     )
+    .postFilter(`lessonCount > 0`)
+    .build()
+
+  const total = query()
+    .and(`_type == "artist"`)
+    .select(`"lessonCount": count(*[${lessonFilter}])`)
+    .postFilter(`lessonCount > 0`)
+    .build()
+
+  const q = `{
+    "data": ${data},
+    "total": ${total}
   }`
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+
+  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }
 
 /**
@@ -73,15 +81,14 @@ export async function fetchArtistBySlug(
   const filter = await new FilterBuilder(`${brandFilter} _type == "song" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
-  const query = `
-  {
-    "data": *[_type == "artist" && slug.current == '${slug}'][0] {
-      name,
-      "slug": slug.current,
-      "lessonCount": count(*[${filter}])
-    }
-  }`
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+
+  const q = query()
+    .and(`_type == "artist" && slug.current == '${slug}'`)
+    .select('name', `"slug": slug.current`, `"lessonCount": count(*[${filter}])`)
+    .first()
+    .build()
+
+  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }
 
 export interface ArtistLessonOptions extends BuildQueryOptions {
@@ -125,7 +132,6 @@ export async function fetchArtistLessons(
     limit = 10,
     includedFields = [],
     progressIds = [],
-    paginated = false,
   }: ArtistLessonOptions = {}
 ): Promise<LessonsByArtistResponse | null> {
   const fieldsString = getFieldsForContentType(contentType) as string
@@ -138,11 +144,20 @@ export async function fetchArtistLessons(
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
   sort = getSortOrder(sort, brand)
-  const query = buildDataAndTotalQuery(filterWithRestrictions, fieldsString, {
-    sort,
-    offset,
-    limit,
-    paginated,
-  })
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+
+  const data = query()
+    .and(filterWithRestrictions)
+    .order(sort)
+    .slice(offset, offset + limit)
+    .select(...(fieldsString ? [fieldsString] : []))
+    .build()
+
+  const total = query().and(filterWithRestrictions).build()
+
+  const q = `{
+    "data": ${data},
+    "total": ${total}
+  }`
+
+  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }

@@ -5,7 +5,7 @@ import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.
 import { fetchSanity, getSortOrder } from '../sanity.js'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { Lesson } from './content'
-import { buildDataAndTotalQuery, BuildQueryOptions, QueryHelper } from '../../lib/sanity/query'
+import { BuildQueryOptions, query } from '../../lib/sanity/query'
 import { Brands } from '../../lib/brands'
 
 export interface Genre {
@@ -34,23 +34,31 @@ export async function fetchGenres(
     bypassPermissions: true,
   }).buildFilter()
 
-  const filter = `*[_type == "genre"]`
-
-  const query = `
-  {
-    "data": ${filter} {
-      name,
-      "slug": slug.current,
-      'thumbnail': thumbnail_url.asset->url,
-      "lessonCount": count(*[${lessonFilter}])
-    } [lessonCount > 0]
-    | ${QueryHelper.sort(options)} ${QueryHelper.paginate(options)},
-    "total": count(${filter} {
-        "lessonCount": count(*[${lessonFilter}])
-      } [lessonCount > 0]
+  const data = query()
+    .and(`_type == "genre"`)
+    .order(options.sort || 'lower(name) asc')
+    .slice(options.offset || 0, (options.offset || 0) + (options.limit || 20))
+    .select(
+      'name',
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lessons_count": count(*[${lessonFilter}])`
     )
+    .postFilter(`lessons_count > 0`)
+    .build()
+
+  const total = query()
+    .and(`_type == "genre"`)
+    .select(`"lessons_count": count(*[${lessonFilter}])`)
+    .postFilter(`lessons_count > 0`)
+    .build()
+
+  const q = `{
+    "data": ${data},
+    "total": ${total}
   }`
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+
+  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }
 
 export interface GenreBySlug {
@@ -78,17 +86,18 @@ export async function fetchGenreBySlug(
     bypassPermissions: true,
   }).buildFilter()
 
-  const query = `
-  {
-    "data": *[_type == 'genre' && slug.current == '${slug}'][0] {
-      'type': _type, name,
-      name,
-      "slug": slug.current,
-      'thumbnail':thumbnail_url.asset->url,
-      "lessonsCount": count(*[${filter}])
-    }
-  }`
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+  const q = query()
+    .and(`_type == "genre" && slug.current == "${slug}"`)
+    .select(
+      'name',
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lessons_count": count(*[${filter}])`
+    )
+    .first()
+    .build()
+
+  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }
 
 export interface GenreLessonsOptions extends BuildQueryOptions {
@@ -131,7 +140,6 @@ export async function fetchGenreLessons(
     limit = 10,
     includedFields = [],
     progressIds = [],
-    paginated = false,
   }: GenreLessonsOptions = {}
 ): Promise<GenreLessons> {
   const fieldsString = getFieldsForContentType(contentType) as string
@@ -144,11 +152,20 @@ export async function fetchGenreLessons(
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
   sort = getSortOrder(sort, brand)
-  const query = buildDataAndTotalQuery(filterWithRestrictions, fieldsString, {
-    sort,
-    offset,
-    limit,
-    paginated,
-  })
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+  const data = query()
+    .and(filterWithRestrictions)
+    .and(`brand == ${brand}`)
+    .order(sort)
+    .slice(offset, offset + limit)
+    .select(...(fieldsString ? [fieldsString] : []))
+    .build()
+
+  const total = query().and(filterWithRestrictions).build()
+
+  const q = `{
+    "data": ${data},
+    "total": ${total}
+  }`
+
+  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }

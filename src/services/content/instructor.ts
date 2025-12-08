@@ -5,7 +5,7 @@ import { FilterBuilder } from '../../filterBuilder.js'
 import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
 import { fetchSanity, getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
-import { buildDataAndTotalQuery, BuildQueryOptions, QueryHelper } from '../../lib/sanity/query'
+import { BuildQueryOptions, query } from '../../lib/sanity/query'
 import { Brands } from '../../lib/brands'
 
 export interface Instructor {
@@ -34,30 +34,37 @@ export interface Instructors {
  */
 export async function fetchInstructors(
   brand: Brands | string,
-  options: BuildQueryOptions = { sort: 'lower(name) asc' }
+  options: BuildQueryOptions
 ): Promise<Instructor[]> {
   const lessonFilter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
 
-  const filter = `*[_type == "instructor"]`
-
-  const query = `
-  {
-    "data": ${filter} {
-      name,
-      "slug": slug.current,
-      'thumbnail': thumbnail_url.asset->url,
-      "lessonCount": count(*[${lessonFilter}])
-    } [lessonCount > 0]
-    | ${QueryHelper.sort(options)} ${QueryHelper.paginate(options)},
-    "total": count(${filter} {
-        "lessonCount": count(*[${lessonFilter}])
-      } [lessonCount > 0]
+  const data = query()
+    .and(`_type == "instructor"`)
+    .order(options.sort || 'lower(name) asc')
+    .slice(options.offset || 0, (options.offset || 0) + (options.limit || 20))
+    .select(
+      'name',
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lessonCount": count(*[${lessonFilter}])`
     )
+    .postFilter(`lessonCount > 0`)
+    .build()
+
+  const total = query()
+    .and(`_type == "instructor"`)
+    .select(`"lessonCount": count(*[${lessonFilter}])`)
+    .postFilter(`lessonCount > 0`)
+    .build()
+
+  const q = `{
+    "data": ${data},
+    "total": count(${total})
   }`
 
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }
 
 export interface FetchInstructorBySlug {
@@ -85,17 +92,19 @@ export async function fetchInstructorBySlug(
     bypassPermissions: true,
   }).buildFilter()
 
-  const query = `
-  {
-    "data": *[_type == "instructor" && slug.current == '${slug}'][0] {
-      name,
-      "slug": slug.current,
-      short_bio,
-      'thumbnail': thumbnail_url.asset->url,
-      "lessonCount": count(*[${filter}])
-    }
-  }`
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+  const q = query()
+    .and(`_type == "instructor" && slug.current == "${slug}"`)
+    .select(
+      'name',
+      `"slug": slug.current`,
+      'short_bio',
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lessonCount": count(*[${filter}])`
+    )
+    .first()
+    .build()
+
+  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }
 
 export interface InstructorLessonsOptions extends BuildQueryOptions {
@@ -135,7 +144,6 @@ export async function fetchInstructorLessons(
     offset = 1,
     limit = 20,
     includedFields = [],
-    paginated = false,
   }: InstructorLessonsOptions = {}
 ): Promise<InstructorLessons> {
   const fieldsString = getFieldsForContentType() as string
@@ -145,11 +153,20 @@ export async function fetchInstructorLessons(
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
   sort = getSortOrder(sort, brand)
-  const query = buildDataAndTotalQuery(filterWithRestrictions, fieldsString, {
-    sort,
-    offset,
-    limit,
-    paginated,
-  })
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+
+  const data = query()
+    .and(filterWithRestrictions)
+    .order(sort)
+    .slice(offset, offset + limit)
+    .select(...(fieldsString ? [fieldsString] : []))
+    .build()
+
+  const total = query().and(filterWithRestrictions).build()
+
+  const q = `{
+    "data": ${data},
+    "total": count(${total})
+  }`
+
+  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }

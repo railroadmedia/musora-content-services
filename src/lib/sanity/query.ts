@@ -1,63 +1,116 @@
+import { Monoid } from '../ads/monoid'
+
 export interface BuildQueryOptions {
   sort?: string
   offset?: number
   limit?: number
-  paginated?: boolean
-  postQuery?: string
 }
 
-export interface FilterOptions {
-  data: {
-    filter: string
-    fields: string
-    post?: string
-  }
-  total: {
-    filter: string
-    fields?: string
-    post?: string
-  }
+export type Projection = string[]
+
+export interface QueryBuilderState {
+  filter: string
+  ordering: string
+  slice: string
+  projection: Projection
+  postFilter: string
 }
 
-// TODO: to be removed in the future
-export function buildDataAndTotalQuery(
-  filter: string = '',
-  fields: string = '...',
-  options: BuildQueryOptions
-): string {
-  const query = `{
-      "data": *[${filter}]
-      {
-        ${fields}
-      } | ${QueryHelper.sort(options)}${QueryHelper.paginate(options)} ,
-      "total": count(*[${filter}]),
-    }`
-  return query
+export interface QueryBuilder {
+  and(expr: string): QueryBuilder
+  or(...exprs: string[]): QueryBuilder
+  order(expr: string): QueryBuilder
+  slice(start: number, end: number): QueryBuilder
+  first(): QueryBuilder
+  select(...fields: string[]): QueryBuilder
+  postFilter(expr: string): QueryBuilder
+  build(): string
+
+  _state(): QueryBuilderState
 }
 
-export class QueryHelper {
-  static sort(options: BuildQueryOptions): string {
-    return options.sort ? ` order(${options.sort}) ` : ''
+const and: Monoid<string> = {
+  empty: '',
+  concat: (a, b) => (!a ? b : !b ? a : `${a} && ${b}`),
+}
+
+const or: Monoid<string> = {
+  empty: '',
+  concat: (a, b) => (!a ? b : !b ? a : `(${a} || ${b})`),
+}
+
+const order: Monoid<string> = {
+  empty: '',
+  concat: (a, b) => `| order(${b || a})`,
+}
+
+const slice: Monoid<string> = {
+  empty: '',
+  concat: (a, b) => b || a,
+}
+
+export const query = (): QueryBuilder => {
+  let state: QueryBuilderState = {
+    filter: and.empty,
+    ordering: order.empty,
+    slice: slice.empty,
+    projection: [],
+    postFilter: and.empty,
   }
 
-  static paginate(options: BuildQueryOptions): string {
-    return options.offset && options.limit && options.paginated
-      ? `[${options.offset}...${options.offset + options.limit}]`
-      : ``
+  const builder: QueryBuilder = {
+    and(expr: string) {
+      state.filter = and.concat(state.filter, expr)
+      return builder
+    },
+
+    or(...exprs: string[]) {
+      const orExpr = exprs.reduce(or.concat, or.empty)
+      state.filter = and.concat(state.filter, orExpr)
+      return builder
+    },
+
+    order(expr: string) {
+      state.ordering = order.concat(state.ordering, expr)
+      return builder
+    },
+
+    slice(start: number, end?: number) {
+      state.slice = slice.concat(state.slice, `[${start}...${end}]`)
+      return builder
+    },
+
+    first() {
+      state.slice = slice.concat(state.slice, `[0]`)
+      return builder
+    },
+
+    select(...fields: string[]) {
+      state.projection.push(...fields)
+      return builder
+    },
+
+    postFilter(expr: string) {
+      state.postFilter = and.concat(state.postFilter, expr)
+      return builder
+    },
+
+    build() {
+      const { filter, ordering, slice, projection } = state
+
+      return `
+        *[${filter}]
+          ${ordering}
+          ${slice}
+        { ${projection.join(', ')} }
+        ${state.postFilter ? `[${state.postFilter}]` : ''}
+      `.trim()
+    },
+
+    _state() {
+      return state
+    },
   }
 
-  // TODO: I don't like this but for now I'll keep it here
-  static buildQuery(filters: FilterOptions, options: BuildQueryOptions): string {
-    return `{
-      "data": *[${filters.data.filter}]
-      {
-        ${filters.data.fields}
-      } ${filters.data.post ? `[${filters.data.post}]` : ''}
-      | ${this.sort(options)}${QueryHelper.paginate(options)} ,
-      "total": count(*[${filters.data.filter}]
-        ${filters.total.fields ? `{${filters.total.fields}}` : ''}
-        ${filters.total.post ? `[${filters.total.post}]` : ''},
-      )
-    }`
-  }
+  return builder
 }
