@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.95.3](https://github.com/railroadmedia/musora-content-services/compare/v2.95.2...v2.95.3) (2025-12-08)
+
+
+### Bug Fixes
+
+* make agi responses standard ([#630](https://github.com/railroadmedia/musora-content-services/issues/630)) ([0301133](https://github.com/railroadmedia/musora-content-services/commit/03011331cb835412af80111a97e6ae83fd6e56d5))
+
 ### [2.95.2](https://github.com/railroadmedia/musora-content-services/compare/v2.95.1...v2.95.2) (2025-12-08)
 
 ### [2.95.1](https://github.com/railroadmedia/musora-content-services/compare/v2.95.0...v2.95.1) (2025-12-08)
