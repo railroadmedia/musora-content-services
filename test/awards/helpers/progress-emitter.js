@@ -1,6 +1,8 @@
 import { emitProgressSaved } from '../../../src/services/progress-events'
 import { COLLECTION_TYPE } from '../../../src/services/sync/models/ContentProgress'
 
+export { COLLECTION_TYPE }
+
 export const emitProgress = ({
   contentId,
   collectionType = null,

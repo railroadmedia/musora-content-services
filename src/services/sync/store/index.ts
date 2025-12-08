@@ -245,7 +245,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         const existingMap = existing.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
 
         const destroyedBuilds = []
-        const recreateBuilds: Array<{ id: RecordId; created_at: number; builder: (record: TModel) => void }> = []
+        const recreateBuilds: Array<{ id: RecordId; created_at: EpochMs; builder: (record: TModel) => void }> = []
 
         existing.forEach(record => {
           if (record._raw._status === 'deleted') {
@@ -256,7 +256,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             destroyedBuilds.push(new this.model(this.collection, { id: record.id }).prepareDestroyPermanently())
             recreateBuilds.push({
               id: record.id,
-              created_at: record._raw.created_at as number,
+              created_at: record._raw.created_at,
               builder: builders[record.id]
             })
           }

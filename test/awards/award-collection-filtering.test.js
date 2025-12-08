@@ -83,11 +83,9 @@ describe('Award Collection Filtering', () => {
       )
     })
 
-    test('child in guided-course triggers only guided-course award', async () => {
+    test('child in course triggers course award (a la carte)', async () => {
       emitProgress({
-        contentId: 416448,
-        collectionType: COLLECTION_TYPE.GUIDED_COURSE,
-        collectionId: 416446
+        contentId: 416448
       })
       await waitForDebounce()
 

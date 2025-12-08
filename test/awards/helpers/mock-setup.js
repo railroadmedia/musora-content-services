@@ -38,8 +38,13 @@ export const setupDefaultMocks = (db, fetchSanity, options = {}) => {
     data: { state: 'completed', created_at: defaultTimestamp }
   })
 
-  db.contentProgress.getSomeProgressByContentIds.mockResolvedValue({
-    data: [{ created_at: defaultTimestamp - 86400 * 10 }]
+  db.contentProgress.getSomeProgressByContentIds.mockImplementation((contentIds) => {
+    const records = contentIds.map(id => ({
+      content_id: id,
+      state: 'completed',
+      created_at: defaultTimestamp - 86400 * 10
+    }))
+    return Promise.resolve({ data: records })
   })
 
   db.contentProgress.queryOne.mockResolvedValue({

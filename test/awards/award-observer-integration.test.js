@@ -52,6 +52,10 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
   }
 
+  const emitAlaCarteProgress = (contentId, progressPercent = 100) => {
+    emitProgressWithCollection(contentId, null, null, progressPercent)
+  }
+
   beforeEach(async () => {
     jest.clearAllMocks()
     awardEvents.removeAllListeners()
@@ -118,7 +122,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
 
     test('emits awardProgress event when lesson completed', async () => {
-      emitProgressWithCollection(417045, COLLECTION_TYPE.GUIDED_COURSE, 417049)
+      emitAlaCarteProgress(417045)
       await waitForDebounce()
 
       expect(listeners.progress).toHaveBeenCalled()
@@ -130,7 +134,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     test('calculates correct progress percentage', async () => {
       mockCompletionStates(db, [417045, 417046])
 
-      emitProgressWithCollection(417045, COLLECTION_TYPE.GUIDED_COURSE, 417049)
+      emitAlaCarteProgress(417045)
       await waitForDebounce()
 
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
@@ -147,7 +151,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     const testAward = getAwardByContentId(417049)
 
     test('emits awardGranted event when all lessons completed', async () => {
-      emitProgressWithCollection(417045, COLLECTION_TYPE.GUIDED_COURSE, 417049)
+      emitAlaCarteProgress(417045)
       await waitForDebounce()
 
       expect(listeners.granted).toHaveBeenCalledTimes(1)
@@ -158,7 +162,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
 
     test('includes completion data in granted event', async () => {
-      emitProgressWithCollection(417045, COLLECTION_TYPE.GUIDED_COURSE, 417049)
+      emitAlaCarteProgress(417045)
       await waitForDebounce()
 
       const payload = listeners.granted.mock.calls[0][0]
@@ -184,9 +188,9 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
 
     test('debounces multiple rapid updates to same course', async () => {
-      emitProgressWithCollection(416467, COLLECTION_TYPE.GUIDED_COURSE, 416464)
-      emitProgressWithCollection(416468, COLLECTION_TYPE.GUIDED_COURSE, 416464)
-      emitProgressWithCollection(416469, COLLECTION_TYPE.GUIDED_COURSE, 416464)
+      emitAlaCarteProgress(416467)
+      emitAlaCarteProgress(416468)
+      emitAlaCarteProgress(416469)
 
       await waitForDebounce()
 
@@ -196,7 +200,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
 
   describe('Scenario: Progress for lessons without awards', () => {
     test('ignores lessons not associated with awards', async () => {
-      emitProgressWithCollection(999999, COLLECTION_TYPE.GUIDED_COURSE, 999000)
+      emitAlaCarteProgress(999999)
       await waitForDebounce()
 
       expect(listeners.progress).not.toHaveBeenCalled()
@@ -210,7 +214,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
 
     test('does not trigger award granted when lessons not completed in DB', async () => {
-      emitProgressWithCollection(417045, COLLECTION_TYPE.GUIDED_COURSE, 417049, 50)
+      emitAlaCarteProgress(417045, 50)
       await waitForDebounce()
 
       expect(listeners.granted).not.toHaveBeenCalled()
@@ -223,8 +227,8 @@ describe('Award Observer Integration - E2E Scenarios', () => {
         progressPercent: 75,
         progressStatus: 'started',
         bubble: true,
-        collectionType: COLLECTION_TYPE.GUIDED_COURSE,
-        collectionId: 417049,
+        collectionType: null,
+        collectionId: null,
         resumeTimeSeconds: null,
         timestamp: Date.now()
       })
@@ -236,7 +240,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
 
   describe('Scenario: Excluded content progress', () => {
     test('excluded content (not in child_ids) does not trigger award progress', async () => {
-      emitProgressWithCollection(416447, COLLECTION_TYPE.GUIDED_COURSE, 416446)
+      emitAlaCarteProgress(416447)
       await waitForDebounce()
 
       expect(db.userAwardProgress.recordAwardProgress).not.toHaveBeenCalled()
@@ -249,7 +253,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
 
     test('does not re-grant already completed award', async () => {
-      emitProgressWithCollection(417045, COLLECTION_TYPE.GUIDED_COURSE, 417049)
+      emitAlaCarteProgress(417045)
       await waitForDebounce()
 
       expect(listeners.granted).not.toHaveBeenCalled()
@@ -268,7 +272,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
 
     test('clears debounce timers on stop', async () => {
-      emitProgressWithCollection(417045, COLLECTION_TYPE.GUIDED_COURSE, 417049)
+      emitAlaCarteProgress(417045)
       contentProgressObserver.stop()
 
       expect(contentProgressObserver.debounceTimers.size).toBe(0)
@@ -281,7 +285,7 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
   })
 
-  describe('Scenario: Learning path vs guided course event differentiation', () => {
+  describe('Scenario: Learning path award events', () => {
     const learningPathAward = getAwardByContentId(417140)
 
     test('learning path award has correct popup message', async () => {
@@ -304,10 +308,10 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
 
     test('tracks progress for multiple courses independently', async () => {
-      emitProgressWithCollection(416448, COLLECTION_TYPE.GUIDED_COURSE, 416446)
+      emitAlaCarteProgress(416448)
       await waitForDebounce()
 
-      emitProgressWithCollection(417045, COLLECTION_TYPE.GUIDED_COURSE, 417049)
+      emitAlaCarteProgress(417045)
       await waitForDebounce()
 
       expect(listeners.progress).toHaveBeenCalledTimes(2)

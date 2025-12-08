@@ -1,68 +1,54 @@
 export const mockCompletionStates = (db, completedIds = [], collection = null) => {
-  db.contentProgress.getOneProgressByContentId.mockImplementation((contentId, options) => {
-    const requestedCollection = options?.collection
-
+  db.contentProgress.getSomeProgressByContentIds.mockImplementation((contentIds, requestedCollection) => {
     const collectionMatches = !collection || (
       requestedCollection?.type === collection.type &&
       requestedCollection?.id === collection.id
     )
 
-    const isCompleted = completedIds.includes(contentId) && collectionMatches
+    const completedRecords = contentIds
+      .filter(id => completedIds.includes(id) && collectionMatches)
+      .map(id => ({
+        content_id: id,
+        state: 'completed',
+        created_at: Math.floor(Date.now() / 1000)
+      }))
 
-    return Promise.resolve({
-      data: isCompleted
-        ? { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
-        : { state: 'started', created_at: Math.floor(Date.now() / 1000) }
-    })
-  })
-
-  db.contentProgress.queryOne.mockImplementation((whereClause) => {
-    const contentId = whereClause?.comparison?.right?.value
-    const isCompleted = completedIds.includes(contentId)
-
-    return Promise.resolve({
-      data: isCompleted
-        ? { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
-        : { state: 'started', created_at: Math.floor(Date.now() / 1000) }
-    })
+    return Promise.resolve({ data: completedRecords })
   })
 }
 
 export const mockAllCompleted = (db) => {
-  db.contentProgress.getOneProgressByContentId.mockResolvedValue({
-    data: { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
-  })
+  db.contentProgress.getSomeProgressByContentIds.mockImplementation((contentIds) => {
+    const completedRecords = contentIds.map(id => ({
+      content_id: id,
+      state: 'completed',
+      created_at: Math.floor(Date.now() / 1000)
+    }))
 
-  db.contentProgress.queryOne.mockResolvedValue({
-    data: { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
+    return Promise.resolve({ data: completedRecords })
   })
 }
 
 export const mockNoneCompleted = (db) => {
-  db.contentProgress.getOneProgressByContentId.mockResolvedValue({
-    data: { state: 'started', created_at: Math.floor(Date.now() / 1000) }
-  })
-
-  db.contentProgress.queryOne.mockResolvedValue({
-    data: { state: 'started', created_at: Math.floor(Date.now() / 1000) }
-  })
+  db.contentProgress.getSomeProgressByContentIds.mockResolvedValue({ data: [] })
 }
 
 export const mockCollectionAwareCompletion = (db, completionMap) => {
-  db.contentProgress.getOneProgressByContentId.mockImplementation((contentId, options) => {
-    const collection = options?.collection
-    const key = collection
-      ? `${contentId}:${collection.type}:${collection.id}`
-      : `${contentId}`
+  db.contentProgress.getSomeProgressByContentIds.mockImplementation((contentIds, collection) => {
+    const completedRecords = contentIds
+      .filter(id => {
+        const key = collection
+          ? `${id}:${collection.type}:${collection.id}`
+          : `${id}`
+        const nullKey = `${id}`
+        return completionMap[key] || (!collection && completionMap[nullKey])
+      })
+      .map(id => ({
+        content_id: id,
+        state: 'completed',
+        created_at: Math.floor(Date.now() / 1000)
+      }))
 
-    const nullKey = `${contentId}`
-
-    const isCompleted = completionMap[key] || (!collection && completionMap[nullKey])
-
-    return Promise.resolve({
-      data: isCompleted
-        ? { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
-        : { state: 'started', created_at: Math.floor(Date.now() / 1000) }
-    })
+    return Promise.resolve({ data: completedRecords })
   })
 }

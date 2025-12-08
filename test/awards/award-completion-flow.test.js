@@ -58,10 +58,6 @@ describe('Award Completion Flow - E2E Scenarios', () => {
   describe('Scenario: User completes all lessons in course', () => {
     beforeEach(() => {
       mockAllCompleted(db)
-
-      db.contentProgress.getSomeProgressByContentIds.mockResolvedValue({
-        data: [{ created_at: Math.floor(Date.now() / 1000) - 86400 * 14 }]
-      })
     })
 
     test('award is granted with 100% progress', async () => {
@@ -157,10 +153,6 @@ describe('Award Completion Flow - E2E Scenarios', () => {
     test('does not grant award when parent completed but only 2 of 4 children completed', async () => {
       mockCompletionStates(db, [417045, 417046])
 
-      db.contentProgress.getSomeProgressByContentIds.mockResolvedValue({
-        data: [{ created_at: Math.floor(Date.now() / 1000) }]
-      })
-
       await awardManager.onContentCompleted(parentCourseId)
 
       expect(listeners.granted).not.toHaveBeenCalled()
@@ -175,10 +167,6 @@ describe('Award Completion Flow - E2E Scenarios', () => {
 
     test('emits awardProgress event with partial progress when parent completed', async () => {
       mockCompletionStates(db, [417045, 417046])
-
-      db.contentProgress.getSomeProgressByContentIds.mockResolvedValue({
-        data: [{ created_at: Math.floor(Date.now() / 1000) }]
-      })
 
       await awardManager.onContentCompleted(parentCourseId)
 

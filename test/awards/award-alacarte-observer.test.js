@@ -172,7 +172,7 @@ describe('Award Observer - A La Carte Progress (null collection)', () => {
     test('non-LP collection context still triggers awards (a la carte)', async () => {
       emitProgress({
         contentId: 417045,
-        collectionType: COLLECTION_TYPE.GUIDED_COURSE,
+        collectionType: 'skill-pack',
         collectionId: 999999
       })
       await waitForDebounce()

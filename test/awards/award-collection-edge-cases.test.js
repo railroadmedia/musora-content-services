@@ -119,9 +119,7 @@ describe('Award Collection Filtering - Edge Cases', () => {
         collectionId: 418010
       })
       emitProgress({
-        contentId: 416448,
-        collectionType: COLLECTION_TYPE.GUIDED_COURSE,
-        collectionId: 416446
+        contentId: 416448
       })
 
       await waitForDebounce()
