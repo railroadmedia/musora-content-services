@@ -9,6 +9,7 @@ import {
 } from './contentProgress'
 import { isContentLikedByIds } from './contentLikes'
 import { fetchLastInteractedChild, fetchLikeCount } from './railcontent'
+import {COLLECTION_TYPE} from "./sync/models/ContentProgress";
 
 /**
  * Combine sanity data with BE contextual data.
@@ -326,7 +327,7 @@ function extractItemsWithCollectionFromMethodData(data, collection, dataField, i
   } else {
     if (isDataAnArray) {
       for (const parent of data) {
-        if (parent.type === 'learning-path-v2') {
+        if (parent.type === COLLECTION_TYPE.LEARNING_PATH) {
           if (!dataField || (dataField && includeParent)) {
             items.push(...getDataTuple([parent], null))
           }
@@ -334,14 +335,14 @@ function extractItemsWithCollectionFromMethodData(data, collection, dataField, i
             items.push(...getDataTuple([parent.intro_video], null))
           }
           if (dataField) {
-            items.push(...getDataTuple(parent[dataField], {type: 'learning-path-v2', id: parent.id}))
+            items.push(...getDataTuple(parent[dataField], {type: COLLECTION_TYPE.LEARNING_PATH, id: parent.id}))
           }
         } else { // is a lesson id, cant determine which collection it belongs to
           items.push(...getDataTuple([parent], collection))
         }
       }
     } else {
-      if (data.type === 'learning-path-v2') {
+      if (data.type === COLLECTION_TYPE.LEARNING_PATH) {
         if (!dataField || (dataField && includeParent)) {
           items.push(...getDataTuple([data], null))
         }
@@ -349,7 +350,7 @@ function extractItemsWithCollectionFromMethodData(data, collection, dataField, i
           items.push(...getDataTuple([data.intro_video], null))
         }
         if (dataField) {
-          items.push(...getDataTuple(data[dataField], {type: 'learning-path-v2', id: data.id}))
+          items.push(...getDataTuple(data[dataField], {type: COLLECTION_TYPE.LEARNING_PATH, id: data.id}))
         }
       } else { // is a lesson id, cant determine which collection it belongs to
         items.push(...getDataTuple([data], collection))
@@ -368,8 +369,9 @@ function extractItemsWithCollectionFromMethodData(data, collection, dataField, i
   }
 
   function getItemCollection(item, collection) {
-    return collection ||
-      (item?.type === 'learning-path-v2' ? { id: item.id, type: 'learning-path-v2' } : null)
+    return item?.type === COLLECTION_TYPE.LEARNING_PATH
+      ? { id: item.id, type: COLLECTION_TYPE.LEARNING_PATH }
+      : (collection || null)
   }
 }
 

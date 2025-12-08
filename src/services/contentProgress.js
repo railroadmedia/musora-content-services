@@ -39,71 +39,44 @@ export async function getNavigateToForMethod(data) {
 
     const {content, collection} = tuple
 
-    if (content.type === 'method-v2') {
-      if (!activeLearningPathId || !dailySession) { // failsafe to intro video
-        return null
-      }
-      const dailiesIds = dailySession ? dailySession.map(item => item.content_ids).flat() : []
-      const activeLearningPath = content.learning_paths?.find(lp => lp?.id === activeLearningPathId) || null
-      const activeLearningPathCollection = {type: 'learning-path-v2', id: activeLearningPathId}
+    const findFirstIncomplete = (progresses) =>
+      Object.keys(progresses).find(id => progresses[id] !== STATE_COMPLETED) || null
 
-      const dailiesProgresses = await getProgressStateByIds(dailiesIds, activeLearningPathCollection)
+    const findChildById = (children, id) =>
+      children?.find(child => child.id === Number(id)) || null
 
-      let navigateToId = Object.entries(dailiesProgresses).find(id => dailiesProgresses[id] !== STATE_COMPLETED) || null
-      if (navigateToId) {
-        const navigateTo = activeLearningPath?.children.find(child => child.id === Number(navigateToId)) || null
-        navigateToData[content.id || 0] = buildNavigateTo(activeLearningPath, navigateTo, activeLearningPathCollection)
-      } else {
-        const childrenIds = activeLearningPath?.children.map(child => child.id) || []
-        const childrenProgresses = await getProgressStateByIds(childrenIds, collection)
-        let navigateToId = Object.entries(childrenProgresses).find(id => childrenProgresses[id] !== STATE_COMPLETED) || null
+    const getFirstOrIncompleteChild = async (content, collection) => {
+      const childrenIds = content?.children.map(child => child.id) || []
+      if (childrenIds.length === 0) return null
 
-        if (navigateToId) {
-          const navigateTo = activeLearningPath?.children.find(child => child.id === Number(navigateToId)) || null
-          navigateToData[content.id || 0] = buildNavigateTo(activeLearningPath, navigateTo, activeLearningPathCollection)
-        } else {
-          navigateToData[content.id || 0] = null
-        }
+      const progresses = await getProgressStateByIds(childrenIds, collection)
+      const incompleteId = findFirstIncomplete(progresses)
 
-      }
-    } else if (content.type === COLLECTION_TYPE.LEARNING_PATH) {
+      return incompleteId ? findChildById(content.children, incompleteId) : content.children[0]
+    }
+
+    const getDailySessionNavigateTo = async (content, dailySession, collection) => {
+      const dailiesIds = dailySession?.map(item => item.content_ids).flat() || []
+      const progresses = await getProgressStateByIds(dailiesIds, collection)
+      const incompleteId = findFirstIncomplete(progresses)
+
+      return incompleteId ? findChildById(content.children, incompleteId) : null
+    }
+
+    // does not support passing in 'method-v2' type yet
+    if (content.type === COLLECTION_TYPE.LEARNING_PATH) {
+      let navigateTo = null
+
       if (content.id === activeLearningPathId) {
-        const dailiesIds = dailySession ? dailySession.map(item => item.content_ids).flat() : []
-        const dailiesProgresses = await getProgressStateByIds(dailiesIds, collection)
-
-        let firstIncompleteDaily = Object.entries(dailiesProgresses).find(id => dailiesProgresses[id] !== STATE_COMPLETED) || null
-        if (firstIncompleteDaily) {
-
-          const navigateToId = firstIncompleteDaily[0]
-          const navigateTo = content?.children.find(child => child.id === Number(navigateToId)) || null
-          navigateToData[content.id] = buildNavigateTo(navigateTo, null, collection)
-
-        } else {
-          const childrenIds = content?.children.map(child => child.id) || []
-          const childrenProgresses = await getProgressStateByIds(childrenIds, collection)
-          let firstIncompleteChild = Object.entries(childrenProgresses).find(id => childrenProgresses[id] !== STATE_COMPLETED) || null
-
-          if (firstIncompleteChild) {
-            const navigateToId = firstIncompleteChild[0]
-            const navigateTo = content?.children.find(child => child.id === Number(navigateToId)) || null
-            navigateToData[content.id] = buildNavigateTo(navigateTo, null, collection)
-          } else {
-            navigateToData[content.id] = null
-          }
-        }
-      } else {
-        const childrenIds = content?.children.map(child => child.id) || []
-        const childrenProgresses = await getProgressStateByIds(childrenIds, collection)
-        let firstIncompleteChild = Object.keys(childrenProgresses).find(id => childrenProgresses[id] !== STATE_COMPLETED) || null
-
-        if (firstIncompleteDaily) {
-          const navigateToId = firstIncompleteChild[0]
-          const navigateTo = content?.children.find(child => child.id === Number(navigateToId)) || null
-          navigateToData[content.id] = buildNavigateTo(navigateTo, null, collection)
-        } else {
-          navigateToData[content.id] = null
-        }
+        navigateTo = await getDailySessionNavigateTo(content, dailySession, collection)
       }
+
+      if (!navigateTo) {
+        navigateTo = await getFirstOrIncompleteChild(content, collection)
+      }
+
+      navigateToData[content.id] =buildNavigateTo(navigateTo, null, collection)
+
     } else {
       navigateToData[content.id] = null
     }
@@ -580,7 +553,7 @@ function normalizeCollection(collection) {
   if (!Object.values(COLLECTION_TYPE).includes(collection.type)) {
     throw new Error(`Invalid collection type: ${collection.type}`)
   }
-  
+
   if (typeof collection.id === 'string' && isNaN(+collection.id)) {
     throw new Error(`Invalid collection id: ${collection.id}`)
   }
