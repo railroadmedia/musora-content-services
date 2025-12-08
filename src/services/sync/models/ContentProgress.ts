@@ -17,7 +17,7 @@ export default class ContentProgress extends BaseModel<{
   collection_id: number | null
   state: STATE
   progress_percent: number
-  resume_time_seconds: number
+  resume_time_seconds: number | null
 }> {
   static table = SYNC_TABLES.CONTENT_PROGRESS
 
@@ -40,7 +40,7 @@ export default class ContentProgress extends BaseModel<{
     return (this._getRaw('collection_id') as number) || null
   }
   get resume_time_seconds() {
-    return this._getRaw('resume_time_seconds') as number
+    return (this._getRaw('resume_time_seconds') as number) || null
   }
 
   set content_id(value: number) {
@@ -53,7 +53,7 @@ export default class ContentProgress extends BaseModel<{
     this._setRaw('state', value)
   }
   set progress_percent(value: number) {
-    this._setRaw('progress_percent', value)
+    this._setRaw('progress_percent', Math.min(100, Math.max(0, value)))
   }
   set collection_type(value: COLLECTION_TYPE | null) {
     this._setRaw('collection_type', value)
@@ -61,8 +61,8 @@ export default class ContentProgress extends BaseModel<{
   set collection_id(value: number | null) {
     this._setRaw('collection_id', value)
   }
-  set resume_time_seconds(value: number) {
-    this._setRaw('resume_time_seconds', value)
+  set resume_time_seconds(value: number | null) {
+    this._setRaw('resume_time_seconds', value !== null ? Math.max(0, value) : null)
   }
 
 }
