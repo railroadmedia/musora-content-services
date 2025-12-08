@@ -23,6 +23,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     )
   }
 
+  //this _specifically_ needs to get content_ids from ALL collection_types (including null)
   async completedByContentIds(contentIds: number[]) {
     return this.queryAll(
       Q.where('content_id', Q.oneOf(contentIds)),
@@ -131,7 +132,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       ])
     }).then(([progressEventsModule, { globalConfig }]) => {
       progressEventsModule.emitProgressSaved({
-        userId: globalConfig.railcontentConfig?.userId || 0,
+        userId: Number(globalConfig.railcontentConfig?.userId) || 0,
         contentId,
         progressPercent: progressPct,
         progressStatus: progressPct === 100 ? STATE.COMPLETED : STATE.STARTED,

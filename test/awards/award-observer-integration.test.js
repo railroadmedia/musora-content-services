@@ -2,17 +2,20 @@ import { contentProgressObserver } from '../../src/services/awards/internal/cont
 import { awardEvents } from '../../src/services/awards/internal/award-events'
 import { emitProgressSaved } from '../../src/services/progress-events'
 import { mockAwardDefinitions, getAwardByContentId } from '../mockData/award-definitions'
+import { setupDefaultMocks, setupAwardEventListeners } from './helpers'
+import { mockCompletionStates } from './helpers/completion-mock'
+import { COLLECTION_TYPE, waitForDebounce } from './helpers/progress-emitter'
 
 jest.mock('../../src/services/sanity', () => ({
-  default: {
-    fetch: jest.fn()
-  },
+  default: { fetch: jest.fn() },
   fetchSanity: jest.fn()
 }))
 
 jest.mock('../../src/services/sync/repository-proxy', () => {
   const mockFns = {
     contentProgress: {
+      getOneProgressByContentId: jest.fn(),
+      getSomeProgressByContentIds: jest.fn(),
       queryOne: jest.fn(),
       queryAll: jest.fn()
     },
@@ -33,8 +36,7 @@ import db from '../../src/services/sync/repository-proxy'
 import { awardDefinitions } from '../../src/services/awards/internal/award-definitions'
 
 describe('Award Observer Integration - E2E Scenarios', () => {
-  let awardProgressListener
-  let awardGrantedListener
+  let listeners
 
   const emitProgressWithCollection = (contentId, collectionType, collectionId, progressPercent = 100) => {
     emitProgressSaved({
@@ -50,30 +52,20 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
   }
 
+  const emitAlaCarteProgress = (contentId, progressPercent = 100) => {
+    emitProgressWithCollection(contentId, null, null, progressPercent)
+  }
+
   beforeEach(async () => {
     jest.clearAllMocks()
     awardEvents.removeAllListeners()
 
     sanityClient.fetch = jest.fn().mockResolvedValue(mockAwardDefinitions)
-    fetchSanity.mockResolvedValue(mockAwardDefinitions)
-
-    db.practices.sumPracticeMinutesForContent = jest.fn().mockResolvedValue(200)
-    db.userAwardProgress.hasCompletedAward = jest.fn().mockResolvedValue(false)
-    db.userAwardProgress.recordAwardProgress = jest.fn().mockResolvedValue({ data: {}, status: 'synced' })
-
-    db.contentProgress.queryAll = jest.fn().mockResolvedValue({
-      data: [{ created_at: Math.floor(Date.now() / 1000) - 86400 * 10 }]
-    })
-    db.contentProgress.queryOne = jest.fn().mockResolvedValue({
-      data: { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
-    })
+    setupDefaultMocks(db, fetchSanity)
 
     await awardDefinitions.refresh()
 
-    awardProgressListener = jest.fn()
-    awardGrantedListener = jest.fn()
-    awardEvents.on('awardProgress', awardProgressListener)
-    awardEvents.on('awardGranted', awardGrantedListener)
+    listeners = setupAwardEventListeners(awardEvents)
 
     await contentProgressObserver.start()
   })
@@ -94,6 +86,22 @@ describe('Award Observer Integration - E2E Scenarios', () => {
       expect(contentProgressObserver.allChildIds.size).toBeGreaterThan(0)
     })
 
+    test('includes content_id in allChildIds Set', async () => {
+      const lpAward = getAwardByContentId(417140)
+      const gcAward = getAwardByContentId(416446)
+
+      expect(contentProgressObserver.allChildIds.has(lpAward.content_id)).toBe(true)
+      expect(contentProgressObserver.allChildIds.has(gcAward.content_id)).toBe(true)
+    })
+
+    test('includes all child_ids in allChildIds Set', async () => {
+      const award = getAwardByContentId(416446)
+
+      award.child_ids.forEach(childId => {
+        expect(contentProgressObserver.allChildIds.has(childId)).toBe(true)
+      })
+    })
+
     test('returns cleanup function', async () => {
       const cleanup = await contentProgressObserver.start()
       expect(typeof cleanup).toBe('function')
@@ -110,44 +118,24 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     const testAward = getAwardByContentId(417049)
 
     beforeEach(() => {
-      const completedLessonIds = [417045]
-
-      db.contentProgress.queryOne.mockImplementation((whereClause) => {
-        const contentId = whereClause?.comparison?.right?.value
-
-        return Promise.resolve({
-          data: completedLessonIds.includes(contentId)
-            ? { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
-            : { state: 'started', created_at: Math.floor(Date.now() / 1000) }
-        })
-      })
+      mockCompletionStates(db, [417045])
     })
 
     test('emits awardProgress event when lesson completed', async () => {
-      emitProgressWithCollection(417045, 'guided-course', 417049)
-      await new Promise(resolve => setTimeout(resolve, 100))
+      emitAlaCarteProgress(417045)
+      await waitForDebounce()
 
-      expect(awardProgressListener).toHaveBeenCalled()
-      const payload = awardProgressListener.mock.calls[0][0]
+      expect(listeners.progress).toHaveBeenCalled()
+      const payload = listeners.progress.mock.calls[0][0]
       expect(payload).toHaveProperty('awardId', testAward._id)
       expect(payload).toHaveProperty('progressPercentage')
     })
 
     test('calculates correct progress percentage', async () => {
-      const completedLessonIds = [417045, 417046]
+      mockCompletionStates(db, [417045, 417046])
 
-      db.contentProgress.queryOne.mockImplementation((whereClause) => {
-        const contentId = whereClause?.comparison?.right?.value
-
-        return Promise.resolve({
-          data: completedLessonIds.includes(contentId)
-            ? { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
-            : { state: 'started', created_at: Math.floor(Date.now() / 1000) }
-        })
-      })
-
-      emitProgressWithCollection(417045, 'guided-course', 417049)
-      await new Promise(resolve => setTimeout(resolve, 100))
+      emitAlaCarteProgress(417045)
+      await waitForDebounce()
 
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
         testAward._id,
@@ -163,21 +151,21 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     const testAward = getAwardByContentId(417049)
 
     test('emits awardGranted event when all lessons completed', async () => {
-      emitProgressWithCollection(417045, 'guided-course', 417049)
-      await new Promise(resolve => setTimeout(resolve, 100))
+      emitAlaCarteProgress(417045)
+      await waitForDebounce()
 
-      expect(awardGrantedListener).toHaveBeenCalledTimes(1)
-      const payload = awardGrantedListener.mock.calls[0][0]
+      expect(listeners.granted).toHaveBeenCalledTimes(1)
+      const payload = listeners.granted.mock.calls[0][0]
       expect(payload).toHaveProperty('awardId', testAward._id)
       expect(payload).toHaveProperty('completionData')
       expect(payload).toHaveProperty('popupMessage')
     })
 
     test('includes completion data in granted event', async () => {
-      emitProgressWithCollection(417045, 'guided-course', 417049)
-      await new Promise(resolve => setTimeout(resolve, 100))
+      emitAlaCarteProgress(417045)
+      await waitForDebounce()
 
-      const payload = awardGrantedListener.mock.calls[0][0]
+      const payload = listeners.granted.mock.calls[0][0]
       expect(payload.completionData).toMatchObject({
         content_title: expect.any(String),
         completed_at: expect.any(String),
@@ -196,25 +184,15 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     ]
 
     beforeEach(() => {
-      const completedLessonIds = nonKickoffLessons.slice(0, 12)
-
-      db.contentProgress.queryOne.mockImplementation((whereClause) => {
-        const contentId = whereClause?.comparison?.right?.value
-
-        return Promise.resolve({
-          data: completedLessonIds.includes(contentId)
-            ? { state: 'completed', created_at: Math.floor(Date.now() / 1000) }
-            : { state: 'started', created_at: Math.floor(Date.now() / 1000) }
-        })
-      })
+      mockCompletionStates(db, nonKickoffLessons.slice(0, 12))
     })
 
     test('debounces multiple rapid updates to same course', async () => {
-      emitProgressWithCollection(416465, 'guided-course', 416464)
-      emitProgressWithCollection(416467, 'guided-course', 416464)
-      emitProgressWithCollection(416468, 'guided-course', 416464)
+      emitAlaCarteProgress(416467)
+      emitAlaCarteProgress(416468)
+      emitAlaCarteProgress(416469)
 
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await waitForDebounce()
 
       expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledTimes(1)
     })
@@ -222,26 +200,24 @@ describe('Award Observer Integration - E2E Scenarios', () => {
 
   describe('Scenario: Progress for lessons without awards', () => {
     test('ignores lessons not associated with awards', async () => {
-      emitProgressWithCollection(999999, 'guided-course', 999000)
-      await new Promise(resolve => setTimeout(resolve, 100))
+      emitAlaCarteProgress(999999)
+      await waitForDebounce()
 
-      expect(awardProgressListener).not.toHaveBeenCalled()
-      expect(awardGrantedListener).not.toHaveBeenCalled()
+      expect(listeners.progress).not.toHaveBeenCalled()
+      expect(listeners.granted).not.toHaveBeenCalled()
     })
   })
 
   describe('Scenario: Non-completed progress status', () => {
     beforeEach(() => {
-      db.contentProgress.queryOne.mockResolvedValue({
-        data: { state: 'started', created_at: Math.floor(Date.now() / 1000) }
-      })
+      mockCompletionStates(db, [])
     })
 
     test('does not trigger award granted when lessons not completed in DB', async () => {
-      emitProgressWithCollection(417045, 'guided-course', 417049, 50)
-      await new Promise(resolve => setTimeout(resolve, 100))
+      emitAlaCarteProgress(417045, 50)
+      await waitForDebounce()
 
-      expect(awardGrantedListener).not.toHaveBeenCalled()
+      expect(listeners.granted).not.toHaveBeenCalled()
     })
 
     test('started progress state in DB does not grant award', async () => {
@@ -251,38 +227,36 @@ describe('Award Observer Integration - E2E Scenarios', () => {
         progressPercent: 75,
         progressStatus: 'started',
         bubble: true,
-        collectionType: 'guided-course',
-        collectionId: 417049,
+        collectionType: null,
+        collectionId: null,
         resumeTimeSeconds: null,
         timestamp: Date.now()
       })
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await waitForDebounce()
 
-      expect(awardGrantedListener).not.toHaveBeenCalled()
+      expect(listeners.granted).not.toHaveBeenCalled()
     })
   })
 
   describe('Scenario: Excluded content progress', () => {
     test('excluded content (not in child_ids) does not trigger award progress', async () => {
-      emitProgressWithCollection(416447, 'guided-course', 416446)
-      await new Promise(resolve => setTimeout(resolve, 100))
+      emitAlaCarteProgress(416447)
+      await waitForDebounce()
 
       expect(db.userAwardProgress.recordAwardProgress).not.toHaveBeenCalled()
     })
   })
 
   describe('Scenario: Already completed award', () => {
-    const testAward = getAwardByContentId(417049)
-
     beforeEach(() => {
       db.userAwardProgress.hasCompletedAward.mockResolvedValue(true)
     })
 
     test('does not re-grant already completed award', async () => {
-      emitProgressWithCollection(417045, 'guided-course', 417049)
-      await new Promise(resolve => setTimeout(resolve, 100))
+      emitAlaCarteProgress(417045)
+      await waitForDebounce()
 
-      expect(awardGrantedListener).not.toHaveBeenCalled()
+      expect(listeners.granted).not.toHaveBeenCalled()
       expect(db.userAwardProgress.recordAwardProgress).not.toHaveBeenCalledWith(
         expect.anything(),
         100,
@@ -298,21 +272,27 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     })
 
     test('clears debounce timers on stop', async () => {
-      emitProgressWithCollection(417045, 'guided-course', 417049)
+      emitAlaCarteProgress(417045)
       contentProgressObserver.stop()
 
       expect(contentProgressObserver.debounceTimers.size).toBe(0)
     })
+
+    test('clears allChildIds on stop', async () => {
+      contentProgressObserver.stop()
+
+      expect(contentProgressObserver.allChildIds.size).toBe(0)
+    })
   })
 
-  describe('Scenario: Learning path vs guided course event differentiation', () => {
+  describe('Scenario: Learning path award events', () => {
     const learningPathAward = getAwardByContentId(417140)
 
     test('learning path award has correct popup message', async () => {
-      emitProgressWithCollection(417105, 'learning-path-v2', 417140)
-      await new Promise(resolve => setTimeout(resolve, 100))
+      emitProgressWithCollection(417105, COLLECTION_TYPE.LEARNING_PATH, 417140)
+      await waitForDebounce()
 
-      const payload = awardGrantedListener.mock.calls[0][0]
+      const payload = listeners.granted.mock.calls[0][0]
       expect(payload.popupMessage).toContain('Learn To Play The Drums')
       expect(payload.popupMessage).toContain('minutes')
       expect(payload.popupMessage).toContain('days')
@@ -324,23 +304,19 @@ describe('Award Observer Integration - E2E Scenarios', () => {
     const testAward2 = getAwardByContentId(417049)
 
     beforeEach(() => {
-      db.contentProgress.queryOne.mockImplementation(() => {
-        return Promise.resolve({
-          data: { state: 'started', created_at: Math.floor(Date.now() / 1000) }
-        })
-      })
+      mockCompletionStates(db, [])
     })
 
     test('tracks progress for multiple courses independently', async () => {
-      emitProgressWithCollection(416448, 'guided-course', 416446)
-      await new Promise(resolve => setTimeout(resolve, 100))
+      emitAlaCarteProgress(416448)
+      await waitForDebounce()
 
-      emitProgressWithCollection(417045, 'guided-course', 417049)
-      await new Promise(resolve => setTimeout(resolve, 100))
+      emitAlaCarteProgress(417045)
+      await waitForDebounce()
 
-      expect(awardProgressListener).toHaveBeenCalledTimes(2)
+      expect(listeners.progress).toHaveBeenCalledTimes(2)
 
-      const calls = awardProgressListener.mock.calls
+      const calls = listeners.progress.mock.calls
       const awardIds = calls.map(call => call[0].awardId)
       expect(awardIds).toContain(testAward1._id)
       expect(awardIds).toContain(testAward2._id)
