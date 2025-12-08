@@ -61,16 +61,12 @@ export async function fetchGenres(
   return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }
 
-export interface GenreBySlug {
-  data: Genre | null
-}
-
 /**
  * Fetch a single genre by their slug and brand
  *
  * @param {string} slug - The slug of the genre to fetch.
  * @param {Brands|string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<GenreBySlug>} - A promise that resolves to an genre object or null if not found.
+ * @returns {Promise<Genre | null>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenreBySlug('drumeo')
@@ -80,7 +76,7 @@ export interface GenreBySlug {
 export async function fetchGenreBySlug(
   slug: string,
   brand?: Brands | string
-): Promise<GenreBySlug> {
+): Promise<Genre | null> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
     bypassPermissions: true,

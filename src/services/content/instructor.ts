@@ -67,16 +67,12 @@ export async function fetchInstructors(
   return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }
 
-export interface FetchInstructorBySlug {
-  data: Instructor | null
-}
-
 /**
  * Fetch a single instructor by their name
  *
  * @param {string} slug - The slug of the instructor to fetch.
  * @param {Brands|string} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Instructor>} - A promise that resolves to an instructor object or null if not found.
+ * @returns {Promise<Instructor | null>} - A promise that resolves to an instructor object or null if not found.
  *
  * @example
  * fetchInstructorBySlug('66samus', 'drumeo')
@@ -86,7 +82,7 @@ export interface FetchInstructorBySlug {
 export async function fetchInstructorBySlug(
   slug: string,
   brand?: Brands | string
-): Promise<FetchInstructorBySlug> {
+): Promise<Instructor | null> {
   const brandFilter = brand ? `brand == "${brand}" && ` : ''
   const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
     bypassPermissions: true,
