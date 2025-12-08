@@ -59,6 +59,7 @@ export const query = (): QueryBuilder => {
   }
 
   const builder: QueryBuilder = {
+    // main filters
     and(expr: string) {
       state.filter = and.concat(state.filter, expr)
       return builder
@@ -70,26 +71,31 @@ export const query = (): QueryBuilder => {
       return builder
     },
 
+    // sorting
     order(expr: string) {
       state.ordering = order.concat(state.ordering, expr)
       return builder
     },
 
-    slice(start: number, end?: number) {
-      state.slice = slice.concat(state.slice, `[${start}...${end}]`)
+    // pagination / slicing
+    slice(start: number = 0, end?: number) {
+      const sliceExpr = !end ? `[${start}]` : `[${start}...${end}]`
+
+      state.slice = slice.concat(state.slice, sliceExpr)
       return builder
     },
 
     first() {
-      state.slice = slice.concat(state.slice, `[0]`)
-      return builder
+      return this.slice()
     },
 
+    // projection
     select(...fields: string[]) {
       state.projection.push(...fields)
       return builder
     },
 
+    // post filters
     postFilter(expr: string) {
       state.postFilter = and.concat(state.postFilter, expr)
       return builder
