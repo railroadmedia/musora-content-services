@@ -5,6 +5,18 @@ import {
 } from './services/eventsAPI';
 
 import {
+	registerAwardCallback,
+	registerProgressCallback
+} from './services/awards/award-callbacks.js';
+
+import {
+	getAwardStatistics,
+	getCompletedAwards,
+	getContentAwards,
+	getInProgressAwards
+} from './services/awards/award-query.js';
+
+import {
 	globalConfig,
 	initializeService
 } from './services/config.js';
@@ -169,9 +181,7 @@ import {
 } from './services/forums/threads.ts';
 
 import {
-	fetchAwardsForUser,
-	fetchCertificate,
-	getAwardDataForGuidedContent
+	fetchCertificate
 } from './services/gamification/awards.ts';
 
 import {
@@ -189,6 +199,11 @@ import {
 import {
 	createTestUser
 } from './services/liveTesting.ts';
+
+import {
+	emitProgressSaved,
+	onProgressSaved
+} from './services/progress-events.js';
 
 import {
 	getMethodCard
@@ -457,6 +472,7 @@ export {
 	deleteUserActivity,
 	duplicatePlaylist,
 	editComment,
+	emitProgressSaved,
 	enrollUserInGuidedCourse,
 	extractSanityUrl,
 	fetchAll,
@@ -466,7 +482,6 @@ export {
 	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
-	fetchAwardsForUser,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -573,10 +588,13 @@ export {
 	getAllCompletedByIds,
 	getAllStarted,
 	getAllStartedOrCompleted,
-	getAwardDataForGuidedContent,
+	getAwardStatistics,
+	getCompletedAwards,
+	getContentAwards,
 	getContentRows,
 	getDailySession,
 	getEnrichedLearningPath,
+	getInProgressAwards,
 	getLastInteractedOf,
 	getLearningPathLessonsByIds,
 	getLegacyMethods,
@@ -640,6 +658,7 @@ export {
 	markNotificationAsUnread,
 	markThreadAsRead,
 	numberOfActiveUsers,
+	onProgressSaved,
 	openComment,
 	otherStats,
 	pauseLiveEventPolling,
@@ -652,6 +671,8 @@ export {
 	recordUserActivity,
 	recordUserPractice,
 	recordWatchSession,
+	registerAwardCallback,
+	registerProgressCallback,
 	removeContentAsInterested,
 	removeContentAsNotInterested,
 	removeUserPractice,

@@ -1,0 +1,273 @@
+import { awardManager } from '../../src/services/awards/internal/award-manager'
+import { awardEvents } from '../../src/services/awards/internal/award-events'
+import { mockAwardDefinitions, getAwardByContentId } from '../mockData/award-definitions'
+import { globalConfig } from '../../src/services/config'
+import { LocalStorageMock } from '../localStorageMock'
+import { setupDefaultMocks, setupAwardEventListeners } from './helpers'
+import { mockCompletionStates, mockAllCompleted, mockNoneCompleted } from './helpers/completion-mock'
+
+jest.mock('../../src/services/sanity', () => ({
+  default: { fetch: jest.fn() },
+  fetchSanity: jest.fn()
+}))
+
+jest.mock('../../src/services/railcontent', () => ({
+  ...jest.requireActual('../../src/services/railcontent'),
+  fetchUserPermissionsData: jest.fn().mockResolvedValue({ permissions: [108, 91, 92], isAdmin: false })
+}))
+
+jest.mock('../../src/services/sync/repository-proxy', () => {
+  const mockFns = {
+    contentProgress: {
+      getOneProgressByContentId: jest.fn(),
+      getSomeProgressByContentIds: jest.fn(),
+      queryOne: jest.fn(),
+      queryAll: jest.fn()
+    },
+    practices: {
+      sumPracticeMinutesForContent: jest.fn()
+    },
+    userAwardProgress: {
+      hasCompletedAward: jest.fn(),
+      recordAwardProgress: jest.fn(),
+      getByAwardId: jest.fn(),
+      completeAward: jest.fn()
+    }
+  }
+  return { default: mockFns, ...mockFns }
+})
+
+import sanityClient, { fetchSanity } from '../../src/services/sanity'
+import db from '../../src/services/sync/repository-proxy'
+import { awardDefinitions } from '../../src/services/awards/internal/award-definitions'
+
+describe('Award Content Exclusion Handling - E2E Scenarios', () => {
+  let listeners
+
+  beforeEach(async () => {
+    jest.clearAllMocks()
+    globalConfig.localStorage = new LocalStorageMock()
+    awardEvents.removeAllListeners()
+
+    sanityClient.fetch = jest.fn().mockResolvedValue(mockAwardDefinitions)
+    setupDefaultMocks(db, fetchSanity, { practiceMinutes: 150 })
+
+    db.userAwardProgress.completeAward = jest.fn().mockResolvedValue({ data: {}, status: 'synced' })
+
+    db.contentProgress.getSomeProgressByContentIds.mockResolvedValue({
+      data: [{ created_at: Math.floor(Date.now() / 1000) - 86400 * 7 }]
+    })
+
+    await awardDefinitions.refresh()
+
+    listeners = setupAwardEventListeners(awardEvents)
+  })
+
+  afterEach(() => {
+    awardEvents.removeAllListeners()
+    awardDefinitions.clear()
+  })
+
+  describe('Scenario: Guided course with excluded intro video (416446 - 1 eligible lesson)', () => {
+    const testAward = getAwardByContentId(416446)
+    const courseId = 416446
+
+    test('completing the single eligible lesson grants award at 100%', async () => {
+      mockAllCompleted(db)
+
+      await awardManager.onContentCompleted(courseId)
+
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        expect.any(String),
+        100,
+        expect.objectContaining({
+          completedAt: expect.any(Number),
+          immediate: true
+        })
+      )
+      expect(listeners.granted).toHaveBeenCalledTimes(1)
+    })
+
+    test('shows 0% progress when eligible lesson not completed', async () => {
+      mockNoneCompleted(db)
+
+      await awardManager.onContentCompleted(courseId)
+
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        testAward._id,
+        0,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
+      )
+    })
+  })
+
+  describe('Scenario: Course with 4 eligible lessons (417049 - intro excluded)', () => {
+    const testAward = getAwardByContentId(417049)
+    const courseId = 417049
+
+    test('completing 1 of 4 lessons shows 25% progress', async () => {
+      mockCompletionStates(db, [417045])
+
+      await awardManager.onContentCompleted(courseId)
+
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        testAward._id,
+        25,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
+      )
+    })
+
+    test('completing 2 of 4 lessons shows 50% progress', async () => {
+      mockCompletionStates(db, [417045, 417046])
+
+      await awardManager.onContentCompleted(courseId)
+
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        testAward._id,
+        50,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
+      )
+    })
+
+    test('must complete all 4 eligible lessons to earn award', async () => {
+      mockCompletionStates(db, [417045, 417046, 417047, 417048])
+
+      await awardManager.onContentCompleted(courseId)
+
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        expect.any(String),
+        100,
+        expect.objectContaining({
+          completedAt: expect.any(Number),
+          immediate: true
+        })
+      )
+      expect(listeners.granted).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('Scenario: Large course with 23 eligible lessons (416464 - intro excluded)', () => {
+    const testAward = getAwardByContentId(416464)
+    const courseId = 416464
+    const eligibleLessons = [
+      416467, 416468, 416469, 416470, 416471, 416472, 416473,
+      416474, 416475, 416476, 416477, 416478, 416479, 416480, 416481,
+      416482, 416483, 416484, 416485, 416486, 416487, 416488, 416489
+    ]
+
+    test('shows 0% progress when no eligible lessons completed', async () => {
+      mockNoneCompleted(db)
+
+      await awardManager.onContentCompleted(courseId)
+
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        testAward._id,
+        0,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
+      )
+    })
+
+    test('completing 12 of 23 lessons shows ~52% progress', async () => {
+      mockCompletionStates(db, eligibleLessons.slice(0, 12))
+
+      await awardManager.onContentCompleted(courseId)
+
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        testAward._id,
+        52,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
+      )
+    })
+
+    test('must complete all 23 eligible lessons to earn award', async () => {
+      mockCompletionStates(db, eligibleLessons)
+
+      await awardManager.onContentCompleted(courseId)
+
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        expect.any(String),
+        100,
+        expect.objectContaining({
+          completedAt: expect.any(Number),
+          immediate: true
+        })
+      )
+      expect(listeners.granted).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('Scenario: Course type without excluded content (417039 - all 3 lessons count)', () => {
+    const testAward = getAwardByContentId(417039)
+    const courseId = 417039
+
+    test('first lesson counts toward progress', async () => {
+      mockCompletionStates(db, [417035])
+
+      await awardManager.onContentCompleted(courseId)
+
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        testAward._id,
+        33,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
+      )
+    })
+
+    test('all 3 lessons must be completed to earn award', async () => {
+      mockAllCompleted(db)
+
+      await awardManager.onContentCompleted(courseId)
+
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        expect.any(String),
+        100,
+        expect.objectContaining({
+          completedAt: expect.any(Number),
+          immediate: true
+        })
+      )
+    })
+  })
+
+  describe('Scenario: Learning path content type (417140)', () => {
+    const testAward = getAwardByContentId(417140)
+    const courseId = 417140
+
+    test('all child content counts toward progress', async () => {
+      mockCompletionStates(db, testAward.child_ids.slice(0, 11))
+
+      await awardManager.onContentCompleted(courseId)
+
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        testAward._id,
+        50,
+        expect.objectContaining({
+          progressData: expect.any(Object)
+        })
+      )
+    })
+  })
+
+  describe('Scenario: Skill pack content type (418000)', () => {
+    const courseId = 418000
+
+    test('completing all lessons grants award', async () => {
+      mockAllCompleted(db)
+
+      await awardManager.onContentCompleted(courseId)
+
+      expect(listeners.granted).toHaveBeenCalledTimes(1)
+    })
+  })
+})

@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.94.8](https://github.com/railroadmedia/musora-content-services/compare/v2.94.7...v2.94.8) (2025-12-04)
+
+
+### Bug Fixes
+
+* collection type check ([#619](https://github.com/railroadmedia/musora-content-services/issues/619)) ([df520a4](https://github.com/railroadmedia/musora-content-services/commit/df520a497c24091b41d207992a8a71daf0fc98e5))
+
+### [2.94.7](https://github.com/railroadmedia/musora-content-services/compare/v2.94.1...v2.94.7) (2025-12-04)
+
+
+### Bug Fixes
+
+* bad import ([#611](https://github.com/railroadmedia/musora-content-services/issues/611)) ([ac9ee7b](https://github.com/railroadmedia/musora-content-services/commit/ac9ee7bb8d9617e319dcdedb47c5d7e3c7973732))
+* fallback for method card when no activ epath ([#610](https://github.com/railroadmedia/musora-content-services/issues/610)) ([8458d97](https://github.com/railroadmedia/musora-content-services/commit/8458d9754d293ae28cb134546305264e638c8bbd))
+* **MU2E2-183/T3PS-956:** Fix create/edit forum category ([070f7e5](https://github.com/railroadmedia/musora-content-services/commit/070f7e5754c0e2e9536311a76610df938f4e5146))
+* Patch permissions filter (round 2) ([#616](https://github.com/railroadmedia/musora-content-services/issues/616)) ([f8509a5](https://github.com/railroadmedia/musora-content-services/commit/f8509a5178dfdd17ac06f5779a39960ae1a8130b))
+* refactor fetchLearningPathProgressCheckLessons to exclude duplicates ([#615](https://github.com/railroadmedia/musora-content-services/issues/615)) ([0f0f51e](https://github.com/railroadmedia/musora-content-services/commit/0f0f51e2148a9e611bb3cbc9d103f12952e00056))
+* watermelon fixes for content progress ([#614](https://github.com/railroadmedia/musora-content-services/issues/614)) ([2c2fa8e](https://github.com/railroadmedia/musora-content-services/commit/2c2fa8e68d5b3174ca62c8b9a900370947e44725))
+
 ### [2.94.6](https://github.com/railroadmedia/musora-content-services/compare/v2.94.5...v2.94.6) (2025-12-03)
 
 

@@ -4,7 +4,8 @@ export const SYNC_TABLES = {
   CONTENT_LIKES: 'content_likes',
   CONTENT_PROGRESS: 'progress',
   PRACTICES: 'practices',
-  PRACTICE_DAY_NOTES: 'practice_day_notes'
+  PRACTICE_DAY_NOTES: 'practice_day_notes',
+  USER_AWARD_PROGRESS: 'user_award_progress'
 }
 
 const contentLikesTable = tableSchema({
@@ -55,12 +56,26 @@ const practiceDayNotesTable = tableSchema({
   ]
 })
 
+const userAwardProgressTable = tableSchema({
+  name: SYNC_TABLES.USER_AWARD_PROGRESS,
+  columns: [
+    { name: 'award_id', type: 'string', isIndexed: true },
+    { name: 'progress_percentage', type: 'number' },
+    { name: 'completed_at', type: 'number', isOptional: true, isIndexed: true },
+    { name: 'progress_data', type: 'string', isOptional: true },
+    { name: 'completion_data', type: 'string', isOptional: true },
+    { name: 'created_at', type: 'number' },
+    { name: 'updated_at', type: 'number', isIndexed: true }
+  ]
+})
+
 export default appSchema({
   version: 1,
   tables: [
     contentLikesTable,
     contentProgressTable,
     practicesTable,
-    practiceDayNotesTable
+    practiceDayNotesTable,
+    userAwardProgressTable
   ]
 })

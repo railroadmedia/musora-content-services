@@ -580,6 +580,7 @@ function normalizeCollection(collection) {
   if (!Object.values(COLLECTION_TYPE).includes(collection.type)) {
     throw new Error(`Invalid collection type: ${collection.type}`)
   }
+  
   if (typeof collection.id === 'string' && isNaN(+collection.id)) {
     throw new Error(`Invalid collection id: ${collection.id}`)
   }

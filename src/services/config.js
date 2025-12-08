@@ -25,11 +25,11 @@ const excludeFromGeneratedIndex = []
 /**
  * Initializes the service with the given configuration.
  * This function must be called before using any other functions in this library.
+ * Automatically initializes award definitions with 24-hour cache in the background.
  *
  * @param {Config} config - Configuration object containing API settings.
  *
- * @example
- * // Initialize the service in your app.js
+ * @example Web Application
  * initializeService({
  *   sanityConfig: {
  *     token: 'your-sanity-api-token',
@@ -43,17 +43,29 @@ const excludeFromGeneratedIndex = []
  *     token: 'your-user-api-token',
  *     userId: 'current-user-id',
  *     baseUrl: 'https://web-staging-one.musora.com',
- *     authToken 'your-auth-token',
+ *     authToken: 'your-auth-token',
  *   },
  *   sessionConfig: {
  *     token: 'your-user-api-token',
  *     userId: 'current-user-id',
- *     authToken 'your-auth-token',
+ *     authToken: 'your-auth-token',
  *   },
  *   baseUrl: 'https://web-staging-one.musora.com',
  *   localStorage: localStorage,
  *   isMA: false,
  *   permissionsVersion: 'v1', // Optional: 'v1' (default) or 'v2'
+ * });
+ *
+ * @example React Native Application
+ * import AsyncStorage from '@react-native-async-storage/async-storage'
+ *
+ * initializeService({
+ *   sanityConfig: { ... },
+ *   railcontentConfig: { ... },
+ *   sessionConfig: { ... },
+ *   baseUrl: 'https://web-staging-one.musora.com',
+ *   localStorage: AsyncStorage,
+ *   isMA: true,
  * });
  */
 export function initializeService(config) {
@@ -65,4 +77,12 @@ export function initializeService(config) {
   globalConfig.isMA = config.isMA || false
   globalConfig.localTimezoneString = config.localTimezoneString || null
   globalConfig.permissionsVersion = config.permissionsVersion || 'v2'
+
+  if (config.localStorage) {
+    import('./awards/internal/award-definitions')
+      .then(({ awardDefinitions }) => awardDefinitions.initialize())
+      .catch(error => {
+        console.error('Failed to initialize award definitions:', error)
+      })
+  }
 }

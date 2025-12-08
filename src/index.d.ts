@@ -1,6 +1,18 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
+	registerAwardCallback,
+	registerProgressCallback
+} from './services/awards/award-callbacks.js';
+
+import {
+	getAwardStatistics,
+	getCompletedAwards,
+	getContentAwards,
+	getInProgressAwards
+} from './services/awards/award-query.js';
+
+import {
 	globalConfig,
 	initializeService
 } from './services/config.js';
@@ -165,9 +177,7 @@ import {
 } from './services/forums/threads.ts';
 
 import {
-	fetchAwardsForUser,
-	fetchCertificate,
-	getAwardDataForGuidedContent
+	fetchCertificate
 } from './services/gamification/awards.ts';
 
 import {
@@ -185,6 +195,11 @@ import {
 import {
 	createTestUser
 } from './services/liveTesting.ts';
+
+import {
+	emitProgressSaved,
+	onProgressSaved
+} from './services/progress-events.js';
 
 import {
 	getMethodCard
@@ -458,6 +473,7 @@ declare module 'musora-content-services' {
 		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
+		emitProgressSaved,
 		enrollUserInGuidedCourse,
 		extractSanityUrl,
 		fetchAll,
@@ -467,7 +483,6 @@ declare module 'musora-content-services' {
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
-		fetchAwardsForUser,
 		fetchByRailContentId,
 		fetchByRailContentIds,
 		fetchByReference,
@@ -574,10 +589,13 @@ declare module 'musora-content-services' {
 		getAllCompletedByIds,
 		getAllStarted,
 		getAllStartedOrCompleted,
-		getAwardDataForGuidedContent,
+		getAwardStatistics,
+		getCompletedAwards,
+		getContentAwards,
 		getContentRows,
 		getDailySession,
 		getEnrichedLearningPath,
+		getInProgressAwards,
 		getLastInteractedOf,
 		getLearningPathLessonsByIds,
 		getLegacyMethods,
@@ -641,6 +659,7 @@ declare module 'musora-content-services' {
 		markNotificationAsUnread,
 		markThreadAsRead,
 		numberOfActiveUsers,
+		onProgressSaved,
 		openComment,
 		otherStats,
 		pauseLiveEventPolling,
@@ -653,6 +672,8 @@ declare module 'musora-content-services' {
 		recordUserActivity,
 		recordUserPractice,
 		recordWatchSession,
+		registerAwardCallback,
+		registerProgressCallback,
 		removeContentAsInterested,
 		removeContentAsNotInterested,
 		removeUserPractice,

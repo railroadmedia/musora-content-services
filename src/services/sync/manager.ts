@@ -12,6 +12,7 @@ import { SyncConcurrencySafetyMechanism } from './concurrency-safety'
 import { SyncTelemetry } from './telemetry/index'
 import { inBoundary } from './errors/boundary'
 import createStoresFromConfig from './store-configs'
+import { contentProgressObserver } from '../awards/internal/content-progress-observer'
 
 export default class SyncManager {
   private static counter = 0
@@ -120,11 +121,16 @@ export default class SyncManager {
       })
     })
 
+    contentProgressObserver.start(this.database).catch(error => {
+      this.telemetry.error('[SyncManager] Failed to start contentProgressObserver', error)
+    })
+
     const teardown = async () => {
       this.telemetry.debug('[SyncManager] Tearing down')
       this.runScope.abort()
       this.strategyMap.forEach(({ strategies }) => strategies.forEach(strategy => strategy.stop()))
       this.safetyMap.forEach(({ mechanisms }) => mechanisms.forEach(mechanism => mechanism()))
+      contentProgressObserver.stop()
       this.retry.stop()
       this.context.stop()
       await this.database.write(() => this.database.unsafeResetDatabase())
