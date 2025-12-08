@@ -351,6 +351,7 @@ import {
 import {
 	fetchMemberships,
 	fetchRechargeTokens,
+	getUpgradePrice,
 	restorePurchases,
 	upgradeSubscription
 } from './services/user/memberships.ts';
@@ -620,6 +621,7 @@ declare module 'musora-content-services' {
 		getTabResults,
 		getTimeRemainingUntilLocal,
 		getToday,
+		getUpgradePrice,
 		getUserData,
 		getUserMonthlyStats,
 		getUserSignature,
