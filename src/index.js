@@ -93,7 +93,7 @@ import {
 
 import {
 	addContextToContent,
-	addContextToMethodContent,
+	addContextToLearningPaths,
 	getNavigateToForPlaylists
 } from './services/contentAggregator.js';
 
@@ -432,7 +432,7 @@ import {
 
 export {
 	addContextToContent,
-	addContextToMethodContent,
+	addContextToLearningPaths,
 	addItemToPlaylist,
 	applyCloudflareWrapper,
 	applySanityTransformations,

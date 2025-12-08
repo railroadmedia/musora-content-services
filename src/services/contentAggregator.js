@@ -152,7 +152,7 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
  *   addProgressStatus: true,
  * })
  */
-export async function addContextToMethodContent(dataPromise, ...dataArgs) {
+export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
   const lastArg = dataArgs[dataArgs.length - 1]
   const options = typeof lastArg === 'object' && !Array.isArray(lastArg) ? lastArg : {}
 
@@ -313,48 +313,35 @@ function extractItemsFromData(data, dataField, isParentArray, includeParent) {
 function extractItemsWithCollectionFromMethodData(data, collection, dataField, isDataAnArray, includeParent, includeIntroVideo) {
   let items = [] // array of tuples {}
 
-  if (data.type === 'method-v2') {
-    if (includeIntroVideo) {
-      items.push(...getDataTuple([data.intro_video], null))
-    }
-    if (dataField) {
-      items.push(...getDataTuple(data[dataField], null))
-      if (includeIntroVideo) {
-        const learningPathIntroVideos = data[dataField].map(lp => lp.intro_video).filter(iv => iv?.id)
-        items.push(...getDataTuple(learningPathIntroVideos, null))
+  if (isDataAnArray) {
+    for (const parent of data) {
+      if (parent.type === COLLECTION_TYPE.LEARNING_PATH) {
+        if (!dataField || (dataField && includeParent)) {
+          items.push(...getDataTuple([parent], null))
+        }
+        if (includeIntroVideo) {
+          items.push(...getDataTuple([parent.intro_video], null))
+        }
+        if (dataField) {
+          items.push(...getDataTuple(parent[dataField], {type: COLLECTION_TYPE.LEARNING_PATH, id: parent.id}))
+        }
+      } else { // is a lesson id, cant determine which collection it belongs to
+        items.push(...getDataTuple([parent], collection))
       }
     }
   } else {
-    if (isDataAnArray) {
-      for (const parent of data) {
-        if (parent.type === COLLECTION_TYPE.LEARNING_PATH) {
-          if (!dataField || (dataField && includeParent)) {
-            items.push(...getDataTuple([parent], null))
-          }
-          if (includeIntroVideo) {
-            items.push(...getDataTuple([parent.intro_video], null))
-          }
-          if (dataField) {
-            items.push(...getDataTuple(parent[dataField], {type: COLLECTION_TYPE.LEARNING_PATH, id: parent.id}))
-          }
-        } else { // is a lesson id, cant determine which collection it belongs to
-          items.push(...getDataTuple([parent], collection))
-        }
+    if (data.type === COLLECTION_TYPE.LEARNING_PATH) {
+      if (!dataField || (dataField && includeParent)) {
+        items.push(...getDataTuple([data], null))
       }
-    } else {
-      if (data.type === COLLECTION_TYPE.LEARNING_PATH) {
-        if (!dataField || (dataField && includeParent)) {
-          items.push(...getDataTuple([data], null))
-        }
-        if (includeIntroVideo) {
-          items.push(...getDataTuple([data.intro_video], null))
-        }
-        if (dataField) {
-          items.push(...getDataTuple(data[dataField], {type: COLLECTION_TYPE.LEARNING_PATH, id: data.id}))
-        }
-      } else { // is a lesson id, cant determine which collection it belongs to
-        items.push(...getDataTuple([data], collection))
+      if (includeIntroVideo) {
+        items.push(...getDataTuple([data.intro_video], null))
       }
+      if (dataField) {
+        items.push(...getDataTuple(data[dataField], {type: COLLECTION_TYPE.LEARNING_PATH, id: data.id}))
+      }
+    } else { // is a lesson id, cant determine which collection it belongs to
+      items.push(...getDataTuple([data], collection))
     }
   }
   return items
