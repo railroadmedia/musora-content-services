@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.96.0](https://github.com/railroadmedia/musora-content-services/compare/v2.95.5...v2.96.0) (2025-12-09)
+
+
+### Features
+
+* handle learning path complete logic ([#628](https://github.com/railroadmedia/musora-content-services/issues/628)) ([e5266d2](https://github.com/railroadmedia/musora-content-services/commit/e5266d2219597fc295dab97cec7b7ce8ac80a705))
+
 ### [2.95.5](https://github.com/railroadmedia/musora-content-services/compare/v2.95.4...v2.95.5) (2025-12-08)
 
 ### [2.95.4](https://github.com/railroadmedia/musora-content-services/compare/v2.95.3...v2.95.4) (2025-12-08)
