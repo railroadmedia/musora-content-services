@@ -1,5 +1,5 @@
-import SyncRepository, { Q } from './base'
-import ContentProgress, { COLLECTION_TYPE, COLLECTION_ID_SELF, STATE } from '../models/ContentProgress'
+import SyncRepository, {Q} from './base'
+import ContentProgress, {COLLECTION_ID_SELF, COLLECTION_TYPE, STATE} from '../models/ContentProgress'
 
 interface ContentIdCollectionTuple {
   contentId: number,
@@ -132,8 +132,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     function tupleClauses(tuple: ContentIdCollectionTuple) {
       return [
         Q.where('content_id', tuple.contentId),
-        Q.where('collection_type', tuple.collection?.type ?? null),
-        Q.where('collection_id', tuple.collection?.id ?? null)
+        Q.where('collection_type', tuple.collection?.type ?? COLLECTION_TYPE.SELF),
+        Q.where('collection_id', tuple.collection?.id ?? COLLECTION_ID_SELF)
       ]
     }
   }

@@ -158,7 +158,6 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
 
   // todo: merge addProgressData with addResumeTimeSeconds to one watermelon call
   const {
-    collection = null, // need only for when children ids are passed in. otherwise i'd remove
     dataField = null,
     dataField_includeParent = false,
     dataField_includeIntroVideo = false,
@@ -178,7 +177,7 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
   if (isDataAnArray && data.length === 0) return data
   if (!data) return false
 
-  let items = extractItemsWithCollectionFromMethodData(data, collection, dataField, isDataAnArray, dataField_includeParent, dataField_includeIntroVideo) ?? []
+  let items = extractItemsWithCollectionFromMethodData(data, dataField, isDataAnArray, dataField_includeParent, dataField_includeIntroVideo) ?? []
   if (items.length === 0) return data
 
   let ids = items.map((item) => (
@@ -310,55 +309,44 @@ function extractItemsFromData(data, dataField, isParentArray, includeParent) {
   return items
 }
 
-function extractItemsWithCollectionFromMethodData(data, collection, dataField, isDataAnArray, includeParent, includeIntroVideo) {
+function extractItemsWithCollectionFromMethodData(data, dataField, isDataAnArray, includeParent, includeIntroVideo) {
   let items = [] // array of tuples {}
 
-  if (isDataAnArray) {
-    for (const parent of data) {
-      if (parent.type === COLLECTION_TYPE.LEARNING_PATH) {
-        if (!dataField || (dataField && includeParent)) {
-          items.push(...getDataTuple([parent], null))
-        }
-        if (includeIntroVideo) {
-          items.push(...getDataTuple([parent.intro_video], null))
-        }
-        if (dataField) {
-          items.push(...getDataTuple(parent[dataField], {type: COLLECTION_TYPE.LEARNING_PATH, id: parent.id}))
-        }
-      } else { // is a lesson id, cant determine which collection it belongs to
-        items.push(...getDataTuple([parent], collection))
-      }
-    }
-  } else {
-    if (data.type === COLLECTION_TYPE.LEARNING_PATH) {
+  const extractLearningPathItems = (item) => {
+    if (item.type === COLLECTION_TYPE.LEARNING_PATH) {
+      const c = {type: COLLECTION_TYPE.LEARNING_PATH, id: item.id}
+
       if (!dataField || (dataField && includeParent)) {
-        items.push(...getDataTuple([data], null))
+        items.push(...getDataTuple([item], c))
       }
       if (includeIntroVideo) {
-        items.push(...getDataTuple([data.intro_video], null))
+        items.push(...getDataTuple([item.intro_video], null))
       }
       if (dataField) {
-        items.push(...getDataTuple(data[dataField], {type: COLLECTION_TYPE.LEARNING_PATH, id: data.id}))
+        items.push(...getDataTuple(item[dataField], c))
       }
     } else { // is a lesson id, cant determine which collection it belongs to
-      items.push(...getDataTuple([data], collection))
+      // do not add it as we cant determine collection
+      // items.push(...getDataTuple([data], collection))
     }
+  }
+
+  if (isDataAnArray) {
+    for (const item of data) {
+      extractLearningPathItems(item)
+    }
+  } else {
+    extractLearningPathItems(data)
   }
   return items
 
   function getDataTuple(data, collection) {
     const tuples = []
     for (const item of data) {
-      const coll = getItemCollection(item, collection)
+      const coll = collection || null
       tuples.push({content: item, collection: coll})
     }
     return tuples
-  }
-
-  function getItemCollection(item, collection) {
-    return item?.type === COLLECTION_TYPE.LEARNING_PATH
-      ? { id: item.id, type: COLLECTION_TYPE.LEARNING_PATH }
-      : (collection || null)
   }
 }
 
