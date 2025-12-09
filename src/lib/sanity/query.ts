@@ -111,10 +111,10 @@ export const query = (): QueryBuilder => {
 
       return `
         *[${filter}]
-          ${ordering}
-          ${slice}
         ${projection.length > 0 ? `{ ${projection} }` : ''}
         ${state.postFilter ? `[${state.postFilter}]` : ''}
+        ${ordering}
+        ${slice}
       `.trim()
     },
 
