@@ -4,13 +4,15 @@ import { COLLECTION_TYPE, STATE } from './sync/models/ContentProgress'
 import { trackUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 import { emitContentCompleted } from './progress-events'
+import {getDailySession} from "./content-org/learning-paths.js";
+import {getToday} from "./dateUtils.js";
 
 const STATE_STARTED = STATE.STARTED
 const STATE_COMPLETED = STATE.COMPLETED
 const MAX_DEPTH = 3
 
-export async function getProgressState(contentId) {
-  return getById(contentId, 'state', '')
+export async function getProgressState(contentId, collection = null) {
+  return getById(contentId, collection, 'state', '')
 }
 
 export async function getProgressStateByIds(contentIds, collection = null) {
@@ -24,6 +26,68 @@ export async function getResumeTimeSecondsByIds(contentIds, collection = null) {
     'resume_time_seconds',
     0
   )
+}
+
+export async function getResumeTimeSecondsByIdsAndCollections(tuples) {
+  return getByIdsAndCollections(tuples, 'resume_time_seconds', 0)
+}
+
+export async function getNavigateToForMethod(data) {
+  let navigateToData = {}
+
+  const brand = data[0].content.brand || null
+  const dailySessionResponse = await getDailySession(brand, getToday())
+  const dailySession = dailySessionResponse?.daily_session || null
+  const activeLearningPathId = dailySessionResponse?.active_learning_path_id || null
+
+  for (const tuple of data) {
+    if (!tuple) continue
+
+    const {content, collection} = tuple
+
+    const findFirstIncomplete = (progresses) =>
+      Object.keys(progresses).find(id => progresses[id] !== STATE_COMPLETED) || null
+
+    const findChildById = (children, id) =>
+      children?.find(child => child.id === Number(id)) || null
+
+    const getFirstOrIncompleteChild = async (content, collection) => {
+      const childrenIds = content?.children.map(child => child.id) || []
+      if (childrenIds.length === 0) return null
+
+      const progresses = await getProgressStateByIds(childrenIds, collection)
+      const incompleteId = findFirstIncomplete(progresses)
+
+      return incompleteId ? findChildById(content.children, incompleteId) : content.children[0]
+    }
+
+    const getDailySessionNavigateTo = async (content, dailySession, collection) => {
+      const dailiesIds = dailySession?.map(item => item.content_ids).flat() || []
+      const progresses = await getProgressStateByIds(dailiesIds, collection)
+      const incompleteId = findFirstIncomplete(progresses)
+
+      return incompleteId ? findChildById(content.children, incompleteId) : null
+    }
+
+    // does not support passing in 'method-v2' type yet
+    if (content.type === COLLECTION_TYPE.LEARNING_PATH) {
+      let navigateTo = null
+
+      if (content.id === activeLearningPathId) {
+        navigateTo = await getDailySessionNavigateTo(content, dailySession, collection)
+      }
+
+      if (!navigateTo) {
+        navigateTo = await getFirstOrIncompleteChild(content, collection)
+      }
+
+      navigateToData[content.id] =buildNavigateTo(navigateTo, null, collection)
+
+    } else {
+      navigateToData[content.id] = null
+    }
+  }
+  return navigateToData
 }
 
 export async function getNavigateTo(data, collection = null) {
@@ -178,10 +242,52 @@ export async function getProgressDataByIds(contentIds, collection) {
   return progress
 }
 
-async function getById(contentId, dataKey, defaultValue) {
+/**
+ * Get progress data for multiple content IDs, each with their own collection context.
+ * Useful when fetching progress for tuples that belong to different collections.
+ *
+ * @param {Array<{contentId: number, collection: {type: string, id: number}|null}>} tuples - Array of objects with contentId and collection
+ * @returns {Promise<Object>} - Object mapping content IDs to progress data
+ *
+ * @example
+ * const tuples = [
+ *   { contentId: 123, collection: { id: 456, type: 'learning-path-v2' } },
+ *   { contentId: 789, collection: { id: 101, type: 'learning-path-v2' } },
+ *   { contentId: 111, collection: null }
+ * ]
+ * const progress = await getProgressDataByIdsAndCollections(tuples)
+ * // Returns: { 123: { progress: 50, status: 'started', last_update: 123456 }, ... }
+ */
+
+// todo: warning: this doesnt work with having 2 items with same contentId but different collection, because
+//  of the response structure here with contentId as key
+export async function getProgressDataByIdsAndCollections(tuples) {
+  tuples = tuples.map(t => ({contentId: normalizeContentId(t.contentId), collection: normalizeCollection(t.collection)}))
+  const progress = Object.fromEntries(tuples.map(item => [item.contentId, {
+    last_update: 0,
+    progress: 0,
+    status: '',
+    collection: {},
+  }]))
+
+  await db.contentProgress.getSomeProgressByContentIdsAndCollection(tuples).then(r => {
+    r.data.forEach(p => {
+      progress[p.content_id] = {
+        last_update: p.updated_at,
+        progress: p.progress_percent,
+        status: p.state,
+        collection: (p.collection_type && p.collection_id) ? {type: p.collection_type, id: p.collection_id} : null
+      }
+    })
+  })
+
+  return progress
+}
+
+async function getById(contentId, collection, dataKey, defaultValue) {
   if (!contentId) return defaultValue
   return db.contentProgress
-    .getOneProgressByContentId(contentId)
+    .getOneProgressByContentId(contentId, collection)
     .then((r) => r.data?.[dataKey] ?? defaultValue)
 }
 
@@ -191,6 +297,18 @@ async function getByIds(contentIds, collection, dataKey, defaultValue) {
   const progress = Object.fromEntries(contentIds.map((id) => [id, defaultValue]))
   await db.contentProgress.getSomeProgressByContentIds(contentIds, collection).then((r) => {
     r.data.forEach((p) => {
+      progress[p.content_id] = p[dataKey] ?? defaultValue
+    })
+  })
+  return progress
+}
+
+async function getByIdsAndCollections(tuples, dataKey, defaultValue) {
+  tuples = tuples.map(t => ({contentId: normalizeContentId(t.contentId), collection: normalizeCollection(t.collection)}))
+  const progress = Object.fromEntries(tuples.map(tuple => [tuple.contentId, defaultValue]))
+
+  await db.contentProgress.getSomeProgressByContentIdsAndCollection(tuples).then(r => {
+    r.data.forEach(p => {
       progress[p.content_id] = p[dataKey] ?? defaultValue
     })
   })

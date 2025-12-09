@@ -90,6 +90,7 @@ import {
 
 import {
 	addContextToContent,
+	addContextToLearningPaths,
 	getNavigateToForPlaylists
 } from './services/contentAggregator.js';
 
@@ -111,10 +112,13 @@ import {
 	getAllStartedOrCompleted,
 	getLastInteractedOf,
 	getNavigateTo,
+	getNavigateToForMethod,
 	getProgressDataByIds,
+	getProgressDataByIdsAndCollections,
 	getProgressState,
 	getProgressStateByIds,
 	getResumeTimeSecondsByIds,
+	getResumeTimeSecondsByIdsAndCollections,
 	getStartedOrCompletedProgressOnly,
 	recordWatchSession
 } from './services/contentProgress.js';
@@ -426,6 +430,7 @@ import {
 declare module 'musora-content-services' {
 	export {
 		addContextToContent,
+		addContextToLearningPaths,
 		addItemToPlaylist,
 		applyCloudflareWrapper,
 		applySanityTransformations,
@@ -590,6 +595,7 @@ declare module 'musora-content-services' {
 		getMethodCard,
 		getMonday,
 		getNavigateTo,
+		getNavigateToForMethod,
 		getNavigateToForPlaylists,
 		getNewAndUpcoming,
 		getOnboardingRecommendedContent,
@@ -597,6 +603,7 @@ declare module 'musora-content-services' {
 		getPracticeNotes,
 		getPracticeSessions,
 		getProgressDataByIds,
+		getProgressDataByIdsAndCollections,
 		getProgressRows,
 		getProgressState,
 		getProgressStateByIds,
@@ -605,6 +612,7 @@ declare module 'musora-content-services' {
 		getRecommendedForYou,
 		getReportIssueOptions,
 		getResumeTimeSecondsByIds,
+		getResumeTimeSecondsByIdsAndCollections,
 		getSanityDate,
 		getScheduleContentRows,
 		getSortOrder,

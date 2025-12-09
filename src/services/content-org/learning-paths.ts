@@ -15,6 +15,7 @@ import {
 import { COLLECTION_TYPE, STATE } from '../sync/models/ContentProgress'
 import { SyncWriteDTO } from '../sync'
 import { ContentProgress } from '../sync/models'
+import { CollectionParameter } from '../sync/repositories/content-progress'
 
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
@@ -37,6 +38,11 @@ interface DailySessionResponse {
 interface DailySession {
   content_ids: number[]
   learning_path_id: number
+}
+
+interface CollectionObject {
+  id: number
+  type: COLLECTION_TYPE.LEARNING_PATH
 }
 
 /**
@@ -308,10 +314,11 @@ export async function completeLearningPathIntroVideo(
 
   response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
-  const collection = { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH }
+  const collection: CollectionObject = { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH }
 
   if (!lessonsToImport) {
-    response.learning_path_reset_response = await contentStatusReset(learningPathId, collection)
+    response.learning_path_reset_response = await resetIfPossible(learningPathId, collection)
+
   } else {
     response.lesson_import_response = await contentsStatusCompleted(lessonsToImport, collection)
   }
@@ -325,6 +332,12 @@ async function completeIfNotCompleted(
   const introVideoStatus = await getProgressState(contentId)
 
   return introVideoStatus !== 'completed' ? await contentStatusCompleted(contentId) : null
+}
+
+async function resetIfPossible(contentId: number, collection: CollectionParameter = null): Promise<SyncWriteDTO<ContentProgress, any> | null> {
+  const status = await getProgressState(contentId, collection)
+
+  return status !== '' ? await contentStatusReset(contentId, collection) : null
 }
 
 export async function onContentCompletedLearningPathListener(event) {

@@ -1,6 +1,15 @@
-import SyncRepository, { Q } from './base'
-import ContentProgress, { COLLECTION_TYPE, COLLECTION_ID_SELF, STATE } from '../models/ContentProgress'
+import SyncRepository, {Q} from './base'
+import ContentProgress, {COLLECTION_ID_SELF, COLLECTION_TYPE, STATE} from '../models/ContentProgress'
 
+interface ContentIdCollectionTuple {
+  contentId: number,
+  collection: CollectionParameter | null,
+}
+
+export interface CollectionParameter {
+  type: COLLECTION_TYPE,
+  id: number,
+}
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
   // null collection only
   async startedIds(limit?: number) {
@@ -77,7 +86,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return clauses
   }
 
-  async mostRecentlyUpdatedId(contentIds: number[], collection: { type: COLLECTION_TYPE; id: number } | null = null) {
+  async mostRecentlyUpdatedId(contentIds: number[], collection: CollectionParameter | null = null) {
     return this.queryOneId(
       Q.where('content_id', Q.oneOf(contentIds)),
       Q.where('collection_type', collection?.type ?? COLLECTION_TYPE.SELF),
@@ -89,7 +98,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
   async getOneProgressByContentId(
     contentId: number,
-    { collection }: { collection?: { type: COLLECTION_TYPE; id: number } | null } = {}
+    collection: CollectionParameter | null = null
   ) {
     const clauses = [
       Q.where('content_id', contentId),
@@ -102,7 +111,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
   async getSomeProgressByContentIds(
     contentIds: number[],
-    collection: { type: COLLECTION_TYPE; id: number } | null = null
+    collection: CollectionParameter | null = null
   ) {
     const clauses = [
       Q.where('content_id', Q.oneOf(contentIds)),
@@ -113,7 +122,23 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.queryAll(...clauses)
   }
 
-  recordProgress(contentId: number, collection: { type: COLLECTION_TYPE; id: number } | null, progressPct: number, resumeTime?: number) {
+  async getSomeProgressByContentIdsAndCollection(tuples: ContentIdCollectionTuple[]) {
+    const clauses = []
+
+    clauses.push(...tuples.map(tuple => Q.and(...tupleClauses(tuple))))
+
+    return await this.queryAll(Q.or(...clauses))
+
+    function tupleClauses(tuple: ContentIdCollectionTuple) {
+      return [
+        Q.where('content_id', tuple.contentId),
+        Q.where('collection_type', tuple.collection?.type ?? COLLECTION_TYPE.SELF),
+        Q.where('collection_id', tuple.collection?.id ?? COLLECTION_ID_SELF)
+      ]
+    }
+  }
+
+  recordProgress(contentId: number, collection: CollectionParameter | null, progressPct: number, resumeTime?: number) {
     const id = ProgressRepository.generateId(contentId, collection)
 
     const result = this.upsertOne(id, (r) => {
@@ -156,7 +181,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
   recordProgresses(
     contentIds: number[],
-    collection: { type: COLLECTION_TYPE; id: number } | null,
+    collection: CollectionParameter | null,
     progressPct: number
   ) {
     return this.upsertSome(
@@ -178,7 +203,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
   recordProgressesTentative(
     contentProgresses: Record<string, number>, // Accept plain object
-    collection: { type: COLLECTION_TYPE; id: number } | null
+    collection: CollectionParameter | null
   ) {
     const data = Object.fromEntries(
       Object.entries(contentProgresses).map(([contentId, progressPct]) => [
@@ -196,13 +221,13 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return this.upsertSomeTentative(data)
   }
 
-  eraseProgress(contentId: number, collection: { type: COLLECTION_TYPE; id: number } | null) {
+  eraseProgress(contentId: number, collection: CollectionParameter | null) {
     return this.deleteOne(ProgressRepository.generateId(contentId, collection))
   }
 
   private static generateId(
     contentId: number,
-    collection: { type: COLLECTION_TYPE; id: number } | null
+    collection: CollectionParameter | null
   ) {
     return `${contentId}:${collection?.type || COLLECTION_TYPE.SELF}:${collection?.id || COLLECTION_ID_SELF}`
   }

@@ -94,6 +94,7 @@ import {
 
 import {
 	addContextToContent,
+	addContextToLearningPaths,
 	getNavigateToForPlaylists
 } from './services/contentAggregator.js';
 
@@ -115,10 +116,13 @@ import {
 	getAllStartedOrCompleted,
 	getLastInteractedOf,
 	getNavigateTo,
+	getNavigateToForMethod,
 	getProgressDataByIds,
+	getProgressDataByIdsAndCollections,
 	getProgressState,
 	getProgressStateByIds,
 	getResumeTimeSecondsByIds,
+	getResumeTimeSecondsByIdsAndCollections,
 	getStartedOrCompletedProgressOnly,
 	recordWatchSession
 } from './services/contentProgress.js';
@@ -425,6 +429,7 @@ import {
 
 export {
 	addContextToContent,
+	addContextToLearningPaths,
 	addItemToPlaylist,
 	applyCloudflareWrapper,
 	applySanityTransformations,
@@ -589,6 +594,7 @@ export {
 	getMethodCard,
 	getMonday,
 	getNavigateTo,
+	getNavigateToForMethod,
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
 	getOnboardingRecommendedContent,
@@ -596,6 +602,7 @@ export {
 	getPracticeNotes,
 	getPracticeSessions,
 	getProgressDataByIds,
+	getProgressDataByIdsAndCollections,
 	getProgressRows,
 	getProgressState,
 	getProgressStateByIds,
@@ -604,6 +611,7 @@ export {
 	getRecommendedForYou,
 	getReportIssueOptions,
 	getResumeTimeSecondsByIds,
+	getResumeTimeSecondsByIdsAndCollections,
 	getSanityDate,
 	getScheduleContentRows,
 	getSortOrder,
