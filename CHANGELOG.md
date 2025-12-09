@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.97.0](https://github.com/railroadmedia/musora-content-services/compare/v2.96.2...v2.97.0) (2025-12-09)
+
+
+### Features
+
+* **BEH-1458:** method addcontexttocontent ([#633](https://github.com/railroadmedia/musora-content-services/issues/633)) ([95a2b0a](https://github.com/railroadmedia/musora-content-services/commit/95a2b0ae3f011e17f92b78ad4fcd1ebe7a2342ca))
+
 ### [2.96.2](https://github.com/railroadmedia/musora-content-services/compare/v2.96.1...v2.96.2) (2025-12-09)
 
 ### [2.96.1](https://github.com/railroadmedia/musora-content-services/compare/v2.96.0...v2.96.1) (2025-12-09)
