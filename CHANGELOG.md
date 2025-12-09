@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.99.1](https://github.com/railroadmedia/musora-content-services/compare/v2.99.0...v2.99.1) (2025-12-09)
+
+
+### Bug Fixes
+
+* ai broke everything because it loves js ([#634](https://github.com/railroadmedia/musora-content-services/issues/634)) ([213a8d5](https://github.com/railroadmedia/musora-content-services/commit/213a8d5b724bcaa284acdc2a76b935c52d2e4004))
+
 ## [2.99.0](https://github.com/railroadmedia/musora-content-services/compare/v2.98.0...v2.99.0) (2025-12-09)
 
 
