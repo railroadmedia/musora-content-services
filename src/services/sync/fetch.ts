@@ -308,12 +308,7 @@ function serializeIds(ids: { id: RecordId }): { client_record_id: RecordId } {
 
 function deserializeRecord(record: SyncSyncable<BaseModel, 'client_record_id'> | null): SyncSyncable<BaseModel, 'id'> | null {
   if (record) {
-    const { client_record_id: id, ...rest } = record as any
-
-    if ('collection_type' in rest && rest.collection_type === 'self') {
-      rest.collection_type = null
-      rest.collection_id = null
-    }
+    const { client_record_id: id, ...rest } = record
 
     return {
       ...rest,

@@ -1,12 +1,12 @@
 import SyncRepository, { Q } from './base'
-import ContentProgress, { COLLECTION_TYPE, STATE } from '../models/ContentProgress'
+import ContentProgress, { COLLECTION_TYPE, COLLECTION_ID_SELF, STATE } from '../models/ContentProgress'
 
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
   // null collection only
   async startedIds(limit?: number) {
     return this.queryAllIds(...[
-      Q.where('collection_type', null),
-      Q.where('collection_id', null),
+      Q.where('collection_type', COLLECTION_TYPE.SELF),
+      Q.where('collection_id', COLLECTION_ID_SELF),
 
       Q.where('state', STATE.STARTED),
       Q.sortBy('updated_at', 'desc'),
@@ -18,8 +18,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   // null collection only
   async completedIds(limit?: number) {
     return this.queryAllIds(...[
-      Q.where('collection_type', null),
-      Q.where('collection_id', null),
+      Q.where('collection_type', COLLECTION_TYPE.SELF),
+      Q.where('collection_id', COLLECTION_ID_SELF),
 
       Q.where('state', STATE.COMPLETED),
       Q.sortBy('updated_at', 'desc'),
@@ -55,8 +55,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     } = {}
   ) {
     const clauses: Q.Clause[] = [
-      Q.where('collection_type', null),
-      Q.where('collection_id', null),
+      Q.where('collection_type', COLLECTION_TYPE.SELF),
+      Q.where('collection_id', COLLECTION_ID_SELF),
 
       Q.or(Q.where('state', STATE.STARTED), Q.where('state', STATE.COMPLETED)),
       Q.sortBy('updated_at', 'desc'),
@@ -80,8 +80,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   async mostRecentlyUpdatedId(contentIds: number[], collection: { type: COLLECTION_TYPE; id: number } | null = null) {
     return this.queryOneId(
       Q.where('content_id', Q.oneOf(contentIds)),
-      Q.where('collection_type', collection?.type ?? null),
-      Q.where('collection_id', collection?.id ?? null),
+      Q.where('collection_type', collection?.type ?? COLLECTION_TYPE.SELF),
+      Q.where('collection_id', collection?.id ?? COLLECTION_ID_SELF),
 
       Q.sortBy('updated_at', 'desc')
     )
@@ -93,8 +93,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   ) {
     const clauses = [
       Q.where('content_id', contentId),
-      Q.where('collection_type', collection?.type ?? null),
-      Q.where('collection_id', collection?.id ?? null),
+      Q.where('collection_type', collection?.type ?? COLLECTION_TYPE.SELF),
+      Q.where('collection_id', collection?.id ?? COLLECTION_ID_SELF),
     ]
 
     return await this.queryOne(...clauses)
@@ -106,8 +106,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   ) {
     const clauses = [
       Q.where('content_id', Q.oneOf(contentIds)),
-      Q.where('collection_type', collection?.type ?? null),
-      Q.where('collection_id', collection?.id ?? null),
+      Q.where('collection_type', collection?.type ?? COLLECTION_TYPE.SELF),
+      Q.where('collection_id', collection?.id ?? COLLECTION_ID_SELF),
     ]
 
     return await this.queryAll(...clauses)
@@ -118,8 +118,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
     const result = this.upsertOne(id, (r) => {
       r.content_id = contentId
-      r.collection_type = collection?.type ?? null
-      r.collection_id = collection?.id ?? null
+      r.collection_type = collection?.type ?? COLLECTION_TYPE.SELF
+      r.collection_id = collection?.id ?? COLLECTION_ID_SELF
 
       r.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
       r.progress_percent = progressPct
@@ -142,8 +142,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
         progressPercent: progressPct,
         progressStatus: progressPct === 100 ? STATE.COMPLETED : STATE.STARTED,
         bubble: true,
-        collectionType: collection?.type ?? null,
-        collectionId: collection?.id ?? null,
+        collectionType: collection?.type ?? COLLECTION_TYPE.SELF,
+        collectionId: collection?.id ?? COLLECTION_ID_SELF,
         resumeTimeSeconds: resumeTime ?? null,
         timestamp: Date.now()
       })
@@ -165,8 +165,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
           ProgressRepository.generateId(contentId, collection),
           (r: ContentProgress) => {
             r.content_id = contentId
-            r.collection_type = collection?.type ?? null
-            r.collection_id = collection?.id ?? null
+            r.collection_type = collection?.type ?? COLLECTION_TYPE.SELF
+            r.collection_id = collection?.id ?? COLLECTION_ID_SELF
 
             r.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
             r.progress_percent = progressPct
@@ -185,8 +185,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
         ProgressRepository.generateId(+contentId, collection),
         (r: ContentProgress) => {
           r.content_id = +contentId
-          r.collection_type = collection?.type ?? null
-          r.collection_id = collection?.id ?? null
+          r.collection_type = collection?.type ?? COLLECTION_TYPE.SELF
+          r.collection_id = collection?.id ?? COLLECTION_ID_SELF
 
           r.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
           r.progress_percent = progressPct
@@ -204,10 +204,6 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     contentId: number,
     collection: { type: COLLECTION_TYPE; id: number } | null
   ) {
-    if (collection) {
-      return `${contentId}:${collection.type}:${collection.id}`
-    } else {
-      return `${contentId}`
-    }
+    return `${contentId}:${collection?.type || COLLECTION_TYPE.SELF}:${collection?.id || COLLECTION_ID_SELF}`
   }
 }
