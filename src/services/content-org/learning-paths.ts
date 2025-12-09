@@ -2,7 +2,7 @@
  * @module LearningPaths
  */
 
-import { fetchHandler } from '../railcontent.js'
+import { fetchHandler, fetchResponseHandler } from '../railcontent.js'
 import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2Structure } from '../sanity.js'
 import { addContextToLearningPaths } from '../contentAggregator.js'
 import {
@@ -48,13 +48,19 @@ interface CollectionObject {
 
 /**
  * Gets today's daily session for the user.
+ * If the daily session doesn't exist, it will be created.
  * @param brand
  * @param userDate
  */
 export async function getDailySession(brand: string, userDate: Date) {
   const stringDate = userDate.toISOString().split('T')[0]
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${stringDate}`
-  return (await fetchHandler(url, 'GET', null, null)) as DailySessionResponse
+  let options = {dataVersion: null, body: null, fullResponse: true, logError: true}
+  const response = await fetchResponseHandler(url, 'GET', options)
+  if (response.status === 204) {
+    return await updateDailySession(brand, userDate, false)
+  }
+  return await response.json() as DailySessionResponse
 }
 
 /**
@@ -82,7 +88,6 @@ export async function getActivePath(brand: string) {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
   return (await fetchHandler(url, 'GET', null, null)) as ActiveLearningPathResponse
 }
-
 /**
  * Sets a new learning path as the user's active learning path.
  * @param brand
