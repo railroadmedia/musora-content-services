@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.96.1](https://github.com/railroadmedia/musora-content-services/compare/v2.96.0...v2.96.1) (2025-12-09)
+
+
+### Bug Fixes
+
+* **agi:** interface return types ([cc0cfae](https://github.com/railroadmedia/musora-content-services/commit/cc0cfae1282266567ac46a6eb072f76ffde7032e))
+
 ## [2.96.0](https://github.com/railroadmedia/musora-content-services/compare/v2.95.5...v2.96.0) (2025-12-09)
 
 
