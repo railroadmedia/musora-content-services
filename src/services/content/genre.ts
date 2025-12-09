@@ -15,6 +15,11 @@ export interface Genre {
   thumbnail: string
 }
 
+export interface Genres {
+  data: Genre[]
+  total: number
+}
+
 /**
  * Fetch all genres with lessons available for a specific brand.
  *
@@ -29,7 +34,7 @@ export interface Genre {
 export async function fetchGenres(
   brand: Brands | string,
   options: BuildQueryOptions = { sort: 'lower(name) asc' }
-): Promise<Genre[]> {
+): Promise<Genres> {
   const lessonFilter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()

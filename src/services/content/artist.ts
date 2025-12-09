@@ -15,6 +15,11 @@ export interface Artist {
   lessonCount: number
 }
 
+export interface Artists {
+  data: Artist[]
+  total: number
+}
+
 /**
  * Fetch all artists with lessons available for a specific brand.
  *
@@ -29,7 +34,7 @@ export interface Artist {
 export async function fetchArtists(
   brand: Brands | string,
   options: BuildQueryOptions = { sort: 'lower(name) asc' }
-): Promise<Artist[] | null> {
+): Promise<Artists> {
   const lessonFilter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()

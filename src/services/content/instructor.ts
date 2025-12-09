@@ -35,7 +35,7 @@ export interface Instructors {
 export async function fetchInstructors(
   brand: Brands | string,
   options: BuildQueryOptions
-): Promise<Instructor[]> {
+): Promise<Instructors> {
   const lessonFilter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
