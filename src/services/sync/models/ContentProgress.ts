@@ -3,7 +3,6 @@ import { SYNC_TABLES } from '../schema'
 
 export enum COLLECTION_TYPE {
   SELF = 'self',
-  GUIDED_COURSE = 'guided-course',
   LEARNING_PATH = 'learning-path-v2',
   PLAYLIST = 'playlist',
 }
