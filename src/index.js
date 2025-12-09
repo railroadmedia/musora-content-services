@@ -1,7 +1,7 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
-	 default as EventsAPI
+	 default as EventsAPI 
 } from './services/eventsAPI';
 
 import {
@@ -54,6 +54,7 @@ import {
 	getActivePath,
 	getDailySession,
 	getEnrichedLearningPath,
+	getEnrichedLearningPaths,
 	getLearningPathLessonsByIds,
 	mapContentToParent,
 	onContentCompletedLearningPathListener,
@@ -587,6 +588,7 @@ export {
 	getContentRows,
 	getDailySession,
 	getEnrichedLearningPath,
+	getEnrichedLearningPaths,
 	getInProgressAwards,
 	getLastInteractedOf,
 	getLearningPathLessonsByIds,

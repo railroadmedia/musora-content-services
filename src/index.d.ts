@@ -50,6 +50,7 @@ import {
 	getActivePath,
 	getDailySession,
 	getEnrichedLearningPath,
+	getEnrichedLearningPaths,
 	getLearningPathLessonsByIds,
 	mapContentToParent,
 	onContentCompletedLearningPathListener,
@@ -425,7 +426,7 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI
+	 default as EventsAPI 
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
@@ -588,6 +589,7 @@ declare module 'musora-content-services' {
 		getContentRows,
 		getDailySession,
 		getEnrichedLearningPath,
+		getEnrichedLearningPaths,
 		getInProgressAwards,
 		getLastInteractedOf,
 		getLearningPathLessonsByIds,
