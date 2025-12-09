@@ -922,7 +922,7 @@ async function extractPinnedItemsAndSortAllItems(
 }
 
 function generateContentsMap(contents, playlistsContents) {
-  const excludedTypes = new Set(['pack-bundle', 'guided-course-part'])
+  const excludedTypes = new Set(['pack-bundle', 'guided-course-lesson'])
   const existingShows = new Set()
   const contentsMap = new Map()
   const childToParentMap = {}
@@ -1097,7 +1097,8 @@ async function processContentItem(content) {
     const progressTimestamp = content.progressTimestamp
     const wasPinned = content.pinned ?? false
     if (content.progressStatus === 'completed') {
-      // this could be handled more gracefully if their was a parent content type for shows
+      // this could be handled more gracefully if there was a parent content type for shows
+      // Update Dec 3rd. We updated almost everything to the DocumentaryType :D, but there's still a few
       const nextByProgress = findIncompleteLesson(progressOnItems, content.id, content.type)
       content = shows.find((lesson) => lesson.id === nextByProgress)
       content.completed_children = completedShows
