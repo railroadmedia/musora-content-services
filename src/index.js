@@ -1,7 +1,7 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 import {
@@ -56,6 +56,7 @@ import {
 	getEnrichedLearningPath,
 	getLearningPathLessonsByIds,
 	mapContentToParent,
+	onContentCompletedLearningPathListener,
 	resetAllLearningPaths,
 	startLearningPath,
 	updateDailySession
@@ -197,7 +198,9 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	emitContentCompleted,
 	emitProgressSaved,
+	onContentCompleted,
 	onProgressSaved
 } from './services/progress-events.js';
 
@@ -467,6 +470,7 @@ export {
 	deleteUserActivity,
 	duplicatePlaylist,
 	editComment,
+	emitContentCompleted,
 	emitProgressSaved,
 	enrollUserInGuidedCourse,
 	extractSanityUrl,
@@ -650,6 +654,8 @@ export {
 	markNotificationAsUnread,
 	markThreadAsRead,
 	numberOfActiveUsers,
+	onContentCompleted,
+	onContentCompletedLearningPathListener,
 	onProgressSaved,
 	openComment,
 	otherStats,

@@ -270,7 +270,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
           if (recreate) {
             return this.collection.prepareCreate(record => {
               record._raw.id = id
-              record._raw.created_at = recreate.created_at
+              record._raw.created_at = recreate.created_at as EpochMs
               record._raw.updated_at = this.generateTimestamp()
               record._raw._status = 'created'
               builder(record)
