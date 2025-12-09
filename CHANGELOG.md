@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.99.3](https://github.com/railroadmedia/musora-content-services/compare/v2.99.2...v2.99.3) (2025-12-09)
+
+
+### Bug Fixes
+
+* **agi:** optional query options property access ([e8d9a33](https://github.com/railroadmedia/musora-content-services/commit/e8d9a333462dc8bcfed7af9171bff4380c9d67fd))
+* **groq:** query order and slicing out of place ([97a3c1c](https://github.com/railroadmedia/musora-content-services/commit/97a3c1c9d27745ee78894f3d2c9c5d3e8195efb0))
+
 ### [2.99.2](https://github.com/railroadmedia/musora-content-services/compare/v2.99.1...v2.99.2) (2025-12-09)
 
 
