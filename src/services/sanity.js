@@ -2078,3 +2078,26 @@ export async function fetchOwnedContent(
 
   return fetchSanity(query, true)
 }
+
+/**
+ * Fetch brands for given content IDs.
+ *
+ * @param {Array<number>} contentIds - Array of railcontent IDs
+ * @returns {Promise<Object>} - A promise that resolves to an object mapping content IDs to brands
+ */
+export async function fetchBrandsByContentIds(contentIds) {
+  if (!contentIds || contentIds.length === 0) {
+    return {}
+  }
+  const idsString = contentIds.join(',')
+  const query = `*[railcontent_id in [${idsString}]]{
+      railcontent_id,
+      brand
+    }`
+  const results = await fetchSanity(query, true)
+  const brandMap = {}
+  results.forEach((item) => {
+    brandMap[item.railcontent_id] = item.brand
+  })
+  return brandMap
+}
