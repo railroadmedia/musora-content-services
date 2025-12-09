@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.99.5](https://github.com/railroadmedia/musora-content-services/compare/v2.99.4...v2.99.5) (2025-12-09)
+
+
+### Bug Fixes
+
+* daily session created when method intro video completed ([#636](https://github.com/railroadmedia/musora-content-services/issues/636)) ([fdfbb62](https://github.com/railroadmedia/musora-content-services/commit/fdfbb6287348307920ec50b798a0f14520fe4f10))
+
 ### [2.99.4](https://github.com/railroadmedia/musora-content-services/compare/v2.99.3...v2.99.4) (2025-12-09)
 
 ### [2.99.3](https://github.com/railroadmedia/musora-content-services/compare/v2.99.2...v2.99.3) (2025-12-09)
