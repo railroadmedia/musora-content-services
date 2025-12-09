@@ -52,6 +52,7 @@ import {
 	getEnrichedLearningPath,
 	getLearningPathLessonsByIds,
 	mapContentToParent,
+	onContentCompletedLearningPathListener,
 	resetAllLearningPaths,
 	startLearningPath,
 	updateDailySession
@@ -197,7 +198,9 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	emitContentCompleted,
 	emitProgressSaved,
+	onContentCompleted,
 	onProgressSaved
 } from './services/progress-events.js';
 
@@ -268,7 +271,6 @@ import {
 	fetchComingSoon,
 	fetchCommentModContentData,
 	fetchContentRows,
-	fetchFoundation,
 	fetchHierarchy,
 	fetchLearningPathHierarchy,
 	fetchLeaving,
@@ -276,15 +278,10 @@ import {
 	fetchLessonsFeaturingThisContent,
 	fetchLiveEvent,
 	fetchMetadata,
-	fetchMethod,
-	fetchMethodChildren,
-	fetchMethodChildrenIds,
-	fetchMethodPreviousNextLesson,
 	fetchMethodV2IntroVideo,
 	fetchMethodV2Structure,
 	fetchMethodV2StructureFromId,
 	fetchNewReleases,
-	fetchNextPreviousLesson,
 	fetchOtherSongVersions,
 	fetchOwnedContent,
 	fetchPackAll,
@@ -427,7 +424,7 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
@@ -473,6 +470,7 @@ declare module 'musora-content-services' {
 		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
+		emitContentCompleted,
 		emitProgressSaved,
 		enrollUserInGuidedCourse,
 		extractSanityUrl,
@@ -505,7 +503,6 @@ declare module 'musora-content-services' {
 		fetchEnrollmentPageMetadata,
 		fetchFollowedThreads,
 		fetchForumCategories,
-		fetchFoundation,
 		fetchGenreBySlug,
 		fetchGenreLessons,
 		fetchGenres,
@@ -528,16 +525,11 @@ declare module 'musora-content-services' {
 		fetchLiveEventPollingState,
 		fetchMemberships,
 		fetchMetadata,
-		fetchMethod,
-		fetchMethodChildren,
-		fetchMethodChildrenIds,
-		fetchMethodPreviousNextLesson,
 		fetchMethodV2IntroVideo,
 		fetchMethodV2Structure,
 		fetchMethodV2StructureFromId,
 		fetchNewReleases,
 		fetchNextContentDataForParent,
-		fetchNextPreviousLesson,
 		fetchNotificationSettings,
 		fetchNotifications,
 		fetchOtherSongVersions,
@@ -659,6 +651,8 @@ declare module 'musora-content-services' {
 		markNotificationAsUnread,
 		markThreadAsRead,
 		numberOfActiveUsers,
+		onContentCompleted,
+		onContentCompletedLearningPathListener,
 		onProgressSaved,
 		openComment,
 		otherStats,

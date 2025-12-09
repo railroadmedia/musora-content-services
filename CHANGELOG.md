@@ -2,6 +2,58 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.96.2](https://github.com/railroadmedia/musora-content-services/compare/v2.96.1...v2.96.2) (2025-12-09)
+
+### [2.96.1](https://github.com/railroadmedia/musora-content-services/compare/v2.96.0...v2.96.1) (2025-12-09)
+
+
+### Bug Fixes
+
+* **agi:** interface return types ([cc0cfae](https://github.com/railroadmedia/musora-content-services/commit/cc0cfae1282266567ac46a6eb072f76ffde7032e))
+
+## [2.96.0](https://github.com/railroadmedia/musora-content-services/compare/v2.95.5...v2.96.0) (2025-12-09)
+
+
+### Features
+
+* handle learning path complete logic ([#628](https://github.com/railroadmedia/musora-content-services/issues/628)) ([e5266d2](https://github.com/railroadmedia/musora-content-services/commit/e5266d2219597fc295dab97cec7b7ce8ac80a705))
+
+### [2.95.5](https://github.com/railroadmedia/musora-content-services/compare/v2.95.4...v2.95.5) (2025-12-08)
+
+### [2.95.4](https://github.com/railroadmedia/musora-content-services/compare/v2.95.3...v2.95.4) (2025-12-08)
+
+
+### Bug Fixes
+
+* **onboarding:** update hard-coded data ([e33f309](https://github.com/railroadmedia/musora-content-services/commit/e33f309d0b051829e58f631f4b1368501bafc72b))
+
+### [2.95.3](https://github.com/railroadmedia/musora-content-services/compare/v2.95.2...v2.95.3) (2025-12-08)
+
+
+### Bug Fixes
+
+* make agi responses standard ([#630](https://github.com/railroadmedia/musora-content-services/issues/630)) ([0301133](https://github.com/railroadmedia/musora-content-services/commit/03011331cb835412af80111a97e6ae83fd6e56d5))
+
+### [2.95.2](https://github.com/railroadmedia/musora-content-services/compare/v2.95.1...v2.95.2) (2025-12-08)
+
+### [2.95.1](https://github.com/railroadmedia/musora-content-services/compare/v2.95.0...v2.95.1) (2025-12-08)
+
+## [2.95.0](https://github.com/railroadmedia/musora-content-services/compare/v2.94.8...v2.95.0) (2025-12-08)
+
+
+### Features
+
+* **BEH-1195:** Awards System ([#606](https://github.com/railroadmedia/musora-content-services/issues/606)) ([a6ffd92](https://github.com/railroadmedia/musora-content-services/commit/a6ffd92ae518c8e530d4ef743f2649725fddb285))
+
+
+### Bug Fixes
+
+* **BR-330:** Wraps artists name in double quotes where its interpolated in the query ([8787399](https://github.com/railroadmedia/musora-content-services/commit/8787399e032d3522e5126ea9506f28cc5cdac22a))
+* duplicate awards from wrong collection type handling ([#627](https://github.com/railroadmedia/musora-content-services/issues/627)) ([f6dfbf7](https://github.com/railroadmedia/musora-content-services/commit/f6dfbf778ad8e7d37d8e0f66ecd1aa5bec323330))
+* method progress card cta ([#622](https://github.com/railroadmedia/musora-content-services/issues/622)) ([6788b48](https://github.com/railroadmedia/musora-content-services/commit/6788b48353d4122e1ca674a5fdd32abbfa8bb642))
+* show next learning path lesson logic for fetch learning path lessons ([#626](https://github.com/railroadmedia/musora-content-services/issues/626)) ([2925a5b](https://github.com/railroadmedia/musora-content-services/commit/2925a5be42715af7f77720209ef78f118ae95bf4))
+* watermelon fixes round [#4](https://github.com/railroadmedia/musora-content-services/issues/4) ([#621](https://github.com/railroadmedia/musora-content-services/issues/621)) ([aa1e834](https://github.com/railroadmedia/musora-content-services/commit/aa1e834dbb287e4b581b67690038e086eb7a4d55))
+
 ### [2.94.8](https://github.com/railroadmedia/musora-content-services/compare/v2.94.7...v2.94.8) (2025-12-04)
 
 

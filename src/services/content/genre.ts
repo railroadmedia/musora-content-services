@@ -5,7 +5,7 @@ import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.
 import { fetchSanity, getSortOrder } from '../sanity.js'
 import { FilterBuilder } from '../../filterBuilder.js'
 import { Lesson } from './content'
-import { buildDataAndTotalQuery } from '../../lib/sanity/query'
+import { BuildQueryOptions, query } from '../../lib/sanity/query'
 import { Brands } from '../../lib/brands'
 
 export interface Genre {
@@ -13,6 +13,11 @@ export interface Genre {
   slug: string
   lessons_count: number
   thumbnail: string
+}
+
+export interface Genres {
+  data: Genre[]
+  total: number
 }
 
 /**
@@ -26,20 +31,39 @@ export interface Genre {
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenres(brand: Brands | string): Promise<Genre[]> {
-  const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
+export async function fetchGenres(
+  brand: Brands | string,
+  options: BuildQueryOptions = { sort: 'lower(name) asc' }
+): Promise<Genres> {
+  const lessonFilter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
 
-  const query = `
-  *[_type == 'genre'] {
-    'type': _type,
-    name,
-    "slug": slug.current,
-    'thumbnail': thumbnail_url.asset->url,
-    "lessons_count": count(*[${filter}])
-  } |order(lower(name)) `
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+  const data = query()
+    .and(`_type == "genre"`)
+    .order(options.sort || 'lower(name) asc')
+    .slice(options.offset || 0, (options.offset || 0) + (options.limit || 20))
+    .select(
+      'name',
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lessons_count": count(*[${lessonFilter}])`
+    )
+    .postFilter(`lessons_count > 0`)
+    .build()
+
+  const total = query()
+    .and(`_type == "genre"`)
+    .select(`"lessons_count": count(*[${lessonFilter}])`)
+    .postFilter(`lessons_count > 0`)
+    .build()
+
+  const q = `{
+    "data": ${data},
+    "total": count(${total})
+  }`
+
+  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }
 
 /**
@@ -47,7 +71,7 @@ export async function fetchGenres(brand: Brands | string): Promise<Genre[]> {
  *
  * @param {string} slug - The slug of the genre to fetch.
  * @param {Brands|string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Genre[]|null>} - A promise that resolves to an genre object or null if not found.
+ * @returns {Promise<Genre | null>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenreBySlug('drumeo')
@@ -63,27 +87,28 @@ export async function fetchGenreBySlug(
     bypassPermissions: true,
   }).buildFilter()
 
-  const query = `
-  *[_type == 'genre' && slug.current == '${slug}'] {
-    'type': _type, name,
-    name,
-    "slug": slug.current,
-    'thumbnail':thumbnail_url.asset->url,
-    "lessonsCount": count(*[${filter}])
-  }`
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+  const q = query()
+    .and(`_type == "genre"`)
+    .and(`slug.current == "${slug}"`)
+    .select(
+      'name',
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lessons_count": count(*[${filter}])`
+    )
+    .first()
+    .build()
+
+  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }
 
-export interface FetchGenreLessonsOptions {
-  sort?: string
+export interface GenreLessonsOptions extends BuildQueryOptions {
   searchTerm?: string
-  page?: number
-  limit?: number
   includedFields?: Array<string>
   progressIds?: Array<number>
 }
 
-export interface LessonsByGenreResponse {
+export interface GenreLessons {
   data: Lesson[]
   total: number
 }
@@ -99,7 +124,7 @@ export interface LessonsByGenreResponse {
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  * @param {Array<number>} [params.progressIds=[]] - The ids of the lessons that are in progress or completed
- * @returns {Promise<LessonsByGenreResponse|null>} - The lessons for the genre
+ * @returns {Promise<GenreLessons|null>} - The lessons for the genre
  *
  * @example
  * fetchGenreLessons('Blues', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
@@ -113,15 +138,13 @@ export async function fetchGenreLessons(
   {
     sort = '-published_on',
     searchTerm = '',
-    page = 1,
+    offset = 1,
     limit = 10,
     includedFields = [],
     progressIds = [],
-  }: FetchGenreLessonsOptions = {}
-): Promise<LessonsByGenreResponse | null> {
+  }: GenreLessonsOptions = {}
+): Promise<GenreLessons> {
   const fieldsString = getFieldsForContentType(contentType) as string
-  const start = (page - 1) * limit
-  const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
   const addType = contentType ? `_type == '${contentType}' && ` : ''
@@ -131,10 +154,19 @@ export async function fetchGenreLessons(
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
   sort = getSortOrder(sort, brand)
-  const query = buildDataAndTotalQuery(filterWithRestrictions, fieldsString, {
-    sort: sort,
-    start: start,
-    end: end,
-  })
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+  const data = query()
+    .and(filterWithRestrictions)
+    .order(sort)
+    .slice(offset, offset + limit)
+    .select(...(fieldsString ? [fieldsString] : []))
+    .build()
+
+  const total = query().and(filterWithRestrictions).build()
+
+  const q = `{
+    "data": ${data},
+    "total": count(${total})
+  }`
+
+  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }

@@ -15,7 +15,7 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
   }
 
   static isInProgress(progress: AwardProgressData): boolean {
-    return progress.progress_percentage > 0 && !UserAwardProgressRepository.isCompleted(progress)
+    return progress.progress_percentage >= 0 && !UserAwardProgressRepository.isCompleted(progress)
   }
 
   static completedAtDate(progress: { completed_at: number | null }): Date | null {

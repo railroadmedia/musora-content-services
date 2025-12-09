@@ -1,7 +1,7 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 import {
@@ -56,6 +56,7 @@ import {
 	getEnrichedLearningPath,
 	getLearningPathLessonsByIds,
 	mapContentToParent,
+	onContentCompletedLearningPathListener,
 	resetAllLearningPaths,
 	startLearningPath,
 	updateDailySession
@@ -201,7 +202,9 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	emitContentCompleted,
 	emitProgressSaved,
+	onContentCompleted,
 	onProgressSaved
 } from './services/progress-events.js';
 
@@ -272,7 +275,6 @@ import {
 	fetchComingSoon,
 	fetchCommentModContentData,
 	fetchContentRows,
-	fetchFoundation,
 	fetchHierarchy,
 	fetchLearningPathHierarchy,
 	fetchLeaving,
@@ -280,15 +282,10 @@ import {
 	fetchLessonsFeaturingThisContent,
 	fetchLiveEvent,
 	fetchMetadata,
-	fetchMethod,
-	fetchMethodChildren,
-	fetchMethodChildrenIds,
-	fetchMethodPreviousNextLesson,
 	fetchMethodV2IntroVideo,
 	fetchMethodV2Structure,
 	fetchMethodV2StructureFromId,
 	fetchNewReleases,
-	fetchNextPreviousLesson,
 	fetchOtherSongVersions,
 	fetchOwnedContent,
 	fetchPackAll,
@@ -472,6 +469,7 @@ export {
 	deleteUserActivity,
 	duplicatePlaylist,
 	editComment,
+	emitContentCompleted,
 	emitProgressSaved,
 	enrollUserInGuidedCourse,
 	extractSanityUrl,
@@ -504,7 +502,6 @@ export {
 	fetchEnrollmentPageMetadata,
 	fetchFollowedThreads,
 	fetchForumCategories,
-	fetchFoundation,
 	fetchGenreBySlug,
 	fetchGenreLessons,
 	fetchGenres,
@@ -527,16 +524,11 @@ export {
 	fetchLiveEventPollingState,
 	fetchMemberships,
 	fetchMetadata,
-	fetchMethod,
-	fetchMethodChildren,
-	fetchMethodChildrenIds,
-	fetchMethodPreviousNextLesson,
 	fetchMethodV2IntroVideo,
 	fetchMethodV2Structure,
 	fetchMethodV2StructureFromId,
 	fetchNewReleases,
 	fetchNextContentDataForParent,
-	fetchNextPreviousLesson,
 	fetchNotificationSettings,
 	fetchNotifications,
 	fetchOtherSongVersions,
@@ -658,6 +650,8 @@ export {
 	markNotificationAsUnread,
 	markThreadAsRead,
 	numberOfActiveUsers,
+	onContentCompleted,
+	onContentCompletedLearningPathListener,
 	onProgressSaved,
 	openComment,
 	otherStats,
