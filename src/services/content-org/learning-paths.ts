@@ -16,6 +16,7 @@ import { COLLECTION_TYPE, STATE } from '../sync/models/ContentProgress'
 import { SyncWriteDTO } from '../sync'
 import { ContentProgress } from '../sync/models'
 import { CollectionParameter } from '../sync/repositories/content-progress'
+import { getToday } from "../dateUtils.js";
 
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
@@ -315,12 +316,21 @@ export async function completeMethodIntroVideo(
   response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
   const methodStructure = await fetchMethodV2Structure(brand)
-  const learningPathId = methodStructure.learning_paths[0].id
+  const firstLearningPathId = methodStructure.learning_paths[0].id
 
-  response.active_path_response = await startLearningPath(brand, learningPathId)
+  response.active_path_response = await methodIntroVideoCompleteActions(brand, firstLearningPathId, getToday())
 
   return response
 }
+
+async function methodIntroVideoCompleteActions(brand: string, learningPathId: number, userDate: Date) {
+  const stringDate = userDate.toISOString().split('T')[0]
+  const url: string = `${LEARNING_PATHS_PATH}/method-intro-video-complete-actions`
+  const body = { brand: brand, learningPathId: learningPathId, userDate: stringDate }
+  return (await fetchHandler(url, 'POST', null, body)) as DailySessionResponse
+}
+
+
 
 interface completeLearningPathIntroVideo {
   intro_video_response: SyncWriteDTO<ContentProgress, any> | null
