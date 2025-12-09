@@ -3,8 +3,8 @@
  */
 
 import { fetchHandler } from '../railcontent.js'
-import { fetchByRailContentId, fetchMethodV2Structure } from '../sanity.js'
-import { addContextToContent } from '../contentAggregator.js'
+import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2Structure } from '../sanity.js'
+import { addContextToLearningPaths } from '../contentAggregator.js'
 import {
   contentStatusCompleted,
   contentsStatusCompleted,
@@ -107,14 +107,14 @@ export async function resetAllLearningPaths() {
  * @returns {Promise<Object>} Learning path with enriched lesson data
  */
 export async function getEnrichedLearningPath(learningPathId) {
-  const response = (await addContextToContent(
+  const response = (await addContextToLearningPaths(
     fetchByRailContentId,
     learningPathId,
     COLLECTION_TYPE.LEARNING_PATH,
     {
-      collection: { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH },
       dataField: 'children',
       dataField_includeParent: true,
+      dataField_includeIntroVideo: true,
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
@@ -125,9 +125,41 @@ export async function getEnrichedLearningPath(learningPathId) {
 
   response.children = mapContentToParent(
     response.children,
-    'learning-path-lesson-v2',
+    COLLECTION_TYPE.LEARNING_PATH,
     learningPathId
   )
+  return response
+}
+
+/**
+ * Returns learning paths with lessons and progress data
+ * @param {number[]} learningPathIds - The learning path IDs
+ * @returns {Promise<Object>} Learning paths with enriched lesson data
+ */
+export async function getEnrichedLearningPaths(learningPathIds: number[]) {
+  const response = (await addContextToLearningPaths(
+    fetchByRailContentIds,
+    learningPathIds,
+    COLLECTION_TYPE.LEARNING_PATH,
+    {
+      dataField: 'children',
+      dataField_includeParent: true,
+      dataField_includeIntroVideo: true,
+      addProgressStatus: true,
+      addProgressPercentage: true,
+      addProgressTimestamp: true,
+      addNavigateTo: true,
+    }
+  )) as any
+  if (!response) return response
+
+  response.forEach((learningPath) => {
+    learningPath.children = mapContentToParent(
+      learningPath.children,
+      COLLECTION_TYPE.LEARNING_PATH,
+      learningPath.id
+    )
+  })
   return response
 }
 
@@ -179,7 +211,7 @@ export async function fetchLearningPathLessons(
   userDate: Date
 ) {
   const learningPath = await getEnrichedLearningPath(learningPathId)
-  let dailySession = await getDailySession(brand, userDate) // what if the call just fails, and a DS does exist?
+  let dailySession = await getDailySession(brand, userDate); // what if the call just fails, and a DS does exist?
   if (!dailySession) {
     dailySession = await updateDailySession(brand, userDate, false)
   }
