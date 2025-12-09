@@ -42,8 +42,8 @@ export async function fetchInstructors(
 
   const data = query()
     .and(`_type == "instructor"`)
-    .order(options.sort || 'lower(name) asc')
-    .slice(options.offset || 0, (options.offset || 0) + (options.limit || 20))
+    .order(options?.sort || 'lower(name) asc')
+    .slice(options?.offset || 0, (options?.offset || 0) + (options?.limit || 20))
     .select(
       'name',
       `"slug": slug.current`,

@@ -41,8 +41,8 @@ export async function fetchArtists(
 
   const data = query()
     .and(`_type == "artist"`)
-    .order(options.sort || 'lower(name) asc')
-    .slice(options.offset || 0, (options.offset || 0) + (options.limit || 20))
+    .order(options?.sort || 'lower(name) asc')
+    .slice(options?.offset || 0, (options?.offset || 0) + (options?.limit || 20))
     .select(
       'name',
       `"slug": slug.current`,
