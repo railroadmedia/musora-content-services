@@ -4,7 +4,7 @@ import { COLLECTION_TYPE, STATE } from './sync/models/ContentProgress'
 import { trackUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 import { emitContentCompleted } from './progress-events'
-import {getDailySession} from "./content-org/learning-paths.js";
+import {getDailySession} from "./content-org/learning-paths.ts";
 import {getToday} from "./dateUtils.js";
 
 const STATE_STARTED = STATE.STARTED
