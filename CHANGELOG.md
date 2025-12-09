@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.99.2](https://github.com/railroadmedia/musora-content-services/compare/v2.99.1...v2.99.2) (2025-12-09)
+
+
+### Bug Fixes
+
+* update get enriched LPs ([#635](https://github.com/railroadmedia/musora-content-services/issues/635)) ([01995dc](https://github.com/railroadmedia/musora-content-services/commit/01995dcd2c013c8cca31e29a44c41118623d9d9b))
+
 ### [2.99.1](https://github.com/railroadmedia/musora-content-services/compare/v2.99.0...v2.99.1) (2025-12-09)
 
 
