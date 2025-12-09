@@ -356,6 +356,7 @@ import {
 import {
 	fetchMemberships,
 	fetchRechargeTokens,
+	getUpgradePrice,
 	restorePurchases,
 	upgradeSubscription
 } from './services/user/memberships.ts';
@@ -619,6 +620,7 @@ export {
 	getTabResults,
 	getTimeRemainingUntilLocal,
 	getToday,
+	getUpgradePrice,
 	getUserData,
 	getUserMonthlyStats,
 	getUserSignature,
