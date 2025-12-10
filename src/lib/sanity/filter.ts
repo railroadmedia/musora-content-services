@@ -1,6 +1,7 @@
 import { filtersToGroq } from '../../contentTypeConfig'
 import { getPermissionsAdapter } from '../../services/permissions/index'
 import type { UserPermissions } from '../../services/permissions/PermissionsAdapter'
+import { filterOps } from './query'
 
 // ============================================
 // TYPES & INTERFACES
@@ -271,7 +272,7 @@ export class Filters {
    * @example Filters.combine(Filters.brand('drumeo'), Filters.type('song'))
    */
   static combine(...filters: (string | undefined | null | false)[]): string {
-    return filters.filter((f) => f).join(' && ')
+    return (filters.filter((f) => f) as string[]).reduce(filterOps.and.concat, filterOps.and.empty)
   }
 
   /**
@@ -280,10 +281,7 @@ export class Filters {
    * @example Filters.combineOr(Filters.type('song'), Filters.type('workout'))
    */
   static combineOr(...filters: (string | undefined | null | false)[]): string {
-    const validFilters = filters.filter((f) => f)
-    if (validFilters.length === 0) return ''
-    if (validFilters.length === 1) return validFilters[0] as string
-    return `(${validFilters.join(' || ')})`
+    return (filters.filter((f) => f) as string[]).reduce(filterOps.or.concat, filterOps.or.empty)
   }
 
   /**
@@ -299,8 +297,11 @@ export class Filters {
   static async combineAsync(
     ...filters: (string | Promise<string> | undefined | null | false)[]
   ): Promise<string> {
-    const resolved = await Promise.all(filters.map((f) => Promise.resolve(f)))
-    return resolved.filter((f) => f).join(' && ')
+    const resolved = (await Promise.all(
+      filters.map((f) => Promise.resolve(f)).filter((f) => f)
+    )) as string[]
+
+    return resolved.reduce(filterOps.and.concat, filterOps.and.empty)
   }
 
   /**
@@ -316,12 +317,11 @@ export class Filters {
   static async combineAsyncOr(
     ...filters: (string | Promise<string> | undefined | null | false)[]
   ): Promise<string> {
-    const resolved = await Promise.all(filters.map((f) => Promise.resolve(f)))
+    const resolved = (await Promise.all(
+      filters.map((f) => Promise.resolve(f)).filter((f) => f)
+    )) as string[]
 
-    const validFilters = resolved.filter((f) => f)
-    if (validFilters.length === 0) return ''
-    if (validFilters.length === 1) return validFilters[0] as string
-    return `(${validFilters.join(' || ')})`
+    return resolved.reduce(filterOps.or.concat, filterOps.or.empty)
   }
 
   // ============================================
