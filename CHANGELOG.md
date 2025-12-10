@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.102.1](https://github.com/railroadmedia/musora-content-services/compare/v2.102.0...v2.102.1) (2025-12-10)
+
+
+### Bug Fixes
+
+* **agi:** offset default and slug clause on artistBySlug ([10cc6d0](https://github.com/railroadmedia/musora-content-services/commit/10cc6d0390a12715aeba01c5dc72ecdb53d0f236))
+
 ## [2.102.0](https://github.com/railroadmedia/musora-content-services/compare/v2.101.1...v2.102.0) (2025-12-10)
 
 
