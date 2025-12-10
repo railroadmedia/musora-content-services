@@ -297,7 +297,7 @@ export class Filters {
    *   Filters.permissions({ bypassPermissions: false })
    * )
    */
-  static async combineOrAsync(
+  static async combineAsyncOr(
     ...filters: (string | Promise<string> | undefined | null | false)[]
   ): Promise<string> {
     const resolved = await Promise.all(filters.map((f) => Promise.resolve(f)))
