@@ -144,7 +144,7 @@ export async function fetchGenreLessons(
 ): Promise<GenreLessons> {
   sort = getSortOrder(sort, brand)
   const fieldsString = getFieldsForContentType(contentType) as string
-  const restrictions = await f.combineAsync(f.status(), f.permissions(), f.publishedDate())
+  const restrictions = await f.contentFilter()
 
   const data = query()
     .and(f.brand(brand))

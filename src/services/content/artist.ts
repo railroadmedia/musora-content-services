@@ -1,8 +1,7 @@
 /**
  * @module Artist
  */
-import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
-import { FilterBuilder } from '../../filterBuilder.js'
+import { getFieldsForContentType } from '../../contentTypeConfig.js'
 import { BuildQueryOptions, query } from '../../lib/sanity/query'
 import { fetchSanity, getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
@@ -147,7 +146,7 @@ export async function fetchArtistLessons(
   sort = getSortOrder(sort, brand)
 
   const fieldsString = getFieldsForContentType(contentType) as string
-  const restrictions = f.combine(await f.status(), await f.permissions(), f.publishedDate())
+  const restrictions = await f.contentFilter()
 
   const data = query()
     .and(f.brand(brand))

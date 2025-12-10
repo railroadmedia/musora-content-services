@@ -1,7 +1,6 @@
 /**
  * @module Instructor
  */
-import { FilterBuilder } from '../../filterBuilder.js'
 import { getFieldsForContentType } from '../../contentTypeConfig.js'
 import { fetchSanity, getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
@@ -146,7 +145,7 @@ export async function fetchInstructorLessons(
 
   const fieldsString = getFieldsForContentType() as string
 
-  const restrictions = await f.combineAsync(f.status(), f.permissions(), f.publishedDate())
+  const restrictions = await f.contentFilter()
 
   const data = query()
     .and(f.brand(brand))
