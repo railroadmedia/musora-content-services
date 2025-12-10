@@ -54,6 +54,8 @@ const project: Monoid<string> = {
   concat: (a, b) => (!a ? b : !b ? a : `${a}, ${b}`),
 }
 
+export const filterOps = { and, or }
+
 export const query = (): QueryBuilder => {
   let state: QueryBuilderState = {
     filter: and.empty,
