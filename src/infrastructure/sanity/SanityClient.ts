@@ -72,15 +72,20 @@ export class SanityClient {
         this.getConfig()
       )
 
-      return (
-        {
-          ...response.result,
-          ...options,
-        } || {
-          data: [],
-          total: 0,
-          ...options,
-        }
+      const listData = response.result
+      const start = options.offset
+      const end =
+        options.offset !== undefined && options.limit !== undefined
+          ? options.offset + options.limit
+          : undefined
+
+      return new SanityListResponse(
+        listData.data || [],
+        listData.total || 0,
+        options.sort,
+        start,
+        end,
+        false
       )
     } catch (error: any) {
       return this.handleError(error, query)

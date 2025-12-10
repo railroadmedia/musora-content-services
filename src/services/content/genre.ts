@@ -20,7 +20,7 @@ export interface Genre {
   thumbnail: string
 }
 
-export interface Genres extends SanityListResponse<Genre> {}
+export type Genres = SanityListResponse<Genre>
 
 /**
  * Fetch all genres with lessons available for a specific brand.
@@ -110,7 +110,7 @@ export interface GenreLessonsOptions extends BuildQueryOptions {
   progressIds?: Array<number>
 }
 
-export interface GenreLessons extends SanityListResponse<Lesson> {}
+export type GenreLessons = SanityListResponse<Lesson>
 
 /**
  * Fetch the genre's lessons.

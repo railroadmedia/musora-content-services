@@ -20,7 +20,7 @@ export interface Instructor {
   thumbnail: string
 }
 
-export interface Instructors extends SanityListResponse<Instructor> {}
+export type Instructors = SanityListResponse<Instructor>
 
 /**
  * Fetch all instructor with lessons available for a specific brand.
@@ -112,7 +112,7 @@ export interface InstructorLessonsOptions extends BuildQueryOptions {
   includedFields?: string[]
 }
 
-export interface InstructorLessons extends SanityListResponse<Lesson> {}
+export type InstructorLessons = SanityListResponse<Lesson>
 
 /**
  * Fetch the data needed for the instructor screen.

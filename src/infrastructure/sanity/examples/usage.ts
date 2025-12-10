@@ -67,24 +67,21 @@ export async function fetchDrumeoSongsExample() {
 
 // Example: Fetch multiple songs with pagination
 export async function fetchSongsExample(brand: Brand, page: number = 1, limit: number = 10) {
-  const start = (page - 1) * limit
-  const end = start + limit
+  const offset = (page - 1) * limit
 
-  const query = `*[_type == "${DocumentType.Song}" && brand == "${brand}"] | order(published_on desc)[${start}...${end}]`
-  const fields = `
+  const query = `*[_type == "${DocumentType.Song}" && brand == "${brand}"] | order(published_on desc)[${offset}...${offset + limit}]{
     "id": railcontent_id,
     title,
     "artist": artist->name,
     "thumbnail": thumbnail.asset->url,
     difficulty_string,
     published_on
-  `
+  }`
 
-  return await sanityClient.fetchList(query, fields, {
+  return await sanityClient.fetchList(query, {
     sort: 'published_on desc',
-    start,
-    end,
-    paginated: false,
+    offset,
+    limit,
   })
 }
 
@@ -125,7 +122,8 @@ export async function fetchSongWithPageType(songId: number): Promise<Lesson | nu
   // Note: Sanity GROQ doesn't support parameterized queries like SQL
   // Parameters would be used for client-side processing if needed
   const query = `*[_type == "${DocumentType.Song}" && railcontent_id == ${songId}][0]`
-  return sanityClient.fetchSingle<Lesson>(query, { songId }).then((res) => pageTypeDecorator(res))
+  const result = await sanityClient.fetchSingle<Lesson>(query, { songId })
+  return result ? pageTypeDecorator(result) : null
 }
 
 // Example: Execute a complex query that returns custom structure
@@ -140,9 +138,11 @@ export async function fetchSongsWithPermissions(brand: Brand) {
   }`
 
   const adapter = getPermissionsAdapter()
-  return Promise.all([sanityClient.executeQuery(query), adapter.fetchUserPermissions()]).then(
-    ([res, perms]) => needsAccessDecorator(res, perms, adapter)
-  )
+  const [res, perms] = await Promise.all([
+    sanityClient.executeQuery(query),
+    adapter.fetchUserPermissions(),
+  ])
+  return res ? needsAccessDecorator(perms, adapter)(res) : null
 }
 //
 // Example: Execute a complex query that returns custom structure
@@ -157,7 +157,9 @@ export async function fetchSongsWithPermissionsAndPageType(brand: Brand) {
   }`
 
   const adapter = getPermissionsAdapter()
-  return Promise.all([sanityClient.executeQuery(query), adapter.fetchUserPermissions()])
-    .then(([res, perms]) => needsAccessDecorator(res, perms, adapter))
-    .then(pageTypeDecorator)
+  const [res, perms] = await Promise.all([
+    sanityClient.executeQuery(query),
+    adapter.fetchUserPermissions(),
+  ])
+  return res ? pageTypeDecorator(needsAccessDecorator(perms, adapter)(res)) : null
 }

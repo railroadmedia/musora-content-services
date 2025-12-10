@@ -47,7 +47,7 @@ export class ContentClient extends SanityClient {
   ): Promise<SanityListResponse<T>> {
     try {
       if (!ids || ids.length === 0) {
-        return { data: [], total: 0 }
+        return new SanityListResponse([], 0)
       }
 
       const q = query()

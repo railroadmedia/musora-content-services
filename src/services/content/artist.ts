@@ -20,7 +20,7 @@ export interface Artist {
   lessonCount: number
 }
 
-export interface Artists extends SanityListResponse<Artist> {}
+export type Artists = SanityListResponse<Artist>
 
 /**
  * Fetch all artists with lessons available for a specific brand.
@@ -110,7 +110,7 @@ export interface ArtistLessonOptions extends BuildQueryOptions {
   progressIds?: Array<number>
 }
 
-export interface ArtistLessons extends SanityListResponse<Lesson> {}
+export type ArtistLessons = SanityListResponse<Lesson>
 
 /**
  * Fetch the artist's lessons.
