@@ -494,7 +494,9 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
 async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
   const progress = isCompleted ? 100 : 0
   const response = await db.contentProgress.recordProgress(contentId, collection, progress)
+
   if (progress === 100) emitContentCompleted(contentId, collection)
+
   const hierarchy = await getHierarchy(contentId, collection)
 
   let ids = {
@@ -526,7 +528,15 @@ async function duplicateLearningPathProgressToExternalContents(ids, collection, 
     })
   )
 
-  // dont overwrite
+  const extProgresses = await getProgressDataByIds(filteredIds.keys(), null)
+
+  // overwrite if LP progress greater, unless LP progress was reset to 0
+  Object.entries(filteredIds).filter(([id, pct]) => {
+    const extPct = extProgresses[id]?.progress
+    return (pct !== 0)
+      ? pct > extPct
+      : false
+  })
 
   // each handles its own bubbling.
   Object.entries(filteredIds).forEach(([id, pct]) => {
@@ -544,13 +554,10 @@ async function getHierarchy(contentId, collection) {
 
 async function setStartedOrCompletedStatuses(contentIds, collection, isCompleted) {
   const progress = isCompleted ? 100 : 0
-  // we explicitly pessimistically await a remote push here
-  // because awards may be generated (on server) on completion
-  // which we would want to toast the user about *in band*
   const response = await db.contentProgress.recordProgresses(contentIds, collection, progress)
 
   // we assume this is used only for contents within the same hierarchy
-  const hierarchy = await getHierarchy(contentIds[0], collection)
+  const hierarchy = await getHierarchy(collection.id, collection)
 
   let ids = {}
   for (const contentId of contentIds) {
