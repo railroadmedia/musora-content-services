@@ -398,14 +398,9 @@ export class Filters {
    * @example await Filters.contentFilter({ bypassPermissions: false, pullFutureContent: false })
    */
   static async contentFilter(config: ContentFilterConfig = {}): Promise<string> {
-    let userData: UserPermissions | undefined
-    if (!config.bypassPermissions && !config.userData) {
-      userData = await getPermissionsAdapter().fetchUserPermissions()
-    }
-
     return Filters.combineAsync(
       Filters.status(config),
-      Filters.permissions({ ...config, userData: userData || config.userData }),
+      Filters.permissions({ ...config }),
       Filters.publishedDate(config)
     )
   }
