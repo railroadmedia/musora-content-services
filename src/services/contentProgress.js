@@ -522,16 +522,16 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
 
 async function duplicateLearningPathProgressToExternalContents(ids, collection, hierarchy) {
   // filter out LPs. we dont want to duplicate to LP's while we dont have a-la-cart LP's set up.
-  const filteredIds = Object.fromEntries(
+  let filteredIds = Object.fromEntries(
     Object.entries(ids).filter((id) => {
       return hierarchy.parents[parseInt(id)] !== null
     })
   )
 
-  const extProgresses = await getProgressDataByIds(filteredIds.keys(), null)
+  const extProgresses = await getProgressDataByIds(Object.keys(filteredIds), null)
 
   // overwrite if LP progress greater, unless LP progress was reset to 0
-  Object.entries(filteredIds).filter(([id, pct]) => {
+  filteredIds = Object.entries(filteredIds).filter(([id, pct]) => {
     const extPct = extProgresses[id]?.progress
     return (pct !== 0)
       ? pct > extPct
@@ -539,7 +539,7 @@ async function duplicateLearningPathProgressToExternalContents(ids, collection, 
   })
 
   // each handles its own bubbling.
-  Object.entries(filteredIds).forEach(([id, pct]) => {
+  filteredIds.forEach(([id, pct]) => {
     saveContentProgress(parseInt(id), null, pct)
   })
 }
