@@ -43,7 +43,7 @@ export async function fetchGenres(
   const data = query()
     .and(type)
     .order(options?.sort || 'lower(name) asc')
-    .slice(options?.offset || 0, (options?.offset || 0) + (options?.limit || 20))
+    .slice(options?.offset || 0, options?.limit || 20)
     .select(
       'name',
       `"slug": slug.current`,
@@ -154,7 +154,7 @@ export async function fetchGenreLessons(
     .and(f.progressIds(progressIds))
     .and(restrictions)
     .order(sort)
-    .slice(offset, offset + limit)
+    .slice(offset, limit)
     .select(...(fieldsString ? [fieldsString] : []))
     .build()
 

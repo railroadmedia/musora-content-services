@@ -20,7 +20,7 @@ export interface QueryBuilder {
   and(expr: string): QueryBuilder
   or(...exprs: string[]): QueryBuilder
   order(expr: string): QueryBuilder
-  slice(start: number, end: number): QueryBuilder
+  slice(offset: number, limit: number): QueryBuilder
   first(): QueryBuilder
   select(...fields: string[]): QueryBuilder
   postFilter(expr: string): QueryBuilder
@@ -83,8 +83,8 @@ export const query = (): QueryBuilder => {
     },
 
     // pagination / slicing
-    slice(start: number = 0, end?: number) {
-      const sliceExpr = !end ? `[${start}]` : `[${start}...${end}]`
+    slice(offset: number = 0, limit?: number) {
+      const sliceExpr = !limit ? `[${offset}]` : `[${offset}...${offset + limit}]`
 
       state.slice = slice.concat(state.slice, sliceExpr)
       return builder
