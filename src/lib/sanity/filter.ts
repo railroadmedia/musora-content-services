@@ -5,13 +5,16 @@ import type { UserPermissions } from '../../services/permissions/PermissionsAdap
 // ============================================
 // TYPES & INTERFACES
 // ============================================
+//
+
+export type Prefix = '' | '@->' | '^.'
 
 export interface PermissionsConfig {
   bypassPermissions?: boolean
   showMembershipRestrictedContent?: boolean
   showOnlyOwnedContent?: boolean
   userData?: UserPermissions
-  prefix?: string
+  prefix?: Prefix
 }
 
 export interface StatusConfig {
@@ -19,18 +22,18 @@ export interface StatusConfig {
   bypassStatuses?: boolean
   isSingle?: boolean
   isAdmin?: boolean
-  prefix?: string
+  prefix?: Prefix
 }
 
 export interface DateConfig {
   bypassPublishedDate?: boolean
   pullFutureContent?: boolean
   getFutureContentOnly?: boolean
-  prefix?: string
+  prefix?: Prefix
 }
 
 export interface ContentFilterConfig extends PermissionsConfig, StatusConfig, DateConfig {
-  prefix?: string
+  prefix?: Prefix
 }
 
 // ============================================
@@ -43,6 +46,9 @@ const STATUS_DRAFT = 'draft'
 const STATUS_ARCHIVED = 'archived'
 const STATUS_UNLISTED = 'unlisted'
 
+const CHILD_PREFIX: Prefix = '@->'
+const PARENT_PREFIX: Prefix = '^.'
+
 // ============================================
 // HELPER UTILITIES
 // ============================================
@@ -52,7 +58,7 @@ const getRoundedTime = (): Date => {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 1)
 }
 
-const applyPrefix = (prefix: string, filter: string): string => {
+const applyPrefix = (prefix: Prefix, filter: string): string => {
   if (!prefix || !filter) return filter
   // Replace field names with prefixed versions
   return filter.replace(/\b([a-z_][a-z0-9_]*)\s*(==|!=|<=|>=|<|>|in|match)/gi, `${prefix}$1 $2`)
@@ -213,17 +219,27 @@ export class Filters {
     return `!defined(${field})`
   }
 
+  /**
+   * @param {Prefix} [prefix=''] - Optional prefix for the field
+   * @returns {string} Filter expression
+   * @example Filters.notDeprecated() // "!defined(deprecated_railcontent_id)"
+   * @example Filters.notDeprecated('@->') // "!defined(@->deprecated_railcontent_id)"
+   */
+  static notDeprecated(prefix: Prefix = ''): string {
+    return `!defined(${prefix}deprecated_railcontent_id)`
+  }
+
   // ============================================
   // PREFIX MODIFIERS
   // ============================================
 
   /**
-   * @param {string} prefix - The prefix to apply ('', '@->', '^.')
+   * @param {Prefix} prefix - The prefix to apply ('', '@->', '^.')
    * @param {string} filter - The filter expression to prefix
    * @returns {string} Filter expression with prefix applied
    * @example Filters.withPrefix('@->', Filters.brand('drumeo'))
    */
-  static withPrefix(prefix: string, filter: string): string {
+  static withPrefix(prefix: Prefix, filter: string): string {
     return applyPrefix(prefix, filter)
   }
 
@@ -233,7 +249,7 @@ export class Filters {
    * @example Filters.asChild(Filters.statusIn(['published']))
    */
   static asChild(filter: string): string {
-    return applyPrefix('@->', filter)
+    return applyPrefix(CHILD_PREFIX, filter)
   }
 
   /**
@@ -242,7 +258,7 @@ export class Filters {
    * @example Filters.asParent(Filters.brand('drumeo'))
    */
   static asParent(filter: string): string {
-    return applyPrefix('^.', filter)
+    return applyPrefix(PARENT_PREFIX, filter)
   }
 
   // ============================================
@@ -394,14 +410,15 @@ export class Filters {
 
   /**
    * @param {ContentFilterConfig} config - Complete filter configuration
-   * @returns {Promise<string>} Combined filter expression (status + permissions + date)
+   * @returns {Promise<string>} Combined filter expression (status + permissions + date + deprecated)
    * @example await Filters.contentFilter({ bypassPermissions: false, pullFutureContent: false })
    */
   static async contentFilter(config: ContentFilterConfig = {}): Promise<string> {
     return Filters.combineAsync(
       Filters.status(config),
       Filters.permissions({ ...config }),
-      Filters.publishedDate(config)
+      Filters.publishedDate(config),
+      Filters.notDeprecated(config.prefix || '')
     )
   }
 
@@ -411,7 +428,7 @@ export class Filters {
    * @example await Filters.childFilter({ showMembershipRestrictedContent: true })
    */
   static async childFilter(config: ContentFilterConfig = {}): Promise<string> {
-    return Filters.contentFilter({ ...config, prefix: '@->' })
+    return Filters.contentFilter({ ...config, prefix: CHILD_PREFIX })
   }
 
   /**
@@ -420,7 +437,7 @@ export class Filters {
    * @example await Filters.parentFilter({ bypassPermissions: true })
    */
   static async parentFilter(config: ContentFilterConfig = {}): Promise<string> {
-    return Filters.contentFilter({ ...config, prefix: '^.' })
+    return Filters.contentFilter({ ...config, prefix: PARENT_PREFIX })
   }
 
   // ============================================
