@@ -138,7 +138,7 @@ export async function fetchInstructorLessons(
   {
     sort = '-published_on',
     searchTerm = '',
-    offset = 1,
+    offset = 0,
     limit = 20,
     includedFields = [],
   }: InstructorLessonsOptions = {}

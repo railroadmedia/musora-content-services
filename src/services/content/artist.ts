@@ -89,7 +89,7 @@ export async function fetchArtistBySlug(
 
   const q = query()
     .and(`_type == "artist"`)
-    .and(`&& slug.current == '${slug}'`)
+    .and(`slug.current == '${slug}'`)
     .select(
       'name',
       `"slug": slug.current`,
@@ -139,7 +139,7 @@ export async function fetchArtistLessons(
   {
     sort = '-published_on',
     searchTerm = '',
-    offset = 1,
+    offset = 0,
     limit = 10,
     includedFields = [],
     progressIds = [],
