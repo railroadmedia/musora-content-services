@@ -15,6 +15,15 @@ export type Span = InjectedSentry.Span
 
 export const SYNC_TELEMETRY_TRACE_PREFIX = 'sync:'
 
+export enum SeverityLevel {
+  Debug = 0,
+  Info = 1,
+  Log = 2,
+  Warning = 3,
+  Error = 4,
+  Fatal = 5
+}
+
 export class SyncTelemetry {
   private static instance: SyncTelemetry | null = null
 
@@ -33,13 +42,18 @@ export class SyncTelemetry {
 
   private userId: string
   private Sentry: SentryLike;
+  private level: SeverityLevel
+  private pretty: boolean
 
   // allows us to know if Sentry shouldn't double-capture a dev-prettified console.error log
   private _ignoreConsole = false
 
-  constructor(userId: string, { Sentry }: { Sentry: SentryLike }) {
+  constructor(userId: string, { Sentry, level, pretty }: { Sentry: SentryLike, level?: SeverityLevel, pretty?: boolean }) {
     this.userId = userId
     this.Sentry = Sentry
+    this.level = typeof level !== 'undefined' ? level : SeverityLevel.Info
+    this.pretty = typeof pretty !== 'undefined' ? pretty : true
+
     watermelonLogger.log = (...messages: any[]) => this.log('[Watermelon]', ...messages);
     watermelonLogger.warn = (...messages: any[]) => this.warn('[Watermelon]', ...messages);
     watermelonLogger.error = (...messages: any[]) => this.error('[Watermelon]', ...messages);
@@ -86,32 +100,32 @@ export class SyncTelemetry {
   }
 
   debug(...messages: any[]) {
-    console.debug(...this.formattedConsoleMessages(...messages));
+    this.level > SeverityLevel.Debug && console.debug(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('debug', ...messages)
   }
 
   info(...messages: any[]) {
-    console.info(...this.formattedConsoleMessages(...messages));
+    this.level > SeverityLevel.Info && console.info(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('info', ...messages)
   }
 
   log(...messages: any[]) {
-    console.log(...this.formattedConsoleMessages(...messages));
+    this.level > SeverityLevel.Log && console.log(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('log', ...messages)
   }
 
   warn(...messages: any[]) {
-    console.warn(...this.formattedConsoleMessages(...messages));
+    this.level > SeverityLevel.Warning && console.warn(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('warning', ...messages)
   }
 
   error(...messages: any[]) {
-    console.error(...this.formattedConsoleMessages(...messages));
+    this.level > SeverityLevel.Error && console.error(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('error', ...messages)
   }
 
   fatal(...messages: any[]) {
-    console.error(...this.formattedConsoleMessages(...messages));
+    this.level > SeverityLevel.Fatal && console.error(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('fatal', ...messages)
   }
 
@@ -124,6 +138,10 @@ export class SyncTelemetry {
   }
 
   private formattedConsoleMessages(...messages: any[]) {
+    if (!this.pretty) {
+      return messages
+    }
+
     const date = new Date();
     return [...this.consolePrefix(date), ...messages, ...this.consoleSuffix(date)];
   }

@@ -45,7 +45,7 @@ export function initializeSyncManager(userId) {
     },
   }
 
-  SyncTelemetry.setInstance(new SyncTelemetry(userId, { Sentry: dummySentry }))
+  SyncTelemetry.setInstance(new SyncTelemetry(userId, { Sentry: dummySentry, level: SyncTelemetry.SeverityLevel.Debug, pretty: false }))
 
   const adapterBus = new SyncAdapterEventBus()
   const adapter = syncAdapter(userId, adapterBus)
