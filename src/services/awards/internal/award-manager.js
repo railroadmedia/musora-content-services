@@ -3,20 +3,25 @@ import { awardEvents } from './award-events'
 import { generateCompletionData } from './completion-data-generator'
 import { AwardMessageGenerator } from './message-generator'
 import db from '../../sync/repository-proxy'
-import { Q } from '@nozbe/watermelondb'
+import { STATE, COLLECTION_TYPE } from '../../sync/models/ContentProgress'
+import {getProgressStateByIds} from "../../contentProgress.js";
 
-async function getCompletionStates(contentIds) {
-  return Promise.all(
-    contentIds.map(async (id) => {
-      const progress = await db.contentProgress.queryOne(
-        Q.where('content_id', id)
-      )
-      return {
-        id,
-        completed: progress.data?.state === 'completed'
-      }
-    })
-  )
+async function getCompletionStates(contentIds, collection = null) {
+  const progress = await getProgressStateByIds(contentIds, collection)
+
+  return contentIds.map(id => {
+    return {
+      id,
+      completed: progress[id] === STATE.COMPLETED
+    }
+  })
+}
+
+function getCollectionFromAward(award) {
+  if (award.content_type === COLLECTION_TYPE.LEARNING_PATH && award.content_id) {
+    return { type: COLLECTION_TYPE.LEARNING_PATH, id: award.content_id }
+  }
+  return null
 }
 
 
@@ -30,14 +35,14 @@ export class AwardManager {
       }
 
       for (const award of awards) {
-        await this.evaluateAward(award, contentId)
+        await this.evaluateAward(award)
       }
     } catch (error) {
       console.error('Error checking awards for completed content:', error)
     }
   }
 
-  async evaluateAward(award, courseContentId) {
+  async evaluateAward(award) {
     try {
       const hasCompleted = await db.userAwardProgress.hasCompletedAward(award._id)
       if (hasCompleted) {
@@ -45,20 +50,21 @@ export class AwardManager {
         return
       }
 
-      const isEligible = await this.checkAwardEligibility(award, courseContentId)
+      const collection = getCollectionFromAward(award)
+      const isEligible = await this.checkAwardEligibility(award, collection)
 
       if (isEligible) {
         console.log(`Award ${award._id} is now eligible, granting award`)
-        await this.grantAward(award._id, courseContentId)
+        await this.grantAward(award, collection)
       } else {
-        await this.updateAwardProgress(award._id, courseContentId)
+        await this.updateAwardProgress(award, collection)
       }
     } catch (error) {
       console.error(`Error checking award ${award._id}:`, error)
     }
   }
 
-  async checkAwardEligibility(award, courseContentId) {
+  async checkAwardEligibility(award, collection) {
     try {
       const childIds = getEligibleChildIds(award)
 
@@ -66,7 +72,7 @@ export class AwardManager {
         return false
       }
 
-      const completionStates = await getCompletionStates(childIds)
+      const completionStates = await getCompletionStates(childIds, collection)
       return completionStates.every(state => state.completed)
     } catch (error) {
       console.error('Error checking award eligibility:', error)
@@ -74,21 +80,11 @@ export class AwardManager {
     }
   }
 
-  async grantAward(awardId, courseContentId) {
-    const definition = await awardDefinitions.getById(awardId)
+  async grantAward(award, collection) {
+    const completionData = await generateCompletionData(award, collection)
 
-    if (!definition) {
-      console.error(`Award definition not found: ${awardId}`)
-      return
-    }
-
-    const completionData = await generateCompletionData(
-      awardId,
-      courseContentId
-    )
-
-    const childIds = getEligibleChildIds(definition)
-    const completionStates = await getCompletionStates(childIds)
+    const childIds = getEligibleChildIds(award)
+    const completionStates = await getCompletionStates(childIds, collection)
 
     const completedLessonIds = completionStates
       .filter(state => state.completed)
@@ -102,7 +98,7 @@ export class AwardManager {
 
     const popupMessage = AwardMessageGenerator.generatePopupMessage(completionData)
 
-    await db.userAwardProgress.recordAwardProgress(awardId, 100, {
+    await db.userAwardProgress.recordAwardProgress(award._id, 100, {
       completedAt: Date.now(),
       completionData,
       progressData,
@@ -110,24 +106,21 @@ export class AwardManager {
     })
 
     awardEvents.emitAwardGranted({
-      awardId,
-      definition,
+      awardId: award._id,
+      definition: award,
       completionData,
       popupMessage,
       timestamp: Date.now()
     })
   }
 
-  async updateAwardProgress(awardId, courseContentId) {
+  async updateAwardProgress(award, collection) {
     try {
-      const award = await awardDefinitions.getById(awardId)
-      if (!award) return
-
       const childIds = getEligibleChildIds(award)
 
       if (childIds.length === 0) return
 
-      const completionStates = await getCompletionStates(childIds)
+      const completionStates = await getCompletionStates(childIds, collection)
 
       const completedLessonIds = completionStates
         .filter(state => state.completed)
@@ -142,12 +135,12 @@ export class AwardManager {
         completedCount
       }
 
-      await db.userAwardProgress.recordAwardProgress(awardId, progressPercentage, {
+      await db.userAwardProgress.recordAwardProgress(award._id, progressPercentage, {
         progressData
       })
 
       awardEvents.emitAwardProgress({
-        awardId,
+        awardId: award._id,
         progressPercentage,
         timestamp: Date.now()
       })

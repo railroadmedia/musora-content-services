@@ -2,9 +2,9 @@
  * @module LearningPaths
  */
 
-import { fetchHandler } from '../railcontent.js'
-import { fetchByRailContentId, fetchMethodV2Structure } from '../sanity.js'
-import { addContextToContent } from '../contentAggregator.js'
+import { fetchHandler, fetchResponseHandler } from '../railcontent.js'
+import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2Structure } from '../sanity.js'
+import { addContextToLearningPaths } from '../contentAggregator.js'
 import {
   contentStatusCompleted,
   contentsStatusCompleted,
@@ -12,42 +12,55 @@ import {
   getAllCompletedByIds,
   getProgressState,
 } from '../contentProgress.js'
-import { COLLECTION_TYPE, STATE } from "../sync/models/ContentProgress";
-import { SyncWriteDTO } from "../sync";
-import { ContentProgress } from "../sync/models";
+import { COLLECTION_TYPE, STATE } from '../sync/models/ContentProgress'
+import { SyncWriteDTO } from '../sync'
+import { ContentProgress } from '../sync/models'
+import { CollectionParameter } from '../sync/repositories/content-progress'
+import { getToday } from "../dateUtils.js";
 
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
 
 interface ActiveLearningPathResponse {
-  user_id: number,
-  brand: string,
-  active_learning_path_id: number,
+  user_id: number
+  brand: string
+  active_learning_path_id: number
 }
 
 interface DailySessionResponse {
-  user_id: number,
-  brand: string,
+  user_id: number
+  brand: string
   user_date: string
-  daily_session: DailySession[],
-  active_learning_path_id: number,
-  active_learning_path_created_at: string,
+  daily_session: DailySession[]
+  active_learning_path_id: number
+  active_learning_path_created_at: string
 }
 
 interface DailySession {
-  content_ids: number[],
-  learning_path_id: number,
+  content_ids: number[]
+  learning_path_id: number
+}
+
+interface CollectionObject {
+  id: number
+  type: COLLECTION_TYPE.LEARNING_PATH
 }
 
 /**
  * Gets today's daily session for the user.
+ * If the daily session doesn't exist, it will be created.
  * @param brand
  * @param userDate
  */
 export async function getDailySession(brand: string, userDate: Date) {
   const stringDate = userDate.toISOString().split('T')[0]
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${stringDate}`
-  return await fetchHandler(url, 'GET', null, null) as DailySessionResponse
+  let options = {dataVersion: null, body: null, fullResponse: true, logError: true}
+  const response = await fetchResponseHandler(url, 'GET', options)
+  if (response.status === 204) {
+    return await updateDailySession(brand, userDate, false)
+  }
+  return await response.json() as DailySessionResponse
 }
 
 /**
@@ -64,7 +77,7 @@ export async function updateDailySession(
   const stringDate = userDate.toISOString().split('T')[0]
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/create`
   const body = { brand: brand, userDate: stringDate, keepFirstLearningPath: keepFirstLearningPath }
-  return await fetchHandler(url, 'POST', null, body) as DailySessionResponse
+  return (await fetchHandler(url, 'POST', null, body)) as DailySessionResponse
 }
 
 /**
@@ -73,9 +86,8 @@ export async function updateDailySession(
  */
 export async function getActivePath(brand: string) {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
-  return await fetchHandler(url, 'GET', null, null) as ActiveLearningPathResponse
+  return (await fetchHandler(url, 'GET', null, null)) as ActiveLearningPathResponse
 }
-
 /**
  * Sets a new learning path as the user's active learning path.
  * @param brand
@@ -84,7 +96,7 @@ export async function getActivePath(brand: string) {
 export async function startLearningPath(brand: string, learningPathId: number) {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/set`
   const body = { brand: brand, learning_path_id: learningPathId }
-  return await fetchHandler(url, 'POST', null, body) as ActiveLearningPathResponse
+  return (await fetchHandler(url, 'POST', null, body)) as ActiveLearningPathResponse
 }
 
 /**
@@ -101,14 +113,14 @@ export async function resetAllLearningPaths() {
  * @returns {Promise<Object>} Learning path with enriched lesson data
  */
 export async function getEnrichedLearningPath(learningPathId) {
-  const response = (await addContextToContent(
+  const response = (await addContextToLearningPaths(
     fetchByRailContentId,
     learningPathId,
     COLLECTION_TYPE.LEARNING_PATH,
     {
-      collection: { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH },
       dataField: 'children',
       dataField_includeParent: true,
+      dataField_includeIntroVideo: true,
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
@@ -119,9 +131,41 @@ export async function getEnrichedLearningPath(learningPathId) {
 
   response.children = mapContentToParent(
     response.children,
-    'learning-path-lesson-v2',
+    COLLECTION_TYPE.LEARNING_PATH,
     learningPathId
   )
+  return response
+}
+
+/**
+ * Returns learning paths with lessons and progress data
+ * @param {number[]} learningPathIds - The learning path IDs
+ * @returns {Promise<Object>} Learning paths with enriched lesson data
+ */
+export async function getEnrichedLearningPaths(learningPathIds: number[]) {
+  const response = (await addContextToLearningPaths(
+    fetchByRailContentIds,
+    learningPathIds,
+    COLLECTION_TYPE.LEARNING_PATH,
+    {
+      dataField: 'children',
+      dataField_includeParent: true,
+      dataField_includeIntroVideo: true,
+      addProgressStatus: true,
+      addProgressPercentage: true,
+      addProgressTimestamp: true,
+      addNavigateTo: true,
+    }
+  )) as any
+  if (!response) return response
+
+  response.forEach((learningPath) => {
+    learningPath.children = mapContentToParent(
+      learningPath.children,
+      COLLECTION_TYPE.LEARNING_PATH,
+      learningPath.id
+    )
+  })
   return response
 }
 
@@ -173,7 +217,7 @@ export async function fetchLearningPathLessons(
   userDate: Date
 ) {
   const learningPath = await getEnrichedLearningPath(learningPathId)
-  let dailySession = await getDailySession(brand, userDate)
+  let dailySession = await getDailySession(brand, userDate); // what if the call just fails, and a DS does exist?
   if (!dailySession) {
     dailySession = await updateDailySession(brand, userDate, false)
   }
@@ -185,19 +229,22 @@ export async function fetchLearningPathLessons(
       is_active_learning_path: isActiveLearningPath,
     }
   }
+  // this assumes that the first entry is active_path, based on user flows
   const todayContentIds = dailySession.daily_session[0]?.content_ids || []
-  const previousLearningPathId = dailySession.daily_session[0]?.learning_path_id
+  const todayLearningPathId = dailySession.daily_session[0]?.learning_path_id
+
   const nextContentIds = dailySession.daily_session[1]?.content_ids || []
   const nextLearningPathId = dailySession.daily_session[1]?.learning_path_id
+
   const completedLessons = []
-  let todaysLessons = []
-  let nextLPLessons = []
+  let thisLPDailies = []
+  let nextLPDailies = []
   let previousLearningPathTodays = []
   const upcomingLessons = []
 
   learningPath.children.forEach((lesson: any) => {
     if (todayContentIds.includes(lesson.id)) {
-      todaysLessons.push(lesson)
+      thisLPDailies.push(lesson)
     } else if (lesson.progressStatus === 'completed') {
       completedLessons.push(lesson)
     } else {
@@ -205,25 +252,24 @@ export async function fetchLearningPathLessons(
     }
   })
 
-  if (todaysLessons.length == 0) {
+  if (thisLPDailies.length == 0) {
     // Daily sessions first lessons are not part of the active learning path, but next lessons are
     // load todays lessons from previous learning path
     previousLearningPathTodays = await getLearningPathLessonsByIds(
       todayContentIds,
-      previousLearningPathId
+      todayLearningPathId
     )
-  } else if (
-    nextContentIds.length > 0 &&
-    todaysLessons.length < 3 &&
-    upcomingLessons.length === 0
+  } else if ( // show next LP dailies if they exist
+    nextContentIds.length > 0
   ) {
     // Daily sessions first lessons are the active learning path and the next lessons are not
     // load next lessons from next learning path
-    // TODO: update item status to locked when the current learning path is not complete
-    nextLPLessons = await getLearningPathLessonsByIds(nextContentIds, nextLearningPathId)
+    const lessons = await getLearningPathLessonsByIds(nextContentIds, nextLearningPathId)
+    nextLPDailies = lessons.map(lesson => ({
+      ...lesson,
+      in_next_learning_path: STATE.COMPLETED === learningPath.progressStatus
+    }))
   }
-
-
 
   return {
     ...learningPath,
@@ -231,8 +277,8 @@ export async function fetchLearningPathLessons(
     active_learning_path_id: dailySession?.active_learning_path_id,
     active_learning_path_created_at: dailySession?.active_learning_path_created_at,
     upcoming_lessons: upcomingLessons,
-    todays_lessons: todaysLessons,
-    next_learning_path_lessons: nextLPLessons,
+    todays_lessons: thisLPDailies,
+    next_learning_path_lessons: nextLPDailies,
     next_learning_path_id: nextLearningPathId,
     completed_lessons: completedLessons,
     previous_learning_path_todays: previousLearningPathTodays,
@@ -246,14 +292,16 @@ export async function fetchLearningPathLessons(
  * @param {number[]} contentIds The array of content IDs within the learning path
  * @returns {Promise<number[]>} Array with completed content IDs
  */
-export async function fetchLearningPathProgressCheckLessons(contentIds: number[]): Promise<number[]> {
+export async function fetchLearningPathProgressCheckLessons(
+  contentIds: number[]
+): Promise<number[]> {
   let query = await getAllCompletedByIds(contentIds)
-  let completedProgress = query.data.map(progress => progress.content_id)
-  return contentIds.filter(contentId => completedProgress.includes(contentId))
+  let completedProgress = query.data.map((progress) => progress.content_id)
+  return contentIds.filter((contentId) => completedProgress.includes(contentId))
 }
 
 interface completeMethodIntroVideo {
-  intro_video_response: SyncWriteDTO<ContentProgress, any> | null,
+  intro_video_response: SyncWriteDTO<ContentProgress, any> | null
   active_path_response: ActiveLearningPathResponse
 }
 /**
@@ -264,23 +312,34 @@ interface completeMethodIntroVideo {
  * @returns {Promise<Object|null>} response.intro_video_response - The intro video completion response or null if already completed.
  * @returns {Promise<Object>} response.active_path_response - The set active learning path response.
  */
-export async function completeMethodIntroVideo(introVideoId: number, brand: string): Promise<completeMethodIntroVideo> {
+export async function completeMethodIntroVideo(
+  introVideoId: number,
+  brand: string
+): Promise<completeMethodIntroVideo> {
   let response = {} as completeMethodIntroVideo
 
   response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
   const methodStructure = await fetchMethodV2Structure(brand)
-  const learningPathId = methodStructure.learning_paths[0].id
+  const firstLearningPathId = methodStructure.learning_paths[0].id
 
-  response.active_path_response = await startLearningPath(brand, learningPathId)
-
+  response.active_path_response = await methodIntroVideoCompleteActions(brand, firstLearningPathId, getToday())
 
   return response
 }
 
+async function methodIntroVideoCompleteActions(brand: string, learningPathId: number, userDate: Date) {
+  const stringDate = userDate.toISOString().split('T')[0]
+  const url: string = `${LEARNING_PATHS_PATH}/method-intro-video-complete-actions`
+  const body = { brand: brand, learningPathId: learningPathId, userDate: stringDate }
+  return (await fetchHandler(url, 'POST', null, body)) as DailySessionResponse
+}
+
+
+
 interface completeLearningPathIntroVideo {
-  intro_video_response: SyncWriteDTO<ContentProgress, any> | null,
-  learning_path_reset_response: SyncWriteDTO<ContentProgress, any> | null,
+  intro_video_response: SyncWriteDTO<ContentProgress, any> | null
+  learning_path_reset_response: SyncWriteDTO<ContentProgress, any> | null
   lesson_import_response: SyncWriteDTO<ContentProgress, any> | null
 }
 /**
@@ -293,15 +352,19 @@ interface completeLearningPathIntroVideo {
  * @returns {Promise<void>} response.learning_path_reset_response - The reset learning path response.
  * @returns {Promise<Object[]>} response.lesson_import_response - The responses for completing each content_id within the learning path.
  */
-export async function completeLearningPathIntroVideo(introVideoId: number, learningPathId: number, lessonsToImport: number[] | null) {
+export async function completeLearningPathIntroVideo(
+  introVideoId: number,
+  learningPathId: number,
+  lessonsToImport: number[] | null
+) {
   let response = {} as completeLearningPathIntroVideo
 
   response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
-  const collection = { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH }
+  const collection: CollectionObject = { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH }
 
   if (!lessonsToImport) {
-    response.learning_path_reset_response = await contentStatusReset(learningPathId, collection)
+    response.learning_path_reset_response = await resetIfPossible(learningPathId, collection)
 
   } else {
     response.lesson_import_response = await contentsStatusCompleted(lessonsToImport, collection)
@@ -310,9 +373,45 @@ export async function completeLearningPathIntroVideo(introVideoId: number, learn
   return response
 }
 
-
-async function completeIfNotCompleted(contentId: number): Promise<SyncWriteDTO<ContentProgress, any> | null> {
+async function completeIfNotCompleted(
+  contentId: number
+): Promise<SyncWriteDTO<ContentProgress, any> | null> {
   const introVideoStatus = await getProgressState(contentId)
 
   return introVideoStatus !== 'completed' ? await contentStatusCompleted(contentId) : null
+}
+
+async function resetIfPossible(contentId: number, collection: CollectionParameter = null): Promise<SyncWriteDTO<ContentProgress, any> | null> {
+  const status = await getProgressState(contentId, collection)
+
+  return status !== '' ? await contentStatusReset(contentId, collection) : null
+}
+
+export async function onContentCompletedLearningPathListener(event) {
+  console.log('if')
+  if (event?.collection?.type !== 'learning-path-v2') return
+  if (event.contentId !== event?.collection?.id) return
+  const learningPathId = event.contentId
+  const learningPath = await getEnrichedLearningPath(learningPathId)
+  console.log('LP', learningPath)
+  const brand = learningPath.brand
+  const activeLearningPath = await getActivePath(brand)
+  console.log('Active LP', activeLearningPath)
+  if (activeLearningPath.active_learning_path_id !== learningPathId) return
+  const method = await fetchMethodV2Structure(brand)
+  console.log('Method', method)
+  const currentIndex = method.learning_paths.findIndex((lp) => lp.id === learningPathId)
+  if (currentIndex === -1) {
+    return
+  }
+  const nextLearningPath = method.learning_paths[currentIndex + 1]
+  console.log('Next LP', nextLearningPath)
+  if (!nextLearningPath) {
+    return
+  }
+
+  await startLearningPath(brand, nextLearningPath.id)
+  const nextLearningPathData = await getEnrichedLearningPath(nextLearningPath.id)
+  console.log('Next LP Data', nextLearningPathData)
+  await contentStatusReset(nextLearningPathData.intro_video.id)
 }

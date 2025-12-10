@@ -134,8 +134,8 @@ export interface OnboardingRecommendedContent {
 
 const recommendedContentCache: { [brand: string]: OnboardingRecommendedContent } = {
   drumeo: {
-    id: 391995,
-    title: 'Getting Started On The Drums',
+    id: 415737,
+    title: 'The Power Of Your Left Hand (Beginner)',
     difficulty: 'Beginner',
     lesson_count: 12,
     skill_count: 1,
@@ -146,7 +146,7 @@ const recommendedContentCache: { [brand: string]: OnboardingRecommendedContent }
     video: {
       external_id: '1002267396',
       hlsManifestUrl:
-        'https://player.vimeo.com/external/1002267396.m3u8?s=abcdef1234567890abcdef1234567890abcdef12&oauth2_token_id=1284792284',
+        'https://player.vimeo.com/external/250467786.m3u8?s=52dc97fc96fe903d80bf71bc1b1709cc444db407&oauth2_token_id=1284792283',
       type: 'vimeo-video',
     },
   },
@@ -168,8 +168,8 @@ const recommendedContentCache: { [brand: string]: OnboardingRecommendedContent }
     },
   },
   guitareo: {
-    id: 294635,
-    title: 'Getting Started On The Acoustic Guitar',
+    id: 191346,
+    title: 'Understanding Your Instrument',
     difficulty: 'Beginner',
     lesson_count: 6,
     skill_count: 5,
@@ -180,13 +180,13 @@ const recommendedContentCache: { [brand: string]: OnboardingRecommendedContent }
     video: {
       external_id: '1003267397',
       hlsManifestUrl:
-        'https://player.vimeo.com/external/1003267397.m3u8?s=1234567890abcdef1234567890abcdef12345678&oauth2_token_id=1284792285',
+        'https://player.vimeo.com/external/166972298.m3u8?s=a93bfe96a4ce9ac5a4eba3441838847ef2eafc9b&oauth2_token_id=1284792283',
       type: 'vimeo-video',
     },
   },
   singeo: {
-    id: 712408,
-    title: 'Singing Starter Kit',
+    id: 415737,
+    title: 'Sound Like A Star — Mastering Iconic Pop Voices',
     difficulty: 'Beginner',
     lesson_count: 5,
     skill_count: 4,
@@ -197,13 +197,13 @@ const recommendedContentCache: { [brand: string]: OnboardingRecommendedContent }
     video: {
       external_id: '1004267398',
       hlsManifestUrl:
-        'https://player.vimeo.com/external/1004267398.m3u8?s=fedcba0987654321fedcba0987654321fedcba09&oauth2_token_id=1284792286',
+        'https://player.vimeo.com/external/1040159819.m3u8?s=f238ad1a650fb30a49c36d61996c982f06ffffb1&oauth2_token_id=1284792283',
       type: 'vimeo-video',
     },
   },
   playbass: {
-    id: 294635,
-    title: 'Getting Started On The Acoustic Guitar',
+    id: 191346,
+    title: 'Understanding Your Instrument',
     difficulty: 'Beginner',
     lesson_count: 6,
     skill_count: 5,
@@ -214,7 +214,7 @@ const recommendedContentCache: { [brand: string]: OnboardingRecommendedContent }
     video: {
       external_id: '1003267397',
       hlsManifestUrl:
-        'https://player.vimeo.com/external/1003267397.m3u8?s=1234567890abcdef1234567890abcdef12345678&oauth2_token_id=1284792285',
+        'https://player.vimeo.com/external/166972298.m3u8?s=a93bfe96a4ce9ac5a4eba3441838847ef2eafc9b&oauth2_token_id=1284792283',
       type: 'vimeo-video',
     },
   },

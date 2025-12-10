@@ -7,7 +7,7 @@ import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
 import { Brand } from '../../lib/brands'
 import { DocumentType } from '../../lib/documents'
-import { getSortOrder } from '../../lib/sanity/query'
+import { BuildQueryOptions, getSortOrder, query } from '../../lib/sanity/query'
 import { Lesson } from './content'
 
 const contentClient = new ContentClient()
@@ -25,7 +25,7 @@ export interface Instructors extends SanityListResponse<Instructor> {}
 /**
  * Fetch all instructor with lessons available for a specific brand.
  *
- * @param {Brand | string} brand - The brand for which to fetch instructors.
+ * @param {Brand|string} brand - The brand for which to fetch instructors.
  * @returns {Promise<Instructors>} - A promise that resolves to an array of instructor objects.
  *
  * @example
@@ -33,20 +33,39 @@ export interface Instructors extends SanityListResponse<Instructor> {}
  *   .then(instructors => console.log(instructors))
  *   .catch(error => console.error(error));
  */
-export async function fetchInstructors(brand: Brand | string): Promise<Instructors> {
-  const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
+export async function fetchInstructors(
+  brand: Brand | string,
+  options: BuildQueryOptions
+): Promise<Instructors> {
+  const lessonFilter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
 
-  return contentClient.fetchByTypeAndBrand<Instructor>(DocumentType.Instructor, brand as Brand, {
-    fields: [
+  const data = query()
+    .and(`_type == "instructor"`)
+    .order(options?.sort || 'lower(name) asc')
+    .slice(options?.offset || 0, (options?.offset || 0) + (options?.limit || 20))
+    .select(
       'name',
-      `'slug': slug.current`,
-      `'thumbnail': thumbnail_url.asset->url`,
-      `'lessonCount': count(*[${filter}])`,
-    ],
-    paginated: false,
-  })
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lessonCount": count(*[${lessonFilter}])`
+    )
+    .postFilter(`lessonCount > 0`)
+    .build()
+
+  const total = query()
+    .and(`_type == "instructor"`)
+    .select(`"lessonCount": count(*[${lessonFilter}])`)
+    .postFilter(`lessonCount > 0`)
+    .build()
+
+  const q = `{
+    "data": ${data},
+    "total": count(${total})
+  }`
+
+  return contentClient.fetchList<Instructor>(q, options)
 }
 
 /**
@@ -70,20 +89,23 @@ export async function fetchInstructorBySlug(
     bypassPermissions: true,
   }).buildFilter()
 
-  const query = `
-    *[_type == "${DocumentType.Instructor}" && slug.current == '${slug}'][0] {
-      name,
-      "slug": slug.current,
-      short_bio,
-      'thumbnail': thumbnail_url.asset->url,
-      "lessonCount": count(*[${filter}])
-    }
-  `
-  return contentClient.fetchSingle<Instructor>(query)
+  const q = query()
+    .and(`_type == "instructor"`)
+    .and(`slug.current == "${slug}"`)
+    .select(
+      'name',
+      `"slug": slug.current`,
+      'short_bio',
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lessonCount": count(*[${filter}])`
+    )
+    .first()
+    .build()
+
+  return contentClient.fetchSingle<Instructor>(q)
 }
 
-export interface FetchInstructorLessonsOptions {
-  sortOrder?: string
+export interface InstructorLessonsOptions extends BuildQueryOptions {
   searchTerm?: string
   page?: number
   limit?: number
@@ -115,16 +137,14 @@ export async function fetchInstructorLessons(
   brand: Brand | string,
   contentType: DocumentType,
   {
-    sortOrder: sort = '-published_on',
+    sort = '-published_on',
     searchTerm = '',
-    page = 1,
+    offset = 1,
     limit = 20,
     includedFields = [],
-  }: FetchInstructorLessonsOptions = {}
+  }: InstructorLessonsOptions = {}
 ): Promise<InstructorLessons> {
   const fieldsString = getFieldsForContentType() as string
-  const start = (page - 1) * limit
-  const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
   const addType = contentType ? `_type == '${contentType}' && ` : ''
@@ -132,10 +152,23 @@ export async function fetchInstructorLessons(
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
   sort = getSortOrder(sort, brand as Brand)
 
-  return contentClient.fetchList<Lesson>(filterWithRestrictions, fieldsString, {
+  const data = query()
+    .and(filterWithRestrictions)
+    .order(sort)
+    .slice(offset, offset + limit)
+    .select(...(fieldsString ? [fieldsString] : []))
+    .build()
+
+  const total = query().and(filterWithRestrictions).build()
+
+  const q = `{
+    "data": ${data},
+    "total": count(${total})
+  }`
+
+  return contentClient.fetchList<Lesson>(q, {
     sort,
-    start,
-    end,
-    paginated: false,
+    offset,
+    limit,
   })
 }

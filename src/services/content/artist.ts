@@ -8,6 +8,7 @@ import { SanityListResponse } from '../../infrastructure/sanity/interfaces/Sanit
 import { Brand } from '../../lib/brands'
 import { DocumentType } from '../../lib/documents'
 import { getSortOrder } from '../../lib/sanity/query'
+import { BuildQueryOptions, query } from '../../lib/sanity/query'
 import { Lesson } from './content'
 
 const contentClient = new ContentClient()
@@ -32,21 +33,39 @@ export interface Artists extends SanityListResponse<Artist> {}
  *   .then(artists => console.log(artists))
  *   .catch(error => console.error(error));
  */
-export async function fetchArtists(brand: Brand | string): Promise<Artists> {
-  const filter = await new FilterBuilder(
-    `_type == "song" && brand == "${brand}" && references(^._id)`,
-    { bypassPermissions: true }
-  ).buildFilter()
+export async function fetchArtists(
+  brand: Brand | string,
+  options: BuildQueryOptions = { sort: 'lower(name) asc' }
+): Promise<Artists> {
+  const lessonFilter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
+    bypassPermissions: true,
+  }).buildFilter()
 
-  return contentClient.fetchByTypeAndBrand<Artist>(DocumentType.Artist, brand, {
-    fields: [
-      `name`,
-      `'slug': slug.current`,
-      `'thumbnail': thumbnail_url.asset->url`,
-      `'lessonCount': count(*[${filter}])`,
-    ],
-    paginated: false,
-  })
+  const data = query()
+    .and(`_type == "${DocumentType.Artist}"`)
+    .order(options?.sort || 'lower(name) asc')
+    .slice(options?.offset || 0, (options?.offset || 0) + (options?.limit || 20))
+    .select(
+      'name',
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lessonCount": count(*[${lessonFilter}])`
+    )
+    .postFilter(`lessonCount > 0`)
+    .build()
+
+  const total = query()
+    .and(`_type == "artist"`)
+    .select(`"lessonCount": count(*[${lessonFilter}])`)
+    .postFilter(`lessonCount > 0`)
+    .build()
+
+  const q = `{
+    "data": ${data},
+    "total": count(${total})
+  }`
+
+  return contentClient.fetchList<Artist>(q, options)
 }
 
 /**
@@ -69,22 +88,24 @@ export async function fetchArtistBySlug(
   const filter = await new FilterBuilder(`${brandFilter} _type == "song" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
-  const query = `
-    *[_type == '${DocumentType.Artist}' && slug.current == '${slug}']{
-      name,
-      "slug": slug.current,
-      "lessonCount": count(*[${filter}])
-    }[lessonCount > 0] |order(lower(name))
-  `
 
-  return contentClient.fetchSingle<Artist>(query)
+  const q = query()
+    .and(`_type == "artist"`)
+    .and(`&& slug.current == '${slug}'`)
+    .select(
+      'name',
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lessonCount": count(*[${filter}])`
+    )
+    .first()
+    .build()
+
+  return contentClient.fetchSingle<Artist>(q)
 }
 
-export interface ArtistLessonOptions {
-  sort?: string
+export interface ArtistLessonOptions extends BuildQueryOptions {
   searchTerm?: string
-  page?: number
-  limit?: number
   includedFields?: Array<string>
   progressIds?: Array<number>
 }
@@ -117,15 +138,13 @@ export async function fetchArtistLessons(
   {
     sort = '-published_on',
     searchTerm = '',
-    page = 1,
+    offset = 1,
     limit = 10,
     includedFields = [],
     progressIds = [],
   }: ArtistLessonOptions = {}
 ): Promise<ArtistLessons> {
   const fieldsString = getFieldsForContentType(contentType) as string
-  const start = (page - 1) * limit
-  const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
   const addType = contentType ? `_type == '${contentType}' && ` : ''
@@ -135,10 +154,24 @@ export async function fetchArtistLessons(
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
 
   sort = getSortOrder(sort, brand as Brand)
-  return contentClient.fetchList(filterWithRestrictions, fieldsString, {
+
+  const data = query()
+    .and(filterWithRestrictions)
+    .order(sort)
+    .slice(offset, offset + limit)
+    .select(...(fieldsString ? [fieldsString] : []))
+    .build()
+
+  const total = query().and(filterWithRestrictions).build()
+
+  const q = `{
+    "data": ${data},
+    "total": count(${total})
+  }`
+
+  return contentClient.fetchList(q, {
     sort,
-    start: start,
-    end: end,
-    paginated: false,
+    offset,
+    limit,
   })
 }

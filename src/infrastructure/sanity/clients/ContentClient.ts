@@ -4,6 +4,7 @@ import { ConfigProvider } from '../interfaces/ConfigProvider'
 import { QueryExecutor } from '../interfaces/QueryExecutor'
 import { DocumentType } from '../../../lib/documents'
 import { SanityListResponse } from '../interfaces/SanityResponse'
+import { query } from '../../../lib/sanity/query'
 
 /**
  * ContentClient extends SanityClient with content-specific methods
@@ -20,17 +21,16 @@ export class ContentClient extends SanityClient {
   public async fetchById<T>(options: FetchByIdOptions): Promise<T | null> {
     try {
       const { type, id, fields, includeChildren = false } = options
-
-      // Build the base query
-      let query = `*[railcontent_id == ${id} && _type == '${type}']`
-
-      // Build fields string
       let fieldsString = this.buildFieldsString(type, fields, includeChildren)
 
-      // Complete the query
-      query += `{${fieldsString}}[0]`
+      const q = query()
+        .and(`railcontent_id == ${id}`)
+        .and(`_type == "${type}"`)
+        .select(fieldsString)
+        .first()
+        .build()
 
-      return await this.fetchFirst<T>(query)
+      return await this.fetchFirst<T>(q)
     } catch (error: any) {
       return this.handleContentError(error, `fetchById(${JSON.stringify(options)})`)
     }
@@ -50,18 +50,17 @@ export class ContentClient extends SanityClient {
         return { data: [], total: 0 }
       }
 
-      const idsString = ids.join(',')
-      const typeFilter = type ? ` && _type == '${type}'` : ''
-      const brandFilter = brand ? ` && brand == "${brand}"` : ''
-      const fieldsString = this.buildFieldsString(type, fields, false)
+      const q = query()
+        .and(`railcontent_id in [${ids.join(',')}]`)
+        .and(type ? `_type == "${type}"` : '')
+        .and(brand ? `brand == "${brand}"` : '')
+        .select(this.buildFieldsString(type, fields, false))
+        .build()
 
-      const query = `*[railcontent_id in [${idsString}]${typeFilter}${brandFilter}]`
-
-      return this.fetchList<T>(query, fieldsString, {
+      return this.fetchList<T>(q, {
         sort: '-railcontent_id',
-        start: 0,
-        end: ids.length,
-        paginated: false,
+        offset: 0,
+        limit: ids.length,
       })
     } catch (error: any) {
       return this.handleContentError(error, `fetchByIds([${ids.join(',')}])`)
@@ -79,27 +78,24 @@ export class ContentClient extends SanityClient {
       offset?: number
       sortBy?: string
       fields?: string[]
-      paginated?: boolean
     } = {}
   ): Promise<SanityListResponse<T>> {
     try {
-      const brandFilter = brand ? `brand == "${brand}" && ` : ''
-      const {
-        limit = 10,
-        offset = 0,
-        sortBy = 'published_on desc',
-        fields,
-        paginated = false,
-      } = options
+      const { limit = 10, offset = 0, sortBy = 'published_on desc', fields } = options
       const fieldsString = this.buildFieldsString(type, fields, false)
 
-      const filter = `${brandFilter} _type == "${type}"`
+      const q = query()
+        .and(brand ? `brand == "${brand}"` : '')
+        .and(`_type == "${type}"`)
+        .order(sortBy)
+        .slice(offset, offset + limit)
+        .select(...(fieldsString ? [fieldsString] : []))
+        .build()
 
-      return this.fetchList<T>(filter, fieldsString, {
+      return this.fetchList<T>(q, {
         sort: sortBy,
-        start: offset,
-        end: offset + limit,
-        paginated,
+        offset,
+        limit: limit,
       })
     } catch (error: any) {
       return this.handleContentError(error, `fetchByBrandAndType(${brand}, ${type})`)

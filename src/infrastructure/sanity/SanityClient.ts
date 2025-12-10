@@ -6,7 +6,7 @@ import { SanityError } from './interfaces/SanityError'
 import { DefaultConfigProvider } from './providers/DefaultConfigProvider'
 import { FetchQueryExecutor } from './executors/FetchQueryExecutor'
 import { SanityListResponse } from './interfaces/SanityResponse'
-import { buildDataAndTotalQuery, BuildQueryOptions } from '../../lib/sanity/query'
+import { BuildQueryOptions } from '../../lib/sanity/query'
 
 export class SanityClient {
   private configProvider: ConfigProvider
@@ -61,12 +61,10 @@ export class SanityClient {
    * Execute a GROQ query and return multiple results
    */
   public async fetchList<T>(
-    filter: string,
-    fields: string,
+    query: string,
     options: BuildQueryOptions,
     params?: Record<string, any>
   ): Promise<SanityListResponse<T>> {
-    const query = buildDataAndTotalQuery(filter, fields, options)
     try {
       const sanityQuery: SanityQuery = { query, params }
       const response = await this.queryExecutor.execute<SanityListResponse<T>>(

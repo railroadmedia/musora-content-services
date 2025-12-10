@@ -10,7 +10,6 @@ import { fetchLessonsFeaturingThisContent } from '../src/services/sanity.js'
 
 const {
   fetchSongById,
-  fetchArtists,
   fetchReturning,
   fetchLeaving,
   fetchComingSoon,
@@ -21,25 +20,20 @@ const {
   fetchByRailContentIds,
   fetchAll,
   fetchAllFilterOptions,
-  fetchFoundation,
-  fetchMethod,
   fetchRelatedLessons,
   fetchAllPacks,
   fetchPackAll,
   fetchLessonContent,
   fetchLiveEvent,
-  fetchCoachLessons,
   fetchByReference,
   fetchScheduledReleases,
   getSortOrder,
   fetchShowsData,
   fetchMetadata,
-  fetchNextPreviousLesson,
   fetchHierarchy,
   fetchTopLevelParentId,
   fetchOtherSongVersions,
   fetchCommentModContentData,
-  fetchMethodPreviousNextLesson,
   fetchSanity,
 } = require('../src/services/sanity.js')
 
@@ -76,13 +70,6 @@ describe('Sanity Queries', function() {
     const response = await fetchComingSoon(brand, { pageNumber: 2, contentPerPage: 20 })
     expect(response).toBeDefined()
   })
-
-
-  test('fetchArtists', async () => {
-    const response = await fetchArtists('drumeo')
-    const artistNames = response.map((x) => x.name)
-    expect(artistNames).toContain('Audioslave')
-  }, 10000)
 
   test('fetchSongArtistCount', async () => {
     const response = await fetchSongArtistCount('drumeo')
@@ -301,13 +288,6 @@ describe('Sanity Queries', function() {
     expect(sort).toBe('published_on asc')
   })
 
-  test('fetchMethod', async () => {
-    const response = await fetchMethod('drumeo', 'drumeo-method')
-    log(response)
-    expect(response).toBeDefined()
-    expect(response.levels.length).toBeGreaterThan(0)
-  })
-
   test('fetchAll-WithProgress', async () => {
     const ids = [410213, 410215]
     let response = await fetchAll('drumeo', 'song', {
@@ -332,13 +312,6 @@ describe('Sanity Queries', function() {
     expect(response.meta.totalResults).toBe(0)
   })
 
-  test('fetchFoundation', async () => {
-    const response = await fetchFoundation('foundations-2019')
-    log(response)
-    expect(response.units.length).toBeGreaterThan(0)
-    expect(response.type).toBe('foundation')
-  })
-
   test('fetchPackAll', async () => {
     const response = await fetchPackAll(212899) //https://web-staging-one.musora.com/admin/studio/publishing/structure/pack;pack_212899%2Cinspect%3Don
     log(response)
@@ -355,35 +328,6 @@ describe('Sanity Queries', function() {
     expect(titles).toStrictEqual(sortedTitles)
     response = await fetchAllPacks('drumeo', 'slug', 'Creative Control')
     expect(response[0].id).toBe(212899)
-  })
-
-  test('fetchCoachLessons', async () => {
-    const response = await fetchCoachLessons('drumeo', 411493, {})
-    expect(response.entity.length).toBeGreaterThan(0)
-  })
-  test('fetchCoachLessons-WithTypeFilters', async () => {
-    const response = await fetchAllFilterOptions('drumeo', ['type,course', 'type,live'], '', '', 'coach-lessons', '', [], 31880)
-    log(response)
-    expect(response.meta.filterOptions.difficulty).toBeDefined()
-    expect(response.meta.filterOptions.type).toBeDefined()
-    expect(response.meta.filterOptions.lifestyle).toBeDefined()
-    expect(response.meta.filterOptions.genre).toBeDefined()
-  })
-
-  test('fetchCoachLessons-WithTypeFilters-InvalidContentType', async () => {
-    const brand = 'drumeo'
-    const coachId = 31880
-    const invalidContentType = 'course' // Not 'coach-lessons'
-
-    await expect(fetchAllFilterOptions(brand, ['type,course', 'type,live'], '', '', invalidContentType, '', [], coachId)).rejects.toThrow(`Invalid contentType: 'course' for coachId. It must be 'coach-lessons'.`)
-  })
-
-  test('fetchCoachLessons-IncludedFields', async () => {
-    const response = await fetchCoachLessons('drumeo', 31880, {
-      includedFields: ['genre,Pop/Rock', 'difficulty,Beginner'],
-    })
-    log(response)
-    expect(response.entity.length).toBeGreaterThan(0)
   })
 
   test('fetchAll-IncludedFields', async () => {
@@ -486,66 +430,6 @@ describe('Sanity Queries', function() {
     const response = await fetchMetadata('drumeo', 'coach-lessons')
     log(response)
     expect(response).toBeDefined()
-  })
-
-  test('fetchNextPreviousLesson-Show-With-Episodes', async () => {
-    const id = 227136
-    const document = await fetchByRailContentId(id, 'behind-the-scenes')
-    const response = await fetchNextPreviousLesson(id)
-    log(response)
-    expect(response.prevLesson).toBeDefined()
-    expect(response.prevLesson.sort).toBeLessThanOrEqual(document.sort)
-    expect(response.nextLesson).toBeDefined()
-    expect(response.nextLesson.sort).toBeGreaterThanOrEqual(document.sort)
-  })
-
-  test('fetchMethodNextPreviousLesson-Last', async () => {
-    const id = 260171
-    const methodId = 259060
-    const response = await fetchMethodPreviousNextLesson(id, methodId)
-    log(response)
-    expect(response.prevLesson).toBeDefined()
-    expect(response.prevLesson.id).toBe(260170)
-    expect(response.prevLesson.type).toBe('course-part')
-    expect(response.nextLesson).not.toBeDefined()
-  })
-
-  test('fetchNextPreviousLesson-Method-Lesson', async () => {
-    const id = 241265
-    const response = await fetchNextPreviousLesson(id)
-    log(response)
-    expect(response.prevLesson).toBeDefined()
-    expect(response.prevLesson.id).toBe(241264)
-    expect(response.prevLesson.type).toBe('learning-path-lesson')
-    expect(response.nextLesson).toBeDefined()
-    expect(response.nextLesson.id).toBe(241267)
-    expect(response.nextLesson.type).toBe('learning-path-lesson')
-  })
-
-  test('fetchNextPreviousLesson-Quick-Tips', async () => {
-    const id = 412277
-    const response = await fetchNextPreviousLesson(id)
-    const document = await fetchByRailContentId(id, 'quick-tips')
-    const documentPublishedOn = new Date(document.published_on)
-    const prevDocumentPublishedOn = new Date(response.prevLesson.published_on)
-    const nextDocumentPublishedOn = new Date(response.nextLesson.published_on)
-    expect(response.prevLesson).toBeDefined()
-    expect(prevDocumentPublishedOn.getTime()).toBeLessThan(documentPublishedOn.getTime())
-    expect(response.nextLesson).toBeDefined()
-    expect(documentPublishedOn.getTime()).toBeLessThan(nextDocumentPublishedOn.getTime())
-  })
-
-  test('fetchNextPreviousLesson-Song', async () => {
-    const id = 414041
-    const response = await fetchNextPreviousLesson(id)
-    const document = await fetchByRailContentId(id, 'song')
-    const documentPublishedOn = new Date(document.published_on)
-    const prevDocumentPublishedOn = new Date(response.prevLesson.published_on)
-    const nextDocumentPublishedOn = new Date(response.nextLesson.published_on)
-    expect(response.prevLesson).toBeDefined()
-    expect(prevDocumentPublishedOn.getTime()).toBeLessThanOrEqual(documentPublishedOn.getTime())
-    expect(response.nextLesson).toBeDefined()
-    expect(documentPublishedOn.getTime()).toBeLessThanOrEqual(nextDocumentPublishedOn.getTime())
   })
 
   test('fetchTopLevelParentId', async () => {

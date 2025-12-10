@@ -9,6 +9,7 @@ import { Brand } from '../../lib/brands'
 import { DocumentType } from '../../lib/documents'
 import { getSortOrder } from '../../lib/sanity/query'
 import { Lesson } from './content'
+import { BuildQueryOptions, query } from '../../lib/sanity/query'
 
 const contentClient = new ContentClient()
 
@@ -32,20 +33,39 @@ export interface Genres extends SanityListResponse<Genre> {}
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenres(brand: Brand | string): Promise<Genres> {
-  const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
+export async function fetchGenres(
+  brand: Brand | string,
+  options: BuildQueryOptions = { sort: 'lower(name) asc' }
+): Promise<Genres> {
+  const lessonFilter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
   }).buildFilter()
 
-  return contentClient.fetchByTypeAndBrand<Genre>(DocumentType.Genre, brand, {
-    fields: [
-      `name`,
-      `'slug': slug.current`,
-      `'thumbnail': thumbnail_url.asset->url`,
-      `'lessons_count': count(*[${filter}])`,
-    ],
-    paginated: false,
-  })
+  const data = query()
+    .and(`_type == "genre"`)
+    .order(options?.sort || 'lower(name) asc')
+    .slice(options?.offset || 0, (options?.offset || 0) + (options?.limit || 20))
+    .select(
+      'name',
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lessons_count": count(*[${lessonFilter}])`
+    )
+    .postFilter(`lessons_count > 0`)
+    .build()
+
+  const total = query()
+    .and(`_type == "genre"`)
+    .select(`"lessons_count": count(*[${lessonFilter}])`)
+    .postFilter(`lessons_count > 0`)
+    .build()
+
+  const q = `{
+    "data": ${data},
+    "total": count(${total})
+  }`
+
+  return contentClient.fetchList<Genre>(q, options)
 }
 
 /**
@@ -69,21 +89,23 @@ export async function fetchGenreBySlug(
     bypassPermissions: true,
   }).buildFilter()
 
-  const query = `
-  *[_type == '${DocumentType.Genre}' && slug.current == '${slug}'] {
-    name,
-    "slug": slug.current,
-    'thumbnail':thumbnail_url.asset->url,
-    "lessonsCount": count(*[${filter}])
-  }`
-  return contentClient.fetchSingle<Genre>(query)
+  const q = query()
+    .and(`_type == "genre"`)
+    .and(`slug.current == "${slug}"`)
+    .select(
+      'name',
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lessons_count": count(*[${filter}])`
+    )
+    .first()
+    .build()
+
+  return contentClient.fetchSingle<Genre>(q)
 }
 
-export interface FetchGenreLessonsOptions {
-  sort?: string
+export interface GenreLessonsOptions extends BuildQueryOptions {
   searchTerm?: string
-  page?: number
-  limit?: number
   includedFields?: Array<string>
   progressIds?: Array<number>
 }
@@ -116,15 +138,13 @@ export async function fetchGenreLessons(
   {
     sort = '-published_on',
     searchTerm = '',
-    page = 1,
+    offset = 1,
     limit = 10,
     includedFields = [],
     progressIds = [],
-  }: FetchGenreLessonsOptions = {}
+  }: GenreLessonsOptions = {}
 ): Promise<GenreLessons> {
   const fieldsString = getFieldsForContentType(contentType) as string
-  const start = (page - 1) * limit
-  const end = start + limit
   const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
   const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
   const addType = contentType ? `_type == '${contentType}' && ` : ''
@@ -134,10 +154,23 @@ export async function fetchGenreLessons(
   const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
   sort = getSortOrder(sort, brand as Brand)
 
-  return contentClient.fetchList<Lesson>(filterWithRestrictions, fieldsString, {
+  const data = query()
+    .and(filterWithRestrictions)
+    .order(sort)
+    .slice(offset, offset + limit)
+    .select(...(fieldsString ? [fieldsString] : []))
+    .build()
+
+  const total = query().and(filterWithRestrictions).build()
+
+  const q = `{
+    "data": ${data},
+    "total": count(${total})
+  }`
+
+  return contentClient.fetchList<Lesson>(q, {
     sort,
-    start,
-    end,
-    paginated: false,
+    offset,
+    limit,
   })
 }
