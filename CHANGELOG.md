@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.102.0](https://github.com/railroadmedia/musora-content-services/compare/v2.101.1...v2.102.0) (2025-12-10)
+
+
+### Features
+
+* **BEH-1457:** method progress duplication ([#617](https://github.com/railroadmedia/musora-content-services/issues/617)) ([917cb9d](https://github.com/railroadmedia/musora-content-services/commit/917cb9dedce2a21c64af4e39eef013a30b236e77))
+
 ### [2.101.1](https://github.com/railroadmedia/musora-content-services/compare/v2.101.0...v2.101.1) (2025-12-10)
 
 
