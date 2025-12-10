@@ -174,7 +174,7 @@ export class Filters {
    * @example Filters.searchMatch('description', 'beginner') // "description match 'beginner*'"
    */
   static searchMatch(field: string, term?: string): string {
-    return term ? `${field} match "${term}*"` : this.empty
+    return term ? `${field} match "${term}*"` : Filters.empty
   }
 
   /**
@@ -398,19 +398,16 @@ export class Filters {
    * @example await Filters.contentFilter({ bypassPermissions: false, pullFutureContent: false })
    */
   static async contentFilter(config: ContentFilterConfig = {}): Promise<string> {
-    // Fetch user data once for all filters
     let userData: UserPermissions | undefined
     if (!config.bypassPermissions && !config.userData) {
       userData = await getPermissionsAdapter().fetchUserPermissions()
     }
 
-    const filters = [
-      await Filters.status(config),
-      await Filters.permissions({ ...config, userData: userData || config.userData }),
-      Filters.publishedDate(config),
-    ]
-
-    return Filters.combine(...filters)
+    return Filters.combineAsync(
+      Filters.status(config),
+      Filters.permissions({ ...config, userData: userData || config.userData }),
+      Filters.publishedDate(config)
+    )
   }
 
   /**
@@ -435,7 +432,7 @@ export class Filters {
   // MISC UTILITIES FIlTERS
   // ============================================
   static includedFields(includedFields: string[]): string {
-    return includedFields.length > 0 ? filtersToGroq(includedFields) : this.empty
+    return includedFields.length > 0 ? filtersToGroq(includedFields) : Filters.empty
   }
 
   static count(filter: string): string {
@@ -443,7 +440,7 @@ export class Filters {
   }
 
   static progressIds(progressIds: number[]): string {
-    return progressIds.length > 0 ? this.idIn(progressIds) : this.empty
+    return progressIds.length > 0 ? Filters.idIn(progressIds) : Filters.empty
   }
 }
 
