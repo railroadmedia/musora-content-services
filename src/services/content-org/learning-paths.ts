@@ -388,30 +388,29 @@ async function resetIfPossible(contentId: number, collection: CollectionParamete
 }
 
 export async function onContentCompletedLearningPathListener(event) {
-  console.log('if')
-  if (event?.collection?.type !== 'learning-path-v2') return
+  if (event?.collection?.type !== COLLECTION_TYPE.LEARNING_PATH) return
   if (event.contentId !== event?.collection?.id) return
+
   const learningPathId = event.contentId
   const learningPath = await getEnrichedLearningPath(learningPathId)
-  console.log('LP', learningPath)
+
   const brand = learningPath.brand
   const activeLearningPath = await getActivePath(brand)
-  console.log('Active LP', activeLearningPath)
+
   if (activeLearningPath.active_learning_path_id !== learningPathId) return
   const method = await fetchMethodV2Structure(brand)
-  console.log('Method', method)
+
   const currentIndex = method.learning_paths.findIndex((lp) => lp.id === learningPathId)
   if (currentIndex === -1) {
     return
   }
   const nextLearningPath = method.learning_paths[currentIndex + 1]
-  console.log('Next LP', nextLearningPath)
   if (!nextLearningPath) {
     return
   }
 
   await startLearningPath(brand, nextLearningPath.id)
   const nextLearningPathData = await getEnrichedLearningPath(nextLearningPath.id)
-  console.log('Next LP Data', nextLearningPathData)
+
   await contentStatusReset(nextLearningPathData.intro_video.id)
 }
