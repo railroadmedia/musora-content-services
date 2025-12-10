@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.101.1](https://github.com/railroadmedia/musora-content-services/compare/v2.101.0...v2.101.1) (2025-12-10)
+
+
+### Bug Fixes
+
+* user id missing on auth key ([ba4068f](https://github.com/railroadmedia/musora-content-services/commit/ba4068ff3aa8005b1b3ed615b07d4ff7eb9f751b))
+
 ## [2.101.0](https://github.com/railroadmedia/musora-content-services/compare/v2.100.3...v2.101.0) (2025-12-10)
 
 
