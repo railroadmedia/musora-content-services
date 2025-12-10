@@ -2,10 +2,12 @@ import BaseModel from './Base'
 import { SYNC_TABLES } from '../schema'
 
 export enum COLLECTION_TYPE {
-  SKILL_PACK = 'skill-pack',
+  SELF = 'self',
+  GUIDED_COURSE = 'guided-course',
   LEARNING_PATH = 'learning-path-v2',
   PLAYLIST = 'playlist',
 }
+export const COLLECTION_ID_SELF = 0
 
 export enum STATE {
   STARTED = 'started',
@@ -14,11 +16,11 @@ export enum STATE {
 
 export default class ContentProgress extends BaseModel<{
   content_id: number
-  collection_type: COLLECTION_TYPE | null
-  collection_id: number | null
+  collection_type: COLLECTION_TYPE
+  collection_id: number
   state: STATE
   progress_percent: number
-  resume_time_seconds: number
+  resume_time_seconds: number | null
 }> {
   static table = SYNC_TABLES.CONTENT_PROGRESS
 
@@ -35,13 +37,13 @@ export default class ContentProgress extends BaseModel<{
     return this._getRaw('progress_percent') as number
   }
   get collection_type() {
-    return (this._getRaw('collection_type') as COLLECTION_TYPE) || null
+    return this._getRaw('collection_type') as COLLECTION_TYPE
   }
   get collection_id() {
-    return (this._getRaw('collection_id') as number) || null
+    return this._getRaw('collection_id') as number
   }
   get resume_time_seconds() {
-    return this._getRaw('resume_time_seconds') as number
+    return (this._getRaw('resume_time_seconds') as number) || null
   }
 
   set content_id(value: number) {
@@ -54,16 +56,16 @@ export default class ContentProgress extends BaseModel<{
     this._setRaw('state', value)
   }
   set progress_percent(value: number) {
-    this._setRaw('progress_percent', value)
+    this._setRaw('progress_percent', Math.min(100, Math.max(0, value)))
   }
-  set collection_type(value: COLLECTION_TYPE | null) {
+  set collection_type(value: COLLECTION_TYPE) {
     this._setRaw('collection_type', value)
   }
-  set collection_id(value: number | null) {
+  set collection_id(value: number) {
     this._setRaw('collection_id', value)
   }
-  set resume_time_seconds(value: number) {
-    this._setRaw('resume_time_seconds', value)
+  set resume_time_seconds(value: number | null) {
+    this._setRaw('resume_time_seconds', value !== null ? Math.max(0, value) : null)
   }
 
 }

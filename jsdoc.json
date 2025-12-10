@@ -5,6 +5,7 @@
       "src/services/content-org",
       "src/services/content",
       "src/services/gamification",
+      "src/services/awards",
       "src/services/api",
       "src/services/progress-row",
       "src/services/config.js",
@@ -17,7 +18,7 @@
       "src/index.js"
     ],
     "includePattern": "(.js|.ts$)",
-    "excludePattern": "(node_modules/|docs)"
+    "excludePattern": "(node_modules/|docs|/internal/)"
   },
   "plugins": [
     "node_modules/jsdoc-babel"

@@ -1,12 +1,37 @@
 import { globalConfig } from '../services/config.js'
 
+async function message(response) {
+  const contentType = response.headers.get('content-type')
+  if (
+    contentType &&
+    contentType.indexOf('application/json') !== -1 &&
+    response.status !== 204
+  ) {
+    return await response.json()
+  } else {
+    return await response.text()
+  }
+}
+
+async function handleError(response, method, url) {
+  console.error(`Fetch error: ${method} ${url} ${response.status} ${response.statusText}`)
+  console.log(response)
+  const contentType = response.headers.get('content-type')
+  if (contentType && contentType.indexOf('json') !== -1) {
+    const data = await response.json()
+    console.log(data)
+  }
+}
+
 export async function fetchJSONHandler(
   url,
   token,
   baseUrl,
   method = 'get',
   dataVersion = null,
-  body = null
+  body = null,
+  fullResponse = false,
+  logError = true
 ) {
   const headers = {
     'Content-Type': 'application/json',
@@ -23,23 +48,13 @@ export async function fetchJSONHandler(
     const response = await fetchHandler(url, token, baseUrl, method, headers, dataVersion, body)
 
     if (response.ok) {
-      const contentType = response.headers.get('content-type')
-      if (
-        contentType &&
-        contentType.indexOf('application/json') !== -1 &&
-        response.status !== 204
-      ) {
-        return await response.json()
-      } else {
-        return await response.text()
+      if (fullResponse) {
+        return response
       }
+      return await message(response)
     } else {
-      console.error(`Fetch error: ${method} ${url} ${response.status} ${response.statusText}`)
-      console.log(response)
-      const contentType = response.headers.get('content-type')
-      if (contentType && contentType.indexOf('json') !== -1) {
-        const data = await response.json()
-        console.log(data)
+      if (logError) {
+        await handleError(response, method, url)
       }
     }
   } catch (error) {

@@ -1,7 +1,7 @@
 import { Database, Q, type Collection, type RecordId } from '@nozbe/watermelondb'
 import { RawSerializer, ModelSerializer } from '../serializers'
 import { ModelClass, SyncToken, SyncEntry,  SyncContext, EpochMs } from '..'
-import { SyncPullResponse, SyncPushResponse, PushPayload } from '../fetch'
+import { SyncPullResponse, SyncPushResponse, SyncPushFailureResponse, PushPayload } from '../fetch'
 import type SyncRetry from '../retry'
 import type SyncRunScope from '../run-scope'
 import EventEmitter from '../utils/event-emitter'
@@ -16,6 +16,7 @@ import { dropThrottle, queueThrottle, createThrottleState, type ThrottleState } 
 import { type WriterInterface } from '@nozbe/watermelondb/Database/WorkQueue'
 import type LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 import { SyncError } from '../errors'
+
 
 type SyncPull = (
   session: BaseSessionProvider,
@@ -244,15 +245,39 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         const existing = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids))))
         const existingMap = existing.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
 
-        const destroyedBuilds = existing.filter(record => record._raw._status === 'deleted').map(record => {
-          return new this.model(this.collection, { id: record.id }).prepareDestroyPermanently()
+        const destroyedBuilds = []
+        const recreateBuilds: Array<{ id: RecordId; created_at: EpochMs; builder: (record: TModel) => void }> = []
+
+        existing.forEach(record => {
+          if (record._raw._status === 'deleted') {
+            destroyedBuilds.push(new this.model(this.collection, { id: record.id }).prepareDestroyPermanently())
+          } else if (record._raw._status === 'created' && builders[record.id]) {
+            // Workaround for WatermelonDB bug: prepareUpdate() doesn't commit field changes
+            // for records with _status='created'. Destroy and recreate to ensure updates persist.
+            destroyedBuilds.push(new this.model(this.collection, { id: record.id }).prepareDestroyPermanently())
+            recreateBuilds.push({
+              id: record.id,
+              created_at: record._raw.created_at,
+              builder: builders[record.id]
+            })
+          }
         })
+
         const newBuilds = Object.entries(builders).map(([id, builder]) => {
           const existing = existingMap.get(id)
+          const recreate = recreateBuilds.find(r => r.id === id)
 
-          if (existing && existing._raw._status !== 'deleted') {
+          if (recreate) {
+            return this.collection.prepareCreate(record => {
+              record._raw.id = id
+              record._raw.created_at = recreate.created_at as EpochMs
+              record._raw.updated_at = this.generateTimestamp()
+              record._raw._status = 'created'
+              builder(record)
+            })
+          } else if (existing && existing._raw._status !== 'deleted' && existing._raw._status !== 'created') {
             return existing.prepareUpdate(builder)
-          } else {
+          } else if (!existing || existing._raw._status === 'deleted') {
             return this.collection.prepareCreate(record => {
               const now = this.generateTimestamp()
 
@@ -262,7 +287,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
               builder(record)
             })
           }
-        })
+          return null
+        }).filter((build): build is ReturnType<typeof this.collection.prepareCreate> => build !== null)
 
         await writer.batch(...destroyedBuilds)
         await writer.batch(...newBuilds)
@@ -455,12 +481,26 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     const records = await this.queryMaybeDeletedRecords(Q.where('_status', Q.notEq('synced')))
 
     if (records.length) {
+      const recordIds = records.map(r => r.id)
+      const updatedAtMap = new Map<RecordId, EpochMs>()
+      records.forEach(record => {
+        updatedAtMap.set(record.id, record._raw.updated_at)
+      })
+
       this.pushCoalescer.push(
         records,
         queueThrottle({ state: this.pushThrottleState }, () => {
-          return this.retry.request(
+          return this.retry.request<SyncPushResponse>(
             { name: `push:${this.model.table}`, op: 'push', parentSpan: span },
-            (span) => this.executePush(records, span)
+            async (span) => {
+              // re-query records since this fn may be deferred due to throttling/retries
+              const currentRecords = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(recordIds)))
+              const recordsToPush = currentRecords.filter(r => r._raw.updated_at <= (updatedAtMap.get(r.id) || 0))
+
+              if (recordsToPush.length) {
+                return this.executePush(recordsToPush, span)
+              }
+            }
           )
         })
       )
@@ -468,6 +508,11 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   private async executePull(span?: Span) {
+    if (!this.context.connectivity.getValue()) {
+      this.telemetry.debug('[Retry] No connectivity - skipping')
+      return { ok: false } as SyncPushFailureResponse
+    }
+
     return this.telemetry.trace(
       {
         name: `pull:${this.model.table}:run`,

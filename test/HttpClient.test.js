@@ -65,7 +65,7 @@ describe('HttpClient', () => {
       expect(mockRequestExecutor.execute).toHaveBeenCalledWith(
         `${baseUrl}${url}`,
         expect.objectContaining({
-          method: 'get',
+          method: 'GET',
           headers: expect.objectContaining({
             Authorization: `Bearer ${token}`,
           }),
@@ -82,7 +82,7 @@ describe('HttpClient', () => {
       expect(mockRequestExecutor.execute).toHaveBeenCalledWith(
         `${baseUrl}${url}`,
         expect.objectContaining({
-          method: 'post',
+          method: 'POST',
           headers: expect.objectContaining({
             Authorization: `Bearer ${token}`,
           }),
@@ -100,7 +100,7 @@ describe('HttpClient', () => {
       expect(mockRequestExecutor.execute).toHaveBeenCalledWith(
         `${baseUrl}${url}`,
         expect.objectContaining({
-          method: 'put',
+          method: 'PUT',
           headers: expect.objectContaining({
             Authorization: `Bearer ${token}`,
           }),
@@ -118,7 +118,7 @@ describe('HttpClient', () => {
       expect(mockRequestExecutor.execute).toHaveBeenCalledWith(
         `${baseUrl}${url}`,
         expect.objectContaining({
-          method: 'patch',
+          method: 'PATCH',
           headers: expect.objectContaining({
             Authorization: `Bearer ${token}`,
           }),
@@ -135,7 +135,7 @@ describe('HttpClient', () => {
       expect(mockRequestExecutor.execute).toHaveBeenCalledWith(
         `${baseUrl}${url}`,
         expect.objectContaining({
-          method: 'delete',
+          method: 'DELETE',
           headers: expect.objectContaining({
             Authorization: `Bearer ${token}`,
           }),
@@ -249,7 +249,7 @@ describe('HttpClient', () => {
       await expect(httpClient.get('/test')).rejects.toMatchObject({
         message: 'Network error',
         url: '/test',
-        method: 'get',
+        method: 'GET',
         originalError: networkError,
       })
     })

@@ -58,10 +58,16 @@ export class FilterBuilder {
   }
 
   async buildFilter() {
-    const adapter = getPermissionsAdapter()
-    this.userData = await adapter.fetchUserPermissions()
+    if (this.bypassPermissions) {
+      this.userData = { permissions: [], isAdmin: false }
+    } else {
+      const adapter = getPermissionsAdapter()
+      this.userData = await adapter.fetchUserPermissions()
+    }
+
     if (this.debug) console.log('baseFilter', this.filter)
     const filter = this._applyContentStatuses()
+      ._removeDeprecatedContent()
       ._applyPermissions()
       ._applyPublishingDateRestrictions()
       ._trimAmpersands().filter // just in case
@@ -76,6 +82,13 @@ export class FilterBuilder {
     // when the new content is available.
     const now = new Date()
     return new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 1)
+  }
+
+  _removeDeprecatedContent() {
+    this._andWhere(
+      `!defined(${this.prefix}deprecated_railcontent_id)`
+    )
+    return this
   }
 
   _applyContentStatuses() {

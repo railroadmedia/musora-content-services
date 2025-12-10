@@ -32,16 +32,10 @@ export default class SyncRetry {
    * Runs the given syncFn with automatic retries.
    * Returns the first successful result or the last failed result after retries.
    */
-  async request<T extends SyncResponse>(spanOpts: StartSpanOptions, syncFn: (span: Span) => Promise<T>) {
+  async request<T extends SyncResponse>(spanOpts: StartSpanOptions, syncFn: (span: Span) => Promise<T | void>) {
     let attempt = 0
 
     while (true) {
-      if (!this.context.connectivity.getValue()) {
-        this.telemetry.debug('[Retry] No connectivity - skipping')
-        this.paused = true
-        return { ok: false } as T
-      }
-
       const now = Date.now()
       if (now < this.backoffUntil) {
         await this.sleep(this.backoffUntil - now)
@@ -50,15 +44,22 @@ export default class SyncRetry {
       attempt++
 
       const spanOptions = { ...spanOpts, name: `${spanOpts.name}:attempt:${attempt}/${this.MAX_ATTEMPTS}`, op: `${spanOpts.op}:attempt` }
-      const result = await this.telemetry.trace(spanOptions, span => syncFn(span))
+      const result = await this.telemetry.trace(spanOptions, span => {
+        if (!this.context.connectivity.getValue()) {
+          this.telemetry.debug('[Retry] No connectivity - skipping')
+          return { ok: false } as T
+        }
+
+        return syncFn(span)
+      })
+
+      if (!result) return result
 
       if (result.ok) {
         this.resetBackoff()
         return result
       } else {
-        const isRetryable = 'isRetryable' in result ? result.isRetryable : false
-
-        if (isRetryable) {
+        if (result.failureType === 'fetch' && result.isRetryable) {
           this.scheduleBackoff()
           if (attempt >= this.MAX_ATTEMPTS) return result
         } else {

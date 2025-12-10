@@ -838,7 +838,7 @@ export async function fetchAllFilterOptions(
 
     return coachId
       ? `brand == '${brand}' && status == "published" && references(*[_type=='instructor' && railcontent_id == ${coachId}]._id) ${filterWithoutOption || ''} ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}`
-      : `_type == '${contentType}' && brand == "${brand}"${includeStatusFilter ? statusFilter : ''}${style && excludeFilter !== 'style' ? ` && '${style}' in genre[]->name` : ''}${artist && excludeFilter !== 'artist' ? ` && artist->name == '${artist}'` : ''} ${progressFilter} ${filterWithoutOption || ''} ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}`
+      : `_type == '${contentType}' && brand == "${brand}"${includeStatusFilter ? statusFilter : ''}${style && excludeFilter !== 'style' ? ` && '${style}' in genre[]->name` : ''}${artist && excludeFilter !== 'artist' ? ` && artist->name == "${artist}"` : ''} ${progressFilter} ${filterWithoutOption || ''} ${term ? ` && (title match "${term}" || album match "${term}" || artist->name match "${term}" || genre[]->name match "${term}")` : ''}`
   }
 
   const metaData = processMetadata(brand, contentType, true)
@@ -864,206 +864,6 @@ export async function fetchAllFilterOptions(
   const results = await fetchSanity(query, true, { processNeedAccess: false })
 
   return includeTabs ? { ...results, tabs, catalogName } : results
-}
-
-//Daniel Nov 14 2025 note - keeping this for when we migrate foundations to packs, so we know what fields to use.
-/**
- * Fetch the Foundations 2019.
- * @param {string} slug - The slug of the method.
- * @returns {Promise<Object|null>} - The fetched foundation data or null if not found.
- */
-export async function fetchFoundation(slug) {
-  const filterParams = {}
-  const query = await buildQuery(
-    `_type == 'foundation' && slug.current == "${slug}"`,
-    filterParams,
-    getFieldsForContentType('foundation'),
-    {
-      sortOrder: 'published_on asc',
-      isSingle: true,
-    }
-  )
-  return fetchSanity(query, false)
-}
-
-/**
- * Fetch the Method (learning-paths) for a specific brand.
- * @param {string} brand - The brand for which to fetch methods.
- * @param {string} slug - The slug of the method.
- * @returns {Promise<Object|null>} - The fetched methods data or null if not found.
- */
-//todo BEH-1446 depreciated. remove all old method functions
-export async function fetchMethod(brand, slug) {
-  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-
-  const query = `*[_type == 'learning-path' && brand == "${brand}" && slug.current == "${slug}"] {
-    "description": ${descriptionField},
-    "instructors":instructor[]->name,
-    published_on,
-    "id": railcontent_id,
-    railcontent_id,
-    "slug": slug.current,
-    status,
-    title,
-    video,
-    length_in_seconds,
-    parent_content_data,
-    "breadcrumbs_data": parent_content_data[] {
-        "id": id,
-        "title": *[railcontent_id == ^.id][0].title,
-        "url": *[railcontent_id == ^.id][0].web_url_path
-    } | order(length(url)),
-    "type": _type,
-    "permission_id": permission_v2,
-    "levels": child[${childrenFilter}]->
-      {
-        "id": railcontent_id,
-        published_on,
-        child_count,
-        difficulty,
-        difficulty_string,
-        "thumbnail": thumbnail.asset->url,
-        "instructor": instructor[]->{name},
-        title,
-        "type": _type,
-        "description": ${descriptionField},
-        "url": web_url_path,
-        web_url_path,
-        xp,
-        total_xp
-      }
-  } | order(published_on asc)`
-  return fetchSanity(query, false)
-}
-
-/**
- * Fetch the child courses for a specific method by Railcontent ID.
- * @param {string} railcontentId - The Railcontent ID of the current lesson.
- * @returns {Promise<Object|null>} - The fetched next lesson data or null if not found.
- */
-export async function fetchMethodChildren(railcontentId) {
-  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-
-  const query = `*[railcontent_id == ${railcontentId}]{
-    "child_count":coalesce(count(child[${childrenFilter}]->), 0),
-    "id": railcontent_id,
-    "description": ${descriptionField},
-    "thumbnail": thumbnail.asset->url,
-    title,
-    xp,
-    total_xp,
-    parent_content_data,
-     "resources": ${resourcesField},
-    "breadcrumbs_data": parent_content_data[] {
-        "id": id,
-        "title": *[railcontent_id == ^.id][0].title,
-        "url": *[railcontent_id == ^.id][0].web_url_path
-    } | order(length(url)),
-    'children': child[(${childrenFilter})]->{
-        ${getFieldsForContentType('method')}
-    },
-  }[0..1]`
-  return fetchSanity(query, true)
-}
-
-/**
- * Fetch the next lesson for a specific method by Railcontent ID.
- * @param {string} railcontentId - The Railcontent ID of the current lesson.
- * @param {string} methodId - The RailcontentID of the method
- * @returns {Promise<Object|null>} - object with `nextLesson` and `previousLesson` attributes
- * @example
- * fetchMethodPreviousNextLesson(241284, 241247)
- *  .then(data => { console.log('nextLesson', data.nextLesson); console.log('prevlesson', data.prevLesson);})
- *  .catch(error => console.error(error));
- */
-export async function fetchMethodPreviousNextLesson(railcontentId, methodId) {
-  const sortedChildren = await fetchMethodChildrenIds(methodId)
-  const index = sortedChildren.indexOf(Number(railcontentId))
-  let nextId = sortedChildren[index + 1]
-  let previousId = sortedChildren[index - 1]
-  let ids = []
-  if (nextId) ids.push(nextId)
-  if (previousId) ids.push(previousId)
-  let nextPrev = await fetchByRailContentIds(ids)
-  const nextLesson = nextPrev.find((elem) => {
-    return elem['id'] === nextId
-  })
-  const prevLesson = nextPrev.find((elem) => {
-    return elem['id'] === previousId
-  })
-  return { nextLesson, prevLesson }
-}
-
-/**
- * Fetch all children of a specific method by Railcontent ID.
- * @param {string} railcontentId - The Railcontent ID of the method.
- * @returns {Promise<Array<Object>|null>} - The fetched children data or null if not found.
- */
-export async function fetchMethodChildrenIds(railcontentId) {
-  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-
-  const query = `*[ railcontent_id == ${railcontentId}]{
-    'children': child[${childrenFilter}]-> {
-        'id': railcontent_id,
-        'type' : _type,
-            'children': child[${childrenFilter}]-> {
-                'id': railcontent_id,
-                'type' : _type,
-                    'children': child[${childrenFilter}]-> {
-                        'id': railcontent_id,
-                        'type' : _type,
-            }
-        }
-    }
-}`
-  let allChildren = await fetchSanity(query, false)
-  return getChildrenToDepth(allChildren, 4)
-}
-
-function getChildrenToDepth(parent, depth = 1) {
-  let allChildrenIds = []
-  if (parent && parent['children'] && depth > 0) {
-    parent['children'].forEach((child) => {
-      if (!child['children']) {
-        allChildrenIds.push(child['id'])
-      }
-      allChildrenIds = allChildrenIds.concat(getChildrenToDepth(child, depth - 1))
-    })
-  }
-  return allChildrenIds
-}
-
-/**
- * Fetch the next and previous lessons for a specific lesson by Railcontent ID.
- * @param {string} railcontentId - The Railcontent ID of the current lesson.
- * @returns {Promise<Object|null>} - The fetched next and previous lesson data or null if found.
- */
-export async function fetchNextPreviousLesson(railcontentId) {
-  const document = await fetchLessonContent(railcontentId)
-  if (document.parent_content_data && document.parent_content_data.length > 0) {
-    const lastElement = document.parent_content_data[document.parent_content_data.length - 1]
-    const results = await fetchMethodPreviousNextLesson(railcontentId, lastElement.id)
-    return results
-  }
-  const processedData = processMetadata(document.brand, document.type, true)
-  let sortBy = processedData?.sortBy ?? 'published_on'
-  const isDesc = sortBy.startsWith('-')
-  sortBy = isDesc ? sortBy.substring(1) : sortBy
-  let sortValue = document[sortBy]
-  if (sortValue == null) {
-    sortBy = 'railcontent_id'
-    sortValue = document['railcontent_id']
-  }
-  const isNumeric = !isNaN(sortValue)
-  let prevComparison = isNumeric ? `${sortBy} <= ${sortValue}` : `${sortBy} <= "${sortValue}"`
-  let nextComparison = isNumeric ? `${sortBy} >= ${sortValue}` : `${sortBy} >= "${sortValue}"`
-  const fields = getFieldsForContentType(document.type)
-  const query = `{
-      "prevLesson": *[brand == "${document.brand}" && status == "${document.status}" && _type == "${document.type}" && ${prevComparison} && railcontent_id != ${railcontentId}] | order(${sortBy} desc){${fields}}[0...1][0],
-      "nextLesson": *[brand == "${document.brand}" && status == "${document.status}" && _type == "${document.type}" && ${nextComparison} && railcontent_id != ${railcontentId}] | order(${sortBy} asc){${fields}}[0...1][0]
-    }`
-
-  return await fetchSanity(query, true)
 }
 
 /**
@@ -2200,8 +2000,11 @@ export async function fetchMethodV2Structure(brand) {
   const _type = 'method-v2'
   const query = `*[_type == '${_type}' && brand == '${brand}'][0...1]{
     'sanity_id': _id,
+    brand,
+    'intro_video_id': intro_video->railcontent_id,
     'learning_paths': child[]->{
       'id': railcontent_id,
+      'intro_video_id': intro_video->railcontent_id,
       'children': child[]->railcontent_id
     }
   }`
@@ -2217,8 +2020,11 @@ export async function fetchMethodV2StructureFromId(contentId) {
   const _type = "method-v2";
   const query = `*[_type == '${_type}' && brand == *[railcontent_id == ${contentId}][0].brand][0...1]{
     'sanity_id': _id,
+    brand,
+    'intro_video_id': intro_video->railcontent_id,
     'learning_paths': child[]->{
       'id': railcontent_id,
+      'intro_video_id': intro_video->railcontent_id,
       'children': child[]->railcontent_id
     }
   }`
