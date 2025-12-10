@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.100.3](https://github.com/railroadmedia/musora-content-services/compare/v2.100.2...v2.100.3) (2025-12-10)
+
+### [2.100.2](https://github.com/railroadmedia/musora-content-services/compare/v2.100.1...v2.100.2) (2025-12-10)
+
+### [2.100.1](https://github.com/railroadmedia/musora-content-services/compare/v2.100.0...v2.100.1) (2025-12-10)
+
+## [2.100.0](https://github.com/railroadmedia/musora-content-services/compare/v2.98.0...v2.100.0) (2025-12-10)
+
+
+### Features
+
+* **BEH-1421:** Content Migration : child lesson type migrations ([#624](https://github.com/railroadmedia/musora-content-services/issues/624)) ([77300ed](https://github.com/railroadmedia/musora-content-services/commit/77300eddabc4deed46c26f7b1291d9540a3ef486))
+
+
+### Bug Fixes
+
+* **agi:** optional query options property access ([e8d9a33](https://github.com/railroadmedia/musora-content-services/commit/e8d9a333462dc8bcfed7af9171bff4380c9d67fd))
+* ai broke everything because it loves js ([#634](https://github.com/railroadmedia/musora-content-services/issues/634)) ([213a8d5](https://github.com/railroadmedia/musora-content-services/commit/213a8d5b724bcaa284acdc2a76b935c52d2e4004))
+* daily session created when method intro video completed ([#636](https://github.com/railroadmedia/musora-content-services/issues/636)) ([fdfbb62](https://github.com/railroadmedia/musora-content-services/commit/fdfbb6287348307920ec50b798a0f14520fe4f10))
+* **groq:** query order and slicing out of place ([97a3c1c](https://github.com/railroadmedia/musora-content-services/commit/97a3c1c9d27745ee78894f3d2c9c5d3e8195efb0))
+* Update category_id for thread ([8b4cee6](https://github.com/railroadmedia/musora-content-services/commit/8b4cee62435e813e2e5b6d77f19fe78298444f5e))
+* update get enriched LPs ([#635](https://github.com/railroadmedia/musora-content-services/issues/635)) ([01995dc](https://github.com/railroadmedia/musora-content-services/commit/01995dcd2c013c8cca31e29a44c41118623d9d9b))
+* User without owned content & without membership have Owned content have Owned Lessons/Songs in For You tab ([901f487](https://github.com/railroadmedia/musora-content-services/commit/901f48716a152c0771a4c5197d85e16d45b60bdc))
+
 ### [2.99.8](https://github.com/railroadmedia/musora-content-services/compare/v2.99.7...v2.99.8) (2025-12-09)
 
 ### [2.99.7](https://github.com/railroadmedia/musora-content-services/compare/v2.99.6...v2.99.7) (2025-12-09)
