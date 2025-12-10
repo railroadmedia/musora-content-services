@@ -301,7 +301,7 @@ export class Filters {
       filters.map((f) => Promise.resolve(f)).filter((f) => f)
     )) as string[]
 
-    return resolved.reduce(filterOps.or.concat, filterOps.and.empty)
+    return resolved.reduce(filterOps.and.concat, filterOps.and.empty)
   }
 
   /**
