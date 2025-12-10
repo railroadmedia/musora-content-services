@@ -1,7 +1,7 @@
 import { filtersToGroq } from '../../contentTypeConfig'
 import { getPermissionsAdapter } from '../../services/permissions/index'
 import type { UserPermissions } from '../../services/permissions/PermissionsAdapter'
-import { query, queryMonoids, filterOps } from './query'
+import { filterOps } from './query'
 
 // ============================================
 // TYPES & INTERFACES
