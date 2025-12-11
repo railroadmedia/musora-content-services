@@ -7,7 +7,7 @@ import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2Structure } f
 import { addContextToLearningPaths } from '../contentAggregator.js'
 import {
   contentStatusCompleted,
-  contentsStatusCompleted,
+  contentStatusCompletedMany,
   contentStatusReset,
   getAllCompletedByIds,
   getProgressState,
@@ -406,7 +406,7 @@ export async function completeLearningPathIntroVideo(
     response.learning_path_reset_response = await resetIfPossible(learningPathId, collection)
 
   } else {
-    response.lesson_import_response = await contentsStatusCompleted(lessonsToImport, collection)
+    response.lesson_import_response = await contentStatusCompletedMany(lessonsToImport, collection)
   }
 
   return response

@@ -1,12 +1,12 @@
 /**
  * @module Artist
  */
-import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
-import { FilterBuilder } from '../../filterBuilder.js'
+import { getFieldsForContentType } from '../../contentTypeConfig.js'
 import { BuildQueryOptions, query } from '../../lib/sanity/query'
 import { fetchSanity, getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
 import { Brands } from '../../lib/brands'
+import { Filters as f } from '../../lib/sanity/filter'
 
 export interface Artist {
   slug: string
@@ -35,27 +35,28 @@ export async function fetchArtists(
   brand: Brands | string,
   options: BuildQueryOptions = { sort: 'lower(name) asc' }
 ): Promise<Artists> {
-  const lessonFilter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
-    bypassPermissions: true,
-  }).buildFilter()
+  const lessonFilter = f.combine(f.brand(brand), f.referencesParent())
+  const type = f.type('artist')
+  const lessonCount = `count(*[${lessonFilter}])`
+  const postFilter = `lessonCount > 0`
 
   const data = query()
-    .and(`_type == "artist"`)
+    .and(type)
     .order(options?.sort || 'lower(name) asc')
-    .slice(options?.offset || 0, (options?.offset || 0) + (options?.limit || 20))
+    .slice(options?.offset || 0, options?.limit || 20)
     .select(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessonCount": count(*[${lessonFilter}])`
+      `"lessonCount": ${lessonCount}`
     )
-    .postFilter(`lessonCount > 0`)
+    .postFilter(postFilter)
     .build()
 
   const total = query()
-    .and(`_type == "artist"`)
-    .select(`"lessonCount": count(*[${lessonFilter}])`)
-    .postFilter(`lessonCount > 0`)
+    .and(type)
+    .select(`"lessonCount": ${lessonCount}`)
+    .postFilter(postFilter)
     .build()
 
   const q = `{
@@ -82,14 +83,11 @@ export async function fetchArtistBySlug(
   slug: string,
   brand?: Brands | string
 ): Promise<Artist | null> {
-  const brandFilter = brand ? `brand == "${brand}" && ` : ''
-  const filter = await new FilterBuilder(`${brandFilter} _type == "song" && references(^._id)`, {
-    bypassPermissions: true,
-  }).buildFilter()
+  const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
 
   const q = query()
-    .and(`_type == "artist"`)
-    .and(`slug.current == '${slug}'`)
+    .and(f.type('artist'))
+    .and(f.slug(slug))
     .select(
       'name',
       `"slug": slug.current`,
@@ -145,25 +143,25 @@ export async function fetchArtistLessons(
     progressIds = [],
   }: ArtistLessonOptions = {}
 ): Promise<ArtistLessons> {
-  const fieldsString = getFieldsForContentType(contentType) as string
-  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
-  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
-  const addType = contentType ? `_type == '${contentType}' && ` : ''
-  const progressFilter =
-    progressIds.length > 0 ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
-  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='artist' && slug.current == '${slug}']._id) ${progressFilter}`
-  const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
-
   sort = getSortOrder(sort, brand)
 
+  const restrictions = await f.combineAsync(
+    f.contentFilter(),
+    f.referencesIDWithFilter(f.combine(f.type('artist'), f.slug(slug)))
+  )
+
   const data = query()
-    .and(filterWithRestrictions)
+    .and(f.brand(brand))
+    .and(f.searchMatch('title', searchTerm))
+    .and(f.includedFields(includedFields))
+    .and(f.progressIds(progressIds))
+    .and(restrictions)
     .order(sort)
-    .slice(offset, offset + limit)
-    .select(...(fieldsString ? [fieldsString] : []))
+    .slice(offset, limit)
+    .select(getFieldsForContentType(contentType) as string)
     .build()
 
-  const total = query().and(filterWithRestrictions).build()
+  const total = query().and(restrictions).build()
 
   const q = `{
     "data": ${data},
