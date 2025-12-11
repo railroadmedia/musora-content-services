@@ -213,7 +213,7 @@ export default class SyncRepository<TModel extends BaseModel> {
     const result: SyncReadDTO<TModel, T> = {
       data,
       status: pull?.ok ? 'fresh' : 'stale',
-      pullStatus: pull?.ok ? 'success' : 'failure',
+      pullStatus: pull ? (pull.ok ? 'success' : 'failure') : null,
       lastFetchToken: fetchToken,
     }
     return result
