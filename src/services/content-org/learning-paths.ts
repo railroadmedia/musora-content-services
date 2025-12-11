@@ -229,12 +229,30 @@ export async function fetchLearningPathLessons(
       is_active_learning_path: isActiveLearningPath,
     }
   }
-  // this assumes that the first entry is active_path, based on user flows
-  const todayContentIds = dailySession.daily_session[0]?.content_ids || []
-  const todayLearningPathId = dailySession.daily_session[0]?.learning_path_id
 
-  const nextContentIds = dailySession.daily_session[1]?.content_ids || []
-  const nextLearningPathId = dailySession.daily_session[1]?.learning_path_id
+  let todayContentIds = []
+  let todayLearningPathId = null
+  let nextContentIds = []
+  let nextLearningPathId = null
+  let previousContentIds = []
+  let previousLearningPathId = null
+
+
+
+  for (const session of dailySession.daily_session) {
+    if (session.learning_path_id === learningPathId) {
+      todayContentIds = session.content_ids || []
+      todayLearningPathId = session.learning_path_id
+    } else {
+      if (!todayLearningPathId) {
+        previousContentIds = session.content_ids || []
+        previousLearningPathId = session.learning_path_id
+      } else if (!nextLearningPathId) {
+        nextContentIds = session.content_ids || []
+        nextLearningPathId = session.learning_path_id
+      }
+    }
+  }
 
   const completedLessons = []
   let thisLPDailies = []
@@ -242,17 +260,20 @@ export async function fetchLearningPathLessons(
   let previousLearningPathTodays = []
   const upcomingLessons = []
 
+  //todo refactor this now thattoday/prev/next is accurate
+  //previous/next never within LP
   learningPath.children.forEach((lesson: any) => {
     if (todayContentIds.includes(lesson.id)) {
       thisLPDailies.push(lesson)
-    } else if (lesson.progressStatus === 'completed') {
+    } else if (lesson.progressStatus === STATE.COMPLETED) {
       completedLessons.push(lesson)
     } else {
       upcomingLessons.push(lesson)
     }
   })
 
-  if (thisLPDailies.length == 0) {
+  // foreach?
+  if (previousContentIds.length !== 0) {
     // Daily sessions first lessons are not part of the active learning path, but next lessons are
     // load todays lessons from previous learning path
     previousLearningPathTodays = await getLearningPathLessonsByIds(
