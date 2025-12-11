@@ -336,8 +336,8 @@ export class Filters {
   static async permissions(config: PermissionsConfig = {}): Promise<string> {
     if (config.bypassPermissions) return ''
 
-    const userData = config.userData || (await getPermissionsAdapter().fetchUserPermissions())
     const adapter = getPermissionsAdapter()
+    const userData = config.userData || (await adapter.fetchUserPermissions())
 
     if (adapter.isAdmin(userData)) return ''
 

@@ -20,7 +20,7 @@ export interface QueryBuilder {
   and(expr: string): QueryBuilder
   or(...exprs: string[]): QueryBuilder
   order(expr: string): QueryBuilder
-  slice(offset: number, limit: number): QueryBuilder
+  slice(offset: number, limit?: number): QueryBuilder
   first(): QueryBuilder
   select(...fields: string[]): QueryBuilder
   postFilter(expr: string): QueryBuilder
