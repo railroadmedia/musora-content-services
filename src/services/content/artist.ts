@@ -137,7 +137,7 @@ export async function fetchArtistLessons(
   {
     sort = '-published_on',
     searchTerm = '',
-    offset = 1,
+    offset = 0,
     limit = 10,
     includedFields = [],
     progressIds = [],

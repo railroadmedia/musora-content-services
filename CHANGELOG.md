@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.102.1](https://github.com/railroadmedia/musora-content-services/compare/v2.102.0...v2.102.1) (2025-12-10)
+
+
+### Bug Fixes
+
+* **agi:** offset default and slug clause on artistBySlug ([10cc6d0](https://github.com/railroadmedia/musora-content-services/commit/10cc6d0390a12715aeba01c5dc72ecdb53d0f236))
+
+## [2.102.0](https://github.com/railroadmedia/musora-content-services/compare/v2.101.1...v2.102.0) (2025-12-10)
+
+
+### Features
+
+* **BEH-1457:** method progress duplication ([#617](https://github.com/railroadmedia/musora-content-services/issues/617)) ([917cb9d](https://github.com/railroadmedia/musora-content-services/commit/917cb9dedce2a21c64af4e39eef013a30b236e77))
+
+### [2.101.1](https://github.com/railroadmedia/musora-content-services/compare/v2.101.0...v2.101.1) (2025-12-10)
+
+
+### Bug Fixes
+
+* user id missing on auth key ([ba4068f](https://github.com/railroadmedia/musora-content-services/commit/ba4068ff3aa8005b1b3ed615b07d4ff7eb9f751b))
+
+## [2.101.0](https://github.com/railroadmedia/musora-content-services/compare/v2.100.3...v2.101.0) (2025-12-10)
+
+
+### Features
+
+* **auth:** authenticate via auth key ([#644](https://github.com/railroadmedia/musora-content-services/issues/644)) ([122ba63](https://github.com/railroadmedia/musora-content-services/commit/122ba63572e95faf49944a3e819b768cb0a9ab85))
+
 ### [2.100.3](https://github.com/railroadmedia/musora-content-services/compare/v2.100.2...v2.100.3) (2025-12-10)
 
 ### [2.100.2](https://github.com/railroadmedia/musora-content-services/compare/v2.100.1...v2.100.2) (2025-12-10)

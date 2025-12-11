@@ -32,7 +32,6 @@ export async function login(email, password, deviceName, deviceToken, platform) 
   return fetch(`${baseUrl}/v1/sessions`, {
     method: 'POST',
     headers: {
-      'X-Client-Platform': 'mobile',
       'Content-Type': 'application/json',
       Authorization: null,
     },
@@ -94,5 +93,23 @@ export async function logout() {
       Authorization: `Bearer ${globalConfig.sessionConfig.authToken}`,
       'Content-Type': 'application/json',
     },
+  })
+}
+
+export async function loginWithAuthKey(userId, authKey, deviceName, deviceToken, platform) {
+  const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
+  return fetch(`${baseUrl}/v1/sessions/auth-key`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: null,
+    },
+    body: JSON.stringify({
+      user_id: userId,
+      auth_key: authKey,
+      device_name: deviceName,
+      device_token: deviceToken,
+      platform: platform,
+    }),
   })
 }
