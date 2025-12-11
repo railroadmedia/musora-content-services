@@ -145,19 +145,20 @@ export async function fetchArtistLessons(
 ): Promise<ArtistLessons> {
   sort = getSortOrder(sort, brand)
 
-  const fieldsString = getFieldsForContentType(contentType) as string
-  const restrictions = await f.contentFilter()
+  const restrictions = await f.combineAsync(
+    f.contentFilter(),
+    f.referencesIDWithFilter(f.combine(f.type('artist'), f.slug(slug)))
+  )
 
   const data = query()
     .and(f.brand(brand))
-    .and(f.referencesIDWithFilter(f.combine(f.type('artist'), f.slug(slug))))
     .and(f.searchMatch('title', searchTerm))
     .and(f.includedFields(includedFields))
     .and(f.progressIds(progressIds))
     .and(restrictions)
     .order(sort)
     .slice(offset, limit)
-    .select(...(fieldsString ? [fieldsString] : []))
+    .select(getFieldsForContentType(contentType) as string)
     .build()
 
   const total = query().and(restrictions).build()

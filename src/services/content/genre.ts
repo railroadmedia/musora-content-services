@@ -143,27 +143,22 @@ export async function fetchGenreLessons(
   }: GenreLessonsOptions = {}
 ): Promise<GenreLessons> {
   sort = getSortOrder(sort, brand)
-  const fieldsString = getFieldsForContentType(contentType) as string
-  const restrictions = await f.contentFilter()
 
-  const data = query()
+  const restrictions = await f.combineAsync(
+    f.contentFilter(),
+    f.referencesIDWithFilter(f.combine(f.type('genre'), f.slug(slug)))
+  )
+
+  const q = query()
     .and(f.brand(brand))
     .and(f.searchMatch('title', searchTerm))
     .and(f.includedFields(includedFields))
-    .and(f.referencesIDWithFilter(f.combine(f.type('genre'), f.slug(slug))))
     .and(f.progressIds(progressIds))
     .and(restrictions)
     .order(sort)
     .slice(offset, limit)
-    .select(...(fieldsString ? [fieldsString] : []))
+    .select(getFieldsForContentType(contentType) as string)
     .build()
-
-  const total = query().and(restrictions).build()
-
-  const q = `{
-    "data": ${data},
-    "total": count(${total})
-  }`
 
   return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }
