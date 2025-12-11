@@ -477,6 +477,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     )()
   }
 
+  // TODO?: accept recordIds from callers to limit pushed records?
+  // Would make us lose the "debounce" effect if this method is called many times in short window
+  // but would reduce duplicated records sent to server in multiple requests in short window
   private async pushUnsyncedWithRetry(span?: Span) {
     const records = await this.queryMaybeDeletedRecords(Q.where('_status', Q.notEq('synced')))
 
