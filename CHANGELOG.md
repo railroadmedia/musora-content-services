@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.102.2](https://github.com/railroadmedia/musora-content-services/compare/v2.102.1...v2.102.2) (2025-12-11)
+
+
+### Bug Fixes
+
+* **agi:** remove count from AGI lessons functions ([5cf3bc3](https://github.com/railroadmedia/musora-content-services/commit/5cf3bc3ade98faa5200cd64ce4b0a9edaff29d7a))
+
 ### [2.102.1](https://github.com/railroadmedia/musora-content-services/compare/v2.102.0...v2.102.1) (2025-12-10)
 
 
