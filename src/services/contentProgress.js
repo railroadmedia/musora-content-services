@@ -441,7 +441,7 @@ export async function contentStatusCompleted(contentId, collection = null) {
   )
 }
 
-export async function contentsStatusCompleted(contentIds, collection = null) {
+export async function contentStatusCompletedMany(contentIds, collection = null) {
   return setStartedOrCompletedStatusMany(
     normalizeContentIds(contentIds),
     normalizeCollection(collection),
@@ -475,7 +475,8 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   const hierarchy = await getHierarchy(contentId, collection)
 
   const bubbledProgresses = await bubbleProgress(hierarchy, contentId, collection)
-  await db.contentProgress.recordProgressesTentative(bubbledProgresses, collection)
+  // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
+  await db.contentProgress.recordProgressMany(bubbledProgresses, collection, collection?.type !== COLLECTION_TYPE.LEARNING_PATH)
 
   if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
     let exportIds = bubbledProgresses

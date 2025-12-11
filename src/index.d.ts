@@ -104,9 +104,9 @@ import {
 
 import {
 	contentStatusCompleted,
+	contentStatusCompletedMany,
 	contentStatusReset,
 	contentStatusStarted,
-	contentsStatusCompleted,
 	getAllCompleted,
 	getAllCompletedByIds,
 	getAllStarted,
@@ -396,6 +396,7 @@ import {
 
 import {
 	login,
+	loginWithAuthKey,
 	logout
 } from './services/user/sessions.js';
 
@@ -447,9 +448,9 @@ declare module 'musora-content-services' {
 		completeMethodIntroVideo,
 		confirmEmailChange,
 		contentStatusCompleted,
+		contentStatusCompletedMany,
 		contentStatusReset,
 		contentStatusStarted,
-		contentsStatusCompleted,
 		convertToTimeZone,
 		createComment,
 		createForumCategory,
@@ -646,6 +647,7 @@ declare module 'musora-content-services' {
 		likePost,
 		lockThread,
 		login,
+		loginWithAuthKey,
 		logout,
 		mapContentToParent,
 		markAllNotificationsAsRead,
