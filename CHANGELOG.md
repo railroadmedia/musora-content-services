@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.103.0](https://github.com/railroadmedia/musora-content-services/compare/v2.102.3...v2.103.0) (2025-12-11)
+
+
+### Features
+
+* add isCompleted and field name updates in award callback([#648](https://github.com/railroadmedia/musora-content-services/issues/648)) ([c250d61](https://github.com/railroadmedia/musora-content-services/commit/c250d61b90bc29504827e8fa368a78b34a3f0c08))
+
+
+### Bug Fixes
+
+* lp lesson upserting ([#645](https://github.com/railroadmedia/musora-content-services/issues/645)) ([1a3094d](https://github.com/railroadmedia/musora-content-services/commit/1a3094d569bb868d62844755b876cee8bc63a365))
+
 ### [2.102.3](https://github.com/railroadmedia/musora-content-services/compare/v2.102.2...v2.102.3) (2025-12-11)
 
 
