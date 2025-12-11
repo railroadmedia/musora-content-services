@@ -50,33 +50,27 @@ export async function getMethodCard(brand) {
       getToday()
     )
 
-    function getAll(lessons) {
-      const all = lessons.every(
-        (lesson) => lesson.progressStatus === STATE.COMPLETED
-      )
-      const any = lessons.some(
-        (lesson) => lesson.progressStatus === STATE.COMPLETED
-      )
-      const none = lessons.every(
-        (lesson) => lesson.progressStatus !== STATE.COMPLETED
-      )
-      const next = lessons.find(
-        (lesson) => lesson.progressStatus !== STATE.COMPLETED
-      )
+    // todo handle no LP returned
 
-      return [all, any, none, next]
-    }
+    // need to calculate based on all dailies
+    const allDailies = [
+      ...learningPath.previous_learning_path_todays,
+      ...learningPath.todays_lessons,
+      ...learningPath.next_learning_path_lessons
+    ]
 
-    const [
-      allDailiesCompleted,
-      anyDailiesCompleted,
-      noDailiesCompleted,
-      nextIncompleteDaily,
-    ] = (learningPath?.todays_lessons.length !== 0)
-      ? getAll(learningPath?.todays_lessons)
-      : (learningPath?.previous_learning_path_todays.length !== 0)
-        ? getAll(learningPath?.previous_learning_path_todays)
-        : []
+    const allDailiesCompleted = allDailies.every(
+      (lesson) => lesson.progressStatus === STATE.COMPLETED
+    )
+    const anyDailiesCompleted = allDailies.some(
+      (lesson) => lesson.progressStatus === STATE.COMPLETED
+    )
+    const noDailiesCompleted = allDailies.every(
+      (lesson) => lesson.progressStatus !== STATE.COMPLETED
+    )
+    const nextIncompleteDaily = allDailies.find(
+      (lesson) => lesson.progressStatus !== STATE.COMPLETED
+    )
 
     // get the first incomplete lesson from upcoming and next learning path lessons
     const nextLesson = [
