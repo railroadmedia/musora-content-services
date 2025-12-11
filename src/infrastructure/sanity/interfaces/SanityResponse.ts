@@ -36,12 +36,16 @@ export class SanityResponse<T = any> implements Functor<T> {
  * Functor class wrapping Sanity list query results with pagination metadata.
  *
  * Implements the Functor interface, allowing transformation of each item in the
- * data array via `.map()` while preserving all metadata (total, sort, pagination).
+ * data array via `.map()` while preserving all metadata (total, sort, offset, limit).
+ *
+ * Pagination uses standard offset/limit semantics:
+ * - offset: Starting position (0-based index)
+ * - limit: Maximum number of items to return
  *
  * Use `.map()` to transform each item in the list.
  *
  * @example
- * const response = new SanityListResponse([...], 10)
+ * const response = new SanityListResponse([...], 100, 'title asc', 0, 10)
  * const decorated = response
  *   .map(needsAccessDecorator(perms, adapter))
  *   .map(pageTypeDecorator)
@@ -54,9 +58,8 @@ export class SanityListResponse<T = any> implements Functor<T> {
     public data: T[],
     public total: number,
     public sort?: string,
-    public start?: number,
-    public end?: number,
-    public paginated?: boolean
+    public offset?: number,
+    public limit?: number
   ) {}
 
   /**
@@ -65,13 +68,6 @@ export class SanityListResponse<T = any> implements Functor<T> {
    * @returns New SanityListResponse with transformed data
    */
   map<U>(fn: (value: T) => U): SanityListResponse<U> {
-    return new SanityListResponse(
-      this.data.map(fn),
-      this.total,
-      this.sort,
-      this.start,
-      this.end,
-      this.paginated
-    )
+    return new SanityListResponse(this.data.map(fn), this.total, this.sort, this.offset, this.limit)
   }
 }

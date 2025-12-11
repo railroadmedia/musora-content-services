@@ -62,7 +62,11 @@ export class SanityClient {
    */
   public async fetchList<T>(
     query: string,
-    options: BuildQueryOptions,
+    options: BuildQueryOptions = {
+      sort: 'lower(name) asc',
+      offset: 0,
+      limit: 20,
+    },
     params?: Record<string, any>
   ): Promise<SanityListResponse<T>> {
     try {
@@ -73,19 +77,13 @@ export class SanityClient {
       )
 
       const listData = response.result
-      const start = options.offset
-      const end =
-        options.offset !== undefined && options.limit !== undefined
-          ? options.offset + options.limit
-          : undefined
 
       return new SanityListResponse(
         listData.data || [],
         listData.total || 0,
         options.sort,
-        start,
-        end,
-        false
+        options.offset,
+        options.limit
       )
     } catch (error: any) {
       return this.handleError(error, query)

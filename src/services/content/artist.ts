@@ -35,7 +35,11 @@ export type Artists = SanityListResponse<Artist>
  */
 export async function fetchArtists(
   brand: Brand | string,
-  options: BuildQueryOptions = { sort: 'lower(name) asc' }
+  options: BuildQueryOptions = {
+    sort: 'lower(name) asc',
+    offset: 0,
+    limit: 20,
+  }
 ): Promise<Artists> {
   const lessonFilter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
     bypassPermissions: true,
