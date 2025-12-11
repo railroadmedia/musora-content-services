@@ -148,7 +148,7 @@ export async function fetchInstructorLessons(
     f.referencesIDWithFilter(f.combine(f.type('instructor'), f.slug(slug)))
   )
 
-  const q = query()
+  const data = query()
     .and(f.brand(brand))
     .and(f.searchMatch('title', searchTerm))
     .and(f.includedFields(includedFields))
@@ -157,6 +157,13 @@ export async function fetchInstructorLessons(
     .slice(offset, limit)
     .select(getFieldsForContentType() as string)
     .build()
+
+  const total = query().and(restrictions).build()
+
+  const q = `{
+    "data": ${data},
+    "total": count(${total})
+  }`
 
   return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }
