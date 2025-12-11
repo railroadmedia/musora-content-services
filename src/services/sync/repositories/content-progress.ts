@@ -122,7 +122,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.queryAll(...clauses)
   }
 
-  async getSomeProgressByContentIdsAndCollection(tuples: ContentIdCollectionTuple[]) {
+  async getSomeProgressByContentIdsAndCollections(tuples: ContentIdCollectionTuple[]) {
     const clauses = []
 
     clauses.push(...tuples.map(tuple => Q.and(...tupleClauses(tuple))))
@@ -179,32 +179,12 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return result
   }
 
-  recordProgresses(
-    contentIds: number[],
-    collection: CollectionParameter | null,
-    progressPct: number
-  ) {
-    return this.upsertSome(
-      Object.fromEntries(
-        contentIds.map((contentId) => [
-          ProgressRepository.generateId(contentId, collection),
-          (r: ContentProgress) => {
-            r.content_id = contentId
-            r.collection_type = collection?.type ?? COLLECTION_TYPE.SELF
-            r.collection_id = collection?.id ?? COLLECTION_ID_SELF
-
-            r.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
-            r.progress_percent = progressPct
-          },
-        ])
-      )
-    )
-  }
-
-  recordProgressesTentative(
+  recordProgressMany(
     contentProgresses: Record<string, number>, // Accept plain object
-    collection: CollectionParameter | null
+    collection: CollectionParameter | null,
+    tentative: boolean
   ) {
+
     const data = Object.fromEntries(
       Object.entries(contentProgresses).map(([contentId, progressPct]) => [
         ProgressRepository.generateId(+contentId, collection),
@@ -218,7 +198,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
         },
       ])
     )
-    return this.upsertSomeTentative(data)
+    return tentative
+      ? this.upsertSomeTentative(data)
+      : this.upsertSome(data)
+
+    //todo add event emitting for bulk updates?
   }
 
   eraseProgress(contentId: number, collection: CollectionParameter | null) {
