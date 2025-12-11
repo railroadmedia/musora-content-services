@@ -270,7 +270,7 @@ export async function getProgressDataByIdsAndCollections(tuples) {
     collection: {},
   }]))
 
-  await db.contentProgress.getSomeProgressByContentIdsAndCollection(tuples).then(r => {
+  await db.contentProgress.getSomeProgressByContentIdsAndCollections(tuples).then(r => {
     r.data.forEach(p => {
       progress[p.content_id] = {
         last_update: p.updated_at,
@@ -307,7 +307,7 @@ async function getByIdsAndCollections(tuples, dataKey, defaultValue) {
   tuples = tuples.map(t => ({contentId: normalizeContentId(t.contentId), collection: normalizeCollection(t.collection)}))
   const progress = Object.fromEntries(tuples.map(tuple => [tuple.contentId, defaultValue]))
 
-  await db.contentProgress.getSomeProgressByContentIdsAndCollection(tuples).then(r => {
+  await db.contentProgress.getSomeProgressByContentIdsAndCollections(tuples).then(r => {
     r.data.forEach(p => {
       progress[p.content_id] = p[dataKey] ?? defaultValue
     })
