@@ -1,14 +1,15 @@
 /**
  * @module Instructor
  */
-import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
-import { FilterBuilder } from '../../filterBuilder.js'
+
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
-import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
-import { Brand } from '../../lib/brands'
-import { DocumentType } from '../../lib/documents'
-import { BuildQueryOptions, getSortOrder, query } from '../../lib/sanity/query'
+import { getFieldsForContentType } from '../../contentTypeConfig.js'
+import { getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
+import { BuildQueryOptions, query } from '../../lib/sanity/query'
+import { Brand } from '../../lib/brands'
+import { Filters as f } from '../../lib/sanity/filter'
+import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
 
 const contentClient = new ContentClient()
 
@@ -37,27 +38,28 @@ export async function fetchInstructors(
   brand: Brand | string,
   options: BuildQueryOptions
 ): Promise<Instructors> {
-  const lessonFilter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
-    bypassPermissions: true,
-  }).buildFilter()
+  const type = f.type('instructor')
+  const lesson = f.combine(f.brand(brand), f.referencesParent())
+  const lessonCount = `count(*[${lesson}])`
+  const postFilter = `lessonCount > 0`
 
   const data = query()
-    .and(`_type == "instructor"`)
-    .order(options?.sort || 'lower(name) asc')
-    .slice(options?.offset || 0, (options?.offset || 0) + (options?.limit || 20))
+    .and(type)
+    .order(getSortOrder(options?.sort || 'lower(name) asc', brand as Brand))
+    .slice(options?.offset || 0, options?.limit || 20)
     .select(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessonCount": count(*[${lessonFilter}])`
+      `"lessonCount": ${lessonCount}`
     )
-    .postFilter(`lessonCount > 0`)
+    .postFilter(postFilter)
     .build()
 
   const total = query()
-    .and(`_type == "instructor"`)
-    .select(`"lessonCount": count(*[${lessonFilter}])`)
-    .postFilter(`lessonCount > 0`)
+    .and(type)
+    .select(`"lessonCount": ${lessonCount}`)
+    .postFilter(postFilter)
     .build()
 
   const q = `{
@@ -84,14 +86,11 @@ export async function fetchInstructorBySlug(
   slug: string,
   brand?: Brand | string
 ): Promise<Instructor | null> {
-  const brandFilter = brand ? `brand == "${brand}" && ` : ''
-  const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
-    bypassPermissions: true,
-  }).buildFilter()
+  const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
 
   const q = query()
-    .and(`_type == "instructor"`)
-    .and(`slug.current == "${slug}"`)
+    .and(f.type('instructor'))
+    .and(f.slug(slug))
     .select(
       'name',
       `"slug": slug.current`,
@@ -139,27 +138,29 @@ export async function fetchInstructorLessons(
   {
     sort = '-published_on',
     searchTerm = '',
-    offset = 1,
+    offset = 0,
     limit = 20,
     includedFields = [],
   }: InstructorLessonsOptions = {}
 ): Promise<InstructorLessons> {
-  const fieldsString = getFieldsForContentType() as string
-  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
-  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
-  const addType = contentType ? `_type == '${contentType}' && ` : ''
-  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='${DocumentType.Instructor}' && slug.current == '${slug}']._id)`
-  const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
   sort = getSortOrder(sort, brand as Brand)
 
+  const restrictions = await f.combineAsync(
+    f.contentFilter(),
+    f.referencesIDWithFilter(f.combine(f.type('instructor'), f.slug(slug)))
+  )
+
   const data = query()
-    .and(filterWithRestrictions)
+    .and(f.brand(brand))
+    .and(f.searchMatch('title', searchTerm))
+    .and(f.includedFields(includedFields))
+    .and(restrictions)
     .order(sort)
-    .slice(offset, offset + limit)
-    .select(...(fieldsString ? [fieldsString] : []))
+    .slice(offset, limit)
+    .select(getFieldsForContentType(contentType) as string)
     .build()
 
-  const total = query().and(filterWithRestrictions).build()
+  const total = query().and(restrictions).build()
 
   const q = `{
     "data": ${data},

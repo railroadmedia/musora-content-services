@@ -13,7 +13,8 @@ import {
 	getAwardStatistics,
 	getCompletedAwards,
 	getContentAwards,
-	getInProgressAwards
+	getInProgressAwards,
+	resetAllAwards
 } from './services/awards/award-query.js';
 
 import {
@@ -108,9 +109,9 @@ import {
 
 import {
 	contentStatusCompleted,
+	contentStatusCompletedMany,
 	contentStatusReset,
 	contentStatusStarted,
-	contentsStatusCompleted,
 	getAllCompleted,
 	getAllCompletedByIds,
 	getAllStarted,
@@ -400,6 +401,7 @@ import {
 
 import {
 	login,
+	loginWithAuthKey,
 	logout
 } from './services/user/sessions.js';
 
@@ -446,9 +448,9 @@ export {
 	completeMethodIntroVideo,
 	confirmEmailChange,
 	contentStatusCompleted,
+	contentStatusCompletedMany,
 	contentStatusReset,
 	contentStatusStarted,
-	contentsStatusCompleted,
 	convertToTimeZone,
 	createComment,
 	createForumCategory,
@@ -645,6 +647,7 @@ export {
 	likePost,
 	lockThread,
 	login,
+	loginWithAuthKey,
 	logout,
 	mapContentToParent,
 	markAllNotificationsAsRead,
@@ -680,6 +683,7 @@ export {
 	reportPlaylist,
 	requestEmailChange,
 	reset,
+	resetAllAwards,
 	resetAllLearningPaths,
 	resetPassword,
 	restoreComment,

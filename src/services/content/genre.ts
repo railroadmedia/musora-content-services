@@ -1,8 +1,7 @@
 /**
  * @module Genre
  */
-import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
-import { FilterBuilder } from '../../filterBuilder.js'
+import { getFieldsForContentType } from '../../contentTypeConfig.js'
 import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
 import { Brand } from '../../lib/brands'
@@ -10,9 +9,9 @@ import { DocumentType } from '../../lib/documents'
 import { getSortOrder } from '../../lib/sanity/query'
 import { Lesson } from './content'
 import { BuildQueryOptions, query } from '../../lib/sanity/query'
+import { Filters as f } from '../../lib/sanity/filter'
 
 const contentClient = new ContentClient()
-
 export interface Genre {
   name: string
   slug: string
@@ -37,27 +36,28 @@ export async function fetchGenres(
   brand: Brand | string,
   options: BuildQueryOptions = { sort: 'lower(name) asc' }
 ): Promise<Genres> {
-  const lessonFilter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
-    bypassPermissions: true,
-  }).buildFilter()
+  const lesson = f.combine(f.brand(brand), f.referencesParent())
+  const type = f.type('genre')
+  const lessonCount = `count(*[${lesson}])`
+  const postFilter = `lessonCount > 0`
 
   const data = query()
-    .and(`_type == "genre"`)
-    .order(options?.sort || 'lower(name) asc')
-    .slice(options?.offset || 0, (options?.offset || 0) + (options?.limit || 20))
+    .and(type)
+    .order(getSortOrder(options?.sort || 'lower(name) asc', brand as Brand))
+    .slice(options?.offset || 0, options?.limit || 20)
     .select(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessons_count": count(*[${lessonFilter}])`
+      `"lessons_count": ${lessonCount}`
     )
-    .postFilter(`lessons_count > 0`)
+    .postFilter(postFilter)
     .build()
 
   const total = query()
-    .and(`_type == "genre"`)
-    .select(`"lessons_count": count(*[${lessonFilter}])`)
-    .postFilter(`lessons_count > 0`)
+    .and(type)
+    .select(`"lessons_count": ${lessonCount}`)
+    .postFilter(postFilter)
     .build()
 
   const q = `{
@@ -84,14 +84,11 @@ export async function fetchGenreBySlug(
   slug: string,
   brand?: Brand | string
 ): Promise<Genre | null> {
-  const brandFilter = brand ? `brand == "${brand}" && ` : ''
-  const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
-    bypassPermissions: true,
-  }).buildFilter()
+  const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
 
   const q = query()
-    .and(`_type == "genre"`)
-    .and(`slug.current == "${slug}"`)
+    .and(f.type('genre'))
+    .and(f.slug(slug))
     .select(
       'name',
       `"slug": slug.current`,
@@ -138,30 +135,29 @@ export async function fetchGenreLessons(
   {
     sort = '-published_on',
     searchTerm = '',
-    offset = 1,
+    offset = 0,
     limit = 10,
     includedFields = [],
     progressIds = [],
   }: GenreLessonsOptions = {}
 ): Promise<GenreLessons> {
-  const fieldsString = getFieldsForContentType(contentType) as string
-  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
-  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
-  const addType = contentType ? `_type == '${contentType}' && ` : ''
-  const progressFilter =
-    progressIds.length > 0 ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
-  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='${DocumentType.Genre}' && slug.current == '${slug}']._id) ${progressFilter}`
-  const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
-  sort = getSortOrder(sort, brand as Brand)
+  const restrictions = await f.combineAsync(
+    f.contentFilter(),
+    f.referencesIDWithFilter(f.combine(f.type('genre'), f.slug(slug)))
+  )
 
   const data = query()
-    .and(filterWithRestrictions)
-    .order(sort)
-    .slice(offset, offset + limit)
-    .select(...(fieldsString ? [fieldsString] : []))
+    .and(f.brand(brand))
+    .and(f.searchMatch('title', searchTerm))
+    .and(f.includedFields(includedFields))
+    .and(f.progressIds(progressIds))
+    .and(restrictions)
+    .order(getSortOrder(sort, brand as Brand))
+    .slice(offset, limit)
+    .select(getFieldsForContentType(contentType) as string)
     .build()
 
-  const total = query().and(filterWithRestrictions).build()
+  const total = query().and(restrictions).build()
 
   const q = `{
     "data": ${data},
