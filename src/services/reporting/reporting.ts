@@ -11,6 +11,9 @@ import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
 import { ReportResponse, ReportableType, IssueTypeMap, ReportIssueOption } from './types'
 import { Brands } from '../../lib/brands'
+import { generateContentUrlWithDomain } from '../urlBuilder.js'
+import {fetchByRailContentId} from "../../index";
+import {fetchByRailContentIds} from "../sanity";
 
 /**
  * Parameters for submitting a report with type-safe issue values
@@ -26,6 +29,14 @@ export type ReportParams<T extends ReportableType = ReportableType> = {
   details?: string
   /** Brand context (required: drumeo, pianote, guitareo, singeo, playbass) */
   brand: Brands | string
+  /** Full URL to the reported content (generated via urlBuilder) */
+  contentUrl?: string
+  /** Content data for URL generation (only needed if contentUrl not provided) */
+  content?: {
+    id: number
+    type: string
+    parentId?: number
+  }
 }
 
 /**
@@ -84,6 +95,18 @@ export async function report<T extends ReportableType>(
   // Add details only when provided (required for 'other' issue)
   if (params.details) {
     requestBody.details = params.details
+  }
+
+  if (params.type == 'content') {
+    const contents = await fetchByRailContentIds([params.id])
+
+    if (contents && contents.length > 0) {
+      requestBody.content_url = generateContentUrlWithDomain({
+        id: contents[0].id,
+        type: contents[0].type,
+        parentId: contents[0].parentId,
+      })
+    }
   }
 
   const response = await httpClient.post<ReportResponse>(

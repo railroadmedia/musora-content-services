@@ -310,6 +310,14 @@ import {
 } from './services/sanity.js';
 
 import {
+	generateCommentUrl,
+	generateContentUrl,
+	generateContentUrlWithDomain,
+	generateForumPostUrl,
+	generatePlaylistUrl
+} from './services/urlBuilder.js';
+
+import {
 	confirmEmailChange,
 	deleteAccount,
 	numberOfActiveUsers,
@@ -578,6 +586,11 @@ declare module 'musora-content-services' {
 		fetchUserPractices,
 		findIncompleteLesson,
 		followThread,
+		generateCommentUrl,
+		generateContentUrl,
+		generateContentUrlWithDomain,
+		generateForumPostUrl,
+		generatePlaylistUrl,
 		getActiveDiscussions,
 		getActivePath,
 		getAllCompleted,
