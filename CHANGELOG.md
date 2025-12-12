@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.104.3](https://github.com/railroadmedia/musora-content-services/compare/v2.104.0...v2.104.3) (2025-12-12)
+
+
+### Bug Fixes
+
+* **MU2-1309:** navigateTo missing on owned contents ([9b12213](https://github.com/railroadmedia/musora-content-services/commit/9b12213ad8061d60eada1603c0384d36b7a955f3))
+
 ### [2.104.2](https://github.com/railroadmedia/musora-content-services/compare/v2.104.1...v2.104.2) (2025-12-12)
 
 ### [2.104.1](https://github.com/railroadmedia/musora-content-services/compare/v2.104.0...v2.104.1) (2025-12-12)
