@@ -8,13 +8,14 @@ import { ModelClass } from './index'
 import SyncRetry from './retry'
 import SyncContext from './context'
 import { SyncError } from './errors'
-import { SyncConcurrencySafetyMechanism } from './concurrency-safety'
+import { SyncEffect } from './effect'
 import { SyncTelemetry } from './telemetry/index'
 import createStoresFromConfig from './store-configs'
 import { contentProgressObserver } from '../awards/internal/content-progress-observer'
 
 import { onProgressSaved, onContentCompleted } from '../progress-events'
 import { onContentCompletedLearningPathListener } from '../content-org/learning-paths'
+import { DatabaseAdapter } from './adapters/factory'
 
 export default class SyncManager {
   private static counter = 0
@@ -26,9 +27,9 @@ export default class SyncManager {
     }
     SyncManager.instance = instance
     const teardown = instance.setup()
-    return async (purge?: boolean) => {
+    return async () => {
       SyncManager.instance = null
-      await teardown(purge)
+      return await teardown()
     }
   }
 
@@ -51,16 +52,16 @@ export default class SyncManager {
   private runScope: SyncRunScope
   private retry: SyncRetry
   private strategyMap: { stores: SyncStore<any>[]; strategies: SyncStrategy[] }[]
-  private safetyMap: { stores: SyncStore<any>[]; mechanisms: (() => void)[] }[]
+  private effectMap: { stores: SyncStore<any>[]; effects: SyncEffect[] }[]
 
-  constructor(context: SyncContext, initDatabase: () => Database, purgeDatabase: (error: Error) => void) {
+  constructor(context: SyncContext, initDatabase: () => Database, destroyDatabase: (dbName: string, adapter: DatabaseAdapter) => void) {
     this.id = (SyncManager.counter++).toString()
 
     this.telemetry = SyncTelemetry.getInstance()!
     this.context = context
 
     this.initDatabase = initDatabase
-    this.purgeDatabase = purgeDatabase
+    this.destroyDatabase = destroyDatabase
 
     this.storesRegistry = this.registerStores(createStoresFromConfig(this.createStore.bind(this)))
 
@@ -68,7 +69,7 @@ export default class SyncManager {
     this.retry = new SyncRetry(this.context, this.telemetry)
 
     this.strategyMap = []
-    this.safetyMap = []
+    this.effectMap = []
   }
 
   /**
@@ -116,8 +117,8 @@ export default class SyncManager {
     this.strategyMap.push({ stores, strategies })
   }
 
-  protectStores(stores: SyncStore<any>[], mechanisms: SyncConcurrencySafetyMechanism[]) {
-    this.safetyMap.push({ stores, mechanisms })
+  protectStores(stores: SyncStore<any>[], effects: SyncEffect[]) {
+    this.effectMap.push({ stores, effects })
   }
 
   setup() {
@@ -145,8 +146,8 @@ export default class SyncManager {
       })
     })
 
-    const safetyTeardowns = this.safetyMap.flatMap(({ stores, mechanisms }) => {
-      return mechanisms.map((mechanism) => mechanism(this.context, stores.map(store => this.realStoresRegistry[store.model.table])))
+    const safetyTeardowns = this.effectMap.flatMap(({ stores, effects }) => {
+      return effects.map((effect) => effect(this.context, stores.map(store => this.realStoresRegistry[store.model.table])))
     });
 
     contentProgressObserver.start(this.database).catch((error) => {
@@ -154,7 +155,7 @@ export default class SyncManager {
     })
     onContentCompleted(onContentCompletedLearningPathListener)
 
-    const teardown = async (purge = false) => {
+    const teardown = async () => {
       this.telemetry.debug('[SyncManager] Tearing down')
       this.runScope.abort()
       this.strategyMap.forEach(({ strategies }) =>
@@ -165,11 +166,7 @@ export default class SyncManager {
       this.retry.stop()
       this.context.stop()
 
-      if (purge) {
-        await this.purgeDatabase('TODO-db-name')
-      } else {
-        await this.database.write(() => this.database.unsafeResetDatabase())
-      }
+      this.destroyDatabase(this.database.adapter.dbName, this.database.adapter.underlyingAdapter)
     }
     return teardown
   }
