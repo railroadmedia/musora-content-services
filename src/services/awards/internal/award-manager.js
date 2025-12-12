@@ -129,6 +129,11 @@ export class AwardManager {
       const completedCount = completedLessonIds.length
       const progressPercentage = Math.round((completedCount / childIds.length) * 100)
 
+      if (progressPercentage === 100) {
+        await this.grantAward(award, collection)
+        return
+      }
+
       const progressData = {
         completedLessonIds,
         totalLessons: childIds.length,
