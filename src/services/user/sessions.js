@@ -32,6 +32,7 @@ export async function login(email, password, deviceName, deviceToken, platform) 
   return fetch(`${baseUrl}/v1/sessions`, {
     method: 'POST',
     headers: {
+      'X-Client-Platform': 'mobile',
       'Content-Type': 'application/json',
       Authorization: null,
     },
