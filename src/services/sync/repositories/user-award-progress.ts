@@ -130,4 +130,30 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
 
     return { definitions, progress: progressMap }
   }
+
+  async deleteAllAwards() {
+    const allProgress = await this.getAll()
+    const ids = allProgress.data.map(p => p.id)
+
+    if (ids.length === 0) {
+      return { deletedCount: 0 }
+    }
+
+    await this.deleteSome(ids)
+
+    const response = await this.store.pushRecordIdsImpatiently(ids)
+
+    if (response && response.ok) {
+      await this.store.db.write(async () => {
+        const collection = this.store.db.get<UserAwardProgress>(UserAwardProgress.table)
+        const deletedRecords = await collection
+          .query(Q.where('id', Q.oneOf(ids)))
+          .fetch()
+
+        await Promise.all(deletedRecords.map(record => record.destroyPermanently()))
+      })
+    }
+
+    return { deletedCount: ids.length }
+  }
 }

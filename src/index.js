@@ -13,7 +13,8 @@ import {
 	getAwardStatistics,
 	getCompletedAwards,
 	getContentAwards,
-	getInProgressAwards
+	getInProgressAwards,
+	resetAllAwards
 } from './services/awards/award-query.js';
 
 import {
@@ -682,6 +683,7 @@ export {
 	reportPlaylist,
 	requestEmailChange,
 	reset,
+	resetAllAwards,
 	resetAllLearningPaths,
 	resetPassword,
 	restoreComment,

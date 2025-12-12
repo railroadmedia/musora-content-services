@@ -9,7 +9,8 @@ import {
 	getAwardStatistics,
 	getCompletedAwards,
 	getContentAwards,
-	getInProgressAwards
+	getInProgressAwards,
+	resetAllAwards
 } from './services/awards/award-query.js';
 
 import {
@@ -683,6 +684,7 @@ declare module 'musora-content-services' {
 		reportPlaylist,
 		requestEmailChange,
 		reset,
+		resetAllAwards,
 		resetAllLearningPaths,
 		resetPassword,
 		restoreComment,

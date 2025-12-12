@@ -210,4 +210,94 @@ describe('Award Completion Flow - E2E Scenarios', () => {
       expect(db.userAwardProgress.recordAwardProgress).not.toHaveBeenCalled()
     })
   })
+
+  describe('Scenario: Race condition - eligibility check fails but progress reaches 100%', () => {
+    const multiLessonAward = getAwardByContentId(417049)
+    const parentCourseId = 417049
+
+    test('grants award with completedAt when updateAwardProgress calculates 100%', async () => {
+      let callCount = 0
+
+      db.contentProgress.getSomeProgressByContentIds.mockImplementation((contentIds) => {
+        callCount++
+
+        if (callCount === 1) {
+          const partialRecords = contentIds
+            .filter(id => [417045, 417046, 417047].includes(id))
+            .map(id => ({
+              content_id: id,
+              state: 'completed',
+              created_at: Math.floor(Date.now() / 1000)
+            }))
+          return Promise.resolve({ data: partialRecords })
+        }
+
+        const allRecords = contentIds.map(id => ({
+          content_id: id,
+          state: 'completed',
+          created_at: Math.floor(Date.now() / 1000)
+        }))
+        return Promise.resolve({ data: allRecords })
+      })
+
+      await awardManager.onContentCompleted(parentCourseId)
+
+      expect(db.userAwardProgress.recordAwardProgress).toHaveBeenCalledWith(
+        multiLessonAward._id,
+        100,
+        expect.objectContaining({
+          completedAt: expect.any(Number),
+          completionData: expect.objectContaining({
+            completed_at: expect.any(String)
+          }),
+          immediate: true
+        })
+      )
+
+      expect(listeners.granted).toHaveBeenCalledTimes(1)
+      expect(listeners.progress).not.toHaveBeenCalled()
+    })
+
+    test('emits awardGranted event when race condition triggers completion', async () => {
+      let callCount = 0
+
+      db.contentProgress.getSomeProgressByContentIds.mockImplementation((contentIds) => {
+        callCount++
+
+        if (callCount === 1) {
+          const partialRecords = contentIds
+            .filter(id => [417045, 417046].includes(id))
+            .map(id => ({
+              content_id: id,
+              state: 'completed',
+              created_at: Math.floor(Date.now() / 1000)
+            }))
+          return Promise.resolve({ data: partialRecords })
+        }
+
+        const allRecords = contentIds.map(id => ({
+          content_id: id,
+          state: 'completed',
+          created_at: Math.floor(Date.now() / 1000)
+        }))
+        return Promise.resolve({ data: allRecords })
+      })
+
+      await awardManager.onContentCompleted(parentCourseId)
+
+      expect(listeners.granted).toHaveBeenCalledTimes(1)
+      expect(listeners.granted).toHaveBeenCalledWith(
+        expect.objectContaining({
+          awardId: multiLessonAward._id,
+          definition: expect.objectContaining({
+            name: multiLessonAward.name
+          }),
+          completionData: expect.objectContaining({
+            completed_at: expect.any(String)
+          }),
+          timestamp: expect.any(Number)
+        })
+      )
+    })
+  })
 })
