@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.103.4](https://github.com/railroadmedia/musora-content-services/compare/v2.103.3...v2.103.4) (2025-12-12)
+
+
+### Bug Fixes
+
+* mobile login broken ([785e0fc](https://github.com/railroadmedia/musora-content-services/commit/785e0fc1fc1ce58840d0e85874f68b9c77342290))
+
 ### [2.103.3](https://github.com/railroadmedia/musora-content-services/compare/v2.103.2...v2.103.3) (2025-12-11)
 
 ### [2.103.2](https://github.com/railroadmedia/musora-content-services/compare/v2.103.1...v2.103.2) (2025-12-11)
