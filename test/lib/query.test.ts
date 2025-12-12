@@ -115,7 +115,7 @@ describe('Sanity Query Builder', () => {
     })
 
     test('overrides previous slice when called multiple times', () => {
-      const result = query().and('_type == "course"').slice(0, 10).slice(10, 20).build()
+      const result = query().and('_type == "course"').slice(0, 10).slice(10, 10).build()
       expect(result).toContain('*[_type == "course"]')
       expect(result).toContain('[10...20]')
       expect(result).not.toContain('[0...10]')
@@ -358,7 +358,7 @@ describe('Sanity Query Builder', () => {
       builder.order('title asc')
       builder.order('publishedOn desc') // Override
       builder.slice(0, 10)
-      builder.slice(5, 15) // Override
+      builder.slice(5, 10) // Override
       const result = builder.build()
       expect(result).toContain('*[_type == "course"]')
       expect(result).toContain('| order(publishedOn desc)')
@@ -418,7 +418,7 @@ describe('Sanity Query Builder', () => {
         .and('published == true')
         .select('_id', 'title', '_type', 'brand')
         .order('_score desc')
-        .slice(20, 40)
+        .slice(20, 20)
         .build()
       expect(result).toContain('title match "*jazz*"')
       expect(result).toContain('[20...40]')

@@ -493,3 +493,16 @@ export async function getAwardStatistics(brand = null) {
     }
   }
 }
+
+/**
+ * @returns {Promise<{ deletedCount: number }>}
+ */
+export async function resetAllAwards() {
+  try {
+    const result = await db.userAwardProgress.deleteAllAwards()
+    return result
+  } catch (error) {
+    console.error('Failed to reset awards:', error)
+    return { deletedCount: 0 }
+  }
+}

@@ -70,9 +70,10 @@ function transformLatestDiscussions(response: PaginatedResponse<ForumThread>): T
 
       return {
         id: thread.id,
-        url: `forums/post/${postId}`,
+        url: `forums/threads/${thread.category_id}/${thread.id}`,
         title: thread.title,
         post: postContent,
+        postId:postId,
         author: {
           id: thread.author!.id,
           name: thread.author!.display_name,

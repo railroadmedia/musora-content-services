@@ -12,7 +12,7 @@ const STATE_COMPLETED = STATE.COMPLETED
 const MAX_DEPTH = 3
 
 export async function getProgressState(contentId, collection = null) {
-  return getById(contentId, collection, 'state', '')
+  return getById(normalizeContentId(contentId), normalizeCollection(collection), 'state', '')
 }
 
 export async function getProgressStateByIds(contentIds, collection = null) {
@@ -270,7 +270,7 @@ export async function getProgressDataByIdsAndCollections(tuples) {
     collection: {},
   }]))
 
-  await db.contentProgress.getSomeProgressByContentIdsAndCollection(tuples).then(r => {
+  await db.contentProgress.getSomeProgressByContentIdsAndCollections(tuples).then(r => {
     r.data.forEach(p => {
       progress[p.content_id] = {
         last_update: p.updated_at,
@@ -307,7 +307,7 @@ async function getByIdsAndCollections(tuples, dataKey, defaultValue) {
   tuples = tuples.map(t => ({contentId: normalizeContentId(t.contentId), collection: normalizeCollection(t.collection)}))
   const progress = Object.fromEntries(tuples.map(tuple => [tuple.contentId, defaultValue]))
 
-  await db.contentProgress.getSomeProgressByContentIdsAndCollection(tuples).then(r => {
+  await db.contentProgress.getSomeProgressByContentIdsAndCollections(tuples).then(r => {
     r.data.forEach(p => {
       progress[p.content_id] = p[dataKey] ?? defaultValue
     })
@@ -441,8 +441,8 @@ export async function contentStatusCompleted(contentId, collection = null) {
   )
 }
 
-export async function contentsStatusCompleted(contentIds, collection = null) {
-  return setStartedOrCompletedStatuses(
+export async function contentStatusCompletedMany(contentIds, collection = null) {
+  return setStartedOrCompletedStatusMany(
     normalizeContentIds(contentIds),
     normalizeCollection(collection),
     true
@@ -472,12 +472,17 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
 
-  const bubbledProgresses = await bubbleProgress(
-    await getHierarchy(contentId, collection),
-    contentId,
-    collection
-  )
-  await db.contentProgress.recordProgressesTentative(bubbledProgresses, collection)
+  const hierarchy = await getHierarchy(contentId, collection)
+
+  const bubbledProgresses = await bubbleProgress(hierarchy, contentId, collection)
+  // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
+  await db.contentProgress.recordProgressMany(bubbledProgresses, collection, collection?.type !== COLLECTION_TYPE.LEARNING_PATH)
+
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+    let exportIds = bubbledProgresses
+    exportIds[contentId] = progress
+    await duplicateLearningPathProgressToExternalContents(exportIds, collection, hierarchy)
+  }
 
   for (const [bubbledContentId, bubbledProgress] of Object.entries(bubbledProgresses)) {
     if (bubbledProgress === 100) {
@@ -490,23 +495,57 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
 async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
   const progress = isCompleted ? 100 : 0
   const response = await db.contentProgress.recordProgress(contentId, collection, progress)
+
   if (progress === 100) emitContentCompleted(contentId, collection)
+
   const hierarchy = await getHierarchy(contentId, collection)
-  await Promise.all([
-    db.contentProgress.recordProgressesTentative(
-      trickleProgress(hierarchy, contentId, collection, progress),
-      collection
-    ),
-    bubbleProgress(hierarchy, contentId, collection).then(async (bubbledProgresses) => {
-      await db.contentProgress.recordProgressesTentative(bubbledProgresses, collection)
-      for (const [bubbledContentId, bubbledProgress] of Object.entries(bubbledProgresses)) {
-        if (bubbledProgress === 100) {
-          emitContentCompleted(Number(bubbledContentId), collection)
-        }
-      }
-    }),
-  ])
+
+  let progresses = {
+    ...trickleProgress(hierarchy, contentId, collection, progress),
+    ...await bubbleProgress(hierarchy, contentId, collection)
+  }
+  // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
+  await db.contentProgress.recordProgressMany(progresses, collection, collection?.type !== COLLECTION_TYPE.LEARNING_PATH)
+
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+    let exportProgresses = progresses
+    exportProgresses[contentId] = progress
+    await duplicateLearningPathProgressToExternalContents(exportProgresses, collection, hierarchy)
+  }
+
+  for (const [id, progress] of Object.entries(progresses)) {
+    if (progress === 100) {
+      emitContentCompleted(Number(id), collection)
+    }
+  }
+
   return response
+}
+
+// we cannot simply pass LP id with self collection, because we do not have a-la-carte LP's set up yet,
+//   and we need each lesson to bubble to its parent outside of LP
+async function duplicateLearningPathProgressToExternalContents(ids, collection, hierarchy) {
+  // filter out LPs. we dont want to duplicate to LP's while we dont have a-la-cart LP's set up.
+  let filteredIds = Object.fromEntries(
+    Object.entries(ids).filter((id) => {
+      return hierarchy.parents[parseInt(id)] !== null
+    })
+  )
+
+  const extProgresses = await getProgressDataByIds(Object.keys(filteredIds), null)
+
+  // overwrite if LP progress greater, unless LP progress was reset to 0
+  filteredIds = Object.entries(filteredIds).filter(([id, pct]) => {
+    const extPct = extProgresses[id]?.progress
+    return (pct !== 0)
+      ? pct > extPct
+      : false
+  })
+
+  // each handles its own bubbling.
+  filteredIds.forEach(([id, pct]) => {
+    saveContentProgress(parseInt(id), null, pct)
+  })
 }
 
 async function getHierarchy(contentId, collection) {
@@ -517,43 +556,52 @@ async function getHierarchy(contentId, collection) {
   }
 }
 
-async function setStartedOrCompletedStatuses(contentIds, collection, isCompleted) {
+async function setStartedOrCompletedStatusMany(contentIds, collection, isCompleted) {
   const progress = isCompleted ? 100 : 0
-  // we explicitly pessimistically await a remote push here
-  // because awards may be generated (on server) on completion
-  // which we would want to toast the user about *in band*
-  const response = await db.contentProgress.recordProgresses(contentIds, collection, progress)
+  const contents = Object.fromEntries(contentIds.map((id) => [id, progress]))
+  const response = await db.contentProgress.recordProgressMany(contents, collection, true)
 
   // we assume this is used only for contents within the same hierarchy
-  const hierarchy = await getHierarchy(contentIds[0], collection)
+  const hierarchy = await getHierarchy(collection.id, collection)
 
-  let ids = {}
+  let progresses = {}
   for (const contentId of contentIds) {
-    ids = {
-      ...ids,
+    progresses = {
+      ...progresses,
       ...trickleProgress(hierarchy, contentId, collection, progress),
       ...(await bubbleProgress(hierarchy, contentId, collection)),
     }
   }
+  // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
+  await db.contentProgress.recordProgressMany(progresses, collection, collection?.type !== COLLECTION_TYPE.LEARNING_PATH)
 
-  await Promise.all([db.contentProgress.recordProgressesTentative(ids, collection)])
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+    let exportProgresses = progresses
+    for (const contentId of contentIds){
+      exportProgresses[contentId] = progress
+    }
+    await duplicateLearningPathProgressToExternalContents(exportProgresses, collection, hierarchy)
+  }
 
   return response
 }
 
 async function resetStatus(contentId, collection = null) {
+  const progress = 0
   const response = await db.contentProgress.eraseProgress(contentId, collection)
   const hierarchy = await getHierarchy(contentId, collection)
 
-  await Promise.all([
-    db.contentProgress.recordProgressesTentative(
-      trickleProgress(hierarchy, contentId, collection, 0),
-      collection
-    ),
-    bubbleProgress(hierarchy, contentId, collection).then((bubbledProgresses) =>
-      db.contentProgress.recordProgressesTentative(bubbledProgresses, collection)
-    ),
-  ])
+  let progresses = {
+    ...trickleProgress(hierarchy, contentId, collection, progress),
+    ...await bubbleProgress(hierarchy, contentId, collection)
+  }
+  // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
+  await db.contentProgress.recordProgressMany(progresses, collection, collection?.type !== COLLECTION_TYPE.LEARNING_PATH)
+
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+    progresses[contentId] = progress
+    await duplicateLearningPathProgressToExternalContents(progresses, collection, hierarchy)
+  }
 
   return response
 }
