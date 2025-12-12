@@ -2068,7 +2068,8 @@ export async function fetchOwnedContent(
     showOnlyOwnedContent: true, // Key parameter: exclude membership content
   }).buildFilter()
 
-  const fieldsString = DEFAULT_FIELDS.join(',')
+  // Use 'tab-data' to include children field (needed for navigateTo calculation)
+  const fieldsString = await getFieldsForContentTypeWithFilteredChildren('tab-data', true)
 
   const query = buildEntityAndTotalQuery(filterWithRestrictions, fieldsString, {
     sortOrder: sortOrder,
