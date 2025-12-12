@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.104.0](https://github.com/railroadmedia/musora-content-services/compare/v2.100.3...v2.104.0) (2025-12-12)
+
+
+### Features
+
+* add isCompleted and field name updates in award callback([#648](https://github.com/railroadmedia/musora-content-services/issues/648)) ([c250d61](https://github.com/railroadmedia/musora-content-services/commit/c250d61b90bc29504827e8fa368a78b34a3f0c08))
+* **auth:** authenticate via auth key ([#644](https://github.com/railroadmedia/musora-content-services/issues/644)) ([122ba63](https://github.com/railroadmedia/musora-content-services/commit/122ba63572e95faf49944a3e819b768cb0a9ab85))
+* **BEH-1457:** method progress duplication ([#617](https://github.com/railroadmedia/musora-content-services/issues/617)) ([917cb9d](https://github.com/railroadmedia/musora-content-services/commit/917cb9dedce2a21c64af4e39eef013a30b236e77))
+
+
+### Bug Fixes
+
+* **agi:** offset default and slug clause on artistBySlug ([10cc6d0](https://github.com/railroadmedia/musora-content-services/commit/10cc6d0390a12715aeba01c5dc72ecdb53d0f236))
+* **agi:** remove count from AGI lessons functions ([5cf3bc3](https://github.com/railroadmedia/musora-content-services/commit/5cf3bc3ade98faa5200cd64ce4b0a9edaff29d7a))
+* **agi:** rollback total on fetchAGILessons ([a02be05](https://github.com/railroadmedia/musora-content-services/commit/a02be0592dd8b195da7971f13ea062674510c8bb))
+* lp lesson upserting ([#645](https://github.com/railroadmedia/musora-content-services/issues/645)) ([1a3094d](https://github.com/railroadmedia/musora-content-services/commit/1a3094d569bb868d62844755b876cee8bc63a365))
+* mobile login broken ([785e0fc](https://github.com/railroadmedia/musora-content-services/commit/785e0fc1fc1ce58840d0e85874f68b9c77342290))
+* **MU2-1305:** fix url and add postId for active discussions ([ac42889](https://github.com/railroadmedia/musora-content-services/commit/ac4288955e2d7c817e0a51aaf1364b75aec6eea1))
+* user id missing on auth key ([ba4068f](https://github.com/railroadmedia/musora-content-services/commit/ba4068ff3aa8005b1b3ed615b07d4ff7eb9f751b))
+
 ### [2.103.6](https://github.com/railroadmedia/musora-content-services/compare/v2.103.5...v2.103.6) (2025-12-12)
 
 ### [2.103.5](https://github.com/railroadmedia/musora-content-services/compare/v2.103.4...v2.103.5) (2025-12-12)
