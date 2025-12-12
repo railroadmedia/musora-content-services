@@ -16,12 +16,12 @@ export type Span = InjectedSentry.Span
 export const SYNC_TELEMETRY_TRACE_PREFIX = 'sync:'
 
 export enum SeverityLevel {
-  Debug = 0,
-  Info = 1,
-  Log = 2,
-  Warning = 3,
-  Error = 4,
-  Fatal = 5
+  DEBUG = 0,
+  INFO = 1,
+  LOG = 2,
+  WARNING = 3,
+  ERROR = 4,
+  FATAL = 5
 }
 
 export class SyncTelemetry {
@@ -48,10 +48,10 @@ export class SyncTelemetry {
   // allows us to know if Sentry shouldn't double-capture a dev-prettified console.error log
   private _ignoreConsole = false
 
-  constructor(userId: string, { Sentry, level, pretty }: { Sentry: SentryLike, level?: SeverityLevel, pretty?: boolean }) {
+  constructor(userId: string, { Sentry, level, pretty }: { Sentry: SentryLike, level?: keyof typeof SeverityLevel, pretty?: boolean }) {
     this.userId = userId
     this.Sentry = Sentry
-    this.level = typeof level !== 'undefined' ? level : SeverityLevel.Info
+    this.level = typeof level !== 'undefined' && level in SeverityLevel ? SeverityLevel[level] : SeverityLevel.LOG
     this.pretty = typeof pretty !== 'undefined' ? pretty : true
 
     watermelonLogger.log = (...messages: any[]) => this.log('[Watermelon]', ...messages);
@@ -100,32 +100,32 @@ export class SyncTelemetry {
   }
 
   debug(...messages: any[]) {
-    this.level > SeverityLevel.Debug && console.debug(...this.formattedConsoleMessages(...messages));
+    this.level <= SeverityLevel.DEBUG && console.debug(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('debug', ...messages)
   }
 
   info(...messages: any[]) {
-    this.level > SeverityLevel.Info && console.info(...this.formattedConsoleMessages(...messages));
+    this.level <= SeverityLevel.INFO && console.info(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('info', ...messages)
   }
 
   log(...messages: any[]) {
-    this.level > SeverityLevel.Log && console.log(...this.formattedConsoleMessages(...messages));
+    this.level <= SeverityLevel.LOG && console.log(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('log', ...messages)
   }
 
   warn(...messages: any[]) {
-    this.level > SeverityLevel.Warning && console.warn(...this.formattedConsoleMessages(...messages));
+    this.level <= SeverityLevel.WARNING && console.warn(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('warning', ...messages)
   }
 
   error(...messages: any[]) {
-    this.level > SeverityLevel.Error && console.error(...this.formattedConsoleMessages(...messages));
+    this.level <= SeverityLevel.ERROR && console.error(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('error', ...messages)
   }
 
   fatal(...messages: any[]) {
-    this.level > SeverityLevel.Fatal && console.error(...this.formattedConsoleMessages(...messages));
+    this.level <= SeverityLevel.FATAL && console.error(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('fatal', ...messages)
   }
 
