@@ -129,7 +129,7 @@ export const query = (): QueryBuilder => {
   return builder
 }
 
-export function getSortOrder(sort = '-published_on', brand: Brand, groupBy?: string): string {
+export function getSortOrder(sort = '-published_on', brand?: Brand, groupBy?: string): string {
   const sanitizedSort = sort?.trim() || '-published_on'
   let isDesc = sanitizedSort.startsWith('-')
   const sortField = isDesc ? sanitizedSort.substring(1) : sanitizedSort
@@ -142,7 +142,7 @@ export function getSortOrder(sort = '-published_on', brand: Brand, groupBy?: str
       break
 
     case 'popularity':
-      if (groupBy == 'artist' || groupBy == 'genre') {
+      if ((groupBy == 'artist' || groupBy == 'genre') && brand) {
         sortOrder = isDesc ? `coalesce(popularity.${brand}, -1)` : 'popularity'
       } else {
         sortOrder = isDesc ? 'coalesce(popularity, -1)' : 'popularity'

@@ -24,7 +24,7 @@ export interface Genres extends SanityListResponse<Genre> {}
 /**
  * Fetch all genres with lessons available for a specific brand.
  *
- * @param {Brand|string} [brand] - The brand for which to fetch the genre for. Lesson count will be filtered by this brand if provided.
+ * @param {Brand} [brand] - The brand for which to fetch the genre for. Lesson count will be filtered by this brand if provided.
  * @returns {Promise<Genres>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
@@ -33,7 +33,7 @@ export interface Genres extends SanityListResponse<Genre> {}
  *   .catch(error => console.error(error));
  */
 export async function fetchGenres(
-  brand: Brand | string,
+  brand: Brand,
   options: BuildQueryOptions = { sort: 'lower(name) asc' }
 ): Promise<Genres> {
   const lesson = f.combine(f.brand(brand), f.referencesParent())
@@ -43,7 +43,7 @@ export async function fetchGenres(
 
   const data = query()
     .and(type)
-    .order(getSortOrder(options?.sort || 'lower(name) asc', brand as Brand))
+    .order(getSortOrder(options?.sort || 'lower(name) asc', brand))
     .slice(options?.offset || 0, options?.limit || 20)
     .select(
       'name',
@@ -72,7 +72,7 @@ export async function fetchGenres(
  * Fetch a single genre by their slug and brand
  *
  * @param {string} slug - The slug of the genre to fetch.
- * @param {Brand|string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
+ * @param {Brand} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
  * @returns {Promise<Genre|null>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
@@ -80,10 +80,7 @@ export async function fetchGenres(
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenreBySlug(
-  slug: string,
-  brand?: Brand | string
-): Promise<Genre | null> {
+export async function fetchGenreBySlug(slug: string, brand?: Brand): Promise<Genre | null> {
   const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
 
   const q = query()
@@ -112,7 +109,7 @@ export interface GenreLessons extends SanityListResponse<Lesson> {}
 /**
  * Fetch the genre's lessons.
  * @param {string} slug - The slug of the genre
- * @param {Brand|string} brand - The brand for which to fetch lessons.
+ * @param {Brand} brand - The brand for which to fetch lessons.
  * @param {DocumentType} contentType - The content type to filter lessons by.
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
@@ -130,7 +127,7 @@ export interface GenreLessons extends SanityListResponse<Lesson> {}
  */
 export async function fetchGenreLessons(
   slug: string,
-  brand: Brand | string,
+  brand: Brand,
   contentType?: DocumentType,
   {
     sort = '-published_on',
@@ -152,7 +149,7 @@ export async function fetchGenreLessons(
     .and(f.includedFields(includedFields))
     .and(f.progressIds(progressIds))
     .and(restrictions)
-    .order(getSortOrder(sort, brand as Brand))
+    .order(getSortOrder(sort, brand))
     .slice(offset, limit)
     .select(getFieldsForContentType(contentType) as string)
     .build()

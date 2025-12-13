@@ -24,7 +24,7 @@ export interface Artists extends SanityListResponse<Artist> {}
 /**
  * Fetch all artists with lessons available for a specific brand.
  *
- * @param {Brand|string} brand - The brand for which to fetch artists.
+ * @param {Brand} brand - The brand for which to fetch artists.
  * @returns {Promise<Artists>} - A promise that resolves to an array of artist objects or null if not found.
  *
  * @example
@@ -33,7 +33,7 @@ export interface Artists extends SanityListResponse<Artist> {}
  *   .catch(error => console.error(error));
  */
 export async function fetchArtists(
-  brand: Brand | string,
+  brand: Brand,
   options: BuildQueryOptions = { sort: 'lower(name) asc' }
 ): Promise<Artists> {
   const lessonFilter = f.combine(f.brand(brand), f.referencesParent())
@@ -43,7 +43,7 @@ export async function fetchArtists(
 
   const data = query()
     .and(type)
-    .order(getSortOrder(options?.sort || 'lower(name) asc', brand as Brand))
+    .order(getSortOrder(options?.sort || 'lower(name) asc', brand))
     .slice(options?.offset || 0, options?.limit || 20)
     .select(
       'name',
@@ -72,7 +72,7 @@ export async function fetchArtists(
  * Fetch a single artist by their Sanity ID.
  *
  * @param {string} slug - The name of the artist to fetch.
- * @param {Brand|string} [brand] - The brand for which to fetch the artist.
+ * @param {Brand} [brand] - The brand for which to fetch the artist.
  * @returns {Promise<Artist|null>} - A promise that resolves to an artist objects or null if not found.
  *
  * @example
@@ -80,10 +80,7 @@ export async function fetchArtists(
  *   .then(artists => console.log(artists))
  *   .catch(error => console.error(error));
  */
-export async function fetchArtistBySlug(
-  slug: string,
-  brand?: Brand | string
-): Promise<Artist | null> {
+export async function fetchArtistBySlug(slug: string, brand?: Brand): Promise<Artist | null> {
   const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
 
   const q = query()
@@ -112,7 +109,7 @@ export interface ArtistLessons extends SanityListResponse<Lesson> {}
 /**
  * Fetch the artist's lessons.
  * @param {string} slug - The slug of the artist
- * @param {Brand|string} brand - The brand for which to fetch lessons.
+ * @param {Brand} brand - The brand for which to fetch lessons.
  * @param {DocumentType} contentType - The type of the lessons we need to get from the artist. If not defined, groq will get lessons from all content types
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
@@ -130,7 +127,7 @@ export interface ArtistLessons extends SanityListResponse<Lesson> {}
  */
 export async function fetchArtistLessons(
   slug: string,
-  brand: Brand | string,
+  brand: Brand,
   contentType: DocumentType,
   {
     sort = '-published_on',
@@ -141,7 +138,7 @@ export async function fetchArtistLessons(
     progressIds = [],
   }: ArtistLessonOptions = {}
 ): Promise<ArtistLessons> {
-  sort = getSortOrder(sort, brand as Brand)
+  sort = getSortOrder(sort, brand)
 
   const restrictions = await f.combineAsync(
     f.contentFilter(),
