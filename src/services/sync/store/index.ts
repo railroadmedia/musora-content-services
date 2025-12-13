@@ -1,7 +1,7 @@
 import { Database, Q, type Collection, type RecordId } from '@nozbe/watermelondb'
 import { RawSerializer, ModelSerializer } from '../serializers'
 import { ModelClass, SyncToken, SyncEntry,  SyncContext, EpochMs } from '..'
-import { SyncPullResponse, SyncPushResponse, SyncPushFailureResponse, PushPayload } from '../fetch'
+import { SyncPullResponse, SyncPushResponse, SyncPushFailureResponse, PushPayload, SyncStorePushResultSuccess, SyncStorePushResultFailure } from '../fetch'
 import type SyncRetry from '../retry'
 import type SyncRunScope from '../run-scope'
 import EventEmitter from '../utils/event-emitter'
@@ -477,6 +477,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     )()
   }
 
+  // TODO?: accept recordIds from callers to limit pushed records?
+  // Would make us lose the "debounce" effect if this method is called many times in short window
+  // but would reduce duplicated records sent to server in multiple requests in short window
   private async pushUnsyncedWithRetry(span?: Span) {
     const records = await this.queryMaybeDeletedRecords(Q.where('_status', Q.notEq('synced')))
 
@@ -566,7 +569,22 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         )
 
         if (response.ok) {
-          const successfulResults = response.results.filter((result) => result.type === 'success')
+          const [failedResults, successfulResults] = response.results.reduce((acc, result) => {
+            if (result.type === 'success') {
+              acc[1].push(result)
+            } else {
+              acc[0].push(result)
+            }
+            return acc
+          }, [[], []] as [SyncStorePushResultFailure[], SyncStorePushResultSuccess[]])
+
+          if (failedResults.length) {
+            this.telemetry.warn(
+              `[store:${this.model.table}] Push completed with failed records`,
+              { results: failedResults }
+            )
+          }
+
           const successfulEntries = successfulResults.map((result) => result.entry)
           await this.writeEntries(successfulEntries, false, pushSpan)
 

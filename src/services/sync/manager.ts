@@ -8,14 +8,14 @@ import { ModelClass } from './index'
 import SyncRetry from './retry'
 import SyncContext from './context'
 import { SyncError } from './errors'
-import { SyncConcurrencySafetyMechanism } from './concurrency-safety'
+import { SyncEffect } from './effect'
 import { SyncTelemetry } from './telemetry/index'
-import { inBoundary } from './errors/boundary'
 import createStoresFromConfig from './store-configs'
 import { contentProgressObserver } from '../awards/internal/content-progress-observer'
 
 import { onProgressSaved, onContentCompleted } from '../progress-events'
 import { onContentCompletedLearningPathListener } from '../content-org/learning-paths'
+import { DatabaseAdapter } from './adapters/factory'
 
 export default class SyncManager {
   private static counter = 0
@@ -29,7 +29,7 @@ export default class SyncManager {
     const teardown = instance.setup()
     return async () => {
       SyncManager.instance = null
-      await teardown()
+      return await teardown()
     }
   }
 
@@ -52,23 +52,24 @@ export default class SyncManager {
   private runScope: SyncRunScope
   private retry: SyncRetry
   private strategyMap: { stores: SyncStore<any>[]; strategies: SyncStrategy[] }[]
-  private safetyMap: { stores: SyncStore<any>[]; mechanisms: (() => void)[] }[]
+  private effectMap: { stores: SyncStore<any>[]; effects: SyncEffect[] }[]
 
-  constructor(context: SyncContext, initDatabase: () => Database) {
+  constructor(context: SyncContext, initDatabase: () => Database, destroyDatabase: (dbName: string, adapter: DatabaseAdapter) => void) {
     this.id = (SyncManager.counter++).toString()
 
     this.telemetry = SyncTelemetry.getInstance()!
     this.context = context
 
-    this.database = this.telemetry.trace({ name: 'db:init' }, () => inBoundary(initDatabase)) // todo - can cause undefined??
+    this.initDatabase = initDatabase
+    this.destroyDatabase = destroyDatabase
+
+    this.storesRegistry = this.registerStores(createStoresFromConfig(this.createStore.bind(this)))
 
     this.runScope = new SyncRunScope()
     this.retry = new SyncRetry(this.context, this.telemetry)
 
-    this.storesRegistry = this.registerStores(createStoresFromConfig(this.createStore.bind(this)))
-
     this.strategyMap = []
-    this.safetyMap = []
+    this.effectMap = []
   }
 
   /**
@@ -79,6 +80,10 @@ export default class SyncManager {
   }
 
   createStore<TModel extends BaseModel>(config: SyncStoreConfig<TModel>) {
+    return config
+  }
+
+  realCreateStore<TModel extends BaseModel>(config: SyncStoreConfig<TModel>) {
     return new SyncStore<TModel>(
       config,
       this.context,
@@ -112,13 +117,19 @@ export default class SyncManager {
     this.strategyMap.push({ stores, strategies })
   }
 
-  protectStores(stores: SyncStore<any>[], mechanisms: SyncConcurrencySafetyMechanism[]) {
-    const teardowns = mechanisms.map((mechanism) => mechanism(this.context, stores))
-    this.safetyMap.push({ stores, mechanisms: teardowns })
+  protectStores(stores: SyncStore<any>[], effects: SyncEffect[]) {
+    this.effectMap.push({ stores, effects })
   }
 
   setup() {
     this.telemetry.debug('[SyncManager] Setting up')
+
+    this.database = this.telemetry.trace({ name: 'db:init' }, this.initDatabase)
+
+    this.realStoresRegistry = {}
+    Object.entries(this.storesRegistry).forEach(([table, storeConfig]) => {
+      this.realStoresRegistry[table] = this.realCreateStore(storeConfig)
+    })
 
     this.context.start()
     this.retry.start()
@@ -126,13 +137,18 @@ export default class SyncManager {
     this.strategyMap.forEach(({ stores, strategies }) => {
       strategies.forEach((strategy) => {
         stores.forEach((store) => {
-          strategy.onTrigger(store, (reason) => {
-            store.requestSync(reason)
+          const realStore = this.realStoresRegistry[store.model.table]
+          strategy.onTrigger(realStore, (reason) => {
+            realStore.requestSync(reason)
           })
         })
         strategy.start()
       })
     })
+
+    const safetyTeardowns = this.effectMap.flatMap(({ stores, effects }) => {
+      return effects.map((effect) => effect(this.context, stores.map(store => this.realStoresRegistry[store.model.table])))
+    });
 
     contentProgressObserver.start(this.database).catch((error) => {
       this.telemetry.error('[SyncManager] Failed to start contentProgressObserver', error)
@@ -145,17 +161,18 @@ export default class SyncManager {
       this.strategyMap.forEach(({ strategies }) =>
         strategies.forEach((strategy) => strategy.stop())
       )
-      this.safetyMap.forEach(({ mechanisms }) => mechanisms.forEach((mechanism) => mechanism()))
+      safetyTeardowns.forEach((teardown) => teardown())
       contentProgressObserver.stop()
       this.retry.stop()
       this.context.stop()
-      await this.database.write(() => this.database.unsafeResetDatabase())
+
+      this.destroyDatabase(this.database.adapter.dbName, this.database.adapter.underlyingAdapter)
     }
     return teardown
   }
 
   getStore<TModel extends BaseModel>(model: ModelClass<TModel>) {
-    const store = this.storesRegistry[model.table]
+    const store = this.realStoresRegistry[model.table]
     if (!store) {
       throw new SyncError(`Store not found`, { table: model.table })
     }
