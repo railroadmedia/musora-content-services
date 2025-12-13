@@ -105,12 +105,12 @@ export async function updateOnboarding({
 /**
  * Fetches the onboardings for the current user and specified brand.
  *
- * @param {string} brand - The brand identifier.
+ * @param {Brand} brand - The brand identifier.
  *
  * @returns {Promise<Onboarding>} - A promise that resolves with the onboarding data.
  * @throws {HttpError} - If the HTTP request fails.
  */
-export async function userOnboardingForBrand(brand: string): Promise<Onboarding> {
+export async function userOnboardingForBrand(brand: Brand): Promise<Onboarding> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.get<Onboarding>(
     `/api/user-management-system/v1/users/${globalConfig.sessionConfig.userId}/onboardings/brand/${encodeURIComponent(brand)}`
@@ -230,7 +230,7 @@ const recommendedContentCache: { [brand: string]: OnboardingRecommendedContent }
  */
 export async function getOnboardingRecommendedContent(
   email: string,
-  brand: Brand | string
+  brand: Brand
 ): Promise<OnboardingRecommendedContent> {
   // TODO: Replace with real API call when available
   if (recommendedContentCache[brand]) {

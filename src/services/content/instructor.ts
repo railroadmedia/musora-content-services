@@ -26,7 +26,7 @@ export type Instructors = SanityListResponse<Instructor>
 /**
  * Fetch all instructor with lessons available for a specific brand.
  *
- * @param {Brand|string} brand - The brand for which to fetch instructors.
+ * @param {Brand} brand - The brand for which to fetch instructors.
  * @returns {Promise<Instructors>} - A promise that resolves to an array of instructor objects.
  *
  * @example
@@ -35,7 +35,7 @@ export type Instructors = SanityListResponse<Instructor>
  *   .catch(error => console.error(error));
  */
 export async function fetchInstructors(
-  brand: Brand | string,
+  brand: Brand,
   options: BuildQueryOptions = {
     sort: 'lower(name) asc',
     offset: 0,
@@ -49,8 +49,8 @@ export async function fetchInstructors(
 
   const data = query()
     .and(type)
-    .order(getSortOrder(options?.sort || 'lower(name) asc', brand as Brand))
-    .slice(options?.offset || 0, options?.limit || 20)
+    .order(getSortOrder(options.sort, brand))
+    .slice(options?.offset || 0, options.limit)
     .select(
       'name',
       `"slug": slug.current`,
@@ -78,7 +78,7 @@ export async function fetchInstructors(
  * Fetch a single instructor by their name
  *
  * @param {string} slug - The slug of the instructor to fetch.
- * @param {Brand|string} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
+ * @param {Brand} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
  * @returns {Promise<Instructor | null>} - A promise that resolves to an instructor object or null if not found.
  *
  * @example
@@ -88,7 +88,7 @@ export async function fetchInstructors(
  */
 export async function fetchInstructorBySlug(
   slug: string,
-  brand?: Brand | string
+  brand?: Brand
 ): Promise<Instructor | null> {
   const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
 
@@ -120,7 +120,7 @@ export type InstructorLessons = SanityListResponse<Lesson>
 /**
  * Fetch the data needed for the instructor screen.
  * @param {string} slug - The slug of the instructor
- * @param {Brand|string} brand - The brand for which to fetch instructor lessons
+ * @param {Brand} brand - The brand for which to fetch instructor lessons
  * @param {DocumentType} contentType - The content type to filter lessons by.
  * @param {FetchInstructorLessonsOptions} options - Parameters for pagination, filtering and sorting.
  * @param {string} [options.sortOrder="-published_on"] - The field to sort the lessons by.
@@ -137,7 +137,7 @@ export type InstructorLessons = SanityListResponse<Lesson>
  */
 export async function fetchInstructorLessons(
   slug: string,
-  brand: Brand | string,
+  brand: Brand,
   contentType: DocumentType,
   {
     sort = '-published_on',
@@ -147,7 +147,7 @@ export async function fetchInstructorLessons(
     includedFields = [],
   }: InstructorLessonsOptions = {}
 ): Promise<InstructorLessons> {
-  sort = getSortOrder(sort, brand as Brand)
+  sort = getSortOrder(sort, brand)
 
   const restrictions = await f.combineAsync(
     f.contentFilter(),
