@@ -1,30 +1,32 @@
 /**
  * @module Instructor
  */
+
+import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
 import { getFieldsForContentType } from '../../contentTypeConfig.js'
-import { fetchSanity, getSortOrder } from '../sanity.js'
+import { getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
 import { BuildQueryOptions, query } from '../../lib/sanity/query'
-import { Brands } from '../../lib/brands'
+import { Brand } from '../../lib/brands'
 import { Filters as f } from '../../lib/sanity/filter'
+import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
+
+const contentClient = new ContentClient()
 
 export interface Instructor {
   lessonCount: number
   slug: string
   name: string
-  short_bio: string
+  short_bio?: string
   thumbnail: string
 }
 
-export interface Instructors {
-  data: Instructor[]
-  total: number
-}
+export interface Instructors extends SanityListResponse<Instructor> {}
 
 /**
  * Fetch all instructor with lessons available for a specific brand.
  *
- * @param {Brands|string} brand - The brand for which to fetch instructors.
+ * @param {Brand} brand - The brand for which to fetch instructors.
  * @returns {Promise<Instructors>} - A promise that resolves to an array of instructor objects.
  *
  * @example
@@ -33,7 +35,7 @@ export interface Instructors {
  *   .catch(error => console.error(error));
  */
 export async function fetchInstructors(
-  brand: Brands | string,
+  brand: Brand,
   options: BuildQueryOptions
 ): Promise<Instructors> {
   const type = f.type('instructor')
@@ -43,7 +45,7 @@ export async function fetchInstructors(
 
   const data = query()
     .and(type)
-    .order(options?.sort || 'lower(name) asc')
+    .order(getSortOrder(options?.sort || 'lower(name) asc', brand))
     .slice(options?.offset || 0, options?.limit || 20)
     .select(
       'name',
@@ -65,14 +67,14 @@ export async function fetchInstructors(
     "total": count(${total})
   }`
 
-  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
+  return contentClient.fetchList<Instructor>(q, options)
 }
 
 /**
  * Fetch a single instructor by their name
  *
  * @param {string} slug - The slug of the instructor to fetch.
- * @param {Brands|string} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
+ * @param {Brand} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
  * @returns {Promise<Instructor | null>} - A promise that resolves to an instructor object or null if not found.
  *
  * @example
@@ -82,7 +84,7 @@ export async function fetchInstructors(
  */
 export async function fetchInstructorBySlug(
   slug: string,
-  brand?: Brands | string
+  brand?: Brand
 ): Promise<Instructor | null> {
   const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
 
@@ -99,24 +101,23 @@ export async function fetchInstructorBySlug(
     .first()
     .build()
 
-  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
+  return contentClient.fetchSingle<Instructor>(q)
 }
 
 export interface InstructorLessonsOptions extends BuildQueryOptions {
   searchTerm?: string
-  includedFields?: Array<string>
+  page?: number
+  limit?: number
+  includedFields?: string[]
 }
 
-export interface InstructorLessons {
-  data: Lesson[]
-  total: number
-}
+export interface InstructorLessons extends SanityListResponse<Lesson> {}
 
 /**
  * Fetch the data needed for the instructor screen.
  * @param {string} slug - The slug of the instructor
- * @param {Brands|string} brand - The brand for which to fetch instructor lessons
- *
+ * @param {Brand} brand - The brand for which to fetch instructor lessons
+ * @param {DocumentType} contentType - The content type to filter lessons by.
  * @param {FetchInstructorLessonsOptions} options - Parameters for pagination, filtering and sorting.
  * @param {string} [options.sortOrder="-published_on"] - The field to sort the lessons by.
  * @param {string} [options.searchTerm=""] - The search term to filter content by title.
@@ -132,7 +133,8 @@ export interface InstructorLessons {
  */
 export async function fetchInstructorLessons(
   slug: string,
-  brand: Brands | string,
+  brand: Brand,
+  contentType: DocumentType,
   {
     sort = '-published_on',
     searchTerm = '',
@@ -155,7 +157,7 @@ export async function fetchInstructorLessons(
     .and(restrictions)
     .order(sort)
     .slice(offset, limit)
-    .select(getFieldsForContentType() as string)
+    .select(getFieldsForContentType(contentType) as string)
     .build()
 
   const total = query().and(restrictions).build()
@@ -165,5 +167,9 @@ export async function fetchInstructorLessons(
     "total": count(${total})
   }`
 
-  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
+  return contentClient.fetchList<Lesson>(q, {
+    sort,
+    offset,
+    limit,
+  })
 }

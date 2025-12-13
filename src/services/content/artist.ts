@@ -2,11 +2,15 @@
  * @module Artist
  */
 import { getFieldsForContentType } from '../../contentTypeConfig.js'
-import { BuildQueryOptions, query } from '../../lib/sanity/query'
-import { fetchSanity, getSortOrder } from '../sanity.js'
+import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
+import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
+import { Brand } from '../../lib/brands'
+import { DocumentType } from '../../lib/documents'
+import { BuildQueryOptions, getSortOrder, query } from '../../lib/sanity/query'
 import { Lesson } from './content'
-import { Brands } from '../../lib/brands'
 import { Filters as f } from '../../lib/sanity/filter'
+
+const contentClient = new ContentClient()
 
 export interface Artist {
   slug: string
@@ -15,16 +19,13 @@ export interface Artist {
   lessonCount: number
 }
 
-export interface Artists {
-  data: Artist[]
-  total: number
-}
+export interface Artists extends SanityListResponse<Artist> {}
 
 /**
  * Fetch all artists with lessons available for a specific brand.
  *
- * @param {Brands|string} brand - The brand for which to fetch artists.
- * @returns {Promise<Artist[]|null>} - A promise that resolves to an array of artist objects or null if not found.
+ * @param {Brand} brand - The brand for which to fetch artists.
+ * @returns {Promise<Artists>} - A promise that resolves to an array of artist objects or null if not found.
  *
  * @example
  * fetchArtists('drumeo')
@@ -32,7 +33,7 @@ export interface Artists {
  *   .catch(error => console.error(error));
  */
 export async function fetchArtists(
-  brand: Brands | string,
+  brand: Brand,
   options: BuildQueryOptions = { sort: 'lower(name) asc' }
 ): Promise<Artists> {
   const lessonFilter = f.combine(f.brand(brand), f.referencesParent())
@@ -42,7 +43,7 @@ export async function fetchArtists(
 
   const data = query()
     .and(type)
-    .order(options?.sort || 'lower(name) asc')
+    .order(getSortOrder(options?.sort || 'lower(name) asc', brand))
     .slice(options?.offset || 0, options?.limit || 20)
     .select(
       'name',
@@ -64,14 +65,14 @@ export async function fetchArtists(
     "total": count(${total})
   }`
 
-  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
+  return contentClient.fetchList<Artist>(q, options)
 }
 
 /**
  * Fetch a single artist by their Sanity ID.
  *
  * @param {string} slug - The name of the artist to fetch.
- * @param {Brands|string} [brand] - The brand for which to fetch the artist.
+ * @param {Brand} [brand] - The brand for which to fetch the artist.
  * @returns {Promise<Artist|null>} - A promise that resolves to an artist objects or null if not found.
  *
  * @example
@@ -79,10 +80,7 @@ export async function fetchArtists(
  *   .then(artists => console.log(artists))
  *   .catch(error => console.error(error));
  */
-export async function fetchArtistBySlug(
-  slug: string,
-  brand?: Brands | string
-): Promise<Artist | null> {
+export async function fetchArtistBySlug(slug: string, brand?: Brand): Promise<Artist | null> {
   const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
 
   const q = query()
@@ -97,7 +95,7 @@ export async function fetchArtistBySlug(
     .first()
     .build()
 
-  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
+  return contentClient.fetchSingle<Artist>(q)
 }
 
 export interface ArtistLessonOptions extends BuildQueryOptions {
@@ -106,16 +104,13 @@ export interface ArtistLessonOptions extends BuildQueryOptions {
   progressIds?: Array<number>
 }
 
-export interface ArtistLessons {
-  data: Lesson[]
-  total: number
-}
+export interface ArtistLessons extends SanityListResponse<Lesson> {}
 
 /**
  * Fetch the artist's lessons.
  * @param {string} slug - The slug of the artist
- * @param {Brands|string} brand - The brand for which to fetch lessons.
- * @param {string} contentType - The type of the lessons we need to get from the artist. If not defined, groq will get lessons from all content types
+ * @param {Brand} brand - The brand for which to fetch lessons.
+ * @param {DocumentType} contentType - The type of the lessons we need to get from the artist. If not defined, groq will get lessons from all content types
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
  * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
@@ -132,8 +127,8 @@ export interface ArtistLessons {
  */
 export async function fetchArtistLessons(
   slug: string,
-  brand: Brands | string,
-  contentType: string,
+  brand: Brand,
+  contentType: DocumentType,
   {
     sort = '-published_on',
     searchTerm = '',
@@ -168,5 +163,9 @@ export async function fetchArtistLessons(
     "total": count(${total})
   }`
 
-  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
+  return contentClient.fetchList(q, {
+    sort,
+    offset,
+    limit,
+  })
 }
