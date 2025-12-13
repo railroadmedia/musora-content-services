@@ -20,7 +20,7 @@ const contentProgressTable = tableSchema({
   name: SYNC_TABLES.CONTENT_PROGRESS,
   columns: [
     { name: 'content_id', type: 'number', isIndexed: true },
-    { name: 'content_brand', type: 'string', isIndexed: true },
+    { name: 'content_brand', type: 'string', isOptional: true, isIndexed: true },
     { name: 'collection_type', type: 'string', isOptional: true, isIndexed: true },
     { name: 'collection_id', type: 'number', isOptional: true, isIndexed: true },
     { name: 'state', type: 'string', isIndexed: true },

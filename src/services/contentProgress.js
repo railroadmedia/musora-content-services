@@ -6,6 +6,7 @@ import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 import { emitContentCompleted } from './progress-events'
 import {getDailySession} from "./content-org/learning-paths.ts";
 import {getToday} from "./dateUtils.js";
+import { fetchBrandsByContentIds } from './sanity.js'
 
 const STATE_STARTED = STATE.STARTED
 const STATE_COMPLETED = STATE.COMPLETED
@@ -316,48 +317,25 @@ async function getByIdsAndCollections(tuples, dataKey, defaultValue) {
 }
 
 export async function getAllStarted(limit = null) {
-  return db.contentProgress.startedIds(limit).then((r) => r.data.map((id) => parseInt(id)))
+  return db.contentProgress.startedIds(limit)
 }
 
 export async function getAllCompleted(limit = null) {
-  return db.contentProgress.completedIds(limit).then((r) => r.data.map((id) => parseInt(id)))
+  return db.contentProgress.completedIds(limit)
 }
 
 export async function getAllCompletedByIds(contentIds) {
   return db.contentProgress.completedByContentIds(normalizeContentIds(contentIds))
 }
 
+/**
+ * Fetches content **IDs** for items that were started or completed.
+ */
 export async function getAllStartedOrCompleted({
-  onlyIds = true,
   brand = null,
   limit = null,
 } = {}) {
-  const agoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
-  const filters = {
-    brand: brand ?? undefined,
-    updatedAfter: agoInSeconds,
-    limit: limit ?? undefined,
-  }
-
-  if (onlyIds) {
-    return db.contentProgress
-      .startedOrCompletedIds(filters)
-      .then((r) => r.data.map((id) => parseInt(id)))
-  } else {
-    return db.contentProgress.startedOrCompleted(filters).then((r) => {
-      return Object.fromEntries(
-        r.data.map((p) => [
-          p.content_id,
-          {
-            last_update: p.updated_at,
-            progress: p.progress_percent,
-            status: p.state,
-            brand: p.content_brand,
-          },
-        ])
-      )
-    })
-  }
+  return await _getAllStartedOrCompleted({ brand, limit }).then(recs => recs.map(rec => rec.content_id))
 }
 
 /**
@@ -378,9 +356,39 @@ export async function getAllStartedOrCompleted({
  * console.log(progressMap[123]); // => 52
  */
 export async function getStartedOrCompletedProgressOnly({ brand = undefined } = {}) {
-  return db.contentProgress.startedOrCompleted({ brand: brand }).then((r) => {
-    return Object.fromEntries(r.data.map((p) => [p.content_id, p.progress_percent]))
+  return _getAllStartedOrCompleted({ brand }).then((r) => {
+    return Object.fromEntries(r.map((p) => [p.content_id, p.progress_percent]))
   })
+}
+
+async function _getAllStartedOrCompleted({
+  brand = null,
+  limit = null,
+} = {}) {
+  const agoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
+  const baseFilters = {
+    updatedAfter: agoInSeconds,
+  }
+
+  if (!brand) {
+    return await db.contentProgress.startedOrCompleted({ ...baseFilters, limit }).then(r => r.data)
+  }
+
+  // content_brand can be null (i.e., when progress records created locally)
+  // TODO: eventually put content metadata into watermelon so we can
+  // always have brand info in progress records and avoid all this
+
+  // for now though, null-ish brands shouldn't be too numerous, so safe to have undefined limit
+  const [strictRecs, looseRecs] = await Promise.all([
+    db.contentProgress.startedOrCompleted({ ...baseFilters, brand, limit }),
+    db.contentProgress.startedOrCompleted({ ...baseFilters, brand: null, limit: undefined })
+  ]);
+
+  const map = await fetchBrandsByContentIds(looseRecs.data.map(r => r.content_id));
+  const filteredLooseRecs = looseRecs.data.filter(r => map[r.content_id] === brand).map(r => ({ ...r, content_brand: brand }));
+
+  const records = [...strictRecs.data, ...filteredLooseRecs].sort((a, b) => b.updated_at - a.updated_at).slice(0, limit || undefined);
+  return records;
 }
 
 /**

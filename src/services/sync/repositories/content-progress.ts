@@ -13,7 +13,7 @@ export interface CollectionParameter {
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
   // null collection only
   async startedIds(limit?: number) {
-    return this.queryAllIds(...[
+    return this.queryAll(...[
       Q.where('collection_type', COLLECTION_TYPE.SELF),
       Q.where('collection_id', COLLECTION_ID_SELF),
 
@@ -21,12 +21,12 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       Q.sortBy('updated_at', 'desc'),
 
       ...(limit ? [Q.take(limit)] : []),
-    ])
+    ]).then((r) => r.data.map((r) => r.content_id))
   }
 
   // null collection only
   async completedIds(limit?: number) {
-    return this.queryAllIds(...[
+    return this.queryAll(...[
       Q.where('collection_type', COLLECTION_TYPE.SELF),
       Q.where('collection_id', COLLECTION_ID_SELF),
 
@@ -34,7 +34,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       Q.sortBy('updated_at', 'desc'),
 
       ...(limit ? [Q.take(limit)] : []),
-    ])
+    ]).then((r) => r.data.map((r) => r.content_id))
   }
 
   //this _specifically_ needs to get content_ids from ALL collection_types (including null)
@@ -51,16 +51,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   }
 
   // null collection only
-  async startedOrCompletedIds(opts: Parameters<typeof this.startedOrCompletedClauses>[0] = {}) {
-    return this.queryAllIds(...this.startedOrCompletedClauses(opts))
-  }
-
-  // null collection only
   private startedOrCompletedClauses(
     opts: {
-      brand?: string
-      updatedAfter?: number
-      limit?: number
+      brand?: string | null
+      updatedAfter?: number,
+      limit?: number,
     } = {}
   ) {
     const clauses: Q.Clause[] = [
@@ -75,7 +70,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       clauses.push(Q.where('updated_at', Q.gte(opts.updatedAfter)))
     }
 
-    if (opts.brand) {
+    if (typeof opts.brand != 'undefined') {
       clauses.push(Q.where('content_brand', opts.brand))
     }
 
