@@ -76,7 +76,7 @@ export async function fetchSongsExample(brand: Brand, page: number = 1, limit: n
     "thumbnail": thumbnail.asset->url,
     difficulty_string,
     published_on
-  `
+  }`
 
   const q = query()
     .and(`_type == "song"`)
@@ -145,9 +145,11 @@ export async function fetchSongsWithPermissions(brand: Brand) {
   }`
 
   const adapter = getPermissionsAdapter()
-  return Promise.all([sanityClient.executeQuery(query), adapter.fetchUserPermissions()]).then(
-    ([res, perms]) => needsAccessDecorator(res, perms, adapter)
-  )
+  const [res, perms] = await Promise.all([
+    sanityClient.executeQuery(query),
+    adapter.fetchUserPermissions(),
+  ])
+  return res ? needsAccessDecorator(perms, adapter)(res) : null
 }
 //
 // Example: Execute a complex query that returns custom structure
@@ -162,7 +164,9 @@ export async function fetchSongsWithPermissionsAndPageType(brand: Brand) {
   }`
 
   const adapter = getPermissionsAdapter()
-  return Promise.all([sanityClient.executeQuery(query), adapter.fetchUserPermissions()])
-    .then(([res, perms]) => needsAccessDecorator(res, perms, adapter))
-    .then(pageTypeDecorator)
+  const [res, perms] = await Promise.all([
+    sanityClient.executeQuery(query),
+    adapter.fetchUserPermissions(),
+  ])
+  return res ? pageTypeDecorator(needsAccessDecorator(perms, adapter)(res)) : null
 }

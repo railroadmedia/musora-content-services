@@ -19,7 +19,7 @@ export interface Genre {
   thumbnail: string
 }
 
-export interface Genres extends SanityListResponse<Genre> {}
+export type Genres = SanityListResponse<Genre>
 
 /**
  * Fetch all genres with lessons available for a specific brand.
@@ -34,7 +34,11 @@ export interface Genres extends SanityListResponse<Genre> {}
  */
 export async function fetchGenres(
   brand: Brand,
-  options: BuildQueryOptions = { sort: 'lower(name) asc' }
+  options: BuildQueryOptions = {
+    sort: 'lower(name) asc',
+    offset: 0,
+    limit: 20,
+  }
 ): Promise<Genres> {
   const lesson = f.combine(f.brand(brand), f.referencesParent())
   const type = f.type('genre')
@@ -43,8 +47,8 @@ export async function fetchGenres(
 
   const data = query()
     .and(type)
-    .order(getSortOrder(options?.sort || 'lower(name) asc', brand))
-    .slice(options?.offset || 0, options?.limit || 20)
+    .order(getSortOrder(options.sort, brand))
+    .slice(options?.offset || 0, options.limit)
     .select(
       'name',
       `"slug": slug.current`,
@@ -104,7 +108,7 @@ export interface GenreLessonsOptions extends BuildQueryOptions {
   progressIds?: Array<number>
 }
 
-export interface GenreLessons extends SanityListResponse<Lesson> {}
+export type GenreLessons = SanityListResponse<Lesson>
 
 /**
  * Fetch the genre's lessons.

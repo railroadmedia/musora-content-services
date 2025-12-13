@@ -19,7 +19,7 @@ export interface Artist {
   lessonCount: number
 }
 
-export interface Artists extends SanityListResponse<Artist> {}
+export type Artists = SanityListResponse<Artist>
 
 /**
  * Fetch all artists with lessons available for a specific brand.
@@ -34,7 +34,11 @@ export interface Artists extends SanityListResponse<Artist> {}
  */
 export async function fetchArtists(
   brand: Brand,
-  options: BuildQueryOptions = { sort: 'lower(name) asc' }
+  options: BuildQueryOptions = {
+    sort: 'lower(name) asc',
+    offset: 0,
+    limit: 20,
+  }
 ): Promise<Artists> {
   const lessonFilter = f.combine(f.brand(brand), f.referencesParent())
   const type = f.type('artist')
@@ -43,8 +47,8 @@ export async function fetchArtists(
 
   const data = query()
     .and(type)
-    .order(getSortOrder(options?.sort || 'lower(name) asc', brand))
-    .slice(options?.offset || 0, options?.limit || 20)
+    .order(getSortOrder(options.sort, brand))
+    .slice(options?.offset || 0, options.limit)
     .select(
       'name',
       `"slug": slug.current`,
@@ -104,7 +108,7 @@ export interface ArtistLessonOptions extends BuildQueryOptions {
   progressIds?: Array<number>
 }
 
-export interface ArtistLessons extends SanityListResponse<Lesson> {}
+export type ArtistLessons = SanityListResponse<Lesson>
 
 /**
  * Fetch the artist's lessons.

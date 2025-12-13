@@ -1,5 +1,4 @@
 import { SONG_TYPES_WITH_CHILDREN } from '../../contentTypeConfig.js'
-import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse.js'
 import { globalConfig } from '../../services/config.js'
 import { PermissionsAdapter, UserPermissions } from '../../services/permissions/PermissionsAdapter'
 
@@ -16,88 +15,85 @@ export interface NeedAccessDecorated {
   [FieldName.NeedAccess]?: boolean
 }
 
+/**
+ * Decorates content with nested traversal of content[] and lessons[] arrays.
+ * Creates new objects (immutable).
+ *
+ * @param result - The content to decorate
+ * @param fieldName - The field name to add
+ * @param callback - Function that returns the field value
+ * @returns Decorated content with new field
+ */
 export function contentDecorator<T>(
   result: T,
   fieldName: FieldName,
   callback: Function
 ): T & { [key in FieldName]?: any } {
-  if (result['content']) {
-    if (Array.isArray(result['content'])) {
+  // Create copy instead of mutating
+  const decorated = { ...result }
+
+  // Use .map() instead of .forEach() for content array
+  if (decorated['content']) {
+    if (Array.isArray(decorated['content'])) {
       // Content rows structure: array of rows, each with a content array
-      result['content'].forEach((contentItem: any) => {
+      decorated['content'] = decorated['content'].map((contentItem: any) => {
         if (contentItem) {
-          contentItem[fieldName] = callback(contentItem)
+          return { ...contentItem, [fieldName]: callback(contentItem) }
         }
+        return contentItem
       })
-    } else {
-      result[fieldName] = callback(result)
     }
-  } else if (result['lessons']) {
-    result['lessons'].forEach((lesson: any) => {
-      lesson[fieldName] = callback(lesson) // Updated to check lesson access
-    })
   }
 
-  result[fieldName] = callback(result)
+  // Use .map() instead of .forEach() for lessons array
+  if (decorated['lessons']) {
+    decorated['lessons'] = decorated['lessons'].map((lesson: any) => ({
+      ...lesson,
+      [fieldName]: callback(lesson),
+    }))
+  }
 
-  return result as T & { [key in FieldName]?: any }
+  decorated[fieldName] = callback(result)
+  return decorated as T & { [key in FieldName]?: any }
 }
 
-export function contentListDecorator<T>(
-  results: SanityListResponse<T>,
-  fieldName: FieldName,
-  callback: Function
-): SanityListResponse<T & { [key in FieldName]?: any }> {
-  results.data.forEach((result) => {
-    result = contentDecorator(result, fieldName, callback)
-  })
-  return results as SanityListResponse<T & { [key in FieldName]?: any }>
+/**
+ * Decorator that adds page_type field ('song' or 'lesson').
+ * Handles nested structures automatically via contentDecorator.
+ *
+ * @example
+ * response.map(pageTypeDecorator)
+ *
+ * @param content - Content to decorate
+ * @returns Content with page_type field
+ */
+export function pageTypeDecorator<T>(content: T): T & PageTypeDecorated {
+  const callback = (item: any): string =>
+    SONG_TYPES_WITH_CHILDREN.includes(item['type']) ? 'song' : 'lesson'
+
+  return contentDecorator(content, FieldName.PageType, callback) as T & PageTypeDecorated
 }
 
-export function pageTypeDecorator<T>(results: T): T & PageTypeDecorated
-export function pageTypeDecorator<T>(
-  results: SanityListResponse<T> | T
-): SanityListResponse<T & PageTypeDecorated>
-export function pageTypeDecorator<T>(
-  results: SanityListResponse<T> | T
-): SanityListResponse<T & PageTypeDecorated> | (T & PageTypeDecorated) {
-  const decorator = function (content: any): string {
-    return SONG_TYPES_WITH_CHILDREN.includes(content['type']) ? 'song' : 'lesson'
+/**
+ * Creates a decorator that adds need_access field based on user permissions.
+ * Curried for composition with functors.
+ * Handles nested structures automatically via contentDecorator.
+ *
+ * @example
+ * const decorator = needsAccessDecorator(perms, adapter)
+ * response.map(decorator)
+ *
+ * @param userPermissions - User's permission data
+ * @param adapter - Permissions adapter instance
+ * @returns Decorator function for content
+ */
+export const needsAccessDecorator =
+  (userPermissions: UserPermissions, adapter: PermissionsAdapter) =>
+  <T>(content: T): T & NeedAccessDecorated => {
+    if (globalConfig.sanityConfig.useDummyRailContentMethods) {
+      return content as T & NeedAccessDecorated
+    }
+
+    const callback = (item: any) => adapter.doesUserNeedAccess(item, userPermissions)
+    return contentDecorator(content, FieldName.NeedAccess, callback)
   }
-
-  if (results && (results as SanityListResponse<T>).data) {
-    return contentListDecorator(results as SanityListResponse<T>, FieldName.PageType, decorator)
-  }
-
-  return contentDecorator(results, FieldName.PageType, decorator) as T & PageTypeDecorated
-}
-
-export function needsAccessDecorator<T>(
-  results: SanityListResponse<T> | T,
-  userPermissions: UserPermissions,
-  adapter: PermissionsAdapter
-): T & NeedAccessDecorated
-export function needsAccessDecorator<T>(
-  results: SanityListResponse<T>,
-  userPermissions: UserPermissions,
-  adapter: PermissionsAdapter
-): SanityListResponse<T & NeedAccessDecorated>
-export function needsAccessDecorator<T>(
-  results: SanityListResponse<T> | T,
-  userPermissions: UserPermissions,
-  adapter: PermissionsAdapter
-): SanityListResponse<T & { [FieldName.NeedAccess]?: boolean }> | (T & NeedAccessDecorated) {
-  if (globalConfig.sanityConfig.useDummyRailContentMethods) {
-    return results as T & NeedAccessDecorated
-  }
-
-  const decorator = function (content: any) {
-    return adapter.doesUserNeedAccess(content, userPermissions)
-  }
-
-  if (results && (results as SanityListResponse<T>).data) {
-    return contentListDecorator(results as SanityListResponse<T>, FieldName.NeedAccess, decorator)
-  }
-
-  return contentDecorator(results as T, FieldName.NeedAccess, decorator)
-}

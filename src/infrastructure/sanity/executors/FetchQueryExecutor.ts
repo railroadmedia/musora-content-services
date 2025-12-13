@@ -21,12 +21,12 @@ export class FetchQueryExecutor implements QueryExecutor {
       }
 
       const result = await response.json()
-      
+
       if (config.debug) {
         console.log('Sanity Results:', result)
       }
 
-      return result as SanityResponse<T>
+      return new SanityResponse(result.result, result.ms, result.query)
     } catch (error: any) {
       if ('message' in error && 'query' in error) {
         throw error as SanityError
@@ -51,19 +51,16 @@ export class FetchQueryExecutor implements QueryExecutor {
     return {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${config.token}`,
+        Authorization: `Bearer ${config.token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(query),
     }
   }
 
-  private async createSanityError(
-    response: Response,
-    query: SanityQuery
-  ): Promise<SanityError> {
+  private async createSanityError(response: Response, query: SanityQuery): Promise<SanityError> {
     let errorMessage = `Sanity API error: ${response.status} - ${response.statusText}`
-    
+
     try {
       const errorBody = await response.json()
       if (errorBody.message) {
@@ -79,4 +76,4 @@ export class FetchQueryExecutor implements QueryExecutor {
       params: query.params,
     }
   }
-} 
+}

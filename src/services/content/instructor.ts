@@ -21,7 +21,7 @@ export interface Instructor {
   thumbnail: string
 }
 
-export interface Instructors extends SanityListResponse<Instructor> {}
+export type Instructors = SanityListResponse<Instructor>
 
 /**
  * Fetch all instructor with lessons available for a specific brand.
@@ -36,7 +36,11 @@ export interface Instructors extends SanityListResponse<Instructor> {}
  */
 export async function fetchInstructors(
   brand: Brand,
-  options: BuildQueryOptions
+  options: BuildQueryOptions = {
+    sort: 'lower(name) asc',
+    offset: 0,
+    limit: 20,
+  }
 ): Promise<Instructors> {
   const type = f.type('instructor')
   const lesson = f.combine(f.brand(brand), f.referencesParent())
@@ -45,8 +49,8 @@ export async function fetchInstructors(
 
   const data = query()
     .and(type)
-    .order(getSortOrder(options?.sort || 'lower(name) asc', brand))
-    .slice(options?.offset || 0, options?.limit || 20)
+    .order(getSortOrder(options.sort, brand))
+    .slice(options?.offset || 0, options.limit)
     .select(
       'name',
       `"slug": slug.current`,
@@ -111,7 +115,7 @@ export interface InstructorLessonsOptions extends BuildQueryOptions {
   includedFields?: string[]
 }
 
-export interface InstructorLessons extends SanityListResponse<Lesson> {}
+export type InstructorLessons = SanityListResponse<Lesson>
 
 /**
  * Fetch the data needed for the instructor screen.
