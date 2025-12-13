@@ -1,6 +1,7 @@
 import { filtersToGroq } from '../../contentTypeConfig'
 import { getPermissionsAdapter } from '../../services/permissions/index'
 import type { UserPermissions } from '../../services/permissions/PermissionsAdapter'
+import { DocumentType } from '../documents'
 import { filterOps } from './query'
 
 // ============================================
@@ -94,7 +95,7 @@ export class Filters {
    * @returns {string} Filter expression
    * @example Filters.type('song') // "_type == 'song'"
    */
-  static type(type: string): string {
+  static type(type: DocumentType): string {
     return `_type == "${type}"`
   }
 

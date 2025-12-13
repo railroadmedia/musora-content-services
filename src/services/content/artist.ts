@@ -37,7 +37,7 @@ export async function fetchArtists(
   options: BuildQueryOptions = { sort: 'lower(name) asc' }
 ): Promise<Artists> {
   const lessonFilter = f.combine(f.brand(brand), f.referencesParent())
-  const type = f.type(DocumentType.Artist)
+  const type = f.type('artist')
   const lessonCount = `count(*[${lessonFilter}])`
   const postFilter = `lessonCount > 0`
 

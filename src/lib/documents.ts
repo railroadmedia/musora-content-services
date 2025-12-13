@@ -1,87 +1,86 @@
-export enum DocumentType {
-  Artist = 'artist',
-  BackstageSecret = 'backstage-secret',
-  BannerCard = 'banner-card',
-  BehindTheScenes = 'behind-the-scenes',
-  BootCamp = 'boot-camp',
-  Challenge = 'challenge',
-  ChallengePart = 'challenge-part',
-  Challenges = 'challenges',
-  CoachStream = 'coach-stream',
-  ContentAward = 'content-award',
-  Course = 'course',
-  CourseCollection = 'course-collection',
-  CoursePart = 'course-part',
-  Creativity = 'creativity',
-  DiyDrumExperiment = 'diy-drum-experiment',
-  Documentary = 'documentary',
-  DrumFestInternational2022 = 'drum-fest-international-2022',
-  Essential = 'essential',
-  ExploringBeats = 'exploring-beats',
-  Focus = 'focus',
-  Foundation = 'foundation',
-  Gear = 'gear',
-  GearGuide = 'gear-guide',
-  Genre = 'genre',
-  GuidedCourse = 'guided-course',
-  GuidedCoursePart = 'guided-course-part',
-  InRhythm = 'in-rhythm',
-  Instructor = 'instructor',
-  JamTrack = 'jam-track',
-  LearningPath = 'learning-path',
-  LearningPathCourse = 'learning-path-course',
-  LearningPathIntro = 'learning-path-intro',
-  LearningPathLesson = 'learning-path-lesson',
-  LearningPathLevel = 'learning-path-level',
-  LearningPathV2 = 'learning-path-v2',
-  License = 'license',
-  Lifestyle = 'lifestyle',
-  Live = 'live',
-  MediaTag = 'media.tag',
-  MethodIntro = 'method-intro',
-  MethodV2 = 'method-v2',
-  OddTimes = 'odd-times',
-  OnTheRoad = 'on-the-road',
-  OnboardingContentCard = 'onboarding-content-card',
-  Pack = 'pack',
-  PackBundle = 'pack-bundle',
-  PackBundleLesson = 'pack-bundle-lesson',
-  PaisteCymbals = 'paiste-cymbals',
-  Performance = 'performance',
-  Permission = 'permission',
-  PlayAlong = 'play-along',
-  PlayAlongPart = 'play-along-part',
-  Podcast = 'podcast',
-  Publisher = 'publisher',
-  QuestionAndAnswer = 'question-and-answer',
-  QuickTips = 'quick-tips',
-  RecommendedContentRow = 'recommended-content-row',
-  Recording = 'recording',
-  RhythmicAdventuresOfCaptainCarson = 'rhythmic-adventures-of-captain-carson',
-  RhythmsFromAnotherPlanet = 'rhythms-from-another-planet',
-  Routine = 'routine',
-  Rudiment = 'rudiment',
-  SemesterPack = 'semester-pack',
-  SemesterPackLesson = 'semester-pack-lesson',
-  SkillPack = 'skill-pack',
-  SkillPackLesson = 'skill-pack-lesson',
-  Solo = 'solo',
-  Song = 'song',
-  SongPart = 'song-part',
-  SongTutorial = 'song-tutorial',
-  SongTutorialChildren = 'song-tutorial-children',
-  Sonor = 'sonor',
-  Special = 'special',
-  Spotlight = 'spotlight',
-  StudentCollaboration = 'student-collaboration',
-  StudentFocus = 'student-focus',
-  StudentReview = 'student-review',
-  StudyTheGreats = 'study-the-greats',
-  Tama = 'tama',
-  TheHistoryOfElectronicDrums = 'the-history-of-electronic-drums',
-  Theory = 'theory',
-  Topic = 'topic',
-  Unit = 'unit',
-  UnitPart = 'unit-part',
-  Workout = 'workout',
-}
+export type DocumentType =
+  | 'artist'
+  | 'backstage-secret'
+  | 'banner-card'
+  | 'behind-the-scenes'
+  | 'boot-camp'
+  | 'challenge'
+  | 'challenge-part'
+  | 'challenges'
+  | 'coach-stream'
+  | 'content-award'
+  | 'course'
+  | 'course-collection'
+  | 'course-part'
+  | 'creativity'
+  | 'diy-drum-experiment'
+  | 'documentary'
+  | 'drum-fest-international-2022'
+  | 'essential'
+  | 'exploring-beats'
+  | 'focus'
+  | 'foundation'
+  | 'gear'
+  | 'gear-guide'
+  | 'genre'
+  | 'guided-course'
+  | 'guided-course-part'
+  | 'in-rhythm'
+  | 'instructor'
+  | 'jam-track'
+  | 'learning-path'
+  | 'learning-path-course'
+  | 'learning-path-intro'
+  | 'learning-path-lesson'
+  | 'learning-path-level'
+  | 'learning-path-v2'
+  | 'license'
+  | 'lifestyle'
+  | 'live'
+  | 'media.tag'
+  | 'method-intro'
+  | 'method-v2'
+  | 'odd-times'
+  | 'on-the-road'
+  | 'onboarding-content-card'
+  | 'pack'
+  | 'pack-bundle'
+  | 'pack-bundle-lesson'
+  | 'paiste-cymbals'
+  | 'performance'
+  | 'permission'
+  | 'play-along'
+  | 'play-along-part'
+  | 'podcast'
+  | 'publisher'
+  | 'question-and-answer'
+  | 'quick-tips'
+  | 'recommended-content-row'
+  | 'recording'
+  | 'rhythmic-adventures-of-captain-carson'
+  | 'rhythms-from-another-planet'
+  | 'routine'
+  | 'rudiment'
+  | 'semester-pack'
+  | 'semester-pack-lesson'
+  | 'skill-pack'
+  | 'skill-pack-lesson'
+  | 'solo'
+  | 'song'
+  | 'song-part'
+  | 'song-tutorial'
+  | 'song-tutorial-children'
+  | 'sonor'
+  | 'special'
+  | 'spotlight'
+  | 'student-collaboration'
+  | 'student-focus'
+  | 'student-review'
+  | 'study-the-greats'
+  | 'tama'
+  | 'the-history-of-electronic-drums'
+  | 'theory'
+  | 'topic'
+  | 'unit'
+  | 'unit-part'
+  | 'workout'
