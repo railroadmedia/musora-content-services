@@ -524,7 +524,7 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted) {
 
 // we cannot simply pass LP id with self collection, because we do not have a-la-carte LP's set up yet,
 //   and we need each lesson to bubble to its parent outside of LP
-async function duplicateLearningPathProgressToExternalContents(ids, collection, hierarchy) {
+async function duplicateLearningPathProgressToExternalContents(ids, collection, hierarchy, { allowZero = false } = {}) {
   // filter out LPs. we dont want to duplicate to LP's while we dont have a-la-cart LP's set up.
   let filteredIds = Object.fromEntries(
     Object.entries(ids).filter((id) => {
@@ -537,9 +537,9 @@ async function duplicateLearningPathProgressToExternalContents(ids, collection, 
   // overwrite if LP progress greater, unless LP progress was reset to 0
   filteredIds = Object.entries(filteredIds).filter(([id, pct]) => {
     const extPct = extProgresses[id]?.progress
-    return (pct !== 0)
-      ? pct > extPct
-      : false
+    return (pct === 0)
+      ? allowZero
+      : pct > extPct
   })
 
   // each handles its own bubbling.
@@ -600,7 +600,7 @@ async function resetStatus(contentId, collection = null) {
 
   if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
     progresses[contentId] = progress
-    await duplicateLearningPathProgressToExternalContents(progresses, collection, hierarchy)
+    await duplicateLearningPathProgressToExternalContents(progresses, collection, hierarchy, { allowZero: true })
   }
 
   return response

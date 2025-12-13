@@ -146,7 +146,6 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       r.collection_type = collection?.type ?? COLLECTION_TYPE.SELF
       r.collection_id = collection?.id ?? COLLECTION_ID_SELF
 
-      r.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
       r.progress_percent = progressPct
 
       if (typeof resumeTime != 'undefined') {
@@ -193,7 +192,6 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
           r.collection_type = collection?.type ?? COLLECTION_TYPE.SELF
           r.collection_id = collection?.id ?? COLLECTION_ID_SELF
 
-          r.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
           r.progress_percent = progressPct
         },
       ])
