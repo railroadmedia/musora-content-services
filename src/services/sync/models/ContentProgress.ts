@@ -55,8 +55,13 @@ export default class ContentProgress extends BaseModel<{
   set state(value: STATE) {
     this._setRaw('state', value)
   }
+  // IMPORTANT: progress percent only moves forward and is clamped between 0 and 100
+  // also has implications for last-write-wins sync strategy
   set progress_percent(value: number) {
-    this._setRaw('progress_percent', Math.min(100, Math.max(0, value)))
+    const normalizedValue = Math.min(100, Math.max(0, value))
+    const percent = normalizedValue === 0 ? 0 : Math.max(normalizedValue, this.progress_percent)
+
+    this._setRaw('progress_percent', percent)
   }
   set collection_type(value: COLLECTION_TYPE) {
     this._setRaw('collection_type', value)
