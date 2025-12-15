@@ -25,16 +25,16 @@ interface RawPushResponse {
 export type SyncResponse = SyncPushResponse | SyncPullResponse
 export type SyncPushResponse = SyncPushSuccessResponse | SyncPushFetchFailureResponse | SyncPushFailureResponse
 
-export type SyncPushSuccessResponse = SyncResponseBase & {
+type SyncPushSuccessResponse = SyncResponseBase & {
   ok: true
   results: SyncStorePushResult[]
 }
-export type SyncPushFetchFailureResponse = SyncResponseBase & {
+type SyncPushFetchFailureResponse = SyncResponseBase & {
   ok: false,
   failureType: 'fetch'
   isRetryable: boolean
 }
-export type SyncPushFailureResponse = SyncResponseBase & {
+type SyncPushFailureResponse = SyncResponseBase & {
   ok: false,
   failureType: 'error'
   originalError: Error
@@ -71,7 +71,7 @@ type SyncPullSuccessResponse = SyncResponseBase & {
   token: SyncToken
   previousToken: SyncToken | null
 }
-type SyncPullFetchFailureResponse = SyncResponseBase & {
+export type SyncPullFetchFailureResponse = SyncResponseBase & {
   ok: false,
   failureType: 'fetch'
   isRetryable: boolean

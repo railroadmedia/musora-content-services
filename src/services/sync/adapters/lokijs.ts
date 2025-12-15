@@ -21,8 +21,8 @@ export function simulateIndexedDBQuotaExceeded() {
   indexedDB.open = function (...args) {
     const request = origOpen.apply(this, args)
     setTimeout(() => {
-      const err = new DOMException('Simulated quota exceeded', 'QuotaExceededError')
-      request.onerror?.({ target: { error: err } })
+      const err = new DOMException('Simulated quota exceeded', 'QuotaExceededError');
+      (request.onerror as any)?.({ target: { ...request, error: err } });
     }, 0)
     return request
   }
@@ -42,7 +42,7 @@ export function destroyDatabase(dbName: string, adapter: LokiJSAdapter): Promise
         await deleteDatabase(adapter._driver.loki)
         return resolve();
       } catch (err: unknown) {
-        SyncTelemetry.getInstance()?.capture(err)
+        SyncTelemetry.getInstance()?.capture(err as Error)
         return reject(err);
       }
     }

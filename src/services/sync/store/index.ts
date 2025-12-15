@@ -1,7 +1,7 @@
 import { Database, Q, type Collection, type RecordId } from '@nozbe/watermelondb'
 import { RawSerializer, ModelSerializer } from '../serializers'
 import { ModelClass, SyncToken, SyncEntry,  SyncContext, EpochMs } from '..'
-import { SyncPullResponse, SyncPushResponse, SyncPushFailureResponse, PushPayload, SyncStorePushResultSuccess, SyncStorePushResultFailure } from '../fetch'
+import { SyncPullResponse, SyncPushResponse, SyncPullFetchFailureResponse, PushPayload, SyncStorePushResultSuccess, SyncStorePushResultFailure } from '../fetch'
 import type SyncRetry from '../retry'
 import type SyncRunScope from '../run-scope'
 import EventEmitter from '../utils/event-emitter'
@@ -207,31 +207,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       await this.ensurePersistence()
 
       return this.modelSerializer.toPlainObject(record)
-    })
-  }
-
-  async upsertOneRemote(id: RecordId, builder: (record: TModel) => void, span?: Span) {
-    return await this.runScope.abortable(async () => {
-      let record: TModel
-      const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(r => r[0] || null)
-
-      if (existing) {
-        existing._isEditing = true
-        builder(existing)
-        existing._isEditing = false
-        record = existing
-      } else {
-        const attrs = new this.model(this.collection, { id })
-        attrs._isEditing = true
-        builder(attrs)
-        attrs._isEditing = false
-        record = this.collection.disposableFromDirtyRaw(attrs._raw)
-      }
-
-      return await this.pushCoalescer.push(
-        [record],
-        () => this.executePush([record], span)
-      )
     })
   }
 
@@ -500,9 +475,11 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
               const currentRecords = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(recordIds)))
               const recordsToPush = currentRecords.filter(r => r._raw.updated_at <= (updatedAtMap.get(r.id) || 0))
 
-              if (recordsToPush.length) {
-                return this.executePush(recordsToPush, span)
+              if (!recordsToPush.length) {
+                return { ok: true, results: [] }
               }
+
+              return this.executePush(recordsToPush, span)
             }
           )
         })
@@ -513,7 +490,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private async executePull(span?: Span) {
     if (!this.context.connectivity.getValue()) {
       this.telemetry.debug('[Retry] No connectivity - skipping')
-      return { ok: false } as SyncPushFailureResponse
+      return { ok: false, failureType: 'fetch', isRetryable: false } as SyncPullFetchFailureResponse
     }
 
     return this.telemetry.trace(

@@ -102,10 +102,6 @@ export default class SyncManager {
     ) as Record<string, SyncStoreConfig>
   }
 
-  storesForModels(models: ModelClass[]) {
-    return models.map((model) => this.storeConfigsRegistry[model.table])
-  }
-
   createStrategy<T extends SyncStrategy, U extends any[]>(
     strategyClass: new (context: SyncContext, ...args: U) => T,
     ...args: U
@@ -113,11 +109,11 @@ export default class SyncManager {
     return new strategyClass(this.context, ...args)
   }
 
-  syncStoresWithStrategies(models: ModelClass[], strategies: SyncStrategy[]) {
+  registerStrategies(models: ModelClass[], strategies: SyncStrategy[]) {
     this.strategyMap.push({ models, strategies })
   }
 
-  protectStores(models: ModelClass[], effects: SyncEffect[]) {
+  registerEffects(models: ModelClass[], effects: SyncEffect[]) {
     this.effectMap.push({ models, effects })
   }
 

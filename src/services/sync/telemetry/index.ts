@@ -81,8 +81,10 @@ export class SyncTelemetry {
     })
   }
 
-  capture(err: SyncError) {
-    err.markReported()
+  capture(err: Error, context = {}) {
+    const wrapped = err instanceof SyncError ? err : new SyncUnexpectedError((err as Error).message, context);
+
+    wrapped.markReported()
     this.Sentry.captureException(err, err instanceof SyncUnexpectedError ? {
       mechanism: {
         handled: false
