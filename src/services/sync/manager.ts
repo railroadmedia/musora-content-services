@@ -1,5 +1,6 @@
 import BaseModel from './models/Base'
 import { Database } from '@nozbe/watermelondb'
+import { DatabaseAdapter } from '@nozbe/watermelondb/adapters/type'
 import SyncRunScope from './run-scope'
 import { SyncStrategy } from './strategies'
 import { default as SyncStore, SyncStoreConfig } from './store'
@@ -10,12 +11,11 @@ import SyncContext from './context'
 import { SyncError } from './errors'
 import { SyncEffect } from './effects'
 import { SyncTelemetry } from './telemetry/index'
-import createStoresFromConfig from './store-configs'
+import createStoreConfigs from './store-configs'
 import { contentProgressObserver } from '../awards/internal/content-progress-observer'
 
 import { onProgressSaved, onContentCompleted } from '../progress-events'
 import { onContentCompletedLearningPathListener } from '../content-org/learning-paths'
-import { DatabaseAdapter } from './adapters/factory'
 
 export default class SyncManager {
   private static counter = 0
@@ -51,8 +51,8 @@ export default class SyncManager {
   private storesRegistry: Record<string, SyncStore<any>>
   private runScope: SyncRunScope
   private retry: SyncRetry
-  private strategyMap: { stores: SyncStore<any>[]; strategies: SyncStrategy[] }[]
-  private effectMap: { stores: SyncStore<any>[]; effects: SyncEffect[] }[]
+  private strategyMap: { models: ModelClass[]; strategies: SyncStrategy[] }[]
+  private effectMap: { models: ModelClass[]; effects: SyncEffect[] }[]
 
   private initDatabase: () => Database
   private destroyDatabase: (dbName: string, adapter: DatabaseAdapter) => void
@@ -66,7 +66,7 @@ export default class SyncManager {
     this.initDatabase = initDatabase
     this.destroyDatabase = destroyDatabase
 
-    this.storeConfigsRegistry = this.registerStores(createStoresFromConfig())
+    this.storeConfigsRegistry = this.registerStoreConfigs(createStoreConfigs())
     this.storesRegistry = {}
 
     this.runScope = new SyncRunScope()
@@ -83,11 +83,7 @@ export default class SyncManager {
     return this.id
   }
 
-  createStore<TModel extends BaseModel>(config: SyncStoreConfig<TModel>) {
-    return config
-  }
-
-  realCreateStore(config: SyncStoreConfig, database: Database) {
+  createStore(config: SyncStoreConfig, database: Database) {
     return new SyncStore(
       config,
       this.context,
@@ -98,7 +94,7 @@ export default class SyncManager {
     )
   }
 
-  registerStores(stores: SyncStoreConfig[]) {
+  registerStoreConfigs(stores: SyncStoreConfig[]) {
     return Object.fromEntries(
       stores.map((store) => {
         return [store.model.table, store]
@@ -117,12 +113,12 @@ export default class SyncManager {
     return new strategyClass(this.context, ...args)
   }
 
-  syncStoresWithStrategies(stores: SyncStore<any>[], strategies: SyncStrategy[]) {
-    this.strategyMap.push({ stores, strategies })
+  syncStoresWithStrategies(models: ModelClass[], strategies: SyncStrategy[]) {
+    this.strategyMap.push({ models, strategies })
   }
 
-  protectStores(stores: SyncStore<any>[], effects: SyncEffect[]) {
-    this.effectMap.push({ stores, effects })
+  protectStores(models: ModelClass[], effects: SyncEffect[]) {
+    this.effectMap.push({ models, effects })
   }
 
   setup() {
@@ -131,26 +127,26 @@ export default class SyncManager {
     const database = this.telemetry.trace({ name: 'db:init' }, this.initDatabase)
 
     Object.entries(this.storeConfigsRegistry).forEach(([table, storeConfig]) => {
-      this.storesRegistry[table] = this.realCreateStore(storeConfig, database)
+      this.storesRegistry[table] = this.createStore(storeConfig, database)
     })
 
     this.context.start()
     this.retry.start()
 
-    this.strategyMap.forEach(({ stores, strategies }) => {
+    this.strategyMap.forEach(({ models, strategies }) => {
       strategies.forEach((strategy) => {
-        stores.forEach((store) => {
-          const realStore = this.storesRegistry[store.model.table]
-          strategy.onTrigger(realStore, (reason) => {
-            realStore.requestSync(reason)
+        models.forEach((model) => {
+          const store = this.storesRegistry[model.table]
+          strategy.onTrigger(store, (reason) => {
+            store.requestSync(reason)
           })
         })
         strategy.start()
       })
     })
 
-    const safetyTeardowns = this.effectMap.flatMap(({ stores, effects }) => {
-      return effects.map((effect) => effect(this.context, stores.map(store => this.storesRegistry[store.model.table])))
+    const safetyTeardowns = this.effectMap.flatMap(({ models, effects }) => {
+      return effects.map((effect) => effect(this.context, models.map(model => this.storesRegistry[model.table])))
     });
 
     contentProgressObserver.start(database).catch((error) => {
