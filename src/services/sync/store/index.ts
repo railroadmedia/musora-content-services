@@ -29,7 +29,7 @@ type SyncPush = (
   signal: AbortSignal
 ) => Promise<SyncPushResponse>
 
-export type SyncStoreConfig<TModel extends BaseModel> = {
+export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
   model: ModelClass<TModel>
   comparator?: TModel extends BaseModel ? SyncResolverComparator<TModel> : SyncResolverComparator
   pull: SyncPull

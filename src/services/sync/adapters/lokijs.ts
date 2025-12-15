@@ -1,6 +1,3 @@
-// import Loki from 'lokijs'
-// import LokiIndexedAdapter from 'lokijs/src/loki-indexed-adapter'
-
 import { SyncTelemetry } from '../telemetry'
 
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
@@ -11,8 +8,8 @@ import { deleteDatabase } from '@nozbe/watermelondb/adapters/lokijs/worker/lokiE
 export function simulateIndexedDBUnavailable() {
   const idb = window.indexedDB;
   ['open', 'databases'].forEach(function (method) {
-    if (typeof idb[method] === 'function') {
-      idb[method] = function () {
+    if (typeof (idb as any)[method] === 'function') {
+      (idb as any)[method] = function () {
         throw new Error('Simulated unavailability of IndexedDB')
       }
     }
