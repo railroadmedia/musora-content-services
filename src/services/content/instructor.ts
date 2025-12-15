@@ -54,15 +54,8 @@ export async function fetchInstructors(
     .postFilter(postFilter)
     .build()
 
-  const total = query()
-    .and(type)
-    .select(`"lessonCount": ${lessonCount}`)
-    .postFilter(postFilter)
-    .build()
-
   const q = `{
     "data": ${data},
-    "total": count(${total})
   }`
 
   return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
@@ -144,14 +137,16 @@ export async function fetchInstructorLessons(
   sort = getSortOrder(sort, brand)
 
   const restrictions = await f.combineAsync(
-    f.contentFilter(),
-    f.referencesIDWithFilter(f.combine(f.type('instructor'), f.slug(slug)))
+    f.status(),
+    f.publishedDate(),
+    f.notDeprecated(),
+    f.referencesIDWithFilter(f.combine(f.type('instructor'), f.slug(slug))),
+    f.brand(brand),
+    f.searchMatch('title', searchTerm),
+    f.includedFields(includedFields)
   )
 
   const data = query()
-    .and(f.brand(brand))
-    .and(f.searchMatch('title', searchTerm))
-    .and(f.includedFields(includedFields))
     .and(restrictions)
     .order(sort)
     .slice(offset, limit)

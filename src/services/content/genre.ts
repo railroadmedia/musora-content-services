@@ -53,15 +53,8 @@ export async function fetchGenres(
     .postFilter(postFilter)
     .build()
 
-  const total = query()
-    .and(type)
-    .select(`"lessons_count": ${lessonCount}`)
-    .postFilter(postFilter)
-    .build()
-
   const q = `{
     "data": ${data},
-    "total": count(${total})
   }`
 
   return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
@@ -145,15 +138,17 @@ export async function fetchGenreLessons(
   sort = getSortOrder(sort, brand)
 
   const restrictions = await f.combineAsync(
-    f.contentFilter(),
-    f.referencesIDWithFilter(f.combine(f.type('genre'), f.slug(slug)))
+    f.status(),
+    f.publishedDate(),
+    f.notDeprecated(),
+    f.referencesIDWithFilter(f.combine(f.type('genre'), f.slug(slug))),
+    f.brand(brand),
+    f.searchMatch('title', searchTerm),
+    f.includedFields(includedFields),
+    f.progressIds(progressIds)
   )
 
   const data = query()
-    .and(f.brand(brand))
-    .and(f.searchMatch('title', searchTerm))
-    .and(f.includedFields(includedFields))
-    .and(f.progressIds(progressIds))
     .and(restrictions)
     .order(sort)
     .slice(offset, limit)
