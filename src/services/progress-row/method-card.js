@@ -43,14 +43,15 @@ export async function getMethodCard(brand) {
       progressTimestamp: timestamp,
     }
   } else {
-    //TODO: Optimize loading of dailySessions/Path, should not need multiple requests
     const learningPath = await fetchLearningPathLessons(
       activeLearningPath.active_learning_path_id,
       brand,
       getToday()
     )
 
-    // todo handle no LP returned
+    if (!learningPath) {
+      return null
+    }
 
     // need to calculate based on all dailies
     const allDailies = [
