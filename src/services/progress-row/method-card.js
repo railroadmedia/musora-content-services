@@ -55,9 +55,9 @@ export async function getMethodCard(brand) {
 
     // need to calculate based on all dailies
     const allDailies = [
-      ...learningPath.previous_learning_path_todays,
-      ...learningPath.todays_lessons,
-      ...learningPath.next_learning_path_lessons
+      ...learningPath.previous_learning_path_dailies,
+      ...learningPath.learning_path_dailies,
+      ...learningPath.next_learning_path_dailies
     ]
 
     let allDailiesCompleted = true;
@@ -83,7 +83,7 @@ export async function getMethodCard(brand) {
     // get the first incomplete lesson from upcoming and next learning path lessons
     const nextLesson = [
       ...learningPath?.upcoming_lessons,
-      ...learningPath?.next_learning_path_lessons,
+      ...learningPath?.next_learning_path_dailies,
     ]?.find((lesson) => lesson.progressStatus !== STATE.COMPLETED)
 
     let ctaText, action
