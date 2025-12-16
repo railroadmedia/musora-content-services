@@ -203,11 +203,11 @@ interface fetchLearningPathLessonsResponse {
   active_learning_path_id?: number
   active_learning_path_created_at?: string
   upcoming_lessons?: any[]
-  todays_lessons?: any[]
-  next_learning_path_lessons?: any[]
-  next_learning_path_id?: number
   completed_lessons?: any[]
-  previous_learning_path_todays?: any[]
+  learning_path_dailies?: any[]
+  next_learning_path_dailies?: any[]
+  next_learning_path_id?: number
+  previous_learning_path_dailies?: any[]
   previous_learning_path_id?: number
 }
 
@@ -225,11 +225,11 @@ interface fetchLearningPathLessonsResponse {
  * @returns {number} result.active_learning_path_id - The active learning path ID from daily session.
  * @returns {string} result.active_learning_path_created_at - The datetime the learning path was set as active.
  * @returns {Array} result.upcoming_lessons - Array of upcoming lessons.
- * @returns {Array} result.todays_lessons - Array of today's dailies in this learning path.
- * @returns {Array} result.next_learning_path_lessons - Array of today's dailies in the next learning path.
+ * @returns {Array} result.learning_path_dailies - Array of today's dailies in this learning path.
+ * @returns {Array} result.next_learning_path_dailies - Array of today's dailies in the next learning path.
  * @returns {number} result.next_learning_path_id - the next learning path (after the active path).
  * @returns {Array} result.completed_lessons - Array of completed lessons in this learning path.
- * @returns {Array} result.previous_learning_path_todays - Array of today's dailies in the previous learning path.
+ * @returns {Array} result.previous_learning_path_dailies - Array of today's dailies in the previous learning path.
  * @returns {number} result.previous_learning_path_id - the previous learning path (before the active path)
  */
 export async function fetchLearningPathLessons(
@@ -308,18 +308,17 @@ export async function fetchLearningPathLessons(
     })))
   }
 
-  // todo rename these to this/next/previous language
   return {
     ...learningPath,
     is_active_learning_path: isActiveLearningPath,
     active_learning_path_id: dailySession?.active_learning_path_id,
     active_learning_path_created_at: dailySession?.active_learning_path_created_at,
     upcoming_lessons: upcomingLessons,
-    todays_lessons: thisLPDailies,
-    next_learning_path_lessons: nextLPDailies,
-    next_learning_path_id: nextLearningPathId,
     completed_lessons: completedLessons,
-    previous_learning_path_todays: previousLPDailies,
+    learning_path_dailies: thisLPDailies,
+    next_learning_path_dailies: nextLPDailies,
+    next_learning_path_id: nextLearningPathId,
+    previous_learning_path_dailies: previousLPDailies,
     previous_learning_path_id: previousLearningPathId,
   }
 }
