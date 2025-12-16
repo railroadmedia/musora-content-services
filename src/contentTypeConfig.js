@@ -253,7 +253,7 @@ export const lessonTypesMapping = {
   'guided courses': ['guided-course'],
   'tiered courses': ['tiered-course'],
   'skill packs': ['skill-pack'],
-  specials: ['specials'],
+  specials: ['special'],
   shows: showsLessonTypes,
   collections: collectionLessonTypes,
   individuals: individualLessonsTypes,
