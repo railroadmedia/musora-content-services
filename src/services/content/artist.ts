@@ -12,7 +12,7 @@ export interface Artist {
   slug: string
   name: string
   thumbnail: string
-  lessonCount: number
+  lesson_count: number
 }
 
 export interface Artists {
@@ -33,35 +33,27 @@ export interface Artists {
  */
 export async function fetchArtists(
   brand: Brands | string,
-  options: BuildQueryOptions = { sort: 'lower(name) asc' }
+  options: BuildQueryOptions
 ): Promise<Artists> {
-  const lessonFilter = f.combine(f.brand(brand), f.referencesParent())
   const type = f.type('artist')
-  const lessonCount = `count(*[${lessonFilter}])`
-  const postFilter = `lessonCount > 0`
+  const postFilter = `lesson_count > 0`
+  const { sort = 'lower(name)', offset = 0, limit = 20 } = options
 
   const data = query()
     .and(type)
-    .order(options?.sort || 'lower(name) asc')
-    .slice(options?.offset || 0, options?.limit || 20)
+    .order(getSortOrder(sort, brand))
+    .slice(offset, limit)
     .select(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessonCount": ${lessonCount}`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
-    .postFilter(postFilter)
-    .build()
-
-  const total = query()
-    .and(type)
-    .select(`"lessonCount": ${lessonCount}`)
     .postFilter(postFilter)
     .build()
 
   const q = `{
     "data": ${data},
-    "total": count(${total})
   }`
 
   return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
@@ -83,8 +75,6 @@ export async function fetchArtistBySlug(
   slug: string,
   brand?: Brands | string
 ): Promise<Artist | null> {
-  const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
-
   const q = query()
     .and(f.type('artist'))
     .and(f.slug(slug))
@@ -92,7 +82,7 @@ export async function fetchArtistBySlug(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessonCount": count(*[${filter}])`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .first()
     .build()
@@ -146,15 +136,17 @@ export async function fetchArtistLessons(
   sort = getSortOrder(sort, brand)
 
   const restrictions = await f.combineAsync(
-    f.contentFilter(),
-    f.referencesIDWithFilter(f.combine(f.type('artist'), f.slug(slug)))
+    f.status(),
+    f.publishedDate(),
+    f.notDeprecated(),
+    f.referencesIDWithFilter(f.combine(f.type('artist'), f.slug(slug))),
+    f.brand(brand),
+    f.searchMatch('title', searchTerm),
+    f.includedFields(includedFields),
+    f.progressIds(progressIds)
   )
 
   const data = query()
-    .and(f.brand(brand))
-    .and(f.searchMatch('title', searchTerm))
-    .and(f.includedFields(includedFields))
-    .and(f.progressIds(progressIds))
     .and(restrictions)
     .order(sort)
     .slice(offset, limit)
@@ -168,5 +160,5 @@ export async function fetchArtistLessons(
     "total": count(${total})
   }`
 
-  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
+  return fetchSanity(q, true, { processNeedAccess: true, processPageType: false })
 }
