@@ -136,9 +136,7 @@ export async function getContentAwards(contentId) {
         instructorName: def.instructor_name,
         progressPercentage: userProgress?.progress_percentage ?? 0,
         isCompleted: userProgress ? UserAwardProgressRepository.isCompleted(userProgress) : false,
-        completedAt: userProgress?.completed_at
-          ? new Date(userProgress.completed_at).toISOString()
-          : null,
+        completedAt: userProgress?.completed_at,
         completionData
       }
     })
@@ -226,11 +224,13 @@ export async function getContentAwards(contentId) {
  */
 export async function getCompletedAwards(brand = null, options = {}) {
   try {
-    const allProgress = await db.userAwardProgress.getAll()
+    const allProgress = await db.userAwardProgress.getCompleted()
 
     const completed = allProgress.data.filter(p =>
       p.progress_percentage === 100 && p.completed_at !== null
     )
+    console.log("allProgress", allProgress)
+    console.log("completed", completed)
     let awards = await Promise.all(
       completed.map(async (progress) => {
         const definition = await awardDefinitions.getById(progress.award_id)
@@ -242,7 +242,7 @@ export async function getCompletedAwards(brand = null, options = {}) {
           return null
         }
         const completionData = definition.type === awardDefinitions.CONTENT_AWARD ? enhanceCompletionData(progress.completion_data) : progress.completion_data;
-        const hasCertificate = definition.type === awardDefinitions.CONTENT_AWARD
+        const hasCertificate = definition.brand === 'drumeo' || definition.type === awardDefinitions.CONTENT_AWARD
         return {
           awardId: progress.award_id,
           awardTitle: definition.name,
@@ -266,6 +266,7 @@ export async function getCompletedAwards(brand = null, options = {}) {
       const offset = options.offset || 0
       awards = awards.slice(offset, offset + options.limit)
     }
+    console.log("awards", awards)
 
     return awards
   } catch (error) {

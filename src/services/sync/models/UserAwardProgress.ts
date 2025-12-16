@@ -5,7 +5,7 @@ import type { CompletionData } from '../../awards/types'
 export default class UserAwardProgress extends BaseModel<{
   award_id: string
   progress_percentage: number
-  completed_at: number | null
+  completed_at: string | null
   progress_data: string | null
   completion_data: string | null
 }> {
@@ -20,7 +20,7 @@ export default class UserAwardProgress extends BaseModel<{
   }
 
   get completed_at() {
-    return this._getRaw('completed_at') as number | null
+    return this._getRaw('completed_at') as string | null
   }
 
   get progress_data() {
@@ -41,7 +41,7 @@ export default class UserAwardProgress extends BaseModel<{
     this._setRaw('progress_percentage', value)
   }
 
-  set completed_at(value: number | null) {
+  set completed_at(value: string | null) {
     this._setRaw('completed_at', value)
   }
 
