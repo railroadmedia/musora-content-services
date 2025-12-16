@@ -16,7 +16,7 @@ export interface Artist {
   slug: string
   name: string
   thumbnail: string
-  lessonCount: number
+  lesson_count: number
 }
 
 export interface Artists extends SanityListResponse<Artist> {}
@@ -36,20 +36,19 @@ export async function fetchArtists(
   brand: Brand,
   options: BuildQueryOptions = { sort: 'lower(name) asc' }
 ): Promise<Artists> {
-  const lessonFilter = f.combine(f.brand(brand), f.referencesParent())
   const type = f.type('artist')
-  const lessonCount = `count(*[${lessonFilter}])`
-  const postFilter = `lessonCount > 0`
+  const postFilter = `lesson_count > 0`
+  const { sort = 'lower(name)', offset = 0, limit = 20 } = options
 
   const data = query()
     .and(type)
-    .order(getSortOrder(options?.sort || 'lower(name) asc', brand))
-    .slice(options?.offset || 0, options?.limit || 20)
+    .order(getSortOrder(sort, brand))
+    .slice(offset, limit)
     .select(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessonCount": ${lessonCount}`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .postFilter(postFilter)
     .build()
@@ -74,8 +73,6 @@ export async function fetchArtists(
  *   .catch(error => console.error(error));
  */
 export async function fetchArtistBySlug(slug: string, brand?: Brand): Promise<Artist | null> {
-  const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
-
   const q = query()
     .and(f.type('artist'))
     .and(f.slug(slug))
@@ -83,7 +80,7 @@ export async function fetchArtistBySlug(slug: string, brand?: Brand): Promise<Ar
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessonCount": count(*[${filter}])`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .first()
     .build()

@@ -1,6 +1,7 @@
 import { filtersToGroq } from '../../contentTypeConfig'
 import { getPermissionsAdapter } from '../../services/permissions/index'
 import type { UserPermissions } from '../../services/permissions/PermissionsAdapter'
+import { Brand } from '../brands'
 import { DocumentType } from '../documents'
 import { filterOps } from './query'
 
@@ -454,6 +455,18 @@ export class Filters {
 
   static progressIds(progressIds: number[]): string {
     return progressIds.length > 0 ? Filters.idIn(progressIds) : Filters.empty
+  }
+
+  static async lessonCount(brand?: Brand): Promise<string> {
+    return Filters.count(
+      await Filters.combineAsync(
+        Filters.status(),
+        Filters.publishedDate(),
+        Filters.notDeprecated(),
+        Filters.referencesParent(),
+        brand ? Filters.brand(brand) : Filters.empty
+      )
+    )
   }
 }
 

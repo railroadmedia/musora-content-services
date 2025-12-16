@@ -14,7 +14,7 @@ import { Lesson } from './content'
 const contentClient = new SanityClient()
 
 export interface Instructor {
-  lessonCount: number
+  lesson_count: number
   slug: string
   name: string
   short_bio?: string
@@ -39,19 +39,18 @@ export async function fetchInstructors(
   options: BuildQueryOptions
 ): Promise<Instructors> {
   const type = f.type('instructor')
-  const lesson = f.combine(f.brand(brand), f.referencesParent())
-  const lessonCount = `count(*[${lesson}])`
-  const postFilter = `lessonCount > 0`
+  const postFilter = `lesson_count > 0`
+  const { sort = 'lower(name)', offset = 0, limit = 20 } = options
 
   const data = query()
     .and(type)
-    .order(getSortOrder(options?.sort || 'lower(name) asc', brand))
-    .slice(options?.offset || 0, options?.limit || 20)
+    .order(getSortOrder(sort, brand))
+    .slice(offset, limit)
     .select(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessonCount": ${lessonCount}`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .postFilter(postFilter)
     .build()
@@ -79,8 +78,6 @@ export async function fetchInstructorBySlug(
   slug: string,
   brand?: Brand
 ): Promise<Instructor | null> {
-  const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
-
   const q = query()
     .and(f.type('instructor'))
     .and(f.slug(slug))
@@ -89,7 +86,7 @@ export async function fetchInstructorBySlug(
       `"slug": slug.current`,
       'short_bio',
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessonCount": count(*[${filter}])`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .first()
     .build()
