@@ -400,6 +400,7 @@ import {
 } from './services/user/profile.js';
 
 import {
+	getAuthKey,
 	login,
 	loginWithAuthKey,
 	logout
@@ -584,6 +585,7 @@ export {
 	getAllCompletedByIds,
 	getAllStarted,
 	getAllStartedOrCompleted,
+	getAuthKey,
 	getAwardStatistics,
 	getCompletedAwards,
 	getContentAwards,
