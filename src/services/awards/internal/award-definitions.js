@@ -9,6 +9,9 @@
 const STORAGE_KEY = 'musora_award_definitions_last_fetch'
 
 class AwardDefinitionsService {
+
+  CONTENT_AWARD = 'content-award'
+  EXP_AWARD  = 'exp-award'
   constructor() {
     /** @type {AwardDefinitionsMap} */
     this.definitions = new Map()
@@ -90,7 +93,7 @@ class AwardDefinitionsService {
         bypassPermissions: true,
       }).buildFilter()
 
-      const query = `*[_type == 'content-award'] {
+      const query = `*[_type in ['content-award', 'exp-award']] {
         _id,
         is_active,
         name,
@@ -107,7 +110,7 @@ class AwardDefinitionsService {
         'child_ids': content->child[${childFilter}]->railcontent_id,
       }`
 
-      const awards = await fetchSanity(query, true, { processNeedAccess: false })
+      const awards = await fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 
       this.definitions.clear()
       this.contentIndex.clear()

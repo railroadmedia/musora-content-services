@@ -37,9 +37,10 @@
  * @typedef {Object} AwardInfo
  * @property {string} awardId - Unique Sanity award ID
  * @property {string} awardTitle - Display name of the award
+ * @property {boolean} hasCertificate - award includes a downloadable certificate
  * @property {string} badge - URL to badge image
  * @property {string} award - URL to award image
- * @property {string} brand - Brand (drumeo, pianote, guitareo, singeo)
+ * @property {string} brand - Brand (drumeo, pianote, guitareo, singeo, playbass)
  * @property {string} instructorName - Name of the instructor
  * @property {number} progressPercentage - Completion percentage (0-100). Progress is tracked per collection context for learning paths.
  * @property {boolean} isCompleted - Whether the award is fully completed

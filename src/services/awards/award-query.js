@@ -231,11 +231,9 @@ export async function getCompletedAwards(brand = null, options = {}) {
     const completed = allProgress.data.filter(p =>
       p.progress_percentage === 100 && p.completed_at !== null
     )
-
     let awards = await Promise.all(
       completed.map(async (progress) => {
         const definition = await awardDefinitions.getById(progress.award_id)
-
         if (!definition) {
           return null
         }
@@ -243,24 +241,23 @@ export async function getCompletedAwards(brand = null, options = {}) {
         if (brand && definition.brand !== brand) {
           return null
         }
-
-        const completionData = enhanceCompletionData(progress.completion_data)
-
+        const completionData = definition.type === awardDefinitions.CONTENT_AWARD ? enhanceCompletionData(progress.completion_data) : progress.completion_data;
+        const hasCertificate = definition.type === awardDefinitions.CONTENT_AWARD
         return {
           awardId: progress.award_id,
           awardTitle: definition.name,
           badge: definition.badge,
           award: definition.award,
           brand: definition.brand,
+          hasCertificate: hasCertificate,
           instructorName: definition.instructor_name,
           progressPercentage: progress.progress_percentage,
           isCompleted: true,
-          completedAt: new Date(progress.completed_at * 1000).toISOString(),
+          completedAt: progress.completed_at,
           completionData
         }
       })
     )
-
     awards = awards.filter(award => award !== null)
 
     awards.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
