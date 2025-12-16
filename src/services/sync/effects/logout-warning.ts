@@ -16,6 +16,10 @@ const createLogoutWarningEffect = (notifyCallback: (fullySynced: boolean) => voi
     const recordCounts = new Map<SyncStore, number>()
     const subscriptions: Subscription[] = []
 
+    const notifyFromAll = () => {
+      notifyCallback(Array.from(recordCounts.values()).reduce((a, b) => a + b, 0) === 0)
+    }
+
     stores.forEach((store) => {
       recordCounts.set(store, 0)
       const sub = store.collection
@@ -27,10 +31,6 @@ const createLogoutWarningEffect = (notifyCallback: (fullySynced: boolean) => voi
         })
       subscriptions.push(sub)
     })
-
-    const notifyFromAll = () => {
-      notifyCallback(Array.from(recordCounts.values()).reduce((a, b) => a + b, 0) === 0)
-    }
 
     return () => {
       subscriptions.forEach((sub) => sub.unsubscribe())
