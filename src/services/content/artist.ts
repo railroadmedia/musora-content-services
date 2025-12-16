@@ -2,15 +2,15 @@
  * @module Artist
  */
 import { getFieldsForContentType } from '../../contentTypeConfig.js'
-import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
+import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 import { Brand } from '../../lib/brands'
 import { DocumentType } from '../../lib/documents'
+import { Filters as f } from '../../lib/sanity/filter'
 import { BuildQueryOptions, getSortOrder, query } from '../../lib/sanity/query'
 import { Lesson } from './content'
-import { Filters as f } from '../../lib/sanity/filter'
 
-const contentClient = new ContentClient()
+const contentClient = new SanityClient()
 
 export interface Artist {
   slug: string

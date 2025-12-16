@@ -2,16 +2,16 @@
  * @module Instructor
  */
 
-import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
 import { getFieldsForContentType } from '../../contentTypeConfig.js'
-import { getSortOrder } from '../sanity.js'
-import { Lesson } from './content'
-import { BuildQueryOptions, query } from '../../lib/sanity/query'
+import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
+import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 import { Brand } from '../../lib/brands'
 import { Filters as f } from '../../lib/sanity/filter'
-import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
+import { BuildQueryOptions, query } from '../../lib/sanity/query'
+import { getSortOrder } from '../sanity.js'
+import { Lesson } from './content'
 
-const contentClient = new ContentClient()
+const contentClient = new SanityClient()
 
 export interface Instructor {
   lessonCount: number
