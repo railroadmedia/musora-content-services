@@ -22,6 +22,7 @@ let progressUpdateCallback = null
  * - `name` - Display name of the award
  * - `badge` - URL to badge image
  * - `completed_at` - ISO timestamp
+ * - `isCompleted` - Boolean indicating the award is completed (always true for granted awards)
  * - `completion_data.message` - Pre-generated congratulations message
  * - `completion_data.practice_minutes` - Total practice time
  * - `completion_data.days_user_practiced` - Days spent practicing
@@ -72,13 +73,14 @@ export function registerAwardCallback(callback) {
       name: definition.name,
       badge: definition.badge,
       completed_at: completionData.completed_at,
-      completion_data: {
+      isCompleted: true,
+      completionData: {
         completed_at: completionData.completed_at,
         days_user_practiced: completionData.days_user_practiced,
         message: popupMessage,
         practice_minutes: completionData.practice_minutes,
-        content_title: completionData.content_title
-      }
+        content_title: completionData.content_title,
+      },
     }
 
     callback(award)
@@ -148,7 +150,7 @@ export function registerProgressCallback(callback) {
   progressUpdateCallback = (payload) => {
     callback({
       awardId: payload.awardId,
-      progressPercentage: payload.progressPercentage
+      progressPercentage: payload.progressPercentage,
     })
   }
 

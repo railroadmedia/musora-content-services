@@ -380,12 +380,14 @@ interface completeLearningPathIntroVideo {
   intro_video_response: SyncWriteDTO<ContentProgress, any> | null
   learning_path_reset_response: SyncWriteDTO<ContentProgress, any> | null
   lesson_import_response: SyncWriteDTO<ContentProgress, any> | null
+  update_dailies_response: DailySessionResponse | null
 }
 /**
  * Handles completion of learning path intro video and other related actions.
  * @param introVideoId - The learning path intro video content ID.
  * @param learningPathId - The content_id of the learning path that this learning path intro video belongs to.
  * @param lessonsToImport - content ids for all lessons with progress found during intro video progress check. empty if user chose not to keep learning path progress.
+ * @param brand
  * @returns {Promise<Array>} response - The response object.
  * @returns {Promise<Object|null>} response.intro_video_response - The intro video completion response or null if already completed.
  * @returns {Promise<void>} response.learning_path_reset_response - The reset learning path response.
@@ -394,7 +396,8 @@ interface completeLearningPathIntroVideo {
 export async function completeLearningPathIntroVideo(
   introVideoId: number,
   learningPathId: number,
-  lessonsToImport: number[] | null
+  lessonsToImport: number[] | null,
+  brand: string | null
 ) {
   let response = {} as completeLearningPathIntroVideo
 
@@ -407,6 +410,15 @@ export async function completeLearningPathIntroVideo(
 
   } else {
     response.lesson_import_response = await contentStatusCompletedMany(lessonsToImport, collection)
+
+    const activePath = await getActivePath(brand)
+    if (activePath.active_learning_path_id === learningPathId) {
+      response.update_dailies_response = await updateDailySession(
+        brand,
+        getToday(),
+        true
+      )
+    }
   }
 
   return response
