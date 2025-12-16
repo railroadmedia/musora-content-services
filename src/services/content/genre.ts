@@ -35,9 +35,7 @@ export async function fetchGenres(
   brand: Brands | string,
   options: BuildQueryOptions
 ): Promise<Genres> {
-  const lesson = f.combine(f.brand(brand), f.referencesParent())
   const type = f.type('genre')
-  const lessonCount = `count(*[${lesson}])`
   const postFilter = `lesson_count > 0`
   const { sort = 'lower(name)', offset = 0, limit = 20 } = options
 
@@ -49,7 +47,7 @@ export async function fetchGenres(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lesson_count": ${lessonCount}`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .postFilter(postFilter)
     .build()
@@ -77,8 +75,6 @@ export async function fetchGenreBySlug(
   slug: string,
   brand?: Brands | string
 ): Promise<Genre | null> {
-  const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
-
   const q = query()
     .and(f.type('genre'))
     .and(f.slug(slug))
@@ -86,7 +82,7 @@ export async function fetchGenreBySlug(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lesson_count": count(*[${filter}])`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .first()
     .build()

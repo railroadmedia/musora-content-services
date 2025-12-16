@@ -37,8 +37,6 @@ export async function fetchInstructors(
   options: BuildQueryOptions
 ): Promise<Instructors> {
   const type = f.type('instructor')
-  const lesson = f.combine(f.brand(brand), f.referencesParent())
-  const lessonCount = `count(*[${lesson}])`
   const postFilter = `lesson_count > 0`
   const { sort = 'lower(name)', offset = 0, limit = 20 } = options
 
@@ -50,7 +48,7 @@ export async function fetchInstructors(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lesson_count": ${lessonCount}`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .postFilter(postFilter)
     .build()
@@ -78,8 +76,6 @@ export async function fetchInstructorBySlug(
   slug: string,
   brand?: Brands | string
 ): Promise<Instructor | null> {
-  const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
-
   const q = query()
     .and(f.type('instructor'))
     .and(f.slug(slug))
@@ -88,7 +84,7 @@ export async function fetchInstructorBySlug(
       `"slug": slug.current`,
       'short_bio',
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lesson_count": count(*[${filter}])`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .first()
     .build()

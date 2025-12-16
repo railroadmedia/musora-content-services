@@ -35,9 +35,7 @@ export async function fetchArtists(
   brand: Brands | string,
   options: BuildQueryOptions
 ): Promise<Artists> {
-  const lessonFilter = f.combine(f.brand(brand), f.referencesParent())
   const type = f.type('artist')
-  const lessonCount = `count(*[${lessonFilter}])`
   const postFilter = `lesson_count > 0`
   const { sort = 'lower(name)', offset = 0, limit = 20 } = options
 
@@ -49,7 +47,7 @@ export async function fetchArtists(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lesson_count": ${lessonCount}`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .postFilter(postFilter)
     .build()
@@ -77,8 +75,6 @@ export async function fetchArtistBySlug(
   slug: string,
   brand?: Brands | string
 ): Promise<Artist | null> {
-  const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
-
   const q = query()
     .and(f.type('artist'))
     .and(f.slug(slug))
@@ -86,7 +82,7 @@ export async function fetchArtistBySlug(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lesson_count": count(*[${filter}])`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .first()
     .build()
