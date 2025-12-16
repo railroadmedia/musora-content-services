@@ -12,7 +12,7 @@ export interface Artist {
   slug: string
   name: string
   thumbnail: string
-  lessonCount: number
+  lesson_count: number
 }
 
 export interface Artists {
@@ -33,22 +33,23 @@ export interface Artists {
  */
 export async function fetchArtists(
   brand: Brands | string,
-  options: BuildQueryOptions = { sort: 'lower(name) asc' }
+  options: BuildQueryOptions
 ): Promise<Artists> {
   const lessonFilter = f.combine(f.brand(brand), f.referencesParent())
   const type = f.type('artist')
   const lessonCount = `count(*[${lessonFilter}])`
-  const postFilter = `lessonCount > 0`
+  const postFilter = `lesson_count > 0`
+  const { sort = 'lower(name)', offset = 0, limit = 20 } = options
 
   const data = query()
     .and(type)
-    .order(options?.sort || 'lower(name) asc')
-    .slice(options?.offset || 0, options?.limit || 20)
+    .order(getSortOrder(sort, brand))
+    .slice(offset, limit)
     .select(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessonCount": ${lessonCount}`
+      `"lesson_count": ${lessonCount}`
     )
     .postFilter(postFilter)
     .build()
@@ -85,7 +86,7 @@ export async function fetchArtistBySlug(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessonCount": count(*[${filter}])`
+      `"lesson_count": count(*[${filter}])`
     )
     .first()
     .build()

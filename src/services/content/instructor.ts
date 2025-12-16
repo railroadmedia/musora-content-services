@@ -9,7 +9,7 @@ import { Brands } from '../../lib/brands'
 import { Filters as f } from '../../lib/sanity/filter'
 
 export interface Instructor {
-  lessonCount: number
+  lesson_count: number
   slug: string
   name: string
   short_bio: string
@@ -39,17 +39,18 @@ export async function fetchInstructors(
   const type = f.type('instructor')
   const lesson = f.combine(f.brand(brand), f.referencesParent())
   const lessonCount = `count(*[${lesson}])`
-  const postFilter = `lessonCount > 0`
+  const postFilter = `lesson_count > 0`
+  const { sort = 'lower(name)', offset = 0, limit = 20 } = options
 
   const data = query()
     .and(type)
-    .order(options?.sort || 'lower(name) asc')
-    .slice(options?.offset || 0, options?.limit || 20)
+    .order(getSortOrder(sort, brand))
+    .slice(offset, limit)
     .select(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessonCount": ${lessonCount}`
+      `"lesson_count": ${lessonCount}`
     )
     .postFilter(postFilter)
     .build()
@@ -87,7 +88,7 @@ export async function fetchInstructorBySlug(
       `"slug": slug.current`,
       'short_bio',
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessonCount": count(*[${filter}])`
+      `"lesson_count": count(*[${filter}])`
     )
     .first()
     .build()

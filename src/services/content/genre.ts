@@ -11,8 +11,8 @@ import { Filters as f } from '../../lib/sanity/filter'
 export interface Genre {
   name: string
   slug: string
-  lessons_count: number
   thumbnail: string
+  lesson_count: number
 }
 
 export interface Genres {
@@ -33,22 +33,23 @@ export interface Genres {
  */
 export async function fetchGenres(
   brand: Brands | string,
-  options: BuildQueryOptions = { sort: 'lower(name) asc' }
+  options: BuildQueryOptions
 ): Promise<Genres> {
   const lesson = f.combine(f.brand(brand), f.referencesParent())
   const type = f.type('genre')
   const lessonCount = `count(*[${lesson}])`
-  const postFilter = `lessonCount > 0`
+  const postFilter = `lesson_count > 0`
+  const { sort = 'lower(name)', offset = 0, limit = 20 } = options
 
   const data = query()
     .and(type)
-    .order(options?.sort || 'lower(name) asc')
-    .slice(options?.offset || 0, options?.limit || 20)
+    .order(getSortOrder(sort, brand))
+    .slice(offset, limit)
     .select(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessons_count": ${lessonCount}`
+      `"lesson_count": ${lessonCount}`
     )
     .postFilter(postFilter)
     .build()
@@ -85,7 +86,7 @@ export async function fetchGenreBySlug(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessons_count": count(*[${filter}])`
+      `"lesson_count": count(*[${filter}])`
     )
     .first()
     .build()
