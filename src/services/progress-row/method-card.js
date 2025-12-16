@@ -60,18 +60,25 @@ export async function getMethodCard(brand) {
       ...learningPath.next_learning_path_lessons
     ]
 
-    const allDailiesCompleted = allDailies.every(
-      (lesson) => lesson.progressStatus === STATE.COMPLETED
-    )
-    const anyDailiesCompleted = allDailies.some(
-      (lesson) => lesson.progressStatus === STATE.COMPLETED
-    )
-    const noDailiesCompleted = allDailies.every(
-      (lesson) => lesson.progressStatus !== STATE.COMPLETED
-    )
-    const nextIncompleteDaily = allDailies.find(
-      (lesson) => lesson.progressStatus !== STATE.COMPLETED
-    )
+    let allDailiesCompleted = true;
+    let anyDailiesCompleted = false;
+    let noDailiesCompleted = true;
+    let nextIncompleteDaily = null;
+
+    for (const lesson of allDailies) {
+      if (lesson.progressStatus === STATE.COMPLETED) {
+        anyDailiesCompleted = true;
+        noDailiesCompleted = false;
+      } else {
+        allDailiesCompleted = false;
+        if (!nextIncompleteDaily) {
+          nextIncompleteDaily = lesson;
+        }
+      }
+      if (!allDailiesCompleted && anyDailiesCompleted && nextIncompleteDaily) {
+        break;
+      }
+    }
 
     // get the first incomplete lesson from upcoming and next learning path lessons
     const nextLesson = [
