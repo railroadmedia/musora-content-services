@@ -8,7 +8,8 @@ import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 import { Brand } from '../../lib/brands'
 import { Filters as f } from '../../lib/sanity/filter'
 import { BuildQueryOptions, query } from '../../lib/sanity/query'
-import { getSortOrder } from '../sanity.js'
+import { getPermissionsAdapter } from '../permissions/PermissionsAdapterFactory.js'
+import { getSortOrder, needsAccessDecorator } from '../sanity.js'
 import { Lesson } from './content'
 
 const contentClient = new SanityClient()
@@ -159,9 +160,14 @@ export async function fetchInstructorLessons(
     "total": count(${total})
   }`
 
-  return contentClient.fetchList<Lesson>(q, {
-    sort,
-    offset,
-    limit,
-  })
+  const [res, permissions] = await Promise.all([
+    contentClient.fetchList<Lesson>(q, {
+      sort,
+      offset,
+      limit,
+    }),
+    getPermissionsAdapter().fetchUserPermissions(),
+  ])
+
+  return needsAccessDecorator(res, permissions)
 }
