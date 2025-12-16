@@ -163,5 +163,5 @@ export async function fetchArtistLessons(
     "total": count(${total})
   }`
 
-  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
+  return fetchSanity(q, true, { processNeedAccess: true, processPageType: false })
 }

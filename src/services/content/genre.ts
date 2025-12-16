@@ -162,5 +162,5 @@ export async function fetchGenreLessons(
     "total": count(${total})
   }`
 
-  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
+  return fetchSanity(q, true, { processNeedAccess: true, processPageType: false })
 }
