@@ -1066,23 +1066,6 @@ export async function fetchNextPreviousLesson(railcontentId) {
   return await fetchSanity(query, true)
 }
 
-/**
- * Fetch the next piece of content under a parent by Railcontent ID
- * @param {int} railcontentId - The Railcontent ID of the parent content
- * @returns {Promise<{next: (Object|null)}|null>} - object with 'next' attribute
- * @example
- * jumpToContinueContent(296693)
- *  then.(data => { console.log('next', data.next);})
- *  .catch(error => console.error(error));
- */
-export async function jumpToContinueContent(railcontentId) {
-  const nextContent = await fetchNextContentDataForParent(railcontentId)
-  if (!nextContent || !nextContent.id) {
-    return null
-  }
-  let next = await fetchByRailContentId(nextContent.id, nextContent.type)
-  return { next }
-}
 
 /**
  * Fetch the page data for a specific lesson by Railcontent ID.
