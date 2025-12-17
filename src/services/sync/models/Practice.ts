@@ -1,5 +1,13 @@
 import { SYNC_TABLES } from '../schema'
 import BaseModel from './Base'
+import {
+  throwIfMaxLengthExceeded,
+  throwIfNotBoolean,
+  throwIfNotNullableNumber,
+  throwIfNotNullableString,
+  throwIfNotNumber,
+  throwIfNotString, throwIfOutsideRange,
+} from '../errors/validators'
 
 export default class Practice extends BaseModel<{
   manual_id: string | null
@@ -43,30 +51,44 @@ export default class Practice extends BaseModel<{
   }
 
   set manual_id(value: string | null) {
-    this._setRaw('manual_id', value)
+    // char(26)
+    throwIfNotNullableString(value)
+    this._setRaw('manual_id', value !== null ? throwIfMaxLengthExceeded(value, 26) : value)
   }
   set content_id(value: number | null) {
-    this._setRaw('content_id', value)
+    // int unsigned
+    throwIfNotNullableNumber(value)
+    this._setRaw('content_id', value !== null ? throwIfOutsideRange(value, 0) : value)
   }
   set date(value: string) {
-    this._setRaw('date', value)
+    this._setRaw('date', throwIfNotString(value))
   }
   set auto(value: boolean) {
-    this._setRaw('auto', value)
+    // tinyint(1)
+    this._setRaw('auto', throwIfNotBoolean(value))
   }
   set duration_seconds(value: number) {
-    this._setRaw('duration_seconds', value)
+    throwIfNotNumber(value)
+    this._setRaw('duration_seconds', throwIfOutsideRange(value, 0, 59999))
   }
   set title(value: string | null) {
-    this._setRaw('title', value)
+    // varchar(64)
+    throwIfNotNullableString(value)
+    this._setRaw('title', value !== null ? throwIfMaxLengthExceeded(value, 64) : value)
   }
   set thumbnail_url(value: string | null) {
-    this._setRaw('thumbnail_url', value)
+    // varchar(255)
+    throwIfNotNullableString(value)
+    this._setRaw('thumbnail_url', value !== null ? throwIfMaxLengthExceeded(value, 255) : value)
   }
   set category_id(value: number | null) {
-    this._setRaw('category_id', value)
+    // tinyint unsigned
+    throwIfNotNullableNumber(value)
+    this._setRaw('category_id', value !== null ? throwIfOutsideRange(value, 0, 255) : value)
   }
   set instrument_id(value: number | null) {
-    this._setRaw('instrument_id', value)
+    // tinyint unsigned
+    throwIfNotNullableNumber(value)
+    this._setRaw('instrument_id', value !== null ? throwIfOutsideRange(value, 0, 255) : value)
   }
 }

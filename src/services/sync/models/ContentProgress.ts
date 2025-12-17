@@ -1,5 +1,12 @@
 import BaseModel from './Base'
 import { SYNC_TABLES } from '../schema'
+import {
+  throwIfInvalidEnumValue, throwIfMaxLengthExceeded,
+  throwIfNotNullableNumber,
+  throwIfNotNumber,
+  throwIfNotString,
+  throwIfOutsideRange,
+} from '../errors/validators'
 
 export enum COLLECTION_TYPE {
   SELF = 'self',
@@ -16,6 +23,7 @@ export enum STATE {
 
 export default class ContentProgress extends BaseModel<{
   content_id: number
+  content_brand: string
   collection_type: COLLECTION_TYPE
   collection_id: number
   state: STATE
@@ -47,25 +55,35 @@ export default class ContentProgress extends BaseModel<{
   }
 
   set content_id(value: number) {
-    this._setRaw('content_id', value)
+    // unsigned int
+    throwIfNotNumber(value)
+    this._setRaw('content_id', throwIfOutsideRange(value, 0))
   }
   set content_brand(value: string) {
-    this._setRaw('content_brand', value)
+    this._setRaw('content_brand', throwIfNotString(value))
   }
   set state(value: STATE) {
-    this._setRaw('state', value)
+    // enum state
+    this._setRaw('state', throwIfInvalidEnumValue(value, STATE))
   }
   set progress_percent(value: number) {
-    this._setRaw('progress_percent', Math.min(100, Math.max(0, value)))
+    // tinyint unsigned
+    throwIfNotNumber(value)
+    this._setRaw('progress_percent', throwIfOutsideRange(value, 0, 100))
   }
   set collection_type(value: COLLECTION_TYPE) {
-    this._setRaw('collection_type', value)
+    // enum collection_type
+    this._setRaw('collection_type', throwIfInvalidEnumValue(value, COLLECTION_TYPE))
   }
   set collection_id(value: number) {
-    this._setRaw('collection_id', value)
+    // unsigned mediumint 16777215
+    throwIfNotNumber(value)
+    this._setRaw('collection_id', throwIfOutsideRange(value, 0, 16777215))
   }
   set resume_time_seconds(value: number | null) {
-    this._setRaw('resume_time_seconds', value !== null ? Math.max(0, value) : null)
+    // smallint unsigned
+    throwIfNotNullableNumber(value)
+    this._setRaw('resume_time_seconds', value !== null ? throwIfOutsideRange(value, 0, 65535) : value)
   }
 
 }
