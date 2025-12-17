@@ -5,7 +5,7 @@ import {
   getResumeTimeSecondsByIds,
 } from './contentProgress'
 import { isContentLikedByIds } from './contentLikes'
-import { fetchLastInteractedChild, fetchLikeCount } from './railcontent'
+import { fetchLikeCount } from './railcontent'
 
 /**
  * Combine sanity data with BE contextual data.
@@ -70,7 +70,6 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     addProgressStatus = false,
     addProgressTimestamp = false,
     addResumeTimeSeconds = false,
-    addLastInteractedChild = false,
     addNavigateTo = false,
   } = options
 
@@ -96,7 +95,6 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
       ? getProgressDataByIds(ids, collection) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(ids, collection) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids, collection) : Promise.resolve(null),
-    addLastInteractedChild ? fetchLastInteractedChild(ids, collection) : Promise.resolve(null),
     addNavigateTo ? getNavigateTo(items, collection) : Promise.resolve(null),
   ])
 
@@ -108,7 +106,6 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     ...(addIsLiked ? { isLiked: isLikedData?.[item.id] } : {}),
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
-    ...(addLastInteractedChild ? { lastInteractedChild: lastInteractedChildData?.[item.id] } : {}),
     ...(addNavigateTo ? { navigateTo: navigateToData?.[item.id] } : {}),
   })
 

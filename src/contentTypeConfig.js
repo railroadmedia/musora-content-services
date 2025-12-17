@@ -216,7 +216,6 @@ export const showsLessonTypes = [
   'odd-times',
   'podcast',
   'spotlight',
-  'study-the-greats',
   'performance',
 ]
 export const entertainmentLessonTypes = [
@@ -720,12 +719,11 @@ export function getNewReleasesTypes(brand) {
 export function getUpcomingEventsTypes(brand) {
   const baseLiveTypes = [
     'student-review',
-    'student-review',
     'student-focus',
     'coach-stream',
     'live',
     'question-and-answer',
-    'boot-camps',
+    'boot-camp',
     'quick-tips',
     'recording',
     'pack-bundle-lesson',
@@ -737,9 +735,9 @@ export function getUpcomingEventsTypes(brand) {
         'spotlight',
         'student-collaborations',
         'live',
-        'podcasts',
-        'gear-guides',
-        'performances',
+        'podcast',
+        'gear-guide',
+        'performance',
         'study-the-greats',
       ]
     case 'guitareo':
