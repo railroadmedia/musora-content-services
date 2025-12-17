@@ -1,11 +1,15 @@
 import {
   getNavigateTo,
+  getNavigateToForMethod,
   getProgressDataByIds,
+  getProgressDataByIdsAndCollections,
   getProgressStateByIds,
   getResumeTimeSecondsByIds,
+  getResumeTimeSecondsByIdsAndCollections,
 } from './contentProgress'
 import { isContentLikedByIds } from './contentLikes'
 import { fetchLikeCount } from './railcontent'
+import {COLLECTION_TYPE} from "./sync/models/ContentProgress";
 
 /**
  * Combine sanity data with BE contextual data.
@@ -54,12 +58,11 @@ import { fetchLikeCount } from './railcontent'
  *
  */
 
-// need to add method support.
-// this means returning collection_type and collection_id
 export async function addContextToContent(dataPromise, ...dataArgs) {
   const lastArg = dataArgs[dataArgs.length - 1]
   const options = typeof lastArg === 'object' && !Array.isArray(lastArg) ? lastArg : {}
 
+  // todo: merge addProgressData with addResumeTimeSeconds to one watermelon call
   const {
     collection = null, // this is needed for different collection types like learning paths. has .id and .type
     dataField = null,
@@ -108,6 +111,121 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
     ...(addNavigateTo ? { navigateTo: navigateToData?.[item.id] } : {}),
   })
+
+  return await processItems(data, addContext, dataField, isDataAnArray, dataField_includeParent)
+}
+
+/**
+ * Enriches method content (learning paths) with contextual data.
+ *
+ * Key behaviors:
+ * 1. Enriches all learning paths in a method structure
+ * 2. Auto-sets collection for learning-path-v2 items when no collection specified
+ * 3. Enriches intro videos when dataField_includeIntroVideo is true
+ *
+ * @param dataPromise - promise or method that provides sanity data
+ * @param dataArgs - Arguments to pass to the dataPromise
+ * @param options - Same as addContextToContent, plus:
+ * @param options.dataField_includeIntroVideo - If true, adds progress to intro_video field where it exists
+ *
+ * @returns {Promise<Object | false>} - Enriched data or false if no data found
+ *
+ * @example
+ * // Enrich method structure with all learning paths
+ * const method = await addContextToMethodContent(fetchMethodV2Structure, brand, {
+ *   dataField: 'learningPaths',
+ *   dataField_includeIntroVideo: true,
+ *   addProgressStatus: true,
+ *   addProgressPercentage: true,
+ * })
+ *
+ * @example
+ * // Enrich single learning path with intro video
+ * const lp = await addContextToMethodContent(fetchByRailContentId, lpId, 'learning-path-v2', {
+ *   collection: { id: lpId, type: 'learning-path-v2' },
+ *   dataField: 'children',
+ *   dataField_includeParent: true,
+ *   dataField_includeIntroVideo: true,
+ *   addProgressStatus: true,
+ * })
+ */
+export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
+  const lastArg = dataArgs[dataArgs.length - 1]
+  const options = typeof lastArg === 'object' && !Array.isArray(lastArg) ? lastArg : {}
+
+  // todo: merge addProgressData with addResumeTimeSeconds to one watermelon call
+  const {
+    dataField = null,
+    dataField_includeParent = false,
+    dataField_includeIntroVideo = false,
+    addProgressPercentage = false,
+    addProgressStatus = false,
+    addProgressTimestamp = false,
+    addIsLiked = false,
+    addLikeCount = false,
+    addResumeTimeSeconds = false,
+    addNavigateTo = false,
+  } = options
+
+  const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
+
+  let data = await dataPromise(...dataParam)
+  const isDataAnArray = Array.isArray(data)
+  if (isDataAnArray && data.length === 0) return data
+  if (!data) return false
+
+  let items = extractItemsWithCollectionFromMethodData(data, dataField, isDataAnArray, dataField_includeParent, dataField_includeIntroVideo) ?? []
+  if (items.length === 0) return data
+
+  let ids = items.map((item) => (
+    {
+      contentId: item.content?.id,
+      collection: item.collection
+    })
+  ).filter(obj => obj.contentId)
+
+  const justIds = ids.map(obj => obj.contentId)
+
+  const [
+    progressData,
+    isLikedData,
+    resumeTimeData,
+    navigateToData,
+  ] = await Promise.all([
+    addProgressPercentage || addProgressStatus || addProgressTimestamp
+      ? getProgressDataByIdsAndCollections(ids) : Promise.resolve(null),
+    addIsLiked ? isContentLikedByIds(justIds) : Promise.resolve(null),
+    addResumeTimeSeconds ? getResumeTimeSecondsByIdsAndCollections(ids) : Promise.resolve(null),
+    addNavigateTo ? getNavigateToForMethod(items) : Promise.resolve(null),
+  ])
+
+  const addContext = async (item) => {
+    const itemId = item.id || 0
+    const enrichedItem = {
+      ...item,
+      ...(addProgressPercentage ? { progressPercentage: progressData?.[itemId]?.progress } : {}),
+      ...(addProgressStatus ? { progressStatus: progressData?.[itemId]?.status } : {}),
+      ...(addProgressTimestamp ? { progressTimestamp: progressData?.[itemId]?.last_update } : {}),
+      ...(addIsLiked ? { isLiked: isLikedData?.[itemId] } : {}),
+      ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(itemId) } : {}),
+      ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[itemId] } : {}),
+      ...(addNavigateTo ? { navigateTo: navigateToData?.[itemId] } : {}),
+    }
+
+    // Enrich intro_video if it exists and flag is set
+    if (dataField_includeIntroVideo && item?.intro_video?.id) {
+      enrichedItem.intro_video = {
+        ...item.intro_video,
+        ...(addProgressPercentage ? { progressPercentage: progressData?.[item.intro_video.id]?.progress } : {}),
+        ...(addProgressStatus ? { progressStatus: progressData?.[item.intro_video.id]?.status } : {}),
+        ...(addProgressTimestamp ? { progressTimestamp: progressData?.[item.intro_video.id]?.last_update } : {}),
+        ...(addIsLiked ? { isLiked: isLikedData?.[item.intro_video.id] } : {}),
+        ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.intro_video.id] } : {}),
+      }
+    }
+
+    return enrichedItem
+  }
 
   return await processItems(data, addContext, dataField, isDataAnArray, dataField_includeParent)
 }
@@ -186,6 +304,47 @@ function extractItemsFromData(data, dataField, isParentArray, includeParent) {
     items = [data]
   }
   return items
+}
+
+function extractItemsWithCollectionFromMethodData(data, dataField, isDataAnArray, includeParent, includeIntroVideo) {
+  let items = [] // array of tuples {}
+
+  const extractLearningPathItems = (item) => {
+    if (item.type === COLLECTION_TYPE.LEARNING_PATH) {
+      const c = {type: COLLECTION_TYPE.LEARNING_PATH, id: item.id}
+
+      if (!dataField || (dataField && includeParent)) {
+        items.push(...getDataTuple([item], c))
+      }
+      if (includeIntroVideo) {
+        items.push(...getDataTuple([item.intro_video], null))
+      }
+      if (dataField) {
+        items.push(...getDataTuple(item[dataField], c))
+      }
+    } else { // is a lesson id, cant determine which collection it belongs to
+      // do not add it as we cant determine collection
+      // items.push(...getDataTuple([data], collection))
+    }
+  }
+
+  if (isDataAnArray) {
+    for (const item of data) {
+      extractLearningPathItems(item)
+    }
+  } else {
+    extractLearningPathItems(data)
+  }
+  return items
+
+  function getDataTuple(data, collection) {
+    const tuples = []
+    for (const item of data) {
+      const coll = collection || null
+      tuples.push({content: item, collection: coll})
+    }
+    return tuples
+  }
 }
 
 async function processItems(data, addContext, dataField, isParentArray, includeParent) {

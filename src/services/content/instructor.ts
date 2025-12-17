@@ -1,45 +1,63 @@
 /**
  * @module Instructor
  */
-import { FilterBuilder } from '../../filterBuilder.js'
-import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
+import { getFieldsForContentType } from '../../contentTypeConfig.js'
 import { fetchSanity, getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
-import { buildDataAndTotalQuery } from '../../lib/sanity/query'
+import { BuildQueryOptions, query } from '../../lib/sanity/query'
 import { Brands } from '../../lib/brands'
+import { Filters as f } from '../../lib/sanity/filter'
 
 export interface Instructor {
-  lessonCount: number
+  lesson_count: number
   slug: string
   name: string
   short_bio: string
   thumbnail: string
 }
 
+export interface Instructors {
+  data: Instructor[]
+  total: number
+}
+
 /**
  * Fetch all instructor with lessons available for a specific brand.
  *
  * @param {Brands|string} brand - The brand for which to fetch instructors.
- * @returns {Promise<Instructor[]>} - A promise that resolves to an array of instructor objects.
+ * @returns {Promise<Instructors>} - A promise that resolves to an array of instructor objects.
  *
  * @example
  * fetchInstructors('drumeo')
  *   .then(instructors => console.log(instructors))
  *   .catch(error => console.error(error));
  */
-export async function fetchInstructors(brand: Brands | string): Promise<Instructor[]> {
-  const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
-    bypassPermissions: true,
-  }).buildFilter()
+export async function fetchInstructors(
+  brand: Brands | string,
+  options: BuildQueryOptions
+): Promise<Instructors> {
+  const type = f.type('instructor')
+  const postFilter = `lesson_count > 0`
+  const { sort = 'lower(name)', offset = 0, limit = 20 } = options
 
-  const query = `
-  *[_type == "instructor"] {
-    name,
-    "slug": slug.current,
-    'thumbnail': thumbnail_url.asset->url,
-    "lessonCount": count(*[${filter}])
-  }[lessonCount > 0] |order(lower(name)) `
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+  const data = query()
+    .and(type)
+    .order(getSortOrder(sort, brand))
+    .slice(offset, limit)
+    .select(
+      'name',
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lesson_count": ${await f.lessonCount(brand)}`
+    )
+    .postFilter(postFilter)
+    .build()
+
+  const q = `{
+    "data": ${data},
+  }`
+
+  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }
 
 /**
@@ -47,7 +65,7 @@ export async function fetchInstructors(brand: Brands | string): Promise<Instruct
  *
  * @param {string} slug - The slug of the instructor to fetch.
  * @param {Brands|string} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Instructor[]>} - A promise that resolves to an instructor object or null if not found.
+ * @returns {Promise<Instructor | null>} - A promise that resolves to an instructor object or null if not found.
  *
  * @example
  * fetchInstructorBySlug('66samus', 'drumeo')
@@ -58,31 +76,28 @@ export async function fetchInstructorBySlug(
   slug: string,
   brand?: Brands | string
 ): Promise<Instructor | null> {
-  const brandFilter = brand ? `brand == "${brand}" && ` : ''
-  const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
-    bypassPermissions: true,
-  }).buildFilter()
+  const q = query()
+    .and(f.type('instructor'))
+    .and(f.slug(slug))
+    .select(
+      'name',
+      `"slug": slug.current`,
+      'short_bio',
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lesson_count": ${await f.lessonCount(brand)}`
+    )
+    .first()
+    .build()
 
-  const query = `
-  *[_type == "instructor" && slug.current == '${slug}'][0] {
-    name,
-    "slug": slug.current,
-    short_bio,
-    'thumbnail': thumbnail_url.asset->url,
-    "lessonCount": count(*[${filter}])
-  }`
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }
 
-export interface FetchInstructorLessonsOptions {
-  sortOrder?: string
+export interface InstructorLessonsOptions extends BuildQueryOptions {
   searchTerm?: string
-  page?: number
-  limit?: number
   includedFields?: Array<string>
 }
 
-export interface InstructorLessonsResponse {
+export interface InstructorLessons {
   data: Lesson[]
   total: number
 }
@@ -99,7 +114,7 @@ export interface InstructorLessonsResponse {
  * @param {number} [options.limit=10] - The number of items per page.
  * @param {Array<string>} [options.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  *
- * @returns {Promise<InstructorLessonsResponse>} - The lessons for the instructor or null if not found.
+ * @returns {Promise<InstructorLessons>} - The lessons for the instructor or null if not found.
  * @example
  * fetchInstructorLessons('instructor123')
  *   .then(lessons => console.log(lessons))
@@ -109,26 +124,38 @@ export async function fetchInstructorLessons(
   slug: string,
   brand: Brands | string,
   {
-    sortOrder = '-published_on',
+    sort = '-published_on',
     searchTerm = '',
-    page = 1,
+    offset = 0,
     limit = 20,
     includedFields = [],
-  }: FetchInstructorLessonsOptions = {}
-): Promise<InstructorLessonsResponse> {
-  const fieldsString = getFieldsForContentType() as string
-  const start = (page - 1) * limit
-  const end = start + limit
-  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
-  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
-  const filter = `brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='instructor' && slug.current == '${slug}']._id)`
-  const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
+  }: InstructorLessonsOptions = {}
+): Promise<InstructorLessons> {
+  sort = getSortOrder(sort, brand)
 
-  sortOrder = getSortOrder(sortOrder, brand)
-  const query = buildDataAndTotalQuery(filterWithRestrictions, fieldsString, {
-    sort: sortOrder,
-    start: start,
-    end: end,
-  })
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+  const restrictions = await f.combineAsync(
+    f.status(),
+    f.publishedDate(),
+    f.notDeprecated(),
+    f.referencesIDWithFilter(f.combine(f.type('instructor'), f.slug(slug))),
+    f.brand(brand),
+    f.searchMatch('title', searchTerm),
+    f.includedFields(includedFields)
+  )
+
+  const data = query()
+    .and(restrictions)
+    .order(sort)
+    .slice(offset, limit)
+    .select(getFieldsForContentType() as string)
+    .build()
+
+  const total = query().and(restrictions).build()
+
+  const q = `{
+    "data": ${data},
+    "total": count(${total})
+  }`
+
+  return fetchSanity(q, true, { processNeedAccess: true, processPageType: false })
 }

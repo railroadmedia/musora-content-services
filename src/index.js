@@ -13,7 +13,8 @@ import {
 	getAwardStatistics,
 	getCompletedAwards,
 	getContentAwards,
-	getInProgressAwards
+	getInProgressAwards,
+	resetAllAwards
 } from './services/awards/award-query.js';
 
 import {
@@ -54,8 +55,10 @@ import {
 	getActivePath,
 	getDailySession,
 	getEnrichedLearningPath,
+	getEnrichedLearningPaths,
 	getLearningPathLessonsByIds,
 	mapContentToParent,
+	onContentCompletedLearningPathListener,
 	resetAllLearningPaths,
 	startLearningPath,
 	updateDailySession
@@ -93,6 +96,7 @@ import {
 
 import {
 	addContextToContent,
+	addContextToLearningPaths,
 	getNavigateToForPlaylists
 } from './services/contentAggregator.js';
 
@@ -105,19 +109,22 @@ import {
 
 import {
 	contentStatusCompleted,
+	contentStatusCompletedMany,
 	contentStatusReset,
 	contentStatusStarted,
-	contentsStatusCompleted,
 	getAllCompleted,
 	getAllCompletedByIds,
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getLastInteractedOf,
 	getNavigateTo,
+	getNavigateToForMethod,
 	getProgressDataByIds,
+	getProgressDataByIdsAndCollections,
 	getProgressState,
 	getProgressStateByIds,
 	getResumeTimeSecondsByIds,
+	getResumeTimeSecondsByIdsAndCollections,
 	getStartedOrCompletedProgressOnly,
 	recordWatchSession
 } from './services/contentProgress.js';
@@ -197,7 +204,9 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	emitContentCompleted,
 	emitProgressSaved,
+	onContentCompleted,
 	onProgressSaved
 } from './services/progress-events.js';
 
@@ -258,7 +267,6 @@ import {
 	fetchComingSoon,
 	fetchCommentModContentData,
 	fetchContentRows,
-	fetchFoundation,
 	fetchHierarchy,
 	fetchLearningPathHierarchy,
 	fetchLeaving,
@@ -266,15 +274,10 @@ import {
 	fetchLessonsFeaturingThisContent,
 	fetchLiveEvent,
 	fetchMetadata,
-	fetchMethod,
-	fetchMethodChildren,
-	fetchMethodChildrenIds,
-	fetchMethodPreviousNextLesson,
 	fetchMethodV2IntroVideo,
 	fetchMethodV2Structure,
 	fetchMethodV2StructureFromId,
 	fetchNewReleases,
-	fetchNextPreviousLesson,
 	fetchOtherSongVersions,
 	fetchOwnedContent,
 	fetchPackAll,
@@ -297,7 +300,8 @@ import {
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	getSanityDate,
-	getSortOrder
+	getSortOrder,
+	jumpToContinueContent
 } from './services/sanity.js';
 
 import {
@@ -344,6 +348,7 @@ import {
 import {
 	fetchMemberships,
 	fetchRechargeTokens,
+	getUpgradePrice,
 	restorePurchases,
 	upgradeSubscription
 } from './services/user/memberships.ts';
@@ -385,7 +390,9 @@ import {
 } from './services/user/profile.js';
 
 import {
+	getAuthKey,
 	login,
+	loginWithAuthKey,
 	logout
 } from './services/user/sessions.js';
 
@@ -417,6 +424,7 @@ import {
 
 export {
 	addContextToContent,
+	addContextToLearningPaths,
 	addItemToPlaylist,
 	applyCloudflareWrapper,
 	applySanityTransformations,
@@ -431,9 +439,9 @@ export {
 	completeMethodIntroVideo,
 	confirmEmailChange,
 	contentStatusCompleted,
+	contentStatusCompletedMany,
 	contentStatusReset,
 	contentStatusStarted,
-	contentsStatusCompleted,
 	convertToTimeZone,
 	createComment,
 	createForumCategory,
@@ -456,6 +464,7 @@ export {
 	deleteUserActivity,
 	duplicatePlaylist,
 	editComment,
+	emitContentCompleted,
 	emitProgressSaved,
 	enrollUserInGuidedCourse,
 	extractSanityUrl,
@@ -483,7 +492,6 @@ export {
 	fetchEnrollmentPageMetadata,
 	fetchFollowedThreads,
 	fetchForumCategories,
-	fetchFoundation,
 	fetchGenreBySlug,
 	fetchGenreLessons,
 	fetchGenres,
@@ -505,15 +513,10 @@ export {
 	fetchLiveEventPollingState,
 	fetchMemberships,
 	fetchMetadata,
-	fetchMethod,
-	fetchMethodChildren,
-	fetchMethodChildrenIds,
-	fetchMethodPreviousNextLesson,
 	fetchMethodV2IntroVideo,
 	fetchMethodV2Structure,
 	fetchMethodV2StructureFromId,
 	fetchNewReleases,
-	fetchNextPreviousLesson,
 	fetchNotificationSettings,
 	fetchNotifications,
 	fetchOtherSongVersions,
@@ -562,12 +565,14 @@ export {
 	getAllCompletedByIds,
 	getAllStarted,
 	getAllStartedOrCompleted,
+	getAuthKey,
 	getAwardStatistics,
 	getCompletedAwards,
 	getContentAwards,
 	getContentRows,
 	getDailySession,
 	getEnrichedLearningPath,
+	getEnrichedLearningPaths,
 	getInProgressAwards,
 	getLastInteractedOf,
 	getLearningPathLessonsByIds,
@@ -576,6 +581,7 @@ export {
 	getMethodCard,
 	getMonday,
 	getNavigateTo,
+	getNavigateToForMethod,
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
 	getOnboardingRecommendedContent,
@@ -583,6 +589,7 @@ export {
 	getPracticeNotes,
 	getPracticeSessions,
 	getProgressDataByIds,
+	getProgressDataByIdsAndCollections,
 	getProgressRows,
 	getProgressState,
 	getProgressStateByIds,
@@ -591,6 +598,7 @@ export {
 	getRecommendedForYou,
 	getReportIssueOptions,
 	getResumeTimeSecondsByIds,
+	getResumeTimeSecondsByIdsAndCollections,
 	getSanityDate,
 	getScheduleContentRows,
 	getSortOrder,
@@ -598,6 +606,7 @@ export {
 	getTabResults,
 	getTimeRemainingUntilLocal,
 	getToday,
+	getUpgradePrice,
 	getUserData,
 	getUserMonthlyStats,
 	getUserSignature,
@@ -612,6 +621,7 @@ export {
 	isNextDay,
 	isSameDate,
 	isUsernameAvailable,
+	jumpToContinueContent,
 	jumpToPost,
 	likeComment,
 	likeContent,
@@ -619,6 +629,7 @@ export {
 	likePost,
 	lockThread,
 	login,
+	loginWithAuthKey,
 	logout,
 	mapContentToParent,
 	markAllNotificationsAsRead,
@@ -628,6 +639,8 @@ export {
 	markNotificationAsUnread,
 	markThreadAsRead,
 	numberOfActiveUsers,
+	onContentCompleted,
+	onContentCompletedLearningPathListener,
 	onProgressSaved,
 	openComment,
 	otherStats,
@@ -652,6 +665,7 @@ export {
 	reportPlaylist,
 	requestEmailChange,
 	reset,
+	resetAllAwards,
 	resetAllLearningPaths,
 	resetPassword,
 	restoreComment,

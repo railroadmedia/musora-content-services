@@ -800,7 +800,7 @@ export function getChildFieldsForContentType(contentType, asQueryString = true) 
 export function getFieldsForContentType(contentType, asQueryString = true) {
   const fields = contentType
     ? DEFAULT_FIELDS.concat(contentTypeConfig?.[contentType]?.fields ?? [])
-    : DEFAULT_FIELDS
+    : DEFAULT_FIELDS.slice() // ensure copy, not original reference
   return asQueryString ? fields.toString() + ',' : fields
 }
 

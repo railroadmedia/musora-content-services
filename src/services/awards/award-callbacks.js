@@ -12,27 +12,51 @@ let progressUpdateCallback = null
  * @param {AwardCallbackFunction} callback - Function called with award data when an award is earned
  * @returns {UnregisterFunction} Cleanup function to unregister this callback
  *
- * @example // Display award notification
- * const cleanup = registerAwardCallback((award) => {
- *   showNotification({
- *     title: award.name,
- *     message: award.completion_data.message,
- *     image: award.badge
- *   })
- * })
+ * @description
+ * Registers a callback to be notified when the user earns a new award. Only one
+ * callback can be registered at a time - registering a new one replaces the previous.
+ * Always call the returned cleanup function when your component unmounts.
  *
- * // Later, when component unmounts:
- * cleanup()
+ * The callback receives an award object with:
+ * - `awardId` - Unique Sanity award ID
+ * - `name` - Display name of the award
+ * - `badge` - URL to badge image
+ * - `completed_at` - ISO timestamp
+ * - `isCompleted` - Boolean indicating the award is completed (always true for granted awards)
+ * - `completion_data.message` - Pre-generated congratulations message
+ * - `completion_data.practice_minutes` - Total practice time
+ * - `completion_data.days_user_practiced` - Days spent practicing
+ * - `completion_data.content_title` - Title of completed content
  *
- * @example // Track award analytics
- * registerAwardCallback((award) => {
- *   analytics.track('Award Earned', {
- *     awardId: award.awardId,
- *     awardName: award.name,
- *     practiceMinutes: award.completion_data.practice_minutes,
- *     completedAt: award.completed_at
+ * @example // React Native - Show award celebration modal
+ * function useAwardNotification() {
+ *   const [award, setAward] = useState(null)
+ *
+ *   useEffect(() => {
+ *     return registerAwardCallback((awardData) => {
+ *       setAward({
+ *         title: awardData.name,
+ *         badge: awardData.badge,
+ *         message: awardData.completion_data.message,
+ *         practiceMinutes: awardData.completion_data.practice_minutes
+ *       })
+ *     })
+ *   }, [])
+ *
+ *   return { award, dismissAward: () => setAward(null) }
+ * }
+ *
+ * @example // Track award in analytics
+ * useEffect(() => {
+ *   return registerAwardCallback((award) => {
+ *     analytics.track('Award Earned', {
+ *       awardId: award.awardId,
+ *       awardName: award.name,
+ *       practiceMinutes: award.completion_data.practice_minutes,
+ *       contentTitle: award.completion_data.content_title
+ *     })
  *   })
- * })
+ * }, [])
  */
 export function registerAwardCallback(callback) {
   if (typeof callback !== 'function') {
@@ -49,13 +73,14 @@ export function registerAwardCallback(callback) {
       name: definition.name,
       badge: definition.badge,
       completed_at: completionData.completed_at,
-      completion_data: {
+      isCompleted: true,
+      completionData: {
         completed_at: completionData.completed_at,
         days_user_practiced: completionData.days_user_practiced,
         message: popupMessage,
         practice_minutes: completionData.practice_minutes,
-        content_title: completionData.content_title
-      }
+        content_title: completionData.content_title,
+      },
     }
 
     callback(award)
@@ -77,25 +102,41 @@ function unregisterAwardCallback() {
  * @param {ProgressCallbackFunction} callback - Function called with progress data when award progress changes
  * @returns {UnregisterFunction} Cleanup function to unregister this callback
  *
- * @example // Update progress bar
- * const cleanup = registerProgressCallback(({ awardId, progressPercentage }) => {
- *   const progressBar = document.getElementById(`award-${awardId}`)
- *   if (progressBar) {
- *     progressBar.style.width = `${progressPercentage}%`
- *     progressBar.textContent = `${progressPercentage}% Complete`
- *   }
- * })
+ * @description
+ * Registers a callback to be notified when award progress changes (but award is not
+ * yet complete). Only one callback can be registered at a time. Use this to update
+ * progress bars or show "almost there" encouragement.
  *
- * // Cleanup on unmount
- * return () => cleanup()
+ * The callback receives:
+ * - `awardId` - Unique Sanity award ID
+ * - `progressPercentage` - Current completion percentage (0-99)
  *
- * @example // React state update
+ * Note: When an award reaches 100%, `registerAwardCallback` fires instead.
+ *
+ * @example // React Native - Update progress in learning path screen
+ * function LearningPathScreen({ learningPathId }) {
+ *   const [awardProgress, setAwardProgress] = useState({})
+ *
+ *   useEffect(() => {
+ *     return registerProgressCallback(({ awardId, progressPercentage }) => {
+ *       setAwardProgress(prev => ({
+ *         ...prev,
+ *         [awardId]: progressPercentage
+ *       }))
+ *     })
+ *   }, [])
+ *
+ *   // Use awardProgress to update UI
+ * }
+ *
+ * @example // Show encouragement toast at milestones
  * useEffect(() => {
  *   return registerProgressCallback(({ awardId, progressPercentage }) => {
- *     setAwardProgress(prev => ({
- *       ...prev,
- *       [awardId]: progressPercentage
- *     }))
+ *     if (progressPercentage === 50) {
+ *       showToast('Halfway to your award!')
+ *     } else if (progressPercentage >= 90) {
+ *       showToast('Almost there! Just a few more lessons.')
+ *     }
  *   })
  * }, [])
  */
@@ -109,7 +150,7 @@ export function registerProgressCallback(callback) {
   progressUpdateCallback = (payload) => {
     callback({
       awardId: payload.awardId,
-      progressPercentage: payload.progressPercentage
+      progressPercentage: payload.progressPercentage,
     })
   }
 

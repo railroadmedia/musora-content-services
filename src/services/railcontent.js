@@ -375,3 +375,15 @@ export async function fetchHandler(url, method = 'get', dataVersion = null, body
     body
   )
 }
+  export async function fetchResponseHandler(url, method = 'get', {dataVersion = null, body = null, fullResponse = true, logError = true}) {
+    return fetchJSONHandler(
+      url,
+      globalConfig.sessionConfig.token,
+      globalConfig.baseUrl,
+      method,
+      dataVersion,
+      body,
+      fullResponse,
+      logError,
+    )
+}

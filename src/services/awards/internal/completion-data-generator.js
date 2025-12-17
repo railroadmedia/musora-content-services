@@ -3,28 +3,19 @@
  */
 
 
-import { Q } from '@nozbe/watermelondb'
-
 /**
- * @param {string} awardId
- * @param {number} courseContentId
+ * @param {import('./types').AwardDefinition} award
+ * @param {{ type: string; id: number } | null} collection
  * @returns {Promise<import('./types').CompletionData>}
  */
-export async function generateCompletionData(awardId, courseContentId) {
-  const { awardDefinitions } = await import('./award-definitions')
+export async function generateCompletionData(award, collection = null) {
   const db = await import('../../sync/repository-proxy')
 
-  const awardDef = await awardDefinitions.getById(awardId)
+  const childIds = award.child_ids || []
 
-  if (!awardDef) {
-    throw new Error(`Award definition not found: ${awardId}`)
-  }
-
-  const childIds = awardDef.child_ids || []
-
-  const daysUserPracticed = await calculateDaysUserPracticed(childIds, db.default)
+  const daysUserPracticed = await calculateDaysUserPracticed(childIds, db.default, collection)
   const practiceMinutes = await calculatePracticeMinutes(childIds, db.default)
-  const contentTitle = awardDef.content_title || generateContentTitle(awardDef.name)
+  const contentTitle = award.content_title || generateContentTitle(award.name)
 
   return {
     content_title: contentTitle,
@@ -37,24 +28,24 @@ export async function generateCompletionData(awardId, courseContentId) {
 /**
  * @param {number[]} contentIds
  * @param {any} db
+ * @param {{ type: string; id: number } | null} collection
  * @returns {Promise<number>}
  */
-async function calculateDaysUserPracticed(contentIds, db) {
+async function calculateDaysUserPracticed(contentIds, db, collection = null) {
   if (contentIds.length === 0) return 0
 
-  if (!db.contentProgress || typeof db.contentProgress.queryAll !== 'function') {
+  if (!db.contentProgress || typeof db.contentProgress.getSomeProgressByContentIds !== 'function') {
     console.warn('contentProgress repository not available, returning 1 day')
     return 1
   }
 
-  const progressRecords = await db.contentProgress.queryAll(
-    Q.where('content_id', Q.oneOf(contentIds)),
-    Q.sortBy('created_at', Q.asc)
-  )
+  const progressResult = await db.contentProgress.getSomeProgressByContentIds(contentIds, collection)
+  const progressRecords = progressResult.data || []
 
-  if (progressRecords.data.length === 0) return 0
+  if (progressRecords.length === 0) return 0
 
-  const earliestRecord = progressRecords.data[0]
+  const sortedRecords = [...progressRecords].sort((a, b) => a.created_at - b.created_at)
+  const earliestRecord = sortedRecords[0]
   const earliestStartDate = earliestRecord.created_at * 1000
 
   const now = Date.now()

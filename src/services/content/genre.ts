@@ -1,18 +1,23 @@
 /**
  * @module Genre
  */
-import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
+import { getFieldsForContentType } from '../../contentTypeConfig.js'
 import { fetchSanity, getSortOrder } from '../sanity.js'
-import { FilterBuilder } from '../../filterBuilder.js'
 import { Lesson } from './content'
-import { buildDataAndTotalQuery } from '../../lib/sanity/query'
+import { BuildQueryOptions, query } from '../../lib/sanity/query'
 import { Brands } from '../../lib/brands'
+import { Filters as f } from '../../lib/sanity/filter'
 
 export interface Genre {
   name: string
   slug: string
-  lessons_count: number
   thumbnail: string
+  lesson_count: number
+}
+
+export interface Genres {
+  data: Genre[]
+  total: number
 }
 
 /**
@@ -26,20 +31,32 @@ export interface Genre {
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenres(brand: Brands | string): Promise<Genre[]> {
-  const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
-    bypassPermissions: true,
-  }).buildFilter()
+export async function fetchGenres(
+  brand: Brands | string,
+  options: BuildQueryOptions
+): Promise<Genres> {
+  const type = f.type('genre')
+  const postFilter = `lesson_count > 0`
+  const { sort = 'lower(name)', offset = 0, limit = 20 } = options
 
-  const query = `
-  *[_type == 'genre'] {
-    'type': _type,
-    name,
-    "slug": slug.current,
-    'thumbnail': thumbnail_url.asset->url,
-    "lessons_count": count(*[${filter}])
-  } |order(lower(name)) `
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+  const data = query()
+    .and(type)
+    .order(getSortOrder(sort, brand))
+    .slice(offset, limit)
+    .select(
+      'name',
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lesson_count": ${await f.lessonCount(brand)}`
+    )
+    .postFilter(postFilter)
+    .build()
+
+  const q = `{
+    "data": ${data},
+  }`
+
+  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }
 
 /**
@@ -47,7 +64,7 @@ export async function fetchGenres(brand: Brands | string): Promise<Genre[]> {
  *
  * @param {string} slug - The slug of the genre to fetch.
  * @param {Brands|string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Genre[]|null>} - A promise that resolves to an genre object or null if not found.
+ * @returns {Promise<Genre | null>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenreBySlug('drumeo')
@@ -58,32 +75,28 @@ export async function fetchGenreBySlug(
   slug: string,
   brand?: Brands | string
 ): Promise<Genre | null> {
-  const brandFilter = brand ? `brand == "${brand}" && ` : ''
-  const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
-    bypassPermissions: true,
-  }).buildFilter()
+  const q = query()
+    .and(f.type('genre'))
+    .and(f.slug(slug))
+    .select(
+      'name',
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lesson_count": ${await f.lessonCount(brand)}`
+    )
+    .first()
+    .build()
 
-  const query = `
-  *[_type == 'genre' && slug.current == '${slug}'] {
-    'type': _type, name,
-    name,
-    "slug": slug.current,
-    'thumbnail':thumbnail_url.asset->url,
-    "lessonsCount": count(*[${filter}])
-  }`
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
 }
 
-export interface FetchGenreLessonsOptions {
-  sort?: string
+export interface GenreLessonsOptions extends BuildQueryOptions {
   searchTerm?: string
-  page?: number
-  limit?: number
   includedFields?: Array<string>
   progressIds?: Array<number>
 }
 
-export interface LessonsByGenreResponse {
+export interface GenreLessons {
   data: Lesson[]
   total: number
 }
@@ -99,7 +112,7 @@ export interface LessonsByGenreResponse {
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  * @param {Array<number>} [params.progressIds=[]] - The ids of the lessons that are in progress or completed
- * @returns {Promise<LessonsByGenreResponse|null>} - The lessons for the genre
+ * @returns {Promise<GenreLessons|null>} - The lessons for the genre
  *
  * @example
  * fetchGenreLessons('Blues', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
@@ -113,28 +126,38 @@ export async function fetchGenreLessons(
   {
     sort = '-published_on',
     searchTerm = '',
-    page = 1,
+    offset = 0,
     limit = 10,
     includedFields = [],
     progressIds = [],
-  }: FetchGenreLessonsOptions = {}
-): Promise<LessonsByGenreResponse | null> {
-  const fieldsString = getFieldsForContentType(contentType) as string
-  const start = (page - 1) * limit
-  const end = start + limit
-  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
-  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
-  const addType = contentType ? `_type == '${contentType}' && ` : ''
-  const progressFilter =
-    progressIds.length > 0 ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
-  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='genre' && slug.current == '${slug}']._id) ${progressFilter}`
-  const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
-
+  }: GenreLessonsOptions = {}
+): Promise<GenreLessons> {
   sort = getSortOrder(sort, brand)
-  const query = buildDataAndTotalQuery(filterWithRestrictions, fieldsString, {
-    sort: sort,
-    start: start,
-    end: end,
-  })
-  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+
+  const restrictions = await f.combineAsync(
+    f.status(),
+    f.publishedDate(),
+    f.notDeprecated(),
+    f.referencesIDWithFilter(f.combine(f.type('genre'), f.slug(slug))),
+    f.brand(brand),
+    f.searchMatch('title', searchTerm),
+    f.includedFields(includedFields),
+    f.progressIds(progressIds)
+  )
+
+  const data = query()
+    .and(restrictions)
+    .order(sort)
+    .slice(offset, limit)
+    .select(getFieldsForContentType(contentType) as string)
+    .build()
+
+  const total = query().and(restrictions).build()
+
+  const q = `{
+    "data": ${data},
+    "total": count(${total})
+  }`
+
+  return fetchSanity(q, true, { processNeedAccess: true, processPageType: false })
 }

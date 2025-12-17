@@ -153,7 +153,7 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
     if (ownedContentIds.length === 0) {
       // User has no owned content permissions
       // Return filter that matches nothing
-      return `railcontent_id == null`
+      return `railcontent_id == 0`
     }
 
     // Content must be in owned content IDs

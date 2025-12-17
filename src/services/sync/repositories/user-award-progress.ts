@@ -4,7 +4,24 @@ import SyncRepository from './base'
 import type { AwardDefinition, CompletionData } from '../../awards/types'
 import type { ModelSerialized } from '../serializers'
 
+type AwardProgressData = {
+  completed_at: number | null
+  progress_percentage: number
+}
+
 export default class UserAwardProgressRepository extends SyncRepository<UserAwardProgress> {
+  static isCompleted(progress: AwardProgressData): boolean {
+    return progress.completed_at !== null && progress.progress_percentage === 100
+  }
+
+  static isInProgress(progress: AwardProgressData): boolean {
+    return progress.progress_percentage >= 0 && !UserAwardProgressRepository.isCompleted(progress)
+  }
+
+  static completedAtDate(progress: { completed_at: number | null }): Date | null {
+    return progress.completed_at ? new Date(progress.completed_at) : null
+  }
+
   async getAll(options?: {
     limit?: number
     onlyCompleted?: boolean
@@ -48,28 +65,8 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
 
   async hasCompletedAward(awardId: string): Promise<boolean> {
     const result = await this.readOne(awardId)
-    return result.data?.isCompleted ?? false
-  }
-
-  async getRecentlyCompleted(options?: {
-    limit?: number
-    since?: number
-  }) {
-    const clauses: any[] = [
-      Q.where('completed_at', Q.notEq(null))
-    ]
-
-    if (options?.since) {
-      clauses.push(Q.where('completed_at', Q.gte(options.since)))
-    }
-
-    clauses.push(Q.sortBy('completed_at', Q.desc))
-
-    if (options?.limit) {
-      clauses.push(Q.take(options.limit))
-    }
-
-    return this.queryAll(...clauses)
+    if (!result.data) return false
+    return UserAwardProgressRepository.isCompleted(result.data)
   }
 
   async recordAwardProgress(
@@ -132,5 +129,31 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
     }
 
     return { definitions, progress: progressMap }
+  }
+
+  async deleteAllAwards() {
+    const allProgress = await this.getAll()
+    const ids = allProgress.data.map(p => p.id)
+
+    if (ids.length === 0) {
+      return { deletedCount: 0 }
+    }
+
+    await this.deleteSome(ids)
+
+    const response = await this.store.pushRecordIdsImpatiently(ids)
+
+    if (response && response.ok) {
+      await this.store.db.write(async () => {
+        const collection = this.store.db.get<UserAwardProgress>(UserAwardProgress.table)
+        const deletedRecords = await collection
+          .query(Q.where('id', Q.oneOf(ids)))
+          .fetch()
+
+        await Promise.all(deletedRecords.map(record => record.destroyPermanently()))
+      })
+    }
+
+    return { deletedCount: ids.length }
   }
 }
