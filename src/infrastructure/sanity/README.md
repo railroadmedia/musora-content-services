@@ -7,7 +7,6 @@ This module provides a TypeScript-based infrastructure for interacting with Sani
 The Sanity infrastructure follows a modular design with clear separation of concerns:
 
 - **SanityClient**: Base client class that provides low-level methods for executing raw GROQ queries
-- **ContentClient**: Specialized client that extends SanityClient with content-specific methods like `fetchById`
 - **Interfaces**: Define contracts for configuration, queries, responses, and errors
 - **Providers**: Handle configuration management
 - **Executors**: Handle the actual execution of queries against the Sanity API
@@ -17,11 +16,10 @@ The Sanity infrastructure follows a modular design with clear separation of conc
 ### Basic Usage
 
 ```typescript
-import { SanityClient, ContentClient } from './infrastructure/sanity'
+import { SanityClient } from './infrastructure/sanity'
 
 // Create client instances (use global configuration automatically)
 const sanityClient = new SanityClient()      // For raw GROQ queries
-const contentClient = new ContentClient()    // For content-specific operations
 
 // Fetch a single document by type and ID (recommended approach)
 const song = await contentClient.fetchById({
@@ -79,7 +77,7 @@ const result = await sanityClient.executeQuery(`
 ### Custom Configuration
 
 ```typescript
-import { SanityClient, ContentClient, ConfigProvider, SanityConfig } from './infrastructure/sanity'
+import { SanityClient, ConfigProvider, SanityConfig } from './infrastructure/sanity'
 
 // Use custom configuration provider
 class CustomConfigProvider implements ConfigProvider {
@@ -98,7 +96,6 @@ class CustomConfigProvider implements ConfigProvider {
 
 const customConfigProvider = new CustomConfigProvider()
 const sanityClient = new SanityClient(customConfigProvider)
-const contentClient = new ContentClient(customConfigProvider)
 ```
 
 ### Error Handling
@@ -153,24 +150,6 @@ initializeService({
 - `refreshConfig(): void`
   - Refreshes the configuration (useful if global config changes)
 
-### ContentClient (Specialized Client)
-
-#### Methods
-
-- `fetchById<T>(options: FetchByIdOptions): Promise<T | null>`
-  - Fetches a single document by type and ID (recommended for simple lookups)
-  - Options: `{ type: string, id: number | string, fields?: string[], includeChildren?: boolean }`
-
-- `fetchByIds<T>(ids: (number | string)[], type?: string, brand?: string, fields?: string[]): Promise<T[]>`
-  - Fetches multiple content items by their IDs
-  - Results are sorted to match the order of input IDs
-
-- `fetchByBrandAndType<T>(brand: string, type: string, options?: {...}): Promise<T[]>`
-  - Fetches content by brand and type with basic filtering
-  - Options: `{ limit?: number, offset?: number, sortBy?: string, fields?: string[] }`
-
-- All methods from SanityClient (inherited)
-
 ### Interfaces
 
 - `SanityConfig`: Configuration structure for Sanity connection
@@ -194,9 +173,12 @@ import { fetchByRailContentId } from './services/sanity'
 const result = await fetchByRailContentId(123, 'song')
 
 // New way (recommended)
-import { ContentClient } from './infrastructure/sanity'
-const contentClient = new ContentClient()
-const result = await contentClient.fetchById({ type: 'song', id: 123 })
+import { SanityClient } from './infrastructure/sanity'
+import { query } from './lib/sanity/query'
+import { Filters as f } from './lib/sanity/filter'
+
+const contentClient = new SanityClient()
+const result = await sanityClient.fetchSingle(query().and(f.type('song'), f.railContentId(123)).build())
 ```
 
 To migrate from the existing `fetchByRailContentIds` function:
@@ -207,9 +189,17 @@ import { fetchByRailContentIds } from './services/sanity'
 const results = await fetchByRailContentIds([123, 456, 789], 'song', 'drumeo')
 
 // New way
-import { ContentClient } from './infrastructure/sanity'
-const contentClient = new ContentClient()
-const results = await contentClient.fetchByIds([123, 456, 789], 'song', 'drumeo')
+import { SanityClient } from './infrastructure/sanity'
+import { query } from './lib/sanity/query'
+import { Filters as f } from './lib/sanity/filter'
+
+const contentClient = new SanityClient()
+const results = await contentClient.fetchByIds(
+  query().and(
+    f.type('song'),
+    f.railContentIds([123, 456, 789]),
+    f.brand('drumeo')
+  ).build()
 ```
 
 To migrate from the existing `fetchSanity` function:

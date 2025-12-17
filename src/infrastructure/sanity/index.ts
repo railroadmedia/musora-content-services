@@ -1,6 +1,5 @@
 // Main clients
 export { SanityClient } from './SanityClient'
-export { ContentClient } from './clients/ContentClient'
 
 // Interfaces
 export type { SanityConfig } from './interfaces/SanityConfig'
@@ -15,4 +14,5 @@ export type { FetchByIdOptions } from './interfaces/FetchByIdOptions'
 export { DefaultConfigProvider } from './providers/DefaultConfigProvider'
 
 // Executors
-export { FetchQueryExecutor } from './executors/FetchQueryExecutor' 
+export { FetchQueryExecutor } from './executors/FetchQueryExecutor'
+

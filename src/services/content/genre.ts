@@ -2,21 +2,22 @@
  * @module Genre
  */
 import { getFieldsForContentType } from '../../contentTypeConfig.js'
-import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
+import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 import { Brand } from '../../lib/brands'
 import { DocumentType } from '../../lib/documents'
-import { getSortOrder } from '../../lib/sanity/query'
-import { Lesson } from './content'
-import { BuildQueryOptions, query } from '../../lib/sanity/query'
 import { Filters as f } from '../../lib/sanity/filter'
+import { BuildQueryOptions, getSortOrder, query } from '../../lib/sanity/query'
+import { getPermissionsAdapter } from '../permissions'
+import { needsAccessDecorator } from '../sanity.js'
+import { Lesson } from './content'
 
-const contentClient = new ContentClient()
+const contentClient = new SanityClient()
 export interface Genre {
   name: string
   slug: string
-  lessons_count: number
   thumbnail: string
+  lesson_count: number
 }
 
 export type Genres = SanityListResponse<Genre>
@@ -32,28 +33,20 @@ export type Genres = SanityListResponse<Genre>
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenres(
-  brand: Brand,
-  options: BuildQueryOptions = {
-    sort: 'lower(name) asc',
-    offset: 0,
-    limit: 20,
-  }
-): Promise<Genres> {
-  const lesson = f.combine(f.brand(brand), f.referencesParent())
+export async function fetchGenres(brand: Brand, options: BuildQueryOptions): Promise<Genres> {
   const type = f.type('genre')
-  const lessonCount = `count(*[${lesson}])`
-  const postFilter = `lessonCount > 0`
+  const postFilter = `lesson_count > 0`
+  const { sort = 'lower(name)', offset = 0, limit = 20 } = options
 
   const data = query()
     .and(type)
-    .order(getSortOrder(options.sort, brand))
-    .slice(options?.offset || 0, options.limit)
+    .order(getSortOrder(sort, brand))
+    .slice(offset, limit)
     .select(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessons_count": ${lessonCount}`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .postFilter(postFilter)
     .build()
@@ -78,8 +71,6 @@ export async function fetchGenres(
  *   .catch(error => console.error(error));
  */
 export async function fetchGenreBySlug(slug: string, brand?: Brand): Promise<Genre | null> {
-  const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
-
   const q = query()
     .and(f.type('genre'))
     .and(f.slug(slug))
@@ -87,7 +78,7 @@ export async function fetchGenreBySlug(slug: string, brand?: Brand): Promise<Gen
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessons_count": count(*[${filter}])`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .first()
     .build()
@@ -160,9 +151,14 @@ export async function fetchGenreLessons(
     "total": count(${total})
   }`
 
-  return contentClient.fetchList<Lesson>(q, {
-    sort,
-    offset,
-    limit,
-  })
+  const [res, permissions] = await Promise.all([
+    contentClient.fetchList<Lesson>(q, {
+      sort,
+      offset,
+      limit,
+    }),
+    getPermissionsAdapter().fetchUserPermissions(),
+  ])
+
+  return needsAccessDecorator(res, permissions)
 }

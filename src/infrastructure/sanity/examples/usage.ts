@@ -1,68 +1,78 @@
 import { Brand } from '../../../lib/brands'
 import { needsAccessDecorator, pageTypeDecorator } from '../../../lib/sanity/decorators'
+import { Filters as f } from '../../../lib/sanity/filter'
 import { query } from '../../../lib/sanity/query'
 import { Lesson } from '../../../services/content/content'
 import { getPermissionsAdapter } from '../../../services/permissions'
-import { SanityClient, ContentClient } from '../index'
+import { SanityClient } from '../index'
 
 /**
- * Example usage of the SanityClient and ContentClient
+ * Example usage of the SanityClient
  *
  * This demonstrates how to use both the base SanityClient for raw queries
- * and the ContentClient for content-specific operations.
  * Both clients automatically use the global configuration from the config service.
  */
 
 // Create client instances
 const sanityClient = new SanityClient()
-const contentClient = new ContentClient()
 
-// Example: Fetch a single song by ID using the ContentClient
+// Example: Fetch a single song by ID using the SanityClient
 export async function fetchSongExample(songId: number) {
-  return await contentClient.fetchById({
-    type: 'song',
-    id: songId,
-  })
+  return await sanityClient.fetchSingle(
+    query().and(`_type == "song"`).and(`railcontent_id == ${songId}`).build()
+  )
 }
 
 // Example: Fetch a single song by ID with custom fields
 export async function fetchSongWithCustomFieldsExample(songId: number) {
-  return await contentClient.fetchById({
-    type: 'song',
-    id: songId,
-    fields: [
-      "'id': railcontent_id",
-      'title',
-      "'artist': artist->name",
-      "'thumbnail': thumbnail.asset->url",
-      'difficulty_string',
-      'published_on',
-      'album',
-      'soundslice',
-    ],
-  })
-}
-
-// Example: Fetch a course with its children/lessons
-export async function fetchCourseWithLessonsExample(courseId: number) {
-  return await contentClient.fetchById({
-    type: 'course',
-    id: courseId,
-    includeChildren: true,
-  })
+  return await sanityClient.fetchSingle(
+    query()
+      .and(`_type == "song"`)
+      .and(`railcontent_id == ${songId}`)
+      .select(
+        "'id': railcontent_id",
+        'title',
+        "'artist': artist->name",
+        "'thumbnail': thumbnail.asset->url",
+        'difficulty_string',
+        'published_on',
+        'album',
+        'soundslice'
+      )
+      .build()
+  )
 }
 
 // Example: Fetch multiple content items by IDs
 export async function fetchMultipleSongsExample(songIds: number[]) {
-  return await contentClient.fetchByIds(songIds, 'song', Brand.Drumeo)
+  const sort = 'published_on desc'
+  const offset = 0
+  const limit = songIds.length
+  return await sanityClient.fetchList(
+    query().and(f.type('song')).and(f.idIn(songIds)).and(f.brand('drumeo')).order(sort).build(),
+    {
+      sort,
+      offset,
+      limit,
+    }
+  )
 }
 
 // Example: Fetch content by brand and type
 export async function fetchDrumeoSongsExample() {
-  return await contentClient.fetchByTypeAndBrand('song', Brand.Drumeo, {
-    limit: 20,
-    sortBy: 'published_on desc',
-  })
+  const sort = 'published_on desc'
+  const offset = 0
+  const limit = 20
+
+  return await sanityClient.fetchList(
+    query()
+      .and(f.type('song'))
+      .and(f.brand('drumeo'))
+      .order('published_on desc')
+      .slice(0, 20)
+      .build(),
+    { sort, offset, limit }
+  )
 }
 
 // Example: Fetch multiple songs with pagination

@@ -2,19 +2,20 @@
  * @module Instructor
  */
 
-import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
 import { getFieldsForContentType } from '../../contentTypeConfig.js'
-import { getSortOrder } from '../sanity.js'
-import { Lesson } from './content'
-import { BuildQueryOptions, query } from '../../lib/sanity/query'
+import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
+import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 import { Brand } from '../../lib/brands'
 import { Filters as f } from '../../lib/sanity/filter'
-import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
+import { BuildQueryOptions, query } from '../../lib/sanity/query'
+import { getPermissionsAdapter } from '../permissions/PermissionsAdapterFactory.js'
+import { getSortOrder, needsAccessDecorator } from '../sanity.js'
+import { Lesson } from './content'
 
-const contentClient = new ContentClient()
+const contentClient = new SanityClient()
 
 export interface Instructor {
-  lessonCount: number
+  lesson_count: number
   slug: string
   name: string
   short_bio?: string
@@ -43,19 +44,18 @@ export async function fetchInstructors(
   }
 ): Promise<Instructors> {
   const type = f.type('instructor')
-  const lesson = f.combine(f.brand(brand), f.referencesParent())
-  const lessonCount = `count(*[${lesson}])`
-  const postFilter = `lessonCount > 0`
+  const postFilter = `lesson_count > 0`
+  const { sort = 'lower(name)', offset = 0, limit = 20 } = options
 
   const data = query()
     .and(type)
-    .order(getSortOrder(options.sort, brand))
-    .slice(options?.offset || 0, options.limit)
+    .order(getSortOrder(sort, brand))
+    .slice(offset, limit)
     .select(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessonCount": ${lessonCount}`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .postFilter(postFilter)
     .build()
@@ -83,8 +83,6 @@ export async function fetchInstructorBySlug(
   slug: string,
   brand?: Brand
 ): Promise<Instructor | null> {
-  const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
-
   const q = query()
     .and(f.type('instructor'))
     .and(f.slug(slug))
@@ -93,7 +91,7 @@ export async function fetchInstructorBySlug(
       `"slug": slug.current`,
       'short_bio',
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessonCount": count(*[${filter}])`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .first()
     .build()
@@ -166,9 +164,14 @@ export async function fetchInstructorLessons(
     "total": count(${total})
   }`
 
-  return contentClient.fetchList<Lesson>(q, {
-    sort,
-    offset,
-    limit,
-  })
+  const [res, permissions] = await Promise.all([
+    contentClient.fetchList<Lesson>(q, {
+      sort,
+      offset,
+      limit,
+    }),
+    getPermissionsAdapter().fetchUserPermissions(),
+  ])
+
+  return needsAccessDecorator(res, permissions)
 }

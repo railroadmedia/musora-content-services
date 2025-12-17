@@ -1306,7 +1306,7 @@ export async function fetchByReference(
  * @returns {Promise<int|null>}
  */
 export async function fetchTopLevelParentId(railcontentId) {
-  const parentFilter = "railcontent_id in [...(^.parent_content_data[].id)]"
+  const parentFilter = 'railcontent_id in [...(^.parent_content_data[].id)]'
   const statusFilter = "&& status in ['scheduled', 'published', 'archived', 'unlisted']"
 
   const query = `*[railcontent_id == ${railcontentId}]{
@@ -1379,7 +1379,7 @@ export async function fetchHierarchy(railcontentId) {
 }
 
 function populateHierarchyLookups(currentLevel, data, parentId) {
-  const railcontentIdField = currentLevel.railcontent_id ? "railcontent_id" : "id";
+  const railcontentIdField = currentLevel.railcontent_id ? 'railcontent_id' : 'id'
 
   let contentId = currentLevel[railcontentIdField]
   let children = currentLevel['children']
@@ -1534,6 +1534,10 @@ function contentResultsDecorator(results, fieldName, callback) {
     results.related_lessons.forEach((result) => {
       result[fieldName] = callback(result)
     })
+  } else if (results.data && Array.isArray(results.data)) {
+    results.data.forEach((result) => {
+      result[fieldName] = callback(result)
+    })
   } else {
     results[fieldName] = callback(results)
   }
@@ -1541,13 +1545,13 @@ function contentResultsDecorator(results, fieldName, callback) {
   return results
 }
 
-function pageTypeDecorator(results) {
+export function pageTypeDecorator(results) {
   return contentResultsDecorator(results, 'page_type', function (content) {
     return SONG_TYPES_WITH_CHILDREN.includes(content['type']) ? 'song' : 'lesson'
   })
 }
 
-function needsAccessDecorator(results, userPermissions) {
+export function needsAccessDecorator(results, userPermissions) {
   if (globalConfig.sanityConfig.useDummyRailContentMethods) return results
   const adapter = getPermissionsAdapter()
   return contentResultsDecorator(results, 'need_access', function (content) {
@@ -2017,7 +2021,7 @@ export async function fetchMethodV2Structure(brand) {
  * @returns {Promise<*|null>}
  */
 export async function fetchMethodV2StructureFromId(contentId) {
-  const _type = "method-v2";
+  const _type = 'method-v2'
   const query = `*[_type == '${_type}' && brand == *[railcontent_id == ${contentId}][0].brand][0...1]{
     'sanity_id': _id,
     brand,
@@ -2028,7 +2032,7 @@ export async function fetchMethodV2StructureFromId(contentId) {
       'children': child[]->railcontent_id
     }
   }`
-  return await fetchSanity(query, false);
+  return await fetchSanity(query, false)
 }
 
 /**
