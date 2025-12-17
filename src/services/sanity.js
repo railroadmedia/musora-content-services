@@ -23,7 +23,7 @@ import {
   SONG_TYPES_WITH_CHILDREN,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems, recommendations } from './recommendations.js'
-import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
+import { processMetadata } from '../contentMetaData.js'
 
 import { globalConfig } from './config.js'
 
