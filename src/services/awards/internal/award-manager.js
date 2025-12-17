@@ -99,7 +99,7 @@ export class AwardManager {
     const popupMessage = AwardMessageGenerator.generatePopupMessage(completionData)
 
     await db.userAwardProgress.recordAwardProgress(award._id, 100, {
-      completedAt: Date.now(),
+      completedAt: new Date().toISOString(),
       completionData,
       progressData,
       immediate: true
