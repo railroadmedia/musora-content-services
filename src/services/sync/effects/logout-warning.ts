@@ -2,7 +2,8 @@ import { Subscription } from 'rxjs'
 import { Q } from '@nozbe/watermelondb'
 
 import { type SyncEffect } from '.'
-import type SyncStore from '../store'
+
+import { type ModelClass } from '../index'
 
 // notifies a subscriber that unsynced records exist
 // ideally used by a logout interrupt prompt to tell the user that logging out
@@ -11,22 +12,25 @@ import type SyncStore from '../store'
 // we notify eagerly so that the prompt can be shown as soon as user clicks logout,
 // instead of waiting for a lazy query at that moment
 
-const createLogoutWarningEffect = (notifyCallback: (fullySynced: boolean) => void) => {
+const createLogoutWarningEffect = (notifyCallback: (unsyncedModels: ModelClass[]) => void) => {
   const logoutWarning: SyncEffect = function (context, stores) {
-    const recordCounts = new Map<SyncStore, number>()
+    const unsyncedModels = new Set<ModelClass>()
     const subscriptions: Subscription[] = []
 
     const notifyFromAll = () => {
-      notifyCallback(Array.from(recordCounts.values()).reduce((a, b) => a + b, 0) === 0)
+      notifyCallback(Array.from(unsyncedModels))
     }
 
     stores.forEach((store) => {
-      recordCounts.set(store, 0)
       const sub = store.collection
         .query(Q.where('_status', Q.notEq('synced')), Q.take(1)) // todo - doesn't consider deleted records ??
         .observe()
         .subscribe((records) => {
-          recordCounts.set(store, records.length)
+          if (records.length > 0) {
+            unsyncedModels.add(store.model)
+          } else {
+            unsyncedModels.delete(store.model)
+          }
           notifyFromAll()
         })
       subscriptions.push(sub)

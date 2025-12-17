@@ -122,6 +122,17 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     }, { table: this.model.table, reason })
   }
 
+  async requestPush(reason: string) {
+    inBoundary(ctx => {
+      this.telemetry.trace(
+        { name: `sync:${this.model.table}`, op: 'push', attributes: ctx },
+        async span => {
+          await this.pushUnsyncedWithRetry(span)
+        }
+      )
+    }, { table: this.model.table, reason })
+  }
+
   async getLastFetchToken() {
     return (await this.db.localStorage.get<SyncToken | null>(this.lastFetchTokenKey)) ?? null
   }
