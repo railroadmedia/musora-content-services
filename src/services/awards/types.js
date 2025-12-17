@@ -73,6 +73,7 @@
  * @property {string} awardId - Unique Sanity award ID
  * @property {string} name - Display name of the award
  * @property {string} badge - URL to badge image
+ * @property {string} contentType - Content type ('guided-course' or 'learning-path-v2')
  * @property {string} completed_at - ISO timestamp of completion
  * @property {AwardCompletionData} completion_data - Practice statistics
  */
