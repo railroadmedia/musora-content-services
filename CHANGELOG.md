@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.105.0](https://github.com/railroadmedia/musora-content-services/compare/v2.104.9...v2.105.0) (2025-12-17)
+
+
+### Features
+
+* Remove xp and total_xp ([#656](https://github.com/railroadmedia/musora-content-services/issues/656)) ([e6238a6](https://github.com/railroadmedia/musora-content-services/commit/e6238a605e095dc81e152c25f0abf4885b2bb091))
+* update type for method progress card ([#662](https://github.com/railroadmedia/musora-content-services/issues/662)) ([ad2d6df](https://github.com/railroadmedia/musora-content-services/commit/ad2d6df35b321afd7df1a302ee6bfbcbce1a31b7))
+
+
+### Bug Fixes
+
+* Minor progress fixes ([#654](https://github.com/railroadmedia/musora-content-services/issues/654)) ([202cceb](https://github.com/railroadmedia/musora-content-services/commit/202ccebc85d119ce9a63007e600a8fd92c3f94d7))
+
 ### [2.104.9](https://github.com/railroadmedia/musora-content-services/compare/v2.104.8...v2.104.9) (2025-12-17)
 
 ### [2.104.8](https://github.com/railroadmedia/musora-content-services/compare/v2.104.7...v2.104.8) (2025-12-16)
