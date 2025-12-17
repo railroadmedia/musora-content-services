@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.104.9](https://github.com/railroadmedia/musora-content-services/compare/v2.104.8...v2.104.9) (2025-12-17)
+
+### [2.104.8](https://github.com/railroadmedia/musora-content-services/compare/v2.104.7...v2.104.8) (2025-12-16)
+
+### [2.104.7](https://github.com/railroadmedia/musora-content-services/compare/v2.104.6...v2.104.7) (2025-12-16)
+
+### [2.104.6](https://github.com/railroadmedia/musora-content-services/compare/v2.104.5...v2.104.6) (2025-12-16)
+
+
+### Bug Fixes
+
+* method card previous dailies ([#649](https://github.com/railroadmedia/musora-content-services/issues/649)) ([14f1c39](https://github.com/railroadmedia/musora-content-services/commit/14f1c390530a126d063eff3c7062e4fe2a09567c))
+* **MU2-1315:** agi lessons permissions ([#657](https://github.com/railroadmedia/musora-content-services/issues/657)) ([b3ff00a](https://github.com/railroadmedia/musora-content-services/commit/b3ff00a2bb57e149981b18b5060ab2ec257db912))
+
 ### [2.104.5](https://github.com/railroadmedia/musora-content-services/compare/v2.104.4...v2.104.5) (2025-12-12)
 
 
