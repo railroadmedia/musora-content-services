@@ -98,7 +98,7 @@ export async function getMethodCard(brand) {
       action = nextLesson
         ? getMethodActionCTA(nextLesson)
         : {
-            type: 'method',
+            type: 'method-complete',
             brand,
           }
     }
