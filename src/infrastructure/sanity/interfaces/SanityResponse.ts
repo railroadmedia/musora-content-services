@@ -15,7 +15,7 @@ import { Functor } from '../../../lib/ads/functor'
  * @implements {Functor<T>}
  * @template T - The type of the result content
  */
-export class SanityResponse<T = any> implements Functor<T> {
+export class SanityResponse<T> implements Functor<T> {
   constructor(
     public result: T,
     public ms: number,
@@ -53,7 +53,7 @@ export class SanityResponse<T = any> implements Functor<T> {
  * @implements {Functor<T>}
  * @template T - The type of items in the data array
  */
-export class SanityListResponse<T = any> implements Functor<T> {
+export class SanityListResponse<T> implements Functor<T> {
   constructor(
     public data: T[],
     public total: number,

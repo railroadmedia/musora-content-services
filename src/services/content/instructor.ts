@@ -7,10 +7,10 @@ import { SanityListResponse } from '../../infrastructure/sanity/interfaces/Sanit
 import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 import { Brand } from '../../lib/brands'
 import { Filters as f } from '../../lib/sanity/filter'
-import { BuildQueryOptions, query } from '../../lib/sanity/query'
+import { BuildQueryOptions, getSortOrder, query } from '../../lib/sanity/query'
 import { getPermissionsAdapter } from '../permissions/PermissionsAdapterFactory.js'
-import { getSortOrder, needsAccessDecorator } from '../sanity.js'
 import { Lesson } from './content'
+import { NeedAccessDecorated, needsAccessDecorator } from '../../lib/sanity/decorators'
 
 const contentClient = new SanityClient()
 
@@ -106,7 +106,7 @@ export interface InstructorLessonsOptions extends BuildQueryOptions {
   includedFields?: string[]
 }
 
-export type InstructorLessons = SanityListResponse<Lesson>
+export type InstructorLessons = SanityListResponse<Lesson & NeedAccessDecorated>
 
 /**
  * Fetch the data needed for the instructor screen.
@@ -164,14 +164,11 @@ export async function fetchInstructorLessons(
     "total": count(${total})
   }`
 
-  const [res, permissions] = await Promise.all([
-    contentClient.fetchList<Lesson>(q, {
+  return contentClient
+    .fetchList<Lesson>(q, {
       sort,
       offset,
       limit,
-    }),
-    getPermissionsAdapter().fetchUserPermissions(),
-  ])
-
-  return needsAccessDecorator(res, permissions)
+    })
+    .then(needsAccessDecorator()) as Promise<InstructorLessons>
 }

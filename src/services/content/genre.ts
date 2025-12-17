@@ -9,8 +9,8 @@ import { DocumentType } from '../../lib/documents'
 import { Filters as f } from '../../lib/sanity/filter'
 import { BuildQueryOptions, getSortOrder, query } from '../../lib/sanity/query'
 import { getPermissionsAdapter } from '../permissions'
-import { needsAccessDecorator } from '../sanity.js'
 import { Lesson } from './content'
+import { NeedAccessDecorated, needsAccessDecorator } from '../../lib/sanity/decorators'
 
 const contentClient = new SanityClient()
 export interface Genre {
@@ -92,7 +92,7 @@ export interface GenreLessonsOptions extends BuildQueryOptions {
   progressIds?: Array<number>
 }
 
-export type GenreLessons = SanityListResponse<Lesson>
+export type GenreLessons = SanityListResponse<Lesson & NeedAccessDecorated>
 
 /**
  * Fetch the genre's lessons.
@@ -151,14 +151,11 @@ export async function fetchGenreLessons(
     "total": count(${total})
   }`
 
-  const [res, permissions] = await Promise.all([
-    contentClient.fetchList<Lesson>(q, {
+  return contentClient
+    .fetchList<Lesson>(q, {
       sort,
       offset,
       limit,
-    }),
-    getPermissionsAdapter().fetchUserPermissions(),
-  ])
-
-  return needsAccessDecorator(res, permissions)
+    })
+    .then(needsAccessDecorator()) as Promise<GenreLessons>
 }

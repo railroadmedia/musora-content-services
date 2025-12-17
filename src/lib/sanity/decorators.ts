@@ -1,6 +1,8 @@
 import { SONG_TYPES_WITH_CHILDREN } from '../../contentTypeConfig.js'
 import { globalConfig } from '../../services/config.js'
+import { getPermissionsAdapter } from '../../services/permissions'
 import { PermissionsAdapter, UserPermissions } from '../../services/permissions/PermissionsAdapter'
+import { Functor } from '../ads/functor'
 
 const enum FieldName {
   NeedAccess = 'need_access',
@@ -67,16 +69,16 @@ export function contentDecorator<T>(
  * @param content - Content to decorate
  * @returns Content with page_type field
  */
-export function pageTypeDecorator<T>(content: T): T & PageTypeDecorated {
+export function pageTypeDecorator<T>(f: Functor<T>): Functor<T & PageTypeDecorated> {
   const callback = (item: any): string =>
     SONG_TYPES_WITH_CHILDREN.includes(item['type']) ? 'song' : 'lesson'
 
-  return contentDecorator(content, FieldName.PageType, callback) as T & PageTypeDecorated
+  return f.map((data) => contentDecorator(data, FieldName.PageType, callback))
 }
 
 /**
  * Creates a decorator that adds need_access field based on user permissions.
- * Curried for composition with functors.
+ * Curried function that accepts an optional permissions object and returns the decorator function
  * Handles nested structures automatically via contentDecorator.
  *
  * @example
@@ -88,12 +90,14 @@ export function pageTypeDecorator<T>(content: T): T & PageTypeDecorated {
  * @returns Decorator function for content
  */
 export const needsAccessDecorator =
-  (userPermissions: UserPermissions, adapter: PermissionsAdapter) =>
-  <T>(content: T): T & NeedAccessDecorated => {
+  (permissions?: UserPermissions) =>
+  async <T>(response: Functor<T>): Promise<Functor<T & NeedAccessDecorated>> => {
     if (globalConfig.sanityConfig.useDummyRailContentMethods) {
-      return content as T & NeedAccessDecorated
+      return response as Functor<T & NeedAccessDecorated>
     }
+    const adapter: PermissionsAdapter = getPermissionsAdapter()
+    permissions = permissions ? permissions : await adapter.fetchUserPermissions()
 
-    const callback = (item: any) => adapter.doesUserNeedAccess(item, userPermissions)
-    return contentDecorator(content, FieldName.NeedAccess, callback)
+    const callback = (item: any) => adapter.doesUserNeedAccess(item, permissions as UserPermissions)
+    return response.map((data) => contentDecorator(data, FieldName.NeedAccess, callback))
   }
