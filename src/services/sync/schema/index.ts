@@ -61,7 +61,7 @@ const userAwardProgressTable = tableSchema({
   columns: [
     { name: 'award_id', type: 'string', isIndexed: true },
     { name: 'progress_percentage', type: 'number' },
-    { name: 'completed_at', type: 'number', isOptional: true, isIndexed: true },
+    { name: 'completed_at', type: 'string', isOptional: true, isIndexed: true },
     { name: 'progress_data', type: 'string', isOptional: true },
     { name: 'completion_data', type: 'string', isOptional: true },
     { name: 'created_at', type: 'number' },
