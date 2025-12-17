@@ -124,6 +124,7 @@ export async function getEnrichedLearningPath(learningPathId) {
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
+      addResumeTimeSeconds: true,
       addNavigateTo: true,
     }
   )) as any
@@ -154,6 +155,7 @@ export async function getEnrichedLearningPaths(learningPathIds: number[]) {
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
+      addResumeTimeSeconds: true,
       addNavigateTo: true,
     }
   )) as any
