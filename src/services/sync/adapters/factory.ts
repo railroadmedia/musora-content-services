@@ -15,12 +15,10 @@ export default function syncAdapterFactory<T extends DatabaseAdapter>(
   namespace: string,
   opts: Omit<DatabaseAdapterOptions, 'schema' | 'migrations'>
 ): () => T {
-  const options = {
+  return () => new AdapterClass({
     ...opts,
     dbName: `sync:${namespace}`,
     schema,
     migrations: undefined
-  }
-
-  return () => new AdapterClass(options)
+  })
 }
