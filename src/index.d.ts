@@ -396,6 +396,7 @@ import {
 } from './services/user/profile.js';
 
 import {
+	getAuthKey,
 	login,
 	loginWithAuthKey,
 	logout
@@ -585,6 +586,7 @@ declare module 'musora-content-services' {
 		getAllCompletedByIds,
 		getAllStarted,
 		getAllStartedOrCompleted,
+		getAuthKey,
 		getAwardStatistics,
 		getCompletedAwards,
 		getContentAwards,

@@ -72,7 +72,7 @@ export async function getDailySession(brand: string, userDate: Date) {
 export async function updateDailySession(
   brand: string,
   userDate: Date,
-  keepFirstLearningPath: boolean
+  keepFirstLearningPath: boolean = false
 ) {
   const stringDate = userDate.toISOString().split('T')[0]
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/create`
@@ -124,6 +124,7 @@ export async function getEnrichedLearningPath(learningPathId) {
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
+      addResumeTimeSeconds: true,
       addNavigateTo: true,
     }
   )) as any
@@ -154,6 +155,7 @@ export async function getEnrichedLearningPaths(learningPathIds: number[]) {
       addProgressStatus: true,
       addProgressPercentage: true,
       addProgressTimestamp: true,
+      addResumeTimeSeconds: true,
       addNavigateTo: true,
     }
   )) as any
@@ -194,6 +196,23 @@ export function mapContentToParent(lessons, parentContentType, parentContentId) 
   })
 }
 
+interface fetchLearningPathLessonsResponse {
+  id: number
+  thumbnail?: string
+  title: string
+  children: any[]
+  is_active_learning_path: boolean
+  active_learning_path_id?: number
+  active_learning_path_created_at?: string
+  upcoming_lessons?: any[]
+  completed_lessons?: any[]
+  learning_path_dailies?: any[]
+  next_learning_path_dailies?: any[]
+  next_learning_path_id?: number
+  previous_learning_path_dailies?: any[]
+  previous_learning_path_id?: number
+}
+
 /** Fetches and organizes learning path lessons.
  *
  * @param {number} learningPathId - The learning path ID.
@@ -203,13 +222,17 @@ export function mapContentToParent(lessons, parentContentType, parentContentId) 
  * @returns {number} result.id - The learning path ID.
  * @returns {string} result.thumbnail - Optional thumbnail URL for the learning path.
  * @returns {string} result.title - The title of the learning path.
- * @returns {boolean} result.is_active_learning_path - Whether the learning path is currently active.
  * @returns {Array} result.children - Array of all lessons.
- * @returns {Array} result.upcoming_lessons - Array of upcoming/additional lessons.
- * @returns {Array} result.todays_lessons - Array of today's lessons (max 3).
- * @returns {Array} result.next_learning_path_lessons - Array of next lessons to be taken.
- * @returns {Array} result.completed_lessons - Array of completed lessons.
- * @returns {Array} result.previous_learning_path_todays - Array of completed lessons.
+ * @returns {boolean} result.is_active_learning_path - Whether the learning path is currently active.
+ * @returns {number} result.active_learning_path_id - The active learning path ID from daily session.
+ * @returns {string} result.active_learning_path_created_at - The datetime the learning path was set as active.
+ * @returns {Array} result.upcoming_lessons - Array of upcoming lessons.
+ * @returns {Array} result.learning_path_dailies - Array of today's dailies in this learning path.
+ * @returns {Array} result.next_learning_path_dailies - Array of today's dailies in the next learning path.
+ * @returns {number} result.next_learning_path_id - the next learning path (after the active path).
+ * @returns {Array} result.completed_lessons - Array of completed lessons in this learning path.
+ * @returns {Array} result.previous_learning_path_dailies - Array of today's dailies in the previous learning path.
+ * @returns {number} result.previous_learning_path_id - the previous learning path (before the active path)
  */
 export async function fetchLearningPathLessons(
   learningPathId: number,
@@ -217,9 +240,9 @@ export async function fetchLearningPathLessons(
   userDate: Date
 ) {
   const learningPath = await getEnrichedLearningPath(learningPathId)
-  let dailySession = await getDailySession(brand, userDate); // what if the call just fails, and a DS does exist?
+  let dailySession = await getDailySession(brand, userDate) as DailySessionResponse // what if the call just fails, and a DS does exist?
   if (!dailySession) {
-    dailySession = await updateDailySession(brand, userDate, false)
+    dailySession = await updateDailySession(brand, userDate, false) as DailySessionResponse
   }
 
   const isActiveLearningPath = (dailySession?.active_learning_path_id || 0) == learningPathId
@@ -227,48 +250,64 @@ export async function fetchLearningPathLessons(
     return {
       ...learningPath,
       is_active_learning_path: isActiveLearningPath,
+    } as fetchLearningPathLessonsResponse
+  }
+
+  let todayContentIds = []
+  let todayLearningPathId = null
+  let nextContentIds = []
+  let nextLearningPathId = null
+  let previousContentIds = []
+  let previousLearningPathId = null
+
+
+
+  for (const session of dailySession.daily_session) {
+    if (session.learning_path_id === learningPathId) {
+      todayContentIds = session.content_ids || []
+      todayLearningPathId = session.learning_path_id
+    } else {
+      if (!todayLearningPathId) {
+        previousContentIds = session.content_ids || []
+        previousLearningPathId = session.learning_path_id
+      } else if (!nextLearningPathId) {
+        nextContentIds = session.content_ids || []
+        nextLearningPathId = session.learning_path_id
+      }
     }
   }
-  // this assumes that the first entry is active_path, based on user flows
-  const todayContentIds = dailySession.daily_session[0]?.content_ids || []
-  const todayLearningPathId = dailySession.daily_session[0]?.learning_path_id
-
-  const nextContentIds = dailySession.daily_session[1]?.content_ids || []
-  const nextLearningPathId = dailySession.daily_session[1]?.learning_path_id
 
   const completedLessons = []
   let thisLPDailies = []
   let nextLPDailies = []
-  let previousLearningPathTodays = []
+  let previousLPDailies = []
   const upcomingLessons = []
 
+  //previous/next never within LP
   learningPath.children.forEach((lesson: any) => {
     if (todayContentIds.includes(lesson.id)) {
       thisLPDailies.push(lesson)
-    } else if (lesson.progressStatus === 'completed') {
+    } else if (lesson.progressStatus === STATE.COMPLETED) {
       completedLessons.push(lesson)
     } else {
       upcomingLessons.push(lesson)
     }
   })
 
-  if (thisLPDailies.length == 0) {
-    // Daily sessions first lessons are not part of the active learning path, but next lessons are
-    // load todays lessons from previous learning path
-    previousLearningPathTodays = await getLearningPathLessonsByIds(
-      todayContentIds,
-      todayLearningPathId
+  if (previousContentIds.length !== 0) {
+    previousLPDailies = await getLearningPathLessonsByIds(
+      previousContentIds,
+      previousLearningPathId
     )
-  } else if ( // show next LP dailies if they exist
-    nextContentIds.length > 0
-  ) {
-    // Daily sessions first lessons are the active learning path and the next lessons are not
-    // load next lessons from next learning path
-    const lessons = await getLearningPathLessonsByIds(nextContentIds, nextLearningPathId)
-    nextLPDailies = lessons.map(lesson => ({
+  }
+  if (nextContentIds.length !== 0) {
+    nextLPDailies = await getLearningPathLessonsByIds(
+      nextContentIds,
+      nextLearningPathId
+    ).then(lessons => lessons.map(lesson => ({
       ...lesson,
-      in_next_learning_path: STATE.COMPLETED === learningPath.progressStatus
-    }))
+      in_next_learning_path: learningPath.progressStatus === STATE.COMPLETED
+    })))
   }
 
   return {
@@ -277,11 +316,12 @@ export async function fetchLearningPathLessons(
     active_learning_path_id: dailySession?.active_learning_path_id,
     active_learning_path_created_at: dailySession?.active_learning_path_created_at,
     upcoming_lessons: upcomingLessons,
-    todays_lessons: thisLPDailies,
-    next_learning_path_lessons: nextLPDailies,
-    next_learning_path_id: nextLearningPathId,
     completed_lessons: completedLessons,
-    previous_learning_path_todays: previousLearningPathTodays,
+    learning_path_dailies: thisLPDailies,
+    next_learning_path_dailies: nextLPDailies,
+    next_learning_path_id: nextLearningPathId,
+    previous_learning_path_dailies: previousLPDailies,
+    previous_learning_path_id: previousLearningPathId,
   }
 }
 
