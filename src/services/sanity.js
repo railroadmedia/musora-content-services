@@ -27,7 +27,8 @@ import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
 
 import { globalConfig } from './config.js'
 
-import { fetchNextContentDataForParent, fetchHandler } from './railcontent.js'
+import { fetchNextContentDataForParent } from './railcontent.js'
+import { GET } from '../infrastructure/http/HttpClient.js'
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'

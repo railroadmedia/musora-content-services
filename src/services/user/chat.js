@@ -1,4 +1,4 @@
-import {fetchHandler} from "../railcontent";
+import { GET } from '../../infrastructure/http/HttpClient.js'
 
 /**
  * @module UserChat
@@ -22,5 +22,5 @@ const baseUrl = `/api/user-management-system`
 export async function fetchChatSettings({ brand = null, liveEventIsGlobal = false } = {}) {
   const isGlobalEvent = liveEventIsGlobal ? '&is_global_event=1' : ''
   const url = `${baseUrl}/v1/users/chat?brand=${brand}${isGlobalEvent}`
-  return fetchHandler(url, 'get')
+  return await GET(url)
 }

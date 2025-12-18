@@ -14,7 +14,7 @@ export class HttpClient {
   private requestExecutor: RequestExecutor
 
   constructor(
-    baseUrl: string,
+    baseUrl: string = '',
     token: string | null = null,
     headerProvider: HeaderProvider = new DefaultHeaderProvider(),
     requestExecutor: RequestExecutor = new FetchRequestExecutor()
@@ -102,7 +102,8 @@ export class HttpClient {
   }
 
   private resolveUrl(url: string): string {
-    return url.startsWith('/') ? this.baseUrl + url : url
+    const baseUrl = this.baseUrl || globalConfig?.baseUrl || ''
+    return url.startsWith('/') ? baseUrl + url : url
   }
 
   private handleError(error: any, url: string, method: string): never {
@@ -120,3 +121,11 @@ export class HttpClient {
     } as NetworkError
   }
 }
+
+const httpClient = new HttpClient()
+
+export const GET = httpClient.get.bind(httpClient)
+export const POST = httpClient.post.bind(httpClient)
+export const PUT = httpClient.put.bind(httpClient)
+export const PATCH = httpClient.patch.bind(httpClient)
+export const DELETE = httpClient.delete.bind(httpClient)

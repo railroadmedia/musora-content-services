@@ -6,9 +6,9 @@ import {
   fetchUserPractices,
   fetchUserPracticeMeta,
   fetchUserPracticeNotes,
-  fetchHandler,
   fetchRecentUserActivities,
 } from './railcontent'
+import { GET, POST, PUT, DELETE } from '../infrastructure/http/HttpClient.js'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import {
   fetchByRailContentId,
@@ -360,8 +360,8 @@ export async function removeUserPractice(id) {
  *   .catch(error => console.error(error));
  */
 export async function restoreUserPractice(id) {
-  let url = `/api/user/practices/v1/practices/restore${buildQueryString([id])}`
-  const response = await fetchHandler(url, 'put')
+  const url = `/api/user/practices/v1/practices/restore${buildQueryString([id])}`
+  const response = await PUT(url, null)
   if (response?.data?.length) {
     const restoredPractice = response.data.find((p) => p.id === id)
     if (restoredPractice) {
@@ -430,7 +430,7 @@ export async function deletePracticeSession(day) {
  */
 export async function restorePracticeSession(date) {
   const url = `/api/user/practices/v1/practices/restore?date=${date}`
-  const response = await fetchHandler(url, 'PUT', null)
+  const response = await PUT(url, null)
 
   if (response?.data) {
     await userActivityContext.updateLocal(async function (localContext) {
@@ -853,7 +853,7 @@ async function formatPracticeMeta(practices = []) {
  */
 export async function recordUserActivity(payload) {
   const url = `/api/user-management-system/v1/activities`
-  return await fetchHandler(url, 'POST', null, payload)
+  return await POST(url, payload)
 }
 
 /**
@@ -869,7 +869,7 @@ export async function recordUserActivity(payload) {
  */
 export async function deleteUserActivity(id) {
   const url = `/api/user-management-system/v1/activities/${id}`
-  return await fetchHandler(url, 'DELETE')
+  return await DELETE(url)
 }
 
 /**
@@ -885,7 +885,7 @@ export async function deleteUserActivity(id) {
  */
 export async function restoreUserActivity(id) {
   const url = `/api/user-management-system/v1/activities/${id}`
-  return await fetchHandler(url, 'POST')
+  return await POST(url, null)
 }
 
 async function extractPinnedItemsAndSortAllItems(
@@ -1384,7 +1384,7 @@ function popContentAndRemoveChildrenFromContentsMap(content, contentsMap) {
  */
 export async function pinProgressRow(brand, id, progressType) {
   const url = `/api/user-management-system/v1/progress/pin?brand=${brand}&id=${id}&progressType=${progressType}`
-  const response = await fetchHandler(url, 'PUT', null)
+  const response = await PUT(url, null)
   if (response && !response.error) {
     await updateUserPinnedProgressRow(brand, {
       id,
@@ -1407,7 +1407,7 @@ export async function pinProgressRow(brand, id, progressType) {
  */
 export async function unpinProgressRow(brand) {
   const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}`
-  const response = await fetchHandler(url, 'PUT', null)
+  const response = await PUT(url, null)
   if (response && !response.error) {
     await updateUserPinnedProgressRow(brand, null)
   }
@@ -1424,17 +1424,12 @@ async function updateUserPinnedProgressRow(brand, pinnedData) {
 
 export async function fetchRecentActivitiesActiveTabs() {
   const url = `/api/user-management-system/v1/activities/tabs`
-  try {
-    const tabs = await fetchHandler(url, 'GET')
-    const activitiesTabs = []
+  const tabs = await GET(url)
+  const activitiesTabs = []
 
-    tabs.forEach((tab) => {
-      activitiesTabs.push({ name: tab.label, short_name: tab.label })
-    })
+  tabs.forEach((tab) => {
+    activitiesTabs.push({ name: tab.label, short_name: tab.label })
+  })
 
-    return activitiesTabs
-  } catch (error) {
-    console.error('Error fetching activity tabs:', error)
-    return []
-  }
+  return activitiesTabs
 }

@@ -1,7 +1,7 @@
 /**
  * @module UserNotifications
  */
-import { fetchHandler } from '../railcontent.js'
+import { GET, PUT, DELETE } from '../../infrastructure/http/HttpClient.js'
 import  eventsAPI from '../eventsAPI.js'
 import './types.js'
 import {globalConfig} from "../config";
@@ -35,7 +35,7 @@ const NotificationChannels = {
 export async function fetchNotifications({ limit = 10, onlyUnread = false, page = 1 } = {}) {
   const unreadParam = onlyUnread ? '&unread=1' : ''
   const url = `${baseUrl}/v1?limit=${limit}&page=${page}${unreadParam}`
-  return fetchHandler(url, 'get')
+  return await GET(url)
 }
 
 /**
@@ -58,7 +58,7 @@ export async function markNotificationAsRead(notificationId) {
   }
 
   const url = `${baseUrl}/v1/read?id=${notificationId}`
-  return fetchHandler(url, 'put')
+  return await PUT(url, null)
 }
 
 /**
@@ -72,7 +72,7 @@ export async function markNotificationAsRead(notificationId) {
 export async function markAllNotificationsAsRead() {
   await eventsAPI.pauseLiveEventCheck()
   const url = `${baseUrl}/v1/read`
-  return fetchHandler(url, 'put')
+  return await PUT(url, null)
 }
 
 /**
@@ -95,7 +95,7 @@ export async function markNotificationAsUnread(notificationId) {
   }
 
   const url = `${baseUrl}/v1/unread?id=${notificationId}`
-  return fetchHandler(url, 'put')
+  return await PUT(url, null)
 }
 
 /**
@@ -117,7 +117,7 @@ export async function deleteNotification(notificationId) {
     throw new Error('notificationId is required')
   }
   const url = `${baseUrl}/v1/${notificationId}`
-  return fetchHandler(url, 'delete')
+  return await DELETE(url)
 }
 
 /**
@@ -140,7 +140,7 @@ export async function restoreNotification(notificationId) {
   }
 
   const url = `${baseUrl}/v1/${notificationId}`
-  return fetchHandler(url, 'put')
+  return await PUT(url, null)
 }
 
 /**
@@ -163,9 +163,9 @@ export async function restoreNotification(notificationId) {
  */
 export async function fetchUnreadCount({ brand = 'drumeo'} = {}) {
   const url = `${baseUrl}/v1/unread-count`
-  const notifUnread =  await fetchHandler(url, 'get')
+  const notifUnread =  await GET(url)
   if (notifUnread && notifUnread.data > 0) {
-    return notifUnread// Return early if unread notifications exist
+    return notifUnread
   }
   const liveEventPollingState = await fetchLiveEventPollingState()
   if(liveEventPollingState.data?.read_state === true){
@@ -191,7 +191,7 @@ export async function fetchUnreadCount({ brand = 'drumeo'} = {}) {
  */
 export async function fetchNotificationSettings() {
   const url = `/api/notifications/v1/settings`;
-  const settings = await fetchHandler(url, 'get');
+  const settings = await GET(url);
 
   if (!settings || typeof settings !== 'object') return {};
 
@@ -258,7 +258,7 @@ export async function updateNotificationSetting({ brand, settingName, email, pus
   const payload = { settings };
   const url = '/api/notifications/v1/settings';
 
-  return fetchHandler(url, 'PUT', null, payload);
+  return await PUT(url, payload);
 }
 
 /**
@@ -274,7 +274,7 @@ export async function pauseLiveEventPolling(brand = 'drumeo') {
   const liveEvent = await fetchLiveEvent(brand)
   const until = liveEvent?.live_event_end_time || null
   const url = `/api/user-management-system/v1/users/pause-polling${until ? `?until=${until}` : ''}`
-  return fetchHandler(url, 'PUT', null)
+  return await PUT(url, null)
 }
 
 /**
@@ -283,7 +283,7 @@ export async function pauseLiveEventPolling(brand = 'drumeo') {
  */
 export async function startLiveEventPolling(brand = 'drumeo') {
   const url = `/api/user-management-system/v1/users/start-polling`
-  return fetchHandler(url, 'PUT', null)
+  return await PUT(url, null)
 }
 
 /**
@@ -293,7 +293,7 @@ export async function startLiveEventPolling(brand = 'drumeo') {
 
 export async function fetchLiveEventPollingState() {
     const url = `/api/user-management-system/v1/users/polling`
-    return fetchHandler(url, 'GET', null)
+    return await GET(url)
 }
 
 

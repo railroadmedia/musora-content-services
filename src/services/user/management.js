@@ -1,11 +1,10 @@
 /**
  * @module UserManagement
  */
-import { fetchHandler as railcontentFetchHandler } from '../railcontent.js'
+import { GET, POST, PUT } from '../../infrastructure/http/HttpClient.js'
 import { fetchHandler, fetchJSONHandler } from '../../lib/httpHelper.js'
 import { globalConfig } from '../config.js'
 import './types.js'
-import { HttpClient } from '../../infrastructure/http/HttpClient'
 
 const baseUrl = `/api/user-management-system`
 
@@ -15,8 +14,7 @@ const baseUrl = `/api/user-management-system`
  */
 export async function blockedUsers() {
   const url = `${baseUrl}/v1/users/${globalConfig.sessionConfig.userId}/blocked`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.get(url)
+  return await GET(url)
 }
 
 /**
@@ -26,7 +24,7 @@ export async function blockedUsers() {
  */
 export async function blockUser(userId) {
   const url = `${baseUrl}/v1/block/${userId}`
-  return railcontentFetchHandler(url, 'post')
+  return await POST(url, null)
 }
 
 /**
@@ -36,7 +34,7 @@ export async function blockUser(userId) {
  */
 export async function unblockUser(userId) {
   const url = `${baseUrl}/v1/unblock/${userId}`
-  return railcontentFetchHandler(url, 'post')
+  return await POST(url, null)
 }
 
 /**
@@ -123,8 +121,7 @@ export async function deletePicture(pictureUrl) {
  */
 export async function getUserData(userId = globalConfig.sessionConfig.userId) {
   const apiUrl = `${baseUrl}/v1/users/${userId}`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.get(apiUrl)
+  return await GET(apiUrl)
 }
 
 /**
@@ -133,8 +130,7 @@ export async function getUserData(userId = globalConfig.sessionConfig.userId) {
  */
 export async function isUsernameAvailable(userName) {
   const apiUrl = `${baseUrl}/v1/users/usernames/available?username=${encodeURIComponent(userName)}`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.get(apiUrl)
+  return await GET(apiUrl)
 }
 
 /**
@@ -143,8 +139,7 @@ export async function isUsernameAvailable(userName) {
  */
 export async function updateDisplayName(newDisplayName) {
   const apiUrl = `${baseUrl}/v1/users/${globalConfig.sessionConfig.userId}/display-name`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.put(apiUrl, { display_name: newDisplayName })
+  return await PUT(apiUrl, { display_name: newDisplayName })
 }
 
 /**
@@ -155,8 +150,7 @@ export async function updateDisplayName(newDisplayName) {
  */
 export async function setUserSignature(params) {
   const apiUrl = `/api/forums/v1/signature`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.post(apiUrl, params)
+  return await POST(apiUrl, params)
 }
 
 /**
@@ -166,8 +160,7 @@ export async function setUserSignature(params) {
  */
 export async function getUserSignature() {
   const apiUrl = `/api/forums/v1/signature`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.get(apiUrl)
+  return await GET(apiUrl)
 }
 
 /**
@@ -178,8 +171,7 @@ export async function getUserSignature() {
  */
 export async function toggleSignaturePrivate(showSignature = true) {
   const apiUrl = `/api/forums/v1/signature/toggle`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.put(apiUrl, { show_signature: showSignature })
+  return await PUT(apiUrl, { show_signature: showSignature })
 }
 
 
