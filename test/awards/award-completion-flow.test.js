@@ -91,7 +91,8 @@ describe('Award Completion Flow - E2E Scenarios', () => {
         definition: expect.objectContaining({
           name: testAward.name,
           badge: testAward.badge,
-          award: testAward.award
+          award: testAward.award,
+          content_type: expect.any(String)
         }),
         completionData: expect.objectContaining({
           content_title: expect.any(String),
