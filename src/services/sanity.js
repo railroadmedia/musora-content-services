@@ -22,13 +22,12 @@ import {
   SONG_TYPES,
   SONG_TYPES_WITH_CHILDREN,
 } from '../contentTypeConfig.js'
-import { fetchSimilarItems, recommendations } from './recommendations.js'
-import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
+import { fetchSimilarItems } from './recommendations.js'
+import { processMetadata } from '../contentMetaData.js'
 
 import { globalConfig } from './config.js'
 
 import { fetchNextContentDataForParent } from './railcontent.js'
-import { GET } from '../infrastructure/http/HttpClient.js'
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
