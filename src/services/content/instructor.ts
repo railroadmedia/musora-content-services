@@ -2,19 +2,18 @@
  * @module Instructor
  */
 import { Either } from '../../core/types/ads/either'
-import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
 import { SanityError } from '../../infrastructure/sanity/interfaces/SanityError'
+import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
 import { Brand } from '../../lib/brands'
 import { DocumentType } from '../../lib/documents'
 import { getSortOrder } from '../../lib/sanity/query'
-
 import { getFieldsForContentType } from '../../contentTypeConfig.js'
 import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 import { Filters as f } from '../../lib/sanity/filter'
 import { BuildQueryOptions, query } from '../../lib/sanity/query'
 import { getPermissionsAdapter } from '../permissions/PermissionsAdapterFactory.js'
-import { Lesson } from './content'
 import { needsAccessDecorator } from '../sanity.js'
+import { Lesson } from './content'
 
 const contentClient = new SanityClient()
 
