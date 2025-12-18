@@ -27,9 +27,9 @@ export default class SyncManager {
     }
     SyncManager.instance = instance
     const teardown = instance.setup()
-    return async () => {
+    return (force = false) => {
       SyncManager.instance = null
-      return await teardown()
+      return teardown(force)
     }
   }
 
@@ -55,9 +55,9 @@ export default class SyncManager {
   private effectMap: { models: ModelClass[]; effects: SyncEffect[] }[]
 
   private initDatabase: () => Database
-  private destroyDatabase?: (dbName: string, adapter: DatabaseAdapter) => void
+  private destroyDatabase?: (dbName: string, adapter: DatabaseAdapter) => Promise<void>
 
-  constructor(context: SyncContext, initDatabase: () => Database, destroyDatabase?: (dbName: string, adapter: DatabaseAdapter) => void) {
+  constructor(context: SyncContext, initDatabase: () => Database, destroyDatabase?: (dbName: string, adapter: DatabaseAdapter) => Promise<void>) {
     this.id = (SyncManager.counter++).toString()
 
     this.telemetry = SyncTelemetry.getInstance()!
@@ -152,7 +152,7 @@ export default class SyncManager {
     })
     onContentCompleted(onContentCompletedLearningPathListener)
 
-    const teardown = () => {
+    const teardown = (force = false) => {
       this.telemetry.debug('[SyncManager] Tearing down')
       this.runScope.abort()
       this.strategyMap.forEach(({ strategies }) =>
@@ -163,12 +163,13 @@ export default class SyncManager {
       this.retry.stop()
       this.context.stop()
 
-      if (this.destroyDatabase && database.adapter.dbName && database.adapter.underlyingAdapter) {
+      if (force && this.destroyDatabase && database.adapter.dbName && database.adapter.underlyingAdapter) {
         return this.destroyDatabase(database.adapter.dbName, database.adapter.underlyingAdapter)
       } else {
         return database.unsafeResetDatabase()
       }
     }
+
     return teardown
   }
 
