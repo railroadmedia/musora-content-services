@@ -3,8 +3,8 @@ import { SYNC_TABLES } from '../schema'
 import {
   throwIfInvalidEnumValue,
   throwIfNotNullableNumber,
+  throwIfNotNullableString,
   throwIfNotNumber,
-  throwIfNotString,
   throwIfOutsideRange,
 } from '../errors/validators'
 
@@ -23,7 +23,7 @@ export enum STATE {
 
 export default class ContentProgress extends BaseModel<{
   content_id: number
-  content_brand: string
+  content_brand: string | null
   collection_type: COLLECTION_TYPE
   collection_id: number
   state: STATE
@@ -36,7 +36,7 @@ export default class ContentProgress extends BaseModel<{
     return this._getRaw('content_id') as number
   }
   get content_brand() {
-    return this._getRaw('content_brand') as string
+    return this._getRaw('content_brand') as string | null
   }
   get state() {
     return this._getRaw('state') as STATE
@@ -59,8 +59,8 @@ export default class ContentProgress extends BaseModel<{
     throwIfNotNumber(value)
     this._setRaw('content_id', throwIfOutsideRange(value, 0))
   }
-  set content_brand(value: string) {
-    this._setRaw('content_brand', throwIfNotString(value))
+  set content_brand(value: string |  null) {
+    this._setRaw('content_brand', throwIfNotNullableString(value))
   }
   // IMPORTANT: progress percent only moves forward and is clamped between 0 and 100
   // also has implications for last-write-wins sync strategy

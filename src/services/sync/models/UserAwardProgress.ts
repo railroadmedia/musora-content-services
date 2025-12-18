@@ -3,7 +3,7 @@ import { SYNC_TABLES } from '../schema'
 import type { CompletionData } from '../../awards/types'
 import {
   throwIfMaxLengthExceeded,
-  throwIfNotNullableNumber,
+  throwIfNotNullableString,
   throwIfNotNumber,
   throwIfNotString,
   throwIfOutsideRange,
@@ -53,7 +53,7 @@ export default class UserAwardProgress extends BaseModel<{
   }
 
   set completed_at(value: string | null) {
-    this._setRaw('completed_at', throwIfNotNullableNumber(value))
+    this._setRaw('completed_at', throwIfNotNullableString(value))
   }
 
   set progress_data(value: any) {
