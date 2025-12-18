@@ -5,13 +5,6 @@ export interface BrandMethodLevels {
   singeo: string
 }
 
-export interface BrandTotalXp {
-  drumeo: string
-  pianote: string
-  guitareo: string
-  singeo: string
-}
-
 export interface BrandTimePracticed {
   drumeo: number
   pianote: number
@@ -44,7 +37,6 @@ export interface User {
   access_level: string
   total_xp: number
   brand_method_levels: BrandMethodLevels
-  brand_total_xp: BrandTotalXp
   brand_minutes_practiced: BrandTimePracticed
   brand_seconds_practiced: BrandTimePracticed
   guitar_playing_since_year: number | null
