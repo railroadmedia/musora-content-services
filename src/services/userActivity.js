@@ -982,9 +982,9 @@ function generateContentsMap(contents, playlistsContents) {
 export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
   // TODO slice progress to a reasonable number, say 100
   const methodCardPromise = getMethodCard(brand)
-  const [recentPlaylists, progressContents, userPinnedItem] = await Promise.all([
+  const [recentPlaylists, nonPlaylistContentIds, userPinnedItem] = await Promise.all([
     fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
-    getAllStartedOrCompleted({ onlyIds: false, brand: brand, limit }),
+    getAllStartedOrCompleted({ brand: brand, limit }),
     getUserPinnedItem(brand),
   ])
 
@@ -995,7 +995,6 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
   )
 
   // todo post v2: refactor this once we migrate playlist progress tracking to new system
-  const nonPlaylistContentIds = Object.keys(progressContents)
   if (userPinnedItem?.progressType === 'content') {
     nonPlaylistContentIds.push(userPinnedItem.id)
   }

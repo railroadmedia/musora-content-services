@@ -21,6 +21,7 @@ let progressUpdateCallback = null
  * - `awardId` - Unique Sanity award ID
  * - `name` - Display name of the award
  * - `badge` - URL to badge image
+ * - `contentType` - Content type ('guided-course' or 'learning-path-v2')
  * - `completed_at` - ISO timestamp
  * - `isCompleted` - Boolean indicating the award is completed (always true for granted awards)
  * - `completion_data.message` - Pre-generated congratulations message
@@ -72,6 +73,7 @@ export function registerAwardCallback(callback) {
       awardId: awardId,
       name: definition.name,
       badge: definition.badge,
+      contentType: definition.content_type,
       completed_at: completionData.completed_at,
       isCompleted: true,
       completionData: {

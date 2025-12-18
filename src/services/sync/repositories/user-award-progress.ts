@@ -5,7 +5,7 @@ import type { AwardDefinition, CompletionData } from '../../awards/types'
 import type { ModelSerialized } from '../serializers'
 
 type AwardProgressData = {
-  completed_at: number | null
+  completed_at: string | null
   progress_percentage: number
 }
 
@@ -18,7 +18,7 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
     return progress.progress_percentage >= 0 && !UserAwardProgressRepository.isCompleted(progress)
   }
 
-  static completedAtDate(progress: { completed_at: number | null }): Date | null {
+  static completedAtDate(progress: { completed_at: string | null }): Date | null {
     return progress.completed_at ? new Date(progress.completed_at) : null
   }
 
@@ -73,7 +73,7 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
     awardId: string,
     progressPercentage: number,
     options?: {
-      completedAt?: number | null
+      completedAt?: string | null
       progressData?: any
       completionData?: CompletionData | null
       immediate?: boolean
@@ -104,7 +104,7 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
     completionData: CompletionData
   ) {
     return this.recordAwardProgress(awardId, 100, {
-      completedAt: Date.now(),
+      completedAt: new Date().toISOString(),
       completionData,
       immediate: true
     })
