@@ -1,7 +1,7 @@
 import { SONG_TYPES_WITH_CHILDREN } from '../../contentTypeConfig.js'
-import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse.js'
 import { globalConfig } from '../../services/config.js'
-import { PermissionsAdapter, UserPermissions } from '../../services/permissions/PermissionsAdapter'
+import { UserPermissions } from '../../services/permissions/PermissionsAdapter'
+import { getPermissionsAdapter } from '../../services/permissions/PermissionsAdapterFactory.js'
 
 const enum FieldName {
   NeedAccess = 'need_access',
@@ -43,61 +43,37 @@ export function contentDecorator<T>(
   return result as T & { [key in FieldName]?: any }
 }
 
-export function contentListDecorator<T>(
-  results: SanityListResponse<T>,
-  fieldName: FieldName,
-  callback: Function
-): SanityListResponse<T & { [key in FieldName]?: any }> {
-  results.data.forEach((result) => {
-    result = contentDecorator(result, fieldName, callback)
-  })
-  return results as SanityListResponse<T & { [key in FieldName]?: any }>
-}
-
-export function pageTypeDecorator<T>(results: T): T & PageTypeDecorated
-export function pageTypeDecorator<T>(
-  results: SanityListResponse<T> | T
-): SanityListResponse<T & PageTypeDecorated>
-export function pageTypeDecorator<T>(
-  results: SanityListResponse<T> | T
-): SanityListResponse<T & PageTypeDecorated> | (T & PageTypeDecorated) {
+export function pageTypeDecorator<T extends { data: any }>(t: T): T {
   const decorator = function (content: any): string {
     return SONG_TYPES_WITH_CHILDREN.includes(content['type']) ? 'song' : 'lesson'
   }
 
-  if (results && (results as SanityListResponse<T>).data) {
-    return contentListDecorator(results as SanityListResponse<T>, FieldName.PageType, decorator)
+  if (t && Array.isArray(t)) {
+    t.data = t.map((i) => contentDecorator(i, FieldName.PageType, decorator))
+    return t
   }
 
-  return contentDecorator(results, FieldName.PageType, decorator) as T & PageTypeDecorated
+  t.data = contentDecorator(t.data, FieldName.PageType, decorator)
+  return t
 }
 
-export function needsAccessDecorator<T>(
-  results: SanityListResponse<T> | T,
-  userPermissions: UserPermissions,
-  adapter: PermissionsAdapter
-): T & NeedAccessDecorated
-export function needsAccessDecorator<T>(
-  results: SanityListResponse<T>,
-  userPermissions: UserPermissions,
-  adapter: PermissionsAdapter
-): SanityListResponse<T & NeedAccessDecorated>
-export function needsAccessDecorator<T>(
-  results: SanityListResponse<T> | T,
-  userPermissions: UserPermissions,
-  adapter: PermissionsAdapter
-): SanityListResponse<T & { [FieldName.NeedAccess]?: boolean }> | (T & NeedAccessDecorated) {
+export async function needsAccessDecorator<T extends { data: any }>(t: T): Promise<T> {
   if (globalConfig.sanityConfig.useDummyRailContentMethods) {
-    return results as T & NeedAccessDecorated
+    return t as T
   }
+
+  const adapter = getPermissionsAdapter()
+  const userPermissions: UserPermissions = await adapter.fetchUserPermissions()
 
   const decorator = function (content: any) {
     return adapter.doesUserNeedAccess(content, userPermissions)
   }
 
-  if (results && (results as SanityListResponse<T>).data) {
-    return contentListDecorator(results as SanityListResponse<T>, FieldName.NeedAccess, decorator)
+  if (t && Array.isArray(t['data'])) {
+    t.data = t.data.map((i) => contentDecorator(i, FieldName.NeedAccess, decorator))
+    return t
   }
 
-  return contentDecorator(results as T, FieldName.NeedAccess, decorator)
+  t.data = contentDecorator(t.data, FieldName.NeedAccess, decorator)
+  return t
 }

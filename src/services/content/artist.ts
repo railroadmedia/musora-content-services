@@ -6,10 +6,9 @@ import { SanityListResponse } from '../../infrastructure/sanity/interfaces/Sanit
 import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 import { Brand } from '../../lib/brands'
 import { DocumentType } from '../../lib/documents'
+import { NeedAccessDecorated, needsAccessDecorator } from '../../lib/sanity/decorators'
 import { Filters as f } from '../../lib/sanity/filter'
 import { BuildQueryOptions, getSortOrder, query } from '../../lib/sanity/query'
-import { getPermissionsAdapter } from '../permissions'
-import { needsAccessDecorator } from '../sanity.js'
 import { Lesson } from './content'
 
 const contentClient = new SanityClient()
@@ -96,7 +95,7 @@ export interface ArtistLessonOptions extends BuildQueryOptions {
   progressIds?: Array<number>
 }
 
-export interface ArtistLessons extends SanityListResponse<Lesson> {}
+export interface ArtistLessons extends SanityListResponse<Lesson & NeedAccessDecorated> {}
 
 /**
  * Fetch the artist's lessons.
@@ -157,14 +156,11 @@ export async function fetchArtistLessons(
     "total": count(${total})
   }`
 
-  const [res, permissions] = await Promise.all([
-    contentClient.fetchList<Lesson>(q, {
+  return contentClient
+    .fetchList<Lesson>(q, {
       sort,
       offset,
       limit,
-    }),
-    getPermissionsAdapter().fetchUserPermissions(),
-  ])
-
-  return needsAccessDecorator(res, permissions)
+    })
+    .then(needsAccessDecorator)
 }

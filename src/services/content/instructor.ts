@@ -6,10 +6,10 @@ import { getFieldsForContentType } from '../../contentTypeConfig.js'
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
 import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 import { Brand } from '../../lib/brands'
+import { NeedAccessDecorated, needsAccessDecorator } from '../../lib/sanity/decorators'
 import { Filters as f } from '../../lib/sanity/filter'
 import { BuildQueryOptions, query } from '../../lib/sanity/query'
-import { getPermissionsAdapter } from '../permissions/PermissionsAdapterFactory.js'
-import { getSortOrder, needsAccessDecorator } from '../sanity.js'
+import { getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
 
 const contentClient = new SanityClient()
@@ -102,7 +102,7 @@ export interface InstructorLessonsOptions extends BuildQueryOptions {
   includedFields?: string[]
 }
 
-export interface InstructorLessons extends SanityListResponse<Lesson> {}
+export interface InstructorLessons extends SanityListResponse<Lesson & NeedAccessDecorated> {}
 
 /**
  * Fetch the data needed for the instructor screen.
@@ -125,7 +125,7 @@ export interface InstructorLessons extends SanityListResponse<Lesson> {}
 export async function fetchInstructorLessons(
   slug: string,
   brand: Brand,
-  contentType: DocumentType,
+  contentType?: DocumentType,
   {
     sort = '-published_on',
     searchTerm = '',
@@ -160,14 +160,11 @@ export async function fetchInstructorLessons(
     "total": count(${total})
   }`
 
-  const [res, permissions] = await Promise.all([
-    contentClient.fetchList<Lesson>(q, {
+  return contentClient
+    .fetchList<Lesson>(q, {
       sort,
       offset,
       limit,
-    }),
-    getPermissionsAdapter().fetchUserPermissions(),
-  ])
-
-  return needsAccessDecorator(res, permissions)
+    })
+    .then(needsAccessDecorator)
 }
