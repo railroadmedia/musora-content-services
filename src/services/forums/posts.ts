@@ -6,6 +6,8 @@ import { globalConfig } from '../config.js'
 import { ForumPost } from './types'
 import { PaginatedResponse } from '../api/types'
 import { markThreadAsRead } from './threads'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError.js'
+import { Either } from '../../core/types/ads/either'
 
 const baseUrl = `/api/forums`
 
@@ -22,9 +24,11 @@ export interface CreatePostParams {
  * @returns {Promise<ForumPost>} - A promise that resolves to the created post.
  * @throws {HttpError} - If the request fails.
  */
-export async function createPost(threadId: number, params: CreatePostParams): Promise<ForumPost> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<ForumPost>(`${baseUrl}/v1/threads/${threadId}/posts`, params)
+export async function createPost(
+  threadId: number,
+  params: CreatePostParams
+): Promise<Either<HttpError, ForumPost>> {
+  return HttpClient.client().post<ForumPost>(`${baseUrl}/v1/threads/${threadId}/posts`, params)
 }
 
 /**
@@ -35,9 +39,11 @@ export async function createPost(threadId: number, params: CreatePostParams): Pr
  * @returns {Promise<ForumPost>} - A promise that resolves to the updated post.
  * @throws {HttpError} - If the request fails.
  */
-export async function updatePost(postId: number, params: CreatePostParams): Promise<ForumPost> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.put<ForumPost>(`${baseUrl}/v1/posts/${postId}`, params)
+export async function updatePost(
+  postId: number,
+  params: CreatePostParams
+): Promise<Either<HttpError, ForumPost>> {
+  return HttpClient.client().put<ForumPost>(`${baseUrl}/v1/posts/${postId}`, params)
 }
 
 export interface FetchPostParams {
@@ -60,8 +66,7 @@ export async function fetchPosts(
   threadId: number,
   brand: string,
   params: FetchPostParams = {}
-): Promise<PaginatedResponse<ForumPost>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
+): Promise<Either<HttpError, PaginatedResponse<ForumPost>>> {
   const queryObj: Record<string, string> = {
     brand,
     ...Object.fromEntries(
@@ -75,11 +80,11 @@ export async function fetchPosts(
   const url = `${baseUrl}/v1/threads/${threadId}/posts?${query}`
 
   // Mark thread as read in background (non-blocking)
-  markThreadAsRead(threadId, brand).catch(error => {
+  markThreadAsRead(threadId, brand).catch((error) => {
     console.error('Failed to mark thread as read:', error)
   })
 
-  return httpClient.get<PaginatedResponse<ForumPost>>(url)
+  return HttpClient.client().get<PaginatedResponse<ForumPost>>(url)
 }
 
 /**
@@ -87,12 +92,10 @@ export async function fetchPosts(
  *
  * @param {number} postId - The ID of the post to like.
  * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
- * @return {Promise<void>} - A promise that resolves when the post is liked.
- * @throws {HttpError} - If the request fails.
+ * @return {Promise<Either<HttpError, void>>} - A promise that resolves when the post is liked.
  */
-export async function likePost(postId: number, brand: string): Promise<void> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<void>(`${baseUrl}/v1/posts/${postId}/likes`, { brand })
+export async function likePost(postId: number, brand: string): Promise<Either<HttpError, void>> {
+  return HttpClient.client().post<void>(`${baseUrl}/v1/posts/${postId}/likes`, { brand })
 }
 
 /**
@@ -103,10 +106,9 @@ export async function likePost(postId: number, brand: string): Promise<void> {
  * @return {Promise<void>} - A promise that resolves when the post is unliked.
  * @throws {HttpError} - If the request fails.
  */
-export async function unlikePost(postId: number, brand: string): Promise<void> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
+export async function unlikePost(postId: number, brand: string): Promise<Either<HttpError, void>> {
   const query = new URLSearchParams({ brand }).toString()
-  return httpClient.delete<void>(`${baseUrl}/v1/posts/${postId}/likes?${query}`)
+  return HttpClient.client().delete<void>(`${baseUrl}/v1/posts/${postId}/likes?${query}`)
 }
 
 /**
@@ -117,9 +119,8 @@ export async function unlikePost(postId: number, brand: string): Promise<void> {
  * @return {Promise<void>} - A promise that resolves when the post is deleted.
  * @throws {HttpError} - If the request fails.
  */
-export async function deletePost(postId: number, brand: string): Promise<void> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.delete<void>(`${baseUrl}/v1/posts/${postId}?brand=${brand}`)
+export async function deletePost(postId: number, brand: string): Promise<Either<HttpError, void>> {
+  return HttpClient.client().delete<void>(`${baseUrl}/v1/posts/${postId}?brand=${brand}`)
 }
 
 /**
@@ -129,16 +130,17 @@ export async function deletePost(postId: number, brand: string): Promise<void> {
  * @returns {Promise<ForumPost[]>} - Resolves to an array of forum posts.
  * @throws {HttpError} - If the request fails.
  */
-export async function fetchCommunityGuidelines(brand: string): Promise<ForumPost[]> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
+export async function fetchCommunityGuidelines(
+  brand: string
+): Promise<Either<HttpError, ForumPost[]>> {
   const url = `${baseUrl}/v1/rules?brand=${brand}`
-  return httpClient.get<ForumPost[]>(url)
+  return HttpClient.client().get<ForumPost[]>(url)
 }
 
 export interface SearchParams {
-  page?: number,
-  limit?: number,
-  category_id?: number,
+  page?: number
+  limit?: number
+  category_id?: number
   /** Sort order: "-published_on" (default), "published_on", or "mine". */
   sort?: '-published_on' | string
   term?: string
@@ -155,8 +157,7 @@ export interface SearchParams {
 export async function search(
   brand: string,
   params: SearchParams
-): Promise<PaginatedResponse<ForumPost>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
+): Promise<Either<HttpError, PaginatedResponse<ForumPost>>> {
   const queryObj: Record<string, string> = {
     brand,
     ...Object.fromEntries(
@@ -168,7 +169,7 @@ export async function search(
   const query = new URLSearchParams(queryObj).toString()
 
   const url = `${baseUrl}/v1/search?${query}`
-  return httpClient.get<PaginatedResponse<ForumPost>>(url)
+  return HttpClient.client().get<PaginatedResponse<ForumPost>>(url)
 }
 
 /**
@@ -185,8 +186,7 @@ export async function jumpToPost(
   postId: number,
   brand: string,
   params: FetchPostParams = {}
-): Promise<PaginatedResponse<ForumPost>> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
+): Promise<Either<HttpError, PaginatedResponse<ForumPost>>> {
   const queryObj: Record<string, string> = {
     brand,
     ...Object.fromEntries(
@@ -198,15 +198,16 @@ export async function jumpToPost(
   const query = new URLSearchParams(queryObj).toString()
 
   const url = `${baseUrl}/v1/posts/${postId}/jump?${query}`
-  const response = await httpClient.get<PaginatedResponse<ForumPost>>(url)
+  const response = await HttpClient.client().get<PaginatedResponse<ForumPost>>(url)
 
-  // Mark thread as read in background (non-blocking)
-  // Extract thread from first post if available
-  if (response.data.length > 0 && response.data[0].thread?.id) {
-    markThreadAsRead(response.data[0].thread.id, brand).catch(error => {
-      console.error('Failed to mark thread as read:', error)
-    })
-  }
-
-  return response
+  return response.map((data) => {
+    // Mark thread as read in background (non-blocking)
+    // Extract thread from first post if available
+    if (data.data.length > 0 && data.data[0].thread?.id) {
+      markThreadAsRead(data.data[0].thread.id, brand).catch((error) => {
+        console.error('Failed to mark thread as read:', error)
+      })
+    }
+    return data
+  })
 }

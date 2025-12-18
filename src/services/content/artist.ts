@@ -2,6 +2,8 @@
  * @module Artist
  */
 import { getFieldsForContentType } from '../../contentTypeConfig.js'
+import { Either } from '../../core/types/ads/either'
+import { SanityError } from '../../infrastructure/sanity/interfaces/SanityError'
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
 import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 import { Brand } from '../../lib/brands'
@@ -26,8 +28,8 @@ export interface Artists extends SanityListResponse<Artist> {}
 /**
  * Fetch all artists with lessons available for a specific brand.
  *
+ * @returns {Promise<Either<SanityError, Artists>>} - A promise that resolves to an array of artist objects or null if not found.
  * @param {Brand} brand - The brand for which to fetch artists.
- * @returns {Promise<Artists>} - A promise that resolves to an array of artist objects or null if not found.
  *
  * @example
  * fetchArtists('drumeo')
@@ -37,7 +39,7 @@ export interface Artists extends SanityListResponse<Artist> {}
 export async function fetchArtists(
   brand: Brand,
   options: BuildQueryOptions = { sort: 'lower(name) asc' }
-): Promise<Artists> {
+): Promise<Either<SanityError, SanityListResponse<Artist>>> {
   const type = f.type('artist')
   const postFilter = `lesson_count > 0`
   const { sort = 'lower(name)', offset = 0, limit = 20 } = options
@@ -67,14 +69,16 @@ export async function fetchArtists(
  *
  * @param {string} slug - The name of the artist to fetch.
  * @param {Brand} [brand] - The brand for which to fetch the artist.
- * @returns {Promise<Artist|null>} - A promise that resolves to an artist objects or null if not found.
- *
+ * @returns {Promise<Either<SanityError, Artist | null>>} - A promise that resolves to an artist objects or null if not found.
  * @example
  * fetchArtists('drumeo')
  *   .then(artists => console.log(artists))
  *   .catch(error => console.error(error));
  */
-export async function fetchArtistBySlug(slug: string, brand?: Brand): Promise<Artist | null> {
+export async function fetchArtistBySlug(
+  slug: string,
+  brand?: Brand
+): Promise<Either<SanityError, Artist | null>> {
   const q = query()
     .and(f.type('artist'))
     .and(f.slug(slug))
@@ -110,7 +114,7 @@ export interface ArtistLessons extends SanityListResponse<Lesson> {}
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  * @param {Array<number>} [params.progressId=[]] - The ids of the lessons that are in progress or completed
- * @returns {Promise<ArtistLessons>} - The lessons for the artist
+ * @returns {Promise<Either<SanityError, ArtistLessons>>} - The lessons for the artist
  *
  * @example
  * fetchArtistLessons('10 Years', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
@@ -129,7 +133,7 @@ export async function fetchArtistLessons(
     includedFields = [],
     progressIds = [],
   }: ArtistLessonOptions = {}
-): Promise<ArtistLessons> {
+): Promise<Either<SanityError, ArtistLessons>> {
   sort = getSortOrder(sort, brand)
 
   const restrictions = await f.combineAsync(
@@ -166,5 +170,5 @@ export async function fetchArtistLessons(
     getPermissionsAdapter().fetchUserPermissions(),
   ])
 
-  return needsAccessDecorator(res, permissions)
+  return res.map((l) => needsAccessDecorator(l, permissions))
 }

@@ -1,15 +1,18 @@
 /**
  * @module Instructor
  */
-
-import { getFieldsForContentType } from '../../contentTypeConfig.js'
+import { Either } from '../../core/types/ads/either'
+import { SanityError } from '../../infrastructure/sanity/interfaces/SanityError'
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
-import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 import { Brand } from '../../lib/brands'
+import { DocumentType } from '../../lib/documents'
+import { getSortOrder } from '../../lib/sanity/query'
+import { getFieldsForContentType } from '../../contentTypeConfig.js'
+import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 import { Filters as f } from '../../lib/sanity/filter'
 import { BuildQueryOptions, query } from '../../lib/sanity/query'
 import { getPermissionsAdapter } from '../permissions/PermissionsAdapterFactory.js'
-import { getSortOrder, needsAccessDecorator } from '../sanity.js'
+import { needsAccessDecorator } from '../sanity.js'
 import { Lesson } from './content'
 
 const contentClient = new SanityClient()
@@ -28,7 +31,7 @@ export interface Instructors extends SanityListResponse<Instructor> {}
  * Fetch all instructor with lessons available for a specific brand.
  *
  * @param {Brand} brand - The brand for which to fetch instructors.
- * @returns {Promise<Instructors>} - A promise that resolves to an array of instructor objects.
+ * @returns {Promise<Either<SanityError, Instructors>>} - A promise that resolves to an array of instructor objects.
  *
  * @example
  * fetchInstructors('drumeo')
@@ -38,7 +41,7 @@ export interface Instructors extends SanityListResponse<Instructor> {}
 export async function fetchInstructors(
   brand: Brand,
   options: BuildQueryOptions
-): Promise<Instructors> {
+): Promise<Either<SanityError, SanityListResponse<Instructor>>> {
   const type = f.type('instructor')
   const postFilter = `lesson_count > 0`
   const { sort = 'lower(name)', offset = 0, limit = 20 } = options
@@ -68,7 +71,7 @@ export async function fetchInstructors(
  *
  * @param {string} slug - The slug of the instructor to fetch.
  * @param {Brand} [brand] - The brand for which to fetch the instructor. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Instructor | null>} - A promise that resolves to an instructor object or null if not found.
+ * @returns {Promise<Either<SanityError, Instructor | null>>} - A promise that resolves to an instructor object or null if not found.
  *
  * @example
  * fetchInstructorBySlug('66samus', 'drumeo')
@@ -78,7 +81,7 @@ export async function fetchInstructors(
 export async function fetchInstructorBySlug(
   slug: string,
   brand?: Brand
-): Promise<Instructor | null> {
+): Promise<Either<SanityError, Instructor | null>> {
   const q = query()
     .and(f.type('instructor'))
     .and(f.slug(slug))
@@ -116,7 +119,7 @@ export interface InstructorLessons extends SanityListResponse<Lesson> {}
  * @param {number} [options.limit=10] - The number of items per page.
  * @param {Array<string>} [options.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  *
- * @returns {Promise<InstructorLessons>} - The lessons for the instructor or null if not found.
+ * @returns {Promise<Either<SanityError, InstructorLessons>>} - The lessons for the instructor or null if not found.
  * @example
  * fetchInstructorLessons('instructor123')
  *   .then(lessons => console.log(lessons))
@@ -133,7 +136,7 @@ export async function fetchInstructorLessons(
     limit = 20,
     includedFields = [],
   }: InstructorLessonsOptions = {}
-): Promise<InstructorLessons> {
+): Promise<Either<SanityError, InstructorLessons>> {
   sort = getSortOrder(sort, brand)
 
   const restrictions = await f.combineAsync(
@@ -169,5 +172,5 @@ export async function fetchInstructorLessons(
     getPermissionsAdapter().fetchUserPermissions(),
   ])
 
-  return needsAccessDecorator(res, permissions)
+  return res.map((l) => needsAccessDecorator(l, permissions))
 }

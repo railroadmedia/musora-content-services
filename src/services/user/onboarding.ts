@@ -1,7 +1,9 @@
 /**
  * @module Onboarding
  */
+import { Either } from '../../core/types/ads/either'
 import { HttpClient } from '../../infrastructure/http/HttpClient'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { Brand } from '../../lib/brands'
 import { globalConfig } from '../config.js'
 
@@ -54,7 +56,7 @@ export async function startOnboarding({
   flow,
   steps = {},
   marketingOptIn = false,
-}: StartOnboardingParams): Promise<Onboarding> {
+}: StartOnboardingParams): Promise<Either<HttpError, Onboarding>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<Onboarding>(`/api/user-management-system/v1/onboardings`, {
     email,
@@ -90,7 +92,7 @@ export async function updateOnboarding({
   steps,
   is_completed = false,
   marketingOptIn = false,
-}: UpdateOnboardingParams): Promise<Onboarding> {
+}: UpdateOnboardingParams): Promise<Either<HttpError, Onboarding>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.put<Onboarding>(`/api/user-management-system/v1/onboardings/${id}`, {
     email,
@@ -105,12 +107,14 @@ export async function updateOnboarding({
 /**
  * Fetches the onboardings for the current user and specified brand.
  *
- * @param {Brand} brand - The brand identifier.
+ * @param {string} brand - The brand identifier.
  *
  * @returns {Promise<Onboarding>} - A promise that resolves with the onboarding data.
  * @throws {HttpError} - If the HTTP request fails.
  */
-export async function userOnboardingForBrand(brand: Brand): Promise<Onboarding> {
+export async function userOnboardingForBrand(
+  brand: string
+): Promise<Either<HttpError, Onboarding>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.get<Onboarding>(
     `/api/user-management-system/v1/users/${globalConfig.sessionConfig.userId}/onboardings/brand/${encodeURIComponent(brand)}`
@@ -224,20 +228,20 @@ const recommendedContentCache: { [brand: string]: OnboardingRecommendedContent }
  * Fetches recommended content for onboarding based on the specified brand.
  *
  * @param {string} email - The user's email address.
- * @param {Brand} brand - The brand identifier.
+ * @param {Brands} brand - The brand identifier.
  * @returns {Promise<OnboardingRecommendedContent>} - A promise that resolves with the recommended content.
  * @throws {HttpError} - If the HTTP request fails.
  */
 export async function getOnboardingRecommendedContent(
   email: string,
   brand: Brand
-): Promise<OnboardingRecommendedContent> {
+): Promise<Either<HttpError, OnboardingRecommendedContent>> {
   // TODO: Replace with real API call when available
   if (recommendedContentCache[brand]) {
-    return recommendedContentCache[brand]
+    return Either.right(recommendedContentCache[brand])
   }
 
-  return {
+  return Either.right({
     id: 412405,
     title: 'Getting Started On The Piano',
     difficulty: 'Beginner',
@@ -253,5 +257,5 @@ export async function getOnboardingRecommendedContent(
         'https://player.vimeo.com/external/1001267395.m3u8?s=8f8d8a8a762f688058e6e6fd6704c402baf1b797&oauth2_token_id=1284792283',
       type: 'vimeo-video',
     },
-  }
+  })
 }

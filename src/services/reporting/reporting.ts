@@ -7,10 +7,12 @@
  *
  */
 
+import { Either } from '../../core/types/ads/either'
 import { HttpClient } from '../../infrastructure/http/HttpClient'
-import { globalConfig } from '../config.js'
-import { ReportResponse, ReportableType, IssueTypeMap, ReportIssueOption } from './types'
+import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { Brand } from '../../lib/brands'
+import { globalConfig } from '../config.js'
+import { IssueTypeMap, ReportIssueOption, ReportResponse, ReportableType } from './types'
 
 /**
  * Parameters for submitting a report with type-safe issue values
@@ -70,7 +72,7 @@ export type ReportParams<T extends ReportableType = ReportableType> = {
  */
 export async function report<T extends ReportableType>(
   params: ReportParams<T>
-): Promise<ReportResponse> {
+): Promise<Either<HttpError, ReportResponse>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
 
   // Build request body

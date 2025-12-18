@@ -2,12 +2,6 @@
  * @module Awards
  */
 
-import { HttpClient } from '../../infrastructure/http/HttpClient'
-import { PaginatedResponse } from '../api/types'
-import { globalConfig } from '../config'
-
-const baseUrl = `/api/gamification`
-
 export interface Certificate {
   award_id: string
   user_name: string
@@ -124,7 +118,7 @@ export async function fetchCertificate(awardId: string): Promise<Certificate> {
     musora_bg_logo_64: certData.musoraBgLogo,
     brand_logo_64: certData.brandLogo,
     musora_logo_64: certData.musoraLogo,
-    ...(certData.instructorSignature && { instructor_signature_64: certData.instructorSignature })
+    ...(certData.instructorSignature && { instructor_signature_64: certData.instructorSignature }),
   }
 
   const base64Images = await urlMapToBase64(imageMap)
@@ -149,6 +143,6 @@ export async function fetchCertificate(awardId: string): Promise<Certificate> {
     award_image_64: base64Images.award_image_64,
     instructor_name: certData.instructorName,
     instructor_signature: certData.instructorSignature,
-    instructor_signature_64: base64Images.instructor_signature_64
+    instructor_signature_64: base64Images.instructor_signature_64,
   }
 }

@@ -1,4 +1,5 @@
 import { Brand } from '../../../lib/brands'
+import { DocumentType } from '../../../lib/documents'
 import { needsAccessDecorator, pageTypeDecorator } from '../../../lib/sanity/decorators'
 import { Filters as f } from '../../../lib/sanity/filter'
 import { query } from '../../../lib/sanity/query'
