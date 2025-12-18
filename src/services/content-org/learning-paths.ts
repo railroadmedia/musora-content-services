@@ -464,5 +464,5 @@ export async function onContentCompletedLearningPathListener(event) {
   await startLearningPath(brand, nextLearningPath.id)
   const nextLearningPathData = await getEnrichedLearningPath(nextLearningPath.id)
 
-  await contentStatusReset(nextLearningPathData.intro_video.id)
+  await contentStatusReset(nextLearningPathData.intro_video.id, {skipPush: true})
 }
