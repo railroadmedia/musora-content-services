@@ -12,12 +12,12 @@ type DatabaseAdapterOptions = SQLiteAdapterOptions & LokiJSAdapterOptions
 
 export default function syncAdapterFactory<T extends DatabaseAdapter>(
   AdapterClass: new (options: DatabaseAdapterOptions) => T,
-  namespace: string,
+  _namespace: string,
   opts: Omit<DatabaseAdapterOptions, 'schema' | 'migrations'>
 ): () => T {
   return () => new AdapterClass({
     ...opts,
-    dbName: `sync:${namespace}`,
+    dbName: `sync`, // don't use user namespace for now
     schema,
     migrations: undefined
   })
