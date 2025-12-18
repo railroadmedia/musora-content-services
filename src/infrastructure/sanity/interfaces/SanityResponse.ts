@@ -1,10 +1,10 @@
-export interface SanityResponse<T = any> {
+export interface SanityResponse<T> {
   result: T
   ms: number
   query: string
 }
 
-export interface SanityListResponse<T = any> {
+export interface SanityListResponse<T> {
   data: T[]
   total: number
   sort?: string

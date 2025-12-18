@@ -145,19 +145,19 @@ export async function fetchSongWithPageType(songId: number): Promise<Lesson | nu
 
 // Example: Execute a complex query that returns custom structure
 export async function fetchSongsWithPermissions(brand: Brand) {
-  const query = `{
-    "data": *[_type == "song" && brand == "${brand}"] | order(published_on desc)[0...10]{
-      "id": railcontent_id,
-      title,
-      "artist": artist->name
-    },
-    "total": count(*[_type == "song" && brand == "${brand}"])
-  }`
+  const sort = 'published_on desc'
+  const offset = 0
+  const limit = 10
 
-  const adapter = getPermissionsAdapter()
-  return Promise.all([sanityClient.executeQuery(query), adapter.fetchUserPermissions()]).then(
-    ([res, perms]) => needsAccessDecorator(perms, adapter)(res)
-  )
+  const q = query()
+    .and(f.type('song'))
+    .and(f.brand(brand))
+    .select("'id': railcontent_id", 'title', "'artist': artist->name")
+    .order(sort)
+    .slice(offset, limit)
+    .build()
+
+  return sanityClient.fetchList(q, { sort, offset, limit }).then(needsAccessDecorator)
 }
 //
 // Example: Execute a complex query that returns custom structure

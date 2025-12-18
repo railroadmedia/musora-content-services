@@ -39,6 +39,6 @@ export interface Lesson {
   thumbnail: string
   title: string
   type: LessonType
-  need_access: boolean
-  page_type: LessonPageType
+  need_access?: boolean
+  page_type?: LessonPageType
 }

@@ -43,7 +43,7 @@ export function contentDecorator<T>(
   return result as T & { [key in FieldName]?: any }
 }
 
-export function pageTypeDecorator<T extends { data: any }>(t: T): T {
+export function pageTypeDecorator<K, T extends { data: K[] | K }>(t: T) {
   const decorator = function (content: any): string {
     return SONG_TYPES_WITH_CHILDREN.includes(content['type']) ? 'song' : 'lesson'
   }
@@ -57,7 +57,7 @@ export function pageTypeDecorator<T extends { data: any }>(t: T): T {
   return t
 }
 
-export async function needsAccessDecorator<T extends { data: any }>(t: T): Promise<T> {
+export async function needsAccessDecorator<K, T extends { data: K[] | K }>(t: T) {
   if (globalConfig.sanityConfig.useDummyRailContentMethods) {
     return t as T
   }
