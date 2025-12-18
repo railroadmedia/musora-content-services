@@ -14,12 +14,12 @@ export class HttpClient {
   private requestExecutor: RequestExecutor
 
   constructor(
-    baseUrl: string,
+    baseUrl: string = '',
     token: string | null = null,
     headerProvider: HeaderProvider = new DefaultHeaderProvider(),
     requestExecutor: RequestExecutor = new FetchRequestExecutor()
   ) {
-    this.baseUrl = baseUrl
+    this.baseUrl = baseUrl || globalConfig?.baseUrl || ''
     this.token = token || globalConfig?.sessionConfig?.token || null
     this.headerProvider = headerProvider
     this.requestExecutor = requestExecutor
@@ -45,8 +45,8 @@ export class HttpClient {
     return this.request<T>(url, 'PATCH', dataVersion, data)
   }
 
-  public async delete<T>(url: string, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'DELETE', dataVersion)
+  public async delete<T>(url: string, data: any = null, dataVersion: string | null = null): Promise<T> {
+    return this.request<T>(url, 'DELETE', dataVersion, data)
   }
 
   private async request<T>(
@@ -93,16 +93,23 @@ export class HttpClient {
       credentials: 'include',
     }
 
-    // Add body for non-GET requests
     if (body) {
-      options.body = JSON.stringify(body)
+      const isFormData = typeof FormData !== 'undefined' && body instanceof FormData
+      if (isFormData) {
+        // Let browser set Content-Type with boundary for FormData
+        delete options.headers['Content-Type']
+        options.body = body
+      } else {
+        options.body = JSON.stringify(body)
+      }
     }
 
     return options
   }
 
   private resolveUrl(url: string): string {
-    return url.startsWith('/') ? this.baseUrl + url : url
+    const baseUrl = this.baseUrl || globalConfig?.baseUrl || ''
+    return url.startsWith('/') ? baseUrl + url : url
   }
 
   private handleError(error: any, url: string, method: string): never {
@@ -120,3 +127,11 @@ export class HttpClient {
     } as NetworkError
   }
 }
+
+const httpClient = new HttpClient()
+
+export const GET = httpClient.get.bind(httpClient)
+export const POST = httpClient.post.bind(httpClient)
+export const PUT = httpClient.put.bind(httpClient)
+export const PATCH = httpClient.patch.bind(httpClient)
+export const DELETE = httpClient.delete.bind(httpClient)

@@ -1,8 +1,7 @@
 /**
  * @module Playlists
  */
-import { globalConfig } from '../config.js'
-import { fetchHandler } from '../railcontent.js'
+import { GET, POST, PUT, DELETE } from '../../infrastructure/http/HttpClient.js'
 import { getNavigateToForPlaylists } from '../contentAggregator.js'
 import './playlists-types.js'
 
@@ -43,7 +42,7 @@ export async function fetchUserPlaylists(
   const content = content_id ? `&content_id=${content_id}` : ''
   const brandString = brand ? `&brand=${brand}` : ''
   const url = `${BASE_PATH}/v1/user/playlists${pageString}${brandString}${limitString}${sortString}${content}`
-  return await getNavigateToForPlaylists(await fetchHandler(url), {dataField: 'data'})
+  return await getNavigateToForPlaylists(await GET(url), {dataField: 'data'})
 }
 
 /**
@@ -68,7 +67,7 @@ export async function fetchUserPlaylists(
  */
 export async function createPlaylist(playlistData) {
   const url = `${BASE_PATH}/v1/user/playlists`
-  return await fetchHandler(url, 'POST', null, playlistData)
+  return await POST(url, playlistData)
 }
 
 /**
@@ -79,7 +78,7 @@ export async function createPlaylist(playlistData) {
  */
 export async function deletePlaylist(playlist) {
   const url = `${BASE_PATH}/v1/user/playlists/delete/${playlist}`
-  return await fetchHandler(url, 'POST', null, playlist)
+  return await POST(url, playlist)
 }
 
 /**
@@ -90,7 +89,7 @@ export async function deletePlaylist(playlist) {
  */
 export async function undeletePlaylist(playlist) {
   const url = `${BASE_PATH}/v1/user/playlists/undelete/${playlist}`
-  return await fetchHandler(url, 'POST', null, playlist)
+  return await POST(url, playlist)
 }
 
 
@@ -114,7 +113,7 @@ export async function undeletePlaylist(playlist) {
  */
 export async function likePlaylist(playlistId) {
   const url = `${BASE_PATH}/v1/user/playlists/like/${playlistId}`
-  return await fetchHandler(url, 'PUT')
+  return await PUT(url, null)
 }
 
 /**
@@ -137,7 +136,7 @@ export async function likePlaylist(playlistId) {
  */
 export async function unlikePlaylist(playlistId) {
   const url = `${BASE_PATH}/v1/user/playlists/like/${playlistId}`
-  return await fetchHandler(url, 'DELETE')
+  return await DELETE(url)
 }
 
 /**
@@ -160,7 +159,7 @@ export async function unlikePlaylist(playlistId) {
  */
 export async function reportPlaylist(playlistId) {
   const url = `${BASE_PATH}/v1/user/playlists/report/${playlistId}`
-  return await fetchHandler(url, 'POST')
+  return await POST(url, null)
 }
 
 /**
@@ -199,7 +198,7 @@ export async function reportPlaylist(playlistId) {
  */
 export async function addItemToPlaylist(payload) {
   const url = `${BASE_PATH}/v1/user/playlists/items`
-  return await fetchHandler(url, 'POST', null, payload)
+  return await POST(url, payload)
 }
 
 /**
@@ -256,7 +255,7 @@ export async function updatePlaylist(playlistId, updateData)
     ...item_order && { item_order },
   }
   const url = `${BASE_PATH}/v1/user/playlists/${playlistId}`
-  return await fetchHandler(url, 'PUT', null, data);
+  return await PUT(url, data);
 }
 
 /**
@@ -300,7 +299,7 @@ export async function deleteItemsFromPlaylist(playlistId, deleted_items) {
  */
 export async function restoreItemFromPlaylist(playlistItemId) {
   const url = `${BASE_PATH}/v1/user/playlists/items/undelete/${playlistItemId}`
-  return await fetchHandler(url, 'POST')
+  return await POST(url, null)
 }
 
 /**
@@ -323,7 +322,7 @@ export async function restoreItemFromPlaylist(playlistItemId) {
  */
 export async function duplicatePlaylist(playlistId, playlistData) {
   const url = `${BASE_PATH}/v1/user/playlists/duplicate/${playlistId}`
-  return await fetchHandler(url, 'POST', null, playlistData)
+  return await POST(url, playlistData)
 }
 
 /**
@@ -344,7 +343,7 @@ export async function duplicatePlaylist(playlistId, playlistData) {
  */
 export async function fetchPlaylist(playlistId) {
   const url = `${BASE_PATH}/v1/user/playlists/${playlistId}`
-  return await getNavigateToForPlaylists(await fetchHandler(url))
+  return await getNavigateToForPlaylists(await GET(url))
 }
 
 /**
@@ -364,5 +363,5 @@ export async function fetchPlaylist(playlistId) {
  */
 export async function fetchPlaylistItems(playlistId) {
   const url = `${BASE_PATH}/v1/user/playlists/items/${playlistId}`
-  return await fetchHandler(url, 'GET')
+  return await GET(url)
 }

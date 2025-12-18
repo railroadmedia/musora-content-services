@@ -43,7 +43,7 @@
     "groqd": "^0.15.12"
   },
   "peerDependencies": {
-    "@nozbe/watermelondb": "0.28.1-0"
+    "@nozbe/watermelondb": "^0.28.1-0"
   },
   "exports": {
     ".": "./src/index.js",
