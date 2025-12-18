@@ -19,7 +19,7 @@ export class HttpClient {
     headerProvider: HeaderProvider = new DefaultHeaderProvider(),
     requestExecutor: RequestExecutor = new FetchRequestExecutor()
   ) {
-    this.baseUrl = baseUrl
+    this.baseUrl = baseUrl || globalConfig?.baseUrl || ''
     this.token = token || globalConfig?.sessionConfig?.token || null
     this.headerProvider = headerProvider
     this.requestExecutor = requestExecutor
@@ -45,8 +45,8 @@ export class HttpClient {
     return this.request<T>(url, 'PATCH', dataVersion, data)
   }
 
-  public async delete<T>(url: string, dataVersion: string | null = null): Promise<T> {
-    return this.request<T>(url, 'DELETE', dataVersion)
+  public async delete<T>(url: string, data: any = null, dataVersion: string | null = null): Promise<T> {
+    return this.request<T>(url, 'DELETE', dataVersion, data)
   }
 
   private async request<T>(
@@ -93,9 +93,15 @@ export class HttpClient {
       credentials: 'include',
     }
 
-    // Add body for non-GET requests
     if (body) {
-      options.body = JSON.stringify(body)
+      const isFormData = typeof FormData !== 'undefined' && body instanceof FormData
+      if (isFormData) {
+        // Let browser set Content-Type with boundary for FormData
+        delete options.headers['Content-Type']
+        options.body = body
+      } else {
+        options.body = JSON.stringify(body)
+      }
     }
 
     return options
