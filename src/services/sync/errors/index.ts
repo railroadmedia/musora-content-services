@@ -47,3 +47,11 @@ export class SyncUnexpectedError extends SyncError {
     Object.setPrototypeOf(this, new.target.prototype)
   }
 }
+
+export class SyncValidationError extends SyncError {
+  constructor(message: string, givenValue: any, expectedValue: any) {
+    super('validationError', { message: message, value: givenValue, expected: expectedValue })
+    this.name = 'SyncValidationError'
+    Object.setPrototypeOf(this, new.target.prototype)
+  }
+}

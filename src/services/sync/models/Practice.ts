@@ -6,7 +6,8 @@ import {
   throwIfNotNullableNumber,
   throwIfNotNullableString,
   throwIfNotNumber,
-  throwIfNotString, throwIfOutsideRange,
+  throwIfNotString,
+  throwIfOutsideRange,
 } from '../errors/validators'
 
 export default class Practice extends BaseModel<{

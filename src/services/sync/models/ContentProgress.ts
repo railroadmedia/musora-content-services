@@ -1,7 +1,7 @@
 import BaseModel from './Base'
 import { SYNC_TABLES } from '../schema'
 import {
-  throwIfInvalidEnumValue, throwIfMaxLengthExceeded,
+  throwIfInvalidEnumValue,
   throwIfNotNullableNumber,
   throwIfNotNumber,
   throwIfNotString,

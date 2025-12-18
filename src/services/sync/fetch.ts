@@ -34,7 +34,7 @@ type SyncPushFetchFailureResponse = SyncResponseBase & {
   failureType: 'fetch'
   isRetryable: boolean
 }
-type SyncPushFailureResponse = SyncResponseBase & {
+export type SyncPushFailureResponse = SyncResponseBase & {
   ok: false,
   failureType: 'error'
   originalError: Error
