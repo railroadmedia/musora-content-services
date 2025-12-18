@@ -229,11 +229,6 @@ const contentMetadata = {
   }
 }
 
-export const typeWithSortOrder = [
-  'in-rhythm',
-  'diy-drum-experiments',
-  'rhythmic-adventures-of-captain-carson',
-]
 
 export function processMetadata(brand, type, withFilters = false) {
   let brandMetaData = contentMetadata[brand]?.[type]

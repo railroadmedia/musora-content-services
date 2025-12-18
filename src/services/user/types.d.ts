@@ -5,13 +5,6 @@ export interface BrandMethodLevels {
   singeo: string
 }
 
-export interface BrandTotalXp {
-  drumeo: string
-  pianote: string
-  guitareo: string
-  singeo: string
-}
-
 export interface BrandTimePracticed {
   drumeo: number
   pianote: number

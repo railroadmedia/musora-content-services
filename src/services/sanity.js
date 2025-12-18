@@ -23,11 +23,11 @@ import {
   SONG_TYPES_WITH_CHILDREN,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems, recommendations } from './recommendations.js'
-import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
+import { processMetadata } from '../contentMetaData.js'
 
 import { globalConfig } from './config.js'
 
-import { fetchNextContentDataForParent, fetchHandler } from './railcontent.js'
+import { fetchHandler } from './railcontent.js'
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
