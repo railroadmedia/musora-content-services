@@ -39,10 +39,7 @@ export async function buildCertificateData(awardId) {
   return {
     userId: globalConfig.sessionConfig.userId,
     userName: userData?.display_name || userData?.name || 'User',
-    completedAt: userProgress.data.completed_at
-      ? new Date(userProgress.data.completed_at * 1000).toISOString()
-      : new Date().toISOString(),
-
+    completedAt: userProgress.data?.completed_at ?? new Date().toISOString(),
     awardId: awardDef._id,
     awardType: awardDef.type || 'content-award',
     awardTitle: awardDef.name,
