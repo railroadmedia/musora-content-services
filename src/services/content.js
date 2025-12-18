@@ -527,5 +527,10 @@ export async function getOwnedContent(brand, {
     };
   }
 
-  return data;
+  return await addContextToContent(() => data, {
+    dataField: 'entity',
+    addNavigateTo: true,
+    addProgressPercentage: true,
+    addProgressStatus: true,
+  });
 }

@@ -2,25 +2,30 @@
  * @module ProgressRow
  */
 
-import {
-  getDailySession,
-  getActivePath,
-  resetAllLearningPaths,
-  startLearningPath,
-  fetchLearningPathLessons,
-} from '../content-org/learning-paths'
+import { getActivePath, fetchLearningPathLessons } from '../content-org/learning-paths'
 import { getToday } from '../dateUtils.js'
-import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2IntroVideo } from '../sanity'
-import { addContextToContent } from '../contentAggregator.js'
+import { fetchMethodV2IntroVideo } from '../sanity'
 import { getProgressState } from '../contentProgress'
+import {COLLECTION_TYPE, STATE} from '../sync/models/ContentProgress'
 
 export async function getMethodCard(brand) {
   const introVideo = await fetchMethodV2IntroVideo(brand)
+
+  if (!introVideo) {
+    return null
+  }
+
   const introVideoProgressState = await getProgressState(introVideo?.id)
-  //resetAllLearningPaths()
-  if (introVideoProgressState !== 'completed') {
+
+  const activeLearningPath = await getActivePath(brand)
+
+  if (introVideoProgressState !== STATE.COMPLETED || !activeLearningPath) {
     //startLearningPath('drumeo', 422533)
     const timestamp = Math.floor(Date.now() / 1000)
+    const instructorText =
+      introVideo.instructor?.length > 1
+        ? 'Multiple Instructors'
+        : introVideo.instructor?.[0]?.name || ''
     return {
       id: 1, // method card has no id
       type: 'method',
@@ -29,7 +34,7 @@ export async function getMethodCard(brand) {
       body: {
         thumbnail: introVideo.thumbnail,
         title: introVideo.title,
-        subtitle: `${introVideo.difficulty_string} • ${introVideo.instructor?.[0]?.name}`,
+        subtitle: `${introVideo.difficulty_string} • ${instructorText}`,
       },
       cta: {
         text: 'Get Started',
@@ -38,56 +43,77 @@ export async function getMethodCard(brand) {
       progressTimestamp: timestamp,
     }
   } else {
-    //TODO: Optimize loading of dailySessions/Path, should not need multiple requests
-    const activeLearningPath = await getActivePath(brand)
     const learningPath = await fetchLearningPathLessons(
       activeLearningPath.active_learning_path_id,
       brand,
       getToday()
     )
 
-    const allCompleted = learningPath?.todays_lessons.every(
-      (lesson) => lesson.progressStatus === 'completed'
-    )
-    const anyCompleted = learningPath?.todays_lessons.some(
-      (lesson) => lesson.progressStatus === 'completed'
-    )
-    const noneCompleted = learningPath?.todays_lessons.every(
-      (lesson) => lesson.progressStatus !== 'completed'
-    )
+    if (!learningPath) {
+      return null
+    }
 
-    const nextIncompleteLesson = learningPath?.todays_lessons.find(
-      (lesson) => lesson.progressStatus !== 'completed'
-    )
-    let ctaText,
-      action,
-      nextLesson = null
-    if (noneCompleted) {
+    // need to calculate based on all dailies
+    const allDailies = [
+      ...learningPath.previous_learning_path_dailies,
+      ...learningPath.learning_path_dailies,
+      ...learningPath.next_learning_path_dailies
+    ]
+
+    let allDailiesCompleted = true;
+    let anyDailiesCompleted = false;
+    let noDailiesCompleted = true;
+    let nextIncompleteDaily = null;
+
+    for (const lesson of allDailies) {
+      if (lesson.progressStatus === STATE.COMPLETED) {
+        anyDailiesCompleted = true;
+        noDailiesCompleted = false;
+      } else {
+        allDailiesCompleted = false;
+        if (!nextIncompleteDaily) {
+          nextIncompleteDaily = lesson;
+        }
+      }
+      if (!allDailiesCompleted && anyDailiesCompleted && nextIncompleteDaily) {
+        break;
+      }
+    }
+
+    // get the first incomplete lesson from upcoming and next learning path lessons
+    const nextLesson = [
+      ...learningPath?.upcoming_lessons,
+      ...learningPath?.next_learning_path_dailies,
+    ]?.find((lesson) => lesson.progressStatus !== STATE.COMPLETED)
+
+    let ctaText, action
+    if (noDailiesCompleted) {
       ctaText = 'Start Session'
-      action = getMethodActionCTA(nextIncompleteLesson)
-    } else if (anyCompleted && !allCompleted) {
+      action = getMethodActionCTA(nextIncompleteDaily)
+    } else if (anyDailiesCompleted && !allDailiesCompleted) {
       ctaText = 'Continue Session'
-      action = getMethodActionCTA(nextIncompleteLesson)
-    } else if (allCompleted) {
-      ctaText = learningPath.next_lesson ? 'Start Next Lesson' : 'Browse Lessons'
-      action = learningPath.next_lesson
-        ? getMethodActionCTA(learningPath.next_lesson)
+      action = getMethodActionCTA(nextIncompleteDaily)
+    } else if (allDailiesCompleted) {
+      ctaText = nextLesson ? 'Start Next Lesson' : 'Browse Lessons'
+      action = nextLesson
+        ? getMethodActionCTA(nextLesson)
         : {
-            type: 'lessons',
-            brand: brand,
+            type: 'method-complete',
+            brand,
           }
     }
 
     let maxProgressTimestamp = Math.max(
       ...learningPath?.children.map((lesson) => lesson.progressTimestamp)
     )
+
     if (!maxProgressTimestamp) {
       maxProgressTimestamp = learningPath.active_learning_path_created_at
     }
 
     return {
       id: 1,
-      type: 'learning-path-v2',
+      type: COLLECTION_TYPE.LEARNING_PATH,
       progressType: 'method',
       header: 'Method',
       body: learningPath,

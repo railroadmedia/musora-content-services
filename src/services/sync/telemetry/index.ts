@@ -75,7 +75,6 @@ export class SyncTelemetry {
       }
     } : undefined)
 
-
     this._ignoreConsole = true
     this.error(err.message)
     this._ignoreConsole = false

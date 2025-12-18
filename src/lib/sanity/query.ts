@@ -1,37 +1,135 @@
+import { Monoid } from '../ads/monoid'
 import { Brand } from '../brands'
 
 export interface BuildQueryOptions {
-  sort: string
-  start: number
-  end: number
-  paginated: boolean
-  isSingle?: boolean
+  sort?: string
+  offset?: number
+  limit?: number
 }
 
-export function buildDataAndTotalQuery(
-  filter: string = '',
-  fields: string = '...',
-  {
-    sort = 'published_on desc',
-    start = 0,
-    end = 10,
-    isSingle = false,
-    paginated = true,
-  }: BuildQueryOptions
-): string {
-  const sortString = sort ? ` | order(${sort})` : ''
-  const countString = isSingle ? '[0...1]' : paginated ? `[${start}...${end}]` : ``
-  const query = `{
-      "data": *[${filter}]  ${sortString}${countString}
-      {
-        ${fields}
-      },
-      "total": count(*[${filter}]),
-    }`
-  return query
+export type Projection = string[]
+
+export interface QueryBuilderState {
+  filter: string
+  ordering: string
+  slice: string
+  projection: string
+  postFilter: string
 }
 
-export function getSortOrder(sort = '-published_on', brand: Brand, groupBy?: string): string {
+export interface QueryBuilder {
+  and(expr: string): QueryBuilder
+  or(...exprs: string[]): QueryBuilder
+  order(expr: string): QueryBuilder
+  slice(offset: number, limit?: number): QueryBuilder
+  first(): QueryBuilder
+  select(...fields: string[]): QueryBuilder
+  postFilter(expr: string): QueryBuilder
+  build(): string
+
+  _state(): QueryBuilderState
+}
+
+const and: Monoid<string> = {
+  empty: '',
+  concat: (a, b) => (!a ? b : !b ? a : `${a} && ${b}`),
+}
+
+const or: Monoid<string> = {
+  empty: '',
+  concat: (a, b) => (!a ? b : !b ? a : `(${a} || ${b})`),
+}
+
+const order: Monoid<string> = {
+  empty: '',
+  concat: (a, b) => `| order(${b || a})`,
+}
+
+const slice: Monoid<string> = {
+  empty: '',
+  concat: (a, b) => b || a,
+}
+
+const project: Monoid<string> = {
+  empty: '',
+  concat: (a, b) => (!a ? b : !b ? a : `${a}, ${b}`),
+}
+
+export const filterOps = { and, or }
+
+export const query = (): QueryBuilder => {
+  let state: QueryBuilderState = {
+    filter: and.empty,
+    ordering: order.empty,
+    slice: slice.empty,
+    projection: project.empty,
+    postFilter: and.empty,
+  }
+
+  const builder: QueryBuilder = {
+    // main filters
+    and(expr: string) {
+      state.filter = and.concat(state.filter, expr)
+      return builder
+    },
+
+    or(...exprs: string[]) {
+      const orExpr = exprs.reduce(or.concat, or.empty)
+      state.filter = and.concat(state.filter, orExpr)
+      return builder
+    },
+
+    // sorting
+    order(expr: string) {
+      state.ordering = order.concat(state.ordering, expr)
+      return builder
+    },
+
+    // pagination / slicing
+    slice(offset: number = 0, limit?: number) {
+      const sliceExpr = !limit ? `[${offset}]` : `[${offset}...${offset + limit}]`
+
+      state.slice = slice.concat(state.slice, sliceExpr)
+      return builder
+    },
+
+    first() {
+      return this.slice()
+    },
+
+    // projection
+    select(...fields: string[]) {
+      state.projection = fields.reduce(project.concat, state.projection)
+      return builder
+    },
+
+    // post filters
+    postFilter(expr: string) {
+      state.postFilter = and.concat(state.postFilter, expr)
+      return builder
+    },
+
+    build() {
+      const { filter, ordering, slice, projection } = state
+
+      return `
+        *[${filter}]
+        ${projection.length > 0 ? `{ ${projection} }` : ''}
+        ${state.postFilter ? `[${state.postFilter}]` : ''}
+        ${ordering}
+        ${slice}
+      `.trim()
+    },
+
+    _state() {
+      return state
+    },
+  }
+
+  return builder
+}
+
+export function getSortOrder(sort = '-published_on', brand?: Brand, groupBy?: string): string {
   const sanitizedSort = sort?.trim() || '-published_on'
   let isDesc = sanitizedSort.startsWith('-')
   const sortField = isDesc ? sanitizedSort.substring(1) : sanitizedSort
@@ -44,7 +142,7 @@ export function getSortOrder(sort = '-published_on', brand: Brand, groupBy?: str
       break
 
     case 'popularity':
-      if (groupBy == 'artist' || groupBy == 'genre') {
+      if ((groupBy == 'artist' || groupBy == 'genre') && brand) {
         sortOrder = isDesc ? `coalesce(popularity.${brand}, -1)` : 'popularity'
       } else {
         sortOrder = isDesc ? 'coalesce(popularity, -1)' : 'popularity'

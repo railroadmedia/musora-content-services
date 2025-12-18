@@ -1,31 +1,35 @@
 /**
  * @module Genre
  */
-import { filtersToGroq, getFieldsForContentType } from '../../contentTypeConfig.js'
+import { getFieldsForContentType } from '../../contentTypeConfig.js'
 import { Either } from '../../core/types/ads/either'
-import { FilterBuilder } from '../../filterBuilder.js'
-import { ContentClient } from '../../infrastructure/sanity/clients/ContentClient'
-import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
 import { SanityError } from '../../infrastructure/sanity/interfaces/SanityError'
+import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
+import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 import { Brand } from '../../lib/brands'
 import { DocumentType } from '../../lib/documents'
-import { getSortOrder } from '../../lib/sanity/query'
+import { Filters as f } from '../../lib/sanity/filter'
+import { BuildQueryOptions, getSortOrder, query } from '../../lib/sanity/query'
+import { getPermissionsAdapter } from '../permissions'
+import { needsAccessDecorator } from '../sanity.js'
 import { Lesson } from './content'
 
-const contentClient = new ContentClient()
-
+const contentClient = new SanityClient()
 export interface Genre {
   name: string
   slug: string
-  lessons_count: number
   thumbnail: string
+  lesson_count: number
 }
+
+export interface Genres extends SanityListResponse<Genre> {}
 
 /**
  * Fetch all genres with lessons available for a specific brand.
  *
- * @param {Brand|string} [brand] - The brand for which to fetch the genre for. Lesson count will be filtered by this brand if provided.
+ * @param {Brand} [brand] - The brand for which to fetch the genre for. Lesson count will be filtered by this brand if provided.
  * @returns {Promise<Either<SanityError, SanityListResponse<Genre>>>} - A promise that resolves to an genre object or null if not found.
+ * @returns {Promise<Genres>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenres('drumeo')
@@ -33,28 +37,38 @@ export interface Genre {
  *   .catch(error => console.error(error));
  */
 export async function fetchGenres(
-  brand: Brand | string
+  brand: Brand,
+  options: BuildQueryOptions
 ): Promise<Either<SanityError, SanityListResponse<Genre>>> {
-  const filter = await new FilterBuilder(`brand == "${brand}" && references(^._id)`, {
-    bypassPermissions: true,
-  }).buildFilter()
+  const type = f.type('genre')
+  const postFilter = `lesson_count > 0`
+  const { sort = 'lower(name)', offset = 0, limit = 20 } = options
 
-  return contentClient.fetchByTypeAndBrand<Genre>(DocumentType.Genre, brand, {
-    fields: [
-      `name`,
-      `'slug': slug.current`,
-      `'thumbnail': thumbnail_url.asset->url`,
-      `'lessons_count': count(*[${filter}])`,
-    ],
-    paginated: false,
-  })
+  const data = query()
+    .and(type)
+    .order(getSortOrder(sort, brand))
+    .slice(offset, limit)
+    .select(
+      'name',
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lesson_count": ${await f.lessonCount(brand)}`
+    )
+    .postFilter(postFilter)
+    .build()
+
+  const q = `{
+    "data": ${data},
+  }`
+
+  return contentClient.fetchList<Genre>(q, options)
 }
 
 /**
  * Fetch a single genre by their slug and brand
  *
  * @param {string} slug - The slug of the genre to fetch.
- * @param {Brand|string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
+ * @param {Brand} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
  * @returns {Promise<Either<SanityError, Genre | null>>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
@@ -64,28 +78,25 @@ export async function fetchGenres(
  */
 export async function fetchGenreBySlug(
   slug: string,
-  brand?: Brand | string
+  brand?: Brand
 ): Promise<Either<SanityError, Genre | null>> {
-  const brandFilter = brand ? `brand == "${brand}" && ` : ''
-  const filter = await new FilterBuilder(`${brandFilter} references(^._id)`, {
-    bypassPermissions: true,
-  }).buildFilter()
+  const q = query()
+    .and(f.type('genre'))
+    .and(f.slug(slug))
+    .select(
+      'name',
+      `"slug": slug.current`,
+      `"thumbnail": thumbnail_url.asset->url`,
+      `"lesson_count": ${await f.lessonCount(brand)}`
+    )
+    .first()
+    .build()
 
-  const query = `
-  *[_type == '${DocumentType.Genre}' && slug.current == '${slug}'] {
-    name,
-    "slug": slug.current,
-    'thumbnail':thumbnail_url.asset->url,
-    "lessonsCount": count(*[${filter}])
-  }`
-  return contentClient.fetchSingle<Genre>(query)
+  return contentClient.fetchSingle<Genre>(q)
 }
 
-export interface FetchGenreLessonsOptions {
-  sort?: string
+export interface GenreLessonsOptions extends BuildQueryOptions {
   searchTerm?: string
-  page?: number
-  limit?: number
   includedFields?: Array<string>
   progressIds?: Array<number>
 }
@@ -95,7 +106,7 @@ export interface GenreLessons extends SanityListResponse<Lesson> {}
 /**
  * Fetch the genre's lessons.
  * @param {string} slug - The slug of the genre
- * @param {Brand|string} brand - The brand for which to fetch lessons.
+ * @param {Brand} brand - The brand for which to fetch lessons.
  * @param {DocumentType} contentType - The content type to filter lessons by.
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
@@ -113,33 +124,50 @@ export interface GenreLessons extends SanityListResponse<Lesson> {}
  */
 export async function fetchGenreLessons(
   slug: string,
-  brand: Brand | string,
+  brand: Brand,
   contentType?: DocumentType,
   {
     sort = '-published_on',
     searchTerm = '',
-    page = 1,
+    offset = 0,
     limit = 10,
     includedFields = [],
     progressIds = [],
-  }: FetchGenreLessonsOptions = {}
+  }: GenreLessonsOptions = {}
 ): Promise<Either<SanityError, GenreLessons>> {
-  const fieldsString = getFieldsForContentType(contentType) as string
-  const start = (page - 1) * limit
-  const end = start + limit
-  const searchFilter = searchTerm ? `&& title match "${searchTerm}*"` : ''
-  const includedFieldsFilter = includedFields.length > 0 ? filtersToGroq(includedFields) : ''
-  const addType = contentType ? `_type == '${contentType}' && ` : ''
-  const progressFilter =
-    progressIds.length > 0 ? `&& railcontent_id in [${progressIds.join(',')}]` : ''
-  const filter = `${addType} brand == '${brand}' ${searchFilter} ${includedFieldsFilter} && references(*[_type=='${DocumentType.Genre}' && slug.current == '${slug}']._id) ${progressFilter}`
-  const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
-  sort = getSortOrder(sort, brand as Brand)
+  const restrictions = await f.combineAsync(
+    f.status(),
+    f.publishedDate(),
+    f.notDeprecated(),
+    f.referencesIDWithFilter(f.combine(f.type('genre'), f.slug(slug))),
+    f.brand(brand),
+    f.searchMatch('title', searchTerm),
+    f.includedFields(includedFields),
+    f.progressIds(progressIds)
+  )
 
-  return contentClient.fetchList<Lesson>(filterWithRestrictions, fieldsString, {
-    sort,
-    start,
-    end,
-    paginated: false,
-  })
+  const data = query()
+    .and(restrictions)
+    .order(getSortOrder(sort, brand))
+    .slice(offset, limit)
+    .select(getFieldsForContentType(contentType) as string)
+    .build()
+
+  const total = query().and(restrictions).build()
+
+  const q = `{
+    "data": ${data},
+    "total": count(${total})
+  }`
+
+  const [res, permissions] = await Promise.all([
+    contentClient.fetchList<Lesson>(q, {
+      sort,
+      offset,
+      limit,
+    }),
+    getPermissionsAdapter().fetchUserPermissions(),
+  ])
+
+  return res.map((l) => needsAccessDecorator(l, permissions))
 }

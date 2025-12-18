@@ -218,3 +218,35 @@ export async function restorePurchases(
     requestBody
   )
 }
+
+/**
+ * Get the upgrade price from Basic to Plus membership.
+ * Returns the price based on the user's subscription interval.
+ *
+ * For monthly subscribers: Returns the monthly upgrade cost (difference between Plus and Base monthly prices, ~$5/month)
+ * For yearly subscribers: Returns the monthly equivalent upgrade cost ($3.33/month from $40/year)
+ * For lifetime subscribers: Returns the annual upgrade cost for songs add-on ($40/year)
+ * If interval cannot be determined: Defaults to monthly price
+ *
+ * @returns {Promise<{price: number, currency: string, period: string|null}>} - The upgrade price information
+ * @property {number} price - The upgrade cost in USD (monthly for month/year, annual for lifetime)
+ * @property {string} currency - The currency 
+ * @property {string|null} period - The billing period for the price ('month' or 'year'). Note: lifetime subscribers return 'year' period with annual price
+ *
+ * @example
+ * getUpgradePrice()
+ *   .then(info => {
+ *     console.log(`Upgrade price: $${info.price} per ${info.period}`)
+ *     // Example outputs:
+ *     // Monthly: "Upgrade price: $5 per month"
+ *     // Yearly: "Upgrade price: $3.33 per month"
+ *     // Lifetime: "Upgrade price: $40 per year"
+ *   })
+ *   .catch(error => {
+ *     console.error('Failed to fetch upgrade price:', error)
+ *   })
+ */
+export async function getUpgradePrice() {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return  httpClient.get(`${baseUrl}/v1/upgrade-price`)
+}

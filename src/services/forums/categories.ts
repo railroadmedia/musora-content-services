@@ -23,7 +23,7 @@ export async function fetchForumCategories(
 }
 
 export interface CreateForumCategoryParams {
-  name: string
+  title: string
   description: string
   weight: number
   brand: string
@@ -46,7 +46,7 @@ export async function createForumCategory(
 export interface UpdateForumCategoryParams {
   id: number
   brand: string
-  name: string
+  title: string
   weight: number
   description?: string
   icon?: string

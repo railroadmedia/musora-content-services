@@ -17,7 +17,6 @@ import {
   fetchShows,
 } from './sanity'
 import { fetchPlaylist, fetchUserPlaylists } from './content-org/playlists'
-import { guidedCourses } from './content-org/guided-courses'
 import {
   getMonday,
   getWeekNumber,
@@ -40,6 +39,7 @@ import dayjs from 'dayjs'
 import { addContextToContent } from './contentAggregator.js'
 import { getMethodCard } from './progress-row/method-card.js'
 import { db, Q } from './sync'
+import {COLLECTION_TYPE} from "./sync/models/ContentProgress";
 
 const DATA_KEY_PRACTICES = 'practices'
 
@@ -922,7 +922,7 @@ async function extractPinnedItemsAndSortAllItems(
 }
 
 function generateContentsMap(contents, playlistsContents) {
-  const excludedTypes = new Set(['pack-bundle', 'guided-course-part'])
+  const excludedTypes = new Set(['pack-bundle', 'guided-course-lesson'])
   const existingShows = new Set()
   const contentsMap = new Map()
   const childToParentMap = {}
@@ -1039,7 +1039,7 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
       switch (item.type) {
         case 'playlist':
           return processPlaylistItem(item)
-        case 'learning-path-v2':
+        case COLLECTION_TYPE.LEARNING_PATH:
         case 'method':
           return item
         default:
@@ -1097,7 +1097,8 @@ async function processContentItem(content) {
     const progressTimestamp = content.progressTimestamp
     const wasPinned = content.pinned ?? false
     if (content.progressStatus === 'completed') {
-      // this could be handled more gracefully if their was a parent content type for shows
+      // this could be handled more gracefully if there was a parent content type for shows
+      // Update Dec 3rd. We updated almost everything to the DocumentaryType :D, but there's still a few
       const nextByProgress = findIncompleteLesson(progressOnItems, content.id, content.type)
       content = shows.find((lesson) => lesson.id === nextByProgress)
       content.completed_children = completedShows
@@ -1282,7 +1283,7 @@ function mergeAndSortItems(items, limit) {
 
 export function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
   const ids = Object.keys(progressOnItems).map(Number)
-  if (contentType === 'guided-course' || contentType === 'learning-path-v2') {
+  if (contentType === 'guided-course' || contentType === COLLECTION_TYPE.LEARNING_PATH) {
     // Return first incomplete lesson
     return ids.find((id) => progressOnItems[id] !== 'completed') || ids.at(0)
   }

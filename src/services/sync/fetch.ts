@@ -23,19 +23,21 @@ interface RawPushResponse {
 }
 
 export type SyncResponse = SyncPushResponse | SyncPullResponse
+export type SyncPushResponse = SyncPushSuccessResponse | SyncPushFetchFailureResponse | SyncPushFailureResponse
 
-export type SyncPushResponse = SyncPushSuccessResponse | SyncPushFailureResponse
-
-type SyncPushSuccessResponse = SyncPushResponseBase & {
+type SyncPushSuccessResponse = SyncResponseBase & {
   ok: true
   results: SyncStorePushResult[]
 }
-type SyncPushFailureResponse = SyncPushResponseBase & {
+type SyncPushFetchFailureResponse = SyncResponseBase & {
   ok: false,
-  originalError: Error
+  failureType: 'fetch'
+  isRetryable: boolean
 }
-interface SyncPushResponseBase extends SyncResponseBase {
-
+type SyncPushFailureResponse = SyncResponseBase & {
+  ok: false,
+  failureType: 'error'
+  originalError: Error
 }
 
 type SyncStorePushResult<TRecordKey extends string = 'id'> = SyncStorePushResultSuccess<TRecordKey> | SyncStorePushResultFailure<TRecordKey>
@@ -61,20 +63,23 @@ interface SyncStorePushResultBase {
   type: 'success' | 'failure'
 }
 
-export type SyncPullResponse = SyncPullSuccessResponse | SyncPullFailureResponse
+export type SyncPullResponse = SyncPullSuccessResponse | SyncPullFailureResponse | SyncPullFetchFailureResponse
 
-type SyncPullSuccessResponse = SyncPullResponseBase & {
+type SyncPullSuccessResponse = SyncResponseBase & {
   ok: true
   entries: SyncEntry[]
   token: SyncToken
   previousToken: SyncToken | null
 }
-type SyncPullFailureResponse = SyncPullResponseBase & {
+type SyncPullFetchFailureResponse = SyncResponseBase & {
   ok: false,
-  originalError: Error
+  failureType: 'fetch'
+  isRetryable: boolean
 }
-interface SyncPullResponseBase extends SyncResponseBase {
-
+type SyncPullFailureResponse = SyncResponseBase & {
+  ok: false,
+  failureType: 'error'
+  originalError: Error
 }
 export interface SyncResponseBase {
   ok: boolean
@@ -141,11 +146,20 @@ export function handlePull(callback: (session: BaseSessionProvider) => Request) 
 
     let response: Response | null = null
     try {
-      response = await performFetch(request)
+      response = await fetch(request)
     } catch (e) {
       return {
         ok: false,
-        originalError: e
+        failureType: 'error',
+        originalError: e as Error
+      }
+    }
+
+    if (response.ok === false) {
+      return {
+        ok: false,
+        failureType: 'fetch',
+        isRetryable: (response.status >= 500 && response.status < 504) || response.status === 429 || response.status === 408
       }
     }
 
@@ -180,11 +194,20 @@ export function handlePush(callback: (session: BaseSessionProvider) => Request) 
 
     let response: Response | null = null
     try {
-      response = await performFetch(request)
+      response = await fetch(request)
     } catch (e) {
       return {
         ok: false,
-        originalError: e
+        failureType: 'error',
+        originalError: e as Error
+      }
+    }
+
+    if (response.ok === false) {
+      return {
+        ok: false,
+        failureType: 'fetch',
+        isRetryable: (response.status >= 500 && response.status < 504) || response.status === 429 || response.status === 408
       }
     }
 
@@ -196,17 +219,6 @@ export function handlePush(callback: (session: BaseSessionProvider) => Request) 
       results: data.results
     }
   }
-}
-
-async function performFetch(request: Request) {
-  const response = await fetch(request)
-  const isRetryable = (response.status >= 500 && response.status < 504) || response.status === 429 || response.status === 408
-
-  if (isRetryable) {
-    throw new Error(`Server returned ${response.status}`)
-  }
-
-  return response
 }
 
 function serializePullUrlQuery(url: string, fetchToken: SyncToken | null) {
@@ -297,6 +309,7 @@ function serializeIds(ids: { id: RecordId }): { client_record_id: RecordId } {
 function deserializeRecord(record: SyncSyncable<BaseModel, 'client_record_id'> | null): SyncSyncable<BaseModel, 'id'> | null {
   if (record) {
     const { client_record_id: id, ...rest } = record
+
     return {
       ...rest,
       id

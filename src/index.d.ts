@@ -1,6 +1,19 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
+	registerAwardCallback,
+	registerProgressCallback
+} from './services/awards/award-callbacks.js';
+
+import {
+	getAwardStatistics,
+	getCompletedAwards,
+	getContentAwards,
+	getInProgressAwards,
+	resetAllAwards
+} from './services/awards/award-query.js';
+
+import {
 	globalConfig,
 	initializeService
 } from './services/config.js';
@@ -38,8 +51,10 @@ import {
 	getActivePath,
 	getDailySession,
 	getEnrichedLearningPath,
+	getEnrichedLearningPaths,
 	getLearningPathLessonsByIds,
 	mapContentToParent,
+	onContentCompletedLearningPathListener,
 	resetAllLearningPaths,
 	startLearningPath,
 	updateDailySession
@@ -77,6 +92,7 @@ import {
 
 import {
 	addContextToContent,
+	addContextToLearningPaths,
 	getNavigateToForPlaylists
 } from './services/contentAggregator.js';
 
@@ -89,6 +105,7 @@ import {
 
 import {
 	contentStatusCompleted,
+	contentStatusCompletedMany,
 	contentStatusReset,
 	contentStatusStarted,
 	getAllCompleted,
@@ -97,10 +114,13 @@ import {
 	getAllStartedOrCompleted,
 	getLastInteractedOf,
 	getNavigateTo,
+	getNavigateToForMethod,
 	getProgressDataByIds,
+	getProgressDataByIdsAndCollections,
 	getProgressState,
 	getProgressStateByIds,
 	getResumeTimeSecondsByIds,
+	getResumeTimeSecondsByIdsAndCollections,
 	getStartedOrCompletedProgressOnly,
 	recordWatchSession
 } from './services/contentProgress.js';
@@ -160,9 +180,7 @@ import {
 } from './services/forums/threads.ts';
 
 import {
-	fetchAwardsForUser,
-	fetchCertificate,
-	getAwardDataForGuidedContent
+	fetchCertificate
 } from './services/gamification/awards.ts';
 
 import {
@@ -180,6 +198,13 @@ import {
 import {
 	createTestUser
 } from './services/liveTesting.ts';
+
+import {
+	emitContentCompleted,
+	emitProgressSaved,
+	onContentCompleted,
+	onProgressSaved
+} from './services/progress-events.js';
 
 import {
 	getMethodCard
@@ -248,22 +273,17 @@ import {
 	fetchComingSoon,
 	fetchCommentModContentData,
 	fetchContentRows,
-	fetchFoundation,
 	fetchHierarchy,
+	fetchLearningPathHierarchy,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
 	fetchLiveEvent,
 	fetchMetadata,
-	fetchMethod,
-	fetchMethodChildren,
-	fetchMethodChildrenIds,
-	fetchMethodPreviousNextLesson,
 	fetchMethodV2IntroVideo,
 	fetchMethodV2Structure,
 	fetchMethodV2StructureFromId,
 	fetchNewReleases,
-	fetchNextPreviousLesson,
 	fetchOtherSongVersions,
 	fetchOwnedContent,
 	fetchPackAll,
@@ -334,6 +354,7 @@ import {
 import {
 	fetchMemberships,
 	fetchRechargeTokens,
+	getUpgradePrice,
 	restorePurchases,
 	upgradeSubscription
 } from './services/user/memberships.ts';
@@ -375,7 +396,9 @@ import {
 } from './services/user/profile.ts';
 
 import {
+	getAuthKey,
 	login,
+	loginWithAuthKey,
 	logout
 } from './services/user/sessions.js';
 
@@ -412,6 +435,7 @@ import {
 declare module 'musora-content-services' {
 	export {
 		addContextToContent,
+		addContextToLearningPaths,
 		addItemToPlaylist,
 		applyCloudflareWrapper,
 		applySanityTransformations,
@@ -426,6 +450,7 @@ declare module 'musora-content-services' {
 		completeMethodIntroVideo,
 		confirmEmailChange,
 		contentStatusCompleted,
+		contentStatusCompletedMany,
 		contentStatusReset,
 		contentStatusStarted,
 		convertToTimeZone,
@@ -450,6 +475,8 @@ declare module 'musora-content-services' {
 		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
+		emitContentCompleted,
+		emitProgressSaved,
 		enrollUserInGuidedCourse,
 		extractSanityUrl,
 		fetchAll,
@@ -459,7 +486,6 @@ declare module 'musora-content-services' {
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
-		fetchAwardsForUser,
 		fetchByRailContentId,
 		fetchByRailContentIds,
 		fetchByReference,
@@ -482,7 +508,6 @@ declare module 'musora-content-services' {
 		fetchEnrollmentPageMetadata,
 		fetchFollowedThreads,
 		fetchForumCategories,
-		fetchFoundation,
 		fetchGenreBySlug,
 		fetchGenreLessons,
 		fetchGenres,
@@ -494,6 +519,7 @@ declare module 'musora-content-services' {
 		fetchInterests,
 		fetchLastInteractedChild,
 		fetchLatestThreads,
+		fetchLearningPathHierarchy,
 		fetchLearningPathLessons,
 		fetchLearningPathProgressCheckLessons,
 		fetchLeaving,
@@ -504,16 +530,11 @@ declare module 'musora-content-services' {
 		fetchLiveEventPollingState,
 		fetchMemberships,
 		fetchMetadata,
-		fetchMethod,
-		fetchMethodChildren,
-		fetchMethodChildrenIds,
-		fetchMethodPreviousNextLesson,
 		fetchMethodV2IntroVideo,
 		fetchMethodV2Structure,
 		fetchMethodV2StructureFromId,
 		fetchNewReleases,
 		fetchNextContentDataForParent,
-		fetchNextPreviousLesson,
 		fetchNotificationSettings,
 		fetchNotifications,
 		fetchOtherSongVersions,
@@ -565,10 +586,15 @@ declare module 'musora-content-services' {
 		getAllCompletedByIds,
 		getAllStarted,
 		getAllStartedOrCompleted,
-		getAwardDataForGuidedContent,
+		getAuthKey,
+		getAwardStatistics,
+		getCompletedAwards,
+		getContentAwards,
 		getContentRows,
 		getDailySession,
 		getEnrichedLearningPath,
+		getEnrichedLearningPaths,
+		getInProgressAwards,
 		getLastInteractedOf,
 		getLearningPathLessonsByIds,
 		getLegacyMethods,
@@ -576,6 +602,7 @@ declare module 'musora-content-services' {
 		getMethodCard,
 		getMonday,
 		getNavigateTo,
+		getNavigateToForMethod,
 		getNavigateToForPlaylists,
 		getNewAndUpcoming,
 		getOnboardingRecommendedContent,
@@ -583,6 +610,7 @@ declare module 'musora-content-services' {
 		getPracticeNotes,
 		getPracticeSessions,
 		getProgressDataByIds,
+		getProgressDataByIdsAndCollections,
 		getProgressRows,
 		getProgressState,
 		getProgressStateByIds,
@@ -591,6 +619,7 @@ declare module 'musora-content-services' {
 		getRecommendedForYou,
 		getReportIssueOptions,
 		getResumeTimeSecondsByIds,
+		getResumeTimeSecondsByIdsAndCollections,
 		getSanityDate,
 		getScheduleContentRows,
 		getSortOrder,
@@ -598,6 +627,7 @@ declare module 'musora-content-services' {
 		getTabResults,
 		getTimeRemainingUntilLocal,
 		getToday,
+		getUpgradePrice,
 		getUserData,
 		getUserMonthlyStats,
 		getUserSignature,
@@ -620,6 +650,7 @@ declare module 'musora-content-services' {
 		likePost,
 		lockThread,
 		login,
+		loginWithAuthKey,
 		logout,
 		mapContentToParent,
 		markAllNotificationsAsRead,
@@ -629,6 +660,9 @@ declare module 'musora-content-services' {
 		markNotificationAsUnread,
 		markThreadAsRead,
 		numberOfActiveUsers,
+		onContentCompleted,
+		onContentCompletedLearningPathListener,
+		onProgressSaved,
 		openComment,
 		otherStats,
 		pauseLiveEventPolling,
@@ -641,6 +675,8 @@ declare module 'musora-content-services' {
 		recordUserActivity,
 		recordUserPractice,
 		recordWatchSession,
+		registerAwardCallback,
+		registerProgressCallback,
 		removeContentAsInterested,
 		removeContentAsNotInterested,
 		removeUserPractice,
@@ -650,6 +686,7 @@ declare module 'musora-content-services' {
 		reportPlaylist,
 		requestEmailChange,
 		reset,
+		resetAllAwards,
 		resetAllLearningPaths,
 		resetPassword,
 		restoreComment,

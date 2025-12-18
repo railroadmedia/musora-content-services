@@ -8,7 +8,6 @@ export interface SanityListResponse<T = any> {
   data: T[]
   total: number
   sort?: string
-  start?: number
-  end?: number
-  paginated?: boolean
+  offset?: number
+  limit?: number
 }

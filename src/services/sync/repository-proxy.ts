@@ -7,42 +7,63 @@ import {
   PracticesRepository,
   PracticeDayNotesRepository
 } from "./repositories"
+import UserAwardProgressRepository from "./repositories/user-award-progress"
 import {
   ContentLike,
   ContentProgress,
   Practice,
+  UserAwardProgress,
   PracticeDayNote
 } from "./models"
 
+
 interface SyncRepositories {
- likes: ContentLikesRepository
- contentProgress: ContentProgressRepository
- practices: PracticesRepository
- practiceDayNotes: PracticeDayNotesRepository
+  likes: ContentLikesRepository;
+  contentProgress: ContentProgressRepository;
+  practices: PracticesRepository;
+  userAwardProgress: UserAwardProgressRepository;
+  practiceDayNotes: PracticeDayNotesRepository;
 }
 
-export default new Proxy({} as SyncRepositories, {
-  get(target: SyncRepositories, prop: keyof SyncRepositories) {
-    if (!target[prop]) {
-      const manager = SyncManager.getInstance()
 
+// internal cache for repositories, keyed by managerId and property name
+const repoCache: Record<string, Partial<SyncRepositories>> = {};
+
+const proxy = new Proxy({} as SyncRepositories, {
+  get(_target, prop: keyof SyncRepositories) {
+    const manager = SyncManager.getInstance();
+    const managerId = manager.getId();
+
+    if (!repoCache[managerId]) {
+      repoCache[managerId] = {};
+    }
+    const cache = repoCache[managerId];
+
+    if (!cache[prop]) {
       switch (prop) {
         case 'likes':
-          target[prop] = new ContentLikesRepository(manager.getStore(ContentLike))
-          break
+          cache.likes = new ContentLikesRepository(manager.getStore(ContentLike));
+          break;
         case 'contentProgress':
-          target[prop] = new ContentProgressRepository(manager.getStore(ContentProgress))
-          break
+          cache.contentProgress = new ContentProgressRepository(manager.getStore(ContentProgress));
+          break;
         case 'practices':
-          target[prop] = new PracticesRepository(manager.getStore(Practice))
-          break
+          cache.practices = new PracticesRepository(manager.getStore(Practice));
+          break;
+        case 'userAwardProgress':
+          cache.userAwardProgress = new UserAwardProgressRepository(manager.getStore(UserAwardProgress));
+          break;
         case 'practiceDayNotes':
-          target[prop] = new PracticeDayNotesRepository(manager.getStore(PracticeDayNote))
-          break
+          cache.practiceDayNotes = new PracticeDayNotesRepository(manager.getStore(PracticeDayNote));
+          break;
         default:
-          throw new SyncError(`Repository '${prop}' not found`)
+          throw new SyncError(`Repository '${String(prop)}' not found`);
       }
     }
-    return target[prop]
+    return cache[prop];
   }
-})
+});
+
+export default proxy;
+
+

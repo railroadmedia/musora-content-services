@@ -1,13 +1,13 @@
+import { Either } from '../../core/types/ads/either'
+import { BuildQueryOptions } from '../../lib/sanity/query'
+import { FetchQueryExecutor } from './executors/FetchQueryExecutor'
 import { ConfigProvider } from './interfaces/ConfigProvider'
 import { QueryExecutor } from './interfaces/QueryExecutor'
-import { SanityQuery } from './interfaces/SanityQuery'
 import { SanityConfig } from './interfaces/SanityConfig'
 import { SanityError } from './interfaces/SanityError'
-import { DefaultConfigProvider } from './providers/DefaultConfigProvider'
-import { FetchQueryExecutor } from './executors/FetchQueryExecutor'
+import { SanityQuery } from './interfaces/SanityQuery'
 import { SanityListResponse } from './interfaces/SanityResponse'
-import { buildDataAndTotalQuery, BuildQueryOptions } from '../../lib/sanity/query'
-import { Either } from '../../core/types/ads/either'
+import { DefaultConfigProvider } from './providers/DefaultConfigProvider'
 
 export class SanityClient {
   private configProvider: ConfigProvider
@@ -68,12 +68,10 @@ export class SanityClient {
    * Execute a GROQ query and return multiple results
    */
   public async fetchList<T>(
-    filter: string,
-    fields: string,
+    query: string,
     options: BuildQueryOptions,
     params?: Record<string, any>
   ): Promise<Either<SanityError, SanityListResponse<T>>> {
-    const query = buildDataAndTotalQuery(filter, fields, options)
     try {
       const sanityQuery: SanityQuery = { query, params }
       const response = await this.queryExecutor.execute<SanityListResponse<T>>(
