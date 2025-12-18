@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.106.0](https://github.com/railroadmedia/musora-content-services/compare/v2.105.0...v2.106.0) (2025-12-18)
+
+
+### Features
+
+* Add some validators prior to writing to watermelon ([#663](https://github.com/railroadmedia/musora-content-services/issues/663)) ([9eeedac](https://github.com/railroadmedia/musora-content-services/commit/9eeedac5a3cf8b4eedd091fcb8252ffd5bae6c85))
+
 ## [2.105.0](https://github.com/railroadmedia/musora-content-services/compare/v2.104.9...v2.105.0) (2025-12-17)
 
 
