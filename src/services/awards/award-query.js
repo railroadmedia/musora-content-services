@@ -136,9 +136,7 @@ export async function getContentAwards(contentId) {
         instructorName: def.instructor_name,
         progressPercentage: userProgress?.progress_percentage ?? 0,
         isCompleted: userProgress ? UserAwardProgressRepository.isCompleted(userProgress) : false,
-        completedAt: userProgress?.completed_at
-          ? new Date(userProgress.completed_at).toISOString()
-          : null,
+        completedAt: userProgress?.completed_at,
         completionData
       }
     })
@@ -168,8 +166,7 @@ export async function getContentAwards(contentId) {
  * - Badge and award images for display
  * - Completion date for "Earned on X" display
  * - `completionData.message` - Pre-generated congratulations text
- * - `completionData.practice_minutes` - Total practice time for this award
- * - `completionData.days_user_practiced` - Days spent earning this award
+ * - `completionData.XXX` - other fields are award type dependant
  *
  * Returns empty array `[]` on error (never throws).
  *
@@ -226,16 +223,14 @@ export async function getContentAwards(contentId) {
  */
 export async function getCompletedAwards(brand = null, options = {}) {
   try {
-    const allProgress = await db.userAwardProgress.getAll()
+    const allProgress = await db.userAwardProgress.getCompleted()
 
     const completed = allProgress.data.filter(p =>
       p.progress_percentage === 100 && p.completed_at !== null
     )
-
     let awards = await Promise.all(
       completed.map(async (progress) => {
         const definition = await awardDefinitions.getById(progress.award_id)
-
         if (!definition) {
           return null
         }
@@ -243,24 +238,24 @@ export async function getCompletedAwards(brand = null, options = {}) {
         if (brand && definition.brand !== brand) {
           return null
         }
-
-        const completionData = enhanceCompletionData(progress.completion_data)
-
+        const completionData = definition.type === awardDefinitions.CONTENT_AWARD ? enhanceCompletionData(progress.completion_data) : progress.completion_data;
+        const hasCertificate = definition.type === awardDefinitions.CONTENT_AWARD
         return {
           awardId: progress.award_id,
           awardTitle: definition.name,
+          awardType: definition.type,
           badge: definition.badge,
           award: definition.award,
           brand: definition.brand,
+          hasCertificate: hasCertificate,
           instructorName: definition.instructor_name,
           progressPercentage: progress.progress_percentage,
           isCompleted: true,
-          completedAt: new Date(progress.completed_at * 1000).toISOString(),
+          completedAt: progress.completed_at,
           completionData
         }
       })
     )
-
     awards = awards.filter(award => award !== null)
 
     awards.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
@@ -269,7 +264,6 @@ export async function getCompletedAwards(brand = null, options = {}) {
       const offset = options.offset || 0
       awards = awards.slice(offset, offset + options.limit)
     }
-
     return awards
   } catch (error) {
     console.error('Failed to get completed awards:', error)
@@ -491,5 +485,18 @@ export async function getAwardStatistics(brand = null) {
       notStarted: 0,
       completionPercentage: 0
     }
+  }
+}
+
+/**
+ * @returns {Promise<{ deletedCount: number }>}
+ */
+export async function resetAllAwards() {
+  try {
+    const result = await db.userAwardProgress.deleteAllAwards()
+    return result
+  } catch (error) {
+    console.error('Failed to reset awards:', error)
+    return { deletedCount: 0 }
   }
 }

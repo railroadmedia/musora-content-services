@@ -97,6 +97,37 @@ export async function logout() {
   })
 }
 
+/**
+ * @param {string|null} brand - Optional brand parameter (drumeo, pianote, guitareo, singeo)
+ * @returns {Promise<{data: string}>} Temporary auth key valid for 5 minutes
+ *
+ * @example
+ * getAuthKey('drumeo')
+ *   .then(response => {
+ *     const authKey = response.data
+ *     const webViewUrl = `https://app.musora.com/page?user_id=${userId}&auth_key=${authKey}`
+ *   })
+ *   .catch(error => console.error(error));
+ */
+export async function getAuthKey(brand = null) {
+  const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
+  const url = brand ? `${baseUrl}/v1/auth-key?brand=${brand}` : `${baseUrl}/v1/auth-key`
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer 503154|sArOCAtYT3ejVnCdoZTj8ocEfQbfDWi5GTTtooQ107d93d29`,
+      'Content-Type': 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to get auth key: ${response.status}`)
+  }
+
+  return response.json()
+}
+
 export async function loginWithAuthKey(userId, authKey, deviceName, deviceToken, platform) {
   const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
   return fetch(`${baseUrl}/v1/sessions/auth-key`, {

@@ -9,7 +9,7 @@ import { Brands } from '../../lib/brands'
 import { Filters as f } from '../../lib/sanity/filter'
 
 export interface Instructor {
-  lessonCount: number
+  lesson_count: number
   slug: string
   name: string
   short_bio: string
@@ -37,32 +37,24 @@ export async function fetchInstructors(
   options: BuildQueryOptions
 ): Promise<Instructors> {
   const type = f.type('instructor')
-  const lesson = f.combine(f.brand(brand), f.referencesParent())
-  const lessonCount = `count(*[${lesson}])`
-  const postFilter = `lessonCount > 0`
+  const postFilter = `lesson_count > 0`
+  const { sort = 'lower(name)', offset = 0, limit = 20 } = options
 
   const data = query()
     .and(type)
-    .order(options?.sort || 'lower(name) asc')
-    .slice(options?.offset || 0, options?.limit || 20)
+    .order(getSortOrder(sort, brand))
+    .slice(offset, limit)
     .select(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessonCount": ${lessonCount}`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
-    .postFilter(postFilter)
-    .build()
-
-  const total = query()
-    .and(type)
-    .select(`"lessonCount": ${lessonCount}`)
     .postFilter(postFilter)
     .build()
 
   const q = `{
     "data": ${data},
-    "total": count(${total})
   }`
 
   return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
@@ -84,8 +76,6 @@ export async function fetchInstructorBySlug(
   slug: string,
   brand?: Brands | string
 ): Promise<Instructor | null> {
-  const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
-
   const q = query()
     .and(f.type('instructor'))
     .and(f.slug(slug))
@@ -94,7 +84,7 @@ export async function fetchInstructorBySlug(
       `"slug": slug.current`,
       'short_bio',
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessonCount": count(*[${filter}])`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .first()
     .build()
@@ -144,14 +134,16 @@ export async function fetchInstructorLessons(
   sort = getSortOrder(sort, brand)
 
   const restrictions = await f.combineAsync(
-    f.contentFilter(),
-    f.referencesIDWithFilter(f.combine(f.type('instructor'), f.slug(slug)))
+    f.status(),
+    f.publishedDate(),
+    f.notDeprecated(),
+    f.referencesIDWithFilter(f.combine(f.type('instructor'), f.slug(slug))),
+    f.brand(brand),
+    f.searchMatch('title', searchTerm),
+    f.includedFields(includedFields)
   )
 
   const data = query()
-    .and(f.brand(brand))
-    .and(f.searchMatch('title', searchTerm))
-    .and(f.includedFields(includedFields))
     .and(restrictions)
     .order(sort)
     .slice(offset, limit)
@@ -165,5 +157,5 @@ export async function fetchInstructorLessons(
     "total": count(${total})
   }`
 
-  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
+  return fetchSanity(q, true, { processNeedAccess: true, processPageType: false })
 }

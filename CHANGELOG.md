@@ -2,6 +2,53 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.105.0](https://github.com/railroadmedia/musora-content-services/compare/v2.104.9...v2.105.0) (2025-12-17)
+
+
+### Features
+
+* Remove xp and total_xp ([#656](https://github.com/railroadmedia/musora-content-services/issues/656)) ([e6238a6](https://github.com/railroadmedia/musora-content-services/commit/e6238a605e095dc81e152c25f0abf4885b2bb091))
+* update type for method progress card ([#662](https://github.com/railroadmedia/musora-content-services/issues/662)) ([ad2d6df](https://github.com/railroadmedia/musora-content-services/commit/ad2d6df35b321afd7df1a302ee6bfbcbce1a31b7))
+
+
+### Bug Fixes
+
+* Minor progress fixes ([#654](https://github.com/railroadmedia/musora-content-services/issues/654)) ([202cceb](https://github.com/railroadmedia/musora-content-services/commit/202ccebc85d119ce9a63007e600a8fd92c3f94d7))
+
+### [2.104.9](https://github.com/railroadmedia/musora-content-services/compare/v2.104.8...v2.104.9) (2025-12-17)
+
+### [2.104.8](https://github.com/railroadmedia/musora-content-services/compare/v2.104.7...v2.104.8) (2025-12-16)
+
+### [2.104.7](https://github.com/railroadmedia/musora-content-services/compare/v2.104.6...v2.104.7) (2025-12-16)
+
+### [2.104.6](https://github.com/railroadmedia/musora-content-services/compare/v2.104.5...v2.104.6) (2025-12-16)
+
+
+### Bug Fixes
+
+* method card previous dailies ([#649](https://github.com/railroadmedia/musora-content-services/issues/649)) ([14f1c39](https://github.com/railroadmedia/musora-content-services/commit/14f1c390530a126d063eff3c7062e4fe2a09567c))
+* **MU2-1315:** agi lessons permissions ([#657](https://github.com/railroadmedia/musora-content-services/issues/657)) ([b3ff00a](https://github.com/railroadmedia/musora-content-services/commit/b3ff00a2bb57e149981b18b5060ab2ec257db912))
+
+### [2.104.5](https://github.com/railroadmedia/musora-content-services/compare/v2.104.4...v2.104.5) (2025-12-12)
+
+
+### Bug Fixes
+
+* conditionally update the active path ([#653](https://github.com/railroadmedia/musora-content-services/issues/653)) ([4775e89](https://github.com/railroadmedia/musora-content-services/commit/4775e89c375aedac310ded0effce4786d48ffcd2))
+
+### [2.104.4](https://github.com/railroadmedia/musora-content-services/compare/v2.104.3...v2.104.4) (2025-12-12)
+
+### [2.104.3](https://github.com/railroadmedia/musora-content-services/compare/v2.104.0...v2.104.3) (2025-12-12)
+
+
+### Bug Fixes
+
+* **MU2-1309:** navigateTo missing on owned contents ([9b12213](https://github.com/railroadmedia/musora-content-services/commit/9b12213ad8061d60eada1603c0384d36b7a955f3))
+
+### [2.104.2](https://github.com/railroadmedia/musora-content-services/compare/v2.104.1...v2.104.2) (2025-12-12)
+
+### [2.104.1](https://github.com/railroadmedia/musora-content-services/compare/v2.104.0...v2.104.1) (2025-12-12)
+
 ## [2.104.0](https://github.com/railroadmedia/musora-content-services/compare/v2.100.3...v2.104.0) (2025-12-12)
 
 

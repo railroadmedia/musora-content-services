@@ -11,8 +11,8 @@ import { Filters as f } from '../../lib/sanity/filter'
 export interface Genre {
   name: string
   slug: string
-  lessons_count: number
   thumbnail: string
+  lesson_count: number
 }
 
 export interface Genres {
@@ -33,35 +33,27 @@ export interface Genres {
  */
 export async function fetchGenres(
   brand: Brands | string,
-  options: BuildQueryOptions = { sort: 'lower(name) asc' }
+  options: BuildQueryOptions
 ): Promise<Genres> {
-  const lesson = f.combine(f.brand(brand), f.referencesParent())
   const type = f.type('genre')
-  const lessonCount = `count(*[${lesson}])`
-  const postFilter = `lessonCount > 0`
+  const postFilter = `lesson_count > 0`
+  const { sort = 'lower(name)', offset = 0, limit = 20 } = options
 
   const data = query()
     .and(type)
-    .order(options?.sort || 'lower(name) asc')
-    .slice(options?.offset || 0, options?.limit || 20)
+    .order(getSortOrder(sort, brand))
+    .slice(offset, limit)
     .select(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessons_count": ${lessonCount}`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
-    .postFilter(postFilter)
-    .build()
-
-  const total = query()
-    .and(type)
-    .select(`"lessons_count": ${lessonCount}`)
     .postFilter(postFilter)
     .build()
 
   const q = `{
     "data": ${data},
-    "total": count(${total})
   }`
 
   return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
@@ -83,8 +75,6 @@ export async function fetchGenreBySlug(
   slug: string,
   brand?: Brands | string
 ): Promise<Genre | null> {
-  const filter = f.combine(brand ? f.brand(brand) : f.empty, f.referencesParent())
-
   const q = query()
     .and(f.type('genre'))
     .and(f.slug(slug))
@@ -92,7 +82,7 @@ export async function fetchGenreBySlug(
       'name',
       `"slug": slug.current`,
       `"thumbnail": thumbnail_url.asset->url`,
-      `"lessons_count": count(*[${filter}])`
+      `"lesson_count": ${await f.lessonCount(brand)}`
     )
     .first()
     .build()
@@ -145,15 +135,17 @@ export async function fetchGenreLessons(
   sort = getSortOrder(sort, brand)
 
   const restrictions = await f.combineAsync(
-    f.contentFilter(),
-    f.referencesIDWithFilter(f.combine(f.type('genre'), f.slug(slug)))
+    f.status(),
+    f.publishedDate(),
+    f.notDeprecated(),
+    f.referencesIDWithFilter(f.combine(f.type('genre'), f.slug(slug))),
+    f.brand(brand),
+    f.searchMatch('title', searchTerm),
+    f.includedFields(includedFields),
+    f.progressIds(progressIds)
   )
 
   const data = query()
-    .and(f.brand(brand))
-    .and(f.searchMatch('title', searchTerm))
-    .and(f.includedFields(includedFields))
-    .and(f.progressIds(progressIds))
     .and(restrictions)
     .order(sort)
     .slice(offset, limit)
@@ -167,5 +159,5 @@ export async function fetchGenreLessons(
     "total": count(${total})
   }`
 
-  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
+  return fetchSanity(q, true, { processNeedAccess: true, processPageType: false })
 }

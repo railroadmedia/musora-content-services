@@ -99,7 +99,7 @@ export class AwardManager {
     const popupMessage = AwardMessageGenerator.generatePopupMessage(completionData)
 
     await db.userAwardProgress.recordAwardProgress(award._id, 100, {
-      completedAt: Date.now(),
+      completedAt: new Date().toISOString(),
       completionData,
       progressData,
       immediate: true
@@ -128,6 +128,11 @@ export class AwardManager {
 
       const completedCount = completedLessonIds.length
       const progressPercentage = Math.round((completedCount / childIds.length) * 100)
+
+      if (progressPercentage === 100) {
+        await this.grantAward(award, collection)
+        return
+      }
 
       const progressData = {
         completedLessonIds,
