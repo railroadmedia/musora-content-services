@@ -55,9 +55,9 @@ export default class SyncManager {
   private effectMap: { models: ModelClass[]; effects: SyncEffect[] }[]
 
   private initDatabase: () => Database
-  private destroyDatabase: (dbName: string, adapter: DatabaseAdapter) => void
+  private destroyDatabase?: (dbName: string, adapter: DatabaseAdapter) => void
 
-  constructor(context: SyncContext, initDatabase: () => Database, destroyDatabase: (dbName: string, adapter: DatabaseAdapter) => void) {
+  constructor(context: SyncContext, initDatabase: () => Database, destroyDatabase?: (dbName: string, adapter: DatabaseAdapter) => void) {
     this.id = (SyncManager.counter++).toString()
 
     this.telemetry = SyncTelemetry.getInstance()!
@@ -120,6 +120,8 @@ export default class SyncManager {
   setup() {
     this.telemetry.debug('[SyncManager] Setting up')
 
+    // can fail synchronously immediately (e.g., schema/migration validation errors)
+    // or asynchronously (e.g., indexedDB errors synchronously OR asynchronously (!))
     const database = this.telemetry.trace({ name: 'db:init' }, this.initDatabase)
 
     Object.entries(this.storeConfigsRegistry).forEach(([table, storeConfig]) => {
@@ -150,7 +152,7 @@ export default class SyncManager {
     })
     onContentCompleted(onContentCompletedLearningPathListener)
 
-    const teardown = async () => {
+    const teardown = () => {
       this.telemetry.debug('[SyncManager] Tearing down')
       this.runScope.abort()
       this.strategyMap.forEach(({ strategies }) =>
@@ -161,8 +163,10 @@ export default class SyncManager {
       this.retry.stop()
       this.context.stop()
 
-      if (database.adapter.underlyingAdapter && database.adapter.dbName) {
-        this.destroyDatabase(database.adapter.dbName, database.adapter.underlyingAdapter)
+      if (this.destroyDatabase && database.adapter.dbName && database.adapter.underlyingAdapter) {
+        return this.destroyDatabase(database.adapter.dbName, database.adapter.underlyingAdapter)
+      } else {
+        return database.unsafeResetDatabase()
       }
     }
     return teardown
