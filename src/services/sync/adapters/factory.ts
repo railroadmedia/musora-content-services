@@ -3,6 +3,8 @@ import schema from '../schema'
 import type SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite'
 import type LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 
+import { SyncTelemetry } from '../telemetry'
+
 export type DatabaseAdapter = SQLiteAdapter | LokiJSAdapter
 
 type SQLiteAdapterOptions = ConstructorParameters<typeof SQLiteAdapter>[0]

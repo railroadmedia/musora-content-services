@@ -9,7 +9,7 @@ import {
 } from '../../src/services/sync/models/index'
 import syncDatabaseFactory from '../../src/services/sync/database/factory'
 
-import syncAdapter, { SyncAdapterEventBus } from './adapter'
+import syncAdapter from './adapter'
 
 export function initializeSyncManager(userId) {
   if (SyncManager.getInstanceOrNull()) {
@@ -37,8 +37,7 @@ export function initializeSyncManager(userId) {
 
   SyncTelemetry.setInstance(new SyncTelemetry(userId, { Sentry: dummySentry, level: SeverityLevel.WARNING, pretty: false }))
 
-  const adapterBus = new SyncAdapterEventBus()
-  const adapter = syncAdapter(userId, adapterBus)
+  const adapter = syncAdapter(userId)
   const db = syncDatabaseFactory(adapter)
 
   const context = new SyncContext({

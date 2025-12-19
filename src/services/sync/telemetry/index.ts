@@ -45,6 +45,8 @@ export class SyncTelemetry {
   private level: SeverityLevel
   private pretty: boolean
 
+  private ignorePatterns: (string | RegExp)[] = []
+
   // allows us to know if Sentry shouldn't double-capture a dev-prettified console.error log
   private _ignoreConsole = false
 
@@ -101,33 +103,59 @@ export class SyncTelemetry {
     return this._ignoreConsole
   }
 
+  /**
+   * Ignore messages/errors in the future that match provided patterns
+   */
+  ignoreLike(...patterns: (RegExp | string)[]) {
+    this.ignorePatterns.push(...patterns)
+  }
+
+  shouldIgnoreRejection(reason: any) {
+    const message = reason instanceof Error ? `${reason.name}: ${reason.message}` : reason
+    return this.shouldIgnoreMessage(message)
+  }
+
+  shouldIgnoreException(exception: unknown) {
+    if (exception instanceof Error) {
+      return this.shouldIgnoreMessage(exception.message)
+    }
+
+    return false
+  }
+
+  shouldIgnoreMessages(messages: any[]) {
+    return messages.some(message => {
+      return this.shouldIgnoreMessage(message)
+    })
+  }
+
   debug(...messages: any[]) {
-    this.level <= SeverityLevel.DEBUG && console.debug(...this.formattedConsoleMessages(...messages));
+    this.level <= SeverityLevel.DEBUG && !this.shouldIgnoreMessages(messages) && console.debug(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('debug', ...messages)
   }
 
   info(...messages: any[]) {
-    this.level <= SeverityLevel.INFO && console.info(...this.formattedConsoleMessages(...messages));
+    this.level <= SeverityLevel.INFO && !this.shouldIgnoreMessages(messages) && console.info(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('info', ...messages)
   }
 
   log(...messages: any[]) {
-    this.level <= SeverityLevel.LOG && console.log(...this.formattedConsoleMessages(...messages));
+    this.level <= SeverityLevel.LOG && !this.shouldIgnoreMessages(messages) && console.log(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('log', ...messages)
   }
 
   warn(...messages: any[]) {
-    this.level <= SeverityLevel.WARNING && console.warn(...this.formattedConsoleMessages(...messages));
+    this.level <= SeverityLevel.WARNING && !this.shouldIgnoreMessages(messages) && console.warn(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('warning', ...messages)
   }
 
   error(...messages: any[]) {
-    this.level <= SeverityLevel.ERROR && console.error(...this.formattedConsoleMessages(...messages));
+    this.level <= SeverityLevel.ERROR && !this.shouldIgnoreMessages(messages) && console.error(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('error', ...messages)
   }
 
   fatal(...messages: any[]) {
-    this.level <= SeverityLevel.FATAL && console.error(...this.formattedConsoleMessages(...messages));
+    this.level <= SeverityLevel.FATAL && !this.shouldIgnoreMessages(messages) && console.error(...this.formattedConsoleMessages(...messages));
     this.recordBreadcrumb('fatal', ...messages)
   }
 
@@ -155,5 +183,19 @@ export class SyncTelemetry {
 
   private consoleSuffix(date: Date) {
     return [` [${date.toLocaleTimeString()}, ${date.getTime()}]`];
+  }
+
+  private shouldIgnoreMessage(message: any) {
+    if (message instanceof Error) message = message.message
+    if (typeof message !== 'string') return false
+
+    return this.ignorePatterns.some(pattern => {
+      if (typeof pattern === 'string') {
+        return message.indexOf(pattern) !== -1
+      } else if (pattern instanceof RegExp) {
+        return pattern.test(message)
+      }
+      return false
+    })
   }
 }

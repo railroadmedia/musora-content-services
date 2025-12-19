@@ -29,7 +29,10 @@ export default class SyncManager {
     const teardown = instance.setup()
     return (force = false) => {
       SyncManager.instance = null
-      return teardown(force)
+      return teardown(force).catch(error => {
+        SyncManager.instance = instance
+        throw error
+      })
     }
   }
 
@@ -166,7 +169,7 @@ export default class SyncManager {
       if (force && this.destroyDatabase && database.adapter.dbName && database.adapter.underlyingAdapter) {
         return this.destroyDatabase(database.adapter.dbName, database.adapter.underlyingAdapter)
       } else {
-        return database.unsafeResetDatabase()
+        return database.write(() => database.unsafeResetDatabase())
       }
     }
 
