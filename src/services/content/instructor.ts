@@ -1,12 +1,12 @@
 /**
  * @module Instructor
  */
-import { getFieldsForContentType } from '../../contentTypeConfig.js'
-import { fetchSanity, getSortOrder } from '../sanity.js'
-import { Lesson } from './content'
-import { BuildQueryOptions, query } from '../../lib/sanity/query'
+import { getFieldsForContentTypeWithFilteredChildren } from '../../contentTypeConfig.js'
 import { Brands } from '../../lib/brands'
 import { Filters as f } from '../../lib/sanity/filter'
+import { BuildQueryOptions, query } from '../../lib/sanity/query'
+import { fetchSanity, getSortOrder } from '../sanity.js'
+import { Lesson } from './content'
 
 export interface Instructor {
   lesson_count: number
@@ -106,7 +106,7 @@ export interface InstructorLessons {
  * Fetch the data needed for the instructor screen.
  * @param {string} slug - The slug of the instructor
  * @param {Brands|string} brand - The brand for which to fetch instructor lessons
- *
+ * @param {string|null} [contentType] - The content type to filter lessons by (e.g., 'lesson', 'course').
  * @param {FetchInstructorLessonsOptions} options - Parameters for pagination, filtering and sorting.
  * @param {string} [options.sortOrder="-published_on"] - The field to sort the lessons by.
  * @param {string} [options.searchTerm=""] - The search term to filter content by title.
@@ -123,6 +123,7 @@ export interface InstructorLessons {
 export async function fetchInstructorLessons(
   slug: string,
   brand: Brands | string,
+  contentType?: string,
   {
     sort = '-published_on',
     searchTerm = '',
@@ -147,7 +148,7 @@ export async function fetchInstructorLessons(
     .and(restrictions)
     .order(sort)
     .slice(offset, limit)
-    .select(getFieldsForContentType() as string)
+    .select((await getFieldsForContentTypeWithFilteredChildren(contentType, true)) as string)
     .build()
 
   const total = query().and(restrictions).build()
