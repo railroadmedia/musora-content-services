@@ -3,8 +3,7 @@ import { db } from './sync'
 import { COLLECTION_TYPE, STATE } from './sync/models/ContentProgress'
 import { trackUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
-import { emitContentCompleted } from './progress-events'
-import {getDailySession} from "./content-org/learning-paths.ts";
+import {getDailySession, onContentCompletedLearningPathActions} from "./content-org/learning-paths.ts";
 import {getToday} from "./dateUtils.js";
 import { fetchBrandsByContentIds } from './sanity.js'
 
@@ -478,8 +477,6 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
     currentSeconds,
     {skipPush: true}
   )
-  if (progress === 100) emitContentCompleted(contentId, collection)
-
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
 
@@ -495,9 +492,11 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
     await duplicateLearningPathProgressToExternalContents(exportIds, collection, hierarchy, {skipPush: true})
   }
 
+  if (progress === 100) await onContentCompletedLearningPathActions(contentId, collection)
+
   for (const [bubbledContentId, bubbledProgress] of Object.entries(bubbledProgresses)) {
     if (bubbledProgress === 100) {
-      emitContentCompleted(Number(bubbledContentId), collection)
+      await onContentCompletedLearningPathActions(Number(bubbledContentId), collection)
     }
   }
 
@@ -512,8 +511,6 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
   const progress = isCompleted ? 100 : 0
   const response = await db.contentProgress.recordProgress(contentId, collection, progress, null, {skipPush: true})
 
-  if (progress === 100) emitContentCompleted(contentId, collection)
-
   const hierarchy = await getHierarchy(contentId, collection)
 
   let progresses = {
@@ -522,16 +519,18 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
   }
   // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
   await db.contentProgress.recordProgressMany(progresses, collection, {tentative: !isLP, skipPush: true})
-
   if (isLP) {
+
     let exportProgresses = progresses
     exportProgresses[contentId] = progress
     await duplicateLearningPathProgressToExternalContents(exportProgresses, collection, hierarchy, {skipPush: true})
   }
 
+  if (progress === 100) await onContentCompletedLearningPathActions(contentId, collection)
+
   for (const [id, progress] of Object.entries(progresses)) {
     if (progress === 100) {
-      emitContentCompleted(Number(id), collection)
+      await onContentCompletedLearningPathActions(Number(id), collection)
     }
   }
 
@@ -585,7 +584,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
 
   if (progress === 100) {
     for (const contentId of contentIds) {
-      emitContentCompleted(contentId, collection)
+      await onContentCompletedLearningPathActions(contentId, collection)
     }
   }
 
@@ -616,7 +615,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
 
   for (const [id, progress] of Object.entries(progresses)) {
     if (progress === 100) {
-      emitContentCompleted(Number(id), collection)
+      await onContentCompletedLearningPathActions(Number(id), collection)
     }
   }
 

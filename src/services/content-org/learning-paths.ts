@@ -445,11 +445,11 @@ async function resetIfPossible(contentId: number, collection: CollectionParamete
   return status !== '' ? await contentStatusReset(contentId, collection) : null
 }
 
-export async function onContentCompletedLearningPathListener(event) {
-  if (event?.collection?.type !== COLLECTION_TYPE.LEARNING_PATH) return
-  if (event.contentId !== event?.collection?.id) return
+export async function onContentCompletedLearningPathActions(contentId: number, collection: CollectionObject|null) {
+  if (collection?.type !== COLLECTION_TYPE.LEARNING_PATH) return
+  if (contentId !== collection?.id) return
 
-  const learningPathId = event.contentId
+  const learningPathId = contentId
   const learningPath = await getEnrichedLearningPath(learningPathId)
 
   const brand = learningPath.brand
