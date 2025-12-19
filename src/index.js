@@ -400,9 +400,8 @@ import {
 } from './services/user/profile.js';
 
 import {
-	getAuthKey,
+	generateAuthSessionUrl,
 	login,
-	loginWithAuthKey,
 	logout
 } from './services/user/sessions.js';
 
@@ -579,13 +578,13 @@ export {
 	fetchUserPractices,
 	findIncompleteLesson,
 	followThread,
+	generateAuthSessionUrl,
 	getActiveDiscussions,
 	getActivePath,
 	getAllCompleted,
 	getAllCompletedByIds,
 	getAllStarted,
 	getAllStartedOrCompleted,
-	getAuthKey,
 	getAwardStatistics,
 	getCompletedAwards,
 	getContentAwards,
@@ -649,7 +648,6 @@ export {
 	likePost,
 	lockThread,
 	login,
-	loginWithAuthKey,
 	logout,
 	mapContentToParent,
 	markAllNotificationsAsRead,

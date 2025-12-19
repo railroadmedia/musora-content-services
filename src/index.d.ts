@@ -396,9 +396,8 @@ import {
 } from './services/user/profile.js';
 
 import {
-	getAuthKey,
+	generateAuthSessionUrl,
 	login,
-	loginWithAuthKey,
 	logout
 } from './services/user/sessions.js';
 
@@ -580,13 +579,13 @@ declare module 'musora-content-services' {
 		fetchUserPractices,
 		findIncompleteLesson,
 		followThread,
+		generateAuthSessionUrl,
 		getActiveDiscussions,
 		getActivePath,
 		getAllCompleted,
 		getAllCompletedByIds,
 		getAllStarted,
 		getAllStartedOrCompleted,
-		getAuthKey,
 		getAwardStatistics,
 		getCompletedAwards,
 		getContentAwards,
@@ -650,7 +649,6 @@ declare module 'musora-content-services' {
 		likePost,
 		lockThread,
 		login,
-		loginWithAuthKey,
 		logout,
 		mapContentToParent,
 		markAllNotificationsAsRead,
