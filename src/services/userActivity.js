@@ -8,7 +8,7 @@ import {
   fetchUserPracticeNotes,
   fetchRecentUserActivities,
 } from './railcontent'
-import { GET, POST, PUT, DELETE } from '../infrastructure/http/HttpClient.js'
+import { GET, POST, PUT, DELETE } from '../infrastructure/http/HttpClient.ts'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import {
   fetchByRailContentId,

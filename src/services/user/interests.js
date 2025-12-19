@@ -2,7 +2,7 @@
  * @module Interests
  */
 import { globalConfig } from '../config.js'
-import { GET, POST, DELETE } from '../../infrastructure/http/HttpClient.js'
+import { GET, POST, DELETE } from '../../infrastructure/http/HttpClient.ts'
 import './types.js'
 
 const baseUrl = `/api/user-management-system`

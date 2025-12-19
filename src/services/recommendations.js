@@ -3,7 +3,7 @@
  */
 
 import { globalConfig } from './config.js'
-import { GET, HttpClient } from '../infrastructure/http/HttpClient.js'
+import { GET, HttpClient } from '../infrastructure/http/HttpClient.ts'
 
 /**
  * Exported functions that are excluded from index generation.

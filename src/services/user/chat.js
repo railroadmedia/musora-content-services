@@ -1,4 +1,4 @@
-import { GET } from '../../infrastructure/http/HttpClient.js'
+import { GET } from '../../infrastructure/http/HttpClient.ts'
 
 /**
  * @module UserChat
