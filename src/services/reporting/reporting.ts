@@ -11,7 +11,7 @@ import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
 import { ReportResponse, ReportableType, IssueTypeMap, ReportIssueOption } from './types'
 import { Brands } from '../../lib/brands'
-import { generateContentUrl, generatePlaylistUrl, generateForumPostUrl, generateCommentUrl } from '../urlBuilder.js'
+import { generateContentUrl, generatePlaylistUrl, generateForumPostUrl, generateCommentUrl } from '../urlBuilder.ts'
 import {fetchByRailContentId} from "../../index";
 import {fetchByRailContentIds} from "../sanity";
 import {addContextToContent} from "../contentAggregator";
@@ -122,7 +122,7 @@ export async function report<T extends ReportableType>(
       id: params.id
     })
   } else if (params.type === 'forum_post') {
-    const { fetchPost } = await import('../forums/posts.js')
+    const { fetchPost } = await import('../forums/posts.ts')
     const post = await fetchPost(params.id, params.brand)
 
     if (post?.thread) {

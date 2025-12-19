@@ -400,7 +400,7 @@ export async function restoreComment(commentId) {
  * @returns {Promise<*|null>}
  */
 export async function replyToComment(commentId, comment) {
-  const { generateCommentUrl } = await import('./urlBuilder.js')
+  const { generateCommentUrl } = await import('./urlBuilder.ts')
   const { fetchByRailContentIds } = await import('./sanity.js')
 
   // Fetch parent comment to get content info
@@ -441,7 +441,7 @@ export async function replyToComment(commentId, comment) {
  * @returns {Promise<*|null>}
  */
 export async function createComment(railcontentId, comment) {
-  const { generateContentUrl } = await import('./urlBuilder.js')
+  const { generateContentUrl } = await import('./urlBuilder.ts')
   const { fetchByRailContentIds } = await import('./sanity.js')
 
   // Fetch content to get type and brand info
@@ -488,7 +488,7 @@ export async function unassignModeratorToComment(commentId) {
  * @returns {Promise<*|null>}
  */
 export async function likeComment(commentId) {
-  const { generateCommentUrl } = await import('./urlBuilder.js')
+  const { generateCommentUrl } = await import('./urlBuilder.ts')
   const { fetchByRailContentIds } = await import('./sanity.js')
 
   // Fetch comment to get content info
