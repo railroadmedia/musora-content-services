@@ -539,14 +539,26 @@ export async function getPracticeNotes(date) {
 export async function getRecentActivity({ page = 1, limit = 5, tabName = null } = {}) {
   const recentActivityData = await fetchRecentUserActivities({ page, limit, tabName })
   const contentIds = recentActivityData.data.map((p) => p.contentId).filter((id) => id !== null)
-  const contents = await addContextToContent(fetchByRailContentIds, contentIds, {
-    addNavigateTo: true,
-    addNextLesson: true,
-  })
+
+  const contents = await addContextToContent(
+    fetchByRailContentIds,
+    contentIds,
+    'progress-tracker',
+    undefined,
+    true,
+    { bypassPermissions: true },
+    {
+      addNavigateTo: true,
+      addNextLesson: true,
+    }
+  )
+
   recentActivityData.data = recentActivityData.data.map((practice) => {
     const content = contents?.find((c) => c.id === practice.contentId) || {}
     return {
       ...practice,
+      thumbnail: content.thumbnail,
+      title: content.title,
       parent_id: content.parent_id || null,
       navigateTo: content.navigateTo,
     }
@@ -796,10 +808,18 @@ export async function calculateLongestStreaks(userId = globalConfig.sessionConfi
 
 async function formatPracticeMeta(practices = []) {
   const contentIds = practices.map((p) => p.content_id).filter((id) => id !== null)
-  const contents = await addContextToContent(fetchByRailContentIds, contentIds, {
-    addNavigateTo: true,
-    addNextLesson: true,
-  })
+  const contents = await addContextToContent(
+    fetchByRailContentIds,
+    contentIds,
+    'progress-tracker',
+    undefined,
+    true,
+    { bypassPermissions: true },
+    {
+      addNavigateTo: true,
+      addNextLesson: true,
+    }
+  )
 
   return practices.map((practice) => {
     const content =
@@ -1111,7 +1131,6 @@ async function processContentItem(content) {
       ctaText = 'Revisit Show'
     }
   }
-  console.log('Progress Timestamp', content.progressTimestamp)
   return {
     id: content.id,
     progressType: 'content',

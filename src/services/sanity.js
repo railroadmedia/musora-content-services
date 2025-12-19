@@ -457,7 +457,8 @@ export async function fetchByRailContentIds(
   ids,
   contentType = undefined,
   brand = undefined,
-  includePermissionsAndStatusFilter = false
+  includePermissionsAndStatusFilter = false,
+  filterOptions = {}
 ) {
   if (!ids?.length) {
     return []
@@ -471,7 +472,7 @@ export async function fetchByRailContentIds(
   const fields = await getFieldsForContentTypeWithFilteredChildren(contentType, true)
   const baseFilter = `railcontent_id in [${idsString}]${brandFilter}`
   const finalFilter = includePermissionsAndStatusFilter
-    ? await new FilterBuilder(baseFilter).buildFilter()
+    ? await new FilterBuilder(baseFilter, filterOptions).buildFilter()
     : baseFilter
   const query = `*[
     ${finalFilter}
@@ -509,7 +510,6 @@ export async function fetchByRailContentIds(
 
   // Sort results to match the order of the input IDs
   const sortedResults = results?.sort(sortFuction) ?? null
-
   return sortedResults
 }
 
