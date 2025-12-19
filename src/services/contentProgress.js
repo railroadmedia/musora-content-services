@@ -95,7 +95,7 @@ export async function getNavigateTo(data, collection = null) {
   collection = normalizeCollection(collection)
   let navigateToData = {}
 
-  const twoDepthContentTypes = ['pack'] // not adding method because it has its own logic (with active path)
+  const twoDepthContentTypes = ['course-collection'] // not adding method because it has its own logic (with active path)
   //TODO add parent hierarchy upwards as well
   // data structure is the same but instead of child{} we use parent{}
   for (const content of data) {
@@ -135,7 +135,7 @@ export async function getNavigateTo(data, collection = null) {
         const lastInteracted = await getLastInteractedOf(childrenIds, collection)
         const lastInteractedStatus = childrenStates[lastInteracted]
 
-        if (['course', 'pack-bundle', 'skill-pack'].includes(content.type)) {
+        if (['course', 'skill-pack'].includes(content.type)) {
           if (lastInteractedStatus === STATE_STARTED) {
             // send to last interacted
             navigateToData[content.id] = buildNavigateTo(
@@ -170,7 +170,7 @@ export async function getNavigateTo(data, collection = null) {
             collection
           )
           if (childrenStates[lastInteractedChildId] === STATE_COMPLETED) {
-            // TODO: packs have an extra situation where we need to jump to the next course if all lessons in the last engaged course are completed
+            // TODO: course collections have an extra situation where we need to jump to the next course if all lessons in the last engaged course are completed
           }
           let lastInteractedChildNavToData = await getNavigateTo(firstChildren, collection)
           lastInteractedChildNavToData = lastInteractedChildNavToData[lastInteractedChildId]

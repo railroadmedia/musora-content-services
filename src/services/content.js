@@ -11,7 +11,7 @@ import {
   fetchUpcomingEvents,
   fetchScheduledReleases,
   fetchReturning,
-  fetchLeaving, fetchScheduledAndNewReleases, fetchContentRows, fetchOwnedContent
+  fetchLeaving, fetchScheduledAndNewReleases, fetchContentRows, fetchOwnedContent, fetchCourseCollectionData
 } from './sanity.js'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {recommendations, rankCategories, rankItems} from "./recommendations";
@@ -19,6 +19,7 @@ import {addContextToContent} from "./contentAggregator.js";
 import {globalConfig} from "./config";
 import {getUserData} from "./user/management";
 import {filterTypes, ownedContentTypes} from "../contentTypeConfig";
+import {getPermissionsAdapter} from "./permissions/index.ts";
 
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
@@ -454,24 +455,33 @@ export async function getRecommendedForYou(brand, rowId = null, {
  *   .then(content => console.log(content))
  *   .catch(error => console.error(error));
  */
-export async function getLegacyMethods(brand) {
-
+export async function getLegacyMethods(brand)
+{
   // TODO: Replace with real data from Sanity when available with permissions
-
-  return [
-    {
-      id: 1,
-      title: '2020 Method',
-      type: 'pack',
-      child_count: 12,
-    },
-    {
-      id: 2,
-      title: '2016 Foundations',
-      type: 'pack',
-      child_count: 12,
-    },
-  ]
+  const brandMap = {
+    drumeo: [241247],
+    pianote: [
+      276693,
+      215952 //Foundations 2019
+    ],
+    singeo: [308514],
+    guitareo: [333652],
+  }
+  const ids = brandMap[brand] ?? null;
+  if (!ids) return [];
+  const adapter = getPermissionsAdapter()
+  const userPermissionsData = await adapter.fetchUserPermissions()
+  const userPermissions = userPermissionsData.permissions
+  // Users should only have access to this if they have an active membership AS WELL as the content access
+  // THis is hardcoded behaviour and isn't found elsewhere
+  const hasMembership = userPermissionsData.isAdmin || userPermissions.includes(91) || userPermissions.includes(92)
+  const hasContentPermission = userPermissions.includes(100000000 + ids[0])
+  console.log('legacyMethods', {hasMembership, hasContentPermission, userPermissionsData})
+  if (hasMembership && hasContentPermission) {
+   return Promise.all(ids.map(id => fetchCourseCollectionData(id)))
+  } else {
+    return []
+  }
 }
 
 /**
@@ -505,7 +515,7 @@ export async function getLegacyMethods(brand) {
  * @example
  * // Fetch owned content filtered by types
  * getOwnedContent('drumeo', {
- *   type: ['course', 'pack'],
+ *   type: ['course', 'course-collection'],
  *   page: 1,
  *   limit: 10
  * })
