@@ -3,7 +3,7 @@
  */
 
 import { globalConfig } from './config.js'
-import { HttpClient } from '../infrastructure/http/HttpClient'
+import { GET, HttpClient } from '../infrastructure/http/HttpClient.ts'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -12,7 +12,8 @@ import { HttpClient } from '../infrastructure/http/HttpClient'
  */
 const excludeFromGeneratedIndex = []
 
-const baseURL = 'https://recommender.musora.com'
+const RECOMMENDER_URL = 'https://recommender.musora.com'
+const recommenderClient = new HttpClient(RECOMMENDER_URL)
 
 /**
  * Fetches similar content to the provided content id
@@ -31,16 +32,14 @@ export async function fetchSimilarItems(content_id, brand, count = 10) {
     return []
   }
   content_id = parseInt(content_id)
-  let data = {
+  const data = {
     brand: brand,
     content_ids: content_id,
-    num_similar: count + 1, // because the content itself is sometimes returned
+    num_similar: count + 1,
   }
   const url = `/similar_items/`
   try {
-    const httpClient = new HttpClient(baseURL)
-    const response = await httpClient.post(url, data)
-    // we requested count + 1 then filtered out the extra potential value, so we need slice to the correct size if necessary
+    const response = await recommenderClient.post(url, data)
     return response['similar_items'].filter((item) => item !== content_id).slice(0, count)
   } catch (error) {
     console.error('Fetch error:', error)
@@ -67,16 +66,15 @@ export async function rankCategories(brand, categories) {
   if (categories.length === 0) {
     return []
   }
-  let data = {
+  const data = {
     brand: brand,
     user_id: globalConfig.sessionConfig.userId,
     playlists: categories,
   }
   const url = `/rank_each_list/`
   try {
-    const httpClient = new HttpClient(baseURL)
-    const response = await httpClient.post(url, data)
-    let rankedCategories = []
+    const response = await recommenderClient.post(url, data)
+    const rankedCategories = []
 
     for (const rankedPlaylist of response['ranked_playlists']) {
       rankedCategories.push({
@@ -89,12 +87,10 @@ export async function rankCategories(brand, categories) {
     console.error('RankCategories fetch error:', error)
     const defaultSorting = []
     for (const slug in categories) {
-      defaultSorting.push(
-        {
-          slug: slug,
-          items: categories[slug],
-        }
-      )
+      defaultSorting.push({
+        slug: slug,
+        items: categories[slug],
+      })
     }
     return defaultSorting
   }
@@ -115,15 +111,14 @@ export async function rankItems(brand, content_ids) {
   if (content_ids.length === 0) {
     return []
   }
-  let data = {
+  const data = {
     brand: brand,
     user_id: globalConfig.sessionConfig.userId,
     content_ids: content_ids,
   }
   const url = `/rank_items/`
   try {
-    const httpClient = new HttpClient(baseURL)
-    const response = await httpClient.post(url, data)
+    const response = await recommenderClient.post(url, data)
     return response['ranked_content_ids']
   } catch (error) {
     console.error('rankItems fetch error:', error)
@@ -135,11 +130,5 @@ export async function recommendations(brand, { section = '' } = {}) {
   section = section.toUpperCase().replace('-', '_')
   const sectionString = section ? `&section=${section}` : ''
   const url = `/api/content/v1/recommendations?brand=${brand}${sectionString}`
-  try {
-    const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-    return httpClient.get(url)
-  } catch (error) {
-    console.error('Fetch error:', error)
-    return null
-  }
+  return await GET(url)
 }

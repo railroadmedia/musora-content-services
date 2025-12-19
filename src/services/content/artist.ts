@@ -119,7 +119,7 @@ export interface ArtistLessons extends SanityListResponse<Lesson & NeedAccessDec
 export async function fetchArtistLessons(
   slug: string,
   brand: Brand,
-  contentType: DocumentType,
+  contentType?: DocumentType,
   {
     sort = '-published_on',
     searchTerm = '',

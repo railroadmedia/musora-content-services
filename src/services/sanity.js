@@ -3,31 +3,32 @@
  */
 import {
   artistOrInstructorName,
-  instructorField,
-  chapterField,
   assignmentsField,
-  descriptionField,
-  resourcesField,
-  contentTypeConfig,
-  getIntroVideoFields,
-  DEFAULT_FIELDS,
-  getFieldsForContentType,
-  filtersToGroq,
-  getUpcomingEventsTypes,
-  showsTypes,
-  getNewReleasesTypes,
+  chapterField,
   coachLessonsTypes,
-  getFieldsForContentTypeWithFilteredChildren,
+  contentTypeConfig,
+  DEFAULT_FIELDS,
+  descriptionField,
+  filtersToGroq,
   getChildFieldsForContentType,
+  getFieldsForContentType,
+  getFieldsForContentTypeWithFilteredChildren,
+  getIntroVideoFields,
+  getNewReleasesTypes,
+  getUpcomingEventsTypes,
+  instructorField,
+  resourcesField,
+  showsTypes,
   SONG_TYPES,
   SONG_TYPES_WITH_CHILDREN,
 } from '../contentTypeConfig.js'
-import { fetchSimilarItems, recommendations } from './recommendations.js'
-import { processMetadata, typeWithSortOrder } from '../contentMetaData.js'
+import { fetchSimilarItems } from './recommendations.js'
+import { processMetadata } from '../contentMetaData.js'
+import { GET } from '../infrastructure/http/HttpClient.ts'
 
 import { globalConfig } from './config.js'
 
-import { fetchNextContentDataForParent, fetchHandler } from './railcontent.js'
+import { fetchNextContentDataForParent } from './railcontent.js'
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
@@ -456,7 +457,8 @@ export async function fetchByRailContentIds(
   ids,
   contentType = undefined,
   brand = undefined,
-  includePermissionsAndStatusFilter = false
+  includePermissionsAndStatusFilter = false,
+  filterOptions = {}
 ) {
   if (!ids?.length) {
     return []
@@ -470,7 +472,7 @@ export async function fetchByRailContentIds(
   const fields = await getFieldsForContentTypeWithFilteredChildren(contentType, true)
   const baseFilter = `railcontent_id in [${idsString}]${brandFilter}`
   const finalFilter = includePermissionsAndStatusFilter
-    ? await new FilterBuilder(baseFilter).buildFilter()
+    ? await new FilterBuilder(baseFilter, filterOptions).buildFilter()
     : baseFilter
   const query = `*[
     ${finalFilter}
@@ -508,7 +510,6 @@ export async function fetchByRailContentIds(
 
   // Sort results to match the order of the input IDs
   const sortedResults = results?.sort(sortFuction) ?? null
-
   return sortedResults
 }
 
@@ -1621,9 +1622,9 @@ export async function fetchChatAndLiveEnvent(brand, forcedId = null) {
     return null
   }
   let url = `/content/live-chat?brand=${brand}`
-  const chatData = await fetchHandler(url)
-  const mergedData = { ...chatData, ...liveEvent[0] }
-  return mergedData
+  const chatData = await GET(url)
+
+  return { ...chatData, ...liveEvent[0] }
 }
 
 //Helper Functions
