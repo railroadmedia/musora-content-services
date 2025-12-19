@@ -1,7 +1,7 @@
 /**
  * @module Onboarding
  */
-import { HttpClient, POST } from '../../infrastructure/http/HttpClient'
+import { GET, POST, PUT } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
 
 export interface OnboardingSteps {
@@ -89,8 +89,7 @@ export async function updateOnboarding({
   is_completed = false,
   marketingOptIn = false,
 }: UpdateOnboardingParams): Promise<Onboarding> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.put<Onboarding>(`/api/user-management-system/v1/onboardings/${id}`, {
+  return PUT(`/api/user-management-system/v1/onboardings/${id}`, {
     email,
     brand,
     flow,
@@ -109,8 +108,7 @@ export async function updateOnboarding({
  * @throws {HttpError} - If the HTTP request fails.
  */
 export async function userOnboardingForBrand(brand: string): Promise<Onboarding> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<Onboarding>(
+  return GET(
     `/api/user-management-system/v1/users/${globalConfig.sessionConfig.userId}/onboardings/brand/${encodeURIComponent(brand)}`
   )
 }
