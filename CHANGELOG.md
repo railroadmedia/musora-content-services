@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.107.0](https://github.com/railroadmedia/musora-content-services/compare/v2.105.0...v2.107.0) (2025-12-19)
+
+
+### Features
+
+* Add some validators prior to writing to watermelon ([#663](https://github.com/railroadmedia/musora-content-services/issues/663)) ([9eeedac](https://github.com/railroadmedia/musora-content-services/commit/9eeedac5a3cf8b4eedd091fcb8252ffd5bae6c85))
+
+
+### Bug Fixes
+
+* 401 authentication errors for mobile app by reading token lazily from globalConfig at request time instead of at HttpClient instantiation ([99204b3](https://github.com/railroadmedia/musora-content-services/commit/99204b317c806ef8bec6f0846059c82fc7f3b585))
+* Restricted access in recent activities ([7013794](https://github.com/railroadmedia/musora-content-services/commit/7013794f235f350eb30833bf0680bb7bb851af10))
+
 ### [2.106.1](https://github.com/railroadmedia/musora-content-services/compare/v2.106.0...v2.106.1) (2025-12-18)
 
 ## [2.106.0](https://github.com/railroadmedia/musora-content-services/compare/v2.105.0...v2.106.0) (2025-12-18)
