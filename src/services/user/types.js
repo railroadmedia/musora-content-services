@@ -46,9 +46,7 @@
  * @property {string|null} revenuecat_origin_app_user_id
  * @property {number} is_drumeo_lifetime_member
  * @property {string} access_level
- * @property {number} total_xp
  * @property {BrandMethodLevels} brand_method_levels
- * @property {BrandTotalXp} brand_total_xp
  * @property {BrandTimePracticed} brand_minutes_practiced
  * @property {BrandTimePracticed} brand_seconds_practiced
  * @property {number|null} guitar_playing_since_year
@@ -107,6 +105,12 @@
  * @typedef {Object} AuthResponse
  * @property {string} token
  * @property {User} user
+ */
+
+/**
+ * @typedef {Object} AuthKeyResponse
+ * @property {number} user_id
+ * @property {string} auth_key
  */
 
 /**

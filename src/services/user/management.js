@@ -1,11 +1,9 @@
 /**
  * @module UserManagement
  */
-import { fetchHandler as railcontentFetchHandler } from '../railcontent.js'
-import { fetchHandler, fetchJSONHandler } from '../../lib/httpHelper.js'
+import { GET, POST, PUT, DELETE } from '../../infrastructure/http/HttpClient.ts'
 import { globalConfig } from '../config.js'
 import './types.js'
-import { HttpClient } from '../../infrastructure/http/HttpClient'
 
 const baseUrl = `/api/user-management-system`
 
@@ -15,8 +13,7 @@ const baseUrl = `/api/user-management-system`
  */
 export async function blockedUsers() {
   const url = `${baseUrl}/v1/users/${globalConfig.sessionConfig.userId}/blocked`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.get(url)
+  return await GET(url)
 }
 
 /**
@@ -26,7 +23,7 @@ export async function blockedUsers() {
  */
 export async function blockUser(userId) {
   const url = `${baseUrl}/v1/block/${userId}`
-  return railcontentFetchHandler(url, 'post')
+  return await POST(url, null)
 }
 
 /**
@@ -36,41 +33,22 @@ export async function blockUser(userId) {
  */
 export async function unblockUser(userId) {
   const url = `${baseUrl}/v1/unblock/${userId}`
-  return railcontentFetchHandler(url, 'post')
+  return await POST(url, null)
 }
 
 /**
  * Upload a picture to the server
  * @param {string} fieldKey
  * @param {File} file
- * @returns {Promise<any|string|null>}
+ * @returns {Promise<string>}
  */
 export async function uploadPicture(fieldKey, file) {
   const formData = new FormData()
   formData.append('file', file)
   formData.append('fieldKey', fieldKey)
   const apiUrl = `${baseUrl}/v1/picture`
-
-  const response = await fetchHandler(
-    apiUrl,
-    globalConfig.sessionConfig.token,
-    globalConfig.baseUrl,
-    'POST',
-    null,
-    null,
-    formData
-  )
-
-  if (!response.ok) {
-    const problemDetails = await response.json()
-    console.log('Error uploading picture:', problemDetails.detail)
-    throw new Error(`Upload failed: ${problemDetails.detail}`)
-  }
-
-  const { url } = await response.json()
-  console.log('Picture uploaded successfully:', url)
-
-  return url
+  const response = await POST(apiUrl, formData)
+  return response?.url
 }
 
 /**
@@ -81,28 +59,8 @@ export async function uploadPicture(fieldKey, file) {
  */
 export async function uploadPictureFromS3(fieldKey, s3_bucket_path) {
   const apiUrl = `${baseUrl}/v1/picture/s3`
-
-  const response = await fetchJSONHandler(
-    apiUrl,
-    globalConfig.sessionConfig.token,
-    globalConfig.baseUrl,
-    'POST',
-    null,
-    {
-      fieldKey,
-      s3_bucket_path,
-    }
-  )
-
-  if (!response.ok) {
-    const problemDetails = await response.json()
-    console.log('Error uploading picture:', problemDetails.detail)
-    throw new Error(`Upload failed: ${problemDetails.detail}`)
-  }
-
-  const { url } = await response.json()
-
-  return url
+  const response = await POST(apiUrl, { fieldKey, s3_bucket_path })
+  return response?.url
 }
 
 /**
@@ -111,10 +69,7 @@ export async function uploadPictureFromS3(fieldKey, s3_bucket_path) {
  */
 export async function deletePicture(pictureUrl) {
   const apiUrl = `${baseUrl}/v1/picture`
-
-  fetchJSONHandler(apiUrl, globalConfig.sessionConfig.token, globalConfig.baseUrl, 'DELETE', null, {
-    picture_url: pictureUrl,
-  })
+  await DELETE(apiUrl, { picture_url: pictureUrl })
 }
 
 /**
@@ -123,8 +78,7 @@ export async function deletePicture(pictureUrl) {
  */
 export async function getUserData(userId = globalConfig.sessionConfig.userId) {
   const apiUrl = `${baseUrl}/v1/users/${userId}`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.get(apiUrl)
+  return await GET(apiUrl)
 }
 
 /**
@@ -133,8 +87,7 @@ export async function getUserData(userId = globalConfig.sessionConfig.userId) {
  */
 export async function isUsernameAvailable(userName) {
   const apiUrl = `${baseUrl}/v1/users/usernames/available?username=${encodeURIComponent(userName)}`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.get(apiUrl)
+  return await GET(apiUrl)
 }
 
 /**
@@ -143,8 +96,7 @@ export async function isUsernameAvailable(userName) {
  */
 export async function updateDisplayName(newDisplayName) {
   const apiUrl = `${baseUrl}/v1/users/${globalConfig.sessionConfig.userId}/display-name`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.put(apiUrl, { display_name: newDisplayName })
+  return await PUT(apiUrl, { display_name: newDisplayName })
 }
 
 /**
@@ -155,8 +107,7 @@ export async function updateDisplayName(newDisplayName) {
  */
 export async function setUserSignature(params) {
   const apiUrl = `/api/forums/v1/signature`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.post(apiUrl, params)
+  return await POST(apiUrl, params)
 }
 
 /**
@@ -166,8 +117,7 @@ export async function setUserSignature(params) {
  */
 export async function getUserSignature() {
   const apiUrl = `/api/forums/v1/signature`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.get(apiUrl)
+  return await GET(apiUrl)
 }
 
 /**
@@ -178,8 +128,7 @@ export async function getUserSignature() {
  */
 export async function toggleSignaturePrivate(showSignature = true) {
   const apiUrl = `/api/forums/v1/signature/toggle`
-  const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.put(apiUrl, { show_signature: showSignature })
+  return await PUT(apiUrl, { show_signature: showSignature })
 }
 
 

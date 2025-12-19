@@ -20,9 +20,9 @@ const contentProgressTable = tableSchema({
   name: SYNC_TABLES.CONTENT_PROGRESS,
   columns: [
     { name: 'content_id', type: 'number', isIndexed: true },
-    { name: 'content_brand', type: 'string', isIndexed: true },
-    { name: 'collection_type', type: 'string', isOptional: true, isIndexed: true },
-    { name: 'collection_id', type: 'number', isOptional: true, isIndexed: true },
+    { name: 'content_brand', type: 'string', isOptional: true, isIndexed: true },
+    { name: 'collection_type', type: 'string', isIndexed: true },
+    { name: 'collection_id', type: 'number', isIndexed: true },
     { name: 'state', type: 'string', isIndexed: true },
     { name: 'progress_percent', type: 'number' },
     { name: 'resume_time_seconds', type: 'number', isOptional: true },
@@ -61,7 +61,7 @@ const userAwardProgressTable = tableSchema({
   columns: [
     { name: 'award_id', type: 'string', isIndexed: true },
     { name: 'progress_percentage', type: 'number' },
-    { name: 'completed_at', type: 'number', isOptional: true, isIndexed: true },
+    { name: 'completed_at', type: 'string', isOptional: true, isIndexed: true },
     { name: 'progress_data', type: 'string', isOptional: true },
     { name: 'completion_data', type: 'string', isOptional: true },
     { name: 'created_at', type: 'number' },

@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.107.2](https://github.com/railroadmedia/musora-content-services/compare/v2.107.1...v2.107.2) (2025-12-19)
+
+### [2.107.1](https://github.com/railroadmedia/musora-content-services/compare/v2.107.0...v2.107.1) (2025-12-19)
+
+## [2.107.0](https://github.com/railroadmedia/musora-content-services/compare/v2.105.0...v2.107.0) (2025-12-19)
+
+
+### Features
+
+* Add some validators prior to writing to watermelon ([#663](https://github.com/railroadmedia/musora-content-services/issues/663)) ([9eeedac](https://github.com/railroadmedia/musora-content-services/commit/9eeedac5a3cf8b4eedd091fcb8252ffd5bae6c85))
+
+
+### Bug Fixes
+
+* 401 authentication errors for mobile app by reading token lazily from globalConfig at request time instead of at HttpClient instantiation ([99204b3](https://github.com/railroadmedia/musora-content-services/commit/99204b317c806ef8bec6f0846059c82fc7f3b585))
+* Restricted access in recent activities ([7013794](https://github.com/railroadmedia/musora-content-services/commit/7013794f235f350eb30833bf0680bb7bb851af10))
+
+### [2.106.1](https://github.com/railroadmedia/musora-content-services/compare/v2.106.0...v2.106.1) (2025-12-18)
+
+## [2.106.0](https://github.com/railroadmedia/musora-content-services/compare/v2.105.0...v2.106.0) (2025-12-18)
+
+
+### Features
+
+* Add some validators prior to writing to watermelon ([#663](https://github.com/railroadmedia/musora-content-services/issues/663)) ([9eeedac](https://github.com/railroadmedia/musora-content-services/commit/9eeedac5a3cf8b4eedd091fcb8252ffd5bae6c85))
+
+## [2.105.0](https://github.com/railroadmedia/musora-content-services/compare/v2.104.9...v2.105.0) (2025-12-17)
+
+
+### Features
+
+* Remove xp and total_xp ([#656](https://github.com/railroadmedia/musora-content-services/issues/656)) ([e6238a6](https://github.com/railroadmedia/musora-content-services/commit/e6238a605e095dc81e152c25f0abf4885b2bb091))
+* update type for method progress card ([#662](https://github.com/railroadmedia/musora-content-services/issues/662)) ([ad2d6df](https://github.com/railroadmedia/musora-content-services/commit/ad2d6df35b321afd7df1a302ee6bfbcbce1a31b7))
+
+
+### Bug Fixes
+
+* Minor progress fixes ([#654](https://github.com/railroadmedia/musora-content-services/issues/654)) ([202cceb](https://github.com/railroadmedia/musora-content-services/commit/202ccebc85d119ce9a63007e600a8fd92c3f94d7))
+
 ### [2.104.9](https://github.com/railroadmedia/musora-content-services/compare/v2.104.8...v2.104.9) (2025-12-17)
 
 ### [2.104.8](https://github.com/railroadmedia/musora-content-services/compare/v2.104.7...v2.104.8) (2025-12-16)

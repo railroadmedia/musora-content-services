@@ -225,7 +225,6 @@ import {
 	fetchCompletedState,
 	fetchContentInProgress,
 	fetchContentPageUserData,
-	fetchHandler,
 	fetchLastInteractedChild,
 	fetchLikeCount,
 	fetchNextContentDataForParent,
@@ -266,6 +265,7 @@ import {
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPacks,
+	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -396,9 +396,8 @@ import {
 } from './services/user/profile.js';
 
 import {
-	getAuthKey,
+	generateAuthSessionUrl,
 	login,
-	loginWithAuthKey,
 	logout
 } from './services/user/sessions.js';
 
@@ -486,6 +485,7 @@ declare module 'musora-content-services' {
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
+		fetchBrandsByContentIds,
 		fetchByRailContentId,
 		fetchByRailContentIds,
 		fetchByReference,
@@ -511,7 +511,6 @@ declare module 'musora-content-services' {
 		fetchGenreBySlug,
 		fetchGenreLessons,
 		fetchGenres,
-		fetchHandler,
 		fetchHierarchy,
 		fetchInstructorBySlug,
 		fetchInstructorLessons,
@@ -580,13 +579,13 @@ declare module 'musora-content-services' {
 		fetchUserPractices,
 		findIncompleteLesson,
 		followThread,
+		generateAuthSessionUrl,
 		getActiveDiscussions,
 		getActivePath,
 		getAllCompleted,
 		getAllCompletedByIds,
 		getAllStarted,
 		getAllStartedOrCompleted,
-		getAuthKey,
 		getAwardStatistics,
 		getCompletedAwards,
 		getContentAwards,
@@ -650,7 +649,6 @@ declare module 'musora-content-services' {
 		likePost,
 		lockThread,
 		login,
-		loginWithAuthKey,
 		logout,
 		mapContentToParent,
 		markAllNotificationsAsRead,
