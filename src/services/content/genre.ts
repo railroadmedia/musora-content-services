@@ -1,12 +1,12 @@
 /**
  * @module Genre
  */
-import { getFieldsForContentType } from '../../contentTypeConfig.js'
-import { fetchSanity, getSortOrder } from '../sanity.js'
-import { Lesson } from './content'
-import { BuildQueryOptions, query } from '../../lib/sanity/query'
+import { getFieldsForContentTypeWithFilteredChildren } from '../../contentTypeConfig.js'
 import { Brands } from '../../lib/brands'
 import { Filters as f } from '../../lib/sanity/filter'
+import { BuildQueryOptions, query } from '../../lib/sanity/query'
+import { fetchSanity, getSortOrder } from '../sanity.js'
+import { Lesson } from './content'
 
 export interface Genre {
   name: string
@@ -149,7 +149,7 @@ export async function fetchGenreLessons(
     .and(restrictions)
     .order(sort)
     .slice(offset, limit)
-    .select(getFieldsForContentType(contentType) as string)
+    .select((await getFieldsForContentTypeWithFilteredChildren(contentType, true)) as string)
     .build()
 
   const total = query().and(restrictions).build()
