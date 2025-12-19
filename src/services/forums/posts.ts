@@ -23,8 +23,26 @@ export interface CreatePostParams {
  * @throws {HttpError} - If the request fails.
  */
 export async function createPost(threadId: number, params: CreatePostParams): Promise<ForumPost> {
+  const { generateForumPostUrl } = await import('../urlBuilder.js')
+  const { fetchThread } = await import('./threads.js')
+
+  // Fetch thread to get category_id for URL generation
+  const thread = await fetchThread(threadId, params.brand)
+
+  // Generate forum post URL
+  const contentUrl = generateForumPostUrl({
+    brand: params.brand,
+    thread: {
+      category_id: thread.category_id,
+      id: threadId
+    }
+  }, false)
+
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<ForumPost>(`${baseUrl}/v1/threads/${threadId}/posts`, params)
+  return httpClient.post<ForumPost>(`${baseUrl}/v1/threads/${threadId}/posts`, {
+    ...params,
+    content_url: contentUrl
+  })
 }
 
 /**
@@ -38,6 +56,19 @@ export async function createPost(threadId: number, params: CreatePostParams): Pr
 export async function updatePost(postId: number, params: CreatePostParams): Promise<ForumPost> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.put<ForumPost>(`${baseUrl}/v1/posts/${postId}`, params)
+}
+
+/**
+ * Fetches a single forum post by ID.
+ *
+ * @param {number} postId - The ID of the post to fetch.
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @returns {Promise<ForumPost>} - A promise that resolves to the forum post.
+ * @throws {HttpError} - If the HTTP request fails.
+ */
+export async function fetchPost(postId: number, brand: string): Promise<ForumPost> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.get<ForumPost>(`${baseUrl}/v1/posts/${postId}?brand=${brand}`)
 }
 
 export interface FetchPostParams {
@@ -91,8 +122,25 @@ export async function fetchPosts(
  * @throws {HttpError} - If the request fails.
  */
 export async function likePost(postId: number, brand: string): Promise<void> {
+  const { generateForumPostUrl } = await import('../urlBuilder.js')
+
+  // Fetch post to get thread info for URL generation
+  const post = await fetchPost(postId, brand)
+
+  // Generate forum post URL
+  const contentUrl = generateForumPostUrl({
+    brand,
+    thread: {
+      category_id: post.thread.category_id,
+      id: post.thread.id
+    }
+  }, false)
+
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.post<void>(`${baseUrl}/v1/posts/${postId}/likes`, { brand })
+  return httpClient.post<void>(`${baseUrl}/v1/posts/${postId}/likes`, {
+    brand,
+    content_url: contentUrl
+  })
 }
 
 /**

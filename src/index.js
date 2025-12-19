@@ -159,6 +159,7 @@ import {
 	createPost,
 	deletePost,
 	fetchCommunityGuidelines,
+	fetchPost,
 	fetchPosts,
 	jumpToPost,
 	likePost,
@@ -172,6 +173,7 @@ import {
 	deleteThread,
 	fetchFollowedThreads,
 	fetchLatestThreads,
+	fetchThread,
 	fetchThreads,
 	followThread,
 	lockThread,
@@ -270,6 +272,7 @@ import {
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPacks,
+	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -320,7 +323,7 @@ import {
 	generateContentUrlWithDomain,
 	generateForumPostUrl,
 	generatePlaylistUrl
-} from './services/urlBuilder.js';
+} from './services/urlBuilder.ts';
 
 import {
 	confirmEmailChange,
@@ -493,6 +496,7 @@ export {
 	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
+	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -551,6 +555,7 @@ export {
 	fetchPlayAlongsCount,
 	fetchPlaylist,
 	fetchPlaylistItems,
+	fetchPost,
 	fetchPosts,
 	fetchRecent,
 	fetchRecentActivitiesActiveTabs,
@@ -571,6 +576,7 @@ export {
 	fetchSongById,
 	fetchSongsInProgress,
 	fetchTabData,
+	fetchThread,
 	fetchThreads,
 	fetchTopComment,
 	fetchTopLevelParentId,

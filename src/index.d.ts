@@ -155,6 +155,7 @@ import {
 	createPost,
 	deletePost,
 	fetchCommunityGuidelines,
+	fetchPost,
 	fetchPosts,
 	jumpToPost,
 	likePost,
@@ -168,6 +169,7 @@ import {
 	deleteThread,
 	fetchFollowedThreads,
 	fetchLatestThreads,
+	fetchThread,
 	fetchThreads,
 	followThread,
 	lockThread,
@@ -266,6 +268,7 @@ import {
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPacks,
+	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -316,7 +319,7 @@ import {
 	generateContentUrlWithDomain,
 	generateForumPostUrl,
 	generatePlaylistUrl
-} from './services/urlBuilder.js';
+} from './services/urlBuilder.ts';
 
 import {
 	confirmEmailChange,
@@ -494,6 +497,7 @@ declare module 'musora-content-services' {
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
+		fetchBrandsByContentIds,
 		fetchByRailContentId,
 		fetchByRailContentIds,
 		fetchByReference,
@@ -552,6 +556,7 @@ declare module 'musora-content-services' {
 		fetchPlayAlongsCount,
 		fetchPlaylist,
 		fetchPlaylistItems,
+		fetchPost,
 		fetchPosts,
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
@@ -572,6 +577,7 @@ declare module 'musora-content-services' {
 		fetchSongById,
 		fetchSongsInProgress,
 		fetchTabData,
+		fetchThread,
 		fetchThreads,
 		fetchTopComment,
 		fetchTopLevelParentId,
