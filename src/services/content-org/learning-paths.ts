@@ -2,7 +2,7 @@
  * @module LearningPaths
  */
 
-import { GET, POST } from '../../infrastructure/http/HttpClient.js'
+import { GET, POST } from '../../infrastructure/http/HttpClient.ts'
 import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2Structure } from '../sanity.js'
 import { addContextToLearningPaths } from '../contentAggregator.js'
 import {

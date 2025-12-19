@@ -74,9 +74,10 @@ export class HttpClient {
       headers['Data-Version'] = dataVersion
     }
 
-    // Add auth token if available
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`
+    // Add auth token if available (check both instance token and global config)
+    const token = this.token || globalConfig?.sessionConfig?.token || null
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
     }
 
     return headers

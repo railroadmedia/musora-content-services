@@ -1,7 +1,7 @@
 /**
  * @module Playlists
  */
-import { GET, POST, PUT, DELETE } from '../../infrastructure/http/HttpClient.js'
+import { GET, POST, PUT, DELETE } from '../../infrastructure/http/HttpClient.ts'
 import { getNavigateToForPlaylists } from '../contentAggregator.js'
 import './playlists-types.js'
 

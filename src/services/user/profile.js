@@ -2,7 +2,7 @@
  * @module UserProfile
  */
 import { globalConfig } from '../config.js'
-import { GET, DELETE } from '../../infrastructure/http/HttpClient.js'
+import { GET, DELETE } from '../../infrastructure/http/HttpClient.ts'
 import { calculateLongestStreaks } from '../userActivity.js'
 import './types.js'
 

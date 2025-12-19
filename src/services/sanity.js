@@ -24,7 +24,7 @@ import {
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems } from './recommendations.js'
 import { processMetadata } from '../contentMetaData.js'
-import { GET } from '../infrastructure/http/HttpClient.js'
+import { GET } from '../infrastructure/http/HttpClient.ts'
 
 import { globalConfig } from './config.js'
 

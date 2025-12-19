@@ -1,7 +1,7 @@
 /**
  * @module UserNotifications
  */
-import { GET, PUT, DELETE } from '../../infrastructure/http/HttpClient.js'
+import { GET, PUT, DELETE } from '../../infrastructure/http/HttpClient.ts'
 import  eventsAPI from '../eventsAPI.js'
 import './types.js'
 import {globalConfig} from "../config";
