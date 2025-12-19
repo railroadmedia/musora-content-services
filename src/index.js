@@ -270,6 +270,7 @@ import {
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPacks,
+	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -400,9 +401,8 @@ import {
 } from './services/user/profile.js';
 
 import {
-	getAuthKey,
+	generateAuthSessionUrl,
 	login,
-	loginWithAuthKey,
 	logout
 } from './services/user/sessions.js';
 
@@ -485,6 +485,7 @@ export {
 	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
+	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -579,13 +580,13 @@ export {
 	fetchUserPractices,
 	findIncompleteLesson,
 	followThread,
+	generateAuthSessionUrl,
 	getActiveDiscussions,
 	getActivePath,
 	getAllCompleted,
 	getAllCompletedByIds,
 	getAllStarted,
 	getAllStartedOrCompleted,
-	getAuthKey,
 	getAwardStatistics,
 	getCompletedAwards,
 	getContentAwards,
@@ -649,7 +650,6 @@ export {
 	likePost,
 	lockThread,
 	login,
-	loginWithAuthKey,
 	logout,
 	mapContentToParent,
 	markAllNotificationsAsRead,

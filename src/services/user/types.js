@@ -108,6 +108,12 @@
  */
 
 /**
+ * @typedef {Object} AuthKeyResponse
+ * @property {number} user_id
+ * @property {string} auth_key
+ */
+
+/**
  * @typedef {Object} UserPermissions
  *
  * @property {string[]} permissions
