@@ -123,7 +123,7 @@ export interface ArtistLessons {
 export async function fetchArtistLessons(
   slug: string,
   brand: Brands | string,
-  contentType: string,
+  contentType?: string,
   {
     sort = '-published_on',
     searchTerm = '',
