@@ -1,7 +1,7 @@
 /**
  * @module Genre
  */
-import { getFieldsForContentType } from '../../contentTypeConfig.js'
+import { getFieldsForContentTypeWithFilteredChildren } from '../../contentTypeConfig.js'
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
 import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 import { Brand } from '../../lib/brands'
@@ -12,6 +12,7 @@ import { BuildQueryOptions, getSortOrder, query } from '../../lib/sanity/query'
 import { Lesson } from './content'
 
 const contentClient = new SanityClient()
+
 export interface Genre {
   name: string
   slug: string
@@ -97,7 +98,7 @@ export interface GenreLessons extends SanityListResponse<Lesson & NeedAccessDeco
  * Fetch the genre's lessons.
  * @param {string} slug - The slug of the genre
  * @param {Brand} brand - The brand for which to fetch lessons.
- * @param {DocumentType} contentType - The content type to filter lessons by.
+ * @param {DocumentType|null} contentType - The content type to filter lessons by.
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
  * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
@@ -140,7 +141,7 @@ export async function fetchGenreLessons(
     .and(restrictions)
     .order(getSortOrder(sort, brand))
     .slice(offset, limit)
-    .select(getFieldsForContentType(contentType) as string)
+    .select((await getFieldsForContentTypeWithFilteredChildren(contentType, true)) as string)
     .build()
 
   const total = query().and(restrictions).build()

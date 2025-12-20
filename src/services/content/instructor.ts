@@ -1,8 +1,7 @@
 /**
  * @module Instructor
  */
-
-import { getFieldsForContentType } from '../../contentTypeConfig.js'
+import { getFieldsForContentTypeWithFilteredChildren } from '../../contentTypeConfig.js'
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
 import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 import { Brand } from '../../lib/brands'
@@ -108,7 +107,7 @@ export interface InstructorLessons extends SanityListResponse<Lesson & NeedAcces
  * Fetch the data needed for the instructor screen.
  * @param {string} slug - The slug of the instructor
  * @param {Brand} brand - The brand for which to fetch instructor lessons
- * @param {DocumentType} contentType - The content type to filter lessons by.
+ * @param {DocumentType|null} contentType - The content type to filter lessons by.
  * @param {FetchInstructorLessonsOptions} options - Parameters for pagination, filtering and sorting.
  * @param {string} [options.sortOrder="-published_on"] - The field to sort the lessons by.
  * @param {string} [options.searchTerm=""] - The search term to filter content by title.
@@ -150,7 +149,7 @@ export async function fetchInstructorLessons(
     .and(restrictions)
     .order(sort)
     .slice(offset, limit)
-    .select(getFieldsForContentType(contentType) as string)
+    .select((await getFieldsForContentTypeWithFilteredChildren(contentType, true)) as string)
     .build()
 
   const total = query().and(restrictions).build()

@@ -1,7 +1,7 @@
 /**
  * @module Artist
  */
-import { getFieldsForContentType } from '../../contentTypeConfig.js'
+import { getFieldsForContentTypeWithFilteredChildren } from '../../contentTypeConfig.js'
 import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
 import { SanityClient } from '../../infrastructure/sanity/SanityClient'
 import { Brand } from '../../lib/brands'
@@ -101,7 +101,7 @@ export interface ArtistLessons extends SanityListResponse<Lesson & NeedAccessDec
  * Fetch the artist's lessons.
  * @param {string} slug - The slug of the artist
  * @param {Brand} brand - The brand for which to fetch lessons.
- * @param {DocumentType} contentType - The type of the lessons we need to get from the artist. If not defined, groq will get lessons from all content types
+ * @param {DocumentType|null} contentType - The type of the lessons we need to get from the artist. If not defined, groq will get lessons from all content types
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
  * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
@@ -146,7 +146,7 @@ export async function fetchArtistLessons(
     .and(restrictions)
     .order(sort)
     .slice(offset, limit)
-    .select(getFieldsForContentType(contentType) as string)
+    .select((await getFieldsForContentTypeWithFilteredChildren(contentType, true)) as string)
     .build()
 
   const total = query().and(restrictions).build()
