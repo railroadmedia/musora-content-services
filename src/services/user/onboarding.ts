@@ -2,6 +2,7 @@
  * @module Onboarding
  */
 import { GET, POST, PUT } from '../../infrastructure/http/HttpClient'
+import { Brand } from '../../lib/brands.js'
 import { globalConfig } from '../config.js'
 
 export interface OnboardingSteps {
@@ -24,7 +25,7 @@ export interface OnboardingSteps {
 
 export interface StartOnboardingParams {
   email: string
-  brand: string
+  brand: Brand
   flow: string
   marketingOptIn: boolean
   steps?: OnboardingSteps
@@ -33,7 +34,7 @@ export interface StartOnboardingParams {
 export interface Onboarding {
   id: number
   email: string
-  brand: string
+  brand: Brand
   flow: string
   steps: OnboardingSteps
   is_completed: boolean
@@ -67,7 +68,7 @@ export async function startOnboarding({
 export interface UpdateOnboardingParams {
   id: number
   email: string
-  brand: string
+  brand: Brand
   flow: string
   marketingOptIn: boolean
   is_completed?: boolean
@@ -102,12 +103,12 @@ export async function updateOnboarding({
 /**
  * Fetches the onboardings for the current user and specified brand.
  *
- * @param {string} brand - The brand identifier.
+ * @param {Brand} brand - The brand identifier.
  *
  * @returns {Promise<Onboarding>} - A promise that resolves with the onboarding data.
  * @throws {HttpError} - If the HTTP request fails.
  */
-export async function userOnboardingForBrand(brand: string): Promise<Onboarding> {
+export async function userOnboardingForBrand(brand: Brand): Promise<Onboarding> {
   return GET(
     `/api/user-management-system/v1/users/${globalConfig.sessionConfig.userId}/onboardings/brand/${encodeURIComponent(brand)}`
   )
@@ -134,8 +135,6 @@ export interface OnboardingRecommendationResponse {
 }
 
 /**
- * Fetches recommended content for onboarding based on the specified brand.
- *
  * @param {number} onboardingId - The ID of the onboarding process.
  * @returns {Promise<OnboardingRecommendationResponse>} - A promise that resolves with the recommended content.
  * @throws {HttpError} - If the HTTP request fails.

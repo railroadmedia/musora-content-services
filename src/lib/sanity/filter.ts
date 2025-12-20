@@ -1,7 +1,8 @@
 import { filtersToGroq } from '../../contentTypeConfig'
 import { getPermissionsAdapter } from '../../services/permissions/index'
 import type { UserPermissions } from '../../services/permissions/PermissionsAdapter'
-import { Brands } from '../brands'
+import { Brand } from '../brands'
+import { DocumentType } from '../documents'
 import { filterOps } from './query'
 
 // ============================================
@@ -95,7 +96,7 @@ export class Filters {
    * @returns {string} Filter expression
    * @example Filters.type('song') // "_type == 'song'"
    */
-  static type(type: string): string {
+  static type(type: DocumentType): string {
     return `_type == "${type}"`
   }
 
@@ -456,7 +457,7 @@ export class Filters {
     return progressIds.length > 0 ? Filters.idIn(progressIds) : Filters.empty
   }
 
-  static async lessonCount(brand?: Brands | string): Promise<string> {
+  static async lessonCount(brand?: Brand): Promise<string> {
     return Filters.count(
       await Filters.combineAsync(
         Filters.status(),

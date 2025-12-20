@@ -2,11 +2,16 @@
  * @module Genre
  */
 import { getFieldsForContentTypeWithFilteredChildren } from '../../contentTypeConfig.js'
-import { Brands } from '../../lib/brands'
+import { SanityListResponse } from '../../infrastructure/sanity/interfaces/SanityResponse'
+import { SanityClient } from '../../infrastructure/sanity/SanityClient'
+import { Brand } from '../../lib/brands'
+import { DocumentType } from '../../lib/documents'
+import { NeedAccessDecorated, needsAccessDecorator } from '../../lib/sanity/decorators'
 import { Filters as f } from '../../lib/sanity/filter'
-import { BuildQueryOptions, query } from '../../lib/sanity/query'
-import { fetchSanity, getSortOrder } from '../sanity.js'
+import { BuildQueryOptions, getSortOrder, query } from '../../lib/sanity/query'
 import { Lesson } from './content'
+
+const contentClient = new SanityClient()
 
 export interface Genre {
   name: string
@@ -15,26 +20,20 @@ export interface Genre {
   lesson_count: number
 }
 
-export interface Genres {
-  data: Genre[]
-  total: number
-}
+export interface Genres extends SanityListResponse<Genre> {}
 
 /**
  * Fetch all genres with lessons available for a specific brand.
  *
- * @param {Brands|string} [brand] - The brand for which to fetch the genre for. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Genre[]>} - A promise that resolves to an genre object or null if not found.
+ * @param {Brand} [brand] - The brand for which to fetch the genre for. Lesson count will be filtered by this brand if provided.
+ * @returns {Promise<Genres>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenres('drumeo')
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenres(
-  brand: Brands | string,
-  options: BuildQueryOptions
-): Promise<Genres> {
+export async function fetchGenres(brand: Brand, options: BuildQueryOptions): Promise<Genres> {
   const type = f.type('genre')
   const postFilter = `lesson_count > 0`
   const { sort = 'lower(name)', offset = 0, limit = 20 } = options
@@ -56,25 +55,22 @@ export async function fetchGenres(
     "data": ${data},
   }`
 
-  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
+  return contentClient.fetchList<Genre>(q, options)
 }
 
 /**
  * Fetch a single genre by their slug and brand
  *
  * @param {string} slug - The slug of the genre to fetch.
- * @param {Brands|string} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
- * @returns {Promise<Genre | null>} - A promise that resolves to an genre object or null if not found.
+ * @param {Brand} [brand] - The brand for which to fetch the genre. Lesson count will be filtered by this brand if provided.
+ * @returns {Promise<Genre|null>} - A promise that resolves to an genre object or null if not found.
  *
  * @example
  * fetchGenreBySlug('drumeo')
  *   .then(genres => console.log(genres))
  *   .catch(error => console.error(error));
  */
-export async function fetchGenreBySlug(
-  slug: string,
-  brand?: Brands | string
-): Promise<Genre | null> {
+export async function fetchGenreBySlug(slug: string, brand?: Brand): Promise<Genre | null> {
   const q = query()
     .and(f.type('genre'))
     .and(f.slug(slug))
@@ -87,7 +83,7 @@ export async function fetchGenreBySlug(
     .first()
     .build()
 
-  return fetchSanity(q, true, { processNeedAccess: false, processPageType: false })
+  return contentClient.fetchSingle<Genre>(q)
 }
 
 export interface GenreLessonsOptions extends BuildQueryOptions {
@@ -96,15 +92,13 @@ export interface GenreLessonsOptions extends BuildQueryOptions {
   progressIds?: Array<number>
 }
 
-export interface GenreLessons {
-  data: Lesson[]
-  total: number
-}
+export interface GenreLessons extends SanityListResponse<Lesson & NeedAccessDecorated> {}
 
 /**
  * Fetch the genre's lessons.
  * @param {string} slug - The slug of the genre
- * @param {Brands|string} brand - The brand for which to fetch lessons.
+ * @param {Brand} brand - The brand for which to fetch lessons.
+ * @param {DocumentType|null} contentType - The content type to filter lessons by.
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
  * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
@@ -112,7 +106,7 @@ export interface GenreLessons {
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  * @param {Array<number>} [params.progressIds=[]] - The ids of the lessons that are in progress or completed
- * @returns {Promise<GenreLessons|null>} - The lessons for the genre
+ * @returns {Promise<GenreLessons>} - The lessons for the genre
  *
  * @example
  * fetchGenreLessons('Blues', 'drumeo', 'song', {'-published_on', '', 1, 10, ["difficulty,Intermediate"], [232168, 232824, 303375, 232194, 393125]})
@@ -121,8 +115,8 @@ export interface GenreLessons {
  */
 export async function fetchGenreLessons(
   slug: string,
-  brand: Brands | string,
-  contentType?: string,
+  brand: Brand,
+  contentType?: DocumentType,
   {
     sort = '-published_on',
     searchTerm = '',
@@ -132,8 +126,6 @@ export async function fetchGenreLessons(
     progressIds = [],
   }: GenreLessonsOptions = {}
 ): Promise<GenreLessons> {
-  sort = getSortOrder(sort, brand)
-
   const restrictions = await f.combineAsync(
     f.status(),
     f.publishedDate(),
@@ -147,7 +139,7 @@ export async function fetchGenreLessons(
 
   const data = query()
     .and(restrictions)
-    .order(sort)
+    .order(getSortOrder(sort, brand))
     .slice(offset, limit)
     .select((await getFieldsForContentTypeWithFilteredChildren(contentType, true)) as string)
     .build()
@@ -159,5 +151,11 @@ export async function fetchGenreLessons(
     "total": count(${total})
   }`
 
-  return fetchSanity(q, true, { processNeedAccess: true, processPageType: false })
+  return contentClient
+    .fetchList<Lesson>(q, {
+      sort,
+      offset,
+      limit,
+    })
+    .then(needsAccessDecorator)
 }

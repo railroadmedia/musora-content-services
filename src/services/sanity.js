@@ -1546,13 +1546,13 @@ function contentResultsDecorator(results, fieldName, callback) {
   return results
 }
 
-function pageTypeDecorator(results) {
+export function pageTypeDecorator(results) {
   return contentResultsDecorator(results, 'page_type', function (content) {
     return SONG_TYPES_WITH_CHILDREN.includes(content['type']) ? 'song' : 'lesson'
   })
 }
 
-function needsAccessDecorator(results, userPermissions) {
+export function needsAccessDecorator(results, userPermissions) {
   if (globalConfig.sanityConfig.useDummyRailContentMethods) return results
   const adapter = getPermissionsAdapter()
   return contentResultsDecorator(results, 'need_access', function (content) {
