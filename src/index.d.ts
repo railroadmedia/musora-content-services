@@ -227,7 +227,6 @@ import {
 	fetchCompletedState,
 	fetchContentInProgress,
 	fetchContentPageUserData,
-	fetchHandler,
 	fetchLastInteractedChild,
 	fetchLikeCount,
 	fetchNextContentDataForParent,
@@ -407,9 +406,8 @@ import {
 } from './services/user/profile.js';
 
 import {
-	getAuthKey,
+	generateAuthSessionUrl,
 	login,
-	loginWithAuthKey,
 	logout
 } from './services/user/sessions.js';
 
@@ -523,7 +521,6 @@ declare module 'musora-content-services' {
 		fetchGenreBySlug,
 		fetchGenreLessons,
 		fetchGenres,
-		fetchHandler,
 		fetchHierarchy,
 		fetchInstructorBySlug,
 		fetchInstructorLessons,
@@ -594,7 +591,8 @@ declare module 'musora-content-services' {
 		fetchUserPractices,
 		findIncompleteLesson,
 		followThread,
-		generateCommentUrl,
+		generateAuthSessionUrl,
+                generateCommentUrl,
 		generateContentUrl,
 		generateContentUrlWithDomain,
 		generateForumPostUrl,
@@ -605,7 +603,6 @@ declare module 'musora-content-services' {
 		getAllCompletedByIds,
 		getAllStarted,
 		getAllStartedOrCompleted,
-		getAuthKey,
 		getAwardStatistics,
 		getCompletedAwards,
 		getContentAwards,
@@ -669,7 +666,6 @@ declare module 'musora-content-services' {
 		likePost,
 		lockThread,
 		login,
-		loginWithAuthKey,
 		logout,
 		mapContentToParent,
 		markAllNotificationsAsRead,

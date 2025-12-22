@@ -2,7 +2,7 @@
  * @module Interests
  */
 import { globalConfig } from '../config.js'
-import { fetchHandler } from '../railcontent.js'
+import { GET, POST, DELETE } from '../../infrastructure/http/HttpClient.ts'
 import './types.js'
 
 const baseUrl = `/api/user-management-system`
@@ -13,7 +13,7 @@ const baseUrl = `/api/user-management-system`
  */
 export async function fetchInterests(userId = globalConfig.sessionConfig.userId) {
   const url = `${baseUrl}/v1/users/${userId}/interests`
-  return fetchHandler(url, 'get')
+  return await GET(url)
 }
 
 /**
@@ -26,7 +26,7 @@ export async function markContentAsInterested(contentId) {
   }
 
   const url = `${baseUrl}/v1/users/interests/${contentId}`
-  return fetchHandler(url, 'post')
+  return await POST(url, null)
 }
 
 /**
@@ -39,7 +39,7 @@ export async function removeContentAsInterested(contentId) {
   }
 
   const url = `${baseUrl}/v1/users/interests/${contentId}`
-  return fetchHandler(url, 'delete')
+  return await DELETE(url)
 }
 
 /**
@@ -48,7 +48,7 @@ export async function removeContentAsInterested(contentId) {
  */
 export async function fetchUninterests(userId = globalConfig.sessionConfig.userId) {
   const url = `${baseUrl}/v1/users/${userId}/uninterests`
-  return fetchHandler(url, 'get')
+  return await GET(url)
 }
 
 /**
@@ -61,7 +61,7 @@ export async function markContentAsNotInterested(contentId) {
   }
 
   const url = `${baseUrl}/v1/users/uninterests/${contentId}`
-  return fetchHandler(url, 'post')
+  return await POST(url, null)
 }
 
 /**
@@ -74,5 +74,5 @@ export async function removeContentAsNotInterested(contentId) {
   }
 
   const url = `${baseUrl}/v1/users/uninterests/${contentId}`
-  return fetchHandler(url, 'delete')
+  return await DELETE(url)
 }

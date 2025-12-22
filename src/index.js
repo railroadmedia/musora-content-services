@@ -231,7 +231,6 @@ import {
 	fetchCompletedState,
 	fetchContentInProgress,
 	fetchContentPageUserData,
-	fetchHandler,
 	fetchLastInteractedChild,
 	fetchLikeCount,
 	fetchNextContentDataForParent,
@@ -411,9 +410,8 @@ import {
 } from './services/user/profile.js';
 
 import {
-	getAuthKey,
+	generateAuthSessionUrl,
 	login,
-	loginWithAuthKey,
 	logout
 } from './services/user/sessions.js';
 
@@ -522,7 +520,6 @@ export {
 	fetchGenreBySlug,
 	fetchGenreLessons,
 	fetchGenres,
-	fetchHandler,
 	fetchHierarchy,
 	fetchInstructorBySlug,
 	fetchInstructorLessons,
@@ -593,6 +590,7 @@ export {
 	fetchUserPractices,
 	findIncompleteLesson,
 	followThread,
+        generateAuthSessionUrl,
 	generateCommentUrl,
 	generateContentUrl,
 	generateContentUrlWithDomain,
@@ -604,7 +602,6 @@ export {
 	getAllCompletedByIds,
 	getAllStarted,
 	getAllStartedOrCompleted,
-	getAuthKey,
 	getAwardStatistics,
 	getCompletedAwards,
 	getContentAwards,
@@ -668,7 +665,6 @@ export {
 	likePost,
 	lockThread,
 	login,
-	loginWithAuthKey,
 	logout,
 	mapContentToParent,
 	markAllNotificationsAsRead,

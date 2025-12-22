@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.107.3](https://github.com/railroadmedia/musora-content-services/compare/v2.107.2...v2.107.3) (2025-12-19)
+
+
+### Bug Fixes
+
+* **AGI:** contentType optional ([deae293](https://github.com/railroadmedia/musora-content-services/commit/deae2934c26ea0b9ee4d68c736fbb5753616a5e9))
+* **AGI:** return children on AGI lessons functions ([#671](https://github.com/railroadmedia/musora-content-services/issues/671)) ([92ed791](https://github.com/railroadmedia/musora-content-services/commit/92ed791ce563aa4f1bf16cb41d2b6fe421504064))
+* **onboarding:** call BE for recommendation ([#670](https://github.com/railroadmedia/musora-content-services/issues/670)) ([a876736](https://github.com/railroadmedia/musora-content-services/commit/a8767363ff3428638bde477cd6c30e5bf61179b2))
+
+### [2.107.2](https://github.com/railroadmedia/musora-content-services/compare/v2.107.1...v2.107.2) (2025-12-19)
+
+### [2.107.1](https://github.com/railroadmedia/musora-content-services/compare/v2.107.0...v2.107.1) (2025-12-19)
+
+## [2.107.0](https://github.com/railroadmedia/musora-content-services/compare/v2.105.0...v2.107.0) (2025-12-19)
+
+
+### Features
+
+* Add some validators prior to writing to watermelon ([#663](https://github.com/railroadmedia/musora-content-services/issues/663)) ([9eeedac](https://github.com/railroadmedia/musora-content-services/commit/9eeedac5a3cf8b4eedd091fcb8252ffd5bae6c85))
+
+
+### Bug Fixes
+
+* 401 authentication errors for mobile app by reading token lazily from globalConfig at request time instead of at HttpClient instantiation ([99204b3](https://github.com/railroadmedia/musora-content-services/commit/99204b317c806ef8bec6f0846059c82fc7f3b585))
+* Restricted access in recent activities ([7013794](https://github.com/railroadmedia/musora-content-services/commit/7013794f235f350eb30833bf0680bb7bb851af10))
+
+### [2.106.1](https://github.com/railroadmedia/musora-content-services/compare/v2.106.0...v2.106.1) (2025-12-18)
+
+## [2.106.0](https://github.com/railroadmedia/musora-content-services/compare/v2.105.0...v2.106.0) (2025-12-18)
+
+
+### Features
+
+* Add some validators prior to writing to watermelon ([#663](https://github.com/railroadmedia/musora-content-services/issues/663)) ([9eeedac](https://github.com/railroadmedia/musora-content-services/commit/9eeedac5a3cf8b4eedd091fcb8252ffd5bae6c85))
+
 ## [2.105.0](https://github.com/railroadmedia/musora-content-services/compare/v2.104.9...v2.105.0) (2025-12-17)
 
 

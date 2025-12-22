@@ -98,50 +98,42 @@ export async function logout() {
 }
 
 /**
- * @param {string|null} brand - Optional brand parameter (drumeo, pianote, guitareo, singeo)
- * @returns {Promise<{data: string}>} Temporary auth key valid for 5 minutes
+ * @param {number} userId
+ * @param {string} redirectTo
+ * @returns {Promise<string>}
  *
  * @example
- * getAuthKey('drumeo')
- *   .then(response => {
- *     const authKey = response.data
- *     const webViewUrl = `https://app.musora.com/page?user_id=${userId}&auth_key=${authKey}`
- *   })
- *   .catch(error => console.error(error));
+ * const authUrl = await generateAuthSessionUrl(592656, 'https://app.musora.com/drumeo')
  */
-export async function getAuthKey(brand = null) {
+export async function generateAuthSessionUrl(userId, redirectTo) {
   const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
-  const url = brand ? `${baseUrl}/v1/auth-key?brand=${brand}` : `${baseUrl}/v1/auth-key`
 
-  const response = await fetch(url, {
+  const headers = {
+    'Content-Type': 'application/json',
+  }
+
+  if (globalConfig.isMA) {
+    headers.Authorization = `Bearer ${globalConfig.sessionConfig.authToken}`
+  }
+
+  const response = await fetch(`${baseUrl}/v1/auth-key`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer 503154|sArOCAtYT3ejVnCdoZTj8ocEfQbfDWi5GTTtooQ107d93d29`,
-      'Content-Type': 'application/json',
-    },
+    headers,
+    credentials: globalConfig.isMA ? undefined : 'include',
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get auth key: ${response.status}`)
+    throw new Error(`Failed to generate auth key: ${response.status}`)
   }
 
-  return response.json()
-}
+  const authKeyResponse = await response.json()
+  const authKey = authKeyResponse.data || authKeyResponse.auth_key
 
-export async function loginWithAuthKey(userId, authKey, deviceName, deviceToken, platform) {
-  const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
-  return fetch(`${baseUrl}/v1/sessions/auth-key`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: null,
-    },
-    body: JSON.stringify({
-      user_id: userId,
-      auth_key: authKey,
-      device_name: deviceName,
-      device_token: deviceToken,
-      platform: platform,
-    }),
+  const params = new URLSearchParams({
+    user_id: userId.toString(),
+    auth_key: authKey,
+    redirect_to: redirectTo,
   })
+
+  return `${baseUrl}/v1/sessions/auth-key?${params.toString()}`
 }
