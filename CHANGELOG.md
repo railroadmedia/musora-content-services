@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.107.4](https://github.com/railroadmedia/musora-content-services/compare/v2.107.1...v2.107.4) (2025-12-22)
+
+
+### Bug Fixes
+
+* **AGI:** contentType optional ([deae293](https://github.com/railroadmedia/musora-content-services/commit/deae2934c26ea0b9ee4d68c736fbb5753616a5e9))
+* **AGI:** return children on AGI lessons functions ([#671](https://github.com/railroadmedia/musora-content-services/issues/671)) ([92ed791](https://github.com/railroadmedia/musora-content-services/commit/92ed791ce563aa4f1bf16cb41d2b6fe421504064))
+* **onboarding:** call BE for recommendation ([#670](https://github.com/railroadmedia/musora-content-services/issues/670)) ([a876736](https://github.com/railroadmedia/musora-content-services/commit/a8767363ff3428638bde477cd6c30e5bf61179b2))
+
 ### [2.107.3](https://github.com/railroadmedia/musora-content-services/compare/v2.107.2...v2.107.3) (2025-12-19)
 
 
