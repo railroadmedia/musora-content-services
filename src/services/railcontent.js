@@ -256,9 +256,8 @@ export async function replyToComment(commentId, comment) {
   const parentComment = await fetchComment(commentId)
 
   if (!parentComment?.content) {
-    const data = { comment: comment }
     const url = `/api/content/v1/comments/${commentId}/reply`
-    return await postDataHandler(url, data)
+    return await POST(url, { comment })
   }
 
   // Fetch content from Sanity to get parentId and correct type
@@ -281,7 +280,7 @@ export async function replyToComment(commentId, comment) {
     ...(contentUrl && { content_url: contentUrl })
   }
   const url = `/api/content/v1/comments/${commentId}/reply`
-  return await POST(url, { comment })
+  return await POST(url, data)
 }
 
 /**
@@ -311,7 +310,7 @@ export async function createComment(railcontentId, comment) {
     ...(contentUrl && { content_url: contentUrl })
   }
   const url = `/api/content/v1/comments/store`
-  return await POST(url, { comment, content_id: railcontentId })
+  return await POST(url, data)
 }
 
 /**
@@ -345,7 +344,7 @@ export async function likeComment(commentId) {
 
   if (!comment?.content) {
     const url = `/api/content/v1/comments/${commentId}/like`
-    return await postDataHandler(url, {})
+    return await POST(url, null)
   }
 
   // Fetch content from Sanity to get parentId and correct type
@@ -365,7 +364,7 @@ export async function likeComment(commentId) {
 
   const url = `/api/content/v1/comments/${commentId}/like`
   const data = contentUrl ? { content_url: contentUrl } : {}
-  return await postDataHandler(url, data)
+  return await POST(url, data)
 }
 
 /**

@@ -592,7 +592,7 @@ declare module 'musora-content-services' {
 		findIncompleteLesson,
 		followThread,
 		generateAuthSessionUrl,
-                generateCommentUrl,
+		generateCommentUrl,
 		generateContentUrl,
 		generateContentUrlWithDomain,
 		generateForumPostUrl,

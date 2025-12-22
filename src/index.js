@@ -590,7 +590,7 @@ export {
 	fetchUserPractices,
 	findIncompleteLesson,
 	followThread,
-        generateAuthSessionUrl,
+	generateAuthSessionUrl,
 	generateCommentUrl,
 	generateContentUrl,
 	generateContentUrlWithDomain,
