@@ -159,6 +159,7 @@ import {
 	createPost,
 	deletePost,
 	fetchCommunityGuidelines,
+	fetchPost,
 	fetchPosts,
 	jumpToPost,
 	likePost,
@@ -172,6 +173,7 @@ import {
 	deleteThread,
 	fetchFollowedThreads,
 	fetchLatestThreads,
+	fetchThread,
 	fetchThreads,
 	followThread,
 	lockThread,
@@ -313,6 +315,14 @@ import {
 	getSortOrder,
 	jumpToContinueContent
 } from './services/sanity.js';
+
+import {
+	generateCommentUrl,
+	generateContentUrl,
+	generateContentUrlWithDomain,
+	generateForumPostUrl,
+	generatePlaylistUrl
+} from './services/urlBuilder.ts';
 
 import {
 	confirmEmailChange,
@@ -542,6 +552,7 @@ export {
 	fetchPlayAlongsCount,
 	fetchPlaylist,
 	fetchPlaylistItems,
+	fetchPost,
 	fetchPosts,
 	fetchRecent,
 	fetchRecentActivitiesActiveTabs,
@@ -562,6 +573,7 @@ export {
 	fetchSongById,
 	fetchSongsInProgress,
 	fetchTabData,
+	fetchThread,
 	fetchThreads,
 	fetchTopComment,
 	fetchTopLevelParentId,
@@ -579,6 +591,11 @@ export {
 	findIncompleteLesson,
 	followThread,
 	generateAuthSessionUrl,
+	generateCommentUrl,
+	generateContentUrl,
+	generateContentUrlWithDomain,
+	generateForumPostUrl,
+	generatePlaylistUrl,
 	getActiveDiscussions,
 	getActivePath,
 	getAllCompleted,
