@@ -469,6 +469,13 @@ export async function contentStatusReset(contentId, collection = null) {
 }
 
 async function saveContentProgress(contentId, collection, progress, currentSeconds) {
+
+  // filter out contentIds that are setting progress lower than existing
+  const contentIdProgress = await getProgressDataByIds([contentId], collection)
+  if (progress <= contentIdProgress[contentId].progress) {
+    return
+  }
+
   const response = await db.contentProgress.recordProgress(
     contentId,
     collection,
@@ -483,6 +490,15 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   const hierarchy = await getHierarchy(contentId, collection)
 
   const bubbledProgresses = await bubbleProgress(hierarchy, contentId, collection)
+
+  // filter out contentIds that are setting progress lower than existing
+  const existingProgresses = await getProgressDataByIds(Object.keys(bubbledProgresses), collection)
+  for (const [bubbledContentId, bubbledProgress] of Object.entries(bubbledProgresses)) {
+    if (bubbledProgress <= existingProgresses[bubbledContentId].progress) {
+      delete bubbledProgresses[bubbledContentId]
+    }
+  }
+
   // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
   await db.contentProgress.recordProgressMany(bubbledProgresses, collection, collection?.type !== COLLECTION_TYPE.LEARNING_PATH)
 
