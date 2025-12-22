@@ -605,8 +605,6 @@ export async function fetchAll(
     bypassStatusAndPublishedValidation = true
   } else if (type === 'lessons' || type === 'songs') {
     typeFilter = ``
-  } else if (type === 'pack') {
-    typeFilter = `&& (_type == 'pack' || _type == 'semester-pack')`
   } else {
     typeFilter = type ? `&& _type == '${type}'` : ''
   }
@@ -1129,50 +1127,6 @@ export async function fetchRelatedLessons(railContentId) {
   return await fetchSanity(query, false, { processNeedAccess: true })
 }
 
-/**
- * Fetch all packs.
- * @param {string} brand - The brand for which to fetch packs.
- * @param {string} [searchTerm=""] - The search term to filter packs.
- * @param {string} [sort="-published_on"] - The field to sort the packs by.
- * @param {number} [params.page=1] - The page number for pagination.
- * @param {number} [params.limit=10] - The number of items per page.
- * @returns {Promise<Array<Object>|null>} - The fetched pack content data or null if not found.
- */
-export async function fetchAllPacks(
-  brand,
-  sort = '-published_on',
-  searchTerm = '',
-  page = 1,
-  limit = 10
-) {
-  const sortOrder = getSortOrder(sort, brand)
-  const filter = `(_type == 'pack' || _type == 'semester-pack') && brand == '${brand}' && title match "${searchTerm}*"`
-  const filterParams = {}
-  const start = (page - 1) * limit
-  const end = start + limit
-
-  const query = await buildQuery(
-    filter,
-    filterParams,
-    await getFieldsForContentTypeWithFilteredChildren('pack'),
-    {
-      sortOrder: sortOrder,
-      start,
-      end,
-    }
-  )
-  return fetchSanity(query, true)
-}
-
-/**
- * Fetch all content for a specific pack by Railcontent ID.
- * @param {string} railcontentId - The Railcontent ID of the pack.
- * @returns {Promise<Array<Object>|null>} - The fetched pack content data or null if not found.
- */
-export async function fetchPackAll(railcontentId, type = 'pack') {
-  return fetchByRailContentId(railcontentId, type)
-}
-
 export async function fetchLiveEvent(brand, forcedContentId = null) {
   const LIVE_EXTRA_MINUTES = 30
   //calendarIDs taken from addevent.php
@@ -1249,6 +1203,25 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
 }
 
 /**
+ * Fetch the data needed for the CourseCollection Overview screen.
+ * @param {number} id - The Railcontent ID of the CourseCollection
+ * @returns {Promise<Object|null>} - The CourseCollection information and lessons or null if not found.
+ *
+ * @example
+ * fetchCourseCollectionData(404048)
+ *   .then(CourseCollection => console.log(CourseCollection))
+ *   .catch(error => console.error(error));
+ */
+export async function fetchCourseCollectionData(id) {
+  const builder = await new FilterBuilder(`railcontent_id == ${id}`).buildFilter()
+  const query = `*[${builder}]{
+    ${await getFieldsForContentTypeWithFilteredChildren('course-collection')}
+  } [0...1]`
+  return fetchSanity(query, false)
+}
+
+/**
+ * DEPRECATED: Use fetchCourseCollectionData
  * Fetch the data needed for the Pack Overview screen.
  * @param {number} id - The Railcontent ID of the pack
  * @returns {Promise<Object|null>} - The pack information and lessons or null if not found.
@@ -1259,11 +1232,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
  *   .catch(error => console.error(error));
  */
 export async function fetchPackData(id) {
-  const builder = await new FilterBuilder(`railcontent_id == ${id}`).buildFilter()
-  const query = `*[${builder}]{
-    ${await getFieldsForContentTypeWithFilteredChildren('pack')}
-  } [0...1]`
-  return fetchSanity(query, false)
+  return fetchCourseCollectionData(id)
 }
 
 /**

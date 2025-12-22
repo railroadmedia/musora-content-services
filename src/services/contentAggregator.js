@@ -19,7 +19,7 @@ import {COLLECTION_TYPE} from "./sync/models/ContentProgress";
  *   {} <- fetchLessonContent || on playback page (main window)
  *   in the examples below, dataField would be set to `children`
  *   [{id, children}, {id, children,}] <- getTabData || catalog Page
- *   {childen, } <- getPackData || pack index page
+ *   {children, } <- getCourseCollectionData || Course Collection index page
  *
  *
  * @param dataPromise - promise or method that provides sanity data
