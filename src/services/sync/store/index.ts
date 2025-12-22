@@ -235,7 +235,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
-  async upsertSome(builders: Record<RecordId, (record: TModel) => void>, span?: Span) {
+  async upsertSome(builders: Record<RecordId, (record: TModel) => void>, span?: Span, { skipPush = false } = {}) {
     if (Object.keys(builders).length === 0) return []
 
     return await this.runScope.abortable(async () => {
@@ -298,29 +298,31 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
       this.emit('upserted', records)
 
-      this.pushUnsyncedWithRetry(span)
+      if (!skipPush) {
+        this.pushUnsyncedWithRetry(span)
+      }
       await this.ensurePersistence()
 
       return records.map((record) => this.modelSerializer.toPlainObject(record))
     })
   }
 
-  async upsertSomeTentative(builders: Record<RecordId, (record: TModel) => void>, span?: Span) {
+  async upsertSomeTentative(builders: Record<RecordId, (record: TModel) => void>, span?: Span, { skipPush = false } = {}) {
     return this.upsertSome(Object.fromEntries(Object.entries(builders).map(([id, builder]) => [id, record => {
       builder(record)
       record._raw._status = 'synced'
-    }])), span)
+    }])), span, {skipPush})
   }
 
-  async upsertOne(id: RecordId, builder: (record: TModel) => void, span?: Span) {
-    return this.upsertSome({ [id]: builder }, span).then(r => r[0])
+  async upsertOne(id: RecordId, builder: (record: TModel) => void, span?: Span, { skipPush = false } = {}) {
+    return this.upsertSome({ [id]: builder }, span, {skipPush}).then(r => r[0])
   }
 
   async upsertOneTentative(id: string, builder: (record: TModel) => void, span?: Span) {
     return this.upsertSomeTentative({ [id]: builder }, span).then(r => r[0])
   }
 
-  async deleteOne(id: RecordId, span?: Span) {
+  async deleteOne(id: RecordId, span?: Span, { skipPush = false } = {}) {
     return await this.runScope.abortable(async () => {
       let record: TModel | null = null
 
@@ -345,7 +347,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
       this.emit('deleted', [id])
 
-      this.pushUnsyncedWithRetry(span)
+      if (!skipPush) {
+        this.pushUnsyncedWithRetry(span)
+      }
       await this.ensurePersistence()
 
       return id
@@ -477,7 +481,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     )()
   }
 
-  private async pushUnsyncedWithRetry(span?: Span) {
+  public async pushUnsyncedWithRetry(span?: Span) {
     const records = await this.queryMaybeDeletedRecords(Q.where('_status', Q.notEq('synced')))
 
     if (records.length) {
