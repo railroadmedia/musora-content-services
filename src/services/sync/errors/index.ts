@@ -38,6 +38,22 @@ export class SyncStoreError extends SyncError {
   }
 }
 
+export class SyncInitError extends SyncError {
+  constructor(error: unknown) {
+    super('initError', { cause: error })
+    this.name = 'SyncInitError'
+    Object.setPrototypeOf(this, new.target.prototype)
+  }
+}
+
+export class SyncSetupError extends SyncError {
+  constructor(error: unknown) {
+    super('setupError', { cause: error })
+    this.name = 'SyncSetupError'
+    Object.setPrototypeOf(this, new.target.prototype)
+  }
+}
+
 // useful for transforming non-sync-related errors into one
 // that captures surrounding details (e.g., table name)
 export class SyncUnexpectedError extends SyncError {

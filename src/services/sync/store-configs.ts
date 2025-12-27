@@ -2,18 +2,20 @@ import { SyncStoreConfig } from "./store"
 import { ContentLike, ContentProgress, Practice, UserAwardProgress, PracticeDayNote } from "./models"
 import { handlePull, handlePush, makeFetchRequest } from "./fetch"
 
-import type SyncStore from "./store"
 import type BaseModel from "./models/Base"
 
-export default function createStoresFromConfig(createStore: <TModel extends BaseModel>(config: SyncStoreConfig<TModel>) => SyncStore<TModel>) {
+// keeps type-safety in each entry
+const c = <TModel extends BaseModel>(config: SyncStoreConfig<TModel>) => config
+
+export default function createStoresFromConfig() {
   return [
-    createStore({
+    c({
       model: ContentLike,
       pull: handlePull(makeFetchRequest('/api/content/v1/user/likes')),
       push: handlePush(makeFetchRequest('/api/content/v1/user/likes', { method: 'POST' })),
     }),
 
-    createStore({
+    c({
       model: ContentProgress,
       comparator: (server, local) => {
         if (server.record.progress_percent === 0 || local.progress_percent === 0) {
@@ -26,22 +28,22 @@ export default function createStoresFromConfig(createStore: <TModel extends Base
       push: handlePush(makeFetchRequest('/content/user/progress', { method: 'POST' })),
     }),
 
-    createStore({
+    c({
       model: Practice,
       pull: handlePull(makeFetchRequest('/api/user/practices/v1')),
       push: handlePush(makeFetchRequest('/api/user/practices/v1', { method: 'POST' })),
     }),
 
-    createStore({
+    c({
       model: PracticeDayNote,
       pull: handlePull(makeFetchRequest('/api/user/practices/v1/notes')),
       push: handlePush(makeFetchRequest('/api/user/practices/v1/notes', { method: 'POST' })),
     }),
 
-    createStore({
+    c({
       model: UserAwardProgress,
       pull: handlePull(makeFetchRequest('/api/content/v1/user/awards')),
       push: handlePush(makeFetchRequest('/api/content/v1/user/awards', { method: 'POST' })),
     })
-  ] as unknown as SyncStore<BaseModel>[]
+  ]
 }

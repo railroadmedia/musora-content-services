@@ -329,8 +329,8 @@ import { ContentLike, ContentProgress, Practice, PracticeDayNote } from 'musora-
 // - TabsProvider: no-op (single "tab" on mobile)
 
 const manager = new SyncManager(context, db)
-manager.syncStoresWithStrategies(
-  manager.storesForModels([ContentLike, ContentProgress, Practice, PracticeDayNote]),
+manager.registerStrategies(
+  ContentLike, ContentProgress, Practice, PracticeDayNote],
   [initialStrategy, onlineStrategy, activityStrategy, hourlyPollingStrategy]
 )
 ```

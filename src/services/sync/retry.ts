@@ -1,5 +1,5 @@
 import SyncContext from "./context"
-import { SyncResponse } from "./fetch"
+import { SyncResponse, SyncPushResponse } from "./fetch"
 import { SyncTelemetry, Span, StartSpanOptions } from "./telemetry/index"
 
 export default class SyncRetry {
@@ -32,7 +32,7 @@ export default class SyncRetry {
    * Runs the given syncFn with automatic retries.
    * Returns the first successful result or the last failed result after retries.
    */
-  async request<T extends SyncResponse>(spanOpts: StartSpanOptions, syncFn: (span: Span) => Promise<T | void>) {
+  async request<T extends SyncResponse>(spanOpts: StartSpanOptions, syncFn: (span: Span) => Promise<T>) {
     let attempt = 0
 
     while (true) {
@@ -47,7 +47,7 @@ export default class SyncRetry {
       const result = await this.telemetry.trace(spanOptions, span => {
         if (!this.context.connectivity.getValue()) {
           this.telemetry.debug('[Retry] No connectivity - skipping')
-          return { ok: false } as T
+          return { ok: false, failureType: 'fetch', isRetryable: false } as T
         }
 
         return syncFn(span)
@@ -55,7 +55,7 @@ export default class SyncRetry {
 
       if (!result) return result
 
-      if (result.ok) {
+      if (result.ok === true) {
         this.resetBackoff()
         return result
       } else {
