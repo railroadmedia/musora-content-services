@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.107.7](https://github.com/railroadmedia/musora-content-services/compare/v2.107.6...v2.107.7) (2025-12-29)
+
+
+### Bug Fixes
+
+* daniel merged bad ([#675](https://github.com/railroadmedia/musora-content-services/issues/675)) ([1c5863b](https://github.com/railroadmedia/musora-content-services/commit/1c5863bc921967fe16875367d9589c8dcf4e0ac3))
+
 ### [2.107.6](https://github.com/railroadmedia/musora-content-services/compare/v2.107.5...v2.107.6) (2025-12-29)
 
 
