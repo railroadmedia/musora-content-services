@@ -54,7 +54,7 @@ import {
 	getEnrichedLearningPaths,
 	getLearningPathLessonsByIds,
 	mapContentToParent,
-	onContentCompletedLearningPathListener,
+	onContentCompletedLearningPathActions,
 	resetAllLearningPaths,
 	startLearningPath,
 	updateDailySession
@@ -202,9 +202,7 @@ import {
 } from './services/liveTesting.ts';
 
 import {
-	emitContentCompleted,
 	emitProgressSaved,
-	onContentCompleted,
 	onProgressSaved
 } from './services/progress-events.js';
 
@@ -484,7 +482,6 @@ declare module 'musora-content-services' {
 		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
-		emitContentCompleted,
 		emitProgressSaved,
 		enrollUserInGuidedCourse,
 		extractSanityUrl,
@@ -675,8 +672,7 @@ declare module 'musora-content-services' {
 		markNotificationAsUnread,
 		markThreadAsRead,
 		numberOfActiveUsers,
-		onContentCompleted,
-		onContentCompletedLearningPathListener,
+		onContentCompletedLearningPathActions,
 		onProgressSaved,
 		openComment,
 		otherStats,
