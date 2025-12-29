@@ -469,7 +469,6 @@ export async function contentStatusReset(contentId, collection = null, {skipPush
 
 async function saveContentProgress(contentId, collection, progress, currentSeconds, {skipPush = false} = {}) {
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
-async function saveContentProgress(contentId, collection, progress, currentSeconds) {
 
   // filter out contentIds that are setting progress lower than existing
   const contentIdProgress = await getProgressDataByIds([contentId], collection)
