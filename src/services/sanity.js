@@ -927,7 +927,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
     "instructor": ${instructorField},
     ${assignmentsField}
     video,
-    length_in_seconds,
+    "length_in_seconds": coalesce(soundslice[0].soundslice_length_in_second, length_in_seconds),
     mp3_no_drums_no_click_url,
     mp3_no_drums_yes_click_url,
     mp3_yes_drums_no_click_url,

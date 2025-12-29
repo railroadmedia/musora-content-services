@@ -89,6 +89,19 @@ export async function markThreadAsRead(threadId: number, brand: string): Promise
   return httpClient.put<void>(`${baseUrl}/v1/threads/${threadId}/read?brand=${brand}`, {})
 }
 
+/**
+ * Fetches a single forum thread by ID.
+ *
+ * @param {number} threadId - The ID of the thread to fetch.
+ * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @returns {Promise<ForumThread>} - A promise that resolves to the forum thread.
+ * @throws {HttpError} - If the HTTP request fails.
+ */
+export async function fetchThread(threadId: number, brand: string): Promise<ForumThread> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.get<ForumThread>(`${baseUrl}/v1/threads/${threadId}?brand=${brand}`)
+}
+
 export interface FetchThreadParams {
   is_followed?: boolean,
   page?: number,

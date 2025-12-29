@@ -249,8 +249,38 @@ export async function restoreComment(commentId) {
  * @returns {Promise<*|null>}
  */
 export async function replyToComment(commentId, comment) {
+  const { generateCommentUrl } = await import('./urlBuilder.ts')
+  const { fetchByRailContentIds } = await import('./sanity.js')
+
+  // Fetch parent comment to get content info
+  const parentComment = await fetchComment(commentId)
+
+  if (!parentComment?.content) {
+    const url = `/api/content/v1/comments/${commentId}/reply`
+    return await POST(url, { comment })
+  }
+
+  // Fetch content from Sanity to get parentId and correct type
+  const contents = await fetchByRailContentIds([parentComment.content.id])
+  const content = contents?.[0]
+
+  // Generate content URL
+  const contentUrl = content ? generateCommentUrl({
+    id: commentId,
+    content: {
+      id: content.id,
+      type: content.type,
+      parentId: content.parentId || content.parent_id,
+      brand: content.brand
+    }
+  }, false) : null
+
+  const data = {
+    comment: comment,
+    ...(contentUrl && { content_url: contentUrl })
+  }
   const url = `/api/content/v1/comments/${commentId}/reply`
-  return await POST(url, { comment })
+  return await POST(url, data)
 }
 
 /**
@@ -259,8 +289,28 @@ export async function replyToComment(commentId, comment) {
  * @returns {Promise<*|null>}
  */
 export async function createComment(railcontentId, comment) {
+  const { generateContentUrl } = await import('./urlBuilder.ts')
+  const { fetchByRailContentIds } = await import('./sanity.js')
+
+  // Fetch content to get type and brand info
+  const contents = await fetchByRailContentIds([railcontentId])
+  const content = contents?.[0]
+
+  // Generate content URL
+  const contentUrl = content ? generateContentUrl({
+    id: content.id,
+    type: content.type,
+    parentId: content.parentId || content.parent_id,
+    brand: content.brand
+  }) : null
+
+  const data = {
+    comment: comment,
+    content_id: railcontentId,
+    ...(contentUrl && { content_url: contentUrl })
+  }
   const url = `/api/content/v1/comments/store`
-  return await POST(url, { comment, content_id: railcontentId })
+  return await POST(url, data)
 }
 
 /**
@@ -286,8 +336,35 @@ export async function unassignModeratorToComment(commentId) {
  * @returns {Promise<*|null>}
  */
 export async function likeComment(commentId) {
+  const { generateCommentUrl } = await import('./urlBuilder.ts')
+  const { fetchByRailContentIds } = await import('./sanity.js')
+
+  // Fetch comment to get content info
+  const comment = await fetchComment(commentId)
+
+  if (!comment?.content) {
+    const url = `/api/content/v1/comments/${commentId}/like`
+    return await POST(url, null)
+  }
+
+  // Fetch content from Sanity to get parentId and correct type
+  const contents = await fetchByRailContentIds([comment.content.id])
+  const content = contents?.[0]
+
+  // Generate content URL
+  const contentUrl = content ? generateCommentUrl({
+    id: commentId,
+    content: {
+      id: content.id,
+      type: content.type,
+      parentId: content.parentId || content.parent_id,
+      brand: content.brand
+    }
+  }, false) : null
+
   const url = `/api/content/v1/comments/${commentId}/like`
-  return await POST(url, null)
+  const data = contentUrl ? { content_url: contentUrl } : {}
+  return await POST(url, data)
 }
 
 /**

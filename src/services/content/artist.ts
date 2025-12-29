@@ -1,12 +1,12 @@
 /**
  * @module Artist
  */
-import { getFieldsForContentType } from '../../contentTypeConfig.js'
+import { getFieldsForContentTypeWithFilteredChildren } from '../../contentTypeConfig.js'
+import { Brands } from '../../lib/brands'
+import { Filters as f } from '../../lib/sanity/filter'
 import { BuildQueryOptions, query } from '../../lib/sanity/query'
 import { fetchSanity, getSortOrder } from '../sanity.js'
 import { Lesson } from './content'
-import { Brands } from '../../lib/brands'
-import { Filters as f } from '../../lib/sanity/filter'
 
 export interface Artist {
   slug: string
@@ -123,7 +123,7 @@ export interface ArtistLessons {
 export async function fetchArtistLessons(
   slug: string,
   brand: Brands | string,
-  contentType: string,
+  contentType?: string,
   {
     sort = '-published_on',
     searchTerm = '',
@@ -150,7 +150,7 @@ export async function fetchArtistLessons(
     .and(restrictions)
     .order(sort)
     .slice(offset, limit)
-    .select(getFieldsForContentType(contentType) as string)
+    .select((await getFieldsForContentTypeWithFilteredChildren(contentType, true)) as string)
     .build()
 
   const total = query().and(restrictions).build()
