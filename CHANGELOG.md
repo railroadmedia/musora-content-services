@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.107.6](https://github.com/railroadmedia/musora-content-services/compare/v2.107.5...v2.107.6) (2025-12-29)
+
+
+### Bug Fixes
+
+* **TP-1051:** group contentProgress upsert pushes ([#665](https://github.com/railroadmedia/musora-content-services/issues/665)) ([27ff11f](https://github.com/railroadmedia/musora-content-services/commit/27ff11fb1b10075313e614cf895356a221f0c0d1))
+
 ### [2.107.5](https://github.com/railroadmedia/musora-content-services/compare/v2.107.4...v2.107.5) (2025-12-29)
 
 
