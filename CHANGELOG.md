@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.107.8](https://github.com/railroadmedia/musora-content-services/compare/v2.107.7...v2.107.8) (2025-12-30)
+
+
+### Bug Fixes
+
+* **T3PS-1289:** navigateTo calculation ([#677](https://github.com/railroadmedia/musora-content-services/issues/677)) ([12f4ca3](https://github.com/railroadmedia/musora-content-services/commit/12f4ca38b05a2175b33a9260e7c00f9aebfb8a87))
+
 ### [2.107.7](https://github.com/railroadmedia/musora-content-services/compare/v2.107.6...v2.107.7) (2025-12-29)
 
 
