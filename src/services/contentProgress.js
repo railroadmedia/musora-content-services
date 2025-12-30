@@ -472,8 +472,9 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
 
   // filter out contentIds that are setting progress lower than existing
   const contentIdProgress = await getProgressDataByIds([contentId], collection)
-  if (progress <= contentIdProgress[contentId].progress) {
-    return
+  const currentProgress = contentIdProgress[contentId].progress;
+  if (progress <= currentProgress) {
+    progress = currentProgress;
   }
 
   const response = await db.contentProgress.recordProgress(
@@ -485,6 +486,10 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   )
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
+
+  if (progress === currentProgress) {
+    return
+  }
 
   const hierarchy = await getHierarchy(contentId, collection)
 
