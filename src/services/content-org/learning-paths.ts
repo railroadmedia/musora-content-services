@@ -364,12 +364,12 @@ export async function completeMethodIntroVideo(
 ): Promise<completeMethodIntroVideo> {
   let response = {} as completeMethodIntroVideo
 
-  response.intro_video_response = await completeIfNotCompleted(introVideoId)
-
   const methodStructure = await fetchMethodV2Structure(brand)
-  const firstLearningPathId = methodStructure.learning_paths[0].id
 
+  const firstLearningPathId = methodStructure.learning_paths[0].id
   response.active_path_response = await methodIntroVideoCompleteActions(brand, firstLearningPathId, getToday())
+
+  response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
   return response
 }
@@ -408,17 +408,16 @@ export async function completeLearningPathIntroVideo(
 ) {
   let response = {} as completeLearningPathIntroVideo
 
-  response.intro_video_response = await completeIfNotCompleted(introVideoId)
-
   const collection: CollectionObject = { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH }
 
   if (!lessonsToImport) {
+
     response.learning_path_reset_response = await resetIfPossible(learningPathId, collection)
-
   } else {
-    response.lesson_import_response = await contentStatusCompletedMany(lessonsToImport, collection)
 
+    response.lesson_import_response = await contentStatusCompletedMany(lessonsToImport, collection)
     const activePath = await getActivePath(brand)
+
     if (activePath.active_learning_path_id === learningPathId) {
       response.update_dailies_response = await updateDailySession(
         brand,
@@ -427,6 +426,8 @@ export async function completeLearningPathIntroVideo(
       )
     }
   }
+
+  response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
   return response
 }
