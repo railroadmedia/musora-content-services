@@ -45,8 +45,8 @@ export async function getNavigateToForMethod(data) {
 
     const {content, collection} = tuple
 
-    const findFirstIncomplete = (progresses) =>
-      Object.keys(progresses).find(id => progresses[id] !== STATE_COMPLETED) || null
+    const findFirstIncomplete = (ids, progresses) =>
+      ids.find(id => progresses[id] !== STATE_COMPLETED) || null
 
     const findChildById = (children, id) =>
       children?.find(child => child.id === Number(id)) || null
@@ -56,7 +56,7 @@ export async function getNavigateToForMethod(data) {
       if (childrenIds.length === 0) return null
 
       const progresses = await getProgressStateByIds(childrenIds, collection)
-      const incompleteId = findFirstIncomplete(progresses)
+      const incompleteId = findFirstIncomplete(childrenIds, progresses)
 
       return incompleteId ? findChildById(content.children, incompleteId) : content.children[0]
     }
@@ -64,7 +64,7 @@ export async function getNavigateToForMethod(data) {
     const getDailySessionNavigateTo = async (content, dailySession, collection) => {
       const dailiesIds = dailySession?.map(item => item.content_ids).flat() || []
       const progresses = await getProgressStateByIds(dailiesIds, collection)
-      const incompleteId = findFirstIncomplete(progresses)
+      const incompleteId = findFirstIncomplete(dailiesIds, progresses)
 
       return incompleteId ? findChildById(content.children, incompleteId) : null
     }
