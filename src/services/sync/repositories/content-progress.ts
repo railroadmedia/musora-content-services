@@ -62,6 +62,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       Q.where('collection_type', COLLECTION_TYPE.SELF),
       Q.where('collection_id', COLLECTION_ID_SELF),
 
+      Q.where('hide_from_progress_row', false),
+
       Q.or(Q.where('state', STATE.STARTED), Q.where('state', STATE.COMPLETED)),
       Q.sortBy('updated_at', 'desc'),
     ]
@@ -133,7 +135,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     }
   }
 
-  recordProgress(contentId: number, collection: CollectionParameter | null, progressPct: number, resumeTime?: number, {skipPush = false} = {}) {
+  recordProgress(contentId: number, collection: CollectionParameter | null, progressPct: number, resumeTime?: number, {skipPush = false, hideFromProgressRow = false} = {}) {
     const id = ProgressRepository.generateId(contentId, collection)
 
     const result = this.upsertOne(id, (r) => {
@@ -146,6 +148,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       if (typeof resumeTime != 'undefined') {
         r.resume_time_seconds = Math.floor(resumeTime)
       }
+
+      r.hide_from_progress_row = hideFromProgressRow
     }, { skipPush })
 
     // Emit event AFTER database write completes
@@ -176,7 +180,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   recordProgressMany(
     contentProgresses: Record<string, number>, // Accept plain object
     collection: CollectionParameter | null,
-    { tentative = true, skipPush = false }: { tentative?: boolean; skipPush?: boolean } = {}
+    { tentative = true, skipPush = false, hideFromProgressRow = false }: { tentative?: boolean; skipPush?: boolean; hideFromProgressRow?: boolean } = {}
   ) {
 
     const data = Object.fromEntries(
@@ -188,6 +192,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
           r.collection_id = collection?.id ?? COLLECTION_ID_SELF
 
           r.progress_percent = progressPct
+
+          r.hide_from_progress_row = hideFromProgressRow
         },
       ])
     )
