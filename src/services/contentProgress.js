@@ -46,7 +46,7 @@ export async function getNavigateToForMethod(data) {
     const {content, collection} = tuple
 
     const findFirstIncomplete = (ids, progresses) =>
-      ids.find(id => progresses[id] !== STATE_COMPLETED) || null
+      ids.find(id => progresses[id] !== STATE_COMPLETED) || ids[0]
 
     const findChildById = (children, id) =>
       children?.find(child => child.id === Number(id)) || null
