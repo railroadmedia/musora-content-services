@@ -1,18 +1,18 @@
 /**
  * @module ProgressRow
  */
-import { getAllStartedOrCompleted, getProgressStateByIds } from '../contentProgress.js'
-import { addContextToContent } from '../contentAggregator.js'
-import { fetchByRailContentIds, fetchShows } from '../sanity.js'
+import { getAllStartedOrCompleted, getProgressStateByIds } from '../../contentProgress.js'
+import { addContextToContent } from '../../contentAggregator.js'
+import { fetchByRailContentIds, fetchShows } from '../../sanity.js'
 import {
   collectionLessonTypes,
   getFormattedType,
   recentTypes,
   showsLessonTypes,
   songs,
-} from '../../contentTypeConfig.js'
-import { getTimeRemainingUntilLocal } from '../dateUtils.js'
-import { findIncompleteLesson } from '../userActivity.js'
+} from '../../../contentTypeConfig.js'
+import { getTimeRemainingUntilLocal } from '../../dateUtils.js'
+import { findIncompleteLesson } from '../../userActivity.js'
 
 export async function getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem ){
   let recentContentIds = await getAllStartedOrCompleted({ brand: brand, limit })

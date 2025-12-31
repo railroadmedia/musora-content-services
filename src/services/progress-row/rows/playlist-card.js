@@ -1,9 +1,9 @@
 /**
  * @module ProgressRow
  */
-import { fetchUserPlaylists } from '../content-org/playlists.js'
-import { addContextToContent } from '../contentAggregator.js'
-import { fetchByRailContentIds } from '../sanity.js'
+import { fetchUserPlaylists } from '../../content-org/playlists.js'
+import { addContextToContent } from '../../contentAggregator.js'
+import { fetchByRailContentIds } from '../../sanity.js'
 
 export async function getPlaylistCards(recentPlaylists){
   return await Promise.all(
