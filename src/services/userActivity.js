@@ -908,82 +908,108 @@ export async function restoreUserActivity(id) {
   return await POST(url, null)
 }
 
-async function extractPinnedItemsAndSortAllItems(
-  userPinnedItem,
-  contentsMap,
-  eligiblePlaylistItems,
-  methodCard,
-  //method contents
-  limit
-) {
-  let pinnedItem = await popPinnedItemFromContentsOrPlaylistMap(
-    userPinnedItem,
-    contentsMap,
-    eligiblePlaylistItems,
-    methodCard
-  )
-
+function sortCards(pinnedCard, contentCardMap, playlistCards, methodCard, limit) {
+  // dedups, orders by progress timestamp and moves pinned item to the front
+  // however, there should already have no duplicates since fetch playlist
+  // shouldn't return dups and contentMap was a map
+  // we insert the pinned card first so it's also first already
   let combined = []
-
-  if (pinnedItem) {
-    pinnedItem.pinned = true
-    combined.push(pinnedItem)
+  if (pinnedCard) {
+    pinnedCard.pinned = true
+    combined.push(pinnedCard)
   }
 
-  if (!(pinnedItem && pinnedItem.progressType === 'method')) {
+  if (!(pinnedCard && pinnedCard.progressType === 'method')) {
     combined.push(methodCard)
   }
 
-  const progressList = Array.from(contentsMap.values())
-  //need another for methodContents?
-
-  combined = [...combined, ...progressList, ...eligiblePlaylistItems]
-  return mergeAndSortItems(combined, limit)
+  const progressList = Array.from(contentCardMap.values())
+  return mergeAndSortItems([...combined, ...progressList, ...playlistCards], limit)
 }
 
-function generateContentsMap(contents, playlistsContents) {
+function generateContentPromises(contents) {
+  const promises = []
+  if (!contents) return promises
+  // why are we exluding these types?
   const excludedTypes = new Set(['pack-bundle', 'guided-course-lesson'])
   const existingShows = new Set()
-  const contentsMap = new Map()
-  const childToParentMap = {}
-  if (!contents) return contentsMap
-  contents.forEach((content) => {
-    if (Array.isArray(content.parent_content_data) && content.parent_content_data.length > 0) {
-      childToParentMap[content.id] =
-        content.parent_content_data[content.parent_content_data.length - 1]
-    }
-  })
-
   const allRecentTypeSet = new Set(Object.values(recentTypes).flat())
   contents.forEach((content) => {
-    const id = content.id
     const type = content.type
     if (
       excludedTypes.has(type) ||
       (!allRecentTypeSet.has(type) && !showsLessonTypes.includes(type))
     )
       return
-    if (!childToParentMap[id]) {
-      // Shows don't have a parent to link them, but need to be handled as if they're a set of children
-      if (!existingShows.has(type)) {
-        contentsMap.set(id, content)
-      }
+
+    let childHasParent = Array.isArray(content.parent_content_data) && content.parent_content_data.length > 0
+    if (!childHasParent) {
+      promises.push(processContentItem(content))
       if (showsLessonTypes.includes(type)) {
+        // Shows don't have a parent to link them, but need to be handled as if they're a set of children
         existingShows.add(type)
       }
     }
   })
 
-  if (playlistsContents) {
-    for (const item of playlistsContents) {
-      const contentId = item.id
-      contentsMap.delete(contentId)
+  return promises
+}
+
+async function getPlaylistEngagedOnContent(recentPlaylists){
+  // take the most recently engaged with video in a playlist and hydrate it with
+  // the content details
+  const playlistEngagedOnContents = recentPlaylists.map(
+    (item) => item.playlist.last_engaged_on
+  )
+  return playlistEngagedOnContents.length > 0
+    ? await addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
+      addNavigateTo: true,
+      addProgressStatus: true,
+      addProgressPercentage: true,
+      addProgressTimestamp: true,
+    })
+    : []
+}
+
+async function getPlaylistCards(recentPlaylists){
+  return await Promise.all(
+    recentPlaylists.map((playlist) => {
+      return processPlaylistItem(playlist)
+    })
+  )
+}
+
+async function getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem ){
+  let recentContentIds = await getAllStartedOrCompleted({ brand: brand, limit })
+  if (userPinnedItem?.progressType === 'content') {
+    recentContentIds.push(userPinnedItem.id)
+  }
+  if (playlistEngagedOnContent) {
+    // remove playlistIds from this prior to adding context to content
+    for (const item of playlistEngagedOnContent) {
       const parentIds = item.parent_content_data || []
-      parentIds.forEach((id) => contentsMap.delete(id))
+      recentContentIds = recentContentIds.filter(id => id !== item.id && !parentIds.includes(id))
     }
   }
-
-  return contentsMap
+  const contents = recentContentIds.length > 0
+    ? await addContextToContent(
+      fetchByRailContentIds,
+      recentContentIds,
+      'progress-tracker',
+      brand,
+      {
+        addNavigateTo: true,
+        addProgressStatus: true,
+        addProgressPercentage: true,
+        addProgressTimestamp: true,
+      }
+    )
+    : []
+  const contentCards = await Promise.all(generateContentPromises(contents))
+  return contentCards.reduce((contentMap, content) => {
+    contentMap.set(content.id, content)
+    return contentMap
+  }, new Map())
 }
 
 /**
@@ -1000,75 +1026,27 @@ function generateContentsMap(contents, playlistsContents) {
  *   .catch(error => console.error(error));
  */
 export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
-  // TODO slice progress to a reasonable number, say 100
-  const methodCardPromise = getMethodCard(brand)
-  const [recentPlaylists, nonPlaylistContentIds, userPinnedItem] = await Promise.all([
-    fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit }),
-    getAllStartedOrCompleted({ brand: brand, limit }),
+  const [userPinnedItem, recentPlaylists] = await Promise.all([
     getUserPinnedItem(brand),
+    getRecentPlaylists(brand, limit)
   ])
-
-  const playlists = recentPlaylists?.data || []
-  const eligiblePlaylistItems = await getEligiblePlaylistItems(playlists)
-  const playlistEngagedOnContents = eligiblePlaylistItems.map(
-    (item) => item.playlist.last_engaged_on
-  )
-
-  // todo post v2: refactor this once we migrate playlist progress tracking to new system
-  if (userPinnedItem?.progressType === 'content') {
-    nonPlaylistContentIds.push(userPinnedItem.id)
+  // just the recently played video from each playlist
+  const playlistEngagedOnContent = await getPlaylistEngagedOnContent(recentPlaylists)
+  // could contain duplicates from playlistEngagedOnContent
+  const [contentCardMap, playlistCards, methodCard] = await Promise.all([
+    getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem),
+    getPlaylistCards(recentPlaylists),
+    getMethodCard(brand),
+  ])
+  const pinnedCard = await popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard)
+  let allResultsLength = playlistCards.length + contentCardMap.size
+  if (methodCard) {
+    allResultsLength += 1
   }
-  //need to update addContextToContent to accept collection info
-  const [playlistsContents, contents] = await Promise.all([
-    (playlistEngagedOnContents.length > 0)
-      ? addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
-          addNavigateTo: true,
-          addProgressStatus: true,
-          addProgressPercentage: true,
-          addProgressTimestamp: true,
-        })
-      : Promise.resolve([]),
-    (nonPlaylistContentIds.length > 0)
-      ? addContextToContent(
-          fetchByRailContentIds,
-          nonPlaylistContentIds,
-          'progress-tracker',
-          brand,
-          {
-            addNavigateTo: true,
-            addProgressStatus: true,
-            addProgressPercentage: true,
-            addProgressTimestamp: true,
-          }
-        )
-      : Promise.resolve([]),
-  ])
-
-  const contentsMap = generateContentsMap(contents, playlistsContents)
-  const methodCard = await methodCardPromise
-  let combined = await extractPinnedItemsAndSortAllItems(
-    userPinnedItem,
-    contentsMap,
-    eligiblePlaylistItems,
-    methodCard,
-    limit
-  )
-  const results = await Promise.all(
-    combined.slice(0, limit).map((item) => {
-      switch (item.type) {
-        case 'playlist':
-          return processPlaylistItem(item)
-        case COLLECTION_TYPE.LEARNING_PATH:
-        case 'method':
-          return item
-        default:
-          return processContentItem(item)
-      }
-    })
-  )
+  const results = sortCards(pinnedCard, contentCardMap, playlistCards, methodCard, limit)
   return {
     type: TabResponseType.PROGRESS_ROWS,
-    displayBrowseAll: combined.length > limit,
+    displayBrowseAll: allResultsLength > limit,
     data: results,
   }
 }
@@ -1260,10 +1238,14 @@ function getLeafNodes(content) {
   return ids
 }
 
-async function getEligiblePlaylistItems(playlists) {
-  const eligible = playlists.filter((p) => p.last_progress && p.last_engaged_on)
-  return Promise.all(
-    eligible.map(async (p) => {
+async function getRecentPlaylists(brand, limit) {
+  // fetch recent playlists, filter out those that do not have recent engagement, map all to some custom object
+  const response = await fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit })
+  const playlists = response?.data || []
+  const recentPlaylists = playlists.filter((p) => p.last_progress && p.last_engaged_on)
+  // why this?
+  return await Promise.all(
+    recentPlaylists.map(async (p) => {
       const utcDate = new Date(p.last_progress.replace(' ', 'T') + 'Z')
       const timestamp = utcDate.getTime()
       return {
@@ -1282,7 +1264,7 @@ function mergeAndSortItems(items, limit) {
   const deduped = []
 
   for (const item of items) {
-    const key = `${item.id}-${item.type}`
+    const key = `${item.id}-${item.progressType}`
     if (!seen.has(key)) {
       seen.add(key)
       deduped.push(item)
@@ -1296,7 +1278,7 @@ function mergeAndSortItems(items, limit) {
       if (!a.pinned && b.pinned) return 1
       return b.progressTimestamp - a.progressTimestamp
     })
-    .slice(0, limit + 5)
+    .slice(0, limit)
 }
 
 export function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
@@ -1320,72 +1302,47 @@ export function findIncompleteLesson(progressOnItems, currentContentId, contentT
   return ids[0]
 }
 
-async function popPinnedItemFromContentsOrPlaylistMap(
-  pinned,
-  contentsMap,
-  playlistItems,
-  methodCard
-) {
-  if (!pinned) return null
-  const { id, pinnedAt } = pinned
-  let item = null
-  const progressType = pinned.progressType ?? pinned.type
+async function popPinnedItem(userPinnedItem, contentsMap, playlistItems, methodCard){
+  if (!userPinnedItem) return null
+  const pinnedId = parseInt(userPinnedItem.id)
+  const pinnedAt = userPinnedItem.pinnedAt
+  const progressType = userPinnedItem.progressType ?? userPinnedItem.type
 
+  let item = null
   if (progressType === 'content') {
-    const pinnedId = parseInt(id)
     if (contentsMap.has(pinnedId)) {
       item = contentsMap.get(pinnedId)
       contentsMap.delete(pinnedId)
     } else {
       // we use fetchByRailContentIds so that we don't have the _type restriction in the query
-      let data = await fetchByRailContentIds([id], 'progress-tracker')
-      item = await addContextToContent(() => data[0] ?? null, {
+      let data = await fetchByRailContentIds([pinnedId], 'progress-tracker')
+      item = await processContentItem(await addContextToContent(() => data[0] ?? null, {
         addNextLesson: true,
         addNavigateTo: true,
         addProgressStatus: true,
         addProgressPercentage: true,
         addProgressTimestamp: true,
-      })
+      }))
     }
-  }
-  if (progressType === 'playlist') {
-    const pinnedPlaylist = playlistItems.find((p) => p.playlist.id === id)
+  } else if (progressType === 'playlist') {
+    const pinnedPlaylist = playlistItems.find((p) => p.playlist.id === pinnedId)
     if (pinnedPlaylist) {
-      playlistItems = playlistItems.filter((p) => p.playlist.id !== id)
       item = pinnedPlaylist
     } else {
-      const playlist = await fetchPlaylist(id)
-      item = {
-        id: id,
+      const playlist = await fetchPlaylist(pinnedId)
+      item = await processPlaylistItem({
+        id: pinnedId,
         playlist: playlist,
         type: 'playlist',
         progressTimestamp: new Date(pinnedAt).getTime(),
-      }
+      })
     }
-  }
-  if (progressType === 'method') {
+  } else if (progressType === 'method') {
     // simply get method card and return
     item = methodCard
     //todo remove method card
   }
   return item
-}
-
-function popContentAndRemoveChildrenFromContentsMap(content, contentsMap) {
-  if (!content.children || content.children.length === 0) {
-    console.warn(`content ${content.id} has no children`, content)
-  } else {
-    const children = content.children.map((child) => child.id)
-    if (contentsMap.has(content.id)) {
-      contentsMap.delete(content.id)
-    }
-    children.forEach((child) => {
-      if (contentsMap.has(child)) {
-        contentsMap.delete(child)
-      }
-    })
-  }
-  return contentsMap
 }
 
 /**
