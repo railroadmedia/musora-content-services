@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.108.0](https://github.com/railroadmedia/musora-content-services/compare/v2.107.8...v2.108.0) (2026-01-02)
+
+
+### Features
+
+* adds column and implements for hiding cards ([#679](https://github.com/railroadmedia/musora-content-services/issues/679)) ([35ac42c](https://github.com/railroadmedia/musora-content-services/commit/35ac42cebe397c557d0b197d4fab38907ca08ab7))
+
+
+### Bug Fixes
+
+* some fixes from Rob ([#676](https://github.com/railroadmedia/musora-content-services/issues/676)) ([7e068ee](https://github.com/railroadmedia/musora-content-services/commit/7e068eee3cabc4de1d0620fe58eadf138532ab56))
+
 ### [2.107.8](https://github.com/railroadmedia/musora-content-services/compare/v2.107.7...v2.107.8) (2025-12-30)
 
 
