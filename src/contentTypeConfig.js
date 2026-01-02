@@ -301,6 +301,7 @@ export const progressTypesMapping = {
   'guided course': ['guided-course'],
   pack: ['pack', 'semester-pack'],
   'learning path': ['learning-path-v2'],
+  'skill pack': skillLessonTypes,
   'jam track': jamTrackLessonTypes,
   'course video': ['course-lesson'],
 }
@@ -343,6 +344,7 @@ export const recentTypes = {
   home: [
     ...individualLessonsTypes,
     ...tutorialsLessonTypes,
+    ...skillLessonTypes,
     ...transcriptionsLessonTypes,
     ...playAlongLessonTypes,
     'guided-course',
