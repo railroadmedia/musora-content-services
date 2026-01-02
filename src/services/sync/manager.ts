@@ -25,12 +25,14 @@ export default class SyncManager {
     if (SyncManager.instance) {
       throw new SyncError('SyncManager already initialized')
     }
+
     SyncManager.instance = instance
     const teardown = instance.setup()
+
     return (force = false) => {
       SyncManager.instance = null
       return teardown(force).catch(error => {
-        SyncManager.instance = instance
+        SyncManager.instance = instance // restore instance on teardown failure
         throw error
       })
     }
@@ -146,7 +148,7 @@ export default class SyncManager {
       })
     })
 
-    const safetyTeardowns = this.effectMap.flatMap(({ models, effects }) => {
+    const effectTeardowns = this.effectMap.flatMap(({ models, effects }) => {
       return effects.map((effect) => effect(this.context, models.map(model => this.storesRegistry[model.table])))
     });
 
@@ -155,21 +157,37 @@ export default class SyncManager {
     })
     onContentCompleted(onContentCompletedLearningPathListener)
 
-    const teardown = (force = false) => {
+    const teardown = async (force = false) => {
       this.telemetry.debug('[SyncManager] Tearing down')
-      this.runScope.abort()
-      this.strategyMap.forEach(({ strategies }) =>
-        strategies.forEach((strategy) => strategy.stop())
-      )
-      safetyTeardowns.forEach((teardown) => teardown())
-      contentProgressObserver.stop()
-      this.retry.stop()
-      this.context.stop()
 
-      if (force && this.destroyDatabase && database.adapter.dbName && database.adapter.underlyingAdapter) {
-        return this.destroyDatabase(database.adapter.dbName, database.adapter.underlyingAdapter)
-      } else {
-        return database.write(() => database.unsafeResetDatabase())
+      const clear = (force = false) => {
+        if (force && this.destroyDatabase && database.adapter.dbName && database.adapter.underlyingAdapter) {
+          return this.destroyDatabase(database.adapter.dbName, database.adapter.underlyingAdapter)
+        } else {
+          return database.write(() => database.unsafeResetDatabase())
+        }
+      }
+
+      try {
+        this.runScope.abort()
+        this.strategyMap.forEach(({ strategies }) => strategies.forEach((strategy) => strategy.stop()))
+        effectTeardowns.forEach((teardown) => teardown())
+        this.retry.stop()
+        this.context.stop()
+
+        contentProgressObserver.stop()
+      } catch (error) {
+        // capture, but don't rethrow
+        this.telemetry.capture(error)
+      }
+
+      try {
+        return clear(force);
+      } catch (error) {
+        if (!force) {
+          return clear(true);
+        }
+        throw error
       }
     }
 
