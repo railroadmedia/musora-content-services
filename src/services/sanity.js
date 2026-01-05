@@ -75,41 +75,6 @@ const TAB_TO_CONTENT_TYPES = {
 };
 
 /**
- * Mapping from filter option names to their underlying Sanity content types.
- * Used to determine which filter options should be visible based on available content.
- * @type {Object.<string, string[]>}
- */
-const FILTER_CHILD_TO_CONTENT_TYPES = {
-  // Single Lessons children
-  'Lessons': lessonTypesMapping['lessons'],
-  'Practice Alongs': lessonTypesMapping['practice alongs'],
-  'Live Archives': lessonTypesMapping['live archives'],
-  'Student Archives': lessonTypesMapping['student archives'],
-
-  // Courses children
-  'Courses': lessonTypesMapping['courses'],
-  'Guided Courses': lessonTypesMapping['guided courses'],
-  'Tiered Courses': lessonTypesMapping['tiered courses'],
-
-  // Entertainment children
-  'Specials': lessonTypesMapping['specials'],
-  'Documentaries': lessonTypesMapping['documentaries'],
-  'Shows': lessonTypesMapping['shows'],
-
-  // Skill Packs (no children)
-  'Skill Packs': lessonTypesMapping['skill packs'],
-
-  // Songs page types
-  'Tutorials': lessonTypesMapping['tutorials'],
-  'Transcriptions': lessonTypesMapping['transcriptions'],
-  'Sheet Music': lessonTypesMapping['sheet music'],
-  'Tabs': lessonTypesMapping['tabs'],
-  'Play-Alongs': lessonTypesMapping['play-alongs'],
-  'Jam Tracks': lessonTypesMapping['jam tracks'],
-};
-
-
-/**
  * Fetch a song by its document ID from Sanity.
  *
  * @param {string} documentId - The ID of the document to fetch.
@@ -2298,6 +2263,7 @@ function filterTabsByContentCounts(tabs, contentTypeCounts) {
     return tabContentTypes.some(type => contentTypeCounts[type] > 0);
   });
 }
+
 /**
  * Filter Type filter options based on content type counts.
  * Removes parent/child options that have no content available.
@@ -2319,7 +2285,7 @@ function filterTypeOptionsByContentCounts(filters, contentTypeCounts) {
       if (item.isParent && item.items) {
         // Filter children based on their content types
         const availableChildren = item.items.filter(child => {
-          const childTypes = FILTER_CHILD_TO_CONTENT_TYPES[child.name];
+          const childTypes = getContentTypesForFilterName(child.name);
 
           if (!childTypes || childTypes.length === 0) {
             console.warn(`Unknown filter child "${child.name}" - showing by default`);
@@ -2339,7 +2305,7 @@ function filterTypeOptionsByContentCounts(filters, contentTypeCounts) {
       }
 
       // For flat items (no children)
-      const itemTypes = FILTER_CHILD_TO_CONTENT_TYPES[item.name];
+      const itemTypes = getContentTypesForFilterName(item.name);
 
       if (!itemTypes || itemTypes.length === 0) {
         console.warn(`Unknown filter item "${item.name}" - showing by default`);
@@ -2362,4 +2328,34 @@ function filterTypeOptionsByContentCounts(filters, contentTypeCounts) {
     }
     return true;
   });
+}
+
+/**
+ * Maps a display name to its corresponding content types from lessonTypesMapping.
+ * @param {string} displayName - The display name from filter metadata
+ * @returns {string[]|undefined} - Array of content types or undefined if not found
+ */
+function getContentTypesForFilterName(displayName) {
+  const displayNameToKey = {
+    'Lessons': 'lessons',
+    'Practice Alongs': 'practice alongs',
+    'Live Archives': 'live archives',
+    'Student Archives': 'student archives',
+    'Courses': 'courses',
+    'Guided Courses': 'guided courses',
+    'Tiered Courses': 'tiered courses',
+    'Specials': 'specials',
+    'Documentaries': 'documentaries',
+    'Shows': 'shows',
+    'Skill Packs': 'skill packs',
+    'Tutorials': 'tutorials',
+    'Transcriptions': 'transcriptions',
+    'Sheet Music': 'sheet music',
+    'Tabs': 'tabs',
+    'Play-Alongs': 'play-alongs',
+    'Jam Tracks': 'jam tracks',
+  };
+
+  const mappingKey = displayNameToKey[displayName];
+  return mappingKey ? lessonTypesMapping[mappingKey] : undefined;
 }
