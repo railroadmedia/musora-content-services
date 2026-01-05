@@ -2,11 +2,11 @@
  * @module ProgressRow
  */
 
-import { getActivePath, fetchLearningPathLessons } from '../content-org/learning-paths'
-import { getToday } from '../dateUtils.js'
-import { fetchMethodV2IntroVideo } from '../sanity'
-import { getProgressState } from '../contentProgress'
-import {COLLECTION_TYPE, STATE} from '../sync/models/ContentProgress'
+import { getActivePath, fetchLearningPathLessons } from '../../content-org/learning-paths'
+import { getToday } from '../../dateUtils.js'
+import { fetchMethodV2IntroVideo } from '../../sanity'
+import { getProgressState } from '../../contentProgress'
+import {COLLECTION_TYPE, STATE} from '../../sync/models/ContentProgress'
 
 export async function getMethodCard(brand) {
   const introVideo = await fetchMethodV2IntroVideo(brand)
@@ -20,8 +20,7 @@ export async function getMethodCard(brand) {
   const activeLearningPath = await getActivePath(brand)
 
   if (introVideoProgressState !== STATE.COMPLETED || !activeLearningPath) {
-    //startLearningPath('drumeo', 422533)
-    const timestamp = Math.floor(Date.now() / 1000)
+    const timestamp = Math.floor(Date.now())
     const instructorText =
       introVideo.instructor?.length > 1
         ? 'Multiple Instructors'
@@ -121,8 +120,7 @@ export async function getMethodCard(brand) {
         text: ctaText,
         action: action,
       },
-      // *1000 is to match playlists which are saved in millisecond accuracy
-      progressTimestamp: maxProgressTimestamp * 1000,
+      progressTimestamp: maxProgressTimestamp,
     }
   }
 }

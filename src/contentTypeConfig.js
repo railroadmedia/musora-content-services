@@ -964,3 +964,13 @@ function groupFilters(filters) {
     return acc
   }, {})
 }
+
+export const getFormattedType = (type, brand) => {
+  for (const [key, values] of Object.entries(progressTypesMapping)) {
+    if (values.includes(type)) {
+      return key === 'songs' ? songs[brand] : key
+    }
+  }
+
+  return null
+}
