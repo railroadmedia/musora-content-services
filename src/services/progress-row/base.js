@@ -107,6 +107,11 @@ async function getUserPinnedItem(brand) {
   return user.brand_pinned_progress[brand] ?? null
 }
 
+/**
+ * Pop the userPinnedItem from cards and return it.
+ * If userPinnedItem is not found, generate the pinned card from scratch.
+ *
+ **/
 async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard){
   if (!userPinnedItem) return null
   const pinnedId = parseInt(userPinnedItem.id)
@@ -150,11 +155,12 @@ async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, meth
   return item
 }
 
+/**
+ * Order cards by progress timestamp, move pinned card to the front,
+ * remove any duplicate cards showing the same content twice,
+ * slice the result based on the provided limit.
+ **/
 function sortCards(pinnedCard, contentCardMap, playlistCards, methodCard, limit) {
-  // dedups, orders by progress timestamp and moves pinned item to the front
-  // however, there should already have no duplicates since fetch playlist
-  // shouldn't return dups and contentMap was a map
-  // we insert the pinned card first so it's also first already
   let combined = []
   if (pinnedCard) {
     pinnedCard.pinned = true

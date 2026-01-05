@@ -13,14 +13,19 @@ import {
 } from '../../../contentTypeConfig.js'
 import { getTimeRemainingUntilLocal } from '../../dateUtils.js'
 import { findIncompleteLesson } from '../../userActivity.js'
+import { COLLECTION_TYPE } from '../../sync/models/ContentProgress.js'
 
+/**
+ * Fetch any content IDs with some progress, include the userPinnedItem,
+ * remove any content IDs that already exist in playlistEngagedOnContent,
+ * and generate a map of the cards keyed by the content IDs
+ */
 export async function getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem ){
   let recentContentIds = await getAllStartedOrCompleted({ brand: brand, limit })
   if (userPinnedItem?.progressType === 'content') {
     recentContentIds.push(userPinnedItem.id)
   }
   if (playlistEngagedOnContent) {
-    // remove playlistIds from this prior to adding context to content
     for (const item of playlistEngagedOnContent) {
       const parentIds = item.parent_content_data || []
       recentContentIds = recentContentIds.filter(id => id !== item.id && !parentIds.includes(id))
@@ -51,7 +56,7 @@ function generateContentPromises(contents) {
   const promises = []
   if (!contents) return promises
   // why are we exluding these types?
-  const excludedTypes = new Set(['pack-bundle', 'guided-course-lesson'])
+  const excludedTypes = new Set(['pack-bundle', 'guided-course-lesson', COLLECTION_TYPE.LEARNING_PATH])
   const existingShows = new Set()
   const allRecentTypeSet = new Set(Object.values(recentTypes).flat())
   contents.forEach((content) => {

@@ -44,12 +44,9 @@ export async function processPlaylistItem(item) {
 }
 
 export async function getRecentPlaylists(brand, limit) {
-  // TODO: clean up these docstrings
-  // fetch recent playlists, filter out those that do not have recent engagement, map all to some custom object
   const response = await fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit })
   const playlists = response?.data || []
   const recentPlaylists = playlists.filter((p) => p.last_progress && p.last_engaged_on)
-  // why this?
   return await Promise.all(
     recentPlaylists.map(async (p) => {
       const utcDate = new Date(p.last_progress.replace(' ', 'T') + 'Z')
@@ -66,8 +63,6 @@ export async function getRecentPlaylists(brand, limit) {
 }
 
 export async function getPlaylistEngagedOnContent(recentPlaylists){
-  // take the most recently engaged with video in a playlist and hydrate it with
-  // the content details
   const playlistEngagedOnContents = recentPlaylists.map(
     (item) => item.playlist.last_engaged_on
   )
