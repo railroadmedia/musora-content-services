@@ -89,13 +89,6 @@ export default class SyncRepository<TModel extends BaseModel> {
     )
   }
 
-  protected async upsertOneRemote(id: RecordId, builder: (record: TModel) => void) {
-    return this.store.telemetry.trace(
-      { name: `upsertOneRemote:${this.store.model.table}`, op: 'upsert' },
-      (span) => this._respondToRemoteWriteOne(() => this.store.upsertOneRemote(id, builder, span), id, span)
-    )
-  }
-
   protected async upsertOne(id: RecordId, builder: (record: TModel) => void, { skipPush = false } = {}) {
     return this.store.telemetry.trace(
       { name: `upsertOne:${this.store.model.table}`, op: 'upsert' },
@@ -213,7 +206,7 @@ export default class SyncRepository<TModel extends BaseModel> {
     const result: SyncReadDTO<TModel, T> = {
       data,
       status: pull?.ok ? 'fresh' : 'stale',
-      pullStatus: pull?.ok ? 'success' : 'failure',
+      pullStatus: pull ? (pull.ok ? 'success' : 'failure') : null,
       lastFetchToken: fetchToken,
     }
     return result
