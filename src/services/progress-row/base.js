@@ -107,7 +107,7 @@ async function getUserPinnedItem(brand) {
   return user.brand_pinned_progress[brand] ?? null
 }
 
-async function popPinnedItem(userPinnedItem, contentsMap, playlistItems, methodCard){
+async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard){
   if (!userPinnedItem) return null
   const pinnedId = parseInt(userPinnedItem.id)
   const pinnedAt = userPinnedItem.pinnedAt
@@ -115,9 +115,9 @@ async function popPinnedItem(userPinnedItem, contentsMap, playlistItems, methodC
 
   let item = null
   if (progressType === 'content') {
-    if (contentsMap.has(pinnedId)) {
-      item = contentsMap.get(pinnedId)
-      contentsMap.delete(pinnedId)
+    if (contentCardMap.has(pinnedId)) {
+      item = contentCardMap.get(pinnedId)
+      contentCardMap.delete(pinnedId)
     } else {
       // we use fetchByRailContentIds so that we don't have the _type restriction in the query
       let data = await fetchByRailContentIds([pinnedId], 'progress-tracker')
@@ -130,7 +130,7 @@ async function popPinnedItem(userPinnedItem, contentsMap, playlistItems, methodC
       }))
     }
   } else if (progressType === 'playlist') {
-    const pinnedPlaylist = playlistItems.find((p) => p.playlist.id === pinnedId)
+    const pinnedPlaylist = playlistCards.find((p) => p.playlist.id === pinnedId)
     if (pinnedPlaylist) {
       item = pinnedPlaylist
     } else {
