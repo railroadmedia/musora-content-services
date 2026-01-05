@@ -115,7 +115,6 @@ export async function processContentItem(content) {
       content = shows.find((lesson) => lesson.id === nextByProgress)
       content.completed_children = completedShows
       content.progressTimestamp = progressTimestamp
-      content.progressTimestamp = progressTimestamp
       content.pinned = wasPinned
     }
     content.child_count = shows.length
