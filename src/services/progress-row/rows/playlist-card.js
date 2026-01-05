@@ -36,7 +36,7 @@ export async function processPlaylistItem(item) {
         item_id: playlist.navigateTo.id ?? null,
         content_id: playlist.navigateTo.content_id ?? null,
         type: 'playlists',
-        // TODO depreciated, maintained to avoid breaking changes
+        // TODO deprecated, maintained to avoid breaking changes
         id: playlist.id,
       },
     },
