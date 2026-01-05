@@ -34,18 +34,18 @@ type SyncPushFetchFailureResponse = SyncResponseBase & {
   failureType: 'fetch'
   isRetryable: boolean
 }
-export type SyncPushFailureResponse = SyncResponseBase & {
+type SyncPushFailureResponse = SyncResponseBase & {
   ok: false,
   failureType: 'error'
   originalError: Error
 }
 
-type SyncStorePushResult<TRecordKey extends string = 'id'> = SyncStorePushResultSuccess<TRecordKey> | SyncStorePushResultFailure<TRecordKey>
-type SyncStorePushResultSuccess<TRecordKey extends string = 'id'> = SyncStorePushResultBase & {
+export type SyncStorePushResult<TRecordKey extends string = 'id'> = SyncStorePushResultSuccess<TRecordKey> | SyncStorePushResultFailure<TRecordKey>
+export type SyncStorePushResultSuccess<TRecordKey extends string = 'id'> = SyncStorePushResultBase & {
   type: 'success'
   entry: SyncEntry<BaseModel, TRecordKey>
 }
-type SyncStorePushResultFailure<TRecordKey extends string = 'id'> = SyncStorePushResultProcessingFailure<TRecordKey> | SyncStorePushResultValidationFailure<TRecordKey>
+export type SyncStorePushResultFailure<TRecordKey extends string = 'id'> = SyncStorePushResultProcessingFailure<TRecordKey> | SyncStorePushResultValidationFailure<TRecordKey>
 type SyncStorePushResultProcessingFailure<TRecordKey extends string = 'id'> = SyncStorePushResultFailureBase<TRecordKey> & {
   failureType: 'processing'
   error: any
@@ -71,7 +71,7 @@ type SyncPullSuccessResponse = SyncResponseBase & {
   token: SyncToken
   previousToken: SyncToken | null
 }
-type SyncPullFetchFailureResponse = SyncResponseBase & {
+export type SyncPullFetchFailureResponse = SyncResponseBase & {
   ok: false,
   failureType: 'fetch'
   isRetryable: boolean

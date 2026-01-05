@@ -17,18 +17,27 @@ import {
   getNewReleasesTypes,
   getUpcomingEventsTypes,
   instructorField,
+  lessonTypesMapping,
+  individualLessonsTypes,
+  coursesLessonTypes,
+  skillLessonTypes,
+  entertainmentLessonTypes,
+  filterTypes,
+  tutorialsLessonTypes,
+  transcriptionsLessonTypes,
+  playAlongLessonTypes,
+  jamTrackLessonTypes,
   resourcesField,
   showsTypes,
   SONG_TYPES,
   SONG_TYPES_WITH_CHILDREN,
 } from '../contentTypeConfig.js'
-import { fetchSimilarItems } from './recommendations.js'
+import { fetchSimilarItems, recommendations } from './recommendations.js'
 import { processMetadata } from '../contentMetaData.js'
 import { GET } from '../infrastructure/http/HttpClient.ts'
 
 import { globalConfig } from './config.js'
 
-import { fetchNextContentDataForParent } from './railcontent.js'
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
@@ -40,6 +49,29 @@ import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
  * @type {string[]}
  */
 const excludeFromGeneratedIndex = ['fetchRelatedByLicense']
+
+/**
+ * Song/Lesson tabs that are always visible.
+ *
+ * @type {string[]}
+ */
+const ALWAYS_VISIBLE_TABS = ['For You', 'Explore All'];
+
+/**
+ * Mapping from tab names to their underlying Sanity content types.
+ * Used to determine if a tab has any content available.
+ * @type {Object.<string, string[]>}
+ */
+const TAB_TO_CONTENT_TYPES = {
+  'Single Lessons': individualLessonsTypes,
+  'Courses': coursesLessonTypes,
+  'Skill Packs': skillLessonTypes,
+  'Entertainment': entertainmentLessonTypes,
+  'Tutorials': tutorialsLessonTypes,
+  'Transcriptions': transcriptionsLessonTypes,
+  'Play-Alongs': playAlongLessonTypes,
+  'Jam Tracks': jamTrackLessonTypes,
+};
 
 /**
  * Fetch a song by its document ID from Sanity.
@@ -925,7 +957,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
     "instructor": ${instructorField},
     ${assignmentsField}
     video,
-    length_in_seconds,
+    "length_in_seconds": coalesce(soundslice[0].soundslice_length_in_second, length_in_seconds),
     mp3_no_drums_no_click_url,
     mp3_no_drums_yes_click_url,
     mp3_yes_drums_no_click_url,
@@ -1566,21 +1598,52 @@ export async function fetchShowsData(brand) {
  *
  * @param {string} brand - The brand for which to fetch metadata.
  * @param {string} type - The type for which to fetch metadata.
+ * @param {Object|boolean} [options={}] - Options object or legacy boolean for withFilters
+ * @param {boolean} [options.skipTabFiltering=false] - Skip dynamic tab filtering (internal use)
  * @returns {Promise<{name, description, type: *, thumbnailUrl}>}
  *
  * @example
+ * // Standard usage (with tab filtering)
+ * fetchMetadata('drumeo', 'lessons')
  *
- * fetchMetadata('drumeo','song')
- *   .then(data => console.log(data))
- *   .catch(error => console.error(error));
+ * @example
+ * // Internal usage (skip tab filtering to prevent recursion)
+ * fetchMetadata('drumeo', 'lessons', { skipTabFiltering: true })
  */
-export async function fetchMetadata(brand, type) {
-  let processedData = processMetadata(brand, type, true)
+export async function fetchMetadata(brand, type, options = {}) {
+  // Handle backward compatibility - type was previously the 3rd param (boolean)
+  const withFilters = typeof options === 'boolean' ? options : true;
+  const skipTabFiltering = options.skipTabFiltering || false;
+  let processedData = processMetadata(brand, type, withFilters)
+
   if (processedData?.onlyAvailableTabs === true) {
     const activeTabs = await fetchRecentActivitiesActiveTabs()
     processedData.tabs = activeTabs
   }
 
+  if ((type === 'lessons' || type === 'songs') && !skipTabFiltering) {
+    try {
+      // Single API call to get all content type counts
+      const contentTypeCounts = await fetchContentTypeCounts(brand, type);
+
+      // Filter tabs based on counts
+      processedData.tabs = filterTabsByContentCounts(
+        processedData.tabs,
+        contentTypeCounts
+      );
+
+      // Filter Type options based on counts
+      if (processedData.filters) {
+        processedData.filters = filterTypeOptionsByContentCounts(
+          processedData.filters,
+          contentTypeCounts
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching content type counts, using all tabs/filters:', error);
+      // Fail open - show all tabs and filters
+    }
+  }
   return processedData ? processedData : {}
 }
 
@@ -2075,4 +2138,192 @@ export async function fetchBrandsByContentIds(contentIds) {
     brandMap[item.railcontent_id] = item.brand
   })
   return brandMap
+}
+
+/**
+ * Get all possible content types for a page type (lessons or songs).
+ * Returns unique array of Sanity content type strings.
+ * Uses the existing filterTypes mapping from contentTypeConfig.
+ *
+ * @param {string} pageName - Page name ('lessons' or 'songs')
+ * @returns {string[]} - Array of content type strings
+ *
+ * @example
+ * getAllContentTypesForPage('lessons')
+ * // Returns: ['lesson', 'quick-tips', 'course', 'guided-course', ...]
+ */
+function getAllContentTypesForPage(pageName) {
+  return filterTypes[pageName] || [];
+}
+
+/**
+ * Fetch counts for all content types on a page (lessons/songs) in a single query.
+ * Uses GROQ aggregation to efficiently get counts for multiple content types.
+ * Only returns types with count > 0.
+ *
+ * @param {string} brand - Brand identifier (e.g., 'drumeo', 'playbass')
+ * @param {string} pageName - Page name ('lessons' or 'songs')
+ * @returns {Promise<Object.<string, number>>} - Object mapping content types to counts
+ *
+ * @example
+ * await fetchContentTypeCounts('playbass', 'lessons')
+ * // Returns: { 'guided-course': 45, 'skill-pack': 12, 'special': 8 }
+ */
+export async function fetchContentTypeCounts(brand, pageName) {
+  const allContentTypes = getAllContentTypesForPage(pageName);
+
+  if (allContentTypes.length === 0) {
+    return {};
+  }
+
+  // Build array of type objects for GROQ query
+  const typesString = allContentTypes
+    .map(type => `{"type": "${type}"}`)
+    .join(', ');
+
+  const query = `{
+    "typeCounts": [${typesString}]{
+      type,
+      'count': count(*[
+        _type == ^.type
+        && brand == "${brand}"
+        && status == "published"
+      ])
+    }[count > 0]
+  }`;
+
+  const results = await fetchSanity(query, true, { processNeedAccess: false });
+
+  // Convert array to object for easier lookup: { 'guided-course': 45, ... }
+  const countsMap = {};
+  if (results.typeCounts) {
+    results.typeCounts.forEach(item => {
+      countsMap[item.type] = item.count;
+    });
+  }
+
+  return countsMap;
+}
+
+/**
+ * Filter tabs based on which content types have content.
+ * Always keeps 'For You' and 'Explore All' tabs.
+ *
+ * @param {Array} tabs - Array of tab objects from metadata
+ * @param {Object.<string, number>} contentTypeCounts - Content type counts
+ * @returns {Array} - Filtered array of tabs with content
+ */
+function filterTabsByContentCounts(tabs, contentTypeCounts) {
+  return tabs.filter(tab => {
+    if (ALWAYS_VISIBLE_TABS.includes(tab.name)) {
+      return true;
+    }
+
+    const tabContentTypes = TAB_TO_CONTENT_TYPES[tab.name] || [];
+
+    if (tabContentTypes.length === 0) {
+      // Unknown tab - show it to be safe
+      console.warn(`Unknown tab "${tab.name}" - showing by default`);
+      return true;
+    }
+
+    // Tab has content if ANY of its content types have count > 0
+    return tabContentTypes.some(type => contentTypeCounts[type] > 0);
+  });
+}
+
+/**
+ * Filter Type filter options based on content type counts.
+ * Removes parent/child options that have no content available.
+ * Returns a new filters array (does not mutate original).
+ *
+ * @param {Array} filters - Filter groups array from metadata
+ * @param {Object.<string, number>} contentTypeCounts - Content type counts
+ * @returns {Array} - Filtered filter groups
+ */
+function filterTypeOptionsByContentCounts(filters, contentTypeCounts) {
+  return filters.map(filter => {
+    // Only process Type filter
+    if (filter.key !== 'type') {
+      return filter;
+    }
+
+    const filteredItems = filter.items.map(item => {
+      // For hierarchical filters (parent with children)
+      if (item.isParent && item.items) {
+        // Filter children based on their content types
+        const availableChildren = item.items.filter(child => {
+          const childTypes = getContentTypesForFilterName(child.name);
+
+          if (!childTypes || childTypes.length === 0) {
+            console.warn(`Unknown filter child "${child.name}" - showing by default`);
+            return true;
+          }
+
+          // Child has content if ANY of its types have count > 0
+          return childTypes.some(type => contentTypeCounts[type] > 0);
+        });
+
+        // Keep parent only if it has available children
+        if (availableChildren.length > 0) {
+          // Return NEW object to avoid mutation
+          return { ...item, items: availableChildren };
+        }
+        return null;
+      }
+
+      // For flat items (no children)
+      const itemTypes = getContentTypesForFilterName(item.name);
+
+      if (!itemTypes || itemTypes.length === 0) {
+        console.warn(`Unknown filter item "${item.name}" - showing by default`);
+        return item;
+      }
+
+      // Item has content if ANY of its types have count > 0
+      const hasContent = itemTypes.some(type => contentTypeCounts[type] > 0);
+      return hasContent ? item : null;
+    }).filter(Boolean); // Remove nulls
+
+    // Return new filter object with filtered items
+    return {
+      ...filter,
+      items: filteredItems
+    };
+  }).filter(filter => {
+    if (filter.key === 'type' && filter.items.length === 0) {
+      return false;
+    }
+    return true;
+  });
+}
+
+/**
+ * Maps a display name to its corresponding content types from lessonTypesMapping.
+ * @param {string} displayName - The display name from filter metadata
+ * @returns {string[]|undefined} - Array of content types or undefined if not found
+ */
+function getContentTypesForFilterName(displayName) {
+  const displayNameToKey = {
+    'Lessons': 'lessons',
+    'Practice Alongs': 'practice alongs',
+    'Live Archives': 'live archives',
+    'Student Archives': 'student archives',
+    'Courses': 'courses',
+    'Guided Courses': 'guided courses',
+    'Tiered Courses': 'tiered courses',
+    'Specials': 'specials',
+    'Documentaries': 'documentaries',
+    'Shows': 'shows',
+    'Skill Packs': 'skill packs',
+    'Tutorials': 'tutorials',
+    'Transcriptions': 'transcriptions',
+    'Sheet Music': 'sheet music',
+    'Tabs': 'tabs',
+    'Play-Alongs': 'play-alongs',
+    'Jam Tracks': 'jam tracks',
+  };
+
+  const mappingKey = displayNameToKey[displayName];
+  return mappingKey ? lessonTypesMapping[mappingKey] : undefined;
 }

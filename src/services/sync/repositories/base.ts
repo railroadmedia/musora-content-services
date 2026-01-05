@@ -89,17 +89,10 @@ export default class SyncRepository<TModel extends BaseModel> {
     )
   }
 
-  protected async upsertOneRemote(id: RecordId, builder: (record: TModel) => void) {
-    return this.store.telemetry.trace(
-      { name: `upsertOneRemote:${this.store.model.table}`, op: 'upsert' },
-      (span) => this._respondToRemoteWriteOne(() => this.store.upsertOneRemote(id, builder, span), id, span)
-    )
-  }
-
-  protected async upsertOne(id: RecordId, builder: (record: TModel) => void) {
+  protected async upsertOne(id: RecordId, builder: (record: TModel) => void, { skipPush = false } = {}) {
     return this.store.telemetry.trace(
       { name: `upsertOne:${this.store.model.table}`, op: 'upsert' },
-      (span) => this._respondToWrite(() => this.store.upsertOne(id, builder, span), span)
+      (span) => this._respondToWrite(() => this.store.upsertOne(id, builder, span, {skipPush}), span)
     )
   }
 
@@ -110,24 +103,24 @@ export default class SyncRepository<TModel extends BaseModel> {
     )
   }
 
-  protected async upsertSome(builders: Record<RecordId, (record: TModel) => void>) {
+  protected async upsertSome(builders: Record<RecordId, (record: TModel) => void>, { skipPush = false } = {}) {
     return this.store.telemetry.trace(
       { name: `upsertSome:${this.store.model.table}`, op: 'upsert' },
-      (span) => this._respondToWrite(() => this.store.upsertSome(builders, span), span)
+      (span) => this._respondToWrite(() => this.store.upsertSome(builders, span, {skipPush}), span)
     )
   }
 
-  protected async upsertSomeTentative(builders: Record<RecordId, (record: TModel) => void>) {
+  protected async upsertSomeTentative(builders: Record<RecordId, (record: TModel) => void>, { skipPush = false } = {}) {
     return this.store.telemetry.trace(
       { name: `upsertSomeTentative:${this.store.model.table}`, op: 'upsert' },
-      (span) => this._respondToWrite(() => this.store.upsertSomeTentative(builders, span), span)
+      (span) => this._respondToWrite(() => this.store.upsertSomeTentative(builders, span, {skipPush}), span)
     )
   }
 
-  protected async deleteOne(id: RecordId) {
+  protected async deleteOne(id: RecordId, { skipPush = false } = {}) {
     return this.store.telemetry.trace(
       { name: `delete:${this.store.model.table}`, op: 'delete' },
-      (span) => this._respondToWriteIds(() => this.store.deleteOne(id, span), span)
+      (span) => this._respondToWriteIds(() => this.store.deleteOne(id, span, {skipPush}), span)
     )
   }
 
@@ -213,7 +206,7 @@ export default class SyncRepository<TModel extends BaseModel> {
     const result: SyncReadDTO<TModel, T> = {
       data,
       status: pull?.ok ? 'fresh' : 'stale',
-      pullStatus: pull?.ok ? 'success' : 'failure',
+      pullStatus: pull ? (pull.ok ? 'success' : 'failure') : null,
       lastFetchToken: fetchToken,
     }
     return result
@@ -243,5 +236,9 @@ export default class SyncRepository<TModel extends BaseModel> {
       lastFetchToken: response.token,
     }
     return result
+  }
+
+  protected async _requestPushUnsynced() {
+    await this.store.pushUnsyncedWithRetry()
   }
 }

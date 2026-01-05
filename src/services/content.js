@@ -129,7 +129,7 @@ export async function getTabResults(brand, pageName, tabName, {
 
 
   // Fetch metadata
-  const metaData = await fetchMetadata(brand, pageName);
+  const metaData = await fetchMetadata(brand, pageName, { skipTabFiltering: true });
 
   // Process filters
   const filters = (metaData.filters ?? []).map(filter => ({
