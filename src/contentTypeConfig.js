@@ -250,7 +250,7 @@ export const lessonTypesMapping = {
   documentaries: ['documentary-lesson'],
   courses: ['course'],
   'guided courses': ['guided-course'],
-  'course collections': ['course-collections'],
+  'course collections': ['course-collection'],
   'skill packs': ['skill-pack'],
   specials: ['specials'],
   shows: showsLessonTypes,
@@ -339,6 +339,7 @@ export const recentTypes = {
   ],
   songs: [...SONG_TYPES],
   home: [
+    ...skillLessonTypes,
     ...individualLessonsTypes,
     ...tutorialsLessonTypes,
     ...transcriptionsLessonTypes,
