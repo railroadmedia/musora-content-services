@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.111.0](https://github.com/railroadmedia/musora-content-services/compare/v2.110.3...v2.111.0) (2026-01-05)
+
+
+### Features
+
+* **MU2-1323:** Add dynamic filtering to lessons/songs excluding those without avaialable content ([072a471](https://github.com/railroadmedia/musora-content-services/commit/072a471a8b37bb31fc1421375563be0b2f124beb))
+* **MU2-1323:** Remove redundant constant ([768befd](https://github.com/railroadmedia/musora-content-services/commit/768befdf393723cb0e091605f3c7e6ef4d523a92))
+* **MU2-1323:** Use filterTypes for get all content types ([8065100](https://github.com/railroadmedia/musora-content-services/commit/80651009fcc9dae6661b3cbaecf55d5c3585d044))
+
 ### [2.110.3](https://github.com/railroadmedia/musora-content-services/compare/v2.110.2...v2.110.3) (2026-01-05)
 
 ### [2.110.2](https://github.com/railroadmedia/musora-content-services/compare/v2.110.1...v2.110.2) (2026-01-05)
