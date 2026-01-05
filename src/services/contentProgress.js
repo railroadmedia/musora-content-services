@@ -467,13 +467,14 @@ export async function contentStatusReset(contentId, collection = null, {skipPush
   return resetStatus(contentId, collection, {skipPush})
 }
 
-async function saveContentProgress(contentId, collection, progress, currentSeconds, {skipPush = false} = {}) {
+async function saveContentProgress(contentId, collection, progress, currentSeconds, {skipPush = false, hideFromProgressRow = false} = {}) {
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
 
   // filter out contentIds that are setting progress lower than existing
   const contentIdProgress = await getProgressDataByIds([contentId], collection)
-  if (progress <= contentIdProgress[contentId].progress) {
-    return
+  const currentProgress = contentIdProgress[contentId].progress;
+  if (progress <= currentProgress) {
+    progress = currentProgress;
   }
 
   const response = await db.contentProgress.recordProgress(
@@ -481,10 +482,14 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
     collection,
     progress,
     currentSeconds,
-    {skipPush: true}
+    {skipPush: true, hideFromProgressRow}
   )
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
+
+  if (progress === currentProgress) {
+    return
+  }
 
   const hierarchy = await getHierarchy(contentId, collection)
 
@@ -499,7 +504,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   }
 
   // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
-  await db.contentProgress.recordProgressMany(bubbledProgresses, collection, {tentative: !isLP, skipPush: true})
+  await db.contentProgress.recordProgressMany(bubbledProgresses, collection, {tentative: !isLP, skipPush: true, hideFromProgressRow})
 
   if (isLP) {
     let exportIds = bubbledProgresses
@@ -577,11 +582,11 @@ async function duplicateLearningPathProgressToExternalContents(ids, collection, 
   // each handles its own bubbling.
   // skipPush on all but last to avoid multiple push requests
   filteredIds.forEach(([id, pct], index) => {
+    let skip = true
     if (index === filteredIds.length - 1) {
-      saveContentProgress(parseInt(id), null, pct, null, {skipPush})
-    } else {
-      saveContentProgress(parseInt(id), null, pct, null, {skipPush: true})
+      skip = skipPush
     }
+    saveContentProgress(parseInt(id), null, pct, null, {skipPush: skip, hideFromProgressRow: true})
   })
 }
 

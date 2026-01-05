@@ -53,6 +53,9 @@ export default class ContentProgress extends BaseModel<{
   get resume_time_seconds() {
     return (this._getRaw('resume_time_seconds') as number) || null
   }
+  get hide_from_progress_row() {
+    return this._getRaw('hide_from_progress_row') as boolean
+  }
 
   set content_id(value: number) {
     // unsigned int
@@ -86,6 +89,9 @@ export default class ContentProgress extends BaseModel<{
     // smallint unsigned
     throwIfNotNullableNumber(value)
     this._setRaw('resume_time_seconds', value !== null ? throwIfOutsideRange(value, 0, 65535) : value)
+  }
+  set hide_from_progress_row(value: boolean) {
+    this._setRaw('hide_from_progress_row', value)
   }
 
 }
