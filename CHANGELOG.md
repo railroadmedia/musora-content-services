@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.109.0](https://github.com/railroadmedia/musora-content-services/compare/v2.108.0...v2.109.0) (2026-01-05)
+
+
+### Features
+
+* **TP-1046:** expose error hooks ([#655](https://github.com/railroadmedia/musora-content-services/issues/655)) ([233fa10](https://github.com/railroadmedia/musora-content-services/commit/233fa1009038448c763d130ec942b9de5a49a875))
+
 ## [2.108.0](https://github.com/railroadmedia/musora-content-services/compare/v2.107.8...v2.108.0) (2026-01-02)
 
 
