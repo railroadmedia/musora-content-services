@@ -1,5 +1,12 @@
 import BaseModel from './Base'
 import { SYNC_TABLES } from '../schema'
+import {
+  throwIfInvalidEnumValue,
+  throwIfNotNullableNumber,
+  throwIfNotNullableString,
+  throwIfNotNumber,
+  throwIfOutsideRange,
+} from '../errors/validators'
 
 export enum COLLECTION_TYPE {
   SELF = 'self',
@@ -16,6 +23,7 @@ export enum STATE {
 
 export default class ContentProgress extends BaseModel<{
   content_id: number
+  content_brand: string | null
   collection_type: COLLECTION_TYPE
   collection_id: number
   state: STATE
@@ -28,7 +36,7 @@ export default class ContentProgress extends BaseModel<{
     return this._getRaw('content_id') as number
   }
   get content_brand() {
-    return this._getRaw('content_brand') as string
+    return this._getRaw('content_brand') as string | null
   }
   get state() {
     return this._getRaw('state') as STATE
@@ -45,27 +53,45 @@ export default class ContentProgress extends BaseModel<{
   get resume_time_seconds() {
     return (this._getRaw('resume_time_seconds') as number) || null
   }
+  get hide_from_progress_row() {
+    return this._getRaw('hide_from_progress_row') as boolean
+  }
 
   set content_id(value: number) {
-    this._setRaw('content_id', value)
+    // unsigned int
+    throwIfNotNumber(value)
+    this._setRaw('content_id', throwIfOutsideRange(value, 0))
   }
-  set content_brand(value: string) {
-    this._setRaw('content_brand', value)
+  set content_brand(value: string |  null) {
+    this._setRaw('content_brand', throwIfNotNullableString(value))
   }
-  set state(value: STATE) {
-    this._setRaw('state', value)
-  }
+  // IMPORTANT: progress percent only moves forward and is clamped between 0 and 100
+  // also has implications for last-write-wins sync strategy
   set progress_percent(value: number) {
-    this._setRaw('progress_percent', Math.min(100, Math.max(0, value)))
+    // tinyint unsigned
+    throwIfNotNumber(value)
+    throwIfOutsideRange(value, 0, 100)
+    const percent = value === 0 ? 0 : Math.max(value, this.progress_percent)
+
+    this._setRaw('progress_percent', percent)
+    this._setRaw('state', percent === 100 ? STATE.COMPLETED : STATE.STARTED)
   }
   set collection_type(value: COLLECTION_TYPE) {
-    this._setRaw('collection_type', value)
+    // enum collection_type
+    this._setRaw('collection_type', throwIfInvalidEnumValue(value, COLLECTION_TYPE))
   }
   set collection_id(value: number) {
-    this._setRaw('collection_id', value)
+    // unsigned mediumint 16777215
+    throwIfNotNumber(value)
+    this._setRaw('collection_id', throwIfOutsideRange(value, 0, 16777215))
   }
   set resume_time_seconds(value: number | null) {
-    this._setRaw('resume_time_seconds', value !== null ? Math.max(0, value) : null)
+    // smallint unsigned
+    throwIfNotNullableNumber(value)
+    this._setRaw('resume_time_seconds', value !== null ? throwIfOutsideRange(value, 0, 65535) : value)
+  }
+  set hide_from_progress_row(value: boolean) {
+    this._setRaw('hide_from_progress_row', value)
   }
 
 }

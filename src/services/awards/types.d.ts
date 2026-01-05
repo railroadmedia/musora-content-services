@@ -65,6 +65,7 @@ export interface AwardCallbackPayload {
   awardId: string
   name: string
   badge: string
+  contentType: string
   completed_at: string
   isCompleted: boolean
   completion_data: AwardCompletionData

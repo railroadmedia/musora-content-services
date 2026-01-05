@@ -2,7 +2,7 @@
  * @module UserProfile
  */
 import { globalConfig } from '../config.js'
-import { fetchHandler } from '../railcontent.js'
+import { GET, DELETE } from '../../infrastructure/http/HttpClient.ts'
 import { calculateLongestStreaks } from '../userActivity.js'
 import './types.js'
 
@@ -13,13 +13,13 @@ const baseUrl = `/api/user-management-system`
  * @returns {Promise<OtherStatsDTO>}
  */
 export async function otherStats(userId = globalConfig.sessionConfig.userId) {
-  const [otherStats, longestStreaks] = await Promise.all([
-    fetchHandler(`${baseUrl}/v1/users/${userId}/statistics`, 'get'),
+  const [stats, longestStreaks] = await Promise.all([
+    GET(`${baseUrl}/v1/users/${userId}/statistics`),
     calculateLongestStreaks(userId),
   ])
 
   return {
-    ...otherStats,
+    ...stats,
     longest_day_streak: {
       type: 'day',
       length: longestStreaks.longestDailyStreak,
@@ -39,5 +39,5 @@ export async function otherStats(userId = globalConfig.sessionConfig.userId) {
  */
 export async function deleteProfilePicture() {
   const url = `${baseUrl}/v1/users/profile_picture`
-  await fetchHandler(url, 'DELETE')
+  await DELETE(url)
 }

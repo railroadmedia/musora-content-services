@@ -11,6 +11,10 @@ import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
 import { ReportResponse, ReportableType, IssueTypeMap, ReportIssueOption } from './types'
 import { Brands } from '../../lib/brands'
+import { generateContentUrl, generatePlaylistUrl, generateForumPostUrl, generateCommentUrl } from '../urlBuilder.ts'
+import {fetchByRailContentId} from "../../index";
+import {fetchByRailContentIds} from "../sanity";
+import {addContextToContent} from "../contentAggregator";
 
 /**
  * Parameters for submitting a report with type-safe issue values
@@ -26,6 +30,14 @@ export type ReportParams<T extends ReportableType = ReportableType> = {
   details?: string
   /** Brand context (required: drumeo, pianote, guitareo, singeo, playbass) */
   brand: Brands | string
+  /** Full URL to the reported content (generated via urlBuilder) */
+  contentUrl?: string
+  /** Content data for URL generation (only needed if contentUrl not provided) */
+  content?: {
+    id: number
+    type: string
+    parentId?: number
+  }
 }
 
 /**
@@ -86,12 +98,68 @@ export async function report<T extends ReportableType>(
     requestBody.details = params.details
   }
 
-  const response = await httpClient.post<ReportResponse>(
+  // Generate content_url for reports (relative URL - backend adds domain)
+  if (params.type === 'content') {
+    // Fetch content and add navigateTo for courses/packs/etc
+    const contents = await addContextToContent(
+      fetchByRailContentIds,
+      [params.id],
+      { addNavigateTo: true }
+    )
+    const content = contents?.[0]
+
+    if (content) {
+      requestBody.content_url = generateContentUrl({
+        id: content.id,
+        type: content.type,
+        parentId: content.parentId || content.parent_id,
+        brand: content.brand,
+        navigateTo: content.navigateTo
+      })
+    }
+  } else if (params.type === 'playlist') {
+    requestBody.content_url = generatePlaylistUrl({
+      id: params.id
+    })
+  } else if (params.type === 'forum_post') {
+    const { fetchPost } = await import('../forums/posts.ts')
+    const post = await fetchPost(params.id, params.brand)
+
+    if (post?.thread) {
+      requestBody.content_url = generateForumPostUrl({
+        brand: params.brand,
+        thread: {
+          category_id: post.thread.category_id,
+          id: post.thread.id
+        }
+      })
+    }
+  } else if (params.type === 'comment') {
+    const { fetchComment } = await import('../railcontent.js')
+    const comment = await fetchComment(params.id)
+
+    if (comment?.content) {
+      const contents = await fetchByRailContentIds([comment.content.id])
+      const content = contents?.[0]
+
+      if (content) {
+        requestBody.content_url = generateCommentUrl({
+          id: comment.id,
+          content: {
+            id: content.id,
+            type: content.type,
+            parentId: content.parentId || content.parent_id,
+            brand: params.brand
+          }
+        })
+      }
+    }
+  }
+
+  return await httpClient.post<ReportResponse>(
     '/api/user-reports/v1/reports',
     requestBody
   )
-
-  return response
 }
 
 /**

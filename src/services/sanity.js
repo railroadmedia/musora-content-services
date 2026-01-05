@@ -3,31 +3,31 @@
  */
 import {
   artistOrInstructorName,
-  instructorField,
-  chapterField,
   assignmentsField,
-  descriptionField,
-  resourcesField,
-  contentTypeConfig,
-  getIntroVideoFields,
-  DEFAULT_FIELDS,
-  getFieldsForContentType,
-  filtersToGroq,
-  getUpcomingEventsTypes,
-  showsTypes,
-  getNewReleasesTypes,
+  chapterField,
   coachLessonsTypes,
-  getFieldsForContentTypeWithFilteredChildren,
+  contentTypeConfig,
+  DEFAULT_FIELDS,
+  descriptionField,
+  filtersToGroq,
   getChildFieldsForContentType,
+  getFieldsForContentType,
+  getFieldsForContentTypeWithFilteredChildren,
+  getIntroVideoFields,
+  getNewReleasesTypes,
+  getUpcomingEventsTypes,
+  instructorField,
+  resourcesField,
+  showsTypes,
   SONG_TYPES,
   SONG_TYPES_WITH_CHILDREN,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems, recommendations } from './recommendations.js'
 import { processMetadata } from '../contentMetaData.js'
+import { GET } from '../infrastructure/http/HttpClient.ts'
 
 import { globalConfig } from './config.js'
 
-import { fetchHandler } from './railcontent.js'
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
@@ -456,7 +456,8 @@ export async function fetchByRailContentIds(
   ids,
   contentType = undefined,
   brand = undefined,
-  includePermissionsAndStatusFilter = false
+  includePermissionsAndStatusFilter = false,
+  filterOptions = {}
 ) {
   if (!ids?.length) {
     return []
@@ -470,7 +471,7 @@ export async function fetchByRailContentIds(
   const fields = await getFieldsForContentTypeWithFilteredChildren(contentType, true)
   const baseFilter = `railcontent_id in [${idsString}]${brandFilter}`
   const finalFilter = includePermissionsAndStatusFilter
-    ? await new FilterBuilder(baseFilter).buildFilter()
+    ? await new FilterBuilder(baseFilter, filterOptions).buildFilter()
     : baseFilter
   const query = `*[
     ${finalFilter}
@@ -508,7 +509,6 @@ export async function fetchByRailContentIds(
 
   // Sort results to match the order of the input IDs
   const sortedResults = results?.sort(sortFuction) ?? null
-
   return sortedResults
 }
 
@@ -926,7 +926,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
     "instructor": ${instructorField},
     ${assignmentsField}
     video,
-    length_in_seconds,
+    "length_in_seconds": coalesce(soundslice[0].soundslice_length_in_second, length_in_seconds),
     mp3_no_drums_no_click_url,
     mp3_no_drums_yes_click_url,
     mp3_yes_drums_no_click_url,
@@ -1621,9 +1621,9 @@ export async function fetchChatAndLiveEnvent(brand, forcedId = null) {
     return null
   }
   let url = `/content/live-chat?brand=${brand}`
-  const chatData = await fetchHandler(url)
-  const mergedData = { ...chatData, ...liveEvent[0] }
-  return mergedData
+  const chatData = await GET(url)
+
+  return { ...chatData, ...liveEvent[0] }
 }
 
 //Helper Functions
@@ -2082,4 +2082,27 @@ export async function fetchOwnedContent(
   })
 
   return fetchSanity(query, true)
+}
+
+/**
+ * Fetch brands for given content IDs.
+ *
+ * @param {Array<number>} contentIds - Array of railcontent IDs
+ * @returns {Promise<Object>} - A promise that resolves to an object mapping content IDs to brands
+ */
+export async function fetchBrandsByContentIds(contentIds) {
+  if (!contentIds || contentIds.length === 0) {
+    return {}
+  }
+  const idsString = contentIds.join(',')
+  const query = `*[railcontent_id in [${idsString}]]{
+      railcontent_id,
+      brand
+    }`
+  const results = await fetchSanity(query, true)
+  const brandMap = {}
+  results.forEach((item) => {
+    brandMap[item.railcontent_id] = item.brand
+  })
+  return brandMap
 }

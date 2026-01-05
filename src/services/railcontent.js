@@ -2,16 +2,14 @@
  * @module Railcontent-Services
  */
 import { globalConfig } from './config.js'
-import { fetchJSONHandler } from '../lib/httpHelper.js'
+import { GET, POST, PUT, DELETE } from '../infrastructure/http/HttpClient.ts'
 
 /**
  * Exported functions that are excluded from index generation.
  *
  * @type {string[]}
  */
-const excludeFromGeneratedIndex = [
-  'fetchUserPermissionsData',
-]
+const excludeFromGeneratedIndex = ['fetchUserPermissionsData']
 
 
 /**
@@ -25,71 +23,36 @@ const excludeFromGeneratedIndex = [
  *   .catch(error => console.error(error));
  */
 export async function fetchContentPageUserData(contentId) {
-  let url = `/api/content/v1/${contentId}/user_data/${globalConfig.sessionConfig.userId}`
-  const headers = {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-    'X-CSRF-TOKEN': globalConfig.sessionConfig.token,
-  }
-
-  try {
-    const response = await fetchAbsolute(url, { headers })
-    const result = await response.json()
-    if (result) {
-      console.log('fetchContentPageUserData', result)
-      return result
-    } else {
-      console.log('result not json')
-    }
-  } catch (error) {
-    console.error('Fetch error:', error)
-    return null
-  }
+  const url = `/api/content/v1/${contentId}/user_data/${globalConfig.sessionConfig.userId}`
+  return await GET(url)
 }
 
 export async function fetchUserPermissionsData() {
-  let url = `/content/user/permissions`
-  // in the case of an unauthorized user, we return empty permissions
-  return (await fetchHandler(url, 'get')) ?? []
-}
-
-async function postDataHandler(url, data) {
-  return fetchHandler(url, 'post', null, data)
-}
-
-async function patchDataHandler_depreciated(url, data) {
-  throw Error('PATCH verb throws a CORS error on the FEW. Use PATCH instead')
-}
-
-async function putDataHandler(url, data) {
-  return fetchHandler(url, 'put', null, data)
-}
-
-async function deleteDataHandler(url, data) {
-  return fetchHandler(url, 'delete')
+  const url = `/content/user/permissions`
+  return (await GET(url)) ?? []
 }
 
 export async function fetchLikeCount(contendId) {
   const url = `/api/content/v1/content/like_count/${contendId}`
-  return await fetchHandler(url)
+  return await GET(url)
 }
 
 export async function postPlaylistContentEngaged(playlistItemId) {
-  let url = `/railtracker/v1/last-engaged/${playlistItemId}`
-  return postDataHandler(url)
+  const url = `/railtracker/v1/last-engaged/${playlistItemId}`
+  return await POST(url, null)
 }
 
 /**
  * Set a user's StudentView Flag
  *
  * @param {int|string} userId - id of the user (must be currently authenticated)
- * @param {bool} enable - truthy value to enable student view
+ * @param {boolean} enable - truthy value to enable student view
  * @returns {Promise<any|null>}
  */
 export async function setStudentViewForUser(userId, enable) {
-  let url = `/user-management-system/user/update/${userId}`
-  let data = { use_student_view: enable ? 1 : 0 }
-  return await putDataHandler(url, data)
+  const url = `/user-management-system/user/update/${userId}`
+  const data = { use_student_view: enable ? 1 : 0 }
+  return await PUT(url, data)
 }
 
 /**
@@ -100,11 +63,10 @@ export async function setStudentViewForUser(userId, enable) {
  */
 export async function fetchTopComment(railcontentId) {
   const url = `/api/content/v1/${railcontentId}/comments?filter=top`
-  return await fetchHandler(url)
+  return await GET(url)
 }
 
 /**
- *
  * @param {int} railcontentId
  * @param {int} page
  * @param {int} limit
@@ -112,11 +74,10 @@ export async function fetchTopComment(railcontentId) {
  */
 export async function fetchComments(railcontentId, page = 1, limit = 20) {
   const url = `/api/content/v1/${railcontentId}/comments?page=${page}&limit=${limit}`
-  return await fetchHandler(url)
+  return await GET(url)
 }
 
 /**
- *
  * @param {int} commentId
  * @param {int} page
  * @param {int} limit
@@ -124,7 +85,7 @@ export async function fetchComments(railcontentId, page = 1, limit = 20) {
  */
 export async function fetchCommentRelies(commentId, page = 1, limit = 20) {
   const url = `/api/content/v1/comments/${commentId}/replies?page=${page}&limit=${limit}`
-  return await fetchHandler(url)
+  return await GET(url)
 }
 
 /**
@@ -133,7 +94,7 @@ export async function fetchCommentRelies(commentId, page = 1, limit = 20) {
  */
 export async function deleteComment(commentId) {
   const url = `/api/content/v1/comments/${commentId}`
-  return await fetchHandler(url, 'DELETE')
+  return await DELETE(url)
 }
 
 /**
@@ -142,7 +103,7 @@ export async function deleteComment(commentId) {
  */
 export async function restoreComment(commentId) {
   const url = `/api/content/v1/comments/restore/${commentId}`
-  return await fetchHandler(url, 'POST')
+  return await POST(url, null)
 }
 
 /**
@@ -151,9 +112,38 @@ export async function restoreComment(commentId) {
  * @returns {Promise<*|null>}
  */
 export async function replyToComment(commentId, comment) {
-  const data = { comment: comment }
+  const { generateCommentUrl } = await import('./urlBuilder.ts')
+  const { fetchByRailContentIds } = await import('./sanity.js')
+
+  // Fetch parent comment to get content info
+  const parentComment = await fetchComment(commentId)
+
+  if (!parentComment?.content) {
+    const url = `/api/content/v1/comments/${commentId}/reply`
+    return await POST(url, { comment })
+  }
+
+  // Fetch content from Sanity to get parentId and correct type
+  const contents = await fetchByRailContentIds([parentComment.content.id])
+  const content = contents?.[0]
+
+  // Generate content URL
+  const contentUrl = content ? generateCommentUrl({
+    id: commentId,
+    content: {
+      id: content.id,
+      type: content.type,
+      parentId: content.parentId || content.parent_id,
+      brand: content.brand
+    }
+  }, false) : null
+
+  const data = {
+    comment: comment,
+    ...(contentUrl && { content_url: contentUrl })
+  }
   const url = `/api/content/v1/comments/${commentId}/reply`
-  return await postDataHandler(url, data)
+  return await POST(url, data)
 }
 
 /**
@@ -162,12 +152,28 @@ export async function replyToComment(commentId, comment) {
  * @returns {Promise<*|null>}
  */
 export async function createComment(railcontentId, comment) {
+  const { generateContentUrl } = await import('./urlBuilder.ts')
+  const { fetchByRailContentIds } = await import('./sanity.js')
+
+  // Fetch content to get type and brand info
+  const contents = await fetchByRailContentIds([railcontentId])
+  const content = contents?.[0]
+
+  // Generate content URL
+  const contentUrl = content ? generateContentUrl({
+    id: content.id,
+    type: content.type,
+    parentId: content.parentId || content.parent_id,
+    brand: content.brand
+  }) : null
+
   const data = {
     comment: comment,
     content_id: railcontentId,
+    ...(contentUrl && { content_url: contentUrl })
   }
   const url = `/api/content/v1/comments/store`
-  return await postDataHandler(url, data)
+  return await POST(url, data)
 }
 
 /**
@@ -176,7 +182,7 @@ export async function createComment(railcontentId, comment) {
  */
 export async function assignModeratorToComment(commentId) {
   const url = `/api/content/v1/comments/${commentId}/assign_moderator`
-  return await postDataHandler(url)
+  return await POST(url, null)
 }
 
 /**
@@ -185,7 +191,7 @@ export async function assignModeratorToComment(commentId) {
  */
 export async function unassignModeratorToComment(commentId) {
   const url = `/api/content/v1/comments/${commentId}/unassign_moderator`
-  return await postDataHandler(url)
+  return await POST(url, null)
 }
 
 /**
@@ -193,8 +199,35 @@ export async function unassignModeratorToComment(commentId) {
  * @returns {Promise<*|null>}
  */
 export async function likeComment(commentId) {
+  const { generateCommentUrl } = await import('./urlBuilder.ts')
+  const { fetchByRailContentIds } = await import('./sanity.js')
+
+  // Fetch comment to get content info
+  const comment = await fetchComment(commentId)
+
+  if (!comment?.content) {
+    const url = `/api/content/v1/comments/${commentId}/like`
+    return await POST(url, null)
+  }
+
+  // Fetch content from Sanity to get parentId and correct type
+  const contents = await fetchByRailContentIds([comment.content.id])
+  const content = contents?.[0]
+
+  // Generate content URL
+  const contentUrl = content ? generateCommentUrl({
+    id: commentId,
+    content: {
+      id: content.id,
+      type: content.type,
+      parentId: content.parentId || content.parent_id,
+      brand: content.brand
+    }
+  }, false) : null
+
   const url = `/api/content/v1/comments/${commentId}/like`
-  return await postDataHandler(url)
+  const data = contentUrl ? { content_url: contentUrl } : {}
+  return await POST(url, data)
 }
 
 /**
@@ -203,7 +236,7 @@ export async function likeComment(commentId) {
  */
 export async function unlikeComment(commentId) {
   const url = `/api/content/v1/comments/${commentId}/like`
-  return await deleteDataHandler(url)
+  return await DELETE(url)
 }
 
 /**
@@ -212,10 +245,7 @@ export async function unlikeComment(commentId) {
  */
 export async function closeComment(commentId) {
   const url = `/api/content/v1/comments/${commentId}`
-  const data = {
-    conversation_status: 'closed',
-  }
-  return await putDataHandler(url, data)
+  return await PUT(url, { conversation_status: 'closed' })
 }
 
 /**
@@ -224,10 +254,7 @@ export async function closeComment(commentId) {
  */
 export async function openComment(commentId) {
   const url = `/api/content/v1/comments/${commentId}`
-  const data = {
-    conversation_status: 'open',
-  }
-  return await putDataHandler(url, data)
+  return await PUT(url, { conversation_status: 'open' })
 }
 
 /**
@@ -237,10 +264,7 @@ export async function openComment(commentId) {
  */
 export async function editComment(commentId, comment) {
   const url = `/api/content/v1/comments/${commentId}`
-  const data = {
-    comment: comment,
-  }
-  return await putDataHandler(url, data)
+  return await PUT(url, { comment })
 }
 
 /**
@@ -250,10 +274,7 @@ export async function editComment(commentId, comment) {
  */
 export async function reportComment(commentId, issue) {
   const url = `/api/content/v1/comments/${commentId}/report`
-  const data = {
-    issue: issue,
-  }
-  return await postDataHandler(url, data)
+  return await POST(url, { issue })
 }
 
 /**
@@ -269,20 +290,19 @@ export async function reportComment(commentId, issue) {
  */
 export async function fetchComment(commentId) {
   const url = `/api/content/v1/comments/${commentId}`
-  const comment = await fetchHandler(url)
+  const comment = await GET(url)
   return comment.parent ? comment.parent : comment
 }
 
 export async function fetchUserPractices(userId) {
   const url = `/api/user/practices/v1/practices?user_id=${userId}`
-  const response = await fetchHandler(url)
+  const response = await GET(url)
   const { data } = response
-  const userPractices = data
-  if (!userPractices) {
+  if (!data) {
     return {}
   }
 
-  const formattedPractices = userPractices.reduce((acc, practice) => {
+  return data.reduce((acc, practice) => {
     if (!acc[practice.date]) {
       acc[practice.date] = []
     }
@@ -294,13 +314,11 @@ export async function fetchUserPractices(userId) {
 
     return acc
   }, {})
-
-  return formattedPractices
 }
 
 export async function fetchUserPracticeMeta(day, userId) {
-  const url = `/api/user/practices/v1/practices?user_id=${userId}&date=${date}`
-  return await fetchHandler(url, 'GET', null)
+  const url = `/api/user/practices/v1/practices?user_id=${userId}&date=${day}`
+  return await GET(url)
 }
 
 /**
@@ -315,7 +333,7 @@ export async function fetchUserPracticeMeta(day, userId) {
  */
 export async function fetchUserPracticeNotes(date) {
   const url = `/api/user/practices/v1/notes?date=${date}`
-  return await fetchHandler(url, 'GET', null)
+  return await GET(url)
 }
 
 /**
@@ -347,43 +365,8 @@ export async function fetchUserPracticeNotes(date) {
  *   .catch(error => console.error(error));
  */
 export async function fetchRecentUserActivities({ page = 1, limit = 5, tabName = null } = {}) {
-  let pageAndLimit = `?page=${page}&limit=${limit}`
-  let tabParam = tabName ? `&tabName=${tabName}` : ''
+  const pageAndLimit = `?page=${page}&limit=${limit}`
+  const tabParam = tabName ? `&tabName=${tabName}` : ''
   const url = `/api/user-management-system/v1/activities/all${pageAndLimit}${tabParam}`
-  return await fetchHandler(url, 'GET', null)
-}
-
-function fetchAbsolute(url, params) {
-  if (globalConfig.sessionConfig.authToken) {
-    params.headers['Authorization'] = `Bearer ${globalConfig.sessionConfig.authToken}`
-  }
-
-  if (globalConfig.baseUrl) {
-    if (url.startsWith('/')) {
-      return fetch(globalConfig.baseUrl + url, params)
-    }
-  }
-  return fetch(url, params)
-}
-export async function fetchHandler(url, method = 'get', dataVersion = null, body = null) {
-  return fetchJSONHandler(
-    url,
-    globalConfig.sessionConfig.token,
-    globalConfig.baseUrl,
-    method,
-    dataVersion,
-    body
-  )
-}
-  export async function fetchResponseHandler(url, method = 'get', {dataVersion = null, body = null, fullResponse = true, logError = true}) {
-    return fetchJSONHandler(
-      url,
-      globalConfig.sessionConfig.token,
-      globalConfig.baseUrl,
-      method,
-      dataVersion,
-      body,
-      fullResponse,
-      logError,
-    )
+  return await GET(url)
 }

@@ -54,7 +54,7 @@ import {
 	getEnrichedLearningPaths,
 	getLearningPathLessonsByIds,
 	mapContentToParent,
-	onContentCompletedLearningPathListener,
+	onContentCompletedLearningPathActions,
 	resetAllLearningPaths,
 	startLearningPath,
 	updateDailySession
@@ -155,6 +155,7 @@ import {
 	createPost,
 	deletePost,
 	fetchCommunityGuidelines,
+	fetchPost,
 	fetchPosts,
 	jumpToPost,
 	likePost,
@@ -168,6 +169,7 @@ import {
 	deleteThread,
 	fetchFollowedThreads,
 	fetchLatestThreads,
+	fetchThread,
 	fetchThreads,
 	followThread,
 	lockThread,
@@ -200,9 +202,7 @@ import {
 } from './services/liveTesting.ts';
 
 import {
-	emitContentCompleted,
 	emitProgressSaved,
-	onContentCompleted,
 	onProgressSaved
 } from './services/progress-events.js';
 
@@ -220,7 +220,6 @@ import {
 	fetchCommentRelies,
 	fetchComments,
 	fetchContentPageUserData,
-	fetchHandler,
 	fetchLikeCount,
 	fetchRecentUserActivities,
 	fetchTopComment,
@@ -256,6 +255,7 @@ import {
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchAllPacks,
+	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -299,6 +299,14 @@ import {
 	getSortOrder,
 	jumpToContinueContent
 } from './services/sanity.js';
+
+import {
+	generateCommentUrl,
+	generateContentUrl,
+	generateContentUrlWithDomain,
+	generateForumPostUrl,
+	generatePlaylistUrl
+} from './services/urlBuilder.ts';
 
 import {
 	confirmEmailChange,
@@ -386,9 +394,8 @@ import {
 } from './services/user/profile.js';
 
 import {
-	getAuthKey,
+	generateAuthSessionUrl,
 	login,
-	loginWithAuthKey,
 	logout
 } from './services/user/sessions.js';
 
@@ -465,7 +472,6 @@ declare module 'musora-content-services' {
 		deleteUserActivity,
 		duplicatePlaylist,
 		editComment,
-		emitContentCompleted,
 		emitProgressSaved,
 		enrollUserInGuidedCourse,
 		extractSanityUrl,
@@ -475,6 +481,7 @@ declare module 'musora-content-services' {
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
+		fetchBrandsByContentIds,
 		fetchByRailContentId,
 		fetchByRailContentIds,
 		fetchByReference,
@@ -496,7 +503,6 @@ declare module 'musora-content-services' {
 		fetchGenreBySlug,
 		fetchGenreLessons,
 		fetchGenres,
-		fetchHandler,
 		fetchHierarchy,
 		fetchInstructorBySlug,
 		fetchInstructorLessons,
@@ -527,6 +533,7 @@ declare module 'musora-content-services' {
 		fetchPlayAlongsCount,
 		fetchPlaylist,
 		fetchPlaylistItems,
+		fetchPost,
 		fetchPosts,
 		fetchRecent,
 		fetchRecentActivitiesActiveTabs,
@@ -546,6 +553,7 @@ declare module 'musora-content-services' {
 		fetchSongArtistCount,
 		fetchSongById,
 		fetchTabData,
+		fetchThread,
 		fetchThreads,
 		fetchTopComment,
 		fetchTopLevelParentId,
@@ -560,13 +568,18 @@ declare module 'musora-content-services' {
 		fetchUserPractices,
 		findIncompleteLesson,
 		followThread,
+		generateAuthSessionUrl,
+		generateCommentUrl,
+		generateContentUrl,
+		generateContentUrlWithDomain,
+		generateForumPostUrl,
+		generatePlaylistUrl,
 		getActiveDiscussions,
 		getActivePath,
 		getAllCompleted,
 		getAllCompletedByIds,
 		getAllStarted,
 		getAllStartedOrCompleted,
-		getAuthKey,
 		getAwardStatistics,
 		getCompletedAwards,
 		getContentAwards,
@@ -630,7 +643,6 @@ declare module 'musora-content-services' {
 		likePost,
 		lockThread,
 		login,
-		loginWithAuthKey,
 		logout,
 		mapContentToParent,
 		markAllNotificationsAsRead,
@@ -640,8 +652,7 @@ declare module 'musora-content-services' {
 		markNotificationAsUnread,
 		markThreadAsRead,
 		numberOfActiveUsers,
-		onContentCompleted,
-		onContentCompletedLearningPathListener,
+		onContentCompletedLearningPathActions,
 		onProgressSaved,
 		openComment,
 		otherStats,

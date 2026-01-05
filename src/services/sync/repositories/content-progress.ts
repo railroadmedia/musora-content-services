@@ -13,7 +13,7 @@ export interface CollectionParameter {
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
   // null collection only
   async startedIds(limit?: number) {
-    return this.queryAllIds(...[
+    return this.queryAll(...[
       Q.where('collection_type', COLLECTION_TYPE.SELF),
       Q.where('collection_id', COLLECTION_ID_SELF),
 
@@ -21,12 +21,12 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       Q.sortBy('updated_at', 'desc'),
 
       ...(limit ? [Q.take(limit)] : []),
-    ])
+    ]).then((r) => r.data.map((r) => r.content_id))
   }
 
   // null collection only
   async completedIds(limit?: number) {
-    return this.queryAllIds(...[
+    return this.queryAll(...[
       Q.where('collection_type', COLLECTION_TYPE.SELF),
       Q.where('collection_id', COLLECTION_ID_SELF),
 
@@ -34,7 +34,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       Q.sortBy('updated_at', 'desc'),
 
       ...(limit ? [Q.take(limit)] : []),
-    ])
+    ]).then((r) => r.data.map((r) => r.content_id))
   }
 
   //this _specifically_ needs to get content_ids from ALL collection_types (including null)
@@ -51,21 +51,18 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   }
 
   // null collection only
-  async startedOrCompletedIds(opts: Parameters<typeof this.startedOrCompletedClauses>[0] = {}) {
-    return this.queryAllIds(...this.startedOrCompletedClauses(opts))
-  }
-
-  // null collection only
   private startedOrCompletedClauses(
     opts: {
-      brand?: string
-      updatedAfter?: number
-      limit?: number
+      brand?: string | null
+      updatedAfter?: number,
+      limit?: number,
     } = {}
   ) {
     const clauses: Q.Clause[] = [
       Q.where('collection_type', COLLECTION_TYPE.SELF),
       Q.where('collection_id', COLLECTION_ID_SELF),
+
+      Q.where('hide_from_progress_row', false),
 
       Q.or(Q.where('state', STATE.STARTED), Q.where('state', STATE.COMPLETED)),
       Q.sortBy('updated_at', 'desc'),
@@ -75,7 +72,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       clauses.push(Q.where('updated_at', Q.gte(opts.updatedAfter)))
     }
 
-    if (opts.brand) {
+    if (typeof opts.brand != 'undefined') {
       clauses.push(Q.where('content_brand', opts.brand))
     }
 
@@ -138,7 +135,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     }
   }
 
-  recordProgress(contentId: number, collection: CollectionParameter | null, progressPct: number, resumeTime?: number) {
+  recordProgress(contentId: number, collection: CollectionParameter | null, progressPct: number, resumeTime?: number, {skipPush = false, hideFromProgressRow = false} = {}) {
     const id = ProgressRepository.generateId(contentId, collection)
 
     const result = this.upsertOne(id, (r) => {
@@ -146,13 +143,14 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       r.collection_type = collection?.type ?? COLLECTION_TYPE.SELF
       r.collection_id = collection?.id ?? COLLECTION_ID_SELF
 
-      r.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
       r.progress_percent = progressPct
 
       if (typeof resumeTime != 'undefined') {
         r.resume_time_seconds = Math.floor(resumeTime)
       }
-    })
+
+      r.hide_from_progress_row = hideFromProgressRow
+    }, { skipPush })
 
     // Emit event AFTER database write completes
     result.then(() => {
@@ -182,7 +180,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   recordProgressMany(
     contentProgresses: Record<string, number>, // Accept plain object
     collection: CollectionParameter | null,
-    tentative: boolean
+    { tentative = true, skipPush = false, hideFromProgressRow = false }: { tentative?: boolean; skipPush?: boolean; hideFromProgressRow?: boolean } = {}
   ) {
 
     const data = Object.fromEntries(
@@ -193,20 +191,25 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
           r.collection_type = collection?.type ?? COLLECTION_TYPE.SELF
           r.collection_id = collection?.id ?? COLLECTION_ID_SELF
 
-          r.state = progressPct === 100 ? STATE.COMPLETED : STATE.STARTED
           r.progress_percent = progressPct
+
+          r.hide_from_progress_row = hideFromProgressRow
         },
       ])
     )
     return tentative
-      ? this.upsertSomeTentative(data)
-      : this.upsertSome(data)
+      ? this.upsertSomeTentative(data, { skipPush })
+      : this.upsertSome(data, { skipPush })
 
     //todo add event emitting for bulk updates?
   }
 
-  eraseProgress(contentId: number, collection: CollectionParameter | null) {
-    return this.deleteOne(ProgressRepository.generateId(contentId, collection))
+  eraseProgress(contentId: number, collection: CollectionParameter | null, {skipPush = false} = {}) {
+    return this.deleteOne(ProgressRepository.generateId(contentId, collection), { skipPush })
+  }
+
+  async requestPushUnsynced() {
+    await this._requestPushUnsynced()
   }
 
   private static generateId(

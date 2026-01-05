@@ -35,7 +35,6 @@ export interface User {
   revenuecat_origin_app_user_id: string | null
   is_drumeo_lifetime_member: number
   access_level: string
-  total_xp: number
   brand_method_levels: BrandMethodLevels
   brand_minutes_practiced: BrandTimePracticed
   brand_seconds_practiced: BrandTimePracticed

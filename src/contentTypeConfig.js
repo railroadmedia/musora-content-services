@@ -284,6 +284,7 @@ export const progressTypesMapping = {
   'guided course': ['guided-course'],
   pack: ['pack', 'semester-pack'],
   'learning path': ['learning-path-v2'],
+  'skill pack': skillLessonTypes,
   'jam track': jamTrackLessonTypes,
   'course video': ['course-lesson'],
 }
@@ -326,6 +327,7 @@ export const recentTypes = {
   home: [
     ...individualLessonsTypes,
     ...tutorialsLessonTypes,
+    ...skillLessonTypes,
     ...transcriptionsLessonTypes,
     ...playAlongLessonTypes,
     'guided-course',
@@ -408,8 +410,6 @@ export let contentTypeConfig = {
       '"instructors": instructor[]->name',
       `"description": ${descriptionField}`,
       `"resource": ${resourcesField}`,
-      'xp',
-      'total_xp',
       `"lessons": child[]->{
                 "id": railcontent_id,
                 title,
@@ -498,11 +498,9 @@ export let contentTypeConfig = {
   pack: {
     fields: [
       '"lesson_count": coalesce(count(child[]->.child[]->), 0)',
-      'xp',
       `"description": ${descriptionField}`,
       '"instructors": instructor[]->{ "id": railcontent_id, name, "thumbnail_url": thumbnail_url.asset->url }',
       '"logo_image_url": logo_image_url.asset->url',
-      'total_xp',
       `"resources": ${resourcesField}`,
       '"thumbnail": thumbnail.asset->url',
       '"light_mode_logo": light_mode_logo_url.asset->url',
@@ -535,7 +533,6 @@ export let contentTypeConfig = {
       '"light_mode_logo": light_mode_logo_url.asset->url',
       '"dark_mode_logo": dark_mode_logo_url.asset->url',
       `"description": ${descriptionField}`,
-      'total_xp',
     ],
     childFields: [`"description": ${descriptionField}`],
   },
@@ -557,7 +554,6 @@ export let contentTypeConfig = {
                 title,
                 "type": _type,
                 "description": ${descriptionField},
-                xp,
                 web_url_path,
                 "url": web_url_path,
             }`,
@@ -569,8 +565,6 @@ export let contentTypeConfig = {
       '"instructors": instructor[]->name',
       `"description": ${descriptionField}`,
       `"resource": ${resourcesField}`,
-      'xp',
-      'total_xp',
       `"lessons": child[]->{
                 "id": railcontent_id,
                 title,

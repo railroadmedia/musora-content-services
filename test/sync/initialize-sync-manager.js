@@ -1,16 +1,6 @@
 import { SyncManager, SyncContext } from '../../src/services/sync/index'
-import {
-  BaseSessionProvider,
-  BaseConnectivityProvider,
-  BaseDurabilityProvider,
-  BaseTabsProvider,
-  BaseVisibilityProvider,
-} from '../../src/services/sync/context/providers/'
-import adapterFactory from '../../src/services/sync/adapters/factory'
-import LokiJSAdapter from '../../src/services/sync/adapters/lokijs'
-import EventEmitter from '../../src/services/sync/utils/event-emitter'
-import { InitialStrategy, PollingStrategy } from '../../src/services/sync/strategies/index'
-import { SyncTelemetry, SentryLike } from '../../src/services/sync/telemetry/index'
+import { InitialStrategy } from '../../src/services/sync/strategies/index'
+import { SyncTelemetry, SeverityLevel, SentryLike } from '../../src/services/sync/telemetry/index'
 import {
   ContentLike,
   ContentProgress,
@@ -19,7 +9,7 @@ import {
 } from '../../src/services/sync/models/index'
 import syncDatabaseFactory from '../../src/services/sync/database/factory'
 
-import syncAdapter, { SyncAdapterEventBus } from './adapter'
+import syncAdapter from './adapter'
 
 export function initializeSyncManager(userId) {
   if (SyncManager.getInstanceOrNull()) {
@@ -45,10 +35,9 @@ export function initializeSyncManager(userId) {
     },
   }
 
-  SyncTelemetry.setInstance(new SyncTelemetry(userId, { Sentry: dummySentry }))
+  SyncTelemetry.setInstance(new SyncTelemetry(userId, { Sentry: dummySentry, level: SeverityLevel.WARNING, pretty: false }))
 
-  const adapterBus = new SyncAdapterEventBus()
-  const adapter = syncAdapter(userId, adapterBus)
+  const adapter = syncAdapter(userId)
   const db = syncDatabaseFactory(adapter)
 
   const context = new SyncContext({
@@ -88,16 +77,10 @@ export function initializeSyncManager(userId) {
   const manager = new SyncManager(context, db)
 
   const initialStrategy = manager.createStrategy(InitialStrategy)
-  const aggressivePollingStrategy = manager.createStrategy(PollingStrategy, 3600_000)
 
-  manager.syncStoresWithStrategies(
-    manager.storesForModels([ContentLike, ContentProgress, Practice, PracticeDayNote]),
-    [initialStrategy, aggressivePollingStrategy]
-  )
-
-  manager.protectStores(
-    manager.storesForModels([ContentLike, ContentProgress, Practice, PracticeDayNote]),
-    []
+  manager.registerStrategies(
+    [ContentLike, ContentProgress, Practice, PracticeDayNote],
+    [initialStrategy]
   )
 
   SyncManager.assignAndSetupInstance(manager)

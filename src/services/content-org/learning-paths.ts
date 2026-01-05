@@ -2,7 +2,7 @@
  * @module LearningPaths
  */
 
-import { fetchHandler, fetchResponseHandler } from '../railcontent.js'
+import { GET, POST } from '../../infrastructure/http/HttpClient.ts'
 import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2Structure } from '../sanity.js'
 import { addContextToLearningPaths } from '../contentAggregator.js'
 import {
@@ -55,12 +55,18 @@ interface CollectionObject {
 export async function getDailySession(brand: string, userDate: Date) {
   const stringDate = userDate.toISOString().split('T')[0]
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${stringDate}`
-  let options = {dataVersion: null, body: null, fullResponse: true, logError: true}
-  const response = await fetchResponseHandler(url, 'GET', options)
-  if (response.status === 204) {
-    return await updateDailySession(brand, userDate, false)
+  try {
+    const response = await GET(url)
+    if (!response) {
+      return await updateDailySession(brand, userDate, false)
+    }
+    return response as DailySessionResponse
+  } catch (error: any) {
+    if (error.status === 204) {
+      return await updateDailySession(brand, userDate, false)
+    }
+    throw error
   }
-  return await response.json() as DailySessionResponse
 }
 
 /**
@@ -77,7 +83,7 @@ export async function updateDailySession(
   const stringDate = userDate.toISOString().split('T')[0]
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/create`
   const body = { brand: brand, userDate: stringDate, keepFirstLearningPath: keepFirstLearningPath }
-  return (await fetchHandler(url, 'POST', null, body)) as DailySessionResponse
+  return (await POST(url, body)) as DailySessionResponse
 }
 
 /**
@@ -86,7 +92,7 @@ export async function updateDailySession(
  */
 export async function getActivePath(brand: string) {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
-  return (await fetchHandler(url, 'GET', null, null)) as ActiveLearningPathResponse
+  return (await GET(url)) as ActiveLearningPathResponse
 }
 /**
  * Sets a new learning path as the user's active learning path.
@@ -96,7 +102,7 @@ export async function getActivePath(brand: string) {
 export async function startLearningPath(brand: string, learningPathId: number) {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/set`
   const body = { brand: brand, learning_path_id: learningPathId }
-  return (await fetchHandler(url, 'POST', null, body)) as ActiveLearningPathResponse
+  return (await POST(url, body)) as ActiveLearningPathResponse
 }
 
 /**
@@ -104,7 +110,7 @@ export async function startLearningPath(brand: string, learningPathId: number) {
  */
 export async function resetAllLearningPaths() {
   const url: string = `${LEARNING_PATHS_PATH}/reset`
-  return await fetchHandler(url, 'POST', null, {})
+  return await POST(url, {})
 }
 
 /**
@@ -358,12 +364,12 @@ export async function completeMethodIntroVideo(
 ): Promise<completeMethodIntroVideo> {
   let response = {} as completeMethodIntroVideo
 
-  response.intro_video_response = await completeIfNotCompleted(introVideoId)
-
   const methodStructure = await fetchMethodV2Structure(brand)
-  const firstLearningPathId = methodStructure.learning_paths[0].id
 
+  const firstLearningPathId = methodStructure.learning_paths[0].id
   response.active_path_response = await methodIntroVideoCompleteActions(brand, firstLearningPathId, getToday())
+
+  response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
   return response
 }
@@ -372,7 +378,7 @@ async function methodIntroVideoCompleteActions(brand: string, learningPathId: nu
   const stringDate = userDate.toISOString().split('T')[0]
   const url: string = `${LEARNING_PATHS_PATH}/method-intro-video-complete-actions`
   const body = { brand: brand, learningPathId: learningPathId, userDate: stringDate }
-  return (await fetchHandler(url, 'POST', null, body)) as DailySessionResponse
+  return (await POST(url, body)) as DailySessionResponse
 }
 
 
@@ -402,17 +408,16 @@ export async function completeLearningPathIntroVideo(
 ) {
   let response = {} as completeLearningPathIntroVideo
 
-  response.intro_video_response = await completeIfNotCompleted(introVideoId)
-
   const collection: CollectionObject = { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH }
 
   if (!lessonsToImport) {
+
     response.learning_path_reset_response = await resetIfPossible(learningPathId, collection)
-
   } else {
-    response.lesson_import_response = await contentStatusCompletedMany(lessonsToImport, collection)
 
+    response.lesson_import_response = await contentStatusCompletedMany(lessonsToImport, collection)
     const activePath = await getActivePath(brand)
+
     if (activePath.active_learning_path_id === learningPathId) {
       response.update_dailies_response = await updateDailySession(
         brand,
@@ -421,6 +426,8 @@ export async function completeLearningPathIntroVideo(
       )
     }
   }
+
+  response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
   return response
 }
@@ -439,11 +446,11 @@ async function resetIfPossible(contentId: number, collection: CollectionParamete
   return status !== '' ? await contentStatusReset(contentId, collection) : null
 }
 
-export async function onContentCompletedLearningPathListener(event) {
-  if (event?.collection?.type !== COLLECTION_TYPE.LEARNING_PATH) return
-  if (event.contentId !== event?.collection?.id) return
+export async function onContentCompletedLearningPathActions(contentId: number, collection: CollectionObject|null) {
+  if (collection?.type !== COLLECTION_TYPE.LEARNING_PATH) return
+  if (contentId !== collection?.id) return
 
-  const learningPathId = event.contentId
+  const learningPathId = contentId
   const learningPath = await getEnrichedLearningPath(learningPathId)
 
   const brand = learningPath.brand
@@ -464,5 +471,5 @@ export async function onContentCompletedLearningPathListener(event) {
   await startLearningPath(brand, nextLearningPath.id)
   const nextLearningPathData = await getEnrichedLearningPath(nextLearningPath.id)
 
-  await contentStatusReset(nextLearningPathData.intro_video.id)
+  await contentStatusReset(nextLearningPathData.intro_video.id, {skipPush: true})
 }
