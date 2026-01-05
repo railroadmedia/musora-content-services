@@ -14,9 +14,6 @@ import { SyncTelemetry } from './telemetry/index'
 import createStoreConfigs from './store-configs'
 import { contentProgressObserver } from '../awards/internal/content-progress-observer'
 
-import { onProgressSaved, onContentCompleted } from '../progress-events'
-import { onContentCompletedLearningPathListener } from '../content-org/learning-paths'
-
 export default class SyncManager {
   private static counter = 0
   private static instance: SyncManager | null = null
@@ -155,7 +152,6 @@ export default class SyncManager {
     contentProgressObserver.start(database).catch((error) => {
       this.telemetry.error('[SyncManager] Failed to start contentProgressObserver', error)
     })
-    onContentCompleted(onContentCompletedLearningPathListener)
 
     const teardown = async (force = false) => {
       this.telemetry.debug('[SyncManager] Tearing down')

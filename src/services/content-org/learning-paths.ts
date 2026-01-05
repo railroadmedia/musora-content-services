@@ -364,12 +364,12 @@ export async function completeMethodIntroVideo(
 ): Promise<completeMethodIntroVideo> {
   let response = {} as completeMethodIntroVideo
 
-  response.intro_video_response = await completeIfNotCompleted(introVideoId)
-
   const methodStructure = await fetchMethodV2Structure(brand)
-  const firstLearningPathId = methodStructure.learning_paths[0].id
 
+  const firstLearningPathId = methodStructure.learning_paths[0].id
   response.active_path_response = await methodIntroVideoCompleteActions(brand, firstLearningPathId, getToday())
+
+  response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
   return response
 }
@@ -408,17 +408,16 @@ export async function completeLearningPathIntroVideo(
 ) {
   let response = {} as completeLearningPathIntroVideo
 
-  response.intro_video_response = await completeIfNotCompleted(introVideoId)
-
   const collection: CollectionObject = { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH }
 
   if (!lessonsToImport) {
+
     response.learning_path_reset_response = await resetIfPossible(learningPathId, collection)
-
   } else {
-    response.lesson_import_response = await contentStatusCompletedMany(lessonsToImport, collection)
 
+    response.lesson_import_response = await contentStatusCompletedMany(lessonsToImport, collection)
     const activePath = await getActivePath(brand)
+
     if (activePath.active_learning_path_id === learningPathId) {
       response.update_dailies_response = await updateDailySession(
         brand,
@@ -427,6 +426,8 @@ export async function completeLearningPathIntroVideo(
       )
     }
   }
+
+  response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
   return response
 }
@@ -445,11 +446,11 @@ async function resetIfPossible(contentId: number, collection: CollectionParamete
   return status !== '' ? await contentStatusReset(contentId, collection) : null
 }
 
-export async function onContentCompletedLearningPathListener(event) {
-  if (event?.collection?.type !== COLLECTION_TYPE.LEARNING_PATH) return
-  if (event.contentId !== event?.collection?.id) return
+export async function onContentCompletedLearningPathActions(contentId: number, collection: CollectionObject|null) {
+  if (collection?.type !== COLLECTION_TYPE.LEARNING_PATH) return
+  if (contentId !== collection?.id) return
 
-  const learningPathId = event.contentId
+  const learningPathId = contentId
   const learningPath = await getEnrichedLearningPath(learningPathId)
 
   const brand = learningPath.brand
@@ -470,5 +471,5 @@ export async function onContentCompletedLearningPathListener(event) {
   await startLearningPath(brand, nextLearningPath.id)
   const nextLearningPathData = await getEnrichedLearningPath(nextLearningPath.id)
 
-  await contentStatusReset(nextLearningPathData.intro_video.id)
+  await contentStatusReset(nextLearningPathData.intro_video.id, {skipPush: true})
 }

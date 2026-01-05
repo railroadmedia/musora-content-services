@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.108.0](https://github.com/railroadmedia/musora-content-services/compare/v2.107.8...v2.108.0) (2026-01-02)
+
+
+### Features
+
+* adds column and implements for hiding cards ([#679](https://github.com/railroadmedia/musora-content-services/issues/679)) ([35ac42c](https://github.com/railroadmedia/musora-content-services/commit/35ac42cebe397c557d0b197d4fab38907ca08ab7))
+
+
+### Bug Fixes
+
+* some fixes from Rob ([#676](https://github.com/railroadmedia/musora-content-services/issues/676)) ([7e068ee](https://github.com/railroadmedia/musora-content-services/commit/7e068eee3cabc4de1d0620fe58eadf138532ab56))
+
+### [2.107.8](https://github.com/railroadmedia/musora-content-services/compare/v2.107.7...v2.107.8) (2025-12-30)
+
+
+### Bug Fixes
+
+* **T3PS-1289:** navigateTo calculation ([#677](https://github.com/railroadmedia/musora-content-services/issues/677)) ([12f4ca3](https://github.com/railroadmedia/musora-content-services/commit/12f4ca38b05a2175b33a9260e7c00f9aebfb8a87))
+
+### [2.107.7](https://github.com/railroadmedia/musora-content-services/compare/v2.107.6...v2.107.7) (2025-12-29)
+
+
+### Bug Fixes
+
+* daniel merged bad ([#675](https://github.com/railroadmedia/musora-content-services/issues/675)) ([1c5863b](https://github.com/railroadmedia/musora-content-services/commit/1c5863bc921967fe16875367d9589c8dcf4e0ac3))
+
+### [2.107.6](https://github.com/railroadmedia/musora-content-services/compare/v2.107.5...v2.107.6) (2025-12-29)
+
+
+### Bug Fixes
+
+* **TP-1051:** group contentProgress upsert pushes ([#665](https://github.com/railroadmedia/musora-content-services/issues/665)) ([27ff11f](https://github.com/railroadmedia/musora-content-services/commit/27ff11fb1b10075313e614cf895356a221f0c0d1))
+
+### [2.107.5](https://github.com/railroadmedia/musora-content-services/compare/v2.107.4...v2.107.5) (2025-12-29)
+
+
+### Bug Fixes
+
+* establishes a positive progress validation ([#672](https://github.com/railroadmedia/musora-content-services/issues/672)) ([e9bc211](https://github.com/railroadmedia/musora-content-services/commit/e9bc211659262b282e1073c2746c3c8824371c35))
+
 ### [2.107.4](https://github.com/railroadmedia/musora-content-services/compare/v2.107.1...v2.107.4) (2025-12-22)
 
 
