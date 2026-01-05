@@ -11,97 +11,6 @@ import { GET, POST, PUT, DELETE } from '../infrastructure/http/HttpClient.ts'
  */
 const excludeFromGeneratedIndex = ['fetchUserPermissionsData']
 
-/**
- * Fetches the completion status of a specific lesson for the current user.
- *
- * @param {string} content_id - The ID of the lesson content to check.
- * @returns {Promise<Object|null>} - Returns the completion status object if found, otherwise null.
- * @example
- * fetchCurrentSongComplete('user123', 'lesson456', 'csrf-token')
- *   .then(status => console.log(status))
- *   .catch(error => console.error(error));
- */
-export async function fetchCompletedState(content_id) {
-  const url = `/content/user_progress/${globalConfig.sessionConfig.userId}?content_ids[]=${content_id}`
-  const result = await GET(url)
-
-  if (result && result[content_id]) {
-    return result[content_id]
-  }
-  return null
-}
-
-/**
- * Fetches the completion status for multiple songs for the current user.
- *
- * @param {Array<string>} contentIds - An array of content IDs to check.
- * @returns {Promise<Object|null>} - Returns an object containing completion statuses keyed by content ID, or null if an error occurs.
- * @example
- * fetchAllCompletedStates('user123', ['song456', 'song789'], 'csrf-token')
- *   .then(statuses => console.log(statuses))
- *   .catch(error => console.error(error));
- */
-export async function fetchAllCompletedStates(contentIds) {
-  const url = `/content/user_progress/${globalConfig.sessionConfig.userId}?${contentIds.map((id) => `content_ids[]=${id}`).join('&')}`
-  return await GET(url)
-}
-
-/**
- * Fetches a list of songs that are currently in progress for the current user.
- *
- * @param {string} brand - The brand associated with the songs.
- * @returns {Promise<Object|null>} - Returns an object containing in-progress songs if found, otherwise null.
- * @example
- * fetchSongsInProgress('drumeo')
- *   .then(songs => console.log(songs))
- *   .catch(error => console.error(error));
- */
-export async function fetchSongsInProgress(brand) {
-  const url = `/content/in_progress/${globalConfig.sessionConfig.userId}?content_type=song&brand=${brand}`
-  return await GET(url)
-}
-
-/**
- * Fetches a list of content that is currently in progress for the current user.
- *
- * @param {string} type - The content type associated with the content.
- * @param {string} brand - The brand associated with the content.
- * @param {number} [options.limit=20] - The limit of results per page.
- * @param {number} [options.page=1] - The page number for pagination.
- * @returns {Promise<Object|null>} - Returns an object containing in-progress content if found, otherwise null.
- * @example
- * fetchContentInProgress('song', 'drumeo')
- *   .then(songs => console.log(songs))
- *   .catch(error => console.error(error));
- */
-export async function fetchContentInProgress(type = 'all', brand, { page, limit } = {}) {
-  const limitString = limit ? `&limit=${limit}` : ''
-  const pageString = page ? `&page=${page}` : ''
-  const contentTypeParam = type === 'all' ? '' : `content_type=${type}&`
-  const url = `/content/in_progress/${globalConfig.sessionConfig.userId}?${contentTypeParam}brand=${brand}${limitString}${pageString}`
-  return await GET(url)
-}
-
-/**
- * Fetches a list of content that has been completed for the current user.
- *
- * @param {string} type - The content type associated with the content.
- * @param {string} brand - The brand associated with the content.
- * @param {number} [options.limit=20] - The limit of results per page.
- * @param {number} [options.page=1] - The page number for pagination.
- * @returns {Promise<Object|null>} - Returns an object containing in-progress content if found, otherwise null.
- * @example
- * fetchCompletedContent('song', 'drumeo')
- *   .then(songs => console.log(songs))
- *   .catch(error => console.error(error));
- */
-export async function fetchCompletedContent(type = 'all', brand, { page, limit } = {}) {
-  const limitString = limit ? `&limit=${limit}` : ''
-  const pageString = page ? `&page=${page}` : ''
-  const contentTypeParam = type === 'all' ? '' : `content_type=${type}&`
-  const url = `/content/completed/${globalConfig.sessionConfig.userId}?${contentTypeParam}brand=${brand}${limitString}${pageString}`
-  return await GET(url)
-}
 
 /**
  * Fetches user context data for a specific piece of content.
@@ -118,18 +27,6 @@ export async function fetchContentPageUserData(contentId) {
   return await GET(url)
 }
 
-/**
- * Fetches the ID and Type of the piece of content that would be the next one for the user
- *
- * @param {int} contentId - The id of the parent (method, level, or course) piece of content.
- * @returns {Promise<Object|null>} - Returns and Object with the id and type of the next piece of content if found, otherwise null.
- */
-export async function fetchNextContentDataForParent(contentId) {
-  const url = `/content/${contentId}/next/${globalConfig.sessionConfig.userId}`
-  const result = await GET(url)
-  return result?.next ?? null
-}
-
 export async function fetchUserPermissionsData() {
   const url = `/content/user/permissions`
   return (await GET(url)) ?? []
@@ -143,40 +40,6 @@ export async function fetchLikeCount(contendId) {
 export async function postPlaylistContentEngaged(playlistItemId) {
   const url = `/railtracker/v1/last-engaged/${playlistItemId}`
   return await POST(url, null)
-}
-
-/**
- * Fetch the user's best award for this challenge
- *
- * @param contentId - railcontent id of the challenge
- * @returns {Promise<any|null>} - streamed PDF
- */
-export async function fetchUserAward(contentId) {
-  const url = `/challenges/download_award/${contentId}`
-  return await GET(url)
-}
-
-/**
- * Fetch All Carousel Card Data
- *
- * @returns {Promise<any|null>}
- */
-export async function fetchCarouselCardData(brand = null) {
-  const brandParam = brand ? `?brand=${brand}` : ''
-  const url = `/api/v2/content/carousel${brandParam}`
-  return await GET(url)
-}
-
-/**
- * Fetch all completed badges for the user ordered by completion date descending
- *
- * @param {string|null} brand -
- * @returns {Promise<any|null>}
- */
-export async function fetchUserBadges(brand = null) {
-  const brandParam = brand ? `?brand=${brand}` : ''
-  const url = `/challenges/user_badges/get${brandParam}`
-  return await GET(url)
 }
 
 /**
@@ -470,32 +333,6 @@ export async function fetchUserPracticeMeta(day, userId) {
  */
 export async function fetchUserPracticeNotes(date) {
   const url = `/api/user/practices/v1/notes?date=${date}`
-  return await GET(url)
-}
-
-/**
- * Get the id and slug of last interacted child. Only valid for certain content types
- *
- * @async
- * @function fetchLastInteractedChild
- * @param {array} content_ids - Content ids of to get the last interacted child of
- *
- *
- * @returns {Promise<Object>} - keyed object per valid content ids with the child
- *
- * @example
- * try {
- *   const response = await fetchLastInteractedChild([191369, 410427]);
- *   console.log('child id', response[191369].content_id)
- *   console.log('child slug', response[191369].slug)
- * } catch (error) {
- *   console.error('Failed to get children', error);
- * }
- */
-export async function fetchLastInteractedChild(content_ids) {
-  const params = new URLSearchParams()
-  content_ids.forEach((id) => params.append('content_ids[]', id))
-  const url = `/api/content/v1/user/last_interacted_child?${params.toString()}`
   return await GET(url)
 }
 

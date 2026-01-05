@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.111.0](https://github.com/railroadmedia/musora-content-services/compare/v2.110.3...v2.111.0) (2026-01-05)
+
+
+### Features
+
+* **MU2-1323:** Add dynamic filtering to lessons/songs excluding those without avaialable content ([072a471](https://github.com/railroadmedia/musora-content-services/commit/072a471a8b37bb31fc1421375563be0b2f124beb))
+* **MU2-1323:** Remove redundant constant ([768befd](https://github.com/railroadmedia/musora-content-services/commit/768befdf393723cb0e091605f3c7e6ef4d523a92))
+* **MU2-1323:** Use filterTypes for get all content types ([8065100](https://github.com/railroadmedia/musora-content-services/commit/80651009fcc9dae6661b3cbaecf55d5c3585d044))
+
+### [2.110.3](https://github.com/railroadmedia/musora-content-services/compare/v2.110.2...v2.110.3) (2026-01-05)
+
+### [2.110.2](https://github.com/railroadmedia/musora-content-services/compare/v2.110.1...v2.110.2) (2026-01-05)
+
+### [2.110.1](https://github.com/railroadmedia/musora-content-services/compare/v2.110.0...v2.110.1) (2026-01-05)
+
+## [2.110.0](https://github.com/railroadmedia/musora-content-services/compare/v2.109.0...v2.110.0) (2026-01-05)
+
+
+### Features
+
+* **BEH-1421:** lesson type migrations ([#660](https://github.com/railroadmedia/musora-content-services/issues/660)) ([7f5ab7e](https://github.com/railroadmedia/musora-content-services/commit/7f5ab7e64693b51aea754e0fb13f10edbd7a7958))
+
+## [2.109.0](https://github.com/railroadmedia/musora-content-services/compare/v2.108.0...v2.109.0) (2026-01-05)
+
+
+### Features
+
+* **TP-1046:** expose error hooks ([#655](https://github.com/railroadmedia/musora-content-services/issues/655)) ([233fa10](https://github.com/railroadmedia/musora-content-services/commit/233fa1009038448c763d130ec942b9de5a49a875))
+
 ## [2.108.0](https://github.com/railroadmedia/musora-content-services/compare/v2.107.8...v2.108.0) (2026-01-02)
 
 

@@ -1,7 +1,7 @@
 import { Database, Q, type Collection, type RecordId } from '@nozbe/watermelondb'
 import { RawSerializer, ModelSerializer } from '../serializers'
 import { ModelClass, SyncToken, SyncEntry,  SyncContext, EpochMs } from '..'
-import { SyncPullResponse, SyncPushResponse, SyncPushFailureResponse, PushPayload } from '../fetch'
+import { SyncPullResponse, SyncPushResponse, SyncPullFetchFailureResponse, PushPayload, SyncStorePushResultSuccess, SyncStorePushResultFailure } from '../fetch'
 import type SyncRetry from '../retry'
 import type SyncRunScope from '../run-scope'
 import EventEmitter from '../utils/event-emitter'
@@ -29,7 +29,7 @@ type SyncPush = (
   signal: AbortSignal
 ) => Promise<SyncPushResponse>
 
-export type SyncStoreConfig<TModel extends BaseModel> = {
+export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
   model: ModelClass<TModel>
   comparator?: TModel extends BaseModel ? SyncResolverComparator<TModel> : SyncResolverComparator
   pull: SyncPull
@@ -122,6 +122,17 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     }, { table: this.model.table, reason })
   }
 
+  async requestPush(reason: string) {
+    inBoundary(ctx => {
+      this.telemetry.trace(
+        { name: `sync:${this.model.table}`, op: 'push', attributes: ctx },
+        async span => {
+          await this.pushUnsyncedWithRetry(span)
+        }
+      )
+    }, { table: this.model.table, reason })
+  }
+
   async getLastFetchToken() {
     return (await this.db.localStorage.get<SyncToken | null>(this.lastFetchTokenKey)) ?? null
   }
@@ -207,31 +218,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       await this.ensurePersistence()
 
       return this.modelSerializer.toPlainObject(record)
-    })
-  }
-
-  async upsertOneRemote(id: RecordId, builder: (record: TModel) => void, span?: Span) {
-    return await this.runScope.abortable(async () => {
-      let record: TModel
-      const existing = await this.queryMaybeDeletedRecords(Q.where('id', id)).then(r => r[0] || null)
-
-      if (existing) {
-        existing._isEditing = true
-        builder(existing)
-        existing._isEditing = false
-        record = existing
-      } else {
-        const attrs = new this.model(this.collection, { id })
-        attrs._isEditing = true
-        builder(attrs)
-        attrs._isEditing = false
-        record = this.collection.disposableFromDirtyRaw(attrs._raw)
-      }
-
-      return await this.pushCoalescer.push(
-        [record],
-        () => this.executePush([record], span)
-      )
     })
   }
 
@@ -501,9 +487,11 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
               const currentRecords = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(recordIds)))
               const recordsToPush = currentRecords.filter(r => r._raw.updated_at <= (updatedAtMap.get(r.id) || 0))
 
-              if (recordsToPush.length) {
-                return this.executePush(recordsToPush, span)
+              if (!recordsToPush.length) {
+                return { ok: true, results: [] }
               }
+
+              return this.executePush(recordsToPush, span)
             }
           )
         })
@@ -514,7 +502,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private async executePull(span?: Span) {
     if (!this.context.connectivity.getValue()) {
       this.telemetry.debug('[Retry] No connectivity - skipping')
-      return { ok: false } as SyncPushFailureResponse
+      return { ok: false, failureType: 'fetch', isRetryable: false } as SyncPullFetchFailureResponse
     }
 
     return this.telemetry.trace(
@@ -570,7 +558,22 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         )
 
         if (response.ok) {
-          const successfulResults = response.results.filter((result) => result.type === 'success')
+          const [failedResults, successfulResults] = response.results.reduce((acc, result) => {
+            if (result.type === 'success') {
+              acc[1].push(result)
+            } else {
+              acc[0].push(result)
+            }
+            return acc
+          }, [[], []] as [SyncStorePushResultFailure[], SyncStorePushResultSuccess[]])
+
+          if (failedResults.length) {
+            this.telemetry.warn(
+              `[store:${this.model.table}] Push completed with failed records`,
+              { results: failedResults }
+            )
+          }
+
           const successfulEntries = successfulResults.map((result) => result.entry)
           await this.writeEntries(successfulEntries, false, pushSpan)
 
