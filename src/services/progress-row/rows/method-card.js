@@ -20,8 +20,7 @@ export async function getMethodCard(brand) {
   const activeLearningPath = await getActivePath(brand)
 
   if (introVideoProgressState !== STATE.COMPLETED || !activeLearningPath) {
-    //startLearningPath('drumeo', 422533)
-    const timestamp = Math.floor(Date.now() / 1000)
+    const timestamp = Math.floor(Date.now())
     const instructorText =
       introVideo.instructor?.length > 1
         ? 'Multiple Instructors'
@@ -121,8 +120,7 @@ export async function getMethodCard(brand) {
         text: ctaText,
         action: action,
       },
-      // *1000 is to match playlists which are saved in millisecond accuracy
-      progressTimestamp: maxProgressTimestamp * 1000,
+      progressTimestamp: maxProgressTimestamp,
     }
   }
 }

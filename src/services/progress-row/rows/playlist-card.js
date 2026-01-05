@@ -53,8 +53,7 @@ export async function getRecentPlaylists(brand, limit) {
       const timestamp = utcDate.getTime()
       return {
         type: 'playlist',
-        // Content timestamps are millisecond accurate so for comparison we bring this to the same resolution
-        progressTimestamp: timestamp / 1000,
+        progressTimestamp: timestamp,
         playlist: p,
         id: p.id,
       }

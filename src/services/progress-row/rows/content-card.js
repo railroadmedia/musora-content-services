@@ -55,18 +55,11 @@ export async function getContentCardMap(brand, limit, playlistEngagedOnContent, 
 function generateContentPromises(contents) {
   const promises = []
   if (!contents) return promises
-  // why are we exluding these types?
-  const excludedTypes = new Set(['pack-bundle', 'guided-course-lesson', COLLECTION_TYPE.LEARNING_PATH])
   const existingShows = new Set()
   const allRecentTypeSet = new Set(Object.values(recentTypes).flat())
   contents.forEach((content) => {
     const type = content.type
-    if (
-      excludedTypes.has(type) ||
-      (!allRecentTypeSet.has(type) && !showsLessonTypes.includes(type))
-    )
-      return
-
+    if (!allRecentTypeSet.has(type) && !showsLessonTypes.includes(type)) return
     let childHasParent = Array.isArray(content.parent_content_data) && content.parent_content_data.length > 0
     if (!childHasParent) {
       promises.push(processContentItem(content))
@@ -162,8 +155,7 @@ export async function processContentItem(content) {
         child: content.navigateTo,
       },
     },
-    // *1000 is to match playlists which are saved in millisecond accuracy
-    progressTimestamp: content.progressTimestamp * 1000,
+    progressTimestamp: content.progressTimestamp,
   }
 }
 

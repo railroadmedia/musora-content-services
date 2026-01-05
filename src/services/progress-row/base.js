@@ -150,7 +150,6 @@ async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, meth
   } else if (progressType === 'method') {
     // simply get method card and return
     item = methodCard
-    //todo remove method card
   }
   return item
 }
