@@ -22,6 +22,7 @@ import {
   coursesLessonTypes,
   skillLessonTypes,
   entertainmentLessonTypes,
+  filterTypes,
   tutorialsLessonTypes,
   transcriptionsLessonTypes,
   playAlongLessonTypes,
@@ -1680,7 +1681,6 @@ export async function fetchMetadata(brand, type, options = {}) {
   // Handle backward compatibility - type was previously the 3rd param (boolean)
   const withFilters = typeof options === 'boolean' ? options : true;
   const skipTabFiltering = options.skipTabFiltering || false;
-
   let processedData = processMetadata(brand, type, withFilters)
 
   if (processedData?.onlyAvailableTabs === true) {
@@ -2210,6 +2210,7 @@ export async function fetchBrandsByContentIds(contentIds) {
 /**
  * Get all possible content types for a page type (lessons or songs).
  * Returns unique array of Sanity content type strings.
+ * Uses the existing filterTypes mapping from contentTypeConfig.
  *
  * @param {string} pageName - Page name ('lessons' or 'songs')
  * @returns {string[]} - Array of content type strings
@@ -2219,25 +2220,7 @@ export async function fetchBrandsByContentIds(contentIds) {
  * // Returns: ['lesson', 'quick-tips', 'course', 'guided-course', ...]
  */
 function getAllContentTypesForPage(pageName) {
-  let allTypes = [];
-
-  if (pageName === 'lessons') {
-    allTypes = [
-      ...individualLessonsTypes,
-      ...coursesLessonTypes,
-      ...skillLessonTypes,
-      ...entertainmentLessonTypes
-    ];
-  } else if (pageName === 'songs') {
-    allTypes = [
-      ...tutorialsLessonTypes,
-      ...transcriptionsLessonTypes,
-      ...playAlongLessonTypes,
-      ...jamTrackLessonTypes
-    ];
-  }
-
-  return [...new Set(allTypes)];
+  return filterTypes[pageName] || [];
 }
 
 /**
