@@ -13,7 +13,6 @@ import {
 } from '../../../contentTypeConfig.js'
 import { getTimeRemainingUntilLocal } from '../../dateUtils.js'
 import { findIncompleteLesson } from '../../userActivity.js'
-import { COLLECTION_TYPE } from '../../sync/models/ContentProgress.js'
 
 /**
  * Fetch any content IDs with some progress, include the userPinnedItem,
