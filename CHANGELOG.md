@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.111.3](https://github.com/railroadmedia/musora-content-services/compare/v2.111.2...v2.111.3) (2026-01-06)
+
+
+### Bug Fixes
+
+* change js import to ts ([#683](https://github.com/railroadmedia/musora-content-services/issues/683)) ([1285cbe](https://github.com/railroadmedia/musora-content-services/commit/1285cbee851a3a2c68a0e36f37909e67173f82b8))
+
 ### [2.111.2](https://github.com/railroadmedia/musora-content-services/compare/v2.111.1...v2.111.2) (2026-01-06)
 
 
