@@ -433,10 +433,10 @@ async function trackPractice(contentId, secondsPlayed, prevSession, details = {}
 }
 
 async function trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds) {
-  const progress = Math.min(
+  const progress = Math.max(1, Math.min(
     99,
     Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds)) * 100)
-  )
+  ))
   return saveContentProgress(contentId, collection, progress, currentSeconds)
 }
 
