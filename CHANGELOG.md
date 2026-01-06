@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.111.2](https://github.com/railroadmedia/musora-content-services/compare/v2.111.1...v2.111.2) (2026-01-06)
+
+
+### Bug Fixes
+
+* adds methods to set/remove http token ([0a460b6](https://github.com/railroadmedia/musora-content-services/commit/0a460b6d002fb7d85c340095d62c1e92ce253d64))
+
 ### [2.111.1](https://github.com/railroadmedia/musora-content-services/compare/v2.111.0...v2.111.1) (2026-01-06)
 
 
