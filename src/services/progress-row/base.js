@@ -14,7 +14,7 @@ import { fetchByRailContentIds } from '../sanity.js'
 import { addContextToContent } from '../contentAggregator.js'
 import { fetchPlaylist } from '../content-org/playlists.js'
 import { TabResponseType } from '../../contentMetaData.js'
-import { PUT } from '../../infrastructure/http/HttpClient.js'
+import { PUT } from '../../infrastructure/http/HttpClient.ts'
 
 
 /**
