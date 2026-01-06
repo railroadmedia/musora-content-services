@@ -29,6 +29,10 @@ export class HttpClient {
     this.token = token
   }
 
+  public clearToken(): void {
+    this.token = null;
+  }
+
   public async get<T>(url: string, dataVersion: string | null = null): Promise<T> {
     return this.request<T>(url, 'GET', dataVersion)
   }
@@ -136,3 +140,11 @@ export const POST = httpClient.post.bind(httpClient)
 export const PUT = httpClient.put.bind(httpClient)
 export const PATCH = httpClient.patch.bind(httpClient)
 export const DELETE = httpClient.delete.bind(httpClient)
+
+export const setHttpToken = (token: string): void => {
+  httpClient.setToken(token)
+}
+
+export const clearHttpToken = (): void => {
+  httpClient.clearToken()
+}
