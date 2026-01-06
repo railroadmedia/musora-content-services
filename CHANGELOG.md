@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.111.1](https://github.com/railroadmedia/musora-content-services/compare/v2.111.0...v2.111.1) (2026-01-06)
+
+
+### Bug Fixes
+
+* fixes small bug with aggregator & adds safety for saveContentProgress ([#681](https://github.com/railroadmedia/musora-content-services/issues/681)) ([b3fd0a7](https://github.com/railroadmedia/musora-content-services/commit/b3fd0a7acf1fe01e2aff567148554fb291bac8a7))
+
 ## [2.111.0](https://github.com/railroadmedia/musora-content-services/compare/v2.110.3...v2.111.0) (2026-01-05)
 
 
