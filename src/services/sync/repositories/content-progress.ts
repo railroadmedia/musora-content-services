@@ -62,7 +62,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       Q.where('collection_type', COLLECTION_TYPE.SELF),
       Q.where('collection_id', COLLECTION_ID_SELF),
 
-      Q.where('hide_from_progress_row', false),
+      Q.where('hide_from_progress_row', false), // todo change this to new datetime
 
       Q.or(Q.where('state', STATE.STARTED), Q.where('state', STATE.COMPLETED)),
       Q.sortBy('updated_at', 'desc'),
@@ -135,8 +135,12 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     }
   }
 
-  recordProgress(contentId: number, collection: CollectionParameter | null, progressPct: number, resumeTime?: number, {skipPush = false, hideFromProgressRow = false} = {}) {
+  recordProgress(contentId: number, collection: CollectionParameter | null, progressPct: number, resumeTime?: number, {skipPush = false, fromLearningPath = false} = {}) {
     const id = ProgressRepository.generateId(contentId, collection)
+
+    if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {
+      fromLearningPath = true
+    }
 
     const result = this.upsertOne(id, (r) => {
       r.content_id = contentId
@@ -149,7 +153,10 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
         r.resume_time_seconds = Math.floor(resumeTime)
       }
 
-      r.hide_from_progress_row = hideFromProgressRow
+      if (!fromLearningPath) {
+        r.last_interacted_a_la_carte = Date.now()
+      }
+
     }, { skipPush })
 
     // Emit event AFTER database write completes
@@ -180,8 +187,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   recordProgressMany(
     contentProgresses: Record<string, number>, // Accept plain object
     collection: CollectionParameter | null,
-    { tentative = true, skipPush = false, hideFromProgressRow = false }: { tentative?: boolean; skipPush?: boolean; hideFromProgressRow?: boolean } = {}
+    { tentative = true, skipPush = false, fromLearningPath = false }: { tentative?: boolean; skipPush?: boolean; fromLearningPath?: boolean } = {}
   ) {
+    if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {
+      fromLearningPath = true
+    }
 
     const data = Object.fromEntries(
       Object.entries(contentProgresses).map(([contentId, progressPct]) => [
@@ -193,7 +203,9 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
           r.progress_percent = progressPct
 
-          r.hide_from_progress_row = hideFromProgressRow
+          if (!fromLearningPath) {
+            r.last_interacted_a_la_carte = Date.now()
+          }
         },
       ])
     )

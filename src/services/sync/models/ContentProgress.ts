@@ -29,6 +29,7 @@ export default class ContentProgress extends BaseModel<{
   state: STATE
   progress_percent: number
   resume_time_seconds: number | null
+  last_interacted_a_la_cart: number | null
 }> {
   static table = SYNC_TABLES.CONTENT_PROGRESS
 
@@ -53,8 +54,8 @@ export default class ContentProgress extends BaseModel<{
   get resume_time_seconds() {
     return (this._getRaw('resume_time_seconds') as number) || null
   }
-  get hide_from_progress_row() {
-    return this._getRaw('hide_from_progress_row') as boolean
+  get last_interacted_a_la_cart() {
+    return this._getRaw('last_interacted_a_la_cart') as number
   }
 
   set content_id(value: number) {
@@ -90,8 +91,8 @@ export default class ContentProgress extends BaseModel<{
     throwIfNotNullableNumber(value)
     this._setRaw('resume_time_seconds', value !== null ? throwIfOutsideRange(value, 0, 65535) : value)
   }
-  set hide_from_progress_row(value: boolean) {
-    this._setRaw('hide_from_progress_row', value)
+  set last_interacted_a_la_cart(value: number) {
+    this._setRaw('last_interacted_a_la_cart', value)
   }
 
 }
