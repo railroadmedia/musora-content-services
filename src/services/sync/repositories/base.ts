@@ -77,56 +77,56 @@ export default class SyncRepository<TModel extends BaseModel> {
 
   protected async insertOne(builder: (record: TModel) => void) {
     return this.store.telemetry.trace(
-      { name: `insertOne:${this.store.model.table}`, op: 'insert' },
+      { name: `insertOne:${this.store.model.table}`, op: 'insert', attributes: { ...this.context.session.toJSON() } },
       (span) => this._respondToWrite(() => this.store.insertOne(builder, span), span)
     )
   }
 
   protected async updateOneId(id: RecordId, builder: (record: TModel) => void) {
     return this.store.telemetry.trace(
-      { name: `updateOne:${this.store.model.table}`, op: 'update' },
+      { name: `updateOne:${this.store.model.table}`, op: 'update', attributes: { ...this.context.session.toJSON() } },
       (span) => this._respondToWrite(() => this.store.updateOneId(id, builder, span), span)
     )
   }
 
   protected async upsertOne(id: RecordId, builder: (record: TModel) => void, { skipPush = false } = {}) {
     return this.store.telemetry.trace(
-      { name: `upsertOne:${this.store.model.table}`, op: 'upsert' },
+      { name: `upsertOne:${this.store.model.table}`, op: 'upsert', attributes: { ...this.context.session.toJSON() } },
       (span) => this._respondToWrite(() => this.store.upsertOne(id, builder, span, {skipPush}), span)
     )
   }
 
   protected async upsertOneTentative(id: RecordId, builder: (record: TModel) => void) {
     return this.store.telemetry.trace(
-      { name: `upsertOneTentative:${this.store.model.table}`, op: 'upsert' },
+      { name: `upsertOneTentative:${this.store.model.table}`, op: 'upsert', attributes: { ...this.context.session.toJSON() } },
       (span) => this._respondToWrite(() => this.store.upsertOneTentative(id, builder, span), span)
     )
   }
 
   protected async upsertSome(builders: Record<RecordId, (record: TModel) => void>, { skipPush = false } = {}) {
     return this.store.telemetry.trace(
-      { name: `upsertSome:${this.store.model.table}`, op: 'upsert' },
+      { name: `upsertSome:${this.store.model.table}`, op: 'upsert', attributes: { ...this.context.session.toJSON() } },
       (span) => this._respondToWrite(() => this.store.upsertSome(builders, span, {skipPush}), span)
     )
   }
 
   protected async upsertSomeTentative(builders: Record<RecordId, (record: TModel) => void>, { skipPush = false } = {}) {
     return this.store.telemetry.trace(
-      { name: `upsertSomeTentative:${this.store.model.table}`, op: 'upsert' },
+      { name: `upsertSomeTentative:${this.store.model.table}`, op: 'upsert', attributes: { ...this.context.session.toJSON() } },
       (span) => this._respondToWrite(() => this.store.upsertSomeTentative(builders, span, {skipPush}), span)
     )
   }
 
   protected async deleteOne(id: RecordId, { skipPush = false } = {}) {
     return this.store.telemetry.trace(
-      { name: `delete:${this.store.model.table}`, op: 'delete' },
+      { name: `delete:${this.store.model.table}`, op: 'delete', attributes: { ...this.context.session.toJSON() } },
       (span) => this._respondToWriteIds(() => this.store.deleteOne(id, span, {skipPush}), span)
     )
   }
 
   protected async deleteSome(ids: RecordId[]) {
     return this.store.telemetry.trace(
-      { name: `deleteSome:${this.store.model.table}`, op: 'delete' },
+      { name: `deleteSome:${this.store.model.table}`, op: 'delete', attributes: { ...this.context.session.toJSON() } },
       (span) => this._respondToWriteIds(() => this.store.deleteSome(ids, span), span)
     )
   }

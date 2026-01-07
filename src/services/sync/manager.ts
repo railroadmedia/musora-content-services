@@ -124,7 +124,7 @@ export default class SyncManager {
 
     // can fail synchronously immediately (e.g., schema/migration validation errors)
     // or asynchronously (e.g., indexedDB errors synchronously OR asynchronously (!))
-    const database = this.telemetry.trace({ name: 'db:init' }, this.initDatabase)
+    const database = this.telemetry.trace({ name: 'db:init', attributes: { ...this.context.session.toJSON() } }, this.initDatabase)
 
     Object.entries(this.storeConfigsRegistry).forEach(([table, storeConfig]) => {
       this.storesRegistry[table] = this.createStore(storeConfig, database)
