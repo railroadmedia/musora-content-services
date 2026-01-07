@@ -1515,7 +1515,6 @@ export async function fetchSanity(
     ])
     const response = promisesResult[0]
     const userPermissions = promisesResult[1]
-
     if (!response.ok) {
       throw new Error(`Sanity API error: ${response.status} - ${response.statusText}`)
     }
@@ -1573,6 +1572,11 @@ function contentResultsDecorator(results, fieldName, callback) {
     })
   } else {
     results[fieldName] = callback(results)
+    if (results.children && Array.isArray(results.children)) {
+      results.children.forEach((result) => {
+        result[fieldName] = callback(result)
+      })
+    }
   }
 
   return results
