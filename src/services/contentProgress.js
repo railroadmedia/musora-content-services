@@ -487,7 +487,9 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
 
+  // skip bubbling if progress hasnt changed
   if (progress === currentProgress) {
+    if (!skipPush) db.contentProgress.requestPushUnsynced()
     return
   }
 
