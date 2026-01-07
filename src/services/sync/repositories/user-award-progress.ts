@@ -63,6 +63,13 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
     return this.readOne(awardId)
   }
 
+  async getByAwardIds(awardIds: string[]) {
+    if (awardIds.length === 0) {
+      return { data: [] }
+    }
+    return this.readSome(awardIds)
+  }
+
   async hasCompletedAward(awardId: string): Promise<boolean> {
     const result = await this.readOne(awardId)
     if (!result.data) return false
@@ -121,14 +128,56 @@ export default class UserAwardProgressRepository extends SyncRepository<UserAwar
     const awardIds = definitions.map(d => d._id)
     const progressMap = new Map<string, ModelSerialized<UserAwardProgress>>()
 
-    for (const awardId of awardIds) {
-      const result = await this.getByAwardId(awardId)
-      if (result.data) {
-        progressMap.set(awardId, result.data)
-      }
+    const progressResults = await this.getByAwardIds(awardIds)
+    for (const progress of progressResults.data) {
+      progressMap.set(progress.award_id, progress)
     }
 
     return { definitions, progress: progressMap }
+  }
+
+  async getAwardsForContentMany(contentIds: number[]): Promise<Map<number, {
+    definitions: AwardDefinition[]
+    progress: Map<string, ModelSerialized<UserAwardProgress>>
+  }>> {
+    const { awardDefinitions } = await import('../../awards/internal/award-definitions')
+
+    const contentToDefinitionsMap = await awardDefinitions.getByContentIds(contentIds)
+
+    const allAwardIds = new Set<string>()
+    contentToDefinitionsMap.forEach(definitions => {
+      definitions.forEach(d => allAwardIds.add(d._id))
+    })
+
+    const progressResults = await this.getByAwardIds(Array.from(allAwardIds))
+    const globalProgressMap = new Map<string, ModelSerialized<UserAwardProgress>>()
+    for (const progress of progressResults.data) {
+      globalProgressMap.set(progress.award_id, progress)
+    }
+
+    const resultMap = new Map<number, {
+      definitions: AwardDefinition[]
+      progress: Map<string, ModelSerialized<UserAwardProgress>>
+    }>()
+
+    contentIds.forEach(contentId => {
+      const definitions = contentToDefinitionsMap.get(contentId) || []
+      const contentProgressMap = new Map<string, ModelSerialized<UserAwardProgress>>()
+
+      definitions.forEach(def => {
+        const progress = globalProgressMap.get(def._id)
+        if (progress) {
+          contentProgressMap.set(def._id, progress)
+        }
+      })
+
+      resultMap.set(contentId, {
+        definitions,
+        progress: contentProgressMap
+      })
+    })
+
+    return resultMap
   }
 
   async deleteAllAwards() {
