@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.112.0](https://github.com/railroadmedia/musora-content-services/compare/v2.111.5...v2.112.0) (2026-01-07)
+
+
+### Features
+
+* **T3PS-1413:** homepage progress row learning path lessons need  need_access flag ([#688](https://github.com/railroadmedia/musora-content-services/issues/688)) ([cde7359](https://github.com/railroadmedia/musora-content-services/commit/cde73595c76c634b711e580497e291fa074b3d51))
+
 ### [2.111.5](https://github.com/railroadmedia/musora-content-services/compare/v2.111.4...v2.111.5) (2026-01-07)
 
 ### [2.111.4](https://github.com/railroadmedia/musora-content-services/compare/v2.111.3...v2.111.4) (2026-01-07)
