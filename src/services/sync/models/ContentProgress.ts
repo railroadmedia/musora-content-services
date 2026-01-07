@@ -29,7 +29,7 @@ export default class ContentProgress extends BaseModel<{
   state: STATE
   progress_percent: number
   resume_time_seconds: number | null
-  last_interacted_a_la_cart: number | null
+  last_interacted_a_la_carte: number | null
 }> {
   static table = SYNC_TABLES.CONTENT_PROGRESS
 
@@ -54,8 +54,8 @@ export default class ContentProgress extends BaseModel<{
   get resume_time_seconds() {
     return (this._getRaw('resume_time_seconds') as number) || null
   }
-  get last_interacted_a_la_cart() {
-    return this._getRaw('last_interacted_a_la_cart') as number
+  get last_interacted_a_la_carte() {
+    return this._getRaw('last_interacted_a_la_carte') as number
   }
 
   set content_id(value: number) {
@@ -91,8 +91,8 @@ export default class ContentProgress extends BaseModel<{
     throwIfNotNullableNumber(value)
     this._setRaw('resume_time_seconds', value !== null ? throwIfOutsideRange(value, 0, 65535) : value)
   }
-  set last_interacted_a_la_cart(value: number) {
-    this._setRaw('last_interacted_a_la_cart', value)
+  set last_interacted_a_la_carte(value: number) {
+    this._setRaw('last_interacted_a_la_carte', value)
   }
 
 }
