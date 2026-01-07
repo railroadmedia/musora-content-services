@@ -521,7 +521,7 @@ export let contentTypeConfig = {
     slug: 'rudiments',
   },
   routine: {
-    fields: [`"description": ${descriptionField}`, 'high_soundslice_slug', 'low_soundslice_slug'],
+    fields: [`"description": ${descriptionField}`, 'soundslice_slug'],
     slug: 'routines',
   },
   foundation: {
