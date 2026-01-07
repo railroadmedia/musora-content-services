@@ -20,6 +20,7 @@ import { getToday } from "../dateUtils.js";
 
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
+const LEARNING_PATH_LESSON = 'learning-path-lesson-v2'
 
 interface ActiveLearningPathResponse {
   user_id: number
@@ -138,7 +139,7 @@ export async function getEnrichedLearningPath(learningPathId) {
 
   response.children = mapContentToParent(
     response.children,
-    COLLECTION_TYPE.LEARNING_PATH,
+    LEARNING_PATH_LESSON,
     learningPathId
   )
   return response
@@ -170,7 +171,7 @@ export async function getEnrichedLearningPaths(learningPathIds: number[]) {
   response.forEach((learningPath) => {
     learningPath.children = mapContentToParent(
       learningPath.children,
-      COLLECTION_TYPE.LEARNING_PATH,
+      LEARNING_PATH_LESSON,
       learningPath.id
     )
   })
