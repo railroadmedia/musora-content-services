@@ -36,9 +36,7 @@ export const syncSentryBeforeSendTransaction: ReturnsUndefined<NonNullable<Sentr
   return undefined
 }
 
-// sentry doesn't bother to expose your chosen environment in tracesSampler
-// so we have to make consumers pass in our greedy option
-export const createSyncSentryTracesSampler = () => {
+export const createSyncSentryTracesSampler = (sampleRate = 0.1) => {
   const sampler: ReturnsUndefined<NonNullable<SentryBrowserOptions['tracesSampler']>> = (context) => {
     if (!context.name.startsWith(SYNC_TELEMETRY_TRACE_PREFIX)) {
       return undefined
@@ -51,7 +49,7 @@ export const createSyncSentryTracesSampler = () => {
     }
 
     if (attributes?.userId) {
-      return userBucketedSampler(attributes.userId as string | number, 0.1)
+      return userBucketedSampler(attributes.userId as string | number, sampleRate)
     }
 
     return undefined
