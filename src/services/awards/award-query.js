@@ -122,30 +122,17 @@ export async function getContentAwards(contentId) {
       }
     }
 
-    const { definitions, progress } = await db.userAwardProgress.getAwardsForContent(contentId)
+    const data = await db.userAwardProgress.getAwardsForContent(contentId)
 
-    const awards = definitions.map(def => {
-      const userProgress = progress.get(def._id)
-      const completionData = enhanceCompletionData(userProgress?.completion_data)
-
-      return {
-        awardId: def._id,
-        awardTitle: def.name,
-        badge: def.badge,
-        award: def.award,
-        brand: def.brand,
-        instructorName: def.instructor_name,
-        progressPercentage: userProgress?.progress_percentage ?? 0,
-        isCompleted: userProgress ? UserAwardProgressRepository.isCompleted(userProgress) : false,
-        completedAt: userProgress?.completed_at,
-        completionData
-      }
-    })
+    const awards = data && data.definitions.length !== 0
+      ? defineAwards(data)
+      : []
 
     return {
-      hasAwards: true,
-      awards
+      hasAwards: awards.length > 0,
+      awards,
     }
+
   } catch (error) {
     console.error(`Failed to get award status for content ${contentId}:`, error)
     return {
@@ -208,37 +195,15 @@ export async function getContentAwardsByIds(contentIds) {
     const result = {}
 
     contentIds.forEach(contentId => {
-      const data = awardsDataMap.get(contentId)
+      const data = awardsDataMap.get(contentId) // {definitions, progress}
 
-      if (!data || data.definitions.length === 0) {
-        result[contentId] = {
-          hasAwards: false,
-          awards: []
-        }
-        return
-      }
-
-      const awards = data.definitions.map(def => {
-        const userProgress = data.progress.get(def._id)
-        const completionData = enhanceCompletionData(userProgress?.completion_data)
-
-        return {
-          awardId: def._id,
-          awardTitle: def.name,
-          badge: def.badge,
-          award: def.award,
-          brand: def.brand,
-          instructorName: def.instructor_name,
-          progressPercentage: userProgress?.progress_percentage ?? 0,
-          isCompleted: userProgress ? UserAwardProgressRepository.isCompleted(userProgress) : false,
-          completedAt: userProgress?.completed_at,
-          completionData
-        }
-      })
+      const awards = data && data.definitions.length !== 0
+        ? defineAwards(data)
+        : []
 
       result[contentId] = {
-        hasAwards: true,
-        awards
+        hasAwards: awards.length > 0,
+        awards,
       }
     })
 
@@ -247,6 +212,26 @@ export async function getContentAwardsByIds(contentIds) {
     console.error(`Failed to get award status for content IDs ${contentIds}:`, error)
     return {}
   }
+}
+
+function defineAwards(data) {
+  return data.definitions.map(def => {
+    const userProgress = data.progress.get(def._id)
+    const completionData = enhanceCompletionData(userProgress?.completion_data)
+
+    return {
+      awardId: def._id,
+      awardTitle: def.name,
+      badge: def.badge,
+      award: def.award,
+      brand: def.brand,
+      instructorName: def.instructor_name,
+      progressPercentage: userProgress?.progress_percentage ?? 0,
+      isCompleted: userProgress ? UserAwardProgressRepository.isCompleted(userProgress) : false,
+      completedAt: userProgress?.completed_at,
+      completionData
+    }
+  })
 }
 
 /**

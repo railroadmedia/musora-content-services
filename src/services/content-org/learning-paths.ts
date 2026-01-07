@@ -119,7 +119,7 @@ export async function resetAllLearningPaths() {
  * @returns {Promise<Object>} Learning path with enriched lesson data
  */
 export async function getEnrichedLearningPath(learningPathId) {
-  const response = (await addContextToLearningPaths(
+  let response = (await addContextToLearningPaths(
     fetchByRailContentId,
     learningPathId,
     COLLECTION_TYPE.LEARNING_PATH,
@@ -132,9 +132,10 @@ export async function getEnrichedLearningPath(learningPathId) {
       addProgressTimestamp: true,
       addResumeTimeSeconds: true,
       addNavigateTo: true,
-      addAwards: true,
     }
   )) as any
+  // add awards to LP parents only
+  response = await addContextToLearningPaths(() => response, {addAwards:true})
   if (!response) return response
 
   response.children = mapContentToParent(
@@ -151,7 +152,7 @@ export async function getEnrichedLearningPath(learningPathId) {
  * @returns {Promise<Object>} Learning paths with enriched lesson data
  */
 export async function getEnrichedLearningPaths(learningPathIds: number[]) {
-  const response = (await addContextToLearningPaths(
+  let response = (await addContextToLearningPaths(
     fetchByRailContentIds,
     learningPathIds,
     COLLECTION_TYPE.LEARNING_PATH,
@@ -164,9 +165,11 @@ export async function getEnrichedLearningPaths(learningPathIds: number[]) {
       addProgressTimestamp: true,
       addResumeTimeSeconds: true,
       addNavigateTo: true,
-      addAwards: true,
     }
   )) as any
+  // add awards to LP parents only
+  response = await addContextToLearningPaths(() => response, {addAwards:true})
+
   if (!response) return response
 
   response.forEach((learningPath) => {

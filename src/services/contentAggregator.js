@@ -190,8 +190,6 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
 
   const justIds = ids.map(obj => obj.contentId)
 
-  console.log('pre', {justIds, items})
-
   const [
     progressData,
     isLikedData,
@@ -206,13 +204,6 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
     addNavigateTo ? getNavigateToForMethod(items) : Promise.resolve(null),
     addAwards ? getContentAwardsByIds(justIds) : Promise.resolve(null),
   ])
-  console.log('dat', {
-    progressData,
-    isLikedData,
-    resumeTimeData,
-    navigateToData,
-    awards
-  })
 
   const addContext = async (item) => {
     const itemId = item.id || 0
