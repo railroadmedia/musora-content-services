@@ -10,6 +10,7 @@ import {
 import { isContentLikedByIds } from './contentLikes'
 import { fetchLikeCount } from './railcontent'
 import {COLLECTION_TYPE} from "./sync/models/ContentProgress";
+import {getContentAwardsByIds} from "./awards/award-query.js";
 
 /**
  * Combine sanity data with BE contextual data.
@@ -163,6 +164,7 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
     addLikeCount = false,
     addResumeTimeSeconds = false,
     addNavigateTo = false,
+    addAwards = false,
   } = options
 
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
@@ -184,18 +186,29 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
 
   const justIds = ids.map(obj => obj.contentId)
 
+  console.log('pre', {justIds, items})
+
   const [
     progressData,
     isLikedData,
     resumeTimeData,
     navigateToData,
+    awards,
   ] = await Promise.all([
     addProgressPercentage || addProgressStatus || addProgressTimestamp
       ? getProgressDataByIdsAndCollections(ids) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(justIds) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIdsAndCollections(ids) : Promise.resolve(null),
     addNavigateTo ? getNavigateToForMethod(items) : Promise.resolve(null),
+    addAwards ? getContentAwardsByIds(justIds) : Promise.resolve(null),
   ])
+  console.log('dat', {
+    progressData,
+    isLikedData,
+    resumeTimeData,
+    navigateToData,
+    awards
+  })
 
   const addContext = async (item) => {
     const itemId = item.id || 0
@@ -208,6 +221,7 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
       ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(itemId) } : {}),
       ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[itemId] } : {}),
       ...(addNavigateTo ? { navigateTo: navigateToData?.[itemId] } : {}),
+      ...(addAwards ? { awards: awards?.[itemId].awards || [] } : {}),
     }
 
     // Enrich intro_video if it exists and flag is set

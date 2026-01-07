@@ -132,6 +132,7 @@ export async function getEnrichedLearningPath(learningPathId) {
       addProgressTimestamp: true,
       addResumeTimeSeconds: true,
       addNavigateTo: true,
+      addAwards: true,
     }
   )) as any
   if (!response) return response
@@ -163,6 +164,7 @@ export async function getEnrichedLearningPaths(learningPathIds: number[]) {
       addProgressTimestamp: true,
       addResumeTimeSeconds: true,
       addNavigateTo: true,
+      addAwards: true,
     }
   )) as any
   if (!response) return response
@@ -197,6 +199,7 @@ export async function getLearningPathLessonsByIds(contentIds, learningPathId) {
  * @param parentContentId
  */
 export function mapContentToParent(lessons, parentContentType, parentContentId) {
+  if (!lessons) return lessons
   return lessons.map((lesson: any) => {
     return { ...lesson, type: parentContentType, parent_id: parentContentId }
   })
