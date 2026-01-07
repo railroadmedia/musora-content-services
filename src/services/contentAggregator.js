@@ -74,6 +74,7 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     addProgressTimestamp = false,
     addResumeTimeSeconds = false,
     addNavigateTo = false,
+    addAwards = false,
   } = options
 
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
@@ -92,12 +93,14 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     isLikedData,
     resumeTimeData,
     navigateToData,
+    awards,
   ] = await Promise.all([ //for now assume these all return `collection = {type, id}`. it will be so when watermelon here
     addProgressPercentage || addProgressStatus || addProgressTimestamp
       ? getProgressDataByIds(ids, collection) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(ids, collection) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids, collection) : Promise.resolve(null),
     addNavigateTo ? getNavigateTo(items, collection) : Promise.resolve(null),
+    addAwards ? getContentAwardsByIds(ids) : Promise.resolve(null),
   ])
 
   const addContext = async (item) => ({
@@ -109,6 +112,7 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
     ...(addNavigateTo ? { navigateTo: navigateToData?.[item.id] } : {}),
+    ...(addAwards ? { awards: awards?.[item.id].awards || [] } : {}),
   })
 
   return await processItems(data, addContext, dataField, isDataAnArray, dataField_includeParent)
