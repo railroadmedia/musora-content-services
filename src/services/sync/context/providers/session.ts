@@ -7,8 +7,8 @@ export default abstract class BaseSessionProvider extends BaseContextProvider {
   }
   toJSON() {
     return {
-      clientId: this.getClientId(),
-      sessionId: this.getSessionId() || undefined,
+      'session.id': this.getSessionId() || undefined,
+      'session.client': this.getClientId(),
     }
   }
 }
