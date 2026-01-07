@@ -43,7 +43,12 @@ export default class SyncRetry {
 
       attempt++
 
-      const spanOptions = { ...spanOpts, name: `${spanOpts.name}:attempt:${attempt}/${this.MAX_ATTEMPTS}`, op: `${spanOpts.op}:attempt` }
+      const spanOptions = {
+        ...spanOpts,
+        name: `${spanOpts.name}:attempt:${attempt}/${this.MAX_ATTEMPTS}`,
+        op: `${spanOpts.op}:attempt`,
+        attributes: { ...spanOpts.attributes, attempt, ...this.context.session.toJSON() }
+      }
       const result = await this.telemetry.trace(spanOptions, span => {
         if (!this.context.connectivity.getValue()) {
           this.telemetry.debug('[Retry] No connectivity - skipping')

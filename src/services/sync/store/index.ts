@@ -100,7 +100,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   async requestSync(reason: string) {
     inBoundary(ctx => {
       this.telemetry.trace(
-        { name: `sync:${this.model.table}`, op: 'sync', attributes: ctx },
+        { name: `sync:${this.model.table}`, op: 'sync', attributes: { ...ctx, ...this.context.session.toJSON() } },
         async span => {
           let pushError: any = null
 
@@ -125,7 +125,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   async requestPush(reason: string) {
     inBoundary(ctx => {
       this.telemetry.trace(
-        { name: `sync:${this.model.table}`, op: 'push', attributes: ctx },
+        { name: `sync:${this.model.table}`, op: 'push', attributes: { ...ctx, ...this.context.session.toJSON() } },
         async span => {
           await this.pushUnsyncedWithRetry(span)
         }
@@ -509,7 +509,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       {
         name: `pull:${this.model.table}:run`,
         op: 'pull:run',
-        attributes: { table: this.model.table },
+        attributes: { table: this.model.table, ...this.context.session.toJSON() },
         parentSpan: span,
       },
       async (pullSpan) => {
@@ -519,7 +519,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
           {
             name: `pull:${this.model.table}:run:fetch`,
             op: 'pull:run:fetch',
-            attributes: { lastFetchToken: lastFetchToken ?? undefined },
+            attributes: { lastFetchToken: lastFetchToken ?? undefined, ...this.context.session.toJSON() },
             parentSpan: pullSpan,
           },
           () => this.puller(this.context.session, lastFetchToken, this.runScope.signal)
@@ -542,7 +542,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       {
         name: `push:${this.model.table}`,
         op: 'push:run',
-        attributes: { table: this.model.table },
+        attributes: { table: this.model.table, ...this.context.session.toJSON() },
         parentSpan,
       },
       async (pushSpan) => {
@@ -552,6 +552,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
           {
             name: `push:${this.model.table}:run:fetch`,
             op: 'push:run:fetch',
+            attributes: { ...this.context.session.toJSON() },
             parentSpan: pushSpan,
           },
           () => this.pusher(this.context.session, payload, this.runScope.signal)
@@ -706,7 +707,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     work: (writer: WriterInterface) => Promise<T>
   ): Promise<T> {
     return this.telemetry.trace(
-      { name: `write:${this.model.table}`, op: 'write', parentSpan },
+      { name: `write:${this.model.table}`, op: 'write', parentSpan, attributes: { ...this.context.session.toJSON() } },
       (writeSpan) => {
         return this.db.write(writer =>
           this.telemetry.trace(
@@ -714,6 +715,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
               name: `write:generate:${this.model.table}`,
               op: 'write:generate',
               parentSpan: writeSpan,
+              attributes: { ...this.context.session.toJSON() },
             },
             () => work(writer)
           )
