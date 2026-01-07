@@ -13,6 +13,7 @@ import {
 	getAwardStatistics,
 	getCompletedAwards,
 	getContentAwards,
+	getContentAwardsByIds,
 	getInProgressAwards,
 	resetAllAwards
 } from './services/awards/award-query.js';
@@ -269,6 +270,7 @@ import {
 	fetchComingSoon,
 	fetchCommentModContentData,
 	fetchContentRows,
+	fetchContentTypeCounts,
 	fetchHierarchy,
 	fetchLearningPathHierarchy,
 	fetchLeaving,
@@ -494,6 +496,7 @@ export {
 	fetchCommunityGuidelines,
 	fetchContentPageUserData,
 	fetchContentRows,
+	fetchContentTypeCounts,
 	fetchCustomerPayments,
 	fetchEnrollmentPageMetadata,
 	fetchFollowedThreads,
@@ -581,6 +584,7 @@ export {
 	getAwardStatistics,
 	getCompletedAwards,
 	getContentAwards,
+	getContentAwardsByIds,
 	getContentRows,
 	getDailySession,
 	getEnrichedLearningPath,

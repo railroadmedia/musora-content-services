@@ -9,6 +9,7 @@ import {
 	getAwardStatistics,
 	getCompletedAwards,
 	getContentAwards,
+	getContentAwardsByIds,
 	getInProgressAwards,
 	resetAllAwards
 } from './services/awards/award-query.js';
@@ -265,6 +266,7 @@ import {
 	fetchComingSoon,
 	fetchCommentModContentData,
 	fetchContentRows,
+	fetchContentTypeCounts,
 	fetchHierarchy,
 	fetchLearningPathHierarchy,
 	fetchLeaving,
@@ -495,6 +497,7 @@ declare module 'musora-content-services' {
 		fetchCommunityGuidelines,
 		fetchContentPageUserData,
 		fetchContentRows,
+		fetchContentTypeCounts,
 		fetchCustomerPayments,
 		fetchEnrollmentPageMetadata,
 		fetchFollowedThreads,
@@ -582,6 +585,7 @@ declare module 'musora-content-services' {
 		getAwardStatistics,
 		getCompletedAwards,
 		getContentAwards,
+		getContentAwardsByIds,
 		getContentRows,
 		getDailySession,
 		getEnrichedLearningPath,
