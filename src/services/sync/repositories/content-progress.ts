@@ -62,7 +62,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       Q.where('collection_type', COLLECTION_TYPE.SELF),
       Q.where('collection_id', COLLECTION_ID_SELF),
 
-      Q.where('hide_from_progress_row', false), // todo change this to new datetime
+      Q.where('last_interacted_a_la_carte', Q.notEq(null)),
 
       Q.or(Q.where('state', STATE.STARTED), Q.where('state', STATE.COMPLETED)),
       Q.sortBy('updated_at', 'desc'),
