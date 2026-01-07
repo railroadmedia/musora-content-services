@@ -433,10 +433,10 @@ async function trackPractice(contentId, secondsPlayed, prevSession, details = {}
 }
 
 async function trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds) {
-  const progress = Math.min(
+  const progress = Math.max(1, Math.min(
     99,
     Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds)) * 100)
-  )
+  ))
   return saveContentProgress(contentId, collection, progress, currentSeconds)
 }
 
@@ -503,8 +503,10 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
     }
   }
 
-  // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
-  await db.contentProgress.recordProgressMany(bubbledProgresses, collection, {tentative: !isLP, skipPush: true, hideFromProgressRow})
+  if (Object.keys(bubbledProgresses).length >= 0) {
+    // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
+    await db.contentProgress.recordProgressMany(bubbledProgresses, collection, {tentative: !isLP, skipPush: true, hideFromProgressRow})
+  }
 
   if (isLP) {
     let exportIds = bubbledProgresses
@@ -539,8 +541,8 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
   }
   // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
   await db.contentProgress.recordProgressMany(progresses, collection, {tentative: !isLP, skipPush: true})
-  if (isLP) {
 
+  if (isLP) {
     let exportProgresses = progresses
     exportProgresses[contentId] = progress
     await duplicateLearningPathProgressToExternalContents(exportProgresses, collection, hierarchy, {skipPush: true})

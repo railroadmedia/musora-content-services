@@ -211,8 +211,10 @@ import {
 } from './services/progress-events.js';
 
 import {
-	getMethodCard
-} from './services/progress-row/method-card.js';
+	getProgressRows,
+	pinProgressRow,
+	unpinProgressRow
+} from './services/progress-row/base.js';
 
 import {
 	assignModeratorToComment,
@@ -411,11 +413,9 @@ import {
 	findIncompleteLesson,
 	getPracticeNotes,
 	getPracticeSessions,
-	getProgressRows,
 	getRecentActivity,
 	getUserMonthlyStats,
 	getUserWeeklyStats,
-	pinProgressRow,
 	recordUserActivity,
 	recordUserPractice,
 	removeUserPractice,
@@ -423,7 +423,6 @@ import {
 	restoreUserActivity,
 	restoreUserPractice,
 	trackUserPractice,
-	unpinProgressRow,
 	updatePracticeNotes,
 	updateUserPractice
 } from './services/userActivity.js';
@@ -589,7 +588,6 @@ export {
 	getLearningPathLessonsByIds,
 	getLegacyMethods,
 	getLessonContentRows,
-	getMethodCard,
 	getMonday,
 	getNavigateTo,
 	getNavigateToForMethod,
