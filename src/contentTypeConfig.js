@@ -62,6 +62,7 @@ export const DEFAULT_FIELDS = [
   "'permission_id': permission_v2",
   'child_count',
   '"parent_id": parent_content_data[0].id',
+  '"grandparent_id": parent_content_data[1].id',
 ]
 
 // these are identical... why
