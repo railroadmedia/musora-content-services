@@ -10,6 +10,7 @@ import {
 import { isContentLikedByIds } from './contentLikes'
 import { fetchLikeCount } from './railcontent'
 import {COLLECTION_TYPE} from "./sync/models/ContentProgress";
+import {getContentAwardsByIds} from "./awards/award-query.js";
 
 /**
  * Combine sanity data with BE contextual data.
@@ -73,6 +74,7 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     addProgressTimestamp = false,
     addResumeTimeSeconds = false,
     addNavigateTo = false,
+    addAwards = false,
   } = options
 
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
@@ -91,12 +93,14 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     isLikedData,
     resumeTimeData,
     navigateToData,
+    awards,
   ] = await Promise.all([ //for now assume these all return `collection = {type, id}`. it will be so when watermelon here
     addProgressPercentage || addProgressStatus || addProgressTimestamp
       ? getProgressDataByIds(ids, collection) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(ids, collection) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids, collection) : Promise.resolve(null),
     addNavigateTo ? getNavigateTo(items, collection) : Promise.resolve(null),
+    addAwards ? getContentAwardsByIds(ids) : Promise.resolve(null),
   ])
 
   const addContext = async (item) => ({
@@ -108,6 +112,7 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(item.id) } : {}),
     ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.id] } : {}),
     ...(addNavigateTo ? { navigateTo: navigateToData?.[item.id] } : {}),
+    ...(addAwards ? { awards: awards?.[item.id].awards || [] } : {}),
   })
 
   return await processItems(data, addContext, dataField, isDataAnArray, dataField_includeParent)
@@ -163,6 +168,7 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
     addLikeCount = false,
     addResumeTimeSeconds = false,
     addNavigateTo = false,
+    addAwards = false,
   } = options
 
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
@@ -189,12 +195,14 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
     isLikedData,
     resumeTimeData,
     navigateToData,
+    awards,
   ] = await Promise.all([
     addProgressPercentage || addProgressStatus || addProgressTimestamp
       ? getProgressDataByIdsAndCollections(ids) : Promise.resolve(null),
     addIsLiked ? isContentLikedByIds(justIds) : Promise.resolve(null),
     addResumeTimeSeconds ? getResumeTimeSecondsByIdsAndCollections(ids) : Promise.resolve(null),
     addNavigateTo ? getNavigateToForMethod(items) : Promise.resolve(null),
+    addAwards ? getContentAwardsByIds(justIds) : Promise.resolve(null),
   ])
 
   const addContext = async (item) => {
@@ -208,6 +216,7 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
       ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(itemId) } : {}),
       ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[itemId] } : {}),
       ...(addNavigateTo ? { navigateTo: navigateToData?.[itemId] } : {}),
+      ...(addAwards ? { awards: awards?.[itemId].awards || [] } : {}),
     }
 
     // Enrich intro_video if it exists and flag is set
