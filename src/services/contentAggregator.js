@@ -91,7 +91,6 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     progressData,
     isLikedData,
     resumeTimeData,
-    lastInteractedChildData,
     navigateToData,
   ] = await Promise.all([ //for now assume these all return `collection = {type, id}`. it will be so when watermelon here
     addProgressPercentage || addProgressStatus || addProgressTimestamp

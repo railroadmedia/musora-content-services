@@ -457,7 +457,6 @@ export async function getRecommendedForYou(brand, rowId = null, {
  */
 export async function getLegacyMethods(brand)
 {
-  // TODO: Replace with real data from Sanity when available with permissions
   const brandMap = {
     drumeo: [241247],
     pianote: [
@@ -473,10 +472,9 @@ export async function getLegacyMethods(brand)
   const userPermissionsData = await adapter.fetchUserPermissions()
   const userPermissions = userPermissionsData.permissions
   // Users should only have access to this if they have an active membership AS WELL as the content access
-  // THis is hardcoded behaviour and isn't found elsewhere
+  // This is hardcoded behaviour and isn't found elsewhere
   const hasMembership = userPermissionsData.isAdmin || userPermissions.includes(91) || userPermissions.includes(92)
   const hasContentPermission = userPermissions.includes(100000000 + ids[0])
-  console.log('legacyMethods', {hasMembership, hasContentPermission, userPermissionsData})
   if (hasMembership && hasContentPermission) {
    return Promise.all(ids.map(id => fetchCourseCollectionData(id)))
   } else {
