@@ -415,7 +415,6 @@ export async function recordWatchSession(
   contentId = normalizeContentId(contentId)
   collection = normalizeCollection(collection)
 
-  // Initialize session structure if not provided
   if (!prevSession) {
     prevSession = {
       practiceSession: new Map(),
@@ -429,27 +428,23 @@ export async function recordWatchSession(
     trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds),
   ])
 
-  // Set up 30-second push interval if it doesn't exist
   if (!prevSession.pushInterval) {
     prevSession.pushInterval = setInterval(() => {
       flushWatchSession()
     }, PUSH_INTERVAL)
   }
 
-  // Update the session structure
   prevSession.practiceSession = session
 
   return prevSession
 }
 
 export async function flushWatchSession(sessionToFlush = null, shouldClearInterval = true) {
-  // Clear interval if session is provided
   if (shouldClearInterval && sessionToFlush?.pushInterval) {
     clearInterval(sessionToFlush.pushInterval)
     sessionToFlush.pushInterval = null
   }
 
-  // Push unsynced data
   db.contentProgress.requestPushUnsynced()
   db.practices.requestPushUnsynced()
 }
