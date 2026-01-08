@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.113.0](https://github.com/railroadmedia/musora-content-services/compare/v2.112.2...v2.113.0) (2026-01-08)
+
+
+### Features
+
+* **BEH-1491:** proper card ordering (and hiding) on progress row ([#686](https://github.com/railroadmedia/musora-content-services/issues/686)) ([e519c35](https://github.com/railroadmedia/musora-content-services/commit/e519c352ac5e8d09a910b89fa03baf31490da102))
+
 ### [2.112.2](https://github.com/railroadmedia/musora-content-services/compare/v2.112.1...v2.112.2) (2026-01-08)
 
 
