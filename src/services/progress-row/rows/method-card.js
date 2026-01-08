@@ -107,7 +107,8 @@ export async function getMethodCard(brand) {
     )
 
     if (!maxProgressTimestamp) {
-      maxProgressTimestamp = learningPath.active_learning_path_created_at
+      // active LP created_at is stored in seconds, so *1000 to match rest of cards
+      maxProgressTimestamp = learningPath.active_learning_path_created_at * 1000
     }
 
     return {
