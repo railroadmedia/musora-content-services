@@ -70,7 +70,7 @@ export class Tabs {
   static Tutorials = { name: 'Tutorials', short_name: 'Tutorials', value: 'type,tutorials', cardType: 'big' }
   static Transcriptions = { name: 'Transcriptions', short_name: 'Transcriptions', value: 'type,transcription', cardType: 'small' }
   static SheetMusic = { name: 'Sheet Music', short_name: 'Sheet Music', value: 'type,sheet music', cardType: 'small' }
-  static Tabs = { name: 'Transcriptions', short_name: 'Transcriptions', value: 'type,tabs', cardType: 'small' }
+  static Tabs = { name: 'Tabs', short_name: 'Tabs', value: 'type,tabs', cardType: 'small' }
   static PlayAlongs = { name: 'Play-Alongs', short_name: 'Play-Alongs', value:'type,play along', cardType: 'small' }
   static JamTracks = { name: 'Jam Tracks', short_name: 'Jam Tracks', value:'type,jam-track', cardType: 'small' }
   static RecentAll = { name: 'All', short_name: 'All' }
