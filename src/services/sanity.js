@@ -1500,10 +1500,12 @@ export async function fetchSanity(
   }
   try {
     const encodedQuery = encodeURIComponent(query)
-    const useGet = encodedQuery.length < 8000
+    const fullGetUrl = `${baseUrl}&query=${encodedQuery}`
+    const useGet = fullGetUrl.length < 8000
+
     let url, method, options
     if (useGet) {
-      url = `${baseUrl}&query=${encodedQuery}`
+      url = fullGetUrl
       method = 'GET'
       options = {
         method,
