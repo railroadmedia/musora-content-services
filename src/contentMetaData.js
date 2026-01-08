@@ -69,6 +69,8 @@ export class Tabs {
   static Songs = { name: 'Songs', short_name: 'Songs', value: '' }
   static Tutorials = { name: 'Tutorials', short_name: 'Tutorials', value: 'type,tutorials', cardType: 'big' }
   static Transcriptions = { name: 'Transcriptions', short_name: 'Transcriptions', value: 'type,transcription', cardType: 'small' }
+  static SheetMusic = { name: 'Sheet Music', short_name: 'Sheet Music', value: 'type,sheet music', cardType: 'small' }
+  static Tabs = { name: 'Transcriptions', short_name: 'Transcriptions', value: 'type,tabs', cardType: 'small' }
   static PlayAlongs = { name: 'Play-Alongs', short_name: 'Play-Alongs', value:'type,play along', cardType: 'small' }
   static JamTracks = { name: 'Jam Tracks', short_name: 'Jam Tracks', value:'type,jam-track', cardType: 'small' }
   static RecentAll = { name: 'All', short_name: 'All' }
@@ -236,6 +238,7 @@ export function processMetadata(brand, type, withFilters = false) {
   brandMetaData = { ...commonMetaData, ...brandMetaData }
   if (type === 'songs' && contentMetadata[brand]?.['songs-types']) {
     brandMetaData['filterOptions']['type'] = contentMetadata[brand]['songs-types']
+    brandMetaData.tabs = mapSongTabNames(brandMetaData)
   }
   if (Object.keys(brandMetaData).length === 0) {
     return null
@@ -260,6 +263,32 @@ export function processMetadata(brand, type, withFilters = false) {
   }
 
   return processedData
+}
+
+function mapSongTabNames(brandMetaData) {
+  brandMetaData.tabs.forEach((tab, index) => {
+    // skip first and last elements, since they are general tabs
+    if (index === 0 || index === brandMetaData.tabs.length - 1) {
+      console.log('skipped')
+      return;
+    }
+
+    const targetName = brandMetaData['filterOptions']['type'][index - 1];
+    console.log('targetName:', targetName);
+
+    // Find the matching Tab by name
+    const matchingTab = Object.values(Tabs).find(
+      tabObj => tabObj.name === targetName
+    );
+    console.log('matchingTab:', matchingTab);
+
+    if (matchingTab) {
+      brandMetaData.tabs[index] = matchingTab;
+      console.log(`Replaced tab at index ${index} with`, matchingTab);
+    }
+  });
+  console.log('brandMetaData.tabs', brandMetaData.tabs)
+  return brandMetaData.tabs;
 }
 
 /**
