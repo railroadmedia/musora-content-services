@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.112.2](https://github.com/railroadmedia/musora-content-services/compare/v2.112.1...v2.112.2) (2026-01-08)
+
+
+### Bug Fixes
+
+* changes lesson type mapping ([#690](https://github.com/railroadmedia/musora-content-services/issues/690)) ([af4dda9](https://github.com/railroadmedia/musora-content-services/commit/af4dda9e03eecfd49a341d2c1aea8afcf217e233))
+* **T3PS-1187:** award progress optimizations ([#689](https://github.com/railroadmedia/musora-content-services/issues/689)) ([5d063b8](https://github.com/railroadmedia/musora-content-services/commit/5d063b8227e9ee5c70c30bc31263296bfcb4aa63))
+
 ### [2.112.1](https://github.com/railroadmedia/musora-content-services/compare/v2.112.0...v2.112.1) (2026-01-07)
 
 ## [2.112.0](https://github.com/railroadmedia/musora-content-services/compare/v2.111.5...v2.112.0) (2026-01-07)
