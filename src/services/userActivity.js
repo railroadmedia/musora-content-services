@@ -96,12 +96,24 @@ export async function getUserWeeklyStats() {
   const today = dayjs()
   const startOfWeek = getMonday(today, timeZone)
   const weekDays = Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, 'day').format('YYYY-MM-DD'))
-
-  const practices = await getOwnPractices(
+  // Query THIS WEEK's practices for display
+  const weekPractices = await getOwnPractices(
     Q.where('date', Q.oneOf(weekDays)),
     Q.sortBy('date', 'desc')
   )
-  const practiceDaysSet = new Set(Object.keys(practices))
+
+  // Query LAST 60 DAYS for streak calculation (balances accuracy vs performance)
+  // This captures:
+  // - Current active streaks up to 60 days
+  // - Recent breaks (to show "restart" message)
+  // - Sufficient context for accurate weekly streak calculation
+  const sixtyDaysAgo = today.subtract(60, 'days').format('YYYY-MM-DD')
+  const recentPractices = await getOwnPractices(
+    Q.where('date', Q.gte(sixtyDaysAgo)),
+    Q.sortBy('date', 'desc')
+  )
+
+  const practiceDaysSet = new Set(Object.keys(weekPractices))
   let dailyStats = []
   for (let i = 0; i < 7; i++) {
     const day = startOfWeek.add(i, 'day')
@@ -118,10 +130,10 @@ export async function getUserWeeklyStats() {
       day: dayStr,
     })
   }
-
-  let { streakMessage } = getStreaksAndMessage(practices)
-
-  return { data: { dailyActiveStats: dailyStats, streakMessage, practices } }
+  // Calculate streak using recent practices (fixes bug)
+  let { streakMessage } = getStreaksAndMessage(recentPractices)
+  // Return same structure (non-breaking)
+  return { data: { dailyActiveStats: dailyStats, streakMessage, practices: weekPractices } }
 }
 
 /**
