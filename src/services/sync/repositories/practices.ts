@@ -64,4 +64,11 @@ export default class PracticesRepository extends SyncRepository<Practice> {
   private static generateManualId(manualId: string) {
     return `manual:${manualId}`;
   }
+
+  async getAutoPractices() {
+    return await this.queryAll(
+      Q.where('auto', true),
+      Q.sortBy('created_at', 'asc')
+    )
+  }
 }
