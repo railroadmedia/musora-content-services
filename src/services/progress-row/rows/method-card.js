@@ -117,7 +117,7 @@ export async function getMethodCard(brand) {
       progressType: 'method',
       header: 'Method',
       body: learningPath,
-      content: learningPath,
+      content: learningPath, // FE uses this field for cards, MA uses `body`
       cta: {
         text: ctaText,
         action: action,
