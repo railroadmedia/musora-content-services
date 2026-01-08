@@ -220,10 +220,6 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return this.deleteOne(ProgressRepository.generateId(contentId, collection), { skipPush })
   }
 
-  async requestPushUnsynced() {
-    await this._requestPushUnsynced()
-  }
-
   private static generateId(
     contentId: number,
     collection: CollectionParameter | null
