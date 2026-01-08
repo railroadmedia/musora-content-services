@@ -304,6 +304,7 @@ import {
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	getSanityDate,
+	getSongTypesFor,
 	getSortOrder,
 	jumpToContinueContent
 } from './services/sanity.js';
@@ -616,6 +617,7 @@ export {
 	getResumeTimeSecondsByIdsAndCollections,
 	getSanityDate,
 	getScheduleContentRows,
+	getSongTypesFor,
 	getSortOrder,
 	getStartedOrCompletedProgressOnly,
 	getTabResults,

@@ -33,7 +33,7 @@ import {
   SONG_TYPES_WITH_CHILDREN,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems, recommendations } from './recommendations.js'
-import { processMetadata } from '../contentMetaData.js'
+import {getSongType, processMetadata} from '../contentMetaData.js'
 import { GET } from '../infrastructure/http/HttpClient.ts'
 
 import { globalConfig } from './config.js'
@@ -2361,4 +2361,9 @@ function getContentTypesForFilterName(displayName) {
 
   const mappingKey = displayNameToKey[displayName];
   return mappingKey ? lessonTypesMapping[mappingKey] : undefined;
+}
+
+// this is so we can export the inner function from mcs
+export function getSongTypesFor(brand) {
+  return getSongType(brand)
 }

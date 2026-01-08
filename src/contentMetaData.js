@@ -363,3 +363,7 @@ function transformFilters(filterOptions) {
 export function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1)
 }
+
+export function getSongType(brand) {
+  return contentMetadata[brand]?.['songs-types'][1]
+}
