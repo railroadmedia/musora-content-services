@@ -33,7 +33,7 @@ import {
   SONG_TYPES_WITH_CHILDREN,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems, recommendations } from './recommendations.js'
-import {getSongType, processMetadata} from '../contentMetaData.js'
+import {getSongType, processMetadata, Tabs} from '../contentMetaData.js'
 import { GET } from '../infrastructure/http/HttpClient.ts'
 
 import { globalConfig } from './config.js'
@@ -53,9 +53,9 @@ const excludeFromGeneratedIndex = ['fetchRelatedByLicense']
 /**
  * Song/Lesson tabs that are always visible.
  *
- * @type {string[]}
+ * @type {object[]}
  */
-const ALWAYS_VISIBLE_TABS = ['For You', 'Explore All'];
+export const ALWAYS_VISIBLE_TABS = [Tabs.ForYou, Tabs.ExploreAll];
 
 /**
  * Mapping from tab names to their underlying Sanity content types.
@@ -2250,7 +2250,7 @@ export async function fetchContentTypeCounts(brand, pageName) {
  */
 function filterTabsByContentCounts(tabs, contentTypeCounts) {
   return tabs.filter(tab => {
-    if (ALWAYS_VISIBLE_TABS.includes(tab.name)) {
+    if (ALWAYS_VISIBLE_TABS.some(visibleTab => visibleTab.name === tab.name)) {
       return true;
     }
 

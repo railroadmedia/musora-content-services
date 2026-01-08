@@ -1,6 +1,8 @@
 // Metadata is taken from the 'common' element and then merged with the <brand> metadata.
 // Brand values are prioritized and will override the same property in the 'common' element.
 
+import {ALWAYS_VISIBLE_TABS} from "./services/sanity.js";
+
 const PROGRESS_NAMES = ['All', 'In Progress', 'Completed', 'Not Started']
 const DIFFICULTY_STRINGS = ['Introductory', 'Beginner', 'Intermediate', 'Advanced', 'Expert']
 
@@ -267,8 +269,7 @@ export function processMetadata(brand, type, withFilters = false) {
 
 function mapSongTabNames(brandMetaData) {
   brandMetaData.tabs.forEach((tab, index) => {
-    // skip first and last elements, since they are general tabs
-    if (index === 0 || index === brandMetaData.tabs.length - 1) {
+    if (ALWAYS_VISIBLE_TABS.some(visibleTab => visibleTab.name === tab)) {
       return;
     }
 
