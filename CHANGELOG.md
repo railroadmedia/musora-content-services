@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.114.0](https://github.com/railroadmedia/musora-content-services/compare/v2.113.0...v2.114.0) (2026-01-08)
+
+
+### Features
+
+* extra data for method card ([#691](https://github.com/railroadmedia/musora-content-services/issues/691)) ([36b034c](https://github.com/railroadmedia/musora-content-services/commit/36b034c83b86f0ff825dfc00af6a6b97b793c4c6))
+
+
+### Bug Fixes
+
+* **T3PS-1347:** Update getUserWeeklyStats to include query for past 60 days for streak calculation, retain original contract of the function ([d798acf](https://github.com/railroadmedia/musora-content-services/commit/d798acf2a01f25551746030722a41ccb81030ed9))
+* **T3PS:** Cleanup ([07f057f](https://github.com/railroadmedia/musora-content-services/commit/07f057f867c8a3931ae6cbf5ecca9ae471f23d00))
+
 ## [2.113.0](https://github.com/railroadmedia/musora-content-services/compare/v2.112.2...v2.113.0) (2026-01-08)
 
 
