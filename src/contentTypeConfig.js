@@ -201,11 +201,7 @@ export const individualLessonsTypes = [
   ...studentArchivesLessonTypes,
 ]
 
-export const coursesLessonTypes = [
-  'course',
-  'tiered-course', // TODO: new content type
-  'guided-course',
-]
+export const coursesLessonTypes = ['course', 'course-collection', 'guided-course']
 
 export const skillLessonTypes = ['skill-pack']
 
@@ -218,11 +214,7 @@ export const showsLessonTypes = [
   'spotlight',
   'performance',
 ]
-export const entertainmentLessonTypes = [
-  'special',
-  'documentary-lesson',
-  ...showsLessonTypes,
-]
+export const entertainmentLessonTypes = ['special', 'documentary-lesson', ...showsLessonTypes]
 export const collectionLessonTypes = [...coursesLessonTypes, ...showsLessonTypes]
 
 export const lessonTypesMapping = {
@@ -403,6 +395,9 @@ export let contentTypeConfig = {
   },
   'guided-course': {
     includeChildFields: true,
+  },
+  'course-collection': {
+    individualLessonsTypes: true,
   },
   course: {
     fields: [
