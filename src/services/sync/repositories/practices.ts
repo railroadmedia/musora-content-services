@@ -65,8 +65,9 @@ export default class PracticesRepository extends SyncRepository<Practice> {
     return `manual:${manualId}`;
   }
 
-  async getAutoPractices() {
+  async getAutoPracticesOnDate(date: string) {
     return await this.queryAll(
+      Q.where('date', date),
       Q.where('auto', true),
       Q.sortBy('created_at', 'asc')
     )
