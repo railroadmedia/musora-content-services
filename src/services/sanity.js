@@ -64,11 +64,13 @@ export const ALWAYS_VISIBLE_TABS = [Tabs.ForYou, Tabs.ExploreAll];
  */
 const TAB_TO_CONTENT_TYPES = {
   'Single Lessons': individualLessonsTypes,
-  Courses: coursesLessonTypes,
+  'Courses': coursesLessonTypes,
   'Skill Packs': skillLessonTypes,
-  Entertainment: entertainmentLessonTypes,
-  Tutorials: tutorialsLessonTypes,
-  Transcriptions: transcriptionsLessonTypes,
+  'Entertainment': entertainmentLessonTypes,
+  'Tutorials': tutorialsLessonTypes,
+  'Transcriptions': transcriptionsLessonTypes,
+  'Sheet Music': transcriptionsLessonTypes,
+  'Tabs': transcriptionsLessonTypes,
   'Play-Alongs': playAlongLessonTypes,
   'Jam Tracks': jamTrackLessonTypes,
 }
