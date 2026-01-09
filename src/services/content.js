@@ -95,7 +95,7 @@ export async function getTabResults(brand, pageName, tabName, {
 
   // Prepare included fields
   const tabValue = Object.values(Tabs).find(
-    tabObj => tabObj.name === tabName
+    tabObj => tabObj.name.toLowerCase() === tabName.toLowerCase()
   ).value
   const mergedIncludedFields = [...filteredSelectedFilters, tabValue];
 

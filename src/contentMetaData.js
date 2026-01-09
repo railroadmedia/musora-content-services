@@ -55,10 +55,10 @@ export class LengthFilterOptions {
 }
 
 export class Tabs {
-  static ForYou = { name: 'For You', short_name: 'For You' }
+  static ForYou = { name: 'For You', short_name: 'For You', value: 'tab,for you' }
   static Individuals = { name: 'Individuals', short_name: 'Individuals', value: 'type,individuals', cardType: 'big' }
   static Collections = { name: 'Collections', short_name: 'Collections', value: 'type,collections', cardType: 'big' }
-  static ExploreAll = { name: 'Explore All', short_name: 'Explore All',  icon: 'icon-filters', cardType: 'big'}
+  static ExploreAll = { name: 'Explore All', short_name: 'Explore All',  value: 'tab,explore all', icon: 'icon-filters', cardType: 'big'}
   static All = { name: 'All', short_name: 'All', value: '' }
   static Courses = { name: 'Courses', short_name: 'Courses', value: '' }
   static SkillLevel = { name: 'Skill Level', short_name: 'SKILL LEVEL', is_group_by: true, value: 'difficulty_string' }
