@@ -300,6 +300,7 @@ import {
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	getSanityDate,
+	getSongTypesFor,
 	getSortOrder,
 	jumpToContinueContent
 } from './services/sanity.js';
@@ -617,6 +618,7 @@ declare module 'musora-content-services' {
 		getResumeTimeSecondsByIdsAndCollections,
 		getSanityDate,
 		getScheduleContentRows,
+		getSongTypesFor,
 		getSortOrder,
 		getStartedOrCompletedProgressOnly,
 		getTabResults,

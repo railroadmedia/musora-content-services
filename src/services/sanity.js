@@ -33,7 +33,7 @@ import {
   SONG_TYPES_WITH_CHILDREN,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems, recommendations } from './recommendations.js'
-import { processMetadata } from '../contentMetaData.js'
+import {getSongType, processMetadata, Tabs} from '../contentMetaData.js'
 import { GET } from '../infrastructure/http/HttpClient.ts'
 
 import { globalConfig } from './config.js'
@@ -53,9 +53,9 @@ const excludeFromGeneratedIndex = ['fetchRelatedByLicense']
 /**
  * Song/Lesson tabs that are always visible.
  *
- * @type {string[]}
+ * @type {object[]}
  */
-const ALWAYS_VISIBLE_TABS = ['For You', 'Explore All']
+export const ALWAYS_VISIBLE_TABS = [Tabs.ForYou, Tabs.ExploreAll];
 
 /**
  * Mapping from tab names to their underlying Sanity content types.
@@ -64,11 +64,13 @@ const ALWAYS_VISIBLE_TABS = ['For You', 'Explore All']
  */
 const TAB_TO_CONTENT_TYPES = {
   'Single Lessons': individualLessonsTypes,
-  Courses: coursesLessonTypes,
+  'Courses': coursesLessonTypes,
   'Skill Packs': skillLessonTypes,
-  Entertainment: entertainmentLessonTypes,
-  Tutorials: tutorialsLessonTypes,
-  Transcriptions: transcriptionsLessonTypes,
+  'Entertainment': entertainmentLessonTypes,
+  'Tutorials': tutorialsLessonTypes,
+  'Transcriptions': transcriptionsLessonTypes,
+  'Sheet Music': transcriptionsLessonTypes,
+  'Tabs': transcriptionsLessonTypes,
   'Play-Alongs': playAlongLessonTypes,
   'Jam Tracks': jamTrackLessonTypes,
 }
@@ -2256,9 +2258,9 @@ export async function fetchContentTypeCounts(brand, pageName) {
  * @returns {Array} - Filtered array of tabs with content
  */
 function filterTabsByContentCounts(tabs, contentTypeCounts) {
-  return tabs.filter((tab) => {
-    if (ALWAYS_VISIBLE_TABS.includes(tab.name)) {
-      return true
+  return tabs.filter(tab => {
+    if (ALWAYS_VISIBLE_TABS.some(visibleTab => visibleTab.name === tab.name)) {
+      return true;
     }
 
     const tabContentTypes = TAB_TO_CONTENT_TYPES[tab.name] || []
@@ -2372,4 +2374,9 @@ function getContentTypesForFilterName(displayName) {
 
   const mappingKey = displayNameToKey[displayName]
   return mappingKey ? lessonTypesMapping[mappingKey] : undefined
+}
+
+// this is so we can export the inner function from mcs
+export function getSongTypesFor(brand) {
+  return getSongType(brand)
 }

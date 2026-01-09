@@ -1,6 +1,8 @@
 // Metadata is taken from the 'common' element and then merged with the <brand> metadata.
 // Brand values are prioritized and will override the same property in the 'common' element.
 
+import {ALWAYS_VISIBLE_TABS} from "./services/sanity.js";
+
 const PROGRESS_NAMES = ['All', 'In Progress', 'Completed', 'Not Started']
 const DIFFICULTY_STRINGS = ['Introductory', 'Beginner', 'Intermediate', 'Advanced', 'Expert']
 
@@ -68,7 +70,9 @@ export class Tabs {
   static Artists = { name: 'Artists', short_name: 'ARTISTS', is_group_by: true, value: 'artist' }
   static Songs = { name: 'Songs', short_name: 'Songs', value: '' }
   static Tutorials = { name: 'Tutorials', short_name: 'Tutorials', value: 'type,tutorials', cardType: 'big' }
-  static Transcriptions = { name: 'Transcriptions', short_name: 'Transcriptions', value: 'type,transcription', cardType: 'small' }
+  static Transcriptions = { name: 'Transcriptions', short_name: 'Transcriptions', value: 'type,transcriptions', cardType: 'small' }
+  static SheetMusic = { name: 'Sheet Music', short_name: 'Sheet Music', value: 'type,transcriptions', cardType: 'small' }
+  static Tabs = { name: 'Tabs', short_name: 'Tabs', value: 'type,transcriptions', cardType: 'small' }
   static PlayAlongs = { name: 'Play-Alongs', short_name: 'Play-Alongs', value:'type,play along', cardType: 'small' }
   static JamTracks = { name: 'Jam Tracks', short_name: 'Jam Tracks', value:'type,jam-track', cardType: 'small' }
   static RecentAll = { name: 'All', short_name: 'All' }
@@ -236,6 +240,7 @@ export function processMetadata(brand, type, withFilters = false) {
   brandMetaData = { ...commonMetaData, ...brandMetaData }
   if (type === 'songs' && contentMetadata[brand]?.['songs-types']) {
     brandMetaData['filterOptions']['type'] = contentMetadata[brand]['songs-types']
+    brandMetaData.tabs = mapSongTabNames(brandMetaData)
   }
   if (Object.keys(brandMetaData).length === 0) {
     return null
@@ -260,6 +265,26 @@ export function processMetadata(brand, type, withFilters = false) {
   }
 
   return processedData
+}
+
+function mapSongTabNames(brandMetaData) {
+  brandMetaData.tabs.forEach((tab, index) => {
+    if (ALWAYS_VISIBLE_TABS.some(visibleTab => visibleTab.name === tab)) {
+      return;
+    }
+
+    const targetName = brandMetaData['filterOptions']['type'][index - 1];
+
+    // Find the matching Tab by name
+    const matchingTab = Object.values(Tabs).find(
+      tabObj => tabObj.name === targetName
+    );
+
+    if (matchingTab) {
+      brandMetaData.tabs[index] = matchingTab;
+    }
+  });
+  return brandMetaData.tabs;
 }
 
 /**
@@ -338,4 +363,8 @@ function transformFilters(filterOptions) {
  */
 export function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1)
+}
+
+export function getSongType(brand) {
+  return contentMetadata[brand]?.['songs-types'][1]
 }
