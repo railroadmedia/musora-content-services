@@ -3,8 +3,13 @@ import { EpochMs } from '..'
 
 export default abstract class BaseModel<ExtraRaw extends object = {}> extends Model {
   declare _raw: RawRecord & ExtraRaw & {
+    server_record_id: number
     created_at: EpochMs
     updated_at: EpochMs
+  }
+
+  get server_record_id() {
+    return this._getRaw('server_record_id') as number
   }
 
   get created_at() {
