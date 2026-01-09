@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.115.0](https://github.com/railroadmedia/musora-content-services/compare/v2.114.0...v2.115.0) (2026-01-09)
+
+
+### Features
+
+* Use Get requests for Sanity if query under character limit ([#694](https://github.com/railroadmedia/musora-content-services/issues/694)) ([da5c384](https://github.com/railroadmedia/musora-content-services/commit/da5c384e7f538cf7c72a3d8f742787f24a4ed570))
+
+
+### Bug Fixes
+
+* **BEH-878:** correct brand song type names ([#695](https://github.com/railroadmedia/musora-content-services/issues/695)) ([2b1cde9](https://github.com/railroadmedia/musora-content-services/commit/2b1cde9978dd744129bd906aff3a9bb03e01b04e))
+
 ## [2.114.0](https://github.com/railroadmedia/musora-content-services/compare/v2.113.0...v2.114.0) (2026-01-08)
 
 
