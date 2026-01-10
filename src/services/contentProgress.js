@@ -4,7 +4,6 @@ import { COLLECTION_TYPE, STATE } from './sync/models/ContentProgress'
 import { trackUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 import {getDailySession, onContentCompletedLearningPathActions} from "./content-org/learning-paths.ts";
-import {getToday} from "./dateUtils.js";
 import { fetchBrandsByContentIds } from './sanity.js'
 
 const STATE_STARTED = STATE.STARTED
@@ -36,7 +35,7 @@ export async function getNavigateToForMethod(data) {
   let navigateToData = {}
 
   const brand = data[0].content.brand || null
-  const dailySessionResponse = await getDailySession(brand, getToday())
+  const dailySessionResponse = await getDailySession(brand, new Date())
   const dailySession = dailySessionResponse?.daily_session || null
   const activeLearningPathId = dailySessionResponse?.active_learning_path_id || null
 

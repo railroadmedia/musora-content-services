@@ -16,7 +16,7 @@ import { COLLECTION_TYPE, STATE } from '../sync/models/ContentProgress'
 import { SyncWriteDTO } from '../sync'
 import { ContentProgress } from '../sync/models'
 import { CollectionParameter } from '../sync/repositories/content-progress'
-import { getToday } from "../dateUtils.js";
+import dayjs from 'dayjs'
 
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
@@ -51,13 +51,14 @@ interface CollectionObject {
  * Gets today's daily session for the user.
  * If the daily session doesn't exist, it will be created.
  * @param brand
- * @param userDate
+ * @param userDate - local datetime. must have date and time - format 2025-10-31T13:45:00
+ * @param forceRefresh - force cache refresh
  */
-export async function getDailySession(brand: string, userDate: Date) {
-  const stringDate = userDate.toISOString().split('T')[0]
-  const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${stringDate}`
+export async function getDailySession(brand: string, userDate: Date, forceRefresh: boolean = false) {
+  const userDateTime = formatLocalDateTime(userDate)
+  const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDateTime=${encodeURIComponent(userDateTime)}`
   try {
-    const response = await GET(url)
+    const response = await GET(url, {cache: forceRefresh ? 'reload' : 'default'})
     if (!response) {
       return await updateDailySession(brand, userDate, false)
     }
@@ -81,10 +82,14 @@ export async function updateDailySession(
   userDate: Date,
   keepFirstLearningPath: boolean = false
 ) {
-  const stringDate = userDate.toISOString().split('T')[0]
+  const userDateTime = formatLocalDateTime(userDate)
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/create`
-  const body = { brand: brand, userDate: stringDate, keepFirstLearningPath: keepFirstLearningPath }
+  const body = { brand: brand, userDateTime: userDateTime, keepFirstLearningPath: keepFirstLearningPath }
   return (await POST(url, body)) as DailySessionResponse
+}
+
+function formatLocalDateTime(date: Date): string {
+  return dayjs(date).format('YYYY-MM-DDTHH:mm:ssZ')
 }
 
 /**
@@ -374,7 +379,7 @@ export async function completeMethodIntroVideo(
   const methodStructure = await fetchMethodV2Structure(brand)
 
   const firstLearningPathId = methodStructure.learning_paths[0].id
-  response.active_path_response = await methodIntroVideoCompleteActions(brand, firstLearningPathId, getToday())
+  response.active_path_response = await methodIntroVideoCompleteActions(brand, firstLearningPathId, new Date())
 
   response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
@@ -428,7 +433,7 @@ export async function completeLearningPathIntroVideo(
     if (activePath.active_learning_path_id === learningPathId) {
       response.update_dailies_response = await updateDailySession(
         brand,
-        getToday(),
+        new Date(),
         true
       )
     }
