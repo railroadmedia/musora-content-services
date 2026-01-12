@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.115.3](https://github.com/railroadmedia/musora-content-services/compare/v2.115.2...v2.115.3) (2026-01-12)
+
+
+### Bug Fixes
+
+* Single lessons, Skill Packs and Entertainment tabs not display content and Courses display any content type ([9793443](https://github.com/railroadmedia/musora-content-services/commit/97934438bf8262fa27349eab562cecf1323c720a))
+
+### [2.115.2](https://github.com/railroadmedia/musora-content-services/compare/v2.115.1...v2.115.2) (2026-01-09)
+
+
+### Bug Fixes
+
+* fix explore all results ([#698](https://github.com/railroadmedia/musora-content-services/issues/698)) ([e9eb8a5](https://github.com/railroadmedia/musora-content-services/commit/e9eb8a5744b1d24c2b1b8e7ba5573cd128454463))
+* oops ([#693](https://github.com/railroadmedia/musora-content-services/issues/693)) ([0be66cb](https://github.com/railroadmedia/musora-content-services/commit/0be66cbaef0b33dad3074a22b9670cee4ddd0024))
+
 ### [2.115.1](https://github.com/railroadmedia/musora-content-services/compare/v2.115.0...v2.115.1) (2026-01-09)
 
 ## [2.115.0](https://github.com/railroadmedia/musora-content-services/compare/v2.114.0...v2.115.0) (2026-01-09)

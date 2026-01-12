@@ -507,7 +507,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
 
   if (Object.keys(bubbledProgresses).length >= 0) {
     // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
-    await db.contentProgress.recordProgressMany(bubbledProgresses, collection, {tentative: !isLP, skipPush: true, hideFromProgressRow})
+    await db.contentProgress.recordProgressMany(bubbledProgresses, collection, {tentative: !isLP, skipPush: true, fromLearningPath})
   }
 
   if (isLP) {
