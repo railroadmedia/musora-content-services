@@ -55,7 +55,7 @@ const excludeFromGeneratedIndex = ['fetchRelatedByLicense']
  *
  * @type {object[]}
  */
-export const ALWAYS_VISIBLE_TABS = [Tabs?.ForYou, Tabs?.ExploreAll];
+export const ALWAYS_VISIBLE_TABS = [Tabs.ForYou, Tabs.ExploreAll];
 
 /**
  * Mapping from tab names to their underlying Sanity content types.
