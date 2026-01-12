@@ -33,7 +33,7 @@ import {
   SONG_TYPES_WITH_CHILDREN,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems, recommendations } from './recommendations.js'
-import {getSongType, processMetadata, Tabs} from '../contentMetaData.js'
+import { getSongType, processMetadata, Tabs } from '../contentMetaData.js'
 import { GET } from '../infrastructure/http/HttpClient.ts'
 
 import { globalConfig } from './config.js'
@@ -55,7 +55,7 @@ const excludeFromGeneratedIndex = ['fetchRelatedByLicense']
  *
  * @type {object[]}
  */
-export const ALWAYS_VISIBLE_TABS = [Tabs.ForYou, Tabs.ExploreAll];
+export const ALWAYS_VISIBLE_TABS = [Tabs.ForYou, Tabs.ExploreAll]
 
 /**
  * Mapping from tab names to their underlying Sanity content types.
@@ -64,13 +64,13 @@ export const ALWAYS_VISIBLE_TABS = [Tabs.ForYou, Tabs.ExploreAll];
  */
 const TAB_TO_CONTENT_TYPES = {
   'Single Lessons': individualLessonsTypes,
-  'Courses': coursesLessonTypes,
+  Courses: coursesLessonTypes,
   'Skill Packs': skillLessonTypes,
-  'Entertainment': entertainmentLessonTypes,
-  'Tutorials': tutorialsLessonTypes,
-  'Transcriptions': transcriptionsLessonTypes,
+  Entertainment: entertainmentLessonTypes,
+  Tutorials: tutorialsLessonTypes,
+  Transcriptions: transcriptionsLessonTypes,
   'Sheet Music': transcriptionsLessonTypes,
-  'Tabs': transcriptionsLessonTypes,
+  Tabs: transcriptionsLessonTypes,
   'Play-Alongs': playAlongLessonTypes,
   'Jam Tracks': jamTrackLessonTypes,
 }
@@ -2258,9 +2258,9 @@ export async function fetchContentTypeCounts(brand, pageName) {
  * @returns {Array} - Filtered array of tabs with content
  */
 function filterTabsByContentCounts(tabs, contentTypeCounts) {
-  return tabs.filter(tab => {
-    if (ALWAYS_VISIBLE_TABS.some(visibleTab => visibleTab.name === tab.name)) {
-      return true;
+  return tabs.filter((tab) => {
+    if (ALWAYS_VISIBLE_TABS.some((visibleTab) => visibleTab.name === tab.name)) {
+      return true
     }
 
     const tabContentTypes = TAB_TO_CONTENT_TYPES[tab.name] || []
@@ -2359,7 +2359,7 @@ function getContentTypesForFilterName(displayName) {
     'Student Archives': 'student archives',
     Courses: 'courses',
     'Guided Courses': 'guided courses',
-    'Tiered Courses': 'tiered courses',
+    'Course Collections': 'course collections',
     Specials: 'specials',
     Documentaries: 'documentaries',
     Shows: 'shows',
