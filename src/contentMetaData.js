@@ -60,7 +60,7 @@ export class Tabs {
   static Collections = { name: 'Collections', short_name: 'Collections', value: 'type,collections', cardType: 'big' }
   static ExploreAll = { name: 'Explore All', short_name: 'Explore All',  value: 'tab,explore all', icon: 'icon-filters', cardType: 'big'}
   static All = { name: 'All', short_name: 'All', value: '' }
-  static Courses = { name: 'Courses', short_name: 'Courses', value: '' }
+  static Courses = { name: 'Courses', short_name: 'Courses', value: 'type,Courses' }
   static SkillLevel = { name: 'Skill Level', short_name: 'SKILL LEVEL', is_group_by: true, value: 'difficulty_string' }
   static Genres = { name: 'Genres', short_name: 'Genres', is_group_by: true, value: 'genre' }
   static Completed = { name: 'Completed', short_name: 'COMPLETED', is_group_by: false, value: 'completed' }
@@ -83,9 +83,9 @@ export class Tabs {
   static RecentActivityPosts = { name: 'Posts', short_name: 'Posts' }
   static RecentActivityComments = { name: 'Comments', short_name: 'Comments' }
  // new tabs - 29.10
-  static SingleLessons = { name: 'Single Lessons', short_name: 'Single Lessons' }
-  static SkillPacks = { name: 'Skill Packs', short_name: 'Skill Packs' }
-  static Entertainment = { name: 'Entertainment', short_name: 'Entertainment' }
+  static SingleLessons = { name: 'Single Lessons', short_name: 'Single Lessons', value: 'type,Single Lessons' }
+  static SkillPacks = { name: 'Skill Packs', short_name: 'Skill Packs', value: 'type,Skill Packs' }
+  static Entertainment = { name: 'Entertainment', short_name: 'Entertainment', value: 'type,Entertainment' }
 }
 
 export const TabResponseType = {
