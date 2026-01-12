@@ -20,6 +20,7 @@ import {globalConfig} from "./config";
 import {getUserData} from "./user/management";
 import {filterTypes, ownedContentTypes} from "../contentTypeConfig";
 import {getPermissionsAdapter} from "./permissions/index.ts";
+import {MEMBERSHIP_PERMISSIONS} from "../constants/membership-permissions.ts";
 
 
 export async function getLessonContentRows (brand='drumeo', pageName = 'lessons') {
@@ -473,7 +474,9 @@ export async function getLegacyMethods(brand)
   const userPermissions = userPermissionsData.permissions
   // Users should only have access to this if they have an active membership AS WELL as the content access
   // This is hardcoded behaviour and isn't found elsewhere
-  const hasMembership = userPermissionsData.isAdmin || userPermissions.includes(91) || userPermissions.includes(92)
+  const hasMembership = userPermissionsData.isAdmin
+    || userPermissions.includes(MEMBERSHIP_PERMISSIONS.base)
+    || userPermissions.includes(MEMBERSHIP_PERMISSIONS.plus)
   const hasContentPermission = userPermissions.includes(100000000 + ids[0])
   if (hasMembership && hasContentPermission) {
    return Promise.all(ids.map(id => fetchCourseCollectionData(id)))
