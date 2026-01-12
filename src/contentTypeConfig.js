@@ -398,9 +398,6 @@ export let contentTypeConfig = {
   'guided-course': {
     includeChildFields: true,
   },
-  'course-collection': {
-    individualLessonsTypes: true,
-  },
   course: {
     fields: [
       '"lesson_count": child_count',
