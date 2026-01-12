@@ -54,38 +54,38 @@ export class LengthFilterOptions {
   ]
 }
 
-export class Tabs {
-  static ForYou = { name: 'For You', short_name: 'For You', value: 'tab,for you' }
-  static Individuals = { name: 'Individuals', short_name: 'Individuals', value: 'type,individuals', cardType: 'big' }
-  static Collections = { name: 'Collections', short_name: 'Collections', value: 'type,collections', cardType: 'big' }
-  static ExploreAll = { name: 'Explore All', short_name: 'Explore All',  value: 'tab,explore all', icon: 'icon-filters', cardType: 'big'}
-  static All = { name: 'All', short_name: 'All', value: '' }
-  static Courses = { name: 'Courses', short_name: 'Courses', value: 'type,Courses' }
-  static SkillLevel = { name: 'Skill Level', short_name: 'SKILL LEVEL', is_group_by: true, value: 'difficulty_string' }
-  static Genres = { name: 'Genres', short_name: 'Genres', is_group_by: true, value: 'genre' }
-  static Completed = { name: 'Completed', short_name: 'COMPLETED', is_group_by: false, value: 'completed' }
-  static InProgress = { name: 'In Progress', short_name: 'IN PROGRESS', is_group_by: false, value: 'in progress' }
-  static Instructors = { name: 'Instructors', short_name: 'INSTRUCTORS', is_group_by: true, value: 'instructor' }
-  static Lessons = { name: 'Lessons', short_name: 'LESSONS', value: '' }
-  static Artists = { name: 'Artists', short_name: 'ARTISTS', is_group_by: true, value: 'artist' }
-  static Songs = { name: 'Songs', short_name: 'Songs', value: '' }
-  static Tutorials = { name: 'Tutorials', short_name: 'Tutorials', value: 'type,tutorials', cardType: 'big' }
-  static Transcriptions = { name: 'Transcriptions', short_name: 'Transcriptions', value: 'type,transcriptions', cardType: 'small' }
-  static SheetMusic = { name: 'Sheet Music', short_name: 'Sheet Music', value: 'type,transcriptions', cardType: 'small' }
-  static Tabs = { name: 'Tabs', short_name: 'Tabs', value: 'type,transcriptions', cardType: 'small' }
-  static PlayAlongs = { name: 'Play-Alongs', short_name: 'Play-Alongs', value:'type,play along', cardType: 'small' }
-  static JamTracks = { name: 'Jam Tracks', short_name: 'Jam Tracks', value:'type,jam-track', cardType: 'small' }
-  static RecentAll = { name: 'All', short_name: 'All' }
-  static RecentIncomplete = { name: 'Incomplete', short_name: 'Incomplete' }
-  static RecentCompleted = { name: 'Completed', short_name: 'Completed' }
-  static RecentActivityLessons = { name: 'Lessons', short_name: 'Lessons' }
-  static RecentActivitySongs = { name: 'Songs', short_name: 'Songs' }
-  static RecentActivityPosts = { name: 'Posts', short_name: 'Posts' }
-  static RecentActivityComments = { name: 'Comments', short_name: 'Comments' }
- // new tabs - 29.10
-  static SingleLessons = { name: 'Single Lessons', short_name: 'Single Lessons', value: 'type,Single Lessons' }
-  static SkillPacks = { name: 'Skill Packs', short_name: 'Skill Packs', value: 'type,Skill Packs' }
-  static Entertainment = { name: 'Entertainment', short_name: 'Entertainment', value: 'type,Entertainment' }
+export const Tabs = {
+  ForYou: { name: 'For You', short_name: 'For You', value: 'tab,for you' },
+  Individuals: { name: 'Individuals', short_name: 'Individuals', value: 'type,individuals', cardType: 'big' },
+  Collections: { name: 'Collections', short_name: 'Collections', value: 'type,collections', cardType: 'big' },
+  ExploreAll: { name: 'Explore All', short_name: 'Explore All',  value: 'tab,explore all', icon: 'icon-filters', cardType: 'big'},
+  All: { name: 'All', short_name: 'All', value: '' },
+  Courses: { name: 'Courses', short_name: 'Courses', value: 'type,Courses' },
+  SkillLevel: { name: 'Skill Level', short_name: 'SKILL LEVEL', is_group_by: true, value: 'difficulty_string' },
+  Genres: { name: 'Genres', short_name: 'Genres', is_group_by: true, value: 'genre' },
+  Completed: { name: 'Completed', short_name: 'COMPLETED', is_group_by: false, value: 'completed' },
+  InProgress: { name: 'In Progress', short_name: 'IN PROGRESS', is_group_by: false, value: 'in progress' },
+  Instructors: { name: 'Instructors', short_name: 'INSTRUCTORS', is_group_by: true, value: 'instructor' },
+  Lessons: { name: 'Lessons', short_name: 'LESSONS', value: '' },
+  Artists: { name: 'Artists', short_name: 'ARTISTS', is_group_by: true, value: 'artist' },
+  Songs: { name: 'Songs', short_name: 'Songs', value: '' },
+  Tutorials: { name: 'Tutorials', short_name: 'Tutorials', value: 'type,tutorials', cardType: 'big' },
+  Transcriptions: { name: 'Transcriptions', short_name: 'Transcriptions', value: 'type,transcriptions', cardType: 'small' },
+  SheetMusic: { name: 'Sheet Music', short_name: 'Sheet Music', value: 'type,transcriptions', cardType: 'small' },
+  Tabs: { name: 'Tabs', short_name: 'Tabs', value: 'type,transcriptions', cardType: 'small' },
+  PlayAlongs: { name: 'Play-Alongs', short_name: 'Play-Alongs', value:'type,play along', cardType: 'small' },
+  JamTracks: { name: 'Jam Tracks', short_name: 'Jam Tracks', value:'type,jam-track', cardType: 'small' },
+  RecentAll: { name: 'All', short_name: 'All' },
+  RecentIncomplete: { name: 'Incomplete', short_name: 'Incomplete' },
+  RecentCompleted: { name: 'Completed', short_name: 'Completed' },
+  RecentActivityLessons: { name: 'Lessons', short_name: 'Lessons' },
+  RecentActivitySongs: { name: 'Songs', short_name: 'Songs' },
+  RecentActivityPosts: { name: 'Posts', short_name: 'Posts' },
+  RecentActivityComments: { name: 'Comments', short_name: 'Comments' },
+  // new tabs - 29.10
+  SingleLessons: { name: 'Single Lessons', short_name: 'Single Lessons', value: 'type,Single Lessons' },
+  SkillPacks: { name: 'Skill Packs', short_name: 'Skill Packs', value: 'type,Skill Packs' },
+  Entertainment: { name: 'Entertainment', short_name: 'Entertainment', value: 'type,Entertainment' },
 }
 
 export const TabResponseType = {
