@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.116.0](https://github.com/railroadmedia/musora-content-services/compare/v2.115.3...v2.116.0) (2026-01-12)
+
+
+### Features
+
+* **T3Ps-1324:** Rename Tiered Courses filter to Course Collections ([97efe76](https://github.com/railroadmedia/musora-content-services/commit/97efe76fff3860d769593809bea2e59fb317b528))
+
 ### [2.115.3](https://github.com/railroadmedia/musora-content-services/compare/v2.115.2...v2.115.3) (2026-01-12)
 
 
