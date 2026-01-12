@@ -55,8 +55,8 @@ interface CollectionObject {
  * @param forceRefresh - force cache refresh
  */
 export async function getDailySession(brand: string, userDate: Date, forceRefresh: boolean = false) {
-  const userDateTime = formatLocalDateTime(userDate)
-  const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDateTime=${encodeURIComponent(userDateTime)}`
+  const dateWithTimezone = formatLocalDateTime(userDate)
+  const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
   try {
     const response = await GET(url, {cache: forceRefresh ? 'reload' : 'default'})
     if (!response) {
@@ -82,24 +82,33 @@ export async function updateDailySession(
   userDate: Date,
   keepFirstLearningPath: boolean = false
 ) {
-  const userDateTime = formatLocalDateTime(userDate)
+  const dateWithTimezone = formatLocalDateTime(userDate)
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/create`
-  const body = { brand: brand, userDateTime: userDateTime, keepFirstLearningPath: keepFirstLearningPath }
-  return (await POST(url, body)) as DailySessionResponse
+  const body = { brand: brand, userDate: dateWithTimezone, keepFirstLearningPath: keepFirstLearningPath }
+
+  const response = await POST(url, body) as DailySessionResponse
+
+  if (response) {
+    await getDailySession(brand, userDate, true) // refresh cache
+  }
+
+  return response
 }
 
 function formatLocalDateTime(date: Date): string {
-  return dayjs(date).format('YYYY-MM-DDTHH:mm:ssZ')
+  return dayjs(date).format('YYYY-MM-DD Z')
 }
 
 /**
  * Gets user's active learning path.
  * @param brand
+ * @param forceRefresh - force cache refresh
  */
-export async function getActivePath(brand: string) {
+export async function getActivePath(brand: string, forceRefresh: boolean = false) {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
-  return (await GET(url)) as ActiveLearningPathResponse
+  return (await GET(url, {cache: forceRefresh ? 'reload' : 'default'})) as ActiveLearningPathResponse
 }
+
 /**
  * Sets a new learning path as the user's active learning path.
  * @param brand
@@ -108,7 +117,14 @@ export async function getActivePath(brand: string) {
 export async function startLearningPath(brand: string, learningPathId: number) {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/set`
   const body = { brand: brand, learning_path_id: learningPathId }
-  return (await POST(url, body)) as ActiveLearningPathResponse
+
+  const response = await POST(url, body) as ActiveLearningPathResponse
+
+  if (response) {
+    await getActivePath(brand, true) // refresh cache
+  }
+
+  return response
 }
 
 /**
