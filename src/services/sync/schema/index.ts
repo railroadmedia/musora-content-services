@@ -11,6 +11,7 @@ export const SYNC_TABLES = {
 const contentLikesTable = tableSchema({
   name: SYNC_TABLES.CONTENT_LIKES,
   columns: [
+    { name: 'server_record_id', type: 'number', isIndexed: true },
     { name: 'content_id', type: 'number', isIndexed: true },
     { name: 'created_at', type: 'number' },
     { name: 'updated_at', type: 'number' }
@@ -19,6 +20,7 @@ const contentLikesTable = tableSchema({
 const contentProgressTable = tableSchema({
   name: SYNC_TABLES.CONTENT_PROGRESS,
   columns: [
+    { name: 'server_record_id', type: 'number', isIndexed: true },
     { name: 'content_id', type: 'number', isIndexed: true },
     { name: 'content_brand', type: 'string', isOptional: true, isIndexed: true },
     { name: 'collection_type', type: 'string', isIndexed: true },
@@ -26,7 +28,7 @@ const contentProgressTable = tableSchema({
     { name: 'state', type: 'string', isIndexed: true },
     { name: 'progress_percent', type: 'number' },
     { name: 'resume_time_seconds', type: 'number', isOptional: true },
-    { name: 'hide_from_progress_row', type: 'boolean'},
+    { name: 'last_interacted_a_la_carte', type: 'number', isOptional: true },
     { name: 'created_at', type: 'number' },
     { name: 'updated_at', type: 'number', isIndexed: true }
   ]
@@ -34,6 +36,7 @@ const contentProgressTable = tableSchema({
 const practicesTable = tableSchema({
   name: SYNC_TABLES.PRACTICES,
   columns: [
+    { name: 'server_record_id', type: 'number', isIndexed: true },
     { name: 'manual_id', type: 'string', isOptional: true },
     { name: 'content_id', type: 'number', isOptional: true, isIndexed: true },
     { name: 'date', type: 'string', isIndexed: true },
@@ -50,6 +53,7 @@ const practicesTable = tableSchema({
 const practiceDayNotesTable = tableSchema({
   name: SYNC_TABLES.PRACTICE_DAY_NOTES,
   columns: [
+    { name: 'server_record_id', type: 'number', isIndexed: true },
     { name: 'date', type: 'string', isIndexed: true },
     { name: 'notes', type: 'string' },
     { name: 'created_at', type: 'number' },
@@ -60,6 +64,7 @@ const practiceDayNotesTable = tableSchema({
 const userAwardProgressTable = tableSchema({
   name: SYNC_TABLES.USER_AWARD_PROGRESS,
   columns: [
+    { name: 'server_record_id', type: 'number', isIndexed: true },
     { name: 'award_id', type: 'string', isIndexed: true },
     { name: 'progress_percentage', type: 'number' },
     { name: 'completed_at', type: 'string', isOptional: true, isIndexed: true },

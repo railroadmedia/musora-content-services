@@ -13,6 +13,7 @@ import {
 	getAwardStatistics,
 	getCompletedAwards,
 	getContentAwards,
+	getContentAwardsByIds,
 	getInProgressAwards,
 	resetAllAwards
 } from './services/awards/award-query.js';
@@ -268,6 +269,7 @@ import {
 	fetchComingSoon,
 	fetchCommentModContentData,
 	fetchContentRows,
+	fetchContentTypeCounts,
 	fetchCourseCollectionData,
 	fetchHierarchy,
 	fetchLearningPathHierarchy,
@@ -301,6 +303,7 @@ import {
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	getSanityDate,
+	getSongTypesFor,
 	getSortOrder,
 	jumpToContinueContent
 } from './services/sanity.js';
@@ -492,6 +495,7 @@ export {
 	fetchCommunityGuidelines,
 	fetchContentPageUserData,
 	fetchContentRows,
+	fetchContentTypeCounts,
 	fetchCourseCollectionData,
 	fetchCustomerPayments,
 	fetchEnrollmentPageMetadata,
@@ -579,6 +583,7 @@ export {
 	getAwardStatistics,
 	getCompletedAwards,
 	getContentAwards,
+	getContentAwardsByIds,
 	getContentRows,
 	getDailySession,
 	getEnrichedLearningPath,
@@ -610,6 +615,7 @@ export {
 	getResumeTimeSecondsByIdsAndCollections,
 	getSanityDate,
 	getScheduleContentRows,
+	getSongTypesFor,
 	getSortOrder,
 	getStartedOrCompletedProgressOnly,
 	getTabResults,

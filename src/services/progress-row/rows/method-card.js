@@ -107,15 +107,17 @@ export async function getMethodCard(brand) {
     )
 
     if (!maxProgressTimestamp) {
-      maxProgressTimestamp = learningPath.active_learning_path_created_at
+      // active LP created_at is stored in seconds, so *1000 to match rest of cards
+      maxProgressTimestamp = learningPath.active_learning_path_created_at * 1000
     }
 
     return {
-      id: 1,
+      id: learningPath?.id,
       type: COLLECTION_TYPE.LEARNING_PATH,
       progressType: 'method',
       header: 'Method',
       body: learningPath,
+      content: learningPath, // FE uses this field for cards, MA uses `body`
       cta: {
         text: ctaText,
         action: action,

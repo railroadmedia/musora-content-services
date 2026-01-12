@@ -20,6 +20,7 @@ import { getToday } from "../dateUtils.js";
 
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
+const LEARNING_PATH_LESSON = 'learning-path-lesson-v2'
 
 interface ActiveLearningPathResponse {
   user_id: number
@@ -119,7 +120,7 @@ export async function resetAllLearningPaths() {
  * @returns {Promise<Object>} Learning path with enriched lesson data
  */
 export async function getEnrichedLearningPath(learningPathId) {
-  const response = (await addContextToLearningPaths(
+  let response = (await addContextToLearningPaths(
     fetchByRailContentId,
     learningPathId,
     COLLECTION_TYPE.LEARNING_PATH,
@@ -134,11 +135,13 @@ export async function getEnrichedLearningPath(learningPathId) {
       addNavigateTo: true,
     }
   )) as any
+  // add awards to LP parents only
+  response = await addContextToLearningPaths(() => response, {addAwards:true})
   if (!response) return response
 
   response.children = mapContentToParent(
     response.children,
-    COLLECTION_TYPE.LEARNING_PATH,
+    LEARNING_PATH_LESSON,
     learningPathId
   )
   return response
@@ -150,7 +153,7 @@ export async function getEnrichedLearningPath(learningPathId) {
  * @returns {Promise<Object>} Learning paths with enriched lesson data
  */
 export async function getEnrichedLearningPaths(learningPathIds: number[]) {
-  const response = (await addContextToLearningPaths(
+  let response = (await addContextToLearningPaths(
     fetchByRailContentIds,
     learningPathIds,
     COLLECTION_TYPE.LEARNING_PATH,
@@ -165,12 +168,15 @@ export async function getEnrichedLearningPaths(learningPathIds: number[]) {
       addNavigateTo: true,
     }
   )) as any
+  // add awards to LP parents only
+  response = await addContextToLearningPaths(() => response, {addAwards:true})
+
   if (!response) return response
 
   response.forEach((learningPath) => {
     learningPath.children = mapContentToParent(
       learningPath.children,
-      COLLECTION_TYPE.LEARNING_PATH,
+      LEARNING_PATH_LESSON,
       learningPath.id
     )
   })
@@ -197,6 +203,7 @@ export async function getLearningPathLessonsByIds(contentIds, learningPathId) {
  * @param parentContentId
  */
 export function mapContentToParent(lessons, parentContentType, parentContentId) {
+  if (!lessons) return lessons
   return lessons.map((lesson: any) => {
     return { ...lesson, type: parentContentType, parent_id: parentContentId }
   })

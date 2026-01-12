@@ -2,6 +2,79 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.116.0](https://github.com/railroadmedia/musora-content-services/compare/v2.115.3...v2.116.0) (2026-01-12)
+
+
+### Features
+
+* **T3Ps-1324:** Rename Tiered Courses filter to Course Collections ([97efe76](https://github.com/railroadmedia/musora-content-services/commit/97efe76fff3860d769593809bea2e59fb317b528))
+
+### [2.115.3](https://github.com/railroadmedia/musora-content-services/compare/v2.115.2...v2.115.3) (2026-01-12)
+
+
+### Bug Fixes
+
+* Single lessons, Skill Packs and Entertainment tabs not display content and Courses display any content type ([9793443](https://github.com/railroadmedia/musora-content-services/commit/97934438bf8262fa27349eab562cecf1323c720a))
+
+### [2.115.2](https://github.com/railroadmedia/musora-content-services/compare/v2.115.1...v2.115.2) (2026-01-09)
+
+
+### Bug Fixes
+
+* fix explore all results ([#698](https://github.com/railroadmedia/musora-content-services/issues/698)) ([e9eb8a5](https://github.com/railroadmedia/musora-content-services/commit/e9eb8a5744b1d24c2b1b8e7ba5573cd128454463))
+* oops ([#693](https://github.com/railroadmedia/musora-content-services/issues/693)) ([0be66cb](https://github.com/railroadmedia/musora-content-services/commit/0be66cbaef0b33dad3074a22b9670cee4ddd0024))
+
+### [2.115.1](https://github.com/railroadmedia/musora-content-services/compare/v2.115.0...v2.115.1) (2026-01-09)
+
+## [2.115.0](https://github.com/railroadmedia/musora-content-services/compare/v2.114.0...v2.115.0) (2026-01-09)
+
+
+### Features
+
+* Use Get requests for Sanity if query under character limit ([#694](https://github.com/railroadmedia/musora-content-services/issues/694)) ([da5c384](https://github.com/railroadmedia/musora-content-services/commit/da5c384e7f538cf7c72a3d8f742787f24a4ed570))
+
+
+### Bug Fixes
+
+* **BEH-878:** correct brand song type names ([#695](https://github.com/railroadmedia/musora-content-services/issues/695)) ([2b1cde9](https://github.com/railroadmedia/musora-content-services/commit/2b1cde9978dd744129bd906aff3a9bb03e01b04e))
+
+## [2.114.0](https://github.com/railroadmedia/musora-content-services/compare/v2.113.0...v2.114.0) (2026-01-08)
+
+
+### Features
+
+* extra data for method card ([#691](https://github.com/railroadmedia/musora-content-services/issues/691)) ([36b034c](https://github.com/railroadmedia/musora-content-services/commit/36b034c83b86f0ff825dfc00af6a6b97b793c4c6))
+
+
+### Bug Fixes
+
+* **T3PS-1347:** Update getUserWeeklyStats to include query for past 60 days for streak calculation, retain original contract of the function ([d798acf](https://github.com/railroadmedia/musora-content-services/commit/d798acf2a01f25551746030722a41ccb81030ed9))
+* **T3PS:** Cleanup ([07f057f](https://github.com/railroadmedia/musora-content-services/commit/07f057f867c8a3931ae6cbf5ecca9ae471f23d00))
+
+## [2.113.0](https://github.com/railroadmedia/musora-content-services/compare/v2.112.2...v2.113.0) (2026-01-08)
+
+
+### Features
+
+* **BEH-1491:** proper card ordering (and hiding) on progress row ([#686](https://github.com/railroadmedia/musora-content-services/issues/686)) ([e519c35](https://github.com/railroadmedia/musora-content-services/commit/e519c352ac5e8d09a910b89fa03baf31490da102))
+
+### [2.112.2](https://github.com/railroadmedia/musora-content-services/compare/v2.112.1...v2.112.2) (2026-01-08)
+
+
+### Bug Fixes
+
+* changes lesson type mapping ([#690](https://github.com/railroadmedia/musora-content-services/issues/690)) ([af4dda9](https://github.com/railroadmedia/musora-content-services/commit/af4dda9e03eecfd49a341d2c1aea8afcf217e233))
+* **T3PS-1187:** award progress optimizations ([#689](https://github.com/railroadmedia/musora-content-services/issues/689)) ([5d063b8](https://github.com/railroadmedia/musora-content-services/commit/5d063b8227e9ee5c70c30bc31263296bfcb4aa63))
+
+### [2.112.1](https://github.com/railroadmedia/musora-content-services/compare/v2.112.0...v2.112.1) (2026-01-07)
+
+## [2.112.0](https://github.com/railroadmedia/musora-content-services/compare/v2.111.5...v2.112.0) (2026-01-07)
+
+
+### Features
+
+* **T3PS-1413:** homepage progress row learning path lessons need  need_access flag ([#688](https://github.com/railroadmedia/musora-content-services/issues/688)) ([cde7359](https://github.com/railroadmedia/musora-content-services/commit/cde73595c76c634b711e580497e291fa074b3d51))
+
 ### [2.111.5](https://github.com/railroadmedia/musora-content-services/compare/v2.111.4...v2.111.5) (2026-01-07)
 
 ### [2.111.4](https://github.com/railroadmedia/musora-content-services/compare/v2.111.3...v2.111.4) (2026-01-07)

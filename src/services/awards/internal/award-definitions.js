@@ -60,6 +60,23 @@ class AwardDefinitionsService {
       .filter(Boolean)
   }
 
+  /** @returns {Promise<Map<number, import('./types').AwardDefinition[]>>} */
+  async getByContentIds(contentIds) {
+    if (this.shouldRefresh()) {
+      await this.fetchFromSanity()
+    }
+
+    return new Map(
+      contentIds.map(contentId => {
+        const awardIds = this.contentIndex.get(contentId) || []
+        const definitions = awardIds
+          .map(id => this.definitions.get(id))
+          .filter(Boolean)
+        return [contentId, definitions]
+      })
+    )
+  }
+
   /** @returns {Promise<boolean>} */
   async hasAwards(contentId) {
     if (this.shouldRefresh()) {

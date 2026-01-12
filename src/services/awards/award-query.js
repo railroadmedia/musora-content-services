@@ -6,6 +6,7 @@
  *
  * **Query Functions** (read-only):
  * - `getContentAwards(contentId)` - Get awards for a learning path/course
+ * - `getContentAwardsByIds(contentIds)` - Get awards for multiple content items (batch optimized)
  * - `getCompletedAwards(brand)` - Get user's earned awards
  * - `getInProgressAwards(brand)` - Get awards user is working toward
  * - `getAwardStatistics(brand)` - Get aggregate award stats
@@ -121,30 +122,17 @@ export async function getContentAwards(contentId) {
       }
     }
 
-    const { definitions, progress } = await db.userAwardProgress.getAwardsForContent(contentId)
+    const data = await db.userAwardProgress.getAwardsForContent(contentId)
 
-    const awards = definitions.map(def => {
-      const userProgress = progress.get(def._id)
-      const completionData = enhanceCompletionData(userProgress?.completion_data)
-
-      return {
-        awardId: def._id,
-        awardTitle: def.name,
-        badge: def.badge,
-        award: def.award,
-        brand: def.brand,
-        instructorName: def.instructor_name,
-        progressPercentage: userProgress?.progress_percentage ?? 0,
-        isCompleted: userProgress ? UserAwardProgressRepository.isCompleted(userProgress) : false,
-        completedAt: userProgress?.completed_at,
-        completionData
-      }
-    })
+    const awards = data && data.definitions.length !== 0
+      ? defineAwards(data)
+      : []
 
     return {
-      hasAwards: true,
-      awards
+      hasAwards: awards.length > 0,
+      awards,
     }
+
   } catch (error) {
     console.error(`Failed to get award status for content ${contentId}:`, error)
     return {
@@ -152,6 +140,98 @@ export async function getContentAwards(contentId) {
       awards: []
     }
   }
+}
+
+/**
+ * @param {number[]} contentIds - Array of Railcontent IDs to fetch awards for
+ * @returns {Promise<Object.<number, ContentAwardsResponse>>} Object mapping content IDs to their award data
+ *
+ * @description
+ * Returns awards for multiple content items at once. More efficient than calling
+ * `getContentAwards()` multiple times. Returns an object where keys are content IDs
+ * and values are the same structure as `getContentAwards()`.
+ *
+ * Content IDs without awards will have `{ hasAwards: false, awards: [] }` in the result.
+ *
+ * Returns empty object `{}` on error (never throws).
+ *
+ * @example
+ * const learningPathIds = [12345, 67890, 11111]
+ * const awardsMap = await getContentAwardsByIds(learningPathIds)
+ *
+ * learningPathIds.forEach(id => {
+ *   const { hasAwards, awards } = awardsMap[id] || { hasAwards: false, awards: [] }
+ *   if (hasAwards) {
+ *     console.log(`Learning path ${id} has ${awards.length} award(s)`)
+ *   }
+ * })
+ *
+ * @example
+ * function CourseListWithAwards({ courseIds }) {
+ *   const [awardsMap, setAwardsMap] = useState({})
+ *
+ *   useEffect(() => {
+ *     getContentAwardsByIds(courseIds).then(setAwardsMap)
+ *   }, [courseIds])
+ *
+ *   return courseIds.map(courseId => {
+ *     const { hasAwards, awards } = awardsMap[courseId] || { hasAwards: false, awards: [] }
+ *     return (
+ *       <CourseCard key={courseId} courseId={courseId}>
+ *         {hasAwards && <AwardBadge award={awards[0]} />}
+ *       </CourseCard>
+ *     )
+ *   })
+ * }
+ */
+export async function getContentAwardsByIds(contentIds) {
+  try {
+    if (!Array.isArray(contentIds) || contentIds.length === 0) {
+      return {}
+    }
+
+    const awardsDataMap = await db.userAwardProgress.getAwardsForContentMany(contentIds)
+
+    const result = {}
+
+    contentIds.forEach(contentId => {
+      const data = awardsDataMap.get(contentId) // {definitions, progress}
+
+      const awards = data && data.definitions.length !== 0
+        ? defineAwards(data)
+        : []
+
+      result[contentId] = {
+        hasAwards: awards.length > 0,
+        awards,
+      }
+    })
+
+    return result
+  } catch (error) {
+    console.error(`Failed to get award status for content IDs ${contentIds}:`, error)
+    return {}
+  }
+}
+
+function defineAwards(data) {
+  return data.definitions.map(def => {
+    const userProgress = data.progress.get(def._id)
+    const completionData = enhanceCompletionData(userProgress?.completion_data)
+
+    return {
+      awardId: def._id,
+      awardTitle: def.name,
+      badge: def.badge,
+      award: def.award,
+      brand: def.brand,
+      instructorName: def.instructor_name,
+      progressPercentage: userProgress?.progress_percentage ?? 0,
+      isCompleted: userProgress ? UserAwardProgressRepository.isCompleted(userProgress) : false,
+      completedAt: userProgress?.completed_at,
+      completionData
+    }
+  })
 }
 
 /**

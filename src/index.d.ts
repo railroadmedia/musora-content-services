@@ -9,6 +9,7 @@ import {
 	getAwardStatistics,
 	getCompletedAwards,
 	getContentAwards,
+	getContentAwardsByIds,
 	getInProgressAwards,
 	resetAllAwards
 } from './services/awards/award-query.js';
@@ -264,6 +265,7 @@ import {
 	fetchComingSoon,
 	fetchCommentModContentData,
 	fetchContentRows,
+	fetchContentTypeCounts,
 	fetchCourseCollectionData,
 	fetchHierarchy,
 	fetchLearningPathHierarchy,
@@ -297,6 +299,7 @@ import {
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	getSanityDate,
+	getSongTypesFor,
 	getSortOrder,
 	jumpToContinueContent
 } from './services/sanity.js';
@@ -493,6 +496,7 @@ declare module 'musora-content-services' {
 		fetchCommunityGuidelines,
 		fetchContentPageUserData,
 		fetchContentRows,
+		fetchContentTypeCounts,
 		fetchCourseCollectionData,
 		fetchCustomerPayments,
 		fetchEnrollmentPageMetadata,
@@ -580,6 +584,7 @@ declare module 'musora-content-services' {
 		getAwardStatistics,
 		getCompletedAwards,
 		getContentAwards,
+		getContentAwardsByIds,
 		getContentRows,
 		getDailySession,
 		getEnrichedLearningPath,
@@ -611,6 +616,7 @@ declare module 'musora-content-services' {
 		getResumeTimeSecondsByIdsAndCollections,
 		getSanityDate,
 		getScheduleContentRows,
+		getSongTypesFor,
 		getSortOrder,
 		getStartedOrCompletedProgressOnly,
 		getTabResults,

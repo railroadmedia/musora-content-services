@@ -96,7 +96,11 @@ export async function getTabResults(brand, pageName, tabName, {
   const filteredSelectedFilters = selectedFilters.filter(f => !f.startsWith('progress,'));
 
   // Prepare included fields
-  const mergedIncludedFields = [...filteredSelectedFilters, `tab,${tabName.toLowerCase()}`];
+  const tabMatch = Object.values(Tabs).find(
+    tabObj => tabObj.name.toLowerCase() === tabName.toLowerCase()
+  )
+  const tabValue = tabMatch?.value || ''
+  const mergedIncludedFields = tabValue ? [...filteredSelectedFilters, tabValue] : filteredSelectedFilters;
 
   // Fetch data
   let results
