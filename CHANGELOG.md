@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.117.8](https://github.com/railroadmedia/musora-content-services/compare/v2.117.7...v2.117.8) (2026-01-13)
+
+
+### Bug Fixes
+
+* **auth:** await for local storage ([69ee2ca](https://github.com/railroadmedia/musora-content-services/commit/69ee2ca780c71a707dfa452ede98240f0cfe8436))
+
 ### [2.117.7](https://github.com/railroadmedia/musora-content-services/compare/v2.117.6...v2.117.7) (2026-01-13)
 
 
