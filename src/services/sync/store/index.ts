@@ -1,4 +1,4 @@
-import { Database, Q, type Collection, type RecordId } from '@nozbe/watermelondb'
+import { Database, Q, Query, type Collection, type RecordId } from '@nozbe/watermelondb'
 import { RawSerializer, ModelSerializer } from '../serializers'
 import { ModelClass, SyncToken, SyncEntry,  SyncContext, EpochMs } from '..'
 import { SyncPullResponse, SyncPushResponse, SyncPullFetchFailureResponse, PushPayload, SyncStorePushResultSuccess, SyncStorePushResultFailure } from '../fetch'
@@ -16,7 +16,6 @@ import { dropThrottle, queueThrottle, createThrottleState, type ThrottleState } 
 import { type WriterInterface } from '@nozbe/watermelondb/Database/WorkQueue'
 import type LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 import { SyncError } from '../errors'
-
 
 type SyncPull = (
   session: BaseSessionProvider,
@@ -39,6 +38,8 @@ export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
 export default class SyncStore<TModel extends BaseModel = BaseModel> {
   static readonly PULL_THROTTLE_INTERVAL = 2_000
   static readonly PUSH_THROTTLE_INTERVAL = 1_000
+  static readonly DELETED_RECORD_GRACE_PERIOD = 10_000 // 10 seconds
+  static readonly CLEANUP_INTERVAL = 60 * 60 * 1000 // 1 hour
 
   readonly telemetry: SyncTelemetry
   readonly context: SyncContext
@@ -60,6 +61,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private pushCoalescer = new PushCoalescer()
 
   private emitter = new EventEmitter()
+  private cleanupTimer: NodeJS.Timeout | null = null
 
   private lastFetchTokenKey: string
 
@@ -91,6 +93,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.lastFetchTokenKey = `last_fetch_token:${this.model.table}`
 
     this.telemetry = telemetry
+
+    // Start background cleanup timer
+    this.startCleanupTimer()
   }
 
   on = this.emitter.on.bind(this.emitter)
@@ -174,6 +179,10 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   async queryAllIds(...args: Q.Clause[]) {
     return this.queryRecordIds(...args)
+  }
+
+  async queryAllDeletedIds(...args: Q.Clause[]) {
+    return this.queryMaybeDeletedRecordIds(...args)
   }
 
   async queryOne(...args: Q.Clause[]) {
@@ -356,6 +365,41 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       await this.ensurePersistence()
 
       return ids
+    })
+  }
+
+  async restoreOne(id: RecordId, span?: Span) {
+    return this.restoreSome([id], span).then(r => r[0])
+  }
+
+  async restoreSome(ids: RecordId[], span?: Span) {
+    return this.runScope.abortable(async () => {
+      const records = await this.telemeterizedWrite(span, async writer => {
+        const records = await writer.callReader(() => this.queryMaybeDeletedRecords(
+          Q.where('id', Q.oneOf(ids)),
+          Q.where('_status', 'deleted')
+        ))
+
+        const destroyBuilds = records.map(record => new this.model(this.collection, { id: record.id }).prepareDestroyPermanently())
+        const createBuilds = records.map(record => this.collection.prepareCreate((r) => {
+          Object.keys(record._raw).forEach((key) => {
+            r._raw[key] = record._raw[key]
+          })
+          r._raw._status = 'updated'
+        }))
+
+        await writer.batch(...destroyBuilds)
+        await writer.batch(...createBuilds)
+
+        return createBuilds
+      })
+
+      // this.emit('upserted', records)
+
+      this.pushUnsyncedWithRetry(span)
+      await this.ensurePersistence()
+
+      return records.map((record) => this.modelSerializer.toPlainObject(record))
     })
   }
 
@@ -637,31 +681,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return this.db.read(async () => {
       const undeletedRecords = await this.collection.query(...args).fetch()
 
-      const serializedQuery = this.collection.query(...args).serialize()
-      const adjustedQuery = {
-        ...serializedQuery,
-        description: {
-          ...serializedQuery.description,
-          where: [
-            // remove the default "not deleted" clause added by WatermelonDB
-            ...serializedQuery.description.where.filter(
-              (w) =>
-                !(
-                  w.type === 'where' &&
-                  w.left === '_status' &&
-                  w.comparison &&
-                  w.comparison.operator === 'notEq' &&
-                  w.comparison.right &&
-                  'value' in w.comparison.right &&
-                  w.comparison.right.value === 'deleted'
-                )
-            ),
-
-            // and add our own "include deleted" clause
-            Q.where('_status', Q.eq('deleted'))
-          ],
-        },
-      }
+      const adjustedQuery = this.maybeDeletedQuery(this.collection.query(...args))
 
       // NOTE: constructing models in this way is a bit of a hack,
       // but since deleted records aren't "resurrectable" in WatermelonDB anyway,
@@ -680,6 +700,54 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         ...deletedRecords,
       ]
     })
+  }
+
+  /**
+   * Query records including ones marked as deleted
+   * WatermelonDB by default excludes deleted records from queries
+   */
+  private async queryMaybeDeletedRecordIds(...args: Q.Clause[]) {
+    return this.db.read(async () => {
+      const undeletedRecordIds = await this.collection.query(...args).fetchIds()
+
+      const adjustedQuery = this.maybeDeletedQuery(this.collection.query(...args))
+      const deletedRecordIds = (await this.db.adapter.unsafeQueryRaw(adjustedQuery)).map(r => r.id)
+
+      return [
+        ...undeletedRecordIds,
+        ...deletedRecordIds,
+      ]
+    })
+  }
+
+  private maybeDeletedQuery(query: Query<TModel>) {
+    const serializedQuery = query.serialize()
+    const adjustedQuery = {
+      ...serializedQuery,
+      description: {
+        ...serializedQuery.description,
+        where: [
+          // remove the default "not deleted" clause added by WatermelonDB
+          ...serializedQuery.description.where.filter(
+            (w) =>
+              !(
+                w.type === 'where' &&
+                w.left === '_status' &&
+                w.comparison &&
+                w.comparison.operator === 'notEq' &&
+                w.comparison.right &&
+                'value' in w.comparison.right &&
+                w.comparison.right.value === 'deleted'
+              )
+          ),
+
+          // and add our own "include deleted" clause
+          Q.where('_status', Q.eq('deleted'))
+        ],
+      },
+    }
+
+    return adjustedQuery
   }
 
   // Avoid lazy persistence to IndexedDB
@@ -739,6 +807,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   private async buildWriteBatchesFromEntries(writer: WriterInterface, entries: SyncEntry[], freshSync: boolean) {
+    // Clean up old deleted records during pull operations
+    await this.cleanupOldDeletedRecords(writer)
+
     // if this is a fresh sync and there are no existing records, we can skip more sophisticated conflict resolution
     if (freshSync) {
       if ((await writer.callReader(() => this.queryMaybeDeletedRecords())).length === 0) {
@@ -747,7 +818,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
           .filter((e) => !e.meta.lifecycle.deleted_at)
           .forEach((entry) => resolver.againstNone(entry))
 
-        return this.prepareRecords(resolver.result)
+        return this.prepareRecords(resolver.result, new Map())
       }
     }
 
@@ -789,17 +860,26 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       }
     })
 
-    return this.prepareRecords(resolver.result)
+    return this.prepareRecords(resolver.result, existingRecordsMap)
   }
 
-  private prepareRecords(result: SyncResolution) {
+  private prepareRecords(result: SyncResolution, existingRecordsMap: Map<RecordId, TModel>) {
     if (Object.values(result).find((c) => c.length)) {
       this.telemetry.debug(`[store:${this.model.table}] Writing changes`, { changes: result })
     }
 
-    const destroyedBuilds = result.idsForDestroy.map((id) => {
-      return new this.model(this.collection, { id }).prepareDestroyPermanently()
-    })
+    const destroyedBuilds = result.idsForDestroy
+      .filter(id => {
+        // Only permanently delete if updated_at is older than grace period
+        const record = existingRecordsMap.get(id)
+        if (!record) return true // If no record found, safe to destroy
+
+        const gracePeriodAgo = Date.now() - SyncStore.DELETED_RECORD_GRACE_PERIOD
+        return record.updated_at < gracePeriodAgo
+      })
+      .map((id) => {
+        return new this.model(this.collection, { id }).prepareDestroyPermanently()
+      })
     const createdBuilds = result.entriesForCreate.map((entry) => {
       return this.collection.prepareCreate((r) => {
         Object.entries(entry.record!).forEach(([key, value]) => {
@@ -855,5 +935,46 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   private isLokiAdapter(adapter: any): adapter is LokiJSAdapter {
     return adapter._driver && 'loki' in adapter._driver
+  }
+
+  private startCleanupTimer() {
+    this.cleanupTimer = setInterval(() => {
+
+      this.runScope.abortable(async () => {
+        this.telemeterizedWrite(undefined, async (writer) => {
+          await this.cleanupOldDeletedRecords(writer)
+        })
+      })
+    }, SyncStore.CLEANUP_INTERVAL)
+  }
+
+  private stopCleanupTimer() {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = null
+    }
+  }
+
+  private async cleanupOldDeletedRecords(writer: WriterInterface) {
+    return // todo
+    const gracePeriodAgo = Date.now() - SyncStore.DELETED_RECORD_GRACE_PERIOD
+
+    const oldDeletedRecords = await writer.callReader(() => this.queryMaybeDeletedRecords(
+      Q.where('_status', 'deleted'),
+      Q.where('updated_at', Q.lt(gracePeriodAgo))
+    ))
+
+    if (oldDeletedRecords.length > 0) {
+      this.telemetry.debug(`[store:${this.model.table}] Cleaning up ${oldDeletedRecords.length} old deleted records`)
+
+      const destroyBuilds = oldDeletedRecords.map(record =>
+        record.prepareDestroyPermanently()
+      )
+      return writer.batch(...destroyBuilds)
+    }
+  }
+
+  async destroy() {
+    this.stopCleanupTimer()
   }
 }

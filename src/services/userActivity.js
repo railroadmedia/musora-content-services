@@ -341,7 +341,8 @@ export async function removeUserPractice(id) {
 }
 
 /**
- * Restores a previously deleted user's practice session by ID, updating both the local and remote activity context.
+ * Restores a previously deleted user's practice session by ID
+ * ***Return all the practices that remain on that date***
  *
  * @param {number} id - The unique identifier of the practice session to be restored.
  * @returns {Promise<Object>} - A promise that resolves to the response containing the restored practice session data.
@@ -353,25 +354,13 @@ export async function removeUserPractice(id) {
  *   .catch(error => console.error(error));
  */
 export async function restoreUserPractice(id) {
-  const url = `/api/user/practices/v1/practices/restore${buildQueryString([id])}`
-  const response = await PUT(url, null)
-  if (response?.data?.length) {
-    const restoredPractice = response.data.find((p) => p.id === id)
-    if (restoredPractice) {
-      await userActivityContext.updateLocal(async function (localContext) {
-        if (!localContext.data[DATA_KEY_PRACTICES][restoredPractice.day]) {
-          localContext.data[DATA_KEY_PRACTICES][restoredPractice.day] = []
-        }
-        response.data.forEach((restoredPractice) => {
-          localContext.data[DATA_KEY_PRACTICES][restoredPractice.day].push({
-            id: restoredPractice.id,
-            duration_seconds: restoredPractice.duration_seconds,
-          })
-        })
-      })
-    }
-  }
-  const formattedMeta = await formatPracticeMeta(response.data || [])
+  const response = await db.practices.restoreOne(id)
+  const remaining = await db.practices.queryAll(
+    Q.where('date', response.data.date),
+    Q.sortBy('created_at', 'asc')
+  )
+
+  const formattedMeta = await formatPracticeMeta(remaining.data)
   const practiceDuration = formattedMeta.reduce(
     (total, practice) => total + (practice.duration || 0),
     0
@@ -422,25 +411,10 @@ export async function deletePracticeSession(day) {
  *   .catch(error => console.error("Restore failed:", error));
  */
 export async function restorePracticeSession(date) {
-  const url = `/api/user/practices/v1/practices/restore?date=${date}`
-  const response = await PUT(url, null)
+  const ids = await db.practices.queryAllDeletedIds(Q.where('date', date))
+  const response = await db.practices.restoreSome(ids.data)
 
-  if (response?.data) {
-    await userActivityContext.updateLocal(async function (localContext) {
-      if (!localContext.data[DATA_KEY_PRACTICES][date]) {
-        localContext.data[DATA_KEY_PRACTICES][date] = []
-      }
-
-      response.data.forEach((restoredPractice) => {
-        localContext.data[DATA_KEY_PRACTICES][date].push({
-          id: restoredPractice.id,
-          duration_seconds: restoredPractice.duration_seconds,
-        })
-      })
-    })
-  }
-
-  const formattedMeta = await formatPracticeMeta(response?.data)
+  const formattedMeta = await formatPracticeMeta(response.data)
   const practiceDuration = formattedMeta.reduce(
     (total, practice) => total + (practice.duration || 0),
     0

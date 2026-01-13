@@ -47,6 +47,10 @@ export default class SyncRepository<TModel extends BaseModel> {
     return this._respondToRead(() => this.store.queryAllIds(...args))
   }
 
+  protected async queryAllDeletedIds(...args: Q.Clause[]) {
+    return this._respondToRead(() => this.store.queryAllDeletedIds(...args))
+  }
+
   protected async fetchOne(id: RecordId) {
     return this._fetch(() => this.store.readOne(id))
   }
@@ -128,6 +132,20 @@ export default class SyncRepository<TModel extends BaseModel> {
     return this.store.telemetry.trace(
       { name: `deleteSome:${this.store.model.table}`, op: 'delete', attributes: { ...this.context.session.toJSON() } },
       (span) => this._respondToWriteIds(() => this.store.deleteSome(ids, span), span)
+    )
+  }
+
+  protected async restoreOne(id: RecordId) {
+    return this.store.telemetry.trace(
+      { name: `restoreOne:${this.store.model.table}`, op: 'restore', attributes: { ...this.context.session.toJSON() } },
+      (span) => this._respondToWrite(() => this.store.restoreOne(id, span), span)
+    )
+  }
+
+  protected async restoreSome(ids: RecordId[]) {
+    return this.store.telemetry.trace(
+      { name: `restoreOne:${this.store.model.table}`, op: 'restore', attributes: { ...this.context.session.toJSON() } },
+      (span) => this._respondToWrite(() => this.store.restoreSome(ids, span), span)
     )
   }
 
