@@ -144,7 +144,7 @@ export default class SyncRepository<TModel extends BaseModel> {
 
   protected async restoreSome(ids: RecordId[]) {
     return this.store.telemetry.trace(
-      { name: `restoreOne:${this.store.model.table}`, op: 'restore', attributes: { ...this.context.session.toJSON() } },
+      { name: `restoreSome:${this.store.model.table}`, op: 'restore', attributes: { ...this.context.session.toJSON() } },
       (span) => this._respondToWrite(() => this.store.restoreSome(ids, span), span)
     )
   }
