@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.117.0](https://github.com/railroadmedia/musora-content-services/compare/v2.116.0...v2.117.0) (2026-01-13)
+
+
+### Features
+
+* **BEH-1442:** old method migration + course collection updates ([#673](https://github.com/railroadmedia/musora-content-services/issues/673)) ([24dd6bf](https://github.com/railroadmedia/musora-content-services/commit/24dd6bf6a1604ef3ee639979cf2ffab5abc05a24))
+
 ## [2.116.0](https://github.com/railroadmedia/musora-content-services/compare/v2.115.3...v2.116.0) (2026-01-12)
 
 
