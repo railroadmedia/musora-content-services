@@ -16,6 +16,7 @@ import { fetchPlaylist } from '../content-org/playlists.js'
 import { TabResponseType } from '../../contentMetaData.js'
 import { PUT } from '../../infrastructure/http/HttpClient.ts'
 
+export const USER_PIN_PROGRESS_KEY = 'user_pin_progress_row'
 
 /**
  * Fetches and combines recent user progress rows and playlists, excluding certain types and parents.
@@ -33,7 +34,7 @@ import { PUT } from '../../infrastructure/http/HttpClient.ts'
 export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
   const [userPinnedItem, recentPlaylists] = await Promise.all([
     getUserPinnedItem(brand),
-    getRecentPlaylists(brand, limit)
+    getRecentPlaylists(brand, limit),
   ])
   const playlistEngagedOnContent = await getPlaylistEngagedOnContent(recentPlaylists)
   const [contentCardMap, playlistCards, methodCard] = await Promise.all([
@@ -101,10 +102,10 @@ export async function unpinProgressRow(brand) {
 }
 
 async function getUserPinnedItem(brand) {
-  const userRaw = await globalConfig.localStorage.getItem('user')
-  const user = userRaw ? JSON.parse(userRaw) : {}
-  user.brand_pinned_progress = user.brand_pinned_progress || {}
-  return user.brand_pinned_progress[brand] ?? null
+  const pinnedProgressRaw = await globalConfig.localStorage.getItem(USER_PIN_PROGRESS_KEY)
+  let pinnedProgress = pinnedProgressRaw ? JSON.parse(pinnedProgressRaw) : {}
+  pinnedProgress = pinnedProgress || {}
+  return pinnedProgress[brand] ?? null
 }
 
 /**
@@ -112,7 +113,7 @@ async function getUserPinnedItem(brand) {
  * If userPinnedItem is not found, generate the pinned card from scratch.
  *
  **/
-async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard){
+async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard) {
   if (!userPinnedItem) return null
   const pinnedId = parseInt(userPinnedItem.id)
   const pinnedAt = userPinnedItem.pinnedAt
@@ -126,13 +127,15 @@ async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, meth
     } else {
       // we use fetchByRailContentIds so that we don't have the _type restriction in the query
       let data = await fetchByRailContentIds([pinnedId], 'progress-tracker')
-      item = await processContentItem(await addContextToContent(() => data[0] ?? null, {
-        addNextLesson: true,
-        addNavigateTo: true,
-        addProgressStatus: true,
-        addProgressPercentage: true,
-        addProgressTimestamp: true,
-      }))
+      item = await processContentItem(
+        await addContextToContent(() => data[0] ?? null, {
+          addNextLesson: true,
+          addNavigateTo: true,
+          addProgressStatus: true,
+          addProgressPercentage: true,
+          addProgressTimestamp: true,
+        })
+      )
     }
   } else if (progressType === 'playlist') {
     const pinnedPlaylist = playlistCards.find((p) => p.playlist.id === pinnedId)
@@ -197,9 +200,9 @@ function mergeAndSortItems(items, limit) {
 }
 
 async function updateUserPinnedProgressRow(brand, pinnedData) {
-  const userRaw = await globalConfig.localStorage.getItem('user')
-  const user = userRaw ? JSON.parse(userRaw) : {}
-  user.brand_pinned_progress = user.brand_pinned_progress || {}
-  user.brand_pinned_progress[brand] = pinnedData
-  await globalConfig.localStorage.setItem('user', JSON.stringify(user))
+  const pinnedProgressRaw = await globalConfig.localStorage.getItem(USER_PIN_PROGRESS_KEY)
+  let pinnedProgress = pinnedProgressRaw ? JSON.parse(pinnedProgressRaw) : {}
+  pinnedProgress = pinnedProgress || {}
+  pinnedProgress[brand] = pinnedData
+  await globalConfig.localStorage.setItem(USER_PIN_PROGRESS_KEY, JSON.stringify(pinnedProgress))
 }

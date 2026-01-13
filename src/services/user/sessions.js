@@ -2,6 +2,7 @@
  * @module Sessions
  */
 import { globalConfig } from '../config.js'
+import { USER_PIN_PROGRESS_KEY } from '../progress-row/base.js'
 import './types.js'
 
 /**
@@ -29,7 +30,7 @@ const excludeFromGeneratedIndex = []
  */
 export async function login(email, password, deviceName, deviceToken, platform) {
   const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
-  return fetch(`${baseUrl}/v1/sessions`, {
+  const res = await fetch(`${baseUrl}/v1/sessions`, {
     method: 'POST',
     headers: {
       'X-Client-Platform': 'mobile',
@@ -44,6 +45,17 @@ export async function login(email, password, deviceName, deviceToken, platform) 
       platform: platform,
     }),
   })
+
+  // TODO: refactor this. I don't think this is the place for it but we need it fixed for the system test
+  if (res.ok) {
+    const user = await res.json()
+
+    globalConfig.localStorage.setItem(
+      USER_PIN_PROGRESS_KEY,
+      JSON.stringify(user.pinned_progress_rows || {})
+    )
+  }
+  return res
 }
 //Removing 3rdParty OAuth2 for now => https://musora.atlassian.net/browse/BEH-624?focusedCommentId=21492
 /*export async function loginWithProvider(provider, providerIdToken, deviceToken, deviceName, platform) {
