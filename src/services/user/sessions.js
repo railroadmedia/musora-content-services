@@ -46,16 +46,17 @@ export async function login(email, password, deviceName, deviceToken, platform) 
     }),
   })
 
+  const data = await res.json()
+
   // TODO: refactor this. I don't think this is the place for it but we need it fixed for the system test
   if (res.ok) {
-    const user = await res.json()
-
     globalConfig.localStorage.setItem(
       USER_PIN_PROGRESS_KEY,
-      JSON.stringify(user.pinned_progress_rows || {})
+      JSON.stringify(data.pinned_progress_rows || {})
     )
   }
-  return res
+
+  return data
 }
 //Removing 3rdParty OAuth2 for now => https://musora.atlassian.net/browse/BEH-624?focusedCommentId=21492
 /*export async function loginWithProvider(provider, providerIdToken, deviceToken, deviceName, platform) {
