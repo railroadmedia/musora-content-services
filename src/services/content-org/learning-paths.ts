@@ -58,7 +58,7 @@ export async function getDailySession(brand: string, userDate: Date, forceRefres
   const dateWithTimezone = formatLocalDateTime(userDate)
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
   try {
-    const response = await GET(url, {cache: forceRefresh ? 'reload' : 'default'})
+    const response = await dataPromiseGET(url, forceRefresh) as DailySessionResponse
     if (!response) {
       return await updateDailySession(brand, userDate, false)
     }
@@ -89,7 +89,8 @@ export async function updateDailySession(
   const response = await POST(url, body) as DailySessionResponse
 
   if (response) {
-    getDailySession(brand, userDate, true) // refresh cache
+    const urlGet: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
+    dataPromiseGET(urlGet, true) // refresh cache
   }
 
   return response
@@ -106,7 +107,7 @@ function formatLocalDateTime(date: Date): string {
  */
 export async function getActivePath(brand: string, forceRefresh: boolean = false) {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
-  return (await GET(url, {cache: forceRefresh ? 'reload' : 'default'})) as ActiveLearningPathResponse
+  return (await dataPromiseGET(url, forceRefresh)) as ActiveLearningPathResponse
 }
 
 /**
@@ -120,8 +121,10 @@ export async function startLearningPath(brand: string, learningPathId: number) {
 
   const response = await POST(url, body) as ActiveLearningPathResponse
 
+  // manual BE call to avoid recursive POST<->GET calls
   if (response) {
-    getActivePath(brand, true) // refresh cache
+    const urlGet: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
+    dataPromiseGET(urlGet, true) // refresh cache
   }
 
   return response
@@ -500,4 +503,8 @@ export async function onContentCompletedLearningPathActions(contentId: number, c
   const nextLearningPathData = await getEnrichedLearningPath(nextLearningPath.id)
 
   await contentStatusReset(nextLearningPathData.intro_video.id, {skipPush: true})
+}
+
+async function dataPromiseGET(url: string, forceRefresh: boolean): Promise<DailySessionResponse|ActiveLearningPathResponse> {
+  return GET(url, {cache: forceRefresh ? 'reload' : 'default'})
 }
