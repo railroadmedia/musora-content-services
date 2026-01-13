@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.117.4](https://github.com/railroadmedia/musora-content-services/compare/v2.117.3...v2.117.4) (2026-01-13)
+
+
+### Bug Fixes
+
+* **pins:** user pins local storage ([#704](https://github.com/railroadmedia/musora-content-services/issues/704)) ([ca7c172](https://github.com/railroadmedia/musora-content-services/commit/ca7c1722b759c1a4711a1f6ee2213b7392d2632e))
+
 ### [2.117.3](https://github.com/railroadmedia/musora-content-services/compare/v2.117.2...v2.117.3) (2026-01-13)
 
 
