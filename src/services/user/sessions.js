@@ -50,7 +50,7 @@ export async function login(email, password, deviceName, deviceToken, platform) 
 
   // TODO: refactor this. I don't think this is the place for it but we need it fixed for the system test
   if (res.ok) {
-    globalConfig.localStorage.setItem(
+    await globalConfig.localStorage.setItem(
       USER_PIN_PROGRESS_KEY,
       JSON.stringify(data.pinned_progress_rows || {})
     )
