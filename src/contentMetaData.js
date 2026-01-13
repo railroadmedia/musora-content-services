@@ -55,7 +55,7 @@ export class Tabs {
   static Collections = { name: 'Collections', short_name: 'Collections', value: 'type,collections', cardType: 'big' }
   static ExploreAll = { name: 'Explore All', short_name: 'Explore All',  value: 'tab,explore all', icon: 'icon-filters', cardType: 'big'}
   static All = { name: 'All', short_name: 'All', value: '' }
-  static Courses = { name: 'Courses', short_name: 'Courses', value: 'type,Courses' }
+  static Courses = { name: 'Courses', short_name: 'Courses', value: 'type,Courses', recSysSection: 'lesson', }
   static SkillLevel = { name: 'Skill Level', short_name: 'SKILL LEVEL', is_group_by: true, value: 'difficulty_string' }
   static Genres = { name: 'Genres', short_name: 'Genres', is_group_by: true, value: 'genre' }
   static Completed = {
@@ -84,12 +84,14 @@ export class Tabs {
     short_name: 'Tutorials',
     value: 'type,tutorials',
     cardType: 'big',
+    recSysSection: 'song',
   }
   static Transcriptions = {
     name: 'Transcriptions',
     short_name: 'Transcriptions',
     value: 'type,transcriptions',
     cardType: 'small',
+    recSysSection: 'song',
   }
   static SheetMusic = {
     name: 'Sheet Music',
@@ -102,12 +104,14 @@ export class Tabs {
     short_name: 'Tabs',
     value: 'type,transcriptions',
     cardType: 'small',
+    recSysSection: 'song',
   }
   static PlayAlongs = {
     name: 'Play-Alongs',
     short_name: 'Play-Alongs',
-    value: 'type,play along',
+    value: 'type,play-along',
     cardType: 'small',
+    recSysSection: 'song',
   }
   static JamTracks = {
     name: 'Jam Tracks',
@@ -123,9 +127,9 @@ export class Tabs {
   static RecentActivityPosts = { name: 'Posts', short_name: 'Posts' }
   static RecentActivityComments = { name: 'Comments', short_name: 'Comments' }
  // new tabs - 29.10
-  static SingleLessons = { name: 'Single Lessons', short_name: 'Single Lessons', value: 'type,Single Lessons' }
-  static SkillPacks = { name: 'Skill Packs', short_name: 'Skill Packs', value: 'type,Skill Packs' }
-  static Entertainment = { name: 'Entertainment', short_name: 'Entertainment', value: 'type,Entertainment' }
+  static SingleLessons = { name: 'Single Lessons', short_name: 'Single Lessons', value: 'type,Single Lessons', recSysSection: 'lesson', }
+  static SkillPacks = { name: 'Skill Packs', short_name: 'Skill Packs', value: 'type,Skill Packs', recSysSection: 'lesson', }
+  static Entertainment = { name: 'Entertainment', short_name: 'Entertainment', value: 'type,Entertainment', recSysSection: 'lesson', }
 }
 
 export const TabResponseType = {
