@@ -169,7 +169,7 @@ function getDefaultCTATextForContent(content, contentType) {
     if (contentType === 'lesson') ctaText = 'Revisit Lesson'
     if (contentType === 'song tutorial' || collectionLessonTypes.includes(content.type))
       ctaText = 'Revisit Lessons'
-    if (contentType === 'pack') ctaText = 'View Lessons'
+    if (contentType === 'course-collection') ctaText = 'View Lessons'
   }
   return ctaText
 }

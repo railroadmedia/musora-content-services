@@ -62,6 +62,7 @@ export const DEFAULT_FIELDS = [
   "'permission_id': permission_v2",
   'child_count',
   '"parent_id": parent_content_data[0].id',
+  '"grandparent_id": parent_content_data[1].id',
 ]
 
 // these are identical... why
@@ -157,13 +158,12 @@ export const showsTypes = {
 }
 
 export const coachLessonsTypes = [
+  'course-collection',
   'course',
   'course-lesson',
   'coach-stream',
   'student-focus',
   'quick-tips',
-  'pack',
-  'semester-pack',
   'question-and-answer',
   'song-tutorial',
   'song-tutorial-lesson',
@@ -201,7 +201,11 @@ export const individualLessonsTypes = [
   ...studentArchivesLessonTypes,
 ]
 
-export const coursesLessonTypes = ['course', 'course-collection', 'guided-course']
+export const coursesLessonTypes = [
+  'course',
+  'course-collection',
+  'guided-course',
+]
 
 export const skillLessonTypes = ['skill-pack']
 
@@ -250,8 +254,7 @@ export const lessonTypesMapping = {
 export const getNextLessonLessonParentTypes = [
   'course',
   'guided-course',
-  'pack',
-  'pack-bundle',
+  'course-collection',
   'song-tutorial',
   'learning-path-v2',
   'skill-pack',
@@ -266,7 +269,7 @@ export const progressTypesMapping = {
     ...studentArchivesLessonTypes,
     'documentary-lesson',
     'live',
-    'pack-bundle-lesson',
+    'course-lesson'
   ],
   course: ['course'],
   show: showsLessonTypes,
@@ -274,7 +277,7 @@ export const progressTypesMapping = {
   songs: transcriptionsLessonTypes,
   'play along': playAlongLessonTypes,
   'guided course': ['guided-course'],
-  pack: ['pack', 'semester-pack'],
+  'course collection': ['course-collection'],
   'learning path': ['learning-path-v2'],
   'skill pack': skillLessonTypes,
   'jam track': jamTrackLessonTypes,
@@ -311,12 +314,12 @@ export const recentTypes = {
   lessons: [
     ...individualLessonsTypes,
     'course-lesson',
-    'pack-bundle-lesson',
     'guided-course-lesson',
     'quick-tips',
   ],
   songs: [...SONG_TYPES],
   home: [
+    ...skillLessonTypes,
     ...individualLessonsTypes,
     ...tutorialsLessonTypes,
     ...skillLessonTypes,
@@ -326,7 +329,7 @@ export const recentTypes = {
     'learning-path-v2',
     'live',
     'course',
-    'pack',
+    'course-collection',
   ],
 }
 
@@ -339,7 +342,6 @@ export const ownedContentTypes = {
     ...coursesLessonTypes,
     ...skillLessonTypes,
     ...entertainmentLessonTypes,
-    'pack',
   ],
   songs: [
     ...tutorialsLessonTypes,
@@ -396,9 +398,6 @@ export let contentTypeConfig = {
   'guided-course': {
     includeChildFields: true,
   },
-  'course-collection': {
-    individualLessonsTypes: true,
-  },
   course: {
     fields: [
       '"lesson_count": child_count',
@@ -414,6 +413,9 @@ export let contentTypeConfig = {
             }`,
     ],
     slug: 'courses',
+  },
+  'course-lesson': {
+    fields: [`"resources": ${resourcesField}`],
   },
   download: {
     fields: [
@@ -490,7 +492,7 @@ export let contentTypeConfig = {
     ],
     slug: 'play-alongs',
   },
-  pack: {
+  'course-collection': {
     fields: [
       '"lesson_count": coalesce(count(child[]->.child[]->), 0)',
       `"description": ${descriptionField}`,
@@ -516,23 +518,8 @@ export let contentTypeConfig = {
     slug: 'rudiments',
   },
   routine: {
-    fields: [`"description": ${descriptionField}`, 'high_soundslice_slug', 'low_soundslice_slug'],
+    fields: [`"description": ${descriptionField}`, 'soundslice_slug'],
     slug: 'routines',
-  },
-  'pack-children': {
-    fields: [
-      'child_count',
-      `"resources": ${resourcesField}`,
-      '"image": logo_image_url.asset->url',
-      '"thumbnail": thumbnail.asset->url',
-      '"light_mode_logo": light_mode_logo_url.asset->url',
-      '"dark_mode_logo": dark_mode_logo_url.asset->url',
-      `"description": ${descriptionField}`,
-    ],
-    childFields: [`"description": ${descriptionField}`],
-  },
-  'pack-bundle-lesson': {
-    fields: [`"resources": ${resourcesField}`],
   },
   foundation: {
     fields: [
