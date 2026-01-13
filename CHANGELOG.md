@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.117.5](https://github.com/railroadmedia/musora-content-services/compare/v2.117.4...v2.117.5) (2026-01-13)
+
+
+### Bug Fixes
+
+* **auth:** client platform header on login ([52d5927](https://github.com/railroadmedia/musora-content-services/commit/52d5927fddd79db807440cccd541c09ae8ce770a))
+
 ### [2.117.4](https://github.com/railroadmedia/musora-content-services/compare/v2.117.3...v2.117.4) (2026-01-13)
 
 
