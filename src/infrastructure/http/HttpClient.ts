@@ -7,6 +7,11 @@ import { DefaultHeaderProvider } from './providers/DefaultHeaderProvider'
 import { FetchRequestExecutor } from './executors/FetchRequestExecutor'
 import { globalConfig } from '../../services/config'
 
+type _RequestOptions = {
+  dataVersion?: string | null
+  cache?: RequestCache
+}
+
 export class HttpClient {
   private baseUrl: string
   private token: string | null
@@ -33,38 +38,38 @@ export class HttpClient {
     this.token = null;
   }
 
-  public async get<T>(url: string, {dataVersion = null, cache = 'default'}: {dataVersion?: string | null; cache?: RequestCache} = {}): Promise<T> {
-    return this.request<T>(url, 'GET', {dataVersion, cache})
+  public async get<T>(url: string, options: _RequestOptions = {}): Promise<T> {
+    return this.request<T>(url, 'GET', options)
   }
 
-  public async post<T>(url: string, data: any, {dataVersion = null}: {dataVersion?: string | null} = {}): Promise<T> {
-    return this.request<T>(url, 'POST', {dataVersion}, data)
+  public async post<T>(url: string, data: any, options: _RequestOptions = {}): Promise<T> {
+    return this.request<T>(url, 'POST', options, data)
   }
 
-  public async put<T>(url: string, data: any, {dataVersion = null}: {dataVersion?: string | null} = {}): Promise<T> {
-    return this.request<T>(url, 'PUT', {dataVersion}, data)
+  public async put<T>(url: string, data: any, options: _RequestOptions = {}): Promise<T> {
+    return this.request<T>(url, 'PUT', options, data)
   }
 
-  public async patch<T>(url: string, data: any, {dataVersion = null}: {dataVersion?: string | null} = {}): Promise<T> {
-    return this.request<T>(url, 'PATCH', {dataVersion}, data)
+  public async patch<T>(url: string, data: any, options: _RequestOptions = {}): Promise<T> {
+    return this.request<T>(url, 'PATCH', options, data)
   }
 
-  public async delete<T>(url: string, data: any = null, {dataVersion = null}: {dataVersion?: string | null} = {}): Promise<T> {
-    return this.request<T>(url, 'DELETE', {dataVersion}, data)
+  public async delete<T>(url: string, data: any = null, options: _RequestOptions = {}): Promise<T> {
+    return this.request<T>(url, 'DELETE', options, data)
   }
 
   private async request<T>(
     url: string,
     method: string,
-    {dataVersion = null, cache}: {dataVersion?: string | null; cache?: RequestCache} = {},
+    options: _RequestOptions = {},
     body: any = null
   ): Promise<T> {
     try {
-      const headers = this.buildHeaders(dataVersion)
-      const options = this.buildRequestOptions(method, headers, body, cache)
+      const headers = this.buildHeaders(options.dataVersion)
+      const requestOptions = this.buildRequestOptions(method, headers, body, options.cache)
       const fullUrl = this.resolveUrl(url)
 
-      return await this.requestExecutor.execute<T>(fullUrl, options)
+      return await this.requestExecutor.execute<T>(fullUrl, requestOptions)
     } catch (error: any) {
       return this.handleError(error, url, method)
     }
@@ -91,7 +96,7 @@ export class HttpClient {
     method: string,
     headers: Record<string, string>,
     body: any,
-    cache?: RequestCache
+    cache?: RequestCache | null
   ): RequestOptions {
     const options: RequestOptions = {
       method,
