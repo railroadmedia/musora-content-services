@@ -130,8 +130,9 @@ export async function getUserWeeklyStats() {
       day: dayStr,
     })
   }
-
+  // Calculate streak using recent practices (fixes bug)
   let { streakMessage } = getStreaksAndMessage(recentPractices)
+  // Return same structure (non-breaking)
   return { data: { dailyActiveStats: dailyStats, streakMessage, practices: weekPractices } }
 }
 
