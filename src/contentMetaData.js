@@ -1,8 +1,6 @@
 // Metadata is taken from the 'common' element and then merged with the <brand> metadata.
 // Brand values are prioritized and will override the same property in the 'common' element.
 
-import { ALWAYS_VISIBLE_TABS } from './services/sanity.js'
-
 const PROGRESS_NAMES = ['All', 'In Progress', 'Completed', 'Not Started']
 const DIFFICULTY_STRINGS = ['Introductory', 'Beginner', 'Intermediate', 'Advanced', 'Expert']
 
@@ -127,6 +125,13 @@ export class Tabs {
   static SkillPacks = { name: 'Skill Packs', short_name: 'Skill Packs', value: 'type,Skill Packs' }
   static Entertainment = { name: 'Entertainment', short_name: 'Entertainment', value: 'type,Entertainment' }
 }
+
+/**
+ * Song/Lesson tabs that are always visible.
+ *
+ * @type {object[]}
+ */
+export const ALWAYS_VISIBLE_TABS = [Tabs.ForYou, Tabs.ExploreAll]
 
 export const TabResponseType = {
   SECTIONS: 'sections',
