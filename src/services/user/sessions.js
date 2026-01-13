@@ -33,7 +33,7 @@ export async function login(email, password, deviceName, deviceToken, platform) 
   const res = await fetch(`${baseUrl}/v1/sessions`, {
     method: 'POST',
     headers: {
-      'X-Client-Platform': 'mobile',
+      'X-Client-Platform': globalConfig.isMA ? 'mobile' : 'web',
       'Content-Type': 'application/json',
       Authorization: null,
     },
