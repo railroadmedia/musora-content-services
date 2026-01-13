@@ -342,7 +342,6 @@ export async function removeUserPractice(id) {
 
 /**
  * Restores a previously deleted user's practice session by ID
- * ***Return all the practices that remain on that date***
  *
  * @param {number} id - The unique identifier of the practice session to be restored.
  * @returns {Promise<Object>} - A promise that resolves to the response containing the restored practice session data.
@@ -354,23 +353,7 @@ export async function removeUserPractice(id) {
  *   .catch(error => console.error(error));
  */
 export async function restoreUserPractice(id) {
-  const response = await db.practices.restoreOne(id)
-  const remaining = await db.practices.queryAll(
-    Q.where('date', response.data.date),
-    Q.sortBy('created_at', 'asc')
-  )
-
-  const formattedMeta = await formatPracticeMeta(remaining.data)
-  const practiceDuration = formattedMeta.reduce(
-    (total, practice) => total + (practice.duration || 0),
-    0
-  )
-  return {
-    data: formattedMeta,
-    message: response.message,
-    version: response.version,
-    practiceDuration,
-  }
+  return await db.practices.restoreOne(id)
 }
 
 /**

@@ -165,6 +165,10 @@ export default class SyncManager {
       }
 
       try {
+        Object.values(this.storesRegistry).forEach((store) => {
+          store.destroy()
+        })
+
         this.runScope.abort()
         this.strategyMap.forEach(({ strategies }) => strategies.forEach((strategy) => strategy.stop()))
         effectTeardowns.forEach((teardown) => teardown())

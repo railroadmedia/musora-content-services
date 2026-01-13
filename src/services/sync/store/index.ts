@@ -38,8 +38,8 @@ export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
 export default class SyncStore<TModel extends BaseModel = BaseModel> {
   static readonly PULL_THROTTLE_INTERVAL = 2_000
   static readonly PUSH_THROTTLE_INTERVAL = 1_000
-  static readonly DELETED_RECORD_GRACE_PERIOD = 10_000 // 10 seconds
-  static readonly CLEANUP_INTERVAL = 60 * 60 * 1000 // 1 hour
+  static readonly DELETED_RECORD_GRACE_PERIOD = 60_000 // 60s
+  static readonly CLEANUP_INTERVAL = 60_000 * 60 // 1hr
 
   readonly telemetry: SyncTelemetry
   readonly context: SyncContext
@@ -94,13 +94,16 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
     this.telemetry = telemetry
 
-    // Start background cleanup timer
     this.startCleanupTimer()
   }
 
   on = this.emitter.on.bind(this.emitter)
   off = this.emitter.off.bind(this.emitter)
   private emit = this.emitter.emit.bind(this.emitter)
+
+  destroy() {
+    this.stopCleanupTimer()
+  }
 
   async requestSync(reason: string) {
     inBoundary(ctx => {
@@ -394,7 +397,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         return createBuilds
       })
 
-      // this.emit('upserted', records)
+      this.emit('upserted', records)
 
       this.pushUnsyncedWithRetry(span)
       await this.ensurePersistence()
@@ -939,7 +942,6 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   private startCleanupTimer() {
     this.cleanupTimer = setInterval(() => {
-
       this.runScope.abortable(async () => {
         this.telemeterizedWrite(undefined, async (writer) => {
           await this.cleanupOldDeletedRecords(writer)
@@ -955,8 +957,12 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     }
   }
 
+  /** Destroy permanently records past their grace period
+   * (we need to keep records around after being marked deleted
+   * for undo purposes, so we don't discard them in writeEntries
+   * (after a server push), but instead every hour or so)
+  */
   private async cleanupOldDeletedRecords(writer: WriterInterface) {
-    return // todo
     const gracePeriodAgo = Date.now() - SyncStore.DELETED_RECORD_GRACE_PERIOD
 
     const oldDeletedRecords = await writer.callReader(() => this.queryMaybeDeletedRecords(
@@ -967,14 +973,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     if (oldDeletedRecords.length > 0) {
       this.telemetry.debug(`[store:${this.model.table}] Cleaning up ${oldDeletedRecords.length} old deleted records`)
 
-      const destroyBuilds = oldDeletedRecords.map(record =>
-        record.prepareDestroyPermanently()
-      )
+      const destroyBuilds = oldDeletedRecords.map(record => record.prepareDestroyPermanently())
       return writer.batch(...destroyBuilds)
     }
-  }
-
-  async destroy() {
-    this.stopCleanupTimer()
   }
 }
