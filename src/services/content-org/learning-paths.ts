@@ -89,7 +89,7 @@ export async function updateDailySession(
   const response = await POST(url, body) as DailySessionResponse
 
   if (response) {
-    await getDailySession(brand, userDate, true) // refresh cache
+    getDailySession(brand, userDate, true) // refresh cache
   }
 
   return response
@@ -121,7 +121,7 @@ export async function startLearningPath(brand: string, learningPathId: number) {
   const response = await POST(url, body) as ActiveLearningPathResponse
 
   if (response) {
-    await getActivePath(brand, true) // refresh cache
+    getActivePath(brand, true) // refresh cache
   }
 
   return response
