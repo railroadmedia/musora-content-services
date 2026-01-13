@@ -238,7 +238,7 @@ export default class SyncRepository<TModel extends BaseModel> {
     return result
   }
 
-  protected async _requestPushUnsynced() {
-    await this.store.pushUnsyncedWithRetry()
+  requestPushUnsynced() {
+    this.store.pushUnsyncedWithRetry()
   }
 }

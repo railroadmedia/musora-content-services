@@ -18,7 +18,7 @@ export default class PracticesRepository extends SyncRepository<Practice> {
     return Math.round(totalSeconds / 60)
   }
 
-  async trackAutoPractice(contentId: number, date: string, incrementalDurationSeconds: number) {
+  async trackAutoPractice(contentId: number, date: string, incrementalDurationSeconds: number, skipPush = true) {
     return await this.upsertOne(PracticesRepository.generateAutoId(contentId, date), r => {
       r._raw.id = PracticesRepository.generateAutoId(contentId, date);
       r.auto = true;
@@ -26,7 +26,7 @@ export default class PracticesRepository extends SyncRepository<Practice> {
       r.date = date;
 
       r.duration_seconds = Math.min((r.duration_seconds || 0) + incrementalDurationSeconds, 59999);
-    })
+    }, { skipPush })
   }
 
   async recordManualPractice(date: string, durationSeconds: number, details: Partial<Pick<Practice, 'title' | 'instrument_id' | 'category_id' | 'thumbnail_url'>> = {}) {
@@ -63,5 +63,13 @@ export default class PracticesRepository extends SyncRepository<Practice> {
 
   private static generateManualId(manualId: string) {
     return `manual:${manualId}`;
+  }
+
+  async getAutoPracticesOnDate(date: string) {
+    return await this.queryAll(
+      Q.where('date', date),
+      Q.where('auto', true),
+      Q.sortBy('created_at', 'asc')
+    )
   }
 }

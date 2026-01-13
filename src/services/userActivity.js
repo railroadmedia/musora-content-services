@@ -298,7 +298,7 @@ export async function recordUserPractice(practiceDetails) {
 
 export async function trackUserPractice(contentId, incSeconds) {
   const day = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD wall clock date in user's timezone
-  return await db.practices.trackAutoPractice(contentId, day, incSeconds);
+  return await db.practices.trackAutoPractice(contentId, day, incSeconds, { skipPush: true }); // NOTE - SKIPS PUSH
 }
 
 /**
