@@ -78,7 +78,7 @@ async function getOwnPractices(...clauses) {
   return data
 }
 
-export const userActivityContext = new DataContext(UserActivityVersionKey, function() {})
+export let userActivityContext = new DataContext(UserActivityVersionKey, function() {})
 
 /**
  * Retrieves user activity statistics for the current week, including daily activity and streak messages.
