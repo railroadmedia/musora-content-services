@@ -126,9 +126,12 @@ export async function rankItems(brand, content_ids) {
   }
 }
 
-export async function recommendations(brand, { section = '' } = {}) {
+export async function recommendations(brand, { section = '', contentTypes = [] } = {}) {
   section = section.toUpperCase().replace('-', '_')
   const sectionString = section ? `&section=${section}` : ''
-  const url = `/api/content/v1/recommendations?brand=${brand}${sectionString}`
+  const contentTypesString = contentTypes.length > 0
+    ? contentTypes.map(type => `&content_types[]=${encodeURIComponent(type)}`).join('')
+    : ''
+  const url = `/api/content/v1/recommendations?brand=${brand}${sectionString}${contentTypesString}`
   return await GET(url)
 }

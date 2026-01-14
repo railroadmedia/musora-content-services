@@ -2,6 +2,8 @@
  * @module Sessions
  */
 import { globalConfig } from '../config.js'
+import { clearAllCachedData } from '../dataContext.js'
+import { USER_PIN_PROGRESS_KEY } from '../progress-row/base.js'
 import './types.js'
 
 /**
@@ -29,10 +31,10 @@ const excludeFromGeneratedIndex = []
  */
 export async function login(email, password, deviceName, deviceToken, platform) {
   const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
-  return fetch(`${baseUrl}/v1/sessions`, {
+  const res = await fetch(`${baseUrl}/v1/sessions`, {
     method: 'POST',
     headers: {
-      'X-Client-Platform': 'mobile',
+      'X-Client-Platform': globalConfig.isMA ? 'mobile' : 'web',
       'Content-Type': 'application/json',
       Authorization: null,
     },
@@ -44,6 +46,20 @@ export async function login(email, password, deviceName, deviceToken, platform) 
       platform: platform,
     }),
   })
+
+  const data = await res.json()
+
+  // TODO: refactor this. I don't think this is the place for it but we need it fixed for the system test
+  if (res.ok) {
+    const userId = data.user?.id
+    const userPinKey = userId ? `user_pin_progress_row_${userId}` : USER_PIN_PROGRESS_KEY
+    await globalConfig.localStorage.setItem(
+      userPinKey,
+      JSON.stringify(data.user?.brand_pinned_progress || {})
+    )
+  }
+
+  return data
 }
 //Removing 3rdParty OAuth2 for now => https://musora.atlassian.net/browse/BEH-624?focusedCommentId=21492
 /*export async function loginWithProvider(provider, providerIdToken, deviceToken, deviceName, platform) {
@@ -78,6 +94,7 @@ export async function login(email, password, deviceName, deviceToken, platform) 
 
 /**
  * Logs the user out of the current session.
+ * Clears all cached data to prevent data leakage between users.
  *
  * @returns {Promise<void>}
  *
@@ -95,6 +112,9 @@ export async function logout() {
       'Content-Type': 'application/json',
     },
   })
+
+  // Clear all locally cached data to prevent data leakage between users
+  await clearAllCachedData()
 }
 
 /**

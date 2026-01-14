@@ -18,7 +18,10 @@ import {recommendations, rankCategories, rankItems} from "./recommendations";
 import {addContextToContent} from "./contentAggregator.js";
 import {globalConfig} from "./config";
 import {getUserData} from "./user/management";
-import {filterTypes, ownedContentTypes} from "../contentTypeConfig";
+import {
+  lessonTypesMapping,
+  ownedContentTypes
+} from "../contentTypeConfig";
 import {getPermissionsAdapter} from "./permissions/index.ts";
 import {MEMBERSHIP_PERMISSIONS} from "../constants/membership-permissions.ts";
 
@@ -100,6 +103,7 @@ export async function getTabResults(brand, pageName, tabName, {
     tabObj => tabObj.name.toLowerCase() === tabName.toLowerCase()
   )
   const tabValue = tabMatch?.value || ''
+  const tabRecSysSection = tabMatch?.recSysSection || ''
   const mergedIncludedFields = tabValue ? [...filteredSelectedFilters, tabValue] : filteredSelectedFilters;
 
   // Fetch data
@@ -112,9 +116,52 @@ export async function getTabResults(brand, pageName, tabName, {
       addProgressPercentage: true,
       addProgressStatus: true
     })
+  } else if (sort === 'recommended' && tabName.toLowerCase() !== Tabs.ExploreAll.name.toLowerCase()) {
+    const contentTypes = lessonTypesMapping[tabName.toLowerCase()] || []
+    const allRecommendations = await recommendations(brand, { contentTypes, section: tabRecSysSection })
+
+    let contentToDisplay
+    if (allRecommendations.length > 0) {
+      // Fetch and sort recommended content
+      let recommendedContent = await fetchByRailContentIds(allRecommendations, 'tab-data', brand, true)
+      recommendedContent.sort((a, b) => allRecommendations.indexOf(a.id) - allRecommendations.indexOf(b.id))
+
+      const start = (page - 1) * limit
+      const end = start + limit
+
+      // Need more content beyond recommendations?
+      if (recommendedContent.length < end) {
+        const additionalNeeded = end - recommendedContent.length;
+        const tabData = await fetchTabData(brand, pageName, {
+          page: Math.ceil(additionalNeeded / limit),
+          limit: additionalNeeded + limit,
+          sort: '-published_on',
+          includedFields: mergedIncludedFields,
+          progress: progressValue
+        })
+
+        // Filter out duplicates and combine
+        const recommendedIds = new Set(recommendedContent.map(c => c.id))
+        const additionalContent = tabData.entity.filter(c => !recommendedIds.has(c.id))
+
+        contentToDisplay = [...recommendedContent, ...additionalContent].slice(start, end)
+      } else {
+        contentToDisplay = recommendedContent.slice(start, end)
+      }
+    } else {
+      // No recommendations - use normal flow
+      const temp = await fetchTabData(brand, pageName, { page, limit, sort: '-published_on', includedFields: mergedIncludedFields, progress: progressValue })
+      contentToDisplay = temp.entity
+    }
+
+    results = await addContextToContent(() => contentToDisplay, {
+      addNextLesson: true,
+      addNavigateTo: true,
+      addProgressPercentage: true,
+      addProgressStatus: true
+    })
   } else {
     let temp = await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
-
     const [ranking, contextResults] = await Promise.all([
       sort === 'recommended' ? rankItems(brand, temp.entity.map(e => e.id)) : [],
       addContextToContent(() => temp.entity, {

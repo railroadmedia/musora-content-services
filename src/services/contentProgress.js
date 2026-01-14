@@ -10,6 +10,7 @@ import { fetchBrandsByContentIds } from './sanity.js'
 const STATE_STARTED = STATE.STARTED
 const STATE_COMPLETED = STATE.COMPLETED
 const MAX_DEPTH = 3
+const PUSH_INTERVAL = 30_000
 
 export async function getProgressState(contentId, collection = null) {
   return getById(normalizeContentId(contentId), normalizeCollection(collection), 'state', '')
@@ -414,16 +415,42 @@ export async function recordWatchSession(
   contentId = normalizeContentId(contentId)
   collection = normalizeCollection(collection)
 
+  if (!prevSession) {
+    prevSession = {
+      practiceSession: new Map(),
+      pushInterval: null
+    }
+  }
+
+  // Track practice and progress locally (no immediate push)
   const [session] = await Promise.all([
-    trackPractice(contentId, secondsPlayed, prevSession, { instrumentId, categoryId }),
+    trackPractice(contentId, secondsPlayed, prevSession.practiceSession, { instrumentId, categoryId }),
     trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds),
   ])
 
-  return session
+  if (!prevSession.pushInterval) {
+    prevSession.pushInterval = setInterval(() => {
+      flushWatchSession()
+    }, PUSH_INTERVAL)
+  }
+
+  prevSession.practiceSession = session
+
+  return prevSession
 }
 
-async function trackPractice(contentId, secondsPlayed, prevSession, details = {}) {
-  const session = prevSession || new Map()
+export async function flushWatchSession(sessionToFlush = null, shouldClearInterval = true) {
+  if (shouldClearInterval && sessionToFlush?.pushInterval) {
+    clearInterval(sessionToFlush.pushInterval)
+    sessionToFlush.pushInterval = null
+  }
+
+  db.contentProgress.requestPushUnsynced()
+  db.practices.requestPushUnsynced()
+}
+
+async function trackPractice(contentId, secondsPlayed, practiceSession, details = {}) {
+  const session = practiceSession || new Map()
 
   const secondsSinceLastUpdate = Math.ceil(secondsPlayed - (session.get(contentId) ?? 0))
   session.set(contentId, secondsPlayed)
@@ -437,7 +464,7 @@ async function trackProgress(contentId, collection, currentSeconds, mediaLengthS
     99,
     Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds)) * 100)
   ))
-  return saveContentProgress(contentId, collection, progress, currentSeconds)
+  return saveContentProgress(contentId, collection, progress, currentSeconds, { skipPush: true })
 }
 
 export async function contentStatusCompleted(contentId, collection = null) {
