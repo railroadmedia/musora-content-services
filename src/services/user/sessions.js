@@ -3,6 +3,7 @@
  */
 import { globalConfig } from '../config.js'
 import { clearAllCachedData } from '../dataContext.js'
+import { USER_PIN_PROGRESS_KEY } from '../progress-row/base.js'
 import './types.js'
 
 /**
@@ -50,8 +51,10 @@ export async function login(email, password, deviceName, deviceToken, platform) 
 
   // TODO: refactor this. I don't think this is the place for it but we need it fixed for the system test
   if (res.ok) {
+    const userId = data.user.id
+    const userPinKey = userId ? `user_pin_progress_row_${userId}` : USER_PIN_PROGRESS_KEY
     await globalConfig.localStorage.setItem(
-      USER_PIN_PROGRESS_KEY,
+      userPinKey,
       JSON.stringify(data.pinned_progress_rows || {})
     )
   }
