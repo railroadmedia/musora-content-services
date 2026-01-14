@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.119.1](https://github.com/railroadmedia/musora-content-services/compare/v2.119.0...v2.119.1) (2026-01-14)
+
+
+### Bug Fixes
+
+* **T3PS-1347:** Implement WatermelonDB-based streak calculator with year boundary fix ([916a8ef](https://github.com/railroadmedia/musora-content-services/commit/916a8ef532a858f82a8133d1725ad69ea3d550e9))
+
 ## [2.119.0](https://github.com/railroadmedia/musora-content-services/compare/v2.118.1...v2.119.0) (2026-01-14)
 
 
