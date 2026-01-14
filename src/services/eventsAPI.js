@@ -2,15 +2,7 @@ import {fetchLiveEventPollingState, fetchUnreadCount, pauseLiveEventPolling} fro
 import {fetchLiveEvent} from "./sanity"
 import { DataContext, PollingStateVersionKey } from './dataContext'
 
-let pollingStateContext = new DataContext(PollingStateVersionKey, fetchLiveEventPollingState)
-
-/**
- * Resets the polling state context. Should be called on logout.
- */
-export function resetPollingStateContext() {
-  pollingStateContext.clearCache()
-  pollingStateContext = new DataContext(PollingStateVersionKey, fetchLiveEventPollingState)
-}
+const pollingStateContext = new DataContext(PollingStateVersionKey, fetchLiveEventPollingState)
 
 /**
  * API for managing notifications and live event polling.

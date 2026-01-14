@@ -2,10 +2,7 @@
  * @module Sessions
  */
 import { globalConfig } from '../config.js'
-import { USER_PIN_PROGRESS_KEY } from '../progress-row/base.js'
 import { clearAllCachedData } from '../dataContext.js'
-import { resetUserActivityContext } from '../userActivity.js'
-import { resetPollingStateContext } from '../eventsAPI.js'
 import './types.js'
 
 /**
@@ -115,10 +112,6 @@ export async function logout() {
 
   // Clear all locally cached data to prevent data leakage between users
   await clearAllCachedData()
-
-  // Reset in-memory context instances
-  resetUserActivityContext()
-  resetPollingStateContext()
 }
 
 /**
