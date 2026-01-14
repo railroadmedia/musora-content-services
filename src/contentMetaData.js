@@ -53,7 +53,7 @@ export class Tabs {
   static Collections = { name: 'Collections', short_name: 'Collections', value: 'type,collections', cardType: 'big' }
   static ExploreAll = { name: 'Explore All', short_name: 'Explore All',  value: 'tab,explore all', icon: 'icon-filters', cardType: 'big'}
   static All = { name: 'All', short_name: 'All', value: '' }
-  static Courses = { name: 'Courses', short_name: 'Courses', value: 'type,Courses', recSysSection: 'lesson', }
+  static Courses = { name: 'Courses', short_name: 'Courses', value: 'tab,courses', recSysSection: 'lesson', }
   static SkillLevel = { name: 'Skill Level', short_name: 'SKILL LEVEL', is_group_by: true, value: 'difficulty_string' }
   static Genres = { name: 'Genres', short_name: 'Genres', is_group_by: true, value: 'genre' }
   static Completed = {

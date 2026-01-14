@@ -229,7 +229,7 @@ export const lessonTypesMapping = {
   performances: performancesLessonTypes,
   'student archives': studentArchivesLessonTypes,
   documentaries: ['documentary-lesson'],
-  courses: ['course', 'course-collection'],
+  courses: ['course'],
   'guided courses': ['guided-course'],
   'course collections': ['course-collection'],
   'skill packs': ['skill-pack'],
