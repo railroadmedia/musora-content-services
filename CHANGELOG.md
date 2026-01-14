@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.119.3](https://github.com/railroadmedia/musora-content-services/compare/v2.119.2...v2.119.3) (2026-01-14)
+
+
+### Bug Fixes
+
+* remove unsupported collection types ([#713](https://github.com/railroadmedia/musora-content-services/issues/713)) ([0441941](https://github.com/railroadmedia/musora-content-services/commit/04419413ffea82303258b839c8e1e11b3a4c507a))
+
 ### [2.119.2](https://github.com/railroadmedia/musora-content-services/compare/v2.119.1...v2.119.2) (2026-01-14)
 
 
