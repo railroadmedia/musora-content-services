@@ -132,6 +132,7 @@ import {
 } from './services/contentProgress.js';
 
 import {
+	clearAllCachedData,
 	verifyLocalDataContext
 } from './services/dataContext.js';
 
@@ -443,6 +444,7 @@ export {
 	buildEntityAndTotalQuery,
 	buildImageSRC,
 	calculateLongestStreaks,
+	clearAllCachedData,
 	closeComment,
 	completeLearningPathIntroVideo,
 	completeMethodIntroVideo,
