@@ -961,9 +961,9 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
     ${parentQuery}
     ...select(
       defined(live_event_start_time) => {
-        "live_event_start_time": live_event_start_time,
-        "live_event_end_time": live_event_end_time,
-        "live_event_stream_id": live_event_stream_id,
+        live_event_start_time,
+        live_event_end_time,
+        live_event_stream_id,
         "videoId": coalesce(live_event_stream_id, video.external_id),
         "live_event_is_global": live_global_event == true
       }
@@ -1183,48 +1183,32 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
   )
   endDateTemp = new Date(endDateTemp.setMinutes(endDateTemp.getMinutes() - LIVE_EXTRA_MINUTES))
 
-  // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
-  // this has some +- on times
-  // But this query just finds the first scheduled event (sorted by start_time) that ends after now()
-  const query =
+  const liveEventFields = `
+    'slug': slug.current,
+    'id': railcontent_id,
+    live_event_start_time,
+    live_event_end_time,
+    live_event_stream_id,
+    "live_event_is_global": live_global_event == true,
+    railcontent_id,
+    published_on,
+    'event_coach_url': instructor[0]->web_url_path,
+    'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
+    title,
+    "thumbnail": thumbnail.asset->url,
+    ${artistOrInstructorName()},
+    difficulty_string,
+    "instructors": ${instructorField},
+    'videoId': coalesce(live_event_stream_id, video.external_id)
+  `
+
+  const filterCondition =
     forcedContentId !== null
-      ? `*[railcontent_id == ${forcedContentId} ]{
-      'slug': slug.current,
-      'id': railcontent_id,
-      live_event_start_time,
-      live_event_end_time,
-      live_event_stream_id,
-      railcontent_id,
-      published_on,
-      'event_coach_url' : instructor[0]->web_url_path,
-      'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
-      title,
-      "thumbnail": thumbnail.asset->url,
-      ${artistOrInstructorName()},
-      difficulty_string,
-      "instructors": ${instructorField},
-      'videoId': coalesce(live_event_stream_id, video.external_id),
-    } | order(live_event_start_time)[0...1]`
-      : `*[status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}']{
-      'slug': slug.current,
-      'id': railcontent_id,
-      live_event_start_time,
-      live_event_end_time,
-      live_event_stream_id,
-      railcontent_id,
-      published_on,
-      'event_coach_url' : instructor[0]->web_url_path,
-      'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
-      title,
-      "thumbnail": thumbnail.asset->url,
-      ${artistOrInstructorName()},
-      difficulty_string,
-      "instructors": instructor[]->{
-            name,
-            web_url_path,
-          },
-      'videoId': coalesce(live_event_stream_id, video.external_id),
-    } | order(live_event_start_time)[0...1]`
+      ? `railcontent_id == ${forcedContentId}`
+      : `status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}'`
+
+  // This query finds the first scheduled event (sorted by start_time) that ends after now()
+  const query = `*[${filterCondition}]{${liveEventFields}} | order(live_event_start_time)[0...1]`
 
   return await fetchSanity(query, false, { processNeedAccess: false })
 }
