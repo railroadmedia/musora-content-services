@@ -1,11 +1,7 @@
 import { getPermissionsAdapter } from './services/permissions/index.ts'
+import { STATUS } from './constants/content-statuses.ts'
 
 export class FilterBuilder {
-  STATUS_SCHEDULED = 'scheduled'
-  STATUS_PUBLISHED = 'published'
-  STATUS_DRAFT = 'draft'
-  STATUS_ARCHIVED = 'archived'
-  STATUS_UNLISTED = 'unlisted'
 
   constructor(
     filter = '',
@@ -97,22 +93,22 @@ export class FilterBuilder {
     if (this.availableContentStatuses.length === 0) {
       if (this.userData.isAdmin) {
         this.availableContentStatuses = [
-          this.STATUS_DRAFT,
-          this.STATUS_SCHEDULED,
-          this.STATUS_PUBLISHED,
-          this.STATUS_ARCHIVED,
-          this.STATUS_UNLISTED,
+          STATUS.DRAFT,
+          STATUS.SCHEDULED,
+          STATUS.PUBLISHED,
+          STATUS.ARCHIVED,
+          STATUS.UNLISTED,
         ]
         this.getFutureScheduledContentsOnly = true
       } else if (this.isSingle) {
         this.availableContentStatuses = [
-          this.STATUS_SCHEDULED,
-          this.STATUS_PUBLISHED,
-          this.STATUS_UNLISTED,
-          this.STATUS_ARCHIVED,
+          STATUS.scheduled,
+          STATUS.published,
+          STATUS.unlisted,
+          STATUS.archived,
         ]
       } else {
-        this.availableContentStatuses = [this.STATUS_SCHEDULED, this.STATUS_PUBLISHED]
+        this.availableContentStatuses = [STATUS.scheduled, STATUS.published]
         this.getFutureScheduledContentsOnly = true
       }
     }
@@ -120,7 +116,7 @@ export class FilterBuilder {
     // I'm not sure if I'm 100% on this logic, but this is my intepretation of the ContentRepository logic
     if (
       this.getFutureScheduledContentsOnly &&
-      this.availableContentStatuses.includes(this.STATUS_SCHEDULED)
+      this.availableContentStatuses.includes(STATUS.scheduled)
     ) {
       // we must pull in future content here, otherwise we'll restrict on content this is published in the past and remove any scheduled content
       this.pullFutureContent = true
