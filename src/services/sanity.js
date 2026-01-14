@@ -1994,7 +1994,7 @@ export async function fetchScheduledAndNewReleases(
   const sortOrder = getSortOrder(sort, brand)
 
   const query = `
-    *[_type in [${typesString}] && brand == '${brand}' && ((status in ['published','scheduled'] )||(show_in_new_feed == true)) ]
+    *[_type in [${typesString}] && brand == '${brand}' && !defined(deprecated_railcontent_id) && ((status in ['published','scheduled'] )||(show_in_new_feed == true)) ]
     [${start}...${end}]
    | order(published_on asc) {
       "id": railcontent_id,
