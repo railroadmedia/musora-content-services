@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.119.0](https://github.com/railroadmedia/musora-content-services/compare/v2.118.1...v2.119.0) (2026-01-14)
+
+
+### Features
+
+* adds restore methods (for progress deletion undo) ([#705](https://github.com/railroadmedia/musora-content-services/issues/705)) ([b01a718](https://github.com/railroadmedia/musora-content-services/commit/b01a71892175b38789d62fffac0ce5f8e2e4513d))
+
 ### [2.118.1](https://github.com/railroadmedia/musora-content-services/compare/v2.118.0...v2.118.1) (2026-01-14)
 
 ## [2.118.0](https://github.com/railroadmedia/musora-content-services/compare/v2.107.4...v2.118.0) (2026-01-14)
