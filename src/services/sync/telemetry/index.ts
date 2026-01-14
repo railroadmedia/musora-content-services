@@ -2,7 +2,7 @@ import watermelonLogger from '@nozbe/watermelondb/utils/common/logger'
 import { SyncError, SyncUnexpectedError } from '../errors'
 
 import * as InjectedSentry from '@sentry/browser'
-export type SentryBrowserOptions = NonNullable<Parameters<typeof InjectedSentry.init>[0]>;
+export type SentryBrowserOptions = NonNullable<Parameters<typeof InjectedSentry.init>[0]>
 
 export type SentryLike = {
   captureException: typeof InjectedSentry.captureException
@@ -21,7 +21,7 @@ export enum SeverityLevel {
   LOG = 2,
   WARNING = 3,
   ERROR = 4,
-  FATAL = 5
+  FATAL = 5,
 }
 
 export class SyncTelemetry {
@@ -41,7 +41,7 @@ export class SyncTelemetry {
   }
 
   private userId: string
-  private Sentry: SentryLike;
+  private Sentry: SentryLike
   private level: SeverityLevel
   private pretty: boolean
 
@@ -50,15 +50,25 @@ export class SyncTelemetry {
   // allows us to know if Sentry shouldn't double-capture a dev-prettified console.error log
   private _ignoreConsole = false
 
-  constructor(userId: string, { Sentry, level, pretty }: { Sentry: SentryLike, level?: keyof typeof SeverityLevel, pretty?: boolean }) {
+  constructor(
+    userId: string,
+    {
+      Sentry,
+      level,
+      pretty,
+    }: { Sentry: SentryLike; level?: keyof typeof SeverityLevel; pretty?: boolean }
+  ) {
     this.userId = userId
     this.Sentry = Sentry
-    this.level = typeof level !== 'undefined' && level in SeverityLevel ? SeverityLevel[level] : SeverityLevel.LOG
+    this.level =
+      typeof level !== 'undefined' && level in SeverityLevel
+        ? SeverityLevel[level]
+        : SeverityLevel.LOG
     this.pretty = typeof pretty !== 'undefined' ? pretty : true
 
-    watermelonLogger.log = (...messages: any[]) => this.log('[Watermelon]', ...messages);
-    watermelonLogger.warn = (...messages: any[]) => this.warn('[Watermelon]', ...messages);
-    watermelonLogger.error = (...messages: any[]) => this.error('[Watermelon]', ...messages);
+    watermelonLogger.log = (message: unknown) => this.log(message instanceof Error ? message : ['[Watermelon]', message].join(' '))
+    watermelonLogger.warn = (message: unknown) => this.warn(message instanceof Error ? message : ['[Watermelon]', message].join(' '))
+    watermelonLogger.error = (message: unknown) => this.error(message instanceof Error ? message : ['[Watermelon]', message].join(' '))
   }
 
   trace<T>(opts: StartSpanOptions, callback: (_span: Span) => T) {
@@ -68,8 +78,8 @@ export class SyncTelemetry {
       op: `${SYNC_TELEMETRY_TRACE_PREFIX}${opts.op}`,
       attributes: {
         ...opts.attributes,
-        userId: this.userId
-      }
+        userId: this.userId,
+      },
     }
     return this.Sentry.startSpan<T>(options, (span) => {
       let desc = span['_spanId'].slice(0, 4)
@@ -84,14 +94,20 @@ export class SyncTelemetry {
   }
 
   capture(err: Error, context = {}) {
-    const wrapped = err instanceof SyncError ? err : new SyncUnexpectedError((err as Error).message, context);
+    const wrapped =
+      err instanceof SyncError ? err : new SyncUnexpectedError((err as Error).message, context)
 
     wrapped.markReported()
-    this.Sentry.captureException(err, err instanceof SyncUnexpectedError ? {
-      mechanism: {
-        handled: false
-      }
-    } : undefined)
+    this.Sentry.captureException(
+      err,
+      err instanceof SyncUnexpectedError
+        ? {
+            mechanism: {
+              handled: false,
+            },
+          }
+        : undefined
+    )
 
     this._ignoreConsole = true
     this.error(err.message)
@@ -123,73 +139,66 @@ export class SyncTelemetry {
     return false
   }
 
-  shouldIgnoreMessages(messages: any[]) {
-    return messages.some(message => {
-      return this.shouldIgnoreMessage(message)
-    })
+  debug(message: unknown, extra?: any) {
+    this._log(SeverityLevel.DEBUG, 'info', message, extra)
   }
 
-  debug(...messages: any[]) {
-    this.level <= SeverityLevel.DEBUG && !this.shouldIgnoreMessages(messages) && console.debug(...this.formattedConsoleMessages(...messages));
-    this.recordBreadcrumb('debug', ...messages)
+  info(message: unknown, extra?: any) {
+    this._log(SeverityLevel.INFO, 'info', message, extra)
   }
 
-  info(...messages: any[]) {
-    this.level <= SeverityLevel.INFO && !this.shouldIgnoreMessages(messages) && console.info(...this.formattedConsoleMessages(...messages));
-    this.recordBreadcrumb('info', ...messages)
+  log(message: unknown, extra?: any) {
+    this._log(SeverityLevel.LOG, 'log', message, extra)
   }
 
-  log(...messages: any[]) {
-    this.level <= SeverityLevel.LOG && !this.shouldIgnoreMessages(messages) && console.log(...this.formattedConsoleMessages(...messages));
-    this.recordBreadcrumb('log', ...messages)
+  warn(message: unknown, extra?: any) {
+    this._log(SeverityLevel.WARNING, 'warn', message, extra)
   }
 
-  warn(...messages: any[]) {
-    this.level <= SeverityLevel.WARNING && !this.shouldIgnoreMessages(messages) && console.warn(...this.formattedConsoleMessages(...messages));
-    this.recordBreadcrumb('warning', ...messages)
+  error(message: unknown[], extra?: any) {
+    this._log(SeverityLevel.ERROR, 'error', message, extra)
   }
 
-  error(...messages: any[]) {
-    this.level <= SeverityLevel.ERROR && !this.shouldIgnoreMessages(messages) && console.error(...this.formattedConsoleMessages(...messages));
-    this.recordBreadcrumb('error', ...messages)
+  fatal(message: unknown[], extra?: any) {
+    this._log(SeverityLevel.FATAL, 'error', message, extra)
   }
 
-  fatal(...messages: any[]) {
-    this.level <= SeverityLevel.FATAL && !this.shouldIgnoreMessages(messages) && console.error(...this.formattedConsoleMessages(...messages));
-    this.recordBreadcrumb('fatal', ...messages)
+  _log(level: SeverityLevel, consoleMethod: 'info' | 'log' | 'warn' | 'error', message: unknown, extra?: any) {
+    if (this.level > level || this.shouldIgnoreMessage(message)) return
+
+    this._ignoreConsole = true
+    console[consoleMethod](...this.formattedConsoleMessage(message, extra))
+    this._ignoreConsole = false
+    this.Sentry.captureMessage(message instanceof Error ? message.message : String(message), level)
   }
 
-  private recordBreadcrumb(level: InjectedSentry.Breadcrumb['level'], ...messages: any[]) {
-    this.Sentry.addBreadcrumb({
-      message: messages.join(', '),
-      level,
-      category: 'sync',
-    })
-  }
-
-  private formattedConsoleMessages(...messages: any[]) {
+  private formattedConsoleMessage(message: unknown, extra: any) {
     if (!this.pretty) {
-      return messages
+      return [message, ...(extra ? [extra] : [])]
     }
 
-    const date = new Date();
-    return [...this.consolePrefix(date), ...messages, ...this.consoleSuffix(date)];
+    const date = new Date()
+    return [...this.consolePrefix(date), message, ...(extra ? [extra] : []), ...this.consoleSuffix(date)]
   }
 
   private consolePrefix(date: Date) {
-    const now = Math.round(date.getTime() / 1000).toString();
-    return [`📡 SYNC: (%c${now.slice(0, 5)}%c${now.slice(5, 10)})`, 'color: #ccc', 'font-weight: bold;'];
+    const now = Math.round(date.getTime() / 1000).toString()
+    return [
+      `📡 SYNC: (%c${now.slice(0, 5)}%c${now.slice(5, 10)})`,
+      'color: #ccc',
+      'font-weight: bold;',
+    ]
   }
 
   private consoleSuffix(date: Date) {
-    return [` [${date.toLocaleTimeString()}, ${date.getTime()}]`];
+    return [` [${date.toLocaleTimeString()}, ${date.getTime()}]`]
   }
 
   private shouldIgnoreMessage(message: any) {
     if (message instanceof Error) message = message.message
     if (typeof message !== 'string') return false
 
-    return this.ignorePatterns.some(pattern => {
+    return this.ignorePatterns.some((pattern) => {
       if (typeof pattern === 'string') {
         return message.indexOf(pattern) !== -1
       } else if (pattern instanceof RegExp) {

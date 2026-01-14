@@ -106,6 +106,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   async requestSync(reason: string) {
+    this.telemetry.debug(`Sync requested: ${reason}`)
     inBoundary(ctx => {
       this.telemetry.trace(
         { name: `sync:${this.model.table}`, op: 'sync', attributes: { ...ctx, ...this.context.session.toJSON() } },
