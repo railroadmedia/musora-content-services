@@ -112,9 +112,6 @@ export async function logout() {
       'Content-Type': 'application/json',
     },
   })
-
-  // Clear all locally cached data to prevent data leakage between users
-  await clearAllCachedData()
 }
 
 /**
