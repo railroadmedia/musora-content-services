@@ -81,6 +81,14 @@ async function getOwnPractices(...clauses) {
 export let userActivityContext = new DataContext(UserActivityVersionKey, function() {})
 
 /**
+ * Resets the user activity context. Should be called on logout.
+ */
+export function resetUserActivityContext() {
+  userActivityContext.clearCache()
+  userActivityContext = new DataContext(UserActivityVersionKey, function() {})
+}
+
+/**
  * Retrieves user activity statistics for the current week, including daily activity and streak messages.
  *
  * @returns {Promise<Object>} - A promise that resolves to an object containing weekly user activity statistics.
