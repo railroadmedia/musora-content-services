@@ -50,14 +50,14 @@ export async function login(email, password, deviceName, deviceToken, platform) 
   const data = await res.json()
 
   // TODO: refactor this. I don't think this is the place for it but we need it fixed for the system test
-  if (res.ok) {
-    const userId = data.user.id
-    const userPinKey = userId ? `user_pin_progress_row_${userId}` : USER_PIN_PROGRESS_KEY
-    await globalConfig.localStorage.setItem(
-      userPinKey,
-      JSON.stringify(data.pinned_progress_rows || {})
-    )
-  }
+  // if (res.ok) {
+  //   const userId = data.user.id
+  //   const userPinKey = userId ? `user_pin_progress_row_${userId}` : USER_PIN_PROGRESS_KEY
+  //   await globalConfig.localStorage.setItem(
+  //     userPinKey,
+  //     JSON.stringify(data.pinned_progress_rows || {})
+  //   )
+  // }
 
   return data
 }
