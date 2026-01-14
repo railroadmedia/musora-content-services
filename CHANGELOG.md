@@ -2,6 +2,49 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.118.0](https://github.com/railroadmedia/musora-content-services/compare/v2.107.4...v2.118.0) (2026-01-14)
+
+
+### Features
+
+* adds column and implements for hiding cards ([#679](https://github.com/railroadmedia/musora-content-services/issues/679)) ([35ac42c](https://github.com/railroadmedia/musora-content-services/commit/35ac42cebe397c557d0b197d4fab38907ca08ab7))
+* **BEH-1421:** lesson type migrations ([#660](https://github.com/railroadmedia/musora-content-services/issues/660)) ([7f5ab7e](https://github.com/railroadmedia/musora-content-services/commit/7f5ab7e64693b51aea754e0fb13f10edbd7a7958))
+* **BEH-1442:** old method migration + course collection updates ([#673](https://github.com/railroadmedia/musora-content-services/issues/673)) ([24dd6bf](https://github.com/railroadmedia/musora-content-services/commit/24dd6bf6a1604ef3ee639979cf2ffab5abc05a24))
+* **BEH-1491:** proper card ordering (and hiding) on progress row ([#686](https://github.com/railroadmedia/musora-content-services/issues/686)) ([e519c35](https://github.com/railroadmedia/musora-content-services/commit/e519c352ac5e8d09a910b89fa03baf31490da102))
+* extra data for method card ([#691](https://github.com/railroadmedia/musora-content-services/issues/691)) ([36b034c](https://github.com/railroadmedia/musora-content-services/commit/36b034c83b86f0ff825dfc00af6a6b97b793c4c6))
+* **MU2-1323:** Add dynamic filtering to lessons/songs excluding those without avaialable content ([072a471](https://github.com/railroadmedia/musora-content-services/commit/072a471a8b37bb31fc1421375563be0b2f124beb))
+* **MU2-1323:** Remove redundant constant ([768befd](https://github.com/railroadmedia/musora-content-services/commit/768befdf393723cb0e091605f3c7e6ef4d523a92))
+* **MU2-1323:** Use filterTypes for get all content types ([8065100](https://github.com/railroadmedia/musora-content-services/commit/80651009fcc9dae6661b3cbaecf55d5c3585d044))
+* **T3Ps-1324:** Rename Tiered Courses filter to Course Collections ([97efe76](https://github.com/railroadmedia/musora-content-services/commit/97efe76fff3860d769593809bea2e59fb317b528))
+* **T3PS-1413:** homepage progress row learning path lessons need  need_access flag ([#688](https://github.com/railroadmedia/musora-content-services/issues/688)) ([cde7359](https://github.com/railroadmedia/musora-content-services/commit/cde73595c76c634b711e580497e291fa074b3d51))
+* **TP-1046:** expose error hooks ([#655](https://github.com/railroadmedia/musora-content-services/issues/655)) ([233fa10](https://github.com/railroadmedia/musora-content-services/commit/233fa1009038448c763d130ec942b9de5a49a875))
+* Use Get requests for Sanity if query under character limit ([#694](https://github.com/railroadmedia/musora-content-services/issues/694)) ([da5c384](https://github.com/railroadmedia/musora-content-services/commit/da5c384e7f538cf7c72a3d8f742787f24a4ed570))
+
+
+### Bug Fixes
+
+* adds methods to set/remove http token ([0a460b6](https://github.com/railroadmedia/musora-content-services/commit/0a460b6d002fb7d85c340095d62c1e92ce253d64))
+* **auth:** await for local storage ([69ee2ca](https://github.com/railroadmedia/musora-content-services/commit/69ee2ca780c71a707dfa452ede98240f0cfe8436))
+* **auth:** client platform header on login ([52d5927](https://github.com/railroadmedia/musora-content-services/commit/52d5927fddd79db807440cccd541c09ae8ce770a))
+* **auth:** login data ([a1b72d8](https://github.com/railroadmedia/musora-content-services/commit/a1b72d8145e230cfc850e208f147080c7ef8c6df))
+* **BEH-878:** correct brand song type names ([#695](https://github.com/railroadmedia/musora-content-services/issues/695)) ([2b1cde9](https://github.com/railroadmedia/musora-content-services/commit/2b1cde9978dd744129bd906aff3a9bb03e01b04e))
+* change js import to ts ([#683](https://github.com/railroadmedia/musora-content-services/issues/683)) ([1285cbe](https://github.com/railroadmedia/musora-content-services/commit/1285cbee851a3a2c68a0e36f37909e67173f82b8))
+* changes lesson type mapping ([#690](https://github.com/railroadmedia/musora-content-services/issues/690)) ([af4dda9](https://github.com/railroadmedia/musora-content-services/commit/af4dda9e03eecfd49a341d2c1aea8afcf217e233))
+* daniel merged bad ([#675](https://github.com/railroadmedia/musora-content-services/issues/675)) ([1c5863b](https://github.com/railroadmedia/musora-content-services/commit/1c5863bc921967fe16875367d9589c8dcf4e0ac3))
+* establishes a positive progress validation ([#672](https://github.com/railroadmedia/musora-content-services/issues/672)) ([e9bc211](https://github.com/railroadmedia/musora-content-services/commit/e9bc211659262b282e1073c2746c3c8824371c35))
+* fix explore all results ([#698](https://github.com/railroadmedia/musora-content-services/issues/698)) ([e9eb8a5](https://github.com/railroadmedia/musora-content-services/commit/e9eb8a5744b1d24c2b1b8e7ba5573cd128454463))
+* fixes small bug with aggregator & adds safety for saveContentProgress ([#681](https://github.com/railroadmedia/musora-content-services/issues/681)) ([b3fd0a7](https://github.com/railroadmedia/musora-content-services/commit/b3fd0a7acf1fe01e2aff567148554fb291bac8a7))
+* oops ([#693](https://github.com/railroadmedia/musora-content-services/issues/693)) ([0be66cb](https://github.com/railroadmedia/musora-content-services/commit/0be66cbaef0b33dad3074a22b9670cee4ddd0024))
+* **pins:** user pins local storage ([#704](https://github.com/railroadmedia/musora-content-services/issues/704)) ([ca7c172](https://github.com/railroadmedia/musora-content-services/commit/ca7c1722b759c1a4711a1f6ee2213b7392d2632e))
+* resolve foryou issue on mpf ([#703](https://github.com/railroadmedia/musora-content-services/issues/703)) ([3e8f0dd](https://github.com/railroadmedia/musora-content-services/commit/3e8f0ddc60eb51a5c510df6433e1cca1c5f5496a))
+* Single lessons, Skill Packs and Entertainment tabs not display content and Courses display any content type ([9793443](https://github.com/railroadmedia/musora-content-services/commit/97934438bf8262fa27349eab562cecf1323c720a))
+* some fixes from Rob ([#676](https://github.com/railroadmedia/musora-content-services/issues/676)) ([7e068ee](https://github.com/railroadmedia/musora-content-services/commit/7e068eee3cabc4de1d0620fe58eadf138532ab56))
+* **T3PS-1187:** award progress optimizations ([#689](https://github.com/railroadmedia/musora-content-services/issues/689)) ([5d063b8](https://github.com/railroadmedia/musora-content-services/commit/5d063b8227e9ee5c70c30bc31263296bfcb4aa63))
+* **T3PS-1289:** navigateTo calculation ([#677](https://github.com/railroadmedia/musora-content-services/issues/677)) ([12f4ca3](https://github.com/railroadmedia/musora-content-services/commit/12f4ca38b05a2175b33a9260e7c00f9aebfb8a87))
+* **T3PS-1347:** Update getUserWeeklyStats to include query for past 60 days for streak calculation, retain original contract of the function ([d798acf](https://github.com/railroadmedia/musora-content-services/commit/d798acf2a01f25551746030722a41ccb81030ed9))
+* **T3PS:** Cleanup ([07f057f](https://github.com/railroadmedia/musora-content-services/commit/07f057f867c8a3931ae6cbf5ecca9ae471f23d00))
+* **TP-1051:** group contentProgress upsert pushes ([#665](https://github.com/railroadmedia/musora-content-services/issues/665)) ([27ff11f](https://github.com/railroadmedia/musora-content-services/commit/27ff11fb1b10075313e614cf895356a221f0c0d1))
+
 ### [2.117.8](https://github.com/railroadmedia/musora-content-services/compare/v2.117.7...v2.117.8) (2026-01-13)
 
 
