@@ -42,7 +42,7 @@ import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
 import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
-
+import { STATUS } from '../constants/content-statuses.ts'
 /**
  * Exported functions that are excluded from index generation.
  *
@@ -1232,6 +1232,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
 /**
  * Fetch the data needed for the CourseCollection Overview screen.
  * @param {number} id - The Railcontent ID of the CourseCollection
+ * @param {boolean} includeUnlisted - Include filter for unlisted content (ie: old method documents)
  * @returns {Promise<Object|null>} - The CourseCollection information and lessons or null if not found.
  *
  * @example
@@ -1239,8 +1240,13 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
  *   .then(CourseCollection => console.log(CourseCollection))
  *   .catch(error => console.error(error));
  */
-export async function fetchCourseCollectionData(id) {
-  const builder = await new FilterBuilder(`railcontent_id == ${id}`).buildFilter()
+export async function fetchCourseCollectionData(id, { includeUnlisted = false }) {
+  const availableStatus = [
+    STATUS.published,
+    STATUS.scheduled,
+    ... includeUnlisted ? [STATUS.unlisted] : []
+  ]
+  const builder = await new FilterBuilder(`railcontent_id == ${id}`, {availableContentStatuses: availableStatus}).buildFilter()
   const query = `*[${builder}]{
     ${await getFieldsForContentTypeWithFilteredChildren('course-collection')}
   } [0...1]`
