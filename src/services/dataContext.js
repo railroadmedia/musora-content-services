@@ -149,27 +149,21 @@ export class DataContext {
 }
 
 /**
- * Clears all cached data from localStorage for a specific user.
+ * Clears all dataContext cached data from localStorage.
  * Should be called on logout to prevent data leakage between users.
- *
- * @param {number} [userId] - The user ID to clear cache for. If not provided, uses current session userId.
+ * Note: Does not clear user_pin_progress_row keys as they are user-specific.
  */
-export async function clearAllCachedData(userId) {
+export async function clearAllCachedData() {
   const storage = globalConfig.localStorage
 
   if (storage) {
-    // Get userId from parameter or current session
-    const targetUserId = userId || globalConfig.sessionConfig?.userId || globalConfig.railcontentConfig?.userId
-    const userPinKey = targetUserId ? `user_pin_progress_row_${targetUserId}` : 'user_pin_progress_row'
-
     const keysToRemove = []
 
     // For React Native AsyncStorage
     if (globalConfig.isMA && storage.getAllKeys) {
       const allKeys = await storage.getAllKeys()
       keysToRemove.push(...allKeys.filter(key =>
-        key.startsWith('dataContext_') ||
-        key === userPinKey
+        key.startsWith('dataContext_')
       ))
     }
     // For web localStorage
@@ -182,8 +176,7 @@ export async function clearAllCachedData(userId) {
         }
       }
       keysToRemove.push(...allKeys.filter(key =>
-        key.startsWith('dataContext_') ||
-        key === userPinKey
+        key.startsWith('dataContext_')
       ))
     }
 
