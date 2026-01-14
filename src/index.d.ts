@@ -128,6 +128,7 @@ import {
 } from './services/contentProgress.js';
 
 import {
+	clearAllCachedData,
 	verifyLocalDataContext
 } from './services/dataContext.js';
 
@@ -444,6 +445,7 @@ declare module 'musora-content-services' {
 		buildEntityAndTotalQuery,
 		buildImageSRC,
 		calculateLongestStreaks,
+		clearAllCachedData,
 		closeComment,
 		completeLearningPathIntroVideo,
 		completeMethodIntroVideo,
