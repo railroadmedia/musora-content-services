@@ -116,7 +116,7 @@ export async function getTabResults(brand, pageName, tabName, {
       addProgressPercentage: true,
       addProgressStatus: true
     })
-  } else if (sort === 'recommended') {
+  } else if (sort === 'recommended' && tabName.toLowerCase() !== Tabs.ExploreAll.name.toLowerCase()) {
     const contentTypes = lessonTypesMapping[tabName.toLowerCase()] || []
     const allRecommendations = await recommendations(brand, { contentTypes, section: tabRecSysSection })
 
@@ -162,12 +162,20 @@ export async function getTabResults(brand, pageName, tabName, {
     })
   } else {
     let temp = await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
+    const [ranking, contextResults] = await Promise.all([
+      sort === 'recommended' ? rankItems(brand, temp.entity.map(e => e.id)) : [],
+      addContextToContent(() => temp.entity, {
+        addNextLesson: true,
+        addNavigateTo: true,
+        addProgressPercentage: true,
+        addProgressStatus: true
+      })
+    ]);
 
-    results = await addContextToContent(() => temp.entity, {
-      addNextLesson: true,
-      addNavigateTo: true,
-      addProgressPercentage: true,
-      addProgressStatus: true
+    results = ranking.length === 0 ? contextResults : contextResults.sort((a, b) => {
+      const indexA = ranking.indexOf(a.id);
+      const indexB = ranking.indexOf(b.id);
+      return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
     })
   }
 
