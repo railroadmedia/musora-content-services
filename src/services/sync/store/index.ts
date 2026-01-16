@@ -113,7 +113,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
           let pushError: any = null
 
           try {
-            await this.pushUnsyncedWithRetry(span)
+            await this.pushUnsyncedWithRetry(span, { type: 'sync-request', reason })
           } catch (err) {
             pushError = err
           }
@@ -135,7 +135,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       this.telemetry.trace(
         { name: `sync:${this.model.table}`, op: 'push', attributes: { ...ctx, ...this.context.session.toJSON() } },
         async span => {
-          await this.pushUnsyncedWithRetry(span)
+          await this.pushUnsyncedWithRetry(span, { type: 'push-request', reason })
         }
       )
     }, { table: this.model.table, reason })
@@ -206,7 +206,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       })
       this.emit('upserted', [record])
 
-      this.pushUnsyncedWithRetry(span)
+      this.pushUnsyncedWithRetry(span, { type: 'insertOne', recordId: record.id })
       await this.ensurePersistence()
 
       return this.modelSerializer.toPlainObject(record)
@@ -226,7 +226,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       })
       this.emit('upserted', [record])
 
-      this.pushUnsyncedWithRetry(span)
+      this.pushUnsyncedWithRetry(span, { type: 'updateOneId', recordId: record.id })
       await this.ensurePersistence()
 
       return this.modelSerializer.toPlainObject(record)
@@ -297,7 +297,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       this.emit('upserted', records)
 
       if (!skipPush) {
-        this.pushUnsyncedWithRetry(span)
+        this.pushUnsyncedWithRetry(span, { type: 'upsertSome', recordIds: records.map(r => r.id).join(',') })
       }
       await this.ensurePersistence()
 
@@ -346,7 +346,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       this.emit('deleted', [id])
 
       if (!skipPush) {
-        this.pushUnsyncedWithRetry(span)
+        this.pushUnsyncedWithRetry(span, { type: 'deleteOne', recordId: id })
       }
       await this.ensurePersistence()
 
@@ -365,7 +365,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       this.emit('deleted', ids)
 
       if (!skipPush) {
-        this.pushUnsyncedWithRetry(span)
+        this.pushUnsyncedWithRetry(span, { type: 'deleteSome', recordIds: ids.join(',') })
       }
       await this.ensurePersistence()
 
@@ -401,7 +401,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
       this.emit('upserted', records)
 
-      this.pushUnsyncedWithRetry(span)
+      this.pushUnsyncedWithRetry(span, { type: 'restoreSome', recordIds: ids.join(',') })
       await this.ensurePersistence()
 
       return records.map((record) => this.modelSerializer.toPlainObject(record))
@@ -516,7 +516,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     )()
   }
 
-  public async pushUnsyncedWithRetry(span?: Span) {
+  public async pushUnsyncedWithRetry(span?: Span, cause?: string | Record<string, string>) {
     const records = await this.queryMaybeDeletedRecords(Q.where('_status', Q.notEq('synced')))
 
     if (records.length) {
@@ -529,8 +529,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       this.pushCoalescer.push(
         records,
         queueThrottle({ state: this.pushThrottleState }, () => {
+          const causeAttrs = typeof cause === 'string' ? { type: cause } : cause ?? {}
           return this.retry.request<SyncPushResponse>(
-            { name: `push:${this.model.table}`, op: 'push', parentSpan: span },
+            { name: `push:${this.model.table}`, op: 'push', parentSpan: span, attributes: { ...causeAttrs } },
             async (span) => {
               // re-query records since this fn may be deferred due to throttling/retries
               const currentRecords = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(recordIds)))
