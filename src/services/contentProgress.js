@@ -533,8 +533,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   }
 
   if (Object.keys(bubbledProgresses).length >= 0) {
-    // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
-    await db.contentProgress.recordProgressMany(bubbledProgresses, collection, {tentative: !isLP, skipPush: true, fromLearningPath})
+    await db.contentProgress.recordProgressMany(bubbledProgresses, collection, {skipPush: true, fromLearningPath})
   }
 
   if (isLP) {
@@ -568,8 +567,7 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
     ...trickleProgress(hierarchy, contentId, collection, progress),
     ...await bubbleProgress(hierarchy, contentId, collection)
   }
-  // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
-  await db.contentProgress.recordProgressMany(progresses, collection, {tentative: !isLP, skipPush: true})
+  await db.contentProgress.recordProgressMany(progresses, collection, {skipPush: true})
 
   if (isLP) {
     let exportProgresses = progresses
@@ -601,7 +599,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
   }
 
   const contents = Object.fromEntries(contentIds.map((id) => [id, progress]))
-  const response = await db.contentProgress.recordProgressMany(contents, collection, {tentative: !isLP, skipPush: true})
+  const response = await db.contentProgress.recordProgressMany(contents, collection, {skipPush: true})
 
   // we assume this is used only for contents within the same hierarchy
   const hierarchy = await getHierarchy(collection.id, collection)
@@ -614,8 +612,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
       ...(await bubbleProgress(hierarchy, contentId, collection)),
     }
   }
-  // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
-  await db.contentProgress.recordProgressMany(progresses, collection, {tentative: !isLP, skipPush: true})
+  await db.contentProgress.recordProgressMany(progresses, collection, {skipPush: true})
 
   if (isLP) {
     let exportProgresses = progresses
@@ -648,8 +645,8 @@ async function resetStatus(contentId, collection = null, {skipPush = false} = {}
     ...trickleProgress(hierarchy, contentId, collection, progress),
     ...await bubbleProgress(hierarchy, contentId, collection)
   }
-  // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
-  await db.contentProgress.recordProgressMany(progresses, collection, {tentative: !isLP, skipPush: true})
+  //todo: setup and use eraseProgressMany here. the current function is incorrect
+  await db.contentProgress.recordProgressMany(progresses, collection, {skipPush: true})
 
   if (isLP) {
     progresses[contentId] = progress
