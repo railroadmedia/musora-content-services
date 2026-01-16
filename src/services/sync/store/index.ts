@@ -618,7 +618,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
           if (failedResults.length) {
             this.telemetry.warn(
               `[store:${this.model.table}] Push completed with failed records`,
-              { results: failedResults }
+              { results: failedResults, resultsJSON: JSON.stringify(failedResults) }
             )
           }
 
