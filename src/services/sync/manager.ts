@@ -5,7 +5,7 @@ import SyncRunScope from './run-scope'
 import { SyncStrategy } from './strategies'
 import { default as SyncStore, SyncStoreConfig } from './store'
 
-import { ModelClass } from './index'
+import { ModelClass, SyncUserScope } from './index'
 import SyncRetry from './retry'
 import SyncContext from './context'
 import { SyncError } from './errors'
@@ -49,6 +49,8 @@ export default class SyncManager {
   private id: string
   public telemetry: SyncTelemetry
   private context: SyncContext
+  private userScope: SyncUserScope
+
   private storeConfigsRegistry: Record<string, SyncStoreConfig<any>>
   private storesRegistry: Record<string, SyncStore<any>>
   private runScope: SyncRunScope
@@ -59,11 +61,14 @@ export default class SyncManager {
   private initDatabase: () => Database
   private destroyDatabase?: (dbName: string, adapter: DatabaseAdapter) => Promise<void>
 
-  constructor(context: SyncContext, initDatabase: () => Database, destroyDatabase?: (dbName: string, adapter: DatabaseAdapter) => Promise<void>) {
+  private teardownPromise: Promise<void> | null = null
+
+  constructor(userScope: SyncUserScope, context: SyncContext, initDatabase: () => Database, destroyDatabase?: (dbName: string, adapter: DatabaseAdapter) => Promise<void>) {
     this.id = (SyncManager.counter++).toString()
 
     this.telemetry = SyncTelemetry.getInstance()!
     this.context = context
+    this.userScope = userScope
 
     this.initDatabase = initDatabase
     this.destroyDatabase = destroyDatabase
@@ -88,6 +93,7 @@ export default class SyncManager {
   createStore(config: SyncStoreConfig, database: Database) {
     return new SyncStore(
       config,
+      this.userScope,
       this.context,
       database,
       this.retry,
@@ -126,6 +132,24 @@ export default class SyncManager {
     // or asynchronously (e.g., indexedDB errors synchronously OR asynchronously (!))
     const database = this.telemetry.trace({ name: 'db:init', attributes: { ...this.context.session.toJSON() } }, this.initDatabase)
 
+    // IMPORTANT: check if user id has changed since last time we saw it
+    // PANIC: if it has, clear the database
+    database.write(async () => {
+      const initialId = this.userScope.initialId // initial should be fine here
+      const storedUserId = await database.localStorage.get<string>('userId')
+
+      if (!storedUserId) {
+        this.telemetry.debug('[SyncManager] No user ID found in local storage, setting', { initialId })
+        await database.localStorage.set('userId', initialId)
+        return
+      }
+
+      if (storedUserId !== initialId) {
+        this.telemetry.warn('[SyncManager] User ID changed, clearing database', { storedUserId, initialId })
+        await database.unsafeResetDatabase()
+      }
+    })
+
     Object.entries(this.storeConfigsRegistry).forEach(([table, storeConfig]) => {
       this.storesRegistry[table] = this.createStore(storeConfig, database)
     })
@@ -154,41 +178,52 @@ export default class SyncManager {
     })
 
     const teardown = async (force = false) => {
-      this.telemetry.debug('[SyncManager] Tearing down')
+      if (this.teardownPromise) {
+        this.telemetry.debug('[SyncManager] Teardown already in progress, returning existing promise')
+        return this.teardownPromise
+      }
 
-      const clear = (force = false) => {
-        if (force && this.destroyDatabase && database.adapter.dbName && database.adapter.underlyingAdapter) {
-          return this.destroyDatabase(database.adapter.dbName, database.adapter.underlyingAdapter)
-        } else {
-          return database.write(() => database.unsafeResetDatabase())
+      this.teardownPromise = (async () => {
+        this.telemetry.debug('[SyncManager] Tearing down')
+
+        const clear = (force = false) => {
+          if (force && this.destroyDatabase && database.adapter.dbName && database.adapter.underlyingAdapter) {
+            return this.destroyDatabase(database.adapter.dbName, database.adapter.underlyingAdapter)
+          } else {
+            return database.write(() => database.unsafeResetDatabase())
+          }
         }
-      }
 
-      try {
-        Object.values(this.storesRegistry).forEach((store) => {
-          store.destroy()
-        })
+        try {
+          Object.values(this.storesRegistry).forEach((store) => {
+            store.destroy()
+          })
 
-        this.runScope.abort()
-        this.strategyMap.forEach(({ strategies }) => strategies.forEach((strategy) => strategy.stop()))
-        effectTeardowns.forEach((teardown) => teardown())
-        this.retry.stop()
-        this.context.stop()
+          this.runScope.abort()
+          this.strategyMap.forEach(({ strategies }) => strategies.forEach((strategy) => strategy.stop()))
+          effectTeardowns.forEach((teardown) => teardown())
+          this.retry.stop()
+          this.context.stop()
 
-        contentProgressObserver.stop()
-      } catch (error) {
-        // capture, but don't rethrow
-        this.telemetry.capture(error)
-      }
-
-      try {
-        return clear(force);
-      } catch (error) {
-        if (!force) {
-          return clear(true);
+          contentProgressObserver.stop()
+        } catch (error) {
+          // capture, but don't rethrow
+          this.telemetry.capture(error)
         }
-        throw error
-      }
+
+        try {
+          return clear(force);
+        } catch (error) {
+          if (!force) {
+            return clear(true);
+          }
+          throw error
+        }
+      })().finally(() => {
+        this.teardownPromise = null
+      })
+
+      return this.teardownPromise
     }
 
     return teardown

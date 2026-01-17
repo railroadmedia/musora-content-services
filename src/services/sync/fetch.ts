@@ -69,7 +69,8 @@ type SyncPullSuccessResponse = SyncResponseBase & {
   ok: true
   entries: SyncEntry[]
   token: SyncToken
-  previousToken: SyncToken | null
+  previousToken: SyncToken | null,
+  intendedUserId: number
 }
 export type SyncPullFetchFailureResponse = SyncResponseBase & {
   ok: false,
@@ -117,8 +118,8 @@ interface ServerPushPayload {
   }[]
 }
 
-export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (session: BaseSessionProvider) => Request {
-  return (session) => new Request(globalConfig.baseUrl + input, {
+export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (userId: number, session: BaseSessionProvider) => Request {
+  return (userId, session) => new Request(globalConfig.baseUrl + input, {
     ...init,
     headers: {
       ...init?.headers,
@@ -129,14 +130,15 @@ export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (sessi
       'X-Sync-Client-Id': session.getClientId(),
       ...(session.getSessionId() ? {
         'X-Sync-Client-Session-Id': session.getSessionId()!
-      } : {})
+      } : {}),
+      'X-Sync-Intended-User-Id': userId.toString()
     }
   })
 }
 
-export function handlePull(callback: (session: BaseSessionProvider) => Request) {
-  return async function(session: BaseSessionProvider, lastFetchToken: SyncToken | null, signal?: AbortSignal): Promise<SyncPullResponse> {
-    const generatedRequest = callback(session)
+export function handlePull(callback: (userId: number, session: BaseSessionProvider) => Request) {
+  return async function(userId: number, session: BaseSessionProvider, lastFetchToken: SyncToken | null, signal?: AbortSignal): Promise<SyncPullResponse> {
+    const generatedRequest = callback(userId, session)
     const url = serializePullUrlQuery(generatedRequest.url, lastFetchToken)
     const request = new Request(url, {
       credentials: 'include',
@@ -163,6 +165,11 @@ export function handlePull(callback: (session: BaseSessionProvider) => Request) 
       }
     }
 
+    if (!response.headers.get('X-Sync-Intended-User-Id')) {
+      throw new Error('Missing X-Sync-Intended-User-Id header')
+    }
+    const intendedUserId = +response.headers.get('X-Sync-Intended-User-Id')!
+
     const json = await response.json() as RawPullResponse
     const data = deserializePullResponse(json)
 
@@ -177,14 +184,15 @@ export function handlePull(callback: (session: BaseSessionProvider) => Request) 
       ok: true,
       entries,
       token,
-      previousToken
+      previousToken,
+      intendedUserId
     }
   }
 }
 
-export function handlePush(callback: (session: BaseSessionProvider) => Request) {
-  return async function(session: BaseSessionProvider, payload: PushPayload, signal?: AbortSignal): Promise<SyncPushResponse> {
-    const generatedRequest = callback(session)
+export function handlePush(callback: (userId: number, session: BaseSessionProvider) => Request) {
+  return async function(userId: number, session: BaseSessionProvider, payload: PushPayload, signal?: AbortSignal): Promise<SyncPushResponse> {
+    const generatedRequest = callback(userId, session)
     const serverPayload = serializePushPayload(payload)
     const request = new Request(generatedRequest, {
       credentials: 'include',

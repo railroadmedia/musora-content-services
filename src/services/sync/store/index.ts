@@ -1,6 +1,6 @@
 import { Database, Q, Query, type Collection, type RecordId } from '@nozbe/watermelondb'
 import { RawSerializer, ModelSerializer } from '../serializers'
-import { ModelClass, SyncToken, SyncEntry,  SyncContext, EpochMs } from '..'
+import { ModelClass, SyncToken, SyncEntry, SyncUserScope, SyncContext, EpochMs } from '..'
 import { SyncPullResponse, SyncPushResponse, SyncPullFetchFailureResponse, PushPayload, SyncStorePushResultSuccess, SyncStorePushResultFailure } from '../fetch'
 import type SyncRetry from '../retry'
 import type SyncRunScope from '../run-scope'
@@ -18,11 +18,13 @@ import type LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 import { SyncError } from '../errors'
 
 type SyncPull = (
+  intendedUserId: number,
   session: BaseSessionProvider,
   previousFetchToken: SyncToken | null,
   signal: AbortSignal
 ) => Promise<SyncPullResponse>
 type SyncPush = (
+  intendedUserId: number,
   session: BaseSessionProvider,
   payload: PushPayload,
   signal: AbortSignal
@@ -42,6 +44,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   static readonly CLEANUP_INTERVAL = 60_000 * 60 // 1hr
 
   readonly telemetry: SyncTelemetry
+  readonly userScope: SyncUserScope
   readonly context: SyncContext
   readonly retry: SyncRetry
   readonly runScope: SyncRunScope
@@ -67,12 +70,14 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   constructor(
     { model, comparator, pull, push }: SyncStoreConfig<TModel>,
+    userScope: SyncUserScope,
     context: SyncContext,
     db: Database,
     retry: SyncRetry,
     runScope: SyncRunScope,
     telemetry: SyncTelemetry
   ) {
+    this.userScope = userScope
     this.context = context
     this.retry = retry
     this.runScope = runScope
@@ -199,7 +204,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   async insertOne(builder: (record: TModel) => void, span?: Span) {
     return await this.runScope.abortable(async () => {
-      const record = await this.telemeterizedWrite(span, async () => {
+      const record = await this.paranoidWrite(span, async () => {
         return this.collection.create(rec => {
           builder(rec)
         })
@@ -221,7 +226,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         throw new SyncError('Record not found', { id })
       }
 
-      const record = await this.telemeterizedWrite(span, async () => {
+      const record = await this.paranoidWrite(span, async () => {
         return found.update(builder)
       })
       this.emit('upserted', [record])
@@ -239,7 +244,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return await this.runScope.abortable(async () => {
       const ids = Object.keys(builders)
 
-      const records = await this.telemeterizedWrite(span, async writer => {
+      const records = await this.paranoidWrite(span, async writer => {
         const existing = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids))))
         const existingMap = existing.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
 
@@ -324,7 +329,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return await this.runScope.abortable(async () => {
       let record: TModel | null = null
 
-      await this.telemeterizedWrite(span, async writer => {
+      await this.paranoidWrite(span, async writer => {
         const existing = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', id))).then(
           (records) => records[0] || null
         )
@@ -356,7 +361,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   async deleteSome(ids: RecordId[], span?: Span, { skipPush = false } = {}) {
     return this.runScope.abortable(async () => {
-      await this.telemeterizedWrite(span, async writer => {
+      await this.paranoidWrite(span, async writer => {
         const existing = await this.queryRecords(Q.where('id', Q.oneOf(ids)))
 
         await writer.batch(...existing.map(record => record.prepareMarkAsDeleted()))
@@ -379,7 +384,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   async restoreSome(ids: RecordId[], span?: Span) {
     return this.runScope.abortable(async () => {
-      const records = await this.telemeterizedWrite(span, async writer => {
+      const records = await this.paranoidWrite(span, async writer => {
         const records = await writer.callReader(() => this.queryMaybeDeletedRecords(
           Q.where('id', Q.oneOf(ids)),
           Q.where('_status', 'deleted')
@@ -410,7 +415,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   async importUpsert(recordRaws: TModel['_raw'][]) {
     await this.runScope.abortable(async () => {
-      await this.telemeterizedWrite(undefined, async writer => {
+      await this.paranoidWrite(undefined, async writer => {
         const ids = recordRaws.map(r => r.id)
         const existingMap = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))).then(records => {
           return records.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
@@ -469,7 +474,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
   async importDeletion(ids: RecordId[]) {
     await this.runScope.abortable(async () => {
-      await this.telemeterizedWrite(undefined, async writer => {
+      await this.paranoidWrite(undefined, async writer => {
         const existingMap = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids)))).then(records => {
           return records.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
         })
@@ -572,10 +577,21 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             attributes: { lastFetchToken: lastFetchToken ?? undefined, ...this.context.session.toJSON() },
             parentSpan: pullSpan,
           },
-          () => this.puller(this.context.session, lastFetchToken, this.runScope.signal)
+          () => this.puller(this.userScope.initialId, this.context.session, lastFetchToken, this.runScope.signal)
         )
 
         if (response.ok) {
+          const initialId = this.userScope.initialId
+          const currentId = this.userScope.getCurrentId()
+
+          if (response.intendedUserId !== initialId || response.intendedUserId !== currentId) {
+            throw new SyncError('Intended user ID does not match', {
+              intendedUserId: response.intendedUserId,
+              initialUserId: initialId,
+              currentUserId: currentId
+            })
+          }
+
           await this.writeEntries(response.entries, !response.previousToken, pullSpan)
           await this.setLastFetchToken(response.token)
 
@@ -605,7 +621,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             attributes: { ...this.context.session.toJSON() },
             parentSpan: pushSpan,
           },
-          () => this.pusher(this.context.session, payload, this.runScope.signal)
+          () => this.pusher(this.userScope.initialId, this.context.session, payload, this.runScope.signal)
         )
 
         if (response.ok) {
@@ -776,10 +792,17 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
-  private telemeterizedWrite<T>(
+  /**
+   * Performs telemetry-wrapped write, crucially checking if the user has changed
+   */
+  private paranoidWrite<T>(
     parentSpan: Span | undefined,
     work: (writer: WriterInterface) => Promise<T>
   ): Promise<T> {
+    if (this.userScope.initialId !== this.userScope.getCurrentId()) {
+      throw new SyncError('Aborted cross-user write operation')
+    }
+
     return this.telemetry.trace(
       { name: `write:${this.model.table}`, op: 'write', parentSpan, attributes: { ...this.context.session.toJSON() } },
       (writeSpan) => {
@@ -800,7 +823,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
   private async writeEntries(entries: SyncEntry[], freshSync: boolean = false, parentSpan?: Span) {
     await this.runScope.abortable(async () => {
-      return this.telemeterizedWrite(parentSpan, async (writer) => {
+      return this.paranoidWrite(parentSpan, async (writer) => {
         const batches = await this.buildWriteBatchesFromEntries(writer, entries, freshSync)
 
         for (const batch of batches) {
@@ -946,7 +969,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private startCleanupTimer() {
     this.cleanupTimer = setInterval(() => {
       this.runScope.abortable(async () => {
-        this.telemeterizedWrite(undefined, async (writer) => {
+        this.paranoidWrite(undefined, async (writer) => {
           await this.cleanupOldDeletedRecords(writer)
         })
       })
