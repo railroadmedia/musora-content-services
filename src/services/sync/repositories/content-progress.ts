@@ -218,6 +218,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return this.deleteOne(ProgressRepository.generateId(contentId, collection), { skipPush })
   }
 
+  eraseProgressMany(contentIds: number[], collection: CollectionParameter | null, {skipPush = false} = {}) {
+    const ids = contentIds.map((id) => ProgressRepository.generateId(id, collection))
+    return this.deleteSome(ids, { skipPush })
+  }
+
   private static generateId(
     contentId: number,
     collection: CollectionParameter | null
