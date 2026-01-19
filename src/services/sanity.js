@@ -1205,7 +1205,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
   const filterCondition =
     forcedContentId !== null
       ? `railcontent_id == ${forcedContentId}`
-      : `status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}'`
+      : `!defined(deprecated_railcontent_id) && status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}'`
 
   // This query finds the first scheduled event (sorted by start_time) that ends after now()
   const query = `*[${filterCondition}]{${liveEventFields}} | order(live_event_start_time)[0...1]`
