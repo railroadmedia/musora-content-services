@@ -16,7 +16,6 @@ export default function syncAdapterFactory<T extends DatabaseAdapter>(
 ): () => T {
   return () => new AdapterClass({
     ...opts,
-    dbName: `sync`,
     schema,
     migrations: undefined
   })
