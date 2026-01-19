@@ -799,8 +799,13 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     parentSpan: Span | undefined,
     work: (writer: WriterInterface) => Promise<T>
   ): Promise<T> {
-    if (this.userScope.initialId !== this.userScope.getCurrentId()) {
-      // throw new SyncError('Aborted cross-user write operation') // syncdebug
+    const initialId = this.userScope.initialId
+    const currentId = this.userScope.getCurrentId()
+    if (initialId !== currentId) {
+      throw new SyncError('Aborted cross-user write operation', {
+        initialId,
+        currentId,
+      })
     }
 
     return this.telemetry.trace(

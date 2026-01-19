@@ -41,8 +41,12 @@ export default class SyncManager {
     if (SyncManager.instance) {
       throw new SyncError('SyncManager already initialized')
     }
-
     SyncManager.instance = instance
+
+    // we don't want to reset the db when it's just a regular page reload
+    // but note that it skips an initial comparison of userId <-> storedUserId
+    // (this lets us keep this particular setup flow synchronous (important because
+    // we don't need a bunch of ready checks in all of our melon query consumers))
     const teardown = instance.setupWithoutDatabaseReset()
 
     return async (mode: SyncTeardownMode = 'reset') => {
@@ -89,7 +93,7 @@ export default class SyncManager {
     initDatabase: () => Database,
     teardownDatabase: {
       destroy?: (dbName: string, adapter: DatabaseAdapter) => Promise<void>
-      freeze?: (adapter: DatabaseAdapter) => Promise<void>
+      abort?: (adapter: DatabaseAdapter) => Promise<void>
     } = {}
   ) {
     this.id = (SyncManager.counter++).toString()
@@ -159,7 +163,14 @@ export default class SyncManager {
     const database = this._initDatabase()
 
     // Default safe behavior is to always reset the db (i.e., on login)
-    await database.write(() => database.unsafeResetDatabase())
+    // (unless the provided intended user matches the already stored user)
+    await database.write(async () => {
+      const storedUserId = await database.localStorage.get<number>('userId');
+      if (!storedUserId || storedUserId !== this.userScope.initialId) {
+        await database.unsafeResetDatabase()
+        await database.localStorage.set('userId', this.userScope.initialId)
+      }
+    })
 
     return this._setup(database)
   }
@@ -254,9 +265,9 @@ export default class SyncManager {
               this.telemetry.capture(err)
               return database.write(() => database.unsafeResetDatabase())
             }
-          } else if (mode === 'reset') {
-            return database.write(() => database.unsafeResetDatabase())
           }
+
+          return database.write(() => database.unsafeResetDatabase())
         }
 
         try {
