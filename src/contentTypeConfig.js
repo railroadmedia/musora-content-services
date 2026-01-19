@@ -132,6 +132,7 @@ export const assignmentsField = `"assignments":assignment[]{
         "description": coalesce(assignment_description,'')
 },`
 
+// todo: refactor live event queries to use this
 export const liveFields = `
     'slug': slug.current,
     'id': railcontent_id,
