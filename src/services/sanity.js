@@ -30,7 +30,7 @@ import {
   resourcesField,
   showsTypes,
   SONG_TYPES,
-  SONG_TYPES_WITH_CHILDREN,
+  SONG_TYPES_WITH_CHILDREN, liveFields,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems, recommendations } from './recommendations.js'
 import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS } from '../contentMetaData.js'
@@ -1183,32 +1183,21 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
   )
   endDateTemp = new Date(endDateTemp.setMinutes(endDateTemp.getMinutes() - LIVE_EXTRA_MINUTES))
 
-  const liveEventFields = `
-    'slug': slug.current,
-    'id': railcontent_id,
-    live_event_start_time,
-    live_event_end_time,
-    live_event_stream_id,
-    "live_event_is_global": live_global_event == true,
-    railcontent_id,
-    published_on,
-    'event_coach_url': instructor[0]->web_url_path,
-    'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
-    title,
-    "thumbnail": thumbnail.asset->url,
-    ${artistOrInstructorName()},
-    difficulty_string,
-    "instructors": ${instructorField},
-    'videoId': coalesce(live_event_stream_id, video.external_id)
-  `
+  const liveEventFields = liveFields + `, 'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}')`
 
-  const filterCondition =
+  const baseFilter =
     forcedContentId !== null
       ? `railcontent_id == ${forcedContentId}`
-      : `!defined(deprecated_railcontent_id) && status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}'`
+      : `status == 'scheduled'
+      && brand == '${brand}'
+      && defined(live_event_start_time)
+      && live_event_start_time <= '${getSanityDate(startDateTemp, false)}'
+      && live_event_end_time >= '${getSanityDate(endDateTemp, false)}'`
+
+  const filter = await new FilterBuilder(baseFilter, {bypassPermissions: true}).buildFilter()
 
   // This query finds the first scheduled event (sorted by start_time) that ends after now()
-  const query = `*[${filterCondition}]{${liveEventFields}} | order(live_event_start_time)[0...1]`
+  const query = `*[${filter}]{${liveEventFields}} | order(live_event_start_time)[0...1]`
 
   return await fetchSanity(query, false, { processNeedAccess: false })
 }

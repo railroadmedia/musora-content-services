@@ -132,6 +132,22 @@ export const assignmentsField = `"assignments":assignment[]{
         "description": coalesce(assignment_description,'')
 },`
 
+export const liveFields = `
+    'slug': slug.current,
+    'id': railcontent_id,
+    title,
+    live_event_start_time,
+    live_event_end_time,
+    live_event_stream_id,
+    "live_event_is_global": live_global_event == true,
+    published_on,
+    "thumbnail": thumbnail.asset->url,
+    ${artistOrInstructorName()},
+    difficulty_string,
+    "instructors": ${instructorField},
+    'videoId': coalesce(live_event_stream_id, video.external_id)
+  `
+
 const contentWithInstructorsField = {
   fields: ['"instructors": instructor[]->name'],
 }
