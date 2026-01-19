@@ -14,6 +14,8 @@ import { SyncTelemetry } from './telemetry/index'
 import createStoreConfigs from './store-configs'
 import { contentProgressObserver } from '../awards/internal/content-progress-observer'
 
+export type SyncTeardownMode = 'reset' | 'destroyOrReset' | 'abortWrites'
+
 export default class SyncManager {
   private static counter = 0
   private static instance: SyncManager | null = null
@@ -26,9 +28,9 @@ export default class SyncManager {
     SyncManager.instance = instance
     const teardown = await instance.setup()
 
-    return async (force = false) => {
+    return async (mode: SyncTeardownMode = 'reset') => {
       SyncManager.instance = null
-      return teardown(force).catch(error => {
+      return teardown(mode).catch((error) => {
         SyncManager.instance = instance // restore instance on teardown failure
         throw error
       })
@@ -43,9 +45,9 @@ export default class SyncManager {
     SyncManager.instance = instance
     const teardown = instance.setupWithoutDatabaseReset()
 
-    return async (force = false) => {
+    return async (mode: SyncTeardownMode = 'reset') => {
       SyncManager.instance = null
-      return teardown(force).catch(error => {
+      return teardown(mode).catch((error) => {
         SyncManager.instance = instance // restore instance on teardown failure
         throw error
       })
@@ -77,10 +79,19 @@ export default class SyncManager {
 
   private initDatabase: () => Database
   private destroyDatabase?: (dbName: string, adapter: DatabaseAdapter) => Promise<void>
+  private abortWritesToDatabase?: (adapter: DatabaseAdapter) => Promise<void>
 
   private teardownPromise: Promise<void> | null = null
 
-  constructor(userScope: SyncUserScope, context: SyncContext, initDatabase: () => Database, destroyDatabase?: (dbName: string, adapter: DatabaseAdapter) => Promise<void>) {
+  constructor(
+    userScope: SyncUserScope,
+    context: SyncContext,
+    initDatabase: () => Database,
+    teardownDatabase: {
+      destroy?: (dbName: string, adapter: DatabaseAdapter) => Promise<void>
+      freeze?: (adapter: DatabaseAdapter) => Promise<void>
+    } = {}
+  ) {
     this.id = (SyncManager.counter++).toString()
 
     this.telemetry = SyncTelemetry.getInstance()!
@@ -88,7 +99,8 @@ export default class SyncManager {
     this.userScope = userScope
 
     this.initDatabase = initDatabase
-    this.destroyDatabase = destroyDatabase
+    this.destroyDatabase = teardownDatabase.destroy
+    this.abortWritesToDatabase = teardownDatabase.abort
 
     this.storeConfigsRegistry = this.registerStoreConfigs(createStoreConfigs())
     this.storesRegistry = {}
@@ -161,7 +173,10 @@ export default class SyncManager {
   _initDatabase() {
     // can fail synchronously immediately (e.g., schema/migration validation errors)
     // or asynchronously (e.g., indexedDB errors synchronously OR asynchronously (!))
-    const database = this.telemetry.trace({ name: 'db:init', attributes: { ...this.context.session.toJSON() } }, this.initDatabase)
+    const database = this.telemetry.trace(
+      { name: 'db:init', attributes: { ...this.context.session.toJSON() } },
+      this.initDatabase
+    )
     return database
   }
 
@@ -186,26 +201,60 @@ export default class SyncManager {
     })
 
     const effectTeardowns = this.effectMap.flatMap(({ models, effects }) => {
-      return effects.map((effect) => effect(this.context, models.map(model => this.storesRegistry[model.table])))
-    });
+      return effects.map((effect) =>
+        effect(
+          this.context,
+          models.map((model) => this.storesRegistry[model.table])
+        )
+      )
+    })
 
     contentProgressObserver.start(database).catch((error) => {
       this.telemetry.error('[SyncManager] Failed to start contentProgressObserver', error)
     })
 
-    const teardown = async (force = false) => {
+    const teardown = async (mode: SyncTeardownMode = 'reset') => {
       if (this.teardownPromise) {
-        this.telemetry.debug('[SyncManager] Teardown already in progress, returning existing promise')
+        this.telemetry.debug(
+          '[SyncManager] Teardown already in progress, returning existing promise'
+        )
         return this.teardownPromise
       }
 
       this.teardownPromise = (async () => {
         this.telemetry.debug('[SyncManager] Tearing down')
 
-        const clear = (force = false) => {
-          if (force && this.destroyDatabase && database.adapter.dbName && database.adapter.underlyingAdapter) {
-            return this.destroyDatabase(database.adapter.dbName, database.adapter.underlyingAdapter)
-          } else {
+        const clear = (mode: SyncTeardownMode) => {
+          if (mode === 'abortWrites') {
+            if (!this.abortWritesToDatabase) {
+              throw new SyncError('Cannot abort writes to database - implementation not provided')
+            }
+            if (!database.adapter.underlyingAdapter) {
+              throw new SyncError('Cannot abort writes to database - adapter not available')
+            }
+
+            return this.abortWritesToDatabase(database.adapter.underlyingAdapter)
+          }
+
+          if (mode === 'destroyOrReset') {
+            try {
+              if (!this.destroyDatabase) {
+                throw new SyncError(
+                  'Cannot destroy or reset database - destroy implementation not provided'
+                )
+              }
+              if (!database.adapter.underlyingAdapter) {
+                throw new SyncError('Cannot destroy  database - adapter not available')
+              }
+              return this.destroyDatabase(
+                database.adapter.dbName,
+                database.adapter.underlyingAdapter
+              )
+            } catch (err: unknown) {
+              this.telemetry.capture(err)
+              return database.write(() => database.unsafeResetDatabase())
+            }
+          } else if (mode === 'reset') {
             return database.write(() => database.unsafeResetDatabase())
           }
         }
@@ -216,7 +265,9 @@ export default class SyncManager {
           })
 
           this.runScope.abort()
-          this.strategyMap.forEach(({ strategies }) => strategies.forEach((strategy) => strategy.stop()))
+          this.strategyMap.forEach(({ strategies }) =>
+            strategies.forEach((strategy) => strategy.stop())
+          )
           effectTeardowns.forEach((teardown) => teardown())
           this.retry.stop()
           this.context.stop()
@@ -227,14 +278,7 @@ export default class SyncManager {
           this.telemetry.capture(error)
         }
 
-        try {
-          return clear(force);
-        } catch (error) {
-          if (!force) {
-            return clear(true);
-          }
-          throw error
-        }
+        return clear(mode)
       })().finally(() => {
         this.teardownPromise = null
       })

@@ -1,5 +1,5 @@
 import type { DatabaseAdapter } from '../adapters/factory'
-import { Database, } from '@nozbe/watermelondb'
+import { Database } from '@nozbe/watermelondb'
 import * as modelClasses from '../models'
 
 export default function syncDatabaseFactory(adapter: () => DatabaseAdapter, { onInitError }: { onInitError?: (error: Error) => void } = {}) {
