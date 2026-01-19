@@ -18,15 +18,21 @@ export default class SyncManager {
   private static counter = 0
   private static instance: SyncManager | null = null
 
-  public static assignAndSetupInstance(instance: SyncManager) {
+  public static async assignAndSetupInstance(instance: SyncManager, options: { async?: boolean } = {}) {
     if (SyncManager.instance) {
       throw new SyncError('SyncManager already initialized')
     }
 
     SyncManager.instance = instance
-    const teardown = instance.setup()
 
-    return (force = false) => {
+    let teardown: (force?: boolean) => Promise<void>
+    if (options.async) {
+      teardown = await instance.setup()
+    } else {
+      teardown = instance.setupWithoutDatabaseReset()
+    }
+
+    return async (force = false) => {
       SyncManager.instance = null
       return teardown(force).catch(error => {
         SyncManager.instance = instance // restore instance on teardown failure
@@ -125,31 +131,48 @@ export default class SyncManager {
     this.effectMap.push({ models, effects })
   }
 
-  setup() {
-    this.telemetry.debug('[SyncManager] Setting up')
+  async setup() {
+    this.telemetry.debug('[SyncManager] Setting up asynchronously with proactive reset')
 
-    // can fail synchronously immediately (e.g., schema/migration validation errors)
-    // or asynchronously (e.g., indexedDB errors synchronously OR asynchronously (!))
-    const database = this.telemetry.trace({ name: 'db:init', attributes: { ...this.context.session.toJSON() } }, this.initDatabase)
+    const database = this._initDatabase()
 
     // IMPORTANT: check if user id has changed since last time we saw it
     // PANIC: if it has, clear the database
     database.write(async () => {
       const initialId = this.userScope.initialId // initial should be fine here
-      const storedUserId = await database.localStorage.get<string>('userId')
+      const storedUserId = await database.localStorage.get<number>('userId')
 
       if (!storedUserId) {
-        this.telemetry.debug('[SyncManager] No user ID found in local storage, setting', { initialId })
+        this.telemetry.debug('[SyncManager] No user ID found in local storage, resetting database for paranoid reasons, and setting user id', { initialId })
         await database.localStorage.set('userId', initialId)
         return
       }
 
       if (storedUserId !== initialId) {
         this.telemetry.warn('[SyncManager] User ID changed, clearing database', { storedUserId, initialId })
-        await database.unsafeResetDatabase()
+        await database.unsafeResetDatabase() // todo - leaves db in unusable state...??
       }
+
+      await database.unsafeResetDatabase()
     })
 
+    return this._setup(database)
+  }
+
+  setupWithoutDatabaseReset() {
+    this.telemetry.debug('[SyncManager] Setting up synchronously without proactive reset')
+    const database = this._initDatabase()
+    return this._setup(database)
+  }
+
+  _initDatabase() {
+    // can fail synchronously immediately (e.g., schema/migration validation errors)
+    // or asynchronously (e.g., indexedDB errors synchronously OR asynchronously (!))
+    const database = this.telemetry.trace({ name: 'db:init', attributes: { ...this.context.session.toJSON() } }, this.initDatabase)
+    return database
+  }
+
+  _setup(database: Database) {
     Object.entries(this.storeConfigsRegistry).forEach(([table, storeConfig]) => {
       this.storesRegistry[table] = this.createStore(storeConfig, database)
     })
