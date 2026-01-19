@@ -75,7 +75,7 @@ export function simulateIndexedDBQuotaExceeded() {
   })
 }
 
-export function disableLoki(adapter: LokiJSAdapter) {
+export function abortWritesToDatabase(adapter: LokiJSAdapter) {
   // acts as handy helper to disable loki's save methods entirely
   lokiFatalError(adapter._driver.loki)
 }

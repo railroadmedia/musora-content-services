@@ -95,7 +95,7 @@ export class SyncTelemetry {
     })
   }
 
-  capture(err: Error, context = {}) {
+  capture(err: unknown, context = {}) {
     const wrapped =
       err instanceof SyncError ? err : new SyncUnexpectedError((err as Error).message, context)
 
@@ -112,7 +112,7 @@ export class SyncTelemetry {
     )
 
     this._ignoreConsole = true
-    this.error(err.message)
+    this.error(err instanceof Error ? err.message : String(err))
     this._ignoreConsole = false
   }
 
