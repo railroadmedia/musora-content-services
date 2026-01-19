@@ -964,6 +964,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
         "live_event_start_time": live_event_start_time,
         "live_event_end_time": live_event_end_time,
         "live_event_stream_id": live_event_stream_id,
+        "vimeo_live_event_id": vimeo_live_event_id,
         "videoId": coalesce(live_event_stream_id, video.external_id),
         "live_event_is_global": live_global_event == true
       }
@@ -1194,6 +1195,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
       live_event_start_time,
       live_event_end_time,
       live_event_stream_id,
+      vimeo_live_event_id,
       railcontent_id,
       published_on,
       'event_coach_url' : instructor[0]->web_url_path,
@@ -1211,6 +1213,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
       live_event_start_time,
       live_event_end_time,
       live_event_stream_id,
+      vimeo_live_event_id,
       railcontent_id,
       published_on,
       'event_coach_url' : instructor[0]->web_url_path,
