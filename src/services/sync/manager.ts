@@ -164,11 +164,13 @@ export default class SyncManager {
 
     // Default safe behavior is to always reset the db (i.e., on login)
     // (unless the provided intended user matches the already stored user)
+
+    // this is technically redundant if we're using namespaced databases
     await database.write(async () => {
-      const storedUserId = await database.localStorage.get<number>('userId');
+      const storedUserId = await database.localStorage.get<number>('__userId__');
       if (!storedUserId || storedUserId !== this.userScope.initialId) {
         await database.unsafeResetDatabase()
-        await database.localStorage.set('userId', this.userScope.initialId)
+        await database.localStorage.set('__userId__', this.userScope.initialId)
       }
     })
 
@@ -255,7 +257,10 @@ export default class SyncManager {
                 )
               }
               if (!database.adapter.underlyingAdapter) {
-                throw new SyncError('Cannot destroy  database - adapter not available')
+                throw new SyncError('Cannot destroy database - adapter not available')
+              }
+              if (!database.adapter.dbName) {
+                throw new SyncError('Cannot destroy database - dbName not available')
               }
               return this.destroyDatabase(
                 database.adapter.dbName,
@@ -267,7 +272,16 @@ export default class SyncManager {
             }
           }
 
-          return database.write(() => database.unsafeResetDatabase())
+          return database.write(() => database.unsafeResetDatabase()).then(() =>{
+            // destroy the db anyways
+            // useful if we're using user-namespaced dbs
+            if (this.destroyDatabase && database.adapter.dbName && database.adapter.underlyingAdapter) {
+              return this.destroyDatabase(
+                database.adapter.dbName,
+                database.adapter.underlyingAdapter
+              )
+            }
+          })
         }
 
         try {
