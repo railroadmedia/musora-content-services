@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.120.0](https://github.com/railroadmedia/musora-content-services/compare/v2.119.3...v2.120.0) (2026-01-19)
+
+
+### Features
+
+* add fetchLiveStreamData method ([aa9b704](https://github.com/railroadmedia/musora-content-services/commit/aa9b7046c7fc69e8b30c0f035577da62f8c5b5fd))
+* add vimeo_live_event_id to GROQ queries ([d4fff6f](https://github.com/railroadmedia/musora-content-services/commit/d4fff6f09ca62682f6cead7e43f6979a56b86e0a))
+* **TP-1060:** method data caching in mcs ([#701](https://github.com/railroadmedia/musora-content-services/issues/701)) ([25efc43](https://github.com/railroadmedia/musora-content-services/commit/25efc43b6c07172db2f20d51d5b79ac9fc204eef))
+
 ### [2.119.3](https://github.com/railroadmedia/musora-content-services/compare/v2.119.2...v2.119.3) (2026-01-14)
 
 
