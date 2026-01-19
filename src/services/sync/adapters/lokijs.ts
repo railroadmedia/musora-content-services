@@ -3,7 +3,7 @@ import { SyncTelemetry } from '../telemetry'
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 export { LokiJSAdapter as default }
 
-import { deleteDatabase } from '@nozbe/watermelondb/adapters/lokijs/worker/lokiExtensions'
+import { deleteDatabase, lokiFatalError } from '@nozbe/watermelondb/adapters/lokijs/worker/lokiExtensions'
 
 /**
  * Mute impending driver errors that are expected after sync adapter failure
@@ -73,6 +73,11 @@ export function simulateIndexedDBQuotaExceeded() {
     delay: 0,
     forceError: () => new DOMException('Simulated quota exceeded', 'QuotaExceededError')
   })
+}
+
+export function disableLoki(adapter: LokiJSAdapter) {
+  // acts as handy helper to disable loki's save methods entirely
+  lokiFatalError(adapter._driver.loki)
 }
 
 /**
