@@ -20,34 +20,13 @@ export default class SyncManager {
   private static counter = 0
   private static instance: SyncManager | null = null
 
-  public static async assignAndSetupInstance(instance: SyncManager) {
-    if (SyncManager.instance) {
-      throw new SyncError('SyncManager already initialized')
-    }
-
-    SyncManager.instance = instance
-    const teardown = await instance.setup()
-
-    return async (mode: SyncTeardownMode = 'reset') => {
-      SyncManager.instance = null
-      return teardown(mode).catch((error) => {
-        SyncManager.instance = instance // restore instance on teardown failure
-        throw error
-      })
-    }
-  }
-
-  public static assignAndSetupInstanceDangerously(instance: SyncManager) {
+  public static assignAndSetupInstance(instance: SyncManager) {
     if (SyncManager.instance) {
       throw new SyncError('SyncManager already initialized')
     }
     SyncManager.instance = instance
 
-    // we don't want to reset the db when it's just a regular page reload
-    // but note that it skips an initial comparison of userId <-> storedUserId
-    // (this lets us keep this particular setup flow synchronous (important because
-    // we don't need a bunch of ready checks in all of our melon query consumers))
-    const teardown = instance.setupWithoutDatabaseReset()
+    const teardown = instance.setup()
 
     return async (mode: SyncTeardownMode = 'reset') => {
       SyncManager.instance = null
@@ -81,7 +60,7 @@ export default class SyncManager {
   private strategyMap: { models: ModelClass[]; strategies: SyncStrategy[] }[]
   private effectMap: { models: ModelClass[]; effects: SyncEffect[] }[]
 
-  private initDatabase: () => Database
+  private initDatabase: (userScope: SyncUserScope) => Database
   private destroyDatabase?: (dbName: string, adapter: DatabaseAdapter) => Promise<void>
   private abortWritesToDatabase?: (adapter: DatabaseAdapter) => Promise<void>
 
@@ -90,7 +69,7 @@ export default class SyncManager {
   constructor(
     userScope: SyncUserScope,
     context: SyncContext,
-    initDatabase: () => Database,
+    initDatabase: (userScope: SyncUserScope) => Database,
     teardownDatabase: {
       destroy?: (dbName: string, adapter: DatabaseAdapter) => Promise<void>
       abort?: (adapter: DatabaseAdapter) => Promise<void>
@@ -158,42 +137,16 @@ export default class SyncManager {
     this.effectMap.push({ models, effects })
   }
 
-  async setup() {
-    this.telemetry.debug('[SyncManager] Setting up with database reset')
-    const database = this._initDatabase()
+  setup() {
+    this.telemetry.debug('[SyncManager] Setting up')
 
-    // Default safe behavior is to always reset the db (i.e., on login)
-    // (unless the provided intended user matches the already stored user)
-
-    // this is technically redundant if we're using namespaced databases
-    await database.write(async () => {
-      const storedUserId = await database.localStorage.get<number>('__userId__');
-      if (!storedUserId || storedUserId !== this.userScope.initialId) {
-        await database.unsafeResetDatabase()
-        await database.localStorage.set('__userId__', this.userScope.initialId)
-      }
-    })
-
-    return this._setup(database)
-  }
-
-  setupWithoutDatabaseReset() {
-    this.telemetry.debug('[SyncManager] Setting up synchronously without proactive reset')
-    const database = this._initDatabase()
-    return this._setup(database)
-  }
-
-  _initDatabase() {
     // can fail synchronously immediately (e.g., schema/migration validation errors)
     // or asynchronously (e.g., indexedDB errors synchronously OR asynchronously (!))
     const database = this.telemetry.trace(
       { name: 'db:init', attributes: { ...this.context.session.toJSON() } },
-      this.initDatabase
+      () => this.initDatabase(this.userScope)
     )
-    return database
-  }
 
-  _setup(database: Database) {
     Object.entries(this.storeConfigsRegistry).forEach(([table, storeConfig]) => {
       this.storesRegistry[table] = this.createStore(storeConfig, database)
     })
