@@ -1,7 +1,7 @@
 /**
  * @module UserManagement
  */
-import { GET, POST, PUT, DELETE } from '../../infrastructure/http/HttpClient.ts'
+import { GET, POST, PUT, DELETE, PATCH } from '../../infrastructure/http/HttpClient.ts'
 import { globalConfig } from '../config.js'
 import './types.js'
 
