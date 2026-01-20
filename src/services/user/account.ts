@@ -4,6 +4,7 @@
 import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from '../config.js'
+import { clearAllCachedData } from '../dataContext.js'
 import { Onboarding } from './onboarding'
 import { AuthResponse } from './types'
 
@@ -149,7 +150,10 @@ export async function confirmEmailChange(token: string): Promise<void> {
 export async function deleteAccount(userId: number): Promise<void> {
   const apiUrl = `/api/user-management-system/v1/users/${userId}`
   const httpClient = new HttpClient(globalConfig.baseUrl, globalConfig.sessionConfig.token)
-  return httpClient.delete(apiUrl)
+  await httpClient.delete(apiUrl)
+
+  // Clear all locally cached data to prevent data leakage between users
+  await clearAllCachedData()
 }
 
 /**
