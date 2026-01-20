@@ -131,5 +131,13 @@ export async function toggleSignaturePrivate(showSignature = true) {
   return await PUT(apiUrl, { show_signature: showSignature })
 }
 
-
-
+/**
+ * Updates the user's brand.
+ *
+ * @param {string} brand - The brand to assign to the user.
+ * @returns {Promise<{ brand: string }>} - A promise that resolves with the updated brand.
+ */
+export async function updateBrand(brand) {
+  const apiUrl = `/api/user-management-system/v1/user/brand`
+  return await PATCH(apiUrl, { brand })
+}
