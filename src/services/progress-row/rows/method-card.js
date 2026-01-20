@@ -19,7 +19,7 @@ export async function getMethodCard(brand) {
   const activeLearningPath = await getActivePath(brand)
 
   if (introVideoProgressState !== STATE.COMPLETED || !activeLearningPath) {
-    const timestamp = -1 // set negative so later filters out naturally if not pinned
+    const timestamp = Math.floor(Date.now())
     const instructorText =
       introVideo.instructor?.length > 1
         ? 'Multiple Instructors'
