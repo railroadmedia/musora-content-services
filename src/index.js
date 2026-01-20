@@ -355,6 +355,7 @@ import {
 	setUserSignature,
 	toggleSignaturePrivate,
 	unblockUser,
+	updateBrand,
 	updateDisplayName,
 	uploadPicture,
 	uploadPictureFromS3
@@ -723,6 +724,7 @@ export {
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
+	updateBrand,
 	updateDailySession,
 	updateDisplayName,
 	updateForumCategory,
