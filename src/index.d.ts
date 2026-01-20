@@ -351,6 +351,7 @@ import {
 	setUserSignature,
 	toggleSignaturePrivate,
 	unblockUser,
+	updateBrand,
 	updateDisplayName,
 	uploadPicture,
 	uploadPictureFromS3
@@ -724,6 +725,7 @@ declare module 'musora-content-services' {
 		unlockThread,
 		unpinProgressRow,
 		unpinThread,
+		updateBrand,
 		updateDailySession,
 		updateDisplayName,
 		updateForumCategory,
