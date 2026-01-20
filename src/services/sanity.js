@@ -30,7 +30,8 @@ import {
   resourcesField,
   showsTypes,
   SONG_TYPES,
-  SONG_TYPES_WITH_CHILDREN, liveFields,
+  SONG_TYPES_WITH_CHILDREN,
+  liveFields,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems, recommendations } from './recommendations.js'
 import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS } from '../contentMetaData.js'
