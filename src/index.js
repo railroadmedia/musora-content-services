@@ -132,6 +132,7 @@ import {
 } from './services/contentProgress.js';
 
 import {
+	clearAllCachedData,
 	verifyLocalDataContext
 } from './services/dataContext.js';
 
@@ -229,6 +230,7 @@ import {
 	fetchComments,
 	fetchContentPageUserData,
 	fetchLikeCount,
+	fetchLiveStreamData,
 	fetchRecentUserActivities,
 	fetchTopComment,
 	fetchUserPermissionsData,
@@ -353,6 +355,7 @@ import {
 	setUserSignature,
 	toggleSignaturePrivate,
 	unblockUser,
+	updateBrand,
 	updateDisplayName,
 	uploadPicture,
 	uploadPictureFromS3
@@ -418,6 +421,7 @@ import {
 	getPracticeNotes,
 	getPracticeSessions,
 	getRecentActivity,
+	getStreaksAndMessage,
 	getUserMonthlyStats,
 	getUserWeeklyStats,
 	recordUserActivity,
@@ -443,6 +447,7 @@ export {
 	buildEntityAndTotalQuery,
 	buildImageSRC,
 	calculateLongestStreaks,
+	clearAllCachedData,
 	closeComment,
 	completeLearningPathIntroVideo,
 	completeMethodIntroVideo,
@@ -520,6 +525,7 @@ export {
 	fetchLikeCount,
 	fetchLiveEvent,
 	fetchLiveEventPollingState,
+	fetchLiveStreamData,
 	fetchMemberships,
 	fetchMetadata,
 	fetchMethodV2IntroVideo,
@@ -620,6 +626,7 @@ export {
 	getSongTypesFor,
 	getSortOrder,
 	getStartedOrCompletedProgressOnly,
+	getStreaksAndMessage,
 	getTabResults,
 	getTimeRemainingUntilLocal,
 	getToday,
@@ -717,6 +724,7 @@ export {
 	unlockThread,
 	unpinProgressRow,
 	unpinThread,
+	updateBrand,
 	updateDailySession,
 	updateDisplayName,
 	updateForumCategory,

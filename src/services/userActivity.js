@@ -2,26 +2,18 @@
  * @module UserActivity
  */
 
-import {
-  fetchUserPractices,
-  fetchUserPracticeMeta,
-  fetchRecentUserActivities,
-} from './railcontent'
+import { fetchUserPractices, fetchUserPracticeMeta, fetchRecentUserActivities } from './railcontent'
 import { GET, POST, PUT, DELETE } from '../infrastructure/http/HttpClient.ts'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import { fetchByRailContentIds } from './sanity'
-import {
-  getMonday,
-  getWeekNumber,
-  isSameDate,
-  isNextDay,
-} from './dateUtils.js'
+import { getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js'
 import { globalConfig } from './config'
 import { getFormattedType } from '../contentTypeConfig'
 import dayjs from 'dayjs'
 import { addContextToContent } from './contentAggregator.js'
 import { db, Q } from './sync'
-import {COLLECTION_TYPE} from "./sync/models/ContentProgress";
+import { COLLECTION_TYPE } from './sync/models/ContentProgress'
+import { streakCalculator } from './user/streakCalculator'
 
 const DATA_KEY_PRACTICES = 'practices'
 
@@ -78,7 +70,7 @@ async function getOwnPractices(...clauses) {
   return data
 }
 
-export let userActivityContext = new DataContext(UserActivityVersionKey, function() {})
+export let userActivityContext = new DataContext(UserActivityVersionKey, function () {})
 
 /**
  * Retrieves user activity statistics for the current week, including daily activity and streak messages.
@@ -95,24 +87,14 @@ export async function getUserWeeklyStats() {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const today = dayjs()
   const startOfWeek = getMonday(today, timeZone)
-  const weekDays = Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, 'day').format('YYYY-MM-DD'))
-  // Query THIS WEEK's practices for display
+  const weekDays = Array.from({ length: 7 }, (_, i) =>
+    startOfWeek.add(i, 'day').format('YYYY-MM-DD')
+  )
+
   const weekPractices = await getOwnPractices(
     Q.where('date', Q.oneOf(weekDays)),
     Q.sortBy('date', 'desc')
   )
-
-  // Query LAST 60 DAYS for streak calculation (balances accuracy vs performance)
-  // This captures:
-  // - Current active streaks up to 60 days
-  // - Recent breaks (to show "restart" message)
-  // - Sufficient context for accurate weekly streak calculation
-  const sixtyDaysAgo = today.subtract(60, 'days').format('YYYY-MM-DD')
-  const recentPractices = await getOwnPractices(
-    Q.where('date', Q.gte(sixtyDaysAgo)),
-    Q.sortBy('date', 'desc')
-  )
-
   const practiceDaysSet = new Set(Object.keys(weekPractices))
   let dailyStats = []
   for (let i = 0; i < 7; i++) {
@@ -131,8 +113,15 @@ export async function getUserWeeklyStats() {
     })
   }
 
-  let { streakMessage } = getStreaksAndMessage(recentPractices)
-  return { data: { dailyActiveStats: dailyStats, streakMessage, practices: weekPractices } }
+  const streakData = await streakCalculator.getStreakData()
+
+  return {
+    data: {
+      dailyActiveStats: dailyStats,
+      streakMessage: streakData.streakMessage,
+      practices: weekPractices,
+    },
+  }
 }
 
 /**
@@ -252,7 +241,9 @@ export async function getUserMonthlyStats(params = {}) {
       return acc
     }, {})
 
-  const { currentDailyStreak, currentWeeklyStreak } = calculateStreaks(filteredPractices)
+  const streakData = await streakCalculator.getStreakData()
+  const currentDailyStreak = streakData.currentDailyStreak
+  const currentWeeklyStreak = streakData.currentWeeklyStreak
 
   return {
     data: {
@@ -285,20 +276,28 @@ export async function getUserMonthlyStats(params = {}) {
  *
  */
 export async function recordUserPractice(practiceDetails) {
-  const day = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD wall clock date in user's timezone
+  const day = new Date().toLocaleDateString('sv-SE') // YYYY-MM-DD wall clock date in user's timezone
   const durationSeconds = practiceDetails.duration_seconds
 
-  return await db.practices.recordManualPractice(day, durationSeconds, {
+  const result = await db.practices.recordManualPractice(day, durationSeconds, {
     title: practiceDetails.title ?? null,
     category_id: practiceDetails.category_id ?? null,
     thumbnail_url: practiceDetails.thumbnail_url ?? null,
     instrument_id: practiceDetails.instrument_id ?? null,
   })
+
+  streakCalculator.invalidate()
+  return result
 }
 
 export async function trackUserPractice(contentId, incSeconds) {
-  const day = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD wall clock date in user's timezone
-  return await db.practices.trackAutoPractice(contentId, day, incSeconds, { skipPush: true }); // NOTE - SKIPS PUSH
+  const day = new Date().toLocaleDateString('sv-SE') // YYYY-MM-DD wall clock date in user's timezone
+  const result = await db.practices.trackAutoPractice(contentId, day, incSeconds, {
+    skipPush: true,
+  }) // NOTE - SKIPS PUSH
+
+  streakCalculator.invalidate()
+  return result
 }
 
 /**
@@ -321,7 +320,9 @@ export async function trackUserPractice(contentId, incSeconds) {
  *
  */
 export async function updateUserPractice(id, practiceDetails) {
-  return await db.practices.updateDetails(id, practiceDetails)
+  const result = await db.practices.updateDetails(id, practiceDetails)
+  streakCalculator.invalidate()
+  return result
 }
 
 /**
@@ -337,11 +338,13 @@ export async function updateUserPractice(id, practiceDetails) {
  *   .catch(error => console.error(error));
  */
 export async function removeUserPractice(id) {
-  return await db.practices.deleteOne(id)
+  const result = await db.practices.deleteOne(id)
+  streakCalculator.invalidate()
+  return result
 }
 
 /**
- * Restores a previously deleted user's practice session by ID, updating both the local and remote activity context.
+ * Restores a previously deleted user's practice session by ID
  *
  * @param {number} id - The unique identifier of the practice session to be restored.
  * @returns {Promise<Object>} - A promise that resolves to the response containing the restored practice session data.
@@ -353,35 +356,7 @@ export async function removeUserPractice(id) {
  *   .catch(error => console.error(error));
  */
 export async function restoreUserPractice(id) {
-  const url = `/api/user/practices/v1/practices/restore${buildQueryString([id])}`
-  const response = await PUT(url, null)
-  if (response?.data?.length) {
-    const restoredPractice = response.data.find((p) => p.id === id)
-    if (restoredPractice) {
-      await userActivityContext.updateLocal(async function (localContext) {
-        if (!localContext.data[DATA_KEY_PRACTICES][restoredPractice.day]) {
-          localContext.data[DATA_KEY_PRACTICES][restoredPractice.day] = []
-        }
-        response.data.forEach((restoredPractice) => {
-          localContext.data[DATA_KEY_PRACTICES][restoredPractice.day].push({
-            id: restoredPractice.id,
-            duration_seconds: restoredPractice.duration_seconds,
-          })
-        })
-      })
-    }
-  }
-  const formattedMeta = await formatPracticeMeta(response.data || [])
-  const practiceDuration = formattedMeta.reduce(
-    (total, practice) => total + (practice.duration || 0),
-    0
-  )
-  return {
-    data: formattedMeta,
-    message: response.message,
-    version: response.version,
-    practiceDuration,
-  }
+  return await db.practices.restoreOne(id)
 }
 
 /**
@@ -402,7 +377,9 @@ export async function restoreUserPractice(id) {
  */
 export async function deletePracticeSession(day) {
   const ids = await db.practices.queryAllIds(Q.where('date', day))
-  return await db.practices.deleteSome(ids.data)
+  const result = await db.practices.deleteSome(ids.data)
+  streakCalculator.invalidate()
+  return result
 }
 
 /**
@@ -422,30 +399,15 @@ export async function deletePracticeSession(day) {
  *   .catch(error => console.error("Restore failed:", error));
  */
 export async function restorePracticeSession(date) {
-  const url = `/api/user/practices/v1/practices/restore?date=${date}`
-  const response = await PUT(url, null)
+  const ids = await db.practices.queryAllDeletedIds(Q.where('date', date))
+  const response = await db.practices.restoreSome(ids.data)
 
-  if (response?.data) {
-    await userActivityContext.updateLocal(async function (localContext) {
-      if (!localContext.data[DATA_KEY_PRACTICES][date]) {
-        localContext.data[DATA_KEY_PRACTICES][date] = []
-      }
-
-      response.data.forEach((restoredPractice) => {
-        localContext.data[DATA_KEY_PRACTICES][date].push({
-          id: restoredPractice.id,
-          duration_seconds: restoredPractice.duration_seconds,
-        })
-      })
-    })
-  }
-
-  const formattedMeta = await formatPracticeMeta(response?.data)
+  const formattedMeta = await formatPracticeMeta(response.data)
   const practiceDuration = formattedMeta.reduce(
     (total, practice) => total + (practice.duration || 0),
     0
   )
-
+  streakCalculator.invalidate()
   return { data: formattedMeta, practiceDuration }
 }
 
@@ -477,10 +439,7 @@ export async function getPracticeSessions(params = {}) {
   let data
 
   if (userId === globalConfig.sessionConfig.userId) {
-    const query = await db.practices.queryAll(
-      Q.where('date', day),
-      Q.sortBy('created_at', 'asc')
-    )
+    const query = await db.practices.queryAll(Q.where('date', day), Q.sortBy('created_at', 'asc'))
     data = query.data
   } else {
     const query = await fetchUserPracticeMeta(day, userId)
@@ -573,7 +532,7 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
  *   .catch(error => console.error(error));
  */
 export async function createPracticeNotes(payload) {
-  return await db.practiceDayNotes.upsertOne(payload.date, r => {
+  return await db.practiceDayNotes.upsertOne(payload.date, (r) => {
     r.date = payload.date
     r.notes = payload.notes
   })
@@ -593,12 +552,12 @@ export async function createPracticeNotes(payload) {
  *   .catch(error => console.error(error));
  */
 export async function updatePracticeNotes(payload) {
-  return await db.practiceDayNotes.updateOneId(payload.date, r => {
+  return await db.practiceDayNotes.updateOneId(payload.date, (r) => {
     r.notes = payload.notes
   })
 }
 
-function getStreaksAndMessage(practices) {
+export function getStreaksAndMessage(practices) {
   let { currentDailyStreak, currentWeeklyStreak, streakMessage } = calculateStreaks(practices, true)
 
   return {
@@ -650,20 +609,32 @@ function calculateStreaks(practices, includeStreakMessage = false) {
   })
   currentDailyStreak = dailyStreak
 
-  // Weekly streak calculation
-  let weekNumbers = new Set(sortedPracticeDays.map((date) => getWeekNumber(date)))
+  // Weekly streak calculation - using Monday dates to handle year boundaries
+  let weekStartMap = new Map()
+  sortedPracticeDays.forEach((date) => {
+    const mondayDate = getMonday(date).format('YYYY-MM-DD')
+    if (!weekStartMap.has(mondayDate)) {
+      weekStartMap.set(mondayDate, getMonday(date).valueOf()) // Store as timestamp
+    }
+  })
+  let sortedWeekTimestamps = [...weekStartMap.values()].sort((a, b) => b - a) // Descending
   let weeklyStreak = 0
-  let lastWeek = null
-  ;[...weekNumbers]
-    .sort((a, b) => b - a)
-    .forEach((week) => {
-      if (lastWeek === null || week === lastWeek - 1) {
+  let prevWeekTimestamp = null
+  for (const currentWeekTimestamp of sortedWeekTimestamps) {
+    if (prevWeekTimestamp === null) {
+      weeklyStreak = 1
+    } else {
+      const daysDiff = (prevWeekTimestamp - currentWeekTimestamp) / (1000 * 60 * 60 * 24)
+      const weeksDiff = Math.round(daysDiff / 7)
+
+      if (weeksDiff === 1) {
         weeklyStreak++
       } else {
-        return
+        break // Properly break on non-consecutive week
       }
-      lastWeek = week
-    })
+    }
+    prevWeekTimestamp = currentWeekTimestamp
+  }
   currentWeeklyStreak = weeklyStreak
 
   // Calculate streak message only if includeStreakMessage is true

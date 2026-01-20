@@ -19,6 +19,14 @@ import { PUT } from '../../infrastructure/http/HttpClient.ts'
 export const USER_PIN_PROGRESS_KEY = 'user_pin_progress_row'
 
 /**
+ * Gets the localStorage key for user pinned progress, scoped by user ID
+ */
+function getUserPinProgressKey() {
+  const userId = globalConfig.sessionConfig?.userId || globalConfig.railcontentConfig?.userId
+  return userId ? `user_pin_progress_row_${userId}` : USER_PIN_PROGRESS_KEY
+}
+
+/**
  * Fetches and combines recent user progress rows and playlists, excluding certain types and parents.
  *
  * @param {Object} [options={}] - Options for fetching progress rows.
@@ -102,7 +110,8 @@ export async function unpinProgressRow(brand) {
 }
 
 async function getUserPinnedItem(brand) {
-  const pinnedProgressRaw = await globalConfig.localStorage.getItem(USER_PIN_PROGRESS_KEY)
+  const key = getUserPinProgressKey()
+  const pinnedProgressRaw = await globalConfig.localStorage.getItem(key)
   let pinnedProgress = pinnedProgressRaw ? JSON.parse(pinnedProgressRaw) : {}
   pinnedProgress = pinnedProgress || {}
   return pinnedProgress[brand] ?? null
@@ -200,9 +209,10 @@ function mergeAndSortItems(items, limit) {
 }
 
 async function updateUserPinnedProgressRow(brand, pinnedData) {
-  const pinnedProgressRaw = await globalConfig.localStorage.getItem(USER_PIN_PROGRESS_KEY)
+  const key = getUserPinProgressKey()
+  const pinnedProgressRaw = await globalConfig.localStorage.getItem(key)
   let pinnedProgress = pinnedProgressRaw ? JSON.parse(pinnedProgressRaw) : {}
   pinnedProgress = pinnedProgress || {}
   pinnedProgress[brand] = pinnedData
-  await globalConfig.localStorage.setItem(USER_PIN_PROGRESS_KEY, JSON.stringify(pinnedProgress))
+  await globalConfig.localStorage.setItem(key, JSON.stringify(pinnedProgress))
 }

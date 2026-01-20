@@ -2,6 +2,7 @@
  * @module Sessions
  */
 import { globalConfig } from '../config.js'
+import { clearAllCachedData } from '../dataContext.js'
 import { USER_PIN_PROGRESS_KEY } from '../progress-row/base.js'
 import './types.js'
 
@@ -50,9 +51,11 @@ export async function login(email, password, deviceName, deviceToken, platform) 
 
   // TODO: refactor this. I don't think this is the place for it but we need it fixed for the system test
   if (res.ok) {
+    const userId = data.user?.id
+    const userPinKey = userId ? `user_pin_progress_row_${userId}` : USER_PIN_PROGRESS_KEY
     await globalConfig.localStorage.setItem(
-      USER_PIN_PROGRESS_KEY,
-      JSON.stringify(data.pinned_progress_rows || {})
+      userPinKey,
+      JSON.stringify(data.user?.brand_pinned_progress || {})
     )
   }
 
@@ -91,6 +94,7 @@ export async function login(email, password, deviceName, deviceToken, platform) 
 
 /**
  * Logs the user out of the current session.
+ * Clears all cached data to prevent data leakage between users.
  *
  * @returns {Promise<void>}
  *
@@ -108,6 +112,9 @@ export async function logout() {
       'Content-Type': 'application/json',
     },
   })
+
+  // Clear all locally cached data to prevent data leakage between users
+  await clearAllCachedData()
 }
 
 /**
