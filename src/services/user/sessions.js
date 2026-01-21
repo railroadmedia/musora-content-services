@@ -149,11 +149,14 @@ export async function generateAuthSessionUrl(userId, redirectTo) {
   const authKeyResponse = await response.json()
   const authKey = authKeyResponse.data || authKeyResponse.auth_key
 
+  const absoluteRedirectTo = new URL(redirectTo)
+  const relativeRedirectTo = absoluteRedirectTo.pathname + absoluteRedirectTo.search
   const params = new URLSearchParams({
     user_id: userId.toString(),
     auth_key: authKey,
-    redirect_to: redirectTo,
+    redirect_to: relativeRedirectTo,
   })
 
-  return `${baseUrl}/v1/sessions/auth-key?${params.toString()}`
+  // HACK: hardcoded FE URL
+  return `https://app.musora.com/impersonate?${params.toString()}`
 }
