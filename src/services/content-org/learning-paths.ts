@@ -188,8 +188,7 @@ export async function getEnrichedLearningPath(learningPathId) {
 
   response.children = mapContentToParent(
     response.children,
-    LEARNING_PATH_LESSON,
-    learningPathId
+    {lessonType: LEARNING_PATH_LESSON, parentContentId: learningPathId}
   )
   return response
 }
@@ -245,15 +244,32 @@ export async function getLearningPathLessonsByIds(contentIds, learningPathId) {
 
 /**
  * Maps content to its parent learning path - fixes multi-parent problems for cta when lessons have a special collection.
- * @param lessons
+ * @param lessons - sanity documents
  * @param parentContentType
  * @param parentContentId
  */
-export function mapContentToParent(lessons, parentContentType, parentContentId) {
+export function mapContentToParent(
+  lessons: any,
+  options?: { lessonType?: string; parentContentId?: number }
+) {
   if (!lessons) return lessons
-  return lessons.map((lesson: any) => {
-    return { ...lesson, type: parentContentType, parent_id: parentContentId }
-  })
+
+  function mapIt(lesson: any) {
+    const mappedLesson = { ...lesson }
+    if (options?.lessonType !== undefined) mappedLesson.type = options.lessonType
+    if (options?.parentContentId !== undefined) mappedLesson.parent_id = options.parentContentId
+    return mappedLesson
+
+  }
+
+  if (typeof lessons === 'object' && !Array.isArray(lessons)) {
+    return mapIt(lessons)
+
+  } else if (Array.isArray(lessons)) {
+    return lessons.map((lesson: any) => {
+      return mapIt(lesson)
+    })
+  }
 }
 
 interface fetchLearningPathLessonsResponse {

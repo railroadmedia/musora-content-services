@@ -2317,3 +2317,12 @@ function getContentTypesForFilterName(displayName) {
 export function getSongTypesFor(brand) {
   return getSongType(brand)
 }
+
+export function fetchParentChildRelationshipsFor(childIds, parentType) {
+  const stringIds = childIds.join(',')
+  const query = `*[_type == '${parentType}' && count(@.child[@->railcontent_id in [${stringIds}]]) > 0]{
+  railcontent_id,
+  "children": child[@->railcontent_id in [${stringIds}]]->railcontent_id
+}`
+  return fetchSanity(query, true)
+}

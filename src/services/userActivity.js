@@ -5,7 +5,7 @@
 import { fetchUserPractices, fetchUserPracticeMeta, fetchRecentUserActivities } from './railcontent'
 import { GET, POST, PUT, DELETE } from '../infrastructure/http/HttpClient.ts'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
-import { fetchByRailContentIds } from './sanity'
+import { fetchByRailContentIds, fetchParentChildRelationshipsFor } from './sanity'
 import { getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js'
 import { globalConfig } from './config'
 import { getFormattedType } from '../contentTypeConfig'
@@ -14,6 +14,7 @@ import { addContextToContent } from './contentAggregator.js'
 import { db, Q } from './sync'
 import { COLLECTION_TYPE } from './sync/models/ContentProgress'
 import { streakCalculator } from './user/streakCalculator'
+import { mapContentToParent } from "./content-org/learning-paths.js";
 
 const DATA_KEY_PRACTICES = 'practices'
 
@@ -490,11 +491,16 @@ export async function getPracticeNotes(date) {
  */
 export async function getRecentActivity({ page = 1, limit = 5, tabName = null } = {}) {
   const recentActivityData = await fetchRecentUserActivities({ page, limit, tabName })
-  const contentIds = recentActivityData.data.map((p) => p.contentId).filter((id) => id !== null)
+
+  const filteredData = recentActivityData.data.filter((id) => id !== null)
+  const allContentIds = filteredData.map((p) => p.contentId)
+  const learningPathContentIds = filteredData
+    .filter((p) => p.sanityType === "learning-path-lesson-v2")
+    .map((p) => p.contentId)
 
   const contents = await addContextToContent(
     fetchByRailContentIds,
-    contentIds,
+    allContentIds,
     'progress-tracker',
     undefined,
     true,
@@ -504,6 +510,23 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
       addNextLesson: true,
     }
   )
+
+  if (learningPathContentIds.length > 0) {
+    const hierarchy = await fetchParentChildRelationshipsFor(learningPathContentIds, 'learning-path-v2')
+
+    const childToParentMap = new Map()
+    hierarchy.forEach((relation) => {
+      relation.children.forEach((childId) => {
+        childToParentMap.set(childId, relation.railcontent_id)
+      })
+    })
+
+    contents.forEach((content) => {
+      if (childToParentMap.has(content.id)) {
+        content = mapContentToParent(content, { parentId: childToParentMap.get(content.id) })
+      }
+    })
+  }
 
   recentActivityData.data = recentActivityData.data.map((practice) => {
     const content = contents?.find((c) => c.id === practice.contentId) || {}
