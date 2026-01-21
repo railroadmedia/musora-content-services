@@ -331,6 +331,8 @@ export const filterTypes = {
 export const recentTypes = {
   lessons: [
     ...individualLessonsTypes,
+    ...skillLessonTypes,
+    ...entertainmentLessonTypes,
     'course-lesson',
     'guided-course-lesson',
     'quick-tips',
