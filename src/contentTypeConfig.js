@@ -683,7 +683,7 @@ export function getNewReleasesTypes(brand) {
     'quick-tips',
     'workout',
     'podcasts',
-    'pack',
+    'course-collection',
     'song',
     'play-along',
     'course',
@@ -720,7 +720,6 @@ export function getUpcomingEventsTypes(brand) {
     'boot-camp',
     'quick-tips',
     'recording',
-    'pack-bundle-lesson',
   ]
   switch (brand) {
     case 'drumeo':
