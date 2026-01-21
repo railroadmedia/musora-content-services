@@ -9,6 +9,7 @@ import {
   contentTypeConfig,
   DEFAULT_FIELDS,
   descriptionField,
+  difficultyStringField,
   filtersToGroq,
   getChildFieldsForContentType,
   getFieldsForContentType,
@@ -331,7 +332,7 @@ export async function fetchNewReleases(
       "instructor": ${instructorField},
       "artists": instructor[]->name,
       difficulty,
-      difficulty_string,
+      ${difficultyStringField()},
       length_in_seconds,
       published_on,
       "type": _type,
@@ -369,7 +370,7 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         "artists": instructor[]->name,
         "instructor": ${instructorField},
         difficulty,
-        difficulty_string,
+        ${difficultyStringField()},
         length_in_seconds,
         published_on,
         "type": _type,
@@ -422,7 +423,7 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
       "instructor": ${instructorField},
       "artists": instructor[]->name,
       difficulty,
-      difficulty_string,
+      ${difficultyStringField()},
       length_in_seconds,
       published_on,
       "type": _type,
@@ -1097,7 +1098,7 @@ export async function fetchSiblingContent(railContentId, brand = null) {
   }).buildFilter()
 
   const brandString = brand ? ` && brand == "${brand}"` : ''
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission_v2, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
+  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, ${difficultyStringField()}, artist->, "permission_id": permission_v2, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
 
   const query = `*[railcontent_id == ${railContentId}${brandString}]{
    _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
@@ -1144,7 +1145,7 @@ export async function fetchRelatedLessons(railContentId) {
     { showMembershipRestrictedContent: true }
   ).buildFilter()
 
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission_v2,_type, "genre": genre[]->name`
+  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, ${difficultyStringField()}, railcontent_id, artist->,"permission_id": permission_v2,_type, "genre": genre[]->name`
 
   const query = `*[railcontent_id == ${railContentId} && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
@@ -1973,7 +1974,7 @@ export async function fetchScheduledAndNewReleases(
       ${artistOrInstructorName()},
       "artists": instructor[]->name,
       difficulty,
-      difficulty_string,
+      ${difficultyStringField()},
       length_in_seconds,
       published_on,
       "type": _type,
