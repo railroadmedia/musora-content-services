@@ -554,6 +554,8 @@ export async function mapContentsThatWereLastProgressedFromMethod(objects: any[]
   const contentIds = objects.map((obj) => obj.id) as number[]
   const trueIds = await getIdsWhereLastAccessedFromMethod(contentIds)
 
+  if (trueIds.length === 0) return objects
+
   let filtered = objects.filter((obj) => trueIds.includes(obj.id))
 
   filtered = await mapLearningPathParentsTo(filtered, {type: true, parent_id: true})
