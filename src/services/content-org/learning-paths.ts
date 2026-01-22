@@ -14,7 +14,8 @@ import {
   contentStatusCompleted,
   contentStatusCompletedMany,
   contentStatusReset,
-  getAllCompletedByIds, getIdsWhereLastAccessedFromMethod,
+  getAllCompletedByIds,
+  getIdsWhereLastAccessedFromMethod,
   getProgressState,
 } from '../contentProgress.js'
 import { COLLECTION_TYPE, STATE } from '../sync/models/ContentProgress'
