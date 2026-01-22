@@ -354,7 +354,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
-  async deleteSome(ids: RecordId[], span?: Span) {
+  async deleteSome(ids: RecordId[], span?: Span, { skipPush = false } = {}) {
     return this.runScope.abortable(async () => {
       await this.telemeterizedWrite(span, async writer => {
         const existing = await this.queryRecords(Q.where('id', Q.oneOf(ids)))
@@ -364,7 +364,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
       this.emit('deleted', ids)
 
-      this.pushUnsyncedWithRetry(span)
+      if (!skipPush) {
+        this.pushUnsyncedWithRetry(span)
+      }
       await this.ensurePersistence()
 
       return ids

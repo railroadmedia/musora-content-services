@@ -114,10 +114,10 @@ export default class SyncRepository<TModel extends BaseModel> {
     )
   }
 
-  protected async deleteSome(ids: RecordId[]) {
+  protected async deleteSome(ids: RecordId[], { skipPush = false } = {}) {
     return this.store.telemetry.trace(
       { name: `deleteSome:${this.store.model.table}`, op: 'delete', attributes: { ...this.context.session.toJSON() } },
-      (span) => this._respondToWriteIds(() => this.store.deleteSome(ids, span), span)
+      (span) => this._respondToWriteIds(() => this.store.deleteSome(ids, span, {skipPush}), span)
     )
   }
 
