@@ -1,5 +1,6 @@
 import SyncRepository, {Q} from './base'
 import ContentProgress, {COLLECTION_ID_SELF, COLLECTION_TYPE, STATE} from '../models/ContentProgress'
+import {EpochMs} from "../index";
 
 interface ContentIdCollectionTuple {
   contentId: number,
@@ -175,7 +176,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       }
 
       if (!fromLearningPath) {
-        r.last_interacted_a_la_carte = Date.now()
+        r.last_interacted_a_la_carte = Date.now() as EpochMs
       }
 
     }, { skipPush })
@@ -225,7 +226,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
           r.progress_percent = progressPct
 
           if (!fromLearningPath) {
-            r.last_interacted_a_la_carte = Date.now()
+            r.last_interacted_a_la_carte = Date.now() as EpochMs
           }
         },
       ])
