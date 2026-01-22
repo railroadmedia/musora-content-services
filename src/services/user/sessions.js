@@ -136,6 +136,7 @@ export async function generateAuthSessionUrl(userId, redirectTo) {
     headers.Authorization = `Bearer ${globalConfig.sessionConfig.authToken}`
   }
 
+  // generate auth key
   const response = await fetch(`${baseUrl}/v1/auth-key`, {
     method: 'GET',
     headers,
@@ -151,12 +152,18 @@ export async function generateAuthSessionUrl(userId, redirectTo) {
 
   const absoluteRedirectTo = new URL(redirectTo)
   const relativeRedirectTo = absoluteRedirectTo.pathname + absoluteRedirectTo.search
+
   const params = new URLSearchParams({
     user_id: userId.toString(),
     auth_key: authKey,
     redirect_to: relativeRedirectTo,
   })
 
-  // HACK: hardcoded FE URL
-  return `https://app.musora.com/impersonate?${params.toString()}`
+  // generate link that will *consume* the auth key
+  if (globalConfig.isMA) {
+    // HACK: hardcoded FE URL
+    return `https://app.musora.com/auth?${params.toString()}`
+  } else {
+    throw new Error('Not implemented - MA deep links don\'t accept auth keys')
+  }
 }
