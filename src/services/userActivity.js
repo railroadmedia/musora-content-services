@@ -494,9 +494,6 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
 
   const filteredData = recentActivityData.data.filter((id) => id !== null)
   const allContentIds = filteredData.map((p) => p.contentId)
-  const learningPathLessons = filteredData
-    .filter((p) => p.sanityType === LEARNING_PATH_LESSON)
-    .map((p) => p.contentId)
 
   let contents = await addContextToContent(
     fetchByRailContentIds,
@@ -511,19 +508,7 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
     }
   )
 
-  if (learningPathLessons.length > 0) {
-    let filtered = contents.filter((obj) => learningPathLessons.includes(obj.id))
-
-    filtered = await mapLearningPathParentsTo(filtered, {type: true, parent_id: true})
-
-    // Map each filtered item back into the total contents object
-    contents = contents.map((item) => {
-      const replace = filtered.find((f) => f.id === item.id) || item
-      return replace
-    })
-
-
-  }
+  contents = await mapContentsThatWereLastProgressedFromMethod(contents)
 
   recentActivityData.data = recentActivityData.data.map((practice) => {
     const content = contents?.find((c) => c.id === practice.contentId) || {}
@@ -533,6 +518,7 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
       title: content.title,
       parent_id: content.parent_id || null,
       navigateTo: content.navigateTo,
+      sanityType: content.type || practice.sanityType,
     }
   })
   return recentActivityData
