@@ -9,6 +9,7 @@ import {
   contentTypeConfig,
   DEFAULT_FIELDS,
   descriptionField,
+  difficultyStringField,
   filtersToGroq,
   getChildFieldsForContentType,
   getFieldsForContentType,
@@ -31,6 +32,7 @@ import {
   showsTypes,
   SONG_TYPES,
   SONG_TYPES_WITH_CHILDREN,
+  liveFields,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems, recommendations } from './recommendations.js'
 import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS } from '../contentMetaData.js'
@@ -330,7 +332,7 @@ export async function fetchNewReleases(
       "instructor": ${instructorField},
       "artists": instructor[]->name,
       difficulty,
-      difficulty_string,
+      ${difficultyStringField()},
       length_in_seconds,
       published_on,
       "type": _type,
@@ -368,7 +370,7 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         "artists": instructor[]->name,
         "instructor": ${instructorField},
         difficulty,
-        difficulty_string,
+        ${difficultyStringField()},
         length_in_seconds,
         published_on,
         "type": _type,
@@ -421,7 +423,7 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
       "instructor": ${instructorField},
       "artists": instructor[]->name,
       difficulty,
-      difficulty_string,
+      ${difficultyStringField()},
       length_in_seconds,
       published_on,
       "type": _type,
@@ -961,9 +963,9 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
     ${parentQuery}
     ...select(
       defined(live_event_start_time) => {
-        "live_event_start_time": live_event_start_time,
-        "live_event_end_time": live_event_end_time,
-        "live_event_stream_id": live_event_stream_id,
+        live_event_start_time,
+        live_event_end_time,
+        live_event_stream_id,
         "vimeo_live_event_id": vimeo_live_event_id,
         "videoId": coalesce(live_event_stream_id, video.external_id),
         "live_event_is_global": live_global_event == true
@@ -1096,7 +1098,7 @@ export async function fetchSiblingContent(railContentId, brand = null) {
   }).buildFilter()
 
   const brandString = brand ? ` && brand == "${brand}"` : ''
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission_v2, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
+  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, ${difficultyStringField()}, artist->, "permission_id": permission_v2, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
 
   const query = `*[railcontent_id == ${railContentId}${brandString}]{
    _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
@@ -1143,7 +1145,7 @@ export async function fetchRelatedLessons(railContentId) {
     { showMembershipRestrictedContent: true }
   ).buildFilter()
 
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission_v2,_type, "genre": genre[]->name`
+  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, ${difficultyStringField()}, railcontent_id, artist->,"permission_id": permission_v2,_type, "genre": genre[]->name`
 
   const query = `*[railcontent_id == ${railContentId} && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
@@ -1184,50 +1186,21 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
   )
   endDateTemp = new Date(endDateTemp.setMinutes(endDateTemp.getMinutes() - LIVE_EXTRA_MINUTES))
 
-  // See LiveStreamEventService.getCurrentOrNextLiveEvent for some nice complicated logic which I don't think is actually importart
-  // this has some +- on times
-  // But this query just finds the first scheduled event (sorted by start_time) that ends after now()
-  const query =
+  const liveEventFields = liveFields + `, 'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}')`
+
+  const baseFilter =
     forcedContentId !== null
-      ? `*[railcontent_id == ${forcedContentId} ]{
-      'slug': slug.current,
-      'id': railcontent_id,
-      live_event_start_time,
-      live_event_end_time,
-      live_event_stream_id,
-      vimeo_live_event_id,
-      railcontent_id,
-      published_on,
-      'event_coach_url' : instructor[0]->web_url_path,
-      'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
-      title,
-      "thumbnail": thumbnail.asset->url,
-      ${artistOrInstructorName()},
-      difficulty_string,
-      "instructors": ${instructorField},
-      'videoId': coalesce(live_event_stream_id, video.external_id),
-    } | order(live_event_start_time)[0...1]`
-      : `*[status == 'scheduled' && brand == '${brand}' && defined(live_event_start_time) && live_event_start_time <= '${getSanityDate(startDateTemp, false)}' && live_event_end_time >= '${getSanityDate(endDateTemp, false)}']{
-      'slug': slug.current,
-      'id': railcontent_id,
-      live_event_start_time,
-      live_event_end_time,
-      live_event_stream_id,
-      vimeo_live_event_id,
-      railcontent_id,
-      published_on,
-      'event_coach_url' : instructor[0]->web_url_path,
-      'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}'),
-      title,
-      "thumbnail": thumbnail.asset->url,
-      ${artistOrInstructorName()},
-      difficulty_string,
-      "instructors": instructor[]->{
-            name,
-            web_url_path,
-          },
-      'videoId': coalesce(live_event_stream_id, video.external_id),
-    } | order(live_event_start_time)[0...1]`
+      ? `railcontent_id == ${forcedContentId}`
+      : `status == 'scheduled'
+      && (brand == '${brand}' || live_global_event == true)
+      && defined(live_event_start_time)
+      && live_event_start_time <= '${getSanityDate(startDateTemp, false)}'
+      && live_event_end_time >= '${getSanityDate(endDateTemp, false)}'`
+
+  const filter = await new FilterBuilder(baseFilter, {bypassPermissions: true}).buildFilter()
+
+  // This query finds the first scheduled event (sorted by start_time) that ends after now()
+  const query = `*[${filter}]{${liveEventFields}} | order(live_event_start_time)[0...1]`
 
   return await fetchSanity(query, false, { processNeedAccess: false })
 }
@@ -2001,7 +1974,7 @@ export async function fetchScheduledAndNewReleases(
       ${artistOrInstructorName()},
       "artists": instructor[]->name,
       difficulty,
-      difficulty_string,
+      ${difficultyStringField()},
       length_in_seconds,
       published_on,
       "type": _type,

@@ -187,7 +187,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   recordProgressMany(
     contentProgresses: Record<string, number>, // Accept plain object
     collection: CollectionParameter | null,
-    { tentative = true, skipPush = false, fromLearningPath = false }: { tentative?: boolean; skipPush?: boolean; fromLearningPath?: boolean } = {}
+    { skipPush = false, fromLearningPath = false }: { skipPush?: boolean; fromLearningPath?: boolean } = {}
   ) {
     if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {
       fromLearningPath = true
@@ -209,9 +209,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
         },
       ])
     )
-    return tentative
-      ? this.upsertSomeTentative(data, { skipPush })
-      : this.upsertSome(data, { skipPush })
+    return this.upsertSome(data, { skipPush })
 
     //todo add event emitting for bulk updates?
   }

@@ -100,24 +100,10 @@ export default class SyncRepository<TModel extends BaseModel> {
     )
   }
 
-  protected async upsertOneTentative(id: RecordId, builder: (record: TModel) => void) {
-    return this.store.telemetry.trace(
-      { name: `upsertOneTentative:${this.store.model.table}`, op: 'upsert', attributes: { ...this.context.session.toJSON() } },
-      (span) => this._respondToWrite(() => this.store.upsertOneTentative(id, builder, span), span)
-    )
-  }
-
   protected async upsertSome(builders: Record<RecordId, (record: TModel) => void>, { skipPush = false } = {}) {
     return this.store.telemetry.trace(
       { name: `upsertSome:${this.store.model.table}`, op: 'upsert', attributes: { ...this.context.session.toJSON() } },
       (span) => this._respondToWrite(() => this.store.upsertSome(builders, span, {skipPush}), span)
-    )
-  }
-
-  protected async upsertSomeTentative(builders: Record<RecordId, (record: TModel) => void>, { skipPush = false } = {}) {
-    return this.store.telemetry.trace(
-      { name: `upsertSomeTentative:${this.store.model.table}`, op: 'upsert', attributes: { ...this.context.session.toJSON() } },
-      (span) => this._respondToWrite(() => this.store.upsertSomeTentative(builders, span, {skipPush}), span)
     )
   }
 

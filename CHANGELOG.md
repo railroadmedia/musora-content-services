@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.122.0](https://github.com/railroadmedia/musora-content-services/compare/v2.118.1...v2.122.0) (2026-01-22)
+
+
+### Features
+
+* add fetchLiveStreamData method ([aa9b704](https://github.com/railroadmedia/musora-content-services/commit/aa9b7046c7fc69e8b30c0f035577da62f8c5b5fd))
+* add vimeo_live_event_id to GROQ queries ([d4fff6f](https://github.com/railroadmedia/musora-content-services/commit/d4fff6f09ca62682f6cead7e43f6979a56b86e0a))
+* adds restore methods (for progress deletion undo) ([#705](https://github.com/railroadmedia/musora-content-services/issues/705)) ([b01a718](https://github.com/railroadmedia/musora-content-services/commit/b01a71892175b38789d62fffac0ce5f8e2e4513d))
+* **TP-1060:** method data caching in mcs ([#701](https://github.com/railroadmedia/musora-content-services/issues/701)) ([25efc43](https://github.com/railroadmedia/musora-content-services/commit/25efc43b6c07172db2f20d51d5b79ac9fc204eef))
+* update brand endpoint ([#719](https://github.com/railroadmedia/musora-content-services/issues/719)) ([4938b61](https://github.com/railroadmedia/musora-content-services/commit/4938b61c8526e31194b284c6daf172764b7900ed))
+
+
+### Bug Fixes
+
+* adds live_global_event field where live_event_stream_id is returned ([#708](https://github.com/railroadmedia/musora-content-services/issues/708)) ([23c58f4](https://github.com/railroadmedia/musora-content-services/commit/23c58f42da866cd1035276c62c773b82c09d3aa5))
+* better logs in Sentry for debugging ([#712](https://github.com/railroadmedia/musora-content-services/issues/712)) ([e1019b5](https://github.com/railroadmedia/musora-content-services/commit/e1019b50b0cf606b86e71028db0a2f9ac354cfca))
+* remove unsupported collection types ([#713](https://github.com/railroadmedia/musora-content-services/issues/713)) ([0441941](https://github.com/railroadmedia/musora-content-services/commit/04419413ffea82303258b839c8e1e11b3a4c507a))
+* **T3PS-1347:** Implement WatermelonDB-based streak calculator with year boundary fix ([916a8ef](https://github.com/railroadmedia/musora-content-services/commit/916a8ef532a858f82a8133d1725ad69ea3d550e9))
+
+### [2.121.2](https://github.com/railroadmedia/musora-content-services/compare/v2.121.1...v2.121.2) (2026-01-20)
+
+### [2.121.1](https://github.com/railroadmedia/musora-content-services/compare/v2.121.0...v2.121.1) (2026-01-20)
+
+## [2.121.0](https://github.com/railroadmedia/musora-content-services/compare/v2.119.3...v2.121.0) (2026-01-20)
+
+
+### Features
+
+* add fetchLiveStreamData method ([aa9b704](https://github.com/railroadmedia/musora-content-services/commit/aa9b7046c7fc69e8b30c0f035577da62f8c5b5fd))
+* add vimeo_live_event_id to GROQ queries ([d4fff6f](https://github.com/railroadmedia/musora-content-services/commit/d4fff6f09ca62682f6cead7e43f6979a56b86e0a))
+* **TP-1060:** method data caching in mcs ([#701](https://github.com/railroadmedia/musora-content-services/issues/701)) ([25efc43](https://github.com/railroadmedia/musora-content-services/commit/25efc43b6c07172db2f20d51d5b79ac9fc204eef))
+* update brand endpoint ([#719](https://github.com/railroadmedia/musora-content-services/issues/719)) ([4938b61](https://github.com/railroadmedia/musora-content-services/commit/4938b61c8526e31194b284c6daf172764b7900ed))
+
 ## [2.120.0](https://github.com/railroadmedia/musora-content-services/compare/v2.119.3...v2.120.0) (2026-01-19)
 
 
