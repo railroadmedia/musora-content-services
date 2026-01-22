@@ -178,12 +178,16 @@ function sortCards(pinnedCard, contentCardMap, playlistCards, methodCard, limit)
     combined.push(pinnedCard)
   }
 
-  if (!(pinnedCard && pinnedCard.progressType === 'method')) {
+  const progressList = Array.from(contentCardMap.values())
+
+  combined = [...combined, ...progressList, ...playlistCards]
+
+  // welcome card state will only show if pinned
+  if (methodCard.type !== 'method') {
     combined.push(methodCard)
   }
 
-  const progressList = Array.from(contentCardMap.values())
-  return mergeAndSortItems([...combined, ...progressList, ...playlistCards], limit)
+  return mergeAndSortItems(combined, limit)
 }
 
 function mergeAndSortItems(items, limit) {
