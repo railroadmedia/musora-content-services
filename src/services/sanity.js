@@ -1906,8 +1906,17 @@ export async function fetchTabData(
       ),
       length_in_seconds
     ),`
+
+  // Check if user is admin to determine available content statuses
+  const adapter = getPermissionsAdapter()
+  const userData = await adapter.fetchUserPermissions()
+  const isAdmin = adapter.isAdmin(userData)
+
   const filterWithRestrictions = await new FilterBuilder(filter, {
     showMembershipRestrictedContent: true,
+    availableContentStatuses: isAdmin
+      ? ['draft', 'scheduled', 'published', 'archived', 'unlisted']  // Admins see all content
+      : ['published'],  // Non-admins see only published content (excludes scheduled/future)
   }).buildFilter()
   query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
     sortOrder: sortOrder,
