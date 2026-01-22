@@ -1192,7 +1192,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
     forcedContentId !== null
       ? `railcontent_id == ${forcedContentId}`
       : `status == 'scheduled'
-      && brand == '${brand}'
+      && (brand == '${brand}' || live_global_event == true)
       && defined(live_event_start_time)
       && live_event_start_time <= '${getSanityDate(startDateTemp, false)}'
       && live_event_end_time >= '${getSanityDate(endDateTemp, false)}'`

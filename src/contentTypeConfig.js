@@ -145,6 +145,7 @@ export const liveFields = `
     "thumbnail": thumbnail.asset->url,
     ${artistOrInstructorName()},
     difficulty_string,
+    railcontent_id,
     "instructors": ${instructorField},
     'videoId': coalesce(live_event_stream_id, video.external_id)
   `
