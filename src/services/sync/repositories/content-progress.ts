@@ -120,6 +120,10 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.queryAll(...clauses)
   }
 
+  // Two ways of checking this for a given content_id:
+  //   * grab both records (collection_type = self & and collection_type = learning-path-v2), and compare their updated_at timestamps.
+  //   * utilize the new last_interacted_a_la_carte, which is updated whenever the content is accessed OUTSIDE of an LP,  and compare THIS with the self updated_at (which will be greater than if it was last accessed from LP)
+  // I went with the second because it's an easier query
   async getSomeProgressWhereLastAccessedFromMethod(contentIds: number[]) {
     const clauses = [
       Q.where('content_id', Q.oneOf(contentIds)),
