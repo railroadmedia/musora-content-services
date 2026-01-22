@@ -192,8 +192,8 @@ export async function getEnrichedLearningPath(learningPathId) {
   if (!response) return response
 
   response.children = mapContentToParent(
-    response.children,
-    {lessonType: LEARNING_PATH_LESSON, parentContentId: learningPathId}
+      response.children,
+      {lessonType: LEARNING_PATH_LESSON, parentContentId: learningPathId}
   )
   return response
 }
@@ -226,9 +226,8 @@ export async function getEnrichedLearningPaths(learningPathIds: number[]) {
 
   response.forEach((learningPath) => {
     learningPath.children = mapContentToParent(
-      learningPath.children,
-      LEARNING_PATH_LESSON,
-      learningPath.id
+        learningPath.children,
+        {lessonType: LEARNING_PATH_LESSON, parentContentId: learningPath.id}
     )
   })
   return response
