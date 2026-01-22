@@ -241,7 +241,7 @@ export const collectionLessonTypes = [...coursesLessonTypes, ...showsLessonTypes
 
 export const lessonTypesMapping = {
   lessons: singleLessonTypes,
-  'practice alongs': practiceAlongsLessonTypes,
+  'practice alongs': [ ...practiceAlongsLessonTypes, 'routine'],
   'live archives': liveArchivesLessonTypes,
   performances: performancesLessonTypes,
   'student archives': studentArchivesLessonTypes,
@@ -267,6 +267,7 @@ export const lessonTypesMapping = {
     ...studentArchivesLessonTypes,
     ...practiceAlongsLessonTypes,
   ],
+  routines: ['routine']
 }
 
 export const getNextLessonLessonParentTypes = [
@@ -287,7 +288,8 @@ export const progressTypesMapping = {
     ...studentArchivesLessonTypes,
     'documentary-lesson',
     'live',
-    'course-lesson'
+    'course-lesson',
+    'routine'
   ],
   course: ['course'],
   show: showsLessonTypes,
@@ -319,6 +321,7 @@ export const filterTypes = {
     ...coursesLessonTypes,
     ...skillLessonTypes,
     ...entertainmentLessonTypes,
+    'routine'
   ],
   songs: [
     ...tutorialsLessonTypes,
@@ -334,6 +337,7 @@ export const recentTypes = {
     'course-lesson',
     'guided-course-lesson',
     'quick-tips',
+    'routine'
   ],
   songs: [...SONG_TYPES],
   home: [
@@ -348,6 +352,7 @@ export const recentTypes = {
     'live',
     'course',
     'course-collection',
+    'routine'
   ],
 }
 
