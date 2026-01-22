@@ -20,6 +20,8 @@ export const SONG_TYPES_WITH_CHILDREN = [
 // Single hierarchy refers to only one element in the hierarchy has video lessons, not that they have a single parent
 export const SINGLE_PARENT_TYPES = ['course-lesson', 'pack-bundle-lesson', 'song-tutorial-lesson']
 
+export const LEARNING_PATH_LESSON = 'learning-path-lesson-v2'
+
 export const genreField = `genre[]->{
   name,
   'slug': slug.current,

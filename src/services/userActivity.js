@@ -8,7 +8,7 @@ import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import { fetchByRailContentIds, fetchParentChildRelationshipsFor } from './sanity'
 import { getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js'
 import { globalConfig } from './config'
-import { getFormattedType } from '../contentTypeConfig'
+import { getFormattedType, LEARNING_PATH_LESSON } from '../contentTypeConfig'
 import dayjs from 'dayjs'
 import { addContextToContent } from './contentAggregator.js'
 import { db, Q } from './sync'
@@ -495,7 +495,7 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
   const filteredData = recentActivityData.data.filter((id) => id !== null)
   const allContentIds = filteredData.map((p) => p.contentId)
   const learningPathContentIds = filteredData
-    .filter((p) => p.sanityType === "learning-path-lesson-v2")
+    .filter((p) => p.sanityType === LEARNING_PATH_LESSON)
     .map((p) => p.contentId)
 
   const contents = await addContextToContent(

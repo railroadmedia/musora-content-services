@@ -17,10 +17,10 @@ import { SyncWriteDTO } from '../sync'
 import { ContentProgress } from '../sync/models'
 import { CollectionParameter } from '../sync/repositories/content-progress'
 import dayjs from 'dayjs'
+import { LEARNING_PATH_LESSON } from "../../contentTypeConfig";
 
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
-const LEARNING_PATH_LESSON = 'learning-path-lesson-v2'
 let dailySessionPromise: Promise<DailySessionResponse> | null = null
 let activePathPromise: Promise<ActiveLearningPathResponse> | null = null
 
