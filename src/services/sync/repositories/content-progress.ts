@@ -119,6 +119,27 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.queryAll(...clauses)
   }
 
+  async getSomeProgressWhereLastAccessedFromMethod(contentIds: number[]) {
+    const clauses = [
+      Q.where('content_id', Q.oneOf(contentIds)),
+      Q.where('collection_type', COLLECTION_TYPE.SELF),
+      Q.where('collection_id', COLLECTION_ID_SELF),
+      Q.or(
+          Q.and(
+              Q.where('updated_at', Q.notEq(null)),
+              Q.where('last_interacted_a_la_carte', null)
+          ),
+          Q.and(
+              Q.where('updated_at', Q.notEq(null)),
+              Q.where('last_interacted_a_la_carte', Q.notEq(null)),
+              Q.where('updated_at', Q.gt(Q.column('last_interacted_a_la_carte')))
+          )
+      )
+    ]
+
+    return await this.queryAll(...clauses)
+  }
+
   async getSomeProgressByContentIdsAndCollections(tuples: ContentIdCollectionTuple[]) {
     const clauses = []
 

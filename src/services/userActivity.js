@@ -14,7 +14,7 @@ import { addContextToContent } from './contentAggregator.js'
 import { db, Q } from './sync'
 import { COLLECTION_TYPE } from './sync/models/ContentProgress'
 import { streakCalculator } from './user/streakCalculator'
-import { mapContentToParent } from "./content-org/learning-paths.js";
+import { mapContentsThatWereLastProgressedFromMethod, mapLearningPathParentsTo } from "./content-org/learning-paths.js";
 
 const DATA_KEY_PRACTICES = 'practices'
 
@@ -494,11 +494,11 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
 
   const filteredData = recentActivityData.data.filter((id) => id !== null)
   const allContentIds = filteredData.map((p) => p.contentId)
-  const learningPathContentIds = filteredData
+  const learningPathLessons = filteredData
     .filter((p) => p.sanityType === LEARNING_PATH_LESSON)
     .map((p) => p.contentId)
 
-  const contents = await addContextToContent(
+  let contents = await addContextToContent(
     fetchByRailContentIds,
     allContentIds,
     'progress-tracker',
@@ -511,21 +511,18 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
     }
   )
 
-  if (learningPathContentIds.length > 0) {
-    const hierarchy = await fetchParentChildRelationshipsFor(learningPathContentIds, 'learning-path-v2')
+  if (learningPathLessons.length > 0) {
+    let filtered = contents.filter((obj) => learningPathLessons.includes(obj.id))
 
-    const childToParentMap = new Map()
-    hierarchy.forEach((relation) => {
-      relation.children.forEach((childId) => {
-        childToParentMap.set(childId, relation.railcontent_id)
-      })
+    filtered = await mapLearningPathParentsTo(filtered, {type: true, parent_id: true})
+
+    // Map each filtered item back into the total contents object
+    contents = contents.map((item) => {
+      const replace = filtered.find((f) => f.id === item.id) || item
+      return replace
     })
 
-    contents.forEach((content) => {
-      if (childToParentMap.has(content.id)) {
-        content = mapContentToParent(content, { parentId: childToParentMap.get(content.id) })
-      }
-    })
+
   }
 
   recentActivityData.data = recentActivityData.data.map((practice) => {
@@ -795,7 +792,7 @@ export async function calculateLongestStreaks(userId = globalConfig.sessionConfi
 
 async function formatPracticeMeta(practices = []) {
   const contentIds = practices.map((p) => p.content_id).filter((id) => id !== null)
-  const contents = await addContextToContent(
+  let contents = await addContextToContent(
     fetchByRailContentIds,
     contentIds,
     'progress-tracker',
@@ -807,6 +804,8 @@ async function formatPracticeMeta(practices = []) {
       addNextLesson: true,
     }
   )
+
+  contents = await mapContentsThatWereLastProgressedFromMethod(contents)
 
   return practices.map((practice) => {
     const content =

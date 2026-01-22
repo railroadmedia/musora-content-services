@@ -3,13 +3,18 @@
  */
 
 import { GET, POST } from '../../infrastructure/http/HttpClient.ts'
-import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2Structure } from '../sanity.js'
+import {
+  fetchByRailContentId,
+  fetchByRailContentIds,
+  fetchMethodV2Structure,
+  fetchParentChildRelationshipsFor
+} from '../sanity.js'
 import { addContextToLearningPaths } from '../contentAggregator.js'
 import {
   contentStatusCompleted,
   contentStatusCompletedMany,
   contentStatusReset,
-  getAllCompletedByIds,
+  getAllCompletedByIds, getIdsWhereLastAccessedFromMethod,
   getProgressState,
 } from '../contentProgress.js'
 import { COLLECTION_TYPE, STATE } from '../sync/models/ContentProgress'
@@ -542,4 +547,44 @@ export async function onContentCompletedLearningPathActions(contentId: number, c
   const nextLearningPathData = await getEnrichedLearningPath(nextLearningPath.id)
 
   await contentStatusReset(nextLearningPathData.intro_video.id, {skipPush: true})
+}
+
+export async function mapContentsThatWereLastProgressedFromMethod(objects: any[]) {
+  if (!objects || objects.length === 0) return objects
+
+  const contentIds = objects.map((obj) => obj.id) as number[]
+  const trueIds = await getIdsWhereLastAccessedFromMethod(contentIds)
+
+  let filtered = objects.filter((obj) => trueIds.includes(obj.id))
+
+  filtered = await mapLearningPathParentsTo(filtered, {type: true, parent_id: true})
+
+  // Map each filtered item back into the total contents object
+  objects = objects.map((item) => {
+    const replace = filtered.find((f) => f.id === item.id) || item
+    return replace
+  })
+
+  return objects
+
+}
+
+export async function mapLearningPathParentsTo(objects: any[], fieldsToMap?: {type?: boolean, parent_id?: boolean}): Promise<object[]> {
+  const ids = objects.map((obj: any) => obj.id) as number[]
+  const hierarchy = await fetchParentChildRelationshipsFor(ids, COLLECTION_TYPE.LEARNING_PATH)
+
+  const parentMap = new Map<number, number>()
+  hierarchy.forEach((relation) => {
+    relation.children.forEach((childId) => {
+      parentMap.set(childId, Number(relation.railcontent_id))
+    })
+  })
+
+  return objects.map((obj) => {
+    const parent_id = parentMap.get(obj.id) ?? undefined
+    return mapContentToParent(obj, {
+      lessonType: fieldsToMap.type ? LEARNING_PATH_LESSON : undefined,
+      parentContentId: fieldsToMap.parent_id ? parent_id : undefined
+    })
+  })
 }
