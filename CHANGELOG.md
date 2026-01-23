@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.122.2](https://github.com/railroadmedia/musora-content-services/compare/v2.122.1...v2.122.2) (2026-01-23)
+
+
+### Bug Fixes
+
+* broken method index ([#735](https://github.com/railroadmedia/musora-content-services/issues/735)) ([126f985](https://github.com/railroadmedia/musora-content-services/commit/126f985866f60bcca1d1ddb2dd97ba8847ff4219))
+
 ### [2.122.1](https://github.com/railroadmedia/musora-content-services/compare/v2.122.0...v2.122.1) (2026-01-23)
 
 
