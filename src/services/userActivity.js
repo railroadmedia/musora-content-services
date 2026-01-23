@@ -792,8 +792,8 @@ async function formatPracticeMeta(practices = []) {
     return {
       id: practice.id,
       auto: practice.auto,
-      thumbnail: practice.content_id ? content.thumbnail : practice.thumbnail_url || '',
-      thumbnail_url: practice.content_id ? content.thumbnail : practice.thumbnail_url || '',
+      thumbnail: practice.content_id ? content?.thumbnail : practice.thumbnail_url || '',
+      thumbnail_url: practice.content_id ? content?.thumbnail : practice.thumbnail_url || '',
       duration: practice.duration_seconds || 0,
       duration_seconds: practice.duration_seconds || 0,
       content_url: content?.url || null,
