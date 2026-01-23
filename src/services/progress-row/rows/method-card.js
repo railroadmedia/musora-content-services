@@ -111,7 +111,7 @@ export async function getMethodCard(brand) {
     }
 
     return {
-      id: learningPath?.id,
+      id: 1,
       type: COLLECTION_TYPE.LEARNING_PATH,
       progressType: 'method',
       header: 'Method',

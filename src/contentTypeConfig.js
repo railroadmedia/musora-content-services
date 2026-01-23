@@ -52,7 +52,7 @@ export const DEFAULT_FIELDS = [
   "'image': thumbnail.asset->url",
   "'thumbnail': thumbnail.asset->url",
   'difficulty',
-  'difficulty_string',
+  difficultyStringField(),
   'published_on',
   "'type': _type",
   "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
@@ -147,6 +147,7 @@ export const liveFields = `
     "thumbnail": thumbnail.asset->url,
     ${artistOrInstructorName()},
     difficulty_string,
+    railcontent_id,
     "instructors": ${instructorField},
     'videoId': coalesce(live_event_stream_id, video.external_id)
   `
@@ -243,7 +244,7 @@ export const collectionLessonTypes = [...coursesLessonTypes, ...showsLessonTypes
 
 export const lessonTypesMapping = {
   lessons: singleLessonTypes,
-  'practice alongs': practiceAlongsLessonTypes,
+  'practice alongs': [ ...practiceAlongsLessonTypes, 'routine'],
   'live archives': liveArchivesLessonTypes,
   performances: performancesLessonTypes,
   'student archives': studentArchivesLessonTypes,
@@ -269,6 +270,7 @@ export const lessonTypesMapping = {
     ...studentArchivesLessonTypes,
     ...practiceAlongsLessonTypes,
   ],
+  routines: ['routine']
 }
 
 export const getNextLessonLessonParentTypes = [
@@ -289,7 +291,8 @@ export const progressTypesMapping = {
     ...studentArchivesLessonTypes,
     'documentary-lesson',
     'live',
-    'course-lesson'
+    'course-lesson',
+    'routine'
   ],
   course: ['course'],
   show: showsLessonTypes,
@@ -321,6 +324,7 @@ export const filterTypes = {
     ...coursesLessonTypes,
     ...skillLessonTypes,
     ...entertainmentLessonTypes,
+    'routine'
   ],
   songs: [
     ...tutorialsLessonTypes,
@@ -333,9 +337,12 @@ export const filterTypes = {
 export const recentTypes = {
   lessons: [
     ...individualLessonsTypes,
+    ...skillLessonTypes,
+    ...entertainmentLessonTypes,
     'course-lesson',
     'guided-course-lesson',
     'quick-tips',
+    'routine'
   ],
   songs: [...SONG_TYPES],
   home: [
@@ -350,6 +357,7 @@ export const recentTypes = {
     'live',
     'course',
     'course-collection',
+    'routine'
   ],
 }
 
@@ -642,9 +650,9 @@ export function getIntroVideoFields(type) {
     `"id": railcontent_id`,
     'title',
     'brand',
-    `"instructor": *[_type == "method-v2" && brand == ^.brand && references(^._id)][0].${instructorField}`,
-    `"difficulty": *[_type == "method-v2" && brand == ^.brand && references(^._id)][0].difficulty`,
-    `"difficulty_string": *[_type == "method-v2" && brand == ^.brand][0].difficulty_string`,
+    `"instructor": ${instructorField}`,
+    `difficulty`,
+    `difficulty_string`,
     `"type": _type`,
     'brand',
     `"description": ${descriptionField}`,
@@ -685,7 +693,7 @@ export function getNewReleasesTypes(brand) {
     'quick-tips',
     'workout',
     'podcasts',
-    'pack',
+    'course-collection',
     'song',
     'play-along',
     'course',
@@ -722,7 +730,6 @@ export function getUpcomingEventsTypes(brand) {
     'boot-camp',
     'quick-tips',
     'recording',
-    'pack-bundle-lesson',
   ]
   switch (brand) {
     case 'drumeo':
@@ -749,6 +756,10 @@ export function artistOrInstructorName(key = 'artist_name') {
 
 export function artistOrInstructorNameAsArray(key = 'artists') {
   return `'${key}': select(artist->name != null => [artist->name], instructor[]->name)`
+}
+
+export function difficultyStringField(key = 'difficulty_string') {
+  return `'${key}': select(difficulty_string == 'Novice' => 'Introductory', difficulty_string)`
 }
 
 export async function getFieldsForContentTypeWithFilteredChildren(
