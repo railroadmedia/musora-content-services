@@ -4,6 +4,13 @@
 const PROGRESS_NAMES = ['All', 'In Progress', 'Completed', 'Not Started']
 const DIFFICULTY_STRINGS = ['Introductory', 'Beginner', 'Intermediate', 'Advanced', 'Expert']
 
+export const CONTENT_STATUSES = {
+  PUBLISHED_ONLY: ['published'],
+  ADMIN_ALL: ['draft', 'scheduled', 'published', 'archived', 'unlisted'],
+  PUBLIC_WITH_SCHEDULED: ['published', 'scheduled'],
+  DRAFT_ONLY: ['draft'],
+}
+
 const LESSON_TYPE_FILTER = [
   {
     title: 'Single Lessons',
