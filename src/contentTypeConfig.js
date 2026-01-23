@@ -985,3 +985,11 @@ export const getFormattedType = (type, brand) => {
 
   return null
 }
+
+export const awardTemplate = {
+  drumeo: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/drumeo.svg",
+  guitareo: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/guitareo.svg",
+  pianote: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/pianote.svg",
+  singeo: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/singeo.svg",
+  playbass: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass.svg",
+}
