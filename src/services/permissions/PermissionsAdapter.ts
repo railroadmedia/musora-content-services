@@ -14,6 +14,8 @@ export interface UserPermissions {
   permissions: string[]
   /** Whether the user is an admin */
   isAdmin: boolean
+  /** Whether the user is a moderator */
+  isModerator: boolean
   /** Whether the user has basic membership */
   isABasicMember: boolean
   /** User's access level (v2 - for future use) */
@@ -107,5 +109,15 @@ export abstract class PermissionsAdapter {
    */
   isAdmin(userPermissions: UserPermissions): boolean {
     return userPermissions?.isAdmin ?? false
+  }
+
+  /**
+   * Check if user is a moderator.
+   *
+   * @param userPermissions - The user's permissions
+   * @returns True if user is moderator
+   */
+  isModerator(userPermissions: UserPermissions): boolean {
+    return userPermissions?.isModerator ?? false
   }
 }
