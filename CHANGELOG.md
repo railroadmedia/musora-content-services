@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.122.1](https://github.com/railroadmedia/musora-content-services/compare/v2.122.0...v2.122.1) (2026-01-23)
+
+
+### Bug Fixes
+
+* handle global live streams ([#727](https://github.com/railroadmedia/musora-content-services/issues/727)) ([e0ed5f3](https://github.com/railroadmedia/musora-content-services/commit/e0ed5f398f61a2188beae56a05547494862a16b7))
+* removes tentative progress call functionality ([#716](https://github.com/railroadmedia/musora-content-services/issues/716)) ([a167d3b](https://github.com/railroadmedia/musora-content-services/commit/a167d3b94c1d2ef6df9a7f76e4c4ea4c71f9bfb5))
+* **T3PS-1562:** hide nonpinned method card ([#721](https://github.com/railroadmedia/musora-content-services/issues/721)) ([cc250ee](https://github.com/railroadmedia/musora-content-services/commit/cc250ee072cac976fc7389eb86e77eff1230b73a))
+* **T3PS-1579:** fix reset bubbling ([#718](https://github.com/railroadmedia/musora-content-services/issues/718)) ([a9490a8](https://github.com/railroadmedia/musora-content-services/commit/a9490a85aeb4df947770a265543fa6782e30b436))
+
 ## [2.122.0](https://github.com/railroadmedia/musora-content-services/compare/v2.118.1...v2.122.0) (2026-01-22)
 
 
