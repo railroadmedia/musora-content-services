@@ -50,7 +50,7 @@ export const DEFAULT_FIELDS = [
   "'image': thumbnail.asset->url",
   "'thumbnail': thumbnail.asset->url",
   'difficulty',
-  difficultyStringField(),
+  'difficulty_string',
   'published_on',
   "'type': _type",
   "'length_in_seconds' : coalesce(length_in_seconds, soundslice[0].soundslice_length_in_second)",
@@ -756,10 +756,6 @@ export function artistOrInstructorNameAsArray(key = 'artists') {
   return `'${key}': select(artist->name != null => [artist->name], instructor[]->name)`
 }
 
-export function difficultyStringField(key = 'difficulty_string') {
-  return `'${key}': select(difficulty_string == 'Novice' => 'Introductory', difficulty_string)`
-}
-
 export async function getFieldsForContentTypeWithFilteredChildren(
   contentType,
   asQueryString = true
@@ -825,9 +821,6 @@ const filterHandlers = {
   style: (value) => `"${value}" in genre[]->name`,
 
   difficulty: (value) => {
-    if (value === 'Introductory') {
-      return `(difficulty_string == "Novice" || difficulty_string == "Introductory")`
-    }
     return `difficulty_string == "${value}"`
   },
 
