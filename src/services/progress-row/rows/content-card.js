@@ -5,6 +5,7 @@ import { getAllStartedOrCompleted, getProgressStateByIds } from '../../contentPr
 import { addContextToContent } from '../../contentAggregator.js'
 import { fetchByRailContentIds, fetchShows } from '../../sanity.js'
 import {
+  awardTemplate,
   collectionLessonTypes,
   getFormattedType,
   recentTypes,
@@ -133,7 +134,9 @@ export async function processContentItem(content) {
       thumbnail: content.thumbnail,
       title: content.title,
       isLive: isLive,
+      badge_logo: content.logo ?? null,
       badge: content.badge ?? null,
+      badge_template: awardTemplate[def.brand],
       isLocked: content.is_locked ?? false,
       subtitle:
         collectionLessonTypes.includes(content.type) || content.lesson_count > 1
