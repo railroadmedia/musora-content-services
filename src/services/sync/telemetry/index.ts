@@ -7,6 +7,7 @@ export type SentryBrowserOptions = NonNullable<Parameters<typeof InjectedSentry.
 
 export type SentryLike = {
   captureException: typeof InjectedSentry.captureException
+  captureMessage: typeof InjectedSentry.captureMessage
   addBreadcrumb: typeof InjectedSentry.addBreadcrumb
   startSpan: typeof InjectedSentry.startSpan
 }
@@ -23,6 +24,15 @@ export enum SeverityLevel {
   WARNING = 3,
   ERROR = 4,
   FATAL = 5,
+}
+
+const severityLevelToSentryLevel: Record<SeverityLevel, 'fatal' | 'error' | 'warning' | 'log' | 'info' | 'debug'> = {
+  [SeverityLevel.DEBUG]: 'debug',
+  [SeverityLevel.INFO]: 'info',
+  [SeverityLevel.LOG]: 'log',
+  [SeverityLevel.WARNING]: 'warning',
+  [SeverityLevel.ERROR]: 'error',
+  [SeverityLevel.FATAL]: 'fatal',
 }
 
 export class SyncTelemetry {
@@ -171,7 +181,12 @@ export class SyncTelemetry {
     this._ignoreConsole = true
     console[consoleMethod](...this.formattedConsoleMessage(message, extra))
     this._ignoreConsole = false
-    this.Sentry.captureMessage(message instanceof Error ? message.message : String(message), level)
+
+    if (level >= SeverityLevel.WARNING) {
+      this.Sentry.captureMessage(message instanceof Error ? message.message : String(message), severityLevelToSentryLevel[level])
+    } else {
+      this.Sentry.addBreadcrumb({ message: message instanceof Error ? message.message : String(message), level: severityLevelToSentryLevel[level] })
+    }
   }
 
   private formattedConsoleMessage(message: unknown, extra: any) {
