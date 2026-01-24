@@ -32,7 +32,7 @@ import {
   showsTypes,
   SONG_TYPES,
   SONG_TYPES_WITH_CHILDREN,
-  liveFields,
+  liveFields, awardTemplate, addAwardTemplateToContent,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems, recommendations } from './recommendations.js'
 import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS } from '../contentMetaData.js'
@@ -940,6 +940,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
       "dark_mode_logo": dark_mode_logo_url.asset->url,
       "light_mode_logo": light_mode_logo_url.asset->url,
       "badge": *[references(^._id) && _type == 'content-award'][0].badge.asset->url,
+      "badge_logo": *[references(^._id) && _type == 'content-award'][0].logo.asset->url,
     },`
     : ''
 
@@ -990,7 +991,10 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
     return result
   }
 
-  return fetchSanity(query, false, { customPostProcess: chapterProcess, processNeedAccess: true })
+  let contents = await fetchSanity(query, false, { customPostProcess: chapterProcess, processNeedAccess: true })
+  contents = addAwardTemplateToContent(contents)
+
+  return contents
 }
 
 /**

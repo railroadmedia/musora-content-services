@@ -15,6 +15,7 @@ import { addContextToContent } from '../contentAggregator.js'
 import { fetchPlaylist } from '../content-org/playlists.js'
 import { TabResponseType } from '../../contentMetaData.js'
 import { PUT } from '../../infrastructure/http/HttpClient.ts'
+import { addAwardTemplateToContent } from "../../contentTypeConfig.js";
 
 export const USER_PIN_PROGRESS_KEY = 'user_pin_progress_row'
 
@@ -136,6 +137,7 @@ async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, meth
     } else {
       // we use fetchByRailContentIds so that we don't have the _type restriction in the query
       let data = await fetchByRailContentIds([pinnedId], 'progress-tracker')
+      data = addAwardTemplateToContent(data)
       item = await processContentItem(
         await addContextToContent(() => data[0] ?? null, {
           addNextLesson: true,
