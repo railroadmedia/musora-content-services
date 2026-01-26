@@ -615,6 +615,7 @@ export async function fetchAll(
     useDefaultFields = true,
     customFields = [],
     progress = 'all',
+    onlyPublished = true
   } = {}
 ) {
   let config = contentTypeConfig[type] ?? {}
@@ -662,6 +663,9 @@ export async function fetchAll(
   let customFilter = ''
   if (type == 'instructor') {
     customFilter = '&& coach_card_image != null'
+  }
+  if (onlyPublished) {
+    customFilter = ' && status == "published" '
   }
   // Determine the group by clause
   let query = ''
