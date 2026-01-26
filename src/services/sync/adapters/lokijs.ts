@@ -3,7 +3,7 @@ import { SyncTelemetry } from '../telemetry'
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 export { LokiJSAdapter as default }
 
-import { deleteDatabase } from '@nozbe/watermelondb/adapters/lokijs/worker/lokiExtensions'
+import { deleteDatabase, lokiFatalError } from '@nozbe/watermelondb/adapters/lokijs/worker/lokiExtensions'
 
 /**
  * Mute impending driver errors that are expected after sync adapter failure
@@ -75,6 +75,12 @@ export function simulateIndexedDBQuotaExceeded() {
   })
 }
 
+export function abortWritesToDatabase(adapter: LokiJSAdapter) {
+  // acts as handy helper to disable loki's save methods entirely
+  lokiFatalError(adapter._driver.loki)
+  return Promise.resolve()
+}
+
 /**
  * Completely destroy database, as opposed to watermelon's reset
  * (which merely clears all records but re-initializes the database schema)
@@ -84,18 +90,18 @@ export function simulateIndexedDBQuotaExceeded() {
 export function destroyDatabase(dbName: string, adapter: LokiJSAdapter): Promise<void> {
   return new Promise(async (resolve, reject) => {
     if (adapter._driver) {
-      // try {
-      //   // good manners to clear the cache, even though this adapter will likely be discarded
-      //   adapter._clearCachedRecords();
-      // } catch (err: unknown) {
-      //   SyncTelemetry.getInstance()?.capture(err)
-      // }
+      try {
+        // good manners to clear the cache, even though this adapter will likely be discarded
+        adapter._clearCachedRecords();
+      } catch (err: unknown) {
+        SyncTelemetry.getInstance()?.capture(err)
+      }
 
       try {
         await deleteDatabase(adapter._driver.loki)
         return resolve();
       } catch (err: unknown) {
-        SyncTelemetry.getInstance()?.capture(err as Error)
+        SyncTelemetry.getInstance()?.capture(err)
         return reject(err);
       }
     }

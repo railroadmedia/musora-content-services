@@ -1,3 +1,4 @@
+import { SyncUserScope } from '../index'
 import watermelonLogger from '@nozbe/watermelondb/utils/common/logger'
 import { SyncError, SyncUnexpectedError } from '../errors'
 
@@ -6,6 +7,7 @@ export type SentryBrowserOptions = NonNullable<Parameters<typeof InjectedSentry.
 
 export type SentryLike = {
   captureException: typeof InjectedSentry.captureException
+  captureMessage: typeof InjectedSentry.captureMessage
   addBreadcrumb: typeof InjectedSentry.addBreadcrumb
   startSpan: typeof InjectedSentry.startSpan
 }
@@ -24,6 +26,15 @@ export enum SeverityLevel {
   FATAL = 5,
 }
 
+const severityLevelToSentryLevel: Record<SeverityLevel, 'fatal' | 'error' | 'warning' | 'log' | 'info' | 'debug'> = {
+  [SeverityLevel.DEBUG]: 'debug',
+  [SeverityLevel.INFO]: 'info',
+  [SeverityLevel.LOG]: 'log',
+  [SeverityLevel.WARNING]: 'warning',
+  [SeverityLevel.ERROR]: 'error',
+  [SeverityLevel.FATAL]: 'fatal',
+}
+
 export class SyncTelemetry {
   private static instance: SyncTelemetry | null = null
 
@@ -40,7 +51,7 @@ export class SyncTelemetry {
     SyncTelemetry.instance = null
   }
 
-  private userId: string
+  private userScope: SyncUserScope
   private Sentry: SentryLike
   private level: SeverityLevel
   private pretty: boolean
@@ -51,14 +62,14 @@ export class SyncTelemetry {
   private _ignoreConsole = false
 
   constructor(
-    userId: string,
+    userScope: SyncUserScope,
     {
       Sentry,
       level,
       pretty,
     }: { Sentry: SentryLike; level?: keyof typeof SeverityLevel; pretty?: boolean }
   ) {
-    this.userId = userId
+    this.userScope = userScope
     this.Sentry = Sentry
     this.level =
       typeof level !== 'undefined' && level in SeverityLevel
@@ -78,7 +89,8 @@ export class SyncTelemetry {
       op: `${SYNC_TELEMETRY_TRACE_PREFIX}${opts.op}`,
       attributes: {
         ...opts.attributes,
-        userId: this.userId,
+        'user.initialId': this.userScope.initialId,
+        'user.currentId': this.userScope.getCurrentId(),
       },
     }
     return this.Sentry.startSpan<T>(options, (span) => {
@@ -93,7 +105,7 @@ export class SyncTelemetry {
     })
   }
 
-  capture(err: Error, context = {}) {
+  capture(err: unknown, context = {}) {
     const wrapped =
       err instanceof SyncError ? err : new SyncUnexpectedError((err as Error).message, context)
 
@@ -110,7 +122,7 @@ export class SyncTelemetry {
     )
 
     this._ignoreConsole = true
-    this.error(err.message)
+    this.error(err instanceof Error ? err.message : String(err))
     this._ignoreConsole = false
   }
 
@@ -155,11 +167,11 @@ export class SyncTelemetry {
     this._log(SeverityLevel.WARNING, 'warn', message, extra)
   }
 
-  error(message: unknown[], extra?: any) {
+  error(message: unknown, extra?: any) {
     this._log(SeverityLevel.ERROR, 'error', message, extra)
   }
 
-  fatal(message: unknown[], extra?: any) {
+  fatal(message: unknown, extra?: any) {
     this._log(SeverityLevel.FATAL, 'error', message, extra)
   }
 
@@ -169,7 +181,12 @@ export class SyncTelemetry {
     this._ignoreConsole = true
     console[consoleMethod](...this.formattedConsoleMessage(message, extra))
     this._ignoreConsole = false
-    this.Sentry.captureMessage(message instanceof Error ? message.message : String(message), level)
+
+    if (level >= SeverityLevel.WARNING) {
+      this.Sentry.captureMessage(message instanceof Error ? message.message : String(message), severityLevelToSentryLevel[level])
+    } else {
+      this.Sentry.addBreadcrumb({ message: message instanceof Error ? message.message : String(message), level: severityLevelToSentryLevel[level] })
+    }
   }
 
   private formattedConsoleMessage(message: unknown, extra: any) {
