@@ -139,7 +139,7 @@ export async function processContentItem(content) {
       isLive: isLive,
       badge_logo: content.logo ?? null,
       badge: content.badge ?? null,
-      badge_template: awardTemplate[def.brand],
+      badge_template: awardTemplate[content.brand],
       isLocked: content.is_locked ?? false,
       subtitle:
         collectionLessonTypes.includes(content.type) || content.lesson_count > 1
