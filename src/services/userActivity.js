@@ -797,7 +797,7 @@ async function formatPracticeMeta(practices = []) {
       duration: practice.duration_seconds || 0,
       duration_seconds: practice.duration_seconds || 0,
       content_url: content?.url || null,
-      title: practice.content_id ? content.title : practice.title,
+      title: practice.content_id ? content?.title : practice?.title  || practice.content_id,
       category_id: practice.category_id,
       instrument_id: practice.instrument_id,
       content_type: getFormattedType(content?.type || '', content?.brand || null),
