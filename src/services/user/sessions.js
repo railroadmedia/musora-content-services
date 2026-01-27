@@ -161,8 +161,11 @@ export async function generateAuthSessionUrl(userId, redirectTo) {
 
   // generate link that will *consume* the auth key
   if (globalConfig.isMA) {
-    // HACK: hardcoded FE URL
-    return `https://app.musora.com/auth?${params.toString()}`
+    if (!absoluteRedirectTo.hostname.endsWith('.musora.com')) {
+      throw new Error('Bad redirect URL - must be a musora.com domain')
+    }
+
+    return `${absoluteRedirectTo.origin}/auth?${params.toString()}`
   } else {
     throw new Error('Not implemented - MA deep links don\'t accept auth keys')
   }
