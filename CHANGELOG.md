@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.122.4](https://github.com/railroadmedia/musora-content-services/compare/v2.122.3...v2.122.4) (2026-01-26)
+
+
+### Bug Fixes
+
+* melon data user isolation ([#717](https://github.com/railroadmedia/musora-content-services/issues/717)) ([6893c3c](https://github.com/railroadmedia/musora-content-services/commit/6893c3c644e1eefcfeeb6439b460a46d853616d6))
+
 ### [2.122.3](https://github.com/railroadmedia/musora-content-services/compare/v2.122.2...v2.122.3) (2026-01-23)
 
 ### [2.122.2](https://github.com/railroadmedia/musora-content-services/compare/v2.122.1...v2.122.2) (2026-01-23)

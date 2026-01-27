@@ -242,7 +242,7 @@ export default class SyncRepository<TModel extends BaseModel> {
     return result
   }
 
-  requestPushUnsynced() {
-    this.store.pushUnsyncedWithRetry()
+  requestPushUnsynced(cause?: string) {
+    this.store.pushUnsyncedWithRetry(undefined, { type: 'repo-push-request', cause })
   }
 }

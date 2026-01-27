@@ -4,6 +4,8 @@ import { Q, RecordId } from "@nozbe/watermelondb"
 import { type ModelSerialized, type RawSerialized } from "./serializers"
 import BaseModel from "./models/Base"
 
+export type SyncUserScope = { initialId: number, getCurrentId: () => number }
+
 export { default as db } from './repository-proxy'
 export { Q }
 
