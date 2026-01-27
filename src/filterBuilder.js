@@ -2,7 +2,8 @@ import { getPermissionsAdapter } from './services/permissions/index.ts'
 import { STATUS } from './constants/content-statuses.ts'
 
 export class FilterBuilder {
-
+  DEFAULT_STATUSES = [STATUS.published, STATUS.scheduled, STATUS.unlisted]
+  CATALOGUE_STATUSES = [STATUS.published, STATUS.scheduled]
   constructor(
     filter = '',
     {
@@ -93,11 +94,11 @@ export class FilterBuilder {
     if (this.availableContentStatuses.length === 0) {
       if (this.userData.isAdmin) {
         this.availableContentStatuses = [
-          STATUS.DRAFT,
-          STATUS.SCHEDULED,
-          STATUS.PUBLISHED,
-          STATUS.ARCHIVED,
-          STATUS.UNLISTED,
+          STATUS.draft,
+          STATUS.scheduled,
+          STATUS.published,
+          STATUS.archived,
+          STATUS.unlisted,
         ]
         this.getFutureScheduledContentsOnly = true
       } else if (this.isSingle) {
@@ -108,7 +109,7 @@ export class FilterBuilder {
           STATUS.archived,
         ]
       } else {
-        this.availableContentStatuses = [STATUS.scheduled, STATUS.published]
+        this.availableContentStatuses = this.DEFAULT_STATUSES
         this.getFutureScheduledContentsOnly = true
       }
     }

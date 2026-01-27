@@ -26,13 +26,7 @@
  *   showMembershipRestrictedContent: false
  * })
  * ```
- *
- * ## Switching Versions
- *
- * Set `permissionsVersion` in `initializeService()`:
- * - `permissionsVersion: 'v1'` - Use current permissions system (default)
- * - `permissionsVersion: 'v2'` - Use new permissions system (when ready)
- *
+
  * ## Architecture
  *
  * - **PermissionsAdapter**: Abstract base class defining the contract
@@ -51,15 +45,9 @@ export type {
   ContentItem,
 } from './PermissionsAdapter'
 
-// Export adapter implementations (runtime values)
-export { PermissionsV1Adapter } from './PermissionsV1Adapter'
 export { PermissionsV2Adapter } from './PermissionsV2Adapter'
 
 // Export factory functions and version utilities (runtime values)
 export {
   getPermissionsAdapter,
-  getPermissionsVersion,
 } from './PermissionsAdapterFactory'
-
-// Export PermissionsVersion type only (not runtime value)
-export type { PermissionsVersion } from './PermissionsAdapterFactory'

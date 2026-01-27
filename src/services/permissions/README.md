@@ -12,8 +12,7 @@ This module is **internal to MCS only** and provides a flexible contract between
 
 - **`index.ts`** - Main exports (TypeScript)
 - **`PermissionsAdapter.ts`** - Abstract base class defining the contract (TypeScript)
-- **`PermissionsV1Adapter.ts`** - V1 implementation (current system, TypeScript)
-- **`PermissionsV2Adapter.ts`** - V2 implementation (placeholder, TypeScript)
+- **`PermissionsV2Adapter.ts`** - implementation 
 - **`PermissionsAdapterFactory.ts`** - Factory for getting appropriate adapter (TypeScript)
 
 ## Usage (Internal MCS only)
@@ -42,19 +41,6 @@ const filter = adapter.generatePermissionsFilter(permissions, {
 })
 ```
 
-## Configuration
-
-Set `permissionsVersion` in `initializeService()`:
-
-```javascript
-import { initializeService } from 'musora-content-services'
-
-initializeService({
-  // ... other config
-  permissionsVersion: 'v1', // 'v1' (default) or 'v2'
-})
-```
-
 ## Documentation
 
 For full details, see the inline documentation in each TypeScript file.
@@ -66,9 +52,9 @@ Internal MCS Code
      ↓
 PermissionsAdapterFactory (getPermissionsAdapter)
      ↓
-PermissionsV1Adapter OR PermissionsV2Adapter
+PermissionsV2Adapter
      ↓
-V1/V2 Implementation
+V2 Implementation
 ```
 
 
@@ -128,12 +114,3 @@ class MockAdapter extends PermissionsAdapter {
   // ... implement other methods
 }
 ```
-
-## Contributing
-
-When implementing V2:
-
-1. Update `PermissionsV2Adapter.ts` with v2 logic
-2. Test with `permissionsVersion: 'v2'` in `initializeService()`
-3. Update documentation
-4. Coordinate with frontend team for data structure changes

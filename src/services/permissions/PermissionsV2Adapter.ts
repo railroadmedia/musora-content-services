@@ -109,20 +109,11 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
     }
 
     let userPermissionIds = this.getUserPermissionIds(userPermissions)
-    const isDereferencedContext = prefix === '@->'
-
     // If showing membership restricted content
     if (showMembershipRestrictedContent) {
-      return ` ${prefix}membership_tier in ${arrayToStringRepresentation([plusMembershipTier, basicMembershipTier])} `
+      userPermissionIds.push(plusMembershipTier, basicMembershipTier)
     }
-
-    const filter = this.buildStandardPermissionFilter(
-      userPermissionIds,
-      prefix,
-      isDereferencedContext
-    )
-
-    return filter
+    return `array::intersects(${prefix}permission_v2, ${arrayToRawRepresentation(userPermissionIds)})`
   }
 
   /**
@@ -159,55 +150,6 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
     // Content must be in owned content IDs
     const ownerContentFilter = `railcontent_id in ${arrayToRawRepresentation(ownedContentIds)}`
     return ` ${ownerContentFilter} `
-  }
-
-  /**
-   * Build standard permission filter (content with no permissions OR user has matching permissions).
-   *
-   * @param userPermissionIds - User's permission IDs
-   * @param prefix - GROQ prefix for nested queries
-   * @param isDereferencedContext - Whether we're in a dereferenced context
-   * @returns GROQ filter string for standard permissions
-   */
-  private buildStandardPermissionFilter(
-    userPermissionIds: string[],
-    prefix: string,
-    isDereferencedContext: boolean
-  ): string {
-    const clauses: string[] = []
-
-    // Content with no permissions is accessible to all
-    // A content has "no permissions" if BOTH permission and permission_v2 are empty/undefined
-    clauses.push(`(!defined(${prefix}permission_v2) || count(${prefix}permission_v2) == 0)`)
-
-    // User has matching permissions
-    if (userPermissionIds.length > 0) {
-      clauses.push(this.buildPermissionCheck(userPermissionIds, prefix, isDereferencedContext))
-    }
-
-    return `(${clauses.join(' || ')})`
-  }
-
-  /**
-   * Build GROQ permission check for given permissions.
-   * Handles both dereferenced and standard contexts.
-   *
-   * @param permissions - Permission IDs to check
-   * @param prefix - GROQ prefix for nested queries
-   * @param isDereferencedContext - Whether we're in a dereferenced context
-   * @returns GROQ filter string for permission check
-   */
-  private buildPermissionCheck(
-    permissions: string[],
-    prefix: string,
-    isDereferencedContext: boolean
-  ): string {
-    if (isDereferencedContext) {
-      // In dereferenced context, check the permission array directly
-      return `array::intersects(${prefix}permission_v2, ${arrayToRawRepresentation(permissions)})`
-    }
-    // In standard context, use references() function
-    return `array::intersects(permission_v2, ${arrayToRawRepresentation(permissions)})`
   }
 
   /**
