@@ -3,7 +3,7 @@
  */
 import { globalConfig } from '../config.js'
 import { clearAllCachedData } from '../dataContext.js'
-import { getUserPinProgressKey, USER_PIN_PROGRESS_KEY } from '../progress-row/base.js'
+import { setUserPinnedProgressRow } from '../progress-row/base.js'
 import './types.js'
 
 /**
