@@ -37,6 +37,15 @@ export async function fetchLikeCount(contendId) {
   return await GET(url)
 }
 
+/**
+ * @param {number} contentId
+ * @returns {Promise<{hls_url: string|null, status: string, vimeo_event_id: string|null}>}
+ */
+export async function fetchLiveStreamData(contentId) {
+  const url = `/api/content/v1/live-events/${contentId}/stream`
+  return await GET(url)
+}
+
 export async function postPlaylistContentEngaged(playlistItemId) {
   const url = `/railtracker/v1/last-engaged/${playlistItemId}`
   return await POST(url, null)

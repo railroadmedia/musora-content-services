@@ -3,7 +3,6 @@
  */
 
 import { getActivePath, fetchLearningPathLessons } from '../../content-org/learning-paths'
-import { getToday } from '../../dateUtils.js'
 import { fetchMethodV2IntroVideo } from '../../sanity'
 import { getProgressState } from '../../contentProgress'
 import {COLLECTION_TYPE, STATE} from '../../sync/models/ContentProgress'
@@ -45,7 +44,7 @@ export async function getMethodCard(brand) {
     const learningPath = await fetchLearningPathLessons(
       activeLearningPath.active_learning_path_id,
       brand,
-      getToday()
+      new Date()
     )
 
     if (!learningPath) {
@@ -112,7 +111,7 @@ export async function getMethodCard(brand) {
     }
 
     return {
-      id: learningPath?.id,
+      id: 1,
       type: COLLECTION_TYPE.LEARNING_PATH,
       progressType: 'method',
       header: 'Method',
