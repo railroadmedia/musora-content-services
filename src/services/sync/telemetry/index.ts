@@ -67,14 +67,18 @@ export class SyncTelemetry {
       Sentry,
       level,
       pretty,
-    }: { Sentry: SentryLike; level?: keyof typeof SeverityLevel; pretty?: boolean }
+    }: { Sentry: SentryLike; level?: SeverityLevel | keyof typeof SeverityLevel; pretty?: boolean }
   ) {
     this.userScope = userScope
     this.Sentry = Sentry
-    this.level =
-      typeof level !== 'undefined' && level in SeverityLevel
-        ? SeverityLevel[level]
-        : SeverityLevel.LOG
+    const normalizedLevel =
+      typeof level === 'number'
+        ? level
+        : typeof level === 'string' && level in SeverityLevel
+          ? SeverityLevel[level]
+          : undefined
+
+    this.level = typeof normalizedLevel === 'number' ? normalizedLevel : SeverityLevel.LOG
     this.pretty = typeof pretty !== 'undefined' ? pretty : true
 
     watermelonLogger.log = (message: unknown) => this.log(message instanceof Error ? message : ['[Watermelon]', message].join(' '))
@@ -177,7 +181,6 @@ export class SyncTelemetry {
 
   _log(level: SeverityLevel, consoleMethod: 'info' | 'log' | 'warn' | 'error', message: unknown, extra?: any) {
     if (this.level > level || this.shouldIgnoreMessage(message)) return
-
     this._ignoreConsole = true
     console[consoleMethod](...this.formattedConsoleMessage(message, extra))
     this._ignoreConsole = false
