@@ -94,6 +94,7 @@ export async function getTabResults(brand, pageName, tabName, {
   selectedFilters = []
 } = {}) {
   // Extract and handle 'progress' filter separately
+  console.log('getTabResults', tabName, selectedFilters)
   const progressFilter = selectedFilters.find(f => f.startsWith('progress,')) || 'progress,all';
   const progressValue = progressFilter.split(',')[1].toLowerCase();
   const filteredSelectedFilters = selectedFilters.filter(f => !f.startsWith('progress,'));
@@ -529,9 +530,10 @@ export async function getLegacyMethods(brand)
     || userPermissions.includes(MEMBERSHIP_PERMISSIONS.base)
     || userPermissions.includes(MEMBERSHIP_PERMISSIONS.plus)
   const hasContentPermission = userPermissions.includes(100000000 + ids[0])
-  if (hasMembership && hasContentPermission) {
+  if (true || hasMembership && hasContentPermission) {
    return Promise.all(ids.map(id => fetchCourseCollectionData(id)))
   } else {
+    console.log('nooooo')
     return []
   }
 }

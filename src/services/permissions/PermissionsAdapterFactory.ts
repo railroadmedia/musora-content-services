@@ -6,14 +6,9 @@
  */
 
 import { PermissionsAdapter } from './PermissionsAdapter'
-import { PermissionsV1Adapter } from './PermissionsV1Adapter'
 import { PermissionsV2Adapter } from './PermissionsV2Adapter'
 import { globalConfig } from '../config.js'
 
-/**
- * Valid permissions version types
- */
-export type PermissionsVersion = 'v1' | 'v2'
 
 /**
  * Singleton instance of the permissions adapter.
@@ -40,32 +35,6 @@ export function getPermissionsAdapter(): PermissionsAdapter {
   if (adapterInstance) {
     return adapterInstance
   }
-
-  const version = (globalConfig.permissionsVersion || 'v1') as PermissionsVersion
-
-  switch (version.toLowerCase()) {
-    case 'v1':
-      adapterInstance = new PermissionsV1Adapter()
-      break
-
-    case 'v2':
-      adapterInstance = new PermissionsV2Adapter()
-      break
-
-    default:
-      throw new Error(
-        `Invalid permissionsVersion: ${version}. Must be 'v1' or 'v2'.`
-      )
-  }
-
+  adapterInstance = new PermissionsV2Adapter()
   return adapterInstance
-}
-
-/**
- * Get the current permissions version being used.
- *
- * @returns The permissions version ('v1' or 'v2')
- */
-export function getPermissionsVersion(): PermissionsVersion {
-  return (globalConfig.permissionsVersion || 'v1') as PermissionsVersion
 }

@@ -762,14 +762,18 @@ export function difficultyStringField(key = 'difficulty_string') {
 
 export async function getFieldsForContentTypeWithFilteredChildren(
   contentType,
-  asQueryString = true
+  asQueryString = true,
+  {
+    availableContentStatuses = [],
+  } = {},
 ) {
   const childFields = getChildFieldsForContentType(contentType, true)
   const parentFields = getFieldsForContentType(contentType, false)
   if (childFields) {
     const childFilter = await new FilterBuilder('', {
       isChildrenFilter: true,
-      showMembershipRestrictedContent: true, // Show all children in lists
+      showMembershipRestrictedContent: showMembershipRestrictedContent,
+      availableContentStatuses: availableContentStatuses,
     }).buildFilter()
     parentFields.push(
       `"children": child[${childFilter}]->{

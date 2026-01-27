@@ -44,7 +44,7 @@ import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
 import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
-
+import { STATUS } from '../constants/content-statuses.ts'
 /**
  * Exported functions that are excluded from index generation.
  *
@@ -1134,7 +1134,7 @@ export async function fetchSiblingContent(railContentId, brand = null) {
  * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
  */
 export async function fetchRelatedLessons(railContentId) {
-  const defaultFilterFields = `_type==^._type && brand == ^.brand && railcontent_id != ${railContentId}`
+  const defaultFilterFields = `!defined(deprecated_railcontent_id) && _type==^._type && brand == ^.brand && railcontent_id != ${railContentId}`
 
   const filterSameArtist = await new FilterBuilder(
     `${defaultFilterFields} && references(^.artist->_id)`,
@@ -1208,6 +1208,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
 /**
  * Fetch the data needed for the CourseCollection Overview screen.
  * @param {number} id - The Railcontent ID of the CourseCollection
+ * @param {boolean} includeUnlisted - Include filter for unlisted content (ie: old method documents)
  * @returns {Promise<Object|null>} - The CourseCollection information and lessons or null if not found.
  *
  * @example
@@ -1216,7 +1217,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
  *   .catch(error => console.error(error));
  */
 export async function fetchCourseCollectionData(id) {
-  const builder = await new FilterBuilder(`railcontent_id == ${id}`).buildFilter()
+  const builder = await new FilterBuilder(`railcontent_id == ${id}`, ).buildFilter()
   const query = `*[${builder}]{
     ${await getFieldsForContentTypeWithFilteredChildren('course-collection')}
   } [0...1]`
@@ -1260,7 +1261,9 @@ export async function fetchByReference(
   const includedFieldsFilter = includedFields.length > 0 ? includedFields.join(' && ') : ''
 
   const filter = `brand == '${brand}' ${searchFilter} && references(*[${includedFieldsFilter}]._id)`
-  const filterWithRestrictions = await new FilterBuilder(filter).buildFilter()
+  const filterWithRestrictions = await new FilterBuilder(filter, {
+    availableContentStatuses: FilterBuilder.CATALOGUE_STATUSES
+  }).buildFilter()
   const query = buildEntityAndTotalQuery(filterWithRestrictions, fieldsString, {
     sortOrder: getSortOrder(sortOrder, brand),
     start: start,
@@ -1546,13 +1549,6 @@ function needsAccessDecorator(results, userPermissions) {
   return contentResultsDecorator(results, 'need_access', function (content) {
     return adapter.doesUserNeedAccess(content, userPermissions)
   })
-}
-
-function doesUserNeedAccessToContent(result, userPermissions) {
-  // Legacy function - now delegates to adapter
-  // Kept for backwards compatibility if used elsewhere
-  const adapter = getPermissionsAdapter()
-  return adapter.doesUserNeedAccess(result, userPermissions)
 }
 
 /**
@@ -1882,7 +1878,7 @@ export async function fetchTabData(
   const progressFilter = await getProgressFilter(progress, progressIds)
   const fieldsString = getFieldsForContentType('tab-data')
   const now = getSanityDate(new Date())
-
+  const availableStatuses = [STATUS.published, STATUS.scheduled]
   // Determine the group by clause
   let query = ''
   let entityFieldsString = ''
@@ -1892,9 +1888,13 @@ export async function fetchTabData(
   const childrenFilter = await new FilterBuilder(``, {
     isChildrenFilter: true,
     showMembershipRestrictedContent: true,
+    availableContentStatuses: availableStatuses,
   }).buildFilter()
   const childrenFields = await getChildFieldsForContentType('tab-data')
-  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`).buildFilter()
+  const lessonCountFilter = await new FilterBuilder(`_id in ^.child[]._ref`, {
+    showMembershipRestrictedContent: true,
+    availableContentStatuses: availableStatuses,
+  }).buildFilter()
   entityFieldsString = ` ${fieldsString}
     'children': child[${childrenFilter}]->{ ${childrenFields} 'children': child[${childrenFilter}]->{ ${childrenFields} }, },
     'isLive': live_event_start_time <= "${now}" && live_event_end_time >= "${now}",
@@ -1909,6 +1909,7 @@ export async function fetchTabData(
     ),`
   const filterWithRestrictions = await new FilterBuilder(filter, {
     showMembershipRestrictedContent: true,
+    availableContentStatuses: availableStatuses,
   }).buildFilter()
   query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
     sortOrder: sortOrder,
@@ -1964,7 +1965,7 @@ export async function fetchScheduledAndNewReleases(
   const sortOrder = getSortOrder(sort, brand)
 
   const query = `
-    *[_type in [${typesString}] && brand == '${brand}' && ((status in ['published','scheduled'] )||(show_in_new_feed == true)) ]
+    *[_type in [${typesString}] && brand == '${brand}' && !defined(deprecated_railcontent_id) && ((status in ['published','scheduled'] )||(show_in_new_feed == true)) ]
     [${start}...${end}]
    | order(published_on asc) {
       "id": railcontent_id,
@@ -2170,6 +2171,7 @@ export async function fetchContentTypeCounts(brand, pageName) {
         _type == ^.type
         && brand == "${brand}"
         && status == "published"
+        && !defined(deprecated_railcontent_id)
       ])
     }[count > 0]
   }`

@@ -39,5 +39,4 @@
  * @property {Object} localStorage - Cache to use for localStorage
  * @property {boolean} isMA - Variable that tells if the library is used by MA or FEW
  * @property {string} localTimezoneString - The local timezone string in format: America/Vancouver
- * @property {('v1'|'v2')} [permissionsVersion='v1'] - Permissions system version to use ('v1' or 'v2')
  */
