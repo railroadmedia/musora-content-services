@@ -956,9 +956,15 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         r._raw._changed = ''
       })
     })
+    const syncedBuilds = result.recordsForSynced.map((record) => {
+      return record.prepareUpdate((r) => {
+        r._raw._status = 'synced'
+        r._raw._changed = ''
+      })
+    })
 
     return [
-      [...destroyedBuilds, ...createdBuilds, ...updatedBuilds, ...restoreDestroyBuilds],
+      [...destroyedBuilds, ...createdBuilds, ...updatedBuilds, ...restoreDestroyBuilds, ...syncedBuilds],
       [...restoreCreateBuilds],
     ]
   }
