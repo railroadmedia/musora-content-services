@@ -44,13 +44,6 @@ export interface ContentUrlParams {
 export interface ForumPostUrlParams {
   /** Brand (drumeo, pianote, etc) */
   brand: Brand
-  /** Thread information */
-  thread: {
-    /** Thread category ID */
-    category_id: number
-    /** Thread ID */
-    id: number
-  }
 }
 
 /**
@@ -214,14 +207,14 @@ export function generateContentUrlWithDomain(params: ContentUrlParams): string {
  * @returns Forum post URL
  *
  * @example
- * generateForumPostUrl({ brand: 'drumeo', thread: { category_id: 12, id: 456 }})
- * // Returns: "/drumeo/forums/threads/12/456"
+ * generateForumPostUrl({ brand: 'drumeo'})
+ * // Returns: "/drumeo/forums/jump-to-post/"
  */
 export function generateForumPostUrl(
   post: ForumPostUrlParams,
   withDomain: boolean = false
 ): string {
-  const path = `/${post.brand}/forums/threads/${post.thread.category_id}/${post.thread.id}`
+  const path = `/${post.brand}/forums/jump-to-post/`
 
   if (withDomain) {
     return globalConfig.frontendUrl + path
