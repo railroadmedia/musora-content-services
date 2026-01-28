@@ -513,6 +513,7 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
       title: content.title,
       parent_id: content.parent_id || null,
       navigateTo: content.navigateTo,
+      artist_name: content.artist_name || null,
     }
   })
   return recentActivityData
@@ -808,6 +809,7 @@ async function formatPracticeMeta(practices = []) {
       content_slug: content?.slug || null,
       parent_id: content?.parent_id || null,
       navigateTo: content?.navigateTo || null,
+      artist_name: content?.artist_name || null,
     }
   })
 }
