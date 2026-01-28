@@ -35,9 +35,10 @@ export function initializeSyncManager(userId) {
     },
   }
 
-  SyncTelemetry.setInstance(new SyncTelemetry(userId, { Sentry: dummySentry, level: SeverityLevel.WARNING, pretty: false }))
+  const userScope = { initialId: userId, getCurrentId: () => userId }
+  SyncTelemetry.setInstance(new SyncTelemetry(userScope, { Sentry: dummySentry, level: SeverityLevel.WARNING, pretty: false }))
 
-  const adapter = syncAdapter(userId)
+  const adapter = syncAdapter()
   const db = syncDatabaseFactory(adapter)
 
   const context = new SyncContext({
@@ -74,7 +75,7 @@ export function initializeSyncManager(userId) {
       stop: () => {},
     },
   })
-  const manager = new SyncManager(context, db)
+  const manager = new SyncManager(userScope, context, db)
 
   const initialStrategy = manager.createStrategy(InitialStrategy)
 
