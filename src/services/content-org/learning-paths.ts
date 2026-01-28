@@ -442,14 +442,10 @@ export async function completeMethodIntroVideo(
   return response
 }
 
-async function methodIntroVideoCompleteActions(
-  brand: string,
-  learningPathId: number,
-  userDate: Date
-) {
-  const stringDate = userDate.toISOString().split('T')[0]
+async function methodIntroVideoCompleteActions(brand: string, learningPathId: number, userDate: Date) {
+  const dateWithTimezone = formatLocalDateTime(userDate)
   const url: string = `${LEARNING_PATHS_PATH}/method-intro-video-complete-actions`
-  const body = { brand: brand, learningPathId: learningPathId, userDate: stringDate }
+  const body = { brand: brand, learningPathId: learningPathId, userDate: dateWithTimezone }
   return (await POST(url, body)) as DailySessionResponse
 }
 
