@@ -1,6 +1,7 @@
 /**
  * @module Sessions
  */
+import { DELETE, POST } from '../../infrastructure/http/HttpClient.js'
 import { globalConfig } from '../config.js'
 import { clearAllCachedData } from '../dataContext.js'
 import { setUserPinnedProgressRow } from '../progress-row/base.js'
@@ -31,28 +32,15 @@ const excludeFromGeneratedIndex = []
  */
 export async function login(email, password, deviceName, deviceToken, platform) {
   const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
-  const res = await fetch(`${baseUrl}/v1/sessions`, {
-    method: 'POST',
-    headers: {
-      'X-Client-Platform': globalConfig.isMA ? 'mobile' : 'web',
-      'Content-Type': 'application/json',
-      Authorization: null,
-    },
-    body: JSON.stringify({
-      email: email,
-      password: password,
-      device_name: deviceName,
-      device_token: deviceToken,
-      platform: platform,
-    }),
+  const data = await POST(`${baseUrl}/v1/sessions`, {
+    email: email,
+    password: password,
+    device_name: deviceName,
+    device_token: deviceToken,
+    platform: platform,
   })
 
-  const data = await res.json()
-
-  // TODO: refactor this. I don't think this is the place for it but we need it fixed for the system test
-  if (res.ok) {
-    await setUserPinnedProgressRow(data.user?.id, data.user?.brand_pinned_progress || {})
-  }
+  await setUserPinnedProgressRow(data.user?.id, data.user?.brand_pinned_progress || {})
 
   return data
 }
@@ -100,13 +88,7 @@ export async function login(email, password, deviceName, deviceToken, platform) 
  */
 export async function logout() {
   const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
-  await fetch(`${baseUrl}/v1/sessions`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${globalConfig.sessionConfig.authToken}`,
-      'Content-Type': 'application/json',
-    },
-  })
+  await DELETE(`${baseUrl}/v1/sessions`)
 
   // Clear all locally cached data to prevent data leakage between users
   await clearAllCachedData()
@@ -162,6 +144,6 @@ export async function generateAuthSessionUrl(userId, redirectTo) {
 
     return `${absoluteRedirectTo.origin}/auth?${params.toString()}`
   } else {
-    throw new Error('Not implemented - MA deep links don\'t accept auth keys')
+    throw new Error("Not implemented - MA deep links don't accept auth keys")
   }
 }
