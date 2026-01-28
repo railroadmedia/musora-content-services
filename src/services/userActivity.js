@@ -809,6 +809,7 @@ async function formatPracticeMeta(practices = []) {
       content_slug: content?.slug || null,
       parent_id: content?.parent_id || null,
       navigateTo: content?.navigateTo || null,
+      artist_name: content?.artist_name || null,
     }
   })
 }
