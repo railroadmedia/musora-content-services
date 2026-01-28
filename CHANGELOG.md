@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.122.7](https://github.com/railroadmedia/musora-content-services/compare/v2.122.3...v2.122.7) (2026-01-28)
+
+
+### Bug Fixes
+
+* add artist name to practices ([aba6c46](https://github.com/railroadmedia/musora-content-services/commit/aba6c46e03afd6635e74050170cbec5e3b1c9a63))
+* add artist name to recent activity data ([78f0e47](https://github.com/railroadmedia/musora-content-services/commit/78f0e4783d575db30aa6667752ded4366e85b05a))
+* filters out null field ([#742](https://github.com/railroadmedia/musora-content-services/issues/742)) ([cab0b58](https://github.com/railroadmedia/musora-content-services/commit/cab0b584a8f40b7404b869730783aea51a058d35))
+* melon data user isolation ([#717](https://github.com/railroadmedia/musora-content-services/issues/717)) ([6893c3c](https://github.com/railroadmedia/musora-content-services/commit/6893c3c644e1eefcfeeb6439b460a46d853616d6))
+* **T3PS-1586:** onboarding recommendation pinning ([#737](https://github.com/railroadmedia/musora-content-services/issues/737)) ([280305b](https://github.com/railroadmedia/musora-content-services/commit/280305b7706ba171752cb54e6d2ee504093b11d1))
+* **T3PS-2003:** Display Shows like Individuals on the progress cards and progress areas ([5a61d7d](https://github.com/railroadmedia/musora-content-services/commit/5a61d7dfaf5fbed2cc8bdca751c12783acbe2b66))
+* **T3PS-2004:** Play Your Favorite Songs on /method/ Shows Unreleased Content ([b7c32de](https://github.com/railroadmedia/musora-content-services/commit/b7c32deeffe8140969d2e11d853d255b0e184f30))
+* **T3PS-2007:** getPracticeSessions for a given date fails if the content doesn’t have a thumbnail ([d3bb457](https://github.com/railroadmedia/musora-content-services/commit/d3bb45760634f8e8f8f8114859d258da5d3909e6))
+
 ### [2.122.6](https://github.com/railroadmedia/musora-content-services/compare/v2.122.5...v2.122.6) (2026-01-28)
 
 
