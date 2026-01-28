@@ -14,8 +14,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   // null collection only
   async startedIds(limit?: number) {
     return this.queryAll(...[
-      Q.where('collection_type', COLLECTION_TYPE.SELF),
-      Q.where('collection_id', COLLECTION_ID_SELF),
+      ProgressRepository.filterOutStandardContentsAccessedByLP,
 
       Q.where('state', STATE.STARTED),
       Q.sortBy('updated_at', 'desc'),
@@ -27,8 +26,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   // null collection only
   async completedIds(limit?: number) {
     return this.queryAll(...[
-      Q.where('collection_type', COLLECTION_TYPE.SELF),
-      Q.where('collection_id', COLLECTION_ID_SELF),
+      ProgressRepository.filterOutStandardContentsAccessedByLP,
 
       Q.where('state', STATE.COMPLETED),
       Q.sortBy('updated_at', 'desc'),
@@ -59,10 +57,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     } = {}
   ) {
     const clauses: Q.Clause[] = [
-      Q.where('collection_type', COLLECTION_TYPE.SELF),
-      Q.where('collection_id', COLLECTION_ID_SELF),
-
-      Q.where('last_interacted_a_la_carte', Q.notEq(null)),
+      ProgressRepository.filterOutStandardContentsAccessedByLP,
 
       Q.or(Q.where('state', STATE.STARTED), Q.where('state', STATE.COMPLETED)),
       Q.sortBy('updated_at', 'desc'),
@@ -222,6 +217,20 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     const ids = contentIds.map((id) => ProgressRepository.generateId(id, collection))
     return this.deleteSome(ids, { skipPush })
   }
+
+  private static filterOutStandardContentsAccessedByLP =
+    // LPs dont have last_interacted_a_la_carte set, hence the OR
+    Q.or(
+      Q.and( // a-la-carte content
+        Q.where('collection_type', COLLECTION_TYPE.SELF),
+        Q.where('collection_id', COLLECTION_ID_SELF),
+        Q.where('last_interacted_a_la_carte', Q.notEq(null)),
+      ),
+      Q.and( // learning paths (parent not lessons)
+        Q.where('collection_type', COLLECTION_TYPE.LEARNING_PATH),
+        Q.where('content_id', Q.eq(Q.column('collection_id'))) // gets parent LP progress
+      )
+    )
 
   private static generateId(
     contentId: number,
