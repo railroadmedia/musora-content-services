@@ -101,9 +101,9 @@ export class SyncTelemetry {
       let desc = span['_spanId'].slice(0, 4)
       desc += span['_parentSpanId'] ? ` (< ${span['_parentSpanId'].slice(0, 4)})` : ''
 
-      this.debug(`[trace:start] ${options.name} (${desc})`)
+      this._log(SeverityLevel.DEBUG, 'info', `[trace:start] ${options.name} (${desc})`, true)
       const result = callback(span)
-      Promise.resolve(result).finally(() => this.debug(`[trace:end] ${options.name} (${desc})`))
+      Promise.resolve(result).finally(() => this._log(SeverityLevel.DEBUG, 'info', `[trace:end] ${options.name} (${desc})`, true))
 
       return result
     })
@@ -179,11 +179,13 @@ export class SyncTelemetry {
     this._log(SeverityLevel.FATAL, 'error', message, extra)
   }
 
-  _log(level: SeverityLevel, consoleMethod: 'info' | 'log' | 'warn' | 'error', message: unknown, extra?: any) {
+  _log(level: SeverityLevel, consoleMethod: 'info' | 'log' | 'warn' | 'error', message: unknown, extra?: any, skipSentry = false) {
     if (this.level > level || this.shouldIgnoreMessage(message)) return
     this._ignoreConsole = true
     console[consoleMethod](...this.formattedConsoleMessage(message, extra))
     this._ignoreConsole = false
+
+    if (skipSentry) return;
 
     if (level >= SeverityLevel.WARNING) {
       this.Sentry.captureMessage(message instanceof Error ? message.message : String(message), severityLevelToSentryLevel[level])
