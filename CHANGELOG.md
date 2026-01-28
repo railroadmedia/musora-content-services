@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.122.6](https://github.com/railroadmedia/musora-content-services/compare/v2.122.5...v2.122.6) (2026-01-28)
+
+
+### Bug Fixes
+
+* **T3PS-1586:** onboarding recommendation pinning ([#737](https://github.com/railroadmedia/musora-content-services/issues/737)) ([280305b](https://github.com/railroadmedia/musora-content-services/commit/280305b7706ba171752cb54e6d2ee504093b11d1))
+
 ### [2.122.5](https://github.com/railroadmedia/musora-content-services/compare/v2.122.4...v2.122.5) (2026-01-28)
 
 
