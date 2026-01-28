@@ -21,8 +21,8 @@ export const USER_PIN_PROGRESS_KEY = 'user_pin_progress_row'
 /**
  * Gets the localStorage key for user pinned progress, scoped by user ID
  */
-function getUserPinProgressKey() {
-  const userId = globalConfig.sessionConfig?.userId || globalConfig.railcontentConfig?.userId
+export function getUserPinProgressKey(id) {
+  const userId = id || globalConfig.sessionConfig?.userId || globalConfig.railcontentConfig?.userId
   return userId ? `user_pin_progress_row_${userId}` : USER_PIN_PROGRESS_KEY
 }
 
@@ -107,6 +107,11 @@ export async function unpinProgressRow(brand) {
     await updateUserPinnedProgressRow(brand, null)
   }
   return response
+}
+
+export async function setUserPinnedProgressRow(userId, pinnedData) {
+  const key = getUserPinProgressKey(userId)
+  await globalConfig.localStorage.setItem(key, JSON.stringify(pinnedData))
 }
 
 async function getUserPinnedItem(brand) {
