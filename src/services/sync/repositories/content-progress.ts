@@ -154,7 +154,9 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       r.progress_percent = progressPct
 
       if (typeof resumeTime != 'undefined') {
-        r.resume_time_seconds = Math.floor(resumeTime)
+        if (resumeTime >= 10 || (r.resume_time_seconds && r.resume_time_seconds >= 10)) {
+          r.resume_time_seconds = Math.floor(resumeTime)
+        }
       }
 
       if (!fromLearningPath) {
