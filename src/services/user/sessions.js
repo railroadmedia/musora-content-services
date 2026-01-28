@@ -1,7 +1,7 @@
 /**
  * @module Sessions
  */
-import { DELETE, POST } from '../../infrastructure/http/HttpClient.js'
+import { DELETE, POST } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
 import { clearAllCachedData } from '../dataContext.js'
 import { setUserPinnedProgressRow } from '../progress-row/base.js'
