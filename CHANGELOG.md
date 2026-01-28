@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.123.1](https://github.com/railroadmedia/musora-content-services/compare/v2.123.0...v2.123.1) (2026-01-28)
+
+
+### Bug Fixes
+
+* **auth:** use http client for auth functions ([#751](https://github.com/railroadmedia/musora-content-services/issues/751)) ([6958adc](https://github.com/railroadmedia/musora-content-services/commit/6958adc87689a7dd433a8c66ccaff60317e6e962))
+
 ## [2.123.0](https://github.com/railroadmedia/musora-content-services/compare/v2.122.7...v2.123.0) (2026-01-28)
 
 
