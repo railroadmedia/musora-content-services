@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.123.0](https://github.com/railroadmedia/musora-content-services/compare/v2.122.7...v2.123.0) (2026-01-28)
+
+
+### Features
+
+* better user impersonation ([#731](https://github.com/railroadmedia/musora-content-services/issues/731)) ([768022d](https://github.com/railroadmedia/musora-content-services/commit/768022df839b2c2e206d02985c82075b0d4de008))
+* **T3PS-1537:** Playbass Recommendations V2 ([#744](https://github.com/railroadmedia/musora-content-services/issues/744)) ([b88ffbd](https://github.com/railroadmedia/musora-content-services/commit/b88ffbd85a9982371e108d9f23190a9217cf29d0))
+* **TP-1080:** ignore resume time until past 10s window ([#749](https://github.com/railroadmedia/musora-content-services/issues/749)) ([c22f4c2](https://github.com/railroadmedia/musora-content-services/commit/c22f4c201ec60dbf9475eebbcee199dfea967bbf))
+
+
+### Bug Fixes
+
+* makes methodIntroComplete function send formatted date matching getDailySession ([#725](https://github.com/railroadmedia/musora-content-services/issues/725)) ([6ac47a0](https://github.com/railroadmedia/musora-content-services/commit/6ac47a04dfa2ea4a0d355409b4be8fa743af1b48))
+
 ### [2.122.7](https://github.com/railroadmedia/musora-content-services/compare/v2.122.3...v2.122.7) (2026-01-28)
 
 
