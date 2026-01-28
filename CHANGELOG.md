@@ -2,6 +2,65 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.122.6](https://github.com/railroadmedia/musora-content-services/compare/v2.122.5...v2.122.6) (2026-01-28)
+
+
+### Bug Fixes
+
+* **T3PS-1586:** onboarding recommendation pinning ([#737](https://github.com/railroadmedia/musora-content-services/issues/737)) ([280305b](https://github.com/railroadmedia/musora-content-services/commit/280305b7706ba171752cb54e6d2ee504093b11d1))
+
+### [2.122.5](https://github.com/railroadmedia/musora-content-services/compare/v2.122.4...v2.122.5) (2026-01-28)
+
+
+### Bug Fixes
+
+* filters out null field ([#742](https://github.com/railroadmedia/musora-content-services/issues/742)) ([cab0b58](https://github.com/railroadmedia/musora-content-services/commit/cab0b584a8f40b7404b869730783aea51a058d35))
+
+### [2.122.4](https://github.com/railroadmedia/musora-content-services/compare/v2.122.3...v2.122.4) (2026-01-26)
+
+
+### Bug Fixes
+
+* melon data user isolation ([#717](https://github.com/railroadmedia/musora-content-services/issues/717)) ([6893c3c](https://github.com/railroadmedia/musora-content-services/commit/6893c3c644e1eefcfeeb6439b460a46d853616d6))
+
+### [2.122.3](https://github.com/railroadmedia/musora-content-services/compare/v2.122.2...v2.122.3) (2026-01-23)
+
+### [2.122.2](https://github.com/railroadmedia/musora-content-services/compare/v2.122.1...v2.122.2) (2026-01-23)
+
+
+### Bug Fixes
+
+* broken method index ([#735](https://github.com/railroadmedia/musora-content-services/issues/735)) ([126f985](https://github.com/railroadmedia/musora-content-services/commit/126f985866f60bcca1d1ddb2dd97ba8847ff4219))
+
+### [2.122.1](https://github.com/railroadmedia/musora-content-services/compare/v2.122.0...v2.122.1) (2026-01-23)
+
+
+### Bug Fixes
+
+* handle global live streams ([#727](https://github.com/railroadmedia/musora-content-services/issues/727)) ([e0ed5f3](https://github.com/railroadmedia/musora-content-services/commit/e0ed5f398f61a2188beae56a05547494862a16b7))
+* removes tentative progress call functionality ([#716](https://github.com/railroadmedia/musora-content-services/issues/716)) ([a167d3b](https://github.com/railroadmedia/musora-content-services/commit/a167d3b94c1d2ef6df9a7f76e4c4ea4c71f9bfb5))
+* **T3PS-1562:** hide nonpinned method card ([#721](https://github.com/railroadmedia/musora-content-services/issues/721)) ([cc250ee](https://github.com/railroadmedia/musora-content-services/commit/cc250ee072cac976fc7389eb86e77eff1230b73a))
+* **T3PS-1579:** fix reset bubbling ([#718](https://github.com/railroadmedia/musora-content-services/issues/718)) ([a9490a8](https://github.com/railroadmedia/musora-content-services/commit/a9490a85aeb4df947770a265543fa6782e30b436))
+
+## [2.122.0](https://github.com/railroadmedia/musora-content-services/compare/v2.118.1...v2.122.0) (2026-01-22)
+
+
+### Features
+
+* add fetchLiveStreamData method ([aa9b704](https://github.com/railroadmedia/musora-content-services/commit/aa9b7046c7fc69e8b30c0f035577da62f8c5b5fd))
+* add vimeo_live_event_id to GROQ queries ([d4fff6f](https://github.com/railroadmedia/musora-content-services/commit/d4fff6f09ca62682f6cead7e43f6979a56b86e0a))
+* adds restore methods (for progress deletion undo) ([#705](https://github.com/railroadmedia/musora-content-services/issues/705)) ([b01a718](https://github.com/railroadmedia/musora-content-services/commit/b01a71892175b38789d62fffac0ce5f8e2e4513d))
+* **TP-1060:** method data caching in mcs ([#701](https://github.com/railroadmedia/musora-content-services/issues/701)) ([25efc43](https://github.com/railroadmedia/musora-content-services/commit/25efc43b6c07172db2f20d51d5b79ac9fc204eef))
+* update brand endpoint ([#719](https://github.com/railroadmedia/musora-content-services/issues/719)) ([4938b61](https://github.com/railroadmedia/musora-content-services/commit/4938b61c8526e31194b284c6daf172764b7900ed))
+
+
+### Bug Fixes
+
+* adds live_global_event field where live_event_stream_id is returned ([#708](https://github.com/railroadmedia/musora-content-services/issues/708)) ([23c58f4](https://github.com/railroadmedia/musora-content-services/commit/23c58f42da866cd1035276c62c773b82c09d3aa5))
+* better logs in Sentry for debugging ([#712](https://github.com/railroadmedia/musora-content-services/issues/712)) ([e1019b5](https://github.com/railroadmedia/musora-content-services/commit/e1019b50b0cf606b86e71028db0a2f9ac354cfca))
+* remove unsupported collection types ([#713](https://github.com/railroadmedia/musora-content-services/issues/713)) ([0441941](https://github.com/railroadmedia/musora-content-services/commit/04419413ffea82303258b839c8e1e11b3a4c507a))
+* **T3PS-1347:** Implement WatermelonDB-based streak calculator with year boundary fix ([916a8ef](https://github.com/railroadmedia/musora-content-services/commit/916a8ef532a858f82a8133d1725ad69ea3d550e9))
+
 ### [2.121.2](https://github.com/railroadmedia/musora-content-services/compare/v2.121.1...v2.121.2) (2026-01-20)
 
 ### [2.121.1](https://github.com/railroadmedia/musora-content-services/compare/v2.121.0...v2.121.1) (2026-01-20)

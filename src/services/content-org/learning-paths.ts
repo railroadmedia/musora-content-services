@@ -56,17 +56,20 @@ interface CollectionObject {
  * @param userDate - local datetime. must have date and time - format 2025-10-31T13:45:00
  * @param forceRefresh - force cache refresh
  */
-export async function getDailySession(brand: string, userDate: Date, forceRefresh: boolean = false) {
+export async function getDailySession(
+  brand: string,
+  userDate: Date,
+  forceRefresh: boolean = false
+) {
   const dateWithTimezone = formatLocalDateTime(userDate)
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
   try {
-    const response = await dataPromiseGET(url, forceRefresh) as DailySessionResponse
+    const response = (await dataPromiseGET(url, forceRefresh)) as DailySessionResponse
     if (!response) {
       return await updateDailySession(brand, userDate, false)
     }
     dailySessionPromise = null // reset promise after successful fetch
     return response as DailySessionResponse
-
   } catch (error: any) {
     if (error.status === 204) {
       return await updateDailySession(brand, userDate, false)
@@ -88,16 +91,23 @@ export async function updateDailySession(
 ) {
   const dateWithTimezone = formatLocalDateTime(userDate)
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/create`
-  const body = { brand: brand, userDate: dateWithTimezone, keepFirstLearningPath: keepFirstLearningPath }
-
-  const response = await POST(url, body) as DailySessionResponse
-
-  if (response) {
-    const urlGet: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
-    dataPromiseGET(urlGet, true) // refresh cache
+  const body = {
+    brand: brand,
+    userDate: dateWithTimezone,
+    keepFirstLearningPath: keepFirstLearningPath,
   }
+  try {
+    const response = (await POST(url, body)) as DailySessionResponse
 
-  return response
+    if (response) {
+      const urlGet: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
+      dataPromiseGET(urlGet, true) // refresh cache
+    }
+
+    return response
+  } catch (error: any) {
+    return null
+  }
 }
 
 function formatLocalDateTime(date: Date): string {
@@ -112,7 +122,7 @@ function formatLocalDateTime(date: Date): string {
 export async function getActivePath(brand: string, forceRefresh: boolean = false) {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
 
-  const response = await dataPromiseGET(url, forceRefresh) as ActiveLearningPathResponse
+  const response = (await dataPromiseGET(url, forceRefresh)) as ActiveLearningPathResponse
   activePathPromise = null // reset promise after successful fetch
 
   return response
@@ -127,7 +137,7 @@ export async function startLearningPath(brand: string, learningPathId: number) {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/set`
   const body = { brand: brand, learning_path_id: learningPathId }
 
-  const response = await POST(url, body) as ActiveLearningPathResponse
+  const response = (await POST(url, body)) as ActiveLearningPathResponse
 
   // manual BE call to avoid recursive POST<->GET calls
   if (response) {
@@ -138,16 +148,22 @@ export async function startLearningPath(brand: string, learningPathId: number) {
   return response
 }
 
-async function dataPromiseGET(url: string, forceRefresh: boolean): Promise<DailySessionResponse|ActiveLearningPathResponse> {
+async function dataPromiseGET(
+  url: string,
+  forceRefresh: boolean
+): Promise<DailySessionResponse | ActiveLearningPathResponse> {
   if (url.includes('daily-session')) {
     if (!dailySessionPromise || forceRefresh) {
-      dailySessionPromise = GET(url, {cache: forceRefresh ? 'reload' : 'default'}) as Promise<DailySessionResponse>
+      dailySessionPromise = GET(url, {
+        cache: forceRefresh ? 'reload' : 'default',
+      }) as Promise<DailySessionResponse>
     }
     return dailySessionPromise
-
   } else if (url.includes('active-path')) {
     if (!activePathPromise || forceRefresh) {
-      activePathPromise = GET(url, {cache: forceRefresh ? 'reload' : 'default'}) as Promise<ActiveLearningPathResponse>
+      activePathPromise = GET(url, {
+        cache: forceRefresh ? 'reload' : 'default',
+      }) as Promise<ActiveLearningPathResponse>
     }
     return activePathPromise
   }
@@ -183,14 +199,10 @@ export async function getEnrichedLearningPath(learningPathId) {
     }
   )) as any
   // add awards to LP parents only
-  response = await addContextToLearningPaths(() => response, {addAwards:true})
+  response = await addContextToLearningPaths(() => response, { addAwards: true })
   if (!response) return response
 
-  response.children = mapContentToParent(
-    response.children,
-    LEARNING_PATH_LESSON,
-    learningPathId
-  )
+  response.children = mapContentToParent(response.children, LEARNING_PATH_LESSON, learningPathId)
   return response
 }
 
@@ -216,7 +228,7 @@ export async function getEnrichedLearningPaths(learningPathIds: number[]) {
     }
   )) as any
   // add awards to LP parents only
-  response = await addContextToLearningPaths(() => response, {addAwards:true})
+  response = await addContextToLearningPaths(() => response, { addAwards: true })
 
   if (!response) return response
 
@@ -300,9 +312,9 @@ export async function fetchLearningPathLessons(
   userDate: Date
 ) {
   const learningPath = await getEnrichedLearningPath(learningPathId)
-  let dailySession = await getDailySession(brand, userDate) as DailySessionResponse // what if the call just fails, and a DS does exist?
+  let dailySession = (await getDailySession(brand, userDate)) as DailySessionResponse // what if the call just fails, and a DS does exist?
   if (!dailySession) {
-    dailySession = await updateDailySession(brand, userDate, false) as DailySessionResponse
+    dailySession = (await updateDailySession(brand, userDate, false)) as DailySessionResponse
   }
 
   const isActiveLearningPath = (dailySession?.active_learning_path_id || 0) == learningPathId
@@ -319,8 +331,6 @@ export async function fetchLearningPathLessons(
   let nextLearningPathId = null
   let previousContentIds = []
   let previousLearningPathId = null
-
-
 
   for (const session of dailySession.daily_session) {
     if (session.learning_path_id === learningPathId) {
@@ -361,13 +371,13 @@ export async function fetchLearningPathLessons(
     )
   }
   if (nextContentIds.length !== 0) {
-    nextLPDailies = await getLearningPathLessonsByIds(
-      nextContentIds,
-      nextLearningPathId
-    ).then(lessons => lessons.map(lesson => ({
-      ...lesson,
-      in_next_learning_path: learningPath.progressStatus === STATE.COMPLETED
-    })))
+    nextLPDailies = await getLearningPathLessonsByIds(nextContentIds, nextLearningPathId).then(
+      (lessons) =>
+        lessons.map((lesson) => ({
+          ...lesson,
+          in_next_learning_path: learningPath.progressStatus === STATE.COMPLETED,
+        }))
+    )
   }
 
   return {
@@ -421,7 +431,11 @@ export async function completeMethodIntroVideo(
   const methodStructure = await fetchMethodV2Structure(brand)
 
   const firstLearningPathId = methodStructure.learning_paths[0].id
-  response.active_path_response = await methodIntroVideoCompleteActions(brand, firstLearningPathId, new Date())
+  response.active_path_response = await methodIntroVideoCompleteActions(
+    brand,
+    firstLearningPathId,
+    new Date()
+  )
 
   response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
@@ -434,8 +448,6 @@ async function methodIntroVideoCompleteActions(brand: string, learningPathId: nu
   const body = { brand: brand, learningPathId: learningPathId, userDate: dateWithTimezone }
   return (await POST(url, body)) as DailySessionResponse
 }
-
-
 
 interface completeLearningPathIntroVideo {
   intro_video_response: SyncWriteDTO<ContentProgress, any> | null
@@ -465,19 +477,13 @@ export async function completeLearningPathIntroVideo(
   const collection: CollectionObject = { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH }
 
   if (!lessonsToImport) {
-
     response.learning_path_reset_response = await resetIfPossible(learningPathId, collection)
   } else {
-
     response.lesson_import_response = await contentStatusCompletedMany(lessonsToImport, collection)
     const activePath = await getActivePath(brand)
 
     if (activePath.active_learning_path_id === learningPathId) {
-      response.update_dailies_response = await updateDailySession(
-        brand,
-        new Date(),
-        true
-      )
+      response.update_dailies_response = await updateDailySession(brand, new Date(), true)
     }
   }
 
@@ -494,13 +500,19 @@ async function completeIfNotCompleted(
   return introVideoStatus !== 'completed' ? await contentStatusCompleted(contentId) : null
 }
 
-async function resetIfPossible(contentId: number, collection: CollectionParameter = null): Promise<SyncWriteDTO<ContentProgress, any> | null> {
+async function resetIfPossible(
+  contentId: number,
+  collection: CollectionParameter = null
+): Promise<SyncWriteDTO<ContentProgress, any> | null> {
   const status = await getProgressState(contentId, collection)
 
   return status !== '' ? await contentStatusReset(contentId, collection) : null
 }
 
-export async function onContentCompletedLearningPathActions(contentId: number, collection: CollectionObject|null) {
+export async function onContentCompletedLearningPathActions(
+  contentId: number,
+  collection: CollectionObject | null
+) {
   if (collection?.type !== COLLECTION_TYPE.LEARNING_PATH) return
   if (contentId !== collection?.id) return
 
@@ -525,5 +537,5 @@ export async function onContentCompletedLearningPathActions(contentId: number, c
   await startLearningPath(brand, nextLearningPath.id)
   const nextLearningPathData = await getEnrichedLearningPath(nextLearningPath.id)
 
-  await contentStatusReset(nextLearningPathData.intro_video.id, {skipPush: true})
+  await contentStatusReset(nextLearningPathData.intro_video.id, { skipPush: true })
 }

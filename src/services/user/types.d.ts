@@ -38,6 +38,7 @@ export interface User {
   brand_method_levels: BrandMethodLevels
   brand_minutes_practiced: BrandTimePracticed
   brand_seconds_practiced: BrandTimePracticed
+  brand_pinned_progress: Record<string, number[]>
   guitar_playing_since_year: number | null
   drumeo_onboarding_skip_setup: number
   pianote_onboarding_skip_setup: number

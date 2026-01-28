@@ -21,8 +21,8 @@ export const USER_PIN_PROGRESS_KEY = 'user_pin_progress_row'
 /**
  * Gets the localStorage key for user pinned progress, scoped by user ID
  */
-function getUserPinProgressKey() {
-  const userId = globalConfig.sessionConfig?.userId || globalConfig.railcontentConfig?.userId
+export function getUserPinProgressKey(id) {
+  const userId = id || globalConfig.sessionConfig?.userId || globalConfig.railcontentConfig?.userId
   return userId ? `user_pin_progress_row_${userId}` : USER_PIN_PROGRESS_KEY
 }
 
@@ -109,6 +109,11 @@ export async function unpinProgressRow(brand) {
   return response
 }
 
+export async function setUserPinnedProgressRow(userId, pinnedData) {
+  const key = getUserPinProgressKey(userId)
+  await globalConfig.localStorage.setItem(key, JSON.stringify(pinnedData))
+}
+
 async function getUserPinnedItem(brand) {
   const key = getUserPinProgressKey()
   const pinnedProgressRaw = await globalConfig.localStorage.getItem(key)
@@ -178,12 +183,16 @@ function sortCards(pinnedCard, contentCardMap, playlistCards, methodCard, limit)
     combined.push(pinnedCard)
   }
 
-  if (!(pinnedCard && pinnedCard.progressType === 'method')) {
+  const progressList = Array.from(contentCardMap.values())
+
+  combined = [...combined, ...progressList, ...playlistCards]
+
+  // welcome card state will only show if pinned
+  if (methodCard.type !== 'method') {
     combined.push(methodCard)
   }
 
-  const progressList = Array.from(contentCardMap.values())
-  return mergeAndSortItems([...combined, ...progressList, ...playlistCards], limit)
+  return mergeAndSortItems(combined, limit)
 }
 
 function mergeAndSortItems(items, limit) {

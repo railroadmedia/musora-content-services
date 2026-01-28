@@ -100,24 +100,10 @@ export default class SyncRepository<TModel extends BaseModel> {
     )
   }
 
-  protected async upsertOneTentative(id: RecordId, builder: (record: TModel) => void) {
-    return this.store.telemetry.trace(
-      { name: `upsertOneTentative:${this.store.model.table}`, op: 'upsert', attributes: { ...this.context.session.toJSON() } },
-      (span) => this._respondToWrite(() => this.store.upsertOneTentative(id, builder, span), span)
-    )
-  }
-
   protected async upsertSome(builders: Record<RecordId, (record: TModel) => void>, { skipPush = false } = {}) {
     return this.store.telemetry.trace(
       { name: `upsertSome:${this.store.model.table}`, op: 'upsert', attributes: { ...this.context.session.toJSON() } },
       (span) => this._respondToWrite(() => this.store.upsertSome(builders, span, {skipPush}), span)
-    )
-  }
-
-  protected async upsertSomeTentative(builders: Record<RecordId, (record: TModel) => void>, { skipPush = false } = {}) {
-    return this.store.telemetry.trace(
-      { name: `upsertSomeTentative:${this.store.model.table}`, op: 'upsert', attributes: { ...this.context.session.toJSON() } },
-      (span) => this._respondToWrite(() => this.store.upsertSomeTentative(builders, span, {skipPush}), span)
     )
   }
 
@@ -128,10 +114,10 @@ export default class SyncRepository<TModel extends BaseModel> {
     )
   }
 
-  protected async deleteSome(ids: RecordId[]) {
+  protected async deleteSome(ids: RecordId[], { skipPush = false } = {}) {
     return this.store.telemetry.trace(
       { name: `deleteSome:${this.store.model.table}`, op: 'delete', attributes: { ...this.context.session.toJSON() } },
-      (span) => this._respondToWriteIds(() => this.store.deleteSome(ids, span), span)
+      (span) => this._respondToWriteIds(() => this.store.deleteSome(ids, span, {skipPush}), span)
     )
   }
 
@@ -256,7 +242,7 @@ export default class SyncRepository<TModel extends BaseModel> {
     return result
   }
 
-  requestPushUnsynced() {
-    this.store.pushUnsyncedWithRetry()
+  requestPushUnsynced(cause?: string) {
+    this.store.pushUnsyncedWithRetry(undefined, { type: 'repo-push-request', cause })
   }
 }

@@ -444,8 +444,8 @@ export async function flushWatchSession(sessionToFlush = null, shouldClearInterv
     sessionToFlush.pushInterval = null
   }
 
-  db.contentProgress.requestPushUnsynced()
-  db.practices.requestPushUnsynced()
+  db.contentProgress.requestPushUnsynced('flush-watch-session')
+  db.practices.requestPushUnsynced('flush-watch-session')
 }
 
 async function trackPractice(contentId, secondsPlayed, practiceSession, details = {}) {
@@ -515,7 +515,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
 
   // skip bubbling if progress hasnt changed
   if (progress === currentProgress) {
-    if (!skipPush) db.contentProgress.requestPushUnsynced()
+    if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return
   }
 
@@ -531,9 +531,8 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
     }
   }
 
-  if (Object.keys(bubbledProgresses).length >= 0) {
-    // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
-    await db.contentProgress.recordProgressMany(bubbledProgresses, collection, {tentative: !isLP, skipPush: true, fromLearningPath})
+  if (Object.keys(bubbledProgresses).length > 0) {
+    await db.contentProgress.recordProgressMany(bubbledProgresses, collection, {skipPush: true, fromLearningPath})
   }
 
   if (isLP) {
@@ -550,7 +549,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
     }
   }
 
-  if (!skipPush) db.contentProgress.requestPushUnsynced()
+  if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
 
   return response
 }
@@ -567,8 +566,7 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
     ...trickleProgress(hierarchy, contentId, collection, progress),
     ...await bubbleProgress(hierarchy, contentId, collection)
   }
-  // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
-  await db.contentProgress.recordProgressMany(progresses, collection, {tentative: !isLP, skipPush: true})
+  await db.contentProgress.recordProgressMany(progresses, collection, {skipPush: true})
 
   if (isLP) {
     let exportProgresses = progresses
@@ -584,7 +582,7 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
     }
   }
 
-  if (!skipPush) db.contentProgress.requestPushUnsynced()
+  if (!skipPush) db.contentProgress.requestPushUnsynced('set-started-or-completed-status')
 
   return response
 }
@@ -600,7 +598,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
   }
 
   const contents = Object.fromEntries(contentIds.map((id) => [id, progress]))
-  const response = await db.contentProgress.recordProgressMany(contents, collection, {tentative: !isLP, skipPush: true})
+  const response = await db.contentProgress.recordProgressMany(contents, collection, {skipPush: true})
 
   // we assume this is used only for contents within the same hierarchy
   const hierarchy = await getHierarchy(collection.id, collection)
@@ -613,8 +611,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
       ...(await bubbleProgress(hierarchy, contentId, collection)),
     }
   }
-  // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
-  await db.contentProgress.recordProgressMany(progresses, collection, {tentative: !isLP, skipPush: true})
+  await db.contentProgress.recordProgressMany(progresses, collection, {skipPush: true})
 
   if (isLP) {
     let exportProgresses = progresses
@@ -630,7 +627,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
     }
   }
 
-  if (!skipPush) db.contentProgress.requestPushUnsynced()
+  if (!skipPush) db.contentProgress.requestPushUnsynced('set-started-or-completed-status-many')
 
   return response
 }
@@ -647,15 +644,28 @@ async function resetStatus(contentId, collection = null, {skipPush = false} = {}
     ...trickleProgress(hierarchy, contentId, collection, progress),
     ...await bubbleProgress(hierarchy, contentId, collection)
   }
-  // BE bubbling/trickling currently does not work, so we utilize non-tentative pushing when learning path collection
-  await db.contentProgress.recordProgressMany(progresses, collection, {tentative: !isLP, skipPush: true})
+  // have to use different endpoints for erase vs record
+  const eraseProgresses = Object.fromEntries(
+    Object.entries(progresses).filter(([_, pct]) => pct === 0)
+  )
+  progresses = Object.fromEntries(
+    Object.entries(progresses).filter(([_, pct]) => pct > 0)
+  )
+
+  if (Object.keys(progresses).length > 0) {
+    await db.contentProgress.recordProgressMany(progresses, collection, {skipPush: true, fromLearningPath: isLP})
+  }
+  if (Object.keys(eraseProgresses).length > 0) {
+    const eraseIds = Object.keys(eraseProgresses).map(Number)
+    await db.contentProgress.eraseProgressMany(eraseIds, collection, {skipPush: true})
+  }
 
   if (isLP) {
     progresses[contentId] = progress
     await duplicateLearningPathProgressToExternalContents(progresses, collection, hierarchy, {skipPush: true})
   }
 
-  if (!skipPush) db.contentProgress.requestPushUnsynced()
+  if (!skipPush) db.contentProgress.requestPushUnsynced('reset-status')
 
   return response
 }

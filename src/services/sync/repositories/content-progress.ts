@@ -17,6 +17,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       Q.where('collection_type', COLLECTION_TYPE.SELF),
       Q.where('collection_id', COLLECTION_ID_SELF),
 
+      Q.where('last_interacted_a_la_carte', Q.notEq(null)),
+
       Q.where('state', STATE.STARTED),
       Q.sortBy('updated_at', 'desc'),
 
@@ -29,6 +31,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return this.queryAll(...[
       Q.where('collection_type', COLLECTION_TYPE.SELF),
       Q.where('collection_id', COLLECTION_ID_SELF),
+
+      Q.where('last_interacted_a_la_carte', Q.notEq(null)),
 
       Q.where('state', STATE.COMPLETED),
       Q.sortBy('updated_at', 'desc'),
@@ -187,7 +191,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   recordProgressMany(
     contentProgresses: Record<string, number>, // Accept plain object
     collection: CollectionParameter | null,
-    { tentative = true, skipPush = false, fromLearningPath = false }: { tentative?: boolean; skipPush?: boolean; fromLearningPath?: boolean } = {}
+    { skipPush = false, fromLearningPath = false }: { skipPush?: boolean; fromLearningPath?: boolean } = {}
   ) {
     if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {
       fromLearningPath = true
@@ -209,15 +213,18 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
         },
       ])
     )
-    return tentative
-      ? this.upsertSomeTentative(data, { skipPush })
-      : this.upsertSome(data, { skipPush })
+    return this.upsertSome(data, { skipPush })
 
     //todo add event emitting for bulk updates?
   }
 
   eraseProgress(contentId: number, collection: CollectionParameter | null, {skipPush = false} = {}) {
     return this.deleteOne(ProgressRepository.generateId(contentId, collection), { skipPush })
+  }
+
+  eraseProgressMany(contentIds: number[], collection: CollectionParameter | null, {skipPush = false} = {}) {
+    const ids = contentIds.map((id) => ProgressRepository.generateId(id, collection))
+    return this.deleteSome(ids, { skipPush })
   }
 
   private static generateId(

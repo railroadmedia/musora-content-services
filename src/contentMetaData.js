@@ -128,6 +128,7 @@ export class Tabs {
   static SingleLessons = { name: 'Single Lessons', short_name: 'Single Lessons', value: 'type,Single Lessons', recSysSection: 'lesson', }
   static SkillPacks = { name: 'Skill Packs', short_name: 'Skill Packs', value: 'type,Skill Packs', recSysSection: 'lesson', }
   static Entertainment = { name: 'Entertainment', short_name: 'Entertainment', value: 'type,Entertainment', recSysSection: 'lesson', }
+  static Routines = { name: 'Routines', short_name: 'Routines', value: 'type,routine', recSysSection: 'lesson', }
 }
 
 /**
@@ -325,6 +326,41 @@ const contentMetadata = {
   },
   singeo: {
     'songs-types': ['Tutorials', 'Sheet Music', 'Play-Alongs', 'Jam Tracks'],
+    lessons: {
+      name: 'Lessons',
+      filterOptions: {
+        difficulty: DIFFICULTY_STRINGS,
+        length: LengthFilterOptions.AllOptions,
+        style: [
+          'Country/Folk',
+          'Funk/Disco',
+          'Hard Rock/Metal',
+          'Hip-Hop/Rap/EDM',
+          'Holiday/Soundtrack',
+          'Jazz/Blues',
+          'Latin/World',
+          'Pop/Rock',
+          'R&B/Soul',
+          'Worship/Gospel',
+        ],
+        type: LESSON_TYPE_FILTER,
+        progress: PROGRESS_NAMES,
+      },
+      sortingOptions: {
+        title: 'Sort By',
+        type: 'radio',
+        items: SortingOptions.AllSortingOptions,
+      },
+      tabs: [
+        Tabs.ForYou,
+        Tabs.SingleLessons,
+        Tabs.Courses,
+        Tabs.SkillPacks,
+        Tabs.Routines,
+        Tabs.Entertainment,
+        Tabs.ExploreAll,
+      ],
+    },
   },
 }
 
