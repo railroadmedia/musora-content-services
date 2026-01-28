@@ -566,7 +566,9 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
     ...trickleProgress(hierarchy, contentId, collection, progress),
     ...await bubbleProgress(hierarchy, contentId, collection)
   }
-  await db.contentProgress.recordProgressMany(progresses, collection, {skipPush: true})
+
+  // have to do this so we dont unnecessarily create a 0% record for each child on set to started/completed
+  await bubbleAndTrickleProgressesSafely(progresses, collection)
 
   if (isLP) {
     let exportProgresses = progresses
@@ -611,7 +613,9 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
       ...(await bubbleProgress(hierarchy, contentId, collection)),
     }
   }
-  await db.contentProgress.recordProgressMany(progresses, collection, {skipPush: true})
+
+  // have to do this so we dont unnecessarily create a 0% record for each child on set to started/completed
+  await bubbleAndTrickleProgressesSafely(progresses, collection)
 
   if (isLP) {
     let exportProgresses = progresses
@@ -644,21 +648,9 @@ async function resetStatus(contentId, collection = null, {skipPush = false} = {}
     ...trickleProgress(hierarchy, contentId, collection, progress),
     ...await bubbleProgress(hierarchy, contentId, collection)
   }
-  // have to use different endpoints for erase vs record
-  const eraseProgresses = Object.fromEntries(
-    Object.entries(progresses).filter(([_, pct]) => pct === 0)
-  )
-  progresses = Object.fromEntries(
-    Object.entries(progresses).filter(([_, pct]) => pct > 0)
-  )
 
-  if (Object.keys(progresses).length > 0) {
-    await db.contentProgress.recordProgressMany(progresses, collection, {skipPush: true, fromLearningPath: isLP})
-  }
-  if (Object.keys(eraseProgresses).length > 0) {
-    const eraseIds = Object.keys(eraseProgresses).map(Number)
-    await db.contentProgress.eraseProgressMany(eraseIds, collection, {skipPush: true})
-  }
+  // have to use different endpoints for erase vs record
+  await bubbleAndTrickleProgressesSafely(progresses, collection)
 
   if (isLP) {
     progresses[contentId] = progress
@@ -768,6 +760,22 @@ function getChildrenToDepth(parentId, hierarchy, depth = 1) {
     allChildrenIds = allChildrenIds.concat(getChildrenToDepth(id, hierarchy, depth - 1))
   })
   return allChildrenIds
+}
+
+async function bubbleAndTrickleProgressesSafely(progresses, collection) {
+  const eraseProgresses = Object.fromEntries(
+      Object.entries(progresses).filter(([_, pct]) => pct === 0)
+  )
+  progresses = Object.fromEntries(
+      Object.entries(progresses).filter(([_, pct]) => pct > 0)
+  )
+  if (Object.keys(progresses).length > 0) {
+    await db.contentProgress.recordProgressMany(progresses, collection, {skipPush: true})
+  }
+  if (Object.keys(eraseProgresses).length > 0) {
+    const eraseIds = Object.keys(eraseProgresses).map(Number)
+    await db.contentProgress.eraseProgressMany(eraseIds, collection, {skipPush: true})
+  }
 }
 
 function normalizeContentId(contentId) {
