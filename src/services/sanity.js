@@ -35,7 +35,7 @@ import {
   liveFields,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems, recommendations } from './recommendations.js'
-import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS } from '../contentMetaData.js'
+import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS, CONTENT_STATUSES } from '../contentMetaData.js'
 import { GET } from '../infrastructure/http/HttpClient.ts'
 
 import { globalConfig } from './config.js'
@@ -115,7 +115,7 @@ export async function fetchLeaving(brand, { pageNumber = 1, contentPerPage = 20 
   }
   const query = await buildQuery(
     filterString,
-    { pullFutureContent: false, availableContentStatuses: ['published'] },
+    { pullFutureContent: false, availableContentStatuses: CONTENT_STATUSES.PUBLISHED_ONLY },
     getFieldsForContentType('leaving'),
     sortOrder
   )
@@ -142,7 +142,7 @@ export async function fetchReturning(brand, { pageNumber = 1, contentPerPage = 2
   }
   const query = await buildQuery(
     filterString,
-    { pullFutureContent: true, availableContentStatuses: ['draft'] },
+    { pullFutureContent: true, availableContentStatuses: CONTENT_STATUSES.DRAFT_ONLY },
     getFieldsForContentType('returning'),
     sortOrder
   )
@@ -1907,8 +1907,18 @@ export async function fetchTabData(
       ),
       length_in_seconds
     ),`
+
+  // Check if user is admin to determine available content statuses
+  const adapter = getPermissionsAdapter()
+  const userData = await adapter.fetchUserPermissions()
+  const isAdminORModerator = adapter.isAdmin(userData) || adapter.isModerator(userData)
+
   const filterWithRestrictions = await new FilterBuilder(filter, {
     showMembershipRestrictedContent: true,
+    availableContentStatuses: isAdminORModerator
+      ? CONTENT_STATUSES.ADMIN_ALL
+      : CONTENT_STATUSES.PUBLISHED_ONLY,
+    pullFutureContent: isAdminORModerator ? true : false,
   }).buildFilter()
   query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
     sortOrder: sortOrder,
