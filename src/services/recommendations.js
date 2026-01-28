@@ -4,6 +4,7 @@
 
 import { globalConfig } from './config.js'
 import { GET, HttpClient } from '../infrastructure/http/HttpClient.ts'
+import { fetchByRailContentIds } from './sanity.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -31,20 +32,32 @@ export async function fetchSimilarItems(content_id, brand, count = 10) {
   if (!content_id) {
     return []
   }
-  content_id = parseInt(content_id)
-  const data = {
-    brand: brand,
-    content_ids: content_id,
-    num_similar: count + 1,
+  if (brand === 'playbass') {
+    // V2 launch customization for playbass
+    const content = (await fetchByRailContentIds([content_id], 'tab-data'))[0] ?? []
+    if (!content) {
+      return []
+    }
+    const section = content.page_type === 'song' ? 'song' : ''
+    const recs = await recommendations('playbass', {section: section})
+    return recs.slice(0, count)
+  } else {
+    content_id = parseInt(content_id)
+    const data = {
+      brand: brand,
+      content_ids: content_id,
+      num_similar: count + 1,
+    }
+    const url = `/similar_items/`
+    try {
+      const response = await recommenderClient.post(url, data)
+      return response['similar_items'].filter((item) => item !== content_id).slice(0, count)
+    } catch (error) {
+      console.error('Fetch error:', error)
+      return null
+    }
   }
-  const url = `/similar_items/`
-  try {
-    const response = await recommenderClient.post(url, data)
-    return response['similar_items'].filter((item) => item !== content_id).slice(0, count)
-  } catch (error) {
-    console.error('Fetch error:', error)
-    return null
-  }
+
 }
 
 /**
