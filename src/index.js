@@ -215,7 +215,9 @@ import {
 
 import {
 	getProgressRows,
+	getUserPinProgressKey,
 	pinProgressRow,
+	setUserPinnedProgressRow,
 	unpinProgressRow
 } from './services/progress-row/base.js';
 
@@ -633,6 +635,7 @@ export {
 	getUpgradePrice,
 	getUserData,
 	getUserMonthlyStats,
+	getUserPinProgressKey,
 	getUserSignature,
 	getUserWeeklyStats,
 	getWeekNumber,
@@ -701,6 +704,7 @@ export {
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
 	setStudentViewForUser,
+	setUserPinnedProgressRow,
 	setUserSignature,
 	setupAccount,
 	startLearningPath,

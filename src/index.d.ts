@@ -211,7 +211,9 @@ import {
 
 import {
 	getProgressRows,
+	getUserPinProgressKey,
 	pinProgressRow,
+	setUserPinnedProgressRow,
 	unpinProgressRow
 } from './services/progress-row/base.js';
 
@@ -634,6 +636,7 @@ declare module 'musora-content-services' {
 		getUpgradePrice,
 		getUserData,
 		getUserMonthlyStats,
+		getUserPinProgressKey,
 		getUserSignature,
 		getUserWeeklyStats,
 		getWeekNumber,
@@ -702,6 +705,7 @@ declare module 'musora-content-services' {
 		sendAccountSetupEmail,
 		sendPasswordResetEmail,
 		setStudentViewForUser,
+		setUserPinnedProgressRow,
 		setUserSignature,
 		setupAccount,
 		startLearningPath,
