@@ -17,6 +17,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       Q.where('collection_type', COLLECTION_TYPE.SELF),
       Q.where('collection_id', COLLECTION_ID_SELF),
 
+      Q.where('last_interacted_a_la_carte', Q.notEq(null)),
+
       Q.where('state', STATE.STARTED),
       Q.sortBy('updated_at', 'desc'),
 
@@ -29,6 +31,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return this.queryAll(...[
       Q.where('collection_type', COLLECTION_TYPE.SELF),
       Q.where('collection_id', COLLECTION_ID_SELF),
+
+      Q.where('last_interacted_a_la_carte', Q.notEq(null)),
 
       Q.where('state', STATE.COMPLETED),
       Q.sortBy('updated_at', 'desc'),
