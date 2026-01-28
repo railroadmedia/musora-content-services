@@ -137,7 +137,7 @@ export class Tabs {
  *
  * @type {object[]}
  */
-export const ALWAYS_VISIBLE_TABS = [Tabs.ForYou, Tabs.ExploreAll]
+export const ALWAYS_VISIBLE_TABS = [Tabs.PlaybassAll, Tabs.ForYou, Tabs.ExploreAll]
 
 export const TabResponseType = {
   SECTIONS: 'sections',
@@ -380,7 +380,7 @@ export function processMetadata(brand, type, withFilters = false) {
   brandMetaData = { ...commonMetaData, ...brandMetaData }
   if (type === 'songs' && contentMetadata[brand]?.['songs-types']) {
     brandMetaData['filterOptions']['type'] = contentMetadata[brand]['songs-types']
-    brandMetaData.tabs = mapSongTabNames(brandMetaData)
+    brandMetaData.tabs = mapSongTabNames(brandMetaData.tabs, brandMetaData['filterOptions']['type'], brand)
   }
   if (Object.keys(brandMetaData).length === 0) {
     return null
@@ -407,22 +407,34 @@ export function processMetadata(brand, type, withFilters = false) {
   return processedData
 }
 
-function mapSongTabNames(brandMetaData) {
-  brandMetaData.tabs.forEach((tab, index) => {
-    if (ALWAYS_VISIBLE_TABS.some((visibleTab) => visibleTab.name === tab)) {
-      return
-    }
+/**
+ * Maps song tab names to the correct Tab objects based on target names.
+ *
+ * @param {object[]} tabs - The array of current Tab objects.
+ * @param {string[]} targetNames - The array of target tab names to map to.
+ * @param {string} brand - The brand identifier to handle specific cases.
+ * @returns {object[]} The updated array of Tab objects.
+ */
+function mapSongTabNames(tabs, targetNames, brand) {
+  if (brand === 'playbass') {
+    targetNames = [Tabs.PlaybassAll.name, ...targetNames, Tabs.ExploreAll.name]
+  } else {
+    targetNames = [Tabs.ForYou.name, ...targetNames, Tabs.ExploreAll.name]
+  }
 
-    const targetName = brandMetaData['filterOptions']['type'][index - 1]
+  tabs.forEach((tab, index) => {
+    // this switch handles weird bug where ForYou tab is set as All on all brands after accessing playbass
+
+    const targetName = targetNames[index]
 
     // Find the matching Tab by name
     const matchingTab = Object.values(Tabs).find((tabObj) => tabObj.name === targetName)
 
     if (matchingTab) {
-      brandMetaData.tabs[index] = matchingTab
+      tabs[index] = matchingTab
     }
   })
-  return brandMetaData.tabs
+  return tabs
 }
 
 /**
