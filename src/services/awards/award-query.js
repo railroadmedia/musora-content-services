@@ -57,6 +57,7 @@ import { awardDefinitions } from './internal/award-definitions'
 import { AwardMessageGenerator } from './internal/message-generator'
 import db from '../sync/repository-proxy'
 import UserAwardProgressRepository from '../sync/repositories/user-award-progress'
+import {awardTemplate} from "../../contentTypeConfig.js";
 
 function enhanceCompletionData(completionData) {
   if (!completionData) return null
@@ -222,7 +223,9 @@ function defineAwards(data) {
     return {
       awardId: def._id,
       awardTitle: def.name,
+      logo: def.logo,
       badge: def.badge,
+      badge_template: awardTemplate[def.brand],
       award: def.award,
       brand: def.brand,
       instructorName: def.instructor_name,
@@ -324,7 +327,9 @@ export async function getCompletedAwards(brand = null, options = {}) {
           awardId: progress.award_id,
           awardTitle: definition.name,
           awardType: definition.type,
+          logo: definition.logo,
           badge: definition.badge,
+          badge_template: awardTemplate[definition.brand],
           award: definition.award,
           brand: definition.brand,
           hasCertificate: hasCertificate,
@@ -445,7 +450,9 @@ export async function getInProgressAwards(brand = null, options = {}) {
         return {
           awardId: progress.award_id,
           awardTitle: definition.name,
+          logo: definition.logo,
           badge: definition.badge,
+          badge_template: awardTemplate[definition.brand],
           award: definition.award,
           brand: definition.brand,
           instructorName: definition.instructor_name,

@@ -4,6 +4,7 @@
 import { fetchUserPlaylists } from '../../content-org/playlists.js'
 import { addContextToContent } from '../../contentAggregator.js'
 import { fetchByRailContentIds } from '../../sanity.js'
+import { addAwardTemplateToContent } from "../../../contentTypeConfig.js";
 
 export async function getPlaylistCards(recentPlaylists){
   return await Promise.all(
@@ -65,7 +66,7 @@ export async function getPlaylistEngagedOnContent(recentPlaylists){
   const playlistEngagedOnContents = recentPlaylists.map(
     (item) => item.playlist.last_engaged_on
   )
-  return playlistEngagedOnContents.length > 0
+  let contents = playlistEngagedOnContents.length > 0
     ? await addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
       addNavigateTo: true,
       addProgressStatus: true,
@@ -73,4 +74,6 @@ export async function getPlaylistEngagedOnContent(recentPlaylists){
       addProgressTimestamp: true,
     })
     : []
+  contents = addAwardTemplateToContent(contents)
+  return contents
 }

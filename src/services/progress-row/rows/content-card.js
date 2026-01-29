@@ -5,6 +5,8 @@ import { getAllStartedOrCompleted, getProgressStateByIds } from '../../contentPr
 import { addContextToContent } from '../../contentAggregator.js'
 import { fetchByRailContentIds, fetchShows } from '../../sanity.js'
 import {
+  addAwardTemplateToContent,
+  awardTemplate,
   collectionLessonTypes,
   getFormattedType,
   recentTypes,
@@ -30,7 +32,7 @@ export async function getContentCardMap(brand, limit, playlistEngagedOnContent, 
       recentContentIds = recentContentIds.filter(id => id !== item.id && !parentIds.includes(id))
     }
   }
-  const contents = recentContentIds.length > 0
+  let contents = recentContentIds.length > 0
     ? await addContextToContent(
       fetchByRailContentIds,
       recentContentIds,
@@ -44,6 +46,8 @@ export async function getContentCardMap(brand, limit, playlistEngagedOnContent, 
       }
     )
     : []
+  contents = addAwardTemplateToContent(contents)
+
   const contentCards = await Promise.all(generateContentPromises(contents))
   return contentCards.reduce((contentMap, content) => {
     contentMap.set(content.id, content)
@@ -111,7 +115,9 @@ export async function processContentItem(content) {
       thumbnail: content.thumbnail,
       title: content.title,
       isLive: isLive,
+      badge_logo: content.logo ?? null,
       badge: content.badge ?? null,
+      badge_template: awardTemplate[content.brand],
       isLocked: content.is_locked ?? false,
       subtitle:
         collectionLessonTypes.includes(content.type) || content.lesson_count > 1

@@ -8,7 +8,7 @@ import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import { fetchByRailContentIds } from './sanity'
 import { getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js'
 import { globalConfig } from './config'
-import { getFormattedType } from '../contentTypeConfig'
+import { addAwardTemplateToContent, getFormattedType } from '../contentTypeConfig'
 import dayjs from 'dayjs'
 import { addContextToContent } from './contentAggregator.js'
 import { db, Q } from './sync'
@@ -492,7 +492,7 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
   const recentActivityData = await fetchRecentUserActivities({ page, limit, tabName })
   const contentIds = recentActivityData.data.map((p) => p.contentId).filter((id) => id !== null)
 
-  const contents = await addContextToContent(
+  let contents = await addContextToContent(
     fetchByRailContentIds,
     contentIds,
     'progress-tracker',
@@ -504,6 +504,7 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
       addNextLesson: true,
     }
   )
+  contents = addAwardTemplateToContent(contents)
 
   recentActivityData.data = recentActivityData.data.map((practice) => {
     const content = contents?.find((c) => c.id === practice.contentId) || {}
@@ -773,7 +774,7 @@ export async function calculateLongestStreaks(userId = globalConfig.sessionConfi
 
 async function formatPracticeMeta(practices = []) {
   const contentIds = practices.map((p) => p.content_id).filter((id) => id !== null)
-  const contents = await addContextToContent(
+  let contents = await addContextToContent(
     fetchByRailContentIds,
     contentIds,
     'progress-tracker',
@@ -785,6 +786,7 @@ async function formatPracticeMeta(practices = []) {
       addNextLesson: true,
     }
   )
+  contents = addAwardTemplateToContent(contents)
 
   return practices.map((practice) => {
     const content =
