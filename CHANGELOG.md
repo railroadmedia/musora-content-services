@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.126.0](https://github.com/railroadmedia/musora-content-services/compare/v2.125.0...v2.126.0) (2026-01-29)
+
+
+### Features
+
+* adds sync store push blocking ([#754](https://github.com/railroadmedia/musora-content-services/issues/754)) ([e9a7c23](https://github.com/railroadmedia/musora-content-services/commit/e9a7c23c91f5e707c08c4e0765af52213ba6263b))
+* melon push failure notifs ([#753](https://github.com/railroadmedia/musora-content-services/issues/753)) ([cce60ad](https://github.com/railroadmedia/musora-content-services/commit/cce60ad3e618106473fd0c7da141aebaced835d5))
+
 ## [2.125.0](https://github.com/railroadmedia/musora-content-services/compare/v2.122.7...v2.125.0) (2026-01-29)
 
 
