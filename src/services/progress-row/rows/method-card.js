@@ -86,12 +86,15 @@ export async function getMethodCard(brand) {
 
     let ctaText, action
     if (noDailiesCompleted) {
+      if (!nextIncompleteDaily) return null
       ctaText = 'Start Session'
       action = getMethodActionCTA(nextIncompleteDaily)
     } else if (anyDailiesCompleted && !allDailiesCompleted) {
+      if (!nextIncompleteDaily) return null
       ctaText = 'Continue Session'
       action = getMethodActionCTA(nextIncompleteDaily)
     } else if (allDailiesCompleted) {
+      if (!nextLesson) return null
       ctaText = nextLesson ? 'Start Next Lesson' : 'Browse Lessons'
       action = nextLesson
         ? getMethodActionCTA(nextLesson)
