@@ -17,15 +17,23 @@ import { type WriterInterface } from '@nozbe/watermelondb/Database/WorkQueue'
 import type LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 import { SyncError } from '../errors'
 
+type SyncStoreEvents<TModel extends BaseModel> = {
+  upserted: [TModel[]]
+  deleted: [RecordId[]]
+  pullCompleted: []
+  pushCompleted: []
+  failedPush: []
+}
+
 type SyncPull = (
   intendedUserId: number,
-  session: BaseSessionProvider,
-  previousFetchToken: SyncToken | null,
-  signal: AbortSignal
+  context: SyncContext,
+  signal: AbortSignal,
+  previousFetchToken: SyncToken | null
 ) => Promise<SyncPullResponse>
 type SyncPush = (
   intendedUserId: number,
-  session: BaseSessionProvider,
+  context: SyncContext,
   payload: PushPayload,
   signal: AbortSignal
 ) => Promise<SyncPushResponse>
@@ -63,7 +71,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private pushThrottleState: ThrottleState<SyncPushResponse>
   private pushCoalescer = new PushCoalescer()
 
-  private emitter = new EventEmitter()
+  private emitter = new EventEmitter<SyncStoreEvents<TModel>>()
   private cleanupTimer: NodeJS.Timeout | null = null
 
   private lastFetchTokenKey: string
@@ -248,7 +256,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         const existing = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids))))
         const existingMap = existing.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
 
-        const destroyedBuilds = []
+        const destroyedBuilds: any[] = []
         const recreateBuilds: Array<{ id: RecordId; created_at: EpochMs; builder: (record: TModel) => void }> = []
 
         existing.forEach(record => {
@@ -393,7 +401,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         const destroyBuilds = records.map(record => new this.model(this.collection, { id: record.id }).prepareDestroyPermanently())
         const createBuilds = records.map(record => this.collection.prepareCreate((r) => {
           Object.keys(record._raw).forEach((key) => {
-            r._raw[key] = record._raw[key]
+            ;(r._raw as any)[key] = (record._raw as any)[key]
           })
           r._raw._status = 'updated'
         }))
@@ -421,8 +429,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
           return records.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
         })
 
-        const mainBatch = []
-        const destroyBatch = []
+        const mainBatch: any[] = []
+        const destroyBatch: any[] = []
 
         recordRaws.forEach(recordRaw => {
           const existing = existingMap.get(recordRaw.id)
@@ -433,7 +441,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
                 destroyBatch.push(new this.model(this.collection, { id: recordRaw.id }).prepareDestroyPermanently());
                 mainBatch.push(this.collection.prepareCreate((record) => {
                   Object.keys(recordRaw).forEach((key) => {
-                    record._raw[key] = recordRaw[key]
+                    ;(record._raw as any)[key] = (recordRaw as any)[key]
                   })
                 }));
               }
@@ -443,7 +451,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
               } else {
                 mainBatch.push(existing.prepareUpdate((record) => {
                   Object.keys(recordRaw).forEach((key) => {
-                    record._raw[key] = recordRaw[key]
+                    ;(record._raw as any)[key] = (recordRaw as any)[key]
                   })
                 }))
               }
@@ -460,7 +468,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             } else {
               mainBatch.push(this.collection.prepareCreate((record) => {
                 Object.keys(recordRaw).forEach((key) => {
-                  record._raw[key] = recordRaw[key]
+                  ;(record._raw as any)[key] = (recordRaw as any)[key]
                 })
               }))
             }
@@ -479,7 +487,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
           return records.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
         })
 
-        const batch = []
+        const batch: any[] = []
 
         ids.forEach(id => {
           const existing = existingMap.get(id)
@@ -547,6 +555,11 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
               }
 
               return this.executePush(recordsToPush, span)
+            },
+            {
+              onFail: () => {
+                this.emit('failedPush')
+              },
             }
           )
         })
@@ -577,7 +590,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             attributes: { lastFetchToken: lastFetchToken ?? undefined, ...this.context.session.toJSON() },
             parentSpan: pullSpan,
           },
-          () => this.puller(this.userScope.initialId, this.context.session, lastFetchToken, this.runScope.signal)
+          () => this.puller(this.userScope.initialId, this.context, this.runScope.signal, lastFetchToken)
         )
 
         if (response.ok) {
@@ -621,7 +634,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             attributes: { ...this.context.session.toJSON() },
             parentSpan: pushSpan,
           },
-          () => this.pusher(this.userScope.initialId, this.context.session, payload, this.runScope.signal)
+          () => this.pusher(this.userScope.initialId, this.context, payload, this.runScope.signal)
         )
 
         if (response.ok) {
@@ -779,7 +792,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private async ensurePersistence() {
     return new Promise<void>((resolve, reject) => {
       if (this.isLokiAdapter(this.db.adapter.underlyingAdapter)) {
-        this.db.adapter.underlyingAdapter._driver.loki.saveDatabase((err) => {
+        this.db.adapter.underlyingAdapter._driver.loki.saveDatabase((err: unknown) => {
           if (err) {
             reject(err)
           } else {
@@ -918,7 +931,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       return this.collection.prepareCreate((r) => {
         Object.entries(entry.record!).forEach(([key, value]) => {
           if (key === 'id') r._raw.id = value.toString()
-          else r._raw[key] = value
+          else (r._raw as any)[key] = value
         })
         r._raw['created_at'] = entry.meta.lifecycle.created_at
         r._raw['updated_at'] = entry.meta.lifecycle.updated_at
@@ -930,7 +943,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     const updatedBuilds = result.tuplesForUpdate.map(([record, entry]) => {
       return record.prepareUpdate((r) => {
         Object.entries(entry.record!).forEach(([key, value]) => {
-          if (key !== 'id') r._raw[key] = value
+          if (key !== 'id') (r._raw as any)[key] = value
         })
         r._raw['created_at'] = entry.meta.lifecycle.created_at
         r._raw['updated_at'] = entry.meta.lifecycle.updated_at
@@ -947,7 +960,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       return this.collection.prepareCreate((r) => {
         Object.entries(entry.record!).forEach(([key, value]) => {
           if (key === 'id') r._raw.id = value.toString()
-          else r._raw[key] = value
+          else (r._raw as any)[key] = value
         })
         r._raw['created_at'] = entry.meta.lifecycle.created_at
         r._raw['updated_at'] = entry.meta.lifecycle.updated_at
