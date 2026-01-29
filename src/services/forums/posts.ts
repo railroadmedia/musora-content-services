@@ -24,18 +24,10 @@ export interface CreatePostParams {
  */
 export async function createPost(threadId: number, params: CreatePostParams): Promise<ForumPost> {
   const { generateForumPostUrl } = await import('../urlBuilder.ts')
-  const { fetchThread } = await import('./threads.ts')
-
-  // Fetch thread to get category_id for URL generation
-  const thread = await fetchThread(threadId, params.brand)
 
   // Generate forum post URL
   const contentUrl = generateForumPostUrl({
     brand: params.brand,
-    thread: {
-      category_id: thread.category_id,
-      id: threadId
-    }
   }, false)
 
   const httpClient = new HttpClient(globalConfig.baseUrl)
@@ -124,16 +116,9 @@ export async function fetchPosts(
 export async function likePost(postId: number, brand: string): Promise<void> {
   const { generateForumPostUrl } = await import('../urlBuilder.ts')
 
-  // Fetch post to get thread info for URL generation
-  const post = await fetchPost(postId, brand)
-
   // Generate forum post URL
   const contentUrl = generateForumPostUrl({
-    brand,
-    thread: {
-      category_id: post.thread.category_id,
-      id: post.thread.id
-    }
+    brand
   }, false)
 
   const httpClient = new HttpClient(globalConfig.baseUrl)

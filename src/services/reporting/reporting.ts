@@ -127,11 +127,7 @@ export async function report<T extends ReportableType>(
 
     if (post?.thread) {
       requestBody.content_url = generateForumPostUrl({
-        brand: params.brand,
-        thread: {
-          category_id: post.thread.category_id,
-          id: post.thread.id
-        }
+        brand: params.brand
       })
     }
   } else if (params.type === 'comment') {
