@@ -15,14 +15,15 @@ import { addContextToContent } from '../contentAggregator.js'
 import { fetchPlaylist } from '../content-org/playlists.js'
 import { TabResponseType } from '../../contentMetaData.js'
 import { PUT } from '../../infrastructure/http/HttpClient.ts'
+import { addAwardTemplateToContent } from "../../contentTypeConfig.js";
 
 export const USER_PIN_PROGRESS_KEY = 'user_pin_progress_row'
 
 /**
  * Gets the localStorage key for user pinned progress, scoped by user ID
  */
-function getUserPinProgressKey() {
-  const userId = globalConfig.sessionConfig?.userId || globalConfig.railcontentConfig?.userId
+export function getUserPinProgressKey(id) {
+  const userId = id || globalConfig.sessionConfig?.userId || globalConfig.railcontentConfig?.userId
   return userId ? `user_pin_progress_row_${userId}` : USER_PIN_PROGRESS_KEY
 }
 
@@ -109,6 +110,11 @@ export async function unpinProgressRow(brand) {
   return response
 }
 
+export async function setUserPinnedProgressRow(userId, pinnedData) {
+  const key = getUserPinProgressKey(userId)
+  await globalConfig.localStorage.setItem(key, JSON.stringify(pinnedData))
+}
+
 async function getUserPinnedItem(brand) {
   const key = getUserPinProgressKey()
   const pinnedProgressRaw = await globalConfig.localStorage.getItem(key)
@@ -136,6 +142,7 @@ async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, meth
     } else {
       // we use fetchByRailContentIds so that we don't have the _type restriction in the query
       let data = await fetchByRailContentIds([pinnedId], 'progress-tracker')
+      data = addAwardTemplateToContent(data)
       item = await processContentItem(
         await addContextToContent(() => data[0] ?? null, {
           addNextLesson: true,

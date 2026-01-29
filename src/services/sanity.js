@@ -32,10 +32,10 @@ import {
   showsTypes,
   SONG_TYPES,
   SONG_TYPES_WITH_CHILDREN,
-  liveFields,
+  liveFields, awardTemplate, addAwardTemplateToContent,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems, recommendations } from './recommendations.js'
-import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS } from '../contentMetaData.js'
+import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS, CONTENT_STATUSES } from '../contentMetaData.js'
 import { GET } from '../infrastructure/http/HttpClient.ts'
 
 import { globalConfig } from './config.js'
@@ -115,7 +115,7 @@ export async function fetchLeaving(brand, { pageNumber = 1, contentPerPage = 20 
   }
   const query = await buildQuery(
     filterString,
-    { pullFutureContent: false, availableContentStatuses: ['published'] },
+    { pullFutureContent: false, availableContentStatuses: CONTENT_STATUSES.PUBLISHED_ONLY },
     getFieldsForContentType('leaving'),
     sortOrder
   )
@@ -142,7 +142,7 @@ export async function fetchReturning(brand, { pageNumber = 1, contentPerPage = 2
   }
   const query = await buildQuery(
     filterString,
-    { pullFutureContent: true, availableContentStatuses: ['draft'] },
+    { pullFutureContent: true, availableContentStatuses: CONTENT_STATUSES.DRAFT_ONLY },
     getFieldsForContentType('returning'),
     sortOrder
   )
@@ -615,6 +615,7 @@ export async function fetchAll(
     useDefaultFields = true,
     customFields = [],
     progress = 'all',
+    onlyPublished = true
   } = {}
 ) {
   let config = contentTypeConfig[type] ?? {}
@@ -662,6 +663,9 @@ export async function fetchAll(
   let customFilter = ''
   if (type == 'instructor') {
     customFilter = '&& coach_card_image != null'
+  }
+  if (onlyPublished) {
+    customFilter = ' && status == "published" '
   }
   // Determine the group by clause
   let query = ''
@@ -940,6 +944,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
       "dark_mode_logo": dark_mode_logo_url.asset->url,
       "light_mode_logo": light_mode_logo_url.asset->url,
       "badge": *[references(^._id) && _type == 'content-award'][0].badge.asset->url,
+      "badge_logo": *[references(^._id) && _type == 'content-award'][0].logo.asset->url,
     },`
     : ''
 
@@ -990,7 +995,10 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
     return result
   }
 
-  return fetchSanity(query, false, { customPostProcess: chapterProcess, processNeedAccess: true })
+  let contents = await fetchSanity(query, false, { customPostProcess: chapterProcess, processNeedAccess: true })
+  contents = addAwardTemplateToContent(contents)
+
+  return contents
 }
 
 /**
@@ -1907,8 +1915,18 @@ export async function fetchTabData(
       ),
       length_in_seconds
     ),`
+
+  // Check if user is admin to determine available content statuses
+  const adapter = getPermissionsAdapter()
+  const userData = await adapter.fetchUserPermissions()
+  const isAdminORModerator = adapter.isAdmin(userData) || adapter.isModerator(userData)
+
   const filterWithRestrictions = await new FilterBuilder(filter, {
     showMembershipRestrictedContent: true,
+    availableContentStatuses: isAdminORModerator
+      ? CONTENT_STATUSES.ADMIN_ALL
+      : CONTENT_STATUSES.PUBLISHED_ONLY,
+    pullFutureContent: isAdminORModerator ? true : false,
   }).buildFilter()
   query = buildEntityAndTotalQuery(filterWithRestrictions, entityFieldsString, {
     sortOrder: sortOrder,

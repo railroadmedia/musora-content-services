@@ -5,6 +5,8 @@ import { getAllStartedOrCompleted, getProgressStateByIds } from '../../contentPr
 import { addContextToContent } from '../../contentAggregator.js'
 import { fetchByRailContentIds, fetchShows } from '../../sanity.js'
 import {
+  addAwardTemplateToContent,
+  awardTemplate,
   collectionLessonTypes,
   getFormattedType,
   recentTypes,
@@ -30,7 +32,7 @@ export async function getContentCardMap(brand, limit, playlistEngagedOnContent, 
       recentContentIds = recentContentIds.filter(id => id !== item.id && !parentIds.includes(id))
     }
   }
-  const contents = recentContentIds.length > 0
+  let contents = recentContentIds.length > 0
     ? await addContextToContent(
       fetchByRailContentIds,
       recentContentIds,
@@ -44,6 +46,8 @@ export async function getContentCardMap(brand, limit, playlistEngagedOnContent, 
       }
     )
     : []
+  contents = addAwardTemplateToContent(contents)
+
   const contentCards = await Promise.all(generateContentPromises(contents))
   return contentCards.reduce((contentMap, content) => {
     contentMap.set(content.id, content)
@@ -58,7 +62,7 @@ function generateContentPromises(contents) {
   const allRecentTypeSet = new Set(Object.values(recentTypes).flat())
   contents.forEach((content) => {
     const type = content.type
-    if (!allRecentTypeSet.has(type) && !showsLessonTypes.includes(type)) return
+    if (!allRecentTypeSet.has(type)) return
     let childHasParent = Array.isArray(content.parent_content_data) && content.parent_content_data.length > 0
     if (!childHasParent) {
       promises.push(processContentItem(content))
@@ -100,28 +104,6 @@ export async function processContentItem(content) {
     }
   }
 
-  if (contentType === 'show') {
-    const shows = await fetchShows(content.brand, content.type)
-    const showIds = shows.map((item) => item.id)
-    const progressOnItems = await getProgressStateByIds(showIds)
-    const completedShows = content.completed_children
-    const progressTimestamp = content.progressTimestamp
-    const wasPinned = content.pinned ?? false
-    if (content.progressStatus === 'completed') {
-      // this could be handled more gracefully if there was a parent content type for shows
-      // Update Dec 3rd. We updated almost everything to the DocumentaryType :D, but there's still a few
-      const nextByProgress = findIncompleteLesson(progressOnItems, content.id, content.type)
-      content = shows.find((lesson) => lesson.id === nextByProgress)
-      content.completed_children = completedShows
-      content.progressTimestamp = progressTimestamp
-      content.pinned = wasPinned
-    }
-    content.child_count = shows.length
-    content.progressPercentage = Math.round((completedShows / shows.length) * 100)
-    if (completedShows === shows.length) {
-      ctaText = 'Revisit Show'
-    }
-  }
   return {
     id: content.id,
     progressType: 'content',
@@ -133,12 +115,14 @@ export async function processContentItem(content) {
       thumbnail: content.thumbnail,
       title: content.title,
       isLive: isLive,
+      badge_logo: content.logo ?? null,
       badge: content.badge ?? null,
+      badge_template: awardTemplate[content.brand],
       isLocked: content.is_locked ?? false,
       subtitle:
         collectionLessonTypes.includes(content.type) || content.lesson_count > 1
           ? `${content.completed_children} of ${content.lesson_count ?? content.child_count} Lessons Complete`
-          : contentType === 'lesson' && isLive === false
+          : (contentType === 'lesson' || contentType === 'show') && isLive === false
             ? `${content.progressPercentage}% Complete`
             : `${content.difficulty_string} • ${content.artist_name}`,
     },
@@ -166,7 +150,7 @@ function getDefaultCTATextForContent(content, contentType) {
       contentType === 'jam track'
     )
       ctaText = 'Replay Song'
-    if (contentType === 'lesson') ctaText = 'Revisit Lesson'
+    if (contentType === 'lesson' || contentType === 'show') ctaText = 'Revisit Lesson'
     if (contentType === 'song tutorial' || collectionLessonTypes.includes(content.type))
       ctaText = 'Revisit Lessons'
     if (contentType === 'course-collection') ctaText = 'View Lessons'

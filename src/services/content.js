@@ -471,10 +471,10 @@ export async function getRecommendedForYou(brand, rowId = null, {
 } = {}) {
   const requiredItems = page * limit;
   const data = await recommendations( brand, {limit: requiredItems})
+  const title = brand === 'playbass' ? "You Might Like" : "Recommended For You"
   if (!data || !data.length) {
-    return { id: 'recommended', title: 'Recommended For You', items: [] };
+    return { id: 'recommended', title: title, items: [] };
   }
-
   // Apply pagination before calling fetchByRailContentIds
   const startIndex = (page - 1) * limit;
   const paginatedData = data.slice(startIndex, startIndex + limit);
@@ -491,7 +491,7 @@ export async function getRecommendedForYou(brand, rowId = null, {
     };
   }
 
-  return { id: 'recommended', title: 'Recommended For You', items: contents }
+  return { id: 'recommended', title: title, items: contents }
 }
 
 

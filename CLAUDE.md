@@ -328,7 +328,7 @@ import { ContentLike, ContentProgress, Practice, PracticeDayNote } from 'musora-
 // - DurabilityProvider: no-op (storage always available on mobile)
 // - TabsProvider: no-op (single "tab" on mobile)
 
-const manager = new SyncManager(context, db)
+const manager = new SyncManager(userScope, context, db)
 manager.registerStrategies(
   ContentLike, ContentProgress, Practice, PracticeDayNote],
   [initialStrategy, onlineStrategy, activityStrategy, hourlyPollingStrategy]

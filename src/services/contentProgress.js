@@ -444,8 +444,8 @@ export async function flushWatchSession(sessionToFlush = null, shouldClearInterv
     sessionToFlush.pushInterval = null
   }
 
-  db.contentProgress.requestPushUnsynced()
-  db.practices.requestPushUnsynced()
+  db.contentProgress.requestPushUnsynced('flush-watch-session')
+  db.practices.requestPushUnsynced('flush-watch-session')
 }
 
 async function trackPractice(contentId, secondsPlayed, practiceSession, details = {}) {
@@ -515,7 +515,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
 
   // skip bubbling if progress hasnt changed
   if (progress === currentProgress) {
-    if (!skipPush) db.contentProgress.requestPushUnsynced()
+    if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return
   }
 
@@ -549,7 +549,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
     }
   }
 
-  if (!skipPush) db.contentProgress.requestPushUnsynced()
+  if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
 
   return response
 }
@@ -582,7 +582,7 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
     }
   }
 
-  if (!skipPush) db.contentProgress.requestPushUnsynced()
+  if (!skipPush) db.contentProgress.requestPushUnsynced('set-started-or-completed-status')
 
   return response
 }
@@ -627,7 +627,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
     }
   }
 
-  if (!skipPush) db.contentProgress.requestPushUnsynced()
+  if (!skipPush) db.contentProgress.requestPushUnsynced('set-started-or-completed-status-many')
 
   return response
 }
@@ -665,7 +665,7 @@ async function resetStatus(contentId, collection = null, {skipPush = false} = {}
     await duplicateLearningPathProgressToExternalContents(progresses, collection, hierarchy, {skipPush: true})
   }
 
-  if (!skipPush) db.contentProgress.requestPushUnsynced()
+  if (!skipPush) db.contentProgress.requestPushUnsynced('reset-status')
 
   return response
 }

@@ -4,6 +4,13 @@
 const PROGRESS_NAMES = ['All', 'In Progress', 'Completed', 'Not Started']
 const DIFFICULTY_STRINGS = ['Introductory', 'Beginner', 'Intermediate', 'Advanced', 'Expert']
 
+export const CONTENT_STATUSES = {
+  PUBLISHED_ONLY: ['published'],
+  ADMIN_ALL: ['draft', 'scheduled', 'published', 'archived', 'unlisted'],
+  PUBLIC_WITH_SCHEDULED: ['published', 'scheduled'],
+  DRAFT_ONLY: ['draft'],
+}
+
 const LESSON_TYPE_FILTER = [
   {
     title: 'Single Lessons',
@@ -49,6 +56,7 @@ export class LengthFilterOptions {
 
 export class Tabs {
   static ForYou = { name: 'For You', short_name: 'For You', value: 'tab,for you' }
+  static PlaybassAll = { name: 'All', short_name: 'All', value: 'tab,for you' }
   static Individuals = { name: 'Individuals', short_name: 'Individuals', value: 'type,individuals', cardType: 'big' }
   static Collections = { name: 'Collections', short_name: 'Collections', value: 'type,collections', cardType: 'big' }
   static ExploreAll = { name: 'Explore All', short_name: 'Explore All',  value: 'tab,explore all', icon: 'icon-filters', cardType: 'big'}
@@ -323,6 +331,15 @@ const contentMetadata = {
   },
   playbass: {
     'songs-types': ['Tutorials', 'Tabs', 'Play-Alongs', 'Jam Tracks'],
+    lessons: {
+      tabs: [
+        Tabs.PlaybassAll,
+        Tabs.SingleLessons,
+        Tabs.Courses,
+        Tabs.SkillPacks,
+        Tabs.ExploreAll,
+      ]
+    },
   },
   singeo: {
     'songs-types': ['Tutorials', 'Sheet Music', 'Play-Alongs', 'Jam Tracks'],

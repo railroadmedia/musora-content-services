@@ -8,7 +8,7 @@ import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import { fetchByRailContentIds, fetchParentChildRelationshipsFor } from './sanity'
 import { getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js'
 import { globalConfig } from './config'
-import { getFormattedType, LEARNING_PATH_LESSON } from '../contentTypeConfig'
+import { addAwardTemplateToContent, getFormattedType, LEARNING_PATH_LESSON } from '../contentTypeConfig'
 import dayjs from 'dayjs'
 import { addContextToContent } from './contentAggregator.js'
 import { db, Q } from './sync'
@@ -507,6 +507,7 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
       addNextLesson: true,
     }
   )
+  contents = addAwardTemplateToContent(contents)
 
   contents = await mapContentsThatWereLastProgressedFromMethod(contents)
 
@@ -519,6 +520,7 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
       parent_id: content.parent_id || null,
       navigateTo: content.navigateTo,
       sanityType: content.type || practice.sanityType,
+      artist_name: content.artist_name || null,
     }
   })
   return recentActivityData
@@ -790,6 +792,7 @@ async function formatPracticeMeta(practices = []) {
       addNextLesson: true,
     }
   )
+  contents = addAwardTemplateToContent(contents)
 
   contents = await mapContentsThatWereLastProgressedFromMethod(contents)
 
@@ -800,12 +803,12 @@ async function formatPracticeMeta(practices = []) {
     return {
       id: practice.id,
       auto: practice.auto,
-      thumbnail: practice.content_id ? content.thumbnail : practice.thumbnail_url || '',
-      thumbnail_url: practice.content_id ? content.thumbnail : practice.thumbnail_url || '',
+      thumbnail: practice.content_id ? content?.thumbnail : practice.thumbnail_url || '',
+      thumbnail_url: practice.content_id ? content?.thumbnail : practice.thumbnail_url || '',
       duration: practice.duration_seconds || 0,
       duration_seconds: practice.duration_seconds || 0,
       content_url: content?.url || null,
-      title: practice.content_id ? content.title : practice.title,
+      title: practice.content_id ? content?.title : practice?.title  || practice.content_id,
       category_id: practice.category_id,
       instrument_id: practice.instrument_id,
       content_type: getFormattedType(content?.type || '', content?.brand || null),
@@ -816,6 +819,7 @@ async function formatPracticeMeta(practices = []) {
       content_slug: content?.slug || null,
       parent_id: content?.parent_id || null,
       navigateTo: content?.navigateTo || null,
+      artist_name: content?.artist_name || null,
     }
   })
 }

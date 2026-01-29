@@ -2,6 +2,69 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.123.2](https://github.com/railroadmedia/musora-content-services/compare/v2.123.1...v2.123.2) (2026-01-28)
+
+
+### Bug Fixes
+
+* **auth:** import ([2686f30](https://github.com/railroadmedia/musora-content-services/commit/2686f3004bef54ab548ec87a2665ff918c385421))
+
+### [2.123.1](https://github.com/railroadmedia/musora-content-services/compare/v2.123.0...v2.123.1) (2026-01-28)
+
+
+### Bug Fixes
+
+* **auth:** use http client for auth functions ([#751](https://github.com/railroadmedia/musora-content-services/issues/751)) ([6958adc](https://github.com/railroadmedia/musora-content-services/commit/6958adc87689a7dd433a8c66ccaff60317e6e962))
+
+## [2.123.0](https://github.com/railroadmedia/musora-content-services/compare/v2.122.7...v2.123.0) (2026-01-28)
+
+
+### Features
+
+* better user impersonation ([#731](https://github.com/railroadmedia/musora-content-services/issues/731)) ([768022d](https://github.com/railroadmedia/musora-content-services/commit/768022df839b2c2e206d02985c82075b0d4de008))
+* **T3PS-1537:** Playbass Recommendations V2 ([#744](https://github.com/railroadmedia/musora-content-services/issues/744)) ([b88ffbd](https://github.com/railroadmedia/musora-content-services/commit/b88ffbd85a9982371e108d9f23190a9217cf29d0))
+* **TP-1080:** ignore resume time until past 10s window ([#749](https://github.com/railroadmedia/musora-content-services/issues/749)) ([c22f4c2](https://github.com/railroadmedia/musora-content-services/commit/c22f4c201ec60dbf9475eebbcee199dfea967bbf))
+
+
+### Bug Fixes
+
+* makes methodIntroComplete function send formatted date matching getDailySession ([#725](https://github.com/railroadmedia/musora-content-services/issues/725)) ([6ac47a0](https://github.com/railroadmedia/musora-content-services/commit/6ac47a04dfa2ea4a0d355409b4be8fa743af1b48))
+
+### [2.122.7](https://github.com/railroadmedia/musora-content-services/compare/v2.122.3...v2.122.7) (2026-01-28)
+
+
+### Bug Fixes
+
+* add artist name to practices ([aba6c46](https://github.com/railroadmedia/musora-content-services/commit/aba6c46e03afd6635e74050170cbec5e3b1c9a63))
+* add artist name to recent activity data ([78f0e47](https://github.com/railroadmedia/musora-content-services/commit/78f0e4783d575db30aa6667752ded4366e85b05a))
+* filters out null field ([#742](https://github.com/railroadmedia/musora-content-services/issues/742)) ([cab0b58](https://github.com/railroadmedia/musora-content-services/commit/cab0b584a8f40b7404b869730783aea51a058d35))
+* melon data user isolation ([#717](https://github.com/railroadmedia/musora-content-services/issues/717)) ([6893c3c](https://github.com/railroadmedia/musora-content-services/commit/6893c3c644e1eefcfeeb6439b460a46d853616d6))
+* **T3PS-1586:** onboarding recommendation pinning ([#737](https://github.com/railroadmedia/musora-content-services/issues/737)) ([280305b](https://github.com/railroadmedia/musora-content-services/commit/280305b7706ba171752cb54e6d2ee504093b11d1))
+* **T3PS-2003:** Display Shows like Individuals on the progress cards and progress areas ([5a61d7d](https://github.com/railroadmedia/musora-content-services/commit/5a61d7dfaf5fbed2cc8bdca751c12783acbe2b66))
+* **T3PS-2004:** Play Your Favorite Songs on /method/ Shows Unreleased Content ([b7c32de](https://github.com/railroadmedia/musora-content-services/commit/b7c32deeffe8140969d2e11d853d255b0e184f30))
+* **T3PS-2007:** getPracticeSessions for a given date fails if the content doesn’t have a thumbnail ([d3bb457](https://github.com/railroadmedia/musora-content-services/commit/d3bb45760634f8e8f8f8114859d258da5d3909e6))
+
+### [2.122.6](https://github.com/railroadmedia/musora-content-services/compare/v2.122.5...v2.122.6) (2026-01-28)
+
+
+### Bug Fixes
+
+* **T3PS-1586:** onboarding recommendation pinning ([#737](https://github.com/railroadmedia/musora-content-services/issues/737)) ([280305b](https://github.com/railroadmedia/musora-content-services/commit/280305b7706ba171752cb54e6d2ee504093b11d1))
+
+### [2.122.5](https://github.com/railroadmedia/musora-content-services/compare/v2.122.4...v2.122.5) (2026-01-28)
+
+
+### Bug Fixes
+
+* filters out null field ([#742](https://github.com/railroadmedia/musora-content-services/issues/742)) ([cab0b58](https://github.com/railroadmedia/musora-content-services/commit/cab0b584a8f40b7404b869730783aea51a058d35))
+
+### [2.122.4](https://github.com/railroadmedia/musora-content-services/compare/v2.122.3...v2.122.4) (2026-01-26)
+
+
+### Bug Fixes
+
+* melon data user isolation ([#717](https://github.com/railroadmedia/musora-content-services/issues/717)) ([6893c3c](https://github.com/railroadmedia/musora-content-services/commit/6893c3c644e1eefcfeeb6439b460a46d853616d6))
+
 ### [2.122.3](https://github.com/railroadmedia/musora-content-services/compare/v2.122.2...v2.122.3) (2026-01-23)
 
 ### [2.122.2](https://github.com/railroadmedia/musora-content-services/compare/v2.122.1...v2.122.2) (2026-01-23)

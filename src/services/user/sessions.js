@@ -1,9 +1,10 @@
 /**
  * @module Sessions
  */
+import { DELETE, POST } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
 import { clearAllCachedData } from '../dataContext.js'
-import { USER_PIN_PROGRESS_KEY } from '../progress-row/base.js'
+import { setUserPinnedProgressRow } from '../progress-row/base.js'
 import './types.js'
 
 /**
@@ -31,33 +32,15 @@ const excludeFromGeneratedIndex = []
  */
 export async function login(email, password, deviceName, deviceToken, platform) {
   const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
-  const res = await fetch(`${baseUrl}/v1/sessions`, {
-    method: 'POST',
-    headers: {
-      'X-Client-Platform': globalConfig.isMA ? 'mobile' : 'web',
-      'Content-Type': 'application/json',
-      Authorization: null,
-    },
-    body: JSON.stringify({
-      email: email,
-      password: password,
-      device_name: deviceName,
-      device_token: deviceToken,
-      platform: platform,
-    }),
+  const data = await POST(`${baseUrl}/v1/sessions`, {
+    email: email,
+    password: password,
+    device_name: deviceName,
+    device_token: deviceToken,
+    platform: platform,
   })
 
-  const data = await res.json()
-
-  // TODO: refactor this. I don't think this is the place for it but we need it fixed for the system test
-  if (res.ok) {
-    const userId = data.user?.id
-    const userPinKey = userId ? `user_pin_progress_row_${userId}` : USER_PIN_PROGRESS_KEY
-    await globalConfig.localStorage.setItem(
-      userPinKey,
-      JSON.stringify(data.user?.brand_pinned_progress || {})
-    )
-  }
+  await setUserPinnedProgressRow(data.user?.id, data.user?.brand_pinned_progress || {})
 
   return data
 }
@@ -105,13 +88,7 @@ export async function login(email, password, deviceName, deviceToken, platform) 
  */
 export async function logout() {
   const baseUrl = `${globalConfig.baseUrl}/api/user-management-system`
-  await fetch(`${baseUrl}/v1/sessions`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${globalConfig.sessionConfig.authToken}`,
-      'Content-Type': 'application/json',
-    },
-  })
+  await DELETE(`${baseUrl}/v1/sessions`)
 
   // Clear all locally cached data to prevent data leakage between users
   await clearAllCachedData()
@@ -136,6 +113,7 @@ export async function generateAuthSessionUrl(userId, redirectTo) {
     headers.Authorization = `Bearer ${globalConfig.sessionConfig.authToken}`
   }
 
+  // generate auth key
   const response = await fetch(`${baseUrl}/v1/auth-key`, {
     method: 'GET',
     headers,
@@ -149,11 +127,23 @@ export async function generateAuthSessionUrl(userId, redirectTo) {
   const authKeyResponse = await response.json()
   const authKey = authKeyResponse.data || authKeyResponse.auth_key
 
+  const absoluteRedirectTo = new URL(redirectTo)
+  const relativeRedirectTo = absoluteRedirectTo.pathname + absoluteRedirectTo.search
+
   const params = new URLSearchParams({
     user_id: userId.toString(),
     auth_key: authKey,
-    redirect_to: redirectTo,
+    redirect_to: relativeRedirectTo,
   })
 
-  return `${baseUrl}/v1/sessions/auth-key?${params.toString()}`
+  // generate link that will *consume* the auth key
+  if (globalConfig.isMA) {
+    if (!absoluteRedirectTo.hostname.endsWith('.musora.com')) {
+      throw new Error('Bad redirect URL - must be a musora.com domain')
+    }
+
+    return `${absoluteRedirectTo.origin}/auth?${params.toString()}`
+  } else {
+    throw new Error("Not implemented - MA deep links don't accept auth keys")
+  }
 }
