@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.125.0](https://github.com/railroadmedia/musora-content-services/compare/v2.122.7...v2.125.0) (2026-01-29)
+
+
+### Features
+
+* **BEH-1505:** new award templates ([#740](https://github.com/railroadmedia/musora-content-services/issues/740)) ([e11f5f0](https://github.com/railroadmedia/musora-content-services/commit/e11f5f0db218132409b1d228a4c0a20500f73922))
+* better user impersonation ([#731](https://github.com/railroadmedia/musora-content-services/issues/731)) ([768022d](https://github.com/railroadmedia/musora-content-services/commit/768022df839b2c2e206d02985c82075b0d4de008))
+* **T3PS-1537:** Playbass Recommendations V2 ([#744](https://github.com/railroadmedia/musora-content-services/issues/744)) ([b88ffbd](https://github.com/railroadmedia/musora-content-services/commit/b88ffbd85a9982371e108d9f23190a9217cf29d0))
+* **TP-1080:** ignore resume time until past 10s window ([#749](https://github.com/railroadmedia/musora-content-services/issues/749)) ([c22f4c2](https://github.com/railroadmedia/musora-content-services/commit/c22f4c201ec60dbf9475eebbcee199dfea967bbf))
+
+
+### Bug Fixes
+
+* **auth:** import ([2686f30](https://github.com/railroadmedia/musora-content-services/commit/2686f3004bef54ab548ec87a2665ff918c385421))
+* **auth:** use http client for auth functions ([#751](https://github.com/railroadmedia/musora-content-services/issues/751)) ([6958adc](https://github.com/railroadmedia/musora-content-services/commit/6958adc87689a7dd433a8c66ccaff60317e6e962))
+* makes methodIntroComplete function send formatted date matching getDailySession ([#725](https://github.com/railroadmedia/musora-content-services/issues/725)) ([6ac47a0](https://github.com/railroadmedia/musora-content-services/commit/6ac47a04dfa2ea4a0d355409b4be8fa743af1b48))
+* resets trickled/bubbled records that are set to 0% in progress ([#746](https://github.com/railroadmedia/musora-content-services/issues/746)) ([056949b](https://github.com/railroadmedia/musora-content-services/commit/056949bc65b61aceb39e14fd5a485ef283817108))
+* **T3PS-1715:** lp lesson practices and activity mapping ([#732](https://github.com/railroadmedia/musora-content-services/issues/732)) ([922e455](https://github.com/railroadmedia/musora-content-services/commit/922e4558b720b17533b3923fd08939ef69afa4f2))
+* use jump-to-post url for notifications/reporting system ([91ff74f](https://github.com/railroadmedia/musora-content-services/commit/91ff74f227c350589f9558a60a76575abb71b0e2))
+
 ### [2.124.1](https://github.com/railroadmedia/musora-content-services/compare/v2.124.0...v2.124.1) (2026-01-29)
 
 
