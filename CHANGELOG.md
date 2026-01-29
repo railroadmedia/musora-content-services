@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.124.1](https://github.com/railroadmedia/musora-content-services/compare/v2.124.0...v2.124.1) (2026-01-29)
+
+
+### Bug Fixes
+
+* resets trickled/bubbled records that are set to 0% in progress ([#746](https://github.com/railroadmedia/musora-content-services/issues/746)) ([056949b](https://github.com/railroadmedia/musora-content-services/commit/056949bc65b61aceb39e14fd5a485ef283817108))
+
 ## [2.124.0](https://github.com/railroadmedia/musora-content-services/compare/v2.123.2...v2.124.0) (2026-01-29)
 
 
