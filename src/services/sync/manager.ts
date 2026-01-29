@@ -275,6 +275,10 @@ export default class SyncManager {
     return store as unknown as SyncStore<TModel>
   }
 
+  getAllStores() {
+    return this.storesRegistry
+  }
+
   getTelemetry() {
     return this.telemetry
   }

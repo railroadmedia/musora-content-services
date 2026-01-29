@@ -5,6 +5,26 @@ import { globalConfig } from '../config.js'
 import { RecordId } from "@nozbe/watermelondb"
 import BaseModel from "./models/Base"
 import SyncContext from "./context"
+import { SyncTelemetry } from "./telemetry"
+
+export type BlockingState = {
+  enabled: boolean
+}
+export type SyncPull = (
+  tableName: string,
+  intendedUserId: number,
+  context: SyncContext,
+  signal: AbortSignal,
+  previousFetchToken: SyncToken | null
+) => Promise<SyncPullResponse>
+export type SyncPush = (
+  tableName: string,
+  intendedUserId: number,
+  context: SyncContext,
+  payload: PushPayload,
+  signal: AbortSignal,
+  blockingState: BlockingState
+) => Promise<SyncPushResponse>
 
 interface RawPullResponse {
   meta: {
@@ -23,7 +43,7 @@ interface RawPushResponse {
 }
 
 export type SyncResponse = SyncPushResponse | SyncPullResponse
-export type SyncPushResponse = SyncPushSuccessResponse | SyncPushFetchFailureResponse | SyncPushAbortResponse | SyncPushFailureResponse
+export type SyncPushResponse = SyncPushSuccessResponse | SyncPushFetchFailureResponse | SyncPushAbortResponse | SyncPushBlockedResponse | SyncPushFailureResponse
 
 type SyncPushSuccessResponse = SyncResponseBase & {
   ok: true
@@ -37,6 +57,11 @@ type SyncPushFetchFailureResponse = SyncResponseBase & {
 type SyncPushAbortResponse = SyncResponseBase & {
   ok: false,
   failureType: 'abort'
+}
+type SyncPushBlockedResponse = SyncResponseBase & {
+  ok: false,
+  failureType: 'blocked'
+  isRetryable: boolean
 }
 type SyncPushFailureResponse = SyncResponseBase & {
   ok: false,
@@ -144,8 +169,8 @@ export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (userI
   })
 }
 
-export function handlePull(callback: (userId: number, context: SyncContext) => Request) {
-  return async function(userId: number, context: SyncContext, signal: AbortSignal | undefined, lastFetchToken: SyncToken | null): Promise<SyncPullResponse> {
+export function handlePull(callback: (userId: number, context: SyncContext) => Request): SyncPull {
+  return async function(_tableName, userId, context, signal, lastFetchToken) {
     const generatedRequest = callback(userId, context)
     const url = serializePullUrlQuery(generatedRequest.url, lastFetchToken)
     const request = new Request(url, {
@@ -211,8 +236,8 @@ export function handlePull(callback: (userId: number, context: SyncContext) => R
   }
 }
 
-export function handlePush(callback: (userId: number, context: SyncContext) => Request) {
-  return async function(userId: number, context: SyncContext, payload: PushPayload, signal: AbortSignal | undefined): Promise<SyncPushResponse> {
+export function handlePush(callback: (userId: number, context: SyncContext) => Request): SyncPush {
+  return async function(tableName, userId, context, payload, signal, blockingState) {
     const generatedRequest = callback(userId, context)
     const serverPayload = serializePushPayload(payload)
     const request = new Request(generatedRequest, {
@@ -220,6 +245,16 @@ export function handlePush(callback: (userId: number, context: SyncContext) => R
       body: JSON.stringify(serverPayload),
       signal
     })
+
+    if (blockingState.enabled) {
+      SyncTelemetry.getInstance().debug(`[sync:${tableName}] Push blocked`)
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 30))
+      return {
+        ok: false,
+        failureType: 'blocked',
+        isRetryable: true
+      }
+    }
 
     let response: Response | null = null
     try {

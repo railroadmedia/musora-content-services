@@ -69,7 +69,7 @@ export default class SyncRetry {
         this.resetBackoff()
         return result
       } else {
-        if (result.failureType === 'fetch' && result.isRetryable) {
+        if ('isRetryable' in result && result.isRetryable) {
           this.scheduleBackoff()
           if (attempt >= this.MAX_ATTEMPTS) {
             options.onFail?.()

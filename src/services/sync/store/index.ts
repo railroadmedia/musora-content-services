@@ -11,11 +11,11 @@ import { default as Resolver, type SyncResolution, type SyncResolverComparator }
 import PushCoalescer from './push-coalescer'
 import { SyncTelemetry, Span } from '../telemetry/index'
 import { inBoundary } from '../errors/boundary'
-import { BaseSessionProvider } from '../context/providers'
 import { dropThrottle, queueThrottle, createThrottleState, type ThrottleState } from '../utils'
 import { type WriterInterface } from '@nozbe/watermelondb/Database/WorkQueue'
 import type LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 import { SyncError } from '../errors'
+import type { SyncPull, SyncPush, BlockingState } from '../fetch'
 
 type SyncStoreEvents<TModel extends BaseModel> = {
   upserted: [TModel[]]
@@ -24,19 +24,6 @@ type SyncStoreEvents<TModel extends BaseModel> = {
   pushCompleted: []
   failedPush: []
 }
-
-type SyncPull = (
-  intendedUserId: number,
-  context: SyncContext,
-  signal: AbortSignal,
-  previousFetchToken: SyncToken | null
-) => Promise<SyncPullResponse>
-type SyncPush = (
-  intendedUserId: number,
-  context: SyncContext,
-  payload: PushPayload,
-  signal: AbortSignal
-) => Promise<SyncPushResponse>
 
 export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
   model: ModelClass<TModel>
@@ -70,6 +57,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private pullThrottleState: ThrottleState<SyncPullResponse>
   private pushThrottleState: ThrottleState<SyncPushResponse>
   private pushCoalescer = new PushCoalescer()
+
+  private pushBlockingState: BlockingState = { enabled: false }
 
   private emitter = new EventEmitter<SyncStoreEvents<TModel>>()
   private cleanupTimer: NodeJS.Timeout | null = null
@@ -152,6 +141,13 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         }
       )
     }, { table: this.model.table, reason })
+  }
+
+  isPushBlocked() {
+    return this.pushBlockingState.enabled
+  }
+  togglePushBlocking() {
+    this.pushBlockingState.enabled = !this.pushBlockingState.enabled
   }
 
   async getLastFetchToken() {
@@ -590,7 +586,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             attributes: { lastFetchToken: lastFetchToken ?? undefined, ...this.context.session.toJSON() },
             parentSpan: pullSpan,
           },
-          () => this.puller(this.userScope.initialId, this.context, this.runScope.signal, lastFetchToken)
+          () => this.puller(this.model.table, this.userScope.initialId, this.context, this.runScope.signal, lastFetchToken)
         )
 
         if (response.ok) {
@@ -634,7 +630,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             attributes: { ...this.context.session.toJSON() },
             parentSpan: pushSpan,
           },
-          () => this.pusher(this.userScope.initialId, this.context, payload, this.runScope.signal)
+          () => this.pusher(this.model.table, this.userScope.initialId, this.context, payload, this.runScope.signal, this.pushBlockingState)
         )
 
         if (response.ok) {
