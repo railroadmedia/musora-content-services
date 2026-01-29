@@ -1,7 +1,7 @@
 import { type SyncEffect } from '.'
 
-const NOTIFICATION_COOLDOWN = 60_000 * 10
-const MUTE_PERIOD = 60_000 * 60 * 3
+const NOTIFICATION_COOLDOWN = 60_000 * 10 // 10 mins
+const MUTE_PERIOD = 60_000 * 60 * 3 // 3 hours
 
 const createPushFailureNotificationEffect = (notifyCallback: (opts: { mute: () => void }) => void) => {
   let lastNotifiedAt = 0
