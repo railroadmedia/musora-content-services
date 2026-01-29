@@ -11,7 +11,7 @@ export default class SyncRetry {
   private backoffUntil = 0
   private failureCount = 0
 
-  private unsubscribeConnectivity: () => void
+  private unsubscribeConnectivity: (() => void) | null = null
 
   constructor(private readonly context: SyncContext, private readonly telemetry: SyncTelemetry) {}
 
@@ -26,13 +26,18 @@ export default class SyncRetry {
 
   stop() {
     this.unsubscribeConnectivity?.()
+    this.unsubscribeConnectivity = null
   }
 
   /**
    * Runs the given syncFn with automatic retries.
    * Returns the first successful result or the last failed result after retries.
    */
-  async request<T extends SyncResponse>(spanOpts: StartSpanOptions, syncFn: (span: Span) => Promise<T>) {
+  async request<T extends SyncResponse>(
+    spanOpts: StartSpanOptions,
+    syncFn: (span: Span) => Promise<T>,
+    options: { onFail?: () => void } = {}
+  ) {
     let attempt = 0
 
     while (true) {
@@ -66,7 +71,10 @@ export default class SyncRetry {
       } else {
         if (result.failureType === 'fetch' && result.isRetryable) {
           this.scheduleBackoff()
-          if (attempt >= this.MAX_ATTEMPTS) return result
+          if (attempt >= this.MAX_ATTEMPTS) {
+            options.onFail?.()
+            return result
+          }
         } else {
           return result
         }

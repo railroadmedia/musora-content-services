@@ -4,7 +4,7 @@ import { EpochMs } from "."
 import { globalConfig } from '../config.js'
 import { RecordId } from "@nozbe/watermelondb"
 import BaseModel from "./models/Base"
-import { BaseSessionProvider } from "./context/providers"
+import SyncContext from "./context"
 
 interface RawPullResponse {
   meta: {
@@ -23,7 +23,7 @@ interface RawPushResponse {
 }
 
 export type SyncResponse = SyncPushResponse | SyncPullResponse
-export type SyncPushResponse = SyncPushSuccessResponse | SyncPushFetchFailureResponse | SyncPushFailureResponse
+export type SyncPushResponse = SyncPushSuccessResponse | SyncPushFetchFailureResponse | SyncPushAbortResponse | SyncPushFailureResponse
 
 type SyncPushSuccessResponse = SyncResponseBase & {
   ok: true
@@ -33,6 +33,10 @@ type SyncPushFetchFailureResponse = SyncResponseBase & {
   ok: false,
   failureType: 'fetch'
   isRetryable: boolean
+}
+type SyncPushAbortResponse = SyncResponseBase & {
+  ok: false,
+  failureType: 'abort'
 }
 type SyncPushFailureResponse = SyncResponseBase & {
   ok: false,
@@ -63,7 +67,7 @@ interface SyncStorePushResultBase {
   type: 'success' | 'failure'
 }
 
-export type SyncPullResponse = SyncPullSuccessResponse | SyncPullFailureResponse | SyncPullFetchFailureResponse
+export type SyncPullResponse = SyncPullSuccessResponse | SyncPullFailureResponse | SyncPullAbortResponse | SyncPullFetchFailureResponse
 
 type SyncPullSuccessResponse = SyncResponseBase & {
   ok: true
@@ -81,6 +85,10 @@ type SyncPullFailureResponse = SyncResponseBase & {
   ok: false,
   failureType: 'error'
   originalError: Error
+}
+type SyncPullAbortResponse = SyncResponseBase & {
+  ok: false,
+  failureType: 'abort'
 }
 export interface SyncResponseBase {
   ok: boolean
@@ -118,8 +126,8 @@ interface ServerPushPayload {
   }[]
 }
 
-export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (userId: number, session: BaseSessionProvider) => Request {
-  return (userId, session) => new Request(globalConfig.baseUrl + input, {
+export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (userId: number, context: SyncContext) => Request {
+  return (userId, context) => new Request(globalConfig.baseUrl + input, {
     ...init,
     headers: {
       ...init?.headers,
@@ -127,18 +135,18 @@ export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (userI
         'Authorization': `Bearer ${globalConfig.sessionConfig.token}`
       } : {},
       'Content-Type': 'application/json',
-      'X-Sync-Client-Id': session.getClientId(),
-      ...(session.getSessionId() ? {
-        'X-Sync-Client-Session-Id': session.getSessionId()!
+      'X-Sync-Client-Id': context.session.getClientId(),
+      ...(context.session.getSessionId() ? {
+        'X-Sync-Client-Session-Id': context.session.getSessionId()!
       } : {}),
       'X-Sync-Intended-User-Id': userId.toString()
     }
   })
 }
 
-export function handlePull(callback: (userId: number, session: BaseSessionProvider) => Request) {
-  return async function(userId: number, session: BaseSessionProvider, lastFetchToken: SyncToken | null, signal?: AbortSignal): Promise<SyncPullResponse> {
-    const generatedRequest = callback(userId, session)
+export function handlePull(callback: (userId: number, context: SyncContext) => Request) {
+  return async function(userId: number, context: SyncContext, signal: AbortSignal | undefined, lastFetchToken: SyncToken | null): Promise<SyncPullResponse> {
+    const generatedRequest = callback(userId, context)
     const url = serializePullUrlQuery(generatedRequest.url, lastFetchToken)
     const request = new Request(url, {
       credentials: 'include',
@@ -150,6 +158,19 @@ export function handlePull(callback: (userId: number, session: BaseSessionProvid
     try {
       response = await fetch(request)
     } catch (e) {
+      if (e.name === 'AbortError') {
+        return {
+          ok: false,
+          failureType: 'abort'
+        }
+      } else if (e instanceof TypeError) {
+        return {
+          ok: false,
+          failureType: 'fetch',
+          isRetryable: context.connectivity.getValue() !== false
+        }
+      }
+
       return {
         ok: false,
         failureType: 'error',
@@ -190,9 +211,9 @@ export function handlePull(callback: (userId: number, session: BaseSessionProvid
   }
 }
 
-export function handlePush(callback: (userId: number, session: BaseSessionProvider) => Request) {
-  return async function(userId: number, session: BaseSessionProvider, payload: PushPayload, signal?: AbortSignal): Promise<SyncPushResponse> {
-    const generatedRequest = callback(userId, session)
+export function handlePush(callback: (userId: number, context: SyncContext) => Request) {
+  return async function(userId: number, context: SyncContext, payload: PushPayload, signal: AbortSignal | undefined): Promise<SyncPushResponse> {
+    const generatedRequest = callback(userId, context)
     const serverPayload = serializePushPayload(payload)
     const request = new Request(generatedRequest, {
       credentials: 'include',
@@ -204,6 +225,19 @@ export function handlePush(callback: (userId: number, session: BaseSessionProvid
     try {
       response = await fetch(request)
     } catch (e) {
+      if (e.name === 'AbortError') {
+        return {
+          ok: false,
+          failureType: 'abort'
+        }
+      } else if (e instanceof TypeError) {
+        return {
+          ok: false,
+          failureType: 'fetch',
+          isRetryable: context.connectivity.getValue() !== false
+        }
+      }
+
       return {
         ok: false,
         failureType: 'error',

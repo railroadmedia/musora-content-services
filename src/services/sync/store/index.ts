@@ -17,15 +17,23 @@ import { type WriterInterface } from '@nozbe/watermelondb/Database/WorkQueue'
 import type LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 import { SyncError } from '../errors'
 
+type SyncStoreEvents<TModel extends BaseModel> = {
+  upserted: [TModel[]]
+  deleted: [RecordId[]]
+  pullCompleted: []
+  pushCompleted: []
+  failedPush: []
+}
+
 type SyncPull = (
   intendedUserId: number,
-  session: BaseSessionProvider,
-  previousFetchToken: SyncToken | null,
-  signal: AbortSignal
+  context: SyncContext,
+  signal: AbortSignal,
+  previousFetchToken: SyncToken | null
 ) => Promise<SyncPullResponse>
 type SyncPush = (
   intendedUserId: number,
-  session: BaseSessionProvider,
+  context: SyncContext,
   payload: PushPayload,
   signal: AbortSignal
 ) => Promise<SyncPushResponse>
@@ -63,7 +71,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private pushThrottleState: ThrottleState<SyncPushResponse>
   private pushCoalescer = new PushCoalescer()
 
-  private emitter = new EventEmitter()
+  private emitter = new EventEmitter<SyncStoreEvents<TModel>>()
   private cleanupTimer: NodeJS.Timeout | null = null
 
   private lastFetchTokenKey: string
@@ -547,6 +555,11 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
               }
 
               return this.executePush(recordsToPush, span)
+            },
+            {
+              onFail: () => {
+                this.emit('failedPush')
+              },
             }
           )
         })
@@ -577,7 +590,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             attributes: { lastFetchToken: lastFetchToken ?? undefined, ...this.context.session.toJSON() },
             parentSpan: pullSpan,
           },
-          () => this.puller(this.userScope.initialId, this.context.session, lastFetchToken, this.runScope.signal)
+          () => this.puller(this.userScope.initialId, this.context, this.runScope.signal, lastFetchToken)
         )
 
         if (response.ok) {
@@ -621,7 +634,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             attributes: { ...this.context.session.toJSON() },
             parentSpan: pushSpan,
           },
-          () => this.pusher(this.userScope.initialId, this.context.session, payload, this.runScope.signal)
+          () => this.pusher(this.userScope.initialId, this.context, payload, this.runScope.signal)
         )
 
         if (response.ok) {
