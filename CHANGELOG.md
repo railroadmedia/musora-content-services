@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.124.0](https://github.com/railroadmedia/musora-content-services/compare/v2.123.2...v2.124.0) (2026-01-29)
+
+
+### Features
+
+* **BEH-1505:** new award templates ([#740](https://github.com/railroadmedia/musora-content-services/issues/740)) ([e11f5f0](https://github.com/railroadmedia/musora-content-services/commit/e11f5f0db218132409b1d228a4c0a20500f73922))
+
+
+### Bug Fixes
+
+* **T3PS-1715:** lp lesson practices and activity mapping ([#732](https://github.com/railroadmedia/musora-content-services/issues/732)) ([922e455](https://github.com/railroadmedia/musora-content-services/commit/922e4558b720b17533b3923fd08939ef69afa4f2))
+
 ### [2.123.2](https://github.com/railroadmedia/musora-content-services/compare/v2.123.1...v2.123.2) (2026-01-28)
 
 
