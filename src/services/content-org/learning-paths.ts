@@ -3,13 +3,19 @@
  */
 
 import { GET, POST } from '../../infrastructure/http/HttpClient.ts'
-import { fetchByRailContentId, fetchByRailContentIds, fetchMethodV2Structure } from '../sanity.js'
+import {
+  fetchByRailContentId,
+  fetchByRailContentIds,
+  fetchMethodV2Structure,
+  fetchParentChildRelationshipsFor
+} from '../sanity.js'
 import { addContextToLearningPaths } from '../contentAggregator.js'
 import {
   contentStatusCompleted,
   contentStatusCompletedMany,
   contentStatusReset,
   getAllCompletedByIds,
+  getIdsWhereLastAccessedFromMethod,
   getProgressState,
 } from '../contentProgress.js'
 import { COLLECTION_TYPE, STATE } from '../sync/models/ContentProgress'
@@ -17,10 +23,10 @@ import { SyncWriteDTO } from '../sync'
 import { ContentProgress } from '../sync/models'
 import { CollectionParameter } from '../sync/repositories/content-progress'
 import dayjs from 'dayjs'
+import { LEARNING_PATH_LESSON } from "../../contentTypeConfig";
 
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
-const LEARNING_PATH_LESSON = 'learning-path-lesson-v2'
 let dailySessionPromise: Promise<DailySessionResponse> | null = null
 let activePathPromise: Promise<ActiveLearningPathResponse> | null = null
 
@@ -202,7 +208,10 @@ export async function getEnrichedLearningPath(learningPathId) {
   response = await addContextToLearningPaths(() => response, { addAwards: true })
   if (!response) return response
 
-  response.children = mapContentToParent(response.children, LEARNING_PATH_LESSON, learningPathId)
+  response.children = mapContentToParent(
+      response.children,
+      {lessonType: LEARNING_PATH_LESSON, parentContentId: learningPathId}
+  )
   return response
 }
 
@@ -234,9 +243,8 @@ export async function getEnrichedLearningPaths(learningPathIds: number[]) {
 
   response.forEach((learningPath) => {
     learningPath.children = mapContentToParent(
-      learningPath.children,
-      LEARNING_PATH_LESSON,
-      learningPath.id
+        learningPath.children,
+        {lessonType: LEARNING_PATH_LESSON, parentContentId: learningPath.id}
     )
   })
   return response
@@ -257,15 +265,32 @@ export async function getLearningPathLessonsByIds(contentIds, learningPathId) {
 
 /**
  * Maps content to its parent learning path - fixes multi-parent problems for cta when lessons have a special collection.
- * @param lessons
+ * @param lessons - sanity documents
  * @param parentContentType
  * @param parentContentId
  */
-export function mapContentToParent(lessons, parentContentType, parentContentId) {
+export function mapContentToParent(
+  lessons: any,
+  options?: { lessonType?: string; parentContentId?: number }
+) {
   if (!lessons) return lessons
-  return lessons.map((lesson: any) => {
-    return { ...lesson, type: parentContentType, parent_id: parentContentId }
-  })
+
+  function mapIt(lesson: any) {
+    const mappedLesson = { ...lesson }
+    if (options?.lessonType !== undefined) mappedLesson.type = options.lessonType
+    if (options?.parentContentId !== undefined) mappedLesson.parent_id = options.parentContentId
+    return mappedLesson
+
+  }
+
+  if (typeof lessons === 'object' && !Array.isArray(lessons)) {
+    return mapIt(lessons)
+
+  } else if (Array.isArray(lessons)) {
+    return lessons.map((lesson: any) => {
+      return mapIt(lesson)
+    })
+  }
 }
 
 interface fetchLearningPathLessonsResponse {
@@ -538,4 +563,46 @@ export async function onContentCompletedLearningPathActions(
   const nextLearningPathData = await getEnrichedLearningPath(nextLearningPath.id)
 
   await contentStatusReset(nextLearningPathData.intro_video.id, { skipPush: true })
+}
+
+export async function mapContentsThatWereLastProgressedFromMethod(objects: any[]) {
+  if (!objects || objects.length === 0) return objects
+
+  const contentIds = objects.map((obj) => obj.id) as number[]
+  const trueIds = await getIdsWhereLastAccessedFromMethod(contentIds)
+
+  if (trueIds.length === 0) return objects
+
+  let filtered = objects.filter((obj) => trueIds.includes(obj.id))
+
+  filtered = await mapLearningPathParentsTo(filtered, {type: true, parent_id: true})
+
+  // Map each filtered item back into the total contents object
+  objects = objects.map((item) => {
+    const replace = filtered.find((f) => f.id === item.id) || item
+    return replace
+  })
+
+  return objects
+
+}
+
+export async function mapLearningPathParentsTo(objects: any[], fieldsToMap?: {type?: boolean, parent_id?: boolean}): Promise<object[]> {
+  const ids = objects.map((obj: any) => obj.id) as number[]
+  const hierarchy = await fetchParentChildRelationshipsFor(ids, COLLECTION_TYPE.LEARNING_PATH)
+
+  const parentMap = new Map<number, number>()
+  hierarchy.forEach((relation) => {
+    relation.children.forEach((childId) => {
+      parentMap.set(childId, Number(relation.railcontent_id))
+    })
+  })
+
+  return objects.map((obj) => {
+    const parent_id = parentMap.get(obj.id) ?? undefined
+    return mapContentToParent(obj, {
+      lessonType: fieldsToMap.type ? LEARNING_PATH_LESSON : undefined,
+      parentContentId: fieldsToMap.parent_id ? parent_id : undefined
+    })
+  })
 }

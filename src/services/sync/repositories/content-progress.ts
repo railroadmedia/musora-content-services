@@ -1,5 +1,6 @@
 import SyncRepository, {Q} from './base'
 import ContentProgress, {COLLECTION_ID_SELF, COLLECTION_TYPE, STATE} from '../models/ContentProgress'
+import {EpochMs} from "../index";
 
 interface ContentIdCollectionTuple {
   contentId: number,
@@ -123,6 +124,31 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.queryAll(...clauses)
   }
 
+  // Two ways of checking this for a given content_id:
+  //   * grab both records (collection_type = self & and collection_type = learning-path-v2), and compare their updated_at timestamps.
+  //   * utilize the new last_interacted_a_la_carte, which is updated whenever the content is accessed OUTSIDE of an LP,  and compare THIS with the self updated_at (which will be greater than if it was last accessed from LP)
+  // I went with the second because it's an easier query
+  async getSomeProgressWhereLastAccessedFromMethod(contentIds: number[]) {
+    const clauses = [
+      Q.where('content_id', Q.oneOf(contentIds)),
+      Q.where('collection_type', COLLECTION_TYPE.SELF),
+      Q.where('collection_id', COLLECTION_ID_SELF),
+      Q.or(
+          Q.and(
+              Q.where('updated_at', Q.notEq(null)),
+              Q.where('last_interacted_a_la_carte', null)
+          ),
+          Q.and(
+              Q.where('updated_at', Q.notEq(null)),
+              Q.where('last_interacted_a_la_carte', Q.notEq(null)),
+              Q.where('updated_at', Q.gt(Q.column('last_interacted_a_la_carte')))
+          )
+      )
+    ]
+
+    return await this.queryAll(...clauses)
+  }
+
   async getSomeProgressByContentIdsAndCollections(tuples: ContentIdCollectionTuple[]) {
     const clauses = []
 
@@ -160,7 +186,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       }
 
       if (!fromLearningPath) {
-        r.last_interacted_a_la_carte = Date.now()
+        r.last_interacted_a_la_carte = Date.now() as EpochMs
       }
 
     }, { skipPush })
@@ -210,7 +236,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
           r.progress_percent = progressPct
 
           if (!fromLearningPath) {
-            r.last_interacted_a_la_carte = Date.now()
+            r.last_interacted_a_la_carte = Date.now() as EpochMs
           }
         },
       ])

@@ -797,3 +797,9 @@ function normalizeCollection(collection) {
     id: typeof collection.id === 'string' ? +collection.id : collection.id,
   }
 }
+
+export async function getIdsWhereLastAccessedFromMethod(contentIds) {
+  const records = await db.contentProgress.getSomeProgressWhereLastAccessedFromMethod(normalizeContentIds(contentIds))
+
+  return records.data.map(record => record.content_id)
+}

@@ -14,6 +14,8 @@
 
 import { globalConfig } from './config.js'
 import { Brands } from '../lib/brands.js'
+import { LEARNING_PATH_LESSON } from '../contentTypeConfig.js'
+import { COLLECTION_TYPE } from "./sync/models/ContentProgress";
 
 /**
  * Brand type - accepts enum values or string
@@ -149,7 +151,7 @@ export function generateContentUrl({
     'jam-track',
   ]
 
-  const methodTypes = ['learning-path-v2', 'learning-path-lesson-v2']
+  const methodTypes = [COLLECTION_TYPE.LEARNING_PATH, LEARNING_PATH_LESSON]
 
   let pageType: string
   if (songTypes.includes(type)) {

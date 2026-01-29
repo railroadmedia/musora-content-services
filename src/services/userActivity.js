@@ -5,15 +5,16 @@
 import { fetchUserPractices, fetchUserPracticeMeta, fetchRecentUserActivities } from './railcontent'
 import { GET, POST, PUT, DELETE } from '../infrastructure/http/HttpClient.ts'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
-import { fetchByRailContentIds } from './sanity'
+import { fetchByRailContentIds, fetchParentChildRelationshipsFor } from './sanity'
 import { getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js'
 import { globalConfig } from './config'
-import { addAwardTemplateToContent, getFormattedType } from '../contentTypeConfig'
+import { addAwardTemplateToContent, getFormattedType, LEARNING_PATH_LESSON } from '../contentTypeConfig'
 import dayjs from 'dayjs'
 import { addContextToContent } from './contentAggregator.js'
 import { db, Q } from './sync'
 import { COLLECTION_TYPE } from './sync/models/ContentProgress'
 import { streakCalculator } from './user/streakCalculator'
+import { mapContentsThatWereLastProgressedFromMethod, mapLearningPathParentsTo } from "./content-org/learning-paths.js";
 
 const DATA_KEY_PRACTICES = 'practices'
 
@@ -490,11 +491,13 @@ export async function getPracticeNotes(date) {
  */
 export async function getRecentActivity({ page = 1, limit = 5, tabName = null } = {}) {
   const recentActivityData = await fetchRecentUserActivities({ page, limit, tabName })
-  const contentIds = recentActivityData.data.map((p) => p.contentId).filter((id) => id !== null)
+
+  const filteredData = recentActivityData.data.filter((id) => id !== null)
+  const allContentIds = filteredData.map((p) => p.contentId)
 
   let contents = await addContextToContent(
     fetchByRailContentIds,
-    contentIds,
+    allContentIds,
     'progress-tracker',
     undefined,
     true,
@@ -506,6 +509,8 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
   )
   contents = addAwardTemplateToContent(contents)
 
+  contents = await mapContentsThatWereLastProgressedFromMethod(contents)
+
   recentActivityData.data = recentActivityData.data.map((practice) => {
     const content = contents?.find((c) => c.id === practice.contentId) || {}
     return {
@@ -514,6 +519,7 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
       title: content.title,
       parent_id: content.parent_id || null,
       navigateTo: content.navigateTo,
+      sanityType: content.type || practice.sanityType,
       artist_name: content.artist_name || null,
     }
   })
@@ -787,6 +793,8 @@ async function formatPracticeMeta(practices = []) {
     }
   )
   contents = addAwardTemplateToContent(contents)
+
+  contents = await mapContentsThatWereLastProgressedFromMethod(contents)
 
   return practices.map((practice) => {
     const content =
