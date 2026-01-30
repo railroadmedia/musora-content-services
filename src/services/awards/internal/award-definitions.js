@@ -116,7 +116,7 @@ class AwardDefinitionsService {
         name,
         'logo': logo.asset->url,
         'badge': badge.asset->url,
-        'badge_rear': select( _type == 'exp-award' => *[_type == 'exp-award' && brand == 'backside'][0].badge.asset->url, badge_rear.asset->url ),
+        'badge_rear': badge_rear.asset->url,
         'award': award.asset->url,
         'content_id': content->railcontent_id,
         'content_type': content->_type,
