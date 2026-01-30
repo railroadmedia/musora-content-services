@@ -115,9 +115,11 @@ export async function processContentItem(content) {
       thumbnail: content.thumbnail,
       title: content.title,
       isLive: isLive,
-      badge_logo: content.logo ?? null,
       badge: content.badge ?? null,
-      badge_template: awardTemplate[content.brand],
+      badge_rear: content.badge_rear ?? null,
+      badge_logo: content.logo ?? null,
+      badge_template: awardTemplate[content.brand].front,
+      badge_template_rear: awardTemplate[content.brand].rear,
       isLocked: content.is_locked ?? false,
       subtitle:
         collectionLessonTypes.includes(content.type) || content.lesson_count > 1

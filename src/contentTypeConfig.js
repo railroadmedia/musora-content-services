@@ -389,6 +389,7 @@ export let contentTypeConfig = {
     fields: [
       '"parent_content_data": parent_content_data[].id',
       '"badge" : *[references(^._id) && _type == "content-award"][0].badge.asset->url',
+      '"badge_rear" : *[references(^._id) && _type == "content-award"][0].badge_rear.asset->url',
       '"badge_logo" : *[references(^._id) && _type == "content-award"][0].logo.asset->url',
     ],
     includeChildFields: true,
@@ -494,10 +495,9 @@ export let contentTypeConfig = {
       `"intro_video": intro_video->{ ${getIntroVideoFields('learning-path-v2').join(', ')} }`,
       'total_skills',
       `"resource": ${resourcesField}`,
-      `"badge": *[
-        _type == "content-award" &&
-        content._ref == ^._id
-      ][0].badge.asset->url`,
+      `"badge": *[references(^._id) && _type == "content-award"][0].badge.asset->url`,
+      `"badge_rear" : *[references(^._id) && _type == "content-award"][0].badge_rear.asset->url`,
+      `"badge_logo" : *[references(^._id) && _type == "content-award"][0].logo.asset->url`,
     ],
     includeChildFields: true,
     childFields: [
@@ -984,11 +984,26 @@ export const getFormattedType = (type, brand) => {
 }
 
 export const awardTemplate = {
-  drumeo: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/drumeo.svg",
-  guitareo: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/guitareo.svg",
-  pianote: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/pianote.svg",
-  singeo: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/singeo.svg",
-  playbass: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass.svg",
+  drumeo: {
+    front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/drumeo.svg",
+    rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/drumeo-rear.svg",
+  },
+  guitareo: {
+    front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/guitareo.svg",
+    rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/guitareo-rear.svg",
+  },
+  pianote: {
+    front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/pianote.svg",
+    rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/pianote-rear.svg",
+  },
+  singeo: {
+    front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/singeo.svg",
+    rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/singeo-rear.svg",
+  },
+  playbass: {
+    front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass.svg",
+    rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass-rear.svg",
+  },
 }
 
 /**
@@ -1005,12 +1020,14 @@ export function addAwardTemplateToContent(content, brand= null) {
   if (Array.isArray(content)) {
     content.forEach((item) => {
       if (item['badge_logo'] && !item['badge_template']) {
-        item['badge_template'] = awardTemplate[item['brand'] || brand]
+        item['badge_template'] = awardTemplate[item['brand'] || brand].front
+        item['badge_template_rear'] = awardTemplate[item['brand'] || brand].rear
       }
     })
   } else {
     if (content['badge_logo'] && !content['badge_template']) {
-      content['badge_template'] = awardTemplate[content['brand'] || brand]
+      content['badge_template'] = awardTemplate[content['brand'] || brand].front
+      content['badge_template_rear'] = awardTemplate[content['brand'] || brand].rear
     }
   }
 

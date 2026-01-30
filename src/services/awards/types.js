@@ -4,7 +4,8 @@
  * @property {boolean} is_active - Whether the award is active
  * @property {string} name - Display name of the award
  * @property {string|null} logo - URL to logo image
- * @property {string} badge - URL to badge image
+ * @property {string|null badge - URL to badge image
+ * @property {string|null} badge_rear - URL to badge rear image
  * @property {string} award - URL to award image
  * @property {number} content_id - Railcontent ID of the parent content (e.g., the learning path ID)
  * @property {string} content_type - Type of parent content ('learning-path-v2', 'guided-course', etc.). Used with content_id to determine collection context for award evaluation.
@@ -39,7 +40,11 @@
  * @property {string} awardTitle - Display name of the award
  * @property {string} awardType - Type of the award
  * @property {boolean} hasCertificate - flag to indicate if the award includes a downloadable certificate
- * @property {string} badge - URL to badge image
+ * @property {string|null} badge - URL to badge image
+ * @property {string|null} badge_rear - URL to badge rear image
+ * @property {string|null} badge_logo - URL to logo image
+ * @property {string|null} badge_template - URL to badge front template image
+ * @property {string|null} badge_template_rear - URL to badge rear template image
  * @property {string} award - URL to award image
  * @property {string} brand - Brand (drumeo, pianote, guitareo, singeo, playbass)
  * @property {string|null} instructorName - Name of the instructor
