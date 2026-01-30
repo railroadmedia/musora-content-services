@@ -190,7 +190,7 @@ function sortCards(pinnedCard, contentCardMap, playlistCards, methodCard, limit)
   combined = [...combined, ...progressList, ...playlistCards]
 
   // welcome card state will only show if pinned
-  if (methodCard.type !== 'method') {
+  if (methodCard && methodCard.type !== 'method') {
     combined.push(methodCard)
   }
 
