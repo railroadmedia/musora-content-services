@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.128.0](https://github.com/railroadmedia/musora-content-services/compare/v2.127.0...v2.128.0) (2026-01-31)
+
+
+### Features
+
+* **BEH-1514:** badge rear ([#756](https://github.com/railroadmedia/musora-content-services/issues/756)) ([201ccea](https://github.com/railroadmedia/musora-content-services/commit/201cceaced4607e085b6504761bc376deaee8f0b))
+
 ## [2.127.0](https://github.com/railroadmedia/musora-content-services/compare/v2.126.0...v2.127.0) (2026-01-30)
 
 
