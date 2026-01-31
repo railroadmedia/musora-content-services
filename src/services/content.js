@@ -126,31 +126,41 @@ export async function getTabResults(brand, pageName, tabName, {
       let recommendedContent = await fetchByRailContentIds(allRecommendations, 'tab-data', brand, true)
       recommendedContent.sort((a, b) => allRecommendations.indexOf(a.id) - allRecommendations.indexOf(b.id))
 
+      recommendedContent = filterCoursesInCourseCollections(recommendedContent)
+
       const start = (page - 1) * limit
       const end = start + limit
 
-      // Need more content beyond recommendations?
+      // use pagination to only fetch new contents
       if (recommendedContent.length < end) {
-        const additionalNeeded = end - recommendedContent.length;
         const tabData = await fetchTabData(brand, pageName, {
-          page: Math.ceil(additionalNeeded / limit),
-          limit: additionalNeeded + limit,
+          page,
+          limit,
           sort: '-published_on',
           includedFields: mergedIncludedFields,
-          progress: progressValue
+          progress: progressValue,
+          excludeIds: recommendedContent.map(c => c.id)
         })
 
         // Filter out duplicates and combine
         const recommendedIds = new Set(recommendedContent.map(c => c.id))
         const additionalContent = tabData.entity.filter(c => !recommendedIds.has(c.id))
 
-        contentToDisplay = [...recommendedContent, ...additionalContent].slice(start, end)
+        const recommendedContentToDisplay = recommendedContent.slice(start, end)
+        const additionalContentToDisplay = additionalContent.slice(0, limit - recommendedContentToDisplay.length)
+        contentToDisplay = [...recommendedContentToDisplay, ...additionalContentToDisplay]
       } else {
         contentToDisplay = recommendedContent.slice(start, end)
       }
     } else {
       // No recommendations - use normal flow
-      const temp = await fetchTabData(brand, pageName, { page, limit, sort: '-published_on', includedFields: mergedIncludedFields, progress: progressValue })
+      const temp = await fetchTabData(brand, pageName, {
+        page,
+        limit,
+        sort: '-published_on',
+        includedFields: mergedIncludedFields,
+        progress: progressValue
+      })
       contentToDisplay = temp.entity
     }
 
@@ -595,4 +605,8 @@ export async function getOwnedContent(brand, {
     addProgressPercentage: true,
     addProgressStatus: true,
   });
+}
+
+export function filterCoursesInCourseCollections(data) {
+  return data.filter(c => !(c.type === 'course' && c.parent_id))
 }
