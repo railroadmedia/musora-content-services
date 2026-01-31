@@ -32,7 +32,8 @@ import {
   SONG_TYPES,
   SONG_TYPES_WITH_CHILDREN,
   liveFields,
-  addAwardTemplateToContent, contentAwardField,
+  addAwardTemplateToContent,
+  contentAwardField,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems } from './recommendations.js'
 import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS, CONTENT_STATUSES } from '../contentMetaData.js'
