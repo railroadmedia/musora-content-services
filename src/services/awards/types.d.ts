@@ -3,7 +3,8 @@ export interface AwardDefinition {
   is_active: boolean
   name: string
   logo: string | null
-  badge: string
+  badge: string | null
+  badge_rear: string | null
   award: string
   content_id: number
   content_type: string
@@ -33,7 +34,11 @@ export interface AwardCompletionData {
 export interface AwardInfo {
   awardId: string
   awardTitle: string
-  badge: string
+  badge: string | null
+  badge_logo: string | null
+  badge_rear: string | null
+  badge_template: string
+  badge_template_rear: string
   award: string
   brand: string
   instructorName: string

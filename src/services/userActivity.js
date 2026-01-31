@@ -8,15 +8,13 @@ import { DataContext, UserActivityVersionKey } from './dataContext.js'
 import { fetchByRailContentIds, fetchParentChildRelationshipsFor } from './sanity'
 import { getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js'
 import { globalConfig } from './config'
-import { addAwardTemplateToContent, getFormattedType, LEARNING_PATH_LESSON } from '../contentTypeConfig'
+import { addAwardTemplateToContent, getFormattedType } from '../contentTypeConfig'
 import dayjs from 'dayjs'
 import { addContextToContent } from './contentAggregator.js'
 import { db, Q } from './sync'
 import { COLLECTION_TYPE } from './sync/models/ContentProgress'
 import { streakCalculator } from './user/streakCalculator'
-import { mapContentsThatWereLastProgressedFromMethod, mapLearningPathParentsTo } from "./content-org/learning-paths.js";
-
-const DATA_KEY_PRACTICES = 'practices'
+import { mapContentsThatWereLastProgressedFromMethod } from "./content-org/learning-paths.ts";
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
