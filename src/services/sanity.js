@@ -32,7 +32,7 @@ import {
   SONG_TYPES,
   SONG_TYPES_WITH_CHILDREN,
   liveFields,
-  addAwardTemplateToContent,
+  addAwardTemplateToContent, contentAwardField,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems } from './recommendations.js'
 import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS, CONTENT_STATUSES } from '../contentMetaData.js'
@@ -943,9 +943,9 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
       "logo" : logo_image_url.asset->url,
       "dark_mode_logo": dark_mode_logo_url.asset->url,
       "light_mode_logo": light_mode_logo_url.asset->url,
-      "badge": *[references(^._id) && _type == 'content-award'][0].badge.asset->url,
-      "badge_rear": *[references(^._id) && _type == 'content-award'][0].badge_rear.asset->url,
-      "badge_logo": *[references(^._id) && _type == 'content-award'][0].logo.asset->url,
+      "badge": ${contentAwardField}.badge.asset->url,
+      "badge_rear": ${contentAwardField}.badge_rear.asset->url,
+      "badge_logo": ${contentAwardField}.logo.asset->url,
     },`
     : ''
 

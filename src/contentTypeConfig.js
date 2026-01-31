@@ -112,6 +112,8 @@ export const resourcesField = `[
           ... *[railcontent_id == ^.parent_content_data[0].id] [0].resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
           ]`
 
+export const contentAwardField = "*[references(^._id) && _type == 'content-award'][0]"
+
 /*
  *  NOTE: TP-366 - Arrays can be either arrays of different objects or arrays of different primitives, not both
  *  updated query so assignment_sheet_music_image can be either an image or a URL
@@ -388,9 +390,9 @@ export let contentTypeConfig = {
   'progress-tracker': {
     fields: [
       '"parent_content_data": parent_content_data[].id',
-      '"badge" : *[references(^._id) && _type == "content-award"][0].badge.asset->url',
-      '"badge_rear" : *[references(^._id) && _type == "content-award"][0].badge_rear.asset->url',
-      '"badge_logo" : *[references(^._id) && _type == "content-award"][0].logo.asset->url',
+      `"badge" : ${contentAwardField}.badge.asset->url`,
+      `"badge_rear" : ${contentAwardField}.badge_rear.asset->url`,
+      `"badge_logo" : ${contentAwardField}.logo.asset->url`,
     ],
     includeChildFields: true,
   },
@@ -495,9 +497,9 @@ export let contentTypeConfig = {
       `"intro_video": intro_video->{ ${getIntroVideoFields('learning-path-v2').join(', ')} }`,
       'total_skills',
       `"resource": ${resourcesField}`,
-      `"badge": *[references(^._id) && _type == "content-award"][0].badge.asset->url`,
-      `"badge_rear" : *[references(^._id) && _type == "content-award"][0].badge_rear.asset->url`,
-      `"badge_logo" : *[references(^._id) && _type == "content-award"][0].logo.asset->url`,
+      `"badge": ${contentAwardField}.badge.asset->url`,
+      `"badge_rear" : ${contentAwardField}.badge_rear.asset->url`,
+      `"badge_logo" : ${contentAwardField}.logo.asset->url`,
     ],
     includeChildFields: true,
     childFields: [
