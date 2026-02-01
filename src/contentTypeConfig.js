@@ -301,10 +301,10 @@ export const progressTypesMapping = {
   'song tutorial': [...tutorialsLessonTypes, 'song-tutorial-lesson'],
   songs: transcriptionsLessonTypes,
   'play along': playAlongLessonTypes,
-  'guided course': ['guided-course'],
+  'guided course': ['guided-course', 'guided-course-lesson'],
   'course collection': ['course-collection'],
   'learning path': ['learning-path-v2'],
-  'skill pack': skillLessonTypes,
+  'skill pack': [...skillLessonTypes, 'skill-pack-lesson'],
   'jam track': jamTrackLessonTypes,
   'course video': ['course-lesson'],
 }
