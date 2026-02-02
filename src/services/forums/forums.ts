@@ -46,6 +46,11 @@ function stripHtml(html: string): string {
   // Remove iframes and their content
   filtered = filtered.replace(/<iframe[^>]*>[\s\S]*?<\/iframe>/gi, '')
 
+  // Replace block-level closing tags and <br> with spaces to prevent word concatenation
+  filtered = filtered.replace(/<br\s*\/?>/gi, ' ')
+  filtered = filtered.replace(/<\/(?:p|div|li|h[1-6])>/gi, ' ')
+  filtered = filtered.replace(/<img[^>]*>/gi, ' ')
+
   // Remove remaining HTML tags
   const withoutTags = filtered.replace(/<[^>]*>/g, '')
 
@@ -58,7 +63,7 @@ function stripHtml(html: string): string {
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, ' ')
 
-  return decoded.trim()
+  return decoded.replace(/\s+/g, ' ').trim()
 }
 
 function transformLatestDiscussions(response: PaginatedResponse<ForumThread>): TransformedResponse {
