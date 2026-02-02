@@ -1,6 +1,6 @@
 import { SyncToken, SyncEntry, SyncSyncable } from "./index"
 import { EpochMs } from "."
-
+import * as fflate from 'fflate'
 import { globalConfig } from '../config.js'
 import { RecordId } from "@nozbe/watermelondb"
 import BaseModel from "./models/Base"
@@ -164,7 +164,8 @@ export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (userI
       ...(context.session.getSessionId() ? {
         'X-Sync-Client-Session-Id': context.session.getSessionId()!
       } : {}),
-      'X-Sync-Intended-User-Id': userId.toString()
+      'X-Sync-Intended-User-Id': userId.toString(),
+      'X-Sync-Accept-Encoding': 'gzip-base64'
     }
   })
 }
@@ -216,7 +217,26 @@ export function handlePull(callback: (userId: number, context: SyncContext) => R
     }
     const intendedUserId = +response.headers.get('X-Sync-Intended-User-Id')!
 
-    const json = await response.json() as RawPullResponse
+    const contentEncoding = response.headers.get('X-Sync-Content-Encoding');
+    let json: RawPullResponse;
+
+    if (contentEncoding === 'gzip-base64') {
+      const base64Data = await response.text();
+
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      const decompressed = fflate.gunzipSync(bytes);
+
+      const jsonString = fflate.strFromU8(decompressed);
+      json = JSON.parse(jsonString) as RawPullResponse;
+    } else {
+      json = await response.json() as RawPullResponse;
+    }
+
     const data = deserializePullResponse(json)
 
     // if no max_updated_at, at least use the server's timestamp
