@@ -1863,6 +1863,7 @@ export async function fetchTabData(
     progressIds = undefined,
     progress = 'all',
     showMembershipRestrictedContent = false,
+    excludeIds = [],
   } = {}
 ) {
   const start = (page - 1) * limit
@@ -1898,7 +1899,13 @@ export async function fetchTabData(
   let entityFieldsString = ''
   let filter = ''
 
-  filter = `brand == "${brand}" && (defined(railcontent_id)) ${includedFieldsFilter} ${progressFilter}`
+  const excludedIdsFilter = excludeIds.length
+    ? `&& !(railcontent_id in [${excludeIds.join(',')}])`
+    : ''
+
+  const excludeCoursesInCourseCollectionsFilter = `&& !(_type == 'course' && defined(parent_content_data))`
+
+  filter = `brand == "${brand}" && (defined(railcontent_id)) ${includedFieldsFilter} ${progressFilter} ${excludedIdsFilter} ${excludeCoursesInCourseCollectionsFilter}`
   const childrenFilter = await new FilterBuilder(``, {
     isChildrenFilter: true,
     showMembershipRestrictedContent: true,
