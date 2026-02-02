@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.129.2](https://github.com/railroadmedia/musora-content-services/compare/v2.129.1...v2.129.2) (2026-02-02)
+
+
+### Bug Fixes
+
+* **BEH-1486:** hide course collection courses ([#757](https://github.com/railroadmedia/musora-content-services/issues/757)) ([055cc73](https://github.com/railroadmedia/musora-content-services/commit/055cc73bf362dc7616602bbce9ae5f5c7324a1c6))
+
 ### [2.129.1](https://github.com/railroadmedia/musora-content-services/compare/v2.129.0...v2.129.1) (2026-02-02)
 
 ## [2.129.0](https://github.com/railroadmedia/musora-content-services/compare/v2.126.0...v2.129.0) (2026-02-02)
