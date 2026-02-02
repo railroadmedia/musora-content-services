@@ -98,29 +98,27 @@ export class PermissionsV2Adapter extends PermissionsAdapter {
       showOnlyOwnedContent = false,
     } = options
 
-    // Admins bypass permission filter
-    if (this.isAdmin(userPermissions)) {
-      return null
-    }
-
     // If showOnlyOwnedContent, show only purchased/owned content
     if (showOnlyOwnedContent) {
       return this.buildOwnedContentFilter(userPermissions)
     }
 
-    let userPermissionIds = this.getUserPermissionIds(userPermissions)
-    const isDereferencedContext = prefix === '@->'
-
-    // If showing membership restricted content
-    if (showMembershipRestrictedContent) {
-      return ` ${prefix}membership_tier in ${arrayToStringRepresentation([plusMembershipTier, basicMembershipTier])} `
+    // Admins bypass permission filter
+    if (this.isAdmin(userPermissions)) {
+      return null
     }
 
+    let userPermissionIds = this.getUserPermissionIds(userPermissions)
+    const isDereferencedContext = prefix === '@->'
     const filter = this.buildStandardPermissionFilter(
       userPermissionIds,
       prefix,
       isDereferencedContext
     )
+    // If showing membership restricted content
+    if (showMembershipRestrictedContent) {
+      return ` (${prefix}membership_tier in ${arrayToStringRepresentation([plusMembershipTier, basicMembershipTier])} || ${filter}  )`
+    }
 
     return filter
   }
