@@ -58,7 +58,7 @@ export class FilterBuilder {
   }
 
   async buildFilter() {
-    if (this.bypassPermissions) {
+    if (this.bypassPermissions && !this.showOnlyOwnedContent) {
       this.userData = { permissions: [], isAdmin: false }
     } else {
       const adapter = getPermissionsAdapter()
@@ -134,10 +134,10 @@ export class FilterBuilder {
   }
 
   _applyPermissions() {
-    if (this.bypassPermissions) return this
+    if (this.bypassPermissions && !this.showOnlyOwnedContent) return this
     const adapter = getPermissionsAdapter()
     // Check if admin (admins bypass permissions)
-    if (adapter.isAdmin(this.userData)) return this
+    if (adapter.isAdmin(this.userData) && !this.showOnlyOwnedContent) return this
 
     // Generate permissions filter using adapter
     const permissionsFilter = adapter.generatePermissionsFilter(this.userData, {
