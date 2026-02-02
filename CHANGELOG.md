@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.129.0](https://github.com/railroadmedia/musora-content-services/compare/v2.126.0...v2.129.0) (2026-02-02)
+
+
+### Features
+
+* allows LP cards through on Your Progress section ([#745](https://github.com/railroadmedia/musora-content-services/issues/745)) ([5ed313a](https://github.com/railroadmedia/musora-content-services/commit/5ed313ac1db434856a2cd189793fa1137d18d384))
+* **BEH-1514:** badge rear ([#756](https://github.com/railroadmedia/musora-content-services/issues/756)) ([201ccea](https://github.com/railroadmedia/musora-content-services/commit/201cceaced4607e085b6504761bc376deaee8f0b))
+
 ## [2.128.0](https://github.com/railroadmedia/musora-content-services/compare/v2.127.0...v2.128.0) (2026-01-31)
 
 
