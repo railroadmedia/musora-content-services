@@ -130,11 +130,12 @@ export async function getTabResults(brand, pageName, tabName, {
 
       const start = (page - 1) * limit
       const end = start + limit
+      const pagesFilledByRec = Math.floor(recommendedContent.length / limit)
 
       // use pagination to only fetch new contents
       if (recommendedContent.length < end) {
         const tabData = await fetchTabData(brand, pageName, {
-          page,
+          page: page - pagesFilledByRec,
           limit,
           sort: '-published_on',
           includedFields: mergedIncludedFields,
