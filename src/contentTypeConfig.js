@@ -1006,6 +1006,10 @@ export const awardTemplate = {
     front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass.svg",
     rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass-rear.svg",
   },
+  musora: {
+    front: null,
+    rear: null,
+  },
 }
 
 /**
