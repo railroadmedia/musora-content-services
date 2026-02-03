@@ -381,7 +381,7 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         live_event_end_time,
          "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}'`
   const query = buildRawQuery(
-    `defined(live_event_start_time) && live_event_start_time >= '${now}' && (!defined(live_event_end_time) || live_event_end_time >= '${now}' ) && brand == '${brand}' &&  status == 'scheduled'`,
+    `defined(live_event_start_time) && (!defined(live_event_end_time) || live_event_end_time >= '${now}' ) && (brand == '${brand}' || brand == 'musora' && live_global_event) && status in ['scheduled']`,
     fields,
     {
       sortOrder: 'published_on asc',
