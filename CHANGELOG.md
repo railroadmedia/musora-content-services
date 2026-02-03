@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.129.3](https://github.com/railroadmedia/musora-content-services/compare/v2.129.0...v2.129.3) (2026-02-03)
+
+
+### Bug Fixes
+
+* **BEH-1486:** hide course collection courses ([#757](https://github.com/railroadmedia/musora-content-services/issues/757)) ([055cc73](https://github.com/railroadmedia/musora-content-services/commit/055cc73bf362dc7616602bbce9ae5f5c7324a1c6))
+* prevent word concatenation in stripHtml for discussion previews ([cea4a6a](https://github.com/railroadmedia/musora-content-services/commit/cea4a6a6405d93c263ae3db02f1ddc8d143e5205))
+
 ### [2.129.2](https://github.com/railroadmedia/musora-content-services/compare/v2.129.1...v2.129.2) (2026-02-02)
 
 
