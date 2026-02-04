@@ -34,7 +34,7 @@ export interface Artists {
  *   .catch(error => console.error(error));
  */
 export async function fetchArtists(
-  brand: Brands,
+  brand: Brands|string,
   options: BuildQueryOptions
 ): Promise<Artists> {
   const type = f.type('artist')
@@ -124,7 +124,7 @@ export interface ArtistLessons {
  */
 export async function fetchArtistLessons(
   slug: string,
-  brand: Brands,
+  brand: Brands|string,
   contentType?: string,
   {
     sort = '-published_on',

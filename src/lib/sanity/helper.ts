@@ -193,7 +193,7 @@ export function getFilterOptions(
 
 export function getSortOrder(
   sort: string = '-published_on',
-  brand: Brands,
+  brand: Brands|string,
   groupBy?: string
 ): string {
   const sanitizedSort = sort?.trim() || '-published_on';

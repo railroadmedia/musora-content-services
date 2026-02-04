@@ -33,7 +33,7 @@ export interface Genres {
  *   .catch(error => console.error(error));
  */
 export async function fetchGenres(
-  brand: Brands,
+  brand: Brands|string,
   options: BuildQueryOptions
 ): Promise<Genres> {
   const type = f.type('genre')
@@ -122,7 +122,7 @@ export interface GenreLessons {
  */
 export async function fetchGenreLessons(
   slug: string,
-  brand: Brands,
+  brand: Brands|string,
   contentType?: string,
   {
     sort = '-published_on',

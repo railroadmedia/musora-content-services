@@ -35,7 +35,7 @@ export interface Instructors {
  *   .catch(error => console.error(error));
  */
 export async function fetchInstructors(
-  brand: Brands,
+  brand: Brands|string,
   options: BuildQueryOptions
 ): Promise<Instructors> {
   const type = f.type('instructor')
@@ -125,7 +125,7 @@ export interface InstructorLessons {
  */
 export async function fetchInstructorLessons(
   slug: string,
-  brand: Brands,
+  brand: Brands|string,
   {
     sort = '-published_on',
     searchTerm = '',

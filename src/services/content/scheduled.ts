@@ -119,7 +119,7 @@ function getLiveEventFilter(brand: string, now: string) {
 }
 
 export async function fetchNewUpcomingAndLive(
-  brand: Brands,
+  brand: Brands|string,
   {
     page = 1,
     limit = 20,
@@ -155,7 +155,7 @@ export async function fetchNewUpcomingAndLive(
 }
 
 export async function fetchNewReleases(
-  brand: Brands,
+  brand: Brands|string,
   {
     page = 1,
     limit = 20,
@@ -180,7 +180,7 @@ export async function fetchNewReleases(
 }
 
 export async function fetchScheduledReleases(
-  brand: Brands,
+  brand: Brands|string,
   {
     page = 1,
     limit = 10
@@ -204,7 +204,7 @@ export async function fetchScheduledReleases(
 }
 
 export async function fetchUpcomingEvents(
-  brand: Brands,
+  brand: Brands|string,
   {
     page = 1,
     limit = 10
