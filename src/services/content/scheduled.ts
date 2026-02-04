@@ -72,6 +72,7 @@ function getNewAndScheduledContentFilter(brand: string, now: string, status: "ne
       statuses = ['published']
       clauses = [
         f.publishedBefore(now),
+        "show_in_new_feed == true",
       ]
       break
     case "scheduled":
@@ -89,13 +90,15 @@ function getNewAndScheduledContentFilter(brand: string, now: string, status: "ne
     default:
       types = merge(upcomingTypes, newTypes)
       statuses = ['published', 'scheduled']
+      clauses = [
+        "show_in_new_feed == true",
+      ]
   }
 
   return f.combine(
     f.typeIn(types),
     f.brand(brand),
     f.statusIn(statuses),
-    "show_in_new_feed == true",
     ...clauses
   )
 }
