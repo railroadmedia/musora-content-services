@@ -81,7 +81,7 @@ function getNewAndScheduledContentFilter(brand: string, now: string, status: "ne
         f.publishedAfter(now),
         f.combineOr(
           f.notDefined('live_event_end_time'),
-          `live_event_end_time < ${now}`,
+          `live_event_end_time < "${now}"`,
         )
       ]
       break
@@ -105,7 +105,7 @@ function getLiveEventFilter(brand: string, now: string) {
     f.defined('live_event_start_time'),
     f.combineOr(
       f.notDefined('live_event_end_time'),
-      `live_event_end_time >= ${now}`,
+      `live_event_end_time >= "${now}"`,
     ),
     f.combineOr(
       f.brand(brand),
