@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.131.1](https://github.com/railroadmedia/musora-content-services/compare/v2.131.0...v2.131.1) (2026-02-04)
+
+
+### Bug Fixes
+
+* add musora to award template ([#765](https://github.com/railroadmedia/musora-content-services/issues/765)) ([692743f](https://github.com/railroadmedia/musora-content-services/commit/692743f950d155e3bda8a8d6675374b4611c5a53))
+* add SP and GC lesson types to progressTypesMapping ([#759](https://github.com/railroadmedia/musora-content-services/issues/759)) ([493ac78](https://github.com/railroadmedia/musora-content-services/commit/493ac78dfadb11e66def4c832d3998033bc133cd))
+* optimize method complete fn ([#755](https://github.com/railroadmedia/musora-content-services/issues/755)) ([23f6429](https://github.com/railroadmedia/musora-content-services/commit/23f6429560234905cdd91f15aca33df0289e9133))
+
 ## [2.131.0](https://github.com/railroadmedia/musora-content-services/compare/v2.130.0...v2.131.0) (2026-02-03)
 
 
