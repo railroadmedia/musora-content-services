@@ -5,7 +5,8 @@ import { getFieldsForContentTypeWithFilteredChildren } from '../../contentTypeCo
 import { Brands } from '../../lib/brands'
 import { Filters as f } from '../../lib/sanity/filter'
 import { BuildQueryOptions, query } from '../../lib/sanity/query'
-import { fetchSanity, getSortOrder } from '../sanity.js'
+import { getSortOrder } from '../../lib/sanity/helper'
+import { fetchSanity } from '../../lib/sanity/fetch'
 import { Lesson } from './content'
 
 export interface Artist {
@@ -24,6 +25,7 @@ export interface Artists {
  * Fetch all artists with lessons available for a specific brand.
  *
  * @param {Brands|string} brand - The brand for which to fetch artists.
+ * @param {Object} options - Options for sorting, pagination, and filtering.
  * @returns {Promise<Artist[]|null>} - A promise that resolves to an array of artist objects or null if not found.
  *
  * @example
@@ -32,7 +34,7 @@ export interface Artists {
  *   .catch(error => console.error(error));
  */
 export async function fetchArtists(
-  brand: Brands | string,
+  brand: Brands,
   options: BuildQueryOptions
 ): Promise<Artists> {
   const type = f.type('artist')
@@ -109,10 +111,10 @@ export interface ArtistLessons {
  * @param {Object} params - Parameters for sorting, searching, pagination and filtering.
  * @param {string} [params.sort="-published_on"] - The field to sort the lessons by.
  * @param {string} [params.searchTerm=""] - The search term to filter the lessons.
- * @param {number} [params.page=1] - The page number for pagination.
+ * @param {number} [params.offset=1] - The offset number for pagination.
  * @param {number} [params.limit=10] - The number of items per page.
  * @param {Array<string>} [params.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
- * @param {Array<number>} [params.progressId=[]] - The ids of the lessons that are in progress or completed
+ * @param {Array<number>} [params.progressIds=[]] - The ids of the lessons that are in progress or completed
  * @returns {Promise<ArtistLessons>} - The lessons for the artist
  *
  * @example
@@ -122,7 +124,7 @@ export interface ArtistLessons {
  */
 export async function fetchArtistLessons(
   slug: string,
-  brand: Brands | string,
+  brand: Brands,
   contentType?: string,
   {
     sort = '-published_on',

@@ -7,16 +7,21 @@ import {
   fetchMetadata,
   fetchRecent,
   fetchTabData,
+  fetchContentRows,
+  fetchOwnedContent,
+  fetchCourseCollectionData,
+  fetchReturning,
+  fetchLeaving,
+} from './sanity.js'
+import {
   fetchNewReleases,
   fetchUpcomingEvents,
   fetchScheduledReleases,
-  fetchReturning,
-  fetchLeaving, fetchScheduledAndNewReleases, fetchContentRows, fetchOwnedContent, fetchCourseCollectionData
-} from './sanity.js'
+  fetchNewUpcomingAndLive,
+} from './content/scheduled'
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {recommendations, rankCategories, rankItems} from "./recommendations";
 import {addContextToContent} from "./contentAggregator.js";
-import {globalConfig} from "./config";
 import {getUserData} from "./user/management";
 import {
   lessonTypesMapping,
@@ -345,7 +350,7 @@ export async function getNewAndUpcoming(brand, {
   limit = 10,
 } = {}) {
 
-  const data = await fetchScheduledAndNewReleases(brand, {page: page, limit: limit});
+  const data = await fetchNewUpcomingAndLive(brand, {page: page, limit: limit});
   if (!data) {
     return null;
   }

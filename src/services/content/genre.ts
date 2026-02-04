@@ -5,7 +5,8 @@ import { getFieldsForContentTypeWithFilteredChildren } from '../../contentTypeCo
 import { Brands } from '../../lib/brands'
 import { Filters as f } from '../../lib/sanity/filter'
 import { BuildQueryOptions, query } from '../../lib/sanity/query'
-import { fetchSanity, getSortOrder } from '../sanity.js'
+import { getSortOrder } from '../../lib/sanity/helper'
+import { fetchSanity } from '../../lib/sanity/fetch'
 import { Lesson } from './content'
 
 export interface Genre {
@@ -32,7 +33,7 @@ export interface Genres {
  *   .catch(error => console.error(error));
  */
 export async function fetchGenres(
-  brand: Brands | string,
+  brand: Brands,
   options: BuildQueryOptions
 ): Promise<Genres> {
   const type = f.type('genre')
@@ -121,7 +122,7 @@ export interface GenreLessons {
  */
 export async function fetchGenreLessons(
   slug: string,
-  brand: Brands | string,
+  brand: Brands,
   contentType?: string,
   {
     sort = '-published_on',

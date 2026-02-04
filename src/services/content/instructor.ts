@@ -5,7 +5,8 @@ import { getFieldsForContentTypeWithFilteredChildren } from '../../contentTypeCo
 import { Brands } from '../../lib/brands'
 import { Filters as f } from '../../lib/sanity/filter'
 import { BuildQueryOptions, query } from '../../lib/sanity/query'
-import { fetchSanity, getSortOrder } from '../sanity.js'
+import { getSortOrder } from '../../lib/sanity/helper'
+import { fetchSanity } from '../../lib/sanity/fetch'
 import { Lesson } from './content'
 
 export interface Instructor {
@@ -25,6 +26,7 @@ export interface Instructors {
  * Fetch all instructor with lessons available for a specific brand.
  *
  * @param {Brands|string} brand - The brand for which to fetch instructors.
+ * @param {BuildQueryOptions} options - Parameters for pagination and sorting.
  * @returns {Promise<Instructors>} - A promise that resolves to an array of instructor objects.
  *
  * @example
@@ -33,7 +35,7 @@ export interface Instructors {
  *   .catch(error => console.error(error));
  */
 export async function fetchInstructors(
-  brand: Brands | string,
+  brand: Brands,
   options: BuildQueryOptions
 ): Promise<Instructors> {
   const type = f.type('instructor')
@@ -107,12 +109,12 @@ export interface InstructorLessons {
  * Fetch the data needed for the instructor screen.
  * @param {string} slug - The slug of the instructor
  * @param {Brands|string} brand - The brand for which to fetch instructor lessons
- * @param {string|null} [contentType] - The content type to filter lessons by (e.g., 'lesson', 'course').
- * @param {FetchInstructorLessonsOptions} options - Parameters for pagination, filtering and sorting.
- * @param {string} [options.sortOrder="-published_on"] - The field to sort the lessons by.
+ * @param {InstructorLessonsOptions} options - Parameters for pagination, filtering and sorting.
+ * @param {string} [options.sort="-published_on"] - The field to sort the lessons by.
  * @param {string} [options.searchTerm=""] - The search term to filter content by title.
- * @param {number} [options.page=1] - The page number for pagination.
+ * @param {number} [options.offset=1] - The offset for pagination.
  * @param {number} [options.limit=10] - The number of items per page.
+ * @param {string} [options.contentType=null] - The content type to filter lessons by (e.g., 'lesson', 'course').
  * @param {Array<string>} [options.includedFields=[]] - Additional filters to apply to the query in the format of a key,value array. eg. ['difficulty,Intermediate', 'genre,rock'].
  *
  * @returns {Promise<InstructorLessons>} - The lessons for the instructor or null if not found.
@@ -123,7 +125,7 @@ export interface InstructorLessons {
  */
 export async function fetchInstructorLessons(
   slug: string,
-  brand: Brands | string,
+  brand: Brands,
   {
     sort = '-published_on',
     searchTerm = '',

@@ -1,4 +1,4 @@
-import {  SONG_TYPES_WITH_CHILDREN } from '../../contentTypeConfig.js'
+import { SONG_TYPES_WITH_CHILDREN } from '../../contentTypeConfig.js'
 import { globalConfig } from '../../services/config.js'
 import { getPermissionsAdapter } from '../../services/permissions'
 

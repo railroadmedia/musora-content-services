@@ -1,6 +1,7 @@
 import { Monoid } from '../ads/monoid'
 
 export interface BuildQueryOptions {
+  page?: number
   sort?: string
   offset?: number
   limit?: number

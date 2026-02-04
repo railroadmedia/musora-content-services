@@ -86,6 +86,7 @@ import {
 } from './services/content-org/playlists.js';
 
 import {
+	filterCoursesInCourseCollections,
 	getContentRows,
 	getLegacyMethods,
 	getLessonContentRows,
@@ -266,7 +267,6 @@ import {
 } from './services/reporting/reporting.ts';
 
 import {
-	buildEntityAndTotalQuery,
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchBrandsByContentIds,
@@ -290,6 +290,7 @@ import {
 	fetchMethodV2Structure,
 	fetchMethodV2StructureFromId,
 	fetchNewReleases,
+	fetchNewUpcomingAndLive,
 	fetchOtherSongVersions,
 	fetchOwnedContent,
 	fetchPackData,
@@ -300,8 +301,6 @@ import {
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
 	fetchReturning,
-	fetchSanity,
-	fetchScheduledAndNewReleases,
 	fetchScheduledReleases,
 	fetchShows,
 	fetchShowsData,
@@ -311,9 +310,7 @@ import {
 	fetchTabData,
 	fetchTopLevelParentId,
 	fetchUpcomingEvents,
-	getSanityDate,
 	getSongTypesFor,
-	getSortOrder,
 	jumpToContinueContent
 } from './services/sanity.js';
 
@@ -450,7 +447,6 @@ export {
 	assignModeratorToComment,
 	blockUser,
 	blockedUsers,
-	buildEntityAndTotalQuery,
 	buildImageSRC,
 	calculateLongestStreaks,
 	clearAllCachedData,
@@ -538,6 +534,7 @@ export {
 	fetchMethodV2Structure,
 	fetchMethodV2StructureFromId,
 	fetchNewReleases,
+	fetchNewUpcomingAndLive,
 	fetchNotificationSettings,
 	fetchNotifications,
 	fetchOtherSongVersions,
@@ -557,8 +554,6 @@ export {
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
 	fetchReturning,
-	fetchSanity,
-	fetchScheduledAndNewReleases,
 	fetchScheduledReleases,
 	fetchShows,
 	fetchShowsData,
@@ -580,6 +575,7 @@ export {
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
 	fetchUserPractices,
+	filterCoursesInCourseCollections,
 	findIncompleteLesson,
 	flushWatchSession,
 	followThread,
@@ -629,10 +625,8 @@ export {
 	getReportIssueOptions,
 	getResumeTimeSecondsByIds,
 	getResumeTimeSecondsByIdsAndCollections,
-	getSanityDate,
 	getScheduleContentRows,
 	getSongTypesFor,
-	getSortOrder,
 	getStartedOrCompletedProgressOnly,
 	getStreaksAndMessage,
 	getTabResults,
