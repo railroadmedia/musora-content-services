@@ -206,23 +206,25 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return this.queryRecordId(...args)
   }
 
-  async insertOne(builder: (record: TModel) => void, span?: Span) {
+  async insertOne(builder: (record: TModel) => void, parentSpan?: Span) {
     return await this.runScope.abortable(async () => {
-      const record = await this.paranoidWrite(span, async () => {
-        return this.collection.create(rec => {
+      const record = await this.paranoidWrite(parentSpan, async  (writer, span) => {
+        const r = await this.collection.create(rec => {
           builder(rec)
         })
+        span.setAttribute('records.ids', [r.id])
+        return r
       })
       this.emit('upserted', [record])
 
-      this.pushUnsyncedWithRetry(span, { type: 'insertOne', recordId: record.id })
+      this.pushUnsyncedWithRetry(parentSpan, { type: 'insertOne', recordId: record.id })
       await this.ensurePersistence()
 
       return this.modelSerializer.toPlainObject(record)
     })
   }
 
-  async updateOneId(id: RecordId, builder: (record: TModel) => void, span?: Span) {
+  async updateOneId(id: RecordId, builder: (record: TModel) => void, parentSpan?: Span) {
     return await this.runScope.abortable(async () => {
       const found = await this.findRecord(id)
 
@@ -230,25 +232,28 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         throw new SyncError('Record not found', { id })
       }
 
-      const record = await this.paranoidWrite(span, async () => {
+      const record = await this.paranoidWrite(parentSpan, async (_writer, span) => {
+        span.setAttribute('records.ids', [id])
         return found.update(builder)
       })
       this.emit('upserted', [record])
 
-      this.pushUnsyncedWithRetry(span, { type: 'updateOneId', recordId: record.id })
+      this.pushUnsyncedWithRetry(parentSpan, { type: 'updateOneId', recordIds: record.id })
       await this.ensurePersistence()
 
       return this.modelSerializer.toPlainObject(record)
     })
   }
 
-  async upsertSome(builders: Record<RecordId, (record: TModel) => void>, span?: Span, { skipPush = false } = {}) {
+  async upsertSome(builders: Record<RecordId, (record: TModel) => void>, parentSpan?: Span, { skipPush = false } = {}) {
     if (Object.keys(builders).length === 0) return []
 
     return await this.runScope.abortable(async () => {
       const ids = Object.keys(builders)
 
-      const records = await this.paranoidWrite(span, async writer => {
+      const records = await this.paranoidWrite(parentSpan, async (writer, span) => {
+        span.setAttribute('records.ids', ids)
+
         const existing = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids))))
         const existingMap = existing.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
 
@@ -306,7 +311,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       this.emit('upserted', records)
 
       if (!skipPush) {
-        this.pushUnsyncedWithRetry(span, { type: 'upsertSome', recordIds: records.map(r => r.id).join(',') })
+        this.pushUnsyncedWithRetry(parentSpan, { type: 'upsertSome', recordIds: records.map(r => r.id).join(',') })
       }
       await this.ensurePersistence()
 
@@ -329,11 +334,13 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return this.upsertSomeTentative({ [id]: builder }, span).then(r => r[0])
   }
 
-  async deleteOne(id: RecordId, span?: Span, { skipPush = false } = {}) {
+  async deleteOne(id: RecordId, parentSpan?: Span, { skipPush = false } = {}) {
     return await this.runScope.abortable(async () => {
       let record: TModel | null = null
 
-      await this.paranoidWrite(span, async writer => {
+      await this.paranoidWrite(parentSpan, async (writer, span) => {
+        span.setAttribute('records.ids', [id])
+
         const existing = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', id))).then(
           (records) => records[0] || null
         )
@@ -355,7 +362,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       this.emit('deleted', [id])
 
       if (!skipPush) {
-        this.pushUnsyncedWithRetry(span, { type: 'deleteOne', recordId: id })
+        this.pushUnsyncedWithRetry(parentSpan, { type: 'deleteOne', recordId: id })
       }
       await this.ensurePersistence()
 
@@ -363,9 +370,10 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
-  async deleteSome(ids: RecordId[], span?: Span, { skipPush = false } = {}) {
+  async deleteSome(ids: RecordId[], parentSpan?: Span, { skipPush = false } = {}) {
     return this.runScope.abortable(async () => {
-      await this.paranoidWrite(span, async writer => {
+      await this.paranoidWrite(parentSpan, async (writer, span) => {
+        span.setAttribute('records.ids', ids)
         const existing = await this.queryRecords(Q.where('id', Q.oneOf(ids)))
 
         await writer.batch(...existing.map(record => record.prepareMarkAsDeleted()))
@@ -374,7 +382,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       this.emit('deleted', ids)
 
       if (!skipPush) {
-        this.pushUnsyncedWithRetry(span, { type: 'deleteSome', recordIds: ids.join(',') })
+        this.pushUnsyncedWithRetry(parentSpan, { type: 'deleteSome', recordIds: ids.join(',') })
       }
       await this.ensurePersistence()
 
@@ -386,9 +394,11 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return this.restoreSome([id], span).then(r => r[0])
   }
 
-  async restoreSome(ids: RecordId[], span?: Span) {
+  async restoreSome(ids: RecordId[], parentSpan?: Span) {
     return this.runScope.abortable(async () => {
-      const records = await this.paranoidWrite(span, async writer => {
+      const records = await this.paranoidWrite(parentSpan, async (writer, span) => {
+        span.setAttribute('records.ids', ids)
+
         const records = await writer.callReader(() => this.queryMaybeDeletedRecords(
           Q.where('id', Q.oneOf(ids)),
           Q.where('_status', 'deleted')
@@ -410,7 +420,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
       this.emit('upserted', records)
 
-      this.pushUnsyncedWithRetry(span, { type: 'restoreSome', recordIds: ids.join(',') })
+      this.pushUnsyncedWithRetry(parentSpan, { type: 'restoreSome', recordIds: ids.join(',') })
       await this.ensurePersistence()
 
       return records.map((record) => this.modelSerializer.toPlainObject(record))
@@ -806,7 +816,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
    */
   private paranoidWrite<T>(
     parentSpan: Span | undefined,
-    work: (writer: WriterInterface) => Promise<T>
+    work: (writer: WriterInterface, span: Span) => Promise<T>
   ): Promise<T> {
     const initialId = this.userScope.initialId
     const currentId = this.userScope.getCurrentId()
@@ -820,17 +830,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return this.telemetry.trace(
       { name: `write:${this.model.table}`, op: 'write', parentSpan, attributes: { ...this.context.session.toJSON() } },
       (writeSpan) => {
-        return this.db.write(writer =>
-          this.telemetry.trace(
-            {
-              name: `write:generate:${this.model.table}`,
-              op: 'write:generate',
-              parentSpan: writeSpan,
-              attributes: { ...this.context.session.toJSON() },
-            },
-            () => work(writer)
-          )
-        )
+        return this.db.write(writer => work(writer, writeSpan))
       }
     )
   }

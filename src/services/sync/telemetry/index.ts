@@ -93,8 +93,7 @@ export class SyncTelemetry {
       op: `${SYNC_TELEMETRY_TRACE_PREFIX}${opts.op}`,
       attributes: {
         ...opts.attributes,
-        'user.initialId': this.userScope.initialId,
-        'user.currentId': this.userScope.getCurrentId(),
+        'user.id': this.userScope.initialId
       },
     }
     return this.Sentry.startSpan<T>(options, (span) => {
