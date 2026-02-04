@@ -90,7 +90,7 @@ export async function unpinProgressRow(brand) {
  */
 export function getUserPinProgressKey(id) {
   const userId = id || globalConfig.sessionConfig?.userId || globalConfig.railcontentConfig?.userId
-  return userId ? `user_pin_progress_row_${userId}` : USER_PIN_PROGRESS_KEY
+  return USER_PIN_PROGRESS_KEY + `_${userId}`
 }
 
 export async function setUserPinnedProgressRow(userId, pinnedData) {
