@@ -212,7 +212,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         const r = await this.collection.create(rec => {
           builder(rec)
         })
-        span.setAttribute('id', r.id)
+        span.setAttribute('record.id', r.id)
         return r
       })
       this.emit('upserted', [record])
@@ -233,7 +233,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       }
 
       const record = await this.paranoidWrite(parentSpan, async (_writer, span) => {
-        span.setAttribute('id', id)
+        span.setAttribute('record.id', id)
         return found.update(builder)
       })
       this.emit('upserted', [record])
@@ -252,7 +252,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       const ids = Object.keys(builders)
 
       const records = await this.paranoidWrite(parentSpan, async (writer, span) => {
-        span.setAttribute('ids', ids.join(','))
+        span.setAttribute('records.ids', ids.join(','))
 
         const existing = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(ids))))
         const existingMap = existing.reduce((map, record) => map.set(record.id, record), new Map<RecordId, TModel>())
@@ -339,7 +339,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       let record: TModel | null = null
 
       await this.paranoidWrite(parentSpan, async (writer, span) => {
-        span.setAttribute('id', id)
+        span.setAttribute('record.id', id)
 
         const existing = await writer.callReader(() => this.queryMaybeDeletedRecords(Q.where('id', id))).then(
           (records) => records[0] || null
@@ -373,7 +373,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   async deleteSome(ids: RecordId[], parentSpan?: Span, { skipPush = false } = {}) {
     return this.runScope.abortable(async () => {
       await this.paranoidWrite(parentSpan, async (writer, span) => {
-        span.setAttribute('ids', ids.join(','))
+        span.setAttribute('records.ids', ids.join(','))
         const existing = await this.queryRecords(Q.where('id', Q.oneOf(ids)))
 
         await writer.batch(...existing.map(record => record.prepareMarkAsDeleted()))
@@ -397,7 +397,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   async restoreSome(ids: RecordId[], parentSpan?: Span) {
     return this.runScope.abortable(async () => {
       const records = await this.paranoidWrite(parentSpan, async (writer, span) => {
-        span.setAttribute('ids', ids.join(','))
+        span.setAttribute('records.ids', ids.join(','))
 
         const records = await writer.callReader(() => this.queryMaybeDeletedRecords(
           Q.where('id', Q.oneOf(ids)),
