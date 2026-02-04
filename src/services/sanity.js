@@ -28,13 +28,13 @@ import {
   SONG_TYPES,
   liveFields,
   addAwardTemplateToContent,
-  contentAwardField, getUpcomingEventsTypes, getNewReleasesTypes, artistOrInstructorName,
+  contentAwardField,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems } from './recommendations.js'
 import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS, CONTENT_STATUSES } from '../contentMetaData.js'
 import { GET } from '../infrastructure/http/HttpClient.ts'
 
-import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
+import { FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
 import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
@@ -46,7 +46,7 @@ import {
   buildQuery,
   buildEntityAndTotalQuery,
   getFilterOptions,
-  getSortOrder, merge,
+  getSortOrder,
 } from '../lib/sanity/helper'
 import { fetchSanity } from '../lib/sanity/fetch'
 
@@ -310,132 +310,6 @@ export async function fetchRelatedSongs(brand, songId) {
 
   // Fetch the related songs data
   return fetchSanity(query, false)
-}
-
-/**
- * Fetch the latest new releases for a specific brand.
- * @param {string} brand - The brand for which to fetch new releases.
- * @returns {Promise<Object|null>} - The fetched new releases data or null if not found.
- */
-export async function fetchNewReleases(
-  brand,
-  { page = 1, limit = 20, sort = '-published_on' } = {}
-) {
-  const newTypes = getNewReleasesTypes(brand)
-  const typesString = arrayToStringRepresentation(newTypes)
-  const start = (page - 1) * limit
-  const end = start + limit
-  const sortOrder = getSortOrder(sort, brand)
-  const now = getDateOnly()
-  const filter = `_type in ${typesString} && brand == '${brand}' && (status == 'published' && show_in_new_feed == true && published_on <= '${now}')`
-  const fields = `
-     "id": railcontent_id,
-      title,
-      "image": thumbnail.asset->url,
-      "thumbnail": thumbnail.asset->url,
-      ${artistOrInstructorName()},
-      "instructor": ${instructorField},
-      "artists": instructor[]->name,
-      difficulty,
-      difficulty_string,
-      length_in_seconds,
-      published_on,
-      "type": _type,
-      web_url_path,
-      "permission_id": permission_v2,
-      `
-  const query = buildRawQuery(filter, fields, { sortOrder: sortOrder, start, end: end })
-  return fetchSanity(query, true)
-}
-
-/**
- * Fetch upcoming events for a specific brand.
- *
- * @param {string} brand - The brand for which to fetch upcoming events.
- * @returns {Promise<Object|null>} - A promise that resolves to an array of upcoming event objects or null if not found.
- *
- * @example
- * fetchUpcomingEvents('drumeo', {
- *   page: 2,
- *   limit: 20,
- * })
- *   .then(events => console.log(events))
- *   .catch(error => console.error(error));
- */
-export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) {
-  const now = getSanityDate(new Date())
-  const start = (page - 1) * limit
-  const end = start + limit
-  const fields = `
-        "id": railcontent_id,
-        title,
-        "image": thumbnail.asset->url,
-        "thumbnail": thumbnail.asset->url,
-        ${artistOrInstructorName()},
-        "artists": instructor[]->name,
-        "instructor": ${instructorField},
-        difficulty,
-        difficulty_string,
-        length_in_seconds,
-        published_on,
-        "type": _type,
-        web_url_path,
-        "permission_id": permission_v2,
-        live_event_start_time,
-        live_event_end_time,
-         "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}'`
-  const query = buildRawQuery(
-    `defined(live_event_start_time) && (!defined(live_event_end_time) || live_event_end_time >= '${now}' ) && (brand == '${brand}' || brand == 'musora' && live_global_event) && status in ['scheduled']`,
-    fields,
-    {
-      sortOrder: 'published_on asc',
-      start: start,
-      end: end,
-    }
-  )
-  return fetchSanity(query, true)
-}
-
-/**
- * Fetch scheduled releases for a specific brand.
- *
- * @param {string} brand - The brand for which to fetch scheduled releasess.
- * @returns {Promise<Object|null>} - A promise that resolves to an array of scheduled release objects or null if not found.
- *
- * @example
- * fetchScheduledReleases('drumeo', {
- *   page: 2,
- *   limit: 20,
- * })
- *   .then(content => console.log(content))
- *   .catch(error => console.error(error));
- */
-export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
-  const upcomingTypes = getUpcomingEventsTypes(brand)
-  const newTypes = getNewReleasesTypes(brand)
-
-  const scheduledTypes = merge(upcomingTypes, newTypes)
-  const typesString = arrayJoinWithQuotes(scheduledTypes)
-  const now = getSanityDate(new Date())
-  const start = (page - 1) * limit
-  const end = start + limit
-  const query = `*[_type in [${typesString}] && brand == '${brand}' && status in ['published','scheduled'] && (!defined(live_event_end_time) || live_event_end_time < '${now}' ) && published_on > '${now}']{
-      "id": railcontent_id,
-      title,
-      "image": thumbnail.asset->url,
-      "thumbnail": thumbnail.asset->url,
-      ${artistOrInstructorName()},
-      "instructor": ${instructorField},
-      "artists": instructor[]->name,
-      difficulty,
-      difficulty_string,
-      length_in_seconds,
-      published_on,
-      "type": _type,
-      web_url_path,
-      "permission_id": permission_v2,
-  } | order(published_on asc)[${start}...${end}]`
-  return fetchSanity(query, true)
 }
 
 /**
@@ -1597,45 +1471,6 @@ export async function fetchRecent(
     progress: progress.toLowerCase(),
   })
   return results.entity
-}
-
-export async function fetchNewUpcomingAndLive(
-  brand,
-  { page = 1, limit = 20, sort = '-published_on' } = {}
-) {
-  const upcomingTypes = getUpcomingEventsTypes(brand)
-  const newTypes = getNewReleasesTypes(brand)
-
-  const scheduledTypes = merge(upcomingTypes, newTypes)
-  const typesString = arrayJoinWithQuotes(scheduledTypes)
-  const now = getSanityDate(new Date())
-
-  const start = (page - 1) * limit
-  const end = start + limit
-  const sortOrder = getSortOrder(sort, brand)
-
-  const query = `
-    *[(_type in [${typesString}] && brand == '${brand}' && ((status in ['published','scheduled'] )||(show_in_new_feed == true)))
-      || (defined(live_event_start_time) && (!defined(live_event_end_time) || live_event_end_time >= '${now}' ) && (brand == '${brand}' || brand == 'musora' && live_global_event) && status in ['scheduled'])]
-    [${start}...${end}]
-   | order(published_on asc) {
-      "id": railcontent_id,
-      title,
-      "image": thumbnail.asset->url,
-      "thumbnail": thumbnail.asset->url,
-      ${artistOrInstructorName()},
-      "artists": instructor[]->name,
-      difficulty,
-      difficulty_string,
-      length_in_seconds,
-      published_on,
-      "type": _type,
-      show_in_new_feed,
-      "permission_id": permission_v2,
-      "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}',
-  }`
-
-  return fetchSanity(query, true)
 }
 
 export async function fetchShows(brand, type, sort = 'sort') {

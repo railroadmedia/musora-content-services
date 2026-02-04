@@ -38,6 +38,13 @@ import {
 } from './services/content/instructor.ts';
 
 import {
+	fetchNewReleases,
+	fetchNewUpcomingAndLive,
+	fetchScheduledReleases,
+	fetchUpcomingEvents
+} from './services/content/scheduled.ts';
+
+import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
@@ -285,8 +292,6 @@ import {
 	fetchMethodV2IntroVideo,
 	fetchMethodV2Structure,
 	fetchMethodV2StructureFromId,
-	fetchNewReleases,
-	fetchNewUpcomingAndLive,
 	fetchOtherSongVersions,
 	fetchOwnedContent,
 	fetchPackData,
@@ -297,7 +302,6 @@ import {
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
 	fetchReturning,
-	fetchScheduledReleases,
 	fetchShows,
 	fetchShowsData,
 	fetchSiblingContent,
@@ -305,7 +309,6 @@ import {
 	fetchSongById,
 	fetchTabData,
 	fetchTopLevelParentId,
-	fetchUpcomingEvents,
 	getSongTypesFor,
 	jumpToContinueContent
 } from './services/sanity.js';
