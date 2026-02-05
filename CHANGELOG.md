@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.131.5](https://github.com/railroadmedia/musora-content-services/compare/v2.131.4...v2.131.5) (2026-02-05)
+
+
+### Bug Fixes
+
+* **T3PS-1401:** 5 minute ttl for pinned data ([#767](https://github.com/railroadmedia/musora-content-services/issues/767)) ([a14cea5](https://github.com/railroadmedia/musora-content-services/commit/a14cea5ce9e65297e5f16c9ab320445786da0c5d))
+
 ### [2.131.4](https://github.com/railroadmedia/musora-content-services/compare/v2.131.3...v2.131.4) (2026-02-05)
 
 
