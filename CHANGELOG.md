@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.131.4](https://github.com/railroadmedia/musora-content-services/compare/v2.131.3...v2.131.4) (2026-02-05)
+
+
+### Bug Fixes
+
+* hide badge field if is_active false ([#773](https://github.com/railroadmedia/musora-content-services/issues/773)) ([d8d9159](https://github.com/railroadmedia/musora-content-services/commit/d8d9159c5270dac8ea1de92634266f9f412b3c7c))
+* **onboarding:** update recommended content interface ([65f5e91](https://github.com/railroadmedia/musora-content-services/commit/65f5e91eea00762ea5ab195ce650eb1b3fa92e77))
+* watermelon validation tweaks ([#770](https://github.com/railroadmedia/musora-content-services/issues/770)) ([ebd6e7f](https://github.com/railroadmedia/musora-content-services/commit/ebd6e7f7c059a23a6126b993b3084744d3d6e78a))
+
 ### [2.131.3](https://github.com/railroadmedia/musora-content-services/compare/v2.131.2...v2.131.3) (2026-02-04)
 
 ### [2.131.2](https://github.com/railroadmedia/musora-content-services/compare/v2.131.1...v2.131.2) (2026-02-04)
