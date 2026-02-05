@@ -38,6 +38,13 @@ import {
 } from './services/content/instructor.ts';
 
 import {
+	fetchNewReleases,
+	fetchNewUpcomingAndLive,
+	fetchScheduledReleases,
+	fetchUpcomingEvents
+} from './services/content/scheduled.ts';
+
+import {
 	enrollUserInGuidedCourse,
 	fetchEnrollmentPageMetadata,
 	guidedCourses,
@@ -82,6 +89,7 @@ import {
 } from './services/content-org/playlists.js';
 
 import {
+	filterCoursesInCourseCollections,
 	getContentRows,
 	getLegacyMethods,
 	getLessonContentRows,
@@ -262,7 +270,6 @@ import {
 } from './services/reporting/reporting.ts';
 
 import {
-	buildEntityAndTotalQuery,
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchBrandsByContentIds,
@@ -285,7 +292,6 @@ import {
 	fetchMethodV2IntroVideo,
 	fetchMethodV2Structure,
 	fetchMethodV2StructureFromId,
-	fetchNewReleases,
 	fetchOtherSongVersions,
 	fetchOwnedContent,
 	fetchPackData,
@@ -296,9 +302,6 @@ import {
 	fetchRelatedRecommendedContent,
 	fetchRelatedSongs,
 	fetchReturning,
-	fetchSanity,
-	fetchScheduledAndNewReleases,
-	fetchScheduledReleases,
 	fetchShows,
 	fetchShowsData,
 	fetchSiblingContent,
@@ -306,10 +309,7 @@ import {
 	fetchSongById,
 	fetchTabData,
 	fetchTopLevelParentId,
-	fetchUpcomingEvents,
-	getSanityDate,
 	getSongTypesFor,
-	getSortOrder,
 	jumpToContinueContent
 } from './services/sanity.js';
 
@@ -451,7 +451,6 @@ declare module 'musora-content-services' {
 		assignModeratorToComment,
 		blockUser,
 		blockedUsers,
-		buildEntityAndTotalQuery,
 		buildImageSRC,
 		calculateLongestStreaks,
 		clearAllCachedData,
@@ -539,6 +538,7 @@ declare module 'musora-content-services' {
 		fetchMethodV2Structure,
 		fetchMethodV2StructureFromId,
 		fetchNewReleases,
+		fetchNewUpcomingAndLive,
 		fetchNotificationSettings,
 		fetchNotifications,
 		fetchOtherSongVersions,
@@ -558,8 +558,6 @@ declare module 'musora-content-services' {
 		fetchRelatedRecommendedContent,
 		fetchRelatedSongs,
 		fetchReturning,
-		fetchSanity,
-		fetchScheduledAndNewReleases,
 		fetchScheduledReleases,
 		fetchShows,
 		fetchShowsData,
@@ -581,6 +579,7 @@ declare module 'musora-content-services' {
 		fetchUserPracticeMeta,
 		fetchUserPracticeNotes,
 		fetchUserPractices,
+		filterCoursesInCourseCollections,
 		findIncompleteLesson,
 		flushWatchSession,
 		followThread,
@@ -630,10 +629,8 @@ declare module 'musora-content-services' {
 		getReportIssueOptions,
 		getResumeTimeSecondsByIds,
 		getResumeTimeSecondsByIdsAndCollections,
-		getSanityDate,
 		getScheduleContentRows,
 		getSongTypesFor,
-		getSortOrder,
 		getStartedOrCompletedProgressOnly,
 		getStreaksAndMessage,
 		getTabResults,

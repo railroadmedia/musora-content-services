@@ -101,7 +101,7 @@ class AwardDefinitionsService {
     this.isFetching = true
 
     try {
-      const { fetchSanity } = await import('../../sanity')
+      const { fetchSanity } = await import('../../../lib/sanity/fetch')
       const { FilterBuilder } = await import('../../../filterBuilder')
 
       const childFilter = await new FilterBuilder('@->exclude_from_awards_calculation != true', {
