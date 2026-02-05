@@ -10,6 +10,50 @@ import {
   throwIfOutsideRange,
 } from '../errors/validators'
 
+export const validators = {
+  // char(26)
+  manual_id: (value: string | null) => {
+    throwIfNotNullableString(value)
+    return value !== null ? throwIfMaxLengthExceeded(value, 26) : value
+  },
+  // int unsigned
+  content_id: (value: number | null) => {
+    throwIfNotNullableNumber(value)
+    return value !== null ? throwIfOutsideRange(value, 0) : value
+  },
+  date: (value: string) => {
+    return throwIfNotString(value)
+  },
+  // tinyint(1)
+  auto: (value: boolean) => {
+    return throwIfNotBoolean(value)
+  },
+  duration_seconds: (value: number) => {
+    throwIfNotNumber(value)
+    return throwIfOutsideRange(value, 0, 59999)
+  },
+  // varchar(64)
+  title: (value: string | null) => {
+    throwIfNotNullableString(value)
+    return value !== null ? throwIfMaxLengthExceeded(value, 64) : value
+  },
+  // varchar(255)
+  thumbnail_url: (value: string | null) => {
+    throwIfNotNullableString(value)
+    return value !== null ? throwIfMaxLengthExceeded(value, 255) : value
+  },
+  // tinyint unsigned
+  category_id: (value: number | null) => {
+    throwIfNotNullableNumber(value)
+    return value !== null ? throwIfOutsideRange(value, 0, 255) : value
+  },
+  // tinyint unsigned
+  instrument_id: (value: number | null) => {
+    throwIfNotNullableNumber(value)
+    return value !== null ? throwIfOutsideRange(value, 0, 255) : value
+  }
+}
+
 export default class Practice extends BaseModel<{
   manual_id: string | null
   content_id: number | null
@@ -52,44 +96,41 @@ export default class Practice extends BaseModel<{
   }
 
   set manual_id(value: string | null) {
-    // char(26)
-    throwIfNotNullableString(value)
-    this._setRaw('manual_id', value !== null ? throwIfMaxLengthExceeded(value, 26) : value)
+    this._setRaw('manual_id', validators.manual_id(value))
   }
   set content_id(value: number | null) {
-    // int unsigned
-    throwIfNotNullableNumber(value)
-    this._setRaw('content_id', value !== null ? throwIfOutsideRange(value, 0) : value)
+    this._setRaw('content_id', validators.content_id(value))
   }
   set date(value: string) {
-    this._setRaw('date', throwIfNotString(value))
+    this._setRaw('date', validators.date(value))
   }
   set auto(value: boolean) {
-    // tinyint(1)
-    this._setRaw('auto', throwIfNotBoolean(value))
+    this._setRaw('auto', validators.auto(value))
   }
   set duration_seconds(value: number) {
-    throwIfNotNumber(value)
-    this._setRaw('duration_seconds', throwIfOutsideRange(value, 0, 59999))
+    this._setRaw('duration_seconds', validators.duration_seconds(value))
   }
   set title(value: string | null) {
-    // varchar(64)
-    throwIfNotNullableString(value)
-    this._setRaw('title', value !== null ? throwIfMaxLengthExceeded(value, 64) : value)
+    this._setRaw('title', validators.title(value))
   }
   set thumbnail_url(value: string | null) {
-    // varchar(255)
-    throwIfNotNullableString(value)
-    this._setRaw('thumbnail_url', value !== null ? throwIfMaxLengthExceeded(value, 255) : value)
+    this._setRaw('thumbnail_url', validators.thumbnail_url(value))
   }
   set category_id(value: number | null) {
-    // tinyint unsigned
-    throwIfNotNullableNumber(value)
-    this._setRaw('category_id', value !== null ? throwIfOutsideRange(value, 0, 255) : value)
+    this._setRaw('category_id', validators.category_id(value))
   }
   set instrument_id(value: number | null) {
-    // tinyint unsigned
-    throwIfNotNullableNumber(value)
-    this._setRaw('instrument_id', value !== null ? throwIfOutsideRange(value, 0, 255) : value)
+    this._setRaw('instrument_id', validators.instrument_id(value))
+  }
+
+  static generateAutoId(contentId: number, date: string) {
+    throwIfNotNumber(contentId)
+    throwIfNotString(date)
+    return ['auto', contentId.toString(), date].join(':')
+  }
+
+  static generateManualId(manualId: string) {
+    throwIfNotString(manualId)
+    return `manual:${manualId}`
   }
 }

@@ -14,4 +14,9 @@ export default class ContentLike extends BaseModel<{
   set content_id(value: number) {
     this._setRaw('content_id', throwIfNotNumber(value))
   }
+
+  static generateId(contentId: number) {
+    throwIfNotNumber(contentId)
+    return contentId.toString()
+  }
 }
