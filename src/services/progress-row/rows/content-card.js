@@ -5,7 +5,7 @@ import { getAllStartedOrCompleted, getProgressStateByIds } from '../../contentPr
 import { addContextToContent } from '../../contentAggregator.js'
 import { fetchByRailContentIds, fetchShows } from '../../sanity.js'
 import {
-  addAwardTemplateToContent,
+  postProcessBadge,
   awardTemplate,
   collectionLessonTypes,
   getFormattedType,
@@ -46,7 +46,7 @@ export async function getContentCardMap(brand, limit, playlistEngagedOnContent, 
       }
     )
     : []
-  contents = addAwardTemplateToContent(contents)
+  contents = postProcessBadge(contents)
 
   const contentCards = await Promise.all(generateContentPromises(contents))
   return contentCards.reduce((contentMap, content) => {

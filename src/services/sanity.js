@@ -32,7 +32,7 @@ import {
   SONG_TYPES,
   SONG_TYPES_WITH_CHILDREN,
   liveFields,
-  addAwardTemplateToContent,
+  postProcessBadge,
   contentAwardField,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems } from './recommendations.js'
@@ -998,7 +998,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
   }
 
   let contents = await fetchSanity(query, false, { customPostProcess: chapterProcess, processNeedAccess: true })
-  contents = addAwardTemplateToContent(contents)
+  contents = postProcessBadge(contents)
 
   return contents
 }
