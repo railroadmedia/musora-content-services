@@ -129,7 +129,7 @@ export interface OnboardingRecommendedContent {
 }
 
 export interface OnboardingRecommendationResponse {
-  recommendation: OnboardingRecommendedContent
+  recommended_content: OnboardingRecommendedContent
   user_onboarding: Onboarding
 }
 
