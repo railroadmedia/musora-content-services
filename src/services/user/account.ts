@@ -5,7 +5,6 @@ import { HttpClient } from '../../infrastructure/http/HttpClient'
 import { HttpError } from '../../infrastructure/http/interfaces/HttpError'
 import { globalConfig } from '../config.js'
 import { clearAllCachedData } from '../dataContext.js'
-import { setUserPinnedProgressRow } from '../progress-row/base.js'
 import { Onboarding } from './onboarding'
 import { AuthResponse } from './types'
 
@@ -80,8 +79,6 @@ export async function setupAccount(props: AccountSetupProps): Promise<AccountSet
       from: props.from,
     }
   )
-
-  await setUserPinnedProgressRow(res.auth.user?.id, res.auth.user?.brand_pinned_progress || {})
 
   return res
 }

@@ -40,8 +40,6 @@ export async function login(email, password, deviceName, deviceToken, platform) 
     platform: platform,
   })
 
-  await setUserPinnedProgressRow(data.user?.id, data.user?.brand_pinned_progress || {})
-
   return data
 }
 //Removing 3rdParty OAuth2 for now => https://musora.atlassian.net/browse/BEH-624?focusedCommentId=21492
