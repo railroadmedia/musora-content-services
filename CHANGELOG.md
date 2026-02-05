@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.131.7](https://github.com/railroadmedia/musora-content-services/compare/v2.131.6...v2.131.7) (2026-02-05)
+
+
+### Bug Fixes
+
+* use badge_logo ([#776](https://github.com/railroadmedia/musora-content-services/issues/776)) ([8d91b64](https://github.com/railroadmedia/musora-content-services/commit/8d91b647b1a85705a6b9157b604914d0743c7a99))
+
 ### [2.131.6](https://github.com/railroadmedia/musora-content-services/compare/v2.131.5...v2.131.6) (2026-02-05)
 
 
