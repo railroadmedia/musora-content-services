@@ -76,7 +76,7 @@ function getNewAndScheduledContentFilter(brand: string, now: string, status: "ne
       ]
       break
     case "scheduled":
-      types = upcomingTypes
+      types = merge(upcomingTypes, newTypes)
       statuses = ['published', 'scheduled']
       clauses = [
         f.publishedAfter(now),
@@ -162,7 +162,7 @@ export async function fetchNewReleases(
   {
     page = 1,
     limit = 20,
-    sort = 'published_on'
+    sort = '-published_on'
   }: BuildQueryOptions = {}
 ): Promise<NewRelease[]> {
   const start = (page - 1) * limit
