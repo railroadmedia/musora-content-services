@@ -3,9 +3,11 @@ import { SYNC_TABLES } from '../schema'
 import {
   throwIfInvalidEnumValue,
   throwIfNotNullableNumber,
+  throwIfNotNullableInteger,
   throwIfNotNullableString,
-  throwIfNotNumber,
   throwIfOutsideRange,
+  throwIfNotInteger,
+  throwIfNotNumber
 } from '../errors/validators'
 
 export enum COLLECTION_TYPE {
@@ -19,16 +21,44 @@ export enum STATE {
   COMPLETED = 'completed'
 }
 
-export default class ContentProgress extends BaseModel<{
-  content_id: number
-  content_brand: string | null
-  collection_type: COLLECTION_TYPE
-  collection_id: number
-  state: STATE
-  progress_percent: number
-  resume_time_seconds: number | null
-  last_interacted_a_la_carte: number | null
-}> {
+export interface CollectionParameter {
+  type: COLLECTION_TYPE,
+  id: number,
+}
+
+const validators = {
+  // unsigned int
+  content_id: (contentId: number) => {
+    throwIfNotNullableInteger(contentId)
+    return throwIfOutsideRange(contentId, 0)
+  },
+  content_brand: (contentBrand: string | null) => {
+    return throwIfNotNullableString(contentBrand)
+  },
+  // tinyint unsigned - IMPORTANT: progress percent only moves forward and is clamped between 0 and 100
+  // also has implications for last-write-wins sync strategy
+  progress_percent: (value: number, currentPercent: number) => {
+    throwIfNotNumber(value)
+    throwIfOutsideRange(value, 0, 100)
+    return value === 0 ? 0 : Math.max(value, currentPercent)
+  },
+  // enum collection_type
+  collection_type: (collectionType: string) => {
+    return throwIfInvalidEnumValue(collectionType, COLLECTION_TYPE) as COLLECTION_TYPE
+  },
+  // unsigned mediumint 16777215
+  collection_id: (collectionId: number) => {
+    throwIfNotInteger(collectionId)
+    return throwIfOutsideRange(collectionId, 0, 16777215)
+  },
+  // smallint unsigned
+  resume_time_seconds: (value: number | null) => {
+    throwIfNotNullableNumber(value)
+    return value !== null ? throwIfOutsideRange(value, 0, 65535) : value
+  }
+}
+
+export default class ContentProgress extends BaseModel {
   static table = SYNC_TABLES.CONTENT_PROGRESS
 
   get content_id() {
@@ -57,40 +87,41 @@ export default class ContentProgress extends BaseModel<{
   }
 
   set content_id(value: number) {
-    // unsigned int
-    throwIfNotNumber(value)
-    this._setRaw('content_id', throwIfOutsideRange(value, 0))
+    this._setRaw('content_id', validators.content_id(value))
   }
   set content_brand(value: string |  null) {
-    this._setRaw('content_brand', throwIfNotNullableString(value))
+    this._setRaw('content_brand', validators.content_brand(value))
   }
-  // IMPORTANT: progress percent only moves forward and is clamped between 0 and 100
-  // also has implications for last-write-wins sync strategy
   set progress_percent(value: number) {
-    // tinyint unsigned
-    throwIfNotNumber(value)
-    throwIfOutsideRange(value, 0, 100)
-    const percent = value === 0 ? 0 : Math.max(value, this.progress_percent)
+    const percent = validators.progress_percent(value, this.progress_percent)
 
     this._setRaw('progress_percent', percent)
     this._setRaw('state', percent === 100 ? STATE.COMPLETED : STATE.STARTED)
   }
   set collection_type(value: COLLECTION_TYPE) {
-    // enum collection_type
-    this._setRaw('collection_type', throwIfInvalidEnumValue(value, COLLECTION_TYPE))
+    this._setRaw('collection_type', validators.collection_type(value))
   }
   set collection_id(value: number) {
-    // unsigned mediumint 16777215
-    throwIfNotNumber(value)
-    this._setRaw('collection_id', throwIfOutsideRange(value, 0, 16777215))
+    this._setRaw('collection_id', validators.collection_id(value))
   }
   set resume_time_seconds(value: number | null) {
-    // smallint unsigned
-    throwIfNotNullableNumber(value)
-    this._setRaw('resume_time_seconds', value !== null ? throwIfOutsideRange(value, 0, 65535) : value)
+    this._setRaw('resume_time_seconds', validators.resume_time_seconds(value))
   }
   set last_interacted_a_la_carte(value: number) {
     this._setRaw('last_interacted_a_la_carte', value)
   }
 
+  static generateId(
+    contentId: number,
+    collection: CollectionParameter | null
+  ) {
+    validators.content_id(contentId)
+
+    if (collection !== null) {
+      validators.collection_type(collection.type)
+      validators.collection_id(collection.id)
+    }
+
+    return `${contentId}:${collection?.type || COLLECTION_TYPE.SELF}:${collection?.id || COLLECTION_ID_SELF}`
+  }
 }

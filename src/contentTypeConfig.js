@@ -301,10 +301,10 @@ export const progressTypesMapping = {
   'song tutorial': [...tutorialsLessonTypes, 'song-tutorial-lesson'],
   songs: transcriptionsLessonTypes,
   'play along': playAlongLessonTypes,
-  'guided course': ['guided-course'],
+  'guided course': ['guided-course', 'guided-course-lesson'],
   'course collection': ['course-collection'],
   'learning path': ['learning-path-v2'],
-  'skill pack': skillLessonTypes,
+  'skill pack': [...skillLessonTypes, 'skill-pack-lesson'],
   'jam track': jamTrackLessonTypes,
   'course video': ['course-lesson'],
 }
@@ -1006,6 +1006,10 @@ export const awardTemplate = {
     front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass.svg",
     rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass-rear.svg",
   },
+  musora: {
+    front: null,
+    rear: null,
+  },
 }
 
 /**
@@ -1014,24 +1018,30 @@ export const awardTemplate = {
  * @param {string} brand - brand for if content brand is missing
  * @returns {object|object[]} post-processed content
  */
-export function addAwardTemplateToContent(content, brand= null) {
+export function postProcessBadge(content, brand = null) {
   if (!content) return content
 
   // should be fine with this; children don't need awards.
   // assumes if badge_logo exists, it needs a badge_template.
   if (Array.isArray(content)) {
-    content.forEach((item) => {
-      if (item['badge_logo'] && !item['badge_template']) {
-        item['badge_template'] = awardTemplate[item['brand'] || brand].front
-        item['badge_template_rear'] = awardTemplate[item['brand'] || brand].rear
-      }
+    content.map((item) => {
+      return process(item)
     })
   } else {
-    if (content['badge_logo'] && !content['badge_template']) {
-      content['badge_template'] = awardTemplate[content['brand'] || brand].front
-      content['badge_template_rear'] = awardTemplate[content['brand'] || brand].rear
-    }
+    content = process(content)
   }
 
   return content
+
+  function process(item) {
+    if (!item['is_active']) {
+      item['badge'] = null
+      item['badge_rear'] = null
+    }
+    if (item['badge_logo'] && !item['badge_template']) {
+      item['badge_template'] = awardTemplate[item['brand'] || brand].front
+      item['badge_template_rear'] = awardTemplate[item['brand'] || brand].rear
+    }
+    return item
+  }
 }

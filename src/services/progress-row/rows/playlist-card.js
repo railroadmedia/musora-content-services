@@ -4,7 +4,7 @@
 import { fetchUserPlaylists } from '../../content-org/playlists.js'
 import { addContextToContent } from '../../contentAggregator.js'
 import { fetchByRailContentIds } from '../../sanity.js'
-import { addAwardTemplateToContent } from "../../../contentTypeConfig.js";
+import { postProcessBadge } from "../../../contentTypeConfig.js";
 
 export async function getPlaylistCards(recentPlaylists){
   return await Promise.all(
@@ -74,6 +74,6 @@ export async function getPlaylistEngagedOnContent(recentPlaylists){
       addProgressTimestamp: true,
     })
     : []
-  contents = addAwardTemplateToContent(contents)
+  contents = postProcessBadge(contents)
   return contents
 }

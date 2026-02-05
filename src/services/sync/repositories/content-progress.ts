@@ -1,5 +1,5 @@
 import SyncRepository, {Q} from './base'
-import ContentProgress, {COLLECTION_ID_SELF, COLLECTION_TYPE, STATE} from '../models/ContentProgress'
+import ContentProgress, {COLLECTION_ID_SELF, COLLECTION_TYPE, STATE, CollectionParameter} from '../models/ContentProgress'
 import {EpochMs} from "../index";
 
 interface ContentIdCollectionTuple {
@@ -7,10 +7,6 @@ interface ContentIdCollectionTuple {
   collection: CollectionParameter | null,
 }
 
-export interface CollectionParameter {
-  type: COLLECTION_TYPE,
-  id: number,
-}
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
   // null collection only
   async startedIds(limit?: number) {
@@ -161,7 +157,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   }
 
   recordProgress(contentId: number, collection: CollectionParameter | null, progressPct: number, resumeTime?: number, {skipPush = false, fromLearningPath = false} = {}) {
-    const id = ProgressRepository.generateId(contentId, collection)
+    const id = ContentProgress.generateId(contentId, collection)
 
     if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {
       fromLearningPath = true
@@ -222,7 +218,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
     const data = Object.fromEntries(
       Object.entries(contentProgresses).map(([contentId, progressPct]) => [
-        ProgressRepository.generateId(+contentId, collection),
+        ContentProgress.generateId(+contentId, collection),
         (r: ContentProgress) => {
           r.content_id = +contentId
           r.collection_type = collection?.type ?? COLLECTION_TYPE.SELF
@@ -242,11 +238,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   }
 
   eraseProgress(contentId: number, collection: CollectionParameter | null, {skipPush = false} = {}) {
-    return this.deleteOne(ProgressRepository.generateId(contentId, collection), { skipPush })
+    return this.deleteOne(ContentProgress.generateId(contentId, collection), { skipPush })
   }
 
   eraseProgressMany(contentIds: number[], collection: CollectionParameter | null, {skipPush = false} = {}) {
-    const ids = contentIds.map((id) => ProgressRepository.generateId(id, collection))
+    const ids = contentIds.map((id) => ContentProgress.generateId(id, collection))
     return this.deleteSome(ids, { skipPush })
   }
 
@@ -264,10 +260,4 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       )
     )
 
-  private static generateId(
-    contentId: number,
-    collection: CollectionParameter | null
-  ) {
-    return `${contentId}:${collection?.type || COLLECTION_TYPE.SELF}:${collection?.id || COLLECTION_ID_SELF}`
-  }
 }

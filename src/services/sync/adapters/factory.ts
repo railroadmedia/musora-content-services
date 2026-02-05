@@ -33,7 +33,7 @@ export default function syncAdapterFactory<T extends DatabaseAdapter>(
 
     return new AdapterClass({
       ...opts,
-      dbName: `sync:${userScope.initialId}`,
+      dbName: `musora:sync:${userScope.initialId}`,
       schema,
       migrations: undefined
     })

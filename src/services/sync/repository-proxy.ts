@@ -32,7 +32,7 @@ const repoCache: Record<string, Partial<SyncRepositories>> = {};
 const proxy = new Proxy({} as SyncRepositories, {
   get(_target, prop: keyof SyncRepositories) {
     // @ts-ignore - funny stuff in RN dev env that calls manager instance too early?
-    if (typeof prop === '$$typeof') return
+    if (prop === '$$typeof') return
 
     const manager = SyncManager.getInstance();
     const managerId = manager.getId();

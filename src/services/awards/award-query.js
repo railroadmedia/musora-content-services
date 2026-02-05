@@ -223,11 +223,7 @@ function defineAwards(data) {
     return {
       awardId: def._id,
       awardTitle: def.name,
-      badge: def.badge,
-      badge_rear: def.badge_rear,
-      badge_logo: def.logo,
-      badge_template: awardTemplate[def.brand].front,
-      badge_template_rear: awardTemplate[def.brand].rear,
+      ...getBadgeFields(def),
       award: def.award,
       brand: def.brand,
       instructorName: def.instructor_name,
@@ -329,11 +325,7 @@ export async function getCompletedAwards(brand = null, options = {}) {
           awardId: progress.award_id,
           awardTitle: definition.name,
           awardType: definition.type,
-          badge: definition.badge,
-          badge_rear: definition.badge_rear,
-          badge_logo: definition.logo,
-          badge_template: awardTemplate[definition.brand].front,
-          badge_template_rear: awardTemplate[definition.brand].rear,
+          ...getBadgeFields(definition),
           award: definition.award,
           brand: definition.brand,
           hasCertificate: hasCertificate,
@@ -454,11 +446,7 @@ export async function getInProgressAwards(brand = null, options = {}) {
         return {
           awardId: progress.award_id,
           awardTitle: definition.name,
-          badge: definition.badge,
-          badge_rear: definition.badge_rear,
-          badge_logo: definition.logo,
-          badge_template: awardTemplate[definition.brand].front,
-          badge_template_rear: awardTemplate[definition.brand].rear,
+          ...getBadgeFields(definition),
           award: definition.award,
           brand: definition.brand,
           instructorName: definition.instructor_name,
@@ -591,5 +579,15 @@ export async function resetAllAwards() {
   } catch (error) {
     console.error('Failed to reset awards:', error)
     return { deletedCount: 0 }
+  }
+}
+
+function getBadgeFields(def) {
+  return {
+    badge: def.is_active ? def.badge : null,
+    badge_rear: def.is_active ? def.badge_rear : null,
+    badge_logo: def.logo,
+    badge_template: awardTemplate[def.brand].front,
+    badge_template_rear: awardTemplate[def.brand].rear,
   }
 }

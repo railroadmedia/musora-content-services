@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.131.4](https://github.com/railroadmedia/musora-content-services/compare/v2.131.3...v2.131.4) (2026-02-05)
+
+
+### Bug Fixes
+
+* hide badge field if is_active false ([#773](https://github.com/railroadmedia/musora-content-services/issues/773)) ([d8d9159](https://github.com/railroadmedia/musora-content-services/commit/d8d9159c5270dac8ea1de92634266f9f412b3c7c))
+* **onboarding:** update recommended content interface ([65f5e91](https://github.com/railroadmedia/musora-content-services/commit/65f5e91eea00762ea5ab195ce650eb1b3fa92e77))
+* watermelon validation tweaks ([#770](https://github.com/railroadmedia/musora-content-services/issues/770)) ([ebd6e7f](https://github.com/railroadmedia/musora-content-services/commit/ebd6e7f7c059a23a6126b993b3084744d3d6e78a))
+
+### [2.131.3](https://github.com/railroadmedia/musora-content-services/compare/v2.131.2...v2.131.3) (2026-02-04)
+
+### [2.131.2](https://github.com/railroadmedia/musora-content-services/compare/v2.131.1...v2.131.2) (2026-02-04)
+
+### [2.131.1](https://github.com/railroadmedia/musora-content-services/compare/v2.131.0...v2.131.1) (2026-02-04)
+
+
+### Bug Fixes
+
+* add musora to award template ([#765](https://github.com/railroadmedia/musora-content-services/issues/765)) ([692743f](https://github.com/railroadmedia/musora-content-services/commit/692743f950d155e3bda8a8d6675374b4611c5a53))
+* add SP and GC lesson types to progressTypesMapping ([#759](https://github.com/railroadmedia/musora-content-services/issues/759)) ([493ac78](https://github.com/railroadmedia/musora-content-services/commit/493ac78dfadb11e66def4c832d3998033bc133cd))
+* optimize method complete fn ([#755](https://github.com/railroadmedia/musora-content-services/issues/755)) ([23f6429](https://github.com/railroadmedia/musora-content-services/commit/23f6429560234905cdd91f15aca33df0289e9133))
+
+## [2.131.0](https://github.com/railroadmedia/musora-content-services/compare/v2.130.0...v2.131.0) (2026-02-03)
+
+
+### Features
+
+* decode gzip+base64'd responses ([#764](https://github.com/railroadmedia/musora-content-services/issues/764)) ([43c2a7c](https://github.com/railroadmedia/musora-content-services/commit/43c2a7cfb03992ac6bb89a46c7c09bcf478404ee))
+
 ## [2.130.0](https://github.com/railroadmedia/musora-content-services/compare/v2.129.3...v2.130.0) (2026-02-03)
 
 

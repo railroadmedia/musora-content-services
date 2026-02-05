@@ -48,8 +48,8 @@ export const createSyncSentryTracesSampler = (sampleRate = 0.1) => {
       return true
     }
 
-    if (attributes?.userId) {
-      return userBucketedSampler(attributes.userId as string | number, sampleRate)
+    if (attributes?.['user.id']) {
+      return userBucketedSampler(attributes['user.id'] as string, sampleRate)
     }
 
     return undefined

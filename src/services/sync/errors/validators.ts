@@ -1,9 +1,13 @@
 import { SyncValidationError } from './index'
 
+export function throwIfNotInteger(val: any) {
+  if (!Number.isSafeInteger(val)) throw new SyncValidationError('Sync value is not a number: ' + val, typeof val, 'number');
+  return val
+}
 
 export function throwIfNotNumber(val: any) {
   // note: this will accept decimal values
-  if (typeof val !== 'number') throw new SyncValidationError('Sync value is not a number: ' + val, typeof val, 'number');
+  if (!Number.isFinite(val)) throw new SyncValidationError('Sync value is not a number: ' + val, typeof val, 'number');
   return val
 }
 
@@ -15,6 +19,10 @@ export function throwIfNotString(val: any) {
 export function throwIfNotBoolean(val: any) {
   if (typeof val !== 'boolean') throw new SyncValidationError('Sync value is not a boolean: ' + val, typeof val, 'boolean');
   return val
+}
+
+export function throwIfNotNullableInteger(val: any) {
+  return val === null ? val : throwIfNotInteger(val)
 }
 
 export function throwIfNotNullableNumber(val: any) {

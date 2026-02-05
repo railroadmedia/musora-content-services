@@ -95,6 +95,7 @@ export async function fetchInstructorBySlug(
 export interface InstructorLessonsOptions extends BuildQueryOptions {
   searchTerm?: string
   includedFields?: Array<string>
+  contentType?: string
 }
 
 export interface InstructorLessons {
@@ -123,13 +124,13 @@ export interface InstructorLessons {
 export async function fetchInstructorLessons(
   slug: string,
   brand: Brands | string,
-  contentType?: string,
   {
     sort = '-published_on',
     searchTerm = '',
     offset = 0,
     limit = 20,
     includedFields = [],
+    contentType = null
   }: InstructorLessonsOptions = {}
 ): Promise<InstructorLessons> {
   sort = getSortOrder(sort, brand)

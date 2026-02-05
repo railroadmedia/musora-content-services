@@ -453,16 +453,19 @@ export async function completeMethodIntroVideo(
 ): Promise<completeMethodIntroVideo> {
   let response = {} as completeMethodIntroVideo
 
-  const methodStructure = await fetchMethodV2Structure(brand)
+  const [intro_video_response, methodStructure] = await Promise.all([
+    completeIfNotCompleted(introVideoId),
+    fetchMethodV2Structure(brand)
+  ])
+  response.intro_video_response = intro_video_response
 
   const firstLearningPathId = methodStructure.learning_paths[0].id
+
   response.active_path_response = await methodIntroVideoCompleteActions(
     brand,
     firstLearningPathId,
     new Date()
   )
-
-  response.intro_video_response = await completeIfNotCompleted(introVideoId)
 
   return response
 }
