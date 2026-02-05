@@ -118,7 +118,7 @@ export async function processContentItem(content) {
       isLive: isLive,
       badge: content.badge ?? null,
       badge_rear: content.badge_rear ?? null,
-      badge_logo: content.logo ?? null,
+      badge_logo: content.badge_logo ?? null,
       badge_template: content.badge_template ?? null,
       badge_template_rear: content.badge_template_rear ?? null,
       isLocked: content.is_locked ?? false,
