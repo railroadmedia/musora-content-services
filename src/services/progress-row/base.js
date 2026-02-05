@@ -14,17 +14,119 @@ import { fetchByRailContentIds } from '../sanity.js'
 import { addContextToContent } from '../contentAggregator.js'
 import { fetchPlaylist } from '../content-org/playlists.js'
 import { TabResponseType } from '../../contentMetaData.js'
-import { PUT } from '../../infrastructure/http/HttpClient.ts'
+import { GET, PUT } from '../../infrastructure/http/HttpClient.ts'
 import { postProcessBadge } from "../../contentTypeConfig.js";
 
 export const USER_PIN_PROGRESS_KEY = 'user_pin_progress_row'
+const CACHE_EXPIRY_MS = 5 * 60 * 1000
+
+async function getUserPinnedItem(brand) {
+  const key = getUserPinProgressKey()
+
+  const pinnedProgress = await getStoredPinnedData(key)
+  const cachedData = pinnedProgress[brand]
+
+  if (isCacheValid(cachedData)) {
+    return cachedData
+  }
+
+  const url = `/api/user-management-system/v1/progress/pin?brand=${brand}`
+  const response = await GET(url)
+
+  if (response && !response.error) {
+    return await setUserBrandPinnedItem(brand, response)
+  }
+  return response
+}
+
+/**
+ * Pins a specific progress row for a user, scoped by brand.
+ *
+ * @param {string} brand - The brand context for the pin action.
+ * @param {number|string} id - The ID of the progress item to pin.
+ * @param {string} progressType - The type of progress (e.g., 'content', 'playlist').
+ * @returns {Promise<Object>} - A promise resolving to the response from the pin API.
+ *
+ * @example
+ * pinProgressRow('drumeo', 12345, 'content')
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+export async function pinProgressRow(brand, id, progressType) {
+  const url = `/api/user-management-system/v1/progress/pin?brand=${brand}&id=${id}&progressType=${progressType}`
+  const response = await PUT(url, null)
+
+  if (response && !response.error) {
+    return await setUserBrandPinnedItem(brand, {
+      id,
+      progressType,
+    })
+  }
+  return response
+}
+
+/**
+ * Unpins the current pinned progress row for a user, scoped by brand.
+ *
+ * @param {string} brand - The brand context for the unpin action.
+ * @returns {Promise<Object>} - A promise resolving to the response from the unpin API.
+ *
+ * @example
+ * unpinProgressRow('drumeo', 123456)
+ *   .then(response => console.log(response))
+ *   .catch(error => console.error(error));
+ */
+export async function unpinProgressRow(brand) {
+  const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}`
+  const response = await PUT(url, null)
+  if (response && !response.error) {
+    await setUserBrandPinnedItem(brand, null)
+  }
+  return response
+}
 
 /**
  * Gets the localStorage key for user pinned progress, scoped by user ID
  */
 export function getUserPinProgressKey(id) {
   const userId = id || globalConfig.sessionConfig?.userId || globalConfig.railcontentConfig?.userId
-  return userId ? `user_pin_progress_row_${userId}` : USER_PIN_PROGRESS_KEY
+  return USER_PIN_PROGRESS_KEY + `_${userId}`
+}
+
+export async function setUserPinnedProgressRow(userId, pinnedData) {
+  const key = getUserPinProgressKey(userId)
+
+  pinnedData.map(item => ({...item, cachedAt: Date.now()}))
+  await globalConfig.localStorage.setItem(key, JSON.stringify(pinnedData))
+}
+
+async function setUserBrandPinnedItem(brand, pinnedData) {
+  if (!brand) return
+
+  const key = getUserPinProgressKey()
+  let pinnedProgress = await getStoredPinnedData(key)
+
+  pinnedProgress[brand] = setPinnedData(pinnedData)
+  await globalConfig.localStorage.setItem(key, JSON.stringify(pinnedProgress))
+  return pinnedProgress
+}
+
+async function getStoredPinnedData(key) {
+  const pinnedProgressRaw = await globalConfig.localStorage.getItem(key)
+  const pinnedProgress = pinnedProgressRaw ? JSON.parse(pinnedProgressRaw) : {}
+  return pinnedProgress || {}
+}
+
+function setPinnedData(pinnedData) {
+  const now = Date.now()
+  return {
+    ...pinnedData,
+    cachedAt: now
+  }
+}
+
+function isCacheValid(cachedData) {
+  return cachedData?.cachedAt && (Date.now() - cachedData.cachedAt) < CACHE_EXPIRY_MS
 }
 
 /**
@@ -65,65 +167,6 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
 }
 
 /**
- * Pins a specific progress row for a user, scoped by brand.
- *
- * @param {string} brand - The brand context for the pin action.
- * @param {number|string} id - The ID of the progress item to pin.
- * @param {string} progressType - The type of progress (e.g., 'content', 'playlist').
- * @returns {Promise<Object>} - A promise resolving to the response from the pin API.
- *
- * @example
- * pinProgressRow('drumeo', 12345, 'content')
- *   .then(response => console.log(response))
- *   .catch(error => console.error(error));
- */
-export async function pinProgressRow(brand, id, progressType) {
-  const url = `/api/user-management-system/v1/progress/pin?brand=${brand}&id=${id}&progressType=${progressType}`
-  const response = await PUT(url, null)
-  if (response && !response.error) {
-    await updateUserPinnedProgressRow(brand, {
-      id,
-      progressType,
-      pinnedAt: new Date().toISOString(),
-    })
-  }
-  return response
-}
-
-/**
- * Unpins the current pinned progress row for a user, scoped by brand.
- *
- * @param {string} brand - The brand context for the unpin action.
- * @returns {Promise<Object>} - A promise resolving to the response from the unpin API.
- *
- * @example
- * unpinProgressRow('drumeo', 123456)
- *   .then(response => console.log(response))
- *   .catch(error => console.error(error));
- */
-export async function unpinProgressRow(brand) {
-  const url = `/api/user-management-system/v1/progress/unpin?brand=${brand}`
-  const response = await PUT(url, null)
-  if (response && !response.error) {
-    await updateUserPinnedProgressRow(brand, null)
-  }
-  return response
-}
-
-export async function setUserPinnedProgressRow(userId, pinnedData) {
-  const key = getUserPinProgressKey(userId)
-  await globalConfig.localStorage.setItem(key, JSON.stringify(pinnedData))
-}
-
-async function getUserPinnedItem(brand) {
-  const key = getUserPinProgressKey()
-  const pinnedProgressRaw = await globalConfig.localStorage.getItem(key)
-  let pinnedProgress = pinnedProgressRaw ? JSON.parse(pinnedProgressRaw) : {}
-  pinnedProgress = pinnedProgress || {}
-  return pinnedProgress[brand] ?? null
-}
-
-/**
  * Pop the userPinnedItem from cards and return it.
  * If userPinnedItem is not found, generate the pinned card from scratch.
  *
@@ -131,7 +174,6 @@ async function getUserPinnedItem(brand) {
 async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard) {
   if (!userPinnedItem) return null
   const pinnedId = parseInt(userPinnedItem.id)
-  const pinnedAt = userPinnedItem.pinnedAt
   const progressType = userPinnedItem.progressType ?? userPinnedItem.type
 
   let item = null
@@ -163,7 +205,7 @@ async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, meth
         id: pinnedId,
         playlist: playlist,
         type: 'playlist',
-        progressTimestamp: new Date(pinnedAt).getTime(),
+        progressTimestamp: new Date().getTime(),
       })
     }
   } else if (progressType === 'method') {
@@ -217,13 +259,4 @@ function mergeAndSortItems(items, limit) {
       return b.progressTimestamp - a.progressTimestamp
     })
     .slice(0, limit)
-}
-
-async function updateUserPinnedProgressRow(brand, pinnedData) {
-  const key = getUserPinProgressKey()
-  const pinnedProgressRaw = await globalConfig.localStorage.getItem(key)
-  let pinnedProgress = pinnedProgressRaw ? JSON.parse(pinnedProgressRaw) : {}
-  pinnedProgress = pinnedProgress || {}
-  pinnedProgress[brand] = pinnedData
-  await globalConfig.localStorage.setItem(key, JSON.stringify(pinnedProgress))
 }
