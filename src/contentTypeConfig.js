@@ -497,9 +497,6 @@ export let contentTypeConfig = {
       `"intro_video": intro_video->{ ${getIntroVideoFields('learning-path-v2').join(', ')} }`,
       'total_skills',
       `"resource": ${resourcesField}`,
-      `"badge": ${contentAwardField}.badge.asset->url`,
-      `"badge_rear" : ${contentAwardField}.badge_rear.asset->url`,
-      `"badge_logo" : ${contentAwardField}.logo.asset->url`,
     ],
     includeChildFields: true,
     childFields: [
