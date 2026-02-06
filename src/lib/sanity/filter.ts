@@ -100,6 +100,15 @@ export class Filters {
   }
 
   /**
+   * @param {string[]} types - Array of content types to filter by
+   * @returns {string} Filter expression
+   * @example Filters.typeIn(['song', 'workout']) // "_type in ['song','workout']"
+   */
+  static typeIn(types: string[]): string {
+    return `_type in ${arrayToStringRepresentation(types)}`
+  }
+
+  /**
    * @param {string} slug - The slug to filter by
    * @returns {string} Filter expression
    * @example Filters.slug('guitar-basics') // "slug.current == 'guitar-basics'"
