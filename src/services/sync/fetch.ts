@@ -126,7 +126,7 @@ export type PushPayload = {
       ids: {
         id: RecordId
       }
-      deleted: false
+      deleted_at: null
     }
   } | {
     record: null
@@ -134,7 +134,7 @@ export type PushPayload = {
       ids: {
         id: RecordId
       }
-      deleted: true
+      deleted_at: EpochMs
     }
   })[]
 }
@@ -146,7 +146,7 @@ interface ServerPushPayload {
       ids: {
         client_record_id: RecordId
       },
-      deleted: boolean
+      client_deleted_at: EpochMs | null
     }
   }[]
 }
@@ -347,11 +347,13 @@ function serializePushPayload(payload: PushPayload): ServerPushPayload {
   return {
     ...payload,
     entries: payload.entries.map(entry => {
+      const { deleted_at, ...restMeta } = entry.meta
       return {
         record: serializeRecord(entry.record),
         meta: {
-          ...entry.meta,
-          ids: serializeIds(entry.meta.ids)
+          ...restMeta,
+          ids: serializeIds(entry.meta.ids),
+          client_deleted_at: deleted_at
         }
       }
     })
@@ -405,7 +407,10 @@ function serializeIds(ids: { id: RecordId }): { client_record_id: RecordId } {
 
 function deserializeRecord(record: SyncSyncable<BaseModel, 'client_record_id'> | null): SyncSyncable<BaseModel, 'id'> | null {
   if (record) {
-    const { client_record_id: id, ...rest } = record
+    const {
+      client_record_id: id,
+      ...rest
+    } = record
 
     return {
       ...rest,
