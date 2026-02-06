@@ -14,9 +14,11 @@ export interface QueryBuilderState {
   slice: string
   projection: string
   postFilter: string
+  selector: string
 }
 
 export interface QueryBuilder {
+  selector(selector: string): QueryBuilder
   and(expr: string): QueryBuilder
   or(...exprs: string[]): QueryBuilder
   order(expr: string): QueryBuilder
@@ -56,16 +58,22 @@ const project: Monoid<string> = {
 
 export const filterOps = { and, or }
 
-export const query = (): QueryBuilder => {
+export const query = (selector?: string): QueryBuilder => {
   let state: QueryBuilderState = {
     filter: and.empty,
     ordering: order.empty,
     slice: slice.empty,
     projection: project.empty,
     postFilter: and.empty,
+    selector: selector || '*',
   }
 
   const builder: QueryBuilder = {
+    selector(selector: string) {
+      state.selector = selector
+      return builder
+    },
+
     // main filters
     and(expr: string) {
       state.filter = and.concat(state.filter, expr)
@@ -112,7 +120,7 @@ export const query = (): QueryBuilder => {
       const { filter, ordering, slice, projection } = state
 
       return `
-        *[${filter}]
+        ${selector}[${filter}]
         ${projection.length > 0 ? `{ ${projection} }` : ''}
         ${state.postFilter ? `[${state.postFilter}]` : ''}
         ${ordering}
