@@ -688,7 +688,6 @@ export const basicMembershipTier = 'basic'
 export function getNewReleasesTypes(brand) {
   const baseNewTypes = [
     'student-review',
-    'student-review',
     'student-focus',
     'coach-stream',
     'live',
@@ -701,7 +700,7 @@ export function getNewReleasesTypes(brand) {
     'song',
     'play-along',
     'course',
-    'unit',
+    'skill-pack'
   ]
   switch (brand) {
     case 'drumeo':
@@ -719,7 +718,6 @@ export function getNewReleasesTypes(brand) {
     case 'pianote':
     case 'singeo':
     case 'playbass':
-      return [...baseNewTypes, 'skill-pack']
     default:
       return baseNewTypes
   }
