@@ -719,6 +719,7 @@ export function getNewReleasesTypes(brand) {
     case 'pianote':
     case 'singeo':
     case 'playbass':
+      return [...baseNewTypes, 'skill-pack']
     default:
       return baseNewTypes
   }
