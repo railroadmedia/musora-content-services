@@ -1,3 +1,4 @@
+import { type BaseIssue } from "valibot"
 import SyncStore from "../store"
 
 type ErrorDetails = Record<string, unknown>
@@ -65,8 +66,8 @@ export class SyncUnexpectedError extends SyncError {
 }
 
 export class SyncValidationError extends SyncError {
-  constructor(message: string, value: any, expected: any) {
-    super('validationError', { message: message, value: value, expected: expected })
+  constructor(message: string, issue: BaseIssue<unknown>) {
+    super(message, { issue })
     this.name = 'SyncValidationError'
     Object.setPrototypeOf(this, new.target.prototype)
   }
