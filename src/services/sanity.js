@@ -1379,10 +1379,10 @@ function populateHierarchyLookups(currentLevel, data, parentId) {
 
   let assignments = currentLevel['assignments']
   if (assignments) {
-    let assignmentIds = assignments.map((assignment) => assignment[railcontentIdField])
+    let assignmentIds = assignments.map((assignment) => assignment[railcontentIdField]).filter(Boolean)
     data.children[contentId] = (data.children[contentId] ?? []).concat(assignmentIds)
     assignmentIds.forEach((assignmentId) => {
-      data.parents[assignmentId] = contentId
+      if (assignmentId) data.parents[assignmentId] = contentId
     })
   }
 }
