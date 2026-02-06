@@ -82,6 +82,7 @@ import {
 } from './services/content-org/playlists.js';
 
 import {
+	filterCoursesInCourseCollections,
 	getContentRows,
 	getLegacyMethods,
 	getLessonContentRows,
@@ -314,6 +315,10 @@ import {
 } from './services/sanity.js';
 
 import {
+	clearState
+} from './services/state.ts';
+
+import {
 	generateCommentUrl,
 	generateContentUrl,
 	generateContentUrlWithDomain,
@@ -455,6 +460,7 @@ declare module 'musora-content-services' {
 		buildImageSRC,
 		calculateLongestStreaks,
 		clearAllCachedData,
+		clearState,
 		closeComment,
 		completeLearningPathIntroVideo,
 		completeMethodIntroVideo,
@@ -581,6 +587,7 @@ declare module 'musora-content-services' {
 		fetchUserPracticeMeta,
 		fetchUserPracticeNotes,
 		fetchUserPractices,
+		filterCoursesInCourseCollections,
 		findIncompleteLesson,
 		flushWatchSession,
 		followThread,
