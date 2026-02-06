@@ -86,6 +86,7 @@ import {
 } from './services/content-org/playlists.js';
 
 import {
+	filterCoursesInCourseCollections,
 	getContentRows,
 	getLegacyMethods,
 	getLessonContentRows,
@@ -318,6 +319,10 @@ import {
 } from './services/sanity.js';
 
 import {
+	clearState
+} from './services/state.ts';
+
+import {
 	generateCommentUrl,
 	generateContentUrl,
 	generateContentUrlWithDomain,
@@ -454,6 +459,7 @@ export {
 	buildImageSRC,
 	calculateLongestStreaks,
 	clearAllCachedData,
+	clearState,
 	closeComment,
 	completeLearningPathIntroVideo,
 	completeMethodIntroVideo,
@@ -580,6 +586,7 @@ export {
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
 	fetchUserPractices,
+	filterCoursesInCourseCollections,
 	findIncompleteLesson,
 	flushWatchSession,
 	followThread,
