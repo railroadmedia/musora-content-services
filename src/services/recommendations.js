@@ -127,6 +127,9 @@ export async function rankItems(brand, content_ids) {
   if (content_ids.length === 0) {
     return []
   }
+  if (brand === 'playbass') {
+    return content_ids
+  }
   const data = {
     brand: brand,
     user_id: globalConfig.sessionConfig.userId,
