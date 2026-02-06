@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.131.9](https://github.com/railroadmedia/musora-content-services/compare/v2.131.8...v2.131.9) (2026-02-06)
+
+
+### Bug Fixes
+
+* move STs navigateTo to behave like courses ([#780](https://github.com/railroadmedia/musora-content-services/issues/780)) ([98e7689](https://github.com/railroadmedia/musora-content-services/commit/98e7689ca6719e7c0af8ae3cc5563778f623c825))
+
 ### [2.131.8](https://github.com/railroadmedia/musora-content-services/compare/v2.131.7...v2.131.8) (2026-02-06)
 
 
