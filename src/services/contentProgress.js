@@ -134,7 +134,7 @@ export async function getNavigateTo(data, collection = null) {
         const lastInteracted = await getLastInteractedOf(childrenIds, collection)
         const lastInteractedStatus = childrenStates[lastInteracted]
 
-        if (['course', 'skill-pack'].includes(content.type)) {
+        if (['course', 'skill-pack', 'song-tutorial'].includes(content.type)) {
           if (lastInteractedStatus === STATE_STARTED) {
             // send to last interacted
             navigateToData[content.id] = buildNavigateTo(
@@ -152,7 +152,7 @@ export async function getNavigateTo(data, collection = null) {
             )
           }
         } else if (
-          ['song-tutorial', 'guided-course', COLLECTION_TYPE.LEARNING_PATH].includes(content.type)
+          ['guided-course', COLLECTION_TYPE.LEARNING_PATH].includes(content.type)
         ) {
           // send to first incomplete
           let incompleteChild = findIncompleteLesson(childrenStates, lastInteracted, content.type)
