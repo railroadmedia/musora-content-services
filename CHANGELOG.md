@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.131.8](https://github.com/railroadmedia/musora-content-services/compare/v2.131.7...v2.131.8) (2026-02-06)
+
+
+### Bug Fixes
+
+* **pins:** do not fetch pins on login or account setup ([#778](https://github.com/railroadmedia/musora-content-services/issues/778)) ([7a621c0](https://github.com/railroadmedia/musora-content-services/commit/7a621c02832942b5a0312a739579b1989d5e4f9b))
+
 ### [2.131.7](https://github.com/railroadmedia/musora-content-services/compare/v2.131.6...v2.131.7) (2026-02-05)
 
 
