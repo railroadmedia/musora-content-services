@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.131.10](https://github.com/railroadmedia/musora-content-services/compare/v2.131.9...v2.131.10) (2026-02-06)
+
+
+### Bug Fixes
+
+* safety for assignment hierarchy if ids are null (dataset inconsistencies) ([#781](https://github.com/railroadmedia/musora-content-services/issues/781)) ([6b89370](https://github.com/railroadmedia/musora-content-services/commit/6b893701a33dd0b205da969ae9fbfa444dcdf701))
+
 ### [2.131.9](https://github.com/railroadmedia/musora-content-services/compare/v2.131.8...v2.131.9) (2026-02-06)
 
 
