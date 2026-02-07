@@ -116,6 +116,7 @@ export async function processContentItem(content) {
       thumbnail: content.thumbnail,
       title: content.title,
       isLive: isLive,
+      brand: content.brand,
       badge: content.badge ?? null,
       badge_rear: content.badge_rear ?? null,
       badge_logo: content.badge_logo ?? null,
