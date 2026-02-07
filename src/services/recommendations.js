@@ -79,34 +79,37 @@ export async function rankCategories(brand, categories) {
   if (categories.length === 0) {
     return []
   }
-  const data = {
-    brand: brand,
-    user_id: globalConfig.sessionConfig.userId,
-    playlists: categories,
-  }
-  const url = `/rank_each_list/`
-  try {
-    const response = await recommenderClient.post(url, data)
-    const rankedCategories = []
+  if (brand !== 'playbass') {
+    const data = {
+      brand: brand,
+      user_id: globalConfig.sessionConfig.userId,
+      playlists: categories,
+    }
+    const url = `/rank_each_list/`
+    try {
+      const response = await recommenderClient.post(url, data)
+      const rankedCategories = []
 
-    for (const rankedPlaylist of response['ranked_playlists']) {
-      rankedCategories.push({
-        slug: rankedPlaylist.playlist_id,
-        items: rankedPlaylist.ranked_items,
-      })
+      for (const rankedPlaylist of response['ranked_playlists']) {
+        rankedCategories.push({
+          slug: rankedPlaylist.playlist_id,
+          items: rankedPlaylist.ranked_items,
+        })
+      }
+      return rankedCategories
+    } catch (error) {
+      console.error('RankCategories fetch error:', error)
     }
-    return rankedCategories
-  } catch (error) {
-    console.error('RankCategories fetch error:', error)
-    const defaultSorting = []
-    for (const slug in categories) {
-      defaultSorting.push({
-        slug: slug,
-        items: categories[slug],
-      })
-    }
-    return defaultSorting
   }
+
+  const defaultSorting = []
+  for (const slug in categories) {
+    defaultSorting.push({
+      slug: slug,
+      items: categories[slug],
+    })
+  }
+  return defaultSorting
 }
 
 /**
@@ -123,6 +126,9 @@ export async function rankCategories(brand, categories) {
 export async function rankItems(brand, content_ids) {
   if (content_ids.length === 0) {
     return []
+  }
+  if (brand === 'playbass') {
+    return content_ids
   }
   const data = {
     brand: brand,
