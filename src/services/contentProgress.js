@@ -640,7 +640,7 @@ async function resetStatus(contentId, collection = null, {skipPush = false} = {}
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
 
   const progress = 0
-  const response = await db.contentProgress.eraseProgress(contentId, collection, {skipPush: true})
+  const response = await db.contentProgress.eraseProgress(Number(contentId), collection, {skipPush: true})
 
   const hierarchy = await getHierarchy(contentId, collection)
 

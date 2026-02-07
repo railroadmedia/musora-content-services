@@ -2,7 +2,7 @@
  * @module LearningPaths
  */
 
-import { GET, POST } from '../../infrastructure/http/HttpClient.ts'
+import { GET, POST } from '../../infrastructure/http/HttpClient'
 import {
   fetchByRailContentId,
   fetchByRailContentIds,
@@ -21,7 +21,7 @@ import {
 import { COLLECTION_TYPE, STATE } from '../sync/models/ContentProgress'
 import { SyncWriteDTO } from '../sync'
 import { ContentProgress } from '../sync/models'
-import { CollectionParameter } from '../sync/repositories/content-progress'
+import { CollectionParameter } from '../sync/models/ContentProgress'
 import dayjs from 'dayjs'
 import { LEARNING_PATH_LESSON } from "../../contentTypeConfig";
 
