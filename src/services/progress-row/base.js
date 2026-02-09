@@ -31,12 +31,15 @@ async function getUserPinnedItem(brand) {
   }
 
   const url = `/api/user-management-system/v1/progress/pin?brand=${brand}`
-  const response = await GET(url)
-
-  if (response && !response.error) {
-    return await setUserBrandPinnedItem(brand, response)
+  try {
+    const response = await GET(url)
+    if (response && !response.error) {
+      return await setUserBrandPinnedItem(brand, response)
+    }
+    return response
+  } catch (error) {
+      return null
   }
-  return response
 }
 
 /**
