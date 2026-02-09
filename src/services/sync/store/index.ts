@@ -392,6 +392,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             r._raw[key] = record._raw[key]
           })
           r._raw._status = 'updated'
+          r._raw.updated_at = this.generateTimestamp()
         }))
 
         await writer.batch(...destroyBuilds)
