@@ -32,11 +32,10 @@ async function getUserPinnedItem(brand) {
   const cachedData = pinnedProgress[brand]
 
   if (isCacheValid(cachedData)) {
-    return {
-      id: cachedData.id,
-      type: cachedData.type,
-      // dont include cachedAt
-    }
+    delete cachedData.cachedAt // is for internal use
+    return cachedData === {}
+      ? null
+      : cachedData
   }
 
   const url = `/api/user-management-system/v1/progress/pin?brand=${brand}`
