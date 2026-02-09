@@ -20,6 +20,11 @@ import { postProcessBadge } from "../../contentTypeConfig.js";
 export const USER_PIN_PROGRESS_KEY = 'user_pin_progress_row'
 const CACHE_EXPIRY_MS = 5 * 60 * 1000
 
+/**
+ * Retrieves user's pinned data by brand, from localStorage or BE call.
+ * @param brand
+ * @returns {Promise<any|*|{id, type}>}
+ */
 async function getUserPinnedItem(brand) {
   const key = getUserPinProgressKey()
 
@@ -27,7 +32,11 @@ async function getUserPinnedItem(brand) {
   const cachedData = pinnedProgress[brand]
 
   if (isCacheValid(cachedData)) {
-    return cachedData
+    return {
+      id: cachedData.id,
+      type: cachedData.type,
+      // dont include cachedAt
+    }
   }
 
   const url = `/api/user-management-system/v1/progress/pin?brand=${brand}`
@@ -109,9 +118,13 @@ async function setUserBrandPinnedItem(brand, pinnedData) {
   const key = getUserPinProgressKey()
   let pinnedProgress = await getStoredPinnedData(key)
 
-  pinnedProgress[brand] = setPinnedData(pinnedData)
+  const processed = pinnedData && typeof pinnedData === 'object'
+    ? pinnedData
+    : null
+
+  pinnedProgress[brand] = setPinnedData(processed)
   await globalConfig.localStorage.setItem(key, JSON.stringify(pinnedProgress))
-  return pinnedProgress
+  return processed
 }
 
 async function getStoredPinnedData(key) {
