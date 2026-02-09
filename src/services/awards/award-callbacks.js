@@ -4,6 +4,7 @@
 
 import './types.js'
 import { awardEvents } from './internal/award-events'
+import { getBadgeFields } from './award-query.js'
 
 let awardGrantedCallback = null
 let progressUpdateCallback = null
@@ -72,7 +73,7 @@ export function registerAwardCallback(callback) {
     const award = {
       awardId: awardId,
       name: definition.name,
-      badge: definition.badge,
+      ...getBadgeFields(definition),
       contentType: definition.content_type,
       completed_at: completionData.completed_at,
       isCompleted: true,
