@@ -1,13 +1,7 @@
 import BaseModel from './Base'
 import { SYNC_TABLES } from '../schema'
 import type { CompletionData } from '../../awards/types'
-import {
-  throwIfMaxLengthExceeded,
-  throwIfNotNullableString,
-  throwIfNotNumber,
-  throwIfNotString,
-  throwIfOutsideRange,
-} from '../errors/validators'
+import { nullableString, percent, varchar } from '../errors/validators'
 
 export default class UserAwardProgress extends BaseModel<{
   award_id: string
@@ -41,19 +35,15 @@ export default class UserAwardProgress extends BaseModel<{
   }
 
   set award_id(value: string) {
-    // varchar(255)
-    throwIfNotString(value)
-    this._setRaw('award_id', throwIfMaxLengthExceeded(value, 255))
+    this._setRaw('award_id', varchar(255)(value))
   }
 
   set progress_percentage(value: number) {
-    // int
-    throwIfNotNumber(value)
-    this._setRaw('progress_percentage', throwIfOutsideRange(value, 0, 100))
+    this._setRaw('progress_percentage', percent(value))
   }
 
   set completed_at(value: string | null) {
-    this._setRaw('completed_at', throwIfNotNullableString(value))
+    this._setRaw('completed_at', nullableString(value))
   }
 
   set progress_data(value: any) {

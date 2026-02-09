@@ -1,13 +1,12 @@
 import BaseModel from './Base'
 import { SYNC_TABLES } from '../schema'
 import {
-  throwIfInvalidEnumValue,
-  throwIfNotNullableNumber,
-  throwIfNotNullableInteger,
-  throwIfNotNullableString,
-  throwIfOutsideRange,
-  throwIfNotInteger,
-  throwIfNotNumber
+  positiveInt,
+  nullableString,
+  nullableUint16,
+  percent,
+  mediumint,
+  enumValue,
 } from '../errors/validators'
 
 export enum COLLECTION_TYPE {
@@ -27,35 +26,15 @@ export interface CollectionParameter {
 }
 
 const validators = {
-  // unsigned int
-  content_id: (contentId: number) => {
-    throwIfNotNullableInteger(contentId)
-    return throwIfOutsideRange(contentId, 0)
-  },
-  content_brand: (contentBrand: string | null) => {
-    return throwIfNotNullableString(contentBrand)
-  },
-  // tinyint unsigned - IMPORTANT: progress percent only moves forward and is clamped between 0 and 100
-  // also has implications for last-write-wins sync strategy
+  content_id: positiveInt,
+  content_brand: nullableString,
   progress_percent: (value: number, currentPercent: number) => {
-    throwIfNotNumber(value)
-    throwIfOutsideRange(value, 0, 100)
-    return value === 0 ? 0 : Math.max(value, currentPercent)
+    const validated = percent(value)
+    return validated === 0 ? 0 : Math.max(validated, currentPercent)
   },
-  // enum collection_type
-  collection_type: (collectionType: string) => {
-    return throwIfInvalidEnumValue(collectionType, COLLECTION_TYPE) as COLLECTION_TYPE
-  },
-  // unsigned mediumint 16777215
-  collection_id: (collectionId: number) => {
-    throwIfNotInteger(collectionId)
-    return throwIfOutsideRange(collectionId, 0, 16777215)
-  },
-  // smallint unsigned
-  resume_time_seconds: (value: number | null) => {
-    throwIfNotNullableNumber(value)
-    return value !== null ? throwIfOutsideRange(value, 0, 65535) : value
-  }
+  collection_type: enumValue(COLLECTION_TYPE),
+  collection_id: mediumint,
+  resume_time_seconds: nullableUint16,
 }
 
 export default class ContentProgress extends BaseModel {
@@ -80,7 +59,7 @@ export default class ContentProgress extends BaseModel {
     return this._getRaw('collection_id') as number
   }
   get resume_time_seconds() {
-    return (this._getRaw('resume_time_seconds') as number) || null
+    return this._getRaw('resume_time_seconds') as number | null
   }
   get last_interacted_a_la_carte() {
     return this._getRaw('last_interacted_a_la_carte') as number

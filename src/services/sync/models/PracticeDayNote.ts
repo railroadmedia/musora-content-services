@@ -1,6 +1,6 @@
 import { SYNC_TABLES } from '../schema'
 import BaseModel from './Base'
-import { throwIfMaxLengthExceeded, throwIfNotString } from '../errors/validators'
+import { string, varchar } from '../errors/validators'
 
 export default class PracticeDayNote extends BaseModel<{
   date: string
@@ -16,10 +16,9 @@ export default class PracticeDayNote extends BaseModel<{
   }
 
   set date(value: string) {
-    this._setRaw('date', throwIfNotString(value))
+    this._setRaw('date', string(value))
   }
   set notes(value: string) {
-    throwIfNotString(value)
-    this._setRaw('notes', throwIfMaxLengthExceeded(value, 3000))
+    this._setRaw('notes', varchar(3000)(value))
   }
 }
