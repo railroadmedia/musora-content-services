@@ -1903,7 +1903,9 @@ export async function fetchTabData(
     ? `&& !(railcontent_id in [${excludeIds.join(',')}])`
     : ''
 
-  const excludeCoursesInCourseCollectionsFilter = `&& !(_type == 'course' && defined(parent_content_data))`
+  const excludeCoursesInCourseCollectionsFilter = pageName === "lessons" && progressIds === undefined
+    ? `&& !(_type == 'course' && defined(parent_content_data))`
+    : ''
 
   filter = `brand == "${brand}" && (defined(railcontent_id)) ${includedFieldsFilter} ${progressFilter} ${excludedIdsFilter} ${excludeCoursesInCourseCollectionsFilter}`
   const childrenFilter = await new FilterBuilder(``, {

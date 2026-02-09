@@ -22,7 +22,7 @@ import { findIncompleteLesson } from '../../userActivity.js'
  * and generate a map of the cards keyed by the content IDs
  */
 export async function getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem ){
-  let recentContentIds = await getAllStartedOrCompleted({ brand: brand, limit })
+  let recentContentIds = await getAllStartedOrCompleted({ brand: brand, limit:100 })
   if (userPinnedItem?.progressType === 'content') {
     recentContentIds.push(userPinnedItem.id)
   }
@@ -58,14 +58,28 @@ export async function getContentCardMap(brand, limit, playlistEngagedOnContent, 
 function generateContentPromises(contents) {
   const promises = []
   if (!contents) return promises
+  // Create a Set of all content IDs that have progress
+  const contentIdsWithProgress = new Set(contents.map(c => parseInt(c.id)))
   const existingShows = new Set()
   let allRecentTypeSet = new Set(Object.values(recentTypes).flat())
   allRecentTypeSet.delete('learning-path-v2') // we do this to remove from homepage, until we allow a-la-carte learning paths
   contents.forEach((content) => {
     const type = content.type
     if (!allRecentTypeSet.has(type)) return
-    let childHasParent = Array.isArray(content.parent_content_data) && content.parent_content_data.length > 0
-    if (!childHasParent) {
+
+    // Check if this content has a parent
+    const hasParent = Array.isArray(content.parent_content_data) && content.parent_content_data.length > 0
+
+    // Only exclude if ANY parent also has progress (to avoid showing both parent and child)
+    // Note: parent_content_data is an array of IDs [333653, 444444], not array of objects
+    // Check if ANY parent has progress
+    const parentHasProgress = hasParent && content.parent_content_data.some(parentId => {
+      const id = parseInt(parentId)
+      return !isNaN(id) && contentIdsWithProgress.has(id)
+    })
+
+    // Include content if it has no parent OR if no parent has progress
+    if (!hasParent || !parentHasProgress) {
       promises.push(processContentItem(content))
       if (showsLessonTypes.includes(type)) {
         // Shows don't have a parent to link them, but need to be handled as if they're a set of children
