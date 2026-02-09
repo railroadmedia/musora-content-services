@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.132.1](https://github.com/railroadmedia/musora-content-services/compare/v2.132.0...v2.132.1) (2026-02-09)
+
+
+### Bug Fixes
+
+* **T3PS-2111:** Add skill pack to playbass release types ([db72a32](https://github.com/railroadmedia/musora-content-services/commit/db72a321f731e3523bf0d14774a28e57ef50f3ca))
+* **T3PS-2111:** Update to add skill-pack to all brands, remove unit (deprecated) and remove dup student-review ([a4af5e4](https://github.com/railroadmedia/musora-content-services/commit/a4af5e4659aedb3fa52394aba781e79debe9a54e))
+
 ## [2.132.0](https://github.com/railroadmedia/musora-content-services/compare/v2.129.3...v2.132.0) (2026-02-09)
 
 
