@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.132.2](https://github.com/railroadmedia/musora-content-services/compare/v2.132.1...v2.132.2) (2026-02-09)
+
+
+### Bug Fixes
+
+* add badge fields to callback fn ([#792](https://github.com/railroadmedia/musora-content-services/issues/792)) ([f9f9003](https://github.com/railroadmedia/musora-content-services/commit/f9f9003eb4fadecf0c8234cf1daf0ff631d4e879))
+
 ### [2.132.1](https://github.com/railroadmedia/musora-content-services/compare/v2.132.0...v2.132.1) (2026-02-09)
 
 
