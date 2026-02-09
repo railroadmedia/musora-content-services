@@ -42,7 +42,7 @@ async function getUserPinnedItem(brand) {
   const url = `/api/user-management-system/v1/progress/pin?brand=${brand}`
   try {
     const response = await GET(url)
-    if (response && !response.error) {
+    if (response === "" || (response && !response.error)) { // "" is 204 case
       return await setUserBrandPinnedItem(brand, response)
     }
     return response
