@@ -73,6 +73,7 @@ export function registerAwardCallback(callback) {
     const award = {
       awardId: awardId,
       name: definition.name,
+      brand: definition.brand,
       ...getBadgeFields(definition),
       contentType: definition.content_type,
       completed_at: completionData.completed_at,
