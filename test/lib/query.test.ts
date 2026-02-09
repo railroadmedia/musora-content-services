@@ -894,4 +894,558 @@ describe('Sanity Query Builder', () => {
       })
     })
   })
+
+  describe('Query Accessor', () => {
+    describe('Basic Accessor Functionality', () => {
+      test('default accessor is empty string', () => {
+        const builder = query()
+        expect(builder._state().accessor).toBe('')
+      })
+
+      test('builds query with simple field access', () => {
+        const result = query().access('title').build()
+        expect(result).toBe('*[].title')
+      })
+
+      test('builds query with field access using dereference', () => {
+        const result = query().access('instructor', true).build()
+        expect(result).toBe('*[].instructor->')
+      })
+
+      test('builds query with array notation access', () => {
+        const result = query().access('items[]').build()
+        expect(result).toBe('*[].items[]')
+      })
+
+      test('access method returns builder for chaining', () => {
+        const builder = query()
+        const result = builder.access('field')
+        expect(result).toBe(builder)
+      })
+
+      test('state reflects accessor value', () => {
+        const builder = query().access('title')
+        expect(builder._state().accessor).toBe('.title')
+      })
+    })
+
+    describe('Accessor with Filters', () => {
+      test('builds query with accessor after filter brackets', () => {
+        const result = query().and('_type == "course"').access('title').build()
+        expect(result).toBe('*[_type == "course"].title')
+      })
+
+      test('builds query with accessor and single and filter', () => {
+        const result = query().and('_type == "course"').access('instructor', true).build()
+        expect(result).toBe('*[_type == "course"].instructor->')
+      })
+
+      test('builds query with accessor and multiple and filters', () => {
+        const result = query()
+          .and('_type == "course"')
+          .and('published == true')
+          .access('title')
+          .build()
+        expect(result).toBe('*[_type == "course" && published == true].title')
+      })
+
+      test('builds query with accessor and or filters', () => {
+        const result = query().or('brand == "drumeo"', 'brand == "pianote"').access('title').build()
+        expect(result).toBe('*[(brand == "drumeo" || brand == "pianote")].title')
+      })
+
+      test('builds query with accessor and complex filter combinations', () => {
+        const result = query()
+          .and('_type == "course"')
+          .and('published == true')
+          .or('difficulty == "beginner"', 'difficulty == "intermediate"')
+          .access('lessons[]', true)
+          .build()
+        expect(result).toContain('*[_type == "course" && published == true')
+        expect(result).toContain('(difficulty == "beginner" || difficulty == "intermediate")]')
+        expect(result).toContain('.lessons[]->')
+      })
+    })
+
+    describe('Accessor with Projection', () => {
+      test('builds query with accessor before projection', () => {
+        const result = query().access('instructor', true).select('_id', 'name').build()
+        expect(result).toContain('*[].instructor->')
+        expect(result).toContain('{ _id, name }')
+        const accessorIndex = result.indexOf('.instructor->')
+        const projectionIndex = result.indexOf('{ _id, name }')
+        expect(accessorIndex).toBeLessThan(projectionIndex)
+      })
+
+      test('builds query with accessor and single field selection', () => {
+        const result = query()
+          .and('_type == "course"')
+          .access('instructor', true)
+          .select('_id')
+          .build()
+        expect(result).toContain('*[_type == "course"].instructor->')
+        expect(result).toContain('{ _id }')
+      })
+
+      test('builds query with accessor and multiple field selections', () => {
+        const result = query()
+          .and('_type == "course"')
+          .access('instructor', true)
+          .select('_id', 'name', 'biography')
+          .build()
+        expect(result).toContain('*[_type == "course"].instructor->')
+        expect(result).toContain('{ _id, name, biography }')
+      })
+
+      test('builds query with accessor and complex projection', () => {
+        const result = query()
+          .and('_type == "learning-path"')
+          .access('courses[]', true)
+          .select('_id', 'title', '"instructor": instructor->name')
+          .build()
+        expect(result).toContain('*[_type == "learning-path"].courses[]->')
+        expect(result).toContain('{ _id, title, "instructor": instructor->name }')
+      })
+    })
+
+    describe('Accessor with Other Operations', () => {
+      test('builds query with accessor and ordering', () => {
+        const result = query()
+          .and('_type == "course"')
+          .access('lessons[]')
+          .order('publishedOn desc')
+          .build()
+        expect(result).toContain('*[_type == "course"].lessons[]')
+        expect(result).toContain('| order(publishedOn desc)')
+      })
+
+      test('builds query with accessor and slicing', () => {
+        const result = query().and('_type == "course"').access('lessons[]').slice(0, 10).build()
+        expect(result).toContain('*[_type == "course"].lessons[]')
+        expect(result).toContain('[0...10]')
+      })
+
+      test('builds query with accessor and post-filters', () => {
+        const result = query()
+          .and('_type == "course"')
+          .access('lessons[]', true)
+          .select('_id', '"count": count(videos)')
+          .postFilter('count > 5')
+          .build()
+        expect(result).toContain('*[_type == "course"].lessons[]->')
+        expect(result).toContain('{ _id, "count": count(videos) }')
+        expect(result).toContain('[count > 5]')
+      })
+
+      test('builds query with accessor and first() helper', () => {
+        const result = query().and('_type == "course"').access('instructor', true).first().build()
+        expect(result).toContain('*[_type == "course"].instructor->')
+        expect(result).toContain('[0]')
+      })
+
+      test('builds query with accessor and all query features combined', () => {
+        const result = query()
+          .and('_type == "course"')
+          .and('published == true')
+          .or('difficulty == "beginner"', 'difficulty == "intermediate"')
+          .access('lessons[]', true)
+          .select('_id', 'title', '"videoCount": count(videos)')
+          .postFilter('videoCount > 3')
+          .order('publishedOn desc')
+          .slice(0, 20)
+          .build()
+        expect(result).toContain('*[_type == "course" && published == true')
+        expect(result).toContain('(difficulty == "beginner" || difficulty == "intermediate")]')
+        expect(result).toContain('.lessons[]->')
+        expect(result).toContain('{ _id, title, "videoCount": count(videos) }')
+        expect(result).toContain('[videoCount > 3]')
+        expect(result).toContain('| order(publishedOn desc)')
+        expect(result).toContain('[0...20]')
+      })
+
+      test('accessor maintains position with multiple operations', () => {
+        const result = query()
+          .and('_type == "course"')
+          .access('instructor', true)
+          .select('_id')
+          .order('name')
+          .slice(0, 5)
+          .build()
+        const filterIndex = result.indexOf('[_type == "course"]')
+        const accessorIndex = result.indexOf('.instructor->')
+        const projectionIndex = result.indexOf('{ _id }')
+        const orderIndex = result.indexOf('| order')
+        const sliceIndex = result.indexOf('[0...5]')
+        expect(filterIndex).toBeLessThan(accessorIndex)
+        expect(accessorIndex).toBeLessThan(projectionIndex)
+        expect(projectionIndex).toBeLessThan(orderIndex)
+        expect(orderIndex).toBeLessThan(sliceIndex)
+      })
+    })
+
+    describe('Accessor Override Behavior', () => {
+      test('last access call overrides previous', () => {
+        const result = query()
+          .and('_type == "course"')
+          .access('oldField')
+          .access('newField')
+          .build()
+        expect(result).toBe('*[_type == "course"].newField')
+        expect(result).not.toContain('oldField')
+      })
+
+      test('overrides dereferencing flag', () => {
+        const builder = query().access('field', true)
+        expect(builder._state().accessor).toBe('.field->')
+        builder.access('field', false)
+        expect(builder._state().accessor).toBe('.field')
+      })
+
+      test('overrides field name', () => {
+        const builder = query().access('oldField')
+        expect(builder._state().accessor).toBe('.oldField')
+        builder.access('newField')
+        expect(builder._state().accessor).toBe('.newField')
+      })
+
+      test('empty string clears accessor', () => {
+        const result = query().and('_type == "course"').access('title').access('').build()
+        expect(result).toBe('*[_type == "course"]')
+        expect(result).not.toContain('.title')
+      })
+
+      test('overrides plain accessor with dereferenced accessor', () => {
+        const result = query()
+          .and('_type == "course"')
+          .access('field')
+          .access('other', true)
+          .build()
+        expect(result).toBe('*[_type == "course"].other->')
+        expect(result).not.toContain('.field')
+      })
+    })
+
+    describe('Accessor with Custom Selectors', () => {
+      test('builds query with accessor and custom selector from constructor', () => {
+        const result = query('*[_type == "course"]').access('title').build()
+        expect(result).toBe('*[_type == "course"][].title')
+      })
+
+      test('builds query with accessor and selector() method', () => {
+        const result = query()
+          .selector('*[_type == "learning-path"]')
+          .access('courses[]', true)
+          .build()
+        expect(result).toBe('*[_type == "learning-path"][].courses[]->')
+      })
+
+      test('builds query with accessor and selector containing dereference', () => {
+        const result = query('*[_type == "course"]->instructor')
+          .and('active == true')
+          .access('courses[]')
+          .select('_id', 'title')
+          .build()
+        expect(result).toContain('*[_type == "course"]->instructor[active == true].courses[]')
+        expect(result).toContain('{ _id, title }')
+      })
+
+      test('builds query with accessor and complex custom selector', () => {
+        const selector = '*[_type == "user" && _id == $userId][0]'
+        const result = query(selector)
+          .access('enrollments[]', true)
+          .select('_id', 'enrolledAt', '"content": content->title')
+          .order('enrolledAt desc')
+          .build()
+        expect(result).toContain(selector)
+        expect(result).toContain('.enrollments[]->')
+        expect(result).toContain('{ _id, enrolledAt, "content": content->title }')
+      })
+    })
+
+    describe('Accessor State Management', () => {
+      test('_state() exposes accessor value', () => {
+        const builder = query().access('title')
+        const state = builder._state()
+        expect(state.accessor).toBe('.title')
+      })
+
+      test('independent builder instances have independent accessors', () => {
+        const builder1 = query().access('field1')
+        const builder2 = query().access('field2')
+        expect(builder1._state().accessor).toBe('.field1')
+        expect(builder2._state().accessor).toBe('.field2')
+      })
+
+      test('state updates when accessor changes', () => {
+        const builder = query()
+        expect(builder._state().accessor).toBe('')
+        builder.access('first')
+        expect(builder._state().accessor).toBe('.first')
+        builder.access('second', true)
+        expect(builder._state().accessor).toBe('.second->')
+        builder.access('')
+        expect(builder._state().accessor).toBe('')
+      })
+
+      test('accessor state is empty by default', () => {
+        const builder = query()
+        expect(builder._state().accessor).toBe('')
+      })
+    })
+
+    describe('Accessor Position Validation', () => {
+      test('accessor appears immediately after filter brackets', () => {
+        const result = query().and('_type == "course"').access('title').build()
+        const filterEndIndex = result.indexOf(']')
+        const accessorIndex = result.indexOf('.title')
+        expect(accessorIndex).toBe(filterEndIndex + 1)
+      })
+
+      test('accessor appears before projection', () => {
+        const result = query()
+          .and('_type == "course"')
+          .access('instructor', true)
+          .select('_id', 'name')
+          .build()
+        const accessorIndex = result.indexOf('.instructor->')
+        const projectionIndex = result.indexOf('{ _id, name }')
+        expect(accessorIndex).toBeLessThan(projectionIndex)
+      })
+
+      test('accessor maintains correct position in complex queries', () => {
+        const result = query()
+          .and('_type == "course"')
+          .access('lessons[]', true)
+          .select('_id')
+          .postFilter('count > 5')
+          .order('publishedOn desc')
+          .slice(0, 10)
+          .build()
+        const filterIndex = result.indexOf('[_type == "course"]')
+        const accessorIndex = result.indexOf('.lessons[]->')
+        const projectionIndex = result.indexOf('{ _id }')
+        const postFilterIndex = result.indexOf('[count > 5]')
+        const orderIndex = result.indexOf('| order')
+        const sliceIndex = result.indexOf('[0...10]')
+
+        expect(filterIndex).toBeLessThan(accessorIndex)
+        expect(accessorIndex).toBeLessThan(projectionIndex)
+        expect(projectionIndex).toBeLessThan(postFilterIndex)
+        expect(postFilterIndex).toBeLessThan(orderIndex)
+        expect(orderIndex).toBeLessThan(sliceIndex)
+      })
+
+      test('validates complete query order with accessor', () => {
+        const result = query()
+          .selector('*[_type == "learning-path"]')
+          .and('published == true')
+          .access('courses[]', true)
+          .select('_id', 'title')
+          .postFilter('count(lessons) > 10')
+          .order('title asc')
+          .slice(5, 15)
+          .build()
+
+        const parts = [
+          { name: 'selector', value: '*[_type == "learning-path"]' },
+          { name: 'filter', value: '[published == true]' },
+          { name: 'accessor', value: '.courses[]->' },
+          { name: 'projection', value: '{ _id, title }' },
+          { name: 'postFilter', value: '[count(lessons) > 10]' },
+          { name: 'order', value: '| order(title asc)' },
+          { name: 'slice', value: '[5...20]' },
+        ]
+
+        for (let i = 0; i < parts.length - 1; i++) {
+          const currentIndex = result.indexOf(parts[i].value)
+          const nextIndex = result.indexOf(parts[i + 1].value)
+          expect(currentIndex).toBeLessThan(nextIndex)
+        }
+      })
+    })
+
+    describe('Real-World Use Cases', () => {
+      test('builds query accessing title from filtered courses', () => {
+        const result = query()
+          .and('_type == "course"')
+          .and('published == true')
+          .and('brand == "drumeo"')
+          .access('title')
+          .order('title asc')
+          .slice(0, 50)
+          .build()
+        expect(result).toContain(
+          '*[_type == "course" && published == true && brand == "drumeo"].title'
+        )
+        expect(result).toContain('| order(title asc)')
+        expect(result).toContain('[0...50]')
+      })
+
+      test('builds query dereferencing instructor reference', () => {
+        const result = query()
+          .and('_type == "course"')
+          .and('published == true')
+          .access('instructor', true)
+          .select(
+            '_id',
+            'name',
+            'biography',
+            '"courseCount": count(*[_type == "course" && references(^._id)])'
+          )
+          .order('name asc')
+          .build()
+        expect(result).toContain('*[_type == "course" && published == true].instructor->')
+        expect(result).toContain(
+          '{ _id, name, biography, "courseCount": count(*[_type == "course" && references(^._id)]) }'
+        )
+        expect(result).toContain('| order(name asc)')
+      })
+
+      test('builds query accessing property then projecting fields', () => {
+        const result = query()
+          .and('_type == "learning-path-v2"')
+          .and('slug.current == $slug')
+          .first()
+          .access('courses[]', true)
+          .select('_id', 'title', 'difficulty', '"lessonCount": count(lessons)')
+          .order('order asc')
+          .build()
+        expect(result).toContain(
+          '*[_type == "learning-path-v2" && slug.current == $slug].courses[]->'
+        )
+        expect(result).toContain('{ _id, title, difficulty, "lessonCount": count(lessons) }')
+        expect(result).toContain('[0]')
+      })
+
+      test('builds query accessing array elements', () => {
+        const result = query()
+          .and('_type == "pack"')
+          .and('_id == $packId')
+          .first()
+          .access('contents[]')
+          .select('_id', 'title', '_type')
+          .build()
+        expect(result).toContain('*[_type == "pack" && _id == $packId].contents[]')
+        expect(result).toContain('{ _id, title, _type }')
+        expect(result).toContain('[0]')
+      })
+
+      test('builds query dereferencing array of references', () => {
+        const result = query()
+          .and('_type == "playlist"')
+          .and('user._ref == $userId')
+          .access('items[]', true)
+          .select('_id', 'title', '_type', 'publishedOn')
+          .order('publishedOn desc')
+          .build()
+        expect(result).toContain('*[_type == "playlist" && user._ref == $userId].items[]->')
+        expect(result).toContain('{ _id, title, _type, publishedOn }')
+      })
+
+      test('builds query with accessor and post-filter aggregation', () => {
+        const result = query()
+          .and('_type == "learning-path"')
+          .access('courses[]', true)
+          .select('_id', 'title', '"totalLessons": count(lessons)')
+          .postFilter('totalLessons >= 10')
+          .postFilter('totalLessons <= 50')
+          .order('totalLessons desc')
+          .slice(0, 20)
+          .build()
+        expect(result).toContain('*[_type == "learning-path"].courses[]->')
+        expect(result).toContain('{ _id, title, "totalLessons": count(lessons) }')
+        expect(result).toContain('[totalLessons >= 10 && totalLessons <= 50]')
+        expect(result).toContain('| order(totalLessons desc)')
+        expect(result).toContain('[0...20]')
+      })
+
+      test('builds complex query with filters, accessor, projection, and ordering', () => {
+        const result = query()
+          .and('_type in ["course", "song", "play-along"]')
+          .and('!(_id in path("drafts.**"))')
+          .and('published == true')
+          .or('difficulty == "beginner"', 'difficulty == "intermediate"')
+          .and('brand == $brand')
+          .access('instructor', true)
+          .select(
+            '_id',
+            'name',
+            'biography',
+            '"activeCoursesCount": count(*[_type == "course" && published == true && references(^._id)])'
+          )
+          .postFilter('activeCoursesCount > 0')
+          .order('name asc')
+          .slice(0, 30)
+          .build()
+        expect(result).toContain('*[_type in ["course", "song", "play-along"]')
+        expect(result).toContain('!(_id in path("drafts.**"))')
+        expect(result).toContain('published == true')
+        expect(result).toContain('(difficulty == "beginner" || difficulty == "intermediate")')
+        expect(result).toContain('brand == $brand')
+        expect(result).toContain('.instructor->')
+        expect(result).toContain('{ _id, name, biography')
+        expect(result).toContain('[activeCoursesCount > 0]')
+        expect(result).toContain('| order(name asc)')
+        expect(result).toContain('[0...30]')
+      })
+
+      test('builds query with accessor but no filters', () => {
+        const result = query().access('metadata').select('author', 'publishedDate').build()
+        expect(result).toContain('*[].metadata')
+        expect(result).toContain('{ author, publishedDate }')
+      })
+    })
+
+    describe('Accessor Edge Cases', () => {
+      test('handles empty string clearing accessor', () => {
+        const builder = query().and('_type == "course"').access('title')
+        expect(builder._state().accessor).toBe('.title')
+        builder.access('')
+        expect(builder._state().accessor).toBe('')
+        const result = builder.build()
+        expect(result).toBe('*[_type == "course"]')
+      })
+
+      test('handles dereferencing with array notation', () => {
+        const result = query().and('_type == "playlist"').access('items[]', true).build()
+        expect(result).toBe('*[_type == "playlist"].items[]->')
+      })
+
+      test('handles accessor without filters', () => {
+        const result = query().access('field').build()
+        expect(result).toBe('*[].field')
+      })
+
+      test('handles multiple access() calls with different parameters', () => {
+        const builder = query().and('_type == "course"')
+        builder.access('field1')
+        expect(builder._state().accessor).toBe('.field1')
+        builder.access('field2', false)
+        expect(builder._state().accessor).toBe('.field2')
+        builder.access('field3', true)
+        expect(builder._state().accessor).toBe('.field3->')
+      })
+
+      test('state reflects cleared accessor', () => {
+        const builder = query().access('field').access('')
+        expect(builder._state().accessor).toBe('')
+      })
+
+      test('handles accessor with empty filter brackets', () => {
+        const result = query().access('title').build()
+        expect(result).toBe('*[].title')
+        expect(result).toMatch(/^\*\[\]\.title$/)
+      })
+    })
+
+    describe('Accessor Default Parameter Behavior', () => {
+      test('dereference parameter defaults to false when not provided', () => {
+        const result1 = query().access('field').build()
+        const result2 = query().access('field', false).build()
+        expect(result1).toBe(result2)
+        expect(result1).toBe('*[].field')
+        expect(result1).not.toContain('->')
+      })
+    })
+  })
 })
