@@ -117,14 +117,14 @@ export const query = (selector?: string): QueryBuilder => {
     },
 
     build() {
-      const { filter, ordering, slice, projection } = state
+      const { selector, filter, postFilter, projection, ordering, slice } = state
 
       return `
-        ${state.selector}[${state.filter}]
-        ${projection.length > 0 ? `{ ${state.projection} }` : ''}
-        ${state.postFilter ? `[${state.postFilter}]` : ''}
-        ${state.ordering}
-        ${state.slice}
+        ${selector}[${filter}]
+        ${projection.length > 0 ? `{ ${projection} }` : ''}
+        ${postFilter ? `[${postFilter}]` : ''}
+        ${ordering}
+        ${slice}
       `.trim()
     },
 
