@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.132.0](https://github.com/railroadmedia/musora-content-services/compare/v2.129.3...v2.132.0) (2026-02-09)
+
+
+### Features
+
+* decode gzip+base64'd responses ([#764](https://github.com/railroadmedia/musora-content-services/issues/764)) ([43c2a7c](https://github.com/railroadmedia/musora-content-services/commit/43c2a7cfb03992ac6bb89a46c7c09bcf478404ee))
+* shows current events and global events ([#763](https://github.com/railroadmedia/musora-content-services/issues/763)) ([63c940c](https://github.com/railroadmedia/musora-content-services/commit/63c940cf4ddab78ea868557e8c9eeb14b1a8b9e6))
+
+
+### Bug Fixes
+
+* add musora to award template ([#765](https://github.com/railroadmedia/musora-content-services/issues/765)) ([692743f](https://github.com/railroadmedia/musora-content-services/commit/692743f950d155e3bda8a8d6675374b4611c5a53))
+* add SP and GC lesson types to progressTypesMapping ([#759](https://github.com/railroadmedia/musora-content-services/issues/759)) ([493ac78](https://github.com/railroadmedia/musora-content-services/commit/493ac78dfadb11e66def4c832d3998033bc133cd))
+* also fetch live events for new and upcoming section ([#769](https://github.com/railroadmedia/musora-content-services/issues/769)) ([7901d9e](https://github.com/railroadmedia/musora-content-services/commit/7901d9e71be3ca6444d4d8a76610e9f3d9e47f2e))
+* hide badge field if is_active false ([#773](https://github.com/railroadmedia/musora-content-services/issues/773)) ([d8d9159](https://github.com/railroadmedia/musora-content-services/commit/d8d9159c5270dac8ea1de92634266f9f412b3c7c))
+* move STs navigateTo to behave like courses ([#780](https://github.com/railroadmedia/musora-content-services/issues/780)) ([98e7689](https://github.com/railroadmedia/musora-content-services/commit/98e7689ca6719e7c0af8ae3cc5563778f623c825))
+* **onboarding:** update recommended content interface ([65f5e91](https://github.com/railroadmedia/musora-content-services/commit/65f5e91eea00762ea5ab195ce650eb1b3fa92e77))
+* optimize method complete fn ([#755](https://github.com/railroadmedia/musora-content-services/issues/755)) ([23f6429](https://github.com/railroadmedia/musora-content-services/commit/23f6429560234905cdd91f15aca33df0289e9133))
+* **pins:** do not fetch pins on login or account setup ([#778](https://github.com/railroadmedia/musora-content-services/issues/778)) ([7a621c0](https://github.com/railroadmedia/musora-content-services/commit/7a621c02832942b5a0312a739579b1989d5e4f9b))
+* progress rows not displayed if pinned row not exists ([544ba9c](https://github.com/railroadmedia/musora-content-services/commit/544ba9cbddbf0703b0419ca156f899ddefd03946))
+* safety for assignment hierarchy if ids are null (dataset inconsistencies) ([#781](https://github.com/railroadmedia/musora-content-services/issues/781)) ([6b89370](https://github.com/railroadmedia/musora-content-services/commit/6b893701a33dd0b205da969ae9fbfa444dcdf701))
+* **T3PS-1401:** 5 minute ttl for pinned data ([#767](https://github.com/railroadmedia/musora-content-services/issues/767)) ([a14cea5](https://github.com/railroadmedia/musora-content-services/commit/a14cea5ce9e65297e5f16c9ab320445786da0c5d))
+* use badge_logo ([#776](https://github.com/railroadmedia/musora-content-services/issues/776)) ([8d91b64](https://github.com/railroadmedia/musora-content-services/commit/8d91b647b1a85705a6b9157b604914d0743c7a99))
+* watermelon validation tweaks ([#770](https://github.com/railroadmedia/musora-content-services/issues/770)) ([ebd6e7f](https://github.com/railroadmedia/musora-content-services/commit/ebd6e7f7c059a23a6126b993b3084744d3d6e78a))
+
 ### [2.131.12](https://github.com/railroadmedia/musora-content-services/compare/v2.131.11...v2.131.12) (2026-02-07)
 
 ### [2.131.11](https://github.com/railroadmedia/musora-content-services/compare/v2.131.10...v2.131.11) (2026-02-07)
