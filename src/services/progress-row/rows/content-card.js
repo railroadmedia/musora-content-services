@@ -82,7 +82,9 @@ export async function processContentItem(content) {
   const isLive = content.isLive ?? false
   let ctaText = getDefaultCTATextForContent(content, contentType)
 
-  content.completed_children = await getCompletedChildren(content, contentType)
+  const {completedChildren, allChildren} = await getCompletedChildren(content, contentType)
+  content.completed_children = completedChildren
+  content.all_children = allChildren
 
   if (content.type === 'guided-course') {
     const nextLessonPublishedOn = content.children.find(
@@ -125,7 +127,7 @@ export async function processContentItem(content) {
       isLocked: content.is_locked ?? false,
       subtitle:
         collectionLessonTypes.includes(content.type) || content.lesson_count > 1
-          ? `${content.completed_children} of ${content.lesson_count ?? content.child_count} Lessons Complete`
+          ? `${content.completed_children} of ${content.all_children ?? content.lesson_count ?? content.child_count} Lessons Complete`
           : (contentType === 'lesson' || contentType === 'show') && isLive === false
             ? `${content.progressPercentage}% Complete`
             : `${content.difficulty_string} • ${content.artist_name}`,
@@ -164,6 +166,7 @@ function getDefaultCTATextForContent(content, contentType) {
 
 async function getCompletedChildren(content, contentType) {
   let completedChildren = null
+  let allChildren = null
   if (contentType === 'show') {
     const shows = await addContextToContent(fetchShows, content.brand, content.type, {
       addProgressStatus: true,
@@ -171,14 +174,16 @@ async function getCompletedChildren(content, contentType) {
     completedChildren = Object.values(shows).filter(
       (show) => show.progressStatus === 'completed'
     ).length
+    allChildren = Object.values(shows).length
   } else if (content.lesson_count > 0) {
     const lessonIds = getLeafNodes(content)
     const progressOnItems = await getProgressStateByIds(lessonIds)
     completedChildren = Object.values(progressOnItems).filter(
       (value) => value === 'completed'
     ).length
+    allChildren = lessonIds.length
   }
-  return completedChildren
+  return {completedChildren, allChildren}
 }
 
 function getLeafNodes(content) {
