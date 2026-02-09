@@ -20,6 +20,11 @@ import { postProcessBadge } from "../../contentTypeConfig.js";
 export const USER_PIN_PROGRESS_KEY = 'user_pin_progress_row'
 const CACHE_EXPIRY_MS = 5 * 60 * 1000
 
+/**
+ * Retrieves user's pinned data by brand, from localStorage or BE call.
+ * @param brand
+ * @returns {Promise<any|*|{id, type}>}
+ */
 async function getUserPinnedItem(brand) {
   const key = getUserPinProgressKey()
 
@@ -27,13 +32,16 @@ async function getUserPinnedItem(brand) {
   const cachedData = pinnedProgress[brand]
 
   if (isCacheValid(cachedData)) {
-    return cachedData
+    delete cachedData.cachedAt // is for internal use
+    return (cachedData.id && cachedData.type)
+      ? cachedData
+      : null
   }
 
   const url = `/api/user-management-system/v1/progress/pin?brand=${brand}`
   try {
     const response = await GET(url)
-    if (response && !response.error) {
+    if (response === "" || (response && !response.error)) { // "" is 204 case
       return await setUserBrandPinnedItem(brand, response)
     }
     return response
@@ -62,7 +70,7 @@ export async function pinProgressRow(brand, id, progressType) {
   if (response && !response.error) {
     return await setUserBrandPinnedItem(brand, {
       id,
-      progressType,
+      type: progressType,
     })
   }
   return response
@@ -109,9 +117,13 @@ async function setUserBrandPinnedItem(brand, pinnedData) {
   const key = getUserPinProgressKey()
   let pinnedProgress = await getStoredPinnedData(key)
 
-  pinnedProgress[brand] = setPinnedData(pinnedData)
+  const processed = pinnedData && typeof pinnedData === 'object'
+    ? pinnedData
+    : null
+
+  pinnedProgress[brand] = setPinnedData(processed)
   await globalConfig.localStorage.setItem(key, JSON.stringify(pinnedProgress))
-  return pinnedProgress
+  return processed
 }
 
 async function getStoredPinnedData(key) {
