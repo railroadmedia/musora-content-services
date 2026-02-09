@@ -1,50 +1,45 @@
+import * as v from 'valibot'
 import { SyncValidationError } from './index'
 
-export function throwIfNotInteger(val: any) {
-  if (!Number.isSafeInteger(val)) throw new SyncValidationError('Sync value is not a number: ' + val, typeof val, 'number');
-  return val
-}
+const validate = <T>(schema: v.BaseSchema<unknown, T, v.BaseIssue<unknown>>) =>
+  (val: unknown): T => {
+    const result = v.safeParse(schema, val)
+    if (!result.success) {
+      const issue = result.issues[0]
+      throw new SyncValidationError(issue.message, issue)
+    }
+    return result.output
+  }
 
-export function throwIfNotNumber(val: any) {
-  // note: this will accept decimal values
-  if (!Number.isFinite(val)) throw new SyncValidationError('Sync value is not a number: ' + val, typeof val, 'number');
-  return val
-}
+const integer = v.pipe(v.number(), v.integer())
+const uint = v.pipe(integer, v.minValue(0))
+const positiveInteger = v.pipe(integer, v.minValue(1))
 
-export function throwIfNotString(val: any) {
-  if (typeof val !== 'string') throw new SyncValidationError('Sync value is not a string: ' + val, typeof val, 'string');
-  return val
-}
+export const number = validate(v.number())
+export const string = validate(v.string())
+export const boolean = validate(v.boolean())
 
-export function throwIfNotBoolean(val: any) {
-  if (typeof val !== 'boolean') throw new SyncValidationError('Sync value is not a boolean: ' + val, typeof val, 'boolean');
-  return val
-}
+export const nullableString = validate(v.nullable(v.string()))
+export const nullableNumber = validate(v.nullable(v.number()))
+export const nullableInteger = validate(v.nullable(integer))
 
-export function throwIfNotNullableInteger(val: any) {
-  return val === null ? val : throwIfNotInteger(val)
-}
+export const uint8 = validate(v.pipe(uint, v.maxValue(255)))
+export const uint16 = validate(v.pipe(uint, v.maxValue(65535)))
+export const mediumint = validate(v.pipe(uint, v.maxValue(16777215)))
+export const percent = validate(v.pipe(v.number(), v.minValue(0), v.maxValue(100)))
 
-export function throwIfNotNullableNumber(val: any) {
-  return val === null ? val : throwIfNotNumber(val)
-}
+export const positiveInt = validate(positiveInteger)
+export const nullableUint = validate(v.nullable(uint))
+export const nullableUint8 = validate(v.nullable(v.pipe(uint, v.maxValue(255))))
+export const nullableUint16 = validate(v.nullable(v.pipe(uint, v.maxValue(65535))))
 
-export function throwIfNotNullableString(val: any) {
-  return val === null ? val : throwIfNotString(val)
-}
+export const char = (max: number) => validate(v.pipe(v.string(), v.maxLength(max)))
+export const varchar = char
+export const nullableChar = (max: number) => validate(v.nullable(v.pipe(v.string(), v.maxLength(max))))
+export const nullableVarchar = nullableChar
 
-export function throwIfOutsideRange(val: number, minimum?: number, maximum?: number) {
-  if (minimum !== undefined && val < minimum) throw new SyncValidationError('Sync value is less than minimum value ' + minimum + ': ' + val, val, null);
-  if (maximum !== undefined && val > maximum) throw new SyncValidationError('Sync value is greater than maximum value ' + maximum + ': ' + val, val, null);
-  return val
-}
+export const numberInRange = (min: number, max: number) =>
+  validate(v.pipe(v.number(), v.minValue(min), v.maxValue(max)))
 
-export function throwIfMaxLengthExceeded(val: string, maximum: number) {
-  if (val.length > maximum) throw new SyncValidationError('Sync value exceeds the maximum length ' + maximum + ': ' + val, val, null);
-  return val
-}
-
-export function throwIfInvalidEnumValue(val: string, enumClass: any) {
-  if (!Object.values(enumClass).includes(val)) throw new SyncValidationError('Sync value is invalid enum value: ' + val, val, enumClass);
-  return val
-}
+export const enumValue = <T extends Record<string, string>>(enumObj: T) =>
+  validate(v.picklist(Object.values(enumObj) as [string, ...string[]]))

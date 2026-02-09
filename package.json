@@ -41,7 +41,8 @@
     "dayjs": "^1.11.13",
     "docdash": "^2.0.2",
     "fflate": "^0.8.2",
-    "groqd": "^0.15.12"
+    "groqd": "^0.15.12",
+    "valibot": "^1.0.0"
   },
   "peerDependencies": {
     "@nozbe/watermelondb": "^0.28.1-0"

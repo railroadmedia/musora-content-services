@@ -1,57 +1,26 @@
 import { SYNC_TABLES } from '../schema'
 import BaseModel from './Base'
 import {
-  throwIfMaxLengthExceeded,
-  throwIfNotBoolean,
-  throwIfNotNullableNumber,
-  throwIfNotNullableString,
-  throwIfNotNumber,
-  throwIfNotString,
-  throwIfOutsideRange,
+  boolean,
+  nullableChar,
+  nullableUint,
+  nullableUint8,
+  nullableVarchar,
+  numberInRange,
+  string,
+  number,
 } from '../errors/validators'
 
 export const validators = {
-  // char(26)
-  manual_id: (value: string | null) => {
-    throwIfNotNullableString(value)
-    return value !== null ? throwIfMaxLengthExceeded(value, 26) : value
-  },
-  // int unsigned
-  content_id: (value: number | null) => {
-    throwIfNotNullableNumber(value)
-    return value !== null ? throwIfOutsideRange(value, 0) : value
-  },
-  date: (value: string) => {
-    return throwIfNotString(value)
-  },
-  // tinyint(1)
-  auto: (value: boolean) => {
-    return throwIfNotBoolean(value)
-  },
-  duration_seconds: (value: number) => {
-    throwIfNotNumber(value)
-    return throwIfOutsideRange(value, 0, 59999)
-  },
-  // varchar(64)
-  title: (value: string | null) => {
-    throwIfNotNullableString(value)
-    return value !== null ? throwIfMaxLengthExceeded(value, 64) : value
-  },
-  // varchar(255)
-  thumbnail_url: (value: string | null) => {
-    throwIfNotNullableString(value)
-    return value !== null ? throwIfMaxLengthExceeded(value, 255) : value
-  },
-  // tinyint unsigned
-  category_id: (value: number | null) => {
-    throwIfNotNullableNumber(value)
-    return value !== null ? throwIfOutsideRange(value, 0, 255) : value
-  },
-  // tinyint unsigned
-  instrument_id: (value: number | null) => {
-    throwIfNotNullableNumber(value)
-    return value !== null ? throwIfOutsideRange(value, 0, 255) : value
-  }
+  manual_id: nullableChar(26),
+  content_id: nullableUint,
+  date: string,
+  auto: boolean,
+  duration_seconds: numberInRange(0, 59999),
+  title: nullableVarchar(64),
+  thumbnail_url: nullableVarchar(255),
+  category_id: nullableUint8,
+  instrument_id: nullableUint8,
 }
 
 export default class Practice extends BaseModel<{
@@ -124,13 +93,13 @@ export default class Practice extends BaseModel<{
   }
 
   static generateAutoId(contentId: number, date: string) {
-    throwIfNotNumber(contentId)
-    throwIfNotString(date)
+    number(contentId)
+    string(date)
     return ['auto', contentId.toString(), date].join(':')
   }
 
   static generateManualId(manualId: string) {
-    throwIfNotString(manualId)
+    string(manualId)
     return `manual:${manualId}`
   }
 }
