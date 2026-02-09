@@ -33,7 +33,7 @@ async function getUserPinnedItem(brand) {
 
   if (isCacheValid(cachedData)) {
     delete cachedData.cachedAt // is for internal use
-    return cachedData === {}
+    return (cachedData.id && cachedData.type)
       ? null
       : cachedData
   }
@@ -70,7 +70,7 @@ export async function pinProgressRow(brand, id, progressType) {
   if (response && !response.error) {
     return await setUserBrandPinnedItem(brand, {
       id,
-      progressType,
+      type: progressType,
     })
   }
   return response
