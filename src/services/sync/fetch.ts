@@ -1,8 +1,7 @@
-import { SyncToken, SyncEntry, SyncSyncable } from "./index"
+import { SyncToken, SyncEntry } from "./index"
 import { EpochMs } from "."
 import * as fflate from 'fflate'
 import { globalConfig } from '../config.js'
-import { RecordId } from "@nozbe/watermelondb"
 import BaseModel from "./models/Base"
 import SyncContext from "./context"
 import { SyncTelemetry } from "./telemetry"
@@ -32,14 +31,14 @@ interface RawPullResponse {
     max_updated_at: EpochMs | null
     timestamp: EpochMs
   }
-  entries: SyncEntry<BaseModel, 'client_record_id'>[]
+  entries: SyncEntry<BaseModel>[]
 }
 
 interface RawPushResponse {
   meta: {
     timestamp: EpochMs
   }
-  results: SyncStorePushResult<'client_record_id'>[]
+  results: SyncStorePushResult[]
 }
 
 export type SyncResponse = SyncPushResponse | SyncPullResponse
@@ -69,24 +68,24 @@ type SyncPushFailureResponse = SyncResponseBase & {
   originalError: Error
 }
 
-export type SyncStorePushResult<TRecordKey extends string = 'id'> = SyncStorePushResultSuccess<TRecordKey> | SyncStorePushResultFailure<TRecordKey>
-export type SyncStorePushResultSuccess<TRecordKey extends string = 'id'> = SyncStorePushResultBase & {
+export type SyncStorePushResult = SyncStorePushResultSuccess | SyncStorePushResultFailure
+export type SyncStorePushResultSuccess = SyncStorePushResultBase & {
   type: 'success'
-  entry: SyncEntry<BaseModel, TRecordKey>
+  entry: SyncEntry<BaseModel>
 }
-export type SyncStorePushResultFailure<TRecordKey extends string = 'id'> = SyncStorePushResultProcessingFailure<TRecordKey> | SyncStorePushResultValidationFailure<TRecordKey>
-type SyncStorePushResultProcessingFailure<TRecordKey extends string = 'id'> = SyncStorePushResultFailureBase<TRecordKey> & {
+export type SyncStorePushResultFailure = SyncStorePushResultProcessingFailure | SyncStorePushResultValidationFailure
+type SyncStorePushResultProcessingFailure = SyncStorePushResultFailureBase & {
   failureType: 'processing'
   error: any
 }
-type SyncStorePushResultValidationFailure<TRecordKey extends string = 'id'> = SyncStorePushResultFailureBase<TRecordKey> & {
+type SyncStorePushResultValidationFailure = SyncStorePushResultFailureBase & {
   failureType: 'validation'
   errors: Record<string, string[]>
 }
-interface SyncStorePushResultFailureBase<TRecordKey extends string = 'id'> extends SyncStorePushResultBase {
+interface SyncStorePushResultFailureBase extends SyncStorePushResultBase {
   type: 'failure'
   failureType: string
-  ids: { [K in TRecordKey]: RecordId }
+  ids: { id: string }
 }
 interface SyncStorePushResultBase {
   type: 'success' | 'failure'
@@ -121,38 +120,38 @@ export interface SyncResponseBase {
 
 export type PushPayload = {
   entries: ({
-    record: SyncSyncable
+    record: BaseModel
     meta: {
       ids: {
-        id: RecordId
+        id: string
       }
-      deleted: false
+      deleted_at: null
     }
   } | {
     record: null
     meta: {
       ids: {
-        id: RecordId
+        id: string
       }
-      deleted: true
+      deleted_at: EpochMs
     }
   })[]
 }
 
 interface ServerPushPayload {
   entries: {
-    record: SyncSyncable<BaseModel, 'client_record_id'> | null
+    record: BaseModel | null
     meta: {
       ids: {
-        client_record_id: RecordId
+        id: string
       },
-      deleted: boolean
+      deleted_at: EpochMs | null
     }
   }[]
 }
 
-export function makeFetchRequest(input: RequestInfo, init?: RequestInit): (userId: number, context: SyncContext) => Request {
-  return (userId, context) => new Request(globalConfig.baseUrl + input, {
+export function makeFetchRequest(input: RequestInfo, init?: RequestInit) {
+  return (userId: number, context: SyncContext) => new Request(globalConfig.baseUrl + input, {
     ...init,
     headers: {
       ...init?.headers,
@@ -237,7 +236,7 @@ export function handlePull(callback: (userId: number, context: SyncContext) => R
       json = await response.json() as RawPullResponse;
     }
 
-    const data = deserializePullResponse(json)
+    const data = json
 
     // if no max_updated_at, at least use the server's timestamp
     // useful for recording that we have at least tried fetching even though resultset empty
@@ -259,7 +258,7 @@ export function handlePull(callback: (userId: number, context: SyncContext) => R
 export function handlePush(callback: (userId: number, context: SyncContext) => Request): SyncPush {
   return async function(tableName, userId, context, payload, signal, blockingState) {
     const generatedRequest = callback(userId, context)
-    const serverPayload = serializePushPayload(payload)
+    const serverPayload = payload
     const request = new Request(generatedRequest, {
       credentials: 'include',
       body: JSON.stringify(serverPayload),
@@ -309,7 +308,7 @@ export function handlePush(callback: (userId: number, context: SyncContext) => R
     }
 
     const json = await response.json() as RawPushResponse
-    const data = deserializePushResponse(json)
+    const data = json
 
     return {
       ok: true,
@@ -325,99 +324,4 @@ function serializePullUrlQuery(url: string, fetchToken: SyncToken | null) {
     searchParams.set('since', fetchToken.toString())
   }
   return url + '?' + searchParams.toString()
-}
-
-function deserializePullResponse(response: RawPullResponse) {
-  return {
-    ...response,
-    entries: response.entries.map(entry => {
-      return {
-        ...entry,
-        record: deserializeRecord(entry.record),
-        meta: {
-          ...entry.meta,
-          ids: deserializeIds(entry.meta.ids)
-        }
-      }
-    })
-  }
-}
-
-function serializePushPayload(payload: PushPayload): ServerPushPayload {
-  return {
-    ...payload,
-    entries: payload.entries.map(entry => {
-      return {
-        record: serializeRecord(entry.record),
-        meta: {
-          ...entry.meta,
-          ids: serializeIds(entry.meta.ids)
-        }
-      }
-    })
-  }
-}
-
-function deserializePushResponse(response: RawPushResponse) {
-  return {
-    results: response.results.map(result => {
-      if (result.type === 'success') {
-        const entry = result.entry
-
-        return {
-          ...result,
-          entry: {
-            ...entry,
-            record: deserializeRecord(entry.record),
-            meta: {
-              ...entry.meta,
-              ids: deserializeIds(entry.meta.ids)
-            }
-          }
-        }
-      } else {
-        return {
-          ...result,
-          ids: deserializeIds(result.ids)
-        }
-      }
-    })
-  }
-}
-
-function serializeRecord(record: SyncSyncable<BaseModel, 'id'> | null): SyncSyncable<BaseModel, 'client_record_id'> | null {
-  if (record) {
-    const { id, ...rest } = record
-    return {
-      ...rest,
-      client_record_id: id
-    }
-  }
-
-  return null
-}
-
-function serializeIds(ids: { id: RecordId }): { client_record_id: RecordId } {
-  return {
-    client_record_id: ids.id
-  }
-}
-
-function deserializeRecord(record: SyncSyncable<BaseModel, 'client_record_id'> | null): SyncSyncable<BaseModel, 'id'> | null {
-  if (record) {
-    const { client_record_id: id, ...rest } = record
-
-    return {
-      ...rest,
-      id
-    }
-  }
-
-  return null
-}
-
-function deserializeIds(ids: { client_record_id: RecordId }): { id: RecordId } {
-  return {
-    id: ids.client_record_id
-  }
 }

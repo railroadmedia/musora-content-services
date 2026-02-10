@@ -392,6 +392,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             r._raw[key] = record._raw[key]
           })
           r._raw._status = 'updated'
+          r._raw.updated_at = this.generateTimestamp()
         }))
 
         await writer.batch(...destroyBuilds)
@@ -658,13 +659,13 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       if (rec._raw._status === 'deleted') {
         return {
           record: null,
-          meta: { ids: { id: rec._raw.id }, deleted: true as true },
+          meta: { ids: { id: rec._raw.id }, deleted_at: rec._raw.updated_at },
         }
       } else {
         const record = this.rawSerializer.toPlainObject(rec)
         return {
           record,
-          meta: { ids: { id: rec._raw.id }, deleted: false as false },
+          meta: { ids: { id: rec._raw.id }, deleted_at: null },
         }
       }
     })

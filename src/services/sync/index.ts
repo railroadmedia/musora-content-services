@@ -1,7 +1,7 @@
 import './telemetry/index'
 
-import { Q, RecordId } from "@nozbe/watermelondb"
-import { type ModelSerialized, type RawSerialized } from "./serializers"
+import { Q } from "@nozbe/watermelondb"
+import { type ModelSerialized } from "./serializers"
 import BaseModel from "./models/Base"
 
 export type SyncUserScope = { initialId: number, getCurrentId: () => number }
@@ -19,14 +19,10 @@ type Branded<T, B extends string> = T & { __brand: B }
 export type EpochMs = Branded<number, 'EpochMs'>
 export type SyncToken = EpochMs
 
-export type SyncSyncable<TModel extends BaseModel = BaseModel, TRecordKey extends string = 'id'> = {
-  [K in TRecordKey]: RecordId
-} & Omit<RawSerialized<TModel>, 'id'>
-
-export type SyncEntry<TModel extends BaseModel = BaseModel, TRecordKey extends string = 'id'> = {
-  record: SyncSyncable<TModel, TRecordKey> | null
+export type SyncEntry<TModel extends BaseModel = BaseModel> = {
+  record: TModel | null
   meta: {
-    ids: { [K in TRecordKey]: RecordId }
+    ids: { id: string }
     lifecycle: {
       created_at: EpochMs
       updated_at: EpochMs
@@ -34,10 +30,10 @@ export type SyncEntry<TModel extends BaseModel = BaseModel, TRecordKey extends s
     }
   }
 }
-export type SyncEntryNonDeleted<TModel extends BaseModel = BaseModel, TRecordKey extends string = 'id'> = {
-  record: SyncSyncable<TModel, TRecordKey>
+export type SyncEntryNonDeleted<TModel extends BaseModel = BaseModel> = {
+  record: TModel
   meta: {
-    ids: { [K in TRecordKey]: RecordId }
+    ids: { id: string }
     lifecycle: {
       created_at: EpochMs
       updated_at: EpochMs
