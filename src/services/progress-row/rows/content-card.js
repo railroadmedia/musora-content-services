@@ -29,7 +29,11 @@ export async function getContentCardMap(brand, limit, playlistEngagedOnContent, 
   if (playlistEngagedOnContent) {
     for (const item of playlistEngagedOnContent) {
       const parentIds = item.parent_content_data || []
-      recentContentIds = recentContentIds.filter(id => id !== item.id && !parentIds.includes(id))
+      recentContentIds = recentContentIds.filter(id => {
+        if (id === item.id) return false
+        if (parentIds.includes(id) && item.progressTimestamp > 0) return false
+        return true
+      })
     }
   }
   let contents = recentContentIds.length > 0
