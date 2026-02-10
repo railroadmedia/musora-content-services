@@ -339,7 +339,7 @@ export const filterTypes = {
 export const recentTypes = {
   lessons: [
     ...individualLessonsTypes,
-    'skill-pack-lesson',
+    ...skillLessonTypes,
     ...entertainmentLessonTypes,
     'course-lesson',
     'guided-course-lesson',
@@ -348,12 +348,18 @@ export const recentTypes = {
   ],
   songs: [...SONG_TYPES],
   home: [
+    ...skillLessonTypes,
     ...individualLessonsTypes,
+    ...tutorialsLessonTypes,
+    ...skillLessonTypes,
     ...transcriptionsLessonTypes,
     ...playAlongLessonTypes,
     ...showsLessonTypes,
-    ...getNextLessonLessonParentTypes,
+    'guided-course',
+    'learning-path-v2',
     'live',
+    'course',
+    'course-collection',
     'routine'
   ],
 }
