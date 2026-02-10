@@ -1,4 +1,5 @@
 import { Monoid } from '../ads/monoid'
+import { FieldAccess } from './field-access'
 
 export interface BuildQueryOptions {
   sort?: string
@@ -16,6 +17,7 @@ export interface QueryBuilderState {
   postFilter: string
   selector: string
   accessor: string
+  dereference: string
 }
 
 export interface QueryBuilder {
@@ -26,7 +28,8 @@ export interface QueryBuilder {
   slice(offset: number, limit?: number): QueryBuilder
   first(): QueryBuilder
   select(...fields: string[]): QueryBuilder
-  access(field: string, dereference?: boolean): QueryBuilder
+  access(field: string, fieldAccess?: FieldAccess): QueryBuilder
+  dereference(): QueryBuilder
   postFilter(expr: string): QueryBuilder
   build(): string
 
@@ -68,6 +71,7 @@ export const query = (selector?: string): QueryBuilder => {
     projection: project.empty,
     postFilter: and.empty,
     selector: selector || '*',
+    dereference: '',
     accessor: '',
   }
 
@@ -113,12 +117,18 @@ export const query = (selector?: string): QueryBuilder => {
       return builder
     },
 
-    access(field: string, dereference: boolean = false) {
+    access(field: string, fieldAccess: FieldAccess = '.') {
       if (!field) {
         state.accessor = ''
         return builder
       }
-      state.accessor = `.${field}${dereference ? '->' : ''}`
+
+      state.accessor = `${fieldAccess}${field}`
+      return builder
+    },
+
+    dereference() {
+      state.dereference = `->`
       return builder
     },
 
@@ -129,14 +139,12 @@ export const query = (selector?: string): QueryBuilder => {
     },
 
     build() {
-      const { selector, filter, accessor, postFilter, projection, ordering, slice } = state
-
       return `
-        ${selector}[${filter}]${accessor}
-        ${projection.length > 0 ? `{ ${projection} }` : ''}
-        ${postFilter ? `[${postFilter}]` : ''}
-        ${ordering}
-        ${slice}
+        ${state.selector}[${state.filter}]${state.accessor}${state.dereference}
+        ${state.projection.length > 0 ? `{ ${state.projection} }` : ''}
+        ${state.postFilter ? `[${state.postFilter}]` : ''}
+        ${state.ordering}
+        ${state.slice}
       `.trim()
     },
 

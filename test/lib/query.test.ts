@@ -908,7 +908,7 @@ describe('Sanity Query Builder', () => {
       })
 
       test('builds query with field access using dereference', () => {
-        const result = query().access('instructor', true).build()
+        const result = query().access('instructor').dereference().build()
         expect(result).toBe('*[].instructor->')
       })
 
@@ -936,7 +936,7 @@ describe('Sanity Query Builder', () => {
       })
 
       test('builds query with accessor and single and filter', () => {
-        const result = query().and('_type == "course"').access('instructor', true).build()
+        const result = query().and('_type == "course"').access('instructor').dereference().build()
         expect(result).toBe('*[_type == "course"].instructor->')
       })
 
@@ -959,7 +959,8 @@ describe('Sanity Query Builder', () => {
           .and('_type == "course"')
           .and('published == true')
           .or('difficulty == "beginner"', 'difficulty == "intermediate"')
-          .access('lessons[]', true)
+          .access('lessons[]')
+          .dereference()
           .build()
         expect(result).toContain('*[_type == "course" && published == true')
         expect(result).toContain('(difficulty == "beginner" || difficulty == "intermediate")]')
@@ -969,7 +970,7 @@ describe('Sanity Query Builder', () => {
 
     describe('Accessor with Projection', () => {
       test('builds query with accessor before projection', () => {
-        const result = query().access('instructor', true).select('_id', 'name').build()
+        const result = query().access('instructor').dereference().select('_id', 'name').build()
         expect(result).toContain('*[].instructor->')
         expect(result).toContain('{ _id, name }')
         const accessorIndex = result.indexOf('.instructor->')
@@ -980,7 +981,8 @@ describe('Sanity Query Builder', () => {
       test('builds query with accessor and single field selection', () => {
         const result = query()
           .and('_type == "course"')
-          .access('instructor', true)
+          .access('instructor')
+          .dereference()
           .select('_id')
           .build()
         expect(result).toContain('*[_type == "course"].instructor->')
@@ -990,7 +992,8 @@ describe('Sanity Query Builder', () => {
       test('builds query with accessor and multiple field selections', () => {
         const result = query()
           .and('_type == "course"')
-          .access('instructor', true)
+          .access('instructor')
+          .dereference()
           .select('_id', 'name', 'biography')
           .build()
         expect(result).toContain('*[_type == "course"].instructor->')
@@ -1000,7 +1003,8 @@ describe('Sanity Query Builder', () => {
       test('builds query with accessor and complex projection', () => {
         const result = query()
           .and('_type == "learning-path"')
-          .access('courses[]', true)
+          .access('courses[]')
+          .dereference()
           .select('_id', 'title', '"instructor": instructor->name')
           .build()
         expect(result).toContain('*[_type == "learning-path"].courses[]->')
@@ -1028,7 +1032,8 @@ describe('Sanity Query Builder', () => {
       test('builds query with accessor and post-filters', () => {
         const result = query()
           .and('_type == "course"')
-          .access('lessons[]', true)
+          .access('lessons[]')
+          .dereference()
           .select('_id', '"count": count(videos)')
           .postFilter('count > 5')
           .build()
@@ -1038,7 +1043,12 @@ describe('Sanity Query Builder', () => {
       })
 
       test('builds query with accessor and first() helper', () => {
-        const result = query().and('_type == "course"').access('instructor', true).first().build()
+        const result = query()
+          .and('_type == "course"')
+          .access('instructor')
+          .dereference()
+          .first()
+          .build()
         expect(result).toContain('*[_type == "course"].instructor->')
         expect(result).toContain('[0]')
       })
@@ -1048,7 +1058,8 @@ describe('Sanity Query Builder', () => {
           .and('_type == "course"')
           .and('published == true')
           .or('difficulty == "beginner"', 'difficulty == "intermediate"')
-          .access('lessons[]', true)
+          .access('lessons[]')
+          .dereference()
           .select('_id', 'title', '"videoCount": count(videos)')
           .postFilter('videoCount > 3')
           .order('publishedOn desc')
@@ -1066,7 +1077,8 @@ describe('Sanity Query Builder', () => {
       test('accessor maintains position with multiple operations', () => {
         const result = query()
           .and('_type == "course"')
-          .access('instructor', true)
+          .access('instructor')
+          .dereference()
           .select('_id')
           .order('name')
           .slice(0, 5)
@@ -1094,13 +1106,6 @@ describe('Sanity Query Builder', () => {
         expect(result).not.toContain('oldField')
       })
 
-      test('overrides dereferencing flag', () => {
-        const builder = query().access('field', true)
-        expect(builder._state().accessor).toBe('.field->')
-        builder.access('field', false)
-        expect(builder._state().accessor).toBe('.field')
-      })
-
       test('overrides field name', () => {
         const builder = query().access('oldField')
         expect(builder._state().accessor).toBe('.oldField')
@@ -1118,7 +1123,8 @@ describe('Sanity Query Builder', () => {
         const result = query()
           .and('_type == "course"')
           .access('field')
-          .access('other', true)
+          .access('other')
+          .dereference()
           .build()
         expect(result).toBe('*[_type == "course"].other->')
         expect(result).not.toContain('.field')
@@ -1134,7 +1140,8 @@ describe('Sanity Query Builder', () => {
       test('builds query with accessor and selector() method', () => {
         const result = query()
           .selector('*[_type == "learning-path"]')
-          .access('courses[]', true)
+          .access('courses[]')
+          .dereference()
           .build()
         expect(result).toBe('*[_type == "learning-path"][].courses[]->')
       })
@@ -1152,7 +1159,8 @@ describe('Sanity Query Builder', () => {
       test('builds query with accessor and complex custom selector', () => {
         const selector = '*[_type == "user" && _id == $userId][0]'
         const result = query(selector)
-          .access('enrollments[]', true)
+          .access('enrollments[]')
+          .dereference()
           .select('_id', 'enrolledAt', '"content": content->title')
           .order('enrolledAt desc')
           .build()
@@ -1181,8 +1189,9 @@ describe('Sanity Query Builder', () => {
         expect(builder._state().accessor).toBe('')
         builder.access('first')
         expect(builder._state().accessor).toBe('.first')
-        builder.access('second', true)
-        expect(builder._state().accessor).toBe('.second->')
+        builder.access('second').dereference()
+        expect(builder._state().accessor).toBe('.second')
+        expect(builder._state().dereference).toBe('->')
         builder.access('')
         expect(builder._state().accessor).toBe('')
       })
@@ -1204,7 +1213,8 @@ describe('Sanity Query Builder', () => {
       test('accessor appears before projection', () => {
         const result = query()
           .and('_type == "course"')
-          .access('instructor', true)
+          .access('instructor')
+          .dereference()
           .select('_id', 'name')
           .build()
         const accessorIndex = result.indexOf('.instructor->')
@@ -1215,7 +1225,8 @@ describe('Sanity Query Builder', () => {
       test('accessor maintains correct position in complex queries', () => {
         const result = query()
           .and('_type == "course"')
-          .access('lessons[]', true)
+          .access('lessons[]')
+          .dereference()
           .select('_id')
           .postFilter('count > 5')
           .order('publishedOn desc')
@@ -1239,7 +1250,8 @@ describe('Sanity Query Builder', () => {
         const result = query()
           .selector('*[_type == "learning-path"]')
           .and('published == true')
-          .access('courses[]', true)
+          .access('courses[]')
+          .dereference()
           .select('_id', 'title')
           .postFilter('count(lessons) > 10')
           .order('title asc')
@@ -1285,7 +1297,8 @@ describe('Sanity Query Builder', () => {
         const result = query()
           .and('_type == "course"')
           .and('published == true')
-          .access('instructor', true)
+          .access('instructor')
+          .dereference()
           .select(
             '_id',
             'name',
@@ -1306,7 +1319,8 @@ describe('Sanity Query Builder', () => {
           .and('_type == "learning-path-v2"')
           .and('slug.current == $slug')
           .first()
-          .access('courses[]', true)
+          .access('courses[]')
+          .dereference()
           .select('_id', 'title', 'difficulty', '"lessonCount": count(lessons)')
           .order('order asc')
           .build()
@@ -1334,7 +1348,8 @@ describe('Sanity Query Builder', () => {
         const result = query()
           .and('_type == "playlist"')
           .and('user._ref == $userId')
-          .access('items[]', true)
+          .access('items[]')
+          .dereference()
           .select('_id', 'title', '_type', 'publishedOn')
           .order('publishedOn desc')
           .build()
@@ -1345,7 +1360,8 @@ describe('Sanity Query Builder', () => {
       test('builds query with accessor and post-filter aggregation', () => {
         const result = query()
           .and('_type == "learning-path"')
-          .access('courses[]', true)
+          .access('courses[]')
+          .dereference()
           .select('_id', 'title', '"totalLessons": count(lessons)')
           .postFilter('totalLessons >= 10')
           .postFilter('totalLessons <= 50')
@@ -1366,7 +1382,8 @@ describe('Sanity Query Builder', () => {
           .and('published == true')
           .or('difficulty == "beginner"', 'difficulty == "intermediate"')
           .and('brand == $brand')
-          .access('instructor', true)
+          .access('instructor')
+          .dereference()
           .select(
             '_id',
             'name',
@@ -1407,7 +1424,7 @@ describe('Sanity Query Builder', () => {
       })
 
       test('handles dereferencing with array notation', () => {
-        const result = query().and('_type == "playlist"').access('items[]', true).build()
+        const result = query().and('_type == "playlist"').access('items[]').dereference().build()
         expect(result).toBe('*[_type == "playlist"].items[]->')
       })
 
@@ -1420,10 +1437,11 @@ describe('Sanity Query Builder', () => {
         const builder = query().and('_type == "course"')
         builder.access('field1')
         expect(builder._state().accessor).toBe('.field1')
-        builder.access('field2', false)
+        builder.access('field2')
         expect(builder._state().accessor).toBe('.field2')
-        builder.access('field3', true)
-        expect(builder._state().accessor).toBe('.field3->')
+        builder.access('field3').dereference()
+        expect(builder._state().accessor).toBe('.field3')
+        expect(builder._state().dereference).toBe('->')
       })
 
       test('state reflects cleared accessor', () => {
@@ -1441,7 +1459,7 @@ describe('Sanity Query Builder', () => {
     describe('Accessor Default Parameter Behavior', () => {
       test('dereference parameter defaults to false when not provided', () => {
         const result1 = query().access('field').build()
-        const result2 = query().access('field', false).build()
+        const result2 = query().access('field').build()
         expect(result1).toBe(result2)
         expect(result1).toBe('*[].field')
         expect(result1).not.toContain('->')
