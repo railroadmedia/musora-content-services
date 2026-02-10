@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.132.4](https://github.com/railroadmedia/musora-content-services/compare/v2.132.3...v2.132.4) (2026-02-10)
+
+
+### Bug Fixes
+
+* redirect to course collection overview ([b4ba2b4](https://github.com/railroadmedia/musora-content-services/commit/b4ba2b42b06940be173a663d57bbfb08c1d188f6))
+
 ### [2.132.3](https://github.com/railroadmedia/musora-content-services/compare/v2.132.2...v2.132.3) (2026-02-10)
 
 
