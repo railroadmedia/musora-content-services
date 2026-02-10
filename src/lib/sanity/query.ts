@@ -15,6 +15,7 @@ export interface QueryBuilderState {
   projection: string
   postFilter: string
   selector: string
+  accessor: string
 }
 
 export interface QueryBuilder {
@@ -25,6 +26,7 @@ export interface QueryBuilder {
   slice(offset: number, limit?: number): QueryBuilder
   first(): QueryBuilder
   select(...fields: string[]): QueryBuilder
+  access(field: string, dereference?: boolean): QueryBuilder
   postFilter(expr: string): QueryBuilder
   build(): string
 
@@ -66,6 +68,7 @@ export const query = (selector?: string): QueryBuilder => {
     projection: project.empty,
     postFilter: and.empty,
     selector: selector || '*',
+    accessor: '',
   }
 
   const builder: QueryBuilder = {
@@ -110,6 +113,15 @@ export const query = (selector?: string): QueryBuilder => {
       return builder
     },
 
+    access(field: string, dereference: boolean = false) {
+      if (!field) {
+        state.accessor = ''
+        return builder
+      }
+      state.accessor = `.${field}${dereference ? '->' : ''}`
+      return builder
+    },
+
     // post filters
     postFilter(expr: string) {
       state.postFilter = and.concat(state.postFilter, expr)
@@ -117,10 +129,10 @@ export const query = (selector?: string): QueryBuilder => {
     },
 
     build() {
-      const { selector, filter, postFilter, projection, ordering, slice } = state
+      const { selector, filter, accessor, postFilter, projection, ordering, slice } = state
 
       return `
-        ${selector}[${filter}]
+        ${selector}[${filter}]${accessor}
         ${projection.length > 0 ? `{ ${projection} }` : ''}
         ${postFilter ? `[${postFilter}]` : ''}
         ${ordering}
