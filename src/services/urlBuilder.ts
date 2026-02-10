@@ -16,6 +16,9 @@ import { globalConfig } from './config.js'
 import { Brands } from '../lib/brands.js'
 import { LEARNING_PATH_LESSON } from '../contentTypeConfig.js'
 import { COLLECTION_TYPE } from "./sync/models/ContentProgress";
+import {getNavigateTo} from "./contentProgress.js";
+import {fetchByRailContentIds} from './sanity.js'
+
 
 /**
  * Brand type - accepts enum values or string
@@ -76,6 +79,11 @@ export interface CommentUrlParams {
 }
 
 /**
+ * Content types that need navigateTo fetching (no overview page)
+ */
+const CONTENT_TYPES_WITHOUT_OVERVIEW = ['course', 'guided-course']
+
+/**
  * Generate a frontend URL for content
  *
  * @param params - Content parameters
@@ -93,13 +101,13 @@ export interface CommentUrlParams {
  * generateContentUrl({ id: 123, type: 'pack-bundle', navigateTo: { id: 456 }, brand: 'guitareo' })
  * // Returns: "/guitareo/lessons/pack/123/456"
  */
-export function generateContentUrl({
+export async function generateContentUrl({
   id,
   type,
   parentId,
   navigateTo,
   brand = 'drumeo',
-}: ContentUrlParams): string {
+}: ContentUrlParams): Promise<string> {
   // Special case: method homepage
   if (type === 'method') {
     return `/${brand}/method`
@@ -131,9 +139,44 @@ export function generateContentUrl({
     return `/${brand}/lessons/pack/overview/${id}`
   }
 
+  // Recursive helper to fetch navigateTo with optional deep fetching
+  const fetchNavigateToRecursive = async (contentId: number | string, shouldGoDeeper: boolean): Promise<any> => {
+    const content = await fetchByRailContentIds([contentId])
+    const navigateToData = await getNavigateTo(content)
+    const navigateTo = navigateToData?.[contentId] || null
+
+    // For guided-course, recursively fetch the child's navigateTo
+    if (shouldGoDeeper && navigateTo?.id) {
+      const childNavigateTo = await fetchNavigateToRecursive(navigateTo.id, false)
+      if (childNavigateTo) {
+        return { ...navigateTo, child: childNavigateTo }
+      }
+    }
+
+    return navigateTo
+  }
+
   // Helper function to build URL with common parameters
-  const buildUrl = (typeSegments: string[]): string => {
-    const contentId = navigateTo ? `${id}/${navigateTo.id}` : id
+  const buildUrl = async (typeSegments: string[]): Promise<string> => {
+    let effectiveNavigateTo = navigateTo
+    let wasNavigateToFetched = false
+
+    // Fetch navigateTo for content types without overview if not provided
+    if (CONTENT_TYPES_WITHOUT_OVERVIEW.includes(type) && !navigateTo?.id) {
+      // Go deeper if no parentId (top-level content like guided-course)
+      effectiveNavigateTo = await fetchNavigateToRecursive(id, !parentId)
+      wasNavigateToFetched = true
+    }
+
+    // When we fetched navigateTo, build URL: /{brand}/.../{parentId}/{lessonId}
+    if (wasNavigateToFetched && effectiveNavigateTo) {
+      const lessonId = effectiveNavigateTo.child?.id || effectiveNavigateTo.id
+      const contentId = `${id}/${lessonId}`
+      return `/${brand}/${typeSegments.join('/')}/${contentId}`
+    }
+
+    // Original logic for when navigateTo was provided or not needed
+    const contentId = effectiveNavigateTo ? `${id}/${effectiveNavigateTo.id}` : id
     const parentSegment = parentId ? `/${parentId}` : ''
     return `/${brand}/${typeSegments.join('/')}${parentSegment}/${contentId}`
   }
@@ -182,7 +225,7 @@ export function generateContentUrl({
   // Use specific route if available, otherwise fall back to type as-is
   const contentTypeSegment = contentTypeRoutes[type] || type
 
-  return buildUrl([pageType, contentTypeSegment])
+  return await buildUrl([pageType, contentTypeSegment])
 }
 
 /**
@@ -195,8 +238,8 @@ export function generateContentUrl({
  * generateContentUrlWithDomain({ id: 123, type: 'song' })
  * // Returns: "https://www.musora.com/drumeo/songs/transcription/123"
  */
-export function generateContentUrlWithDomain(params: ContentUrlParams): string {
-  const path = generateContentUrl(params)
+export async function generateContentUrlWithDomain(params: ContentUrlParams): Promise<string> {
+  const path = await generateContentUrl(params)
 
   if (path === '#') {
     return '#'
@@ -267,15 +310,15 @@ export function generatePlaylistUrl(
  * })
  * // Returns: "/drumeo/songs/transcription/123#comment-789"
  */
-export function generateCommentUrl(
+export async function generateCommentUrl(
   comment: CommentUrlParams,
   withDomain: boolean = false
-): string {
+): Promise<string> {
   if (!comment.content) {
     return '#'
   }
 
-  const contentUrl = generateContentUrl({
+  const contentUrl = await generateContentUrl({
     id: comment.content.id,
     type: comment.content.type,
     parentId: comment.content.parentId,

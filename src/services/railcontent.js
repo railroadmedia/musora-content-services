@@ -137,7 +137,7 @@ export async function replyToComment(commentId, comment) {
   const content = contents?.[0]
 
   // Generate content URL
-  const contentUrl = content ? generateCommentUrl({
+  const contentUrl = content ? await generateCommentUrl({
     id: commentId,
     content: {
       id: content.id,
@@ -169,7 +169,7 @@ export async function createComment(railcontentId, comment) {
   const content = contents?.[0]
 
   // Generate content URL
-  const contentUrl = content ? generateContentUrl({
+  const contentUrl = content ? await generateContentUrl({
     id: content.id,
     type: content.type,
     parentId: content.parentId || content.parent_id,
@@ -224,7 +224,7 @@ export async function likeComment(commentId) {
   const content = contents?.[0]
 
   // Generate content URL
-  const contentUrl = content ? generateCommentUrl({
+  const contentUrl = content ? await generateCommentUrl({
     id: commentId,
     content: {
       id: content.id,
