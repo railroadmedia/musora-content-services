@@ -582,7 +582,7 @@ export async function resetAllAwards() {
   }
 }
 
-function getBadgeFields(def) {
+export function getBadgeFields(def) {
   return {
     badge: def.is_active ? def.badge : null,
     badge_rear: def.is_active ? def.badge_rear : null,

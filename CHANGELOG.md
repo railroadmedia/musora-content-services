@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.132.5](https://github.com/railroadmedia/musora-content-services/compare/v2.132.4...v2.132.5) (2026-02-10)
+
+### [2.132.4](https://github.com/railroadmedia/musora-content-services/compare/v2.132.3...v2.132.4) (2026-02-10)
+
+
+### Bug Fixes
+
+* redirect to course collection overview ([b4ba2b4](https://github.com/railroadmedia/musora-content-services/commit/b4ba2b42b06940be173a663d57bbfb08c1d188f6))
+
+### [2.132.3](https://github.com/railroadmedia/musora-content-services/compare/v2.132.2...v2.132.3) (2026-02-10)
+
+
+### Bug Fixes
+
+* **T3PS-2194:** bubble progress to highest ancestor successfully ([#794](https://github.com/railroadmedia/musora-content-services/issues/794)) ([f7d96af](https://github.com/railroadmedia/musora-content-services/commit/f7d96aff27aac7e23c5b3d261648b34443f03b65))
+
+### [2.132.2](https://github.com/railroadmedia/musora-content-services/compare/v2.132.1...v2.132.2) (2026-02-09)
+
+
+### Bug Fixes
+
+* add badge fields to callback fn ([#792](https://github.com/railroadmedia/musora-content-services/issues/792)) ([f9f9003](https://github.com/railroadmedia/musora-content-services/commit/f9f9003eb4fadecf0c8234cf1daf0ff631d4e879))
+
 ### [2.132.1](https://github.com/railroadmedia/musora-content-services/compare/v2.132.0...v2.132.1) (2026-02-09)
 
 
