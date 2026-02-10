@@ -254,8 +254,9 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
         Q.where('collection_id', COLLECTION_ID_SELF),
         Q.where('last_interacted_a_la_carte', Q.notEq(null)),
       ),
-      Q.and( // learning paths (parents AND lessons)
+      Q.and( // learning paths (parent not lessons)
         Q.where('collection_type', COLLECTION_TYPE.LEARNING_PATH),
+        Q.where('content_id', Q.eq(Q.column('collection_id'))) // gets parent LP progress
       )
     )
 
