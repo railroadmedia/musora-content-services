@@ -982,26 +982,32 @@ export const awardTemplate = {
   drumeo: {
     front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/drumeo.svg",
     rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/drumeo-rear.svg",
+    unearned: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/drumeo-unearned.svg",
   },
   guitareo: {
     front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/guitareo.svg",
     rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/guitareo-rear.svg",
+    unearned: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/guitareo-unearned.svg",
   },
   pianote: {
     front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/pianote.svg",
     rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/pianote-rear.svg",
+    unearned: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/pianote-unearned.svg",
   },
   singeo: {
     front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/singeo.svg",
     rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/singeo-rear.svg",
+    unearned: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/singeo-unearned.svg",
   },
   playbass: {
     front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass.svg",
     rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass-rear.svg",
+    unearned: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass-unearned.svg",
   },
   musora: {
     front: null,
     rear: null,
+    unearned: null,
   },
 }
 
@@ -1034,6 +1040,7 @@ export function postProcessBadge(content, brand = null) {
     if (item['badge_logo'] && !item['badge_template']) {
       item['badge_template'] = awardTemplate[item['brand'] || brand].front
       item['badge_template_rear'] = awardTemplate[item['brand'] || brand].rear
+      item['badge_template_unearned'] = awardTemplate[item['brand'] || brand].unearned
     }
     return item
   }

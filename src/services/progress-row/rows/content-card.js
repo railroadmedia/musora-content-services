@@ -6,7 +6,6 @@ import { addContextToContent } from '../../contentAggregator.js'
 import { fetchByRailContentIds, fetchShows } from '../../sanity.js'
 import {
   postProcessBadge,
-  awardTemplate,
   collectionLessonTypes,
   getFormattedType,
   recentTypes,
@@ -14,7 +13,6 @@ import {
   songs,
 } from '../../../contentTypeConfig.js'
 import { getTimeRemainingUntilLocal } from '../../dateUtils.js'
-import { findIncompleteLesson } from '../../userActivity.js'
 
 /**
  * Fetch any content IDs with some progress, include the userPinnedItem,

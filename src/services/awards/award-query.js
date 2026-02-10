@@ -589,5 +589,6 @@ export function getBadgeFields(def) {
     badge_logo: def.logo,
     badge_template: awardTemplate[def.brand].front,
     badge_template_rear: awardTemplate[def.brand].rear,
+    badge_template_unearned: awardTemplate[def.brand].unearned,
   }
 }
