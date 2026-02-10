@@ -132,6 +132,17 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     }, { table: this.model.table, reason })
   }
 
+  async requestPull(reason: string) {
+    inBoundary(ctx => {
+      this.telemetry.trace(
+        { name: `sync:${this.model.table}`, op: 'pull', attributes: { ...ctx, ...this.context.session.toJSON() } },
+        async span => {
+          await this.pullRecordsWithRetry(span)
+        }
+      )
+    }, { table: this.model.table, reason })
+  }
+
   async requestPush(reason: string) {
     inBoundary(ctx => {
       this.telemetry.trace(
