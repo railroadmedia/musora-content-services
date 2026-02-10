@@ -115,6 +115,10 @@ export function generateContentUrl({
     return `/${brand}/lessons/${id}/live`
   }
 
+  if (type === 'course-collection') {
+    return `/${brand}/lessons/course-collection/overview/${id}`
+  }
+
   if (type === 'pack') {
     return `/${brand}/lessons/pack/overview/${id}`
   }
