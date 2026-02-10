@@ -586,7 +586,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             attributes: { lastFetchToken: lastFetchToken ?? undefined, ...this.context.session.toJSON() },
             parentSpan: pullSpan,
           },
-          () => this.puller(this.model.table, this.userScope.initialId, this.context, this.runScope.signal, lastFetchToken)
+          () => this.puller(this.model.table, this.db.adapter.schema.version, this.userScope.initialId, this.context, this.runScope.signal, lastFetchToken)
         )
 
         if (response.ok) {
@@ -630,7 +630,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             attributes: { ...this.context.session.toJSON() },
             parentSpan: pushSpan,
           },
-          () => this.pusher(this.model.table, this.userScope.initialId, this.context, payload, this.runScope.signal, this.pushBlockingState)
+          () => this.pusher(this.model.table, this.db.adapter.schema.version, this.userScope.initialId, this.context, payload, this.runScope.signal, this.pushBlockingState)
         )
 
         if (response.ok) {

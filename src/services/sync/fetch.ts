@@ -11,6 +11,7 @@ export type BlockingState = {
 }
 export type SyncPull = (
   tableName: string,
+  schemaVersion: number,
   intendedUserId: number,
   context: SyncContext,
   signal: AbortSignal,
@@ -18,6 +19,7 @@ export type SyncPull = (
 ) => Promise<SyncPullResponse>
 export type SyncPush = (
   tableName: string,
+  schemaVersion: number,
   intendedUserId: number,
   context: SyncContext,
   payload: PushPayload,
@@ -170,12 +172,15 @@ export function makeFetchRequest(input: RequestInfo, init?: RequestInit) {
 }
 
 export function handlePull(callback: (userId: number, context: SyncContext) => Request): SyncPull {
-  return async function(_tableName, userId, context, signal, lastFetchToken) {
+  return async function(_tableName, schemaVersion, userId, context, signal, lastFetchToken) {
     const generatedRequest = callback(userId, context)
     const url = serializePullUrlQuery(generatedRequest.url, lastFetchToken)
     const request = new Request(url, {
       credentials: 'include',
-      headers: generatedRequest.headers,
+      headers: {
+        ...Object.fromEntries(generatedRequest.headers.entries()),
+        'X-Sync-Schema-Version': schemaVersion.toString()
+      },
       signal
     });
 
@@ -256,12 +261,16 @@ export function handlePull(callback: (userId: number, context: SyncContext) => R
 }
 
 export function handlePush(callback: (userId: number, context: SyncContext) => Request): SyncPush {
-  return async function(tableName, userId, context, payload, signal, blockingState) {
+  return async function(tableName, schemaVersion, userId, context, payload, signal, blockingState) {
     const generatedRequest = callback(userId, context)
     const serverPayload = payload
     const request = new Request(generatedRequest, {
       credentials: 'include',
       body: JSON.stringify(serverPayload),
+      headers: {
+  ...Object.fromEntries(generatedRequest.headers.entries()),
+  'X-Sync-Schema-Version': schemaVersion.toString()
+},
       signal
     })
 
