@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.132.3](https://github.com/railroadmedia/musora-content-services/compare/v2.132.2...v2.132.3) (2026-02-10)
+
+
+### Bug Fixes
+
+* **T3PS-2194:** bubble progress to highest ancestor successfully ([#794](https://github.com/railroadmedia/musora-content-services/issues/794)) ([f7d96af](https://github.com/railroadmedia/musora-content-services/commit/f7d96aff27aac7e23c5b3d261648b34443f03b65))
+
 ### [2.132.2](https://github.com/railroadmedia/musora-content-services/compare/v2.132.1...v2.132.2) (2026-02-09)
 
 
