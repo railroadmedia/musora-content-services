@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.132.6](https://github.com/railroadmedia/musora-content-services/compare/v2.132.5...v2.132.6) (2026-02-10)
+
+
+### Bug Fixes
+
+* **query builder:** refactor accessor and dereference ([#799](https://github.com/railroadmedia/musora-content-services/issues/799)) ([457d9b1](https://github.com/railroadmedia/musora-content-services/commit/457d9b1236baed20ef0100ee857dab6032434bf5))
+* **T3PS-2122:** return all sanity docs for clientside sorting ([#797](https://github.com/railroadmedia/musora-content-services/issues/797)) ([3d6d059](https://github.com/railroadmedia/musora-content-services/commit/3d6d059340e7bf8a714b3a82ced343a55a2a5828))
+* **T3PS-2170:** LP children in lessons progress row ([#798](https://github.com/railroadmedia/musora-content-services/issues/798)) ([f42c7a9](https://github.com/railroadmedia/musora-content-services/commit/f42c7a9dbace54500688aee15291b8749ccbe34b))
+
 ### [2.132.5](https://github.com/railroadmedia/musora-content-services/compare/v2.132.4...v2.132.5) (2026-02-10)
 
 ### [2.132.4](https://github.com/railroadmedia/musora-content-services/compare/v2.132.3...v2.132.4) (2026-02-10)
