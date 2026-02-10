@@ -526,7 +526,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   // filter out contentIds that are setting progress lower than existing
   const existingProgresses = await getProgressDataByIds(Object.keys(bubbledProgresses), collection)
   for (const [bubbledContentId, bubbledProgress] of Object.entries(bubbledProgresses)) {
-    if (bubbledProgress <= existingProgresses[bubbledContentId].progress) {
+    if (bubbledProgress < existingProgresses[bubbledContentId].progress) {
       delete bubbledProgresses[bubbledContentId]
     }
   }

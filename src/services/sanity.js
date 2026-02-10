@@ -1303,8 +1303,9 @@ export async function fetchTopLevelParentId(railcontentId) {
   let parents = response['parents']
   let parentsLength = parents ? response['parents'].length : 0
   if (parentsLength > 0) {
-    // return the last parent
-    return parents[parentsLength - 1]['railcontent_id']
+    const directParentId = parents[parentsLength - 1]['railcontent_id']
+    const topParentId = await fetchTopLevelParentId(directParentId)
+    return topParentId
   }
   return response['railcontent_id']
 }
