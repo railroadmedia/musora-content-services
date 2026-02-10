@@ -725,10 +725,15 @@ function getAncestorAndSiblingIds(hierarchy, contentId, depth = 1) {
     return []
   }
 
-  return [
-    ...(hierarchy?.children?.[parentId] ?? []),
+  const siblingIds = hierarchy?.children?.[parentId] ?? []
+
+  const allIds = [
+    ...siblingIds,
+    parentId,
     ...getAncestorAndSiblingIds(hierarchy, parentId, depth + 1),
   ]
+
+  return [...new Set(allIds)]
 }
 
 // doesn't accept collection - assumes progresses are already filtered appropriately
