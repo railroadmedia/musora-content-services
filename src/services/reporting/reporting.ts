@@ -109,7 +109,7 @@ export async function report<T extends ReportableType>(
     const content = contents?.[0]
 
     if (content) {
-      requestBody.content_url = generateContentUrl({
+      requestBody.content_url = await generateContentUrl({
         id: content.id,
         type: content.type,
         parentId: content.parentId || content.parent_id,
@@ -139,7 +139,7 @@ export async function report<T extends ReportableType>(
       const content = contents?.[0]
 
       if (content) {
-        requestBody.content_url = generateCommentUrl({
+        requestBody.content_url = await generateCommentUrl({
           id: comment.id,
           content: {
             id: content.id,
