@@ -70,16 +70,13 @@ export async function getDailySession(
   const dateWithTimezone = formatLocalDateTime(userDate)
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
   try {
-    const response = (await dataPromiseGET(url, forceRefresh)) as DailySessionResponse
-    if (!response) {
+    const response = (await dataPromiseGET(url, forceRefresh)) as DailySessionResponse|""
+    if (response !== "" && !response) { // "" is 204 case
       return await updateDailySession(brand, userDate, false)
     }
     dailySessionPromise = null // reset promise after successful fetch
     return response as DailySessionResponse
   } catch (error: any) {
-    if (error.status === 204) {
-      return await updateDailySession(brand, userDate, false)
-    }
     throw error
   }
 }
@@ -157,7 +154,7 @@ export async function startLearningPath(brand: string, learningPathId: number) {
 async function dataPromiseGET(
   url: string,
   forceRefresh: boolean
-): Promise<DailySessionResponse | ActiveLearningPathResponse> {
+): Promise<DailySessionResponse | ActiveLearningPathResponse | ""> {
   if (url.includes('daily-session')) {
     if (!dailySessionPromise || forceRefresh) {
       dailySessionPromise = GET(url, {
