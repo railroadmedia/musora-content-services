@@ -1,9 +1,11 @@
-import { SyncTelemetry, SYNC_TELEMETRY_TRACE_PREFIX, type SentryBrowserOptions } from '.'
+import { SyncTelemetry, SYNC_TELEMETRY_TRACE_PREFIX } from '.'
 import { SyncError } from '../errors'
+import type { ErrorEvent, TransactionEvent, EventHint, TracesSamplerSamplingContext } from '@sentry/core'
 
-type ReturnsUndefined<T extends (...args: any[]) => any> = (...args: Parameters<T>) => ReturnType<T> | undefined
+type BeforeSendResult<T> = T | PromiseLike<T | null> | null | undefined
+type SamplerResult = number | boolean | undefined
 
-export const syncSentryBeforeSend: ReturnsUndefined<NonNullable<SentryBrowserOptions['beforeSend']>> = (event, hint) => {
+export const syncSentryBeforeSend = (event: ErrorEvent, hint: EventHint): BeforeSendResult<ErrorEvent> => {
   if (event.logger === 'console' && SyncTelemetry.getInstance()?.shouldIgnoreConsole()) {
     return null
   }
@@ -25,7 +27,7 @@ export const syncSentryBeforeSend: ReturnsUndefined<NonNullable<SentryBrowserOpt
   return undefined
 }
 
-export const syncSentryBeforeSendTransaction: ReturnsUndefined<NonNullable<SentryBrowserOptions['beforeSendTransaction']>> = (event, hint) => {
+export const syncSentryBeforeSendTransaction = (event: TransactionEvent, hint: EventHint): BeforeSendResult<TransactionEvent> => {
   if (event.contexts?.trace?.op?.startsWith(SYNC_TELEMETRY_TRACE_PREFIX)) {
     // filter out noisy empty sync traces
     if (event.contexts.trace.op === `${SYNC_TELEMETRY_TRACE_PREFIX}sync` && event.spans?.length === 0) {
@@ -37,7 +39,7 @@ export const syncSentryBeforeSendTransaction: ReturnsUndefined<NonNullable<Sentr
 }
 
 export const createSyncSentryTracesSampler = (sampleRate = 0.1) => {
-  const sampler: ReturnsUndefined<NonNullable<SentryBrowserOptions['tracesSampler']>> = (context) => {
+  const sampler = (context: TracesSamplerSamplingContext): SamplerResult => {
     if (!context.name.startsWith(SYNC_TELEMETRY_TRACE_PREFIX)) {
       return undefined
     }
