@@ -76,10 +76,10 @@ export function registerAwardCallback(callback) {
       brand: definition.brand,
       ...getBadgeFields(definition),
       contentType: definition.content_type,
-      completed_at: completionData.completed_at,
+      completedAt: completionData.completed_at,
       isCompleted: true,
       completionData: {
-        completed_at: completionData.completed_at,
+        completedAt: completionData.completed_at,
         days_user_practiced: completionData.days_user_practiced,
         message: popupMessage,
         practice_minutes: completionData.practice_minutes,
