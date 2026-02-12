@@ -232,7 +232,7 @@ export async function getProgressDataByIds(contentIds, collection) {
   await db.contentProgress.getSomeProgressByContentIds(contentIds, collection).then((r) => {
     r.data.forEach((p) => {
       progress[p.content_id] = {
-        last_update: p.updated_at,
+        last_update: p.last_interacted_a_la_carte,
         progress: p.progress_percent,
         status: p.state,
       }
