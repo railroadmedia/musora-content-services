@@ -109,7 +109,6 @@ export class FilterBuilder {
           this.STATUS_SCHEDULED,
           this.STATUS_PUBLISHED,
           this.STATUS_UNLISTED,
-          this.STATUS_ARCHIVED,
         ]
       } else {
         this.availableContentStatuses = [this.STATUS_SCHEDULED, this.STATUS_PUBLISHED]
