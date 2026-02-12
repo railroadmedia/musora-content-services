@@ -141,6 +141,7 @@ export async function fetchInstructorLessons(
     f.notDeprecated(),
     f.referencesIDWithFilter(f.combine(f.type('instructor'), f.slug(slug))),
     f.brand(brand),
+    f.permissions({showMembershipRestrictedContent: true}),
     f.searchMatch('title', searchTerm),
     f.includedFields(includedFields)
   )
