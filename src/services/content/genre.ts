@@ -140,6 +140,7 @@ export async function fetchGenreLessons(
     f.notDeprecated(),
     f.referencesIDWithFilter(f.combine(f.type('genre'), f.slug(slug))),
     f.brand(brand),
+    f.permissions({showMembershipRestrictedContent: true}),
     f.searchMatch('title', searchTerm),
     f.includedFields(includedFields),
     f.progressIds(progressIds)
