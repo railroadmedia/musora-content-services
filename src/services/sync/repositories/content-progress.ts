@@ -13,8 +13,6 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return this.queryAll(...[
       ProgressRepository.filterOutStandardContentsAccessedByLP,
 
-      Q.where('last_interacted_a_la_carte', Q.notEq(null)),
-
       Q.where('state', STATE.STARTED),
       Q.sortBy('updated_at', 'desc'),
 
@@ -26,8 +24,6 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   async completedIds(limit?: number) {
     return this.queryAll(...[
       ProgressRepository.filterOutStandardContentsAccessedByLP,
-
-      Q.where('last_interacted_a_la_carte', Q.notEq(null)),
 
       Q.where('state', STATE.COMPLETED),
       Q.sortBy('updated_at', 'desc'),
@@ -177,7 +173,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       }
 
       if (!fromLearningPath) {
-        r.last_interacted_a_la_carte = Date.now() as EpochMs
+        r.last_interacted_a_la_carte = r.updated_at
       }
 
     }, { skipPush })
@@ -227,7 +223,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
           r.progress_percent = progressPct
 
           if (!fromLearningPath) {
-            r.last_interacted_a_la_carte = Date.now() as EpochMs
+            r.last_interacted_a_la_carte = r.updated_at
           }
         },
       ])
@@ -249,7 +245,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   private static filterOutStandardContentsAccessedByLP =
     // LPs dont have last_interacted_a_la_carte set, hence the OR
     Q.or(
-      Q.and( // a-la-carte content
+      Q.and( // a-la-carte content that's been accessed directly
         Q.where('collection_type', COLLECTION_TYPE.SELF),
         Q.where('collection_id', COLLECTION_ID_SELF),
         Q.where('last_interacted_a_la_carte', Q.notEq(null)),
