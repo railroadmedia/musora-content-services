@@ -20,7 +20,7 @@ import { getTimeRemainingUntilLocal } from '../../dateUtils.js'
  * and generate a map of the cards keyed by the content IDs
  */
 export async function getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem ){
-  let recentContentIds = await getAllStartedOrCompleted({ brand: brand, limit })
+  let recentContentIds = await getAllStartedOrCompleted({ brand: brand, limit: (limit ? limit * 5 : limit) })
   if (userPinnedItem?.progressType === 'content') {
     recentContentIds.push(userPinnedItem.id)
   }
