@@ -268,9 +268,9 @@ export function handlePush(callback: (userId: number, context: SyncContext) => R
       credentials: 'include',
       body: JSON.stringify(serverPayload),
       headers: {
-  ...Object.fromEntries(generatedRequest.headers.entries()),
-  'X-Sync-Schema-Version': schemaVersion.toString()
-},
+        ...Object.fromEntries(generatedRequest.headers.entries()),
+        'X-Sync-Schema-Version': schemaVersion.toString()
+      },
       signal
     })
 
