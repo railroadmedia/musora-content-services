@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.134.0](https://github.com/railroadmedia/musora-content-services/compare/v2.132.5...v2.134.0) (2026-02-12)
+
+
+### Features
+
+* returns badge unearned state images where badge returned ([#803](https://github.com/railroadmedia/musora-content-services/issues/803)) ([c1a7193](https://github.com/railroadmedia/musora-content-services/commit/c1a719366b42d00da6fe2a1d87a9352fc3054a80))
+
+
+### Bug Fixes
+
+* add restrict content on instructors/genre/artist pages based on permissions ([f8cd2cd](https://github.com/railroadmedia/musora-content-services/commit/f8cd2cd8e00b6a7b8c6e2d267f8d5cf038a34f7e))
+* **query builder:** refactor accessor and dereference ([#799](https://github.com/railroadmedia/musora-content-services/issues/799)) ([457d9b1](https://github.com/railroadmedia/musora-content-services/commit/457d9b1236baed20ef0100ee857dab6032434bf5))
+* returns promise on public pull method ([#802](https://github.com/railroadmedia/musora-content-services/issues/802)) ([cc5a54f](https://github.com/railroadmedia/musora-content-services/commit/cc5a54f247491e7733b0b3c492ab397847759383))
+* **T3PS-2122:** return all sanity docs for clientside sorting ([#797](https://github.com/railroadmedia/musora-content-services/issues/797)) ([3d6d059](https://github.com/railroadmedia/musora-content-services/commit/3d6d059340e7bf8a714b3a82ced343a55a2a5828))
+* **T3PS-2170:** LP children in lessons progress row ([#798](https://github.com/railroadmedia/musora-content-services/issues/798)) ([f42c7a9](https://github.com/railroadmedia/musora-content-services/commit/f42c7a9dbace54500688aee15291b8749ccbe34b))
+
 ## [2.133.0](https://github.com/railroadmedia/musora-content-services/compare/v2.132.8...v2.133.0) (2026-02-11)
 
 
