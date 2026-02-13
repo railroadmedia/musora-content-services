@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.134.2](https://github.com/railroadmedia/musora-content-services/compare/v2.134.0...v2.134.2) (2026-02-13)
+
+
+### Bug Fixes
+
+* Archived content should not be available in v2 ([1c3c178](https://github.com/railroadmedia/musora-content-services/commit/1c3c17855f1ad5dc78fc2d24b69f88a2c21c454b))
+* increase progress row query size ([#810](https://github.com/railroadmedia/musora-content-services/issues/810)) ([ae6d00a](https://github.com/railroadmedia/musora-content-services/commit/ae6d00a970e7be91ebc794cacc7f9138bebaa43b))
+* makes sentry typing happy ([#807](https://github.com/railroadmedia/musora-content-services/issues/807)) ([0867430](https://github.com/railroadmedia/musora-content-services/commit/08674309f1c80aa5d8f1b682080fc2c061e156bf))
+* proper homepage row sort ([#811](https://github.com/railroadmedia/musora-content-services/issues/811)) ([bb08940](https://github.com/railroadmedia/musora-content-services/commit/bb08940bc44efca070d73cf25c9090759e26fdd5))
+* **T3PS-2223:** propagate course-collection resources to course-lessons ([#812](https://github.com/railroadmedia/musora-content-services/issues/812)) ([86764c9](https://github.com/railroadmedia/musora-content-services/commit/86764c90e3ae9cb73c1ba013118e2305238381c4))
+
 ### [2.134.1](https://github.com/railroadmedia/musora-content-services/compare/v2.134.0...v2.134.1) (2026-02-12)
 
 
