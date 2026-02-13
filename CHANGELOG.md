@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.134.5](https://github.com/railroadmedia/musora-content-services/compare/v2.134.4...v2.134.5) (2026-02-13)
+
+
+### Bug Fixes
+
+* **T3PS-2286:** lessons page lp lessons ([#813](https://github.com/railroadmedia/musora-content-services/issues/813)) ([254b744](https://github.com/railroadmedia/musora-content-services/commit/254b7443fdd96dd9868349ab43a36220d1257a78))
+
 ### [2.134.4](https://github.com/railroadmedia/musora-content-services/compare/v2.134.3...v2.134.4) (2026-02-13)
 
 
