@@ -1154,6 +1154,10 @@ export async function fetchRelatedLessons(railContentId) {
     `${defaultFilterFields} && references(^.genre[]->_id)`,
     { showMembershipRestrictedContent: true }
   ).buildFilter()
+  const filterSameDifficulty = await new FilterBuilder(
+    `${defaultFilterFields} && difficulty == ^.difficulty`,
+    { showMembershipRestrictedContent: true }
+  ).buildFilter()
 
   const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission_v2,_type, "genre": genre[]->name`
 
@@ -1162,6 +1166,7 @@ export async function fetchRelatedLessons(railContentId) {
     "related_lessons" : array::unique([
       ...(*[${filterSameArtist}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
       ...(*[${filterSameGenre}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
+      ...(*[${filterSameDifficulty}]{${queryFields}}|order(published_on desc, title asc)[0...10]),
       ])[0...10]}`
 
   return await fetchSanity(query, false, { processNeedAccess: true })
