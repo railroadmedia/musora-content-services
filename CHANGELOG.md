@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.134.3](https://github.com/railroadmedia/musora-content-services/compare/v2.134.2...v2.134.3) (2026-02-13)
+
+
+### Bug Fixes
+
+* **T3PS-2270:** fixes create Daily Session calling when no daily session exists ([#806](https://github.com/railroadmedia/musora-content-services/issues/806)) ([63f502a](https://github.com/railroadmedia/musora-content-services/commit/63f502a374b84100b82d95582c31f564b62db12b))
+
 ### [2.134.2](https://github.com/railroadmedia/musora-content-services/compare/v2.134.0...v2.134.2) (2026-02-13)
 
 
