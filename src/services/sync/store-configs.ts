@@ -3,7 +3,7 @@ import { ContentLike, ContentProgress, Practice, UserAwardProgress, PracticeDayN
 import { handlePull, handlePush, makeFetchRequest } from "./fetch"
 
 import type BaseModel from "./models/Base"
-import { EpochMs } from "."
+import { EpochMs } from "./index"
 
 // keeps type-safety in each entry
 const c = <TModel extends BaseModel>(config: SyncStoreConfig<TModel>) => config
