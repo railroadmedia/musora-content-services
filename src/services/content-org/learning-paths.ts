@@ -27,8 +27,8 @@ import { LEARNING_PATH_LESSON } from "../../contentTypeConfig";
 
 const BASE_PATH: string = `/api/content-org`
 const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
-let dailySessionPromise: Promise<DailySessionResponse> | null = null
-let activePathPromise: Promise<ActiveLearningPathResponse> | null = null
+let dailySessionPromise: Promise<DailySessionResponse|""> | null = null
+let activePathPromise: Promise<ActiveLearningPathResponse|""> | null = null
 
 interface ActiveLearningPathResponse {
   user_id: number
@@ -70,16 +70,15 @@ export async function getDailySession(
   const dateWithTimezone = formatLocalDateTime(userDate)
   const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
   try {
-    const response = (await dataPromiseGET(url, forceRefresh)) as DailySessionResponse
+    const response = (await dataPromiseGET(url, forceRefresh)) as DailySessionResponse|""
+    dailySessionPromise = null
+
     if (!response) {
       return await updateDailySession(brand, userDate, false)
     }
-    dailySessionPromise = null // reset promise after successful fetch
     return response as DailySessionResponse
+
   } catch (error: any) {
-    if (error.status === 204) {
-      return await updateDailySession(brand, userDate, false)
-    }
     throw error
   }
 }
@@ -105,9 +104,12 @@ export async function updateDailySession(
   try {
     const response = (await POST(url, body)) as DailySessionResponse
 
-    if (response) {
+    if (response) { // refresh cached value
       const urlGet: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
-      dataPromiseGET(urlGet, true) // refresh cache
+      dataPromiseGET(urlGet, true).then(() => {
+        dailySessionPromise = null
+      })
+
     }
 
     return response
@@ -128,8 +130,8 @@ function formatLocalDateTime(date: Date): string {
 export async function getActivePath(brand: string, forceRefresh: boolean = false) {
   const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
 
-  const response = (await dataPromiseGET(url, forceRefresh)) as ActiveLearningPathResponse
-  activePathPromise = null // reset promise after successful fetch
+  const response = await dataPromiseGET(url, forceRefresh) as ActiveLearningPathResponse
+  activePathPromise = null
 
   return response
 }
@@ -148,7 +150,9 @@ export async function startLearningPath(brand: string, learningPathId: number) {
   // manual BE call to avoid recursive POST<->GET calls
   if (response) {
     const urlGet: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
-    dataPromiseGET(urlGet, true) // refresh cache
+    dataPromiseGET(urlGet, true).then(() => {
+      activePathPromise = null
+    })
   }
 
   return response
@@ -157,7 +161,7 @@ export async function startLearningPath(brand: string, learningPathId: number) {
 async function dataPromiseGET(
   url: string,
   forceRefresh: boolean
-): Promise<DailySessionResponse | ActiveLearningPathResponse> {
+): Promise<DailySessionResponse | ActiveLearningPathResponse | ""> {
   if (url.includes('daily-session')) {
     if (!dailySessionPromise || forceRefresh) {
       dailySessionPromise = GET(url, {
