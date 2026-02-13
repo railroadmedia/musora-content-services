@@ -30,12 +30,12 @@ export type SyncStoreConfig<TModel extends BaseModel = BaseModel> = {
   comparator?: TModel extends BaseModel ? SyncResolverComparator<TModel> : SyncResolverComparator
   pull: SyncPull
   push: SyncPush
+  purgeGracePeriod?: EpochMs
 }
 
 export default class SyncStore<TModel extends BaseModel = BaseModel> {
   static readonly PULL_THROTTLE_INTERVAL = 2_000
   static readonly PUSH_THROTTLE_INTERVAL = 1_000
-  static readonly DELETED_RECORD_GRACE_PERIOD = 60_000 // 60s
   static readonly CLEANUP_INTERVAL = 60_000 * 60 // 1hr
 
   readonly telemetry: SyncTelemetry
@@ -58,6 +58,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private pushThrottleState: ThrottleState<SyncPushResponse>
   private pushCoalescer = new PushCoalescer()
 
+  private purgeGracePeriod: EpochMs
   private pushBlockingState: BlockingState = { enabled: false }
 
   private emitter = new EventEmitter<SyncStoreEvents<TModel>>()
@@ -66,7 +67,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   private lastFetchTokenKey: string
 
   constructor(
-    { model, comparator, pull, push }: SyncStoreConfig<TModel>,
+    { model, comparator, pull, push, purgeGracePeriod }: SyncStoreConfig<TModel>,
     userScope: SyncUserScope,
     context: SyncContext,
     db: Database,
@@ -89,6 +90,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.pushCoalescer = new PushCoalescer()
     this.pushThrottleState = createThrottleState(SyncStore.PUSH_THROTTLE_INTERVAL)
     this.pullThrottleState = createThrottleState(SyncStore.PULL_THROTTLE_INTERVAL)
+
+    this.purgeGracePeriod = purgeGracePeriod ?? (0 as EpochMs)
 
     this.puller = pull
     this.pusher = push
@@ -525,6 +528,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     )()
   }
 
+  // TODO - slight annoying bug that occurs with purge grace period
+  // since we send ALL unsynced records, any that are dirty deleted
+  // will keep on getting sent multiple times for as long as the grace period is active
   public async pushUnsyncedWithRetry(span?: Span, cause?: string | Record<string, string>) {
     const records = await this.queryMaybeDeletedRecords(Q.where('_status', Q.notEq('synced')))
 
@@ -907,7 +913,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         const record = existingRecordsMap.get(id)
         if (!record) return true // If no record found, safe to destroy
 
-        const gracePeriodAgo = Date.now() - SyncStore.DELETED_RECORD_GRACE_PERIOD
+        const gracePeriodAgo = Date.now() - this.purgeGracePeriod
         return record.updated_at < gracePeriodAgo
       })
       .map((id) => {
@@ -999,7 +1005,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
    * (after a server push), but instead every hour or so)
   */
   private async cleanupOldDeletedRecords(writer: WriterInterface) {
-    const gracePeriodAgo = Date.now() - SyncStore.DELETED_RECORD_GRACE_PERIOD
+    const gracePeriodAgo = Date.now() - this.purgeGracePeriod
 
     const oldDeletedRecords = await writer.callReader(() => this.queryMaybeDeletedRecords(
       Q.where('_status', 'deleted'),
