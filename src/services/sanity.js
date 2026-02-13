@@ -776,7 +776,7 @@ export function getSortOrder(sort = '-published_on', brand, groupBy) {
 
   switch (sortField) {
     case 'slug':
-      sortOrder = groupBy ? 'name' : '!defined(slug.current), lower(slug.current)'
+      sortOrder = groupBy ? 'name' : '!defined(title_for_sort), title_for_sort, !defined(title), lower(title)'
       break
 
     case 'popularity':
