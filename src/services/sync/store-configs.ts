@@ -33,14 +33,14 @@ export default function createStoresFromConfig() {
       model: Practice,
       pull: handlePull(makeFetchRequest('/api/user/practices/v1')),
       push: handlePush(makeFetchRequest('/api/user/practices/v1', { method: 'POST' })),
-      purgeGracePeriod: 10_000 as EpochMs
+      purgeGracePeriod: 12_000 as EpochMs // delete undo toast duration is 10s
     }),
 
     c({
       model: PracticeDayNote,
       pull: handlePull(makeFetchRequest('/api/user/practices/v1/notes')),
       push: handlePush(makeFetchRequest('/api/user/practices/v1/notes', { method: 'POST' })),
-      purgeGracePeriod: 10_000 as EpochMs
+      purgeGracePeriod: 12_000 as EpochMs // delete undo toast duration is 10s
     }),
 
     c({
