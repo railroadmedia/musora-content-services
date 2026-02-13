@@ -134,7 +134,7 @@ export async function getNavigateTo(data, collection = null) {
         const lastInteracted = await getLastInteractedOf(childrenIds, collection)
         const lastInteractedStatus = childrenStates[lastInteracted]
 
-        if (['course', 'skill-pack', 'song-tutorial'].includes(content.type)) {
+        if (['course', 'skill-pack', 'song-tutorial', 'documentary'].includes(content.type)) {
           if (lastInteractedStatus === STATE_STARTED) {
             // send to last interacted
             navigateToData[content.id] = buildNavigateTo(
