@@ -9,7 +9,7 @@ import { fetchBrandsByContentIds } from './sanity.js'
 const STATE_STARTED = STATE.STARTED
 const STATE_COMPLETED = STATE.COMPLETED
 const MAX_DEPTH = 3
-const PUSH_INTERVAL = 5_000
+const PUSH_INTERVAL = 30_000
 
 export async function getProgressState(contentId, collection = null) {
   return getById(normalizeContentId(contentId), normalizeCollection(collection), 'state', '')
