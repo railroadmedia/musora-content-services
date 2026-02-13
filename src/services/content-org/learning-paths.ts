@@ -575,8 +575,11 @@ export async function onContentCompletedLearningPathActions(
 export async function mapContentsThatWereLastProgressedFromMethod(objects: any[]) {
   if (!objects || objects.length === 0) return objects
 
-  const contentIds = objects.map((obj) => obj.id) as number[]
-  const trueIds = await getIdsWhereLastAccessedFromMethod(contentIds)
+  const validIds = objects
+    .filter((obj) => ['skill-pack-lesson', 'song-tutorial-lesson'].includes(obj.type))
+    .map((obj) => obj.id) as number[]
+
+  const trueIds = await getIdsWhereLastAccessedFromMethod(validIds)
 
   if (trueIds.length === 0) return objects
 
