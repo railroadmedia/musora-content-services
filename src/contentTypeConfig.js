@@ -833,7 +833,7 @@ const filterHandlers = {
       [Tabs.PlayAlongs.name.toLowerCase()]: playAlongLessonTypes,
       [Tabs.JamTracks.name.toLowerCase()]: jamTrackLessonTypes,
       [Tabs.ExploreAll.name.toLowerCase()]: filterTypes[pageName] || [],
-      [Tabs.RecentAll.name.toLowerCase()]: recentTypes[pageName] || [],
+      [Tabs.RecentAll.name.toLowerCase()]: pageName ? [...recentTypes['lessons'], ...recentTypes['songs']] : recentTypes[pageName] || [],
       [Tabs.SingleLessons.name.toLowerCase()]: individualLessonsTypes,
       [Tabs.Courses.name.toLowerCase()]: coursesLessonTypes,
       [Tabs.SkillPacks.name.toLowerCase()]: skillLessonTypes,
