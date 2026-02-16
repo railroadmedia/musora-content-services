@@ -12,7 +12,7 @@ async function getCompletionStates(contentIds, collection = null) {
   return contentIds.map(id => {
     return {
       id,
-      completed: progress[id] === STATE.COMPLETED
+      completed: progress.get(id) === STATE.COMPLETED
     }
   })
 }
