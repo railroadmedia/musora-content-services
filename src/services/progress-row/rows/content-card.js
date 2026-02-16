@@ -180,7 +180,7 @@ async function getCompletedChildren(content, contentType) {
   } else if (content.lesson_count > 0) {
     const lessonIds = getLeafNodes(content)
     const progressOnItems = await getProgressStateByIds(lessonIds)
-    completedChildren = Array.from(progressOnItems.values()).filter(
+    completedChildren = Object.values(progressOnItems).filter(
       (value) => value === 'completed'
     ).length
     allChildren = lessonIds.length

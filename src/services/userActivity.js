@@ -883,20 +883,19 @@ export async function restoreUserActivity(id) {
 }
 
 export function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
-  const isMap = progressOnItems instanceof Map
-  const ids = isMap ? Array.from(progressOnItems.keys()) : Object.keys(progressOnItems).map(Number)
-  const getProgress = (id) => isMap ? progressOnItems.get(id) : progressOnItems[id]
-
+  const ids = Object.keys(progressOnItems).map(Number)
   if (contentType === 'guided-course' || contentType === COLLECTION_TYPE.LEARNING_PATH) {
-    return ids.find((id) => getProgress(id) !== 'completed') || ids.at(0)
+    // Return first incomplete lesson
+    return ids.find((id) => progressOnItems[id] !== 'completed') || ids.at(0)
   }
 
+  // For other types, find next incomplete after current
   const currentIndex = ids.indexOf(Number(currentContentId))
   if (currentIndex === -1) return null
 
   for (let i = currentIndex + 1; i < ids.length; i++) {
     const id = ids[i]
-    if (getProgress(id) !== 'completed') {
+    if (progressOnItems[id] !== 'completed') {
       return id
     }
   }
