@@ -336,26 +336,26 @@ export const filterTypes = {
   ],
 }
 
+const lessonRecentTypes = [
+  ...individualLessonsTypes,
+  'skill-pack-lesson',
+  ...entertainmentLessonTypes,
+  'course-lesson',
+  'guided-course-lesson',
+  'quick-tips',
+  'routine'
+]
+
+const songsRecentTypes = [...SONG_TYPES]
+
 export const recentTypes = {
-  lessons: [
-    ...individualLessonsTypes,
-    'skill-pack-lesson',
-    ...entertainmentLessonTypes,
-    'course-lesson',
-    'guided-course-lesson',
-    'quick-tips',
-    'routine'
-  ],
-  songs: [...SONG_TYPES],
-  home: [
-    ...individualLessonsTypes,
-    ...transcriptionsLessonTypes,
-    ...playAlongLessonTypes,
-    ...showsLessonTypes,
-    ...getNextLessonLessonParentTypes,
-    'live',
-    'routine'
-  ],
+  lessons: lessonRecentTypes,
+  songs: songsRecentTypes,
+  home:
+    [
+      ...lessonRecentTypes,
+      ...songsRecentTypes,
+    ]
 }
 
 export const ownedContentTypes = {
@@ -833,7 +833,7 @@ const filterHandlers = {
       [Tabs.PlayAlongs.name.toLowerCase()]: playAlongLessonTypes,
       [Tabs.JamTracks.name.toLowerCase()]: jamTrackLessonTypes,
       [Tabs.ExploreAll.name.toLowerCase()]: filterTypes[pageName] || [],
-      [Tabs.RecentAll.name.toLowerCase()]: pageName ? [...recentTypes['lessons'], ...recentTypes['songs']] : recentTypes[pageName] || [],
+      [Tabs.RecentAll.name.toLowerCase()]: recentTypes[pageName] || [],
       [Tabs.SingleLessons.name.toLowerCase()]: individualLessonsTypes,
       [Tabs.Courses.name.toLowerCase()]: coursesLessonTypes,
       [Tabs.SkillPacks.name.toLowerCase()]: skillLessonTypes,
