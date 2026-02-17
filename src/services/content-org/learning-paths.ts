@@ -342,7 +342,7 @@ export async function fetchLearningPathLessons(
   userDate: Date
 ) {
   const learningPath = await getEnrichedLearningPath(learningPathId)
-  let dailySession = (await getDailySession(brand, userDate)) as DailySessionResponse // what if the call just fails, and a DS does exist?
+  let dailySession = (await getDailySession(brand, userDate)) as DailySessionResponse
 
   const isActiveLearningPath = (dailySession?.active_learning_path_id || 0) == learningPathId
   if (!isActiveLearningPath) {
