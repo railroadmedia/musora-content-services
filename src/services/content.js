@@ -439,7 +439,6 @@ export async function getScheduleContentRows(brand, contentRowId = null, { page 
       const items = await section.fetchMethod(brand, pagination)
 
       const content = await addContextToContent(() => items, {
-        dataField: 'children',
         addProgressPercentage: true,
         addProgressStatus: true,
         addNavigateTo: true,
