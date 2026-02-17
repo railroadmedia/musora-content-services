@@ -270,8 +270,9 @@ export async function getLearningPathLessonsByIds(contentIds, learningPathId) {
 /**
  * Maps content to its parent learning path - fixes multi-parent problems for cta when lessons have a special collection.
  * @param lessons - sanity documents
- * @param parentContentType
- * @param parentContentId
+ * @param options
+ * @param options.lessonType
+ * @param options.parentContentId
  */
 export function mapContentToParent(
   lessons: any,
@@ -342,9 +343,6 @@ export async function fetchLearningPathLessons(
 ) {
   const learningPath = await getEnrichedLearningPath(learningPathId)
   let dailySession = (await getDailySession(brand, userDate)) as DailySessionResponse // what if the call just fails, and a DS does exist?
-  if (!dailySession) {
-    dailySession = (await updateDailySession(brand, userDate, false)) as DailySessionResponse
-  }
 
   const isActiveLearningPath = (dailySession?.active_learning_path_id || 0) == learningPathId
   if (!isActiveLearningPath) {
@@ -589,8 +587,7 @@ export async function mapContentsThatWereLastProgressedFromMethod(objects: any[]
 
   // Map each filtered item back into the total contents object
   objects = objects.map((item) => {
-    const replace = filtered.find((f) => f.id === item.id) || item
-    return replace
+    return filtered.find((f) => f.id === item.id) || item
   })
 
   return objects
