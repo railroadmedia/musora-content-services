@@ -438,12 +438,19 @@ export async function getScheduleContentRows(brand, contentRowId = null, { page 
       const pagination = isNewReleases ? { page: 1, limit: 30 } : { page: 1, limit: Number.MAX_SAFE_INTEGER };
       const items = await section.fetchMethod(brand, pagination)
 
+      const content = await addContextToContent(() => items, {
+        dataField: 'children',
+        addProgressPercentage: true,
+        addProgressStatus: true,
+        addNavigateTo: true,
+      })
+
       return {
         id,
         title: section.title,
         // TODO: Remove content after FE/MA updates the existing code to use items
-        content: items,
-        items: items
+        content: content,
+        items: content
       };
     })
   );
