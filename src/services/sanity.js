@@ -324,7 +324,10 @@ export async function fetchNewReleases(
   const sortOrder = getSortOrder(sort, brand)
   const now = getDateOnly()
   const filter = `_type in ${typesString} && brand == '${brand}' && (status == 'published' && show_in_new_feed == true && published_on <= '${now}')`
-  const fields = `
+
+  let fields = await getFieldsForContentTypeWithFilteredChildren(null)
+
+  const entityFieldsString = `${fields}
      "id": railcontent_id,
      status,
       title,
@@ -341,7 +344,7 @@ export async function fetchNewReleases(
       web_url_path,
       "permission_id": permission_v2,
       `
-  const query = buildRawQuery(filter, fields, { sortOrder: sortOrder, start, end: end })
+  const query = buildRawQuery(filter, entityFieldsString, { sortOrder: sortOrder, start, end: end })
   return fetchSanity(query, true)
 }
 
