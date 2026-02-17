@@ -326,6 +326,7 @@ export async function fetchNewReleases(
   const filter = `_type in ${typesString} && brand == '${brand}' && (status == 'published' && show_in_new_feed == true && published_on <= '${now}')`
   const fields = `
      "id": railcontent_id,
+     status,
       title,
       "image": thumbnail.asset->url,
       "thumbnail": thumbnail.asset->url,
@@ -364,6 +365,7 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
   const end = start + limit
   const fields = `
         "id": railcontent_id,
+        status,
         title,
         "image": thumbnail.asset->url,
         "thumbnail": thumbnail.asset->url,
@@ -417,6 +419,7 @@ export async function fetchScheduledReleases(brand, { page = 1, limit = 10 }) {
   const end = start + limit
   const query = `*[_type in [${typesString}] && brand == '${brand}' && status in ['published','scheduled'] && (!defined(live_event_end_time) || live_event_end_time < '${now}' ) && published_on > '${now}']{
       "id": railcontent_id,
+      status,
       title,
       "image": thumbnail.asset->url,
       "thumbnail": thumbnail.asset->url,
