@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.134.7](https://github.com/railroadmedia/musora-content-services/compare/v2.134.6...v2.134.7) (2026-02-18)
+
+
+### Bug Fixes
+
+* **BR-415:** remove old implementation of daily session update ([#824](https://github.com/railroadmedia/musora-content-services/issues/824)) ([d71485c](https://github.com/railroadmedia/musora-content-services/commit/d71485c908228553aed786145f4b3e9dd4b69225))
+* handle null resources when fetching lesson data ([#825](https://github.com/railroadmedia/musora-content-services/issues/825)) ([5945d81](https://github.com/railroadmedia/musora-content-services/commit/5945d81a5fe7449b956a69e2134edfe377541f89))
+* started dailies should make cta CONTINUE ([#818](https://github.com/railroadmedia/musora-content-services/issues/818)) ([7cfd3b3](https://github.com/railroadmedia/musora-content-services/commit/7cfd3b3dfbdd8033a498dfcbe81f898ddf8431d3))
+* type safety for all progress gets/writes ([#819](https://github.com/railroadmedia/musora-content-services/issues/819)) ([0616303](https://github.com/railroadmedia/musora-content-services/commit/0616303f3898bca55c6c044299d8f10ca64837a7))
+
 ### [2.134.6](https://github.com/railroadmedia/musora-content-services/compare/v2.134.5...v2.134.6) (2026-02-17)
 
 
