@@ -16,6 +16,7 @@ import { fetchPlaylist } from '../content-org/playlists.js'
 import { TabResponseType } from '../../contentMetaData.js'
 import { GET, PUT } from '../../infrastructure/http/HttpClient.ts'
 import { postProcessBadge } from "../../contentTypeConfig.js";
+import { db } from '../sync/index.js'
 
 export const USER_PIN_PROGRESS_KEY = 'user_pin_progress_row'
 const CACHE_EXPIRY_MS = 5 * 60 * 1000
@@ -157,7 +158,16 @@ function isCacheValid(cachedData) {
  *   .then(data => console.log(data))
  *   .catch(error => console.error(error));
  */
-export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}) {
+export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}, options = {}) {
+  // since this MCS method abstracts db, provide pull abstractions instead of making MPF/MA do it on their own
+  if (options.pull) {
+    await db.contentProgress.pull()
+  }
+  // otherwise check for fresh data from server by default
+  else {
+    db.contentProgress.pull()
+  }
+
   const [userPinnedItem, recentPlaylists] = await Promise.all([
     getUserPinnedItem(brand),
     getRecentPlaylists(brand, limit),
