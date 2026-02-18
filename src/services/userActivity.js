@@ -432,12 +432,21 @@ export async function restorePracticeSession(date) {
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
-export async function getPracticeSessions(params = {}) {
+export async function getPracticeSessions(params = {}, options = {}) {
   const { day, userId = globalConfig.sessionConfig.userId } = params
 
   let data
 
   if (userId === globalConfig.sessionConfig.userId) {
+    // since this MCS method abstracts db, provide pull abstractions instead of making MPF/MA do it on their own
+    if (options.pull) {
+      await db.practices.pull()
+    }
+    // otherwise check for fresh data from server by default
+    else {
+      db.practices.pull()
+    }
+
     const query = await db.practices.queryAll(Q.where('date', day), Q.sortBy('created_at', 'asc'))
     data = query.data
   } else {
