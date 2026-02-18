@@ -537,7 +537,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   }
 
   if (Object.keys(bubbledProgresses).length > 0) {
-    await db.contentProgress.recordProgressMany(normalizeContentIds(bubbledProgresses), normalizeCollection(collection), {skipPush: true, fromLearningPath})
+    await db.contentProgress.recordProgressMany(bubbledProgresses, normalizeCollection(collection), {skipPush: true, fromLearningPath})
   }
 
   if (isLP) {
@@ -605,7 +605,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
   }
 
   const contents = Object.fromEntries(contentIds.map((id) => [id, progress]))
-  const response = await db.contentProgress.recordProgressMany(normalizeContentIds(contents), normalizeCollection(collection), {skipPush: true})
+  const response = await db.contentProgress.recordProgressMany(contents, normalizeCollection(collection), {skipPush: true})
 
   // we assume this is used only for contents within the same hierarchy
   const hierarchy = await getHierarchy(collection.id, collection)
@@ -780,7 +780,7 @@ async function bubbleAndTrickleProgressesSafely(progresses, collection) {
       Object.entries(progresses).filter(([_, pct]) => pct > 0)
   )
   if (Object.keys(progresses).length > 0) {
-    await db.contentProgress.recordProgressMany(normalizeContentIds(progresses), normalizeCollection(collection), {skipPush: true})
+    await db.contentProgress.recordProgressMany(progresses, normalizeCollection(collection), {skipPush: true})
   }
   if (Object.keys(eraseProgresses).length > 0) {
     const eraseIds = Object.keys(eraseProgresses).map(Number)
