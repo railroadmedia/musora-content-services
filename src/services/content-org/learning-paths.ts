@@ -567,7 +567,7 @@ export async function onContentCompletedLearningPathActions(
   await startLearningPath(brand, nextLearningPath.id)
   const nextLearningPathData = await getEnrichedLearningPath(nextLearningPath.id)
 
-  await contentStatusReset(nextLearningPathData.intro_video.id, { skipPush: true })
+  await contentStatusReset(nextLearningPathData.intro_video.id, { skipPush: false })
 }
 
 export async function mapContentsThatWereLastProgressedFromMethod(objects: any[]) {
