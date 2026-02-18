@@ -1,6 +1,6 @@
 import { fetchHierarchy, fetchLearningPathHierarchy } from './sanity.js'
 import { db } from './sync'
-import { COLLECTION_TYPE, STATE } from './sync/models/ContentProgress'
+import { COLLECTION_ID_SELF, COLLECTION_TYPE, STATE } from './sync/models/ContentProgress'
 import { trackUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 import {getDailySession, onContentCompletedLearningPathActions} from "./content-org/learning-paths.ts";
@@ -467,6 +467,7 @@ async function trackProgress(contentId, collection, currentSeconds, mediaLengthS
 }
 
 export async function contentStatusCompleted(contentId, collection = null) {
+  collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
   return setStartedOrCompletedStatus(
     normalizeContentId(contentId),
     normalizeCollection(collection),
@@ -475,6 +476,7 @@ export async function contentStatusCompleted(contentId, collection = null) {
 }
 
 export async function contentStatusCompletedMany(contentIds, collection = null) {
+  collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
   return setStartedOrCompletedStatusMany(
     normalizeContentIds(contentIds),
     normalizeCollection(collection),
@@ -483,6 +485,7 @@ export async function contentStatusCompletedMany(contentIds, collection = null) 
 }
 
 export async function contentStatusStarted(contentId, collection = null) {
+  collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
   return setStartedOrCompletedStatus(
     normalizeContentId(contentId),
     normalizeCollection(collection),
@@ -490,10 +493,12 @@ export async function contentStatusStarted(contentId, collection = null) {
   )
 }
 export async function contentStatusReset(contentId, collection = null, {skipPush = false} = {}) {
+  collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
   return resetStatus(contentId, collection, {skipPush})
 }
 
 async function saveContentProgress(contentId, collection, progress, currentSeconds, {skipPush = false, fromLearningPath = false} = {}) {
+  collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
 
   // filter out contentIds that are setting progress lower than existing

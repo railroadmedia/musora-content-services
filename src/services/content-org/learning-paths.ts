@@ -18,7 +18,7 @@ import {
   getIdsWhereLastAccessedFromMethod,
   getProgressState,
 } from '../contentProgress.js'
-import { COLLECTION_TYPE, STATE } from '../sync/models/ContentProgress'
+import { COLLECTION_ID_SELF, COLLECTION_TYPE, STATE } from '../sync/models/ContentProgress'
 import { SyncWriteDTO } from '../sync'
 import { ContentProgress } from '../sync/models'
 import { CollectionParameter } from '../sync/models/ContentProgress'
@@ -270,8 +270,9 @@ export async function getLearningPathLessonsByIds(contentIds, learningPathId) {
 /**
  * Maps content to its parent learning path - fixes multi-parent problems for cta when lessons have a special collection.
  * @param lessons - sanity documents
- * @param parentContentType
- * @param parentContentId
+ * @param options
+ * @param options.lessonType
+ * @param options.parentContentId
  */
 export function mapContentToParent(
   lessons: any,
@@ -341,10 +342,7 @@ export async function fetchLearningPathLessons(
   userDate: Date
 ) {
   const learningPath = await getEnrichedLearningPath(learningPathId)
-  let dailySession = (await getDailySession(brand, userDate)) as DailySessionResponse // what if the call just fails, and a DS does exist?
-  if (!dailySession) {
-    dailySession = (await updateDailySession(brand, userDate, false)) as DailySessionResponse
-  }
+  let dailySession = (await getDailySession(brand, userDate)) as DailySessionResponse
 
   const isActiveLearningPath = (dailySession?.active_learning_path_id || 0) == learningPathId
   if (!isActiveLearningPath) {
@@ -569,7 +567,10 @@ export async function onContentCompletedLearningPathActions(
   await startLearningPath(brand, nextLearningPath.id)
   const nextLearningPathData = await getEnrichedLearningPath(nextLearningPath.id)
 
-  await contentStatusReset(nextLearningPathData.intro_video.id, { skipPush: true })
+  await contentStatusReset(
+    nextLearningPathData.intro_video.id,
+    { id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF },
+    { skipPush: false })
 }
 
 export async function mapContentsThatWereLastProgressedFromMethod(objects: any[]) {
@@ -589,8 +590,7 @@ export async function mapContentsThatWereLastProgressedFromMethod(objects: any[]
 
   // Map each filtered item back into the total contents object
   objects = objects.map((item) => {
-    const replace = filtered.find((f) => f.id === item.id) || item
-    return replace
+    return filtered.find((f) => f.id === item.id) || item
   })
 
   return objects
