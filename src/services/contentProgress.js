@@ -229,7 +229,7 @@ export async function getProgressDataByIds(contentIds, collection) {
     ])
   )
 
-  await db.contentProgress.getSomeProgressByContentIds(contentIds, collection).then((r) => {
+  await db.contentProgress.getSomeProgressByContentIds(normalizeContentIds(contentIds), normalizeCollection(collection)).then((r) => {
     r.data.forEach((p) => {
       progress[p.content_id] = {
         last_update: p.last_interacted_a_la_carte,
@@ -259,8 +259,8 @@ export async function getProgressDataByIds(contentIds, collection) {
  * // Returns: { 123: { progress: 50, status: 'started', last_update: 123456 }, ... }
  */
 
-// todo: warning: this doesnt work with having 2 items with same contentId but different collection, because
-//  of the response structure here with contentId as key
+// warning: unsafe due to object key conflicts.
+// todo: remove this, and simplify addContextToLearningPaths
 export async function getProgressDataByIdsAndCollections(tuples) {
   tuples = tuples.map(t => ({contentId: normalizeContentId(t.contentId), collection: normalizeCollection(t.collection)}))
   const progress = Object.fromEntries(tuples.map(item => [item.contentId, {
@@ -295,7 +295,7 @@ async function getByIds(contentIds, collection, dataKey, defaultValue) {
   if (contentIds.length === 0) return {}
 
   const progress = Object.fromEntries(contentIds.map((id) => [id, defaultValue]))
-  await db.contentProgress.getSomeProgressByContentIds(contentIds, collection).then((r) => {
+  await db.contentProgress.getSomeProgressByContentIds(normalizeContentIds(contentIds), normalizeCollection(collection)).then((r) => {
     r.data.forEach((p) => {
       progress[p.content_id] = p[dataKey] ?? defaultValue
     })
@@ -509,8 +509,8 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   }
 
   const response = await db.contentProgress.recordProgress(
-    contentId,
-    collection,
+    normalizeContentId(contentId),
+    normalizeCollection(collection),
     progress,
     currentSeconds,
     {skipPush: true, fromLearningPath}
@@ -537,7 +537,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   }
 
   if (Object.keys(bubbledProgresses).length > 0) {
-    await db.contentProgress.recordProgressMany(bubbledProgresses, collection, {skipPush: true, fromLearningPath})
+    await db.contentProgress.recordProgressMany(normalizeContentIds(bubbledProgresses), normalizeCollection(collection), {skipPush: true, fromLearningPath})
   }
 
   if (isLP) {
@@ -563,7 +563,7 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
 
   const progress = isCompleted ? 100 : 0
-  const response = await db.contentProgress.recordProgress(contentId, collection, progress, null, {skipPush: true})
+  const response = await db.contentProgress.recordProgress(normalizeContentId(contentId), normalizeCollection(collection), progress, null, {skipPush: true})
 
   const hierarchy = await getHierarchy(contentId, collection)
 
@@ -605,7 +605,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
   }
 
   const contents = Object.fromEntries(contentIds.map((id) => [id, progress]))
-  const response = await db.contentProgress.recordProgressMany(contents, collection, {skipPush: true})
+  const response = await db.contentProgress.recordProgressMany(normalizeContentIds(contents), normalizeCollection(collection), {skipPush: true})
 
   // we assume this is used only for contents within the same hierarchy
   const hierarchy = await getHierarchy(collection.id, collection)
@@ -645,7 +645,7 @@ async function resetStatus(contentId, collection = null, {skipPush = false} = {}
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
 
   const progress = 0
-  const response = await db.contentProgress.eraseProgress(Number(contentId), collection, {skipPush: true})
+  const response = await db.contentProgress.eraseProgress(normalizeContentId(contentId), normalizeCollection(collection), {skipPush: true})
 
   const hierarchy = await getHierarchy(contentId, collection)
 
@@ -780,11 +780,11 @@ async function bubbleAndTrickleProgressesSafely(progresses, collection) {
       Object.entries(progresses).filter(([_, pct]) => pct > 0)
   )
   if (Object.keys(progresses).length > 0) {
-    await db.contentProgress.recordProgressMany(progresses, collection, {skipPush: true})
+    await db.contentProgress.recordProgressMany(normalizeContentIds(progresses), normalizeCollection(collection), {skipPush: true})
   }
   if (Object.keys(eraseProgresses).length > 0) {
     const eraseIds = Object.keys(eraseProgresses).map(Number)
-    await db.contentProgress.eraseProgressMany(eraseIds, collection, {skipPush: true})
+    await db.contentProgress.eraseProgressMany(normalizeContentIds(eraseIds), normalizeCollection(collection), {skipPush: true})
   }
 }
 
