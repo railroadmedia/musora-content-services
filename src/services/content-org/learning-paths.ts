@@ -18,7 +18,7 @@ import {
   getIdsWhereLastAccessedFromMethod,
   getProgressState,
 } from '../contentProgress.js'
-import { COLLECTION_TYPE, STATE } from '../sync/models/ContentProgress'
+import { COLLECTION_ID_SELF, COLLECTION_TYPE, STATE } from '../sync/models/ContentProgress'
 import { SyncWriteDTO } from '../sync'
 import { ContentProgress } from '../sync/models'
 import { CollectionParameter } from '../sync/models/ContentProgress'
@@ -567,7 +567,10 @@ export async function onContentCompletedLearningPathActions(
   await startLearningPath(brand, nextLearningPath.id)
   const nextLearningPathData = await getEnrichedLearningPath(nextLearningPath.id)
 
-  await contentStatusReset(nextLearningPathData.intro_video.id, { skipPush: false })
+  await contentStatusReset(
+    nextLearningPathData.intro_video.id,
+    { id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF },
+    { skipPush: false })
 }
 
 export async function mapContentsThatWereLastProgressedFromMethod(objects: any[]) {
