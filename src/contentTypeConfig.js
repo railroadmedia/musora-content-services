@@ -241,7 +241,7 @@ export const showsLessonTypes = [
   'spotlight',
   'performance',
 ]
-export const entertainmentLessonTypes = ['special', 'documentary-lesson', ...showsLessonTypes]
+export const entertainmentLessonTypes = ['special', 'documentary', ...showsLessonTypes]
 export const collectionLessonTypes = [...coursesLessonTypes]
 
 export const lessonTypesMapping = {
@@ -250,7 +250,7 @@ export const lessonTypesMapping = {
   'live archives': liveArchivesLessonTypes,
   performances: performancesLessonTypes,
   'student archives': studentArchivesLessonTypes,
-  documentaries: ['documentary-lesson'],
+  documentaries: ['documentary'],
   courses: ['course'],
   'guided courses': ['guided-course'],
   'course collections': ['course-collection'],
@@ -282,6 +282,7 @@ export const getNextLessonLessonParentTypes = [
   'song-tutorial',
   'learning-path-v2',
   'skill-pack',
+  'documentary',
 ]
 
 export const progressTypesMapping = {
@@ -297,6 +298,7 @@ export const progressTypesMapping = {
     'routine'
   ],
   course: ['course'],
+  documentary: ['documentary'],
   show: showsLessonTypes,
   'song tutorial': [...tutorialsLessonTypes, 'song-tutorial-lesson'],
   songs: transcriptionsLessonTypes,
@@ -423,6 +425,12 @@ export let contentTypeConfig = {
     fields: [`"resources": ${resourcesField}`],
   },
   'guided-course': {
+    includeChildFields: true,
+  },
+  documentary: {
+    includeChildFields: true,
+  },
+  'skill-pack': {
     includeChildFields: true,
   },
   course: {
