@@ -335,10 +335,10 @@ export async function getAllStartedOrCompleted({
   limit = null,
   includePlaylists = false,
   includeLearningPaths = true,
-  justIds = true
+  onlyIds = true
 } = {}) {
   const data = await _getAllStartedOrCompleted({ brand, limit, includePlaylists, includeLearningPaths })
-  return justIds ? data.map(rec => rec.content_id) : data
+  return onlyIds ? data.map(rec => rec.content_id) : data
 }
 
 /**

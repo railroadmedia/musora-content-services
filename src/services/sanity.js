@@ -45,6 +45,8 @@ import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
 import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
+import { COLLECTION_TYPE } from './sync/models/ContentProgress.js'
+import { fetchPlaylist } from './content-org/playlists.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -757,11 +759,11 @@ async function getProgressFilter(progress, progressIds) {
       return `&& railcontent_id in [${ids.join(',')}]`
     }
     case 'not started': {
-      const ids = await getAllStartedOrCompleted()
+      const ids = await getAllStartedOrCompleted({onlyIds: true})
       return `&& !(railcontent_id in [${ids.join(',')}])`
     }
     case 'recent': {
-      const ids = progressIds !== undefined ? progressIds : await getAllStartedOrCompleted()
+      const ids = progressIds !== undefined ? progressIds : await getAllStartedOrCompleted({onlyIds: true})
       return `&& (railcontent_id in [${ids.join(',')}])`
     }
     case 'incomplete': {
@@ -1321,7 +1323,17 @@ export async function fetchTopLevelParentId(railcontentId) {
   return response['railcontent_id']
 }
 
-export async function fetchLearningPathHierarchy(railcontentId, collection) {
+export async function getHierarchy(contentId, collection) {
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+    return await fetchLearningPathHierarchy(contentId, collection)
+  } else if (collection && collection.type === COLLECTION_TYPE.PLAYLIST) {
+    return await getPlaylistHierarchy(contentId, collection)
+  } else {
+    return await fetchHierarchy(contentId)
+  }
+}
+
+async function fetchLearningPathHierarchy(railcontentId, collection) {
   if (!collection) {
     return null
   }
@@ -1340,7 +1352,32 @@ export async function fetchLearningPathHierarchy(railcontentId, collection) {
   return data
 }
 
-export async function fetchHierarchy(railcontentId) {
+async function getPlaylistHierarchy(railcontentId, collection) {
+  if (!collection) {
+    return null
+  }
+
+  const playlistId = collection.id
+
+  const structure = {
+    railcontent_id: playlistId,
+    children: [],
+    // assignments?
+  }
+
+  const response = await fetchPlaylist(playlistId)
+  structure.children = response.items.map((item) => item.content_id)
+
+  let data = {
+    topLevelId: playlistId,
+    parents: {},
+    children: {},
+  }
+  populateHierarchyLookups(structure, data, null)
+  return data
+}
+
+async function fetchHierarchy(railcontentId) {
   let topLevelId = await fetchTopLevelParentId(railcontentId)
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const query = `*[railcontent_id == ${topLevelId}]{
