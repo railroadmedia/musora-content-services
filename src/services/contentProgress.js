@@ -46,7 +46,7 @@ export async function getNavigateToForMethod(data) {
     const {content, collection} = tuple
 
     const findFirstIncomplete = (ids, progresses) =>
-      ids.find(id => progresses[id] !== STATE_COMPLETED) || ids[0]
+      ids.find(id => progresses.get(id) !== STATE_COMPLETED) || ids[0]
 
     const findChildById = (children, id) =>
       children?.find(child => child.id === Number(id)) || null
@@ -132,7 +132,7 @@ export async function getNavigateTo(data, collection = null) {
       } else {
         const childrenStates = await getProgressStateByIds(childrenIds, collection)
         const lastInteracted = await getLastInteractedOf(childrenIds, collection)
-        const lastInteractedStatus = childrenStates[lastInteracted]
+        const lastInteractedStatus = childrenStates.get(lastInteracted)
 
         if (['course', 'skill-pack', 'song-tutorial'].includes(content.type)) {
           if (lastInteractedStatus === STATE_STARTED) {
@@ -168,7 +168,7 @@ export async function getNavigateTo(data, collection = null) {
             firstChildren.map((child) => child.id),
             collection
           )
-          if (childrenStates[lastInteractedChildId] === STATE_COMPLETED) {
+          if (childrenStates.get(lastInteractedChildId) === STATE_COMPLETED) {
             // TODO: course collections have an extra situation where we need to jump to the next course if all lessons in the last engaged course are completed
           }
           let lastInteractedChildNavToData = await getNavigateTo(firstChildren, collection)
@@ -292,12 +292,12 @@ async function getById(contentId, collection, dataKey, defaultValue) {
 }
 
 async function getByIds(contentIds, collection, dataKey, defaultValue) {
-  if (contentIds.length === 0) return {}
+  if (contentIds.length === 0) return new Map()
 
-  const progress = Object.fromEntries(contentIds.map((id) => [id, defaultValue]))
+  const progress = new Map(contentIds.map((id) => [id, defaultValue]))
   await db.contentProgress.getSomeProgressByContentIds(normalizeContentIds(contentIds), normalizeCollection(collection)).then((r) => {
     r.data.forEach((p) => {
-      progress[p.content_id] = p[dataKey] ?? defaultValue
+      progress.set(p.content_id, p[dataKey] ?? defaultValue)
     })
   })
   return progress
@@ -750,7 +750,7 @@ function averageProgressesFor(hierarchy, contentId, progressData, depth = 1) {
   if (!parentId) return {}
 
   const parentChildProgress = hierarchy?.children?.[parentId]?.map((childId) => {
-    return progressData[childId] ?? 0
+    return progressData.get(childId) ?? 0
   })
   const avgParentProgress =
     parentChildProgress.length > 0
