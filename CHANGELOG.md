@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.135.2](https://github.com/railroadmedia/musora-content-services/compare/v2.135.1...v2.135.2) (2026-02-19)
+
+### [2.135.1](https://github.com/railroadmedia/musora-content-services/compare/v2.135.0...v2.135.1) (2026-02-19)
+
+
+### Bug Fixes
+
+* stop normalizing object ([#827](https://github.com/railroadmedia/musora-content-services/issues/827)) ([82d10d6](https://github.com/railroadmedia/musora-content-services/commit/82d10d6ab9fa45cdffe0cee607fe769ec8f1d53e))
+
+## [2.135.0](https://github.com/railroadmedia/musora-content-services/compare/v2.134.8...v2.135.0) (2026-02-18)
+
+
+### Features
+
+* melon fresher progress and practices ([#826](https://github.com/railroadmedia/musora-content-services/issues/826)) ([dcbc98d](https://github.com/railroadmedia/musora-content-services/commit/dcbc98dd5270214ff7d719648943b4d335c4d62e))
+
+### [2.134.8](https://github.com/railroadmedia/musora-content-services/compare/v2.134.7...v2.134.8) (2026-02-18)
+
+### [2.134.7](https://github.com/railroadmedia/musora-content-services/compare/v2.134.6...v2.134.7) (2026-02-18)
+
+
+### Bug Fixes
+
+* **BR-415:** remove old implementation of daily session update ([#824](https://github.com/railroadmedia/musora-content-services/issues/824)) ([d71485c](https://github.com/railroadmedia/musora-content-services/commit/d71485c908228553aed786145f4b3e9dd4b69225))
+* handle null resources when fetching lesson data ([#825](https://github.com/railroadmedia/musora-content-services/issues/825)) ([5945d81](https://github.com/railroadmedia/musora-content-services/commit/5945d81a5fe7449b956a69e2134edfe377541f89))
+* started dailies should make cta CONTINUE ([#818](https://github.com/railroadmedia/musora-content-services/issues/818)) ([7cfd3b3](https://github.com/railroadmedia/musora-content-services/commit/7cfd3b3dfbdd8033a498dfcbe81f898ddf8431d3))
+* type safety for all progress gets/writes ([#819](https://github.com/railroadmedia/musora-content-services/issues/819)) ([0616303](https://github.com/railroadmedia/musora-content-services/commit/0616303f3898bca55c6c044299d8f10ca64837a7))
+
+### [2.134.6](https://github.com/railroadmedia/musora-content-services/compare/v2.134.5...v2.134.6) (2026-02-17)
+
+
+### Bug Fixes
+
+* child cta for new releases ([#822](https://github.com/railroadmedia/musora-content-services/issues/822)) ([d0d2aae](https://github.com/railroadmedia/musora-content-services/commit/d0d2aae729050f918f3c9a6a4cceb4523c03ef70))
+* return status field in response ([#823](https://github.com/railroadmedia/musora-content-services/issues/823)) ([371bbd3](https://github.com/railroadmedia/musora-content-services/commit/371bbd3a92ef99a4ae3454facb43135084943b7a))
+
 ### [2.134.5](https://github.com/railroadmedia/musora-content-services/compare/v2.134.4...v2.134.5) (2026-02-13)
 
 

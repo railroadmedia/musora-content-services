@@ -59,21 +59,32 @@ export async function getMethodCard(brand) {
     ]
 
     let allDailiesCompleted = true;
-    let anyDailiesCompleted = false;
-    let noDailiesCompleted = true;
+    let anyDailiesStarted = false;
+    let noDailiesStarted = true;
     let nextIncompleteDaily = null;
 
     for (const lesson of allDailies) {
-      if (lesson.progressStatus === STATE.COMPLETED) {
-        anyDailiesCompleted = true;
-        noDailiesCompleted = false;
-      } else {
-        allDailiesCompleted = false;
-        if (!nextIncompleteDaily) {
-          nextIncompleteDaily = lesson;
-        }
+      switch (lesson.progressStatus) {
+        case STATE.COMPLETED:
+          anyDailiesStarted = true;
+          noDailiesStarted = false;
+          break;
+        case STATE.STARTED:
+          anyDailiesStarted = true;
+          noDailiesStarted = false;
+          allDailiesCompleted = false;
+          if (!nextIncompleteDaily) {
+            nextIncompleteDaily = lesson;
+          }
+          break;
+        default:
+          allDailiesCompleted = false;
+          if (!nextIncompleteDaily) {
+            nextIncompleteDaily = lesson;
+          }
+          break;
       }
-      if (!allDailiesCompleted && anyDailiesCompleted && nextIncompleteDaily) {
+      if (!allDailiesCompleted && anyDailiesStarted && nextIncompleteDaily) {
         break;
       }
     }
@@ -85,10 +96,10 @@ export async function getMethodCard(brand) {
     ]?.find((lesson) => lesson.progressStatus !== STATE.COMPLETED)
 
     let ctaText, action
-    if (noDailiesCompleted) {
+    if (noDailiesStarted) {
       ctaText = 'Start Session'
       action = getMethodActionCTA(nextIncompleteDaily)
-    } else if (anyDailiesCompleted && !allDailiesCompleted) {
+    } else if (anyDailiesStarted && !allDailiesCompleted) {
       ctaText = 'Continue Session'
       action = getMethodActionCTA(nextIncompleteDaily)
     } else if (allDailiesCompleted) {
