@@ -16,7 +16,7 @@ import { fetchPlaylist } from '../content-org/playlists.js'
 import { TabResponseType } from '../../contentMetaData.js'
 import { GET, PUT } from '../../infrastructure/http/HttpClient.ts'
 import { postProcessBadge } from "../../contentTypeConfig.js";
-import { db } from '../sync/index.js'
+import { db } from '../sync/index'
 
 export const USER_PIN_PROGRESS_KEY = 'user_pin_progress_row'
 const CACHE_EXPIRY_MS = 5 * 60 * 1000
