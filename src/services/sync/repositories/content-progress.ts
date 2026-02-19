@@ -8,10 +8,11 @@ interface ContentIdCollectionTuple {
 }
 
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
-  // null collection only
+
+  // todo: used on progress row so must have collection distinction
   async startedIds(limit?: number) {
     return this.queryAll(...[
-      ProgressRepository.filterOutStandardContentsAccessedByLP,
+      ProgressRepository.collectionTypeFilter({learningPaths: true}),
 
       Q.where('state', STATE.STARTED),
       Q.sortBy('updated_at', 'desc'),
@@ -20,10 +21,10 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     ]).then((r) => r.data.map((r) => r.content_id))
   }
 
-  // null collection only
+  // todo: used on progress row so must have collection distinction
   async completedIds(limit?: number) {
     return this.queryAll(...[
-      ProgressRepository.filterOutStandardContentsAccessedByLP,
+      ProgressRepository.collectionTypeFilter({learningPaths: true}),
 
       Q.where('state', STATE.COMPLETED),
       Q.sortBy('updated_at', 'desc'),
@@ -32,7 +33,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     ]).then((r) => r.data.map((r) => r.content_id))
   }
 
-  //this _specifically_ needs to get content_ids from ALL collection_types (including null)
+  //this _specifically_ needs to get content_ids from ALL collection_types (including self)
   async completedByContentIds(contentIds: number[]) {
     return this.queryAll(
       Q.where('content_id', Q.oneOf(contentIds)),
@@ -40,21 +41,22 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     )
   }
 
-  // null collection only
   async startedOrCompleted(opts: Parameters<typeof this.startedOrCompletedClauses>[0] = {}) {
     return this.queryAll(...this.startedOrCompletedClauses(opts))
   }
 
-  // null collection only
   private startedOrCompletedClauses(
     opts: {
       brand?: string | null
       updatedAfter?: number,
       limit?: number,
+      includePlaylists?: boolean,
+      includeLearningPaths?: boolean
     } = {}
   ) {
     const clauses: Q.Clause[] = [
-      ProgressRepository.filterOutStandardContentsAccessedByLP,
+      // todo: filter out LPs if not the right page
+      ProgressRepository.collectionTypeFilter({playlists: opts.includePlaylists, learningPaths: opts.includeLearningPaths}),
 
       Q.or(Q.where('state', STATE.STARTED), Q.where('state', STATE.COMPLETED)),
       Q.sortBy('updated_at', 'desc'),
@@ -111,10 +113,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.queryAll(...clauses)
   }
 
-  // Two ways of checking this for a given content_id:
-  //   * grab both records (collection_type = self & and collection_type = learning-path-v2), and compare their updated_at timestamps.
-  //   * utilize the new last_interacted_a_la_carte, which is updated whenever the content is accessed OUTSIDE of an LP,  and compare THIS with the self updated_at (which will be greater than if it was last accessed from LP)
-  // I went with the second because it's an easier query
+  // utilize last_interacted_a_la_carte of the :self record, which is updated whenever the content is accessed
+  // a-la-carte (not in LP), and compare this with updated_at (which will be greater than if it was last accessed from LP)
   async getSomeProgressWhereLastAccessedFromMethod(contentIds: number[]) {
     const clauses = [
       Q.where('content_id', Q.oneOf(contentIds)),
@@ -172,7 +172,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
         }
       }
 
-      if (!fromLearningPath) {
+      if (!fromLearningPath && r.collection_type === COLLECTION_TYPE.SELF) {
         r.last_interacted_a_la_carte = r.updated_at
       }
 
@@ -222,7 +222,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
           r.progress_percent = progressPct
 
-          if (!fromLearningPath) {
+          if (!fromLearningPath && r.collection_type === COLLECTION_TYPE.SELF) {
             r.last_interacted_a_la_carte = r.updated_at
           }
         },
@@ -242,18 +242,34 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return this.deleteSome(ids, { skipPush })
   }
 
-  private static filterOutStandardContentsAccessedByLP =
-    // LPs dont have last_interacted_a_la_carte set, hence the OR
-    Q.or(
+  static collectionTypeFilter(params: { playlists?: boolean; learningPaths?: boolean } = {}) {
+    let clauses: Q.Where[] = []
+
+    if (params.playlists) {
+      clauses.push(
+        Q.and( // just parents
+          Q.where('collection_type', COLLECTION_TYPE.PLAYLIST),
+          Q.where('content_id', Q.eq(Q.column('collection_id')))
+        )
+      )
+    }
+    if (params.learningPaths) {
+      clauses.push(
+        Q.and( // just parents
+          Q.where('collection_type', COLLECTION_TYPE.LEARNING_PATH),
+          Q.where('content_id', Q.eq(Q.column('collection_id')))
+        )
+      )
+    }
+
+    clauses.push(
       Q.and( // a-la-carte content that's been accessed directly
         Q.where('collection_type', COLLECTION_TYPE.SELF),
         Q.where('collection_id', COLLECTION_ID_SELF),
         Q.where('last_interacted_a_la_carte', Q.notEq(null)),
       ),
-      Q.and( // learning paths (parents)
-        Q.where('collection_type', COLLECTION_TYPE.LEARNING_PATH),
-        Q.where('content_id', Q.eq(Q.column('collection_id')))
-      )
     )
 
+    return Q.or(...clauses)
+  }
 }

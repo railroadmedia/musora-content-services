@@ -1,4 +1,4 @@
-import { fetchHierarchy, fetchLearningPathHierarchy } from './sanity.js'
+import { getHierarchy } from './sanity.js'
 import { db } from './sync'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, STATE } from './sync/models/ContentProgress'
 import { trackUserPractice, findIncompleteLesson } from './userActivity'
@@ -333,8 +333,12 @@ export async function getAllCompletedByIds(contentIds) {
 export async function getAllStartedOrCompleted({
   brand = null,
   limit = null,
+  includePlaylists = false,
+  includeLearningPaths = true,
+  justIds = true
 } = {}) {
-  return await _getAllStartedOrCompleted({ brand, limit }).then(recs => recs.map(rec => rec.content_id))
+  const data = await _getAllStartedOrCompleted({ brand, limit, includePlaylists, includeLearningPaths })
+  return justIds ? data.map(rec => rec.content_id) : data
 }
 
 /**
@@ -363,6 +367,8 @@ export async function getStartedOrCompletedProgressOnly({ brand = undefined } = 
 async function _getAllStartedOrCompleted({
   brand = null,
   limit = null,
+  includePlaylists = false,
+  includeLearningPaths = true,
 } = {}) {
   const agoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
   const baseFilters = {
@@ -370,12 +376,12 @@ async function _getAllStartedOrCompleted({
   }
 
   if (!brand) {
-    return await db.contentProgress.startedOrCompleted({ ...baseFilters, limit }).then(r => r.data)
+    return await db.contentProgress.startedOrCompleted({ ...baseFilters, limit, includePlaylists, includeLearningPaths }).then(r => r.data)
   }
 
   // content_brand can be null (i.e., when progress records created locally)
   // TODO: eventually put content metadata into watermelon so we can
-  // always have brand info in progress records and avoid all this
+  //  always have brand info in progress records and avoid all this
 
   // for now though, null-ish brands shouldn't be too numerous, so safe to have undefined limit
   const [strictRecs, looseRecs] = await Promise.all([
@@ -696,14 +702,6 @@ async function duplicateLearningPathProgressToExternalContents(ids, collection, 
     }
     saveContentProgress(parseInt(id), null, pct, null, {skipPush: skip, fromLearningPath: true})
   })
-}
-
-async function getHierarchy(contentId, collection) {
-  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
-    return await fetchLearningPathHierarchy(contentId, collection)
-  } else {
-    return await fetchHierarchy(contentId)
-  }
 }
 
 // agnostic to collection - makes returned data structure simpler,
