@@ -3,6 +3,7 @@ import { ContentLike, ContentProgress, Practice, UserAwardProgress, PracticeDayN
 import { handlePull, handlePush, makeFetchRequest } from "./fetch"
 
 import type BaseModel from "./models/Base"
+import { EpochMs } from "./index"
 
 // keeps type-safety in each entry
 const c = <TModel extends BaseModel>(config: SyncStoreConfig<TModel>) => config
@@ -32,12 +33,14 @@ export default function createStoresFromConfig() {
       model: Practice,
       pull: handlePull(makeFetchRequest('/api/user/practices/v1')),
       push: handlePush(makeFetchRequest('/api/user/practices/v1', { method: 'POST' })),
+      purgeGracePeriod: 12_000 as EpochMs // delete undo toast duration is 10s
     }),
 
     c({
       model: PracticeDayNote,
       pull: handlePull(makeFetchRequest('/api/user/practices/v1/notes')),
       push: handlePush(makeFetchRequest('/api/user/practices/v1/notes', { method: 'POST' })),
+      purgeGracePeriod: 12_000 as EpochMs // delete undo toast duration is 10s
     }),
 
     c({
