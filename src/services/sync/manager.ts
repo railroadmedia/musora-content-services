@@ -158,8 +158,10 @@ export default class SyncManager {
       strategies.forEach((strategy) => {
         models.forEach((model) => {
           const store = this.storesRegistry[model.table]
-          strategy.onTrigger(store, (reason) => {
-            store.requestSync(reason)
+          strategy.onTrigger(store, {
+            callback: (reason) => store.requestSync(reason),
+            requestSync: (reason) => store.requestSync(reason),
+            requestPull: (reason) => store.requestPull(reason),
           })
         })
         strategy.start()
