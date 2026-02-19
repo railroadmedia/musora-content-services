@@ -1496,13 +1496,13 @@ export async function fetchSanity(
     if (result.result) {
       let results = isList ? result.result : result.result[0]
       if (!results) {
-        throw new Error('No results found')
+        return null
       }
       results = processNeedAccess ? await needsAccessDecorator(results, userPermissions) : results
       results = processPageType ? pageTypeDecorator(results) : results
       return customPostProcess ? customPostProcess(results) : results
     } else {
-      throw new Error('No results found')
+      return null
     }
   } catch (error) {
     console.error('fetchSanity: Fetch error:', { error, query })
@@ -1656,7 +1656,7 @@ export async function fetchMetadata(brand, type, options = {}) {
 export async function fetchChatAndLiveEnvent(brand, forcedId = null) {
   const liveEvent =
     forcedId !== null ? await fetchByRailContentIds([forcedId]) : [await fetchLiveEvent(brand)]
-  if (liveEvent.length === 0 || (liveEvent.length === 1 && liveEvent[0] === undefined)) {
+  if (liveEvent.length === 0 || (liveEvent.length === 1 && !liveEvent[0])) {
     return null
   }
   let url = `/content/live-chat?brand=${brand}`
