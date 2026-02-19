@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.136.2](https://github.com/railroadmedia/musora-content-services/compare/v2.136.1...v2.136.2) (2026-02-19)
+
 ### [2.136.1](https://github.com/railroadmedia/musora-content-services/compare/v2.136.0...v2.136.1) (2026-02-19)
 
 ## [2.136.0](https://github.com/railroadmedia/musora-content-services/compare/v2.135.3...v2.136.0) (2026-02-19)
