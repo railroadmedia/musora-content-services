@@ -1,7 +1,7 @@
 /**
  * @module ProgressRow
  */
-import { getAllStartedOrCompleted, getProgressStateByIds } from '../../contentProgress.js'
+import { getAllStartedOrCompleted, getProgressStateByIds } from '../../contentProgress'
 import { addContextToContent } from '../../contentAggregator.js'
 import { fetchByRailContentIds, fetchShows } from '../../sanity.js'
 import {
@@ -19,21 +19,19 @@ import { getTimeRemainingUntilLocal } from '../../dateUtils.js'
  * remove any content IDs that already exist in playlistEngagedOnContent,
  * and generate a map of the cards keyed by the content IDs
  */
-export async function getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem ){
-  let recentContentIds = await getAllStartedOrCompleted({ brand: brand, limit: (limit ? (limit * 5) : limit) })
+export async function getContentCardMap(brand, limit, userPinnedItem ){
+  // only a-la-carte content
+  let recentContentIds = await getAllStartedOrCompleted({
+    brand: brand,
+    limit: (limit ? (limit * 5) : limit), // soon to be set properly
+    includeLearningPaths: false,
+    justIds: true,
+  })
+
   if (userPinnedItem?.progressType === 'content') {
     recentContentIds.push(userPinnedItem.id)
   }
-  if (playlistEngagedOnContent) {
-    for (const item of playlistEngagedOnContent) {
-      const parentIds = item.parent_content_data || []
-      recentContentIds = recentContentIds.filter(id => {
-        if (id === item.id) return false
-        if (parentIds.includes(id) && item.progressTimestamp > 0) return false
-        return true
-      })
-    }
-  }
+
   let contents = recentContentIds.length > 0
     ? await addContextToContent(
       fetchByRailContentIds,
@@ -62,7 +60,6 @@ function generateContentPromises(contents) {
   if (!contents) return promises
   const existingShows = new Set()
   let allRecentTypeSet = new Set(Object.values(recentTypes).flat())
-  allRecentTypeSet.delete('learning-path-v2') // we do this to remove from homepage, until we allow a-la-carte learning paths
   contents.forEach((content) => {
     const type = content.type
     if (!allRecentTypeSet.has(type)) return

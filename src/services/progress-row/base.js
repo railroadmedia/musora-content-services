@@ -17,6 +17,7 @@ import { TabResponseType } from '../../contentMetaData.js'
 import { GET, PUT } from '../../infrastructure/http/HttpClient.ts'
 import { postProcessBadge } from "../../contentTypeConfig.js";
 import { db } from '../sync/index'
+import { getAllStartedOrCompleted } from '../contentProgress.js'
 
 export const USER_PIN_PROGRESS_KEY = 'user_pin_progress_row'
 const CACHE_EXPIRY_MS = 5 * 60 * 1000
@@ -158,6 +159,7 @@ function isCacheValid(cachedData) {
  *   .then(data => console.log(data))
  *   .catch(error => console.error(error));
  */
+// todo: refactor once we have progress content_type and depth implemented. allows for much cleaner code.
 export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}, options = {}) {
   // since this MCS method abstracts db, provide pull abstractions instead of making MPF/MA do it on their own
   if (options.pull) {
@@ -168,21 +170,21 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}, opti
     db.contentProgress.pull()
   }
 
-  const [userPinnedItem, recentPlaylists] = await Promise.all([
-    getUserPinnedItem(brand),
-    getRecentPlaylists(brand, limit),
-  ])
-  const playlistEngagedOnContent = await getPlaylistEngagedOnContent(recentPlaylists)
+  const userPinnedItem = await getUserPinnedItem(brand)
+
   const [contentCardMap, playlistCards, methodCard] = await Promise.all([
-    getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem),
-    getPlaylistCards(recentPlaylists),
+    getContentCardMap(brand, limit, userPinnedItem),
+    getPlaylistCards(brand, limit),
     getMethodCard(brand),
   ])
+
   const pinnedCard = await popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard)
+
   let allResultsLength = playlistCards.length + contentCardMap.size
   if (methodCard) {
     allResultsLength += 1
   }
+
   const results = sortCards(pinnedCard, contentCardMap, playlistCards, methodCard, limit)
   return {
     type: TabResponseType.PROGRESS_ROWS,
@@ -226,7 +228,7 @@ async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, meth
       item = pinnedPlaylist
     } else {
       const playlist = await fetchPlaylist(pinnedId)
-      item = await processPlaylistItem({
+      item = processPlaylistItem({
         id: pinnedId,
         playlist: playlist,
         type: 'playlist',

@@ -6,15 +6,12 @@ import { addContextToContent } from '../../contentAggregator.js'
 import { fetchByRailContentIds } from '../../sanity.js'
 import { postProcessBadge } from "../../../contentTypeConfig.js";
 
-export async function getPlaylistCards(recentPlaylists){
-  return await Promise.all(
-    recentPlaylists.map((playlist) => {
-      return processPlaylistItem(playlist)
-    })
-  )
+export async function getPlaylistCards(brand, limit) {
+  let recentPlaylists = await getRecentPlaylists(brand, limit)
+  return recentPlaylists.map((p) => processPlaylistItem(p))
 }
 
-export async function processPlaylistItem(item) {
+export function processPlaylistItem(item) {
   const playlist = item.playlist
 
   return {
@@ -47,19 +44,18 @@ export async function processPlaylistItem(item) {
 export async function getRecentPlaylists(brand, limit) {
   const response = await fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit })
   const playlists = response?.data || []
+
   const recentPlaylists = playlists.filter((p) => p.last_progress && p.last_engaged_on)
-  return await Promise.all(
-    recentPlaylists.map(async (p) => {
-      const utcDate = new Date(p.last_progress.replace(' ', 'T') + 'Z')
-      const timestamp = utcDate.getTime()
-      return {
-        type: 'playlist',
-        progressTimestamp: timestamp,
-        playlist: p,
-        id: p.id,
-      }
-    })
-  )
+  return recentPlaylists.map(async (p) => {
+    const utcDate = new Date(p.last_progress.replace(' ', 'T') + 'Z')
+    const timestamp = utcDate.getTime()
+    return {
+      type: 'playlist',
+      progressTimestamp: timestamp,
+      playlist: p,
+      id: p.id,
+    }
+  })
 }
 
 export async function getPlaylistEngagedOnContent(recentPlaylists){
