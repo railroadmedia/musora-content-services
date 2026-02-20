@@ -333,7 +333,7 @@ export async function getAllCompletedByIds(contentIds) {
 export async function getAllStartedOrCompleted({
   brand = null,
   limit = null,
-  includeALaCarte = true,
+  includeALaCarte = true, // refactor these into an `include: {learningPath: false...}` all falsedefault
   includePlaylists = false,
   includeLearningPaths = true,
   onlyIds = true

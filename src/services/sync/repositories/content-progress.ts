@@ -58,7 +58,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     const clauses: Q.Clause[] = [
       // todo: filter out LPs if not the right page
       ProgressRepository.collectionTypeFilter({
-        includeALaCarte: opts.includeALaCarte,
+        aLaCarte: opts.includeALaCarte,
         playlists: opts.includePlaylists,
         learningPaths: opts.includeLearningPaths}),
 
