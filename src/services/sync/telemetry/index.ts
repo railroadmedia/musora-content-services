@@ -10,6 +10,7 @@ export type SentryLike = {
   captureMessage: typeof InjectedSentry.captureMessage
   addBreadcrumb: typeof InjectedSentry.addBreadcrumb
   startSpan: typeof InjectedSentry.startSpan
+  logger: typeof InjectedSentry.logger
 }
 
 export type StartSpanOptions = Parameters<typeof InjectedSentry.startSpan>[0]
@@ -35,6 +36,13 @@ const severityLevelToSentryLevel: Record<SeverityLevel, 'fatal' | 'error' | 'war
   [SeverityLevel.ERROR]: 'error',
   [SeverityLevel.FATAL]: 'fatal',
 }
+
+type CaptureOptions = {
+  tags?: Record<string, string>
+  contexts?: Record<string, Record<string, unknown>>
+  extra?: unknown
+}
+type LogAttributes = Record<string, unknown>
 
 export class SyncTelemetry {
   private static instance: SyncTelemetry | null = null
@@ -79,7 +87,7 @@ export class SyncTelemetry {
     this.level = typeof normalizedLevel === 'number' ? normalizedLevel : SeverityLevel.LOG
     this.pretty = typeof pretty !== 'undefined' ? pretty : true
 
-    watermelonLogger.log = (message: unknown) => this.log(message instanceof Error ? message : ['[Watermelon]', message].join(' '))
+    watermelonLogger.log = (message: unknown) => this.log(message instanceof Error ? message.message : ['[Watermelon]', message].join(' '))
     watermelonLogger.warn = (message: unknown) => this.warn(message instanceof Error ? message : ['[Watermelon]', message].join(' '))
     watermelonLogger.error = (message: unknown) => this.error(message instanceof Error ? message : ['[Watermelon]', message].join(' '))
   }
@@ -98,9 +106,9 @@ export class SyncTelemetry {
       let desc = span['_spanId'].slice(0, 4)
       desc += span['_parentSpanId'] ? ` (< ${span['_parentSpanId'].slice(0, 4)})` : ''
 
-      this._log(SeverityLevel.DEBUG, 'info', `[trace:start] ${options.name} (${desc})`, true)
+      this.consoleLog(SeverityLevel.DEBUG, 'info', `[trace:start] ${options.name} (${desc})`)
       const result = callback(span)
-      Promise.resolve(result).finally(() => this._log(SeverityLevel.DEBUG, 'info', `[trace:end] ${options.name} (${desc})`, true))
+      Promise.resolve(result).finally(() => this.consoleLog(SeverityLevel.DEBUG, 'info', `[trace:end] ${options.name} (${desc})`))
 
       return result
     })
@@ -122,12 +130,88 @@ export class SyncTelemetry {
         : undefined
     )
 
-    this._logToConsoleOnly(SeverityLevel.ERROR, 'error', err instanceof Error ? err.message : String(err))
+    this.consoleLog(SeverityLevel.ERROR, 'error', err)
   }
 
-  /**
-   * Ignore messages/errors in the future that match provided patterns
-   */
+  debug(message: string, attrs?: LogAttributes) {
+    this.logMessage(SeverityLevel.DEBUG, 'info', message, attrs)
+  }
+
+  info(message: string, attrs?: LogAttributes) {
+    this.logMessage(SeverityLevel.INFO, 'info', message, attrs)
+  }
+
+  log(message: string, attrs?: LogAttributes) {
+    this.logMessage(SeverityLevel.LOG, 'log', message, attrs)
+  }
+
+  warn(message: unknown, opts?: CaptureOptions) {
+    this.captureError(SeverityLevel.WARNING, 'warn', message, opts)
+  }
+
+  error(message: unknown, opts?: CaptureOptions) {
+    this.captureError(SeverityLevel.ERROR, 'error', message, opts)
+  }
+
+  fatal(message: unknown, opts?: CaptureOptions) {
+    this.captureError(SeverityLevel.FATAL, 'error', message, opts)
+  }
+
+  private logMessage(level: SeverityLevel, consoleMethod: 'info' | 'log', message: string, attrs?: LogAttributes) {
+    if (this.level > level) return
+    if (this.shouldIgnoreMessage(message)) return
+
+    console[consoleMethod](...this.consoleFormattedMessage(message, attrs))
+    const sentryLevel = severityLevelToSentryLevel[level]
+    const sentryLogMethod = sentryLevel === 'debug' ? 'debug' : 'info'
+    this.Sentry.addBreadcrumb({
+      message,
+      data: attrs,
+      level: sentryLevel,
+    })
+    this.Sentry.logger[sentryLogMethod](message, attrs)
+  }
+
+  private captureError(level: SeverityLevel, consoleMethod: 'warn' | 'error', error: unknown, opts: CaptureOptions) {
+    if (this.level > level) return
+    if (error instanceof Error && this.shouldIgnoreMessage(error.message)) return
+    if (typeof error === 'string' && this.shouldIgnoreMessage(error)) return
+
+    console[consoleMethod](...this.consoleFormattedMessage(error, opts))
+    this.Sentry.captureException(error, { level: severityLevelToSentryLevel[level] })
+  }
+
+  private consoleLog(level: SeverityLevel, consoleMethod: 'info' | 'log' | 'warn' | 'error', message: unknown, extra?: any) {
+    if (this.level > level || this.shouldIgnoreMessage(message)) return
+    console[consoleMethod](...this.consoleFormattedMessage(message, extra))
+  }
+
+  static isSyncConsoleMessage(args: unknown[]): boolean {
+    return typeof args[0] === 'string' && args[0].startsWith(SYNC_TELEMETRY_CONSOLE_PREFIX)
+  }
+
+  private consoleFormattedMessage(message: unknown, remnant: CaptureOptions | LogAttributes) {
+    if (!this.pretty) {
+      return [message, ...(remnant ? [remnant] : [])]
+    }
+
+    const date = new Date()
+    return [...this.consolePrefix(date), message, ...(remnant ? [remnant] : []), ...this.consoleSuffix(date)]
+  }
+
+  private consolePrefix(date: Date) {
+    const now = Math.round(date.getTime() / 1000).toString()
+    return [
+      `${SYNC_TELEMETRY_CONSOLE_PREFIX} (%c${now.slice(0, 5)}%c${now.slice(5, 10)})`,
+      'color: #ccc',
+      'font-weight: bold;',
+    ]
+  }
+
+  private consoleSuffix(date: Date) {
+    return [` [${date.toLocaleTimeString()}, ${date.getTime()}]`]
+  }
+
   ignoreLike(...patterns: (RegExp | string)[]) {
     this.ignorePatterns.push(...patterns)
   }
@@ -143,76 +227,6 @@ export class SyncTelemetry {
     }
 
     return false
-  }
-
-  debug(message: unknown, extra?: any) {
-    this._log(SeverityLevel.DEBUG, 'info', message, extra)
-  }
-
-  info(message: unknown, extra?: any) {
-    this._log(SeverityLevel.INFO, 'info', message, extra)
-  }
-
-  log(message: unknown, extra?: any) {
-    this._log(SeverityLevel.LOG, 'log', message, extra)
-  }
-
-  warn(message: unknown, extra?: any) {
-    this._log(SeverityLevel.WARNING, 'warn', message, extra)
-  }
-
-  error(message: unknown, extra?: any) {
-    this._log(SeverityLevel.ERROR, 'error', message, extra)
-  }
-
-  fatal(message: unknown, extra?: any) {
-    this._log(SeverityLevel.FATAL, 'error', message, extra)
-  }
-
-  _log(level: SeverityLevel, consoleMethod: 'info' | 'log' | 'warn' | 'error', message: unknown, extra?: any, skipSentry = false) {
-    if (this.level > level || this.shouldIgnoreMessage(message)) return
-
-    console[consoleMethod](...this.formattedConsoleMessage(message, extra))
-
-    if (skipSentry) return
-
-    const messageStr = message instanceof Error ? message.message : String(message)
-    if (level >= SeverityLevel.WARNING) {
-      this.Sentry.captureMessage(messageStr, severityLevelToSentryLevel[level])
-    } else {
-      this.Sentry.addBreadcrumb({ message: messageStr, level: severityLevelToSentryLevel[level] })
-    }
-  }
-
-  private _logToConsoleOnly(level: SeverityLevel, consoleMethod: 'info' | 'log' | 'warn' | 'error', message: unknown, extra?: any) {
-    if (this.level > level || this.shouldIgnoreMessage(message)) return
-    console[consoleMethod](...this.formattedConsoleMessage(message, extra))
-  }
-
-  static isSyncConsoleMessage(args: unknown[]): boolean {
-    return typeof args[0] === 'string' && args[0].startsWith(SYNC_TELEMETRY_CONSOLE_PREFIX)
-  }
-
-  private formattedConsoleMessage(message: unknown, extra: any) {
-    if (!this.pretty) {
-      return [message, ...(extra ? [extra] : [])]
-    }
-
-    const date = new Date()
-    return [...this.consolePrefix(date), message, ...(extra ? [extra] : []), ...this.consoleSuffix(date)]
-  }
-
-  private consolePrefix(date: Date) {
-    const now = Math.round(date.getTime() / 1000).toString()
-    return [
-      `${SYNC_TELEMETRY_CONSOLE_PREFIX} (%c${now.slice(0, 5)}%c${now.slice(5, 10)})`,
-      'color: #ccc',
-      'font-weight: bold;',
-    ]
-  }
-
-  private consoleSuffix(date: Date) {
-    return [` [${date.toLocaleTimeString()}, ${date.getTime()}]`]
   }
 
   private shouldIgnoreMessage(message: any) {
