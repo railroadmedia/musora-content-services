@@ -77,6 +77,16 @@ export interface RestorePurchasesSetupAccountResponse {
 }
 
 /**
+ * Represents response for latest subscription platform as best we can determine.
+ */
+export interface LastSubscriptionPlatform {
+  platform: 'ios' | 'android' | 'web' | null
+  product_identifier: string | null
+  expires_date: string | null
+  is_active: boolean
+}
+
+/**
  * Represents all possible responses from RevenueCat purchase restoration
  */
 export type RestorePurchasesResponse =
@@ -230,7 +240,7 @@ export async function restorePurchases(
  *
  * @returns {Promise<{price: number, currency: string, period: string|null}>} - The upgrade price information
  * @property {number} price - The upgrade cost in USD (monthly for month/year, annual for lifetime)
- * @property {string} currency - The currency 
+ * @property {string} currency - The currency
  * @property {string|null} period - The billing period for the price ('month' or 'year'). Note: lifetime subscribers return 'year' period with annual price
  *
  * @example
@@ -249,4 +259,14 @@ export async function restorePurchases(
 export async function getUpgradePrice() {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return  httpClient.get(`${baseUrl}/v1/upgrade-price`)
+}
+
+/**
+ * @returns {Promise<LastSubscriptionPlatform>} The user's last active subscription platform and expiry info
+ */
+export async function fetchLastSubscriptionPlatform(): Promise<LastSubscriptionPlatform> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.get<LastSubscriptionPlatform>(
+    '/api/user-memberships/v1/latest-subscription'
+  )
 }

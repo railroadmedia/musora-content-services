@@ -11,6 +11,7 @@ import {
 
 import {
 	getAwardStatistics,
+	getBadgeFields,
 	getCompletedAwards,
 	getContentAwards,
 	getContentAwardsByIds,
@@ -373,6 +374,7 @@ import {
 } from './services/user/management.js';
 
 import {
+	fetchLastSubscriptionPlatform,
 	fetchMemberships,
 	fetchRechargeTokens,
 	getUpgradePrice,
@@ -527,6 +529,7 @@ export {
 	fetchInstructorLessons,
 	fetchInstructors,
 	fetchInterests,
+	fetchLastSubscriptionPlatform,
 	fetchLatestThreads,
 	fetchLearningPathHierarchy,
 	fetchLearningPathLessons,
@@ -603,6 +606,7 @@ export {
 	getAllStarted,
 	getAllStartedOrCompleted,
 	getAwardStatistics,
+	getBadgeFields,
 	getCompletedAwards,
 	getContentAwards,
 	getContentAwardsByIds,
