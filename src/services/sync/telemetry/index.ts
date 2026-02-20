@@ -16,6 +16,7 @@ export type StartSpanOptions = Parameters<typeof InjectedSentry.startSpan>[0]
 export type Span = InjectedSentry.Span
 
 export const SYNC_TELEMETRY_TRACE_PREFIX = 'sync:'
+export const SYNC_TELEMETRY_CONSOLE_PREFIX = '📡 SYNC:'
 
 export enum SeverityLevel {
   DEBUG = 0,
@@ -57,9 +58,6 @@ export class SyncTelemetry {
   private pretty: boolean
 
   private ignorePatterns: (string | RegExp)[] = []
-
-  // allows us to know if Sentry shouldn't double-capture a dev-prettified console.error log
-  private _ignoreConsole = false
 
   constructor(
     userScope: SyncUserScope,
@@ -124,14 +122,7 @@ export class SyncTelemetry {
         : undefined
     )
 
-    this._ignoreConsole = true
-    this.error(err instanceof Error ? err.message : String(err))
-    this._ignoreConsole = false
-  }
-
-  // allows us to know if Sentry shouldn't double-capture a dev-prettified console.error log
-  shouldIgnoreConsole() {
-    return this._ignoreConsole
+    this._logToConsoleOnly(SeverityLevel.ERROR, 'error', err instanceof Error ? err.message : String(err))
   }
 
   /**
@@ -180,17 +171,26 @@ export class SyncTelemetry {
 
   _log(level: SeverityLevel, consoleMethod: 'info' | 'log' | 'warn' | 'error', message: unknown, extra?: any, skipSentry = false) {
     if (this.level > level || this.shouldIgnoreMessage(message)) return
-    this._ignoreConsole = true
+
     console[consoleMethod](...this.formattedConsoleMessage(message, extra))
-    this._ignoreConsole = false
 
-    if (skipSentry) return;
+    if (skipSentry) return
 
+    const messageStr = message instanceof Error ? message.message : String(message)
     if (level >= SeverityLevel.WARNING) {
-      this.Sentry.captureMessage(message instanceof Error ? message.message : String(message), severityLevelToSentryLevel[level])
+      this.Sentry.captureMessage(messageStr, severityLevelToSentryLevel[level])
     } else {
-      this.Sentry.addBreadcrumb({ message: message instanceof Error ? message.message : String(message), level: severityLevelToSentryLevel[level] })
+      this.Sentry.addBreadcrumb({ message: messageStr, level: severityLevelToSentryLevel[level] })
     }
+  }
+
+  private _logToConsoleOnly(level: SeverityLevel, consoleMethod: 'info' | 'log' | 'warn' | 'error', message: unknown, extra?: any) {
+    if (this.level > level || this.shouldIgnoreMessage(message)) return
+    console[consoleMethod](...this.formattedConsoleMessage(message, extra))
+  }
+
+  static isSyncConsoleMessage(args: unknown[]): boolean {
+    return typeof args[0] === 'string' && args[0].startsWith(SYNC_TELEMETRY_CONSOLE_PREFIX)
   }
 
   private formattedConsoleMessage(message: unknown, extra: any) {
@@ -205,7 +205,7 @@ export class SyncTelemetry {
   private consolePrefix(date: Date) {
     const now = Math.round(date.getTime() / 1000).toString()
     return [
-      `📡 SYNC: (%c${now.slice(0, 5)}%c${now.slice(5, 10)})`,
+      `${SYNC_TELEMETRY_CONSOLE_PREFIX} (%c${now.slice(0, 5)}%c${now.slice(5, 10)})`,
       'color: #ccc',
       'font-weight: bold;',
     ]
