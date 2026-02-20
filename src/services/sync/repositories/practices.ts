@@ -19,14 +19,42 @@ export default class PracticesRepository extends SyncRepository<Practice> {
   }
 
   async trackAutoPractice(contentId: number, date: string, incrementalDurationSeconds: number, skipPush = true) {
-    return await this.upsertOne(Practice.generateAutoId(contentId, date), r => {
+    this.store.telemetry.log('trackUserPractice:before', {
+      now: performance.now(),
+      contentId,
+      date,
+      incrementalDurationSeconds
+    })
+
+    const result = await this.upsertOne(Practice.generateAutoId(contentId, date), r => {
+      const oldDurationSeconds = r.duration_seconds;
+
       r._raw.id = Practice.generateAutoId(contentId, date);
       r.auto = true;
       r.content_id = contentId;
       r.date = date;
 
       r.duration_seconds = Math.min((r.duration_seconds || 0) + incrementalDurationSeconds, 59999);
+
+      this.store.telemetry.log('trackUserPractice:around', {
+        now: performance.now(),
+        contentId,
+        date,
+        incrementalDurationSeconds,
+        before: oldDurationSeconds,
+        after: r.duration_seconds
+      })
     }, { skipPush })
+
+    this.store.telemetry.log('trackUserPractice:after', {
+      now: performance.now(),
+      contentId,
+      date,
+      incrementalDurationSeconds,
+      after: result.data.duration_seconds
+    })
+
+    return result
   }
 
   async recordManualPractice(date: string, durationSeconds: number, details: Partial<Pick<Practice, 'title' | 'instrument_id' | 'category_id' | 'thumbnail_url'>> = {}) {
@@ -49,7 +77,7 @@ export default class PracticesRepository extends SyncRepository<Practice> {
 
   async updateDetails(id: RecordId, details: Partial<Pick<Practice, 'duration_seconds' | 'title' | 'thumbnail_url' | 'category_id' | 'instrument_id'>>) {
     return await this.updateOneId(id, r => {
-      r.duration_seconds = Math.min(details.duration_seconds, 59999) ?? r.duration_seconds;
+      r.duration_seconds = details.duration_seconds !== null ? Math.min(details.duration_seconds, 59999) : r.duration_seconds;
       r.title = details.title ?? r.title;
       r.thumbnail_url = details.thumbnail_url ?? r.thumbnail_url;
       r.category_id = details.category_id ?? r.category_id;

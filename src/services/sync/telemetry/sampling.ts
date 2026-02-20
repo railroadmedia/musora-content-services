@@ -6,7 +6,8 @@ type BeforeSendResult<T> = T | PromiseLike<T | null> | null | undefined
 type SamplerResult = number | boolean | undefined
 
 export const syncSentryBeforeSend = (event: ErrorEvent, hint: EventHint): BeforeSendResult<ErrorEvent> => {
-  if (event.logger === 'console' && SyncTelemetry.getInstance()?.shouldIgnoreConsole()) {
+  const consoleArgs = event.extra?.arguments as unknown[] | undefined
+  if (event.logger === 'console' && consoleArgs && SyncTelemetry.isSyncConsoleMessage(consoleArgs)) {
     return null
   }
 
