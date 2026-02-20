@@ -1,4 +1,6 @@
 import schema from '../schema'
+import migrations from '../migrations'
+
 import type { SyncUserScope } from '../index'
 import { SyncError } from '../errors'
 
@@ -35,7 +37,7 @@ export default function syncAdapterFactory<T extends DatabaseAdapter>(
       ...opts,
       dbName: `musora:sync:${userScope.initialId}`,
       schema,
-      migrations: undefined
+      migrations
     })
   }
 }

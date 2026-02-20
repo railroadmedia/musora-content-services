@@ -30,7 +30,8 @@ const contentProgressTable = tableSchema({
     { name: 'resume_time_seconds', type: 'number', isOptional: true },
     { name: 'last_interacted_a_la_carte', type: 'number', isOptional: true },
     { name: 'created_at', type: 'number' },
-    { name: 'updated_at', type: 'number', isIndexed: true }
+    { name: 'updated_at', type: 'number', isIndexed: true },
+    { name: 'foo', type: 'string', isOptional: true }
   ]
 })
 const practicesTable = tableSchema({
@@ -76,7 +77,7 @@ const userAwardProgressTable = tableSchema({
 })
 
 export default appSchema({
-  version: 1,
+  version: 2,
   tables: [
     contentLikesTable,
     contentProgressTable,
