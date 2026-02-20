@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.136.4](https://github.com/railroadmedia/musora-content-services/compare/v2.136.3...v2.136.4) (2026-02-20)
+
+
+### Bug Fixes
+
+* better Sentry logging ([#832](https://github.com/railroadmedia/musora-content-services/issues/832)) ([73bd384](https://github.com/railroadmedia/musora-content-services/commit/73bd38473acb631a9f30d559e403e8f4203bb548))
+
 ### [2.136.3](https://github.com/railroadmedia/musora-content-services/compare/v2.136.2...v2.136.3) (2026-02-20)
 
 
