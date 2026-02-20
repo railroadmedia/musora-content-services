@@ -333,11 +333,12 @@ export async function getAllCompletedByIds(contentIds) {
 export async function getAllStartedOrCompleted({
   brand = null,
   limit = null,
+  includeALaCarte = true,
   includePlaylists = false,
   includeLearningPaths = true,
   onlyIds = true
 } = {}) {
-  const data = await _getAllStartedOrCompleted({ brand, limit, includePlaylists, includeLearningPaths })
+  const data = await _getAllStartedOrCompleted({ brand, limit, includeALaCarte, includePlaylists, includeLearningPaths })
   return onlyIds ? data.map(rec => rec.content_id) : data
 }
 
@@ -367,6 +368,7 @@ export async function getStartedOrCompletedProgressOnly({ brand = undefined } = 
 async function _getAllStartedOrCompleted({
   brand = null,
   limit = null,
+  includeALaCarte = true,
   includePlaylists = false,
   includeLearningPaths = true,
 } = {}) {
@@ -376,7 +378,7 @@ async function _getAllStartedOrCompleted({
   }
 
   if (!brand) {
-    return await db.contentProgress.startedOrCompleted({ ...baseFilters, limit, includePlaylists, includeLearningPaths }).then(r => r.data)
+    return await db.contentProgress.startedOrCompleted({ ...baseFilters, limit, includeALaCarte, includePlaylists, includeLearningPaths }).then(r => r.data)
   }
 
   // content_brand can be null (i.e., when progress records created locally)

@@ -50,13 +50,17 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       brand?: string | null
       updatedAfter?: number,
       limit?: number,
+      includeALaCarte?: boolean,
       includePlaylists?: boolean,
       includeLearningPaths?: boolean
     } = {}
   ) {
     const clauses: Q.Clause[] = [
       // todo: filter out LPs if not the right page
-      ProgressRepository.collectionTypeFilter({playlists: opts.includePlaylists, learningPaths: opts.includeLearningPaths}),
+      ProgressRepository.collectionTypeFilter({
+        includeALaCarte: opts.includeALaCarte,
+        playlists: opts.includePlaylists,
+        learningPaths: opts.includeLearningPaths}),
 
       Q.or(Q.where('state', STATE.STARTED), Q.where('state', STATE.COMPLETED)),
       Q.sortBy('updated_at', 'desc'),
@@ -242,8 +246,23 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return this.deleteSome(ids, { skipPush })
   }
 
-  static collectionTypeFilter(params: { playlists?: boolean; learningPaths?: boolean } = {}) {
+  static collectionTypeFilter(
+    params: {
+      aLaCarte?: boolean;
+      playlists?: boolean;
+      learningPaths?: boolean
+    } = {}) {
     let clauses: Q.Where[] = []
+
+    if (params.aLaCarte) {
+      clauses.push(
+        Q.and( // a-la-carte content that's been accessed directly
+          Q.where('collection_type', COLLECTION_TYPE.SELF),
+          Q.where('collection_id', COLLECTION_ID_SELF),
+          Q.where('last_interacted_a_la_carte', Q.notEq(null)),
+        ),
+      )
+    }
 
     if (params.playlists) {
       clauses.push(
@@ -262,14 +281,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       )
     }
 
-    clauses.push(
-      Q.and( // a-la-carte content that's been accessed directly
-        Q.where('collection_type', COLLECTION_TYPE.SELF),
-        Q.where('collection_id', COLLECTION_ID_SELF),
-        Q.where('last_interacted_a_la_carte', Q.notEq(null)),
-      ),
-    )
-
+    if (clauses.length === 0) return
     return Q.or(...clauses)
   }
 }
