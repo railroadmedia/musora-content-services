@@ -1,7 +1,7 @@
 name: Deploy Docs to GitHub Pages
 on:
   push:
-    branches: [main, project-v2]
+    branches: [main]
 
 # Required permissions for GitHub Pages deployment
 permissions:
