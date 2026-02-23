@@ -22,9 +22,9 @@ export const SINGLE_PARENT_TYPES = ['course-lesson', 'pack-bundle-lesson', 'song
 
 export const LEARNING_PATH_LESSON = 'learning-path-lesson-v2'
 
-export const parentField = `'parent': parent_content_data[0]`
+export const parentField = 'parent_content_data[0]'
 
-export const grandParentField = `'grandparent': parent_content_data[1]`
+export const grandParentField = 'parent_content_data[1]'
 
 export const genreField = `genre[]->{
   name,
