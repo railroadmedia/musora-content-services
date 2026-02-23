@@ -51,43 +51,12 @@ export async function getMethodCard(brand) {
       return null
     }
 
-    // need to calculate based on all dailies
-    const allDailies = [
-      ...learningPath.previous_learning_path_dailies,
-      ...learningPath.learning_path_dailies,
-      ...learningPath.next_learning_path_dailies
-    ]
-
-    let allDailiesCompleted = true;
-    let anyDailiesStarted = false;
-    let noDailiesStarted = true;
-    let nextIncompleteDaily = null;
-
-    for (const lesson of allDailies) {
-      switch (lesson.progressStatus) {
-        case STATE.COMPLETED:
-          anyDailiesStarted = true;
-          noDailiesStarted = false;
-          break;
-        case STATE.STARTED:
-          anyDailiesStarted = true;
-          noDailiesStarted = false;
-          allDailiesCompleted = false;
-          if (!nextIncompleteDaily) {
-            nextIncompleteDaily = lesson;
-          }
-          break;
-        default:
-          allDailiesCompleted = false;
-          if (!nextIncompleteDaily) {
-            nextIncompleteDaily = lesson;
-          }
-          break;
-      }
-      if (!allDailiesCompleted && anyDailiesStarted && nextIncompleteDaily) {
-        break;
-      }
-    }
+    const {
+      allDailiesCompleted,
+      anyDailiesStarted,
+      noDailiesStarted,
+      nextIncompleteDaily
+    } = analyzeDailySession(learningPath)
 
     // get the first incomplete lesson from upcoming and next learning path lessons
     const nextLesson = [
@@ -146,3 +115,50 @@ function getMethodActionCTA(item) {
     parent_id: item.parent_id,
   }
 }
+
+function analyzeDailySession(learningPath) {
+  const allDailies = [
+    ...learningPath.previous_learning_path_dailies,
+    ...learningPath.learning_path_dailies,
+    ...learningPath.next_learning_path_dailies
+  ]
+
+  let allDailiesCompleted = true;
+  let anyDailiesStarted = false;
+  let noDailiesStarted = true;
+  let nextIncompleteDaily = null;
+
+  for (const lesson of allDailies) {
+    switch (lesson.progressStatus) {
+      case STATE.COMPLETED:
+        anyDailiesStarted = true;
+        noDailiesStarted = false;
+        break;
+      case STATE.STARTED:
+        anyDailiesStarted = true;
+        noDailiesStarted = false;
+        allDailiesCompleted = false;
+        if (!nextIncompleteDaily) {
+          nextIncompleteDaily = lesson;
+        }
+        break;
+      default:
+        allDailiesCompleted = false;
+        if (!nextIncompleteDaily) {
+          nextIncompleteDaily = lesson;
+        }
+        break;
+    }
+    if (!allDailiesCompleted && anyDailiesStarted && nextIncompleteDaily) {
+      break;
+    }
+  }
+
+  return {
+    allDailiesCompleted,
+    anyDailiesStarted,
+    noDailiesStarted,
+    nextIncompleteDaily
+  }
+}
+
