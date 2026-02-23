@@ -7,6 +7,7 @@ import {
 
 import {
 	getAwardStatistics,
+	getBadgeFields,
 	getCompletedAwards,
 	getContentAwards,
 	getContentAwardsByIds,
@@ -369,6 +370,7 @@ import {
 } from './services/user/management.js';
 
 import {
+	fetchLastSubscriptionPlatform,
 	fetchMemberships,
 	fetchRechargeTokens,
 	getUpgradePrice,
@@ -528,6 +530,7 @@ declare module 'musora-content-services' {
 		fetchInstructorLessons,
 		fetchInstructors,
 		fetchInterests,
+		fetchLastSubscriptionPlatform,
 		fetchLatestThreads,
 		fetchLearningPathHierarchy,
 		fetchLearningPathLessons,
@@ -604,6 +607,7 @@ declare module 'musora-content-services' {
 		getAllStarted,
 		getAllStartedOrCompleted,
 		getAwardStatistics,
+		getBadgeFields,
 		getCompletedAwards,
 		getContentAwards,
 		getContentAwardsByIds,
