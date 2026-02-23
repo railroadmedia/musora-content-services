@@ -1117,7 +1117,9 @@ export async function fetchSiblingContent(railContentId, brand = null) {
   const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission_v2, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
 
   const query = `*[railcontent_id == ${railContentId}${brandString}]{
-   _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
+   _type, parent_type, 
+   'parent_id': parent_content_data[0].id, railcontent_id,
+   'collection_id': parent_content_data[1].id, railcontent_id,
    'for-calculations': *[${filterGetParent}][0]{
     'siblings-list': child[]->railcontent_id,
     'parents-list': *[${filterForParentList}][0].child[]->railcontent_id
@@ -1136,6 +1138,11 @@ export async function fetchSiblingContent(railContentId, brand = null) {
     const currentSiblingIndex = calc['siblings-list'].indexOf(result['railcontent_id']) + 1
 
     delete result['for-calculations']
+
+    if(result['collection_id']){
+      result['collection_data'] = await fetchCourseCollectionData(result['collection_id'])
+    }
+
     result = { ...result, parentCount, currentParentIndex, siblingCount, currentSiblingIndex }
     return result
   } else {
