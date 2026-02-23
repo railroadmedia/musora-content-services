@@ -313,7 +313,7 @@ async function getByRecordIds(ids, dataKey, defaultValue) {
   return progress
 }
 
-// todo: add brand filtering for `getAllStarted` & `getAllCompleted` like with getAllStartedOrCompleted
+// todo TP-1107: brand lookup for all getAllStarted, getAllCompleted, getAllStartedOrCompleted
 export async function getAllStarted(limit = null, {
   onlyIds = true,
   include = { aLaCarte: true, playlists: false, learningPaths: false },
@@ -391,7 +391,7 @@ async function _getAllStartedOrCompleted({
   }
 
   // content_brand can be null (i.e., when progress records created locally)
-  // TODO: eventually put content metadata into watermelon so we can
+  // TODO TP-1107: eventually put content metadata into watermelon so we can
   //  always have brand info in progress records and avoid all this
 
   // for now though, null-ish brands shouldn't be too numerous, so safe to have undefined limit

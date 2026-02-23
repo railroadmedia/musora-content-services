@@ -7,7 +7,6 @@ import { fetchMethodV2IntroVideo } from '../../sanity'
 import { getProgressState } from '../../contentProgress'
 import {COLLECTION_TYPE, STATE} from '../../sync/models/ContentProgress'
 
-// todo: add safety so this card cannot fail the whole row.
 export async function getMethodCard(brand) {
   const introVideo = await fetchMethodV2IntroVideo(brand)
 
