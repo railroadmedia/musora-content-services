@@ -8,15 +8,31 @@ import { getProgressState } from '../../contentProgress'
 import {COLLECTION_TYPE, STATE} from '../../sync/models/ContentProgress'
 
 export async function getMethodCard(brand) {
-  const introVideo = await fetchMethodV2IntroVideo(brand)
-
-  if (!introVideo) {
+  let introVideo
+  try {
+    introVideo = await fetchMethodV2IntroVideo(brand)
+  } catch (error) {
+    console.error('Error fetching method intro video:', error)
     return null
   }
 
-  const introVideoProgressState = await getProgressState(introVideo?.id)
+  if (!introVideo) return null
 
-  const activeLearningPath = await getActivePath(brand)
+  let introVideoProgressState
+  try {
+    introVideoProgressState = await getProgressState(introVideo?.id)
+  } catch (error) {
+    console.error('Error fetching progress state for method intro video:', error)
+    return null
+  }
+
+  let activeLearningPath
+  try {
+    activeLearningPath = await getActivePath(brand)
+  } catch (error) {
+    console.error('Error fetching active learning path:', error)
+    return null
+  }
 
   if (introVideoProgressState !== STATE.COMPLETED || !activeLearningPath) {
     const timestamp = Math.floor(Date.now())
@@ -41,45 +57,21 @@ export async function getMethodCard(brand) {
       progressTimestamp: timestamp,
     }
   } else {
-    const learningPath = await fetchLearningPathLessons(
-      activeLearningPath.active_learning_path_id,
-      brand,
-      new Date()
-    )
-
-    if (!learningPath) {
+    let learningPath
+    try {
+      learningPath = await fetchLearningPathLessons(
+        activeLearningPath.active_learning_path_id,
+        brand,
+        new Date()
+      )
+    } catch (e) {
+      console.error('Failed to fetch learning path lessons', e)
       return null
     }
 
-    const {
-      allDailiesCompleted,
-      anyDailiesStarted,
-      noDailiesStarted,
-      nextIncompleteDaily
-    } = analyzeDailySession(learningPath)
+    if (!learningPath) return null
 
-    // get the first incomplete lesson from upcoming and next learning path lessons
-    const nextLesson = [
-      ...learningPath?.upcoming_lessons,
-      ...learningPath?.next_learning_path_dailies,
-    ]?.find((lesson) => lesson.progressStatus !== STATE.COMPLETED)
-
-    let ctaText, action
-    if (noDailiesStarted) {
-      ctaText = 'Start Session'
-      action = getMethodActionCTA(nextIncompleteDaily)
-    } else if (anyDailiesStarted && !allDailiesCompleted) {
-      ctaText = 'Continue Session'
-      action = getMethodActionCTA(nextIncompleteDaily)
-    } else if (allDailiesCompleted) {
-      ctaText = nextLesson ? 'Start Next Lesson' : 'Browse Lessons'
-      action = nextLesson
-        ? getMethodActionCTA(nextLesson)
-        : {
-            type: 'method-complete',
-            brand,
-          }
-    }
+    const { ctaText, action } = getCtaAndText(learningPath)
 
     let maxProgressTimestamp = Math.max(
       ...learningPath?.children.map((lesson) => lesson.progressTimestamp)
@@ -108,13 +100,48 @@ export async function getMethodCard(brand) {
 
 function getMethodActionCTA(item) {
   return {
-    type: item.type,
-    brand: item.brand,
-    id: item.id,
-    slug: item.slug,
-    parent_id: item.parent_id,
+    type: item.type ?? null,
+    brand: item.brand ?? null,
+    id: item.id ?? null,
+    slug: item.slug ?? null,
+    parent_id: item.parent_id ?? null,
   }
 }
+
+function getCtaAndText(learningPath) {
+  const {
+    allDailiesCompleted,
+    anyDailiesStarted,
+    noDailiesStarted,
+    nextIncompleteDaily
+  } = analyzeDailySession(learningPath)
+
+  // get the first incomplete lesson from upcoming and next learning path lessons
+  const nextLesson = [
+    ...learningPath?.upcoming_lessons,
+    ...learningPath?.next_learning_path_dailies,
+  ]?.find((lesson) => lesson.progressStatus !== STATE.COMPLETED)
+
+  let ctaText, action
+  if (noDailiesStarted) {
+    ctaText = 'Start Session'
+    action = getMethodActionCTA(nextIncompleteDaily)
+  } else if (anyDailiesStarted && !allDailiesCompleted) {
+    ctaText = 'Continue Session'
+    action = getMethodActionCTA(nextIncompleteDaily)
+  } else if (allDailiesCompleted) {
+    ctaText = nextLesson ? 'Start Next Lesson' : 'Browse Lessons'
+    action = nextLesson
+      ? getMethodActionCTA(nextLesson)
+      : {
+        type: 'method-complete',
+        brand: learningPath.brand,
+      }
+  }
+
+  return { action, ctaText }
+}
+
 
 function analyzeDailySession(learningPath) {
   const allDailies = [
