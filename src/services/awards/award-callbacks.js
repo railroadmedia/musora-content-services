@@ -76,6 +76,7 @@ export function registerAwardCallback(callback) {
       brand: definition.brand,
       ...getBadgeFields(definition),
       contentType: definition.content_type,
+      hasCertificate: definition.type === 'content-award',
       completedAt: completionData.completed_at,
       isCompleted: true,
       completionData: {
