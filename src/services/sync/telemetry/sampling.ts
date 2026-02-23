@@ -42,7 +42,7 @@ export const syncSentryBeforeSendTransaction = (event: TransactionEvent, hint: E
 export const createSyncSentryTracesSampler = (sampleRate = 0.01) => {
   const sampler = (context: TracesSamplerSamplingContext): SamplerResult => {
     if (!context.name.startsWith(SYNC_TELEMETRY_TRACE_PREFIX)) return undefined
-    return sampleRate
+    return context.inheritOrSampleWith(sampleRate)
   }
 
   return sampler
