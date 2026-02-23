@@ -23,9 +23,8 @@ export async function getContentCardMap(brand, limit, userPinnedItem ){
   // only a-la-carte content
   let recentContentIds = await getAllStartedOrCompleted({
     brand: brand,
-    limit: (limit ? (limit * 5) : limit), // soon to be set properly
-    includeLearningPaths: false,
-    justIds: true,
+    limit: (limit ? (limit * 5) : limit), // soon to have proper limit
+    onlyIds: true,
   })
 
   if (userPinnedItem?.progressType === 'content') {

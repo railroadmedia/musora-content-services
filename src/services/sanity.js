@@ -759,11 +759,11 @@ async function getProgressFilter(progress, progressIds) {
       return `&& railcontent_id in [${ids.join(',')}]`
     }
     case 'not started': {
-      const ids = await getAllStartedOrCompleted({onlyIds: true})
+      const ids = await getAllStartedOrCompleted()
       return `&& !(railcontent_id in [${ids.join(',')}])`
     }
     case 'recent': {
-      const ids = progressIds !== undefined ? progressIds : await getAllStartedOrCompleted({onlyIds: true})
+      const ids = progressIds !== undefined ? progressIds : await getAllStartedOrCompleted()
       return `&& (railcontent_id in [${ids.join(',')}])`
     }
     case 'incomplete': {
@@ -1925,7 +1925,7 @@ export async function fetchTabData(
 
   switch (progress) {
     case 'recent':
-      progressIds = await getAllStartedOrCompleted({ brand, onlyIds: true })
+      progressIds = await getAllStartedOrCompleted({ brand })
       sortOrder = null
       break
     case 'incomplete':

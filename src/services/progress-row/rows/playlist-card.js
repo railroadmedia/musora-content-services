@@ -4,7 +4,6 @@
 import { fetchUserPlaylists } from '../../content-org/playlists.js'
 import { addContextToContent } from '../../contentAggregator.js'
 import { fetchByRailContentIds } from '../../sanity.js'
-import { postProcessBadge } from "../../../contentTypeConfig.js";
 
 export async function getPlaylistCards(brand, limit) {
   let recentPlaylists = await getRecentPlaylists(brand, limit)
@@ -42,11 +41,12 @@ export function processPlaylistItem(item) {
 }
 
 export async function getRecentPlaylists(brand, limit) {
+  // todo: add a get_playlist param ot get a specific playlist, so we get ideally do only 1 fetch.
   const response = await fetchUserPlaylists(brand, { sort: '-last_progress', limit: limit })
   const playlists = response?.data || []
 
   const recentPlaylists = playlists.filter((p) => p.last_progress && p.last_engaged_on)
-  return recentPlaylists.map(async (p) => {
+  return recentPlaylists.map((p) => {
     const utcDate = new Date(p.last_progress.replace(' ', 'T') + 'Z')
     const timestamp = utcDate.getTime()
     return {
@@ -62,7 +62,7 @@ export async function getPlaylistEngagedOnContent(recentPlaylists){
   const playlistEngagedOnContents = recentPlaylists.map(
     (item) => item.playlist.last_engaged_on
   )
-  let contents = playlistEngagedOnContents.length > 0
+  return playlistEngagedOnContents.length > 0
     ? await addContextToContent(fetchByRailContentIds, playlistEngagedOnContents, 'progress-tracker', {
       addNavigateTo: true,
       addProgressStatus: true,
@@ -70,6 +70,4 @@ export async function getPlaylistEngagedOnContent(recentPlaylists){
       addProgressTimestamp: true,
     })
     : []
-  contents = postProcessBadge(contents)
-  return contents
 }

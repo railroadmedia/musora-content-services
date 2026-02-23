@@ -315,12 +315,21 @@ async function getByIdsAndCollections(tuples, dataKey, defaultValue) {
   return progress
 }
 
-export async function getAllStarted(limit = null) {
-  return db.contentProgress.startedIds(limit)
+// todo: add brand filtering for `getAllStarted` & `getAllCompleted` like with getAllStartedOrCompleted
+export async function getAllStarted(limit = null, {
+  onlyIds = true,
+  include = { aLaCarte: true, playlists: false, learningPaths: false },
+} = {}
+) {
+  return db.contentProgress.started(limit, {onlyIds, include})
 }
 
-export async function getAllCompleted(limit = null) {
-  return db.contentProgress.completedIds(limit)
+export async function getAllCompleted(limit = null, {
+  onlyIds = true,
+  include = { aLaCarte: true, playlists: false, learningPaths: false },
+} = {}
+) {
+  return db.contentProgress.completed(limit, {onlyIds, include})
 }
 
 export async function getAllCompletedByIds(contentIds) {
@@ -333,13 +342,17 @@ export async function getAllCompletedByIds(contentIds) {
 export async function getAllStartedOrCompleted({
   brand = null,
   limit = null,
-  includeALaCarte = true, // refactor these into an `include: {learningPath: false...}` all falsedefault
-  includePlaylists = false,
-  includeLearningPaths = true,
+  include = { aLaCarte: true, playlists: false, learningPaths: false },
   onlyIds = true
 } = {}) {
-  const data = await _getAllStartedOrCompleted({ brand, limit, includeALaCarte, includePlaylists, includeLearningPaths })
-  return onlyIds ? data.map(rec => rec.content_id) : data
+  const data = await _getAllStartedOrCompleted({
+    brand,
+    limit,
+    include
+  })
+  return onlyIds
+    ? data.map(rec => rec.content_id)
+    : data
 }
 
 /**
@@ -368,9 +381,7 @@ export async function getStartedOrCompletedProgressOnly({ brand = undefined } = 
 async function _getAllStartedOrCompleted({
   brand = null,
   limit = null,
-  includeALaCarte = true,
-  includePlaylists = false,
-  includeLearningPaths = true,
+  include = { aLaCarte: true, playlists: false, learningPaths: false },
 } = {}) {
   const agoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
   const baseFilters = {
@@ -378,7 +389,7 @@ async function _getAllStartedOrCompleted({
   }
 
   if (!brand) {
-    return await db.contentProgress.startedOrCompleted({ ...baseFilters, limit, includeALaCarte, includePlaylists, includeLearningPaths }).then(r => r.data)
+    return await db.contentProgress.startedOrCompleted({ ...baseFilters, limit, include }).then(r => r.data)
   }
 
   // content_brand can be null (i.e., when progress records created locally)
@@ -387,8 +398,8 @@ async function _getAllStartedOrCompleted({
 
   // for now though, null-ish brands shouldn't be too numerous, so safe to have undefined limit
   const [strictRecs, looseRecs] = await Promise.all([
-    db.contentProgress.startedOrCompleted({ ...baseFilters, brand, limit }),
-    db.contentProgress.startedOrCompleted({ ...baseFilters, brand: null, limit: undefined })
+    db.contentProgress.startedOrCompleted({ ...baseFilters, brand, limit, include }),
+    db.contentProgress.startedOrCompleted({ ...baseFilters, brand: null, limit: undefined, include })
   ]);
 
   const map = await fetchBrandsByContentIds(looseRecs.data.map(r => r.content_id));

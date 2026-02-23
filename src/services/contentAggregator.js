@@ -237,6 +237,7 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
   return await processItems(data, addContext, dataField, isDataAnArray, dataField_includeParent)
 }
 
+// todo: user playlist watermelon progress to determine navigateTo
 export async function getNavigateToForPlaylists(data, { dataField = null } = {}) {
   let playlists = extractItemsFromData(data, dataField, false, false)
   let allIds = []

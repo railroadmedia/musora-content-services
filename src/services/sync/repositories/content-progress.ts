@@ -9,28 +9,46 @@ interface ContentIdCollectionTuple {
 
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
 
-  // todo: used on progress row so must have collection distinction
-  async startedIds(limit?: number) {
-    return this.queryAll(...[
-      ProgressRepository.collectionTypeFilter({learningPaths: true}),
+  async started(
+    limit?: number,
+    opts: {
+      onlyIds?: boolean
+      include?: { aLaCarte?: boolean, playlists?: boolean, learningPaths?: boolean }
+    } = {}
+    ) {
+    const results = await this.queryAll(...[
+      ProgressRepository.collectionTypeFilter(opts.include),
 
       Q.where('state', STATE.STARTED),
       Q.sortBy('updated_at', 'desc'),
 
       ...(limit ? [Q.take(limit)] : []),
-    ]).then((r) => r.data.map((r) => r.content_id))
+    ])
+
+    return opts.onlyIds
+        ? results.data.map((r) => r.content_id)
+        : results.data
   }
 
-  // todo: used on progress row so must have collection distinction
-  async completedIds(limit?: number) {
-    return this.queryAll(...[
-      ProgressRepository.collectionTypeFilter({learningPaths: true}),
+  async completed(
+    limit?: number,
+    opts: {
+      onlyIds?: boolean
+      include?: { aLaCarte?: boolean, playlists?: boolean, learningPaths?: boolean }
+    } = {}
+  ) {
+    const results = await this.queryAll(...[
+      ProgressRepository.collectionTypeFilter(opts.include),
 
       Q.where('state', STATE.COMPLETED),
       Q.sortBy('updated_at', 'desc'),
 
       ...(limit ? [Q.take(limit)] : []),
-    ]).then((r) => r.data.map((r) => r.content_id))
+    ])
+
+    return opts.onlyIds
+      ? results.data.map((r) => r.content_id)
+      : results.data
   }
 
   //this _specifically_ needs to get content_ids from ALL collection_types (including self)
@@ -48,19 +66,13 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   private startedOrCompletedClauses(
     opts: {
       brand?: string | null
-      updatedAfter?: number,
-      limit?: number,
-      includeALaCarte?: boolean,
-      includePlaylists?: boolean,
-      includeLearningPaths?: boolean
+      updatedAfter?: number
+      limit?: number
+      include?: { aLaCarte?: boolean, playlists?: boolean, learningPaths?: boolean }
     } = {}
   ) {
     const clauses: Q.Clause[] = [
-      // todo: filter out LPs if not the right page
-      ProgressRepository.collectionTypeFilter({
-        aLaCarte: opts.includeALaCarte,
-        playlists: opts.includePlaylists,
-        learningPaths: opts.includeLearningPaths}),
+      ProgressRepository.collectionTypeFilter(opts.include),
 
       Q.or(Q.where('state', STATE.STARTED), Q.where('state', STATE.COMPLETED)),
       Q.sortBy('updated_at', 'desc'),
