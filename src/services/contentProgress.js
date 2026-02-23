@@ -19,6 +19,10 @@ export async function getProgressStateByIds(contentIds, collection = null) {
   return getByIds(normalizeContentIds(contentIds), normalizeCollection(collection), 'state', '')
 }
 
+export async function getProgressStateByRecordIds(ids) {
+  return getByRecordIds(ids, 'state', '')
+}
+
 export async function getResumeTimeSecondsByIds(contentIds, collection = null) {
   return getByIds(
     normalizeContentIds(contentIds),
@@ -28,8 +32,8 @@ export async function getResumeTimeSecondsByIds(contentIds, collection = null) {
   )
 }
 
-export async function getResumeTimeSecondsByIdsAndCollections(tuples) {
-  return getByIdsAndCollections(tuples, 'resume_time_seconds', 0)
+export async function getResumeTimeSecondsByRecordIds(ids) {
+  return getByRecordIds(ids, 'resume_time_seconds', 0)
 }
 
 export async function getNavigateToForMethod(data) {
@@ -246,7 +250,7 @@ export async function getProgressDataByIds(contentIds, collection) {
  * Get progress data for multiple content IDs, each with their own collection context.
  * Useful when fetching progress for tuples that belong to different collections.
  *
- * @param {Array<{contentId: number, collection: {type: string, id: number}|null}>} tuples - Array of objects with contentId and collection
+ * @param ids {Array<string>} - Array of record ids
  * @returns {Promise<Object>} - Object mapping content IDs to progress data
  *
  * @example
@@ -255,32 +259,27 @@ export async function getProgressDataByIds(contentIds, collection) {
  *   { contentId: 789, collection: { id: 101, type: 'learning-path-v2' } },
  *   { contentId: 111, collection: null }
  * ]
- * const progress = await getProgressDataByIdsAndCollections(tuples)
+ * const progress = await getProgressDataByRecordIds(tuples)
  * // Returns: { 123: { progress: 50, status: 'started', last_update: 123456 }, ... }
  */
 
-// warning: unsafe due to object key conflicts.
-// todo: remove this, and simplify addContextToLearningPaths
-export async function getProgressDataByIdsAndCollections(tuples) {
-  tuples = tuples.map(t => ({contentId: normalizeContentId(t.contentId), collection: normalizeCollection(t.collection)}))
-  const progress = Object.fromEntries(tuples.map(item => [item.contentId, {
+export async function getProgressDataByRecordIds(ids) {
+  const progress = Object.fromEntries(ids.map(id => [id, {
     last_update: 0,
     progress: 0,
     status: '',
     collection: {},
   }]))
 
-  await db.contentProgress.getSomeProgressByContentIdsAndCollections(tuples).then(r => {
+  await db.contentProgress.getSomeProgressByRecordIds(ids).then(r => {
     r.data.forEach(p => {
-      progress[p.content_id] = {
+      progress[p.id] = {
         last_update: p.updated_at,
         progress: p.progress_percent,
         status: p.state,
-        collection: (p.collection_type && p.collection_id) ? {type: p.collection_type, id: p.collection_id} : null
       }
     })
   })
-
   return progress
 }
 
@@ -303,13 +302,12 @@ async function getByIds(contentIds, collection, dataKey, defaultValue) {
   return progress
 }
 
-async function getByIdsAndCollections(tuples, dataKey, defaultValue) {
-  tuples = tuples.map(t => ({contentId: normalizeContentId(t.contentId), collection: normalizeCollection(t.collection)}))
-  const progress = Object.fromEntries(tuples.map(tuple => [tuple.contentId, defaultValue]))
+async function getByRecordIds(ids, dataKey, defaultValue) {
+  const progress = Object.fromEntries(ids.map(id => [id, defaultValue]))
 
-  await db.contentProgress.getSomeProgressByContentIdsAndCollections(tuples).then(r => {
+  await db.contentProgress.getSomeProgressByRecordIds(ids).then(r => {
     r.data.forEach(p => {
-      progress[p.content_id] = p[dataKey] ?? defaultValue
+      progress[p.id] = p[dataKey] ?? defaultValue
     })
   })
   return progress
@@ -831,4 +829,13 @@ export async function getIdsWhereLastAccessedFromMethod(contentIds) {
   const records = await db.contentProgress.getSomeProgressWhereLastAccessedFromMethod(normalizeContentIds(contentIds))
 
   return records.data.map(record => record.content_id)
+}
+
+export function generateRecordId(contentId, collection) {
+  if (!contentId || !collection)  return null
+
+  contentId = normalizeContentId(contentId)
+  collection = normalizeCollection(collection)
+
+  return `${contentId}:${collection?.type || COLLECTION_TYPE.SELF}:${collection?.id || COLLECTION_ID_SELF}`
 }

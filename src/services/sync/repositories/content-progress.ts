@@ -1,11 +1,5 @@
 import SyncRepository, {Q} from './base'
 import ContentProgress, {COLLECTION_ID_SELF, COLLECTION_TYPE, STATE, CollectionParameter} from '../models/ContentProgress'
-import {EpochMs} from "../index";
-
-interface ContentIdCollectionTuple {
-  contentId: number,
-  collection: CollectionParameter | null,
-}
 
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
 
@@ -152,20 +146,8 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.queryAll(...clauses)
   }
 
-  async getSomeProgressByContentIdsAndCollections(tuples: ContentIdCollectionTuple[]) {
-    const clauses = []
-
-    clauses.push(...tuples.map(tuple => Q.and(...tupleClauses(tuple))))
-
-    return await this.queryAll(Q.or(...clauses))
-
-    function tupleClauses(tuple: ContentIdCollectionTuple) {
-      return [
-        Q.where('content_id', tuple.contentId),
-        Q.where('collection_type', tuple.collection?.type ?? COLLECTION_TYPE.SELF),
-        Q.where('collection_id', tuple.collection?.id ?? COLLECTION_ID_SELF)
-      ]
-    }
+  async getSomeProgressByRecordIds(ids: string[]) {
+    return await this.readSome(ids)
   }
 
   recordProgress(contentId: number, collection: CollectionParameter | null, progressPct: number, resumeTime?: number, {skipPush = false, fromLearningPath = false} = {}) {
