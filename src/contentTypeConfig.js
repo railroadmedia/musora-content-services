@@ -336,26 +336,26 @@ export const filterTypes = {
   ],
 }
 
+const lessonRecentTypes = [
+  ...individualLessonsTypes,
+  'skill-pack-lesson',
+  ...entertainmentLessonTypes,
+  'course-lesson',
+  'guided-course-lesson',
+  'quick-tips',
+  'routine'
+]
+
+const songsRecentTypes = [...SONG_TYPES]
+
 export const recentTypes = {
-  lessons: [
-    ...individualLessonsTypes,
-    'skill-pack-lesson',
-    ...entertainmentLessonTypes,
-    'course-lesson',
-    'guided-course-lesson',
-    'quick-tips',
-    'routine'
-  ],
-  songs: [...SONG_TYPES],
-  home: [
-    ...individualLessonsTypes,
-    ...transcriptionsLessonTypes,
-    ...playAlongLessonTypes,
-    ...showsLessonTypes,
-    ...getNextLessonLessonParentTypes,
-    'live',
-    'routine'
-  ],
+  lessons: lessonRecentTypes,
+  songs: songsRecentTypes,
+  home:
+    [
+      ...lessonRecentTypes,
+      ...songsRecentTypes,
+    ]
 }
 
 export const ownedContentTypes = {
