@@ -1141,8 +1141,8 @@ export async function fetchSiblingContent(railContentId, brand = null) {
 
     delete result['for-calculations']
 
-    if (result['collection_id']) {
-      result['collection_data'] = await fetchCourseCollectionData(result['collection_id'])
+    if (result['grandparent']) {
+      result['collection_data'] = await fetchCourseCollectionData(result['grandparent']?.id)
     }
 
     result = { ...result, parentCount, currentParentIndex, siblingCount, currentSiblingIndex }
