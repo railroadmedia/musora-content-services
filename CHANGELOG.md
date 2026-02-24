@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.137.0](https://github.com/railroadmedia/musora-content-services/compare/v2.136.4...v2.137.0) (2026-02-24)
+
+
+### Features
+
+* add collection data in fetch sibling content ([#836](https://github.com/railroadmedia/musora-content-services/issues/836)) ([6472764](https://github.com/railroadmedia/musora-content-services/commit/6472764b41da98b0754aec91b4714b70444f8b84))
+
+
+### Bug Fixes
+
+* **T3PS-2156:** changes what is shown on Your Progress page (lessons) ([#821](https://github.com/railroadmedia/musora-content-services/issues/821)) ([58cfc1b](https://github.com/railroadmedia/musora-content-services/commit/58cfc1b6660471fcb50ebfe15865a9b69c8a8830))
+* **T3PS-2273:** Add function for retrieving latest subscription platform ([c3e74ce](https://github.com/railroadmedia/musora-content-services/commit/c3e74cecb43619d69912a04644e01ffbb0ff4cc1))
+
 ### [2.136.4](https://github.com/railroadmedia/musora-content-services/compare/v2.136.3...v2.136.4) (2026-02-20)
 
 
