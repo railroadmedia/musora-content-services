@@ -22,6 +22,10 @@ export const SINGLE_PARENT_TYPES = ['course-lesson', 'pack-bundle-lesson', 'song
 
 export const LEARNING_PATH_LESSON = 'learning-path-lesson-v2'
 
+export const parentField = 'parent_content_data[0]'
+
+export const grandParentField = 'parent_content_data[1]'
+
 export const genreField = `genre[]->{
   name,
   'slug': slug.current,
@@ -224,11 +228,7 @@ export const individualLessonsTypes = [
   ...studentArchivesLessonTypes,
 ]
 
-export const coursesLessonTypes = [
-  'course',
-  'course-collection',
-  'guided-course',
-]
+export const coursesLessonTypes = ['course', 'course-collection', 'guided-course']
 
 export const skillLessonTypes = ['skill-pack']
 
@@ -246,7 +246,7 @@ export const collectionLessonTypes = [...coursesLessonTypes]
 
 export const lessonTypesMapping = {
   lessons: singleLessonTypes,
-  'practice alongs': [ ...practiceAlongsLessonTypes, 'routine'],
+  'practice alongs': [...practiceAlongsLessonTypes, 'routine'],
   'live archives': liveArchivesLessonTypes,
   performances: performancesLessonTypes,
   'student archives': studentArchivesLessonTypes,
@@ -272,7 +272,7 @@ export const lessonTypesMapping = {
     ...studentArchivesLessonTypes,
     ...practiceAlongsLessonTypes,
   ],
-  routines: ['routine']
+  routines: ['routine'],
 }
 
 export const getNextLessonLessonParentTypes = [
@@ -294,7 +294,7 @@ export const progressTypesMapping = {
     'documentary-lesson',
     'live',
     'course-lesson',
-    'routine'
+    'routine',
   ],
   course: ['course'],
   show: showsLessonTypes,
@@ -326,7 +326,7 @@ export const filterTypes = {
     ...coursesLessonTypes,
     ...skillLessonTypes,
     ...entertainmentLessonTypes,
-    'routine'
+    'routine',
   ],
   songs: [
     ...tutorialsLessonTypes,
@@ -343,7 +343,7 @@ const lessonRecentTypes = [
   'course-lesson',
   'guided-course-lesson',
   'quick-tips',
-  'routine'
+  'routine',
 ]
 
 const songsRecentTypes = [...SONG_TYPES]
@@ -351,11 +351,7 @@ const songsRecentTypes = [...SONG_TYPES]
 export const recentTypes = {
   lessons: lessonRecentTypes,
   songs: songsRecentTypes,
-  home:
-    [
-      ...lessonRecentTypes,
-      ...songsRecentTypes,
-    ]
+  home: [...lessonRecentTypes, ...songsRecentTypes],
 }
 
 export const ownedContentTypes = {
@@ -694,7 +690,7 @@ export function getNewReleasesTypes(brand) {
     'song',
     'play-along',
     'course',
-    'skill-pack'
+    'skill-pack',
   ]
   switch (brand) {
     case 'drumeo':
@@ -980,29 +976,29 @@ export const getFormattedType = (type, brand) => {
 
 export const awardTemplate = {
   drumeo: {
-    front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/drumeo.svg",
-    rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/drumeo-rear.svg",
-    unearned: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/drumeo-unearned.svg",
+    front: 'https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/drumeo.svg',
+    rear: 'https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/drumeo-rear.svg',
+    unearned: 'https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/drumeo-unearned.svg',
   },
   guitareo: {
-    front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/guitareo.svg",
-    rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/guitareo-rear.svg",
-    unearned: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/guitareo-unearned.svg",
+    front: 'https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/guitareo.svg',
+    rear: 'https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/guitareo-rear.svg',
+    unearned: 'https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/guitareo-unearned.svg',
   },
   pianote: {
-    front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/pianote.svg",
-    rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/pianote-rear.svg",
-    unearned: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/pianote-unearned.svg",
+    front: 'https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/pianote.svg',
+    rear: 'https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/pianote-rear.svg',
+    unearned: 'https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/pianote-unearned.svg',
   },
   singeo: {
-    front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/singeo.svg",
-    rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/singeo-rear.svg",
-    unearned: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/singeo-unearned.svg",
+    front: 'https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/singeo.svg',
+    rear: 'https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/singeo-rear.svg',
+    unearned: 'https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/singeo-unearned.svg',
   },
   playbass: {
-    front: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass.svg",
-    rear: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass-rear.svg",
-    unearned: "https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass-unearned.svg",
+    front: 'https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass.svg',
+    rear: 'https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass-rear.svg',
+    unearned: 'https://d3fzm1tzeyr5n3.cloudfront.net/v2/awards/playbass-unearned.svg',
   },
   musora: {
     front: null,
