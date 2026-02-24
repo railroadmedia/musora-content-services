@@ -275,10 +275,10 @@ export async function getLearningPathLessonsByIds(contentIds, learningPathId) {
  * @param options.parentContentId
  */
 export function mapContentToParent(
-  lessons: any,
+   lessons: any,
   options?: { lessonType?: string; parentContentId?: number }
 ) {
-  if (!lessons) return lessons
+  if (!lessons || (Array.isArray(lessons) && lessons.length === 0)) return lessons
 
   function mapIt(lesson: any) {
     const mappedLesson = { ...lesson }
@@ -342,6 +342,8 @@ export async function fetchLearningPathLessons(
   userDate: Date
 ) {
   const learningPath = await getEnrichedLearningPath(learningPathId)
+  if (!learningPath || learningPath.children?.length === 0) return null
+
   let dailySession = (await getDailySession(brand, userDate)) as DailySessionResponse
 
   const isActiveLearningPath = (dailySession?.active_learning_path_id || 0) == learningPathId
