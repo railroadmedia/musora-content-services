@@ -143,7 +143,7 @@ export default class SyncManager {
     // can fail synchronously immediately (e.g., schema/migration validation errors)
     // or asynchronously (e.g., indexedDB errors synchronously OR asynchronously (!))
     const database = this.telemetry.trace(
-      { name: 'db:init', attributes: { ...this.context.session.toJSON() } },
+      { name: 'db:init', op: 'db', attributes: { ...this.context.session.toJSON() } },
       () => this.initDatabase(this.userScope)
     )
 

@@ -1,6 +1,6 @@
 import SyncContext from "./context"
-import { SyncResponse, SyncPushResponse } from "./fetch"
-import { SyncTelemetry, Span, StartSpanOptions } from "./telemetry/index"
+import { SyncResponse } from "./fetch"
+import { SyncTelemetry } from "./telemetry/index"
 
 export default class SyncRetry {
   private readonly BASE_BACKOFF = 1_000
@@ -34,8 +34,7 @@ export default class SyncRetry {
    * Returns the first successful result or the last failed result after retries.
    */
   async request<T extends SyncResponse>(
-    spanOpts: StartSpanOptions,
-    syncFn: (span: Span) => Promise<T>,
+    syncFn: (attempt: number) => Promise<T>,
     options: { onFail?: () => void } = {}
   ) {
     let attempt = 0
@@ -48,20 +47,12 @@ export default class SyncRetry {
 
       attempt++
 
-      const spanOptions = {
-        ...spanOpts,
-        name: `${spanOpts.name}:attempt:${attempt}/${this.MAX_ATTEMPTS}`,
-        op: `${spanOpts.op}:attempt`,
-        attributes: { ...spanOpts.attributes, attempt, ...this.context.session.toJSON() }
+      if (!this.context.connectivity.getValue()) {
+        this.telemetry.debug('[Retry] No connectivity - skipping')
+        return { ok: false, failureType: 'fetch', isRetryable: false } as T
       }
-      const result = await this.telemetry.trace(spanOptions, span => {
-        if (!this.context.connectivity.getValue()) {
-          this.telemetry.debug('[Retry] No connectivity - skipping')
-          return { ok: false, failureType: 'fetch', isRetryable: false } as T
-        }
 
-        return syncFn(span)
-      })
+      const result = await syncFn(attempt)
 
       if (!result) return result
 
