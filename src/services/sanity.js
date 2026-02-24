@@ -1119,8 +1119,8 @@ export async function fetchSiblingContent(railContentId, brand = null) {
   const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission_v2, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
 
   const query = `*[railcontent_id == ${railContentId}${brandString}]{
-    _type, 
-    parent_type, 
+    _type,
+    parent_type,
     railcontent_id,
     'parent_id': ${parentField}.id,
     'grandparent_id':${grandParentField}.id,
@@ -2081,8 +2081,10 @@ export async function fetchMethodV2Structure(brand) {
     'sanity_id': _id,
     brand,
     'intro_video_id': intro_video->railcontent_id,
-    'learning_paths': child[]->{
+    'learning_paths': child[@->status == 'published']->{
       'id': railcontent_id,
+      status,
+      published_on,
       'intro_video_id': intro_video->railcontent_id,
       'children': child[]->railcontent_id
     }
