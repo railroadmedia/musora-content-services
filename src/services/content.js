@@ -93,6 +93,9 @@ export async function getTabResults(brand, pageName, tabName, {
   sort = 'recommended',
   selectedFilters = []
 } = {}) {
+
+  if (!tabName && ['lessons', 'songs'].includes(pageName)) return { type: TabResponseType.CATALOG, data: [], meta: { filters: [], sort: {} } }
+
   // Extract and handle 'progress' filter separately
   const progressFilter = selectedFilters.find(f => f.startsWith('progress,')) || 'progress,all';
   const progressValue = progressFilter.split(',')[1].toLowerCase();
