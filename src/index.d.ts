@@ -370,6 +370,7 @@ import {
 } from './services/user/management.js';
 
 import {
+	fetchHasActivePlatformSubscription,
 	fetchLastSubscriptionPlatform,
 	fetchMemberships,
 	fetchRechargeTokens,
@@ -525,6 +526,7 @@ declare module 'musora-content-services' {
 		fetchGenreBySlug,
 		fetchGenreLessons,
 		fetchGenres,
+		fetchHasActivePlatformSubscription,
 		fetchHierarchy,
 		fetchInstructorBySlug,
 		fetchInstructorLessons,

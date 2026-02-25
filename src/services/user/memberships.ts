@@ -79,11 +79,9 @@ export interface RestorePurchasesSetupAccountResponse {
 /**
  * Represents response for latest subscription platform as best we can determine.
  */
-export interface LastSubscriptionPlatform {
-  platform: 'ios' | 'android' | 'web' | null
-  product_identifier: string | null
-  expires_date: string | null
-  is_active: boolean
+export interface SubscriptionPlatform {
+  last_platform: 'ios' | 'android' | 'web' | null
+  has_active_platform_subscription: boolean
 }
 
 /**
@@ -262,11 +260,19 @@ export async function getUpgradePrice() {
 }
 
 /**
- * @returns {Promise<LastSubscriptionPlatform>} The user's last active subscription platform and expiry info
+ * @returns {Promise<'ios' | 'android' | 'web' | null>} The platform of the user's last known subscription
  */
-export async function fetchLastSubscriptionPlatform(): Promise<LastSubscriptionPlatform> {
+export async function fetchLastSubscriptionPlatform(): Promise<'ios' | 'android' | 'web' | null> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<LastSubscriptionPlatform>(
-    '/api/user-memberships/v1/latest-subscription'
-  )
+  const response = await httpClient.get<SubscriptionPlatform>(`${baseUrl}/v1/subscription-platform`)
+  return response.last_platform
+}
+
+/**
+* @returns {Promise<boolean>} Whether the user has any subscription from a known platform (web, ios, android)
+*/
+export async function fetchHasActivePlatformSubscription(): Promise<boolean> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  const response = await httpClient.get<SubscriptionPlatform>(`${baseUrl}/v1/subscription-platform`)
+  return response.has_active_platform_subscription
 }

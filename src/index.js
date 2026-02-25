@@ -374,6 +374,7 @@ import {
 } from './services/user/management.js';
 
 import {
+	fetchHasActivePlatformSubscription,
 	fetchLastSubscriptionPlatform,
 	fetchMemberships,
 	fetchRechargeTokens,
@@ -524,6 +525,7 @@ export {
 	fetchGenreBySlug,
 	fetchGenreLessons,
 	fetchGenres,
+	fetchHasActivePlatformSubscription,
 	fetchHierarchy,
 	fetchInstructorBySlug,
 	fetchInstructorLessons,
