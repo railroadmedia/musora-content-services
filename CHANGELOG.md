@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.137.1](https://github.com/railroadmedia/musora-content-services/compare/v2.137.0...v2.137.1) (2026-02-25)
+
+
+### Bug Fixes
+
+* **T3PS-1975:** Add functions for sub platform request ([dea8900](https://github.com/railroadmedia/musora-content-services/commit/dea89007b67fe3dfdffaa45feb9f4f0af8a42123))
+* **T3PS-2159:** Add hasCertificate to award object in callback ([f742b8e](https://github.com/railroadmedia/musora-content-services/commit/f742b8e32556854518316f51003134544421eb8c))
+* unset syncmanager instance late ([#830](https://github.com/railroadmedia/musora-content-services/issues/830)) ([a908c03](https://github.com/railroadmedia/musora-content-services/commit/a908c03bd4de1ec4b1020ef63b1eeab7eeff6bea))
+
 ## [2.137.0](https://github.com/railroadmedia/musora-content-services/compare/v2.136.4...v2.137.0) (2026-02-24)
 
 
