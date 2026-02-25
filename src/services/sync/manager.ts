@@ -29,10 +29,8 @@ export default class SyncManager {
     const teardown = instance.setup()
 
     return async (mode: SyncTeardownMode = 'reset') => {
-      SyncManager.instance = null
-      return teardown(mode).catch((error) => {
-        SyncManager.instance = instance // restore instance on teardown failure
-        throw error
+      return teardown(mode).then(() => {
+        SyncManager.instance = null
       })
     }
   }
