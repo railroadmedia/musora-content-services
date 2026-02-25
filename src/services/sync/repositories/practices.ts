@@ -34,7 +34,9 @@ export default class PracticesRepository extends SyncRepository<Practice> {
       r.content_id = contentId;
       r.date = date;
 
-      r.duration_seconds = Math.min((r.duration_seconds || 0) + incrementalDurationSeconds, 59999);
+      r.duration_seconds = typeof incrementalDurationSeconds === 'number'
+        ? Math.min((r.duration_seconds || 0) + incrementalDurationSeconds, 59999)
+        : r.duration_seconds;
 
       this.store.telemetry.log('trackUserPractice:around', {
         now: performance.now(),
