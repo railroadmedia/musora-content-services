@@ -316,7 +316,7 @@ async function getByRecordIds(ids, dataKey, defaultValue) {
 // todo TP-1107: brand lookup for all getAllStarted, getAllCompleted, getAllStartedOrCompleted
 export async function getAllStarted(limit = null, {
   onlyIds = true,
-  include = { aLaCarte: true, playlists: false, learningPaths: false },
+  include = { aLaCarte: true, learningPaths: false },
 } = {}
 ) {
   return db.contentProgress.started(limit, {onlyIds, include})
@@ -324,7 +324,7 @@ export async function getAllStarted(limit = null, {
 
 export async function getAllCompleted(limit = null, {
   onlyIds = true,
-  include = { aLaCarte: true, playlists: false, learningPaths: false },
+  include = { aLaCarte: true, learningPaths: false },
 } = {}
 ) {
   return db.contentProgress.completed(limit, {onlyIds, include})
@@ -340,7 +340,7 @@ export async function getAllCompletedByIds(contentIds) {
 export async function getAllStartedOrCompleted({
   brand = null,
   limit = null,
-  include = { aLaCarte: true, playlists: false, learningPaths: false },
+  include = { aLaCarte: true, learningPaths: false },
   onlyIds = true
 } = {}) {
   const data = await _getAllStartedOrCompleted({
@@ -379,7 +379,7 @@ export async function getStartedOrCompletedProgressOnly({ brand = undefined } = 
 async function _getAllStartedOrCompleted({
   brand = null,
   limit = null,
-  include = { aLaCarte: true, playlists: false, learningPaths: false },
+  include = { aLaCarte: true, learningPaths: false },
 } = {}) {
   const agoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
   const baseFilters = {

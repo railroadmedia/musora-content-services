@@ -62,7 +62,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       brand?: string | null
       updatedAfter?: number
       limit?: number
-      include?: { aLaCarte?: boolean, playlists?: boolean, learningPaths?: boolean }
+      include?: { aLaCarte?: boolean, learningPaths?: boolean }
     } = {}
   ) {
     const clauses: Q.Clause[] = [
@@ -243,7 +243,6 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   static collectionTypeFilter(
     params: {
       aLaCarte?: boolean;
-      playlists?: boolean;
       learningPaths?: boolean
     } = {}) {
     let clauses: Q.Where[] = []
@@ -258,14 +257,6 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       )
     }
 
-    if (params.playlists) {
-      clauses.push(
-        Q.and( // just parents
-          Q.where('collection_type', COLLECTION_TYPE.PLAYLIST),
-          Q.where('content_id', Q.eq(Q.column('collection_id')))
-        )
-      )
-    }
     if (params.learningPaths) {
       clauses.push(
         Q.and( // just parents
