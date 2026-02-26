@@ -236,26 +236,20 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
 export async function getNavigateToForPlaylists(data, { dataField = null } = {}) {
   let playlists = extractItemsFromData(data, dataField, false, false)
 
-  const allIds = playlists.flatMap(playlist =>
-    playlist.items.map(item => generateRecordId(item.content_id, { type: COLLECTION_TYPE.PLAYLIST, id: playlist.id }))
-  )
-
-  const progressOnItems = await getProgressStateByRecordIds(allIds) // key: client_record_id, value: progress
+  const allIds = [...new Set(playlists.flatMap(playlist => playlist.items.map(item => item.content_id)))]
+  const progressOnItems = await getProgressDataByIds(allIds) // currently playlist progress IS a-la-carte progress.
 
   const addContext = async (playlist) => {
-    const collection = {type: COLLECTION_TYPE.PLAYLIST, id: playlist.id}
-
     // Filter out locked items (where need_access === true) and scheduled content
     const accessibleItems = playlist.items.filter((item) => !item.need_access && item.status !== 'scheduled')
 
-    const allItemsCompleted = accessibleItems.every((i) => {
-      const itemId = generateRecordId(i.content_id, collection)
-      const progress = progressOnItems.get(itemId)
+    const allItemsCompleted = accessibleItems.every((item) => {
+      const progress = progressOnItems[item.content_id]
       return progress && progress === 'completed'
     })
     let nextItem = accessibleItems[0] ?? playlist.items[0] ?? null
     if (!allItemsCompleted) {
-      const lastItemProgress = progressOnItems.get(generateRecordId(playlist.last_engaged_on), collection)
+      const lastItemProgress = progressOnItems[playlist.last_engaged_on]
       const index = accessibleItems.findIndex((i) => i.content_id === playlist.last_engaged_on)
       if (lastItemProgress === 'completed') {
         nextItem = accessibleItems[index + 1] ?? nextItem
