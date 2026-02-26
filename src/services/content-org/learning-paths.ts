@@ -102,9 +102,9 @@ export async function updateDailySession(
     keepFirstLearningPath: keepFirstLearningPath,
   }
   try {
-    const response = (await POST(url, body)) as DailySessionResponse
+    const response = (await POST(url, body)) as DailySessionResponse|''
 
-    if (response) { // refresh cached value
+    if (response || response === '') { // refresh cached value
       const urlGet: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
       dataPromiseGET(urlGet, true).then(() => {
         dailySessionPromise = null
