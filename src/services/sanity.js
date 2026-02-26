@@ -1119,8 +1119,8 @@ export async function fetchSiblingContent(railContentId, brand = null) {
   const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission_v2, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
 
   const query = `*[railcontent_id == ${railContentId}${brandString}]{
-    _type, 
-    parent_type, 
+    _type,
+    parent_type,
     railcontent_id,
     'parent_id': ${parentField}.id,
     'grandparent_id':${grandParentField}.id,
@@ -2022,9 +2022,9 @@ export async function fetchScheduledAndNewReleases(
         && brand == '${brand}'
         && status in ['scheduled']
       )
-    )]
+    )] | order(${sortOrder})
     [${start}...${end}]
-    | order(${sortOrder}) {
+    {
       "id": railcontent_id,
       title,
       "image": thumbnail.asset->url,
