@@ -19,7 +19,7 @@ export default class PracticesRepository extends SyncRepository<Practice> {
   }
 
   async trackAutoPractice(contentId: number, date: string, incrementalDurationSeconds: number, skipPush = true) {
-    this.store.telemetry.log('trackUserPractice:before', {
+    this.store.log('trackUserPractice:before', {
       now: performance.now(),
       contentId,
       date,
@@ -36,7 +36,7 @@ export default class PracticesRepository extends SyncRepository<Practice> {
 
       r.duration_seconds = Math.min((r.duration_seconds || 0) + incrementalDurationSeconds, 59999);
 
-      this.store.telemetry.log('trackUserPractice:around', {
+      this.store.log('trackUserPractice:around', {
         now: performance.now(),
         contentId,
         date,
@@ -46,7 +46,7 @@ export default class PracticesRepository extends SyncRepository<Practice> {
       })
     }, { skipPush })
 
-    this.store.telemetry.log('trackUserPractice:after', {
+    this.store.log('trackUserPractice:after', {
       now: performance.now(),
       contentId,
       date,

@@ -110,6 +110,10 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.stopCleanupTimer()
   }
 
+  log(message: string, attrs?: Record<string, unknown>) {
+    this.telemetry.log(message, { ...this.context.session.toJSON(), ...attrs })
+  }
+
   async requestSync(reason: string) {
     return inBoundary(ctx => {
       return this.telemetry.trace(
@@ -146,7 +150,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
    * Request a retrying pull - does not return
    */
   async requestPull(reason: string) {
-    return inBoundary(ctx => {
+    inBoundary(ctx => {
       return this.pullRecordsWithRetry(undefined)
     }, { table: this.model.table, reason })
   }
@@ -155,7 +159,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
    * Request a retrying push - does not return
    */
   async requestPush(reason: string) {
-    return inBoundary(ctx => {
+    inBoundary(ctx => {
       return this.pushUnsyncedWithRetry(undefined, { type: 'push-request', reason })
     }, { table: this.model.table, reason })
   }
