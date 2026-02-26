@@ -106,9 +106,9 @@ export class SyncTelemetry {
       let desc = span['_spanId'].slice(0, 4)
       desc += span['_parentSpanId'] ? ` (< ${span['_parentSpanId'].slice(0, 4)})` : ''
 
-      this.consoleLog(SeverityLevel.DEBUG, 'info', `[trace:start] ${options.name} (${desc})`)
+      this.consoleLog(SeverityLevel.DEBUG, 'info', `[trace:start] ${options.name} (${desc})`, options.attributes)
       const result = callback(span)
-      Promise.resolve(result).finally(() => this.consoleLog(SeverityLevel.DEBUG, 'info', `[trace:end] ${options.name} (${desc})`))
+      Promise.resolve(result).finally(() => this.consoleLog(SeverityLevel.DEBUG, 'info', `[trace:end] ${options.name} (${desc})`, options.attributes))
 
       return result
     })
