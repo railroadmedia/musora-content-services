@@ -391,15 +391,16 @@ async function _getAllStartedOrCompleted({
 }
 
 /**
- * Record watch session
- * @return {string} sessionId - provide in future calls to update progress
  * @param {int} contentId
+ * @param {object|null} collection
  * @param {int} mediaLengthSeconds
  * @param {int} currentSeconds
  * @param {int} secondsPlayed
- * @param {string} sessionId - This function records a sessionId to pass into future updates to progress on the same video
- * @param {int} instrumentId - enum value of instrument id
- * @param {int} categoryId - enum value of category id
+ * @param {object|null} prevSession - provide in future calls to update progress on the same video
+ * @param {int|null} instrumentId - enum value of instrument id
+ * @param {int|null} categoryId - enum value of category id
+ * @param {boolean} isLive - when true, uses secondsPlayed instead of currentSeconds for progress
+ * @returns {object} session
  */
 export async function recordWatchSession(
   contentId,
@@ -409,7 +410,8 @@ export async function recordWatchSession(
   secondsPlayed,
   prevSession = null,
   instrumentId = null,
-  categoryId = null
+  categoryId = null,
+  isLive = false
 ) {
   contentId = normalizeContentId(contentId)
   collection = normalizeCollection(collection)
@@ -421,10 +423,12 @@ export async function recordWatchSession(
     }
   }
 
+  const progressSeconds = isLive ? secondsPlayed : currentSeconds
+
   // Track practice and progress locally (no immediate push)
   const [session] = await Promise.all([
     trackPractice(contentId, secondsPlayed, prevSession.practiceSession, { instrumentId, categoryId }),
-    trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds),
+    trackProgress(contentId, collection, progressSeconds, mediaLengthSeconds),
   ])
 
   if (!prevSession.pushInterval) {
