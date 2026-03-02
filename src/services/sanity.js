@@ -2081,8 +2081,10 @@ export async function fetchMethodV2Structure(brand) {
     'sanity_id': _id,
     brand,
     'intro_video_id': intro_video->railcontent_id,
-    'learning_paths': child[]->{
+    'learning_paths': child[@->status == 'published']->{
       'id': railcontent_id,
+      status,
+      published_on,
       'intro_video_id': intro_video->railcontent_id,
       'children': child[]->railcontent_id
     }

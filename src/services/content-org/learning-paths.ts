@@ -555,13 +555,17 @@ export async function onContentCompletedLearningPathActions(
   const activeLearningPath = await getActivePath(brand)
 
   if (activeLearningPath.active_learning_path_id !== learningPathId) return
-  const method = await fetchMethodV2Structure(brand)
 
-  const currentIndex = method.learning_paths.findIndex((lp) => lp.id === learningPathId)
+  const method = await fetchMethodV2Structure(brand)
+  const now = new Date()
+  //only want to set next LP active if it's available
+  const publishedLearningPaths = method.learning_paths.filter((lp) => lp.published_on && new Date(lp.published_on) <= now)
+
+  const currentIndex = publishedLearningPaths.findIndex((lp) => lp.id === learningPathId)
   if (currentIndex === -1) {
     return
   }
-  const nextLearningPath = method.learning_paths[currentIndex + 1]
+  const nextLearningPath = publishedLearningPaths[currentIndex + 1]
   if (!nextLearningPath) {
     return
   }
