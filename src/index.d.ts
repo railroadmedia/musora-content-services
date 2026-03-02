@@ -380,6 +380,7 @@ import {
 } from './services/user/memberships.ts';
 
 import {
+	deleteAllNotifications,
 	deleteNotification,
 	fetchLiveEventPollingState,
 	fetchNotificationSettings,
@@ -481,6 +482,7 @@ declare module 'musora-content-services' {
 		createTestUser,
 		createThread,
 		deleteAccount,
+		deleteAllNotifications,
 		deleteComment,
 		deleteForumCategory,
 		deleteItemsFromPlaylist,
