@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.138.1](https://github.com/railroadmedia/musora-content-services/compare/v2.138.0...v2.138.1) (2026-03-03)
+
+
+### Bug Fixes
+
+* removes redundant/buggy practice session tracking in trackPractice ([#850](https://github.com/railroadmedia/musora-content-services/issues/850)) ([8702b4b](https://github.com/railroadmedia/musora-content-services/commit/8702b4b4b183a8e02b25b0731c8fa422b26c976e))
+
 ## [2.138.0](https://github.com/railroadmedia/musora-content-services/compare/v2.137.4...v2.138.0) (2026-03-03)
 
 
