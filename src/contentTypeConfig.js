@@ -346,12 +346,27 @@ const lessonRecentTypes = [
   'routine',
 ]
 
+const parentRecentTypes = [
+  ...individualLessonsTypes,
+  'skill-pack',
+  ...entertainmentLessonTypes,
+  'course',
+  'course-collection',
+  'guided-course',
+  'routine',
+  'song',
+  'play-along',
+  'jam-track',
+  'song-tutorial',
+]
+
 const songsRecentTypes = [...SONG_TYPES]
 
 export const recentTypes = {
   lessons: lessonRecentTypes,
   songs: songsRecentTypes,
   home: [...lessonRecentTypes, ...songsRecentTypes],
+  homeRow: parentRecentTypes,
 }
 
 export const ownedContentTypes = {

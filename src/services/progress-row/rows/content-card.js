@@ -21,6 +21,7 @@ import { getTimeRemainingUntilLocal } from '../../dateUtils.js'
  */
 export async function getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem ){
   let recentContentIds = await getAllStartedOrCompleted({ brand: brand, limit: (limit ? (limit * 5) : limit) })
+  debugger
   if (userPinnedItem?.progressType === 'content') {
     recentContentIds.push(userPinnedItem.id)
   }
@@ -61,7 +62,7 @@ function generateContentPromises(contents) {
   const promises = []
   if (!contents) return promises
   const existingShows = new Set()
-  let allRecentTypeSet = new Set(Object.values(recentTypes).flat())
+  let allRecentTypeSet = new Set(Object.values(recentTypes.homeRow))
   allRecentTypeSet.delete('learning-path-v2') // we do this to remove from homepage, until we allow a-la-carte learning paths
   contents.forEach((content) => {
     const type = content.type
