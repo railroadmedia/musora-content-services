@@ -61,7 +61,7 @@ async function getOwnPractices(...clauses) {
     acc[practice.date] = acc[practice.date] || []
     acc[practice.date].push({
       id: practice.id,
-      duration_seconds: practice.duration_seconds,
+      duration_seconds: Math.round(practice.duration_seconds),
     })
     return acc
   }, {})
@@ -457,10 +457,10 @@ export async function getPracticeSessions(params = {}, options = {}) {
   if (!data.length) return { data: { practices: [], practiceDuration: 0 } }
 
   const formattedMeta = await formatPracticeMeta(data)
-  const practiceDuration = formattedMeta.reduce(
+  const practiceDuration = Math.round(formattedMeta.reduce(
     (total, practice) => total + (practice.duration || 0),
     0
-  )
+  ))
 
   return { data: { practices: formattedMeta, practiceDuration } }
 }
