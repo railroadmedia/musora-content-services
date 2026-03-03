@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.138.0](https://github.com/railroadmedia/musora-content-services/compare/v2.137.4...v2.138.0) (2026-03-03)
+
+
+### Features
+
+* **T3PS-2336:** New method: deleteAllNotifications ([8b52162](https://github.com/railroadmedia/musora-content-services/commit/8b52162cfdd4d1ffc15f0e356dd8124c883d64ac))
+
+
+### Bug Fixes
+
+* dont set unreleased LP as active ([#843](https://github.com/railroadmedia/musora-content-services/issues/843)) ([f6b595e](https://github.com/railroadmedia/musora-content-services/commit/f6b595ef1c220aa97e44d4d24c971d0aec80e0f4))
+
 ### [2.137.4](https://github.com/railroadmedia/musora-content-services/compare/v2.137.3...v2.137.4) (2026-02-26)
 
 
