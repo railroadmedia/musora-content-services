@@ -384,6 +384,7 @@ import {
 } from './services/user/memberships.ts';
 
 import {
+	deleteAllNotifications,
 	deleteNotification,
 	fetchLiveEventPollingState,
 	fetchNotificationSettings,
@@ -480,6 +481,7 @@ export {
 	createTestUser,
 	createThread,
 	deleteAccount,
+	deleteAllNotifications,
 	deleteComment,
 	deleteForumCategory,
 	deleteItemsFromPlaylist,
