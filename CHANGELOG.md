@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.138.2](https://github.com/railroadmedia/musora-content-services/compare/v2.138.1...v2.138.2) (2026-03-03)
+
+
+### Bug Fixes
+
+* round practice duration float ([#853](https://github.com/railroadmedia/musora-content-services/issues/853)) ([244b2f6](https://github.com/railroadmedia/musora-content-services/commit/244b2f635c053bd00263716ebde3fc605ac2beaa))
+
 ### [2.138.1](https://github.com/railroadmedia/musora-content-services/compare/v2.138.0...v2.138.1) (2026-03-03)
 
 
