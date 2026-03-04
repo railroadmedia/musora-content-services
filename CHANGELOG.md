@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.139.1](https://github.com/railroadmedia/musora-content-services/compare/v2.139.0...v2.139.1) (2026-03-04)
+
+
+### Bug Fixes
+
+* **BEH-1530:** cache 204 daily session response ([#852](https://github.com/railroadmedia/musora-content-services/issues/852)) ([9ce8013](https://github.com/railroadmedia/musora-content-services/commit/9ce80135799733e428bc7f7588615bbf80222b4f))
+
 ## [2.139.0](https://github.com/railroadmedia/musora-content-services/compare/v2.138.4...v2.139.0) (2026-03-04)
 
 
