@@ -150,11 +150,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.readSome(ids)
   }
 
-  recordProgress(contentId: number, collection: CollectionParameter | null, progressPct: number, resumeTime?: number, {skipPush = false, fromLearningPath = false} = {}) {
+  recordProgress(contentId: number, collection: CollectionParameter | null, progressPct: number, resumeTime?: number, {skipPush = false, accessedDirectly = true} = {}) {
     const id = ContentProgress.generateId(contentId, collection)
 
     if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {
-      fromLearningPath = true
+      accessedDirectly = false
     }
 
     const result = this.upsertOne(id, (r) => {
@@ -170,7 +170,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
         }
       }
 
-      if (!fromLearningPath && r.collection_type === COLLECTION_TYPE.SELF) {
+      if (accessedDirectly && r.collection_type === COLLECTION_TYPE.SELF) {
         r.last_interacted_a_la_carte = r.updated_at
       }
 
@@ -204,10 +204,10 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   recordProgressMany(
     contentProgresses: Record<string, number>, // Accept plain object
     collection: CollectionParameter | null,
-    { skipPush = false, fromLearningPath = false }: { skipPush?: boolean; fromLearningPath?: boolean } = {}
+    { skipPush = false, accessedDirectly = true }: { skipPush?: boolean; accessedDirectly?: boolean } = {}
   ) {
     if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {
-      fromLearningPath = true
+      accessedDirectly = false
     }
 
     const data = Object.fromEntries(
@@ -220,7 +220,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
           r.progress_percent = progressPct
 
-          if (!fromLearningPath && r.collection_type === COLLECTION_TYPE.SELF) {
+          if (accessedDirectly && r.collection_type === COLLECTION_TYPE.SELF) {
             r.last_interacted_a_la_carte = r.updated_at
           }
         },

@@ -514,9 +514,10 @@ export async function contentStatusReset(contentId, collection = null, {skipPush
   return resetStatus(contentId, collection, {skipPush})
 }
 
-async function saveContentProgress(contentId, collection, progress, currentSeconds, {skipPush = false, fromLearningPath = false} = {}) {
+async function saveContentProgress(contentId, collection, progress, currentSeconds, {skipPush = false, accessedDirectly = true} = {}) {
   collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
+  const isPlaylist = collection?.type === COLLECTION_TYPE.PLAYLIST
 
   // filter out contentIds that are setting progress lower than existing
   const contentIdProgress = await getProgressDataByIds([contentId], collection)
@@ -525,12 +526,18 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
     progress = currentProgress;
   }
 
+  if (isPlaylist) {
+    const exportIds = { [contentId]: progress }
+    await duplicateProgressToALAaCarte(exportIds, collection, {skipPush: true})
+    return
+  }
+
   const response = await db.contentProgress.recordProgress(
     normalizeContentId(contentId),
     normalizeCollection(collection),
     progress,
     currentSeconds,
-    {skipPush: true, fromLearningPath}
+    {skipPush: true, accessedDirectly}
   )
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
@@ -554,13 +561,13 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   }
 
   if (Object.keys(bubbledProgresses).length > 0) {
-    await db.contentProgress.recordProgressMany(bubbledProgresses, normalizeCollection(collection), {skipPush: true, fromLearningPath})
+    await db.contentProgress.recordProgressMany(bubbledProgresses, normalizeCollection(collection), {skipPush: true, accessedDirectly})
   }
 
   if (isLP) {
     let exportIds = bubbledProgresses
     exportIds[contentId] = progress
-    await duplicateLearningPathProgressToExternalContents(exportIds, collection, hierarchy, {skipPush: true})
+    await duplicateProgressToALAaCarte(exportIds, collection, {skipPush: true})
   }
 
   if (progress === 100) await onContentCompletedLearningPathActions(contentId, collection)
@@ -595,7 +602,7 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
   if (isLP) {
     let exportProgresses = progresses
     exportProgresses[contentId] = progress
-    await duplicateLearningPathProgressToExternalContents(exportProgresses, collection, hierarchy, {skipPush: true})
+    await duplicateProgressToALAaCarte(exportProgresses, collection, {skipPush: true})
   }
 
   if (progress === 100) await onContentCompletedLearningPathActions(contentId, collection)
@@ -644,7 +651,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
     for (const contentId of contentIds){
       exportProgresses[contentId] = progress
     }
-    await duplicateLearningPathProgressToExternalContents(exportProgresses, collection, hierarchy, {skipPush: true})
+    await duplicateProgressToALAaCarte(exportProgresses, collection, {skipPush: true})
   }
 
   for (const [id, progress] of Object.entries(progresses)) {
@@ -676,7 +683,7 @@ async function resetStatus(contentId, collection = null, {skipPush = false} = {}
 
   if (isLP) {
     progresses[contentId] = progress
-    await duplicateLearningPathProgressToExternalContents(progresses, collection, hierarchy, {skipPush: true})
+    await duplicateProgressToALAaCarte(progresses, collection, {skipPush: true})
   }
 
   if (!skipPush) db.contentProgress.requestPushUnsynced('reset-status')
@@ -684,36 +691,50 @@ async function resetStatus(contentId, collection = null, {skipPush = false} = {}
   return response
 }
 
-// we cannot simply pass LP id with self collection, because we do not have a-la-carte LP's set up yet,
-//   and we need each lesson to bubble to its parent outside of LP
-async function duplicateLearningPathProgressToExternalContents(ids, collection, hierarchy, {skipPush = false} = {}) {
-  // filter out LPs. we dont want to duplicate to LP's while we dont have a-la-cart LP's set up.
-  let filteredIds = Object.fromEntries(
-    Object.entries(ids).filter(([id]) => {
-      return hierarchy.parents[parseInt(id)] !== null
+async function duplicateProgressToALAaCarte(progresses, collection, {skipPush = false} = {}) {
+
+  // a-la-cart LPs not set up.
+  let filteredProgresses = filterOutLearningPathsForDuplication(progresses, collection)
+
+  const externalProgresses = await getProgressDataByIds(Object.keys(filteredProgresses), null)
+
+  filteredProgresses = filterGreaterThanProgress(filteredProgresses, externalProgresses)
+
+  duplicateProgressForIds(filteredProgresses, skipPush)
+}
+
+function filterOutLearningPathsForDuplication(progresses, collection) {
+  return Object.fromEntries(
+    Object.entries(progresses).filter(([id]) => {
+      if (collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+        // dont want progress on a-la-carte LPs (not supported)
+        return id !== collection.id
+      }
     })
   )
+}
 
-  const extProgresses = await getProgressDataByIds(Object.keys(filteredIds), null)
-
+function filterGreaterThanProgress(progresses, external) {
   // overwrite if LP progress greater, unless LP progress was reset to 0
-  filteredIds = Object.entries(filteredIds).filter(([id, pct]) => {
-    const extPct = extProgresses[id]?.progress
+  return Object.entries(progresses).filter(([id, pct]) => {
+    const extPct = external[id]?.progress
     return (pct !== 0)
       ? pct > extPct
       : false
   })
+}
 
-  // each handles its own bubbling.
-  // skipPush on all but last to avoid multiple push requests
-  filteredIds.forEach(([id, pct], index) => {
+async function duplicateProgressForIds(ids, skipPush) {
+  ids.forEach(([id, pct], index) => {
     let skip = true
-    if (index === filteredIds.length - 1) {
+    if (index === ids.length - 1) {
+      // only allow push on last call, to group into one push
       skip = skipPush
     }
-    saveContentProgress(parseInt(id), null, pct, null, {skipPush: skip, fromLearningPath: true})
+    saveContentProgress(parseInt(id), null, pct, null, {skipPush: skip, accessedDirectly: false})
   })
 }
+
 
 // agnostic to collection - makes returned data structure simpler,
 // as long as callers remember to pass collection where needed
