@@ -1326,8 +1326,6 @@ export async function fetchTopLevelParentId(railcontentId) {
 export async function getHierarchy(contentId, collection) {
   if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
     return await fetchLearningPathHierarchy(contentId, collection)
-  } else if (collection && collection.type === COLLECTION_TYPE.PLAYLIST) {
-    return await getPlaylistHierarchy(contentId, collection)
   } else {
     return await fetchHierarchy(contentId)
   }
@@ -1349,31 +1347,6 @@ async function fetchLearningPathHierarchy(railcontentId, collection) {
     children: {},
   }
   populateHierarchyLookups(response, data, null)
-  return data
-}
-
-async function getPlaylistHierarchy(railcontentId, collection) {
-  if (!collection) {
-    return null
-  }
-
-  const playlistId = collection.id
-
-  const structure = {
-    railcontent_id: playlistId,
-    children: [],
-    // assignments?
-  }
-
-  const response = await fetchPlaylist(playlistId)
-  structure.children = response.items.map((item) => item.content_id)
-
-  let data = {
-    topLevelId: playlistId,
-    parents: {},
-    children: {},
-  }
-  populateHierarchyLookups(structure, data, null)
   return data
 }
 
