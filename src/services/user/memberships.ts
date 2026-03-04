@@ -77,6 +77,14 @@ export interface RestorePurchasesSetupAccountResponse {
 }
 
 /**
+ * Represents response for latest subscription platform as best we can determine.
+ */
+export interface SubscriptionPlatform {
+  last_platform: 'ios' | 'android' | 'web' | null
+  has_active_platform_subscription: boolean
+}
+
+/**
  * Represents all possible responses from RevenueCat purchase restoration
  */
 export type RestorePurchasesResponse =
@@ -230,7 +238,7 @@ export async function restorePurchases(
  *
  * @returns {Promise<{price: number, currency: string, period: string|null}>} - The upgrade price information
  * @property {number} price - The upgrade cost in USD (monthly for month/year, annual for lifetime)
- * @property {string} currency - The currency 
+ * @property {string} currency - The currency
  * @property {string|null} period - The billing period for the price ('month' or 'year'). Note: lifetime subscribers return 'year' period with annual price
  *
  * @example
@@ -249,4 +257,22 @@ export async function restorePurchases(
 export async function getUpgradePrice() {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return  httpClient.get(`${baseUrl}/v1/upgrade-price`)
+}
+
+/**
+ * @returns {Promise<'ios' | 'android' | 'web' | null>} The platform of the user's last known subscription
+ */
+export async function fetchLastSubscriptionPlatform(): Promise<'ios' | 'android' | 'web' | null> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  const response = await httpClient.get<SubscriptionPlatform>(`${baseUrl}/v1/subscription-platform`)
+  return response.last_platform
+}
+
+/**
+* @returns {Promise<boolean>} Whether the user has any subscription from a known platform (web, ios, android)
+*/
+export async function fetchHasActivePlatformSubscription(): Promise<boolean> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  const response = await httpClient.get<SubscriptionPlatform>(`${baseUrl}/v1/subscription-platform`)
+  return response.has_active_platform_subscription
 }

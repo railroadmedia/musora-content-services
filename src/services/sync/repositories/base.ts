@@ -80,59 +80,35 @@ export default class SyncRepository<TModel extends BaseModel> {
   }
 
   protected async insertOne(builder: (record: TModel) => void) {
-    return this.store.telemetry.trace(
-      { name: `insertOne:${this.store.model.table}`, op: 'insert', attributes: { ...this.context.session.toJSON() } },
-      (span) => this._respondToWrite(() => this.store.insertOne(builder, span), span)
-    )
+    return this._respondToWrite(() => this.store.insertOne(builder))
   }
 
   protected async updateOneId(id: RecordId, builder: (record: TModel) => void) {
-    return this.store.telemetry.trace(
-      { name: `updateOne:${this.store.model.table}`, op: 'update', attributes: { ...this.context.session.toJSON() } },
-      (span) => this._respondToWrite(() => this.store.updateOneId(id, builder, span), span)
-    )
+    return this._respondToWrite(() => this.store.updateOneId(id, builder))
   }
 
   protected async upsertOne(id: RecordId, builder: (record: TModel) => void, { skipPush = false } = {}) {
-    return this.store.telemetry.trace(
-      { name: `upsertOne:${this.store.model.table}`, op: 'upsert', attributes: { ...this.context.session.toJSON() } },
-      (span) => this._respondToWrite(() => this.store.upsertOne(id, builder, span, {skipPush}), span)
-    )
+    return this._respondToWrite(() => this.store.upsertOne(id, builder, undefined, {skipPush}))
   }
 
   protected async upsertSome(builders: Record<RecordId, (record: TModel) => void>, { skipPush = false } = {}) {
-    return this.store.telemetry.trace(
-      { name: `upsertSome:${this.store.model.table}`, op: 'upsert', attributes: { ...this.context.session.toJSON() } },
-      (span) => this._respondToWrite(() => this.store.upsertSome(builders, span, {skipPush}), span)
-    )
+    return this._respondToWrite(() => this.store.upsertSome(builders, undefined, {skipPush}))
   }
 
   protected async deleteOne(id: RecordId, { skipPush = false } = {}) {
-    return this.store.telemetry.trace(
-      { name: `delete:${this.store.model.table}`, op: 'delete', attributes: { ...this.context.session.toJSON() } },
-      (span) => this._respondToWriteIds(() => this.store.deleteOne(id, span, {skipPush}), span)
-    )
+    return this._respondToWriteIds(() => this.store.deleteOne(id, undefined, {skipPush}))
   }
 
   protected async deleteSome(ids: RecordId[], { skipPush = false } = {}) {
-    return this.store.telemetry.trace(
-      { name: `deleteSome:${this.store.model.table}`, op: 'delete', attributes: { ...this.context.session.toJSON() } },
-      (span) => this._respondToWriteIds(() => this.store.deleteSome(ids, span, {skipPush}), span)
-    )
+    return this._respondToWriteIds(() => this.store.deleteSome(ids, undefined, {skipPush}))
   }
 
   protected async restoreOne(id: RecordId) {
-    return this.store.telemetry.trace(
-      { name: `restoreOne:${this.store.model.table}`, op: 'restore', attributes: { ...this.context.session.toJSON() } },
-      (span) => this._respondToWrite(() => this.store.restoreOne(id, span), span)
-    )
+    return this._respondToWrite(() => this.store.restoreOne(id))
   }
 
   protected async restoreSome(ids: RecordId[]) {
-    return this.store.telemetry.trace(
-      { name: `restoreSome:${this.store.model.table}`, op: 'restore', attributes: { ...this.context.session.toJSON() } },
-      (span) => this._respondToWrite(() => this.store.restoreSome(ids, span), span)
-    )
+    return this._respondToWrite(() => this.store.restoreSome(ids))
   }
 
   private async _respondToWrite<T extends SyncWriteRecordData<TModel>>(create: () => Promise<T>, span?: Span) {
@@ -171,23 +147,6 @@ export default class SyncRepository<TModel extends BaseModel> {
       data,
       status: response ? 'synced' : 'unsynced',
       pushStatus: response ? 'success' : 'pending',
-    }
-    return ret
-  }
-
-  private async _respondToRemoteWriteOne<T extends SyncPushResponse>(push: () => Promise<T>, id: RecordId, span?: Span) {
-    const response = await push()
-
-    if (!response.ok) {
-      throw new SyncError('Failed to push records', { response })
-    }
-
-    const data = await this.store.readOne(id)
-
-    const ret: SyncRemoteWriteDTO<TModel> = {
-      data,
-      status: 'synced',
-      pushStatus: 'success'
     }
     return ret
   }

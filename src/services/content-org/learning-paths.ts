@@ -275,10 +275,10 @@ export async function getLearningPathLessonsByIds(contentIds, learningPathId) {
  * @param options.parentContentId
  */
 export function mapContentToParent(
-  lessons: any,
+   lessons: any,
   options?: { lessonType?: string; parentContentId?: number }
 ) {
-  if (!lessons) return lessons
+  if (!lessons || (Array.isArray(lessons) && lessons.length === 0)) return lessons
 
   function mapIt(lesson: any) {
     const mappedLesson = { ...lesson }
@@ -342,6 +342,8 @@ export async function fetchLearningPathLessons(
   userDate: Date
 ) {
   const learningPath = await getEnrichedLearningPath(learningPathId)
+  if (!learningPath || learningPath.children?.length === 0) return null
+
   let dailySession = (await getDailySession(brand, userDate)) as DailySessionResponse
 
   const isActiveLearningPath = (dailySession?.active_learning_path_id || 0) == learningPathId
@@ -553,13 +555,17 @@ export async function onContentCompletedLearningPathActions(
   const activeLearningPath = await getActivePath(brand)
 
   if (activeLearningPath.active_learning_path_id !== learningPathId) return
-  const method = await fetchMethodV2Structure(brand)
 
-  const currentIndex = method.learning_paths.findIndex((lp) => lp.id === learningPathId)
+  const method = await fetchMethodV2Structure(brand)
+  const now = new Date()
+  //only want to set next LP active if it's available
+  const publishedLearningPaths = method.learning_paths.filter((lp) => lp.published_on && new Date(lp.published_on) <= now)
+
+  const currentIndex = publishedLearningPaths.findIndex((lp) => lp.id === learningPathId)
   if (currentIndex === -1) {
     return
   }
-  const nextLearningPath = method.learning_paths[currentIndex + 1]
+  const nextLearningPath = publishedLearningPaths[currentIndex + 1]
   if (!nextLearningPath) {
     return
   }

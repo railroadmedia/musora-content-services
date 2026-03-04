@@ -58,7 +58,8 @@ function generateContentPromises(contents) {
   const promises = []
   if (!contents) return promises
   const existingShows = new Set()
-  let allRecentTypeSet = new Set(Object.values(recentTypes).flat())
+  let allRecentTypeSet = new Set(Object.values(recentTypes.homeRow))
+  allRecentTypeSet.delete('learning-path-v2') // we do this to remove from homepage, until we allow a-la-carte learning paths
   contents.forEach((content) => {
     const type = content.type
     if (!allRecentTypeSet.has(type)) return

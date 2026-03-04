@@ -110,25 +110,27 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     this.stopCleanupTimer()
   }
 
+  log(message: string, attrs?: Record<string, unknown>) {
+    this.telemetry.log(message, { ...this.context.session.toJSON(), ...attrs })
+  }
+
   async requestSync(reason: string) {
-    inBoundary(ctx => {
-      this.telemetry.trace(
-        { name: `sync:${this.model.table}`, op: 'sync', attributes: { ...ctx, ...this.context.session.toJSON() } },
+    return inBoundary(ctx => {
+      return this.telemetry.trace(
+        { name: 'sync', op: 'function', attributes: { 'db.collection.name': this.model.table, ...ctx, ...this.context.session.toJSON() } },
         async span => {
-          let pushError: any = null
+          let pullError: any = null
 
           try {
-            await this.pushUnsyncedWithRetry(span, { type: 'sync-request', reason })
+            await this.pullRecordsWithRetry(span)
           } catch (err) {
-            pushError = err
+            pullError = err
           }
 
-          // will return records that we just saw in push response, but we can't
-          // be sure there were no other changes before the push
-          await this.pullRecordsWithRetry(span)
+          await this.pushUnsyncedWithRetry(span, { type: 'sync-request', reason })
 
-          if (pushError) {
-            throw pushError
+          if (pullError) {
+            throw pullError
           }
         }
       )
@@ -138,7 +140,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   async pull(reason: string) {
     return inBoundary(ctx => {
       return this.telemetry.trace(
-        { name: `sync:${this.model.table}`, op: 'pull', attributes: { ...ctx, ...this.context.session.toJSON() } },
+        { name: 'sync.pull', op: 'function', attributes: { 'db.collection.name': this.model.table, ...ctx, ...this.context.session.toJSON() } },
         async span => await this.pullRecords(span)
       )
     }, { table: this.model.table, reason })
@@ -149,10 +151,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
    */
   async requestPull(reason: string) {
     inBoundary(ctx => {
-      this.telemetry.trace(
-        { name: `sync:${this.model.table}`, op: 'pull-request', attributes: { ...ctx, ...this.context.session.toJSON() } },
-        async span => await this.pullRecordsWithRetry(span)
-      )
+      return this.pullRecordsWithRetry(undefined)
     }, { table: this.model.table, reason })
   }
 
@@ -161,10 +160,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
    */
   async requestPush(reason: string) {
     inBoundary(ctx => {
-      this.telemetry.trace(
-        { name: `sync:${this.model.table}`, op: 'push', attributes: { ...ctx, ...this.context.session.toJSON() } },
-        async span => await this.pushUnsyncedWithRetry(span, { type: 'push-request', reason })
-      )
+      return this.pushUnsyncedWithRetry(undefined, { type: 'push-request', reason })
     }, { table: this.model.table, reason })
   }
 
@@ -326,19 +322,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
-  async upsertSomeTentative(builders: Record<RecordId, (record: TModel) => void>, span?: Span, { skipPush = false } = {}) {
-    return this.upsertSome(Object.fromEntries(Object.entries(builders).map(([id, builder]) => [id, record => {
-      builder(record)
-      record._raw._status = 'synced'
-    }])), span, {skipPush})
-  }
-
   async upsertOne(id: RecordId, builder: (record: TModel) => void, span?: Span, { skipPush = false } = {}) {
     return this.upsertSome({ [id]: builder }, span, {skipPush}).then(r => r[0])
-  }
-
-  async upsertOneTentative(id: string, builder: (record: TModel) => void, span?: Span) {
-    return this.upsertSomeTentative({ [id]: builder }, span).then(r => r[0])
   }
 
   async deleteOne(id: RecordId, parentSpan?: Span, { skipPush = false } = {}) {
@@ -534,11 +519,10 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     })
   }
 
-  private async pullRecordsWithRetry(span?: Span) {
+  private async pullRecordsWithRetry(parentSpan?: Span) {
     dropThrottle({ state: this.pullThrottleState, deferOnce: true }, () =>
       this.retry.request(
-        { name: `pull:${this.model.table}`, op: 'pull', parentSpan: span },
-        (span) => this.executePull(span)
+        (attempt) => this.executePull(parentSpan, attempt)
       )
     )()
   }
@@ -559,10 +543,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       this.pushCoalescer.push(
         records,
         queueThrottle({ state: this.pushThrottleState }, () => {
-          const causeAttrs = typeof cause === 'string' ? { type: cause } : cause ?? {}
           return this.retry.request<SyncPushResponse>(
-            { name: `push:${this.model.table}`, op: 'push', parentSpan: span, attributes: { ...causeAttrs } },
-            async (span) => {
+            async (attempt) => {
               // re-query records since this fn may be deferred due to throttling/retries
               const currentRecords = await this.queryMaybeDeletedRecords(Q.where('id', Q.oneOf(recordIds)))
               const recordsToPush = currentRecords.filter(r => r._raw.updated_at <= (updatedAtMap.get(r.id) || 0))
@@ -571,7 +553,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
                 return { ok: true, results: [] }
               }
 
-              return this.executePush(recordsToPush, span)
+              return this.executePush(recordsToPush, span, attempt)
             },
             {
               onFail: () => {
@@ -584,102 +566,82 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     }
   }
 
-  private async executePull(span?: Span) {
+  private async executePull(parentSpan?: Span, attempt?: number) {
     if (!this.context.connectivity.getValue()) {
       this.telemetry.debug('[Retry] No connectivity - skipping')
       return { ok: false, failureType: 'fetch', isRetryable: false } as SyncPullFetchFailureResponse
     }
 
-    return this.telemetry.trace(
+    const lastFetchToken = await this.getLastFetchToken()
+
+    const response = await this.telemetry.trace(
       {
-        name: `pull:${this.model.table}:run`,
-        op: 'pull:run',
-        attributes: { table: this.model.table, ...this.context.session.toJSON() },
-        parentSpan: span,
-      },
-      async (pullSpan) => {
-        const lastFetchToken = await this.getLastFetchToken()
-
-        const response = await this.telemetry.trace(
-          {
-            name: `pull:${this.model.table}:run:fetch`,
-            op: 'pull:run:fetch',
-            attributes: { lastFetchToken: lastFetchToken ?? undefined, ...this.context.session.toJSON() },
-            parentSpan: pullSpan,
-          },
-          () => this.puller(this.model.table, this.db.adapter.schema.version, this.userScope.initialId, this.context, this.runScope.signal, lastFetchToken)
-        )
-
-        if (response.ok) {
-          const initialId = this.userScope.initialId
-          const currentId = this.userScope.getCurrentId()
-
-          if (response.intendedUserId !== initialId || response.intendedUserId !== currentId) {
-            throw new SyncError('Intended user ID does not match', {
-              intendedUserId: response.intendedUserId,
-              initialUserId: initialId,
-              currentUserId: currentId
-            })
-          }
-
-          await this.writeEntries(response.entries, !response.previousToken, pullSpan)
-          await this.setLastFetchToken(response.token)
-
-          this.emit('pullCompleted')
-        }
-
-        return response
-      }
-    )
-  }
-
-  private async executePush(records: TModel[], parentSpan?: Span) {
-    return this.telemetry.trace(
-      {
-        name: `push:${this.model.table}`,
-        op: 'push:run',
-        attributes: { table: this.model.table, ...this.context.session.toJSON() },
+        name: 'sync.pull',
+        op: 'http.client',
+        attributes: { 'db.collection.name': this.model.table, 'sync.token': lastFetchToken ?? undefined, attempt: attempt ?? 1, ...this.context.session.toJSON() },
         parentSpan,
       },
-      async (pushSpan) => {
-        const payload = this.generatePushPayload(records)
-
-        const response = await this.telemetry.trace(
-          {
-            name: `push:${this.model.table}:run:fetch`,
-            op: 'push:run:fetch',
-            attributes: { ...this.context.session.toJSON() },
-            parentSpan: pushSpan,
-          },
-          () => this.pusher(this.model.table, this.db.adapter.schema.version, this.userScope.initialId, this.context, payload, this.runScope.signal, this.pushBlockingState)
-        )
-
-        if (response.ok) {
-          const [failedResults, successfulResults] = response.results.reduce((acc, result) => {
-            if (result.type === 'success') {
-              acc[1].push(result)
-            } else {
-              acc[0].push(result)
-            }
-            return acc
-          }, [[], []] as [SyncStorePushResultFailure[], SyncStorePushResultSuccess[]])
-
-          if (failedResults.length) {
-            this.telemetry.warn(
-              `[store:${this.model.table}] Push completed with failed records`,
-              { results: failedResults, resultsJSON: JSON.stringify(failedResults) }
-            )
-          }
-
-          const successfulEntries = successfulResults.map((result) => result.entry)
-          await this.writeEntries(successfulEntries, false, pushSpan)
-
-          this.emit('pushCompleted')
-        }
-
-        return response
-      }
+      () => this.puller(this.model.table, this.db.adapter.schema.version, this.userScope.initialId, this.context, this.runScope.signal, lastFetchToken)
     )
+
+    if (response.ok) {
+      const initialId = this.userScope.initialId
+      const currentId = this.userScope.getCurrentId()
+
+      if (response.intendedUserId !== initialId || response.intendedUserId !== currentId) {
+        throw new SyncError('Intended user ID does not match', {
+          intendedUserId: response.intendedUserId,
+          initialUserId: initialId,
+          currentUserId: currentId
+        })
+      }
+
+      await this.writeEntries(response.entries, !response.previousToken, parentSpan)
+      await this.setLastFetchToken(response.token)
+
+      this.emit('pullCompleted')
+    }
+
+    return response
+  }
+
+  private async executePush(records: TModel[], parentSpan?: Span, attempt?: number) {
+    const payload = this.generatePushPayload(records)
+
+    const response = await this.telemetry.trace(
+      {
+        name: 'sync.push',
+        op: 'http.client',
+        attributes: { 'db.collection.name': this.model.table, attempt: attempt ?? 1, ...this.context.session.toJSON() },
+        parentSpan,
+      },
+      () => this.pusher(this.model.table, this.db.adapter.schema.version, this.userScope.initialId, this.context, payload, this.runScope.signal, this.pushBlockingState)
+    )
+
+    if (response.ok) {
+      const [failedResults, successfulResults] = response.results.reduce((acc, result) => {
+        if (result.type === 'success') {
+          acc[1].push(result)
+        } else {
+          acc[0].push(result)
+        }
+        return acc
+      }, [[], []] as [SyncStorePushResultFailure[], SyncStorePushResultSuccess[]])
+
+      if (failedResults.length) {
+        this.telemetry.warn(
+          `[store:${this.model.table}] Push completed with failed records`,
+          { extra: { resultsJSON: JSON.stringify(failedResults) } }
+        )
+      }
+
+      const successfulEntries = successfulResults.map((result) => result.entry)
+      await this.writeEntries(successfulEntries, false, parentSpan)
+
+      this.emit('pushCompleted')
+    }
+
+    return response
   }
 
   private generatePushPayload(records: TModel[]) {
@@ -827,7 +789,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
    */
   private paranoidWrite<T>(
     parentSpan: Span | undefined,
-    work: (writer: WriterInterface, span: Span) => Promise<T>
+    work: (writer: WriterInterface, span: Span) => Promise<T>,
+    spanName: 'sync.write' | 'sync.ack' | 'sync.cleanup' = 'sync.write'
   ): Promise<T> {
     const initialId = this.userScope.initialId
     const currentId = this.userScope.getCurrentId()
@@ -839,7 +802,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     }
 
     return this.telemetry.trace(
-      { name: `write:${this.model.table}`, op: 'write', parentSpan, attributes: { ...this.context.session.toJSON() } },
+      { name: spanName, op: 'db', parentSpan, attributes: { 'db.system': this.getDbSystem(), 'db.collection.name': this.model.table, ...this.context.session.toJSON() } },
       (writeSpan) => {
         return this.db.write(writer => work(writer, writeSpan))
       }
@@ -847,6 +810,8 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   private async writeEntries(entries: SyncEntry[], freshSync: boolean = false, parentSpan?: Span) {
+    if (!entries.length) return
+
     await this.runScope.abortable(async () => {
       return this.paranoidWrite(parentSpan, async (writer) => {
         const batches = await this.buildWriteBatchesFromEntries(writer, entries, freshSync)
@@ -856,7 +821,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
             await writer.batch(...batch)
           }
         }
-      })
+      }, 'sync.ack')
     })
   }
 
@@ -997,12 +962,20 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
     return adapter._driver && 'loki' in adapter._driver
   }
 
+  private getDbSystem(): string {
+    const underlyingAdapter = this.db.adapter.underlyingAdapter
+    if (this.isLokiAdapter(underlyingAdapter)) {
+      return 'lokijs'
+    }
+    return 'sqlite'
+  }
+
   private startCleanupTimer() {
     this.cleanupTimer = setInterval(() => {
       this.runScope.abortable(async () => {
         this.paranoidWrite(undefined, async (writer) => {
           await this.cleanupOldDeletedRecords(writer)
-        })
+        }, 'sync.cleanup')
       })
     }, SyncStore.CLEANUP_INTERVAL)
   }

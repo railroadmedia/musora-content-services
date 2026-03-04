@@ -34,6 +34,8 @@ import {
   liveFields,
   postProcessBadge,
   contentAwardField,
+  parentField,
+  grandParentField,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems } from './recommendations.js'
 import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS, CONTENT_STATUSES } from '../contentMetaData.js'
@@ -1119,8 +1121,12 @@ export async function fetchSiblingContent(railContentId, brand = null) {
   const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission_v2, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
 
   const query = `*[railcontent_id == ${railContentId}${brandString}]{
-   _type, parent_type, 'parent_id': parent_content_data[0].id, railcontent_id,
-   'for-calculations': *[${filterGetParent}][0]{
+    _type,
+    parent_type,
+    railcontent_id,
+    'parent_id': ${parentField}.id,
+    'grandparent_id':${grandParentField}.id,
+    'for-calculations': *[${filterGetParent}][0]{
     'siblings-list': child[]->railcontent_id,
     'parents-list': *[${filterForParentList}][0].child[]->railcontent_id
     },
@@ -1138,6 +1144,11 @@ export async function fetchSiblingContent(railContentId, brand = null) {
     const currentSiblingIndex = calc['siblings-list'].indexOf(result['railcontent_id']) + 1
 
     delete result['for-calculations']
+
+    if (result['grandparent_id']) {
+      result['collection_data'] = await fetchCourseCollectionData(result['grandparent_id'])
+    }
+
     result = { ...result, parentCount, currentParentIndex, siblingCount, currentSiblingIndex }
     return result
   } else {
@@ -1506,13 +1517,13 @@ export async function fetchSanity(
     if (result.result) {
       let results = isList ? result.result : result.result[0]
       if (!results) {
-        throw new Error('No results found')
+        return null
       }
       results = processNeedAccess ? await needsAccessDecorator(results, userPermissions) : results
       results = processPageType ? pageTypeDecorator(results) : results
       return customPostProcess ? customPostProcess(results) : results
     } else {
-      throw new Error('No results found')
+      return null
     }
   } catch (error) {
     console.error('fetchSanity: Fetch error:', { error, query })
@@ -1666,7 +1677,7 @@ export async function fetchMetadata(brand, type, options = {}) {
 export async function fetchChatAndLiveEnvent(brand, forcedId = null) {
   const liveEvent =
     forcedId !== null ? await fetchByRailContentIds([forcedId]) : [await fetchLiveEvent(brand)]
-  if (liveEvent.length === 0 || (liveEvent.length === 1 && liveEvent[0] === undefined)) {
+  if (liveEvent.length === 0 || (liveEvent.length === 1 && !liveEvent[0])) {
     return null
   }
   let url = `/content/live-chat?brand=${brand}`
@@ -2013,10 +2024,17 @@ export async function fetchScheduledAndNewReleases(
   const sortOrder = getSortOrder(sort, brand)
 
   const query = `
-    *[(_type in [${typesString}] && brand == '${brand}' && ((status in ['published','scheduled'] )||(show_in_new_feed == true)))
-      || (defined(live_event_start_time) && (!defined(live_event_end_time) || live_event_end_time >= '${now}' ) && (brand == '${brand}' || brand == 'musora' && live_global_event) && status in ['scheduled'])]
+    *[show_in_new_feed == true && (
+      (_type in [${typesString}] && brand == '${brand}' && status in ['published','scheduled'] && defined(published_on))
+      || (
+        defined(live_event_start_time)
+        && (!defined(live_event_end_time) || live_event_end_time >= '${now}' )
+        && brand == '${brand}'
+        && status in ['scheduled']
+      )
+    )] | order(${sortOrder})
     [${start}...${end}]
-   | order(published_on asc) {
+    {
       "id": railcontent_id,
       title,
       "image": thumbnail.asset->url,
@@ -2073,8 +2091,10 @@ export async function fetchMethodV2Structure(brand) {
     'sanity_id': _id,
     brand,
     'intro_video_id': intro_video->railcontent_id,
-    'learning_paths': child[]->{
+    'learning_paths': child[@->status == 'published']->{
       'id': railcontent_id,
+      status,
+      published_on,
       'intro_video_id': intro_video->railcontent_id,
       'children': child[]->railcontent_id
     }

@@ -1,7 +1,7 @@
 name: Deploy Docs to GitHub Pages
 on:
   push:
-    branches: [main, project-v2]
+    branches: [main]
 
 # Required permissions for GitHub Pages deployment
 permissions:
@@ -28,37 +28,24 @@ jobs:
           ref: main
           path: main-content
 
-      - name: Checkout project-v2 branch
-        uses: actions/checkout@v4
-        with:
-          ref: project-v2
-          path: v2-content
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install dependencies for v2
-        working-directory: v2-content
+        working-directory: main-content
         run: npm ci
 
       - name: Generate v2 documentation
-        working-directory: v2-content
+        working-directory: main-content
         run: npm run doc
 
       - name: Combine v1 and v2 docs into deployment structure
         run: |
           mkdir -p _site
-          # Copy existing v1 docs from main branch (already committed)
-          if [ -d "main-content/docs" ]; then
-            cp -r main-content/docs/* _site/
-            echo "✅ Copied existing v1 docs from main branch"
-          fi
-          # Copy v2 docs to /v2/ subdirectory
-          mkdir -p _site/v2
-          cp -r v2-content/docs/* _site/v2/
-          echo "✅ Combined v1 (root) and v2 (/v2/) documentation"
+          cp -r main-content/docs/* _site/
+          echo "✅ Copied existing docs from main branch"
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v4

@@ -29,10 +29,8 @@ export default class SyncManager {
     const teardown = instance.setup()
 
     return async (mode: SyncTeardownMode = 'reset') => {
-      SyncManager.instance = null
-      return teardown(mode).catch((error) => {
-        SyncManager.instance = instance // restore instance on teardown failure
-        throw error
+      return teardown(mode).then(() => {
+        SyncManager.instance = null
       })
     }
   }
@@ -143,7 +141,7 @@ export default class SyncManager {
     // can fail synchronously immediately (e.g., schema/migration validation errors)
     // or asynchronously (e.g., indexedDB errors synchronously OR asynchronously (!))
     const database = this.telemetry.trace(
-      { name: 'db:init', attributes: { ...this.context.session.toJSON() } },
+      { name: 'db:init', op: 'db', attributes: { ...this.context.session.toJSON() } },
       () => this.initDatabase(this.userScope)
     )
 

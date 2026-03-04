@@ -2,6 +2,114 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.139.0](https://github.com/railroadmedia/musora-content-services/compare/v2.138.4...v2.139.0) (2026-03-04)
+
+
+### Features
+
+* adds SQLITE_FULL error simulation ([#854](https://github.com/railroadmedia/musora-content-services/issues/854)) ([fc1cf71](https://github.com/railroadmedia/musora-content-services/commit/fc1cf7185ff6a07b08f77eeee0fa5ec2f2fb4197))
+
+### [2.138.4](https://github.com/railroadmedia/musora-content-services/compare/v2.138.3...v2.138.4) (2026-03-04)
+
+
+### Bug Fixes
+
+* filter out incorrectly-scheduled contents ([#855](https://github.com/railroadmedia/musora-content-services/issues/855)) ([7a68112](https://github.com/railroadmedia/musora-content-services/commit/7a6811228a17424674ae1194099962a286780b3e))
+
+### [2.138.3](https://github.com/railroadmedia/musora-content-services/compare/v2.138.2...v2.138.3) (2026-03-04)
+
+
+### Bug Fixes
+
+* correct homepage row allowed types ([#851](https://github.com/railroadmedia/musora-content-services/issues/851)) ([19f1e2a](https://github.com/railroadmedia/musora-content-services/commit/19f1e2ae50e80e5c231b88035187be6e0c65cd44))
+
+### [2.138.2](https://github.com/railroadmedia/musora-content-services/compare/v2.138.1...v2.138.2) (2026-03-03)
+
+
+### Bug Fixes
+
+* round practice duration float ([#853](https://github.com/railroadmedia/musora-content-services/issues/853)) ([244b2f6](https://github.com/railroadmedia/musora-content-services/commit/244b2f635c053bd00263716ebde3fc605ac2beaa))
+
+### [2.138.1](https://github.com/railroadmedia/musora-content-services/compare/v2.138.0...v2.138.1) (2026-03-03)
+
+
+### Bug Fixes
+
+* removes redundant/buggy practice session tracking in trackPractice ([#850](https://github.com/railroadmedia/musora-content-services/issues/850)) ([8702b4b](https://github.com/railroadmedia/musora-content-services/commit/8702b4b4b183a8e02b25b0731c8fa422b26c976e))
+
+## [2.138.0](https://github.com/railroadmedia/musora-content-services/compare/v2.137.4...v2.138.0) (2026-03-03)
+
+
+### Features
+
+* **T3PS-2336:** New method: deleteAllNotifications ([8b52162](https://github.com/railroadmedia/musora-content-services/commit/8b52162cfdd4d1ffc15f0e356dd8124c883d64ac))
+
+
+### Bug Fixes
+
+* dont set unreleased LP as active ([#843](https://github.com/railroadmedia/musora-content-services/issues/843)) ([f6b595e](https://github.com/railroadmedia/musora-content-services/commit/f6b595ef1c220aa97e44d4d24c971d0aec80e0f4))
+
+### [2.137.4](https://github.com/railroadmedia/musora-content-services/compare/v2.137.3...v2.137.4) (2026-02-26)
+
+
+### Bug Fixes
+
+* fix homepage new and upcoming row ([#847](https://github.com/railroadmedia/musora-content-services/issues/847)) ([4504822](https://github.com/railroadmedia/musora-content-services/commit/45048225961d8b625e88915d9f0a876196655e25))
+
+### [2.137.3](https://github.com/railroadmedia/musora-content-services/compare/v2.137.2...v2.137.3) (2026-02-26)
+
+
+### Bug Fixes
+
+* refactor sync tracing ([#842](https://github.com/railroadmedia/musora-content-services/issues/842)) ([2c9a341](https://github.com/railroadmedia/musora-content-services/commit/2c9a341d88eca033d694a8704df02944bf98be1a))
+
+### [2.137.2](https://github.com/railroadmedia/musora-content-services/compare/v2.137.1...v2.137.2) (2026-02-26)
+
+
+### Bug Fixes
+
+* check for type before validation ([#845](https://github.com/railroadmedia/musora-content-services/issues/845)) ([87bec02](https://github.com/railroadmedia/musora-content-services/commit/87bec02bf2be0171fae2df73b720bfd8ac8ddc05))
+
+### [2.137.1](https://github.com/railroadmedia/musora-content-services/compare/v2.137.0...v2.137.1) (2026-02-25)
+
+
+### Bug Fixes
+
+* **T3PS-1975:** Add functions for sub platform request ([dea8900](https://github.com/railroadmedia/musora-content-services/commit/dea89007b67fe3dfdffaa45feb9f4f0af8a42123))
+* **T3PS-2159:** Add hasCertificate to award object in callback ([f742b8e](https://github.com/railroadmedia/musora-content-services/commit/f742b8e32556854518316f51003134544421eb8c))
+* unset syncmanager instance late ([#830](https://github.com/railroadmedia/musora-content-services/issues/830)) ([a908c03](https://github.com/railroadmedia/musora-content-services/commit/a908c03bd4de1ec4b1020ef63b1eeab7eeff6bea))
+
+## [2.137.0](https://github.com/railroadmedia/musora-content-services/compare/v2.136.4...v2.137.0) (2026-02-24)
+
+
+### Features
+
+* add collection data in fetch sibling content ([#836](https://github.com/railroadmedia/musora-content-services/issues/836)) ([6472764](https://github.com/railroadmedia/musora-content-services/commit/6472764b41da98b0754aec91b4714b70444f8b84))
+
+
+### Bug Fixes
+
+* **T3PS-2156:** changes what is shown on Your Progress page (lessons) ([#821](https://github.com/railroadmedia/musora-content-services/issues/821)) ([58cfc1b](https://github.com/railroadmedia/musora-content-services/commit/58cfc1b6660471fcb50ebfe15865a9b69c8a8830))
+* **T3PS-2273:** Add function for retrieving latest subscription platform ([c3e74ce](https://github.com/railroadmedia/musora-content-services/commit/c3e74cecb43619d69912a04644e01ffbb0ff4cc1))
+
+### [2.136.4](https://github.com/railroadmedia/musora-content-services/compare/v2.136.3...v2.136.4) (2026-02-20)
+
+
+### Bug Fixes
+
+* better Sentry logging ([#832](https://github.com/railroadmedia/musora-content-services/issues/832)) ([73bd384](https://github.com/railroadmedia/musora-content-services/commit/73bd38473acb631a9f30d559e403e8f4203bb548))
+
+### [2.136.3](https://github.com/railroadmedia/musora-content-services/compare/v2.136.2...v2.136.3) (2026-02-20)
+
+
+### Bug Fixes
+
+* change query ([#831](https://github.com/railroadmedia/musora-content-services/issues/831)) ([8e7d2a2](https://github.com/railroadmedia/musora-content-services/commit/8e7d2a20cecc6bc134664e72b0c30cc067ba0591))
+
+### [2.136.2](https://github.com/railroadmedia/musora-content-services/compare/v2.136.1...v2.136.2) (2026-02-19)
+
+### [2.136.1](https://github.com/railroadmedia/musora-content-services/compare/v2.136.0...v2.136.1) (2026-02-19)
+
 ## [2.136.0](https://github.com/railroadmedia/musora-content-services/compare/v2.135.3...v2.136.0) (2026-02-19)
 
 

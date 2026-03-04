@@ -433,14 +433,13 @@ export async function recordWatchSession(
 
   if (!prevSession) {
     prevSession = {
-      practiceSession: new Map(),
       pushInterval: null
     }
   }
 
   // Track practice and progress locally (no immediate push)
-  const [session] = await Promise.all([
-    trackPractice(contentId, secondsPlayed, prevSession.practiceSession, { instrumentId, categoryId }),
+  await Promise.all([
+    trackPractice(contentId, secondsPlayed, { instrumentId, categoryId }),
     trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds),
   ])
 
@@ -449,9 +448,6 @@ export async function recordWatchSession(
       flushWatchSession()
     }, PUSH_INTERVAL)
   }
-
-  prevSession.practiceSession = session
-
   return prevSession
 }
 
@@ -465,14 +461,8 @@ export async function flushWatchSession(sessionToFlush = null, shouldClearInterv
   db.practices.requestPushUnsynced('flush-watch-session')
 }
 
-async function trackPractice(contentId, secondsPlayed, practiceSession, details = {}) {
-  const session = practiceSession || new Map()
-
-  const secondsSinceLastUpdate = Math.ceil(secondsPlayed - (session.get(contentId) ?? 0))
-  session.set(contentId, secondsPlayed)
-
-  await trackUserPractice(contentId, secondsSinceLastUpdate, details)
-  return session
+async function trackPractice(contentId, secondsPlayed, details = {}) {
+  return trackUserPractice(contentId, secondsPlayed, details)
 }
 
 async function trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds) {

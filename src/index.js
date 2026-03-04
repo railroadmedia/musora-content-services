@@ -375,6 +375,8 @@ import {
 } from './services/user/management.js';
 
 import {
+	fetchHasActivePlatformSubscription,
+	fetchLastSubscriptionPlatform,
 	fetchMemberships,
 	fetchRechargeTokens,
 	getUpgradePrice,
@@ -383,6 +385,7 @@ import {
 } from './services/user/memberships.ts';
 
 import {
+	deleteAllNotifications,
 	deleteNotification,
 	fetchLiveEventPollingState,
 	fetchNotificationSettings,
@@ -479,6 +482,7 @@ export {
 	createTestUser,
 	createThread,
 	deleteAccount,
+	deleteAllNotifications,
 	deleteComment,
 	deleteForumCategory,
 	deleteItemsFromPlaylist,
@@ -524,10 +528,16 @@ export {
 	fetchGenreBySlug,
 	fetchGenreLessons,
 	fetchGenres,
+<<<<<<< fix/TP-1105_playlist-progress-for-homepage-row
+=======
+	fetchHasActivePlatformSubscription,
+	fetchHierarchy,
+>>>>>>> main
 	fetchInstructorBySlug,
 	fetchInstructorLessons,
 	fetchInstructors,
 	fetchInterests,
+	fetchLastSubscriptionPlatform,
 	fetchLatestThreads,
 	fetchLearningPathLessons,
 	fetchLearningPathProgressCheckLessons,
