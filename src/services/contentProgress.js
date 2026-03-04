@@ -853,10 +853,9 @@ export async function getIdsWhereLastAccessedFromMethod(contentIds) {
 }
 
 export function generateRecordId(contentId, collection) {
-  if (!contentId || !collection)  return null
+  if (!contentId)  return null
 
   contentId = normalizeContentId(contentId)
-  collection = normalizeCollection(collection)
 
   return `${contentId}:${collection?.type || COLLECTION_TYPE.SELF}:${collection?.id || COLLECTION_ID_SELF}`
 }
