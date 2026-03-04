@@ -523,11 +523,11 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
     return {
       ...practice,
       thumbnail: content.thumbnail,
-      title: content.title,
+      title: content.title || practice.title,
       parent_id: content.parent_id || null,
       navigateTo: content.navigateTo,
-      sanityType: content.type || practice.sanityType,
-      artist_name: content.artist_name || null,
+      sanityType: content.type,
+      artist_name: content.artist_name,
     }
   })
   return recentActivityData
