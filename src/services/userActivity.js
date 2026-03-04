@@ -522,12 +522,12 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
     const content = contents?.find((c) => c.id === practice.contentId) || {}
     return {
       ...practice,
-      thumbnail: content.thumbnail,
+      thumbnail: content.thumbnail || null,
       title: content.title || practice.title,
       parent_id: content.parent_id || null,
-      navigateTo: content.navigateTo,
-      sanityType: content.type,
-      artist_name: content.artist_name,
+      navigateTo: content.navigateTo || null,
+      sanityType: content.type || null,
+      artist_name: content.artist_name || null,
     }
   })
   return recentActivityData
