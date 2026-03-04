@@ -2015,7 +2015,7 @@ export async function fetchScheduledAndNewReleases(
 
   const query = `
     *[show_in_new_feed == true && (
-      (_type in [${typesString}] && brand == '${brand}' && status in ['published','scheduled'])
+      (_type in [${typesString}] && brand == '${brand}' && status in ['published','scheduled'] && defined(published_on))
       || (
         defined(live_event_start_time)
         && (!defined(live_event_end_time) || live_event_end_time >= '${now}' )
