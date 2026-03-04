@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.139.0](https://github.com/railroadmedia/musora-content-services/compare/v2.138.4...v2.139.0) (2026-03-04)
+
+
+### Features
+
+* adds SQLITE_FULL error simulation ([#854](https://github.com/railroadmedia/musora-content-services/issues/854)) ([fc1cf71](https://github.com/railroadmedia/musora-content-services/commit/fc1cf7185ff6a07b08f77eeee0fa5ec2f2fb4197))
+
 ### [2.138.4](https://github.com/railroadmedia/musora-content-services/compare/v2.138.3...v2.138.4) (2026-03-04)
 
 
