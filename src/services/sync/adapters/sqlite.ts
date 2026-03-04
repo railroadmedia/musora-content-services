@@ -22,11 +22,11 @@ export default class SQLiteErrorAwareAdapter extends SQLiteAdapter {
 export class FullFailingSQLiteAdapter extends SQLiteErrorAwareAdapter {
   constructor(options: any, extensions?: { onFullError?: (error: Error) => void }) {
     super(options, extensions);
-    
+
     // Wrap the dispatcher to intercept batch calls and simulate errors at dispatcher level
     const originalDispatcher = (this as any)._dispatcher;
     const originalCall = originalDispatcher.call.bind(originalDispatcher);
-    
+
     originalDispatcher.call = (methodName: string, args: any[], callback: any) => {
       if (methodName === 'batch') {
         // Simulate dispatcher-level error
