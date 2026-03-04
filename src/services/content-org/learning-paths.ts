@@ -112,7 +112,7 @@ export async function updateDailySession(
 
     }
 
-    return response
+    return (response !== '' ? response : null)
   } catch (error: any) {
     return null
   }
@@ -497,23 +497,23 @@ interface completeLearningPathIntroVideo {
  * @returns {Promise<Object|null>} response.intro_video_response - The intro video completion response or null if already completed.
  * @returns {Promise<void>} response.learning_path_reset_response - The reset learning path response.
  * @returns {Promise<Object[]>} response.lesson_import_response - The responses for completing each content_id within the learning path.
+ * @returns {Promise<Object|null>} response.update_dailies_response - The updated daily session if it was changed.
  */
 export async function completeLearningPathIntroVideo(
   introVideoId: number,
   learningPathId: number,
   lessonsToImport: number[] | null,
-  brand: string | null
+  brand: string
 ) {
   let response = {} as completeLearningPathIntroVideo
-
   const collection: CollectionObject = { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH }
 
   if (!lessonsToImport) {
     response.learning_path_reset_response = await resetIfPossible(learningPathId, collection)
   } else {
     response.lesson_import_response = await contentStatusCompletedMany(lessonsToImport, collection)
-    const activePath = await getActivePath(brand)
 
+    const activePath = await getActivePath(brand)
     if (activePath.active_learning_path_id === learningPathId) {
       response.update_dailies_response = await updateDailySession(brand, new Date(), true)
     }
