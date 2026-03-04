@@ -296,6 +296,12 @@ export async function fetchLiveEventPollingState() {
     return await GET(url)
 }
 
+export async function deleteAllNotifications() {
+  await eventsAPI.pauseLiveEventCheck()
+  const url = `${baseUrl}/v1/all`
+  return await DELETE(url, null)
+}
+
 
 
 

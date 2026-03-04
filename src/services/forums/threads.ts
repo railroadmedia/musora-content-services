@@ -198,18 +198,30 @@ export async function fetchFollowedThreads(
   return httpClient.get<PaginatedResponse<ForumThread>>(`${baseUrl}/v1/threads?brand=${brand}`)
 }
 
+export interface FetchLatestThreadParams {
+  page?: number,
+  limit?: number,
+}
+
 /**
  * Fetches latest forum Threads for the given brand and not blocked to current user.
  *
  * @param {string} brand - The brand context (e.g., "drumeo", "singeo").
+ * @param {FetchLatestThreadParams} params - Optional pagination parameters.
  * @returns {Promise<PaginatedResponse<ForumThread>>} - A promise that resolves to the list of forum threads.
  * @throws {HttpError} - If the request fails.
  */
 export async function fetchLatestThreads(
-  brand: string
+  brand: string,
+  params: FetchLatestThreadParams = {}
 ): Promise<PaginatedResponse<ForumThread>> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.get<PaginatedResponse<ForumThread>>(`${baseUrl}/v1/threads/latest?brand=${brand}`)
+  const queryObj: Record<string, string> = { brand, ...Object.fromEntries(
+      Object.entries(params).filter(([_, v]) => v !== undefined && v !== null).map(([k, v]) => [k, String(v)])
+    )}
+  const query = new URLSearchParams(queryObj).toString()
+
+  return httpClient.get<PaginatedResponse<ForumThread>>(`${baseUrl}/v1/threads/latest?${query}`)
 }
 
 /**

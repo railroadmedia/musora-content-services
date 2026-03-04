@@ -346,12 +346,27 @@ const lessonRecentTypes = [
   'routine',
 ]
 
+const parentRecentTypes = [
+  ...individualLessonsTypes,
+  'skill-pack',
+  ...entertainmentLessonTypes,
+  'course',
+  'course-collection',
+  'guided-course',
+  'routine',
+  'song',
+  'play-along',
+  'jam-track',
+  'song-tutorial',
+]
+
 const songsRecentTypes = [...SONG_TYPES]
 
 export const recentTypes = {
   lessons: lessonRecentTypes,
   songs: songsRecentTypes,
   home: [...lessonRecentTypes, ...songsRecentTypes],
+  homeRow: parentRecentTypes,
 }
 
 export const ownedContentTypes = {
@@ -487,9 +502,6 @@ export let contentTypeConfig = {
       `"intro_video": intro_video->{ ${getIntroVideoFields('learning-path-v2').join(', ')} }`,
       'total_skills',
       `"resource": ${resourcesField}`,
-      `"badge": ${contentAwardField}.badge.asset->url`,
-      `"badge_rear" : ${contentAwardField}.badge_rear.asset->url`,
-      `"badge_logo" : ${contentAwardField}.logo.asset->url`,
     ],
     includeChildFields: true,
     childFields: [

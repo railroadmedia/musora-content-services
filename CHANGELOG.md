@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.138.3](https://github.com/railroadmedia/musora-content-services/compare/v2.138.2...v2.138.3) (2026-03-04)
+
+
+### Bug Fixes
+
+* correct homepage row allowed types ([#851](https://github.com/railroadmedia/musora-content-services/issues/851)) ([19f1e2a](https://github.com/railroadmedia/musora-content-services/commit/19f1e2ae50e80e5c231b88035187be6e0c65cd44))
+
+### [2.138.2](https://github.com/railroadmedia/musora-content-services/compare/v2.138.1...v2.138.2) (2026-03-03)
+
+
+### Bug Fixes
+
+* round practice duration float ([#853](https://github.com/railroadmedia/musora-content-services/issues/853)) ([244b2f6](https://github.com/railroadmedia/musora-content-services/commit/244b2f635c053bd00263716ebde3fc605ac2beaa))
+
+### [2.138.1](https://github.com/railroadmedia/musora-content-services/compare/v2.138.0...v2.138.1) (2026-03-03)
+
+
+### Bug Fixes
+
+* removes redundant/buggy practice session tracking in trackPractice ([#850](https://github.com/railroadmedia/musora-content-services/issues/850)) ([8702b4b](https://github.com/railroadmedia/musora-content-services/commit/8702b4b4b183a8e02b25b0731c8fa422b26c976e))
+
+## [2.138.0](https://github.com/railroadmedia/musora-content-services/compare/v2.137.4...v2.138.0) (2026-03-03)
+
+
+### Features
+
+* **T3PS-2336:** New method: deleteAllNotifications ([8b52162](https://github.com/railroadmedia/musora-content-services/commit/8b52162cfdd4d1ffc15f0e356dd8124c883d64ac))
+
+
+### Bug Fixes
+
+* dont set unreleased LP as active ([#843](https://github.com/railroadmedia/musora-content-services/issues/843)) ([f6b595e](https://github.com/railroadmedia/musora-content-services/commit/f6b595ef1c220aa97e44d4d24c971d0aec80e0f4))
+
 ### [2.137.4](https://github.com/railroadmedia/musora-content-services/compare/v2.137.3...v2.137.4) (2026-02-26)
 
 
