@@ -1,12 +1,13 @@
 import {
+  generateRecordId,
   getNavigateTo,
   getNavigateToForMethod,
   getProgressDataByIds,
-  getProgressDataByIdsAndCollections,
-  getProgressStateByIds,
+  getProgressDataByRecordIds,
+  getProgressStateByRecordIds,
   getResumeTimeSecondsByIds,
-  getResumeTimeSecondsByIdsAndCollections,
-} from './contentProgress'
+  getResumeTimeSecondsByRecordIds,
+} from './contentProgress.js'
 import { isContentLikedByIds } from './contentLikes'
 import { fetchLikeCount } from './railcontent'
 import {COLLECTION_TYPE} from "./sync/models/ContentProgress";
@@ -181,14 +182,9 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
   let items = extractItemsWithCollectionFromMethodData(data, dataField, isDataAnArray, dataField_includeParent, dataField_includeIntroVideo) ?? []
   if (items.length === 0) return data
 
-  let ids = items.map((item) => (
-    {
-      contentId: item.content?.id,
-      collection: item.collection
-    })
-  ).filter(obj => obj.contentId)
+  const recordIds = items.map((item) => generateRecordId(item.content?.id, item.collection))
 
-  const justIds = ids.map(obj => obj.contentId)
+  const ids = items.map(item => item.content?.id)
 
   const [
     progressData,
@@ -198,11 +194,11 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
     awards,
   ] = await Promise.all([
     addProgressPercentage || addProgressStatus || addProgressTimestamp
-      ? getProgressDataByIdsAndCollections(ids) : Promise.resolve(null),
-    addIsLiked ? isContentLikedByIds(justIds) : Promise.resolve(null),
-    addResumeTimeSeconds ? getResumeTimeSecondsByIdsAndCollections(ids) : Promise.resolve(null),
+      ? getProgressDataByRecordIds(recordIds) : Promise.resolve(null),
+    addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
+    addResumeTimeSeconds ? getResumeTimeSecondsByRecordIds(recordIds) : Promise.resolve(null),
     addNavigateTo ? getNavigateToForMethod(items) : Promise.resolve(null),
-    addAwards ? getContentAwardsByIds(justIds) : Promise.resolve(null),
+    addAwards ? getContentAwardsByIds(ids) : Promise.resolve(null),
   ])
 
   const addContext = async (item) => {
@@ -239,23 +235,21 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
 
 export async function getNavigateToForPlaylists(data, { dataField = null } = {}) {
   let playlists = extractItemsFromData(data, dataField, false, false)
-  let allIds = []
-  playlists.forEach(
-    (playlist) => (allIds = [...allIds, ...playlist.items.map((a) => a.content_id)])
-  )
-  const progressOnItems = await getProgressStateByIds(allIds)
+
+  const allIds = [...new Set(playlists.flatMap(playlist => playlist.items.map(item => item.content_id)))]
+  const progressOnItems = await getProgressDataByIds(allIds) // currently playlist progress IS a-la-carte progress.
+
   const addContext = async (playlist) => {
     // Filter out locked items (where need_access === true) and scheduled content
     const accessibleItems = playlist.items.filter((item) => !item.need_access && item.status !== 'scheduled')
 
-    const allItemsCompleted = accessibleItems.every((i) => {
-      const itemId = i.content_id
-      const progress = progressOnItems.get(itemId)
+    const allItemsCompleted = accessibleItems.every((item) => {
+      const progress = progressOnItems[item.content_id]
       return progress && progress === 'completed'
     })
     let nextItem = accessibleItems[0] ?? playlist.items[0] ?? null
     if (!allItemsCompleted) {
-      const lastItemProgress = progressOnItems.get(playlist.last_engaged_on)
+      const lastItemProgress = progressOnItems[playlist.last_engaged_on]
       const index = accessibleItems.findIndex((i) => i.content_id === playlist.last_engaged_on)
       if (lastItemProgress === 'completed') {
         nextItem = accessibleItems[index + 1] ?? nextItem

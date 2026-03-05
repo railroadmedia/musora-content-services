@@ -47,6 +47,8 @@ import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
 import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
+import { COLLECTION_TYPE } from './sync/models/ContentProgress.js'
+import { fetchPlaylist } from './content-org/playlists.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -1332,7 +1334,15 @@ export async function fetchTopLevelParentId(railcontentId) {
   return response['railcontent_id']
 }
 
-export async function fetchLearningPathHierarchy(railcontentId, collection) {
+export async function getHierarchy(contentId, collection) {
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+    return await fetchLearningPathHierarchy(contentId, collection)
+  } else {
+    return await fetchHierarchy(contentId)
+  }
+}
+
+async function fetchLearningPathHierarchy(railcontentId, collection) {
   if (!collection) {
     return null
   }
@@ -1351,7 +1361,7 @@ export async function fetchLearningPathHierarchy(railcontentId, collection) {
   return data
 }
 
-export async function fetchHierarchy(railcontentId) {
+async function fetchHierarchy(railcontentId) {
   let topLevelId = await fetchTopLevelParentId(railcontentId)
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const query = `*[railcontent_id == ${topLevelId}]{
@@ -1899,7 +1909,7 @@ export async function fetchTabData(
 
   switch (progress) {
     case 'recent':
-      progressIds = await getAllStartedOrCompleted({ brand, onlyIds: true })
+      progressIds = await getAllStartedOrCompleted({ brand })
       sortOrder = null
       break
     case 'incomplete':

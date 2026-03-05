@@ -12,6 +12,7 @@ import {
 export enum COLLECTION_TYPE {
   SELF = 'self',
   LEARNING_PATH = 'learning-path-v2',
+  PLAYLIST = 'playlist',
 }
 export const COLLECTION_ID_SELF = 0
 

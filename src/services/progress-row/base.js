@@ -4,8 +4,6 @@
 import { getMethodCard } from './rows/method-card.js'
 import {
   getPlaylistCards,
-  getPlaylistEngagedOnContent,
-  getRecentPlaylists,
   processPlaylistItem,
 } from './rows/playlist-card.js'
 import { globalConfig } from '../config.js'
@@ -168,21 +166,21 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}, opti
     db.contentProgress.pull()
   }
 
-  const [userPinnedItem, recentPlaylists] = await Promise.all([
-    getUserPinnedItem(brand),
-    getRecentPlaylists(brand, limit),
-  ])
-  const playlistEngagedOnContent = await getPlaylistEngagedOnContent(recentPlaylists)
+  const userPinnedItem = await getUserPinnedItem(brand)
+
   const [contentCardMap, playlistCards, methodCard] = await Promise.all([
-    getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem),
-    getPlaylistCards(recentPlaylists),
+    getContentCardMap(brand, limit, userPinnedItem),
+    getPlaylistCards(brand, limit),
     getMethodCard(brand),
   ])
+
   const pinnedCard = await popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard)
+
   let allResultsLength = playlistCards.length + contentCardMap.size
   if (methodCard) {
     allResultsLength += 1
   }
+
   const results = sortCards(pinnedCard, contentCardMap, playlistCards, methodCard, limit)
   return {
     type: TabResponseType.PROGRESS_ROWS,
@@ -226,7 +224,7 @@ async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, meth
       item = pinnedPlaylist
     } else {
       const playlist = await fetchPlaylist(pinnedId)
-      item = await processPlaylistItem({
+      item = processPlaylistItem({
         id: pinnedId,
         playlist: playlist,
         type: 'playlist',
