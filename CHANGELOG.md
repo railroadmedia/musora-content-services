@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.139.2](https://github.com/railroadmedia/musora-content-services/compare/v2.139.1...v2.139.2) (2026-03-05)
+
+
+### Bug Fixes
+
+* **TP-970:** update getRecentActivity ([#856](https://github.com/railroadmedia/musora-content-services/issues/856)) ([f08d928](https://github.com/railroadmedia/musora-content-services/commit/f08d928f499b12f5051409c9c1dccc7f98c80aeb))
+
 ### [2.139.1](https://github.com/railroadmedia/musora-content-services/compare/v2.139.0...v2.139.1) (2026-03-04)
 
 
