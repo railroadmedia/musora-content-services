@@ -944,18 +944,35 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
   }
 
   const parentQuery = addParent
-    ? `"parent_content_data": *[railcontent_id in [...(^.parent_content_data[].id)]]{
-      "id": railcontent_id,
-      title,
-      slug,
-      "type": _type,
-      "logo" : logo_image_url.asset->url,
-      "dark_mode_logo": dark_mode_logo_url.asset->url,
-      "light_mode_logo": light_mode_logo_url.asset->url,
-      "badge": ${contentAwardField}.badge.asset->url,
-      "badge_rear": ${contentAwardField}.badge_rear.asset->url,
-      "badge_logo": ${contentAwardField}.logo.asset->url,
-    },`
+    ? `"parent_content_data": select(
+        !defined(parent_content_data) || count(parent_content_data) == 0 => [],
+        [
+          ...[*[defined(railcontent_id) && railcontent_id == ^.parent_content_data[0].id][0]{
+            "id": railcontent_id,
+            title,
+            slug,
+            "type": _type,
+            "logo" : logo_image_url.asset->url,
+            "dark_mode_logo": dark_mode_logo_url.asset->url,
+            "light_mode_logo": light_mode_logo_url.asset->url,
+            "badge": *[references(^._id) && _type == 'content-award'][0].badge.asset->url,
+            "badge_rear": *[references(^._id) && _type == 'content-award'][0].badge_rear.asset->url,
+            "badge_logo": *[references(^._id) && _type == 'content-award'][0].logo.asset->url,
+      }],
+          ...coalesce(*[defined(railcontent_id) && railcontent_id == ^.parent_content_data[1].id][0]{
+              "id": railcontent_id,
+              title,
+              slug,
+              "type": _type,
+              "logo" : logo_image_url.asset->url,
+              "dark_mode_logo": dark_mode_logo_url.asset->url,
+              "light_mode_logo": light_mode_logo_url.asset->url,
+              "badge": *[references(^._id) && _type == 'content-award'][0].badge.asset->url,
+              "badge_rear": *[references(^._id) && _type == 'content-award'][0].badge_rear.asset->url,
+              "badge_logo": *[references(^._id) && _type == 'content-award'][0].logo.asset->url,
+            }, []),
+        ],
+      ),`
     : ''
 
   const fields = `${getFieldsForContentType()}
