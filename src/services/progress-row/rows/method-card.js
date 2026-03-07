@@ -152,7 +152,7 @@ function analyzeDailySession(learningPath) {
 
   let allDailiesCompleted = true;
   let anyDailiesStarted = false;
-  let noDailiesStarted = true;
+  let noDailiesStarted = false;
   let nextIncompleteDaily = null;
 
   for (const lesson of allDailies) {
