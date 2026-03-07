@@ -1,10 +1,13 @@
-import { fetchHierarchy, fetchLearningPathHierarchy } from './sanity.js'
+import {
+  fetchHierarchy,
+  fetchLearningPathHierarchy,
+  fetchMetadataByContentIds,
+} from './sanity.js'
 import { db } from './sync'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, STATE } from './sync/models/ContentProgress'
 import { trackUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 import {getDailySession, onContentCompletedLearningPathActions} from "./content-org/learning-paths.ts";
-import { fetchBrandsByContentIds } from './sanity.js'
 
 const STATE_STARTED = STATE.STARTED
 const STATE_COMPLETED = STATE.COMPLETED
@@ -332,9 +335,11 @@ export async function getAllCompletedByIds(contentIds) {
  */
 export async function getAllStartedOrCompleted({
   brand = null,
+  contentTypes = null,
+  topLevelOnly = false,
   limit = null,
 } = {}) {
-  return await _getAllStartedOrCompleted({ brand, limit }).then(recs => recs.map(rec => rec.content_id))
+  return await _getAllStartedOrCompleted({ brand, contentTypes, topLevelOnly, limit }).then(recs => recs.map(rec => rec.content_id))
 }
 
 /**
@@ -362,32 +367,47 @@ export async function getStartedOrCompletedProgressOnly({ brand = undefined } = 
 
 async function _getAllStartedOrCompleted({
   brand = null,
+  contentTypes = null,
+  topLevelOnly = false,
   limit = null,
 } = {}) {
-  const agoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
+  const agoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60
   const baseFilters = {
     updatedAfter: agoInSeconds,
   }
 
-  if (!brand) {
+  const needsLooseFetch = !!(brand || contentTypes || topLevelOnly)
+
+  if (!needsLooseFetch) {
     return await db.contentProgress.startedOrCompleted({ ...baseFilters, limit }).then(r => r.data)
   }
 
-  // content_brand can be null (i.e., when progress records created locally)
-  // TODO: eventually put content metadata into watermelon so we can
-  // always have brand info in progress records and avoid all this
+  const strictFilters = {
+    ...baseFilters,
+    ...(brand && { brand }),
+    ...(contentTypes && { contentTypes }),
+    ...(topLevelOnly && { topLevelOnly }),
+  }
 
-  // for now though, null-ish brands shouldn't be too numerous, so safe to have undefined limit
   const [strictRecs, looseRecs] = await Promise.all([
-    db.contentProgress.startedOrCompleted({ ...baseFilters, brand, limit }),
-    db.contentProgress.startedOrCompleted({ ...baseFilters, brand: null, limit: undefined })
-  ]);
+    db.contentProgress.startedOrCompleted({ ...strictFilters, limit }),
+    db.contentProgress.startedOrCompleted({ ...baseFilters, onlyLooseRecs: true, limit: undefined }),
+  ])
 
-  const map = await fetchBrandsByContentIds(looseRecs.data.map(r => r.content_id));
-  const filteredLooseRecs = looseRecs.data.filter(r => map[r.content_id] === brand).map(r => ({ ...r, content_brand: brand }));
+  const metaMap = await fetchMetadataByContentIds(looseRecs.data.map(r => r.content_id))
 
-  const records = [...strictRecs.data, ...filteredLooseRecs].sort((a, b) => b.updated_at - a.updated_at).slice(0, limit || undefined);
-  return records;
+  const filteredLooseRecs = looseRecs.data
+    .filter(r => {
+      const meta = metaMap[r.content_id]
+      if (!meta) return false
+      if (brand && meta.brand !== brand) return false
+      if (contentTypes && !contentTypes.includes(meta.type)) return false
+      if (topLevelOnly && meta.parent_id !== 0) return false
+      return true
+    })
+    .map(r => ({ ...r, ...metaMap[r.content_id] }))
+
+  return [...strictRecs.data, ...filteredLooseRecs].sort((a, b) => b.updated_at - a.updated_at).slice(0, limit ?? undefined);
 }
 
 /**
