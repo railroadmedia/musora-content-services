@@ -67,19 +67,31 @@ export async function getDailySession(
   userDate: Date,
   forceRefresh: boolean = false
 ) {
-  const dateWithTimezone = formatLocalDateTime(userDate)
-  const url: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
-  try {
-    const response = (await dataPromiseGET(url, forceRefresh)) as DailySessionResponse|""
-    dailySessionPromise = null
+  if (dailySessionPromise && !forceRefresh) {
+    return dailySessionPromise
+  }
+
+  dailySessionPromise = (async () => {
+    const dateWithTimezone = formatLocalDateTime(userDate)
+    const url = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&userDate=${encodeURIComponent(dateWithTimezone)}`
+
+    const response = await GET(url, {
+      cache: forceRefresh ? 'reload' : 'default',
+    }) as DailySessionResponse | ''
 
     if (!response) {
       return await updateDailySession(brand, userDate, false)
     }
     return response as DailySessionResponse
+  })()
 
-  } catch (error: any) {
-    throw error
+  try {
+    return await dailySessionPromise
+  } catch (error) {
+    console.error('Error fetching daily session:', (error as any).message)
+    return null
+  } finally {
+    dailySessionPromise = null
   }
 }
 
