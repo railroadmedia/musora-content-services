@@ -5,7 +5,7 @@
 import { getActivePath, fetchLearningPathLessons } from '../../content-org/learning-paths'
 import { fetchMethodV2IntroVideo } from '../../sanity'
 import { getProgressState } from '../../contentProgress'
-import {COLLECTION_TYPE, STATE} from '../../sync/models/ContentProgress'
+import { COLLECTION_TYPE, STATE } from '../../sync/models/ContentProgress'
 
 export async function getMethodCard(brand) {
   let introVideo
@@ -62,7 +62,7 @@ export async function getMethodCard(brand) {
       learningPath = await fetchLearningPathLessons(
         activeLearningPath.active_learning_path_id,
         brand,
-        new Date()
+        new Date(),
       )
     } catch (e) {
       console.error('Failed to fetch learning path lessons', e)
@@ -80,7 +80,7 @@ export async function getMethodCard(brand) {
     }
 
     let maxProgressTimestamp = Math.max(
-      ...learningPath?.children.map((lesson) => lesson.progressTimestamp)
+      ...learningPath?.children.map((lesson) => lesson.progressTimestamp),
     )
 
     if (!maxProgressTimestamp) {
@@ -122,10 +122,10 @@ function getCtaAndText(learningPath) {
       allDailiesCompleted,
       anyDailiesStarted,
       noDailiesStarted,
-      nextIncompleteDaily
+      nextIncompleteDaily,
     } = analyzeDailySession(learningPath))
   } catch (e) {
-    console.error(e, "error generating method card cta")
+    console.error(e, 'error generating method card cta')
     throw e
   }
 
@@ -142,7 +142,7 @@ function getCtaAndText(learningPath) {
     try {
       nextLesson = getNextLesson(learningPath)
     } catch (e) {
-      console.error(e, "error finding next lesson for method card cta")
+      console.error(e, 'error finding next lesson for method card cta')
       throw e
     }
 
@@ -172,37 +172,37 @@ function analyzeDailySession(learningPath) {
   const allDailies = [
     ...learningPath.previous_learning_path_dailies,
     ...learningPath.learning_path_dailies,
-    ...learningPath.next_learning_path_dailies
+    ...learningPath.next_learning_path_dailies,
   ]
 
-  let allDailiesCompleted = true;
-  let anyDailiesStarted = false;
-  let noDailiesStarted = false;
-  let nextIncompleteDaily = null;
+  let allDailiesCompleted = true
+  let anyDailiesStarted = false
+  let noDailiesStarted = false
+  let nextIncompleteDaily = null
 
   for (const lesson of allDailies) {
     switch (lesson.progressStatus) {
       case STATE.COMPLETED:
-        anyDailiesStarted = true;
-        noDailiesStarted = false;
-        break;
+        anyDailiesStarted = true
+        noDailiesStarted = false
+        break
       case STATE.STARTED:
-        anyDailiesStarted = true;
-        noDailiesStarted = false;
-        allDailiesCompleted = false;
+        anyDailiesStarted = true
+        noDailiesStarted = false
+        allDailiesCompleted = false
         if (!nextIncompleteDaily) {
-          nextIncompleteDaily = lesson;
+          nextIncompleteDaily = lesson
         }
-        break;
+        break
       default:
-        allDailiesCompleted = false;
+        allDailiesCompleted = false
         if (!nextIncompleteDaily) {
-          nextIncompleteDaily = lesson;
+          nextIncompleteDaily = lesson
         }
-        break;
+        break
     }
     if (!allDailiesCompleted && anyDailiesStarted && nextIncompleteDaily) {
-      break;
+      break
     }
   }
 
@@ -210,7 +210,7 @@ function analyzeDailySession(learningPath) {
     allDailiesCompleted,
     anyDailiesStarted,
     noDailiesStarted,
-    nextIncompleteDaily
+    nextIncompleteDaily,
   }
 }
 

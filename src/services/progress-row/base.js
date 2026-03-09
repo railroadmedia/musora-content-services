@@ -174,9 +174,18 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}, opti
   ])
   const playlistEngagedOnContent = await getPlaylistEngagedOnContent(recentPlaylists)
   const [contentCardMap, playlistCards, methodCard] = await Promise.all([
-    getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem),
-    getPlaylistCards(recentPlaylists),
-    getMethodCard(brand),
+    getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem).catch(err => {
+      console.error('getContentCardMap failed:', err)
+      return null
+    }),
+    getPlaylistCards(recentPlaylists).catch(err => {
+      console.error('getPlaylistCards failed:', err)
+      return null
+    }),
+    getMethodCard(brand).catch(err => {
+      console.error('getMethodCard failed:', err)
+      return null
+    }),
   ])
   const pinnedCard = await popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard)
   let allResultsLength = playlistCards.length + contentCardMap.size
