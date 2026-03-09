@@ -168,11 +168,7 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}, opti
 
   const userPinnedItem = await getUserPinnedItem(brand)
 
-  const [contentCardMap, playlistCards, methodCard] = await Promise.all([
-    getContentCardMap(brand, limit, userPinnedItem),
-    getPlaylistCards(brand, limit),
-    getMethodCard(brand),
-  ])
+  const [contentCardMap, playlistCards, methodCard] = await getCards(brand, limit, userPinnedItem)
 
   const pinnedCard = await popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard)
 
@@ -187,6 +183,23 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}, opti
     displayBrowseAll: allResultsLength > limit,
     data: results,
   }
+}
+
+async function getCards(brand, limit, userPinnedItem) {
+  return Promise.all([
+    getContentCardMap(brand, limit, userPinnedItem).catch(e => {
+      console.error('getContentCardMap failed:', e)
+      return new Map()
+    }),
+    getPlaylistCards(brand, limit).catch(e => {
+      console.error('getPlaylistCards failed:', e)
+      return []
+    }),
+    getMethodCard(brand).catch(e => {
+      console.error('getMethodCard failed:', e)
+      return null
+    }),
+  ])
 }
 
 /**
