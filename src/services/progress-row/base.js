@@ -17,6 +17,7 @@ import { TabResponseType } from '../../contentMetaData.js'
 import { GET, PUT } from '../../infrastructure/http/HttpClient.ts'
 import { postProcessBadge } from "../../contentTypeConfig.js";
 import { db } from '../sync/index'
+import { getSignatureReturns } from 'jsdoc/lib/jsdoc/util/templateHelper.js'
 
 export const USER_PIN_PROGRESS_KEY = 'user_pin_progress_row'
 const CACHE_EXPIRY_MS = 5 * 60 * 1000
@@ -173,20 +174,9 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}, opti
     getRecentPlaylists(brand, limit),
   ])
   const playlistEngagedOnContent = await getPlaylistEngagedOnContent(recentPlaylists)
-  const [contentCardMap, playlistCards, methodCard] = await Promise.all([
-    getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem).catch(err => {
-      console.error('getContentCardMap failed:', err)
-      return null
-    }),
-    getPlaylistCards(recentPlaylists).catch(err => {
-      console.error('getPlaylistCards failed:', err)
-      return null
-    }),
-    getMethodCard(brand).catch(err => {
-      console.error('getMethodCard failed:', err)
-      return null
-    }),
-  ])
+
+  const [contentCardMap, playlistCards, methodCard] = await getCards(brand, limit, playlistEngagedOnContent, userPinnedItem, recentPlaylists)
+
   const pinnedCard = await popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard)
   let allResultsLength = playlistCards.length + contentCardMap.size
   if (methodCard) {
@@ -198,6 +188,23 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}, opti
     displayBrowseAll: allResultsLength > limit,
     data: results,
   }
+}
+
+async function getCards(brand, limit, playlistEngagedOnContent, userPinnedItem, recentPlaylists) {
+  return Promise.all([
+    getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem).catch(e => {
+      console.error('getContentCardMap failed:', e)
+      return null
+    }),
+    getPlaylistCards(recentPlaylists).catch(e => {
+      console.error('getPlaylistCards failed:', e)
+      return null
+    }),
+    getMethodCard(brand).catch(e => {
+      console.error('getMethodCard failed:', e)
+      return null
+    }),
+  ])
 }
 
 /**
