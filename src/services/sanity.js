@@ -1321,7 +1321,6 @@ export async function fetchTopLevelParentId(railcontentId) {
     }`
   let response = await fetchSanity(query, false, { processNeedAccess: false })
   if (!response) return null
-  console.log('fetchTopParent', response)
   return response['top_parent'] ?? response['railcontent_id']
 }
 
