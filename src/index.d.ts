@@ -109,6 +109,11 @@ import {
 } from './services/contentLikes.js';
 
 import {
+	getCachedContentMetadata,
+	setCachedContentMetadata
+} from './services/contentMetadataCache.ts';
+
+import {
 	contentStatusCompleted,
 	contentStatusCompletedMany,
 	contentStatusReset,
@@ -269,7 +274,6 @@ import {
 	buildEntityAndTotalQuery,
 	fetchAll,
 	fetchAllFilterOptions,
-	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -284,6 +288,7 @@ import {
 	fetchLessonsFeaturingThisContent,
 	fetchLiveEvent,
 	fetchMetadata,
+	fetchMetadataByContentIds,
 	fetchMethodV2IntroVideo,
 	fetchMethodV2Structure,
 	fetchMethodV2StructureFromId,
@@ -505,7 +510,6 @@ declare module 'musora-content-services' {
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
-		fetchBrandsByContentIds,
 		fetchByRailContentId,
 		fetchByRailContentIds,
 		fetchByReference,
@@ -551,6 +555,7 @@ declare module 'musora-content-services' {
 		fetchLiveStreamData,
 		fetchMemberships,
 		fetchMetadata,
+		fetchMetadataByContentIds,
 		fetchMethodV2IntroVideo,
 		fetchMethodV2Structure,
 		fetchMethodV2StructureFromId,
@@ -616,6 +621,7 @@ declare module 'musora-content-services' {
 		getAllStartedOrCompleted,
 		getAwardStatistics,
 		getBadgeFields,
+		getCachedContentMetadata,
 		getCompletedAwards,
 		getContentAwards,
 		getContentAwardsByIds,
@@ -733,6 +739,7 @@ declare module 'musora-content-services' {
 		search,
 		sendAccountSetupEmail,
 		sendPasswordResetEmail,
+		setCachedContentMetadata,
 		setStudentViewForUser,
 		setUserPinnedProgressRow,
 		setUserSignature,

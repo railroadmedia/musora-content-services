@@ -63,6 +63,9 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       updatedAfter?: number
       limit?: number
       include?: { aLaCarte?: boolean, learningPaths?: boolean }
+      contentTypes?: number[] | null
+      topLevelOnly?: boolean | null
+      onlyLooseRecs?: boolean // need this for unique logic
     } = {}
   ) {
     const clauses: Q.Clause[] = [
@@ -76,8 +79,31 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       clauses.push(Q.where('updated_at', Q.gte(opts.updatedAfter)))
     }
 
-    if (typeof opts.brand != 'undefined') {
-      clauses.push(Q.where('content_brand', opts.brand))
+    if (opts.onlyLooseRecs) {
+      clauses.push(Q.or(
+        Q.where('content_brand', null),
+        Q.where('content_type', null),
+        Q.where('content_parent_id', null)
+      ))
+    } else {
+      if (typeof opts.brand != 'undefined') {
+        clauses.push(Q.where('content_brand', opts.brand))
+      }
+
+      if (typeof opts.contentTypes != 'undefined') {
+        if (opts.contentTypes === null) {
+          clauses.push(Q.where('content_type', null))
+        } else {
+          clauses.push(Q.where('content_type', Q.oneOf(opts.contentTypes)))
+        }
+      }
+
+      if (typeof opts.topLevelOnly != 'undefined') {
+        const value = opts.topLevelOnly === null ? null
+          : opts.topLevelOnly ? 0
+            : Q.notEq(null)
+        clauses.push(Q.where('content_parent_id', value))
+      }
     }
 
     if (opts.limit) {
