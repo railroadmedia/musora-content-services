@@ -71,7 +71,13 @@ export async function getMethodCard(brand) {
 
     if (!learningPath) return null
 
-    const { ctaText, action } = getCtaAndText(learningPath)
+    let ctaText, action
+    try {
+      ({ ctaText, action } = getCtaAndText(learningPath))
+    } catch (e) {
+      console.error('Failed to determine CTA and action for method card', e)
+      return null
+    }
 
     let maxProgressTimestamp = Math.max(
       ...learningPath?.children.map((lesson) => lesson.progressTimestamp)
@@ -99,28 +105,29 @@ export async function getMethodCard(brand) {
 }
 
 function getMethodActionCTA(item) {
-  return {
+  return item ? {
     type: item.type ?? null,
     brand: item.brand ?? null,
     id: item.id ?? null,
     slug: item.slug ?? null,
     parent_id: item.parent_id ?? null,
-  }
+  } : null
 }
 
 function getCtaAndText(learningPath) {
-  const {
-    allDailiesCompleted,
-    anyDailiesStarted,
-    noDailiesStarted,
-    nextIncompleteDaily
-  } = analyzeDailySession(learningPath)
+  let allDailiesCompleted, anyDailiesStarted, noDailiesStarted, nextIncompleteDaily
 
-  // get the first incomplete lesson from upcoming and next learning path lessons
-  const nextLesson = [
-    ...learningPath?.upcoming_lessons,
-    ...learningPath?.next_learning_path_dailies,
-  ]?.find((lesson) => lesson.progressStatus !== STATE.COMPLETED)
+  try {
+    ({
+      allDailiesCompleted,
+      anyDailiesStarted,
+      noDailiesStarted,
+      nextIncompleteDaily
+    } = analyzeDailySession(learningPath))
+  } catch (e) {
+    console.error(e, "error generating method card cta")
+    throw e
+  }
 
   let ctaText, action
   if (noDailiesStarted) {
@@ -130,6 +137,15 @@ function getCtaAndText(learningPath) {
     ctaText = 'Continue Session'
     action = getMethodActionCTA(nextIncompleteDaily)
   } else if (allDailiesCompleted) {
+    // get the first incomplete lesson from upcoming and next learning path lessons
+    let nextLesson
+    try {
+      nextLesson = getNextLesson(learningPath)
+    } catch (e) {
+      console.error(e, "error finding next lesson for method card cta")
+      throw e
+    }
+
     ctaText = nextLesson ? 'Start Next Lesson' : 'Browse Lessons'
     action = nextLesson
       ? getMethodActionCTA(nextLesson)
@@ -137,6 +153,15 @@ function getCtaAndText(learningPath) {
         type: 'method-complete',
         brand: learningPath.brand,
       }
+  }
+
+  //fallback for if somehow a lesson's data was null
+  if (!action) {
+    ctaText = 'Browse Lessons'
+    action = {
+      type: 'method-complete',
+      brand: learningPath.brand,
+    }
   }
 
   return { action, ctaText }
@@ -152,7 +177,7 @@ function analyzeDailySession(learningPath) {
 
   let allDailiesCompleted = true;
   let anyDailiesStarted = false;
-  let noDailiesStarted = true;
+  let noDailiesStarted = false;
   let nextIncompleteDaily = null;
 
   for (const lesson of allDailies) {
@@ -187,5 +212,12 @@ function analyzeDailySession(learningPath) {
     noDailiesStarted,
     nextIncompleteDaily
   }
+}
+
+function getNextLesson(learningPath) {
+  return [
+    ...learningPath?.upcoming_lessons,
+    ...learningPath?.next_learning_path_dailies,
+  ]?.find((lesson) => lesson.progressStatus !== STATE.COMPLETED)
 }
 
