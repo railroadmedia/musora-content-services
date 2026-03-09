@@ -948,29 +948,32 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
         !defined(parent_content_data) || count(parent_content_data) == 0 => [],
         [
           ...[*[defined(railcontent_id) && railcontent_id == ^.parent_content_data[0].id][0]{
-            "id": railcontent_id,
-            title,
-            slug,
-            "type": _type,
-            "logo" : logo_image_url.asset->url,
-            "dark_mode_logo": dark_mode_logo_url.asset->url,
-            "light_mode_logo": light_mode_logo_url.asset->url,
-            "badge": *[references(^._id) && _type == 'content-award'][0].badge.asset->url,
-            "badge_rear": *[references(^._id) && _type == 'content-award'][0].badge_rear.asset->url,
-            "badge_logo": *[references(^._id) && _type == 'content-award'][0].logo.asset->url,
-      }],
-          ...coalesce(*[defined(railcontent_id) && railcontent_id == ^.parent_content_data[1].id][0]{
-              "id": railcontent_id,
-              title,
-              slug,
-              "type": _type,
-              "logo" : logo_image_url.asset->url,
-              "dark_mode_logo": dark_mode_logo_url.asset->url,
-              "light_mode_logo": light_mode_logo_url.asset->url,
-              "badge": *[references(^._id) && _type == 'content-award'][0].badge.asset->url,
-              "badge_rear": *[references(^._id) && _type == 'content-award'][0].badge_rear.asset->url,
-              "badge_logo": *[references(^._id) && _type == 'content-award'][0].logo.asset->url,
-            }, []),
+             "id": railcontent_id,
+             title,
+             slug,
+             "type": _type,
+             "logo" : logo_image_url.asset->url,
+             "dark_mode_logo": dark_mode_logo_url.asset->url,
+             "light_mode_logo": light_mode_logo_url.asset->url,
+             "badge": *[references(^._id) && _type == 'content-award'][0].badge.asset->url,
+             "badge_rear": *[references(^._id) && _type == 'content-award'][0].badge_rear.asset->url,
+             "badge_logo": *[references(^._id) && _type == 'content-award'][0].logo.asset->url,
+          }],
+          ...select(
+            count(parent_content_data) == 2 => [*[defined(railcontent_id) && railcontent_id == ^.parent_content_data[1].id][0]{
+               "id": railcontent_id,
+               title,
+               slug,
+               "type": _type,
+               "logo" : logo_image_url.asset->url,
+               "dark_mode_logo": dark_mode_logo_url.asset->url,
+               "light_mode_logo": light_mode_logo_url.asset->url,
+               "badge": *[references(^._id) && _type == 'content-award'][0].badge.asset->url,
+               "badge_rear": *[references(^._id) && _type == 'content-award'][0].badge_rear.asset->url,
+               "badge_logo": *[references(^._id) && _type == 'content-award'][0].logo.asset->url,
+            }],
+            []
+           ),
         ],
       ),`
     : ''
@@ -1328,25 +1331,18 @@ export async function fetchByReference(
  * @returns {Promise<int|null>}
  */
 export async function fetchTopLevelParentId(railcontentId) {
-  const parentFilter = 'railcontent_id in [...(^.parent_content_data[].id)]'
+  const parentFilter = 'railcontent_id in [...(^.parent_content_data[].id)] && (!defined(parent_content_data) || count(parent_content_data) == 0)'
   const statusFilter = "&& status in ['scheduled', 'published', 'archived', 'unlisted']"
 
   const query = `*[railcontent_id == ${railcontentId}]{
       railcontent_id,
-      'parents': *[${parentFilter} ${statusFilter}]{
-        railcontent_id
-      }
+      'top_parent': *[${parentFilter} ${statusFilter}][0].railcontent_id
     }`
   let response = await fetchSanity(query, false, { processNeedAccess: false })
   if (!response) return null
-  let parents = response['parents']
-  let parentsLength = parents ? response['parents'].length : 0
-  if (parentsLength > 0) {
-    const directParentId = parents[parentsLength - 1]['railcontent_id']
-    const topParentId = await fetchTopLevelParentId(directParentId)
-    return topParentId
-  }
-  return response['railcontent_id']
+  console.log('fetchTopParent', response)
+  let parent = response['top_parent'] ?? response['railcontent_id']
+  return parent
 }
 
 export async function fetchLearningPathHierarchy(railcontentId, collection) {
