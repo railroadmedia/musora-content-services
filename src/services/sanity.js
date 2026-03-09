@@ -2185,7 +2185,7 @@ export async function fetchMetadataByContentIds(contentIds) {
       railcontent_id,
       brand,
       'type': _type,
-      'parent_id':  coalesce(parent_content_data->railcontent_id, 0)
+      'parent_id':  coalesce(parent_content_data[0].id, 0)
     }`
   const results = await fetchSanity(query, true)
 
