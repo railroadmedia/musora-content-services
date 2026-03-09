@@ -17,7 +17,6 @@ import { TabResponseType } from '../../contentMetaData.js'
 import { GET, PUT } from '../../infrastructure/http/HttpClient.ts'
 import { postProcessBadge } from "../../contentTypeConfig.js";
 import { db } from '../sync/index'
-import { getSignatureReturns } from 'jsdoc/lib/jsdoc/util/templateHelper.js'
 
 export const USER_PIN_PROGRESS_KEY = 'user_pin_progress_row'
 const CACHE_EXPIRY_MS = 5 * 60 * 1000
@@ -194,11 +193,11 @@ async function getCards(brand, limit, playlistEngagedOnContent, userPinnedItem, 
   return Promise.all([
     getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem).catch(e => {
       console.error('getContentCardMap failed:', e)
-      return null
+      return new Map()
     }),
     getPlaylistCards(recentPlaylists).catch(e => {
       console.error('getPlaylistCards failed:', e)
-      return null
+      return []
     }),
     getMethodCard(brand).catch(e => {
       console.error('getMethodCard failed:', e)
