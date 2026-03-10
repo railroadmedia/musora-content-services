@@ -35,7 +35,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   //this _specifically_ needs to get content_ids from ALL collection_types (including null)
   async completedByContentIds(contentIds: number[]) {
     return this.queryAll(
-      Q.where('content_id', Q.oneOf(contentIds)),
+      Q.where('content_id', Q.oneOf([...contentIds])),
       Q.where('state', STATE.COMPLETED)
     )
   }
@@ -77,7 +77,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
   async mostRecentlyUpdatedId(contentIds: number[], collection: CollectionParameter | null = null) {
     return this.queryOneId(
-      Q.where('content_id', Q.oneOf(contentIds)),
+      Q.where('content_id', Q.oneOf([...contentIds])),
       Q.where('collection_type', collection?.type ?? COLLECTION_TYPE.SELF),
       Q.where('collection_id', collection?.id ?? COLLECTION_ID_SELF),
 
@@ -103,7 +103,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     collection: CollectionParameter | null = null
   ) {
     const clauses = [
-      Q.where('content_id', Q.oneOf(contentIds)),
+      Q.where('content_id', Q.oneOf([...contentIds])),
       Q.where('collection_type', collection?.type ?? COLLECTION_TYPE.SELF),
       Q.where('collection_id', collection?.id ?? COLLECTION_ID_SELF),
     ]
@@ -117,7 +117,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   // I went with the second because it's an easier query
   async getSomeProgressWhereLastAccessedFromMethod(contentIds: number[]) {
     const clauses = [
-      Q.where('content_id', Q.oneOf(contentIds)),
+      Q.where('content_id', Q.oneOf([...contentIds])),
       Q.where('collection_type', COLLECTION_TYPE.SELF),
       Q.where('collection_id', COLLECTION_ID_SELF),
       Q.or(
