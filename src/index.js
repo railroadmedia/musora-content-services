@@ -113,11 +113,6 @@ import {
 } from './services/contentLikes.js';
 
 import {
-	getCachedContentMetadata,
-	setCachedContentMetadata
-} from './services/contentMetadataCache.ts';
-
-import {
 	contentStatusCompleted,
 	contentStatusCompletedMany,
 	contentStatusReset,
@@ -276,6 +271,7 @@ import {
 	buildEntityAndTotalQuery,
 	fetchAll,
 	fetchAllFilterOptions,
+	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -292,7 +288,6 @@ import {
 	fetchLessonsFeaturingThisContent,
 	fetchLiveEvent,
 	fetchMetadata,
-	fetchMetadataByContentIds,
 	fetchMethodV2IntroVideo,
 	fetchMethodV2Structure,
 	fetchMethodV2StructureFromId,
@@ -508,6 +503,7 @@ export {
 	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
+	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -551,7 +547,6 @@ export {
 	fetchLiveStreamData,
 	fetchMemberships,
 	fetchMetadata,
-	fetchMetadataByContentIds,
 	fetchMethodV2IntroVideo,
 	fetchMethodV2Structure,
 	fetchMethodV2StructureFromId,
@@ -616,7 +611,6 @@ export {
 	getAllStartedOrCompleted,
 	getAwardStatistics,
 	getBadgeFields,
-	getCachedContentMetadata,
 	getCompletedAwards,
 	getContentAwards,
 	getContentAwardsByIds,
@@ -732,7 +726,6 @@ export {
 	search,
 	sendAccountSetupEmail,
 	sendPasswordResetEmail,
-	setCachedContentMetadata,
 	setStudentViewForUser,
 	setUserPinnedProgressRow,
 	setUserSignature,

@@ -4,7 +4,6 @@ import {
   positiveInt,
   nullableString,
   nullableUint16,
-  nullableUint32,
   percent,
   mediumint,
   enumValue,
@@ -29,8 +28,6 @@ export interface CollectionParameter {
 const validators = {
   content_id: positiveInt,
   content_brand: nullableString,
-  content_type: nullableString,
-  content_parent_id: nullableUint32,
   progress_percent: (value: number, currentPercent: number) => {
     const validated = percent(value)
     return validated === 0 ? 0 : Math.max(validated, currentPercent)
@@ -48,12 +45,6 @@ export default class ContentProgress extends BaseModel {
   }
   get content_brand() {
     return this._getRaw('content_brand') as string | null
-  }
-  get content_type() {
-    return this._getRaw('content_type') as string | null
-  }
-  get content_parent_id() {
-    return this._getRaw('content_parent_id') as number | null
   }
   get state() {
     return this._getRaw('state') as STATE
@@ -79,12 +70,6 @@ export default class ContentProgress extends BaseModel {
   }
   set content_brand(value: string |  null) {
     this._setRaw('content_brand', validators.content_brand(value))
-  }
-  set content_type(value: string |  null) {
-    this._setRaw('content_type', validators.content_type(value))
-  }
-  set content_parent_id(value: number |  null) {
-    this._setRaw('content_parent_id', validators.content_parent_id(value))
   }
   set progress_percent(value: number) {
     const percent = validators.progress_percent(value, this.progress_percent)
