@@ -1311,7 +1311,7 @@ export async function getHierarchy(contentId, collection) {
   }
   if (!response) return null
 
-  const topLevelId = response[0]?.railcontent_id
+  const topLevelId = response?.railcontent_id ?? response?.id
 
   let data = {
     topLevelId: topLevelId,
@@ -1390,7 +1390,7 @@ export async function fetchLearningPathHierarchyData(railcontentId, collection) 
 
   const topLevelId = collection.id
 
-  return await fetchByRailContentId(topLevelId, 'hierarchy-data')
+  return (await fetchByRailContentIds([topLevelId], 'hierarchy-data'))[0]
 }
 
 export async function fetchALaCarteHierarchyData(railcontentId) {
