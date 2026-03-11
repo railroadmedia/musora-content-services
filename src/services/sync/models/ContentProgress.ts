@@ -2,9 +2,9 @@ import BaseModel from './Base'
 import { SYNC_TABLES } from '../schema'
 import {
   positiveInt,
-  nullableString,
   nullableUint16,
-  nullableUint32,
+  uint32,
+  string,
   percent,
   mediumint,
   enumValue,
@@ -15,6 +15,8 @@ export enum COLLECTION_TYPE {
   LEARNING_PATH = 'learning-path-v2',
 }
 export const COLLECTION_ID_SELF = 0
+
+export const PARENT_ID_TOP_LEVEL = 0
 
 export enum STATE {
   STARTED = 'started',
@@ -28,9 +30,9 @@ export interface CollectionParameter {
 
 const validators = {
   content_id: positiveInt,
-  content_brand: nullableString,
-  content_type: nullableString,
-  content_parent_id: nullableUint32,
+  content_brand: string,
+  content_type: string,
+  content_parent_id: uint32,
   progress_percent: (value: number, currentPercent: number) => {
     const validated = percent(value)
     return validated === 0 ? 0 : Math.max(validated, currentPercent)
@@ -47,13 +49,13 @@ export default class ContentProgress extends BaseModel {
     return this._getRaw('content_id') as number
   }
   get content_brand() {
-    return this._getRaw('content_brand') as string | null
+    return this._getRaw('content_brand') as string
   }
   get content_type() {
-    return this._getRaw('content_type') as string | null
+    return this._getRaw('content_type') as string
   }
   get content_parent_id() {
-    return this._getRaw('content_parent_id') as number | null
+    return this._getRaw('content_parent_id') as number
   }
   get state() {
     return this._getRaw('state') as STATE
