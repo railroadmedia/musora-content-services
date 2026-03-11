@@ -1183,7 +1183,7 @@ export async function fetchRelatedLessons(railContentId) {
     { showMembershipRestrictedContent: true }
   ).buildFilter()
 
-  const queryFields = DEFAULT_FIELDS.join(', ')
+  const queryFields = getFieldsForContentType()
 
   const query = `*[railcontent_id == ${railContentId} && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
