@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.139.4](https://github.com/railroadmedia/musora-content-services/compare/v2.139.3...v2.139.4) (2026-03-11)
+
+
+### Bug Fixes
+
+* update fetch related lessons query fields ([#862](https://github.com/railroadmedia/musora-content-services/issues/862)) ([bb991a4](https://github.com/railroadmedia/musora-content-services/commit/bb991a4d82d38e21bd47a56a6ba4b8df74fa98b1))
+
 ### [2.139.3](https://github.com/railroadmedia/musora-content-services/compare/v2.139.2...v2.139.3) (2026-03-11)
 
 
