@@ -785,7 +785,13 @@ export function getSortOrder(sort = '-published_on', brand, groupBy) {
 
   switch (sortField) {
     case 'slug':
-      sortOrder = groupBy ? 'name' : '!defined(title), lower(title)'
+      if (groupBy) {
+        sortOrder = 'name'
+      } else {
+        sortOrder = '!defined(title_for_sort), title_for_sort'
+        sortOrder += isDesc ? ' desc' : ' asc'
+        sortOrder += ', !defined(title), lower(title)' // title fallback
+      }
       break
 
     case 'popularity':
@@ -946,17 +952,18 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
 
   const parentQuery = addParent
     ? `"parent_content_data": *[railcontent_id in [...(^.parent_content_data[].id)]]{
-      "id": railcontent_id,
-      title,
-      slug,
-      "type": _type,
-      "logo" : logo_image_url.asset->url,
-      "dark_mode_logo": dark_mode_logo_url.asset->url,
-      "light_mode_logo": light_mode_logo_url.asset->url,
-      "badge": ${contentAwardField}.badge.asset->url,
-      "badge_rear": ${contentAwardField}.badge_rear.asset->url,
-      "badge_logo": ${contentAwardField}.logo.asset->url,
-    },`
+        "id": railcontent_id,
+        title,
+        slug,
+        "type": _type,
+        "logo" : logo_image_url.asset->url,
+        "dark_mode_logo": dark_mode_logo_url.asset->url,
+        "light_mode_logo": light_mode_logo_url.asset->url,
+        "badge": *[references(^._id) && _type == 'content-award'][0].badge.asset->url,
+        "badge_rear": *[references(^._id) && _type == 'content-award'][0].badge_rear.asset->url,
+        "badge_logo": *[references(^._id) && _type == 'content-award'][0].logo.asset->url,
+        'parentCount': coalesce(count(parent_content_data), 0)
+      } | order(parentCount desc),`
     : ''
 
   const fields = `${getFieldsForContentType()}
@@ -1177,7 +1184,7 @@ export async function fetchRelatedLessons(railContentId) {
     { showMembershipRestrictedContent: true }
   ).buildFilter()
 
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission_v2,_type, "genre": genre[]->name`
+  const queryFields = getFieldsForContentType()
 
   const query = `*[railcontent_id == ${railContentId} && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
@@ -1363,24 +1370,16 @@ function extractMetadataFromHierarchy(hierarchyData) {
  * @returns {Promise<int|null>}
  */
 export async function fetchTopLevelParentId(railcontentId) {
-  const parentFilter = 'railcontent_id in [...(^.parent_content_data[].id)]'
+  const parentFilter = 'railcontent_id in [...(^.parent_content_data[].id)] && (!defined(parent_content_data) || count(parent_content_data) == 0)'
   const statusFilter = "&& status in ['scheduled', 'published', 'archived', 'unlisted']"
 
   const query = `*[railcontent_id == ${railcontentId}]{
       railcontent_id,
-      'parents': *[${parentFilter} ${statusFilter}]{
-        railcontent_id
-      }
+      'top_parent': *[${parentFilter} ${statusFilter}][0].railcontent_id
     }`
   let response = await fetchSanity(query, false, { processNeedAccess: false })
   if (!response) return null
-  let parents = response['parents']
-  let parentsLength = parents ? response['parents'].length : 0
-  if (parentsLength > 0) {
-    const directParentId = parents[parentsLength - 1]['railcontent_id']
-    return await fetchTopLevelParentId(directParentId)
-  }
-  return response['railcontent_id']
+  return response['top_parent'] ?? response['railcontent_id']
 }
 
 export async function fetchLearningPathHierarchyData(railcontentId, collection) {
