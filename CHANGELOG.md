@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.139.3](https://github.com/railroadmedia/musora-content-services/compare/v2.139.2...v2.139.3) (2026-03-11)
+
+
+### Features
+
+* **TP-1107:** progress row type and hierarchy query filtering ([#858](https://github.com/railroadmedia/musora-content-services/issues/858)) ([91be05d](https://github.com/railroadmedia/musora-content-services/commit/91be05d1ee857d404676354852f86be174b593b8))
+
+
+### Bug Fixes
+
+* method card safety 2 ([#860](https://github.com/railroadmedia/musora-content-services/issues/860)) ([409f2fc](https://github.com/railroadmedia/musora-content-services/commit/409f2fc9269a869c68a8590f87c179ebf2d88d94))
+* **T3PS-1573:** correct sort alphabetically ([#805](https://github.com/railroadmedia/musora-content-services/issues/805)) ([6f7fba6](https://github.com/railroadmedia/musora-content-services/commit/6f7fba6f5aab250b73275b51a694e8e9459b7bc1))
+* **T3PS-2213:** fix parent content data ([#857](https://github.com/railroadmedia/musora-content-services/issues/857)) ([531e149](https://github.com/railroadmedia/musora-content-services/commit/531e149dbab1305ff8eba9ad4cb988decfd62da1))
+
 ### [2.139.2](https://github.com/railroadmedia/musora-content-services/compare/v2.139.1...v2.139.2) (2026-03-05)
 
 
