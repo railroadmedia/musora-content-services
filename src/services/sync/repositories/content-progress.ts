@@ -7,7 +7,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     limit?: number,
     opts: {
       onlyIds?: boolean
-      include?: { aLaCarte?: boolean, playlists?: boolean, learningPaths?: boolean }
+      include?: { aLaCarte?: boolean, learningPaths?: boolean }
     } = {}
     ) {
     const results = await this.queryAll(...[
@@ -28,7 +28,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     limit?: number,
     opts: {
       onlyIds?: boolean
-      include?: { aLaCarte?: boolean, playlists?: boolean, learningPaths?: boolean }
+      include?: { aLaCarte?: boolean, learningPaths?: boolean }
     } = {}
   ) {
     const results = await this.queryAll(...[
