@@ -341,7 +341,7 @@ export async function getAllStartedOrCompleted({
   brand = null,
   limit = null,
   include = { aLaCarte: true, learningPaths: false },
-  onlyIds = true
+  onlyIds = true // need to be careful if allowing non-alacarte progress, because some content_ids can overlap
 } = {}) {
   const data = _getAllStartedOrCompleted({
     brand,
