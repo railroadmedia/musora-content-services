@@ -1,7 +1,7 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 import {
@@ -528,11 +528,7 @@ export {
 	fetchGenreBySlug,
 	fetchGenreLessons,
 	fetchGenres,
-<<<<<<< fix/TP-1105_playlist-progress-for-homepage-row
-=======
 	fetchHasActivePlatformSubscription,
-	fetchHierarchy,
->>>>>>> main
 	fetchInstructorBySlug,
 	fetchInstructorLessons,
 	fetchInstructors,

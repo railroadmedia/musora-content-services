@@ -448,7 +448,7 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
@@ -529,11 +529,7 @@ declare module 'musora-content-services' {
 		fetchGenreBySlug,
 		fetchGenreLessons,
 		fetchGenres,
-<<<<<<< fix/TP-1105_playlist-progress-for-homepage-row
-=======
 		fetchHasActivePlatformSubscription,
-		fetchHierarchy,
->>>>>>> main
 		fetchInstructorBySlug,
 		fetchInstructorLessons,
 		fetchInstructors,
