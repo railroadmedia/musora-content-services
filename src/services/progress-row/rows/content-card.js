@@ -13,6 +13,7 @@ import {
   songs,
 } from '../../../contentTypeConfig.js'
 import { getTimeRemainingUntilLocal } from '../../dateUtils.js'
+import { PARENT_ID_TOP_LEVEL } from '../../sync/models/ContentProgress.js'
 
 /**
  * Fetch any content IDs with some progress, include the userPinnedItem,
@@ -20,7 +21,12 @@ import { getTimeRemainingUntilLocal } from '../../dateUtils.js'
  * and generate a map of the cards keyed by the content IDs
  */
 export async function getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem ){
-  let recentContentIds = await getAllStartedOrCompleted({ brand: brand, limit: (limit ? (limit * 5) : limit) })
+  const metadata = {
+      brand: brand,
+      contentTypes: Object.values(recentTypes.homeRow),
+      parentId: PARENT_ID_TOP_LEVEL,
+    }
+  let recentContentIds = await getAllStartedOrCompleted({ metadata, limit: limit })
   if (userPinnedItem?.progressType === 'content') {
     recentContentIds.push(userPinnedItem.id)
   }

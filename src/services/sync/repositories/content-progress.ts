@@ -7,6 +7,12 @@ interface ContentIdCollectionTuple {
   collection: CollectionParameter | null,
 }
 
+interface MetadataParameter {
+  brand: string
+  type: string
+  parent_id: number
+}
+
 export default class ProgressRepository extends SyncRepository<ContentProgress> {
   // null collection only
   async startedIds(limit?: number) {
@@ -49,8 +55,10 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   private startedOrCompletedClauses(
     opts: {
       brand?: string | null
-      updatedAfter?: number,
-      limit?: number,
+      contentTypes?: string[] | null
+      parentId?: number | null
+      updatedAfter?: number
+      limit?: number
     } = {}
   ) {
     const clauses: Q.Clause[] = [
@@ -64,8 +72,16 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       clauses.push(Q.where('updated_at', Q.gte(opts.updatedAfter)))
     }
 
-    if (typeof opts.brand != 'undefined') {
+    if (opts.brand) {
       clauses.push(Q.where('content_brand', opts.brand))
+    }
+
+    if (opts.contentTypes) {
+      clauses.push(Q.where('content_type', Q.oneOf(opts.contentTypes)))
+    }
+
+    if (opts.parentId || opts.parentId === 0) {
+      clauses.push(Q.where('content_parent_id', opts.parentId))
     }
 
     if (opts.limit) {
@@ -152,7 +168,13 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     }
   }
 
-  recordProgress(contentId: number, collection: CollectionParameter | null, progressPct: number, resumeTime?: number, {skipPush = false, fromLearningPath = false} = {}) {
+  recordProgress(
+    contentId: number,
+    collection: CollectionParameter | null,
+    progressPct: number,
+    metadata: MetadataParameter,
+    resumeTime?: number,
+    {skipPush = false, fromLearningPath = false} = {}) {
     const id = ContentProgress.generateId(contentId, collection)
 
     if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {
@@ -165,6 +187,10 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       r.collection_id = collection?.id ?? COLLECTION_ID_SELF
 
       r.progress_percent = progressPct
+
+      r.content_brand = metadata.brand
+      r.content_type = metadata.type
+      r.content_parent_id = metadata.parent_id
 
       if (typeof resumeTime != 'undefined') {
         if (resumeTime >= 10 || r.resume_time_seconds !== null) {
@@ -206,6 +232,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   recordProgressMany(
     contentProgresses: Record<string, number>, // Accept plain object
     collection: CollectionParameter | null,
+    metadata: Record<string, MetadataParameter>,
     { skipPush = false, fromLearningPath = false }: { skipPush?: boolean; fromLearningPath?: boolean } = {}
   ) {
     if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {
@@ -221,6 +248,10 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
           r.collection_id = collection?.id ?? COLLECTION_ID_SELF
 
           r.progress_percent = progressPct
+
+          r.content_brand = metadata[contentId]?.brand
+          r.content_type = metadata[contentId]?.type
+          r.content_parent_id = metadata[contentId]?.parent_id
 
           if (!fromLearningPath) {
             r.last_interacted_a_la_carte = r.updated_at
