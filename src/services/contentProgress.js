@@ -313,7 +313,6 @@ async function getByRecordIds(ids, dataKey, defaultValue) {
   return progress
 }
 
-// todo TP-1107: brand lookup for all getAllStarted, getAllCompleted, getAllStartedOrCompleted
 export async function getAllStarted(limit = null, {
   onlyIds = true,
   include = { aLaCarte: true, learningPaths: false },
