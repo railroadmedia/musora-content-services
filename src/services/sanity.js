@@ -33,7 +33,6 @@ import {
   SONG_TYPES_WITH_CHILDREN,
   liveFields,
   postProcessBadge,
-  contentAwardField,
   parentField,
   grandParentField,
 } from '../contentTypeConfig.js'
@@ -48,8 +47,6 @@ import { getPermissionsAdapter } from './permissions/index.ts'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
 import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
 import { COLLECTION_TYPE } from './sync/models/ContentProgress.js'
-import { fetchPlaylist } from './content-org/playlists.js'
-import { getCachedContentMetadata, setCachedContentMetadata } from './contentMetadataCache.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -1186,7 +1183,7 @@ export async function fetchRelatedLessons(railContentId) {
     { showMembershipRestrictedContent: true }
   ).buildFilter()
 
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, railcontent_id, artist->,"permission_id": permission_v2,_type, "genre": genre[]->name`
+  const queryFields = getFieldsForContentType()
 
   const query = `*[railcontent_id == ${railContentId} && (!defined(permission) || references(*[_type=='permission']._id))]{
    _type, parent_type, railcontent_id,
@@ -2176,39 +2173,21 @@ export async function fetchOwnedContent(
  * @param {Array<number>} contentIds - Array of railcontent IDs
  * @returns {Promise<Object>} - A promise that resolves to an object mapping content IDs to brands
  */
-export async function fetchMetadataByContentIds(contentIds) {
+export async function fetchBrandsByContentIds(contentIds) {
   if (!contentIds || contentIds.length === 0) {
     return {}
   }
-
-  const cachedContents = await getCachedContentMetadata(contentIds)
-  const nonCachedIds = contentIds.filter((id) => !cachedContents[id])
-
-  if (nonCachedIds.length === 0) {
-    return cachedContents
-  }
-
-  const idsString = nonCachedIds.join(',')
+  const idsString = contentIds.join(',')
   const query = `*[railcontent_id in [${idsString}]]{
       railcontent_id,
-      brand,
-      'type': _type,
-      'parent_id':  coalesce(parent_content_data[0].id, 0)
+      brand
     }`
   const results = await fetchSanity(query, true)
-
-  const nonCachedContents = results.reduce((acc, item) => {
-    acc[item.railcontent_id] = {
-      b: item.brand,
-      t: item.type,
-      p: item.parent_id,
-    }
-    return acc
-  }, {})
-
-  setCachedContentMetadata(nonCachedContents)
-
-  return { ...cachedContents, ...nonCachedContents }
+  const brandMap = {}
+  results.forEach((item) => {
+    brandMap[item.railcontent_id] = item.brand
+  })
+  return brandMap
 }
 
 /**

@@ -1,7 +1,7 @@
 /**
  * @module ProgressRow
  */
-import { getAllStartedOrCompleted, getProgressStateByIds } from '../../contentProgress'
+import { getAllStartedOrCompleted, getProgressStateByIds } from '../../contentProgress.js'
 import { addContextToContent } from '../../contentAggregator.js'
 import { fetchByRailContentIds, fetchShows } from '../../sanity.js'
 import {
@@ -22,10 +22,7 @@ import { getTimeRemainingUntilLocal } from '../../dateUtils.js'
 export async function getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem ){
   let recentContentIds = await getAllStartedOrCompleted({
     brand: brand,
-    contentTypes: Object.values(recentTypes.homeRow),
-    topLevelOnly: true,
-    onlyIds: true,
-    limit: limit
+    limit: (limit ? (limit * 5) : limit)
   })
   if (userPinnedItem?.progressType === 'content') {
     recentContentIds.push(userPinnedItem.id)
