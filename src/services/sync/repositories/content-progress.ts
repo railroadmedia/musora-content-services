@@ -55,7 +55,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
   private startedOrCompletedClauses(
     opts: {
       brand?: string | null
-      contentTypes?: number[] | null
+      contentTypes?: string[] | null
       parentId?: number | null
       updatedAfter?: number
       limit?: number

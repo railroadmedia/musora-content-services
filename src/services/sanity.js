@@ -1943,12 +1943,8 @@ export async function fetchTabData(
 
   switch (progress) {
     case 'recent':
-      const metadata = {
-        brand: brand,
-        contentTypes: null, // not needed for recent filter
-        parentId: null, // not needed for recent filter
-      }
-      progressIds = await getAllStartedOrCompleted({ metadata, onlyIds: true })
+      const metadata = { brand }
+      progressIds = await getAllStartedOrCompleted({ metadata })
       sortOrder = null
       break
     case 'incomplete':

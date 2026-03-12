@@ -79,13 +79,13 @@ export default class ContentProgress extends BaseModel {
   set content_id(value: number) {
     this._setRaw('content_id', validators.content_id(value))
   }
-  set content_brand(value: string |  null) {
+  set content_brand(value: string) {
     this._setRaw('content_brand', validators.content_brand(value))
   }
-  set content_type(value: string |  null) {
+  set content_type(value: string) {
     this._setRaw('content_type', validators.content_type(value))
   }
-  set content_parent_id(value: number |  null) {
+  set content_parent_id(value: number) {
     this._setRaw('content_parent_id', validators.content_parent_id(value))
   }
   set progress_percent(value: number) {

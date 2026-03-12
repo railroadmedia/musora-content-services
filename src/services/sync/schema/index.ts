@@ -78,7 +78,7 @@ const userAwardProgressTable = tableSchema({
 })
 
 export default appSchema({
-  version: 2,
+  version: 2, // intentionally no migration for version 1->2, to wipe client db and backfill content_* columns
   tables: [
     contentLikesTable,
     contentProgressTable,

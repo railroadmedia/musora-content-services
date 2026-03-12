@@ -354,11 +354,22 @@ export async function getAllStartedOrCompleted({
  * console.log(progressMap[123]); // => 52
  */
 export async function getStartedOrCompletedProgressOnly({ brand = undefined } = {}) {
-  return _getAllStartedOrCompleted({ brand }).then((r) => {
+  const metadata = { brand }
+  return _getAllStartedOrCompleted({ metadata }).then((r) => {
     return Object.fromEntries(r.map((p) => [p.content_id, p.progress_percent]))
   })
 }
 
+/**
+ *
+ * @param {object|null} metadata - metadata filters
+ * @param {string} metadata.brand - optional filter to fetch progress for a specific brand
+ * @param {string[]} metadata.contentTypes - optional filter to fetch progress of specific content types
+ * @param {number} metadata.parentId - optional filter to fetch progress for a child of a specific parent id
+ * @param {number|null} limit
+ * @returns {Promise<any[]>}
+ * @private
+ */
 async function _getAllStartedOrCompleted({
   metadata = null,
   limit = null,
@@ -607,7 +618,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
     }
   }
   // have to do this so we dont unnecessarily create a 0% record for each child on set to started/completed
-  await bubbleAndTrickleProgressesSafely(progresses, collection)
+  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata)
 
   if (isLP) {
     let exportProgresses = progresses
