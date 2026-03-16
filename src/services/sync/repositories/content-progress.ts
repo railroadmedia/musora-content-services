@@ -249,9 +249,9 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
           r.progress_percent = progressPct
 
-          r.content_brand = metadata[contentId]?.brand
-          r.content_type = metadata[contentId]?.type
-          r.content_parent_id = metadata[contentId]?.parent_id
+          r.content_brand = metadata[contentId].brand
+          r.content_type = metadata[contentId].type
+          r.content_parent_id = metadata[contentId].parent_id
 
           if (!fromLearningPath) {
             r.last_interacted_a_la_carte = r.updated_at
