@@ -245,7 +245,7 @@ export async function getNavigateToForPlaylists(data, { dataField = null } = {})
 
     const allItemsCompleted = accessibleItems.every((item) => {
       const progress = progressOnItems[item.content_id]
-      return progress && progress === 'completed'
+      return progress?.status === 'completed'
     })
     let nextItem = accessibleItems[0] ?? playlist.items[0] ?? null
     if (!allItemsCompleted) {

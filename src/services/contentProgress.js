@@ -268,7 +268,6 @@ export async function getProgressDataByRecordIds(ids) {
     last_update: 0,
     progress: 0,
     status: '',
-    collection: {},
   }]))
 
   await db.contentProgress.getSomeProgressByRecordIds(ids).then(r => {
@@ -342,7 +341,7 @@ export async function getAllStartedOrCompleted({
   include = { aLaCarte: true, learningPaths: false },
   onlyIds = true // need to be careful if allowing non-alacarte progress, because some content_ids can overlap
 } = {}) {
-  const data = _getAllStartedOrCompleted({
+  const data = await _getAllStartedOrCompleted({
     brand,
     limit,
     include
@@ -699,6 +698,8 @@ function filterOutLearningPathsForDuplication(progresses, collection) {
       if (collection.type === COLLECTION_TYPE.LEARNING_PATH) {
         // dont want progress on a-la-carte LPs (not supported)
         return id !== collection.id
+      } else {
+        return true
       }
     })
   )
