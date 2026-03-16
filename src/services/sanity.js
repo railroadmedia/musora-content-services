@@ -2023,21 +2023,8 @@ export async function fetchScheduledAndNewReleases(
     )] | order(${sortOrder})
     [${start}...${end}]
     {
-      "id": railcontent_id,
-      title,
-      "image": thumbnail.asset->url,
-      "thumbnail": thumbnail.asset->url,
-      ${artistOrInstructorName()},
-      "artists": instructor[]->name,
-      difficulty,
-      difficulty_string,
-      length_in_seconds,
-      published_on,
-      "type": _type,
-      show_in_new_feed,
-      "permission_id": permission_v2,
-      "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}',
-  }`
+      ${getFieldsForContentType('new-and-scheduled')}
+    }`
 
   return fetchSanity(query, true)
 }
