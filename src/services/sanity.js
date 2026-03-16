@@ -35,7 +35,7 @@ import {
   postProcessBadge,
   contentAwardField,
   parentField,
-  grandParentField,
+  grandParentField, parentRecentTypes,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems } from './recommendations.js'
 import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS, CONTENT_STATUSES } from '../contentMetaData.js'
@@ -47,6 +47,8 @@ import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
 import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
+import { query } from '../lib/sanity/query'
+import { Filters as f } from '../lib/sanity/filter'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -1998,35 +2000,116 @@ export async function fetchRecent(
 
 export async function fetchScheduledAndNewReleases(
   brand,
-  { page = 1, limit = 20, sort = '-published_on' } = {}
+  // page param deprecated, doesnt have 1-1 affect on this functionality
+  // if we want to allow pagination, this requires a revisit
+  { limit = 10 } = {}
 ) {
-  const upcomingTypes = getUpcomingEventsTypes(brand)
-  const newTypes = getNewReleasesTypes(brand)
+  const maxLessons = 3
+  const maxSongs = 5
+  const maxLivestreams = 2
 
-  const scheduledTypes = merge(upcomingTypes, newTypes)
-  const typesString = arrayJoinWithQuotes(scheduledTypes)
-  const now = getSanityDate(new Date())
+  const rawNow = new Date()
+  const now = getSanityDate(rawNow)
+  const fifteenDaysAgo = getSanityDate(new Date(rawNow - 15 * 24 * 60 * 60 * 1000))
 
-  const start = (page - 1) * limit
-  const end = start + limit
-  const sortOrder = getSortOrder(sort, brand)
+  const parentsWithoutSong = parentRecentTypes.filter(type => type !== 'song')
 
-  const query = `
-    *[show_in_new_feed == true && (
-      (_type in [${typesString}] && brand == '${brand}' && status in ['published','scheduled'] && defined(published_on))
-      || (
-        defined(live_event_start_time)
-        && (!defined(live_event_end_time) || live_event_end_time >= '${now}' )
-        && brand == '${brand}'
-        && status in ['scheduled']
-      )
-    )] | order(${sortOrder})
-    [${start}...${end}]
-    {
-      ${getFieldsForContentType('new-and-scheduled')}
+  const fields = getFieldsForContentType('new-and-scheduled')
+
+  const lessonFilter = f.combine(
+    "show_in_new_feed == true",
+    f.brand(brand),
+    f.typeIn(parentsWithoutSong),
+    f.statusIn(['published']),
+    f.publishedBefore(now),
+  )
+
+  const songFilter = f.combine(
+    "show_in_new_feed == true",
+    f.brand(brand),
+    f.type('song'),
+    f.statusIn(['published']),
+    f.publishedBefore(now),
+    f.publishedAfter(fifteenDaysAgo),
+  )
+
+  const livestreamFilter = f.combine(
+    "show_in_new_feed == true",
+    f.combineOr(
+      f.brand(brand),
+      'live_global_event == true'
+    ),
+    f.statusIn(['scheduled']),
+    `live_event_start_time >= '${now}'`,
+  )
+
+  const lessonQuery = query()
+    .and(lessonFilter)
+    .order('published_on desc')
+    .slice(0, maxLessons)
+    .select(fields)
+    .build()
+
+  const songQuery = query()
+    .and(songFilter)
+    .order('published_on desc')
+    .slice(0, maxSongs)
+    .select(fields)
+    .build()
+
+  const livestreamQuery = query()
+    .and(livestreamFilter)
+    .order('live_event_start_time asc')
+    .slice(0, maxLivestreams)
+    .select(fields)
+    .build()
+
+  return songQuery
+
+  const q = `{
+    "lessons": ${lessonQuery},
+    "songs": ${songQuery},
+    "livestreams": ${livestreamQuery}
     }`
 
-  return fetchSanity(query, true)
+  const r = await fetchSanity(q, true)
+
+  if (!r) {
+    return []
+  }
+
+  return reorderScheduledAndNewReleases(r, limit)
+}
+
+function reorderScheduledAndNewReleases(r, limit) {
+  let lessonLimit, songLimit, livestreamLimit
+  if (limit >= 10) {
+    lessonLimit = 3
+    songLimit = 5
+    livestreamLimit = 2
+  } else if (limit >= 3) {
+    lessonLimit = 2
+    livestreamLimit = 1
+    songLimit = limit - lessonLimit - livestreamLimit
+  } else {
+    lessonLimit = (limit > 0) ? 1 : 0
+    livestreamLimit = 0
+    songLimit = limit - lessonLimit
+  }
+
+  const lessons = r.lessons.slice(0, lessonLimit)
+  if (lessons.length < lessonLimit) {
+    songLimit += (lessonLimit - lessons.length)
+  }
+
+  const livestreams = r.livestreams.slice(0, livestreamLimit)
+  if (livestreams.length < livestreamLimit) {
+    songLimit += (livestreamLimit - livestreams.length)
+  }
+
+  const songs = r.songs.slice(0, songLimit)
+
+  return [...lessons, ...songs, ...livestreams]
 }
 
 export async function fetchShows(brand, type, sort = 'sort') {
@@ -2142,6 +2225,10 @@ export async function fetchOwnedContent(
     start: start,
     end: end,
   })
+
+  // have to order within a subfield like with relatedLessons
+
+
 
   return fetchSanity(query, true)
 }

@@ -353,7 +353,7 @@ const lessonRecentTypes = [
   'routine',
 ]
 
-const parentRecentTypes = [
+export const parentRecentTypes = [
   ...individualLessonsTypes,
   'skill-pack',
   ...entertainmentLessonTypes,
