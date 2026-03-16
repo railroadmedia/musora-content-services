@@ -518,7 +518,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
 
   if (isPlaylist) {
     const exportIds = { [contentId]: progress }
-    await duplicateProgressToALAaCarte(exportIds, collection, {skipPush: true})
+    await duplicateProgressToALaCarte(exportIds, collection, {skipPush: true})
     return
   }
 
@@ -557,7 +557,7 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   if (isLP) {
     let exportIds = bubbledProgresses
     exportIds[contentId] = progress
-    await duplicateProgressToALAaCarte(exportIds, collection, {skipPush: true})
+    await duplicateProgressToALaCarte(exportIds, collection, {skipPush: true})
   }
 
   if (progress === 100) await onContentCompletedLearningPathActions(contentId, collection)
@@ -592,7 +592,7 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
   if (isLP) {
     let exportProgresses = progresses
     exportProgresses[contentId] = progress
-    await duplicateProgressToALAaCarte(exportProgresses, collection, {skipPush: true})
+    await duplicateProgressToALaCarte(exportProgresses, collection, {skipPush: true})
   }
 
   if (progress === 100) await onContentCompletedLearningPathActions(contentId, collection)
@@ -641,7 +641,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
     for (const contentId of contentIds){
       exportProgresses[contentId] = progress
     }
-    await duplicateProgressToALAaCarte(exportProgresses, collection, {skipPush: true})
+    await duplicateProgressToALaCarte(exportProgresses, collection, {skipPush: true})
   }
 
   for (const [id, progress] of Object.entries(progresses)) {
@@ -673,7 +673,7 @@ async function resetStatus(contentId, collection = null, {skipPush = false} = {}
 
   if (isLP) {
     progresses[contentId] = progress
-    await duplicateProgressToALAaCarte(progresses, collection, {skipPush: true})
+    await duplicateProgressToALaCarte(progresses, collection, {skipPush: true})
   }
 
   if (!skipPush) db.contentProgress.requestPushUnsynced('reset-status')
@@ -681,7 +681,7 @@ async function resetStatus(contentId, collection = null, {skipPush = false} = {}
   return response
 }
 
-async function duplicateProgressToALAaCarte(progresses, collection, {skipPush = false} = {}) {
+async function duplicateProgressToALaCarte(progresses, collection, {skipPush = false} = {}) {
 
   // a-la-cart LPs not set up.
   let filteredProgresses = filterOutLearningPathsForDuplication(progresses, collection)
