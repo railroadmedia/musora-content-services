@@ -33,7 +33,6 @@ import {
   SONG_TYPES_WITH_CHILDREN,
   liveFields,
   postProcessBadge,
-  contentAwardField,
   parentField,
   grandParentField, parentRecentTypes,
 } from '../contentTypeConfig.js'
@@ -49,6 +48,7 @@ import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './cont
 import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
 import { query } from '../lib/sanity/query'
 import { Filters as f } from '../lib/sanity/filter'
+import { COLLECTION_TYPE } from './sync/models/ContentProgress.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -1332,56 +1332,104 @@ export async function fetchTopLevelParentId(railcontentId) {
   return response['top_parent'] ?? response['railcontent_id']
 }
 
-export async function fetchLearningPathHierarchy(railcontentId, collection) {
+export async function getHierarchy(contentId, collection) {
+  let response
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+    response = await fetchLearningPathHierarchyData(contentId, collection)
+  } else {
+    response = await fetchALaCarteHierarchyData(contentId)
+  }
+  if (!response) return null
+
+  const topLevelId = response.railcontent_id ?? response.id
+
+  if (!topLevelId) {
+    console.error('Top level ID not found in hierarchy response', response)
+    return null
+  }
+
+  let data = {
+    topLevelId: topLevelId,
+    parents: {},
+    children: {},
+    metadata: {},
+  }
+  populateHierarchyLookups(response, data, null)
+  data.metadata = extractMetadataFromHierarchy(response)
+
+  return data
+
+}
+
+function extractMetadataFromHierarchy(hierarchyData) {
+  let metadata = {}
+  function recursiveExtract(currentLevel, parentMetadata = {}) {
+    const railcontentIdField = currentLevel.railcontent_id ? 'railcontent_id' : 'id'
+    let contentId = currentLevel[railcontentIdField]
+    metadata[contentId] = {
+      type: currentLevel.metadata?.type ?? 'assignment',
+      brand: currentLevel.metadata?.brand ?? parentMetadata.brand,
+      parent_id: currentLevel.metadata?.parent_id ?? parentMetadata.parent_id,
+    }
+    let children = currentLevel['children']
+    if (children) {
+      for (let i = 0; i < children.length; i++) {
+        recursiveExtract(children[i], metadata[contentId])
+      }
+    }
+    let assignments = currentLevel['assignments']
+    if (assignments) {
+      for (let i = 0; i < assignments.length; i++) {
+        recursiveExtract(assignments[i], metadata[contentId])
+      }
+    }
+  }
+  recursiveExtract(hierarchyData)
+  return metadata
+}
+
+async function fetchLearningPathHierarchyData(railcontentId, collection) {
   if (!collection) {
     return null
   }
 
   const topLevelId = collection.id
 
-  let response = await fetchByRailContentId(topLevelId, collection.type)
-  if (!response) return null
-
-  let data = {
-    topLevelId: topLevelId,
-    parents: {},
-    children: {},
-  }
-  populateHierarchyLookups(response, data, null)
-  return data
+  return (await fetchByRailContentIds([topLevelId], 'hierarchy-data'))[0]
 }
 
-export async function fetchHierarchy(railcontentId) {
+async function fetchALaCarteHierarchyData(railcontentId) {
   let topLevelId = await fetchTopLevelParentId(railcontentId)
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const query = `*[railcontent_id == ${topLevelId}]{
       railcontent_id,
+      'metadata': { brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
       'assignments': assignment[]{railcontent_id},
       'children': child[${childrenFilter}]->{
         railcontent_id,
+        'metadata': {
+  brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
         'assignments': assignment[]{railcontent_id},
         'children': child[${childrenFilter}]->{
             railcontent_id,
+            'metadata': {
+      brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
             'assignments': assignment[]{railcontent_id},
             'children': child[${childrenFilter}]->{
                railcontent_id,
+               'metadata': {
+         brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
                'assignments': assignment[]{railcontent_id},
                'children': child[${childrenFilter}]->{
                   railcontent_id,
+                  'metadata': {
+            brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
             }
           }
         }
       },
     }`
-  let response = await fetchSanity(query, false, { processNeedAccess: false })
-  if (!response) return null
-  let data = {
-    topLevelId: topLevelId,
-    parents: {},
-    children: {},
-  }
-  populateHierarchyLookups(response, data, null)
-  return data
+  return await fetchSanity(query, false, { processNeedAccess: false })
 }
 
 function populateHierarchyLookups(currentLevel, data, parentId) {
@@ -1403,10 +1451,12 @@ function populateHierarchyLookups(currentLevel, data, parentId) {
   let assignments = currentLevel['assignments']
   if (assignments) {
     let assignmentIds = assignments.map((assignment) => assignment[railcontentIdField]).filter(Boolean)
-    data.children[contentId] = (data.children[contentId] ?? []).concat(assignmentIds)
-    assignmentIds.forEach((assignmentId) => {
-      if (assignmentId) data.parents[assignmentId] = contentId
-    })
+    if (assignmentIds.length > 0) {
+      data.children[contentId] = (data.children[contentId] ?? []).concat(assignmentIds)
+      assignmentIds.forEach((assignmentId) => {
+        if (assignmentId) data.parents[assignmentId] = contentId
+      })
+    }
   }
 }
 
@@ -1899,7 +1949,8 @@ export async function fetchTabData(
 
   switch (progress) {
     case 'recent':
-      progressIds = await getAllStartedOrCompleted({ brand, onlyIds: true })
+      const metadata = { brand }
+      progressIds = await getAllStartedOrCompleted({ metadata })
       sortOrder = null
       break
     case 'incomplete':

@@ -1,10 +1,9 @@
-import { fetchHierarchy, fetchLearningPathHierarchy } from './sanity.js'
+import { getHierarchy } from './sanity.js'
 import { db } from './sync'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, STATE } from './sync/models/ContentProgress'
 import { trackUserPractice, findIncompleteLesson } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
-import {getDailySession, onContentCompletedLearningPathActions} from "./content-org/learning-paths.ts";
-import { fetchBrandsByContentIds } from './sanity.js'
+import { getDailySession, onContentCompletedLearningPathActions } from './content-org/learning-paths.ts'
 
 const STATE_STARTED = STATE.STARTED
 const STATE_COMPLETED = STATE.COMPLETED
@@ -19,6 +18,10 @@ export async function getProgressStateByIds(contentIds, collection = null) {
   return getByIds(normalizeContentIds(contentIds), normalizeCollection(collection), 'state', '')
 }
 
+export async function getProgressStateByRecordIds(ids) {
+  return getByRecordIds(ids, 'state', '')
+}
+
 export async function getResumeTimeSecondsByIds(contentIds, collection = null) {
   return getByIds(
     normalizeContentIds(contentIds),
@@ -28,8 +31,8 @@ export async function getResumeTimeSecondsByIds(contentIds, collection = null) {
   )
 }
 
-export async function getResumeTimeSecondsByIdsAndCollections(tuples) {
-  return getByIdsAndCollections(tuples, 'resume_time_seconds', 0)
+export async function getResumeTimeSecondsByRecordIds(ids) {
+  return getByRecordIds(ids, 'resume_time_seconds', 0)
 }
 
 export async function getNavigateToForMethod(data) {
@@ -246,7 +249,7 @@ export async function getProgressDataByIds(contentIds, collection) {
  * Get progress data for multiple content IDs, each with their own collection context.
  * Useful when fetching progress for tuples that belong to different collections.
  *
- * @param {Array<{contentId: number, collection: {type: string, id: number}|null}>} tuples - Array of objects with contentId and collection
+ * @param ids {Array<string>} - Array of record ids
  * @returns {Promise<Object>} - Object mapping content IDs to progress data
  *
  * @example
@@ -255,32 +258,26 @@ export async function getProgressDataByIds(contentIds, collection) {
  *   { contentId: 789, collection: { id: 101, type: 'learning-path-v2' } },
  *   { contentId: 111, collection: null }
  * ]
- * const progress = await getProgressDataByIdsAndCollections(tuples)
+ * const progress = await getProgressDataByRecordIds(tuples)
  * // Returns: { 123: { progress: 50, status: 'started', last_update: 123456 }, ... }
  */
 
-// warning: unsafe due to object key conflicts.
-// todo: remove this, and simplify addContextToLearningPaths
-export async function getProgressDataByIdsAndCollections(tuples) {
-  tuples = tuples.map(t => ({contentId: normalizeContentId(t.contentId), collection: normalizeCollection(t.collection)}))
-  const progress = Object.fromEntries(tuples.map(item => [item.contentId, {
+export async function getProgressDataByRecordIds(ids) {
+  const progress = Object.fromEntries(ids.map(id => [id, {
     last_update: 0,
     progress: 0,
     status: '',
-    collection: {},
   }]))
 
-  await db.contentProgress.getSomeProgressByContentIdsAndCollections(tuples).then(r => {
+  await db.contentProgress.getSomeProgressByRecordIds(ids).then(r => {
     r.data.forEach(p => {
-      progress[p.content_id] = {
+      progress[p.id] = {
         last_update: p.updated_at,
         progress: p.progress_percent,
         status: p.state,
-        collection: (p.collection_type && p.collection_id) ? {type: p.collection_type, id: p.collection_id} : null
       }
     })
   })
-
   return progress
 }
 
@@ -303,24 +300,31 @@ async function getByIds(contentIds, collection, dataKey, defaultValue) {
   return progress
 }
 
-async function getByIdsAndCollections(tuples, dataKey, defaultValue) {
-  tuples = tuples.map(t => ({contentId: normalizeContentId(t.contentId), collection: normalizeCollection(t.collection)}))
-  const progress = Object.fromEntries(tuples.map(tuple => [tuple.contentId, defaultValue]))
+async function getByRecordIds(ids, dataKey, defaultValue) {
+  const progress = Object.fromEntries(ids.map(id => [id, defaultValue]))
 
-  await db.contentProgress.getSomeProgressByContentIdsAndCollections(tuples).then(r => {
+  await db.contentProgress.getSomeProgressByRecordIds(ids).then(r => {
     r.data.forEach(p => {
-      progress[p.content_id] = p[dataKey] ?? defaultValue
+      progress[p.id] = p[dataKey] ?? defaultValue
     })
   })
   return progress
 }
 
-export async function getAllStarted(limit = null) {
-  return db.contentProgress.startedIds(limit)
+export async function getAllStarted(limit = null, {
+  onlyIds = true,
+  include = { aLaCarte: true, learningPaths: false },
+} = {}
+) {
+  return db.contentProgress.started(limit, {onlyIds, include})
 }
 
-export async function getAllCompleted(limit = null) {
-  return db.contentProgress.completedIds(limit)
+export async function getAllCompleted(limit = null, {
+  onlyIds = true,
+  include = { aLaCarte: true, learningPaths: false },
+} = {}
+) {
+  return db.contentProgress.completed(limit, {onlyIds, include})
 }
 
 export async function getAllCompletedByIds(contentIds) {
@@ -331,10 +335,19 @@ export async function getAllCompletedByIds(contentIds) {
  * Fetches content **IDs** for items that were started or completed.
  */
 export async function getAllStartedOrCompleted({
-  brand = null,
+  metadata = null,
   limit = null,
+  include = { aLaCarte: true, learningPaths: false },
+  onlyIds = true // need to be careful if allowing non-alacarte progress, because some content_ids can overlap
 } = {}) {
-  return await _getAllStartedOrCompleted({ brand, limit }).then(recs => recs.map(rec => rec.content_id))
+  const data = await _getAllStartedOrCompleted({
+    metadata,
+    limit,
+    include
+  })
+  return onlyIds
+    ? data.map(rec => rec.content_id)
+    : data
 }
 
 /**
@@ -355,39 +368,38 @@ export async function getAllStartedOrCompleted({
  * console.log(progressMap[123]); // => 52
  */
 export async function getStartedOrCompletedProgressOnly({ brand = undefined } = {}) {
-  return _getAllStartedOrCompleted({ brand }).then((r) => {
+  const metadata = { brand }
+  return _getAllStartedOrCompleted({ metadata }).then((r) => {
     return Object.fromEntries(r.map((p) => [p.content_id, p.progress_percent]))
   })
 }
 
+/**
+ *
+ * @param {object|null} metadata - metadata filters
+ * @param {string} metadata.brand - optional filter to fetch progress for a specific brand
+ * @param {string[]} metadata.contentTypes - optional filter to fetch progress of specific content types
+ * @param {number} metadata.parentId - optional filter to fetch progress for a child of a specific parent id
+ * @param {object} include - what collection types to include in results
+ * @param {number|null} limit
+ * @returns {Promise<any[]>}
+ * @private
+ */
 async function _getAllStartedOrCompleted({
-  brand = null,
+  metadata = null,
   limit = null,
+  include = { aLaCarte: true, learningPaths: false },
 } = {}) {
   const agoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
   const baseFilters = {
     updatedAfter: agoInSeconds,
+    include: include,
+    brand: metadata?.brand,
+    contentTypes: metadata?.contentTypes,
+    parentId: metadata?.parentId,
   }
 
-  if (!brand) {
-    return await db.contentProgress.startedOrCompleted({ ...baseFilters, limit }).then(r => r.data)
-  }
-
-  // content_brand can be null (i.e., when progress records created locally)
-  // TODO: eventually put content metadata into watermelon so we can
-  // always have brand info in progress records and avoid all this
-
-  // for now though, null-ish brands shouldn't be too numerous, so safe to have undefined limit
-  const [strictRecs, looseRecs] = await Promise.all([
-    db.contentProgress.startedOrCompleted({ ...baseFilters, brand, limit }),
-    db.contentProgress.startedOrCompleted({ ...baseFilters, brand: null, limit: undefined })
-  ]);
-
-  const map = await fetchBrandsByContentIds(looseRecs.data.map(r => r.content_id));
-  const filteredLooseRecs = looseRecs.data.filter(r => map[r.content_id] === brand).map(r => ({ ...r, content_brand: brand }));
-
-  const records = [...strictRecs.data, ...filteredLooseRecs].sort((a, b) => b.updated_at - a.updated_at).slice(0, limit || undefined);
-  return records;
+  return (await db.contentProgress.startedOrCompleted({ ...baseFilters, limit })).data
 }
 
 /**
@@ -487,9 +499,10 @@ export async function contentStatusReset(contentId, collection = null, {skipPush
   return resetStatus(contentId, collection, {skipPush})
 }
 
-async function saveContentProgress(contentId, collection, progress, currentSeconds, {skipPush = false, fromLearningPath = false} = {}) {
+async function saveContentProgress(contentId, collection, progress, currentSeconds, {skipPush = false, accessedDirectly = true} = {}) {
   collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
+  const isPlaylist = collection?.type === COLLECTION_TYPE.PLAYLIST
 
   // filter out contentIds that are setting progress lower than existing
   const contentIdProgress = await getProgressDataByIds([contentId], collection)
@@ -498,12 +511,22 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
     progress = currentProgress;
   }
 
+  const hierarchy = await getHierarchy(contentId, collection)
+  const metadata = hierarchy.metadata || {}
+
+  if (isPlaylist) {
+    const exportIds = { [contentId]: progress }
+    await duplicateProgressToALaCarte(exportIds, collection, {skipPush: true})
+    return
+  }
+
   const response = await db.contentProgress.recordProgress(
     normalizeContentId(contentId),
     normalizeCollection(collection),
     progress,
+    metadata[contentId],
     currentSeconds,
-    {skipPush: true, fromLearningPath}
+    {skipPush: true, accessedDirectly}
   )
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
@@ -513,8 +536,6 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return
   }
-
-  const hierarchy = await getHierarchy(contentId, collection)
 
   const bubbledProgresses = await bubbleProgress(hierarchy, contentId, collection)
 
@@ -527,13 +548,17 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
   }
 
   if (Object.keys(bubbledProgresses).length > 0) {
-    await db.contentProgress.recordProgressMany(bubbledProgresses, normalizeCollection(collection), {skipPush: true, fromLearningPath})
+    await db.contentProgress.recordProgressMany(
+      bubbledProgresses,
+      normalizeCollection(collection),
+      metadata,
+      {skipPush: true, accessedDirectly})
   }
 
   if (isLP) {
     let exportIds = bubbledProgresses
     exportIds[contentId] = progress
-    await duplicateLearningPathProgressToExternalContents(exportIds, collection, hierarchy, {skipPush: true})
+    await duplicateProgressToALaCarte(exportIds, collection, {skipPush: true})
   }
 
   if (progress === 100) await onContentCompletedLearningPathActions(contentId, collection)
@@ -552,10 +577,18 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
 async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {skipPush = false} = {}) {
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
 
-  const progress = isCompleted ? 100 : 0
-  const response = await db.contentProgress.recordProgress(normalizeContentId(contentId), normalizeCollection(collection), progress, null, {skipPush: true})
-
   const hierarchy = await getHierarchy(contentId, collection)
+  const metadata = hierarchy.metadata || {}
+
+  const progress = isCompleted ? 100 : 0
+  const response = await db.contentProgress.recordProgress(
+    normalizeContentId(contentId),
+    normalizeCollection(collection),
+    progress,
+    metadata[contentId],
+    null,
+    {skipPush: true}
+  )
 
   let progresses = {
     ...trickleProgress(hierarchy, contentId, collection, progress),
@@ -563,12 +596,12 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
   }
 
   // have to do this so we dont unnecessarily create a 0% record for each child on set to started/completed
-  await bubbleAndTrickleProgressesSafely(progresses, collection)
+  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata)
 
   if (isLP) {
     let exportProgresses = progresses
     exportProgresses[contentId] = progress
-    await duplicateLearningPathProgressToExternalContents(exportProgresses, collection, hierarchy, {skipPush: true})
+    await duplicateProgressToALaCarte(exportProgresses, collection, {skipPush: true})
   }
 
   if (progress === 100) await onContentCompletedLearningPathActions(contentId, collection)
@@ -588,17 +621,17 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
   const progress = isCompleted ? 100 : 0
 
-  if (progress === 100) {
-    for (const contentId of contentIds) {
-      await onContentCompletedLearningPathActions(contentId, collection)
-    }
-  }
-
-  const contents = Object.fromEntries(contentIds.map((id) => [id, progress]))
-  const response = await db.contentProgress.recordProgressMany(contents, normalizeCollection(collection), {skipPush: true})
-
   // we assume this is used only for contents within the same hierarchy
   const hierarchy = await getHierarchy(collection.id, collection)
+  const metadata = hierarchy.metadata || {}
+
+  const contents = Object.fromEntries(contentIds.map((id) => [id, progress]))
+  const response = await db.contentProgress.recordProgressMany(
+    contents,
+    normalizeCollection(collection),
+    metadata,
+    {skipPush: true}
+  )
 
   let progresses = {}
   for (const contentId of contentIds) {
@@ -608,18 +641,22 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
       ...(await bubbleProgress(hierarchy, contentId, collection)),
     }
   }
-
   // have to do this so we dont unnecessarily create a 0% record for each child on set to started/completed
-  await bubbleAndTrickleProgressesSafely(progresses, collection)
+  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata)
 
   if (isLP) {
     let exportProgresses = progresses
     for (const contentId of contentIds){
       exportProgresses[contentId] = progress
     }
-    await duplicateLearningPathProgressToExternalContents(exportProgresses, collection, hierarchy, {skipPush: true})
+    await duplicateProgressToALaCarte(exportProgresses, collection, {skipPush: true})
   }
 
+  if (progress === 100) {
+    for (const contentId of contentIds) {
+      await onContentCompletedLearningPathActions(contentId, collection)
+    }
+  }
   for (const [id, progress] of Object.entries(progresses)) {
     if (progress === 100) {
       await onContentCompletedLearningPathActions(Number(id), collection)
@@ -649,7 +686,7 @@ async function resetStatus(contentId, collection = null, {skipPush = false} = {}
 
   if (isLP) {
     progresses[contentId] = progress
-    await duplicateLearningPathProgressToExternalContents(progresses, collection, hierarchy, {skipPush: true})
+    await duplicateProgressToALaCarte(progresses, collection, {skipPush: true})
   }
 
   if (!skipPush) db.contentProgress.requestPushUnsynced('reset-status')
@@ -657,44 +694,52 @@ async function resetStatus(contentId, collection = null, {skipPush = false} = {}
   return response
 }
 
-// we cannot simply pass LP id with self collection, because we do not have a-la-carte LP's set up yet,
-//   and we need each lesson to bubble to its parent outside of LP
-async function duplicateLearningPathProgressToExternalContents(ids, collection, hierarchy, {skipPush = false} = {}) {
-  // filter out LPs. we dont want to duplicate to LP's while we dont have a-la-cart LP's set up.
-  let filteredIds = Object.fromEntries(
-    Object.entries(ids).filter(([id]) => {
-      return hierarchy.parents[parseInt(id)] !== null
+async function duplicateProgressToALaCarte(progresses, collection, {skipPush = false} = {}) {
+
+  // a-la-cart LPs not set up.
+  let filteredProgresses = filterOutLearningPathsForDuplication(progresses, collection)
+
+  const externalProgresses = await getProgressDataByIds(Object.keys(filteredProgresses), null)
+
+  filteredProgresses = filterGreaterThanProgress(filteredProgresses, externalProgresses)
+
+  duplicateProgressForIds(filteredProgresses, skipPush)
+}
+
+function filterOutLearningPathsForDuplication(progresses, collection) {
+  return Object.fromEntries(
+    Object.entries(progresses).filter(([id]) => {
+      if (collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+        // dont want progress on a-la-carte LPs (not supported)
+        return id !== collection.id
+      } else {
+        return true
+      }
     })
   )
+}
 
-  const extProgresses = await getProgressDataByIds(Object.keys(filteredIds), null)
-
+function filterGreaterThanProgress(progresses, external) {
   // overwrite if LP progress greater, unless LP progress was reset to 0
-  filteredIds = Object.entries(filteredIds).filter(([id, pct]) => {
-    const extPct = extProgresses[id]?.progress
+  return Object.entries(progresses).filter(([id, pct]) => {
+    const extPct = external[id]?.progress
     return (pct !== 0)
       ? pct > extPct
       : false
   })
+}
 
-  // each handles its own bubbling.
-  // skipPush on all but last to avoid multiple push requests
-  filteredIds.forEach(([id, pct], index) => {
+async function duplicateProgressForIds(ids, skipPush) {
+  ids.forEach(([id, pct], index) => {
     let skip = true
-    if (index === filteredIds.length - 1) {
+    if (index === ids.length - 1) {
+      // only allow push on last call, to group into one push
       skip = skipPush
     }
-    saveContentProgress(parseInt(id), null, pct, null, {skipPush: skip, fromLearningPath: true})
+    saveContentProgress(parseInt(id), null, pct, null, {skipPush: skip, accessedDirectly: false})
   })
 }
 
-async function getHierarchy(contentId, collection) {
-  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
-    return await fetchLearningPathHierarchy(contentId, collection)
-  } else {
-    return await fetchHierarchy(contentId)
-  }
-}
 
 // agnostic to collection - makes returned data structure simpler,
 // as long as callers remember to pass collection where needed
@@ -762,7 +807,7 @@ function getChildrenToDepth(parentId, hierarchy, depth = 1) {
   return allChildrenIds
 }
 
-async function bubbleAndTrickleProgressesSafely(progresses, collection) {
+async function bubbleAndTrickleProgressesSafely(progresses, collection, metadata) {
   const eraseProgresses = Object.fromEntries(
       Object.entries(progresses).filter(([_, pct]) => pct === 0)
   )
@@ -770,7 +815,12 @@ async function bubbleAndTrickleProgressesSafely(progresses, collection) {
       Object.entries(progresses).filter(([_, pct]) => pct > 0)
   )
   if (Object.keys(progresses).length > 0) {
-    await db.contentProgress.recordProgressMany(progresses, normalizeCollection(collection), {skipPush: true})
+    await db.contentProgress.recordProgressMany(
+      progresses,
+      normalizeCollection(collection),
+      metadata,
+      {skipPush: true}
+    )
   }
   if (Object.keys(eraseProgresses).length > 0) {
     const eraseIds = Object.keys(eraseProgresses).map(Number)
@@ -810,4 +860,12 @@ export async function getIdsWhereLastAccessedFromMethod(contentIds) {
   const records = await db.contentProgress.getSomeProgressWhereLastAccessedFromMethod(normalizeContentIds(contentIds))
 
   return records.data.map(record => record.content_id)
+}
+
+export function generateRecordId(contentId, collection) {
+  if (!contentId)  return null
+
+  contentId = normalizeContentId(contentId)
+
+  return `${contentId}:${collection?.type || COLLECTION_TYPE.SELF}:${collection?.id || COLLECTION_ID_SELF}`
 }

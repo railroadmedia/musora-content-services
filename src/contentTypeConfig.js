@@ -70,6 +70,8 @@ export const DEFAULT_FIELDS = [
   'child_count',
   '"parent_id": parent_content_data[0].id',
   '"grandparent_id": parent_content_data[1].id',
+  'live_event_start_time',
+  'live_event_end_time',
 ]
 
 // these are identical... why
@@ -408,6 +410,18 @@ export let contentTypeConfig = {
     ],
     includeChildFields: true,
   },
+  'hierarchy-data': {
+    fields: [
+      'railcontent_id',
+      '"assignments": assignment[]{railcontent_id}',
+      '"metadata": { brand, "type": _type, "parent_id":  coalesce(parent_content_data[0].id, 0) }',
+      ],
+    childFields: [
+      'railcontent_id',
+      '"assignments": assignment[]{railcontent_id}',
+      '"metadata": { brand, "type": _type, "parent_id":  coalesce(parent_content_data[0].id, 0) }',
+    ],
+  },
   song: {
     fields: ['album', 'soundslice', 'instrumentless', `"resources": ${resourcesField}`],
     relationships: {
@@ -657,7 +671,10 @@ export let contentTypeConfig = {
     }`,
   ],
   'new-and-scheduled': {
-    fields: ['show_in_new_feed', isLiveField()],
+    fields: [
+      'show_in_new_feed', 
+      isLiveField()
+    ],
   },
 }
 
