@@ -1125,7 +1125,7 @@ export async function fetchSiblingContent(railContentId, brand = null) {
   }).buildFilter()
 
   const brandString = brand ? ` && brand == "${brand}"` : ''
-  const queryFields = `_id, "id":railcontent_id, published_on, "instructor": instructor[0]->name, title, "thumbnail":thumbnail.asset->url, length_in_seconds, status, "type": _type, difficulty, difficulty_string, artist->, "permission_id": permission_v2, "genre": genre[]->name, "parent_id": parent_content_data[0].id`
+  const queryFields = getFieldsForContentType()
 
   const query = `*[railcontent_id == ${railContentId}${brandString}]{
     _type,
