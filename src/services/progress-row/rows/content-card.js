@@ -17,7 +17,6 @@ import { PARENT_ID_TOP_LEVEL } from '../../sync/models/ContentProgress.js'
 
 /**
  * Fetch any content IDs with some progress, include the userPinnedItem,
- * remove any content IDs that already exist in playlistEngagedOnContent,
  * and generate a map of the cards keyed by the content IDs
  */
 export async function getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem ){
@@ -30,16 +29,7 @@ export async function getContentCardMap(brand, limit, playlistEngagedOnContent, 
   if (userPinnedItem?.progressType === 'content') {
     recentContentIds.push(userPinnedItem.id)
   }
-  if (playlistEngagedOnContent) {
-    for (const item of playlistEngagedOnContent) {
-      const parentIds = item.parent_content_data || []
-      recentContentIds = recentContentIds.filter(id => {
-        if (id === item.id) return false
-        if (parentIds.includes(id) && item.progressTimestamp > 0) return false
-        return true
-      })
-    }
-  }
+
   let contents = recentContentIds.length > 0
     ? await addContextToContent(
       fetchByRailContentIds,

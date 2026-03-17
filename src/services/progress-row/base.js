@@ -4,8 +4,6 @@
 import { getMethodCard } from './rows/method-card.js'
 import {
   getPlaylistCards,
-  getPlaylistEngagedOnContent,
-  getRecentPlaylists,
   processPlaylistItem,
 } from './rows/playlist-card.js'
 import { globalConfig } from '../config.js'
@@ -168,19 +166,17 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}, opti
     db.contentProgress.pull()
   }
 
-  const [userPinnedItem, recentPlaylists] = await Promise.all([
-    getUserPinnedItem(brand),
-    getRecentPlaylists(brand, limit),
-  ])
-  const playlistEngagedOnContent = await getPlaylistEngagedOnContent(recentPlaylists)
+  const userPinnedItem = await getUserPinnedItem(brand)
 
-  const [contentCardMap, playlistCards, methodCard] = await getCards(brand, limit, playlistEngagedOnContent, userPinnedItem, recentPlaylists)
+  const [contentCardMap, playlistCards, methodCard] = await getCards(brand, limit, userPinnedItem)
 
   const pinnedCard = await popPinnedItem(userPinnedItem, contentCardMap, playlistCards, methodCard)
+
   let allResultsLength = playlistCards.length + contentCardMap.size
   if (methodCard) {
     allResultsLength += 1
   }
+
   const results = sortCards(pinnedCard, contentCardMap, playlistCards, methodCard, limit)
   return {
     type: TabResponseType.PROGRESS_ROWS,
@@ -189,13 +185,13 @@ export async function getProgressRows({ brand = 'drumeo', limit = 8 } = {}, opti
   }
 }
 
-async function getCards(brand, limit, playlistEngagedOnContent, userPinnedItem, recentPlaylists) {
+async function getCards(brand, limit, userPinnedItem) {
   return Promise.all([
-    getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem).catch(e => {
+    getContentCardMap(brand, limit, userPinnedItem).catch(e => {
       console.error('getContentCardMap failed:', e)
       return new Map()
     }),
-    getPlaylistCards(recentPlaylists).catch(e => {
+    getPlaylistCards(brand, limit).catch(e => {
       console.error('getPlaylistCards failed:', e)
       return []
     }),
@@ -241,7 +237,7 @@ async function popPinnedItem(userPinnedItem, contentCardMap, playlistCards, meth
       item = pinnedPlaylist
     } else {
       const playlist = await fetchPlaylist(pinnedId)
-      item = await processPlaylistItem({
+      item = processPlaylistItem({
         id: pinnedId,
         playlist: playlist,
         type: 'playlist',

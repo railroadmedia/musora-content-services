@@ -1,7 +1,7 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 import {
@@ -118,6 +118,7 @@ import {
 	contentStatusReset,
 	contentStatusStarted,
 	flushWatchSession,
+	generateRecordId,
 	getAllCompleted,
 	getAllCompletedByIds,
 	getAllStarted,
@@ -127,11 +128,12 @@ import {
 	getNavigateTo,
 	getNavigateToForMethod,
 	getProgressDataByIds,
-	getProgressDataByIdsAndCollections,
+	getProgressDataByRecordIds,
 	getProgressState,
 	getProgressStateByIds,
+	getProgressStateByRecordIds,
 	getResumeTimeSecondsByIds,
-	getResumeTimeSecondsByIdsAndCollections,
+	getResumeTimeSecondsByRecordIds,
 	getStartedOrCompletedProgressOnly,
 	recordWatchSession
 } from './services/contentProgress.js';
@@ -602,6 +604,7 @@ export {
 	generateContentUrlWithDomain,
 	generateForumPostUrl,
 	generatePlaylistUrl,
+	generateRecordId,
 	getActiveDiscussions,
 	getActivePath,
 	getAllCompleted,
@@ -634,16 +637,17 @@ export {
 	getPracticeNotes,
 	getPracticeSessions,
 	getProgressDataByIds,
-	getProgressDataByIdsAndCollections,
+	getProgressDataByRecordIds,
 	getProgressRows,
 	getProgressState,
 	getProgressStateByIds,
+	getProgressStateByRecordIds,
 	getRecent,
 	getRecentActivity,
 	getRecommendedForYou,
 	getReportIssueOptions,
 	getResumeTimeSecondsByIds,
-	getResumeTimeSecondsByIdsAndCollections,
+	getResumeTimeSecondsByRecordIds,
 	getSanityDate,
 	getScheduleContentRows,
 	getSongTypesFor,

@@ -33,7 +33,6 @@ import {
   SONG_TYPES_WITH_CHILDREN,
   liveFields,
   postProcessBadge,
-  contentAwardField,
   parentField,
   grandParentField,
 } from '../contentTypeConfig.js'
@@ -1309,57 +1308,6 @@ export async function fetchByReference(
   return fetchSanity(query, true)
 }
 
-export async function getHierarchy(contentId, collection) {
-  let response
-  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
-    response = await fetchLearningPathHierarchyData(contentId, collection)
-  } else {
-    response = await fetchALaCarteHierarchyData(contentId)
-  }
-  if (!response) return null
-
-  const topLevelId = response?.railcontent_id ?? response?.id
-
-  let data = {
-    topLevelId: topLevelId,
-    parents: {},
-    children: {},
-    metadata: {},
-  }
-  populateHierarchyLookups(response, data, null)
-  data.metadata = extractMetadataFromHierarchy(response)
-
-  return data
-
-}
-
-function extractMetadataFromHierarchy(hierarchyData) {
-  let metadata = {}
-  function recursiveExtract(currentLevel, parentMetadata = {}) {
-    const railcontentIdField = currentLevel.railcontent_id ? 'railcontent_id' : 'id'
-    let contentId = currentLevel[railcontentIdField]
-    metadata[contentId] = {
-      type: currentLevel.metadata?.type ?? 'assignment',
-      brand: currentLevel.metadata?.brand ?? parentMetadata.brand,
-      parent_id: currentLevel.metadata?.parent_id ?? parentMetadata.parent_id,
-    }
-    let children = currentLevel['children']
-    if (children) {
-      for (let i = 0; i < children.length; i++) {
-        recursiveExtract(children[i], metadata[contentId])
-      }
-    }
-    let assignments = currentLevel['assignments']
-    if (assignments) {
-      for (let i = 0; i < assignments.length; i++) {
-        recursiveExtract(assignments[i], metadata[contentId])
-      }
-    }
-  }
-  recursiveExtract(hierarchyData)
-  return metadata
-}
-
 /**
  *
  * Return the top level parent content railcontent_id.
@@ -1382,7 +1330,16 @@ export async function fetchTopLevelParentId(railcontentId) {
   return response['top_parent'] ?? response['railcontent_id']
 }
 
-export async function fetchLearningPathHierarchyData(railcontentId, collection) {
+// todo make this correct version from contentProgress
+export async function getHierarchy(contentId, collection) {
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+    return await fetchLearningPathHierarchyData(contentId, collection)
+  } else {
+    return await fetchALaCarteHierarchyData(contentId)
+  }
+}
+
+async function fetchLearningPathHierarchyData(railcontentId, collection) {
   if (!collection) {
     return null
   }
@@ -2070,21 +2027,8 @@ export async function fetchScheduledAndNewReleases(
     )] | order(${sortOrder})
     [${start}...${end}]
     {
-      "id": railcontent_id,
-      title,
-      "image": thumbnail.asset->url,
-      "thumbnail": thumbnail.asset->url,
-      ${artistOrInstructorName()},
-      "artists": instructor[]->name,
-      difficulty,
-      difficulty_string,
-      length_in_seconds,
-      published_on,
-      "type": _type,
-      show_in_new_feed,
-      "permission_id": permission_v2,
-      "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}',
-  }`
+      ${getFieldsForContentType('new-and-scheduled')}
+    }`
 
   return fetchSanity(query, true)
 }
@@ -2204,6 +2148,29 @@ export async function fetchOwnedContent(
   })
 
   return fetchSanity(query, true)
+}
+
+/**
+ * Fetch brands for given content IDs.
+ *
+ * @param {Array<number>} contentIds - Array of railcontent IDs
+ * @returns {Promise<Object>} - A promise that resolves to an object mapping content IDs to brands
+ */
+export async function fetchBrandsByContentIds(contentIds) {
+  if (!contentIds || contentIds.length === 0) {
+    return {}
+  }
+  const idsString = contentIds.join(',')
+  const query = `*[railcontent_id in [${idsString}]]{
+      railcontent_id,
+      brand
+    }`
+  const results = await fetchSanity(query, true)
+  const brandMap = {}
+  results.forEach((item) => {
+    brandMap[item.railcontent_id] = item.brand
+  })
+  return brandMap
 }
 
 /**

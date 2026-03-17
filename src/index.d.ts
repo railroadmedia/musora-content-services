@@ -114,6 +114,7 @@ import {
 	contentStatusReset,
 	contentStatusStarted,
 	flushWatchSession,
+	generateRecordId,
 	getAllCompleted,
 	getAllCompletedByIds,
 	getAllStarted,
@@ -123,11 +124,12 @@ import {
 	getNavigateTo,
 	getNavigateToForMethod,
 	getProgressDataByIds,
-	getProgressDataByIdsAndCollections,
+	getProgressDataByRecordIds,
 	getProgressState,
 	getProgressStateByIds,
+	getProgressStateByRecordIds,
 	getResumeTimeSecondsByIds,
-	getResumeTimeSecondsByIdsAndCollections,
+	getResumeTimeSecondsByRecordIds,
 	getStartedOrCompletedProgressOnly,
 	recordWatchSession
 } from './services/contentProgress.js';
@@ -447,7 +449,7 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
@@ -603,6 +605,7 @@ declare module 'musora-content-services' {
 		generateContentUrlWithDomain,
 		generateForumPostUrl,
 		generatePlaylistUrl,
+		generateRecordId,
 		getActiveDiscussions,
 		getActivePath,
 		getAllCompleted,
@@ -635,16 +638,17 @@ declare module 'musora-content-services' {
 		getPracticeNotes,
 		getPracticeSessions,
 		getProgressDataByIds,
-		getProgressDataByIdsAndCollections,
+		getProgressDataByRecordIds,
 		getProgressRows,
 		getProgressState,
 		getProgressStateByIds,
+		getProgressStateByRecordIds,
 		getRecent,
 		getRecentActivity,
 		getRecommendedForYou,
 		getReportIssueOptions,
 		getResumeTimeSecondsByIds,
-		getResumeTimeSecondsByIdsAndCollections,
+		getResumeTimeSecondsByRecordIds,
 		getSanityDate,
 		getScheduleContentRows,
 		getSongTypesFor,
