@@ -657,7 +657,7 @@ export let contentTypeConfig = {
     }`,
   ],
   'new-and-scheduled': {
-    fields: ['show_in_new_feed', isLiveField()],
+    fields: ['show_in_new_feed', isLiveField(), 'live_event_start_time'],
   },
 }
 
