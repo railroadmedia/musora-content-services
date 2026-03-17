@@ -1,6 +1,7 @@
 //import {AWSUrl, CloudFrontURl} from "./services/config";
 import { LengthFilterOptions, Tabs } from './contentMetaData.js'
 import { FilterBuilder } from './filterBuilder.js'
+import { getSanityDate } from './services/sanity.js'
 
 export const AWSUrl = 'https://s3.us-east-1.amazonaws.com/musora-web-platform'
 export const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net'
@@ -165,6 +166,12 @@ const contentWithInstructorsField = {
 const contentWithSortField = {
   fields: ['sort'],
 }
+
+const isLiveField = () => {
+  const now = getSanityDate(new Date())
+  return `"isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}'`
+}
+
 export const showsTypes = {
   drumeo: [
     'odd-times',
@@ -649,6 +656,13 @@ export let contentTypeConfig = {
       }
     }`,
   ],
+  'new-and-scheduled': {
+    fields: [
+      'show_in_new_feed',
+      isLiveField(),
+      'live_event_start_time',
+    ],
+  },
 }
 
 export function getIntroVideoFields(type) {
