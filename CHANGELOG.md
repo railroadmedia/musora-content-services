@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.140.0](https://github.com/railroadmedia/musora-content-services/compare/v2.139.7...v2.140.0) (2026-03-17)
+
+
+### Features
+
+* default field updates ([#869](https://github.com/railroadmedia/musora-content-services/issues/869)) ([d751e5a](https://github.com/railroadmedia/musora-content-services/commit/d751e5a586735664ec40b0dfed82b00460e34e92))
+
+
+### Bug Fixes
+
+* **TP-1105:** playlist progress for homepage row ([#846](https://github.com/railroadmedia/musora-content-services/issues/846)) ([717e123](https://github.com/railroadmedia/musora-content-services/commit/717e1233e07cc3f81c98b80022a4c9e8b9df952c))
+
 ### [2.139.7](https://github.com/railroadmedia/musora-content-services/compare/v2.139.6...v2.139.7) (2026-03-17)
 
 ### [2.139.6](https://github.com/railroadmedia/musora-content-services/compare/v2.139.5...v2.139.6) (2026-03-17)
