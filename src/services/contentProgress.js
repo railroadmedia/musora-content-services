@@ -407,39 +407,20 @@ export async function recordWatchSession(
   mediaLengthSeconds,
   currentSeconds,
   secondsPlayed,
-  prevSession = null,
   instrumentId = null,
   categoryId = null
 ) {
   contentId = normalizeContentId(contentId)
   collection = normalizeCollection(collection)
 
-  if (!prevSession) {
-    prevSession = {
-      pushInterval: null
-    }
-  }
-
   // Track practice and progress locally (no immediate push)
   await Promise.all([
     trackPractice(contentId, secondsPlayed, { instrumentId, categoryId }),
     trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds),
   ])
-
-  if (!prevSession.pushInterval) {
-    prevSession.pushInterval = setInterval(() => {
-      flushWatchSession()
-    }, PUSH_INTERVAL)
-  }
-  return prevSession
 }
 
-export async function flushWatchSession(sessionToFlush = null, shouldClearInterval = true) {
-  if (shouldClearInterval && sessionToFlush?.pushInterval) {
-    clearInterval(sessionToFlush.pushInterval)
-    sessionToFlush.pushInterval = null
-  }
-
+export async function flushWatchSession() {
   db.contentProgress.requestPushUnsynced('flush-watch-session')
   db.practices.requestPushUnsynced('flush-watch-session')
 }
