@@ -70,6 +70,8 @@ export const DEFAULT_FIELDS = [
   'child_count',
   '"parent_id": parent_content_data[0].id',
   '"grandparent_id": parent_content_data[1].id',
+  'live_event_start_time',
+  'live_event_end_time',
 ]
 
 // these are identical... why
@@ -658,9 +660,8 @@ export let contentTypeConfig = {
   ],
   'new-and-scheduled': {
     fields: [
-      'show_in_new_feed',
-      isLiveField(),
-      'live_event_start_time',
+      'show_in_new_feed', 
+      isLiveField()
     ],
   },
 }
