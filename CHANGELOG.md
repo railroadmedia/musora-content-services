@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.140.3](https://github.com/railroadmedia/musora-content-services/compare/v2.140.2...v2.140.3) (2026-03-17)
+
+
+### Bug Fixes
+
+* **BEHSTP-56:** New And Upcoming Row changes ([#866](https://github.com/railroadmedia/musora-content-services/issues/866)) ([2885f1a](https://github.com/railroadmedia/musora-content-services/commit/2885f1a166810253eadbd6ba9cfa951fc8f5c6cc))
+
 ### [2.140.2](https://github.com/railroadmedia/musora-content-services/compare/v2.140.1...v2.140.2) (2026-03-17)
 
 ### [2.140.1](https://github.com/railroadmedia/musora-content-services/compare/v2.140.0...v2.140.1) (2026-03-17)
