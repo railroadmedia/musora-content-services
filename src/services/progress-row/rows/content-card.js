@@ -13,7 +13,7 @@ import {
   songs,
 } from '../../../contentTypeConfig.js'
 import { getTimeRemainingUntilLocal } from '../../dateUtils.js'
-import { PARENT_ID_TOP_LEVEL } from '../../sync/models/ContentProgress.js'
+import { PARENT_ID_TOP_LEVEL } from '../../sync/models/ContentProgress'
 
 /**
  * Fetch any content IDs with some progress, include the userPinnedItem,
