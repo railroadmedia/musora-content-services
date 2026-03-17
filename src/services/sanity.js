@@ -1330,13 +1330,55 @@ export async function fetchTopLevelParentId(railcontentId) {
   return response['top_parent'] ?? response['railcontent_id']
 }
 
-// todo make this correct version from contentProgress
 export async function getHierarchy(contentId, collection) {
+  let response
   if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
-    return await fetchLearningPathHierarchyData(contentId, collection)
+    response = await fetchLearningPathHierarchyData(contentId, collection)
   } else {
-    return await fetchALaCarteHierarchyData(contentId)
+    response = await fetchALaCarteHierarchyData(contentId)
   }
+  if (!response) return null
+
+  const topLevelId = response?.railcontent_id ?? response?.id
+
+  let data = {
+    topLevelId: topLevelId,
+    parents: {},
+    children: {},
+    metadata: {},
+  }
+  populateHierarchyLookups(response, data, null)
+  data.metadata = extractMetadataFromHierarchy(response)
+
+  return data
+
+}
+
+function extractMetadataFromHierarchy(hierarchyData) {
+  let metadata = {}
+  function recursiveExtract(currentLevel, parentMetadata = {}) {
+    const railcontentIdField = currentLevel.railcontent_id ? 'railcontent_id' : 'id'
+    let contentId = currentLevel[railcontentIdField]
+    metadata[contentId] = {
+      type: currentLevel.metadata?.type ?? 'assignment',
+      brand: currentLevel.metadata?.brand ?? parentMetadata.brand,
+      parent_id: currentLevel.metadata?.parent_id ?? parentMetadata.parent_id,
+    }
+    let children = currentLevel['children']
+    if (children) {
+      for (let i = 0; i < children.length; i++) {
+        recursiveExtract(children[i], metadata[contentId])
+      }
+    }
+    let assignments = currentLevel['assignments']
+    if (assignments) {
+      for (let i = 0; i < assignments.length; i++) {
+        recursiveExtract(assignments[i], metadata[contentId])
+      }
+    }
+  }
+  recursiveExtract(hierarchyData)
+  return metadata
 }
 
 async function fetchLearningPathHierarchyData(railcontentId, collection) {

@@ -270,6 +270,7 @@ import {
 	fetchALaCarteHierarchyData,
 	fetchAll,
 	fetchAllFilterOptions,
+	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -279,7 +280,6 @@ import {
 	fetchContentRows,
 	fetchContentTypeCounts,
 	fetchCourseCollectionData,
-	fetchLearningPathHierarchyData,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
@@ -449,7 +449,7 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI
+	 default as EventsAPI 
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
@@ -507,6 +507,7 @@ declare module 'musora-content-services' {
 		fetchArtistBySlug,
 		fetchArtistLessons,
 		fetchArtists,
+		fetchBrandsByContentIds,
 		fetchByRailContentId,
 		fetchByRailContentIds,
 		fetchByReference,
@@ -537,7 +538,6 @@ declare module 'musora-content-services' {
 		fetchInterests,
 		fetchLastSubscriptionPlatform,
 		fetchLatestThreads,
-		fetchLearningPathHierarchyData,
 		fetchLearningPathLessons,
 		fetchLearningPathProgressCheckLessons,
 		fetchLeaving,

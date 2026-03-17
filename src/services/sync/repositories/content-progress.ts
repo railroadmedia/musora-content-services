@@ -166,7 +166,13 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.readSome(ids)
   }
 
-  recordProgress(contentId: number, collection: CollectionParameter | null, progressPct: number, resumeTime?: number, {skipPush = false, accessedDirectly = true} = {}) {
+  recordProgress(
+    contentId: number,
+    collection: CollectionParameter | null,
+    progressPct: number,
+    metadata: MetadataParameter,
+    resumeTime?: number,
+    {skipPush = false, accessedDirectly = true} = {}) {
     const id = ContentProgress.generateId(contentId, collection)
 
     if (collection?.type === COLLECTION_TYPE.LEARNING_PATH) {

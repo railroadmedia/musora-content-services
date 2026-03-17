@@ -1,7 +1,7 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
-	 default as EventsAPI
+	 default as EventsAPI 
 } from './services/eventsAPI';
 
 import {
@@ -274,6 +274,7 @@ import {
 	fetchALaCarteHierarchyData,
 	fetchAll,
 	fetchAllFilterOptions,
+	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -283,7 +284,6 @@ import {
 	fetchContentRows,
 	fetchContentTypeCounts,
 	fetchCourseCollectionData,
-	fetchLearningPathHierarchyData,
 	fetchLeaving,
 	fetchLessonContent,
 	fetchLessonsFeaturingThisContent,
@@ -506,6 +506,7 @@ export {
 	fetchArtistBySlug,
 	fetchArtistLessons,
 	fetchArtists,
+	fetchBrandsByContentIds,
 	fetchByRailContentId,
 	fetchByRailContentIds,
 	fetchByReference,
@@ -536,7 +537,6 @@ export {
 	fetchInterests,
 	fetchLastSubscriptionPlatform,
 	fetchLatestThreads,
-	fetchLearningPathHierarchyData,
 	fetchLearningPathLessons,
 	fetchLearningPathProgressCheckLessons,
 	fetchLeaving,
