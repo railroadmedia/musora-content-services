@@ -33,6 +33,7 @@ import {
   SONG_TYPES_WITH_CHILDREN,
   liveFields,
   postProcessBadge,
+  parentRecentTypes,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems } from './recommendations.js'
 import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS, CONTENT_STATUSES } from '../contentMetaData.js'
@@ -44,6 +45,9 @@ import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
 import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
 import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
+import { query } from '../lib/sanity/query'
+import { Filters as f } from '../lib/sanity/filter'
+import { COLLECTION_TYPE } from './sync/models/ContentProgress.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -385,7 +389,7 @@ export async function fetchUpcomingEvents(brand, { page = 1, limit = 10 } = {}) 
         live_event_end_time,
          "isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}'`
   const query = buildRawQuery(
-    `defined(live_event_start_time) && (!defined(live_event_end_time) || live_event_end_time >= '${now}' ) && (brand == '${brand}' || brand == 'musora' && live_global_event) && status in ['scheduled']`,
+    `defined(live_event_start_time) && (!defined(live_event_end_time) || live_event_end_time >= '${now}' ) && (brand == '${brand}' || live_global_event) && status in ['scheduled']`,
     fields,
     {
       sortOrder: 'published_on asc',
@@ -1307,56 +1311,104 @@ export async function fetchTopLevelParentId(railcontentId) {
   return response['top_parent'] ?? railcontentId
 }
 
-export async function fetchLearningPathHierarchy(railcontentId, collection) {
+export async function getHierarchy(contentId, collection) {
+  let response
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+    response = await fetchLearningPathHierarchyData(contentId, collection)
+  } else {
+    response = await fetchALaCarteHierarchyData(contentId)
+  }
+  if (!response) return null
+
+  const topLevelId = response.railcontent_id ?? response.id
+
+  if (!topLevelId) {
+    console.error('Top level ID not found in hierarchy response', response)
+    return null
+  }
+
+  let data = {
+    topLevelId: topLevelId,
+    parents: {},
+    children: {},
+    metadata: {},
+  }
+  populateHierarchyLookups(response, data, null)
+  data.metadata = extractMetadataFromHierarchy(response)
+
+  return data
+
+}
+
+function extractMetadataFromHierarchy(hierarchyData) {
+  let metadata = {}
+  function recursiveExtract(currentLevel, parentMetadata = {}) {
+    const railcontentIdField = currentLevel.railcontent_id ? 'railcontent_id' : 'id'
+    let contentId = currentLevel[railcontentIdField]
+    metadata[contentId] = {
+      type: currentLevel.metadata?.type ?? 'assignment',
+      brand: currentLevel.metadata?.brand ?? parentMetadata.brand,
+      parent_id: currentLevel.metadata?.parent_id ?? parentMetadata.parent_id,
+    }
+    let children = currentLevel['children']
+    if (children) {
+      for (let i = 0; i < children.length; i++) {
+        recursiveExtract(children[i], metadata[contentId])
+      }
+    }
+    let assignments = currentLevel['assignments']
+    if (assignments) {
+      for (let i = 0; i < assignments.length; i++) {
+        recursiveExtract(assignments[i], metadata[contentId])
+      }
+    }
+  }
+  recursiveExtract(hierarchyData)
+  return metadata
+}
+
+async function fetchLearningPathHierarchyData(railcontentId, collection) {
   if (!collection) {
     return null
   }
 
   const topLevelId = collection.id
 
-  let response = await fetchByRailContentId(topLevelId, collection.type)
-  if (!response) return null
-
-  let data = {
-    topLevelId: topLevelId,
-    parents: {},
-    children: {},
-  }
-  populateHierarchyLookups(response, data, null)
-  return data
+  return (await fetchByRailContentIds([topLevelId], 'hierarchy-data'))[0]
 }
 
-export async function fetchHierarchy(railcontentId) {
+async function fetchALaCarteHierarchyData(railcontentId) {
   let topLevelId = await fetchTopLevelParentId(railcontentId)
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const query = `*[railcontent_id == ${topLevelId}]{
       railcontent_id,
+      'metadata': { brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
       'assignments': assignment[]{railcontent_id},
       'children': child[${childrenFilter}]->{
         railcontent_id,
+        'metadata': {
+  brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
         'assignments': assignment[]{railcontent_id},
         'children': child[${childrenFilter}]->{
             railcontent_id,
+            'metadata': {
+      brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
             'assignments': assignment[]{railcontent_id},
             'children': child[${childrenFilter}]->{
                railcontent_id,
+               'metadata': {
+         brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
                'assignments': assignment[]{railcontent_id},
                'children': child[${childrenFilter}]->{
                   railcontent_id,
+                  'metadata': {
+            brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
             }
           }
         }
       },
     }`
-  let response = await fetchSanity(query, false, { processNeedAccess: false })
-  if (!response) return null
-  let data = {
-    topLevelId: topLevelId,
-    parents: {},
-    children: {},
-  }
-  populateHierarchyLookups(response, data, null)
-  return data
+  return await fetchSanity(query, false, { processNeedAccess: false })
 }
 
 function populateHierarchyLookups(currentLevel, data, parentId) {
@@ -1378,10 +1430,12 @@ function populateHierarchyLookups(currentLevel, data, parentId) {
   let assignments = currentLevel['assignments']
   if (assignments) {
     let assignmentIds = assignments.map((assignment) => assignment[railcontentIdField]).filter(Boolean)
-    data.children[contentId] = (data.children[contentId] ?? []).concat(assignmentIds)
-    assignmentIds.forEach((assignmentId) => {
-      if (assignmentId) data.parents[assignmentId] = contentId
-    })
+    if (assignmentIds.length > 0) {
+      data.children[contentId] = (data.children[contentId] ?? []).concat(assignmentIds)
+      assignmentIds.forEach((assignmentId) => {
+        if (assignmentId) data.parents[assignmentId] = contentId
+      })
+    }
   }
 }
 
@@ -1874,7 +1928,8 @@ export async function fetchTabData(
 
   switch (progress) {
     case 'recent':
-      progressIds = await getAllStartedOrCompleted({ brand, onlyIds: true })
+      const metadata = { brand }
+      progressIds = await getAllStartedOrCompleted({ metadata })
       sortOrder = null
       break
     case 'incomplete':
@@ -1975,35 +2030,116 @@ export async function fetchRecent(
 
 export async function fetchScheduledAndNewReleases(
   brand,
-  { page = 1, limit = 20, sort = '-published_on' } = {}
+  // page param deprecated, doesnt have 1-1 affect on this functionality
+  // if we want to allow pagination, this requires a revisit
+  { limit = 10 } = {}
 ) {
-  const upcomingTypes = getUpcomingEventsTypes(brand)
-  const newTypes = getNewReleasesTypes(brand)
+  const maxLessons = 3
+  const maxSongs = 5
+  const maxLivestreams = 2
 
-  const scheduledTypes = merge(upcomingTypes, newTypes)
-  const typesString = arrayJoinWithQuotes(scheduledTypes)
-  const now = getSanityDate(new Date())
+  const rawNow = new Date()
+  const now = getSanityDate(rawNow)
+  const fifteenDaysAgo = getSanityDate(new Date(rawNow - 15 * 24 * 60 * 60 * 1000))
 
-  const start = (page - 1) * limit
-  const end = start + limit
-  const sortOrder = getSortOrder(sort, brand)
+  const parentsWithoutSong = parentRecentTypes.filter(type => type !== 'song')
 
-  const query = `
-    *[show_in_new_feed == true && (
-      (_type in [${typesString}] && brand == '${brand}' && status in ['published','scheduled'] && defined(published_on))
-      || (
-        defined(live_event_start_time)
-        && (!defined(live_event_end_time) || live_event_end_time >= '${now}' )
-        && brand == '${brand}'
-        && status in ['scheduled']
-      )
-    )] | order(${sortOrder})
-    [${start}...${end}]
-    {
-      ${getFieldsForContentType('new-and-scheduled')}
+  const fields = getFieldsForContentType('new-and-scheduled')
+
+  const lessonFilter = f.combine(
+    "show_in_new_feed == true",
+    f.brand(brand),
+    f.typeIn(parentsWithoutSong),
+    f.statusIn(['published']),
+    f.publishedBefore(now),
+    f.publishedAfter(fifteenDaysAgo),
+  )
+
+  const songFilter = f.combine(
+    "show_in_new_feed == true",
+    f.brand(brand),
+    f.type('song'),
+    f.statusIn(['published']),
+    f.publishedBefore(now),
+    f.publishedAfter(fifteenDaysAgo),
+  )
+
+  const livestreamFilter = f.combine(
+    "show_in_new_feed == true",
+    f.combineOr(
+      f.brand(brand),
+      'live_global_event == true'
+    ),
+    f.statusIn(['scheduled']),
+    `live_event_start_time >= '${now}'`,
+  )
+
+  const lessonQuery = query()
+    .and(lessonFilter)
+    .order('published_on desc')
+    .slice(0, maxLessons)
+    .select(fields)
+    .build()
+
+  const songQuery = query()
+    .and(songFilter)
+    .order('published_on desc')
+    .slice(0, maxSongs)
+    .select(fields)
+    .build()
+
+  const livestreamQuery = query()
+    .and(livestreamFilter)
+    .order('live_event_start_time asc')
+    .slice(0, maxLivestreams)
+    .select(fields)
+    .build()
+
+  const q = `{
+    "lessons": ${lessonQuery},
+    "songs": ${songQuery},
+    "livestreams": ${livestreamQuery}
     }`
 
-  return fetchSanity(query, true)
+  const r = await fetchSanity(q, true)
+
+  if (!r) {
+    return []
+  }
+
+  return reorderScheduledAndNewReleases(r, limit)
+}
+
+function reorderScheduledAndNewReleases(r, limit) {
+  let lessonLimit, songLimit, livestreamLimit
+  // discrete limit/order behaviour for this row
+  if (limit >= 10) {
+    lessonLimit = 3
+    songLimit = 5
+    livestreamLimit = 2
+  } else if (limit >= 3) {
+    lessonLimit = 2
+    livestreamLimit = 1
+    songLimit = limit - lessonLimit - livestreamLimit
+  } else {
+    lessonLimit = (limit > 0) ? 1 : 0
+    livestreamLimit = 0
+    songLimit = limit - lessonLimit
+  }
+
+  const lessons = r.lessons.slice(0, lessonLimit)
+  if (lessons.length < lessonLimit) {
+    songLimit += (lessonLimit - lessons.length)
+  }
+
+  const livestreams = r.livestreams.slice(0, livestreamLimit)
+  if (livestreams.length < livestreamLimit) {
+    songLimit += (livestreamLimit - livestreams.length)
+  }
+
+  const songs = r.songs.slice(0, songLimit)
+
+  return [...lessons, ...songs, ...livestreams]
 }
 
 export async function fetchShows(brand, type, sort = 'sort') {

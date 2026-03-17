@@ -2,8 +2,9 @@ import BaseModel from './Base'
 import { SYNC_TABLES } from '../schema'
 import {
   positiveInt,
-  nullableString,
   nullableUint16,
+  uint32,
+  string,
   percent,
   mediumint,
   enumValue,
@@ -12,8 +13,11 @@ import {
 export enum COLLECTION_TYPE {
   SELF = 'self',
   LEARNING_PATH = 'learning-path-v2',
+  PLAYLIST = 'playlist',
 }
 export const COLLECTION_ID_SELF = 0
+
+export const PARENT_ID_TOP_LEVEL = 0
 
 export enum STATE {
   STARTED = 'started',
@@ -27,7 +31,9 @@ export interface CollectionParameter {
 
 const validators = {
   content_id: positiveInt,
-  content_brand: nullableString,
+  content_brand: string,
+  content_type: string,
+  content_parent_id: uint32,
   progress_percent: (value: number, currentPercent: number) => {
     const validated = percent(value)
     return validated === 0 ? 0 : Math.max(validated, currentPercent)
@@ -44,7 +50,13 @@ export default class ContentProgress extends BaseModel {
     return this._getRaw('content_id') as number
   }
   get content_brand() {
-    return this._getRaw('content_brand') as string | null
+    return this._getRaw('content_brand') as string
+  }
+  get content_type() {
+    return this._getRaw('content_type') as string
+  }
+  get content_parent_id() {
+    return this._getRaw('content_parent_id') as number
   }
   get state() {
     return this._getRaw('state') as STATE
@@ -68,8 +80,14 @@ export default class ContentProgress extends BaseModel {
   set content_id(value: number) {
     this._setRaw('content_id', validators.content_id(value))
   }
-  set content_brand(value: string |  null) {
+  set content_brand(value: string) {
     this._setRaw('content_brand', validators.content_brand(value))
+  }
+  set content_type(value: string) {
+    this._setRaw('content_type', validators.content_type(value))
+  }
+  set content_parent_id(value: number) {
+    this._setRaw('content_parent_id', validators.content_parent_id(value))
   }
   set progress_percent(value: number) {
     const percent = validators.progress_percent(value, this.progress_percent)

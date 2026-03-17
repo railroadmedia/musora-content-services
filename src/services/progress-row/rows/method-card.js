@@ -136,14 +136,16 @@ function getCtaAndText(learningPath) {
   } else if (anyDailiesStarted && !allDailiesCompleted) {
     ctaText = 'Continue Session'
     action = getMethodActionCTA(nextIncompleteDaily)
-  } else if (allDailiesCompleted) {
-    // get the first incomplete lesson from upcoming and next learning path lessons
+  } else {
     let nextLesson
-    try {
-      nextLesson = getNextLesson(learningPath)
-    } catch (e) {
-      console.error(e, 'error finding next lesson for method card cta')
-      throw e
+
+    if (allDailiesCompleted) {
+      try {
+        nextLesson = getNextLesson(learningPath)
+      } catch (e) {
+        console.error(e, 'error finding next lesson for method card cta')
+        throw e
+      }
     }
 
     ctaText = nextLesson ? 'Start Next Lesson' : 'Browse Lessons'
@@ -177,18 +179,15 @@ function analyzeDailySession(learningPath) {
 
   let allDailiesCompleted = true
   let anyDailiesStarted = false
-  let noDailiesStarted = false
   let nextIncompleteDaily = null
 
   for (const lesson of allDailies) {
     switch (lesson.progressStatus) {
       case STATE.COMPLETED:
         anyDailiesStarted = true
-        noDailiesStarted = false
         break
       case STATE.STARTED:
         anyDailiesStarted = true
-        noDailiesStarted = false
         allDailiesCompleted = false
         if (!nextIncompleteDaily) {
           nextIncompleteDaily = lesson
@@ -206,10 +205,20 @@ function analyzeDailySession(learningPath) {
     }
   }
 
+  // fallback to Browse Lessons card state
+  if (allDailies.length === 0) {
+    return {
+      allDailiesCompleted: false,
+      anyDailiesStarted: false,
+      noDailiesStarted: false,
+      nextIncompleteDaily: null,
+    }
+  }
+
   return {
     allDailiesCompleted,
     anyDailiesStarted,
-    noDailiesStarted,
+    noDailiesStarted: !anyDailiesStarted,
     nextIncompleteDaily,
   }
 }

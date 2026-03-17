@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.140.4](https://github.com/railroadmedia/musora-content-services/compare/v2.140.3...v2.140.4) (2026-03-17)
+
+
+### Bug Fixes
+
+* use default fields for fetch sibling content ([#870](https://github.com/railroadmedia/musora-content-services/issues/870)) ([3d00aa2](https://github.com/railroadmedia/musora-content-services/commit/3d00aa20f013301377e00dbc890261b012372829))
+
+### [2.140.3](https://github.com/railroadmedia/musora-content-services/compare/v2.140.2...v2.140.3) (2026-03-17)
+
+
+### Bug Fixes
+
+* **BEHSTP-56:** New And Upcoming Row changes ([#866](https://github.com/railroadmedia/musora-content-services/issues/866)) ([2885f1a](https://github.com/railroadmedia/musora-content-services/commit/2885f1a166810253eadbd6ba9cfa951fc8f5c6cc))
+
+### [2.140.2](https://github.com/railroadmedia/musora-content-services/compare/v2.140.1...v2.140.2) (2026-03-17)
+
+### [2.140.1](https://github.com/railroadmedia/musora-content-services/compare/v2.140.0...v2.140.1) (2026-03-17)
+
+
+### Bug Fixes
+
+* correct no-progress state and add fallback ([#864](https://github.com/railroadmedia/musora-content-services/issues/864)) ([132ae17](https://github.com/railroadmedia/musora-content-services/commit/132ae1783e5bb566b62ac06c1177355a37254c11))
+* **TP-1107:** progress row type and parent_id filtering ([#863](https://github.com/railroadmedia/musora-content-services/issues/863)) ([6d50823](https://github.com/railroadmedia/musora-content-services/commit/6d50823f1db35614f2827c33c18decb04ce156a6))
+
+## [2.140.0](https://github.com/railroadmedia/musora-content-services/compare/v2.139.7...v2.140.0) (2026-03-17)
+
+
+### Features
+
+* default field updates ([#869](https://github.com/railroadmedia/musora-content-services/issues/869)) ([d751e5a](https://github.com/railroadmedia/musora-content-services/commit/d751e5a586735664ec40b0dfed82b00460e34e92))
+
+
+### Bug Fixes
+
+* **TP-1105:** playlist progress for homepage row ([#846](https://github.com/railroadmedia/musora-content-services/issues/846)) ([717e123](https://github.com/railroadmedia/musora-content-services/commit/717e1233e07cc3f81c98b80022a4c9e8b9df952c))
+
+### [2.139.7](https://github.com/railroadmedia/musora-content-services/compare/v2.139.6...v2.139.7) (2026-03-17)
+
+### [2.139.6](https://github.com/railroadmedia/musora-content-services/compare/v2.139.5...v2.139.6) (2026-03-17)
+
 ### [2.139.5](https://github.com/railroadmedia/musora-content-services/compare/v2.139.4...v2.139.5) (2026-03-16)
 
 ### [2.139.4](https://github.com/railroadmedia/musora-content-services/compare/v2.139.3...v2.139.4) (2026-03-11)
