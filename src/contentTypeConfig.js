@@ -410,6 +410,18 @@ export let contentTypeConfig = {
     ],
     includeChildFields: true,
   },
+  'hierarchy-data': {
+    fields: [
+      'railcontent_id',
+      '"assignments": assignment[]{railcontent_id}',
+      '"metadata": { brand, "type": _type, "parent_id":  coalesce(parent_content_data[0].id, 0) }',
+      ],
+    childFields: [
+      'railcontent_id',
+      '"assignments": assignment[]{railcontent_id}',
+      '"metadata": { brand, "type": _type, "parent_id":  coalesce(parent_content_data[0].id, 0) }',
+    ],
+  },
   song: {
     fields: ['album', 'soundslice', 'instrumentless', `"resources": ${resourcesField}`],
     relationships: {

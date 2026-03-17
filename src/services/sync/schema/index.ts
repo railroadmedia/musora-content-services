@@ -22,7 +22,9 @@ const contentProgressTable = tableSchema({
   columns: [
     { name: 'server_record_id', type: 'number', isIndexed: true },
     { name: 'content_id', type: 'number', isIndexed: true },
-    { name: 'content_brand', type: 'string', isOptional: true, isIndexed: true },
+    { name: 'content_brand', type: 'string', isIndexed: true },
+    { name: 'content_type', type: 'string', isIndexed: true },
+    { name: 'content_parent_id', type: 'number', isIndexed: true },
     { name: 'collection_type', type: 'string', isIndexed: true },
     { name: 'collection_id', type: 'number', isIndexed: true },
     { name: 'state', type: 'string', isIndexed: true },
@@ -76,7 +78,7 @@ const userAwardProgressTable = tableSchema({
 })
 
 export default appSchema({
-  version: 1,
+  version: 2, // intentionally no migration for version 1->2, to wipe client db and backfill content_* columns
   tables: [
     contentLikesTable,
     contentProgressTable,
