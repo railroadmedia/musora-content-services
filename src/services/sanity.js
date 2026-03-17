@@ -2022,6 +2022,7 @@ export async function fetchScheduledAndNewReleases(
     f.typeIn(parentsWithoutSong),
     f.statusIn(['published']),
     f.publishedBefore(now),
+    f.publishedAfter(fifteenDaysAgo),
   )
 
   const songFilter = f.combine(
@@ -2224,10 +2225,6 @@ export async function fetchOwnedContent(
     start: start,
     end: end,
   })
-
-  // have to order within a subfield like with relatedLessons
-
-
 
   return fetchSanity(query, true)
 }
