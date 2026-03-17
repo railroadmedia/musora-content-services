@@ -16,24 +16,17 @@ import { getTimeRemainingUntilLocal } from '../../dateUtils.js'
 
 /**
  * Fetch any content IDs with some progress, include the userPinnedItem,
- * remove any content IDs that already exist in playlistEngagedOnContent,
  * and generate a map of the cards keyed by the content IDs
  */
-export async function getContentCardMap(brand, limit, playlistEngagedOnContent, userPinnedItem ){
-  let recentContentIds = await getAllStartedOrCompleted({ brand: brand, limit: (limit ? (limit * 5) : limit) })
+export async function getContentCardMap(brand, limit, userPinnedItem ){
+  let recentContentIds = await getAllStartedOrCompleted({
+    brand: brand,
+    limit: (limit ? (limit * 5) : limit),
+  })
   if (userPinnedItem?.progressType === 'content') {
     recentContentIds.push(userPinnedItem.id)
   }
-  if (playlistEngagedOnContent) {
-    for (const item of playlistEngagedOnContent) {
-      const parentIds = item.parent_content_data || []
-      recentContentIds = recentContentIds.filter(id => {
-        if (id === item.id) return false
-        if (parentIds.includes(id) && item.progressTimestamp > 0) return false
-        return true
-      })
-    }
-  }
+
   let contents = recentContentIds.length > 0
     ? await addContextToContent(
       fetchByRailContentIds,
