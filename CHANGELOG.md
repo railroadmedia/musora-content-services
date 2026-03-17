@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.140.1](https://github.com/railroadmedia/musora-content-services/compare/v2.140.0...v2.140.1) (2026-03-17)
+
+
+### Bug Fixes
+
+* correct no-progress state and add fallback ([#864](https://github.com/railroadmedia/musora-content-services/issues/864)) ([132ae17](https://github.com/railroadmedia/musora-content-services/commit/132ae1783e5bb566b62ac06c1177355a37254c11))
+* **TP-1107:** progress row type and parent_id filtering ([#863](https://github.com/railroadmedia/musora-content-services/issues/863)) ([6d50823](https://github.com/railroadmedia/musora-content-services/commit/6d50823f1db35614f2827c33c18decb04ce156a6))
+
 ## [2.140.0](https://github.com/railroadmedia/musora-content-services/compare/v2.139.7...v2.140.0) (2026-03-17)
 
 
