@@ -2064,8 +2064,6 @@ export async function fetchScheduledAndNewReleases(
     .select(fields)
     .build()
 
-  return songQuery
-
   const q = `{
     "lessons": ${lessonQuery},
     "songs": ${songQuery},
