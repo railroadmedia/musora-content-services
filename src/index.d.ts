@@ -267,7 +267,6 @@ import {
 
 import {
 	buildEntityAndTotalQuery,
-	fetchALaCarteHierarchyData,
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchBrandsByContentIds,
@@ -501,7 +500,6 @@ declare module 'musora-content-services' {
 		emitProgressSaved,
 		enrollUserInGuidedCourse,
 		extractSanityUrl,
-		fetchALaCarteHierarchyData,
 		fetchAll,
 		fetchAllFilterOptions,
 		fetchArtistBySlug,

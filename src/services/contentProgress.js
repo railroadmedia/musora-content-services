@@ -380,6 +380,7 @@ export async function getStartedOrCompletedProgressOnly({ brand = undefined } = 
  * @param {string} metadata.brand - optional filter to fetch progress for a specific brand
  * @param {string[]} metadata.contentTypes - optional filter to fetch progress of specific content types
  * @param {number} metadata.parentId - optional filter to fetch progress for a child of a specific parent id
+ * @param {object} include - what collection types to include in results
  * @param {number|null} limit
  * @returns {Promise<any[]>}
  * @private
@@ -389,7 +390,7 @@ async function _getAllStartedOrCompleted({
   limit = null,
   include = { aLaCarte: true, learningPaths: false },
 } = {}) {
-  const agoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60
+  const agoInSeconds = Math.floor(Date.now() / 1000) - 60 * 24 * 60 * 60 // 60 days in seconds
   const baseFilters = {
     updatedAfter: agoInSeconds,
     include: include,

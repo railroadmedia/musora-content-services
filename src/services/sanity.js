@@ -1339,7 +1339,12 @@ export async function getHierarchy(contentId, collection) {
   }
   if (!response) return null
 
-  const topLevelId = response?.railcontent_id ?? response?.id
+  const topLevelId = response.railcontent_id ?? response.id
+
+  if (!topLevelId) {
+    console.error('Top level ID not found in hierarchy response', response)
+    return null
+  }
 
   let data = {
     topLevelId: topLevelId,
@@ -1391,7 +1396,7 @@ async function fetchLearningPathHierarchyData(railcontentId, collection) {
   return (await fetchByRailContentIds([topLevelId], 'hierarchy-data'))[0]
 }
 
-export async function fetchALaCarteHierarchyData(railcontentId) {
+async function fetchALaCarteHierarchyData(railcontentId) {
   let topLevelId = await fetchTopLevelParentId(railcontentId)
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const query = `*[railcontent_id == ${topLevelId}]{

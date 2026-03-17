@@ -271,7 +271,6 @@ import {
 
 import {
 	buildEntityAndTotalQuery,
-	fetchALaCarteHierarchyData,
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchBrandsByContentIds,
@@ -500,7 +499,6 @@ export {
 	emitProgressSaved,
 	enrollUserInGuidedCourse,
 	extractSanityUrl,
-	fetchALaCarteHierarchyData,
 	fetchAll,
 	fetchAllFilterOptions,
 	fetchArtistBySlug,
