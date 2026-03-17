@@ -2081,6 +2081,7 @@ export async function fetchScheduledAndNewReleases(
 
 function reorderScheduledAndNewReleases(r, limit) {
   let lessonLimit, songLimit, livestreamLimit
+  // discrete limit/order behaviour for this row
   if (limit >= 10) {
     lessonLimit = 3
     songLimit = 5
