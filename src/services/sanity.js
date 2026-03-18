@@ -47,7 +47,7 @@ import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './cont
 import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
 import { query } from '../lib/sanity/query'
 import { Filters as f } from '../lib/sanity/filter'
-import { COLLECTION_TYPE } from './sync/models/ContentProgress.js'
+import { COLLECTION_TYPE } from './sync/models/ContentProgress'
 
 /**
  * Exported functions that are excluded from index generation.
