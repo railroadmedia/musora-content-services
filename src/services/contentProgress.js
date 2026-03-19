@@ -406,12 +406,14 @@ async function _getAllStartedOrCompleted({
  * Record watch session
  * @return {string} sessionId - provide in future calls to update progress
  * @param {int} contentId
+ * @param {any} collection
  * @param {int} mediaLengthSeconds
  * @param {int} currentSeconds
  * @param {int} secondsPlayed
- * @param {string} sessionId - This function records a sessionId to pass into future updates to progress on the same video
- * @param {int} instrumentId - enum value of instrument id
- * @param {int} categoryId - enum value of category id
+ * @param {any} prevSession - This function records a sessionId to pass into future updates to progress on the same video
+ * @param {int|null} instrumentId - enum value of instrument id
+ * @param {int|null} categoryId - enum value of category id
+ * @param {boolean} isLivestream
  */
 export async function recordWatchSession(
   contentId,
@@ -421,7 +423,8 @@ export async function recordWatchSession(
   secondsPlayed,
   prevSession = null,
   instrumentId = null,
-  categoryId = null
+  categoryId = null,
+  isLivestream = false,
 ) {
   contentId = normalizeContentId(contentId)
   collection = normalizeCollection(collection)
@@ -435,7 +438,7 @@ export async function recordWatchSession(
   // Track practice and progress locally (no immediate push)
   await Promise.all([
     trackPractice(contentId, secondsPlayed, { instrumentId, categoryId }),
-    trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds),
+    trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds, isLivestream),
   ])
 
   if (!prevSession.pushInterval) {
@@ -460,12 +463,14 @@ async function trackPractice(contentId, secondsPlayed, details = {}) {
   return trackUserPractice(contentId, secondsPlayed, details)
 }
 
-async function trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds) {
+async function trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds, isLivestream = false) {
   const progress = Math.max(1, Math.min(
     99,
     Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds)) * 100)
   ))
-  return saveContentProgress(contentId, collection, progress, currentSeconds, { skipPush: true })
+  return isLivestream
+    ? saveContentProgress(contentId, null, 0, currentSeconds, { skipPush: true })
+    : saveContentProgress(contentId, collection, progress, currentSeconds, { skipPush: true })
 }
 
 export async function contentStatusCompleted(contentId, collection = null) {
