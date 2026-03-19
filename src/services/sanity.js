@@ -1622,6 +1622,17 @@ function contentResultsDecorator(results, fieldName, callback) {
       result[fieldName] = callback(result)
       processChildren(result)
     })
+  } else if (results.lessons && results.livestreams && results.songs) {
+    // `fetchScheduledAndNewReleases` response structure
+    ['lessons', 'livestreams', 'songs'].forEach((key) => {
+      if (results[key] && Array.isArray(results[key])) {
+        results[key].forEach((item) => {
+          item[fieldName] = callback(item)
+          processChildren(item)
+        })
+      }
+    })
+
   } else {
     results[fieldName] = callback(results)
     processChildren(results) // this on was always true
@@ -2135,6 +2146,7 @@ export async function fetchScheduledAndNewReleases(
     "livestreams": ${livestreamQuery}
     }`
 
+  debugger
   const r = await fetchSanity(q, true)
 
   if (!r) {
