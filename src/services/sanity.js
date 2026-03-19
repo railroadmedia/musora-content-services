@@ -1572,6 +1572,17 @@ export async function fetchSanity(
 }
 
 function contentResultsDecorator(results, fieldName, callback) {
+  const processChildren = (result) => {
+    if (result.children && Array.isArray(result.children)) {
+      result.children.forEach((child) => {
+        if (child) {
+          child[fieldName] = callback(child)
+          processChildren(child)
+        }
+      })
+    }
+  }
+
   if (Array.isArray(results)) {
     results.forEach((result) => {
       // Check if this is a content row structure
@@ -1581,9 +1592,11 @@ function contentResultsDecorator(results, fieldName, callback) {
           if (contentItem) {
             contentItem[fieldName] = callback(contentItem)
           }
+          processChildren(contentItem)
         })
       } else {
         result[fieldName] = callback(result)
+        processChildren(result)
       }
     })
   } else if (results.entity && Array.isArray(results.entity)) {
@@ -1592,26 +1605,26 @@ function contentResultsDecorator(results, fieldName, callback) {
       if (result.lessons) {
         result.lessons.forEach((lesson) => {
           lesson[fieldName] = callback(lesson) // Updated to check lesson access
+          processChildren(lesson)
         })
       } else {
         result[fieldName] = callback(result)
+        processChildren(result)
       }
     })
   } else if (results.related_lessons && Array.isArray(results.related_lessons)) {
     results.related_lessons.forEach((result) => {
       result[fieldName] = callback(result)
+      processChildren(result)
     })
   } else if (results.data && Array.isArray(results.data)) {
     results.data.forEach((result) => {
       result[fieldName] = callback(result)
+      processChildren(result)
     })
   } else {
     results[fieldName] = callback(results)
-    if (results.children && Array.isArray(results.children)) {
-      results.children.forEach((result) => {
-        result[fieldName] = callback(result)
-      })
-    }
+    processChildren(results) // this on was always true
   }
 
   return results
