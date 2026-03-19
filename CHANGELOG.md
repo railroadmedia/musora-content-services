@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.140.7](https://github.com/railroadmedia/musora-content-services/compare/v2.140.6...v2.140.7) (2026-03-19)
+
+
+### Bug Fixes
+
+* add need_access to children ([#876](https://github.com/railroadmedia/musora-content-services/issues/876)) ([ce375c4](https://github.com/railroadmedia/musora-content-services/commit/ce375c4c7f4ac3cb8b400abf0ed7fdc7ac679be6))
+
 ### [2.140.6](https://github.com/railroadmedia/musora-content-services/compare/v2.140.5...v2.140.6) (2026-03-17)
 
 ### [2.140.5](https://github.com/railroadmedia/musora-content-services/compare/v2.140.4...v2.140.5) (2026-03-17)
