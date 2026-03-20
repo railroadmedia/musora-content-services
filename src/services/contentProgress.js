@@ -469,7 +469,7 @@ async function trackProgress(contentId, collection, currentSeconds, mediaLengthS
     Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds)) * 100)
   ))
   return isLivestream
-    ? saveContentProgress(contentId, null, 0, currentSeconds, { skipPush: true })
+    ? saveContentProgress(contentId, null, progress, 0, { skipPush: true })
     : saveContentProgress(contentId, collection, progress, currentSeconds, { skipPush: true })
 }
 
