@@ -44,7 +44,7 @@ import { globalConfig } from './config.js'
 
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
-import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
+import {getAllCompleted, getAllCompletedByIds, getAllStarted, getAllStartedOrCompleted} from './contentProgress.js'
 import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
 import { query } from '../lib/sanity/query'
 import { Filters as f } from '../lib/sanity/filter'
@@ -2529,4 +2529,17 @@ export function fetchParentChildRelationshipsFor(childIds, parentType) {
   "children": child[@->railcontent_id in [${stringIds}]]->railcontent_id
 }`
   return fetchSanity(query, true)
+}
+
+export async function hasAnyMethodV2IntroCompleted() {
+  const type = 'method-intro'
+  const filter = `_type == '${type}'`
+  const fields = getIntroVideoFields('method-v2')
+
+  const query = `*[${filter}] { ${fields.join(', ')} }`
+  const videos = await fetchSanity(query, true);
+  const ids = (videos || []).map((v) => v.id)
+
+  const completedVideos = await getAllCompletedByIds(ids)
+  return (completedVideos?.data?.length || 0) > 0
 }
