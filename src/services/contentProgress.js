@@ -38,15 +38,15 @@ export async function getResumeTimeSecondsByRecordIds(ids) {
 export async function getNavigateToForMethod(data) {
   let navigateToData = {}
 
-  const brand = data[0].content.brand || null
+  const brand = data[0].brand || null
   const dailySessionResponse = await getDailySession(brand, new Date())
   const dailySession = dailySessionResponse?.daily_session || null
   const activeLearningPathId = dailySessionResponse?.active_learning_path_id || null
 
-  for (const tuple of data) {
-    if (!tuple) continue
+  for (const content of data) {
+    if (!content) continue
 
-    const {content, collection} = tuple
+    const { _, collection } = extractFromRecordId
 
     const findFirstIncomplete = (ids, progresses) =>
       ids.find(id => progresses.get(id) !== STATE_COMPLETED) || ids[0]
@@ -93,8 +93,7 @@ export async function getNavigateToForMethod(data) {
   return navigateToData
 }
 
-export async function getNavigateTo(data, collection = null) {
-  collection = normalizeCollection(collection)
+export async function getNavigateTo(data) {
   let navigateToData = {}
 
   const twoDepthContentTypes = ['course-collection'] // not adding method because it has its own logic (with active path)
@@ -122,19 +121,18 @@ export async function getNavigateTo(data, collection = null) {
         children.set(child.id, child)
       })
       // return first child (or grand child) if parent-content is complete or no progress
-      const contentState = await getProgressState(content.id, collection)
+      const contentState = await getProgressState(content.id)
       if (contentState !== STATE_STARTED) {
         const firstChild = validChildren[0]
-        let lastInteractedChildNavToData = await getNavigateTo([firstChild], collection)
+        let lastInteractedChildNavToData = await getNavigateTo([firstChild])
         lastInteractedChildNavToData = lastInteractedChildNavToData[firstChild.id] ?? null
         navigateToData[content.id] = buildNavigateTo(
           firstChild,
           lastInteractedChildNavToData,
-          collection
         ) //no G-child for LP
       } else {
-        const childrenStates = await getProgressStateByIds(childrenIds, collection)
-        const lastInteracted = await getLastInteractedOf(childrenIds, collection)
+        const childrenStates = await getProgressStateByIds(childrenIds)
+        const lastInteracted = await getLastInteractedOf(childrenIds)
         const lastInteractedStatus = childrenStates.get(lastInteracted)
 
         if (['course', 'skill-pack', 'song-tutorial'].includes(content.type)) {
@@ -143,7 +141,6 @@ export async function getNavigateTo(data, collection = null) {
             navigateToData[content.id] = buildNavigateTo(
               children.get(lastInteracted),
               null,
-              collection
             )
           } else {
             // send to first incomplete after last interacted
@@ -151,7 +148,6 @@ export async function getNavigateTo(data, collection = null) {
             navigateToData[content.id] = buildNavigateTo(
               children.get(incompleteChild),
               null,
-              collection
             )
           }
         } else if (
@@ -162,24 +158,21 @@ export async function getNavigateTo(data, collection = null) {
           navigateToData[content.id] = buildNavigateTo(
             children.get(incompleteChild),
             null,
-            collection
           )
         } else if (twoDepthContentTypes.includes(content.type)) {
           // send to navigateTo child of last interacted child
           const firstChildren = content.children ?? []
           const lastInteractedChildId = await getLastInteractedOf(
             firstChildren.map((child) => child.id),
-            collection
           )
           if (childrenStates.get(lastInteractedChildId) === STATE_COMPLETED) {
             // TODO: course collections have an extra situation where we need to jump to the next course if all lessons in the last engaged course are completed
           }
-          let lastInteractedChildNavToData = await getNavigateTo(firstChildren, collection)
+          let lastInteractedChildNavToData = await getNavigateTo(firstChildren)
           lastInteractedChildNavToData = lastInteractedChildNavToData[lastInteractedChildId]
           navigateToData[content.id] = buildNavigateTo(
             children.get(lastInteractedChildId),
             lastInteractedChildNavToData,
-            collection
           )
         }
       }
@@ -863,9 +856,25 @@ export async function getIdsWhereLastAccessedFromMethod(contentIds) {
 }
 
 export function generateRecordId(contentId, collection) {
-  if (!contentId)  return null
+  if (!contentId) return null
 
   contentId = normalizeContentId(contentId)
 
   return `${contentId}:${collection?.type || COLLECTION_TYPE.SELF}:${collection?.id || COLLECTION_ID_SELF}`
+}
+
+export function extractFromRecordId(recordId) {
+  if (!recordId) return null
+
+  const contentId = Number(recordId.split(':')[0])
+  const collectionType = recordId.split(':')[1]
+  const collectionId = Number(recordId.split(':')[2])
+
+  return {
+    contentId,
+    collection: {
+      type: collectionType || COLLECTION_TYPE.SELF,
+      id: collectionId || COLLECTION_ID_SELF
+    }
+  }
 }
