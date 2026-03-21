@@ -46,7 +46,7 @@ export async function getNavigateToForMethod(data) {
   for (const content of data) {
     if (!content) continue
 
-    const { _, collection } = extractFromRecordId
+    const { _, collection } = extractFromRecordId(content.record_id)
 
     const findFirstIncomplete = (ids, progresses) =>
       ids.find(id => progresses.get(id) !== STATE_COMPLETED) || ids[0]
