@@ -589,7 +589,7 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
   }
 
   // have to do this so we dont unnecessarily create a 0% record for each child on set to started/completed
-  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata)
+  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, false)
 
   if (isLP) {
     let exportProgresses = progresses
@@ -635,7 +635,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
     }
   }
   // have to do this so we dont unnecessarily create a 0% record for each child on set to started/completed
-  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata)
+  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, false)
 
   if (isLP) {
     let exportProgresses = progresses
@@ -668,6 +668,7 @@ async function resetStatus(contentId, collection = null, {skipPush = false} = {}
   const response = await db.contentProgress.eraseProgress(normalizeContentId(contentId), normalizeCollection(collection), {skipPush: true})
 
   const hierarchy = await getHierarchy(contentId, collection)
+  const metadata = hierarchy.metadata || {}
 
   let progresses = {
     ...trickleProgress(hierarchy, contentId, collection, progress),
@@ -675,7 +676,7 @@ async function resetStatus(contentId, collection = null, {skipPush = false} = {}
   }
 
   // have to use different endpoints for erase vs record
-  await bubbleAndTrickleProgressesSafely(progresses, collection)
+  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, true)
 
   if (isLP) {
     progresses[contentId] = progress
@@ -800,13 +801,31 @@ function getChildrenToDepth(parentId, hierarchy, depth = 1) {
   return allChildrenIds
 }
 
-async function bubbleAndTrickleProgressesSafely(progresses, collection, metadata) {
-  const eraseProgresses = Object.fromEntries(
+async function bubbleAndTrickleProgressesSafely(progresses, collection, metadata, isResetAction) {
+  // have to be careful of bubbling 0% progress to parent when actually completing lessons. old method has like
+  // individual records need to be reset or set to 0% progress.
+
+  //flow
+  /*
+  user completes 1/200 lessons in old method
+  parent gets 10%, G-parent gets 0%
+
+  user resets lesson to 0%
+  G-parent still has progress = 0% but like 1 lesson completed.
+
+  therefore cant have boolean isDeleted flag. must have flag on individual records.
+   */
+
+  let eraseProgresses = {}
+  if (isResetAction) {
+    eraseProgresses = Object.fromEntries(
       Object.entries(progresses).filter(([_, pct]) => pct === 0)
-  )
-  progresses = Object.fromEntries(
+    )
+    progresses = Object.fromEntries(
       Object.entries(progresses).filter(([_, pct]) => pct > 0)
-  )
+    )
+  }
+
   if (Object.keys(progresses).length > 0) {
     await db.contentProgress.recordProgressMany(
       progresses,
