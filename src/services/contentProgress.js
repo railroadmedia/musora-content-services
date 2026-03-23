@@ -406,14 +406,16 @@ async function _getAllStartedOrCompleted({
  * Record watch session
  * @return {string} sessionId - provide in future calls to update progress
  * @param {int} contentId
- * @param {any} collection
- * @param {int} mediaLengthSeconds
- * @param {int} currentSeconds
- * @param {int} secondsPlayed
+ * @param {any} collection - progress collection context, null if a-la-carte
+ * @param {string} collection.type - enum value of collection type
+ * @param {int} collection.id - content_id of parent collection (e.g. learning path content_id)
+ * @param {int} mediaLengthSeconds - total length of video media || live event duration if livestream
+ * @param {int} currentSeconds - seconds timestamp relative to beginning of video
+ * @param {int} secondsPlayed - seconds played in this watch session (since last pause)
  * @param {any} prevSession - This function records a sessionId to pass into future updates to progress on the same video
  * @param {int|null} instrumentId - enum value of instrument id
  * @param {int|null} categoryId - enum value of category id
- * @param {boolean} isLivestream
+ * @param {boolean} isLivestream - determines livestream-specific progress handling
  */
 export async function recordWatchSession(
   contentId,
