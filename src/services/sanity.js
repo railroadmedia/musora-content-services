@@ -1572,12 +1572,12 @@ export async function fetchSanity(
 }
 
 function contentResultsDecorator(results, fieldName, callback) {
-  const processChildren = (result) => {
+  const processChildren = (result, depth = 0) => {
     if (result.children && Array.isArray(result.children)) {
       result.children.forEach((child) => {
-        if (child) {
+        if (child && depth < 3) { // course-collections are only 3 depth
           child[fieldName] = callback(child)
-          processChildren(child)
+          processChildren(child, depth + 1)
         }
       })
     }
@@ -2146,7 +2146,6 @@ export async function fetchScheduledAndNewReleases(
     "livestreams": ${livestreamQuery}
     }`
 
-  debugger
   const r = await fetchSanity(q, true)
 
   if (!r) {
