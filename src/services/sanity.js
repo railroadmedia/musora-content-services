@@ -951,7 +951,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
   }
 
   const parentQuery = addParent
-    ? `"parent_content_data": parent_content_reference[0]->{
+    ? `"parent_content_data": parent_content_reference[]->{
         "id": railcontent_id,
         title,
         slug,
