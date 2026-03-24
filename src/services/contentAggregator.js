@@ -1,10 +1,10 @@
 import {
+  extractFromRecordId,
   generateRecordId,
   getNavigateTo,
   getNavigateToForMethod,
   getProgressDataByIds,
   getProgressDataByRecordIds,
-  getProgressStateByRecordIds,
   getResumeTimeSecondsByIds,
   getResumeTimeSecondsByRecordIds,
 } from './contentProgress.js'
@@ -65,7 +65,6 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
 
   // todo: merge addProgressData with addResumeTimeSeconds to one watermelon call
   const {
-    collection = null, // this is needed for different collection types like learning paths. has .id and .type
     dataField = null,
     dataField_includeParent = false,
     addProgressPercentage = false,
@@ -77,6 +76,8 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     addNavigateTo = false,
     addAwards = false,
   } = options
+
+  let dataFields = dataField ? [dataField] : []
 
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
 
@@ -95,12 +96,12 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     resumeTimeData,
     navigateToData,
     awards,
-  ] = await Promise.all([ //for now assume these all return `collection = {type, id}`. it will be so when watermelon here
+  ] = await Promise.all([
     addProgressPercentage || addProgressStatus || addProgressTimestamp
-      ? getProgressDataByIds(ids, collection) : Promise.resolve(null),
-    addIsLiked ? isContentLikedByIds(ids, collection) : Promise.resolve(null),
-    addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids, collection) : Promise.resolve(null),
-    addNavigateTo ? getNavigateTo(items, collection) : Promise.resolve(null),
+      ? getProgressDataByIds(ids) : Promise.resolve(null),
+    addIsLiked ? isContentLikedByIds(ids) : Promise.resolve(null),
+    addResumeTimeSeconds ? getResumeTimeSecondsByIds(ids) : Promise.resolve(null),
+    addNavigateTo ? getNavigateTo(items) : Promise.resolve(null),
     addAwards ? getContentAwardsByIds(ids) : Promise.resolve(null),
   ])
 
@@ -116,7 +117,7 @@ export async function addContextToContent(dataPromise, ...dataArgs) {
     ...(addAwards ? { awards: awards?.[item.id].awards || [] } : {}),
   })
 
-  return await processItems(data, addContext, dataField, isDataAnArray, dataField_includeParent)
+  return await processItems(data, addContext, dataFields, isDataAnArray, dataField_includeParent)
 }
 
 /**
@@ -172,6 +173,11 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
     addAwards = false,
   } = options
 
+  let dataFields = dataField ? [dataField] : []
+  if (dataField_includeIntroVideo) {
+    dataFields.push('intro_video')
+  }
+
   const dataParam = lastArg === options ? dataArgs.slice(0, -1) : dataArgs
 
   let data = await dataPromise(...dataParam)
@@ -179,12 +185,11 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
   if (isDataAnArray && data.length === 0) return data
   if (!data) return false
 
-  let items = extractItemsWithCollectionFromMethodData(data, dataField, isDataAnArray, dataField_includeParent, dataField_includeIntroVideo) ?? []
+  let items, recordIds
+  [data, items, recordIds] = addRecordIdsToData(data, dataField, isDataAnArray, dataField_includeParent, dataField_includeIntroVideo) ?? []
   if (items.length === 0) return data
 
-  const recordIds = items.map((item) => generateRecordId(item.content?.id, item.collection))
-
-  const ids = items.map(item => item.content?.id)
+  const ids = recordIds.map(item => extractFromRecordId(item).contentId)
 
   const [
     progressData,
@@ -203,37 +208,28 @@ export async function addContextToLearningPaths(dataPromise, ...dataArgs) {
 
   const addContext = async (item) => {
     const itemId = item.id || 0
-    const enrichedItem = {
+    const itemRecordId = item.record_id || 0
+    delete item.record_id
+
+    return {
       ...item,
-      ...(addProgressPercentage ? { progressPercentage: progressData?.[itemId]?.progress } : {}),
-      ...(addProgressStatus ? { progressStatus: progressData?.[itemId]?.status } : {}),
-      ...(addProgressTimestamp ? { progressTimestamp: progressData?.[itemId]?.last_update } : {}),
+      ...(addProgressPercentage ? { progressPercentage: progressData?.[itemRecordId]?.progress } : {}),
+      ...(addProgressStatus ? { progressStatus: progressData?.[itemRecordId]?.status } : {}),
+      ...(addProgressTimestamp ? { progressTimestamp: progressData?.[itemRecordId]?.last_update } : {}),
       ...(addIsLiked ? { isLiked: isLikedData?.[itemId] } : {}),
       ...(addLikeCount && ids.length === 1 ? { likeCount: await fetchLikeCount(itemId) } : {}),
-      ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[itemId] } : {}),
+      ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[itemRecordId] } : {}),
       ...(addNavigateTo ? { navigateTo: navigateToData?.[itemId] } : {}),
       ...(addAwards ? { awards: awards?.[itemId].awards || [] } : {}),
     }
-
-    // Enrich intro_video if it exists and flag is set
-    if (dataField_includeIntroVideo && item?.intro_video?.id) {
-      enrichedItem.intro_video = {
-        ...item.intro_video,
-        ...(addProgressPercentage ? { progressPercentage: progressData?.[item.intro_video.id]?.progress } : {}),
-        ...(addProgressStatus ? { progressStatus: progressData?.[item.intro_video.id]?.status } : {}),
-        ...(addProgressTimestamp ? { progressTimestamp: progressData?.[item.intro_video.id]?.last_update } : {}),
-        ...(addIsLiked ? { isLiked: isLikedData?.[item.intro_video.id] } : {}),
-        ...(addResumeTimeSeconds ? { resumeTime: resumeTimeData?.[item.intro_video.id] } : {}),
-      }
-    }
-
-    return enrichedItem
   }
 
-  return await processItems(data, addContext, dataField, isDataAnArray, dataField_includeParent)
+  return await processItems(data, addContext, dataFields, isDataAnArray, dataField_includeParent)
 }
 
 export async function getNavigateToForPlaylists(data, { dataField = null } = {}) {
+  let dataFields = dataField ? [dataField] : []
+
   let playlists = extractItemsFromData(data, dataField, false, false)
 
   const allIds = [...new Set(playlists.flatMap(playlist => playlist.items.map(item => item.content_id)))]
@@ -263,7 +259,7 @@ export async function getNavigateToForPlaylists(data, { dataField = null } = {})
     }
     return playlist
   }
-  return await processItems(data, addContext, dataField, false, false)
+  return await processItems(data, addContext, dataFields, false, false)
 }
 
 function extractItemsFromData(data, dataField, isParentArray, includeParent) {
@@ -307,21 +303,30 @@ function extractItemsFromData(data, dataField, isParentArray, includeParent) {
   return items
 }
 
-function extractItemsWithCollectionFromMethodData(data, dataField, isDataAnArray, includeParent, includeIntroVideo) {
-  let items = [] // array of tuples {}
+function addRecordIdsToData(data, dataField, isDataAnArray, includeParent, includeIntroVideo) {
+  let items = []
+  let recordIds = []
 
-  const extractLearningPathItems = (item) => {
-    if (item.type === COLLECTION_TYPE.LEARNING_PATH) {
-      const c = {type: COLLECTION_TYPE.LEARNING_PATH, id: item.id}
+  const extractLearningPathItems = (content) => {
+    if (content.type === COLLECTION_TYPE.LEARNING_PATH) {
+      const c = {type: COLLECTION_TYPE.LEARNING_PATH, id: content.id}
 
       if (!dataField || (dataField && includeParent)) {
-        items.push(...getDataTuple([item], c))
+        content.record_id = generateRecordId(content.id, c)
+        items.push(content)
+        recordIds.push(content.record_id)
       }
       if (includeIntroVideo) {
-        items.push(...getDataTuple([item.intro_video], null))
+        content.intro_video.record_id = generateRecordId(content.intro_video.id, null)
+        items.push(content.intro_video)
+        recordIds.push(content.intro_video.record_id)
       }
       if (dataField) {
-        items.push(...getDataTuple(item[dataField], c))
+        for (const child of content[dataField] ?? []) {
+          child.record_id = generateRecordId(child.id, c)
+          items.push(child)
+          recordIds.push(child.record_id)
+        }
       }
     } else { // is a lesson id, cant determine which collection it belongs to
       // do not add it as we cant determine collection
@@ -330,41 +335,36 @@ function extractItemsWithCollectionFromMethodData(data, dataField, isDataAnArray
   }
 
   if (isDataAnArray) {
-    for (const item of data) {
-      extractLearningPathItems(item)
+    for (const content of data) {
+      extractLearningPathItems(content)
     }
   } else {
     extractLearningPathItems(data)
   }
-  return items
-
-  function getDataTuple(data, collection) {
-    const tuples = []
-    for (const item of data) {
-      const coll = collection || null
-      tuples.push({content: item, collection: coll})
-    }
-    return tuples
-  }
+  return [data, items, recordIds]
 }
 
-async function processItems(data, addContext, dataField, isParentArray, includeParent) {
-  if (dataField) {
+async function processItems(data, addContext, dataFields, isParentArray, includeParent) {
+  if (dataFields.length > 0) {
     if (isParentArray) {
       for (let parent of data) {
-        const fieldValue = parent[dataField]
-        if (Array.isArray(fieldValue)) {
-          parent[dataField] = await Promise.all(fieldValue.map(addContext))
-        } else if (fieldValue && typeof fieldValue === 'object') {
-          parent[dataField] = await addContext(fieldValue)
+        for (const field of dataFields) {
+          const fieldValue = parent[field]
+          if (Array.isArray(fieldValue)) {
+            parent[field] = await Promise.all(fieldValue.map(addContext))
+          } else if (fieldValue && typeof fieldValue === 'object') {
+            parent[field] = await addContext(fieldValue)
+          }
         }
       }
     } else {
-      const fieldValue = data[dataField]
-      if (Array.isArray(fieldValue)) {
-        data[dataField] = await Promise.all(fieldValue.map(addContext))
-      } else if (fieldValue && typeof fieldValue === 'object') {
-        data[dataField] = await addContext(fieldValue)
+      for (const field of dataFields) {
+        const fieldValue = data[field]
+        if (Array.isArray(fieldValue)) {
+          data[field] = await Promise.all(fieldValue.map(addContext))
+        } else if (fieldValue && typeof fieldValue === 'object') {
+          data[field] = await addContext(fieldValue)
+        }
       }
     }
     if (includeParent) {

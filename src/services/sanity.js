@@ -2528,5 +2528,5 @@ export function fetchParentChildRelationshipsFor(childIds, parentType) {
   railcontent_id,
   "children": child[@->railcontent_id in [${stringIds}]]->railcontent_id
 }`
-  return fetchSanity(query, true)
+  return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
