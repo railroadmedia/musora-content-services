@@ -2545,11 +2545,10 @@ export function fetchParentChildRelationshipsFor(childIds, parentType) {
 export async function hasAnyMethodV2IntroCompleted() {
   const type = 'method-intro'
   const filter = `_type == '${type}'`
-  const fields = getIntroVideoFields('method-v2')
 
-  const query = `*[${filter}] { ${fields.join(', ')} }`
+  const query = `*[${filter}] { railcontent_id }`
   const videos = await fetchSanity(query, true);
-  const ids = (videos || []).map((v) => v.id)
+  const ids = (videos || []).map((v) => v.railcontent_id)
 
   const completedVideos = await getAllCompletedByIds(ids)
   return (completedVideos?.data?.length || 0) > 0
