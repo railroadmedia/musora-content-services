@@ -802,20 +802,6 @@ function getChildrenToDepth(parentId, hierarchy, depth = 1) {
 }
 
 async function bubbleAndTrickleProgressesSafely(progresses, collection, metadata, isResetAction) {
-  // have to be careful of bubbling 0% progress to parent when actually completing lessons. old method has like
-  // individual records need to be reset or set to 0% progress.
-
-  //flow
-  /*
-  user completes 1/200 lessons in old method
-  parent gets 10%, G-parent gets 0%
-
-  user resets lesson to 0%
-  G-parent still has progress = 0% but like 1 lesson completed.
-
-  therefore cant have boolean isDeleted flag. must have flag on individual records.
-   */
-
   let eraseProgresses = {}
   if (isResetAction) {
     eraseProgresses = Object.fromEntries(
