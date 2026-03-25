@@ -16,10 +16,10 @@ import { AuthResponse } from './types'
  */
 export async function status(email: string): Promise<{ requires_setup: boolean }> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  const response = await httpClient.get<{ requires_setup: boolean }>(
-    `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status`
+  return await httpClient.post<{ requires_setup: boolean }>(
+    `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status`,
+    []
   )
-  return response
 }
 
 /**
@@ -48,6 +48,7 @@ export interface AccountSetupProps {
 export interface AccountSetupResponse {
   auth: AuthResponse
   onboarding: Onboarding
+  product_brand?: string
 }
 
 /**

@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.140.9](https://github.com/railroadmedia/musora-content-services/compare/v2.140.8...v2.140.9) (2026-03-24)
+
+
+### Bug Fixes
+
+* bubbling 0% progress doesnt reset ancestor ([#881](https://github.com/railroadmedia/musora-content-services/issues/881)) ([c1538e5](https://github.com/railroadmedia/musora-content-services/commit/c1538e52a34d839ab9b81cc6f72f8839ef4dcb51))
+* **MU2-1419:** return product brand on account setup ([#882](https://github.com/railroadmedia/musora-content-services/issues/882)) ([c7bf35e](https://github.com/railroadmedia/musora-content-services/commit/c7bf35e06144d132799a5234b8cb1bf188c2307c))
+* **NW-345:** Get to Post for account status endpoint ([d97f97e](https://github.com/railroadmedia/musora-content-services/commit/d97f97e9a04ef4f701636c7c1ee602e96fc546d5))
+
+### [2.140.8](https://github.com/railroadmedia/musora-content-services/compare/v2.140.7...v2.140.8) (2026-03-23)
+
+
+### Bug Fixes
+
+* fix enriching learning paths ([#879](https://github.com/railroadmedia/musora-content-services/issues/879)) ([793c4e9](https://github.com/railroadmedia/musora-content-services/commit/793c4e90a77ad03d9f293bc6576317f4391b746d))
+
 ### [2.140.7](https://github.com/railroadmedia/musora-content-services/compare/v2.140.6...v2.140.7) (2026-03-19)
 
 

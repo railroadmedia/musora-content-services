@@ -367,6 +367,7 @@ export const parentRecentTypes = [
   'play-along',
   'jam-track',
   'song-tutorial',
+  ...liveArchivesLessonTypes,
 ]
 
 const songsRecentTypes = [...SONG_TYPES]
@@ -374,8 +375,8 @@ const songsRecentTypes = [...SONG_TYPES]
 export const recentTypes = {
   lessons: lessonRecentTypes,
   songs: songsRecentTypes,
-  home: [...lessonRecentTypes, ...songsRecentTypes],
-  homeRow: [...parentRecentTypes, ...liveArchivesLessonTypes],
+  home: parentRecentTypes,
+  homeRow: parentRecentTypes,
 }
 
 export const ownedContentTypes = {
