@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.143.1](https://github.com/railroadmedia/musora-content-services/compare/v2.143.0...v2.143.1) (2026-03-25)
+
+
+### Bug Fixes
+
+* **progress-row:** get children count without looking at permissions ([#885](https://github.com/railroadmedia/musora-content-services/issues/885)) ([0bf807c](https://github.com/railroadmedia/musora-content-services/commit/0bf807c330724c894d2a34df180326219df280dc))
+
 ## [2.143.0](https://github.com/railroadmedia/musora-content-services/compare/v2.142.0...v2.143.0) (2026-03-25)
 
 
