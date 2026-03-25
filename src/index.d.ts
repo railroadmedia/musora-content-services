@@ -17,6 +17,7 @@ import {
 
 import {
 	globalConfig,
+	initializeEnvVar,
 	initializeService
 } from './services/config.js';
 
@@ -113,6 +114,7 @@ import {
 	contentStatusCompletedMany,
 	contentStatusReset,
 	contentStatusStarted,
+	extractFromRecordId,
 	flushWatchSession,
 	generateRecordId,
 	getAllCompleted,
@@ -499,6 +501,7 @@ declare module 'musora-content-services' {
 		editComment,
 		emitProgressSaved,
 		enrollUserInGuidedCourse,
+		extractFromRecordId,
 		extractSanityUrl,
 		fetchAll,
 		fetchAllFilterOptions,
@@ -665,6 +668,7 @@ declare module 'musora-content-services' {
 		getWeekNumber,
 		globalConfig,
 		guidedCourses,
+		initializeEnvVar,
 		initializeService,
 		isBucketUrl,
 		isContentLiked,
