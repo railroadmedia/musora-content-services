@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.143.0](https://github.com/railroadmedia/musora-content-services/compare/v2.142.0...v2.143.0) (2026-03-25)
+
+
+### Features
+
+* **MU2-1407:** account setup updates ([#874](https://github.com/railroadmedia/musora-content-services/issues/874)) ([c8c2322](https://github.com/railroadmedia/musora-content-services/commit/c8c2322d0949bc37e348c57d5a79dcf3ed151188))
+
 ## [2.142.0](https://github.com/railroadmedia/musora-content-services/compare/v2.141.2...v2.142.0) (2026-03-25)
 
 
