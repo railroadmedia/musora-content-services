@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.142.0](https://github.com/railroadmedia/musora-content-services/compare/v2.141.2...v2.142.0) (2026-03-25)
+
+
+### Features
+
+* **MU2-1387:** store paywall skipping on onboarding data ([#875](https://github.com/railroadmedia/musora-content-services/issues/875)) ([11d0459](https://github.com/railroadmedia/musora-content-services/commit/11d0459fef4cb72f29951137901dcb8ec7bdf8f4))
+
 ### [2.141.2](https://github.com/railroadmedia/musora-content-services/compare/v2.141.1...v2.141.2) (2026-03-25)
 
 ### [2.141.1](https://github.com/railroadmedia/musora-content-services/compare/v2.141.0...v2.141.1) (2026-03-25)
