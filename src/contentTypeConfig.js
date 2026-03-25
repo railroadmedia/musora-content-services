@@ -367,6 +367,7 @@ export const parentRecentTypes = [
   'play-along',
   'jam-track',
   'song-tutorial',
+  ...liveArchivesLessonTypes,
 ]
 
 const songsRecentTypes = [...SONG_TYPES]

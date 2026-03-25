@@ -399,12 +399,16 @@ async function _getAllStartedOrCompleted({
  * Record watch session
  * @return {string} sessionId - provide in future calls to update progress
  * @param {int} contentId
- * @param {int} mediaLengthSeconds
- * @param {int} currentSeconds
- * @param {int} secondsPlayed
- * @param {string} sessionId - This function records a sessionId to pass into future updates to progress on the same video
- * @param {int} instrumentId - enum value of instrument id
- * @param {int} categoryId - enum value of category id
+ * @param {any} collection - progress collection context, null if a-la-carte
+ * @param {string} collection.type - enum value of collection type
+ * @param {int} collection.id - content_id of parent collection (e.g. learning path content_id)
+ * @param {int} mediaLengthSeconds - total length of video media || live event duration if livestream
+ * @param {int} currentSeconds - seconds timestamp relative to beginning of video
+ * @param {int} secondsPlayed - seconds played in this watch session (since last pause)
+ * @param {any} prevSession - This function records a sessionId to pass into future updates to progress on the same video
+ * @param {int|null} instrumentId - enum value of instrument id
+ * @param {int|null} categoryId - enum value of category id
+ * @param {boolean} isLivestream - determines livestream-specific progress handling
  */
 export async function recordWatchSession(
   contentId,
@@ -414,7 +418,8 @@ export async function recordWatchSession(
   secondsPlayed,
   prevSession = null,
   instrumentId = null,
-  categoryId = null
+  categoryId = null,
+  isLivestream = false,
 ) {
   contentId = normalizeContentId(contentId)
   collection = normalizeCollection(collection)
@@ -428,7 +433,7 @@ export async function recordWatchSession(
   // Track practice and progress locally (no immediate push)
   await Promise.all([
     trackPractice(contentId, secondsPlayed, { instrumentId, categoryId }),
-    trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds),
+    trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds, isLivestream),
   ])
 
   if (!prevSession.pushInterval) {
@@ -453,11 +458,17 @@ async function trackPractice(contentId, secondsPlayed, details = {}) {
   return trackUserPractice(contentId, secondsPlayed, details)
 }
 
-async function trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds) {
+async function trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds, isLivestream = false) {
   const progress = Math.max(1, Math.min(
     99,
     Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds)) * 100)
   ))
+
+  if (isLivestream) {
+    // resumeTime of a livestream will far exceed VOD length, so set to 0
+    // doesn't affect livestream resumeTime, but will send users to 0 seconds in VOD
+    currentSeconds = 0
+  }
   return saveContentProgress(contentId, collection, progress, currentSeconds, { skipPush: true })
 }
 
