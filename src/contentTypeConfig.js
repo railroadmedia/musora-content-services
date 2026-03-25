@@ -374,7 +374,7 @@ const songsRecentTypes = [...SONG_TYPES]
 export const recentTypes = {
   lessons: lessonRecentTypes,
   songs: songsRecentTypes,
-  home: [...lessonRecentTypes, ...songsRecentTypes],
+  home: parentRecentTypes,
   homeRow: parentRecentTypes,
 }
 
@@ -672,7 +672,7 @@ export let contentTypeConfig = {
   ],
   'new-and-scheduled': {
     fields: [
-      'show_in_new_feed', 
+      'show_in_new_feed',
       isLiveField()
     ],
   },
