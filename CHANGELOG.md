@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.141.1](https://github.com/railroadmedia/musora-content-services/compare/v2.141.0...v2.141.1) (2026-03-25)
+
+
+### Bug Fixes
+
+* **TP-1166:** set watermelon DB namespacing based on environment ([#884](https://github.com/railroadmedia/musora-content-services/issues/884)) ([fe16b68](https://github.com/railroadmedia/musora-content-services/commit/fe16b68fbde371fdffb4f2673218e1d2a4ab016d))
+
 ## [2.141.0](https://github.com/railroadmedia/musora-content-services/compare/v2.140.9...v2.141.0) (2026-03-25)
 
 
