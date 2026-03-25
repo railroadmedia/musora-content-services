@@ -21,6 +21,7 @@ import {
 
 import {
 	globalConfig,
+	initializeEnvVar,
 	initializeService
 } from './services/config.js';
 
@@ -117,6 +118,7 @@ import {
 	contentStatusCompletedMany,
 	contentStatusReset,
 	contentStatusStarted,
+	extractFromRecordId,
 	flushWatchSession,
 	generateRecordId,
 	getAllCompleted,
@@ -498,6 +500,7 @@ export {
 	editComment,
 	emitProgressSaved,
 	enrollUserInGuidedCourse,
+	extractFromRecordId,
 	extractSanityUrl,
 	fetchAll,
 	fetchAllFilterOptions,
@@ -664,6 +667,7 @@ export {
 	getWeekNumber,
 	globalConfig,
 	guidedCourses,
+	initializeEnvVar,
 	initializeService,
 	isBucketUrl,
 	isContentLiked,

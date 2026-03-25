@@ -54,6 +54,7 @@ const excludeFromGeneratedIndex = []
  *   localStorage: localStorage,
  *   isMA: false,
  *   permissionsVersion: 'v1', // Optional: 'v1' (default) or 'v2'
+ *   appEnv: 'local'
  * });
  *
  * @example React Native Application
@@ -66,6 +67,9 @@ const excludeFromGeneratedIndex = []
  *   baseUrl: 'https://web-staging-one.musora.com',
  *   localStorage: AsyncStorage,
  *   isMA: true,
+ *   localTimezoneString: '',
+ *   permissionsVersion: 'v2',
+ *   appEnv: 'local'
  * });
  */
 export function initializeService(config) {
@@ -85,4 +89,8 @@ export function initializeService(config) {
         console.error('Failed to initialize award definitions:', error)
       })
   }
+}
+
+export function initializeEnvVar(config) {
+  globalConfig.appEnv = config.appEnv
 }
