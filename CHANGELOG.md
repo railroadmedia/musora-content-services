@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.141.0](https://github.com/railroadmedia/musora-content-services/compare/v2.140.9...v2.141.0) (2026-03-25)
+
+
+### Features
+
+* change your progress section to display parents ([#883](https://github.com/railroadmedia/musora-content-services/issues/883)) ([66e4678](https://github.com/railroadmedia/musora-content-services/commit/66e4678f20c781c5d66c59e5c9ce488c63dc5301))
+
+
+### Bug Fixes
+
+* **T3PS-2319:** setup livestream progress ([#878](https://github.com/railroadmedia/musora-content-services/issues/878)) ([d1284c6](https://github.com/railroadmedia/musora-content-services/commit/d1284c69bf35cd4cdaf9a4b448767dc615a6dbf1))
+
 ### [2.140.9](https://github.com/railroadmedia/musora-content-services/compare/v2.140.8...v2.140.9) (2026-03-24)
 
 
