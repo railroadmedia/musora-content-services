@@ -214,6 +214,14 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	acceptInvite,
+	createAccount,
+	createInvites,
+	fetchUserAccountDetails,
+	rescindInvite
+} from './services/multi-user-accounts/multi-user-accounts.ts';
+
+import {
 	emitProgressSaved,
 	onProgressSaved
 } from './services/progress-events.js';
@@ -455,6 +463,7 @@ import {
 
 declare module 'musora-content-services' {
 	export {
+		acceptInvite,
 		addContextToContent,
 		addContextToLearningPaths,
 		addItemToPlaylist,
@@ -477,8 +486,10 @@ declare module 'musora-content-services' {
 		contentStatusReset,
 		contentStatusStarted,
 		convertToTimeZone,
+		createAccount,
 		createComment,
 		createForumCategory,
+		createInvites,
 		createPlaylist,
 		createPost,
 		createPracticeNotes,
@@ -590,6 +601,7 @@ declare module 'musora-content-services' {
 		fetchUninterests,
 		fetchUnreadCount,
 		fetchUpcomingEvents,
+		fetchUserAccountDetails,
 		fetchUserPermissions,
 		fetchUserPermissionsData,
 		fetchUserPlaylists,
@@ -719,6 +731,7 @@ declare module 'musora-content-services' {
 		reportComment,
 		reportPlaylist,
 		requestEmailChange,
+		rescindInvite,
 		reset,
 		resetAllAwards,
 		resetAllLearningPaths,
