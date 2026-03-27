@@ -937,6 +937,7 @@ export async function jumpToContinueContent(railcontentId) {
  * Fetch the page data for a specific lesson by Railcontent ID.
  * @param {string} railContentId - The Railcontent ID of the current lesson.
  * @parent {boolean} addParent - Whether to include parent content data in the response.
+ * @forDownload {boolean} forDownload - Whether the content is being fetched for download, which includes hierarchy data.
  * @returns {Promise<Object|null>} - The fetched page data or null if found.
  *
  * @example
