@@ -13,8 +13,26 @@ export interface User {
   profile_picture_url: string | null
 }
 
+export interface InviteResponse {
+  email: string
+  id: number
+  created_at: string
+  expires_at: string
+  existing_user_details: User
+}
+
+export interface UsersMultiAccountResponse {
+  user_id: number
+  active_multi_user_account: MultiUserAccountResponse
+  last_cancelled_multi_user_account: MultiUserAccountResponse
+  is_active_primary: boolean
+  is_active_sub: boolean
+  active_invite: InviteResponse
+}
+
 export interface MultiUserAccountResponse {
   id: number
+  product_name: string
   is_active: boolean
   primary_user: User
   active_invited_emails: string[]
@@ -23,6 +41,7 @@ export interface MultiUserAccountResponse {
   total_seats: number
   active_subs: User[]
   end_time: string
+  is_primary_account_holder: boolean
 }
 
 export interface CreateAccountParams {
@@ -51,14 +70,14 @@ export async function createAccount(params: CreateAccountParams): Promise<MultiU
  * Fetches multi-user account details for a specific user.
  *
  * @param {number} userId - The ID of the user to fetch account details for.
- * @returns {Promise<MultiUserAccountResponse>} - A promise that resolves to the account details.
+ * @returns {Promise<UsersMultiAccountResponse>} - A promise that resolves to the account details.
  * @throws {HttpError} - If the HTTP request fails.
  */
-export async function fetchUserAccountDetails(userId: number): Promise<MultiUserAccountResponse> {
+export async function fetchUsersMultiAccountDetails(userId: number): Promise<UsersMultiAccountResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   const url = `${baseUrl}/${userId}/details`
   console.log(url)
-  return httpClient.get<MultiUserAccountResponse>(url)
+  return httpClient.get<UsersMultiAccountResponse>(url)
 }
 
 /**

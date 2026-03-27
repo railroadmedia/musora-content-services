@@ -221,7 +221,7 @@ import {
 	acceptInvite,
 	createAccount,
 	createInvites,
-	fetchUserAccountDetails,
+	fetchUsersMultiAccountDetails,
 	rescindInvite
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
@@ -600,13 +600,13 @@ export {
 	fetchUninterests,
 	fetchUnreadCount,
 	fetchUpcomingEvents,
-	fetchUserAccountDetails,
 	fetchUserPermissions,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
 	fetchUserPractices,
+	fetchUsersMultiAccountDetails,
 	filterCoursesInCourseCollections,
 	findIncompleteLesson,
 	flushWatchSession,
