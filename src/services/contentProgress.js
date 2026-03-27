@@ -496,35 +496,38 @@ async function trackProgress(
   return saveContentProgress(contentId, collection, progress, currentSeconds, { hierarchy, skipPush: true })
 }
 
-export async function contentStatusCompleted(contentId, collection = null) {
+export async function contentStatusCompleted(contentId, collection = null, hierarchy = null) {
   collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
   return setStartedOrCompletedStatus(
     normalizeContentId(contentId),
     normalizeCollection(collection),
-    true
+    true,
+    { hierarchy }
   )
 }
 
-export async function contentStatusCompletedMany(contentIds, collection = null) {
+export async function contentStatusCompletedMany(contentIds, collection = null, hierarchy = null) {
   collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
   return setStartedOrCompletedStatusMany(
     normalizeContentIds(contentIds),
     normalizeCollection(collection),
-    true
+    true,
+    { hierarchy }
   )
 }
 
-export async function contentStatusStarted(contentId, collection = null) {
+export async function contentStatusStarted(contentId, collection = null, hierarchy = null) {
   collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
   return setStartedOrCompletedStatus(
     normalizeContentId(contentId),
     normalizeCollection(collection),
-    false
+    false,
+    { hierarchy }
   )
 }
-export async function contentStatusReset(contentId, collection = null, {skipPush = false} = {}) {
+export async function contentStatusReset(contentId, collection = null, {hierarchy = null, skipPush = false} = {}) {
   collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
-  return resetStatus(contentId, collection, {skipPush})
+  return resetStatus(contentId, collection, {hierarchy, skipPush})
 }
 
 async function saveContentProgress(
@@ -595,6 +598,7 @@ async function saveContentProgress(
       {skipPush: true, accessedDirectly})
   }
 
+  // there are problems if we allow downloading LPs, since we require 2 different hierarchies for this.
   if (isLP) {
     let exportIds = bubbledProgresses
     exportIds[contentId] = progress
@@ -614,10 +618,12 @@ async function saveContentProgress(
   return response
 }
 
-async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {skipPush = false} = {}) {
+async function setStartedOrCompletedStatus(contentId, collection, isCompleted, { hierarchy = null, skipPush = false } = {}) {
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
 
-  const hierarchy = await getHierarchy(contentId, collection)
+  if (!hierarchy) {
+    hierarchy = await getHierarchy(contentId, collection)
+  }
   const metadata = hierarchy.metadata || {}
 
   const progress = isCompleted ? 100 : 0
@@ -657,12 +663,14 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
   return response
 }
 
-async function setStartedOrCompletedStatusMany(contentIds, collection, isCompleted, {skipPush = false} = {}) {
+async function setStartedOrCompletedStatusMany(contentIds, collection, isCompleted, { hierarchy = null, skipPush = false } = {}) {
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
   const progress = isCompleted ? 100 : 0
 
   // we assume this is used only for contents within the same hierarchy
-  const hierarchy = await getHierarchy(collection.id, collection)
+  if (!hierarchy) {
+    hierarchy = await getHierarchy(collection.id, collection)
+  }
   const metadata = hierarchy.metadata || {}
 
   const contents = Object.fromEntries(contentIds.map((id) => [id, progress]))
@@ -708,13 +716,15 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
   return response
 }
 
-async function resetStatus(contentId, collection = null, {skipPush = false} = {}) {
+async function resetStatus(contentId, collection = null, { hierarchy = null, skipPush = false } = {}) {
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
 
   const progress = 0
   const response = await db.contentProgress.eraseProgress(normalizeContentId(contentId), normalizeCollection(collection), {skipPush: true})
 
-  const hierarchy = await getHierarchy(contentId, collection)
+  if (!hierarchy) {
+    hierarchy = await getHierarchy(contentId, collection)
+  }
   const metadata = hierarchy.metadata || {}
 
   let progresses = {
