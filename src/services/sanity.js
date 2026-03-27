@@ -944,7 +944,7 @@ export async function jumpToContinueContent(railcontentId) {
  *   .then(data => console.log(data))
  *   .catch(error => console.error(error));
  */
-export async function fetchLessonContent(railContentId, { addParent = false } = {}) {
+export async function fetchLessonContent(railContentId, { addParent = false, forDownload = false } = {}) {
   const filterParams = {
     isSingle: true,
     pullFutureContent: true,
@@ -1014,7 +1014,15 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
     return result
   }
 
-  let contents = await fetchSanity(query, false, { customPostProcess: chapterProcess, processNeedAccess: true })
+  let [contents, hierarchy] = await Promise.all([
+    fetchSanity(query, false, { customPostProcess: chapterProcess, processNeedAccess: true }),
+    forDownload ? getHierarchy(railContentId) : Promise.resolve(null)
+  ])
+
+  if (forDownload) {
+    contents.hierarchy = hierarchy
+  }
+
   contents = postProcessBadge(contents)
 
   return contents
