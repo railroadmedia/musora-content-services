@@ -153,6 +153,10 @@ import {
 } from './services/dateUtils.js';
 
 import {
+	getEndScreen
+} from './services/endScreen.js';
+
+import {
 	createForumCategory,
 	deleteForumCategory,
 	fetchForumCategories,
@@ -620,6 +624,7 @@ declare module 'musora-content-services' {
 		getContentAwardsByIds,
 		getContentRows,
 		getDailySession,
+		getEndScreen,
 		getEnrichedLearningPath,
 		getEnrichedLearningPaths,
 		getHierarchy,
