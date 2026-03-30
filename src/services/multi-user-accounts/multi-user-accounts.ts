@@ -115,3 +115,16 @@ export async function rescindInvite(inviteId: number): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<void>(`${baseUrl}/invites/${inviteId}/rescind`, {})
 }
+
+
+/**
+ * Removes a member from a multi-user account. authorized user must be the primary account owner, or the user passed
+ *
+ * @param {number} userId - Id of the user to remove
+ * @returns {Promise<void|MultiUserAccountResponse>} - Updated MultiUserAccountResponse if account owner, void if active user
+ * @throws {HttpError} - If the request fails.
+ */
+export async function removeUserFromActiveMultiUserAccount(userId: number): Promise<MultiUserAccountResponse|void> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.delete<MultiUserAccountResponse|void>(`${baseUrl}/${userId}/remove`, {})
+}
