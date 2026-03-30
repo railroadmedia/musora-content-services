@@ -396,6 +396,21 @@ async function _getAllStartedOrCompleted({
 }
 
 /**
+ * @typedef {Object} hierarchyParameter
+ * @property {number} [topLevelId]
+ * @property { {[contentId: number]: [parentId: number]} } [parents]
+ * @property { {[contentId: number]: [childId: number]} } [children]
+ * @property { hierarchyMetadata } [metadata]
+ */
+
+/**
+ * @typedef {Object} hierarchyMetadata
+ * @property {string} [brand]
+ * @property {number} [parent_id]
+ * @property {string} [type]
+ */
+
+/**
  * Record watch session
  * @return {string} sessionId - provide in future calls to update progress
  * @param {int} contentId
@@ -409,6 +424,7 @@ async function _getAllStartedOrCompleted({
  * @param {int|null} instrumentId - enum value of instrument id
  * @param {int|null} categoryId - enum value of category id
  * @param {boolean} isLivestream - determines livestream-specific progress handling
+ * @param {hierarchyParameter|null} hierarchy - response from getHierarchy, passed in to avoid redundant calls within the same session
  */
 export async function recordWatchSession(
   contentId,
@@ -420,6 +436,7 @@ export async function recordWatchSession(
   instrumentId = null,
   categoryId = null,
   isLivestream = false,
+  hierarchy = null,
 ) {
   contentId = normalizeContentId(contentId)
   collection = normalizeCollection(collection)
@@ -433,7 +450,7 @@ export async function recordWatchSession(
   // Track practice and progress locally (no immediate push)
   await Promise.all([
     trackPractice(contentId, secondsPlayed, { instrumentId, categoryId }),
-    trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds, isLivestream),
+    trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds, isLivestream, hierarchy),
   ])
 
   if (!prevSession.pushInterval) {
@@ -458,7 +475,14 @@ async function trackPractice(contentId, secondsPlayed, details = {}) {
   return trackUserPractice(contentId, secondsPlayed, details)
 }
 
-async function trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds, isLivestream = false) {
+async function trackProgress(
+  contentId,
+  collection,
+  currentSeconds,
+  mediaLengthSeconds,
+  isLivestream = false,
+  hierarchy = null,
+) {
   const progress = Math.max(1, Math.min(
     99,
     Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds)) * 100)
@@ -469,7 +493,7 @@ async function trackProgress(contentId, collection, currentSeconds, mediaLengthS
     // doesn't affect livestream resumeTime, but will send users to 0 seconds in VOD
     currentSeconds = 0
   }
-  return saveContentProgress(contentId, collection, progress, currentSeconds, { skipPush: true })
+  return saveContentProgress(contentId, collection, progress, currentSeconds, { hierarchy, skipPush: true })
 }
 
 export async function contentStatusCompleted(contentId, collection = null) {
@@ -503,7 +527,17 @@ export async function contentStatusReset(contentId, collection = null, {skipPush
   return resetStatus(contentId, collection, {skipPush})
 }
 
-async function saveContentProgress(contentId, collection, progress, currentSeconds, {skipPush = false, accessedDirectly = true} = {}) {
+async function saveContentProgress(
+  contentId,
+  collection,
+  progress,
+  currentSeconds,
+  {
+    hierarchy = null,
+    skipPush = false,
+    accessedDirectly = true,
+  } = {}
+) {
   collection = collection ?? {id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF}
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
   const isPlaylist = collection?.type === COLLECTION_TYPE.PLAYLIST
@@ -515,7 +549,9 @@ async function saveContentProgress(contentId, collection, progress, currentSecon
     progress = currentProgress;
   }
 
-  const hierarchy = await getHierarchy(contentId, collection)
+  if (!hierarchy) {
+    hierarchy = await getHierarchy(contentId, collection)
+  }
   const metadata = hierarchy.metadata || {}
 
   if (isPlaylist) {
