@@ -98,13 +98,12 @@ export const DEFAULT_CHILD_FIELDS = [
   '"grandparent_id": parent_content_data[1].id',
 ]
 
-export const playAlongMp3sField = `{
-      'mp3_no_drums_no_click_url':      mp3_no_drums_no_click_url,
-      'mp3_no_drums_yes_click_url':     mp3_no_drums_yes_click_url,
-      'mp3_yes_drums_no_click_url':     mp3_yes_drums_no_click_url,
-      'mp3_yes_drums_yes_click_url':    mp3_yes_drums_yes_click_url,
-}
-`
+export const playAlongMp3sFields = [
+      'mp3_no_drums_no_click_url',
+      'mp3_no_drums_yes_click_url',
+      'mp3_yes_drums_no_click_url',
+      'mp3_yes_drums_yes_click_url',
+]
 
 export const chapterField = `chapter[]{
                     chapter_description,
@@ -144,22 +143,28 @@ export const assignmentsField = `"assignments":assignment[]{
 },`
 
 // todo: refactor live event queries to use this
-export const liveFields = `
-    'slug': slug.current,
-    'id': railcontent_id,
-    title,
-    live_event_start_time,
-    live_event_end_time,
-    live_event_stream_id,
-    "live_event_is_global": live_global_event == true,
-    published_on,
-    "thumbnail": thumbnail.asset->url,
-    ${artistOrInstructorName()},
-    difficulty_string,
-    railcontent_id,
-    "instructors": ${instructorField},
-    'videoId': coalesce(live_event_stream_id, video.external_id)
-  `
+export function getLiveFields(minimum = false) {
+  const minimumFields = [
+    "live_event_start_time",
+    "live_event_end_time",
+    "live_event_stream_id",
+    "'live_event_is_global': live_global_event == true",
+    "'videoId': coalesce(live_event_stream_id, video.external_id)",
+  ]
+  const additionalFields = [
+    "'slug': slug.current",
+    "'id': railcontent_id",
+    "title",
+    "published_on",
+    "'thumbnail': thumbnail.asset->url",
+    `${artistOrInstructorName()}`,
+    "difficulty_string",
+    "railcontent_id",
+    `'instructors': ${instructorField}`,
+  ]
+
+  return minimum ? minimumFields : minimumFields.concat(additionalFields)
+}
 
 const contentWithInstructorsField = {
   fields: ['"instructors": instructor[]->name'],
@@ -173,6 +178,21 @@ const isLiveField = () => {
   const now = getSanityDate(new Date())
   return `"isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}'`
 }
+
+const pcdForDownloadField = `
+  "parent_content_data": parent_content_reference[]->{
+    "id": railcontent_id,
+    title,
+    slug,
+    "type": _type,
+    "logo" : logo_image_url.asset->url,
+    "dark_mode_logo": dark_mode_logo_url.asset->url,
+    "light_mode_logo": light_mode_logo_url.asset->url,
+    "badge": *[references(^._id) && _type == 'content-award'][0].badge.asset->url,
+    "badge_rear": *[references(^._id) && _type == 'content-award'][0].badge_rear.asset->url,
+    "badge_logo": *[references(^._id) && _type == 'content-award'][0].logo.asset->url,
+    'parentCount': coalesce(count(parent_content_data), 0)
+  }`
 
 export const showsTypes = {
   drumeo: [
@@ -479,42 +499,40 @@ export let contentTypeConfig = {
   },
   download: {
     fields: [
-      `"resource": ${resourcesField}`,
+      `"resources": ${resourcesField}`,
       'soundslice',
+      'soundslice_slug',
       'instrumentless',
       `"description": ${descriptionField}`,
+      `${assignmentsField}`,
       `"chapters": ${chapterField}`,
       '"instructors":instructor[]->name',
       `"instructor": ${instructorField}`,
       'video',
-      `"play_along_mp3s": ${playAlongMp3sField}`,
+      ...playAlongMp3sFields,
+      pcdForDownloadField,
       `...select(
         defined(live_event_start_time) => {
-          "live_event_start_time": live_event_start_time,
-          "live_event_end_time": live_event_end_time,
-          "live_event_stream_id": live_event_stream_id,
-          "videoId": coalesce(live_event_stream_id, video.external_id),
-          "live_event_is_global": live_global_event == true
+          ${getLiveFields(true).join(',')}
         }
       )`,
     ],
     childFields: [
-      `"resource": ${resourcesField}`,
+      `"resources": ${resourcesField}`,
       'soundslice',
+      'soundslice_slug',
       'instrumentless',
       `"description": ${descriptionField}`,
+      `${assignmentsField}`,
       `"chapters": ${chapterField}`,
       '"instructors":instructor[]->name',
       `"instructor": ${instructorField}`,
       'video',
-      `"play_along_mp3s": ${playAlongMp3sField}`,
+      ...playAlongMp3sFields,
+      pcdForDownloadField,
       `...select(
         defined(live_event_start_time) => {
-          "live_event_start_time": live_event_start_time,
-          "live_event_end_time": live_event_end_time,
-          "live_event_stream_id": live_event_stream_id,
-          "videoId": coalesce(live_event_stream_id, video.external_id),
-          "live_event_is_global": live_global_event == true
+          ${getLiveFields(true).join(',')}
         }
       )`,
     ],

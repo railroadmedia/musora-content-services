@@ -1,4 +1,4 @@
-import { getHierarchy } from './sanity.js'
+import { getHierarchy, getHierarchies } from './sanity.js'
 import { db } from './sync'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, STATE } from './sync/models/ContentProgress'
 import { trackUserPractice, findIncompleteLesson } from './userActivity'
@@ -667,9 +667,8 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
   const progress = isCompleted ? 100 : 0
 
-  // we assume this is used only for contents within the same hierarchy
   if (!hierarchy) {
-    hierarchy = await getHierarchy(collection.id, collection)
+    hierarchy = await getHierarchies(contentIds, collection)
   }
   const metadata = hierarchy.metadata || {}
 

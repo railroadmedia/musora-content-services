@@ -31,10 +31,11 @@ import {
   showsTypes,
   SONG_TYPES,
   SONG_TYPES_WITH_CHILDREN,
-  liveFields,
   postProcessBadge,
   parentField,
-  grandParentField, parentRecentTypes,
+  grandParentField,
+  parentRecentTypes,
+  getLiveFields,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems } from './recommendations.js'
 import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS, CONTENT_STATUSES } from '../contentMetaData.js'
@@ -74,6 +75,12 @@ const TAB_TO_CONTENT_TYPES = {
   'Play-Alongs': playAlongLessonTypes,
   'Jam Tracks': jamTrackLessonTypes,
 }
+
+const HIERARCHY_NODE_FIELDS = `
+  railcontent_id,
+  'metadata': { brand, 'type': _type, 'parent_id': coalesce(parent_content_data[0].id, 0) },
+  'assignments': assignment[]{railcontent_id}
+`
 
 /**
  * Fetch a song by its document ID from Sanity.
@@ -535,10 +542,14 @@ export async function fetchByRailContentIds(
     }
     return results.map(liveProcess)
   }
-  const results = await fetchSanity(query, true, {
-    customPostProcess: customPostProcess,
-    processNeedAccess: true,
-  })
+  let [results, hierarchies] = await Promise.all([
+    fetchSanity(query, true, { customPostProcess: customPostProcess, processNeedAccess: true }),
+    (contentType === 'download') ? getHierarchies(ids) : Promise.resolve(null),
+  ])
+
+  if (hierarchies) {
+    results.forEach(r => r.hierarchy = hierarchies[r.id] ?? null)
+  }
 
   const sortFuction = function compare(a, b) {
     const indexA = ids.indexOf(a['id'])
@@ -945,58 +956,14 @@ export async function jumpToContinueContent(railcontentId) {
  *   .then(data => console.log(data))
  *   .catch(error => console.error(error));
  */
-export async function fetchLessonContent(railContentId, { addParent = false, forDownload = false } = {}) {
+export async function fetchLessonContent(railContentId, { forDownload = false } = {}) {
   const filterParams = {
     isSingle: true,
     pullFutureContent: true,
     showMembershipRestrictedContent: true,
   }
 
-  const parentQuery = addParent
-    ? `"parent_content_data": *[railcontent_id in [...(^.parent_content_data[].id)]]{
-        "id": railcontent_id,
-        title,
-        slug,
-        "type": _type,
-        "logo" : logo_image_url.asset->url,
-        "dark_mode_logo": dark_mode_logo_url.asset->url,
-        "light_mode_logo": light_mode_logo_url.asset->url,
-        "badge": *[references(^._id) && _type == 'content-award'][0].badge.asset->url,
-        "badge_rear": *[references(^._id) && _type == 'content-award'][0].badge_rear.asset->url,
-        "badge_logo": *[references(^._id) && _type == 'content-award'][0].logo.asset->url,
-        'parentCount': coalesce(count(parent_content_data), 0)
-      } | order(parentCount desc),`
-    : ''
-
-  const fields = `${getFieldsForContentType()}
-    "resources": ${resourcesField},
-    soundslice,
-    instrumentless,
-    soundslice_slug,
-    "description": ${descriptionField},
-    "chapters": ${chapterField},
-    "instructors":instructor[]->name,
-    "instructor": ${instructorField},
-    ${assignmentsField}
-    video,
-    "length_in_seconds": coalesce(soundslice[0].soundslice_length_in_second, length_in_seconds),
-    mp3_no_drums_no_click_url,
-    mp3_no_drums_yes_click_url,
-    mp3_yes_drums_no_click_url,
-    mp3_yes_drums_yes_click_url,
-    "permission_id": permission_v2,
-    ${parentQuery}
-    ...select(
-      defined(live_event_start_time) => {
-        live_event_start_time,
-        live_event_end_time,
-        live_event_stream_id,
-        "vimeo_live_event_id": vimeo_live_event_id,
-        "videoId": coalesce(live_event_stream_id, video.external_id),
-        "live_event_is_global": live_global_event == true
-      }
-    )
-  `
+  const fields = getFieldsForContentType('download')
 
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
@@ -1236,7 +1203,8 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
   )
   endDateTemp = new Date(endDateTemp.setMinutes(endDateTemp.getMinutes() - LIVE_EXTRA_MINUTES))
 
-  const liveEventFields = liveFields + `, 'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}')`
+  const liveEventFields = getLiveFields().concat(`'event_coach_calendar_id': coalesce(calendar_id, '${defaultCalendarID}')`)
+  const fieldsString = liveEventFields.join(',')
 
   const baseFilter =
     forcedContentId !== null
@@ -1250,7 +1218,7 @@ export async function fetchLiveEvent(brand, forcedContentId = null) {
   const filter = await new FilterBuilder(baseFilter, {bypassPermissions: true}).buildFilter()
 
   // This query finds the first scheduled event (sorted by start_time) that ends after now()
-  const query = `*[${filter}]{${liveEventFields}} | order(live_event_start_time)[0...1]`
+  const query = `*[${filter}]{${fieldsString}} | order(live_event_start_time)[0...1]`
 
   return await fetchSanity(query, false, { processNeedAccess: false })
 }
@@ -1320,7 +1288,6 @@ export async function fetchByReference(
 }
 
 /**
- *
  * Return the top level parent content railcontent_id.
  * Ignores learning-path-v2 parents.
  * ex: if railcontentId is of type 'skill-pack-lesson', return the corresponding 'skill-pack' railcontent_id
@@ -1328,7 +1295,7 @@ export async function fetchByReference(
  * @param {int} railcontentId
  * @returns {Promise<int|null>}
  */
-export async function fetchTopLevelParentId(railcontentId) {
+async function fetchTopLevelParentId(railcontentId) {
   const parentFilter = 'railcontent_id in [...(^.parent_content_data[].id)] && (!defined(parent_content_data) || count(parent_content_data) == 0)'
   const statusFilter = "&& status in ['scheduled', 'published', 'archived', 'unlisted']"
 
@@ -1341,6 +1308,34 @@ export async function fetchTopLevelParentId(railcontentId) {
   return response['top_parent'] ?? response['railcontent_id']
 }
 
+/**
+ * Return the top level parent content railcontent_id for a set of ids.
+ * Ignores learning-path-v2 parents.
+ * ex: if railcontentId is of type 'skill-pack-lesson', return the corresponding 'skill-pack' railcontent_id
+ *
+ * @param {int[]} railcontentId
+ * @returns {Promise<Record<[railcontentId: int],[topLevelParentId: int]>|null>}
+ */
+async function fetchTopLevelParentIds(railcontentIds) {
+  const parentFilter = 'railcontent_id in [...(^.parent_content_data[].id)] && (!defined(parent_content_data) || count(parent_content_data) == 0)'
+  const statusFilter = "&& status in ['scheduled', 'published', 'archived', 'unlisted']"
+
+  const idsString = railcontentIds.join(',')
+  const query = `*[railcontent_id in [${idsString}]]{
+      railcontent_id,
+      'top_parent': *[${parentFilter} ${statusFilter}][0].railcontent_id
+    }`
+  let response = await fetchSanity(query, true, { processNeedAccess: false })
+  if (!response) return null
+
+  let responseMap = {}
+  response.forEach(item => {
+    responseMap[item.railcontent_id] = item.top_parent ?? item.railcontent_id
+  })
+
+  return responseMap
+}
+
 export async function getHierarchy(contentId, collection) {
   let response
   if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
@@ -1350,24 +1345,65 @@ export async function getHierarchy(contentId, collection) {
   }
   if (!response) return null
 
-  const topLevelId = response.railcontent_id ?? response.id
+  return getHierarchyLookupsAndMetadata(response)
+}
+
+export async function getHierarchies(contentIds, collection) {
+  let response
+  if (collection && collection.type === COLLECTION_TYPE.LEARNING_PATH) {
+    response = await fetchLearningPathHierarchyDataForIds(contentIds, collection)
+  } else {
+    response = await fetchALaCarteHierarchyDataForIds(contentIds)
+  }
+  if (!response) return null
+
+  const hierarchyData = getHierarchyLookupsAndMetadataMany(response)
+
+  return mapHierarchyDataToContentIds(hierarchyData, contentIds)
+}
+
+function getHierarchyLookupsAndMetadataMany(hierarchies) {
+  let hierarchyData = {}
+  Object.values(hierarchies).forEach(hierarchy => {
+    const topLevelId = hierarchy.railcontent_id ?? hierarchy.id
+    hierarchyData[topLevelId] = getHierarchyLookupsAndMetadata(hierarchy)
+  })
+  return hierarchyData
+}
+
+function getHierarchyLookupsAndMetadata(hierarchy) {
+  const topLevelId = hierarchy.railcontent_id ?? hierarchy.id
 
   if (!topLevelId) {
-    console.error('Top level ID not found in hierarchy response', response)
+    console.error('Top level ID not found in hierarchy response', hierarchy)
     return null
   }
 
-  let data = {
+  let datum = {
     topLevelId: topLevelId,
     parents: {},
     children: {},
     metadata: {},
   }
-  populateHierarchyLookups(response, data, null)
-  data.metadata = extractMetadataFromHierarchy(response)
 
+  populateHierarchyLookups(hierarchy, datum, null)
+  datum.metadata = extractMetadataFromHierarchy(hierarchy)
+
+  return datum
+}
+
+function mapHierarchyDataToContentIds(hierarchyData, contentIds) {
+  let data = {}
+  // because of single parent rule we can simply find first hierarchy that contains the contentId in parent or children lookups
+  contentIds.forEach(contentId => {
+    for (let key in hierarchyData) {
+      if (key === contentId || hierarchyData[key].parents[contentId] || hierarchyData[key].children[contentId]) {
+        data[contentId] = hierarchyData[key]
+        break
+      }
+    }
+  })
   return data
-
 }
 
 function extractMetadataFromHierarchy(hierarchyData) {
@@ -1407,38 +1443,59 @@ async function fetchLearningPathHierarchyData(railcontentId, collection) {
   return (await fetchByRailContentIds([topLevelId], 'hierarchy-data'))[0]
 }
 
+async function fetchLearningPathHierarchyDataForIds(railcontentIds, collection) {
+  if (!collection) {
+    return null
+  }
+  const topLevelId = collection.id
+
+  const response = await fetchByRailContentIds([topLevelId], 'hierarchy-data')
+  if (!response) return null
+
+  let responseMap = {}
+  response.forEach(item => {
+    responseMap[item.railcontent_id] = item
+  })
+
+  return responseMap
+}
+
+/**
+ * returns hierarchy data for the given railcontentId
+ * @param {int} railcontentId
+ * @returns {Promise<object|null>}
+ */
 async function fetchALaCarteHierarchyData(railcontentId) {
-  let topLevelId = await fetchTopLevelParentId(railcontentId)
-  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-  const query = `*[railcontent_id == ${topLevelId}]{
-      railcontent_id,
-      'metadata': { brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
-      'assignments': assignment[]{railcontent_id},
-      'children': child[${childrenFilter}]->{
-        railcontent_id,
-        'metadata': {
-  brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
-        'assignments': assignment[]{railcontent_id},
-        'children': child[${childrenFilter}]->{
-            railcontent_id,
-            'metadata': {
-      brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
-            'assignments': assignment[]{railcontent_id},
-            'children': child[${childrenFilter}]->{
-               railcontent_id,
-               'metadata': {
-         brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
-               'assignments': assignment[]{railcontent_id},
-               'children': child[${childrenFilter}]->{
-                  railcontent_id,
-                  'metadata': {
-            brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
-            }
-          }
-        }
-      },
-    }`
-  return await fetchSanity(query, false, { processNeedAccess: false })
+  const topLevelId = await fetchTopLevelParentId(railcontentId)
+  const childrenFilter = await new FilterBuilder('', { isChildrenFilter: true }).buildFilter()
+  const query = buildHierarchyQuery(childrenFilter, `railcontent_id == ${topLevelId}`)
+
+  return fetchSanity(query, false, { processNeedAccess: false })
+}
+
+/**
+ * returns a map of railcontentId to hierarchy data.
+ * @param {int[]} railcontentIds
+ * @returns {Promise<Record<[topLevelParentId: int],object>|null>}
+ */
+async function fetchALaCarteHierarchyDataForIds(railcontentIds) {
+  const topLevelIds = await fetchTopLevelParentIds(railcontentIds)
+  const idsString = Object.values(topLevelIds).join(',')
+  const childrenFilter = await new FilterBuilder('', { isChildrenFilter: true }).buildFilter()
+  const query = buildHierarchyQuery(childrenFilter, `railcontent_id in [${idsString}]`)
+
+  const response = await fetchSanity(query, true, { processNeedAccess: false })
+  if (!response) return null
+
+  return Object.fromEntries(response.map(item => [item.railcontent_id, item]))
+}
+
+function buildHierarchyQuery(filter, rootSelector) {
+  const node = (depth) => depth === 0
+    ? HIERARCHY_NODE_FIELDS
+    : `${HIERARCHY_NODE_FIELDS}, 'children': child[${filter}]->{${node(depth - 1)}}`
+
+  return `*[${rootSelector}]{ ${node(4)} }`
 }
 
 function populateHierarchyLookups(currentLevel, data, parentId) {
