@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>content-org/learning-paths.ts - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Accounts.html">Accounts</a><ul class='methods'><li data-type='method'><a href="module-Accounts.html#~confirmEmailChange">confirmEmailChange</a></li><li data-type='method'><a href="module-Accounts.html#~deleteAccount">deleteAccount</a></li><li data-type='method'><a href="module-Accounts.html#~numberOfActiveUsers">numberOfActiveUsers</a></li><li data-type='method'><a href="module-Accounts.html#~requestEmailChange">requestEmailChange</a></li><li data-type='method'><a href="module-Accounts.html#~resetPassword">resetPassword</a></li><li data-type='method'><a href="module-Accounts.html#~sendAccountSetupEmail">sendAccountSetupEmail</a></li><li data-type='method'><a href="module-Accounts.html#~sendPasswordResetEmail">sendPasswordResetEmail</a></li><li data-type='method'><a href="module-Accounts.html#~setupAccount">setupAccount</a></li><li data-type='method'><a href="module-Accounts.html#~status">status</a></li><li data-type='method'><a href="module-Accounts.html#~toggleStudentView">toggleStudentView</a></li></ul></li><li><a href="module-Artist.html">Artist</a><ul class='methods'><li data-type='method'><a href="module-Artist.html#~fetchArtistBySlug">fetchArtistBySlug</a></li><li data-type='method'><a href="module-Artist.html#~fetchArtistLessons">fetchArtistLessons</a></li><li data-type='method'><a href="module-Artist.html#~fetchArtists">fetchArtists</a></li></ul></li><li><a href="module-Awards.html">Awards</a><ul class='methods'><li data-type='method'><a href="module-Awards.html#.getAwardStatistics">getAwardStatistics</a></li><li data-type='method'><a href="module-Awards.html#.getCompletedAwards">getCompletedAwards</a></li><li data-type='method'><a href="module-Awards.html#.getContentAwards">getContentAwards</a></li><li data-type='method'><a href="module-Awards.html#.getContentAwardsByIds">getContentAwardsByIds</a></li><li data-type='method'><a href="module-Awards.html#.getInProgressAwards">getInProgressAwards</a></li><li data-type='method'><a href="module-Awards.html#.registerAwardCallback">registerAwardCallback</a></li><li data-type='method'><a href="module-Awards.html#.registerProgressCallback">registerProgressCallback</a></li><li data-type='method'><a href="module-Awards.html#.resetAllAwards">resetAllAwards</a></li><li data-type='method'><a href="module-Awards.html#~fetchCertificate">fetchCertificate</a></li></ul></li><li></li><li></li><li><a href="module-Config.html">Config</a><ul class='methods'><li data-type='method'><a href="module-Config.html#.initializeService">initializeService</a></li></ul></li><li><a href="module-Content-Services-V2.html">Content-Services-V2</a><ul class='methods'><li data-type='method'><a href="module-Content-Services-V2.html#.getContentRows">getContentRows</a></li><li data-type='method'><a href="module-Content-Services-V2.html#.getLegacyMethods">getLegacyMethods</a></li><li data-type='method'><a href="module-Content-Services-V2.html#.getNewAndUpcoming">getNewAndUpcoming</a></li><li data-type='method'><a href="module-Content-Services-V2.html#.getOwnedContent">getOwnedContent</a></li><li data-type='method'><a href="module-Content-Services-V2.html#.getRecent">getRecent</a></li><li data-type='method'><a href="module-Content-Services-V2.html#.getRecommendedForYou">getRecommendedForYou</a></li><li data-type='method'><a href="module-Content-Services-V2.html#.getScheduleContentRows">getScheduleContentRows</a></li><li data-type='method'><a href="module-Content-Services-V2.html#.getTabResults">getTabResults</a></li></ul></li><li><a href="module-Forums.html">Forums</a><ul class='methods'><li data-type='method'><a href="module-Forums.html#~createForumCategory">createForumCategory</a></li><li data-type='method'><a href="module-Forums.html#~createPost">createPost</a></li><li data-type='method'><a href="module-Forums.html#~createThread">createThread</a></li><li data-type='method'><a href="module-Forums.html#~deleteForumCategory">deleteForumCategory</a></li><li data-type='method'><a href="module-Forums.html#~deletePost">deletePost</a></li><li data-type='method'><a href="module-Forums.html#~deleteThread">deleteThread</a></li><li data-type='method'><a href="module-Forums.html#~fetchCommunityGuidelines">fetchCommunityGuidelines</a></li><li data-type='method'><a href="module-Forums.html#~fetchFollowedThreads">fetchFollowedThreads</a></li><li data-type='method'><a href="module-Forums.html#~fetchForumCategories">fetchForumCategories</a></li><li data-type='method'><a href="module-Forums.html#~fetchLatestThreads">fetchLatestThreads</a></li><li data-type='method'><a href="module-Forums.html#~fetchPost">fetchPost</a></li><li data-type='method'><a href="module-Forums.html#~fetchPosts">fetchPosts</a></li><li data-type='method'><a href="module-Forums.html#~fetchThread">fetchThread</a></li><li data-type='method'><a href="module-Forums.html#~fetchThreads">fetchThreads</a></li><li data-type='method'><a href="module-Forums.html#~followThread">followThread</a></li><li data-type='method'><a href="module-Forums.html#~jumpToPost">jumpToPost</a></li><li data-type='method'><a href="module-Forums.html#~likePost">likePost</a></li><li data-type='method'><a href="module-Forums.html#~lockThread">lockThread</a></li><li data-type='method'><a href="module-Forums.html#~markThreadAsRead">markThreadAsRead</a></li><li data-type='method'><a href="module-Forums.html#~pinThread">pinThread</a></li><li data-type='method'><a href="module-Forums.html#~search">search</a></li><li data-type='method'><a href="module-Forums.html#~unfollowThread">unfollowThread</a></li><li data-type='method'><a href="module-Forums.html#~unlikePost">unlikePost</a></li><li data-type='method'><a href="module-Forums.html#~unlockThread">unlockThread</a></li><li data-type='method'><a href="module-Forums.html#~unpinThread">unpinThread</a></li><li data-type='method'><a href="module-Forums.html#~updateForumCategory">updateForumCategory</a></li><li data-type='method'><a href="module-Forums.html#~updatePost">updatePost</a></li><li data-type='method'><a href="module-Forums.html#~updateThread">updateThread</a></li></ul></li><li></li><li></li><li><a href="module-Genre.html">Genre</a><ul class='methods'><li data-type='method'><a href="module-Genre.html#~fetchGenreBySlug">fetchGenreBySlug</a></li><li data-type='method'><a href="module-Genre.html#~fetchGenreLessons">fetchGenreLessons</a></li><li data-type='method'><a href="module-Genre.html#~fetchGenres">fetchGenres</a></li></ul></li><li><a href="module-GuidedCourses.html">GuidedCourses</a></li><li><a href="module-Instructor.html">Instructor</a><ul class='methods'><li data-type='method'><a href="module-Instructor.html#~fetchInstructorBySlug">fetchInstructorBySlug</a></li><li data-type='method'><a href="module-Instructor.html#~fetchInstructorLessons">fetchInstructorLessons</a></li><li data-type='method'><a href="module-Instructor.html#~fetchInstructors">fetchInstructors</a></li></ul></li><li><a href="module-Interests.html">Interests</a><ul class='methods'><li data-type='method'><a href="module-Interests.html#.fetchInterests">fetchInterests</a></li><li data-type='method'><a href="module-Interests.html#.fetchUninterests">fetchUninterests</a></li><li data-type='method'><a href="module-Interests.html#.markContentAsInterested">markContentAsInterested</a></li><li data-type='method'><a href="module-Interests.html#.markContentAsNotInterested">markContentAsNotInterested</a></li><li data-type='method'><a href="module-Interests.html#.removeContentAsInterested">removeContentAsInterested</a></li><li data-type='method'><a href="module-Interests.html#.removeContentAsNotInterested">removeContentAsNotInterested</a></li></ul></li><li><a href="module-LearningPaths.html">LearningPaths</a><ul class='methods'><li data-type='method'><a href="module-LearningPaths.html#~completeLearningPathIntroVideo">completeLearningPathIntroVideo</a></li><li data-type='method'><a href="module-LearningPaths.html#~completeMethodIntroVideo">completeMethodIntroVideo</a></li><li data-type='method'><a href="module-LearningPaths.html#~fetchLearningPathLessons">fetchLearningPathLessons</a></li><li data-type='method'><a href="module-LearningPaths.html#~fetchLearningPathProgressCheckLessons">fetchLearningPathProgressCheckLessons</a></li><li data-type='method'><a href="module-LearningPaths.html#~getActivePath">getActivePath</a></li><li data-type='method'><a href="module-LearningPaths.html#~getDailySession">getDailySession</a></li><li data-type='method'><a href="module-LearningPaths.html#~getEnrichedLearningPath">getEnrichedLearningPath</a></li><li data-type='method'><a href="module-LearningPaths.html#~getEnrichedLearningPaths">getEnrichedLearningPaths</a></li><li data-type='method'><a href="module-LearningPaths.html#~getLearningPathLessonsByIds">getLearningPathLessonsByIds</a></li><li data-type='method'><a href="module-LearningPaths.html#~mapContentToParent">mapContentToParent</a></li><li data-type='method'><a href="module-LearningPaths.html#~resetAllLearningPaths">resetAllLearningPaths</a></li><li data-type='method'><a href="module-LearningPaths.html#~startLearningPath">startLearningPath</a></li><li data-type='method'><a href="module-LearningPaths.html#~updateDailySession">updateDailySession</a></li></ul></li><li><a href="module-MultiUserAccounts.html">MultiUserAccounts</a><ul class='methods'><li data-type='method'><a href="module-MultiUserAccounts.html#~acceptInvite">acceptInvite</a></li><li data-type='method'><a href="module-MultiUserAccounts.html#~createAccount">createAccount</a></li><li data-type='method'><a href="module-MultiUserAccounts.html#~createInvites">createInvites</a></li><li data-type='method'><a href="module-MultiUserAccounts.html#~fetchUsersMultiAccountDetails">fetchUsersMultiAccountDetails</a></li><li data-type='method'><a href="module-MultiUserAccounts.html#~rescindInvite">rescindInvite</a></li></ul></li><li><a href="module-Onboarding.html">Onboarding</a><ul class='methods'><li data-type='method'><a href="module-Onboarding.html#~getOnboardingRecommendedContent">getOnboardingRecommendedContent</a></li><li data-type='method'><a href="module-Onboarding.html#~startOnboarding">startOnboarding</a></li><li data-type='method'><a href="module-Onboarding.html#~updateOnboarding">updateOnboarding</a></li><li data-type='method'><a href="module-Onboarding.html#~userOnboardingForBrand">userOnboardingForBrand</a></li></ul></li><li><a href="module-Payments.html">Payments</a><ul class='methods'><li data-type='method'><a href="module-Payments.html#~fetchCustomerPayments">fetchCustomerPayments</a></li></ul></li><li><a href="module-Permissions.html">Permissions</a><ul class='methods'><li data-type='method'><a href="module-Permissions.html#.fetchUserPermissions">fetchUserPermissions</a></li><li data-type='method'><a href="module-Permissions.html#.reset">reset</a></li></ul></li><li><a href="module-Playlists.html">Playlists</a><ul class='methods'><li data-type='method'><a href="module-Playlists.html#.addItemToPlaylist">addItemToPlaylist</a></li><li data-type='method'><a href="module-Playlists.html#.createPlaylist">createPlaylist</a></li><li data-type='method'><a href="module-Playlists.html#.deletePlaylist">deletePlaylist</a></li><li data-type='method'><a href="module-Playlists.html#.duplicatePlaylist">duplicatePlaylist</a></li><li data-type='method'><a href="module-Playlists.html#.fetchPlaylist">fetchPlaylist</a></li><li data-type='method'><a href="module-Playlists.html#.fetchPlaylistItems">fetchPlaylistItems</a></li><li data-type='method'><a href="module-Playlists.html#.fetchUserPlaylists">fetchUserPlaylists</a></li><li data-type='method'><a href="module-Playlists.html#.togglePlaylistPrivate">togglePlaylistPrivate</a></li><li data-type='method'><a href="module-Playlists.html#.undeletePlaylist">undeletePlaylist</a></li><li data-type='method'><a href="module-Playlists.html#.updatePlaylist">updatePlaylist</a></li><li data-type='method'><a href="module-Playlists.html#~deleteItemsFromPlaylist">deleteItemsFromPlaylist</a></li><li data-type='method'><a href="module-Playlists.html#~likePlaylist">likePlaylist</a></li><li data-type='method'><a href="module-Playlists.html#~reportPlaylist">reportPlaylist</a></li><li data-type='method'><a href="module-Playlists.html#~restoreItemFromPlaylist">restoreItemFromPlaylist</a></li><li data-type='method'><a href="module-Playlists.html#~unlikePlaylist">unlikePlaylist</a></li></ul></li><li><a href="module-ProgressRow.html">ProgressRow</a><ul class='methods'><li data-type='method'><a href="module-ProgressRow.html#.getContentCardMap">getContentCardMap</a></li><li data-type='method'><a href="module-ProgressRow.html#.getProgressRows">getProgressRows</a></li><li data-type='method'><a href="module-ProgressRow.html#.getUserPinProgressKey">getUserPinProgressKey</a></li><li data-type='method'><a href="module-ProgressRow.html#.pinProgressRow">pinProgressRow</a></li><li data-type='method'><a href="module-ProgressRow.html#.unpinProgressRow">unpinProgressRow</a></li><li data-type='method'><a href="module-ProgressRow.html#~getUserPinnedItem">getUserPinnedItem</a></li><li data-type='method'><a href="module-ProgressRow.html#~popPinnedItem">popPinnedItem</a></li><li data-type='method'><a href="module-ProgressRow.html#~sortCards">sortCards</a></li></ul></li><li></li><li></li><li></li><li><a href="module-Railcontent-Services.html">Railcontent-Services</a><ul class='methods'><li data-type='method'><a href="module-Railcontent-Services.html#.assignModeratorToComment">assignModeratorToComment</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.closeComment">closeComment</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.createComment">createComment</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.deleteComment">deleteComment</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.editComment">editComment</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.fetchComment">fetchComment</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.fetchCommentRelies">fetchCommentRelies</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.fetchComments">fetchComments</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.fetchContentPageUserData">fetchContentPageUserData</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.fetchLiveStreamData">fetchLiveStreamData</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.fetchRecentUserActivities">fetchRecentUserActivities</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.fetchTopComment">fetchTopComment</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.fetchUserPracticeNotes">fetchUserPracticeNotes</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.likeComment">likeComment</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.openComment">openComment</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.replyToComment">replyToComment</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.reportComment">reportComment</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.restoreComment">restoreComment</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.setStudentViewForUser">setStudentViewForUser</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.unassignModeratorToComment">unassignModeratorToComment</a></li><li data-type='method'><a href="module-Railcontent-Services.html#.unlikeComment">unlikeComment</a></li></ul></li><li><a href="module-Sanity-Services.html">Sanity-Services</a><ul class='methods'><li data-type='method'><a href="module-Sanity-Services.html#.fetchAll">fetchAll</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchAllFilterOptions">fetchAllFilterOptions</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchBrandsByContentIds">fetchBrandsByContentIds</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchByRailContentId">fetchByRailContentId</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchByRailContentIds">fetchByRailContentIds</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchByReference">fetchByReference</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchComingSoon">fetchComingSoon</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchCommentModContentData">fetchCommentModContentData</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchContentTypeCounts">fetchContentTypeCounts</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchCourseCollectionData">fetchCourseCollectionData</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchLeaving">fetchLeaving</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchLessonContent">fetchLessonContent</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchLessonsFeaturingThisContent">fetchLessonsFeaturingThisContent</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchMetadata">fetchMetadata</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchMethodV2IntroVideo">fetchMethodV2IntroVideo</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchMethodV2Structure">fetchMethodV2Structure</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchMethodV2StructureFromId">fetchMethodV2StructureFromId</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchNewReleases">fetchNewReleases</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchOtherSongVersions">fetchOtherSongVersions</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchOwnedContent">fetchOwnedContent</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchPackData">fetchPackData</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchRelatedLessons">fetchRelatedLessons</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchRelatedRecommendedContent">fetchRelatedRecommendedContent</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchRelatedSongs">fetchRelatedSongs</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchReturning">fetchReturning</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchSanity">fetchSanity</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchScheduledReleases">fetchScheduledReleases</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchShowsData">fetchShowsData</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchSiblingContent">fetchSiblingContent</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchSongArtistCount">fetchSongArtistCount</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchSongById">fetchSongById</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchTopLevelParentId">fetchTopLevelParentId</a></li><li data-type='method'><a href="module-Sanity-Services.html#.fetchUpcomingEvents">fetchUpcomingEvents</a></li><li data-type='method'><a href="module-Sanity-Services.html#.jumpToContinueContent">jumpToContinueContent</a></li><li data-type='method'><a href="module-Sanity-Services.html#~fetchRelatedByLicense">fetchRelatedByLicense</a></li><li data-type='method'><a href="module-Sanity-Services.html#~filterTabsByContentCounts">filterTabsByContentCounts</a></li><li data-type='method'><a href="module-Sanity-Services.html#~filterTypeOptionsByContentCounts">filterTypeOptionsByContentCounts</a></li><li data-type='method'><a href="module-Sanity-Services.html#~getAllContentTypesForPage">getAllContentTypesForPage</a></li><li data-type='method'><a href="module-Sanity-Services.html#~getContentTypesForFilterName">getContentTypesForFilterName</a></li><li data-type='method'><a href="module-Sanity-Services.html#~getQueryFromPage">getQueryFromPage</a></li></ul></li><li><a href="module-Sessions.html">Sessions</a><ul class='methods'><li data-type='method'><a href="module-Sessions.html#.generateAuthSessionUrl">generateAuthSessionUrl</a></li><li data-type='method'><a href="module-Sessions.html#.login">login</a></li><li data-type='method'><a href="module-Sessions.html#.logout">logout</a></li></ul></li><li><a href="module-UserActivity.html">UserActivity</a><ul class='methods'><li data-type='method'><a href="module-UserActivity.html#.calculateLongestStreaks">calculateLongestStreaks</a></li><li data-type='method'><a href="module-UserActivity.html#.createPracticeNotes">createPracticeNotes</a></li><li data-type='method'><a href="module-UserActivity.html#.deletePracticeSession">deletePracticeSession</a></li><li data-type='method'><a href="module-UserActivity.html#.deleteUserActivity">deleteUserActivity</a></li><li data-type='method'><a href="module-UserActivity.html#.getPracticeNotes">getPracticeNotes</a></li><li data-type='method'><a href="module-UserActivity.html#.getPracticeSessions">getPracticeSessions</a></li><li data-type='method'><a href="module-UserActivity.html#.getRecentActivity">getRecentActivity</a></li><li data-type='method'><a href="module-UserActivity.html#.getUserMonthlyStats">getUserMonthlyStats</a></li><li data-type='method'><a href="module-UserActivity.html#.getUserWeeklyStats">getUserWeeklyStats</a></li><li data-type='method'><a href="module-UserActivity.html#.recordUserActivity">recordUserActivity</a></li><li data-type='method'><a href="module-UserActivity.html#.recordUserPractice">recordUserPractice</a></li><li data-type='method'><a href="module-UserActivity.html#.removeUserPractice">removeUserPractice</a></li><li data-type='method'><a href="module-UserActivity.html#.restorePracticeSession">restorePracticeSession</a></li><li data-type='method'><a href="module-UserActivity.html#.restoreUserActivity">restoreUserActivity</a></li><li data-type='method'><a href="module-UserActivity.html#.restoreUserPractice">restoreUserPractice</a></li><li data-type='method'><a href="module-UserActivity.html#.updatePracticeNotes">updatePracticeNotes</a></li><li data-type='method'><a href="module-UserActivity.html#.updateUserPractice">updateUserPractice</a></li></ul></li><li><a href="module-UserChat.html">UserChat</a><ul class='methods'><li data-type='method'><a href="module-UserChat.html#.fetchChatSettings">fetchChatSettings</a></li></ul></li><li><a href="module-UserManagement.html">UserManagement</a><ul class='methods'><li data-type='method'><a href="module-UserManagement.html#.blockUser">blockUser</a></li><li data-type='method'><a href="module-UserManagement.html#.blockedUsers">blockedUsers</a></li><li data-type='method'><a href="module-UserManagement.html#.deletePicture">deletePicture</a></li><li data-type='method'><a href="module-UserManagement.html#.getUserData">getUserData</a></li><li data-type='method'><a href="module-UserManagement.html#.getUserSignature">getUserSignature</a></li><li data-type='method'><a href="module-UserManagement.html#.isUsernameAvailable">isUsernameAvailable</a></li><li data-type='method'><a href="module-UserManagement.html#.setUserSignature">setUserSignature</a></li><li data-type='method'><a href="module-UserManagement.html#.toggleSignaturePrivate">toggleSignaturePrivate</a></li><li data-type='method'><a href="module-UserManagement.html#.unblockUser">unblockUser</a></li><li data-type='method'><a href="module-UserManagement.html#.updateBrand">updateBrand</a></li><li data-type='method'><a href="module-UserManagement.html#.updateDisplayName">updateDisplayName</a></li><li data-type='method'><a href="module-UserManagement.html#.uploadPicture">uploadPicture</a></li><li data-type='method'><a href="module-UserManagement.html#.uploadPictureFromS3">uploadPictureFromS3</a></li></ul></li><li><a href="module-UserMemberships.html">UserMemberships</a><ul class='methods'><li data-type='method'><a href="module-UserMemberships.html#~fetchHasActivePlatformSubscription">fetchHasActivePlatformSubscription</a></li><li data-type='method'><a href="module-UserMemberships.html#~fetchLastSubscriptionPlatform">fetchLastSubscriptionPlatform</a></li><li data-type='method'><a href="module-UserMemberships.html#~fetchMemberships">fetchMemberships</a></li><li data-type='method'><a href="module-UserMemberships.html#~fetchRechargeTokens">fetchRechargeTokens</a></li><li data-type='method'><a href="module-UserMemberships.html#~getUpgradePrice">getUpgradePrice</a></li><li data-type='method'><a href="module-UserMemberships.html#~restorePurchases">restorePurchases</a></li><li data-type='method'><a href="module-UserMemberships.html#~upgradeSubscription">upgradeSubscription</a></li></ul></li><li><a href="module-UserNotifications.html">UserNotifications</a><ul class='methods'><li data-type='method'><a href="module-UserNotifications.html#.deleteNotification">deleteNotification</a></li><li data-type='method'><a href="module-UserNotifications.html#.fetchLiveEventPollingState">fetchLiveEventPollingState</a></li><li data-type='method'><a href="module-UserNotifications.html#.fetchNotificationSettings">fetchNotificationSettings</a></li><li data-type='method'><a href="module-UserNotifications.html#.fetchNotifications">fetchNotifications</a></li><li data-type='method'><a href="module-UserNotifications.html#.fetchUnreadCount">fetchUnreadCount</a></li><li data-type='method'><a href="module-UserNotifications.html#.markAllNotificationsAsRead">markAllNotificationsAsRead</a></li><li data-type='method'><a href="module-UserNotifications.html#.markNotificationAsRead">markNotificationAsRead</a></li><li data-type='method'><a href="module-UserNotifications.html#.markNotificationAsUnread">markNotificationAsUnread</a></li><li data-type='method'><a href="module-UserNotifications.html#.pauseLiveEventPolling">pauseLiveEventPolling</a></li><li data-type='method'><a href="module-UserNotifications.html#.restoreNotification">restoreNotification</a></li><li data-type='method'><a href="module-UserNotifications.html#.startLiveEventPolling">startLiveEventPolling</a></li><li data-type='method'><a href="module-UserNotifications.html#.updateNotificationSetting">updateNotificationSetting</a></li></ul></li><li><a href="module-UserProfile.html">UserProfile</a><ul class='methods'><li data-type='method'><a href="module-UserProfile.html#.deleteProfilePicture">deleteProfilePicture</a></li><li data-type='method'><a href="module-UserProfile.html#.otherStats">otherStats</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="ContentOrganization.html">ContentOrganization</a></li><li><a href="Forums.html">Forums</a></li><li><a href="Gamification.html">Gamification</a></li><li><a href="UserManagementSystem.html">UserManagementSystem</a></li></ul><h3>Interfaces</h3><ul><li><a href="TestUser.html">TestUser</a></li></ul><h3>Global</h3><ul><li><a href="global.html#createTestUser">createTestUser</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">content-org/learning-paths.ts</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module LearningPaths
+ */
+
+import { GET, POST } from '../../infrastructure/http/HttpClient'
+import {
+  fetchByRailContentId,
+  fetchByRailContentIds,
+  fetchMethodV2Structure,
+  fetchParentChildRelationshipsFor
+} from '../sanity.js'
+import { addContextToLearningPaths } from '../contentAggregator.js'
+import {
+  contentStatusCompleted,
+  contentStatusCompletedMany,
+  contentStatusReset,
+  getAllCompletedByIds,
+  getIdsWhereLastAccessedFromMethod,
+  getProgressState,
+} from '../contentProgress.js'
+import { COLLECTION_ID_SELF, COLLECTION_TYPE, STATE } from '../sync/models/ContentProgress'
+import { SyncWriteDTO } from '../sync'
+import { ContentProgress } from '../sync/models'
+import { CollectionParameter } from '../sync/models/ContentProgress'
+import dayjs from 'dayjs'
+import { LEARNING_PATH_LESSON } from "../../contentTypeConfig";
+
+const BASE_PATH: string = `/api/content-org`
+const LEARNING_PATHS_PATH = `${BASE_PATH}/v1/user/learning-paths`
+let dailySessionPromise: Promise&lt;DailySessionResponse|""> | null = null
+let activePathPromise: Promise&lt;ActiveLearningPathResponse|""> | null = null
+
+interface ActiveLearningPathResponse {
+  user_id: number
+  brand: string
+  active_learning_path_id: number
+}
+
+interface DailySessionResponse {
+  user_id: number
+  brand: string
+  user_date: string
+  daily_session: DailySession[]
+  active_learning_path_id: number
+  active_learning_path_created_at: string
+}
+
+interface DailySession {
+  content_ids: number[]
+  learning_path_id: number
+}
+
+interface CollectionObject {
+  id: number
+  type: COLLECTION_TYPE.LEARNING_PATH
+}
+
+/**
+ * Gets today's daily session for the user.
+ * If the daily session doesn't exist, it will be created.
+ * @param brand
+ * @param userDate - local datetime. must have date and time - format 2025-10-31T13:45:00
+ * @param forceRefresh - force cache refresh
+ */
+export async function getDailySession(
+  brand: string,
+  userDate: Date,
+  forceRefresh: boolean = false
+) {
+  if (dailySessionPromise &amp;&amp; !forceRefresh) {
+    return dailySessionPromise
+  }
+
+  dailySessionPromise = (async () => {
+    const dateWithTimezone = formatLocalDateTime(userDate)
+    const url = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&amp;userDate=${encodeURIComponent(dateWithTimezone)}`
+
+    const response = await GET(url, {
+      cache: forceRefresh ? 'reload' : 'default',
+    }) as DailySessionResponse | ''
+
+    if (!response) {
+      return await updateDailySession(brand, userDate, false)
+    }
+    return response as DailySessionResponse
+  })()
+
+  try {
+    return await dailySessionPromise
+  } catch (error) {
+    console.error('Error fetching daily session:', (error as any).message)
+    return null
+  } finally {
+    dailySessionPromise = null
+  }
+}
+
+/**
+ * Updates the daily session for the user. Optionally, keeps the first learning path's dailies from a matching day's session.
+ * @param brand
+ * @param userDate - format 2025-10-31
+ * @param keepFirstLearningPath
+ */
+export async function updateDailySession(
+  brand: string,
+  userDate: Date,
+  keepFirstLearningPath: boolean = false
+) {
+  const dateWithTimezone = formatLocalDateTime(userDate)
+  const url: string = `${LEARNING_PATHS_PATH}/daily-session/create`
+  const body = {
+    brand: brand,
+    userDate: dateWithTimezone,
+    keepFirstLearningPath: keepFirstLearningPath,
+  }
+  try {
+    const response = (await POST(url, body)) as DailySessionResponse|''
+
+    if (response || response === '') { // refresh cached value
+      const urlGet: string = `${LEARNING_PATHS_PATH}/daily-session/get?brand=${brand}&amp;userDate=${encodeURIComponent(dateWithTimezone)}`
+      dataPromiseGET(urlGet, true).then(() => {
+        dailySessionPromise = null
+      })
+
+    }
+
+    return (response !== '' ? response : null)
+  } catch (error: any) {
+    return null
+  }
+}
+
+function formatLocalDateTime(date: Date): string {
+  return dayjs(date).format('YYYY-MM-DD Z')
+}
+
+/**
+ * Gets user's active learning path.
+ * @param brand
+ * @param forceRefresh - force cache refresh
+ */
+export async function getActivePath(brand: string, forceRefresh: boolean = false) {
+  const url: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
+
+  const response = await dataPromiseGET(url, forceRefresh) as ActiveLearningPathResponse
+  activePathPromise = null
+
+  return response
+}
+
+/**
+ * Sets a new learning path as the user's active learning path.
+ * @param brand
+ * @param learningPathId
+ */
+export async function startLearningPath(brand: string, learningPathId: number) {
+  const url: string = `${LEARNING_PATHS_PATH}/active-path/set`
+  const body = { brand: brand, learning_path_id: learningPathId }
+
+  const response = (await POST(url, body)) as ActiveLearningPathResponse
+
+  // manual BE call to avoid recursive POST&lt;->GET calls
+  if (response) {
+    const urlGet: string = `${LEARNING_PATHS_PATH}/active-path/get?brand=${brand}`
+    dataPromiseGET(urlGet, true).then(() => {
+      activePathPromise = null
+    })
+  }
+
+  return response
+}
+
+async function dataPromiseGET(
+  url: string,
+  forceRefresh: boolean
+): Promise&lt;DailySessionResponse | ActiveLearningPathResponse | ""> {
+  if (url.includes('daily-session')) {
+    if (!dailySessionPromise || forceRefresh) {
+      dailySessionPromise = GET(url, {
+        cache: forceRefresh ? 'reload' : 'default',
+      }) as Promise&lt;DailySessionResponse>
+    }
+    return dailySessionPromise
+  } else if (url.includes('active-path')) {
+    if (!activePathPromise || forceRefresh) {
+      activePathPromise = GET(url, {
+        cache: forceRefresh ? 'reload' : 'default',
+      }) as Promise&lt;ActiveLearningPathResponse>
+    }
+    return activePathPromise
+  }
+}
+
+/**
+ * Resets the user's learning path.
+ */
+export async function resetAllLearningPaths() {
+  const url: string = `${LEARNING_PATHS_PATH}/reset`
+  return await POST(url, {})
+}
+
+/**
+ * Returns learning path with lessons and progress data
+ * @param {number} learningPathId - The learning path ID
+ * @returns {Promise&lt;Object>} Learning path with enriched lesson data
+ */
+export async function getEnrichedLearningPath(learningPathId) {
+  let response = (await addContextToLearningPaths(
+    fetchByRailContentId,
+    learningPathId,
+    COLLECTION_TYPE.LEARNING_PATH,
+    {
+      dataField: 'children',
+      dataField_includeParent: true,
+      dataField_includeIntroVideo: true,
+      addProgressStatus: true,
+      addProgressPercentage: true,
+      addProgressTimestamp: true,
+      addResumeTimeSeconds: true,
+      addNavigateTo: true,
+    }
+  )) as any
+  // add awards to LP parents only
+  response = await addContextToLearningPaths(() => response, { addAwards: true })
+  if (!response) return response
+
+  response.children = mapContentToParent(
+      response.children,
+      {lessonType: LEARNING_PATH_LESSON, parentContentId: learningPathId}
+  )
+  return response
+}
+
+/**
+ * Returns learning paths with lessons and progress data
+ * @param {number[]} learningPathIds - The learning path IDs
+ * @returns {Promise&lt;Object>} Learning paths with enriched lesson data
+ */
+export async function getEnrichedLearningPaths(learningPathIds: number[]) {
+  let response = (await addContextToLearningPaths(
+    fetchByRailContentIds,
+    learningPathIds,
+    COLLECTION_TYPE.LEARNING_PATH,
+    {
+      dataField: 'children',
+      dataField_includeParent: true,
+      dataField_includeIntroVideo: true,
+      addProgressStatus: true,
+      addProgressPercentage: true,
+      addProgressTimestamp: true,
+      addResumeTimeSeconds: true,
+      addNavigateTo: true,
+    }
+  )) as any
+  // add awards to LP parents only
+  response = await addContextToLearningPaths(() => response, { addAwards: true })
+
+  if (!response) return response
+
+  response.forEach((learningPath) => {
+    learningPath.children = mapContentToParent(
+        learningPath.children,
+        {lessonType: LEARNING_PATH_LESSON, parentContentId: learningPath.id}
+    )
+  })
+  return response
+}
+
+/**
+ * Get specific learning path lessons by content IDs
+ * @param {number[]} contentIds - Array of content IDs to filter
+ * @param {number} learningPathId - The learning path ID
+ * @returns {Promise&lt;Array>} Filtered lessons
+ */
+export async function getLearningPathLessonsByIds(contentIds, learningPathId) {
+  // It is more efficient to load the entire learning path than individual lessons
+  // Also adds reliability check whether content is actually in the learning path
+  const learningPath = await getEnrichedLearningPath(learningPathId)
+  return learningPath.children.filter((lesson) => contentIds.includes(lesson.id))
+}
+
+/**
+ * Maps content to its parent learning path - fixes multi-parent problems for cta when lessons have a special collection.
+ * @param lessons - sanity documents
+ * @param options
+ * @param options.lessonType
+ * @param options.parentContentId
+ */
+export function mapContentToParent(
+   lessons: any,
+  options?: { lessonType?: string; parentContentId?: number }
+) {
+  if (!lessons || (Array.isArray(lessons) &amp;&amp; lessons.length === 0)) return lessons
+
+  function mapIt(lesson: any) {
+    const mappedLesson = { ...lesson }
+    if (options?.lessonType !== undefined) mappedLesson.type = options.lessonType
+    if (options?.parentContentId !== undefined) mappedLesson.parent_id = options.parentContentId
+    return mappedLesson
+
+  }
+
+  if (typeof lessons === 'object' &amp;&amp; !Array.isArray(lessons)) {
+    return mapIt(lessons)
+
+  } else if (Array.isArray(lessons)) {
+    return lessons.map((lesson: any) => {
+      return mapIt(lesson)
+    })
+  }
+}
+
+interface fetchLearningPathLessonsResponse {
+  id: number
+  thumbnail?: string
+  title: string
+  children: any[]
+  is_active_learning_path: boolean
+  active_learning_path_id?: number
+  active_learning_path_created_at?: string
+  upcoming_lessons?: any[]
+  completed_lessons?: any[]
+  learning_path_dailies?: any[]
+  next_learning_path_dailies?: any[]
+  next_learning_path_id?: number
+  previous_learning_path_dailies?: any[]
+  previous_learning_path_id?: number
+}
+
+/** Fetches and organizes learning path lessons.
+ *
+ * @param {number} learningPathId - The learning path ID.
+ * @param {string} brand
+ * @param {Date} userDate - Users local date - format 2025-10-31
+ * @returns {Promise&lt;Object>} result - The result object.
+ * @returns {number} result.id - The learning path ID.
+ * @returns {string} result.thumbnail - Optional thumbnail URL for the learning path.
+ * @returns {string} result.title - The title of the learning path.
+ * @returns {Array} result.children - Array of all lessons.
+ * @returns {boolean} result.is_active_learning_path - Whether the learning path is currently active.
+ * @returns {number} result.active_learning_path_id - The active learning path ID from daily session.
+ * @returns {string} result.active_learning_path_created_at - The datetime the learning path was set as active.
+ * @returns {Array} result.upcoming_lessons - Array of upcoming lessons.
+ * @returns {Array} result.learning_path_dailies - Array of today's dailies in this learning path.
+ * @returns {Array} result.next_learning_path_dailies - Array of today's dailies in the next learning path.
+ * @returns {number} result.next_learning_path_id - the next learning path (after the active path).
+ * @returns {Array} result.completed_lessons - Array of completed lessons in this learning path.
+ * @returns {Array} result.previous_learning_path_dailies - Array of today's dailies in the previous learning path.
+ * @returns {number} result.previous_learning_path_id - the previous learning path (before the active path)
+ */
+export async function fetchLearningPathLessons(
+  learningPathId: number,
+  brand: string,
+  userDate: Date
+) {
+  const learningPath = await getEnrichedLearningPath(learningPathId)
+  if (!learningPath || learningPath.children?.length === 0) return null
+
+  let dailySession = (await getDailySession(brand, userDate)) as DailySessionResponse
+
+  const isActiveLearningPath = (dailySession?.active_learning_path_id || 0) == learningPathId
+  if (!isActiveLearningPath) {
+    return {
+      ...learningPath,
+      is_active_learning_path: isActiveLearningPath,
+    } as fetchLearningPathLessonsResponse
+  }
+
+  let todayContentIds = []
+  let todayLearningPathId = null
+  let nextContentIds = []
+  let nextLearningPathId = null
+  let previousContentIds = []
+  let previousLearningPathId = null
+
+  for (const session of dailySession.daily_session) {
+    if (session.learning_path_id === learningPathId) {
+      todayContentIds = session.content_ids || []
+      todayLearningPathId = session.learning_path_id
+    } else {
+      if (!todayLearningPathId) {
+        previousContentIds = session.content_ids || []
+        previousLearningPathId = session.learning_path_id
+      } else if (!nextLearningPathId) {
+        nextContentIds = session.content_ids || []
+        nextLearningPathId = session.learning_path_id
+      }
+    }
+  }
+
+  const completedLessons = []
+  let thisLPDailies = []
+  let nextLPDailies = []
+  let previousLPDailies = []
+  const upcomingLessons = []
+
+  //previous/next never within LP
+  learningPath.children.forEach((lesson: any) => {
+    if (todayContentIds.includes(lesson.id)) {
+      thisLPDailies.push(lesson)
+    } else if (lesson.progressStatus === STATE.COMPLETED) {
+      completedLessons.push(lesson)
+    } else {
+      upcomingLessons.push(lesson)
+    }
+  })
+
+  if (previousContentIds.length !== 0) {
+    previousLPDailies = await getLearningPathLessonsByIds(
+      previousContentIds,
+      previousLearningPathId
+    )
+  }
+  if (nextContentIds.length !== 0) {
+    nextLPDailies = await getLearningPathLessonsByIds(nextContentIds, nextLearningPathId).then(
+      (lessons) =>
+        lessons.map((lesson) => ({
+          ...lesson,
+          in_next_learning_path: learningPath.progressStatus === STATE.COMPLETED,
+        }))
+    )
+  }
+
+  return {
+    ...learningPath,
+    is_active_learning_path: isActiveLearningPath,
+    active_learning_path_id: dailySession?.active_learning_path_id,
+    active_learning_path_created_at: dailySession?.active_learning_path_created_at,
+    upcoming_lessons: upcomingLessons,
+    completed_lessons: completedLessons,
+    learning_path_dailies: thisLPDailies,
+    next_learning_path_dailies: nextLPDailies,
+    next_learning_path_id: nextLearningPathId,
+    previous_learning_path_dailies: previousLPDailies,
+    previous_learning_path_id: previousLearningPathId,
+  }
+}
+
+/**
+ * For an array of contentIds, fetch any content progress with state=completed,
+ * including other learning paths and a la carte progress.
+ *
+ * @param {number[]} contentIds The array of content IDs within the learning path
+ * @returns {Promise&lt;number[]>} Array with completed content IDs
+ */
+export async function fetchLearningPathProgressCheckLessons(
+  contentIds: number[]
+): Promise&lt;number[]> {
+  let query = await getAllCompletedByIds(contentIds)
+  let completedProgress = query.data.map((progress) => progress.content_id)
+  return contentIds.filter((contentId) => completedProgress.includes(contentId))
+}
+
+interface completeMethodIntroVideo {
+  intro_video_response: SyncWriteDTO&lt;ContentProgress, any> | null
+  active_path_response: ActiveLearningPathResponse
+}
+/**
+ * Handles completion of method intro video and other related actions.
+ * @param introVideoId - The method intro video content ID.
+ * @param brand
+ * @returns {Promise&lt;Array>} response - The response object.
+ * @returns {Promise&lt;Object|null>} response.intro_video_response - The intro video completion response or null if already completed.
+ * @returns {Promise&lt;Object>} response.active_path_response - The set active learning path response.
+ */
+export async function completeMethodIntroVideo(
+  introVideoId: number,
+  brand: string
+): Promise&lt;completeMethodIntroVideo> {
+  let response = {} as completeMethodIntroVideo
+
+  const [intro_video_response, methodStructure] = await Promise.all([
+    completeIfNotCompleted(introVideoId),
+    fetchMethodV2Structure(brand)
+  ])
+  response.intro_video_response = intro_video_response
+
+  const firstLearningPathId = methodStructure.learning_paths[0].id
+
+  response.active_path_response = await methodIntroVideoCompleteActions(
+    brand,
+    firstLearningPathId,
+    new Date()
+  )
+
+  return response
+}
+
+async function methodIntroVideoCompleteActions(brand: string, learningPathId: number, userDate: Date) {
+  const dateWithTimezone = formatLocalDateTime(userDate)
+  const url: string = `${LEARNING_PATHS_PATH}/method-intro-video-complete-actions`
+  const body = { brand: brand, learningPathId: learningPathId, userDate: dateWithTimezone }
+  return (await POST(url, body)) as DailySessionResponse
+}
+
+interface completeLearningPathIntroVideo {
+  intro_video_response: SyncWriteDTO&lt;ContentProgress, any> | null
+  learning_path_reset_response: SyncWriteDTO&lt;ContentProgress, any> | null
+  lesson_import_response: SyncWriteDTO&lt;ContentProgress, any> | null
+  update_dailies_response: DailySessionResponse | null
+}
+/**
+ * Handles completion of learning path intro video and other related actions.
+ * @param introVideoId - The learning path intro video content ID.
+ * @param learningPathId - The content_id of the learning path that this learning path intro video belongs to.
+ * @param lessonsToImport - content ids for all lessons with progress found during intro video progress check. empty if user chose not to keep learning path progress.
+ * @param brand
+ * @returns {Promise&lt;Array>} response - The response object.
+ * @returns {Promise&lt;Object|null>} response.intro_video_response - The intro video completion response or null if already completed.
+ * @returns {Promise&lt;void>} response.learning_path_reset_response - The reset learning path response.
+ * @returns {Promise&lt;Object[]>} response.lesson_import_response - The responses for completing each content_id within the learning path.
+ * @returns {Promise&lt;Object|null>} response.update_dailies_response - The updated daily session if it was changed.
+ */
+export async function completeLearningPathIntroVideo(
+  introVideoId: number,
+  learningPathId: number,
+  lessonsToImport: number[] | null,
+  brand: string
+) {
+  let response = {} as completeLearningPathIntroVideo
+  const collection: CollectionObject = { id: learningPathId, type: COLLECTION_TYPE.LEARNING_PATH }
+
+  if (!lessonsToImport) {
+    response.learning_path_reset_response = await resetIfPossible(learningPathId, collection)
+  } else {
+    response.lesson_import_response = await contentStatusCompletedMany(lessonsToImport, collection)
+
+    const activePath = await getActivePath(brand)
+    if (activePath.active_learning_path_id === learningPathId) {
+      response.update_dailies_response = await updateDailySession(brand, new Date(), true)
+    }
+  }
+
+  response.intro_video_response = await completeIfNotCompleted(introVideoId)
+
+  return response
+}
+
+async function completeIfNotCompleted(
+  contentId: number
+): Promise&lt;SyncWriteDTO&lt;ContentProgress, any> | null> {
+  const introVideoStatus = await getProgressState(contentId)
+
+  return introVideoStatus !== 'completed' ? await contentStatusCompleted(contentId) : null
+}
+
+async function resetIfPossible(
+  contentId: number,
+  collection: CollectionParameter = null
+): Promise&lt;SyncWriteDTO&lt;ContentProgress, any> | null> {
+  const status = await getProgressState(contentId, collection)
+
+  return status !== '' ? await contentStatusReset(contentId, collection) : null
+}
+
+export async function onContentCompletedLearningPathActions(
+  contentId: number,
+  collection: CollectionObject | null
+) {
+  if (collection?.type !== COLLECTION_TYPE.LEARNING_PATH) return
+  if (contentId !== collection?.id) return
+
+  const learningPathId = contentId
+  const learningPath = await getEnrichedLearningPath(learningPathId)
+
+  const brand = learningPath.brand
+  const activeLearningPath = await getActivePath(brand)
+
+  if (activeLearningPath.active_learning_path_id !== learningPathId) return
+
+  const method = await fetchMethodV2Structure(brand)
+  const now = new Date()
+  //only want to set next LP active if it's available
+  const publishedLearningPaths = method.learning_paths.filter((lp) => lp.published_on &amp;&amp; new Date(lp.published_on) &lt;= now)
+
+  const currentIndex = publishedLearningPaths.findIndex((lp) => lp.id === learningPathId)
+  if (currentIndex === -1) {
+    return
+  }
+  const nextLearningPath = publishedLearningPaths[currentIndex + 1]
+  if (!nextLearningPath) {
+    return
+  }
+
+  await startLearningPath(brand, nextLearningPath.id)
+  const nextLearningPathData = await getEnrichedLearningPath(nextLearningPath.id)
+
+  await contentStatusReset(
+    nextLearningPathData.intro_video.id,
+    { id: COLLECTION_ID_SELF, type: COLLECTION_TYPE.SELF },
+    { skipPush: false })
+}
+
+export async function mapContentsThatWereLastProgressedFromMethod(objects: any[]) {
+  if (!objects || objects.length === 0) return objects
+
+  const validIds = objects
+    .filter((obj) => ['skill-pack-lesson', 'song-tutorial-lesson'].includes(obj.type))
+    .map((obj) => obj.id) as number[]
+
+  const trueIds = await getIdsWhereLastAccessedFromMethod(validIds)
+
+  if (trueIds.length === 0) return objects
+
+  let filtered = objects.filter((obj) => trueIds.includes(obj.id))
+
+  filtered = await mapLearningPathParentsTo(filtered, {type: true, parent_id: true})
+
+  // Map each filtered item back into the total contents object
+  objects = objects.map((item) => {
+    return filtered.find((f) => f.id === item.id) || item
+  })
+
+  return objects
+
+}
+
+export async function mapLearningPathParentsTo(objects: any[], fieldsToMap?: {type?: boolean, parent_id?: boolean}): Promise&lt;object[]> {
+  const ids = objects.map((obj: any) => obj.id) as number[]
+  const hierarchy = await fetchParentChildRelationshipsFor(ids, COLLECTION_TYPE.LEARNING_PATH)
+
+  const parentMap = new Map&lt;number, number>()
+  hierarchy.forEach((relation) => {
+    relation.children.forEach((childId) => {
+      parentMap.set(childId, Number(relation.railcontent_id))
+    })
+  })
+
+  return objects.map((obj) => {
+    const parent_id = parentMap.get(obj.id) ?? undefined
+    return mapContentToParent(obj, {
+      lessonType: fieldsToMap.type ? LEARNING_PATH_LESSON : undefined,
+      parentContentId: fieldsToMap.parent_id ? parent_id : undefined
+    })
+  })
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Tue Mar 31 2026 13:12:10 GMT-0700 (Pacific Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
