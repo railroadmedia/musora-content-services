@@ -1518,9 +1518,7 @@ export async function fetchSanity(
   const perspective = globalConfig.sanityConfig.perspective ?? 'published'
   const api = globalConfig.sanityConfig.useCachedAPI ? 'apicdn' : 'api'
   const baseUrl = `https://${globalConfig.sanityConfig.projectId}.${api}.sanity.io/v${globalConfig.sanityConfig.version}/data/query/${globalConfig.sanityConfig.dataset}?perspective=${perspective}`
-  const headers = {
-    'Content-Type': 'application/json',
-  }
+
   try {
     const encodedQuery = encodeURIComponent(query)
     const fullGetUrl = `${baseUrl}&query=${encodedQuery}`
@@ -1532,14 +1530,15 @@ export async function fetchSanity(
       method = 'GET'
       options = {
         method,
-        headers,
       }
     } else {
       url = baseUrl
       method = 'POST'
       options = {
         method,
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ query }),
       }
     }
