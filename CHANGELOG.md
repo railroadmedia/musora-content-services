@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.144.0](https://github.com/railroadmedia/musora-content-services/compare/v2.143.0...v2.144.0) (2026-03-31)
+
+
+### Features
+
+* **BEHLTP-22:** update user data ([873b211](https://github.com/railroadmedia/musora-content-services/commit/873b211fd50f0f0763b18e7de1df82eb3eacc8be))
+
 ## [2.143.0](https://github.com/railroadmedia/musora-content-services/compare/v2.142.0...v2.143.0) (2026-03-25)
 
 
