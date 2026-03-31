@@ -45,7 +45,7 @@ export const instructorField = `instructor[]->{
 
 export const artistField = `select(
           defined(artist) => artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url},
-          defined(parent_content_reference) => *[_type == ^.parent_content_reference[0]->_type && railcontent_id == ^.parent_content_reference[0]->railcontent_id][0].artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url}
+          defined(parent_content_reference) => *[_type == ^.${parentField}->_type && railcontent_id == ^.${parentField}->railcontent_id][0].artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url}
         )`
 
 export const DEFAULT_FIELDS = [
@@ -68,8 +68,8 @@ export const DEFAULT_FIELDS = [
   "'slug' : slug.current",
   "'permission_id': permission_v2",
   'child_count',
-  '"parent_id": parent_content_reference[0]->railcontent_id',
-  '"grandparent_id": parent_content_reference[1]->railcontent_id',
+  '"parent_id": ${parentField}->railcontent_id',
+  `"grandparent_id": ${grandParentField}->railcontent_id`,
   'live_event_start_time',
   'live_event_end_time',
 ]
@@ -94,8 +94,8 @@ export const DEFAULT_CHILD_FIELDS = [
   "'slug' : slug.current",
   "'permission_id': permission_v2",
   'child_count',
-  '"parent_id": parent_content_reference[0]->railcontent_id',
-  '"grandparent_id": parent_content_reference[1]->railcontent_id',
+  `"parent_id": ${parentField}->railcontent_id`,
+  `"grandparent_id": ${grandParentField}->railcontent_id`,
 ]
 
 export const playAlongMp3sFields = [
@@ -435,12 +435,12 @@ export let contentTypeConfig = {
     fields: [
       'railcontent_id',
       '"assignments": assignment[]{railcontent_id}',
-      '"metadata": { brand, "type": _type, "parent_id":  coalesce(parent_content_reference[0]->railcontent_id, 0) }',
+      `"metadata": { brand, "type": _type, "parent_id":  coalesce(${parentField}->railcontent_id, 0) }`,
       ],
     childFields: [
       'railcontent_id',
       '"assignments": assignment[]{railcontent_id}',
-      '"metadata": { brand, "type": _type, "parent_id":  coalesce(parent_content_reference[0]->railcontent_id, 0) }',
+      `"metadata": { brand, "type": _type, "parent_id":  coalesce(${parentField}->railcontent_id, 0) }`,
     ],
   },
   song: {
@@ -545,7 +545,7 @@ export let contentTypeConfig = {
     ],
     includeChildFields: true,
     childFields: [
-      `"parent_data": parent_content_reference[0]->{
+      `"parent_data": ${parentField}->{
         "id": railcontent_id,
         "title": title,
     }`,
