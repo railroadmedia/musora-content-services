@@ -1532,14 +1532,15 @@ export async function fetchSanity(
       method = 'GET'
       options = {
         method,
-        headers,
       }
     } else {
       url = baseUrl
       method = 'POST'
       options = {
         method,
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ query }),
       }
     }
