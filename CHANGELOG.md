@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.144.0](https://github.com/railroadmedia/musora-content-services/compare/v2.143.1...v2.144.0) (2026-03-31)
+
+
+### Features
+
+* **behltp-22:**  Muppets - user data - invite create/accept/rescind endpoints ([#886](https://github.com/railroadmedia/musora-content-services/issues/886)) ([21c20b9](https://github.com/railroadmedia/musora-content-services/commit/21c20b935833de3956d43d6c04122430df6806dc))
+
+
+### Bug Fixes
+
+* **BR-531:** fix award Days Practiced calculation ([#887](https://github.com/railroadmedia/musora-content-services/issues/887)) ([25882a9](https://github.com/railroadmedia/musora-content-services/commit/25882a9c7ab162cdbc6d9fec96b53459b328feb2))
+
 ### [2.143.1](https://github.com/railroadmedia/musora-content-services/compare/v2.143.0...v2.143.1) (2026-03-25)
 
 
