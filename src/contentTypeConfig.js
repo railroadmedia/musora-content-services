@@ -140,7 +140,7 @@ export const assignmentsField = `"assignments":assignment[]{
             }.url,  assignment_sheet_music_image),
         "timecode": assignment_timecode,
         "description": coalesce(assignment_description,'')
-},`
+}`
 
 // todo: refactor live event queries to use this
 export function getLiveFields(minimum = false) {
@@ -504,7 +504,7 @@ export let contentTypeConfig = {
       'soundslice_slug',
       'instrumentless',
       `"description": ${descriptionField}`,
-      `${assignmentsField}`,
+      assignmentsField,
       `"chapters": ${chapterField}`,
       '"instructors":instructor[]->name',
       `"instructor": ${instructorField}`,
@@ -523,7 +523,7 @@ export let contentTypeConfig = {
       'soundslice_slug',
       'instrumentless',
       `"description": ${descriptionField}`,
-      `${assignmentsField}`,
+      assignmentsField,
       `"chapters": ${chapterField}`,
       '"instructors":instructor[]->name',
       `"instructor": ${instructorField}`,
