@@ -1,8 +1,9 @@
 import { fetchSimilarItems } from './recommendations.js'
 import { fetchByRailContentIds, fetchCourseCollectionData } from './sanity.js'
-import { playAlongLessonTypes, jamTrackLessonTypes } from '../contentTypeConfig.js'
+import { addContextToContent } from './contentAggregator.js'
+import { playAlongLessonTypes, jamTrackLessonTypes, singleLessonTypes, liveArchivesLessonTypes, practiceAlongsLessonTypes, lessonTypesMapping } from '../contentTypeConfig.js'
 
-const SINGLE_SONG_LESSON_TYPES = [...playAlongLessonTypes, ...jamTrackLessonTypes]
+const SINGLE_SONG_LESSON_TYPES = [...playAlongLessonTypes, ...jamTrackLessonTypes, ...lessonTypesMapping['single lessons']]
 const COURSE_COMPLETE_CTA = { primary: 'Play Now', secondary: 'Back to Home' }
 const COUNTDOWN_CTA = { primary: 'Play Now', secondary: 'Cancel' }
 
@@ -49,7 +50,7 @@ export async function getEndScreen({ lesson, course = null, collection = null, p
     return buildCourseComplete(nextCourseFirstLesson)
   }
 
-  return buildCourseComplete(await fetchEndScreenRecommendation(brand, lesson.id))
+  return buildCourseComplete(await fetchEndScreenRecommendation(brand, course.id, course.id))
 }
 
 function buildCountdown(upNext) {
@@ -67,7 +68,7 @@ function buildCourseComplete(upNext) {
  */
 function getNextItemInPlaylistOrNull(contentId, playlist) {
   const items = playlist.items ?? []
-  const index = items.findIndex((item) => item.id === contentId)
+  const index = items.findIndex((item) => Number(item.id) === Number(contentId))
   if (index < 0 || index === items.length - 1) return null
   return items.slice(index + 1).find(isReleasedContent) ?? null
 }
@@ -79,7 +80,7 @@ function getNextItemInPlaylistOrNull(contentId, playlist) {
  */
 function getNextLessonOrNull(lessonId, course) {
   const children = course.children ?? []
-  const index = children.findIndex((child) => child.id === lessonId)
+  const index = children.findIndex((child) => Number(child.id) === Number(lessonId))
   if (index < 0 || index === children.length - 1) return null
   return children.slice(index + 1).find(isReleasedContent) ?? null
 }
@@ -97,7 +98,7 @@ function isReleasedContent(content) {
 function getFirstLessonOfNextCourseOrNull(courseId, collection) {
   if (collection?.type !== 'course-collection') return null
   const courses = collection.children ?? []
-  const index = courses.findIndex((course) => course.id === courseId)
+  const index = courses.findIndex((course) => Number(course.id) === Number(courseId))
   const nextCourse = index >= 0 && index < courses.length - 1 ? courses[index + 1] : null
   return nextCourse?.children?.[0] ?? null
 }
@@ -107,12 +108,19 @@ function getFirstLessonOfNextCourseOrNull(courseId, collection) {
  * @param {number} contentId
  * @returns {Promise<Object|null>}
  */
-async function fetchEndScreenRecommendation(brand, contentId) {
+async function fetchEndScreenRecommendation(brand, contentId, excludeId = null) {
   try {
-    const ids = await fetchSimilarItems(contentId, brand, 5)
+    const ids = await fetchSimilarItems(contentId, brand, 50)
     if (!Array.isArray(ids) || ids.length === 0) return null
+
     const contents = await fetchByRailContentIds(ids)
-    return contents?.find((c) => !c.parent_id) ?? null
+    const recommended = contents?.find((c) =>  c.id !== excludeId && (!c.parent_id || c.parent_id !== excludeId)) ?? null
+    if (!recommended) return null
+    return await addContextToContent(() => recommended, {
+      addProgressPercentage: true,
+      addProgressStatus: true,
+      addNavigateTo: true,
+    })
   } catch {
     return null
   }
