@@ -33,7 +33,12 @@ export function getWeekNumber(date) {
 }
 //Check if two dates are the same
 export function isSameDate(date1, date2) {
-  return dayjs(date1).isSame(dayjs(date2), 'day')
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const toLocalDay = (date) => {
+    const hasTimezoneInfo = /Z$|[+-]\d{2}:?\d{2}$/.test(String(date))
+    return hasTimezoneInfo ? dayjs(date).tz(timeZone) : dayjs.tz(date, timeZone)
+  }
+  return toLocalDay(date1).isSame(toLocalDay(date2), 'day')
 }
 
 // Check if two dates are consecutive days
