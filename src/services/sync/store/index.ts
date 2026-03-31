@@ -586,7 +586,19 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
     if (response.ok) {
       const initialId = this.userScope.initialId
-      const currentId = this.userScope.getCurrentId()
+      let currentId = this.userScope.getCurrentId()
+
+      if (currentId === null && this.userScope.fetchCurrentId) {
+        try {
+          currentId = await this.userScope.fetchCurrentId()
+        } catch {
+          throw new SyncError('Intended user ID does not match after fetchCurrentId failed', {
+            intendedUserId: response.intendedUserId,
+            initialUserId: initialId,
+            currentUserId: currentId,
+          })
+        }
+      }
 
       if (response.intendedUserId !== initialId || response.intendedUserId !== currentId) {
         throw new SyncError('Intended user ID does not match', {
@@ -787,18 +799,24 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   /**
    * Performs telemetry-wrapped write, crucially checking if the user has changed
    */
-  private paranoidWrite<T>(
+  private async paranoidWrite<T>(
     parentSpan: Span | undefined,
     work: (writer: WriterInterface, span: Span) => Promise<T>,
     spanName: 'sync.write' | 'sync.ack' | 'sync.cleanup' = 'sync.write'
   ): Promise<T> {
     const initialId = this.userScope.initialId
-    const currentId = this.userScope.getCurrentId()
+    let currentId = this.userScope.getCurrentId()
+
+    if (currentId === null && this.userScope.fetchCurrentId) {
+      try {
+        currentId = await this.userScope.fetchCurrentId()
+      } catch {
+        throw new SyncError('Aborted cross-user write operation after fetchCurrentId failed', { initialId, currentId })
+      }
+    }
+
     if (initialId !== currentId) {
-      throw new SyncError('Aborted cross-user write operation', {
-        initialId,
-        currentId,
-      })
+      throw new SyncError('Aborted cross-user write operation', { initialId, currentId })
     }
 
     return this.telemetry.trace(

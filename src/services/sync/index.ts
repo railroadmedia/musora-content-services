@@ -1,10 +1,10 @@
 import './telemetry/index'
 
-import { Q } from "@nozbe/watermelondb"
+import { Q, type RecordId } from "@nozbe/watermelondb"
 import { type ModelSerialized } from "./serializers"
 import BaseModel from "./models/Base"
 
-export type SyncUserScope = { initialId: number, getCurrentId: () => number }
+export type SyncUserScope = { initialId: number, getCurrentId: () => number | null, fetchCurrentId?: () => Promise<number | null> }
 
 export { default as db } from './repository-proxy'
 export { Q }
