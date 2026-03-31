@@ -218,6 +218,14 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	acceptInvite,
+	createAccount,
+	createInvites,
+	fetchUsersMultiAccountDetails,
+	rescindInvite
+} from './services/multi-user-accounts/multi-user-accounts.ts';
+
+import {
 	emitProgressSaved,
 	onProgressSaved
 } from './services/progress-events.js';
@@ -454,6 +462,7 @@ import {
 } from './services/userActivity.js';
 
 export {
+	acceptInvite,
 	addContextToContent,
 	addContextToLearningPaths,
 	addItemToPlaylist,
@@ -476,8 +485,10 @@ export {
 	contentStatusReset,
 	contentStatusStarted,
 	convertToTimeZone,
+	createAccount,
 	createComment,
 	createForumCategory,
+	createInvites,
 	createPlaylist,
 	createPost,
 	createPracticeNotes,
@@ -595,6 +606,7 @@ export {
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
 	fetchUserPractices,
+	fetchUsersMultiAccountDetails,
 	filterCoursesInCourseCollections,
 	findIncompleteLesson,
 	flushWatchSession,
@@ -718,6 +730,7 @@ export {
 	reportComment,
 	reportPlaylist,
 	requestEmailChange,
+	rescindInvite,
 	reset,
 	resetAllAwards,
 	resetAllLearningPaths,
