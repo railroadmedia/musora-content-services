@@ -23,9 +23,9 @@ export const SINGLE_PARENT_TYPES = ['course-lesson', 'pack-bundle-lesson', 'song
 
 export const LEARNING_PATH_LESSON = 'learning-path-lesson-v2'
 
-export const parentField = 'parent_content_data[0]'
+export const parentField = 'parent_content_reference[0]'
 
-export const grandParentField = 'parent_content_data[1]'
+export const grandParentField = 'parent_content_reference[1]'
 
 export const genreField = `genre[]->{
   name,
@@ -45,7 +45,7 @@ export const instructorField = `instructor[]->{
 
 export const artistField = `select(
           defined(artist) => artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url},
-          defined(parent_content_data) => *[_type == ^.parent_content_data[0].type && railcontent_id == ^.parent_content_data[0].id][0].artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url}
+          defined(parent_content_reference) => *[_type == ^.parent_content_reference[0]->_type && railcontent_id == ^.parent_content_reference[0]->railcontent_id][0].artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url}
         )`
 
 export const DEFAULT_FIELDS = [
@@ -68,8 +68,8 @@ export const DEFAULT_FIELDS = [
   "'slug' : slug.current",
   "'permission_id': permission_v2",
   'child_count',
-  '"parent_id": parent_content_data[0].id',
-  '"grandparent_id": parent_content_data[1].id',
+  '"parent_id": parent_content_reference[0]->railcontent_id',
+  '"grandparent_id": parent_content_reference[1]->railcontent_id',
   'live_event_start_time',
   'live_event_end_time',
 ]
@@ -94,8 +94,8 @@ export const DEFAULT_CHILD_FIELDS = [
   "'slug' : slug.current",
   "'permission_id': permission_v2",
   'child_count',
-  '"parent_id": parent_content_data[0].id',
-  '"grandparent_id": parent_content_data[1].id',
+  '"parent_id": parent_content_reference[0]->railcontent_id',
+  '"grandparent_id": parent_content_reference[1]->railcontent_id',
 ]
 
 export const playAlongMp3sFields = [
@@ -115,7 +115,7 @@ export const descriptionField = 'description[0].children[0].text'
 // this pulls both any defined resources for the document as well as any resources in the parent document
 export const resourcesField = `[
           ... resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
-          ... *[defined(resource) && railcontent_id in [...(^.parent_content_data[].id)]].resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
+          ... *[defined(resource) && railcontent_id in [...(^.parent_content_reference[]->railcontent_id)]].resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
           ]`
 
 export const contentAwardField = "*[references(^._id) && _type == 'content-award'][0]"
@@ -191,7 +191,7 @@ const pcdForDownloadField = `
     "badge": *[references(^._id) && _type == 'content-award'][0].badge.asset->url,
     "badge_rear": *[references(^._id) && _type == 'content-award'][0].badge_rear.asset->url,
     "badge_logo": *[references(^._id) && _type == 'content-award'][0].logo.asset->url,
-    'parentCount': coalesce(count(parent_content_data), 0)
+    'parentCount': coalesce(count(parent_content_reference), 0)
   }`
 
 export const showsTypes = {
@@ -424,7 +424,7 @@ export let contentTypeConfig = {
   },
   'progress-tracker': {
     fields: [
-      '"parent_content_data": parent_content_data[].id',
+      '"parent_content_data": parent_content_reference[]->railcontent_id',
       `"badge" : ${contentAwardField}.badge.asset->url`,
       `"badge_rear" : ${contentAwardField}.badge_rear.asset->url`,
       `"badge_logo" : ${contentAwardField}.logo.asset->url`,
@@ -435,12 +435,12 @@ export let contentTypeConfig = {
     fields: [
       'railcontent_id',
       '"assignments": assignment[]{railcontent_id}',
-      '"metadata": { brand, "type": _type, "parent_id":  coalesce(parent_content_data[0].id, 0) }',
+      '"metadata": { brand, "type": _type, "parent_id":  coalesce(parent_content_reference[0]->railcontent_id, 0) }',
       ],
     childFields: [
       'railcontent_id',
       '"assignments": assignment[]{railcontent_id}',
-      '"metadata": { brand, "type": _type, "parent_id":  coalesce(parent_content_data[0].id, 0) }',
+      '"metadata": { brand, "type": _type, "parent_id":  coalesce(parent_content_reference[0]->railcontent_id, 0) }',
     ],
   },
   song: {
@@ -545,9 +545,9 @@ export let contentTypeConfig = {
     ],
     includeChildFields: true,
     childFields: [
-      `"parent_data": parent_content_data[0] {
-        "id": id,
-        "title": *[railcontent_id == ^.id][0].title,
+      `"parent_data": parent_content_reference[0]->{
+        "id": railcontent_id,
+        "title": title,
     }`,
     ],
   },

@@ -76,10 +76,10 @@ const TAB_TO_CONTENT_TYPES = {
   'Jam Tracks': jamTrackLessonTypes,
 }
 
+// parent_id must coalesce to 0 here for progress tracking reasons.
 const HIERARCHY_NODE_FIELDS = `
   railcontent_id,
-  'metadata': { brand, 'type': _type, 'parent_id': coalesce(parent_content_data[0].id, 0) },
-  'assignments': assignment[]{railcontent_id}
+  'metadata': { brand, 'type': _type, 'parent_id': coalesce(parent_content_reference[0]->railcontent_id, 0) },
 `
 
 /**
@@ -1107,8 +1107,8 @@ export async function fetchSiblingContent(railContentId, brand = null) {
     _type,
     parent_type,
     railcontent_id,
-    'parent_id': ${parentField}.id,
-    'grandparent_id':${grandParentField}.id,
+    'parent_id': ${parentField}->railcontent_id,
+    'grandparent_id':${grandParentField}->railcontent_id,
     'for-calculations': *[${filterGetParent}][0]{
     'siblings-list': child[]->railcontent_id,
     'parents-list': *[${filterForParentList}][0].child[]->railcontent_id
@@ -1296,13 +1296,10 @@ export async function fetchByReference(
  * @returns {Promise<int|null>}
  */
 async function fetchTopLevelParentId(railcontentId) {
-  const parentFilter = 'railcontent_id in [...(^.parent_content_data[].id)] && (!defined(parent_content_data) || count(parent_content_data) == 0)'
-  const statusFilter = "&& status in ['scheduled', 'published', 'archived', 'unlisted']"
-
   const query = `*[railcontent_id == ${railcontentId}]{
-      railcontent_id,
-      'top_parent': *[${parentFilter} ${statusFilter}][0].railcontent_id
-    }`
+    railcontent_id,
+    'top_parent': coalesce(parent_content_reference[1]->railcontent_id, parent_content_reference[0]->railcontent_id, railcontent_id),
+  }`
   let response = await fetchSanity(query, false, { processNeedAccess: false })
   if (!response) return null
   return response['top_parent'] ?? response['railcontent_id']
@@ -1317,14 +1314,11 @@ async function fetchTopLevelParentId(railcontentId) {
  * @returns {Promise<Record<[railcontentId: int],[topLevelParentId: int]>|null>}
  */
 async function fetchTopLevelParentIds(railcontentIds) {
-  const parentFilter = 'railcontent_id in [...(^.parent_content_data[].id)] && (!defined(parent_content_data) || count(parent_content_data) == 0)'
-  const statusFilter = "&& status in ['scheduled', 'published', 'archived', 'unlisted']"
-
   const idsString = railcontentIds.join(',')
   const query = `*[railcontent_id in [${idsString}]]{
-      railcontent_id,
-      'top_parent': *[${parentFilter} ${statusFilter}][0].railcontent_id
-    }`
+    railcontent_id,
+    'top_parent': coalesce(parent_content_reference[1]->railcontent_id, parent_content_reference[0]->railcontent_id, railcontent_id),
+  }`
   let response = await fetchSanity(query, true, { processNeedAccess: false })
   if (!response) return null
 
@@ -1495,7 +1489,7 @@ function buildHierarchyQuery(filter, rootSelector) {
     ? HIERARCHY_NODE_FIELDS
     : `${HIERARCHY_NODE_FIELDS}, 'children': child[${filter}]->{${node(depth - 1)}}`
 
-  return `*[${rootSelector}]{ ${node(4)} }`
+  return `*[${rootSelector}]{ ${node(3)} }`
 }
 
 function populateHierarchyLookups(currentLevel, data, parentId) {
@@ -2067,7 +2061,7 @@ export async function fetchTabData(
     ? `&& !(railcontent_id in [${excludeIds.join(',')}])`
     : ''
 
-  const excludeCoursesInCourseCollectionsFilter = `&& !(_type == 'course' && defined(parent_content_data))`
+  const excludeCoursesInCourseCollectionsFilter = `&& !(_type == 'course' && defined(parent_content_reference))`
 
   filter = `brand == "${brand}" && (defined(railcontent_id)) ${includedFieldsFilter} ${progressFilter} ${excludedIdsFilter} ${excludeCoursesInCourseCollectionsFilter}`
   const childrenFilter = await new FilterBuilder(``, {
