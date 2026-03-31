@@ -11,12 +11,21 @@ const COUNTDOWN_CTA = { primary: 'Play Now', secondary: 'Cancel' }
  * @param {{id: number, type: string}} params.lesson
  * @param {{id: number, type: string, children: Array<{id: number}>}|null} params.course
  * @param {{id: number, type: string, children: Array<{id: number, children: Array<{id: number}>}>}|null} params.collection
+ * @param {{id: number, items: Array<{id: number, type: string, status?: string}>}|null} params.playlist
  * @param {string} params.brand
  * @returns {Promise<{variant: string, upNext: Object|null, countdownAutoplay: boolean, ctaLabels: {primary: string, secondary: string}}>}
  */
-export async function getEndScreen({ lesson, course = null, collection = null, brand }) {
+export async function getEndScreen({ lesson, course = null, collection = null, playlist = null, brand }) {
   if (SINGLE_SONG_LESSON_TYPES.includes(lesson.type)) {
     return buildCountdown(await fetchEndScreenRecommendation(brand, lesson.id))
+  }
+
+  if (playlist) {
+    const nextItemInPlaylist = getNextItemInPlaylistOrNull(lesson.id, playlist)
+    if (nextItemInPlaylist) {
+      return buildCountdown(nextItemInPlaylist)
+    }
+    return buildCourseComplete(await fetchEndScreenRecommendation(brand, lesson.id))
   }
 
   if (!course) {
@@ -49,6 +58,18 @@ function buildCountdown(upNext) {
 
 function buildCourseComplete(upNext) {
   return { variant: 'course-complete', upNext, countdownAutoplay: false, ctaLabels: COURSE_COMPLETE_CTA }
+}
+
+/**
+ * @param {number} contentId
+ * @param {{items: Array<{id: number, type: string, status?: string}>}} playlist
+ * @returns {Object|null}
+ */
+function getNextItemInPlaylistOrNull(contentId, playlist) {
+  const items = playlist.items ?? []
+  const index = items.findIndex((item) => item.id === contentId)
+  if (index < 0 || index === items.length - 1) return null
+  return items.slice(index + 1).find(isReleasedContent) ?? null
 }
 
 /**
