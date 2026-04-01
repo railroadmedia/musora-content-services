@@ -14,17 +14,9 @@ export default class SyncRunScope {
   }
 
   abortable<T>(fn: () => Promise<T>): Promise<T> {
-    return new Promise((resolve, reject) => {
-      if (this.signal.aborted) {
-        reject(this.signal.reason)
-        return
-      }
-
-      fn().then(resolve).catch(reject)
-
-      this.signal.addEventListener('abort', () => {
-        reject(this.signal.reason)
-      })
-    })
+    if (this.signal.aborted) {
+      return Promise.reject(this.signal.reason)
+    }
+    return fn()
   }
 }
