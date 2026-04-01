@@ -13,6 +13,7 @@ export default class LokiPersistenceErrorAwareAdapter extends LokiJSAdapter {
     super(options);
     const that = this;
 
+    // Schedule save override right at end of setup hook right after `_driver` is ready
     const setupDispatchCallback = this._dispatcher._pendingCalls[0].callback;
     this._dispatcher._pendingCalls[0].callback = function() {
       that._overrideSaveDatabase(extensions.onPersistenceError);
