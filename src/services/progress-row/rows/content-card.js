@@ -87,18 +87,7 @@ export async function processContentItem(content) {
   content.all_children = allChildren
 
   if (content.type === 'guided-course') {
-    const nextLessonPublishedOn = content.children.find(
-      (child) => child.id === content.navigateTo.id
-    )?.published_on
-    let isLocked = new Date(nextLessonPublishedOn) > new Date()
-    if (isLocked) {
-      content.is_locked = true
-      const timeRemaining = getTimeRemainingUntilLocal(nextLessonPublishedOn, {
-        withTotalSeconds: true,
-      })
-      content.time_remaining_seconds = timeRemaining.totalSeconds
-      ctaText = 'Next lesson in ' + timeRemaining.formatted
-    } else if (
+    if (
       !content.progressStatus ||
       content.progressStatus === 'not-started' ||
       content.progressPercentage === 0
@@ -134,7 +123,6 @@ export async function processContentItem(content) {
     },
     cta: {
       text: ctaText,
-      timeRemainingToUnlockSeconds: content.time_remaining_seconds ?? null,
       action: {
         type: content.type,
         brand: content.brand,
