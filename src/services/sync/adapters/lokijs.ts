@@ -1,9 +1,47 @@
 import { SyncTelemetry } from '../telemetry'
 
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
-export { LokiJSAdapter as default }
 
 import { deleteDatabase, lokiFatalError } from '@nozbe/watermelondb/adapters/lokijs/worker/lokiExtensions'
+
+export type LokiExtensions = {
+  onPersistenceError?: (err: Error) => void
+}
+
+export default class LokiPersistenceErrorAwareAdapter extends LokiJSAdapter {
+  constructor(options: any, extensions: LokiExtensions = {}) {
+    super(options);
+    const that = this;
+
+    const setupDispatchCallback = this._dispatcher._pendingCalls[0].callback;
+    this._dispatcher._pendingCalls[0].callback = function() {
+      that._overrideSaveDatabase(extensions.onPersistenceError);
+      setupDispatchCallback.apply(that, arguments);
+    }
+  }
+
+  _overrideSaveDatabase(onPersistenceError?: (err: Error) => void) {
+    const driver = this._driver
+    const persistenceAdapter = driver.loki.persistenceAdapter
+    const oldSaveDatabase = persistenceAdapter.saveDatabase;
+
+    persistenceAdapter.saveDatabase = function(...args: any[]) {
+      const callback = args[args.length - 1];
+      oldSaveDatabase.call(persistenceAdapter, args[0], args[1], function(err: Error | null) {
+        if (err) {
+          driver.loki.autosave = false
+          driver.loki.autosaveDisable()
+
+          // Don't set _isBroken - that prevents us from being to trigger onPersistenceError in the future
+          // driver._isBroken = true
+        }
+
+        err && onPersistenceError?.(err)
+        callback(err);
+      })
+    }
+  }
+}
 
 /**
  * Mute impending driver errors that are expected after sync adapter failure
