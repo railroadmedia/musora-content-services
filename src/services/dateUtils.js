@@ -31,13 +31,16 @@ export function getMonday(date, timeZone = Intl.DateTimeFormat().resolvedOptions
 export function getWeekNumber(date) {
   return dayjs(date).isoWeek()
 }
+
+// Decides if we need to convert or interpret the date based on whether it has timezone info.
+export function toLocalDay(date, timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone) {
+  const hasTimezoneInfo = /Z$|[+-]\d{2}:?\d{2}$/.test(String(date))
+  // Has timezone info ? convert : interpret
+  return hasTimezoneInfo ? dayjs(date).tz(timeZone) : dayjs.tz(date, timeZone)
+}
+
 //Check if two dates are the same
 export function isSameDate(date1, date2) {
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  const toLocalDay = (date) => {
-    const hasTimezoneInfo = /Z$|[+-]\d{2}:?\d{2}$/.test(String(date))
-    return hasTimezoneInfo ? dayjs(date).tz(timeZone) : dayjs.tz(date, timeZone)
-  }
   return toLocalDay(date1).isSame(toLocalDay(date2), 'day')
 }
 
