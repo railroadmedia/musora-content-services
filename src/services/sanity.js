@@ -44,7 +44,7 @@ import { globalConfig } from './config.js'
 
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
-import { getAllCompleted, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
+import {getAllCompleted, getAllCompletedByIds, getAllStarted, getAllStartedOrCompleted} from './contentProgress.js'
 import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
 import { query } from '../lib/sanity/query'
 import { Filters as f } from '../lib/sanity/filter'
@@ -2528,4 +2528,27 @@ export function fetchParentChildRelationshipsFor(childIds, parentType) {
   "children": child[@->railcontent_id in [${stringIds}]]->railcontent_id
 }`
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
+}
+
+/**
+ * Checks whether the user has completed a Method V2 intro video on **any** brand.
+ *
+ * Fetches all `method-intro` content IDs from Sanity (cross-brand) and checks
+ * the local progress store for any completed record among them. This intentionally
+ * ignores the current brand so that completing the intro on one brand (e.g. PlayBass)
+ * is recognised as completed when the user switches to another brand (e.g. Drumeo).
+ *
+ * @returns {Promise<boolean>} `true` if the user has completed at least one Method V2
+ *   intro video across any brand, `false` otherwise.
+ */
+export async function hasAnyMethodV2IntroCompleted() {
+  const type = 'method-intro'
+  const filter = `_type == '${type}'`
+
+  const query = `*[${filter}] { railcontent_id }`
+  const videos = await fetchSanity(query, true);
+  const ids = (videos || []).map((v) => v.railcontent_id)
+
+  const completedVideos = await getAllCompletedByIds(ids)
+  return (completedVideos?.data?.length || 0) > 0
 }
