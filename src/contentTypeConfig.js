@@ -72,7 +72,7 @@ export const DEFAULT_FIELDS = [
   '"grandparent_id": parent_content_data[1].id',
   'live_event_start_time',
   'live_event_end_time',
-  'enrollment_start_time', 
+  'enrollment_start_time',
   'enrollment_end_time',
 ]
 
@@ -677,6 +677,7 @@ export let contentTypeConfig = {
       'show_in_new_feed',
       isLiveField()
     ],
+    includeChildFields: true,
   },
 }
 

@@ -2088,7 +2088,7 @@ export async function fetchScheduledAndNewReleases(
 
   const parentsWithoutSong = parentRecentTypes.filter(type => type !== 'song')
 
-  const fields = getFieldsForContentType('new-and-scheduled')
+  const fields = await getFieldsForContentTypeWithFilteredChildren('new-and-scheduled')
 
   const lessonFilter = f.combine(
     "show_in_new_feed == true",
