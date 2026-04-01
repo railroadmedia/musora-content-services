@@ -38,15 +38,15 @@ export async function getResumeTimeSecondsByRecordIds(ids) {
 export async function getNavigateToForMethod(data) {
   let navigateToData = {}
 
-  const brand = data[0].content.brand || null
+  const brand = data[0].brand || null
   const dailySessionResponse = await getDailySession(brand, new Date())
   const dailySession = dailySessionResponse?.daily_session || null
   const activeLearningPathId = dailySessionResponse?.active_learning_path_id || null
 
-  for (const tuple of data) {
-    if (!tuple) continue
+  for (const content of data) {
+    if (!content) continue
 
-    const {content, collection} = tuple
+    const { _, collection } = extractFromRecordId(content.record_id)
 
     const findFirstIncomplete = (ids, progresses) =>
       ids.find(id => progresses.get(id) !== STATE_COMPLETED) || ids[0]
@@ -93,8 +93,7 @@ export async function getNavigateToForMethod(data) {
   return navigateToData
 }
 
-export async function getNavigateTo(data, collection = null) {
-  collection = normalizeCollection(collection)
+export async function getNavigateTo(data) {
   let navigateToData = {}
 
   const twoDepthContentTypes = ['course-collection'] // not adding method because it has its own logic (with active path)
@@ -122,19 +121,18 @@ export async function getNavigateTo(data, collection = null) {
         children.set(child.id, child)
       })
       // return first child (or grand child) if parent-content is complete or no progress
-      const contentState = await getProgressState(content.id, collection)
+      const contentState = await getProgressState(content.id)
       if (contentState !== STATE_STARTED) {
         const firstChild = validChildren[0]
-        let lastInteractedChildNavToData = await getNavigateTo([firstChild], collection)
+        let lastInteractedChildNavToData = await getNavigateTo([firstChild])
         lastInteractedChildNavToData = lastInteractedChildNavToData[firstChild.id] ?? null
         navigateToData[content.id] = buildNavigateTo(
           firstChild,
           lastInteractedChildNavToData,
-          collection
         ) //no G-child for LP
       } else {
-        const childrenStates = await getProgressStateByIds(childrenIds, collection)
-        const lastInteracted = await getLastInteractedOf(childrenIds, collection)
+        const childrenStates = await getProgressStateByIds(childrenIds)
+        const lastInteracted = await getLastInteractedOf(childrenIds)
         const lastInteractedStatus = childrenStates.get(lastInteracted)
 
         if (['course', 'skill-pack', 'song-tutorial'].includes(content.type)) {
@@ -143,7 +141,6 @@ export async function getNavigateTo(data, collection = null) {
             navigateToData[content.id] = buildNavigateTo(
               children.get(lastInteracted),
               null,
-              collection
             )
           } else {
             // send to first incomplete after last interacted
@@ -151,7 +148,6 @@ export async function getNavigateTo(data, collection = null) {
             navigateToData[content.id] = buildNavigateTo(
               children.get(incompleteChild),
               null,
-              collection
             )
           }
         } else if (
@@ -162,24 +158,21 @@ export async function getNavigateTo(data, collection = null) {
           navigateToData[content.id] = buildNavigateTo(
             children.get(incompleteChild),
             null,
-            collection
           )
         } else if (twoDepthContentTypes.includes(content.type)) {
           // send to navigateTo child of last interacted child
           const firstChildren = content.children ?? []
           const lastInteractedChildId = await getLastInteractedOf(
             firstChildren.map((child) => child.id),
-            collection
           )
           if (childrenStates.get(lastInteractedChildId) === STATE_COMPLETED) {
             // TODO: course collections have an extra situation where we need to jump to the next course if all lessons in the last engaged course are completed
           }
-          let lastInteractedChildNavToData = await getNavigateTo(firstChildren, collection)
+          let lastInteractedChildNavToData = await getNavigateTo(firstChildren)
           lastInteractedChildNavToData = lastInteractedChildNavToData[lastInteractedChildId]
           navigateToData[content.id] = buildNavigateTo(
             children.get(lastInteractedChildId),
             lastInteractedChildNavToData,
-            collection
           )
         }
       }
@@ -406,12 +399,16 @@ async function _getAllStartedOrCompleted({
  * Record watch session
  * @return {string} sessionId - provide in future calls to update progress
  * @param {int} contentId
- * @param {int} mediaLengthSeconds
- * @param {int} currentSeconds
- * @param {int} secondsPlayed
- * @param {string} sessionId - This function records a sessionId to pass into future updates to progress on the same video
- * @param {int} instrumentId - enum value of instrument id
- * @param {int} categoryId - enum value of category id
+ * @param {any} collection - progress collection context, null if a-la-carte
+ * @param {string} collection.type - enum value of collection type
+ * @param {int} collection.id - content_id of parent collection (e.g. learning path content_id)
+ * @param {int} mediaLengthSeconds - total length of video media || live event duration if livestream
+ * @param {int} currentSeconds - seconds timestamp relative to beginning of video
+ * @param {int} secondsPlayed - seconds played in this watch session (since last pause)
+ * @param {any} prevSession - This function records a sessionId to pass into future updates to progress on the same video
+ * @param {int|null} instrumentId - enum value of instrument id
+ * @param {int|null} categoryId - enum value of category id
+ * @param {boolean} isLivestream - determines livestream-specific progress handling
  */
 export async function recordWatchSession(
   contentId,
@@ -421,7 +418,8 @@ export async function recordWatchSession(
   secondsPlayed,
   prevSession = null,
   instrumentId = null,
-  categoryId = null
+  categoryId = null,
+  isLivestream = false,
 ) {
   contentId = normalizeContentId(contentId)
   collection = normalizeCollection(collection)
@@ -435,7 +433,7 @@ export async function recordWatchSession(
   // Track practice and progress locally (no immediate push)
   await Promise.all([
     trackPractice(contentId, secondsPlayed, { instrumentId, categoryId }),
-    trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds),
+    trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds, isLivestream),
   ])
 
   if (!prevSession.pushInterval) {
@@ -460,11 +458,17 @@ async function trackPractice(contentId, secondsPlayed, details = {}) {
   return trackUserPractice(contentId, secondsPlayed, details)
 }
 
-async function trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds) {
+async function trackProgress(contentId, collection, currentSeconds, mediaLengthSeconds, isLivestream = false) {
   const progress = Math.max(1, Math.min(
     99,
     Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds)) * 100)
   ))
+
+  if (isLivestream) {
+    // resumeTime of a livestream will far exceed VOD length, so set to 0
+    // doesn't affect livestream resumeTime, but will send users to 0 seconds in VOD
+    currentSeconds = 0
+  }
   return saveContentProgress(contentId, collection, progress, currentSeconds, { skipPush: true })
 }
 
@@ -596,7 +600,7 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
   }
 
   // have to do this so we dont unnecessarily create a 0% record for each child on set to started/completed
-  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata)
+  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, false)
 
   if (isLP) {
     let exportProgresses = progresses
@@ -642,7 +646,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
     }
   }
   // have to do this so we dont unnecessarily create a 0% record for each child on set to started/completed
-  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata)
+  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, false)
 
   if (isLP) {
     let exportProgresses = progresses
@@ -675,6 +679,7 @@ async function resetStatus(contentId, collection = null, {skipPush = false} = {}
   const response = await db.contentProgress.eraseProgress(normalizeContentId(contentId), normalizeCollection(collection), {skipPush: true})
 
   const hierarchy = await getHierarchy(contentId, collection)
+  const metadata = hierarchy.metadata || {}
 
   let progresses = {
     ...trickleProgress(hierarchy, contentId, collection, progress),
@@ -682,7 +687,7 @@ async function resetStatus(contentId, collection = null, {skipPush = false} = {}
   }
 
   // have to use different endpoints for erase vs record
-  await bubbleAndTrickleProgressesSafely(progresses, collection)
+  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, true)
 
   if (isLP) {
     progresses[contentId] = progress
@@ -807,13 +812,17 @@ function getChildrenToDepth(parentId, hierarchy, depth = 1) {
   return allChildrenIds
 }
 
-async function bubbleAndTrickleProgressesSafely(progresses, collection, metadata) {
-  const eraseProgresses = Object.fromEntries(
+async function bubbleAndTrickleProgressesSafely(progresses, collection, metadata, isResetAction) {
+  let eraseProgresses = {}
+  if (isResetAction) {
+    eraseProgresses = Object.fromEntries(
       Object.entries(progresses).filter(([_, pct]) => pct === 0)
-  )
-  progresses = Object.fromEntries(
+    )
+    progresses = Object.fromEntries(
       Object.entries(progresses).filter(([_, pct]) => pct > 0)
-  )
+    )
+  }
+
   if (Object.keys(progresses).length > 0) {
     await db.contentProgress.recordProgressMany(
       progresses,
@@ -863,9 +872,25 @@ export async function getIdsWhereLastAccessedFromMethod(contentIds) {
 }
 
 export function generateRecordId(contentId, collection) {
-  if (!contentId)  return null
+  if (!contentId) return null
 
   contentId = normalizeContentId(contentId)
 
   return `${contentId}:${collection?.type || COLLECTION_TYPE.SELF}:${collection?.id || COLLECTION_ID_SELF}`
+}
+
+export function extractFromRecordId(recordId) {
+  if (!recordId) return null
+
+  const contentId = Number(recordId.split(':')[0])
+  const collectionType = recordId.split(':')[1]
+  const collectionId = Number(recordId.split(':')[2])
+
+  return {
+    contentId,
+    collection: {
+      type: collectionType || COLLECTION_TYPE.SELF,
+      id: collectionId || COLLECTION_ID_SELF
+    }
+  }
 }

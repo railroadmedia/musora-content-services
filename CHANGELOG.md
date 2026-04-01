@@ -2,6 +2,105 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.145.6](https://github.com/railroadmedia/musora-content-services/compare/v2.145.5...v2.145.6) (2026-03-31)
+
+### [2.145.5](https://github.com/railroadmedia/musora-content-services/compare/v2.145.4...v2.145.5) (2026-03-31)
+
+### [2.145.4](https://github.com/railroadmedia/musora-content-services/compare/v2.145.3...v2.145.4) (2026-03-31)
+
+
+### Bug Fixes
+
+* remove content-type from application/json ([#894](https://github.com/railroadmedia/musora-content-services/issues/894)) ([281f5b9](https://github.com/railroadmedia/musora-content-services/commit/281f5b9bd8618b97c7070b581f7299feb936ac00))
+
+### [2.145.3](https://github.com/railroadmedia/musora-content-services/compare/v2.145.2...v2.145.3) (2026-03-31)
+
+### [2.145.2](https://github.com/railroadmedia/musora-content-services/compare/v2.145.1...v2.145.2) (2026-03-31)
+
+### [2.145.1](https://github.com/railroadmedia/musora-content-services/compare/v2.145.0...v2.145.1) (2026-03-31)
+
+## [2.145.0](https://github.com/railroadmedia/musora-content-services/compare/v2.143.1...v2.145.0) (2026-03-31)
+
+
+### Features
+
+* **behltp-22:**  Muppets - user data - invite create/accept/rescind endpoints ([#886](https://github.com/railroadmedia/musora-content-services/issues/886)) ([21c20b9](https://github.com/railroadmedia/musora-content-services/commit/21c20b935833de3956d43d6c04122430df6806dc))
+
+
+### Bug Fixes
+
+* **BR-531:** fix award Days Practiced calculation ([#887](https://github.com/railroadmedia/musora-content-services/issues/887)) ([25882a9](https://github.com/railroadmedia/musora-content-services/commit/25882a9c7ab162cdbc6d9fec96b53459b328feb2))
+
+## [2.144.0](https://github.com/railroadmedia/musora-content-services/compare/v2.143.1...v2.144.0) (2026-03-31)
+
+
+### Features
+
+* **behltp-22:**  Muppets - user data - invite create/accept/rescind endpoints ([#886](https://github.com/railroadmedia/musora-content-services/issues/886)) ([21c20b9](https://github.com/railroadmedia/musora-content-services/commit/21c20b935833de3956d43d6c04122430df6806dc))
+
+
+### Bug Fixes
+
+* **BR-531:** fix award Days Practiced calculation ([#887](https://github.com/railroadmedia/musora-content-services/issues/887)) ([25882a9](https://github.com/railroadmedia/musora-content-services/commit/25882a9c7ab162cdbc6d9fec96b53459b328feb2))
+
+### [2.143.1](https://github.com/railroadmedia/musora-content-services/compare/v2.143.0...v2.143.1) (2026-03-25)
+
+
+### Bug Fixes
+
+* **progress-row:** get children count without looking at permissions ([#885](https://github.com/railroadmedia/musora-content-services/issues/885)) ([0bf807c](https://github.com/railroadmedia/musora-content-services/commit/0bf807c330724c894d2a34df180326219df280dc))
+
+## [2.143.0](https://github.com/railroadmedia/musora-content-services/compare/v2.142.0...v2.143.0) (2026-03-25)
+
+
+### Features
+
+* **MU2-1407:** account setup updates ([#874](https://github.com/railroadmedia/musora-content-services/issues/874)) ([c8c2322](https://github.com/railroadmedia/musora-content-services/commit/c8c2322d0949bc37e348c57d5a79dcf3ed151188))
+
+## [2.142.0](https://github.com/railroadmedia/musora-content-services/compare/v2.141.2...v2.142.0) (2026-03-25)
+
+
+### Features
+
+* **MU2-1387:** store paywall skipping on onboarding data ([#875](https://github.com/railroadmedia/musora-content-services/issues/875)) ([11d0459](https://github.com/railroadmedia/musora-content-services/commit/11d0459fef4cb72f29951137901dcb8ec7bdf8f4))
+
+### [2.141.2](https://github.com/railroadmedia/musora-content-services/compare/v2.141.1...v2.141.2) (2026-03-25)
+
+### [2.141.1](https://github.com/railroadmedia/musora-content-services/compare/v2.141.0...v2.141.1) (2026-03-25)
+
+
+### Bug Fixes
+
+* **TP-1166:** set watermelon DB namespacing based on environment ([#884](https://github.com/railroadmedia/musora-content-services/issues/884)) ([fe16b68](https://github.com/railroadmedia/musora-content-services/commit/fe16b68fbde371fdffb4f2673218e1d2a4ab016d))
+
+## [2.141.0](https://github.com/railroadmedia/musora-content-services/compare/v2.140.9...v2.141.0) (2026-03-25)
+
+
+### Features
+
+* change your progress section to display parents ([#883](https://github.com/railroadmedia/musora-content-services/issues/883)) ([66e4678](https://github.com/railroadmedia/musora-content-services/commit/66e4678f20c781c5d66c59e5c9ce488c63dc5301))
+
+
+### Bug Fixes
+
+* **T3PS-2319:** setup livestream progress ([#878](https://github.com/railroadmedia/musora-content-services/issues/878)) ([d1284c6](https://github.com/railroadmedia/musora-content-services/commit/d1284c69bf35cd4cdaf9a4b448767dc615a6dbf1))
+
+### [2.140.9](https://github.com/railroadmedia/musora-content-services/compare/v2.140.8...v2.140.9) (2026-03-24)
+
+
+### Bug Fixes
+
+* bubbling 0% progress doesnt reset ancestor ([#881](https://github.com/railroadmedia/musora-content-services/issues/881)) ([c1538e5](https://github.com/railroadmedia/musora-content-services/commit/c1538e52a34d839ab9b81cc6f72f8839ef4dcb51))
+* **MU2-1419:** return product brand on account setup ([#882](https://github.com/railroadmedia/musora-content-services/issues/882)) ([c7bf35e](https://github.com/railroadmedia/musora-content-services/commit/c7bf35e06144d132799a5234b8cb1bf188c2307c))
+* **NW-345:** Get to Post for account status endpoint ([d97f97e](https://github.com/railroadmedia/musora-content-services/commit/d97f97e9a04ef4f701636c7c1ee602e96fc546d5))
+
+### [2.140.8](https://github.com/railroadmedia/musora-content-services/compare/v2.140.7...v2.140.8) (2026-03-23)
+
+
+### Bug Fixes
+
+* fix enriching learning paths ([#879](https://github.com/railroadmedia/musora-content-services/issues/879)) ([793c4e9](https://github.com/railroadmedia/musora-content-services/commit/793c4e90a77ad03d9f293bc6576317f4391b746d))
+
 ### [2.140.7](https://github.com/railroadmedia/musora-content-services/compare/v2.140.6...v2.140.7) (2026-03-19)
 
 

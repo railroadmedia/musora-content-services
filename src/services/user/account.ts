@@ -16,10 +16,10 @@ import { AuthResponse } from './types'
  */
 export async function status(email: string): Promise<{ requires_setup: boolean }> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  const response = await httpClient.get<{ requires_setup: boolean }>(
-    `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status`
+  return await httpClient.post<{ requires_setup: boolean }>(
+    `/api/user-management-system/v1/accounts/${encodeURIComponent(email)}/status`,
+    []
   )
-  return response
 }
 
 /**
@@ -43,11 +43,13 @@ export interface AccountSetupProps {
   revenuecatAppUserId?: string
   deviceName?: string
   from?: string
+  hasSkippedPaywall?: boolean
 }
 
 export interface AccountSetupResponse {
   auth: AuthResponse
   onboarding: Onboarding
+  product_brand?: string
 }
 
 /**
@@ -65,7 +67,11 @@ export interface AccountSetupResponse {
  */
 export async function setupAccount(props: AccountSetupProps): Promise<AccountSetupResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  if ((!globalConfig.isMA || props.from === 'mobile-ios-app') && !props.token) {
+  if (
+    !props.hasSkippedPaywall &&
+    (!globalConfig.isMA || props.from === 'mobile-ios-app') &&
+    !props.token
+  ) {
     throw new Error('Token is required for non-MA environments')
   }
 
@@ -77,6 +83,8 @@ export async function setupAccount(props: AccountSetupProps): Promise<AccountSet
       password_confirmation: props.passwordConfirmation,
       token: props.token,
       from: props.from,
+      has_skipped_paywall: props.hasSkippedPaywall,
+      mobile_app_id: props.revenuecatAppUserId,
     }
   )
 

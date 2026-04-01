@@ -1,6 +1,7 @@
 import schema from '../schema'
 import type { SyncUserScope } from '../index'
 import { SyncError } from '../errors'
+import { globalConfig } from '../../config.js'
 
 import type { default as SQLiteAdapter, SQLiteExtensions } from './sqlite'
 import type LokiJSAdapter from './lokijs'
@@ -32,9 +33,11 @@ export default function syncAdapterFactory<T extends DatabaseAdapter>(
       throw new SyncError('User ID is required to construct database adapter')
     }
 
+    const envName = globalConfig.appEnv || 'production'
+    const dbSuffix = envName === 'production' ? '' : (':' + (envName))
     const adapter = new AdapterClass({
       ...opts,
-      dbName: `musora:sync:${userScope.initialId}`,
+      dbName: `musora:sync:${userScope.initialId}${dbSuffix}`,
       schema,
       migrations: undefined
     }, extensions)
