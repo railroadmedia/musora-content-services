@@ -5,6 +5,7 @@
       "src/services/content-org",
       "src/services/content",
       "src/services/gamification",
+      "src/services/multi-user-accounts",
       "src/services/awards",
       "src/services/api",
       "src/services/progress-row",

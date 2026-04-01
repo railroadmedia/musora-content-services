@@ -328,6 +328,7 @@ import {
 	getSanityDate,
 	getSongTypesFor,
 	getSortOrder,
+	hasAnyMethodV2IntroCompleted,
 	jumpToContinueContent
 } from './services/sanity.js';
 
@@ -680,6 +681,7 @@ export {
 	getWeekNumber,
 	globalConfig,
 	guidedCourses,
+	hasAnyMethodV2IntroCompleted,
 	initializeEnvVar,
 	initializeService,
 	isBucketUrl,

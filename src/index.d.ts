@@ -324,6 +324,7 @@ import {
 	getSanityDate,
 	getSongTypesFor,
 	getSortOrder,
+	hasAnyMethodV2IntroCompleted,
 	jumpToContinueContent
 } from './services/sanity.js';
 
@@ -681,6 +682,7 @@ declare module 'musora-content-services' {
 		getWeekNumber,
 		globalConfig,
 		guidedCourses,
+		hasAnyMethodV2IntroCompleted,
 		initializeEnvVar,
 		initializeService,
 		isBucketUrl,

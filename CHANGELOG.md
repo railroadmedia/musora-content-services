@@ -2,12 +2,53 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [2.144.0](https://github.com/railroadmedia/musora-content-services/compare/v2.143.0...v2.144.0) (2026-03-31)
+### [2.145.6](https://github.com/railroadmedia/musora-content-services/compare/v2.145.5...v2.145.6) (2026-03-31)
+
+### [2.145.5](https://github.com/railroadmedia/musora-content-services/compare/v2.145.4...v2.145.5) (2026-03-31)
+
+### [2.145.4](https://github.com/railroadmedia/musora-content-services/compare/v2.145.3...v2.145.4) (2026-03-31)
+
+
+### Bug Fixes
+
+* remove content-type from application/json ([#894](https://github.com/railroadmedia/musora-content-services/issues/894)) ([281f5b9](https://github.com/railroadmedia/musora-content-services/commit/281f5b9bd8618b97c7070b581f7299feb936ac00))
+
+### [2.145.3](https://github.com/railroadmedia/musora-content-services/compare/v2.145.2...v2.145.3) (2026-03-31)
+
+### [2.145.2](https://github.com/railroadmedia/musora-content-services/compare/v2.145.1...v2.145.2) (2026-03-31)
+
+### [2.145.1](https://github.com/railroadmedia/musora-content-services/compare/v2.145.0...v2.145.1) (2026-03-31)
+
+## [2.145.0](https://github.com/railroadmedia/musora-content-services/compare/v2.143.1...v2.145.0) (2026-03-31)
 
 
 ### Features
 
-* **BEHLTP-22:** update user data ([873b211](https://github.com/railroadmedia/musora-content-services/commit/873b211fd50f0f0763b18e7de1df82eb3eacc8be))
+* **behltp-22:**  Muppets - user data - invite create/accept/rescind endpoints ([#886](https://github.com/railroadmedia/musora-content-services/issues/886)) ([21c20b9](https://github.com/railroadmedia/musora-content-services/commit/21c20b935833de3956d43d6c04122430df6806dc))
+
+
+### Bug Fixes
+
+* **BR-531:** fix award Days Practiced calculation ([#887](https://github.com/railroadmedia/musora-content-services/issues/887)) ([25882a9](https://github.com/railroadmedia/musora-content-services/commit/25882a9c7ab162cdbc6d9fec96b53459b328feb2))
+
+## [2.144.0](https://github.com/railroadmedia/musora-content-services/compare/v2.143.1...v2.144.0) (2026-03-31)
+
+
+### Features
+
+* **behltp-22:**  Muppets - user data - invite create/accept/rescind endpoints ([#886](https://github.com/railroadmedia/musora-content-services/issues/886)) ([21c20b9](https://github.com/railroadmedia/musora-content-services/commit/21c20b935833de3956d43d6c04122430df6806dc))
+
+
+### Bug Fixes
+
+* **BR-531:** fix award Days Practiced calculation ([#887](https://github.com/railroadmedia/musora-content-services/issues/887)) ([25882a9](https://github.com/railroadmedia/musora-content-services/commit/25882a9c7ab162cdbc6d9fec96b53459b328feb2))
+
+### [2.143.1](https://github.com/railroadmedia/musora-content-services/compare/v2.143.0...v2.143.1) (2026-03-25)
+
+
+### Bug Fixes
+
+* **progress-row:** get children count without looking at permissions ([#885](https://github.com/railroadmedia/musora-content-services/issues/885)) ([0bf807c](https://github.com/railroadmedia/musora-content-services/commit/0bf807c330724c894d2a34df180326219df280dc))
 
 ## [2.143.0](https://github.com/railroadmedia/musora-content-services/compare/v2.142.0...v2.143.0) (2026-03-25)
 
