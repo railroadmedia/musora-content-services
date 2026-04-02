@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.147.1](https://github.com/railroadmedia/musora-content-services/compare/v2.147.0...v2.147.1) (2026-04-02)
+
+
+### Bug Fixes
+
+* patches indexedDB.deleteDatabase to silence noisy safari errs ([#888](https://github.com/railroadmedia/musora-content-services/issues/888)) ([c67d408](https://github.com/railroadmedia/musora-content-services/commit/c67d40800ffe64d3eab204b97eaf26413b5a6e79))
+
 ## [2.147.0](https://github.com/railroadmedia/musora-content-services/compare/v2.146.1...v2.147.0) (2026-04-02)
 
 
