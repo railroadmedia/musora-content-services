@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.146.0](https://github.com/railroadmedia/musora-content-services/compare/v2.145.9...v2.146.0) (2026-04-02)
+
+
+### Features
+
+* **BEHLPT-18:**  remove user from muppet ([#891](https://github.com/railroadmedia/musora-content-services/issues/891)) ([ecdf778](https://github.com/railroadmedia/musora-content-services/commit/ecdf778108f974f59885c3d442c47c90152c5554))
+
 ### [2.145.9](https://github.com/railroadmedia/musora-content-services/compare/v2.145.8...v2.145.9) (2026-04-01)
 
 ### [2.145.8](https://github.com/railroadmedia/musora-content-services/compare/v2.145.7...v2.145.8) (2026-04-01)
