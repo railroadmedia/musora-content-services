@@ -343,21 +343,26 @@ export async function getContentRows(brand, pageName, contentRowSlug = null, {
  *   .then(response => console.log(response))
  *   .catch(error => console.error(error));
  */
-export async function getNewAndUpcoming(brand, {
-  page = 1,
-  limit = 10,
-} = {}) {
+export async function getNewAndUpcoming(brand, { page = 1, limit = 10 } = {}) {
+  const data = await addContextToContent(
+    fetchScheduledAndNewReleases,
+    brand,
+    { page: page, limit: limit },
+    {
+      addNavigateTo: true,
+      addProgressPercentage: true,
+      addProgressStatus: true,
+    }
+  )
 
-  const data = await fetchScheduledAndNewReleases(brand, {page: page, limit: limit});
   if (!data) {
-    return null;
+    return null
   }
 
   return {
     data: data,
-  };
+  }
 }
-
 /**
  * Fetches scheduled content rows for a given brand with optional filtering by content row ID.
  *
