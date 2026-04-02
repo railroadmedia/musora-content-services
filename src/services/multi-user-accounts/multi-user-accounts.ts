@@ -1,7 +1,7 @@
 /**
  * @module MultiUserAccounts
  */
-import { HttpClient } from '../../infrastructure/http/HttpClient'
+import { HttpClient, DELETE } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
 
 const baseUrl = `/api/multi-user-accounts/v1`
@@ -125,6 +125,5 @@ export async function rescindInvite(inviteId: number): Promise<void> {
  * @throws {HttpError} - If the request fails.
  */
 export async function removeUserFromActiveMultiUserAccount(userId: number): Promise<MultiUserAccountResponse|void> {
-  const httpClient = new HttpClient(globalConfig.baseUrl)
-  return httpClient.delete<MultiUserAccountResponse|void>(`${baseUrl}/${userId}/remove`, {})
+  return DELETE(`${globalConfig.baseUrl}${baseUrl}/${userId}/remove`, {})
 }
