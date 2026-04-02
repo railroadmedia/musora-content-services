@@ -470,9 +470,13 @@ async function trackProgress(contentId, collection, currentSeconds, mediaLengthS
     99,
     Math.round(((currentSeconds ?? 0) / Math.max(1, mediaLengthSeconds)) * 100)
   ))
-  return isLivestream
-    ? saveContentProgress(contentId, null, progress, 0, { skipPush: true })
-    : saveContentProgress(contentId, collection, progress, currentSeconds, { skipPush: true })
+
+  if (isLivestream) {
+    // resumeTime of a livestream will far exceed VOD length, so set to 0
+    // doesn't affect livestream resumeTime, but will send users to 0 seconds in VOD
+    currentSeconds = 0
+  }
+  return saveContentProgress(contentId, collection, progress, currentSeconds, { skipPush: true })
 }
 
 export async function contentStatusCompleted(contentId, collection = null) {
