@@ -75,9 +75,7 @@ export async function createAccount(params: CreateAccountParams): Promise<MultiU
  */
 export async function fetchUsersMultiAccountDetails(userId: number): Promise<UsersMultiAccountResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  const url = `${baseUrl}/${userId}/details`
-  console.log(url)
-  return httpClient.get<UsersMultiAccountResponse>(url)
+  return httpClient.get<UsersMultiAccountResponse>(`${baseUrl}/${userId}/details`)
 }
 
 /**
