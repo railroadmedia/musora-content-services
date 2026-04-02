@@ -57,7 +57,7 @@ function generateContentPromises(contents) {
   const promises = []
   if (!contents) return promises
   const existingShows = new Set()
-  let allRecentTypeSet = new Set(Object.values(recentTypes.homeRow))
+  const allRecentTypeSet = new Set(Object.values(recentTypes.homeRow))
   allRecentTypeSet.delete('learning-path-v2') // we do this to remove from homepage, until we allow a-la-carte learning paths
   contents.forEach((content) => {
     const type = content.type
@@ -103,12 +103,7 @@ export async function processContentItem(content) {
       badge_template: content.badge_template ?? null,
       badge_template_rear: content.badge_template_rear ?? null,
       isLocked: content.is_locked ?? false,
-      subtitle:
-        collectionLessonTypes.includes(content.type) || content.lesson_count > 1
-          ? `${content.completed_children ?? 0} of ${content.all_children ?? content.lesson_count ?? content.child_count} Lessons Complete`
-          : (contentType === 'lesson' || contentType === 'show') && isLive === false
-            ? `${content.progressPercentage}% Complete`
-            : `${content.difficulty_string} • ${content.artist_name}`,
+      subtitle: getSubtitle(content, contentType, isLive),
     },
     cta: {
       text: ctaText,
@@ -124,17 +119,22 @@ export async function processContentItem(content) {
   }
 }
 
-function getDefaultCTATextForContent(content, contentType) {
-  let ctaText = 'Continue'
-  if (content.type === 'guided-course') {
-    if (
-      !content.progressStatus ||
-      content.progressStatus === 'not-started' ||
-      content.progressPercentage === 0
-    ) {
-      ctaText = 'Start Course'
-    }
+function getSubtitle(content, contentType, isLive) {
+  if (collectionLessonTypes.includes(content.type) || content.lesson_count > 1) {
+    return `${content.completed_children ?? 0} of ${content.all_children ?? content.lesson_count ?? content.child_count} Lessons Complete`
   }
+  if ((contentType === 'lesson' || contentType === 'show') && !isLive) {
+    return `${content.progressPercentage}% Complete`
+  }
+  return `${content.difficulty_string} • ${content.artist_name}`
+}
+
+function getDefaultCTATextForContent(content, contentType) {
+  const notStarted =
+    !content.progressStatus ||
+    content.progressStatus === 'not-started' ||
+    content.progressPercentage === 0
+  if (content.type === 'guided-course' && notStarted) return 'Start Course'
 
   if (content.progressStatus === 'completed') {
     if (
@@ -142,13 +142,14 @@ function getDefaultCTATextForContent(content, contentType) {
       contentType === 'play along' ||
       contentType === 'jam track'
     )
-      ctaText = 'Replay Song'
-    if (contentType === 'lesson' || contentType === 'show') ctaText = 'Revisit Lesson'
+      return 'Replay Song'
+    if (contentType === 'lesson' || contentType === 'show') return 'Revisit Lesson'
     if (contentType === 'song tutorial' || collectionLessonTypes.includes(content.type))
-      ctaText = 'Revisit Lessons'
-    if (contentType === 'course-collection') ctaText = 'View Lessons'
+      return 'Revisit Lessons'
+    if (contentType === 'course-collection') return 'View Lessons'
   }
-  return ctaText
+
+  return 'Continue'
 }
 
 async function getCompletedChildren(content, contentType) {
