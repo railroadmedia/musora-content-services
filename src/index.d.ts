@@ -218,6 +218,7 @@ import {
 	createAccount,
 	createInvites,
 	fetchUsersMultiAccountDetails,
+	removeUserFromActiveMultiUserAccount,
 	rescindInvite
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
@@ -727,6 +728,7 @@ declare module 'musora-content-services' {
 		registerProgressCallback,
 		removeContentAsInterested,
 		removeContentAsNotInterested,
+		removeUserFromActiveMultiUserAccount,
 		removeUserPractice,
 		replyToComment,
 		report,
