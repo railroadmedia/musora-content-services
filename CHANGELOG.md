@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.147.0](https://github.com/railroadmedia/musora-content-services/compare/v2.146.1...v2.147.0) (2026-04-02)
+
+
+### Features
+
+* Add children to fetchScheduledAndNewReleases for navigateTo calculations ([#901](https://github.com/railroadmedia/musora-content-services/issues/901)) ([3ade1ad](https://github.com/railroadmedia/musora-content-services/commit/3ade1ad400e1dd9e56d245f3a37d77d709a0d4e1))
+
 ### [2.146.1](https://github.com/railroadmedia/musora-content-services/compare/v2.146.0...v2.146.1) (2026-04-02)
 
 ## [2.146.0](https://github.com/railroadmedia/musora-content-services/compare/v2.145.9...v2.146.0) (2026-04-02)
