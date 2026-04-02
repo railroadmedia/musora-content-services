@@ -12,7 +12,6 @@ import {
   showsLessonTypes,
   songs,
 } from '../../../contentTypeConfig.js'
-import { getTimeRemainingUntilLocal } from '../../dateUtils.js'
 import { PARENT_ID_TOP_LEVEL } from '../../sync/models/ContentProgress'
 
 /**
@@ -80,21 +79,11 @@ function generateContentPromises(contents) {
 export async function processContentItem(content) {
   const contentType = getFormattedType(content.type, content.brand)
   const isLive = content.isLive ?? false
-  let ctaText = getDefaultCTATextForContent(content, contentType)
+  const ctaText = getDefaultCTATextForContent(content, contentType)
 
   const { completedChildren, allChildren } = await getCompletedChildren(content, contentType)
   content.completed_children = completedChildren
   content.all_children = allChildren
-
-  if (content.type === 'guided-course') {
-    if (
-      !content.progressStatus ||
-      content.progressStatus === 'not-started' ||
-      content.progressPercentage === 0
-    ) {
-      ctaText = 'Start Course'
-    }
-  }
 
   return {
     id: content.id,
@@ -137,6 +126,16 @@ export async function processContentItem(content) {
 
 function getDefaultCTATextForContent(content, contentType) {
   let ctaText = 'Continue'
+  if (content.type === 'guided-course') {
+    if (
+      !content.progressStatus ||
+      content.progressStatus === 'not-started' ||
+      content.progressPercentage === 0
+    ) {
+      ctaText = 'Start Course'
+    }
+  }
+
   if (content.progressStatus === 'completed') {
     if (
       contentType === songs[content.brand] ||
