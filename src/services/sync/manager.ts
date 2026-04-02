@@ -300,11 +300,15 @@ export default class SyncManager {
     window.indexedDB.deleteDatabase('WatermelonIDBChecker')
   }
 
-  disconnectDatabase() {
+  disconnectDatabase(disableReconnect = false) {
     const driver = this.database.adapter.underlyingAdapter._driver as any
     if (!('loki' in driver)) throw new Error('Only Loki databases are disconnectable')
 
     const idb = driver.loki.persistenceAdapter.idb
     idb.close()
+
+    if (disableReconnect) {
+      idb._disableReconnect = true
+    }
   }
 }
