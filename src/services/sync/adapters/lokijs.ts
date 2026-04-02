@@ -29,15 +29,26 @@ export default class LokiPersistenceErrorAwareAdapter extends LokiJSAdapter {
     persistenceAdapter.saveDatabase = function(...args: any[]) {
       const callback = args[args.length - 1];
       oldSaveDatabase.call(persistenceAdapter, args[0], args[1], function(err: Error | null) {
-        if (err) {
-          driver.loki.autosave = false
-          driver.loki.autosaveDisable()
+        if (err && err.name === 'InvalidStateError' && err.message.includes('database connection is closing')) {
+          // triggers new connection on next save
+          persistenceAdapter.idb?.close()
+          persistenceAdapter.idb = null
 
-          // Don't set _isBroken - that prevents us from being to trigger onPersistenceError in the future
-          // driver._isBroken = true
+          // retry once
+          oldSaveDatabase.call(persistenceAdapter, args[0], args[1], function(err: Error | null) {
+            if (err && err.name === 'InvalidStateError' && err.message.includes('database connection is closing')) {
+              // Don't set _isBroken - that prevents us from being to trigger onPersistenceError in the future
+              // driver._isBroken = true
+
+              onPersistenceError?.(err)
+            }
+
+            callback(err);
+          })
+
+          return
         }
 
-        err && onPersistenceError?.(err)
         callback(err);
       })
     }
