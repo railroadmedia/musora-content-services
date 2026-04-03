@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.148.0](https://github.com/railroadmedia/musora-content-services/compare/v2.145.6...v2.148.0) (2026-04-03)
+
+
+### Features
+
+* Add children to fetchScheduledAndNewReleases for navigateTo calculations ([#901](https://github.com/railroadmedia/musora-content-services/issues/901)) ([3ade1ad](https://github.com/railroadmedia/musora-content-services/commit/3ade1ad400e1dd9e56d245f3a37d77d709a0d4e1))
+* **BEHLPT-18:**  remove user from muppet ([#891](https://github.com/railroadmedia/musora-content-services/issues/891)) ([ecdf778](https://github.com/railroadmedia/musora-content-services/commit/ecdf778108f974f59885c3d442c47c90152c5554))
+
+
+### Bug Fixes
+
+* patches indexedDB.deleteDatabase to silence noisy safari errs ([#888](https://github.com/railroadmedia/musora-content-services/issues/888)) ([c67d408](https://github.com/railroadmedia/musora-content-services/commit/c67d40800ffe64d3eab204b97eaf26413b5a6e79))
+
 ### [2.147.1](https://github.com/railroadmedia/musora-content-services/compare/v2.147.0...v2.147.1) (2026-04-02)
 
 
