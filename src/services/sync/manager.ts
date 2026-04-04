@@ -287,7 +287,7 @@ export default class SyncManager {
     return this.context
   }
 
-  abort() {
-    this.runScope.abort()
+  abort(reason?: string) {
+    this.runScope.abort(reason)
   }
 }

@@ -11,8 +11,8 @@ export default class SyncRunScope {
     return this.abortController.signal
   }
 
-  abort(): void {
-    this.abortController.abort()
+  abort(reason?: string): void {
+    this.abortController.abort(reason)
   }
 
   abortable<T>(fn: () => Promise<T>): Promise<T> {
