@@ -286,4 +286,8 @@ export default class SyncManager {
   getContext() {
     return this.context
   }
+
+  abort() {
+    this.runScope.abort()
+  }
 }
