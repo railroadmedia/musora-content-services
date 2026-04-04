@@ -172,7 +172,9 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
   }
 
   async getLastFetchToken() {
-    return (await this.db.localStorage.get<SyncToken | null>(this.lastFetchTokenKey)) ?? null
+    return await this.runScope.abortable(async () => {
+      return (await this.db.localStorage.get<SyncToken | null>(this.lastFetchTokenKey)) ?? null
+    })
   }
 
   async pullRecords(span?: Span) {

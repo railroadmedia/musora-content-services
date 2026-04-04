@@ -1,3 +1,5 @@
+import { SyncAbortError } from './errors'
+
 export default class SyncRunScope {
   private abortController: AbortController
 
@@ -16,8 +18,7 @@ export default class SyncRunScope {
   abortable<T>(fn: () => Promise<T>): Promise<T> {
     return new Promise((resolve, reject) => {
       if (this.signal.aborted) {
-        reject(this.signal.reason)
-        return
+        return Promise.reject(new SyncAbortError('Operation aborted', { reason: this.signal.reason }))
       }
 
       fn().then(resolve).catch(reject)
