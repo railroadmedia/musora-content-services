@@ -854,7 +854,7 @@ export async function recordUserActivity(payload) {
   return await db.userActivities.record(payload)
 }
 
-async function recordUserProgressActivity(contentId, action) {
+// todo: have to build event-based system for tracking activities, like BE does.
 
 /**
  * Deletes a specific user activity by its ID.
