@@ -60,8 +60,6 @@ export default class UserActivitiesRepository extends SyncRepository<UserActivit
     })
   }
 
-  async recordAuto
-
   private filterByTab(tabName: string) {
     const tabValue = this.getTabValueFromName(tabName)
 
