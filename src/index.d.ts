@@ -222,6 +222,12 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
+	getOwnPracticesOffline,
+	getRecentActivityOffline,
+	recordWatchSessionOffline
+} from './services/offline/offline.ts';
+
+import {
 	emitProgressSaved,
 	onProgressSaved
 } from './services/progress-events.js';
@@ -440,7 +446,6 @@ import {
 	deletePracticeSession,
 	deleteUserActivity,
 	fetchRecentActivitiesActiveTabs,
-	findIncompleteLesson,
 	getPracticeNotes,
 	getPracticeSessions,
 	getRecentActivity,
@@ -610,7 +615,6 @@ declare module 'musora-content-services' {
 		fetchUserPractices,
 		fetchUsersMultiAccountDetails,
 		filterCoursesInCourseCollections,
-		findIncompleteLesson,
 		flushWatchSession,
 		followThread,
 		generateAuthSessionUrl,
@@ -648,6 +652,7 @@ declare module 'musora-content-services' {
 		getNavigateToForPlaylists,
 		getNewAndUpcoming,
 		getOnboardingRecommendedContent,
+		getOwnPracticesOffline,
 		getOwnedContent,
 		getPracticeNotes,
 		getPracticeSessions,
@@ -659,6 +664,7 @@ declare module 'musora-content-services' {
 		getProgressStateByRecordIds,
 		getRecent,
 		getRecentActivity,
+		getRecentActivityOffline,
 		getRecommendedForYou,
 		getReportIssueOptions,
 		getResumeTimeSecondsByIds,
@@ -723,6 +729,7 @@ declare module 'musora-content-services' {
 		recordUserActivity,
 		recordUserPractice,
 		recordWatchSession,
+		recordWatchSessionOffline,
 		registerAwardCallback,
 		registerProgressCallback,
 		removeContentAsInterested,

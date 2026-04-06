@@ -32,6 +32,7 @@ export const positiveInt = validate(positiveInteger)
 export const nullableUint = validate(v.nullable(uint))
 export const nullableUint8 = validate(v.nullable(v.pipe(uint, v.maxValue(255))))
 export const nullableUint16 = validate(v.nullable(v.pipe(uint, v.maxValue(65535))))
+export const nullableUint32 = validate(v.nullable(v.pipe(uint, v.maxValue(4294967295))))
 export const uint32 = validate(v.pipe(uint, v.maxValue(4294967295)))
 
 export const char = (max: number) => validate(v.pipe(v.string(), v.maxLength(max)))

@@ -226,6 +226,12 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
+	getOwnPracticesOffline,
+	getRecentActivityOffline,
+	recordWatchSessionOffline
+} from './services/offline/offline.ts';
+
+import {
 	emitProgressSaved,
 	onProgressSaved
 } from './services/progress-events.js';
@@ -444,7 +450,6 @@ import {
 	deletePracticeSession,
 	deleteUserActivity,
 	fetchRecentActivitiesActiveTabs,
-	findIncompleteLesson,
 	getPracticeNotes,
 	getPracticeSessions,
 	getRecentActivity,
@@ -609,7 +614,6 @@ export {
 	fetchUserPractices,
 	fetchUsersMultiAccountDetails,
 	filterCoursesInCourseCollections,
-	findIncompleteLesson,
 	flushWatchSession,
 	followThread,
 	generateAuthSessionUrl,
@@ -647,6 +651,7 @@ export {
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
 	getOnboardingRecommendedContent,
+	getOwnPracticesOffline,
 	getOwnedContent,
 	getPracticeNotes,
 	getPracticeSessions,
@@ -658,6 +663,7 @@ export {
 	getProgressStateByRecordIds,
 	getRecent,
 	getRecentActivity,
+	getRecentActivityOffline,
 	getRecommendedForYou,
 	getReportIssueOptions,
 	getResumeTimeSecondsByIds,
@@ -722,6 +728,7 @@ export {
 	recordUserActivity,
 	recordUserPractice,
 	recordWatchSession,
+	recordWatchSessionOffline,
 	registerAwardCallback,
 	registerProgressCallback,
 	removeContentAsInterested,

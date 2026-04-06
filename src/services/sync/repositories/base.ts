@@ -39,7 +39,7 @@ export default class SyncRepository<TModel extends BaseModel> {
     return this._respondToRead(() => this.store.queryOneId(...args))
   }
 
-  protected async queryAll(...args: Q.Clause[]) {
+  async queryAll(...args: Q.Clause[]) {
     return this._respondToRead(() => this.store.queryAll(...args))
   }
 

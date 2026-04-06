@@ -5,7 +5,8 @@ export const SYNC_TABLES = {
   CONTENT_PROGRESS: 'progress',
   PRACTICES: 'practices',
   PRACTICE_DAY_NOTES: 'practice_day_notes',
-  USER_AWARD_PROGRESS: 'user_award_progress'
+  USER_AWARD_PROGRESS: 'user_award_progress',
+  USER_ACTIVITIES: 'user_activities'
 }
 
 const contentLikesTable = tableSchema({
@@ -77,13 +78,31 @@ const userAwardProgressTable = tableSchema({
   ]
 })
 
+const userActivitiesTable = tableSchema({
+  name: SYNC_TABLES.USER_ACTIVITIES,
+  columns: [
+    { name: 'server_record_id', type: 'number', isIndexed: true },
+    { name: 'content_id', type: 'number', isOptional: true, isIndexed: true },
+    { name: 'action', type: 'string', isIndexed: true },
+    { name: 'brand', type: 'string', isIndexed: true },
+    { name: 'type', type: 'string', isIndexed: true },
+    { name: 'date', type: 'number', isIndexed: true },
+    { name: 'summary', type: 'string', isOptional: true },
+    { name: 'post_id', type: 'number', isOptional: true },
+    { name: 'comment_id', type: 'number', isOptional: true },
+    { name: 'created_at', type: 'number' },
+    { name: 'updated_at', type: 'number', isIndexed: true }
+  ]
+})
+
 export default appSchema({
-  version: 2, // intentionally no migration for version 1->2, to wipe client db and backfill content_* columns
+  version: 3,
   tables: [
     contentLikesTable,
     contentProgressTable,
     practicesTable,
     practiceDayNotesTable,
-    userAwardProgressTable
+    userAwardProgressTable,
+    userActivitiesTable
   ]
 })

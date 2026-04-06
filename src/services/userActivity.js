@@ -2,17 +2,15 @@
  * @module UserActivity
  */
 
-import { fetchUserPractices, fetchUserPracticeMeta, fetchRecentUserActivities } from './railcontent'
-import { GET, POST, PUT, DELETE } from '../infrastructure/http/HttpClient.ts'
+import { fetchUserPractices, fetchUserPracticeMeta } from './railcontent'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
-import { fetchByRailContentIds, fetchParentChildRelationshipsFor } from './sanity'
+import { fetchByRailContentIds } from './sanity'
 import { getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js'
 import { globalConfig } from './config'
 import { postProcessBadge, getFormattedType } from '../contentTypeConfig'
 import dayjs from 'dayjs'
 import { addContextToContent } from './contentAggregator.js'
 import { db, Q } from './sync'
-import { COLLECTION_TYPE } from './sync/models/ContentProgress'
 import { streakCalculator } from './user/streakCalculator'
 import { mapContentsThatWereLastProgressedFromMethod } from "./content-org/learning-paths.ts";
 
@@ -497,10 +495,10 @@ export async function getPracticeNotes(date) {
  *   .catch(error => console.error("Failed to get recent activity:", error));
  */
 export async function getRecentActivity({ page = 1, limit = 5, tabName = null } = {}) {
-  const recentActivityData = await fetchRecentUserActivities({ page, limit, tabName })
+  const result = await db.userActivities.getPage(page, limit, {tabName})
+  const activities = result.data
 
-  const filteredData = recentActivityData.data.filter((id) => id !== null)
-  const allContentIds = filteredData.map((p) => p.contentId)
+  const allContentIds = activities.map((a) => a.content_id).filter((id) => id !== null)
 
   let contents = await addContextToContent(
     fetchByRailContentIds,
@@ -518,19 +516,24 @@ export async function getRecentActivity({ page = 1, limit = 5, tabName = null } 
 
   contents = await mapContentsThatWereLastProgressedFromMethod(contents)
 
-  recentActivityData.data = recentActivityData.data.map((practice) => {
-    const content = contents?.find((c) => c.id === practice.contentId) || {}
+  const data = activities.map((activity) => {
+    const content = contents?.find((c) => c.id === activity.content_id) || {}
     return {
-      ...practice,
+      ...activity,
       thumbnail: content.thumbnail || null,
-      title: content.title || practice.title,
+      title: content.title || activity.title || null,
       parent_id: content.parent_id || null,
       navigateTo: content.navigateTo || null,
       sanityType: content.type || null,
       artist_name: content.artist_name || null,
     }
   })
-  return recentActivityData
+
+  return {
+    currentPage: result.currentPage,
+    totalPages: result.totalPages,
+    data,
+  }
 }
 
 /**
@@ -580,11 +583,6 @@ export function getStreaksAndMessage(practices) {
     currentWeeklyStreak,
     streakMessage,
   }
-}
-
-function buildQueryString(ids, paramName = 'practice_ids') {
-  if (!ids.length) return ''
-  return '?' + ids.map((id) => `${paramName}[]=${id}`).join('&')
 }
 
 // Helper: Calculate streaks
@@ -835,7 +833,6 @@ async function formatPracticeMeta(practices = []) {
  * Records a new user activity in the system.
  *
  * @param {Object} payload - The data representing the user activity.
- * @param {number} payload.user_id - The ID of the user.
  * @param {string} payload.action - The type of action (e.g., 'start', 'complete', 'comment', etc.).
  * @param {string} payload.brand - The brand associated with the activity.
  * @param {string} payload.type - The content type (e.g., 'lesson', 'song', etc.).
@@ -845,7 +842,6 @@ async function formatPracticeMeta(practices = []) {
  *
  * @example
  * recordUserActivity({
- *   user_id: 123,
  *   action: 'start',
  *   brand: 'pianote',
  *   type: 'lesson',
@@ -855,9 +851,10 @@ async function formatPracticeMeta(practices = []) {
  *   .catch(error => console.error(error));
  */
 export async function recordUserActivity(payload) {
-  const url = `/api/user-management-system/v1/activities`
-  return await POST(url, payload)
+  return await db.userActivities.record(payload)
 }
+
+async function recordUserProgressActivity(contentId, action) {
 
 /**
  * Deletes a specific user activity by its ID.
@@ -871,8 +868,7 @@ export async function recordUserActivity(payload) {
  *   .catch(error => console.error(error));
  */
 export async function deleteUserActivity(id) {
-  const url = `/api/user-management-system/v1/activities/${id}`
-  return await DELETE(url)
+  return await db.userActivities.deleteOne(id)
 }
 
 /**
@@ -887,40 +883,10 @@ export async function deleteUserActivity(id) {
  *   .catch(error => console.error(error));
  */
 export async function restoreUserActivity(id) {
-  const url = `/api/user-management-system/v1/activities/${id}`
-  return await POST(url, null)
-}
-
-export function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
-  const isMap = progressOnItems instanceof Map
-  const ids = isMap ? Array.from(progressOnItems.keys()) : Object.keys(progressOnItems).map(Number)
-  const getProgress = (id) => isMap ? progressOnItems.get(id) : progressOnItems[id]
-
-  if (contentType === 'guided-course' || contentType === COLLECTION_TYPE.LEARNING_PATH) {
-    return ids.find((id) => getProgress(id) !== 'completed') || ids.at(0)
-  }
-
-  const currentIndex = ids.indexOf(Number(currentContentId))
-  if (currentIndex === -1) return null
-
-  for (let i = currentIndex + 1; i < ids.length; i++) {
-    const id = ids[i]
-    if (getProgress(id) !== 'completed') {
-      return id
-    }
-  }
-
-  return ids[0]
+  return await db.userActivities.restoreOne(id)
 }
 
 export async function fetchRecentActivitiesActiveTabs() {
-  const url = `/api/user-management-system/v1/activities/tabs`
-  const tabs = await GET(url)
-  const activitiesTabs = []
-
-  tabs.forEach((tab) => {
-    activitiesTabs.push({ name: tab.label, short_name: tab.label })
-  })
-
-  return activitiesTabs
+  const tabs = await db.userActivities.tabs()
+  return tabs.map(tab => ({ name: tab.label, short_name: tab.label }))
 }

@@ -1,5 +1,5 @@
 import { SyncStoreConfig } from "./store"
-import { ContentLike, ContentProgress, Practice, UserAwardProgress, PracticeDayNote } from "./models"
+import { ContentLike, ContentProgress, Practice, UserAwardProgress, PracticeDayNote, UserActivity } from "./models"
 import { handlePull, handlePush, makeFetchRequest } from "./fetch"
 
 import type BaseModel from "./models/Base"
@@ -47,6 +47,12 @@ export default function createStoresFromConfig() {
       model: UserAwardProgress,
       pull: handlePull(makeFetchRequest('/api/content/v1/user/awards')),
       push: handlePush(makeFetchRequest('/api/content/v1/user/awards', { method: 'POST' })),
+    }),
+
+    c({
+      model: UserActivity,
+      pull: handlePull(makeFetchRequest('/api/user-management-system/v1/activities/sync')),
+      push: handlePush(makeFetchRequest('/api/user-management-system/v1/activities/sync', { method: 'POST' })),
     })
   ]
 }

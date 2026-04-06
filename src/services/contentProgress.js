@@ -1,7 +1,7 @@
 import { getHierarchy } from './sanity.js'
 import { db } from './sync'
 import { COLLECTION_ID_SELF, COLLECTION_TYPE, STATE } from './sync/models/ContentProgress'
-import { trackUserPractice, findIncompleteLesson } from './userActivity'
+import { trackUserPractice } from './userActivity'
 import { getNextLessonLessonParentTypes } from '../contentTypeConfig.js'
 import { getDailySession, onContentCompletedLearningPathActions } from './content-org/learning-paths.ts'
 
@@ -179,6 +179,28 @@ export async function getNavigateTo(data) {
     }
   }
   return navigateToData
+}
+
+function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
+  const isMap = progressOnItems instanceof Map
+  const ids = isMap ? Array.from(progressOnItems.keys()) : Object.keys(progressOnItems).map(Number)
+  const getProgress = (id) => isMap ? progressOnItems.get(id) : progressOnItems[id]
+
+  if (contentType === 'guided-course' || contentType === COLLECTION_TYPE.LEARNING_PATH) {
+    return ids.find((id) => getProgress(id) !== 'completed') || ids.at(0)
+  }
+
+  const currentIndex = ids.indexOf(Number(currentContentId))
+  if (currentIndex === -1) return null
+
+  for (let i = currentIndex + 1; i < ids.length; i++) {
+    const id = ids[i]
+    if (getProgress(id) !== 'completed') {
+      return id
+    }
+  }
+
+  return ids[0]
 }
 
 function buildNavigateTo(content, child = null, collection = null) {
