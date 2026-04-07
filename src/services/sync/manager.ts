@@ -270,6 +270,10 @@ export default class SyncManager {
     return teardown
   }
 
+  getDatabase() {
+    return this.database
+  }
+
   getStore<TModel extends BaseModel>(model: ModelClass<TModel>) {
     const store = this.storesRegistry[model.table]
     if (!store) {
@@ -288,27 +292,5 @@ export default class SyncManager {
 
   getContext() {
     return this.context
-  }
-
-  purgeDatabase() {
-    const driver = this.database.adapter.underlyingAdapter._driver as any
-    if (!('loki' in driver)) throw new Error('Only Loki databases are purgeable')
-
-    const idb = driver.loki.persistenceAdapter.idb
-    idb.close()
-    window.indexedDB.deleteDatabase(idb.name)
-    window.indexedDB.deleteDatabase('WatermelonIDBChecker')
-  }
-
-  disconnectDatabase(disableReconnect = false) {
-    const driver = this.database.adapter.underlyingAdapter._driver as any
-    if (!('loki' in driver)) throw new Error('Only Loki databases are disconnectable')
-
-    const idb = driver.loki.persistenceAdapter.idb
-    idb.close()
-
-    if (disableReconnect) {
-      idb._disableReconnect = true
-    }
   }
 }
