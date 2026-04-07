@@ -26,7 +26,7 @@ course (last, has next course) →  course-complete    +  first lesson of next c
 course (last, no next course)  →  course-complete    +  RecSys recommendation
 ```
 
-RecSys fallback: if the recommender returns nothing, a default lesson is used.
+RecSys fallback: if the recommender returns nothing, a default lesson is used (Need to decide with Chris about default lessons).
 
 ### `getLearningPathEndScreen`
 
@@ -99,7 +99,7 @@ Same return type. Parameters are a subset of `getEndScreen`:
 
 Call `getEndScreen` **at page load**, not when the video ends. RecSys calls happen in the background while the user watches — by the time the video ends, the result is ready.
 
-### Mobile App (MA)
+### Recommendation for Mobile App (MA)
 
 Use `getEndScreen` for all content types including learning paths:
 
@@ -126,7 +126,7 @@ const endScreen = getLearningPathEndScreen({
 })
 ```
 
-### Web Platform (FE)
+### Recommendation for Web Platform (FE)
 
 For lessons, courses and playlists use `getEndScreen` in a `watch`:
 
