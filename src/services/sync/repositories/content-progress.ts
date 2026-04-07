@@ -214,6 +214,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
         contentId,
         progressPercent: progressPct,
         progressStatus: progressPct === 100 ? STATE.COMPLETED : STATE.STARTED,
+        metadata,
         bubble: true,
         collectionType: collection?.type ?? COLLECTION_TYPE.SELF,
         collectionId: collection?.id ?? COLLECTION_ID_SELF,

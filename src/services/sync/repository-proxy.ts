@@ -63,7 +63,7 @@ const proxy = new Proxy({} as SyncRepositories, {
           cache.practiceDayNotes = new PracticeDayNotesRepository(manager.getStore(PracticeDayNote));
           break;
         case 'userActivities':
-          cache.userActivities = new UserActivityRepository(manager.getStore(UserActivity));
+          cache.userActivities = new UserActivitiesRepository(manager.getStore(UserActivity));
           break;
         default:
           throw new SyncError(`Repository '${String(prop)}' not found`);

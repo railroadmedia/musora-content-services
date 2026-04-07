@@ -19,6 +19,16 @@ interface TabCountResponse {
 }
 
 export default class UserActivitiesRepository extends SyncRepository<UserActivity> {
+
+  async queryOneActivity(contentId: number, state: string, type: string) {
+    const clauses: Q.Clause[] = [
+      Q.where('content_id', contentId),
+      Q.where('action', state),
+      Q.where('type', type),
+    ]
+
+    return this.queryOne(...clauses)
+  }
   async getPage(page: number, limit: number, {tabName = null, offline = false}: {tabName?: string|null, offline?: boolean} = {}) {
     const filterClauses: Q.Clause[] = []
 
@@ -48,7 +58,7 @@ export default class UserActivitiesRepository extends SyncRepository<UserActivit
   }
 
   async record(payload: UserActivityRecordPayload) {
-    return this.insertOne(r => { // no upserts.
+    return this.insertOne(r => {
       r.content_id = payload.content_id
       r.action = payload.action
       r.brand = payload.brand

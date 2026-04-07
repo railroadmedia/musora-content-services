@@ -16,6 +16,12 @@ export enum ACTIVITY_TAB {
   COMMENTS = 'comment',
 }
 
+export enum ACTIVITY_TYPE {
+  STARTED = 'start',
+  COMPLETED = 'complete',
+  PLAY = 'play',
+}
+
 const validators = {
   content_id: nullableUint32,
   action: varchar(50),
