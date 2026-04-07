@@ -27,7 +27,7 @@ export default class LokiPersistenceErrorAwareAdapter extends LokiJSAdapter {
     const oldSaveDatabase = persistenceAdapter.saveDatabase;
 
     persistenceAdapter.saveDatabase = function(...args: any[]) {
-      const callback = args[args.length - 1];
+      const callback = args[2];
       oldSaveDatabase.call(persistenceAdapter, args[0], args[1], function(err: Error | null) {
         if (err && err.name === 'InvalidStateError' && err.message.includes('database connection is closing')) {
           // triggers new connection on next save
