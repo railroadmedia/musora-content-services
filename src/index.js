@@ -222,6 +222,7 @@ import {
 	createAccount,
 	createInvites,
 	fetchUsersMultiAccountDetails,
+	removeUserFromActiveMultiUserAccount,
 	rescindInvite
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
@@ -731,6 +732,7 @@ export {
 	registerProgressCallback,
 	removeContentAsInterested,
 	removeContentAsNotInterested,
+	removeUserFromActiveMultiUserAccount,
 	removeUserPractice,
 	replyToComment,
 	report,

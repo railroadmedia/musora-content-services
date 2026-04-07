@@ -1,7 +1,7 @@
 /**
  * @module MultiUserAccounts
  */
-import { HttpClient } from '../../infrastructure/http/HttpClient'
+import { HttpClient, DELETE } from '../../infrastructure/http/HttpClient'
 import { globalConfig } from '../config.js'
 
 const baseUrl = `/api/multi-user-accounts/v1`
@@ -75,9 +75,7 @@ export async function createAccount(params: CreateAccountParams): Promise<MultiU
  */
 export async function fetchUsersMultiAccountDetails(userId: number): Promise<UsersMultiAccountResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
-  const url = `${baseUrl}/${userId}/details`
-  console.log(url)
-  return httpClient.get<UsersMultiAccountResponse>(url)
+  return httpClient.get<UsersMultiAccountResponse>(`${baseUrl}/${userId}/details`)
 }
 
 /**
@@ -114,4 +112,16 @@ export async function acceptInvite(inviteId: number): Promise<void> {
 export async function rescindInvite(inviteId: number): Promise<void> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.post<void>(`${baseUrl}/invites/${inviteId}/rescind`, {})
+}
+
+
+/**
+ * Removes a member from a multi-user account. authorized user must be the primary account owner, or the user passed
+ *
+ * @param {number} userId - Id of the user to remove
+ * @returns {Promise<void|MultiUserAccountResponse>} - Updated MultiUserAccountResponse if account owner, void if active user
+ * @throws {HttpError} - If the request fails.
+ */
+export async function removeUserFromActiveMultiUserAccount(userId: number): Promise<MultiUserAccountResponse|void> {
+  return DELETE(`${globalConfig.baseUrl}${baseUrl}/${userId}/remove`, {})
 }
