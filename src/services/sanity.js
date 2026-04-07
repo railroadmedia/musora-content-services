@@ -55,7 +55,7 @@ import { COLLECTION_TYPE } from './sync/models/ContentProgress'
  *
  * @type {string[]}
  */
-const excludeFromGeneratedIndex = ['fetchRelatedByLicense']
+const excludeFromGeneratedIndex = ['fetchRelatedByLicense', 'fetchMethodIntroIds']
 
 /**
  * Mapping from tab names to their underlying Sanity content types.
@@ -2530,6 +2530,11 @@ export function fetchParentChildRelationshipsFor(childIds, parentType) {
   return fetchSanity(query, true, { processNeedAccess: false, processPageType: false })
 }
 
+export async function fetchMethodIntroIds() {
+  const videos = await fetchSanity(`*[_type == 'method-intro'] { railcontent_id }`, true)
+  return (videos || []).map((v) => v.railcontent_id)
+}
+
 /**
  * Checks whether the user has completed a Method V2 intro video on **any** brand.
  *
@@ -2542,13 +2547,7 @@ export function fetchParentChildRelationshipsFor(childIds, parentType) {
  *   intro video across any brand, `false` otherwise.
  */
 export async function hasAnyMethodV2IntroCompleted() {
-  const type = 'method-intro'
-  const filter = `_type == '${type}'`
-
-  const query = `*[${filter}] { railcontent_id }`
-  const videos = await fetchSanity(query, true);
-  const ids = (videos || []).map((v) => v.railcontent_id)
-
+  const ids = await fetchMethodIntroIds()
   const completedVideos = await getAllCompletedByIds(ids)
   return (completedVideos?.data?.length || 0) > 0
 }

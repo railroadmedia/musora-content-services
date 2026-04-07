@@ -6,8 +6,9 @@ import { GET, POST } from '../../infrastructure/http/HttpClient'
 import {
   fetchByRailContentId,
   fetchByRailContentIds,
+  fetchMethodIntroIds,
   fetchMethodV2Structure,
-  fetchParentChildRelationshipsFor
+  fetchParentChildRelationshipsFor,
 } from '../sanity.js'
 import { addContextToLearningPaths } from '../contentAggregator.js'
 import {
@@ -195,6 +196,11 @@ async function dataPromiseGET(
  * Resets the user's learning path.
  */
 export async function resetAllLearningPaths() {
+  const ids = await fetchMethodIntroIds()
+  for (const id of ids) {
+    await contentStatusReset(id)
+  }
+
   const url: string = `${LEARNING_PATHS_PATH}/reset`
   return await POST(url, {})
 }
