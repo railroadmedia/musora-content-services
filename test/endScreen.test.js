@@ -41,7 +41,11 @@ jest.mock('../src/services/recommendations.js', () => ({
   fetchSimilarItems: jest.fn()
 }))
 
-import { getEndScreen } from '../src/services/endScreen.js'
+jest.mock('../src/services/contentAggregator.js', () => ({
+  addContextToContent: jest.fn(async (getter) => getter()),
+}))
+
+import { getEndScreen, getLearningPathEndScreen } from '../src/services/endScreen/endScreen.ts'
 import * as recommendationsModule from '../src/services/recommendations.js'
 import * as sanityModule from '../src/services/sanity.js'
 
@@ -68,21 +72,24 @@ describe('getEndScreen', () => {
         countdownAutoplay: true,
         ctaLabels: { primary: 'Play Now', secondary: 'Cancel' }
       })
-      expect(recommendationsModule.fetchSimilarItems).toHaveBeenCalledWith(123, 'drumeo', 5)
+      expect(recommendationsModule.fetchSimilarItems).toHaveBeenCalledWith(123, 'drumeo', 50)
     })
 
-    test('single lesson returns null when RecSys returns empty array', async () => {
-      mockFetchRecommendation([])
+    test('single lesson uses fallback lesson when RecSys returns empty array', async () => {
+      const fallbackLesson = { id: 373201, type: 'lesson', title: 'Fallback Lesson' }
+      jest.spyOn(recommendationsModule, 'fetchSimilarItems').mockResolvedValue([])
+      jest.spyOn(sanityModule, 'fetchByRailContentIds').mockResolvedValue([fallbackLesson])
 
       const result = await getEndScreen({
         lesson: { id: 123, type: 'lesson' },
         brand: 'drumeo'
       })
 
-      expect(result.upNext).toBeNull()
+      expect(result.variant).toBe('countdown-up-next')
+      expect(result.upNext).toEqual(fallbackLesson)
     })
 
-    test('single lesson returns null when RecSys throws error', async () => {
+    test('single lesson returns null upNext when RecSys throws error', async () => {
       jest.spyOn(recommendationsModule, 'fetchSimilarItems').mockRejectedValue(new Error('API Error'))
 
       const result = await getEndScreen({
@@ -90,6 +97,7 @@ describe('getEndScreen', () => {
         brand: 'drumeo'
       })
 
+      expect(result.variant).toBe('countdown-up-next')
       expect(result.upNext).toBeNull()
     })
   })
@@ -711,7 +719,9 @@ describe('getEndScreen', () => {
       expect(result.variant).toBe('course-complete')
     })
 
-    test('RecSys filters out content with parent_id', async () => {
+    test('RecSys filters out lessons from the same course (parent_id === excludeId)', async () => {
+      // Course 100 is finished (lesson 301 is last). excludeId = course.id = 100.
+      // id 888 belongs to course 100 → filtered out. id 999 has no parent → returned.
       const mockContents = [
         { id: 888, parent_id: 100, type: 'course-lesson' },
         { id: 999, type: 'course', title: 'Standalone Course' }
@@ -720,26 +730,297 @@ describe('getEndScreen', () => {
       jest.spyOn(sanityModule, 'fetchByRailContentIds').mockResolvedValue(mockContents)
 
       const result = await getEndScreen({
-        lesson: { id: 123, type: 'lesson' },
+        lesson: { id: 301, type: 'course-lesson' },
+        course: { id: 100, children: [{ id: 301 }] },
         brand: 'drumeo'
       })
 
+      expect(result.variant).toBe('course-complete')
       expect(result.upNext).toEqual({ id: 999, type: 'course', title: 'Standalone Course' })
     })
 
-    test('RecSys returns null when all recommendations have parent_id', async () => {
+    test('RecSys returns null when all recommendations belong to the same course', async () => {
+      // All items have parent_id === excludeId (course 100) → none pass the filter → null
       const mockContents = [
         { id: 888, parent_id: 100, type: 'course-lesson' },
-        { id: 889, parent_id: 101, type: 'course-lesson' }
+        { id: 889, parent_id: 100, type: 'course-lesson' }
       ]
       jest.spyOn(recommendationsModule, 'fetchSimilarItems').mockResolvedValue([888, 889])
       jest.spyOn(sanityModule, 'fetchByRailContentIds').mockResolvedValue(mockContents)
 
       const result = await getEndScreen({
-        lesson: { id: 123, type: 'lesson' },
+        lesson: { id: 301, type: 'course-lesson' },
+        course: { id: 100, children: [{ id: 301 }] },
         brand: 'drumeo'
       })
 
+      expect(result.upNext).toBeNull()
+    })
+  })
+})
+
+describe('getLearningPathEndScreen', () => {
+  const lesson = { id: 101 }
+
+  const makeLP = (overrides = {}) => ({
+    children: [
+      { id: 101, progressStatus: 'completed' },
+      { id: 102, progressStatus: '' },
+      { id: 103, progressStatus: '' },
+    ],
+    is_active_learning_path: true,
+    learning_path_dailies: [
+      { id: 101, progressStatus: 'completed' },
+      { id: 102, progressStatus: '' },
+    ],
+    ...overrides,
+  })
+
+  describe('path-complete', () => {
+    test('returns path-complete when all lessons are completed and lesson was not previously completed', () => {
+      const lp = makeLP({
+        children: [
+          { id: 101, progressStatus: 'completed' },
+          { id: 102, progressStatus: 'completed' },
+        ],
+        learning_path_dailies: [{ id: 101, progressStatus: 'completed' }],
+      })
+
+      const result = getLearningPathEndScreen({ lesson, learningPath: lp })
+
+      expect(result).toEqual({
+        variant: 'path-complete',
+        upNext: null,
+        countdownAutoplay: false,
+        ctaLabels: { primary: 'View Achievement', secondary: 'Back to Home' },
+      })
+    })
+
+    test('does NOT return path-complete when lesson was previously completed', () => {
+      const lp = makeLP({
+        children: [
+          { id: 101, progressStatus: 'completed' },
+          { id: 102, progressStatus: 'completed' },
+        ],
+        learning_path_dailies: [],
+      })
+
+      const result = getLearningPathEndScreen({ lesson, learningPath: lp, lessonWasPreviouslyCompleted: true })
+
+      expect(result.variant).not.toBe('path-complete')
+    })
+  })
+
+  describe('method-session-complete', () => {
+    test('returns method-session-complete when all dailies done and lesson is today\'s and path not finished', () => {
+      const lp = makeLP({
+        learning_path_dailies: [
+          { id: 101, progressStatus: 'completed' },
+          { id: 102, progressStatus: 'completed' },
+        ],
+      })
+
+      const result = getLearningPathEndScreen({ lesson, learningPath: lp })
+
+      expect(result).toEqual({
+        variant: 'method-session-complete',
+        upNext: null,
+        countdownAutoplay: false,
+        ctaLabels: { primary: 'View Session', secondary: 'Back to Home' },
+      })
+    })
+
+    test('does NOT return method-session-complete if lesson was previously completed', () => {
+      const lp = makeLP({
+        learning_path_dailies: [
+          { id: 101, progressStatus: 'completed' },
+          { id: 102, progressStatus: 'completed' },
+        ],
+      })
+
+      const result = getLearningPathEndScreen({ lesson, learningPath: lp, lessonWasPreviouslyCompleted: true })
+
+      expect(result.variant).not.toBe('method-session-complete')
+    })
+
+    test('does NOT return method-session-complete if lesson is not in today\'s dailies', () => {
+      const lp = makeLP({
+        learning_path_dailies: [
+          { id: 200, progressStatus: 'completed' },
+          { id: 201, progressStatus: 'completed' },
+        ],
+      })
+
+      const result = getLearningPathEndScreen({ lesson, learningPath: lp })
+
+      expect(result.variant).not.toBe('method-session-complete')
+    })
+
+    test('does NOT return method-session-complete if LP is not active', () => {
+      const lp = makeLP({
+        is_active_learning_path: false,
+        learning_path_dailies: [
+          { id: 101, progressStatus: 'completed' },
+          { id: 102, progressStatus: 'completed' },
+        ],
+      })
+
+      const result = getLearningPathEndScreen({ lesson, learningPath: lp })
+
+      expect(result.variant).not.toBe('method-session-complete')
+    })
+  })
+
+  describe('countdown-up-next (next daily lesson)', () => {
+    test('returns countdown with next incomplete daily lesson', () => {
+      const nextDaily = { id: 102, progressStatus: '' }
+      const lp = makeLP({
+        learning_path_dailies: [
+          { id: 101, progressStatus: 'completed' },
+          nextDaily,
+        ],
+      })
+
+      const result = getLearningPathEndScreen({ lesson, learningPath: lp })
+
+      expect(result).toEqual({
+        variant: 'countdown-up-next',
+        upNext: nextDaily,
+        countdownAutoplay: true,
+        ctaLabels: { primary: 'Play Now', secondary: 'Cancel' },
+      })
+    })
+
+    test('skips to next daily even if previously completed', () => {
+      const nextDaily = { id: 102, progressStatus: '' }
+      const lp = makeLP({
+        learning_path_dailies: [
+          { id: 101, progressStatus: 'completed' },
+          nextDaily,
+        ],
+      })
+
+      const result = getLearningPathEndScreen({ lesson, learningPath: lp, lessonWasPreviouslyCompleted: true })
+
+      expect(result.variant).toBe('countdown-up-next')
+      expect(result.upNext).toEqual(nextDaily)
+    })
+  })
+
+  describe('countdown-up-next (next lesson in path, fallback)', () => {
+    test('returns next lesson in path when LP is not active', () => {
+      const lp = makeLP({ is_active_learning_path: false })
+
+      const result = getLearningPathEndScreen({ lesson, learningPath: lp })
+
+      expect(result).toEqual({
+        variant: 'countdown-up-next',
+        upNext: { id: 102, progressStatus: '' },
+        countdownAutoplay: true,
+        ctaLabels: { primary: 'Play Now', secondary: 'Cancel' },
+      })
+    })
+
+    test('non-active LP: wraps to first lesson when current is last in path', () => {
+      const lp = makeLP({
+        children: [
+          { id: 100, progressStatus: '' },
+          { id: 101, progressStatus: 'completed' },
+        ],
+        is_active_learning_path: false,
+        learning_path_dailies: [],
+      })
+
+      const result = getLearningPathEndScreen({ lesson, learningPath: lp })
+
+      expect(result.variant).toBe('countdown-up-next')
+      expect(result.upNext).toEqual({ id: 100, progressStatus: '' })
+    })
+
+    test('active LP: returns first incomplete lesson regardless of position', () => {
+      const lp = makeLP({
+        learning_path_dailies: [
+          { id: 200, progressStatus: 'completed' },
+          { id: 201, progressStatus: 'completed' },
+        ],
+      })
+
+      const result = getLearningPathEndScreen({ lesson, learningPath: lp })
+
+      expect(result.variant).toBe('countdown-up-next')
+      expect(result.upNext).toEqual({ id: 102, progressStatus: '' })
+    })
+  })
+
+  describe('< 3 dailies: combines previous + current + next LP dailies', () => {
+    test('isTodaysLesson is true for a lesson from previous LP dailies', () => {
+      const lessonFromPrevious = { id: 50, type: 'lesson' }
+      const lp = makeLP({
+        learning_path_dailies: [{ id: 101, progressStatus: 'completed' }],
+        previous_learning_path_dailies: [{ id: 50, progressStatus: 'completed' }],
+        next_learning_path_dailies: [],
+      })
+
+      const result = getLearningPathEndScreen({ lesson: lessonFromPrevious, learningPath: lp })
+
+      expect(result.variant).toBe('method-session-complete')
+    })
+
+    test('next LP lessons are excluded from dailyLessonsCompleted check', () => {
+      const lp = makeLP({
+        learning_path_dailies: [{ id: 101, progressStatus: 'completed' }],
+        previous_learning_path_dailies: [],
+        next_learning_path_dailies: [{ id: 200, progressStatus: '' }],
+      })
+
+      // Even though next LP lesson is incomplete, session should still be complete
+      const result = getLearningPathEndScreen({ lesson, learningPath: lp })
+
+      expect(result.variant).toBe('method-session-complete')
+    })
+
+    test('countdown shows next LP daily when current lesson is last before it and session not done', () => {
+      // Combined list: [100 (incomplete), 101 (completed), 200 (next LP)]
+      // lesson 101 is at index 1, next in combined list is 200 (next LP)
+      // 100 is still incomplete → dailyLessonsCompleted = false → enters !dailyLessonsCompleted branch
+      const lp = makeLP({
+        learning_path_dailies: [{ id: 100, progressStatus: '' }, { id: 101, progressStatus: 'completed' }],
+        previous_learning_path_dailies: [],
+        next_learning_path_dailies: [{ id: 200, progressStatus: '' }],
+      })
+
+      const result = getLearningPathEndScreen({ lesson, learningPath: lp })
+
+      expect(result.variant).toBe('countdown-up-next')
+      expect(result.upNext).toMatchObject({ id: 200 })
+    })
+  })
+
+  describe('edge cases', () => {
+    test('handles empty children array', () => {
+      const lp = makeLP({ children: [], is_active_learning_path: false })
+
+      const result = getLearningPathEndScreen({ lesson, learningPath: lp })
+
+      expect(result.variant).toBe('countdown-up-next')
+      expect(result.upNext).toBeNull()
+    })
+
+    test('handles empty dailies array on active LP', () => {
+      const lp = makeLP({ learning_path_dailies: [] })
+
+      const result = getLearningPathEndScreen({ lesson, learningPath: lp })
+
+      expect(result.variant).toBe('countdown-up-next')
+      expect(result.upNext).toEqual({ id: 102, progressStatus: '' })
+    })
+
+    test('handles undefined children and dailies', () => {
+      const lp = { is_active_learning_path: false }
+
+      const result = getLearningPathEndScreen({ lesson, learningPath: lp })
+
+      expect(result.variant).toBe('countdown-up-next')
       expect(result.upNext).toBeNull()
     })
   })

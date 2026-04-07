@@ -157,8 +157,9 @@ import {
 } from './services/dateUtils.js';
 
 import {
-	getEndScreen
-} from './services/endScreen.js';
+	getEndScreen,
+	getLearningPathEndScreen
+} from './services/endScreen/endScreen.ts';
 
 import {
 	createForumCategory,
@@ -624,6 +625,7 @@ export {
 	getContentRows,
 	getDailySession,
 	getEndScreen,
+	getLearningPathEndScreen,
 	getEnrichedLearningPath,
 	getEnrichedLearningPaths,
 	getHierarchy,
