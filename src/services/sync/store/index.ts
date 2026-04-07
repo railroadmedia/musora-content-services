@@ -591,11 +591,12 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
       if (currentId === null && this.userScope.fetchCurrentId) {
         try {
           currentId = await this.userScope.fetchCurrentId()
-        } catch {
+        } catch (error) {
           throw new SyncError('Intended user ID does not match after fetchCurrentId failed', {
             intendedUserId: response.intendedUserId,
             initialUserId: initialId,
             currentUserId: currentId,
+            fetchError: error
           })
         }
       }
