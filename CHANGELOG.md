@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.149.0](https://github.com/railroadmedia/musora-content-services/compare/v2.148.0...v2.149.0) (2026-04-07)
+
+
+### Features
+
+* remove countdown logic for GC in progress card ([#897](https://github.com/railroadmedia/musora-content-services/issues/897)) ([254bc2a](https://github.com/railroadmedia/musora-content-services/commit/254bc2a0a695f68e449a49a71197be01654ba9aa))
+
 ## [2.148.0](https://github.com/railroadmedia/musora-content-services/compare/v2.145.6...v2.148.0) (2026-04-03)
 
 
