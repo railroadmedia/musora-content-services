@@ -13,7 +13,7 @@ import { SyncEffect } from './effects'
 import { SyncTelemetry } from './telemetry/index'
 import createStoreConfigs from './store-configs'
 import { contentProgressObserver } from '../awards/internal/content-progress-observer.js'
-import { progressActivityObserver } from '../user-activity/progress-activiity-observer.js'
+import { contentProgressActivityObserver } from '../user-activity/content-progress-activity-observer.js'
 
 export type SyncTeardownMode = 'reset' | 'destroyOrReset' | 'abortWrites'
 
@@ -180,8 +180,8 @@ export default class SyncManager {
       this.telemetry.error('[SyncManager] Failed to start contentProgressObserver', error)
     })
 
-    progressActivityObserver.start(database).catch((error) => {
-      this.telemetry.error('[SyncManager] Failed to start progressActivityObserver', error)
+    contentProgressActivityObserver.start(database).catch((error) => {
+      this.telemetry.error('[SyncManager] Failed to start contentProgressActivityObserver', error)
     })
 
     const teardown = async (mode: SyncTeardownMode = 'reset') => {
@@ -256,7 +256,7 @@ export default class SyncManager {
           this.context.stop()
 
           contentProgressObserver.stop()
-          progressActivityObserver.stop()
+          contentProgressActivityObserver.stop()
         } catch (error) {
           // capture, but don't rethrow
           this.telemetry.capture(error)

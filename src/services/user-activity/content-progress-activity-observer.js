@@ -1,11 +1,11 @@
 import { onProgressSaved } from '../progress-events'
 import { getNextLessonLessonParentTypes, SONG_TYPES_WITH_CHILDREN } from '../../contentTypeConfig.js'
-import { STATE } from '../sync/models/ContentProgress.js'
-import { ACTIVITY_TYPE } from '../sync/models/UserActivity.js'
+import { STATE } from '../sync/models/ContentProgress'
+import { ACTIVITY_TYPE } from '../sync/models/UserActivity'
 import { db } from '../sync'
 
 
-class ProgressActivityObserver {
+class ContentProgressActivityObserver {
   constructor() {
     this.subscription = null
     this.progressEventUnsubscribe = null
@@ -56,7 +56,7 @@ class ProgressActivityObserver {
         date: new Date()
       })
     } catch (error) {
-      console.error('[ProgressActivityObserver] Error handling progress change:', error)
+      console.error('[ContentProgressActivityObserver] Error handling progress change:', error)
     }
   }
 
@@ -104,4 +104,4 @@ class ProgressActivityObserver {
 }
 
 
-export const progressActivityObserver = new ProgressActivityObserver()
+export const contentProgressActivityObserver = new ContentProgressActivityObserver()

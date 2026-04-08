@@ -1,6 +1,6 @@
 import { db } from '../sync'
 import { Q } from '@nozbe/watermelondb'
-import { recordWatchSession } from '../contentProgress'
+import { recordWatchSession } from '../contentProgress.js'
 
 export const RECORD_OFFLINE_STATUS = ['created', 'updated']
 
