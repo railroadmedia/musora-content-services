@@ -552,7 +552,10 @@ async function saveContentProgress(
     progress = currentProgress;
   }
 
-  if (!hierarchy) {
+  let offline = false
+  if (hierarchy) {
+    offline = true
+  } else {
     hierarchy = await getHierarchy(contentId, collection)
   }
   const metadata = hierarchy.metadata || {}
@@ -574,8 +577,8 @@ async function saveContentProgress(
   // note - previous implementation explicitly did not trickle progress to children here
   // (only to siblings/parents via le bubbles)
 
-  // skip bubbling if progress hasnt changed
-  if (progress === currentProgress) {
+  // skip bubbling if progress hasnt changed, or if offline
+  if (progress === currentProgress || offline) {
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
     return
   }
@@ -621,7 +624,10 @@ async function saveContentProgress(
 async function setStartedOrCompletedStatus(contentId, collection, isCompleted, { hierarchy = null, skipPush = false } = {}) {
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
 
-  if (!hierarchy) {
+  let offline = false
+  if (hierarchy) {
+    offline = true
+  } else {
     hierarchy = await getHierarchy(contentId, collection)
   }
   const metadata = hierarchy.metadata || {}
@@ -636,12 +642,17 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
     {skipPush: true}
   )
 
+  // skip bubbling if offline
+  if (offline) {
+    if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
+    return
+  }
+
   let progresses = {
     ...trickleProgress(hierarchy, contentId, collection, progress),
     ...await bubbleProgress(hierarchy, contentId, collection)
   }
 
-  // have to do this so we dont unnecessarily create a 0% record for each child on set to started/completed
   await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, false)
 
   if (isLP) {
@@ -667,7 +678,10 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
   const progress = isCompleted ? 100 : 0
 
-  if (!hierarchy) {
+  let offline = false
+  if (hierarchy) {
+    offline = true
+  } else {
     hierarchy = await getHierarchies(contentIds, collection)
   }
   const metadata = hierarchy.metadata || {}
@@ -680,6 +694,12 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
     {skipPush: true}
   )
 
+  // skip bubbling if offline
+  if (offline) {
+    if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
+    return
+  }
+
   let progresses = {}
   for (const contentId of contentIds) {
     progresses = {
@@ -688,7 +708,6 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
       ...(await bubbleProgress(hierarchy, contentId, collection)),
     }
   }
-  // have to do this so we dont unnecessarily create a 0% record for each child on set to started/completed
   await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, false)
 
   if (isLP) {
@@ -721,17 +740,25 @@ async function resetStatus(contentId, collection = null, { hierarchy = null, ski
   const progress = 0
   const response = await db.contentProgress.eraseProgress(normalizeContentId(contentId), normalizeCollection(collection), {skipPush: true})
 
-  if (!hierarchy) {
+  let offline = false
+  if (hierarchy) {
+    offline = true
+   } else {
     hierarchy = await getHierarchy(contentId, collection)
   }
   const metadata = hierarchy.metadata || {}
+
+  // skip bubbling if offline
+  if (offline) {
+    if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
+    return
+  }
 
   let progresses = {
     ...trickleProgress(hierarchy, contentId, collection, progress),
     ...await bubbleProgress(hierarchy, contentId, collection)
   }
 
-  // have to use different endpoints for erase vs record
   await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, true)
 
   if (isLP) {

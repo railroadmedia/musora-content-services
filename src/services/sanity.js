@@ -988,6 +988,8 @@ export async function fetchLessonContent(railContentId, { forDownload = false } 
   ])
 
   if (forDownload) {
+    // even though we are not allowing bubbling offline and therefore dont need hierarchy, if we ever do, we have to
+    // ensure that downloaded content has hierarchy data as well as metadata
     contents.hierarchy = hierarchy
   }
 
