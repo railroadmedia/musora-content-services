@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.150.0](https://github.com/railroadmedia/musora-content-services/compare/v2.149.0...v2.150.0) (2026-04-08)
+
+
+### Features
+
+* throw specific error after abort; protect getLastFetchToken ([#905](https://github.com/railroadmedia/musora-content-services/issues/905)) ([7c084e4](https://github.com/railroadmedia/musora-content-services/commit/7c084e4b351e26f8464f568d658e855f84e31951))
+
 ## [2.149.0](https://github.com/railroadmedia/musora-content-services/compare/v2.148.0...v2.149.0) (2026-04-07)
 
 
