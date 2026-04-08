@@ -1,9 +1,61 @@
 import { SyncTelemetry } from '../telemetry'
 
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
-export { LokiJSAdapter as default }
 
 import { deleteDatabase, lokiFatalError } from '@nozbe/watermelondb/adapters/lokijs/worker/lokiExtensions'
+
+export type LokiExtensions = {
+  onPersistenceError?: (err: Error) => void
+}
+
+export default class LokiPersistenceErrorAwareAdapter extends LokiJSAdapter {
+  constructor(options: any, extensions: LokiExtensions = {}) {
+    super(options);
+    const that = this;
+
+    // Schedule save override right at end of setup hook right after `_driver` is ready
+    const setupDispatchCallback = this._dispatcher._pendingCalls[0].callback;
+    this._dispatcher._pendingCalls[0].callback = function() {
+      that._overrideSaveDatabase(extensions.onPersistenceError);
+      setupDispatchCallback.apply(that, arguments);
+    }
+  }
+
+  _overrideSaveDatabase(onPersistenceError?: (err: Error) => void) {
+    const driver = this._driver
+    const persistenceAdapter = driver.loki.persistenceAdapter
+    const oldSaveDatabase = persistenceAdapter.saveDatabase;
+
+    persistenceAdapter.saveDatabase = function(...args: any[]) {
+      const callback = args[2];
+      oldSaveDatabase.call(persistenceAdapter, args[0], args[1], function(err: Error | null) {
+        if (err && err.name === 'InvalidStateError' && err.message.includes('database connection is closing')) {
+          // triggers new connection on next save
+          if (persistenceAdapter.idb && !persistenceAdapter.idb._disableReconnect) {
+            persistenceAdapter.idb.close()
+            persistenceAdapter.idb = null
+          }
+
+          // retry once
+          oldSaveDatabase.call(persistenceAdapter, args[0], args[1], function(err: Error | null) {
+            if (err && err.name === 'InvalidStateError' && err.message.includes('database connection is closing')) {
+              // Don't set _isBroken - that prevents us from being to trigger onPersistenceError in the future
+              // driver._isBroken = true
+
+              onPersistenceError?.(err)
+            }
+
+            callback(err);
+          })
+
+          return
+        }
+
+        callback(err);
+      })
+    }
+  }
+}
 
 /**
  * Mute impending driver errors that are expected after sync adapter failure

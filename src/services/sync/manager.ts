@@ -63,6 +63,7 @@ export default class SyncManager {
   private abortWritesToDatabase?: (adapter: DatabaseAdapter) => Promise<void>
 
   private teardownPromise: Promise<void> | null = null
+  private database: Database | null = null
 
   constructor(
     userScope: SyncUserScope,
@@ -144,6 +145,7 @@ export default class SyncManager {
       { name: 'db:init', op: 'db', attributes: { ...this.context.session.toJSON() } },
       () => this.initDatabase(this.userScope)
     )
+    this.database = database
 
     Object.entries(this.storeConfigsRegistry).forEach(([table, storeConfig]) => {
       this.storesRegistry[table] = this.createStore(storeConfig, database)
@@ -234,6 +236,7 @@ export default class SyncManager {
                 database.adapter.underlyingAdapter
               )
             }
+            this.database = null
           })
         }
 
@@ -265,6 +268,10 @@ export default class SyncManager {
     }
 
     return teardown
+  }
+
+  getDatabase() {
+    return this.database
   }
 
   getStore<TModel extends BaseModel>(model: ModelClass<TModel>) {
