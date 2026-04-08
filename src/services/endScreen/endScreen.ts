@@ -167,7 +167,7 @@ function getNextLessonOrNull(lessonId: number, course: Course): ContentItem | nu
 }
 
 function isReleasedContent(content: ContentItem): boolean {
-  if (!content?.status) return true
+  if (!content?.status) return false
   return content.status === 'published' || content.status === 'scheduled'
 }
 
