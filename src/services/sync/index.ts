@@ -1,6 +1,6 @@
 import './telemetry/index'
 
-import { Q } from "@nozbe/watermelondb"
+import { Q, type RecordId } from "@nozbe/watermelondb"
 import { type ModelSerialized } from "./serializers"
 import BaseModel from "./models/Base"
 

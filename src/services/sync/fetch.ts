@@ -122,7 +122,7 @@ export interface SyncResponseBase {
 
 export type PushPayload = {
   entries: ({
-    record: BaseModel
+    record: Record<string, unknown>
     meta: {
       ids: {
         id: string
@@ -135,7 +135,7 @@ export type PushPayload = {
       ids: {
         id: string
       }
-      deleted_at: EpochMs
+      deleted_at: number
     }
   })[]
 }

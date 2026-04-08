@@ -4,6 +4,7 @@ import { COLLECTION_TYPE, emitLearningPathProgress, emitAlaCarteProgress, waitFo
 import { mockCollectionAwareCompletion } from './helpers/completion-mock'
 
 jest.mock('../../src/services/sanity', () => ({
+  ...jest.requireActual('../../src/services/sanity'),
   default: { fetch: jest.fn() },
   fetchSanity: jest.fn()
 }))

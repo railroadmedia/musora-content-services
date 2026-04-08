@@ -1,95 +1,66 @@
 import {
   isContentLiked,
-  dataContext,
   likeContent,
   unlikeContent,
 } from '../src/services/contentLikes'
 import { initializeTestService } from './initializeTests'
-import { userActivityContext } from '../src/services/userActivity.js'
 
-const railContentModule = require('../src/services/railcontent.js')
+let mockLikedIds = new Set()
+
+jest.mock('../src/services/sync/repository-proxy', () => {
+  const mockFns = {
+    likes: {
+      isLiked: jest.fn().mockImplementation((contentId) =>
+        Promise.resolve({ data: mockLikedIds.has(Number(contentId)) })
+      ),
+      areLiked: jest.fn().mockImplementation((contentIds) =>
+        Promise.resolve({ data: contentIds.map(id => mockLikedIds.has(Number(id))) })
+      ),
+      like: jest.fn().mockImplementation((contentId) => {
+        mockLikedIds.add(Number(contentId))
+        return Promise.resolve({ success: true })
+      }),
+      unlike: jest.fn().mockImplementation((contentId) => {
+        mockLikedIds.delete(Number(contentId))
+        return Promise.resolve({ success: true })
+      }),
+    }
+  }
+  return { default: mockFns, ...mockFns }
+})
+
+jest.mock('../src/services/railcontent.js', () => ({
+  ...jest.requireActual('../src/services/railcontent.js'),
+  fetchUserPermissionsData: jest.fn(() => ({ permissions: [78, 91, 92], isAdmin: false })),
+}))
 
 describe('contentLikesDataContext', function () {
-  let mock = null
-  const testVersion = 1
-
   beforeEach(() => {
     initializeTestService()
-    mock = jest.spyOn(dataContext, 'fetchData')
-    var json = JSON.parse(`{"version":${testVersion},"data":[308516,308515,308514,308518]}`)
-    mock.mockImplementation(() => json)
-    dataContext.ensureLocalContextLoaded()
+    mockLikedIds = new Set([308516, 308515, 308514, 308518])
   })
 
   test('contentLiked', async () => {
-    let result = await isContentLiked(308516)
-    expect(result).toBe(true)
+    expect(await isContentLiked(308516)).toBe(true)
   })
 
   test('contentLikedStringInput', async () => {
-    let result = await isContentLiked('308516')
-    expect(result).toBe(true)
+    expect(await isContentLiked('308516')).toBe(true)
   })
 
   test('contentNotLiked', async () => {
-    let result = await isContentLiked(121111)
-    expect(result).toBe(false)
-  })
-
-  test('ensureOnlyOneServerFetchRequest', async () => {
-    dataContext.clearCache()
-    await isContentLiked(308516)
-    await isContentLiked(308514)
-    await isContentLiked(121111)
-    expect(dataContext.fetchData).toHaveBeenCalledTimes(1)
-  })
-
-  test('ensureDataPulledFromLocalCache', async () => {
-    dataContext.clearCache()
-    await isContentLiked(308516)
-    dataContext.clearContext()
-    await isContentLiked(308514)
-    expect(dataContext.fetchData).toHaveBeenCalledTimes(1)
+    expect(await isContentLiked(121111)).toBe(false)
   })
 
   test('likeContent', async () => {
-    mock = jest.spyOn(railContentModule, 'postContentLiked')
-    var json = JSON.parse(`{"version":${testVersion + 1}}`)
-    mock.mockImplementation(() => json)
-
-    dataContext.clearCache()
-    let isLiked = await isContentLiked(111111)
-    expect(isLiked).toBe(false)
-
+    expect(await isContentLiked(111111)).toBe(false)
     await likeContent(111111)
-    isLiked = await isContentLiked(111111)
-    expect(isLiked).toBe(true)
-
-    dataContext.clearContext()
-    isLiked = await isContentLiked(111111)
-    expect(isLiked).toBe(true)
-
-    expect(dataContext.version()).toBe(testVersion + 1)
+    expect(await isContentLiked(111111)).toBe(true)
   })
 
   test('unlikeContent', async () => {
-    mock = jest.spyOn(railContentModule, 'postContentUnliked')
-    var json = JSON.parse(`{"version":${testVersion + 1}}`)
-    mock.mockImplementation(() => json)
-
-    dataContext.clearCache()
-    let isLiked = await isContentLiked(308516)
-    expect(isLiked).toBe(true)
-
+    expect(await isContentLiked(308516)).toBe(true)
     await unlikeContent(308516)
-    console.log(dataContext.context)
-    isLiked = await isContentLiked(308516)
-    expect(isLiked).toBe(false)
-
-    dataContext.clearContext()
-    isLiked = await isContentLiked(308516)
-    expect(isLiked).toBe(false)
-
-    expect(dataContext.version()).toBe(testVersion + 1)
+    expect(await isContentLiked(308516)).toBe(false)
   })
 })

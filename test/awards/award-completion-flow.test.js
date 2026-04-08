@@ -5,6 +5,7 @@ import { setupDefaultMocks, setupAwardEventListeners } from './helpers'
 import { mockCompletionStates, mockAllCompleted } from './helpers/completion-mock'
 
 jest.mock('../../src/services/sanity', () => ({
+  ...jest.requireActual('../../src/services/sanity'),
   default: { fetch: jest.fn() },
   fetchSanity: jest.fn()
 }))
@@ -67,7 +68,7 @@ describe('Award Completion Flow - E2E Scenarios', () => {
         testAward._id,
         100,
         expect.objectContaining({
-          completedAt: expect.any(Number),
+          completedAt: expect.any(String),
           completionData: expect.objectContaining({
             content_title: expect.any(String),
             days_user_practiced: expect.any(Number),
@@ -120,7 +121,7 @@ describe('Award Completion Flow - E2E Scenarios', () => {
         testAward._id,
         100,
         expect.objectContaining({
-          completedAt: expect.any(Number),
+          completedAt: expect.any(String),
           immediate: true
         })
       )
@@ -247,7 +248,7 @@ describe('Award Completion Flow - E2E Scenarios', () => {
         multiLessonAward._id,
         100,
         expect.objectContaining({
-          completedAt: expect.any(Number),
+          completedAt: expect.any(String),
           completionData: expect.objectContaining({
             completed_at: expect.any(String)
           }),

@@ -1,20 +1,30 @@
 import { initializeTestService } from './initializeTests.js'
 import {getUserWeeklyStats, userActivityContext} from '../src/services/userActivity.js'
+import { streakCalculator } from '../src/services/user/streakCalculator'
 import {log} from './log.js'
 
-import fs from 'fs';
 import path from 'path';
 
-global.fetch = jest.fn()
-let mock = null
-const DEBUG = false
+let mockPracticeData = []
 
+jest.mock('../src/services/sync/repository-proxy', () => {
+  const mockFns = {
+    practices: {
+      queryAll: jest.fn().mockImplementation(() => Promise.resolve({ data: mockPracticeData })),
+      getAll: jest.fn().mockImplementation(() => Promise.resolve({ data: mockPracticeData })),
+    }
+  }
+  return { default: mockFns, ...mockFns }
+})
+
+const DEBUG = false
 
 // Test Examples are taken from this document
 // https://docs.google.com/spreadsheets/d/1pBmBTAODeRWI5uIO84lXjaQFW-lRPNh6gi7GV0lCwyc/edit?gid=0#gid=0
 describe('Streak Messages', function () {
   beforeEach(() => {
     initializeTestService()
+    mockPracticeData = []
     const userLocalMidnight = new Date();
     userLocalMidnight.setFullYear(2025, 2, 24);
     jest.useFakeTimers();
@@ -60,7 +70,6 @@ describe('Streak Messages', function () {
       {day: 24, incomplete: 'You have a 2 day streak! Keep it going with any lesson or song!', complete: ''},
     ]
 
-    mock = jest.spyOn(userActivityContext, 'fetchData')
     // you can test a specific day by setting this value to the correct date and the test will only run that day
     // this is 0 indexed
     const testSpecificDay = null;
@@ -109,7 +118,6 @@ describe('Streak Messages', function () {
       {day: 28, incomplete: 'You have a 3 week streak! Keep it going with any lesson or song!', complete: ''},
     ]
 
-    mock = jest.spyOn(userActivityContext, 'fetchData')
     // you can test a specific day by setting this value to the correct date and the test will only run that day
     // this is zero indexed so do 1 day below the day you want to test
     const testSpecificDay = null;
@@ -153,7 +161,6 @@ describe('Streak Messages', function () {
       {day: 20, incomplete: 'You have a 3 week streak! Keep up the momentum!', complete: ''},
     ]
 
-    mock = jest.spyOn(userActivityContext, 'fetchData')
     // you can test a specific day by setting this value to the correct date and the test will only run that day
     // this is 0 indexed
     const testSpecificDay = null;
@@ -187,7 +194,6 @@ describe('Streak Messages', function () {
       {day: 11, incomplete: 'You have a 2 week streak! Keep up the momentum!', complete: 'You have a 2 week streak! Keep up the momentum!'},
     ]
 
-    mock = jest.spyOn(userActivityContext, 'fetchData')
     // you can test a specific day by setting this value to the correct date and the test will only run that day
     // this is 0 indexed
     const testSpecificDay = null;
@@ -201,20 +207,6 @@ function incrementFakeDate(nDays = 1){
   jest.useFakeTimers();
   jest.setSystemTime(today);
 }
-
-const loadMockDataForDays = (fileName, datesArray) => {
-  const jsonPath = path.join(__dirname, 'mockData/', fileName);
-  let json = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
-  let practices = {};
-  // Loop through the provided dates and durations
-  datesArray.forEach(({ date, duration_seconds }) => {
-    practices[date] = [{ "duration_seconds": duration_seconds }];
-  });
-
-  // Replace the placeholder with dynamically generated data
-  json.data.practices = practices;
-  return json;
-};
 
 function sliceExampleData(startDate, nDays, includeToday, activeDays)
 {
@@ -239,9 +231,9 @@ async function testExpectedMessageForDays(exampleData, expectedMessages, startDa
     target.setDate(target.getDate() + i)
     const setDataAndCheckStreakMessage = async function(includeToday)  {
       let activeDays = sliceExampleData(startDate, i, includeToday, exampleData)
-      let json = loadMockDataForDays('mockData_user_practices.json', activeDays);
-      mock.mockImplementation(() => json);
+      mockPracticeData = activeDays.map(({ date, duration_seconds }) => ({ date, duration_seconds }))
       userActivityContext.clearCache()
+      streakCalculator.invalidate()
       let practices = await getUserWeeklyStats()
       const state = includeToday ? 'STARTED' :  'NOT-STARTED'
       const expected = includeToday && !!expectedMessages[i].complete ? expectedMessages[i].complete :

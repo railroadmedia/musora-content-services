@@ -35,7 +35,8 @@ export function initializeSyncManager(userId) {
     },
   }
 
-  const userScope = { initialId: userId, getCurrentId: () => userId }
+  const resolvedUserId = userId ?? 'test-user'
+  const userScope = { initialId: resolvedUserId, getCurrentId: () => resolvedUserId }
   SyncTelemetry.setInstance(new SyncTelemetry(userScope, { Sentry: dummySentry, level: SeverityLevel.WARNING, pretty: false }))
 
   const adapter = syncAdapter()
@@ -45,6 +46,7 @@ export function initializeSyncManager(userId) {
     session: {
       getClientId: () => 'test-client-id',
       getSessionId: () => null,
+      toJSON: () => ({ 'session.client': 'test-client-id' }),
       start: () => {},
       stop: () => {},
     },

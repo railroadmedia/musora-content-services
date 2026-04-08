@@ -24,6 +24,10 @@ export default class UserAwardProgress extends BaseModel<{
     return this._getRaw('completed_at') as string | null
   }
 
+  get isCompleted() {
+    return this.completed_at !== null
+  }
+
   get progress_data() {
     const raw = this._getRaw('progress_data') as string | null
     return raw ? JSON.parse(raw) : null

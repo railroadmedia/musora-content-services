@@ -3,6 +3,10 @@ import Practice from "../models/Practice";
 import { RecordId } from "@nozbe/watermelondb";
 
 export default class PracticesRepository extends SyncRepository<Practice> {
+  async getAll() {
+    return this.queryAll()
+  }
+
   async sumPracticeMinutesForContent(contentIds: number[]): Promise<number> {
     if (contentIds.length === 0) return 0
 
