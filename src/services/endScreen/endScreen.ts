@@ -25,7 +25,6 @@ const SINGLE_SONG_LESSON_TYPES: string[] = [
 const COURSE_COMPLETE_CTA: CtaLabels = { primary: 'Play Now', secondary: 'Back to Home' }
 const COUNTDOWN_CTA: CtaLabels = { primary: 'Play Now', secondary: 'Cancel' }
 const PATH_COMPLETE_CTA: CtaLabels = { primary: 'View Achievement', secondary: 'Back to Home' }
-const SESSION_COMPLETE_CTA: CtaLabels = { primary: 'View Session', secondary: 'Back to Home' }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
@@ -42,16 +41,16 @@ export async function getEndScreen({
     return getLearningPathEndScreen({ lesson, learningPath, lessonWasPreviouslyCompleted })
   }
 
-  if (SINGLE_SONG_LESSON_TYPES.includes(lesson.type ?? '')) {
-    return buildCountdown(await fetchEndScreenRecommendation(brand, lesson.id))
-  }
-
   if (playlist) {
     const nextItemInPlaylist = getNextItemInPlaylistOrNull(lesson.id, playlist)
     if (nextItemInPlaylist) {
       return buildCountdown(nextItemInPlaylist)
     }
     return buildCourseComplete(await fetchEndScreenRecommendation(brand, lesson.id))
+  }
+
+  if (SINGLE_SONG_LESSON_TYPES.includes(lesson.type ?? '')) {
+    return buildCountdown(await fetchEndScreenRecommendation(brand, lesson.id))
   }
 
   if (!course) {
@@ -115,17 +114,12 @@ export function getLearningPathEndScreen({
     const currentDailies = effectiveDailies.filter((d) => !d.isNextLP)
     const dailyLessonsCompleted =
       currentDailies.length > 0 && currentDailies.every((d) => d.progressStatus === 'completed')
-    const isTodaysLesson = effectiveDailies.some((d) => Number(d.id) === Number(lesson.id))
 
     if (!dailyLessonsCompleted) {
       const nextDailyLesson = getNextInArrayOrNull(lesson.id, effectiveDailies)
       if (nextDailyLesson) {
-        return buildCountdown(nextDailyLesson)
+        return buildWhatToDoToday(nextDailyLesson)
       }
-    }
-
-    if (dailyLessonsCompleted && !lessonWasPreviouslyCompleted && isTodaysLesson) {
-      return buildMethodSessionComplete()
     }
   }
 
@@ -152,8 +146,8 @@ function buildPathComplete(): EndScreenResult {
   return { variant: 'path-complete', upNext: null, countdownAutoplay: false, ctaLabels: PATH_COMPLETE_CTA }
 }
 
-function buildMethodSessionComplete(): EndScreenResult {
-  return { variant: 'method-session-complete', upNext: null, countdownAutoplay: false, ctaLabels: SESSION_COMPLETE_CTA }
+function buildWhatToDoToday(upNext: any): EndScreenResult {
+  return { variant: 'what-to-do-today', upNext, countdownAutoplay: true, ctaLabels: COUNTDOWN_CTA }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

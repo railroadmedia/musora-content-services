@@ -6,7 +6,7 @@ export type EndScreenVariant =
   | 'countdown-up-next'
   | 'course-complete'
   | 'path-complete'
-  | 'method-session-complete'
+  | 'what-to-do-today'
 
 export interface CtaLabels {
   primary: string
@@ -52,6 +52,7 @@ export interface Playlist {
 export interface LPLesson {
   id: number
   progressStatus?: string
+  [key: string]: any
 }
 
 export interface LearningPath {

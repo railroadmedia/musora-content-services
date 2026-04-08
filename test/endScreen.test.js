@@ -811,8 +811,8 @@ describe('getLearningPathEndScreen', () => {
     })
   })
 
-  describe('method-session-complete', () => {
-    test('returns method-session-complete when all dailies done and lesson is today\'s and path not finished', () => {
+  describe('all dailies done on active LP → countdown-up-next', () => {
+    test('returns countdown with first incomplete lesson in path when all dailies are done', () => {
       const lp = makeLP({
         learning_path_dailies: [
           { id: 101, progressStatus: 'completed' },
@@ -822,15 +822,13 @@ describe('getLearningPathEndScreen', () => {
 
       const result = getLearningPathEndScreen({ lesson, learningPath: lp })
 
-      expect(result).toEqual({
-        variant: 'method-session-complete',
-        upNext: null,
-        countdownAutoplay: false,
-        ctaLabels: { primary: 'View Session', secondary: 'Back to Home' },
-      })
+      expect(result.variant).toBe('countdown-up-next')
+      // children default: [101 completed, 102 '', 103 ''] → first incomplete is 102
+      expect(result.upNext).toMatchObject({ id: 102 })
+      expect(result.countdownAutoplay).toBe(true)
     })
 
-    test('does NOT return method-session-complete if lesson was previously completed', () => {
+    test('returns countdown regardless of lessonWasPreviouslyCompleted when dailies are done', () => {
       const lp = makeLP({
         learning_path_dailies: [
           { id: 101, progressStatus: 'completed' },
@@ -840,23 +838,10 @@ describe('getLearningPathEndScreen', () => {
 
       const result = getLearningPathEndScreen({ lesson, learningPath: lp, lessonWasPreviouslyCompleted: true })
 
-      expect(result.variant).not.toBe('method-session-complete')
+      expect(result.variant).toBe('countdown-up-next')
     })
 
-    test('does NOT return method-session-complete if lesson is not in today\'s dailies', () => {
-      const lp = makeLP({
-        learning_path_dailies: [
-          { id: 200, progressStatus: 'completed' },
-          { id: 201, progressStatus: 'completed' },
-        ],
-      })
-
-      const result = getLearningPathEndScreen({ lesson, learningPath: lp })
-
-      expect(result.variant).not.toBe('method-session-complete')
-    })
-
-    test('does NOT return method-session-complete if LP is not active', () => {
+    test('non-active LP with all dailies done also returns countdown', () => {
       const lp = makeLP({
         is_active_learning_path: false,
         learning_path_dailies: [
@@ -867,12 +852,12 @@ describe('getLearningPathEndScreen', () => {
 
       const result = getLearningPathEndScreen({ lesson, learningPath: lp })
 
-      expect(result.variant).not.toBe('method-session-complete')
+      expect(result.variant).toBe('countdown-up-next')
     })
   })
 
-  describe('countdown-up-next (next daily lesson)', () => {
-    test('returns countdown with next incomplete daily lesson', () => {
+  describe('what-to-do-today (next daily lesson)', () => {
+    test('returns what-to-do-today with next incomplete daily lesson', () => {
       const nextDaily = { id: 102, progressStatus: '' }
       const lp = makeLP({
         learning_path_dailies: [
@@ -884,14 +869,14 @@ describe('getLearningPathEndScreen', () => {
       const result = getLearningPathEndScreen({ lesson, learningPath: lp })
 
       expect(result).toEqual({
-        variant: 'countdown-up-next',
+        variant: 'what-to-do-today',
         upNext: nextDaily,
         countdownAutoplay: true,
         ctaLabels: { primary: 'Play Now', secondary: 'Cancel' },
       })
     })
 
-    test('skips to next daily even if previously completed', () => {
+    test('returns what-to-do-today even if lesson was previously completed', () => {
       const nextDaily = { id: 102, progressStatus: '' }
       const lp = makeLP({
         learning_path_dailies: [
@@ -902,7 +887,7 @@ describe('getLearningPathEndScreen', () => {
 
       const result = getLearningPathEndScreen({ lesson, learningPath: lp, lessonWasPreviouslyCompleted: true })
 
-      expect(result.variant).toBe('countdown-up-next')
+      expect(result.variant).toBe('what-to-do-today')
       expect(result.upNext).toEqual(nextDaily)
     })
   })
@@ -953,7 +938,7 @@ describe('getLearningPathEndScreen', () => {
   })
 
   describe('< 3 dailies: combines previous + current + next LP dailies', () => {
-    test('isTodaysLesson is true for a lesson from previous LP dailies', () => {
+    test('all combined dailies done (lesson from previous LP) → countdown-up-next with next in path', () => {
       const lessonFromPrevious = { id: 50, type: 'lesson' }
       const lp = makeLP({
         learning_path_dailies: [{ id: 101, progressStatus: 'completed' }],
@@ -963,20 +948,22 @@ describe('getLearningPathEndScreen', () => {
 
       const result = getLearningPathEndScreen({ lesson: lessonFromPrevious, learningPath: lp })
 
-      expect(result.variant).toBe('method-session-complete')
+      expect(result.variant).toBe('countdown-up-next')
+      expect(result.upNext).toMatchObject({ id: 102 })
     })
 
-    test('next LP lessons are excluded from dailyLessonsCompleted check', () => {
+    test('next LP lessons are excluded from dailyLessonsCompleted check → falls through to countdown', () => {
       const lp = makeLP({
         learning_path_dailies: [{ id: 101, progressStatus: 'completed' }],
         previous_learning_path_dailies: [],
         next_learning_path_dailies: [{ id: 200, progressStatus: '' }],
       })
 
-      // Even though next LP lesson is incomplete, session should still be complete
+      // current dailies are all done; incomplete next LP lesson doesn't block countdown
       const result = getLearningPathEndScreen({ lesson, learningPath: lp })
 
-      expect(result.variant).toBe('method-session-complete')
+      expect(result.variant).toBe('countdown-up-next')
+      expect(result.upNext).toMatchObject({ id: 102 })
     })
 
     test('countdown shows next LP daily when current lesson is last before it and session not done', () => {
@@ -991,7 +978,7 @@ describe('getLearningPathEndScreen', () => {
 
       const result = getLearningPathEndScreen({ lesson, learningPath: lp })
 
-      expect(result.variant).toBe('countdown-up-next')
+      expect(result.variant).toBe('what-to-do-today')
       expect(result.upNext).toMatchObject({ id: 200 })
     })
   })

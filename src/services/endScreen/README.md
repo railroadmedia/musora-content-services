@@ -32,9 +32,9 @@ RecSys fallback: if the recommender returns nothing, a default lesson is used (N
 
 ```
 all lessons completed  +  not previously completed  →  path-complete
-active LP  +  not all dailies done                  →  countdown-up-next  (next daily)
-active LP  +  all dailies done  +  today's lesson   →  method-session-complete
-default                                             →  countdown-up-next  (next in path)
+active LP  +  dailies not done                      →  what-to-do-today   (next daily)
+active LP  +  all dailies done                      →  countdown-up-next  (next in path)
+non-active LP                                       →  countdown-up-next  (next in array or first)
 ```
 
 ---
@@ -46,7 +46,7 @@ default                                             →  countdown-up-next  (nex
 | `countdown-up-next` | `true` | Next lesson available — autoplays |
 | `course-complete` | `false` | Course or playlist finished |
 | `path-complete` | `false` | All lessons in learning path completed |
-| `method-session-complete` | `false` | Daily session done, path still in progress |
+| `what-to-do-today` | `true` | Active LP, daily session not yet complete — shows next daily |
 
 ---
 
@@ -63,16 +63,18 @@ default                                             →  countdown-up-next  (nex
   collection?: { id: number, type: string, children?: { id: number, children?: ContentItem[] }[] }
   playlist?:   { id: number, items?: ContentItem[] }
   learningPath?: {
-    children?:                 { id: number, progressStatus?: string }[]
-    is_active_learning_path:   boolean
-    learning_path_dailies?:    { id: number, progressStatus?: string }[]
+    children?:                          { id: number, progressStatus?: string }[]
+    is_active_learning_path:            boolean
+    learning_path_dailies?:             { id: number, progressStatus?: string }[]
+    previous_learning_path_dailies?:    { id: number, progressStatus?: string }[]
+    next_learning_path_dailies?:        { id: number, progressStatus?: string }[]
   }
   lessonWasPreviouslyCompleted?: boolean  // used with learningPath, default false
 }
 
 // Return value
 {
-  variant:           'countdown-up-next' | 'course-complete' | 'path-complete' | 'method-session-complete'
+  variant:           'countdown-up-next' | 'course-complete' | 'path-complete' | 'what-to-do-today'
   upNext:            object | null  // null only for path-complete and method-session-complete
   countdownAutoplay: boolean
   ctaLabels:         { primary: string, secondary: string }
@@ -86,7 +88,13 @@ Same return type. Parameters are a subset of `getEndScreen`:
 ```typescript
 {
   lesson:                      { id: number }
-  learningPath:                { children?, is_active_learning_path, learning_path_dailies? }
+  learningPath:                {
+    children?,
+    is_active_learning_path,
+    learning_path_dailies?,
+    previous_learning_path_dailies?,
+    next_learning_path_dailies?
+  }
   lessonWasPreviouslyCompleted?: boolean
 }
 ```
