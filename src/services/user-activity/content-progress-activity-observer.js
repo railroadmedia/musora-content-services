@@ -53,7 +53,8 @@ class ContentProgressActivityObserver {
         action: state,
         brand: progressRecord.metadata.brand,
         type,
-        date: new Date()
+        date: Math.floor(Date.now() / 1000)
+
       })
     } catch (error) {
       console.error('[ContentProgressActivityObserver] Error handling progress change:', error)
