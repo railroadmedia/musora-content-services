@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.151.0](https://github.com/railroadmedia/musora-content-services/compare/v2.149.0...v2.151.0) (2026-04-08)
+
+
+### Features
+
+* recovers user id if clobbered by Safari ITP ([#892](https://github.com/railroadmedia/musora-content-services/issues/892)) ([338476d](https://github.com/railroadmedia/musora-content-services/commit/338476d69025140f3a93b30e0ae63d194d185185))
+* throw specific error after abort; protect getLastFetchToken ([#905](https://github.com/railroadmedia/musora-content-services/issues/905)) ([7c084e4](https://github.com/railroadmedia/musora-content-services/commit/7c084e4b351e26f8464f568d658e855f84e31951))
+
 ## [2.150.0](https://github.com/railroadmedia/musora-content-services/compare/v2.149.0...v2.150.0) (2026-04-08)
 
 
