@@ -32,16 +32,6 @@ export async function fetchSimilarItems(content_id, brand, count = 10) {
   if (!content_id) {
     return []
   }
-  if (brand === 'playbass') {
-    // V2 launch customization for playbass
-    const content = (await fetchByRailContentIds([content_id], 'tab-data'))[0] ?? []
-    if (!content) {
-      return []
-    }
-    const section = content.page_type === 'song' ? 'song' : ''
-    const recs = await recommendations('playbass', {section: section})
-    return recs.slice(0, count)
-  } else {
     content_id = parseInt(content_id)
     const data = {
       brand: brand,
@@ -56,8 +46,6 @@ export async function fetchSimilarItems(content_id, brand, count = 10) {
       console.error('Fetch error:', error)
       return null
     }
-  }
-
 }
 
 /**
@@ -79,27 +67,25 @@ export async function rankCategories(brand, categories) {
   if (categories.length === 0) {
     return []
   }
-  if (brand !== 'playbass') {
-    const data = {
-      brand: brand,
-      user_id: globalConfig.sessionConfig.userId,
-      playlists: categories,
-    }
-    const url = `/rank_each_list/`
-    try {
-      const response = await recommenderClient.post(url, data)
-      const rankedCategories = []
+  const data = {
+    brand: brand,
+    user_id: globalConfig.sessionConfig.userId,
+    playlists: categories,
+  }
+  const url = `/rank_each_list/`
+  try {
+    const response = await recommenderClient.post(url, data)
+    const rankedCategories = []
 
-      for (const rankedPlaylist of response['ranked_playlists']) {
-        rankedCategories.push({
-          slug: rankedPlaylist.playlist_id,
-          items: rankedPlaylist.ranked_items,
-        })
-      }
-      return rankedCategories
-    } catch (error) {
-      console.error('RankCategories fetch error:', error)
+    for (const rankedPlaylist of response['ranked_playlists']) {
+      rankedCategories.push({
+        slug: rankedPlaylist.playlist_id,
+        items: rankedPlaylist.ranked_items,
+      })
     }
+    return rankedCategories
+  } catch (error) {
+    console.error('RankCategories fetch error:', error)
   }
 
   const defaultSorting = []
@@ -126,9 +112,6 @@ export async function rankCategories(brand, categories) {
 export async function rankItems(brand, content_ids) {
   if (content_ids.length === 0) {
     return []
-  }
-  if (brand === 'playbass') {
-    return content_ids
   }
   const data = {
     brand: brand,
