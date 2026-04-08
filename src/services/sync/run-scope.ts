@@ -19,7 +19,7 @@ export default class SyncRunScope {
   // does NOT attempt to pass abort signal to the function
   abortable<T>(fn: () => Promise<T>): Promise<T> {
     if (this.signal.aborted) {
-      reject(new SyncAbortError('Operation aborted', { reason: this.signal.reason }))
+      return Promise.reject(new SyncAbortError('Operation aborted', { reason: this.signal.reason }))
     }
     return fn()
   }
