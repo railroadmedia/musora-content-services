@@ -222,6 +222,7 @@ import {
 	createAccount,
 	createInvites,
 	fetchUsersMultiAccountDetails,
+	removeUserFromActiveMultiUserAccount,
 	rescindInvite
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
@@ -327,6 +328,7 @@ import {
 	getSanityDate,
 	getSongTypesFor,
 	getSortOrder,
+	hasAnyMethodV2IntroCompleted,
 	jumpToContinueContent
 } from './services/sanity.js';
 
@@ -679,6 +681,7 @@ export {
 	getWeekNumber,
 	globalConfig,
 	guidedCourses,
+	hasAnyMethodV2IntroCompleted,
 	initializeEnvVar,
 	initializeService,
 	isBucketUrl,
@@ -724,6 +727,7 @@ export {
 	registerProgressCallback,
 	removeContentAsInterested,
 	removeContentAsNotInterested,
+	removeUserFromActiveMultiUserAccount,
 	removeUserPractice,
 	replyToComment,
 	report,

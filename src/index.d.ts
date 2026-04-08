@@ -218,6 +218,7 @@ import {
 	createAccount,
 	createInvites,
 	fetchUsersMultiAccountDetails,
+	removeUserFromActiveMultiUserAccount,
 	rescindInvite
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
@@ -323,6 +324,7 @@ import {
 	getSanityDate,
 	getSongTypesFor,
 	getSortOrder,
+	hasAnyMethodV2IntroCompleted,
 	jumpToContinueContent
 } from './services/sanity.js';
 
@@ -680,6 +682,7 @@ declare module 'musora-content-services' {
 		getWeekNumber,
 		globalConfig,
 		guidedCourses,
+		hasAnyMethodV2IntroCompleted,
 		initializeEnvVar,
 		initializeService,
 		isBucketUrl,
@@ -725,6 +728,7 @@ declare module 'musora-content-services' {
 		registerProgressCallback,
 		removeContentAsInterested,
 		removeContentAsNotInterested,
+		removeUserFromActiveMultiUserAccount,
 		removeUserPractice,
 		replyToComment,
 		report,

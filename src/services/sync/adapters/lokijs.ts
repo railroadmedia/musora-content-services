@@ -68,6 +68,41 @@ export function muteImpendingDriverErrors() {
 }
 
 /**
+ * Patch indexedDB.deleteDatabase to delay the real call by 1ms
+ * as Safari logs tons of noisy errors, due to watermelon's
+ * `IncrementalIndexedDBAdapter.prototype.deleteDatabase` fn not waiting for
+ * a `close()` call to complete before trying `deleteDatabase`
+ * (which consistently triggers `request.onblocked`)
+ */
+export function patchIndexedDBDeleteDatabaseErrors() {
+  const idb = window.indexedDB as any
+  const originalDeleteDatabase = idb.deleteDatabase
+
+  idb.deleteDatabase = function(...args: any[]) {
+    const proxyRequest = new Proxy({} as IDBOpenDBRequest, {
+      get(target, prop) {
+        return target[prop]
+      },
+      set(target, prop, value) {
+        target[prop] = value
+        return true
+      },
+    })
+
+    // Delay the real call by 1ms
+    setTimeout(() => {
+      const realRequest = originalDeleteDatabase.apply(this, args)
+
+      Object.keys(proxyRequest).forEach(prop => {
+        realRequest[prop] = (event: Event) => proxyRequest[prop]?.call(proxyRequest, event)
+      })
+    }, 1)
+
+    return proxyRequest
+  }
+}
+
+/**
  * Patch IndexedDB open to listen for specifically definitely asynchronous errors
  */
 export function patchIndexedDBOpenErrors(

@@ -72,6 +72,8 @@ export const DEFAULT_FIELDS = [
   '"grandparent_id": parent_content_data[1].id',
   'live_event_start_time',
   'live_event_end_time',
+  'enrollment_start_time',
+  'enrollment_end_time',
 ]
 
 // these are identical... why
@@ -399,7 +401,6 @@ export const ownedContentTypes = {
 
 export let contentTypeConfig = {
   'tab-data': {
-    fields: ['enrollment_start_time', 'enrollment_end_time'],
     includeChildFields: true,
   },
   'progress-tracker': {
@@ -416,7 +417,7 @@ export let contentTypeConfig = {
       'railcontent_id',
       '"assignments": assignment[]{railcontent_id}',
       '"metadata": { brand, "type": _type, "parent_id":  coalesce(parent_content_data[0].id, 0) }',
-      ],
+    ],
     childFields: [
       'railcontent_id',
       '"assignments": assignment[]{railcontent_id}',
@@ -676,6 +677,7 @@ export let contentTypeConfig = {
       'show_in_new_feed',
       isLiveField()
     ],
+    includeChildFields: true,
   },
 }
 
