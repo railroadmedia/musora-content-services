@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.151.1](https://github.com/railroadmedia/musora-content-services/compare/v2.151.0...v2.151.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* broken abort rejection after merge conflict fail ([#909](https://github.com/railroadmedia/musora-content-services/issues/909)) ([e75ebea](https://github.com/railroadmedia/musora-content-services/commit/e75ebeace9f5738d9accf6c546cd343ac7c98855))
+
 ## [2.151.0](https://github.com/railroadmedia/musora-content-services/compare/v2.149.0...v2.151.0) (2026-04-08)
 
 
