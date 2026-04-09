@@ -1400,7 +1400,7 @@ async function fetchLearningPathHierarchyData(railcontentId, collection) {
 
 async function fetchALaCarteHierarchyData(railcontentId) {
   let topLevelId = await fetchTopLevelParentId(railcontentId)
-  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true, bypassPermissions: true }).buildFilter()
   const query = `*[railcontent_id == ${topLevelId}]{
       railcontent_id,
       'metadata': { brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
