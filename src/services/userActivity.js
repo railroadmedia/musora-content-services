@@ -3,16 +3,15 @@
  */
 
 import { fetchUserPractices, fetchUserPracticeMeta, fetchRecentUserActivities } from './railcontent'
-import { GET, POST, PUT, DELETE } from '../infrastructure/http/HttpClient.ts'
+import { GET, POST, DELETE } from '../infrastructure/http/HttpClient.ts'
 import { DataContext, UserActivityVersionKey } from './dataContext.js'
-import { fetchByRailContentIds, fetchParentChildRelationshipsFor } from './sanity'
+import { fetchByRailContentIds } from './sanity'
 import { getMonday, getWeekNumber, isSameDate, isNextDay } from './dateUtils.js'
 import { globalConfig } from './config'
 import { postProcessBadge, getFormattedType } from '../contentTypeConfig'
 import dayjs from 'dayjs'
 import { addContextToContent } from './contentAggregator.js'
 import { db, Q } from './sync'
-import { COLLECTION_TYPE } from './sync/models/ContentProgress'
 import { streakCalculator } from './user/streakCalculator'
 import { mapContentsThatWereLastProgressedFromMethod } from "./content-org/learning-paths.ts";
 
@@ -582,11 +581,6 @@ export function getStreaksAndMessage(practices) {
   }
 }
 
-function buildQueryString(ids, paramName = 'practice_ids') {
-  if (!ids.length) return ''
-  return '?' + ids.map((id) => `${paramName}[]=${id}`).join('&')
-}
-
 // Helper: Calculate streaks
 function calculateStreaks(practices, includeStreakMessage = false) {
   let currentDailyStreak = 0
@@ -889,28 +883,6 @@ export async function deleteUserActivity(id) {
 export async function restoreUserActivity(id) {
   const url = `/api/user-management-system/v1/activities/${id}`
   return await POST(url, null)
-}
-
-export function findIncompleteLesson(progressOnItems, currentContentId, contentType) {
-  const isMap = progressOnItems instanceof Map
-  const ids = isMap ? Array.from(progressOnItems.keys()) : Object.keys(progressOnItems).map(Number)
-  const getProgress = (id) => isMap ? progressOnItems.get(id) : progressOnItems[id]
-
-  if (contentType === 'guided-course' || contentType === COLLECTION_TYPE.LEARNING_PATH) {
-    return ids.find((id) => getProgress(id) !== 'completed') || ids.at(0)
-  }
-
-  const currentIndex = ids.indexOf(Number(currentContentId))
-  if (currentIndex === -1) return null
-
-  for (let i = currentIndex + 1; i < ids.length; i++) {
-    const id = ids[i]
-    if (getProgress(id) !== 'completed') {
-      return id
-    }
-  }
-
-  return ids[0]
 }
 
 export async function fetchRecentActivitiesActiveTabs() {
