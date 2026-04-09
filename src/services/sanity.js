@@ -75,7 +75,7 @@ const TAB_TO_CONTENT_TYPES = {
 // parent_id must coalesce to 0 here for progress tracking reasons.
 const HIERARCHY_NODE_FIELDS = `
   railcontent_id,
-  'metadata': { brand, 'type': _type, 'parent_id': coalesce(${parentField}->railcontent_id, 0) },
+  'metadata': { brand, 'type': _type, 'parent_id': coalesce(${parentField}->railcontent_id, 0) }
 `
 
 /**
