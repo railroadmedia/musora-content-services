@@ -425,21 +425,6 @@ async function _getAllStartedOrCompleted({
 }
 
 /**
- * @typedef {Object} hierarchyParameter
- * @property {number} [topLevelId]
- * @property { {[contentId: number]: [parentId: number]} } [parents]
- * @property { {[contentId: number]: [childId: number]} } [children]
- * @property { hierarchyMetadata } [metadata]
- */
-
-/**
- * @typedef {Object} hierarchyMetadata
- * @property {string} [brand]
- * @property {number} [parent_id]
- * @property {string} [type]
- */
-
-/**
  * Record watch session
  * @return {string} sessionId - provide in future calls to update progress
  * @param {int} contentId
@@ -449,11 +434,10 @@ async function _getAllStartedOrCompleted({
  * @param {int} mediaLengthSeconds - total length of video media || live event duration if livestream
  * @param {int} currentSeconds - seconds timestamp relative to beginning of video
  * @param {int} secondsPlayed - seconds played in this watch session (since last pause)
- * @param {any} prevSession - This function records a sessionId to pass into future updates to progress on the same video
+ * @param {string|null} prevSession - This function records a sessionId to pass into future updates to progress on the same video
  * @param {int|null} instrumentId - enum value of instrument id
  * @param {int|null} categoryId - enum value of category id
- * @param {boolean} isLivestream - determines livestream-specific progress handling
- * @param {hierarchyParameter|null} hierarchy - response from getHierarchy, passed in to avoid redundant calls within the same session
+ * @param {boolean|null} isLivestream - determines livestream-specific progress handling
  */
 export async function recordWatchSession(
   contentId,
@@ -481,18 +465,20 @@ export async function recordWatchSession(
 }
 
 /**
- * internal function ot be called by only or offline version of recordWatchSession
- * @param contentId
- * @param mediaLengthSeconds
- * @param currentSeconds
- * @param secondsPlayed
- * @param collection
- * @param prevSession
- * @param instrumentId
- * @param categoryId
- * @param isLivestream
- * @param hierarchy
- * @returns {Promise<*>}
+ * internal function to be called by only or offline version of recordWatchSession
+ * @return {string} sessionId - provide in future calls to update progress
+ * @param {int} contentId
+ * @param {any} collection - progress collection context, null if a-la-carte
+ * @param {string} collection.type - enum value of collection type
+ * @param {int} collection.id - content_id of parent collection (e.g. learning path content_id)
+ * @param {int} mediaLengthSeconds - total length of video media || live event duration if livestream
+ * @param {int} currentSeconds - seconds timestamp relative to beginning of video
+ * @param {int} secondsPlayed - seconds played in this watch session (since last pause)
+ * @param {string|null} prevSession - This function records a sessionId to pass into future updates to progress on the same video
+ * @param {int|null} instrumentId - enum value of instrument id
+ * @param {int|null} categoryId - enum value of category id
+ * @param {boolean|null} isLivestream - determines livestream-specific progress handling
+ * @param {object|null} hierarchy - response from getHierarchy, passed in to avoid redundant calls within the same session
  * @private
  */
 export async function _recordWatchSession(
