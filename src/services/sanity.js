@@ -3,12 +3,9 @@
  */
 import {
   artistOrInstructorName,
-  assignmentsField,
-  chapterField,
   coachLessonsTypes,
   contentTypeConfig,
   DEFAULT_FIELDS,
-  descriptionField,
   filtersToGroq,
   getChildFieldsForContentType,
   getFieldsForContentType,
@@ -27,7 +24,6 @@ import {
   transcriptionsLessonTypes,
   playAlongLessonTypes,
   jamTrackLessonTypes,
-  resourcesField,
   showsTypes,
   SONG_TYPES,
   SONG_TYPES_WITH_CHILDREN,

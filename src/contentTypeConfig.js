@@ -367,7 +367,7 @@ export const filterTypes = {
   ],
 }
 
-const lessonRecentTypes = [
+export const lessonRecentTypes = [
   ...individualLessonsTypes,
   'skill-pack-lesson',
   ...entertainmentLessonTypes,
