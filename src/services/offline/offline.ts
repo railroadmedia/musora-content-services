@@ -1,9 +1,12 @@
 import { db } from '../sync'
 import { Q } from '@nozbe/watermelondb'
 import { _recordWatchSession } from '../contentProgress.js'
-import { CollectionParameter } from '../sync/models/ContentProgress'
-
-export const RECORD_OFFLINE_STATUS = ['created', 'updated']
+import { CollectionParameter, STATE } from '../sync/models/ContentProgress'
+import { lessonRecentTypes, SONG_TYPES } from '../../contentTypeConfig.js'
+import dayjs from 'dayjs'
+import { getMonday } from '../dateUtils'
+import { streakCalculator } from '../user/streakCalculator'
+import { _calculateLongestStreaks, _getUserMonthlyStats, _getUserWeeklyStats } from '../userActivity.js'
 
 interface HierarchyParameter {
   topLevelId: number
@@ -16,37 +19,102 @@ interface HierarchyParameter {
   }
 }
 
+interface Activity {
+  contentId: number
+  action: 'start' | 'complete'
+  contentType: 'lesson' | 'song'
+  date: string
+  brand: string
+}
+
 ////////////////////////
 ////       USER ACTIVITY
 ////////////////////////
 
-export async function getRecentActivityOffline({ page = 1, limit = 5, tabName = null } = {}): Promise<any> {
-  // refactor this to RADFOP
+export async function getRecentActivityOffline(
+  offlineTimestamp: number,
+  {
+    page = 1,
+    limit = 5,
+    tabName = null
+  }: {
+    page: number,
+    limit: number,
+    tabName: 'lessons'|'songs'|null
+  }): Promise<any> {
+  // Note: this is kind of a hack. We're really just getting RADFOP: Recent Activities Derived From Offline Progress,
+  // because setting up watermelon user activities table is extremely complicated.
+  // Note: this implementation does not persist "activities" beyond when the corresponding record is deleted. That's ok right now.
 
-  // do we allow lessons or songs tab? for sure allow ALL tab.
+  const clauses = getClauses(offlineTimestamp, tabName)
 
-  // get all offline content progress, sorted by created_at, grab ALL, for purposes of pagination.
-  // explode into started and completed actions based on created_at and updated_at (with status).
-  // iterate through and create list of RADFOP
-  // store total count and current page.
-  // apply limit -> data.
+  const query = await db.contentProgress.queryAll(...clauses)
+  const progress = query.data
+
+  const activities = deriveActivitiesFromProgress(progress)
+
+  const totalPages = Math.ceil(activities.length / limit)
+  const currentPage = Math.min(page, totalPages)
+
+  const sorted = activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  const data = sorted.slice((currentPage - 1) * limit, currentPage * limit)
 
   return {
-    currentPage: result.currentPage,
-    totalPages: result.totalPages,
-    data: result.data,
+    currentPage,
+    totalPages,
+    data,
   }
 }
 
-// as we are only supporting RADFOP, there's no offline activity write function
+function getClauses(offlineTimestamp: number, tabName: string|null) {
+  let clauses: Q.Clause[] = [
+    Q.where('updated_at', Q.gte(offlineTimestamp)),
+    Q.sortBy('created_at', 'desc'),
+  ]
+
+  if (tabName === 'lessons') {
+    clauses.push(Q.where('content_type', Q.oneOf(lessonRecentTypes)))
+  } else if (tabName === 'songs') {
+    clauses.push(Q.where('content_type', Q.oneOf(SONG_TYPES)))
+  } else {
+    clauses.push(Q.where('content_type', Q.oneOf([...lessonRecentTypes, ...SONG_TYPES])))
+  }
+
+  return clauses
+}
+
+function deriveActivitiesFromProgress(progress: Record<any, any>) {
+  const activities: Activity[] = []
+  progress.forEach(p => {
+    const type = lessonRecentTypes.includes(p.content_type) ? 'lesson' : 'song'
+
+    activities.push({
+      contentId: p.content_id,
+      action: 'start',
+      contentType: type,
+      date: dayjs(p.created_at).format('YYYY-MM-DD'),
+      brand: p.content_brand,
+    })
+    if (p.state === STATE.COMPLETED) {
+      activities.push({
+        contentId: p.content_id,
+        action: 'complete',
+        contentType: type,
+        date: dayjs(p.updated_at).format('YYYY-MM-DD'),
+        brand: p.content_brand,
+      })
+    }
+  })
+  return activities
+}
 
 
 ////////////////////////
 ////           PRACTICES
 ////////////////////////
 
-export async function getOwnPracticesOffline(...clauses: Q.Clause[]) {
-  clauses.push(Q.where('_status', Q.oneOf(RECORD_OFFLINE_STATUS)))
+async function getOwnPracticesOffline(offlineTimestamp: number, clauses: Q.Clause[] = []) {
+  clauses.push(Q.where('updated_at', Q.gte(offlineTimestamp)))
   const results = await db.practices.queryAll(...clauses)
   const data = results.data.reduce((acc, practice) => {
     acc[practice.date] = acc[practice.date] || []
@@ -58,6 +126,64 @@ export async function getOwnPracticesOffline(...clauses: Q.Clause[]) {
   }, {})
 
   return data
+}
+
+export async function getPracticeSessionsOffline(
+  offlineTimestamp: number,
+  params: { day?: string }) {
+  const { day = dayjs().format('YYYY-MM-DD') } = params
+
+  const query = await db.practices.queryAll(
+    Q.where('updated_at', Q.gte(offlineTimestamp)),
+    Q.where('date', day),
+    Q.sortBy('created_at', 'asc'))
+  const practices = query.data
+
+  if (!practices.length) return { data: { practices: [], practiceDuration: 0 } }
+
+  const practiceDuration = Math.round(practices.reduce(
+    (total, practice) => total + (practice.duration_seconds || 0),
+    0
+  ))
+
+  return { data: { practices, practiceDuration } }
+}
+
+export async function getUserWeeklyStatsOffline(offlineTimestamp: number) {
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const today = dayjs()
+  const startOfWeek = getMonday(today, timeZone)
+  const weekDays = Array.from({ length: 7 }, (_, i) =>
+    startOfWeek.add(i, 'day').format('YYYY-MM-DD')
+  )
+
+  const weekPractices = await getOwnPracticesOffline(
+    offlineTimestamp,
+    [
+      Q.where('date', Q.oneOf(weekDays)),
+      Q.sortBy('date', 'desc')
+    ]
+  )
+
+  const streakData = await streakCalculator.getStreakData()
+
+  return _getUserWeeklyStats(weekPractices, streakData)
+}
+
+export async function getUserMonthlyStatsOffline(
+  offlineTimestamp: number,
+  params: { month?: number, year?: number }
+) {
+  const practices = await getOwnPracticesOffline(offlineTimestamp)
+
+  const streakData = await streakCalculator.getStreakData()
+
+  return _getUserMonthlyStats(practices, streakData, params)
+}
+
+export async function calculateLongestStreaksOffline(offlineTimestamp: number) {
+  let practices = await getOwnPracticesOffline(offlineTimestamp)
+  return _calculateLongestStreaks(practices)
 }
 
 

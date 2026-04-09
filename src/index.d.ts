@@ -214,8 +214,11 @@ import {
 } from './services/liveTesting.ts';
 
 import {
-	getOwnPracticesOffline,
+	calculateLongestStreaksOffline,
+	getPracticeSessionsOffline,
 	getRecentActivityOffline,
+	getUserMonthlyStatsOffline,
+	getUserWeeklyStatsOffline,
 	recordWatchSessionOffline
 } from './services/offline/offline.ts';
 
@@ -246,7 +249,6 @@ import {
 	fetchLiveStreamData,
 	fetchRecentUserActivities,
 	fetchTopComment,
-	fetchUserPermissionsData,
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
 	fetchUserPractices,
@@ -455,12 +457,11 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI
+	 default as EventsAPI 
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
 	export {
-		_recordWatchSession,
 		addContextToContent,
 		addContextToLearningPaths,
 		addItemToPlaylist,
@@ -472,6 +473,7 @@ declare module 'musora-content-services' {
 		buildEntityAndTotalQuery,
 		buildImageSRC,
 		calculateLongestStreaks,
+		calculateLongestStreaksOffline,
 		clearAllCachedData,
 		clearState,
 		closeComment,
@@ -596,7 +598,6 @@ declare module 'musora-content-services' {
 		fetchUnreadCount,
 		fetchUpcomingEvents,
 		fetchUserPermissions,
-		fetchUserPermissionsData,
 		fetchUserPlaylists,
 		fetchUserPracticeMeta,
 		fetchUserPracticeNotes,
@@ -640,10 +641,10 @@ declare module 'musora-content-services' {
 		getNavigateToForPlaylists,
 		getNewAndUpcoming,
 		getOnboardingRecommendedContent,
-		getOwnPracticesOffline,
 		getOwnedContent,
 		getPracticeNotes,
 		getPracticeSessions,
+		getPracticeSessionsOffline,
 		getProgressDataByIds,
 		getProgressDataByRecordIds,
 		getProgressRows,
@@ -669,9 +670,11 @@ declare module 'musora-content-services' {
 		getUpgradePrice,
 		getUserData,
 		getUserMonthlyStats,
+		getUserMonthlyStatsOffline,
 		getUserPinProgressKey,
 		getUserSignature,
 		getUserWeeklyStats,
+		getUserWeeklyStatsOffline,
 		getWeekNumber,
 		globalConfig,
 		guidedCourses,

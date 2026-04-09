@@ -1,7 +1,7 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
-	 default as EventsAPI
+	 default as EventsAPI 
 } from './services/eventsAPI';
 
 import {
@@ -218,8 +218,11 @@ import {
 } from './services/liveTesting.ts';
 
 import {
-	getOwnPracticesOffline,
+	calculateLongestStreaksOffline,
+	getPracticeSessionsOffline,
 	getRecentActivityOffline,
+	getUserMonthlyStatsOffline,
+	getUserWeeklyStatsOffline,
 	recordWatchSessionOffline
 } from './services/offline/offline.ts';
 
@@ -250,7 +253,6 @@ import {
 	fetchLiveStreamData,
 	fetchRecentUserActivities,
 	fetchTopComment,
-	fetchUserPermissionsData,
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
 	fetchUserPractices,
@@ -459,7 +461,6 @@ import {
 } from './services/userActivity.js';
 
 export {
-	_recordWatchSession,
 	addContextToContent,
 	addContextToLearningPaths,
 	addItemToPlaylist,
@@ -471,6 +472,7 @@ export {
 	buildEntityAndTotalQuery,
 	buildImageSRC,
 	calculateLongestStreaks,
+	calculateLongestStreaksOffline,
 	clearAllCachedData,
 	clearState,
 	closeComment,
@@ -595,7 +597,6 @@ export {
 	fetchUnreadCount,
 	fetchUpcomingEvents,
 	fetchUserPermissions,
-	fetchUserPermissionsData,
 	fetchUserPlaylists,
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
@@ -639,10 +640,10 @@ export {
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
 	getOnboardingRecommendedContent,
-	getOwnPracticesOffline,
 	getOwnedContent,
 	getPracticeNotes,
 	getPracticeSessions,
+	getPracticeSessionsOffline,
 	getProgressDataByIds,
 	getProgressDataByRecordIds,
 	getProgressRows,
@@ -668,9 +669,11 @@ export {
 	getUpgradePrice,
 	getUserData,
 	getUserMonthlyStats,
+	getUserMonthlyStatsOffline,
 	getUserPinProgressKey,
 	getUserSignature,
 	getUserWeeklyStats,
+	getUserWeeklyStatsOffline,
 	getWeekNumber,
 	globalConfig,
 	guidedCourses,

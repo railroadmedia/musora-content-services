@@ -15,6 +15,13 @@ import { db, Q } from './sync'
 import { streakCalculator } from './user/streakCalculator'
 import { mapContentsThatWereLastProgressedFromMethod } from "./content-org/learning-paths.ts";
 
+/**
+ * Exported functions that are excluded from index generation.
+ *
+ * @type {string[]}
+ */
+const excludeFromGeneratedIndex = ['_getUserWeeklyStats', '_getUserMonthlyStats', '_calculateLongestStreaks']
+
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 const streakMessages = {
@@ -93,6 +100,14 @@ export async function getUserWeeklyStats() {
     Q.where('date', Q.oneOf(weekDays)),
     Q.sortBy('date', 'desc')
   )
+
+  const streakData = await streakCalculator.getStreakData()
+
+  return _getUserWeeklyStats(weekPractices, streakData)
+}
+
+
+export function _getUserWeeklyStats(weekPractices, streakData) {
   const practiceDaysSet = new Set(Object.keys(weekPractices))
   let dailyStats = []
   for (let i = 0; i < 7; i++) {
@@ -110,8 +125,6 @@ export async function getUserWeeklyStats() {
       day: dayStr,
     })
   }
-
-  const streakData = await streakCalculator.getStreakData()
 
   return {
     data: {
@@ -153,14 +166,21 @@ export async function getUserWeeklyStats() {
  * getUserMonthlyStats({ userId: 123 }).then(console.log);
  */
 export async function getUserMonthlyStats(params = {}) {
+  const userId = params.userId || globalConfig.sessionConfig.userId
+  const practices = await getUserPractices(userId)
+
+  const streakData = await streakCalculator.getStreakData()
+
+  return _getUserMonthlyStats(practices, streakData, params)
+}
+
+export function _getUserMonthlyStats(practices, streakData, params = {}) {
   const now = dayjs()
   const {
     year = now.year(),
     month = now.month(), // 0-indexed
-    userId = globalConfig.sessionConfig.userId,
   } = params
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  const practices = await getUserPractices(userId)
 
   const firstDayOfMonth = dayjs.tz(`${year}-${month + 1}-01`, timeZone).startOf('day')
   const endOfMonth = firstDayOfMonth.endOf('month')
@@ -239,7 +259,6 @@ export async function getUserMonthlyStats(params = {}) {
       return acc
     }, {})
 
-  const streakData = await streakCalculator.getStreakData()
   const currentDailyStreak = streakData.currentDailyStreak
   const currentWeeklyStreak = streakData.currentWeeklyStreak
 
@@ -701,6 +720,10 @@ function calculateStreaks(practices, includeStreakMessage = false) {
  */
 export async function calculateLongestStreaks(userId = globalConfig.sessionConfig.userId) {
   let practices = await getUserPractices(userId)
+  return _calculateLongestStreaks(practices)
+}
+
+export function _calculateLongestStreaks(practices) {
   let totalPracticeSeconds = 0
   // Calculate total practice duration
   for (const date in practices) {
