@@ -1,7 +1,7 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
-	 default as EventsAPI
+	 default as EventsAPI 
 } from './services/eventsAPI';
 
 import {
@@ -153,7 +153,8 @@ import {
 	getWeekNumber,
 	isNextDay,
 	isSameDate,
-	toDayjs
+	toDayjs,
+	toLocalDay
 } from './services/dateUtils.js';
 
 import {
@@ -218,15 +219,6 @@ import {
 } from './services/liveTesting.ts';
 
 import {
-	calculateLongestStreaksOffline,
-	getPracticeSessionsOffline,
-	getRecentActivityOffline,
-	getUserMonthlyStatsOffline,
-	getUserWeeklyStatsOffline,
-	recordWatchSessionOffline
-} from './services/offline/offline.ts';
-
-import {
 	acceptInvite,
 	createAccount,
 	createInvites,
@@ -234,6 +226,15 @@ import {
 	removeUserFromActiveMultiUserAccount,
 	rescindInvite
 } from './services/multi-user-accounts/multi-user-accounts.ts';
+
+import {
+	calculateLongestStreaksOffline,
+	getPracticeSessionsOffline,
+	getRecentActivityOffline,
+	getUserMonthlyStatsOffline,
+	getUserWeeklyStatsOffline,
+	recordWatchSessionOffline
+} from './services/offline/offline.ts';
 
 import {
 	emitProgressSaved,
@@ -769,6 +770,7 @@ export {
 	startOnboarding,
 	status,
 	toDayjs,
+	toLocalDay,
 	togglePlaylistPrivate,
 	toggleSignaturePrivate,
 	toggleStudentView,
