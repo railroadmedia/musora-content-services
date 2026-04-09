@@ -214,6 +214,12 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	getOwnPracticesOffline,
+	getRecentActivityOffline,
+	recordWatchSessionOffline
+} from './services/offline/offline.ts';
+
+import {
 	emitProgressSaved,
 	onProgressSaved
 } from './services/progress-events.js';
@@ -431,7 +437,6 @@ import {
 	deletePracticeSession,
 	deleteUserActivity,
 	fetchRecentActivitiesActiveTabs,
-	findIncompleteLesson,
 	getPracticeNotes,
 	getPracticeSessions,
 	getRecentActivity,
@@ -450,11 +455,12 @@ import {
 } from './services/userActivity.js';
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 declare module 'musora-content-services' {
 	export {
+		_recordWatchSession,
 		addContextToContent,
 		addContextToLearningPaths,
 		addItemToPlaylist,
@@ -596,7 +602,6 @@ declare module 'musora-content-services' {
 		fetchUserPracticeNotes,
 		fetchUserPractices,
 		filterCoursesInCourseCollections,
-		findIncompleteLesson,
 		flushWatchSession,
 		followThread,
 		generateAuthSessionUrl,
@@ -635,6 +640,7 @@ declare module 'musora-content-services' {
 		getNavigateToForPlaylists,
 		getNewAndUpcoming,
 		getOnboardingRecommendedContent,
+		getOwnPracticesOffline,
 		getOwnedContent,
 		getPracticeNotes,
 		getPracticeSessions,
@@ -646,6 +652,7 @@ declare module 'musora-content-services' {
 		getProgressStateByRecordIds,
 		getRecent,
 		getRecentActivity,
+		getRecentActivityOffline,
 		getRecommendedForYou,
 		getReportIssueOptions,
 		getResumeTimeSecondsByIds,
@@ -709,6 +716,7 @@ declare module 'musora-content-services' {
 		recordUserActivity,
 		recordUserPractice,
 		recordWatchSession,
+		recordWatchSessionOffline,
 		registerAwardCallback,
 		registerProgressCallback,
 		removeContentAsInterested,

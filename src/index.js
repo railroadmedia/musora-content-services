@@ -1,7 +1,7 @@
 /*** This file was generated automatically. To recreate, please run `npm run build-index`. ***/
 
 import {
-	 default as EventsAPI 
+	 default as EventsAPI
 } from './services/eventsAPI';
 
 import {
@@ -216,6 +216,12 @@ import {
 import {
 	createTestUser
 } from './services/liveTesting.ts';
+
+import {
+	getOwnPracticesOffline,
+	getRecentActivityOffline,
+	recordWatchSessionOffline
+} from './services/offline/offline.ts';
 
 import {
 	emitProgressSaved,
@@ -435,7 +441,6 @@ import {
 	deletePracticeSession,
 	deleteUserActivity,
 	fetchRecentActivitiesActiveTabs,
-	findIncompleteLesson,
 	getPracticeNotes,
 	getPracticeSessions,
 	getRecentActivity,
@@ -454,6 +459,7 @@ import {
 } from './services/userActivity.js';
 
 export {
+	_recordWatchSession,
 	addContextToContent,
 	addContextToLearningPaths,
 	addItemToPlaylist,
@@ -595,7 +601,6 @@ export {
 	fetchUserPracticeNotes,
 	fetchUserPractices,
 	filterCoursesInCourseCollections,
-	findIncompleteLesson,
 	flushWatchSession,
 	followThread,
 	generateAuthSessionUrl,
@@ -634,6 +639,7 @@ export {
 	getNavigateToForPlaylists,
 	getNewAndUpcoming,
 	getOnboardingRecommendedContent,
+	getOwnPracticesOffline,
 	getOwnedContent,
 	getPracticeNotes,
 	getPracticeSessions,
@@ -645,6 +651,7 @@ export {
 	getProgressStateByRecordIds,
 	getRecent,
 	getRecentActivity,
+	getRecentActivityOffline,
 	getRecommendedForYou,
 	getReportIssueOptions,
 	getResumeTimeSecondsByIds,
@@ -708,6 +715,7 @@ export {
 	recordUserActivity,
 	recordUserPractice,
 	recordWatchSession,
+	recordWatchSessionOffline,
 	registerAwardCallback,
 	registerProgressCallback,
 	removeContentAsInterested,
