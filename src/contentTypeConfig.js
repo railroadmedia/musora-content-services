@@ -45,7 +45,7 @@ export const instructorField = `instructor[]->{
 
 export const artistField = `select(
           defined(artist) => artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url},
-          defined(parent_content_reference) => *[_type == ^.${parentField}->_type && railcontent_id == ^.${parentField}->railcontent_id][0].artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url}
+          defined(parent_content_reference) => ${parentField}->artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url}
         )`
 
 export const DEFAULT_FIELDS = [
@@ -142,7 +142,7 @@ export const assignmentsField = `"assignments":assignment[]{
             }.url,  assignment_sheet_music_image),
         "timecode": assignment_timecode,
         "description": coalesce(assignment_description,'')
-},`
+}`
 
 // todo: refactor live event queries to use this
 export function getLiveFields(minimum = false) {
