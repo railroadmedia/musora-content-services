@@ -978,7 +978,11 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         }, 'sync.cleanup')
       })
     }, SyncStore.CLEANUP_INTERVAL)
-    this.cleanupTimer.unref()
+
+    // in tests in node env, prevents the timer from keeping the process alive
+    if (typeof (this.cleanupTimer as any).unref === 'function') {
+      (this.cleanupTimer as any).unref()
+    }
   }
 
   private stopCleanupTimer() {
