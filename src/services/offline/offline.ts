@@ -46,7 +46,6 @@ export async function recordWatchSessionOffline(
   prevSession = null,
   instrumentId = null,
   categoryId = null,
-  isLivestream = false,
   hierarchy = null,
 ) {
   return _recordWatchSession(
@@ -59,6 +58,6 @@ export async function recordWatchSessionOffline(
       prevSession,
       instrumentId,
       categoryId,
-      isLivestream,
+      hierarchy,
     })
 }
