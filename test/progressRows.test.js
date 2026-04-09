@@ -113,8 +113,10 @@ describe('getProgressRows', () => {
       .mockImplementationOnce(() => Promise.resolve([])) // playlists
       .mockImplementationOnce(() => Promise.resolve(mockData_sanity_progress_content) // content progress
       );
-
-    getAllStartedOrCompleted.mockResolvedValue(mockData_progress_content);
+    const sortedIds = Object.entries(mockData_progress_content)
+      .sort(([, a], [, b]) => b.last_update - a.last_update)
+      .map(([id]) => Number(id))
+    getAllStartedOrCompleted.mockResolvedValue(sortedIds)
     getProgressStateByIds
       .mockImplementationOnce(() => Promise.resolve({
         "287853": "completed",
