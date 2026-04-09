@@ -735,8 +735,7 @@ export function _calculateLongestStreaks(practices) {
   let practiceDates = Object.keys(practices)
     .map((dateStr) => {
       const [y, m, d] = dateStr.split('-').map(Number)
-      const newDate = new Date()
-      newDate.setFullYear(y, m - 1, d)
+      const newDate = new Date(y, m - 1, d, 0, 0, 0, 0)
       return newDate
     })
     .sort((a, b) => a - b)
@@ -761,7 +760,7 @@ export function _calculateLongestStreaks(practices) {
   let currentDailyStreak = 1
   for (let i = 1; i < normalizedDates.length; i++) {
     const diffInDays = (normalizedDates[i] - normalizedDates[i - 1]) / (1000 * 60 * 60 * 24)
-    if (diffInDays === 1) {
+    if (Math.round(diffInDays) === 1) {
       currentDailyStreak++
       longestDailyStreak = Math.max(longestDailyStreak, currentDailyStreak)
     } else {
@@ -787,7 +786,7 @@ export function _calculateLongestStreaks(practices) {
 
   for (let i = 1; i < weekStartDates.length; i++) {
     const diffInWeeks = (weekStartDates[i] - weekStartDates[i - 1]) / (1000 * 60 * 60 * 24 * 7)
-    if (diffInWeeks === 1) {
+    if (Math.round(diffInWeeks) === 1) {
       currentWeeklyStreak++
       longestWeeklyStreak = Math.max(longestWeeklyStreak, currentWeeklyStreak)
     } else {

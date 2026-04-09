@@ -1,9 +1,61 @@
 import { SyncTelemetry } from '../telemetry'
 
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
-export { LokiJSAdapter as default }
 
 import { deleteDatabase, lokiFatalError } from '@nozbe/watermelondb/adapters/lokijs/worker/lokiExtensions'
+
+export type LokiExtensions = {
+  onPersistenceError?: (err: Error) => void
+}
+
+export default class LokiPersistenceErrorAwareAdapter extends LokiJSAdapter {
+  constructor(options: any, extensions: LokiExtensions = {}) {
+    super(options);
+    const that = this;
+
+    // Schedule save override right at end of setup hook right after `_driver` is ready
+    const setupDispatchCallback = this._dispatcher._pendingCalls[0].callback;
+    this._dispatcher._pendingCalls[0].callback = function() {
+      that._overrideSaveDatabase(extensions.onPersistenceError);
+      setupDispatchCallback.apply(that, arguments);
+    }
+  }
+
+  _overrideSaveDatabase(onPersistenceError?: (err: Error) => void) {
+    const driver = this._driver
+    const persistenceAdapter = driver.loki.persistenceAdapter
+    const oldSaveDatabase = persistenceAdapter.saveDatabase;
+
+    persistenceAdapter.saveDatabase = function(...args: any[]) {
+      const callback = args[2];
+      oldSaveDatabase.call(persistenceAdapter, args[0], args[1], function(err: Error | null) {
+        if (err && err.name === 'InvalidStateError' && err.message.includes('database connection is closing')) {
+          // triggers new connection on next save
+          if (persistenceAdapter.idb && !persistenceAdapter.idb._disableReconnect) {
+            persistenceAdapter.idb.close()
+            persistenceAdapter.idb = null
+          }
+
+          // retry once
+          oldSaveDatabase.call(persistenceAdapter, args[0], args[1], function(err: Error | null) {
+            if (err && err.name === 'InvalidStateError' && err.message.includes('database connection is closing')) {
+              // Don't set _isBroken - that prevents us from being to trigger onPersistenceError in the future
+              // driver._isBroken = true
+
+              onPersistenceError?.(err)
+            }
+
+            callback(err);
+          })
+
+          return
+        }
+
+        callback(err);
+      })
+    }
+  }
+}
 
 /**
  * Mute impending driver errors that are expected after sync adapter failure
@@ -13,6 +65,41 @@ export function muteImpendingDriverErrors() {
     'Cannot run actions because driver is not set up',
     /The reader you're trying to run \(.+\) can't be performed yet/
   )
+}
+
+/**
+ * Patch indexedDB.deleteDatabase to delay the real call by 1ms
+ * as Safari logs tons of noisy errors, due to watermelon's
+ * `IncrementalIndexedDBAdapter.prototype.deleteDatabase` fn not waiting for
+ * a `close()` call to complete before trying `deleteDatabase`
+ * (which consistently triggers `request.onblocked`)
+ */
+export function patchIndexedDBDeleteDatabaseErrors() {
+  const idb = window.indexedDB as any
+  const originalDeleteDatabase = idb.deleteDatabase
+
+  idb.deleteDatabase = function(...args: any[]) {
+    const proxyRequest = new Proxy({} as IDBOpenDBRequest, {
+      get(target, prop) {
+        return target[prop]
+      },
+      set(target, prop, value) {
+        target[prop] = value
+        return true
+      },
+    })
+
+    // Delay the real call by 1ms
+    setTimeout(() => {
+      const realRequest = originalDeleteDatabase.apply(this, args)
+
+      Object.keys(proxyRequest).forEach(prop => {
+        realRequest[prop] = (event: Event) => proxyRequest[prop]?.call(proxyRequest, event)
+      })
+    }, 1)
+
+    return proxyRequest
+  }
 }
 
 /**

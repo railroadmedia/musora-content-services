@@ -2,6 +2,127 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.152.1](https://github.com/railroadmedia/musora-content-services/compare/v2.152.0...v2.152.1) (2026-04-09)
+
+## [2.152.0](https://github.com/railroadmedia/musora-content-services/compare/v2.151.1...v2.152.0) (2026-04-09)
+
+
+### Features
+
+* use sanity.musora.com cloudflare worker for caching ([#900](https://github.com/railroadmedia/musora-content-services/issues/900)) ([a6302f9](https://github.com/railroadmedia/musora-content-services/commit/a6302f96374fdea152f9fddd3ce8a8512e1c7b17))
+
+### [2.151.1](https://github.com/railroadmedia/musora-content-services/compare/v2.151.0...v2.151.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* broken abort rejection after merge conflict fail ([#909](https://github.com/railroadmedia/musora-content-services/issues/909)) ([e75ebea](https://github.com/railroadmedia/musora-content-services/commit/e75ebeace9f5738d9accf6c546cd343ac7c98855))
+
+## [2.151.0](https://github.com/railroadmedia/musora-content-services/compare/v2.149.0...v2.151.0) (2026-04-08)
+
+
+### Features
+
+* recovers user id if clobbered by Safari ITP ([#892](https://github.com/railroadmedia/musora-content-services/issues/892)) ([338476d](https://github.com/railroadmedia/musora-content-services/commit/338476d69025140f3a93b30e0ae63d194d185185))
+* throw specific error after abort; protect getLastFetchToken ([#905](https://github.com/railroadmedia/musora-content-services/issues/905)) ([7c084e4](https://github.com/railroadmedia/musora-content-services/commit/7c084e4b351e26f8464f568d658e855f84e31951))
+
+## [2.150.0](https://github.com/railroadmedia/musora-content-services/compare/v2.149.0...v2.150.0) (2026-04-08)
+
+
+### Features
+
+* throw specific error after abort; protect getLastFetchToken ([#905](https://github.com/railroadmedia/musora-content-services/issues/905)) ([7c084e4](https://github.com/railroadmedia/musora-content-services/commit/7c084e4b351e26f8464f568d658e855f84e31951))
+
+## [2.149.0](https://github.com/railroadmedia/musora-content-services/compare/v2.148.0...v2.149.0) (2026-04-07)
+
+
+### Features
+
+* remove countdown logic for GC in progress card ([#897](https://github.com/railroadmedia/musora-content-services/issues/897)) ([254bc2a](https://github.com/railroadmedia/musora-content-services/commit/254bc2a0a695f68e449a49a71197be01654ba9aa))
+
+## [2.148.0](https://github.com/railroadmedia/musora-content-services/compare/v2.145.6...v2.148.0) (2026-04-03)
+
+
+### Features
+
+* Add children to fetchScheduledAndNewReleases for navigateTo calculations ([#901](https://github.com/railroadmedia/musora-content-services/issues/901)) ([3ade1ad](https://github.com/railroadmedia/musora-content-services/commit/3ade1ad400e1dd9e56d245f3a37d77d709a0d4e1))
+* **BEHLPT-18:**  remove user from muppet ([#891](https://github.com/railroadmedia/musora-content-services/issues/891)) ([ecdf778](https://github.com/railroadmedia/musora-content-services/commit/ecdf778108f974f59885c3d442c47c90152c5554))
+
+
+### Bug Fixes
+
+* patches indexedDB.deleteDatabase to silence noisy safari errs ([#888](https://github.com/railroadmedia/musora-content-services/issues/888)) ([c67d408](https://github.com/railroadmedia/musora-content-services/commit/c67d40800ffe64d3eab204b97eaf26413b5a6e79))
+
+### [2.147.1](https://github.com/railroadmedia/musora-content-services/compare/v2.147.0...v2.147.1) (2026-04-02)
+
+
+### Bug Fixes
+
+* patches indexedDB.deleteDatabase to silence noisy safari errs ([#888](https://github.com/railroadmedia/musora-content-services/issues/888)) ([c67d408](https://github.com/railroadmedia/musora-content-services/commit/c67d40800ffe64d3eab204b97eaf26413b5a6e79))
+
+## [2.147.0](https://github.com/railroadmedia/musora-content-services/compare/v2.146.1...v2.147.0) (2026-04-02)
+
+
+### Features
+
+* Add children to fetchScheduledAndNewReleases for navigateTo calculations ([#901](https://github.com/railroadmedia/musora-content-services/issues/901)) ([3ade1ad](https://github.com/railroadmedia/musora-content-services/commit/3ade1ad400e1dd9e56d245f3a37d77d709a0d4e1))
+
+### [2.146.1](https://github.com/railroadmedia/musora-content-services/compare/v2.146.0...v2.146.1) (2026-04-02)
+
+## [2.146.0](https://github.com/railroadmedia/musora-content-services/compare/v2.145.9...v2.146.0) (2026-04-02)
+
+
+### Features
+
+* **BEHLPT-18:**  remove user from muppet ([#891](https://github.com/railroadmedia/musora-content-services/issues/891)) ([ecdf778](https://github.com/railroadmedia/musora-content-services/commit/ecdf778108f974f59885c3d442c47c90152c5554))
+
+### [2.145.9](https://github.com/railroadmedia/musora-content-services/compare/v2.145.8...v2.145.9) (2026-04-01)
+
+### [2.145.8](https://github.com/railroadmedia/musora-content-services/compare/v2.145.7...v2.145.8) (2026-04-01)
+
+### [2.145.7](https://github.com/railroadmedia/musora-content-services/compare/v2.145.6...v2.145.7) (2026-04-01)
+
+### [2.145.6](https://github.com/railroadmedia/musora-content-services/compare/v2.145.5...v2.145.6) (2026-03-31)
+
+### [2.145.5](https://github.com/railroadmedia/musora-content-services/compare/v2.145.4...v2.145.5) (2026-03-31)
+
+### [2.145.4](https://github.com/railroadmedia/musora-content-services/compare/v2.145.3...v2.145.4) (2026-03-31)
+
+
+### Bug Fixes
+
+* remove content-type from application/json ([#894](https://github.com/railroadmedia/musora-content-services/issues/894)) ([281f5b9](https://github.com/railroadmedia/musora-content-services/commit/281f5b9bd8618b97c7070b581f7299feb936ac00))
+
+### [2.145.3](https://github.com/railroadmedia/musora-content-services/compare/v2.145.2...v2.145.3) (2026-03-31)
+
+### [2.145.2](https://github.com/railroadmedia/musora-content-services/compare/v2.145.1...v2.145.2) (2026-03-31)
+
+### [2.145.1](https://github.com/railroadmedia/musora-content-services/compare/v2.145.0...v2.145.1) (2026-03-31)
+
+## [2.145.0](https://github.com/railroadmedia/musora-content-services/compare/v2.143.1...v2.145.0) (2026-03-31)
+
+
+### Features
+
+* **behltp-22:**  Muppets - user data - invite create/accept/rescind endpoints ([#886](https://github.com/railroadmedia/musora-content-services/issues/886)) ([21c20b9](https://github.com/railroadmedia/musora-content-services/commit/21c20b935833de3956d43d6c04122430df6806dc))
+
+
+### Bug Fixes
+
+* **BR-531:** fix award Days Practiced calculation ([#887](https://github.com/railroadmedia/musora-content-services/issues/887)) ([25882a9](https://github.com/railroadmedia/musora-content-services/commit/25882a9c7ab162cdbc6d9fec96b53459b328feb2))
+
+## [2.144.0](https://github.com/railroadmedia/musora-content-services/compare/v2.143.1...v2.144.0) (2026-03-31)
+
+
+### Features
+
+* **behltp-22:**  Muppets - user data - invite create/accept/rescind endpoints ([#886](https://github.com/railroadmedia/musora-content-services/issues/886)) ([21c20b9](https://github.com/railroadmedia/musora-content-services/commit/21c20b935833de3956d43d6c04122430df6806dc))
+
+
+### Bug Fixes
+
+* **BR-531:** fix award Days Practiced calculation ([#887](https://github.com/railroadmedia/musora-content-services/issues/887)) ([25882a9](https://github.com/railroadmedia/musora-content-services/commit/25882a9c7ab162cdbc6d9fec96b53459b328feb2))
+
 ### [2.143.1](https://github.com/railroadmedia/musora-content-services/compare/v2.143.0...v2.143.1) (2026-03-25)
 
 

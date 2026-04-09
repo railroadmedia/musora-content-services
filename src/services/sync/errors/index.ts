@@ -72,3 +72,11 @@ export class SyncValidationError extends SyncError {
     Object.setPrototypeOf(this, new.target.prototype)
   }
 }
+
+export class SyncAbortError extends SyncError {
+  constructor(message: string = 'Sync operation was aborted', details?: ErrorDetails) {
+    super(message, details)
+    this.name = 'SyncAbortError'
+    Object.setPrototypeOf(this, new.target.prototype)
+  }
+}

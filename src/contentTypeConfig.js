@@ -72,6 +72,8 @@ export const DEFAULT_FIELDS = [
   `"grandparent_id": ${grandParentField}->railcontent_id`,
   'live_event_start_time',
   'live_event_end_time',
+  'enrollment_start_time',
+  'enrollment_end_time',
 ]
 
 // these are identical... why
@@ -94,16 +96,17 @@ export const DEFAULT_CHILD_FIELDS = [
   "'slug' : slug.current",
   "'permission_id': permission_v2",
   'child_count',
-  `"parent_id": ${parentField}->railcontent_id`,
-  `"grandparent_id": ${grandParentField}->railcontent_id`,
+  '"parent_id": parent_content_data[0].id',
+  '"grandparent_id": parent_content_data[1].id',
 ]
 
-export const playAlongMp3sFields = [
-      'mp3_no_drums_no_click_url',
-      'mp3_no_drums_yes_click_url',
-      'mp3_yes_drums_no_click_url',
-      'mp3_yes_drums_yes_click_url',
-]
+export const playAlongMp3sField = `{
+      'mp3_no_drums_no_click_url':      mp3_no_drums_no_click_url,
+      'mp3_no_drums_yes_click_url':     mp3_no_drums_yes_click_url,
+      'mp3_yes_drums_no_click_url':     mp3_yes_drums_no_click_url,
+      'mp3_yes_drums_yes_click_url':    mp3_yes_drums_yes_click_url,
+}
+`
 
 export const chapterField = `chapter[]{
                     chapter_description,
@@ -115,7 +118,7 @@ export const descriptionField = 'description[0].children[0].text'
 // this pulls both any defined resources for the document as well as any resources in the parent document
 export const resourcesField = `[
           ... resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
-          ... *[defined(resource) && railcontent_id in [...(^.parent_content_reference[]->railcontent_id)]].resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
+          ... *[defined(resource) && railcontent_id in [...(^.parent_content_data[].id)]].resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
           ]`
 
 export const contentAwardField = "*[references(^._id) && _type == 'content-award'][0]"
@@ -140,31 +143,25 @@ export const assignmentsField = `"assignments":assignment[]{
             }.url,  assignment_sheet_music_image),
         "timecode": assignment_timecode,
         "description": coalesce(assignment_description,'')
-}`
+},`
 
 // todo: refactor live event queries to use this
-export function getLiveFields(minimum = false) {
-  const minimumFields = [
-    "live_event_start_time",
-    "live_event_end_time",
-    "live_event_stream_id",
-    "'live_event_is_global': live_global_event == true",
-    "'videoId': coalesce(live_event_stream_id, video.external_id)",
-  ]
-  const additionalFields = [
-    "'slug': slug.current",
-    "'id': railcontent_id",
-    "title",
-    "published_on",
-    "'thumbnail': thumbnail.asset->url",
-    `${artistOrInstructorName()}`,
-    "difficulty_string",
-    "railcontent_id",
-    `'instructors': ${instructorField}`,
-  ]
-
-  return minimum ? minimumFields : minimumFields.concat(additionalFields)
-}
+export const liveFields = `
+    'slug': slug.current,
+    'id': railcontent_id,
+    title,
+    live_event_start_time,
+    live_event_end_time,
+    live_event_stream_id,
+    "live_event_is_global": live_global_event == true,
+    published_on,
+    "thumbnail": thumbnail.asset->url,
+    ${artistOrInstructorName()},
+    difficulty_string,
+    railcontent_id,
+    "instructors": ${instructorField},
+    'videoId': coalesce(live_event_stream_id, video.external_id)
+  `
 
 const contentWithInstructorsField = {
   fields: ['"instructors": instructor[]->name'],
@@ -178,21 +175,6 @@ const isLiveField = () => {
   const now = getSanityDate(new Date())
   return `"isLive": live_event_start_time <= '${now}' && live_event_end_time >= '${now}'`
 }
-
-const pcdForDownloadField = `
-  "parent_content_data": parent_content_reference[]->{
-    "id": railcontent_id,
-    title,
-    slug,
-    "type": _type,
-    "logo" : logo_image_url.asset->url,
-    "dark_mode_logo": dark_mode_logo_url.asset->url,
-    "light_mode_logo": light_mode_logo_url.asset->url,
-    "badge": *[references(^._id) && _type == 'content-award'][0].badge.asset->url,
-    "badge_rear": *[references(^._id) && _type == 'content-award'][0].badge_rear.asset->url,
-    "badge_logo": *[references(^._id) && _type == 'content-award'][0].logo.asset->url,
-    'parentCount': coalesce(count(parent_content_reference), 0)
-  }`
 
 export const showsTypes = {
   drumeo: [
@@ -365,7 +347,7 @@ export const filterTypes = {
   ],
 }
 
-export const lessonRecentTypes = [
+const lessonRecentTypes = [
   ...individualLessonsTypes,
   'skill-pack-lesson',
   ...entertainmentLessonTypes,
@@ -419,7 +401,6 @@ export const ownedContentTypes = {
 
 export let contentTypeConfig = {
   'tab-data': {
-    fields: ['enrollment_start_time', 'enrollment_end_time'],
     includeChildFields: true,
   },
   'progress-tracker': {
@@ -694,6 +675,7 @@ export let contentTypeConfig = {
       'show_in_new_feed',
       isLiveField()
     ],
+    includeChildFields: true,
   },
 }
 

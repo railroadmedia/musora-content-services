@@ -12,7 +12,6 @@ import {
   showsLessonTypes,
   songs,
 } from '../../../contentTypeConfig.js'
-import { getTimeRemainingUntilLocal } from '../../dateUtils.js'
 import { PARENT_ID_TOP_LEVEL } from '../../sync/models/ContentProgress'
 
 /**
@@ -58,7 +57,7 @@ function generateContentPromises(contents) {
   const promises = []
   if (!contents) return promises
   const existingShows = new Set()
-  let allRecentTypeSet = new Set(Object.values(recentTypes.homeRow))
+  const allRecentTypeSet = new Set(Object.values(recentTypes.homeRow))
   allRecentTypeSet.delete('learning-path-v2') // we do this to remove from homepage, until we allow a-la-carte learning paths
   contents.forEach((content) => {
     const type = content.type
@@ -80,32 +79,11 @@ function generateContentPromises(contents) {
 export async function processContentItem(content) {
   const contentType = getFormattedType(content.type, content.brand)
   const isLive = content.isLive ?? false
-  let ctaText = getDefaultCTATextForContent(content, contentType)
+  const ctaText = getDefaultCTATextForContent(content, contentType)
 
   const { completedChildren, allChildren } = await getCompletedChildren(content, contentType)
   content.completed_children = completedChildren
   content.all_children = allChildren
-
-  if (content.type === 'guided-course') {
-    const nextLessonPublishedOn = content.children.find(
-      (child) => child.id === content.navigateTo.id
-    )?.published_on
-    let isLocked = new Date(nextLessonPublishedOn) > new Date()
-    if (isLocked) {
-      content.is_locked = true
-      const timeRemaining = getTimeRemainingUntilLocal(nextLessonPublishedOn, {
-        withTotalSeconds: true,
-      })
-      content.time_remaining_seconds = timeRemaining.totalSeconds
-      ctaText = 'Next lesson in ' + timeRemaining.formatted
-    } else if (
-      !content.progressStatus ||
-      content.progressStatus === 'not-started' ||
-      content.progressPercentage === 0
-    ) {
-      ctaText = 'Start Course'
-    }
-  }
 
   return {
     id: content.id,
@@ -125,16 +103,10 @@ export async function processContentItem(content) {
       badge_template: content.badge_template ?? null,
       badge_template_rear: content.badge_template_rear ?? null,
       isLocked: content.is_locked ?? false,
-      subtitle:
-        collectionLessonTypes.includes(content.type) || content.lesson_count > 1
-          ? `${content.completed_children ?? 0} of ${content.all_children ?? content.lesson_count ?? content.child_count} Lessons Complete`
-          : (contentType === 'lesson' || contentType === 'show') && isLive === false
-            ? `${content.progressPercentage}% Complete`
-            : `${content.difficulty_string} • ${content.artist_name}`,
+      subtitle: getSubtitle(content, contentType, isLive),
     },
     cta: {
       text: ctaText,
-      timeRemainingToUnlockSeconds: content.time_remaining_seconds ?? null,
       action: {
         type: content.type,
         brand: content.brand,
@@ -147,21 +119,37 @@ export async function processContentItem(content) {
   }
 }
 
+function getSubtitle(content, contentType, isLive) {
+  if (collectionLessonTypes.includes(content.type) || content.lesson_count > 1) {
+    return `${content.completed_children ?? 0} of ${content.all_children ?? content.lesson_count ?? content.child_count} Lessons Complete`
+  }
+  if ((contentType === 'lesson' || contentType === 'show') && !isLive) {
+    return `${content.progressPercentage}% Complete`
+  }
+  return `${content.difficulty_string} • ${content.artist_name}`
+}
+
 function getDefaultCTATextForContent(content, contentType) {
-  let ctaText = 'Continue'
+  const notStarted =
+    !content.progressStatus ||
+    content.progressStatus === 'not-started' ||
+    content.progressPercentage === 0
+  if (content.type === 'guided-course' && notStarted) return 'Start Course'
+
   if (content.progressStatus === 'completed') {
     if (
       contentType === songs[content.brand] ||
       contentType === 'play along' ||
       contentType === 'jam track'
     )
-      ctaText = 'Replay Song'
-    if (contentType === 'lesson' || contentType === 'show') ctaText = 'Revisit Lesson'
+      return 'Replay Song'
+    if (contentType === 'lesson' || contentType === 'show') return 'Revisit Lesson'
     if (contentType === 'song tutorial' || collectionLessonTypes.includes(content.type))
-      ctaText = 'Revisit Lessons'
-    if (contentType === 'course-collection') ctaText = 'View Lessons'
+      return 'Revisit Lessons'
+    if (contentType === 'course-collection') return 'View Lessons'
   }
-  return ctaText
+
+  return 'Continue'
 }
 
 async function getCompletedChildren(content, contentType) {
@@ -176,7 +164,7 @@ async function getCompletedChildren(content, contentType) {
       (show) => show.progressStatus === 'completed'
     ).length
     allChildren = Object.values(shows).length
-  } else if (content.children.length > 0) {
+  } else if (content.children && content.children.length > 0) {
     const lessonIds = getLeafNodes(content)
     const progressOnItems = await getProgressStateByIds(lessonIds)
     completedChildren = Array.from(progressOnItems.values()).filter(
