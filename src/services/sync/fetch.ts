@@ -140,18 +140,6 @@ export type PushPayload = {
   })[]
 }
 
-interface ServerPushPayload {
-  entries: {
-    record: BaseModel | null
-    meta: {
-      ids: {
-        id: string
-      },
-      deleted_at: EpochMs | null
-    }
-  }[]
-}
-
 export function makeFetchRequest(input: RequestInfo, init?: RequestInit) {
   return (userId: number, context: SyncContext) => new Request(globalConfig.baseUrl + input, {
     ...init,
