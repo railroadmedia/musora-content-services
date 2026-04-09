@@ -68,7 +68,7 @@ export const DEFAULT_FIELDS = [
   "'slug' : slug.current",
   "'permission_id': permission_v2",
   'child_count',
-  '"parent_id": ${parentField}->railcontent_id',
+  `"parent_id": ${parentField}->railcontent_id`,
   `"grandparent_id": ${grandParentField}->railcontent_id`,
   'live_event_start_time',
   'live_event_end_time',
