@@ -103,11 +103,11 @@ export async function getUserWeeklyStats() {
 
   const streakData = await streakCalculator.getStreakData()
 
-  return _getUserWeeklyStats(weekPractices, streakData)
+  return _getUserWeeklyStats(weekPractices, startOfWeek, today, streakData)
 }
 
 
-export function _getUserWeeklyStats(weekPractices, streakData) {
+export function _getUserWeeklyStats(weekPractices, startOfWeek, today, streakData) {
   const practiceDaysSet = new Set(Object.keys(weekPractices))
   let dailyStats = []
   for (let i = 0; i < 7; i++) {

@@ -167,7 +167,7 @@ export async function getUserWeeklyStatsOffline(offlineTimestamp: number) {
 
   const streakData = await streakCalculator.getStreakData()
 
-  return _getUserWeeklyStats(weekPractices, streakData)
+  return _getUserWeeklyStats(weekPractices, startOfWeek, today, streakData)
 }
 
 export async function getUserMonthlyStatsOffline(
