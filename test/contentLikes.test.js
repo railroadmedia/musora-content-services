@@ -29,10 +29,6 @@ jest.mock('../src/services/sync/repository-proxy', () => {
   return { default: mockFns, ...mockFns }
 })
 
-jest.mock('../src/services/railcontent.js', () => ({
-  ...jest.requireActual('../src/services/railcontent.js'),
-  fetchUserPermissionsData: jest.fn(() => ({ permissions: [78, 91, 92], isAdmin: false })),
-}))
 
 describe('contentLikesDataContext', function () {
   beforeEach(() => {
