@@ -125,7 +125,7 @@ These were already skipped before CI work. Status is noted where confirmed.
 |---|---|---|
 | getTabResults-Filters | Failing | Timeout (>5s) |
 | getTabResults-Type-Filter | Failing | `TypeError: null.entity` — Sanity returns null |
-| getContentRows | Unknown | — |
+| getContentRows | Unknown |Sanity & pw-recommender  |
 | getNewAndUpcoming | Failing | Timeout (>5s) |
 | getScheduleContentRows | Failing | Timeout (>5s) |
 | getSpecificScheduleContentRow | Failing | Timeout (>5s) |
