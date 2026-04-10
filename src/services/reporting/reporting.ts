@@ -12,8 +12,7 @@ import { globalConfig } from '../config.js'
 import { ReportResponse, ReportableType, IssueTypeMap, ReportIssueOption } from './types'
 import { Brands } from '../../lib/brands'
 import { generateContentUrl, generatePlaylistUrl, generateForumPostUrl, generateCommentUrl } from '../urlBuilder'
-import {fetchByRailContentId} from "../sanity";
-import {fetchByRailContentIds} from "../sanity";
+import {fetchByRailContentId, fetchByRailContentIds} from "../sanity";
 import {addContextToContent} from "../contentAggregator";
 
 /**
