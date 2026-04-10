@@ -15,13 +15,6 @@ import { db, Q } from './sync'
 import { streakCalculator } from './user/streakCalculator'
 import { mapContentsThatWereLastProgressedFromMethod } from "./content-org/learning-paths.ts";
 
-/**
- * Exported functions that are excluded from index generation.
- *
- * @type {string[]}
- */
-const excludeFromGeneratedIndex = ['_getUserWeeklyStats', '_getUserMonthlyStats', '_calculateLongestStreaks']
-
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 const streakMessages = {
