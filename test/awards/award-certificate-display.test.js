@@ -3,6 +3,7 @@ import { mockAwardDefinitions, getAwardById } from '../mockData/award-definition
 import { globalConfig } from '../../src/services/config'
 
 jest.mock('../../src/services/sanity', () => ({
+  ...jest.requireActual('../../src/services/sanity'),
   default: {
     fetch: jest.fn()
   },
@@ -83,7 +84,7 @@ describe('Award Certificate Display - E2E Scenarios', () => {
       expect(certificate).toMatchObject({
         userId: 12345,
         userName: 'John Doe',
-        completedAt: expect.any(String),
+        completedAt: expect.any(Number),
         awardId: awardId,
         awardType: 'content-award',
         awardTitle: testAward.name,

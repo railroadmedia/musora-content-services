@@ -39,6 +39,7 @@ export interface Onboarding {
   is_completed: boolean
   completed_at: Date | null
   marketing_opt_in: boolean
+  has_skipped_paywall: boolean
 }
 
 /**
@@ -59,8 +60,8 @@ export async function startOnboarding({
     brand,
     flow,
     steps,
-    marketing_opt_in: marketingOptIn,
     is_completed: false,
+    marketing_opt_in: marketingOptIn,
   })
 }
 
@@ -69,8 +70,9 @@ export interface UpdateOnboardingParams {
   email: string
   brand: string
   flow: string
-  marketingOptIn: boolean
   is_completed?: boolean
+  marketingOptIn?: boolean
+  hasSkippedPaywall?: boolean
   steps: OnboardingSteps
 }
 
@@ -88,6 +90,7 @@ export async function updateOnboarding({
   steps,
   is_completed = false,
   marketingOptIn = false,
+  hasSkippedPaywall = false,
 }: UpdateOnboardingParams): Promise<Onboarding> {
   return PUT(`/api/user-management-system/v1/onboardings/${id}`, {
     email,
@@ -96,6 +99,7 @@ export async function updateOnboarding({
     steps,
     is_completed,
     marketing_opt_in: marketingOptIn,
+    has_skipped_paywall: hasSkippedPaywall,
   })
 }
 

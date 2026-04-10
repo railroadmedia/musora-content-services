@@ -21,6 +21,7 @@ import {
 
 import {
 	globalConfig,
+	initializeEnvVar,
 	initializeService
 } from './services/config.js';
 
@@ -117,6 +118,7 @@ import {
 	contentStatusCompletedMany,
 	contentStatusReset,
 	contentStatusStarted,
+	extractFromRecordId,
 	flushWatchSession,
 	generateRecordId,
 	getAllCompleted,
@@ -214,6 +216,15 @@ import {
 import {
 	createTestUser
 } from './services/liveTesting.ts';
+
+import {
+	acceptInvite,
+	createAccount,
+	createInvites,
+	fetchUsersMultiAccountDetails,
+	removeUserFromActiveMultiUserAccount,
+	rescindInvite
+} from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
 	emitProgressSaved,
@@ -317,6 +328,7 @@ import {
 	getSanityDate,
 	getSongTypesFor,
 	getSortOrder,
+	hasAnyMethodV2IntroCompleted,
 	jumpToContinueContent
 } from './services/sanity.js';
 
@@ -452,6 +464,7 @@ import {
 } from './services/userActivity.js';
 
 export {
+	acceptInvite,
 	addContextToContent,
 	addContextToLearningPaths,
 	addItemToPlaylist,
@@ -474,8 +487,10 @@ export {
 	contentStatusReset,
 	contentStatusStarted,
 	convertToTimeZone,
+	createAccount,
 	createComment,
 	createForumCategory,
+	createInvites,
 	createPlaylist,
 	createPost,
 	createPracticeNotes,
@@ -498,6 +513,7 @@ export {
 	editComment,
 	emitProgressSaved,
 	enrollUserInGuidedCourse,
+	extractFromRecordId,
 	extractSanityUrl,
 	fetchAll,
 	fetchAllFilterOptions,
@@ -592,6 +608,7 @@ export {
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
 	fetchUserPractices,
+	fetchUsersMultiAccountDetails,
 	filterCoursesInCourseCollections,
 	findIncompleteLesson,
 	flushWatchSession,
@@ -664,6 +681,8 @@ export {
 	getWeekNumber,
 	globalConfig,
 	guidedCourses,
+	hasAnyMethodV2IntroCompleted,
+	initializeEnvVar,
 	initializeService,
 	isBucketUrl,
 	isContentLiked,
@@ -708,12 +727,14 @@ export {
 	registerProgressCallback,
 	removeContentAsInterested,
 	removeContentAsNotInterested,
+	removeUserFromActiveMultiUserAccount,
 	removeUserPractice,
 	replyToComment,
 	report,
 	reportComment,
 	reportPlaylist,
 	requestEmailChange,
+	rescindInvite,
 	reset,
 	resetAllAwards,
 	resetAllLearningPaths,

@@ -4,7 +4,7 @@ import SyncStore from "../store";
 
 type SyncCallback = (reason: string) => void
 
-type SyncCallbacks = {
+export type SyncCallbacks = {
   callback: SyncCallback
   requestSync: SyncCallback
   requestPull: SyncCallback

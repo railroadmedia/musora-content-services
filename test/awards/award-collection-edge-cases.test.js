@@ -5,6 +5,7 @@ import { setupDefaultMocks, setupAwardEventListeners } from './helpers'
 import { COLLECTION_TYPE, emitProgress, waitForDebounce } from './helpers/progress-emitter'
 
 jest.mock('../../src/services/sanity', () => ({
+  ...jest.requireActual('../../src/services/sanity'),
   default: { fetch: jest.fn() },
   fetchSanity: jest.fn()
 }))

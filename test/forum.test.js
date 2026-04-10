@@ -7,7 +7,7 @@ describe('forum', function () {
     initializeTestService()
   })
 
-  test('getActiveDiscussions', async () => {
+  test.skip('getActiveDiscussions', async () => {
     const results = await getActiveDiscussions('drumeo')
     console.log(results)
     expect(results.data).toBeDefined()

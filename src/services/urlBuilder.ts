@@ -38,6 +38,7 @@ export interface ContentUrlParams {
   /** Navigation target (optional) */
   navigateTo?: {
     id: number
+    child?: { id: number }
   }
   /** Brand (drumeo, pianote, guitareo, singeo, playbass) */
   brand?: Brand

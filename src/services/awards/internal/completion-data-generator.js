@@ -46,7 +46,7 @@ async function calculateDaysUserPracticed(contentIds, db, collection = null) {
 
   const sortedRecords = [...progressRecords].sort((a, b) => a.created_at - b.created_at)
   const earliestRecord = sortedRecords[0]
-  const earliestStartDate = earliestRecord.created_at * 1000
+  const earliestStartDate = earliestRecord.created_at
 
   const now = Date.now()
   const daysDiff = Math.floor((now - earliestStartDate) / (1000 * 60 * 60 * 24))
