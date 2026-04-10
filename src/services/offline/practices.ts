@@ -2,6 +2,11 @@ import { db } from '../sync'
 import { Q } from '@nozbe/watermelondb'
 import dayjs from 'dayjs'
 
+/**
+ * @param offlineTimestamp - Minimum `updated_at` epoch ms to include
+ * @param options.day - Date in YYYY-MM-DD format, defaults to today
+ * @returns `{ data: { practices, practiceDuration } }` where `practiceDuration` is total seconds
+ */
 export async function getPracticeSessionsOffline(
   offlineTimestamp: number,
   { day = dayjs().format('YYYY-MM-DD') }: { day?: string } = {}

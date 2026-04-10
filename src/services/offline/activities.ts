@@ -12,10 +12,13 @@ interface Activity {
   brand: string
 }
 
-////////////////////////
-////       USER ACTIVITY
-////////////////////////
-
+/**
+ * @param offlineTimestamp - Minimum `updated_at` epoch ms to include
+ * @param options.page - Page number (default 1)
+ * @param options.limit - Results per page (default 5)
+ * @param options.tabName - Restrict to `'lessons'`, `'songs'`, or both when `null`
+ * @returns `{ currentPage, totalPages, data }` where `data` is a page of `Activity` records
+ */
 export async function getRecentActivityOffline(
   offlineTimestamp: number,
   {
