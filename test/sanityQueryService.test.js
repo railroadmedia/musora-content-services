@@ -55,7 +55,7 @@ jest.mock('../src/services/permissions/index.ts', () => ({
     fetchUserPermissions: jest.fn().mockResolvedValue({ permissions: [108, 91, 92], isAdmin: false }),
     isAdmin: jest.fn().mockReturnValue(false),
     generatePermissionsFilter: jest.fn().mockReturnValue(
-      `(!defined(permission) || references(*[_type == 'permission' && railcontent_id in [108,91,92]]._id))`
+      `(!defined(permission_v2) || array::intersects(permission_v2, [108,91,92]) `
     ),
   }),
 }))
