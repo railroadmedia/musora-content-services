@@ -101,13 +101,6 @@ export async function getUserWeeklyStats() {
     Q.sortBy('date', 'desc')
   )
 
-  const streakData = await streakCalculator.getStreakData()
-
-  return _getUserWeeklyStats(weekPractices, startOfWeek, today, streakData)
-}
-
-
-export function _getUserWeeklyStats(weekPractices, startOfWeek, today, streakData) {
   const practiceDaysSet = new Set(Object.keys(weekPractices))
   let dailyStats = []
   for (let i = 0; i < 7; i++) {
@@ -125,6 +118,8 @@ export function _getUserWeeklyStats(weekPractices, startOfWeek, today, streakDat
       day: dayStr,
     })
   }
+
+  const streakData = await streakCalculator.getStreakData()
 
   return {
     data: {
@@ -166,21 +161,15 @@ export function _getUserWeeklyStats(weekPractices, startOfWeek, today, streakDat
  * getUserMonthlyStats({ userId: 123 }).then(console.log);
  */
 export async function getUserMonthlyStats(params = {}) {
-  const userId = params.userId || globalConfig.sessionConfig.userId
-  const practices = await getUserPractices(userId)
-
-  const streakData = await streakCalculator.getStreakData()
-
-  return _getUserMonthlyStats(practices, streakData, params)
-}
-
-export function _getUserMonthlyStats(practices, streakData, params = {}) {
   const now = dayjs()
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const {
     year = now.year(),
     month = now.month(), // 0-indexed
+    userId = globalConfig.sessionConfig.userId,
   } = params
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
+  const practices = await getUserPractices(userId)
 
   const firstDayOfMonth = dayjs.tz(`${year}-${month + 1}-01`, timeZone).startOf('day')
   const endOfMonth = firstDayOfMonth.endOf('month')
@@ -259,6 +248,7 @@ export function _getUserMonthlyStats(practices, streakData, params = {}) {
       return acc
     }, {})
 
+  const streakData = await streakCalculator.getStreakData()
   const currentDailyStreak = streakData.currentDailyStreak
   const currentWeeklyStreak = streakData.currentWeeklyStreak
 
@@ -720,10 +710,6 @@ function calculateStreaks(practices, includeStreakMessage = false) {
  */
 export async function calculateLongestStreaks(userId = globalConfig.sessionConfig.userId) {
   let practices = await getUserPractices(userId)
-  return _calculateLongestStreaks(practices)
-}
-
-export function _calculateLongestStreaks(practices) {
   let totalPracticeSeconds = 0
   // Calculate total practice duration
   for (const date in practices) {

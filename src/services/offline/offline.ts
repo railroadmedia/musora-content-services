@@ -38,10 +38,10 @@ export async function getRecentActivityOffline(
     limit = 5,
     tabName = null
   }: {
-    page: number,
-    limit: number,
-    tabName: 'lessons'|'songs'|null
-  }): Promise<any> {
+    page?: number,
+    limit?: number,
+    tabName?: 'lessons'|'songs'|null
+  } = {}): Promise<any> {
   // Note: this is kind of a hack. We're really just getting RADFOP: Recent Activities Derived From Offline Progress,
   // because setting up watermelon user activities table is extremely complicated.
   // Note: this implementation does not persist "activities" beyond when the corresponding record is deleted. That's ok right now.
@@ -113,25 +113,10 @@ function deriveActivitiesFromProgress(progress: Record<any, any>) {
 ////           PRACTICES
 ////////////////////////
 
-async function getOwnPracticesOffline(offlineTimestamp: number, clauses: Q.Clause[] = []) {
-  clauses.push(Q.where('updated_at', Q.gte(offlineTimestamp)))
-  const results = await db.practices.queryAll(...clauses)
-  const data = results.data.reduce((acc, practice) => {
-    acc[practice.date] = acc[practice.date] || []
-    acc[practice.date].push({
-      id: practice.id,
-      duration_seconds: Math.round(practice.duration_seconds),
-    })
-    return acc
-  }, {})
-
-  return data
-}
-
 export async function getPracticeSessionsOffline(
   offlineTimestamp: number,
-  params: { day?: string }) {
-  const { day = dayjs().format('YYYY-MM-DD') } = params
+  { day = dayjs().format('YYYY-MM-DD') }: { day?: string } = {}
+) {
 
   const query = await db.practices.queryAll(
     Q.where('updated_at', Q.gte(offlineTimestamp)),
@@ -147,43 +132,6 @@ export async function getPracticeSessionsOffline(
   ))
 
   return { data: { practices, practiceDuration } }
-}
-
-export async function getUserWeeklyStatsOffline(offlineTimestamp: number) {
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  const today = dayjs()
-  const startOfWeek = getMonday(today, timeZone)
-  const weekDays = Array.from({ length: 7 }, (_, i) =>
-    startOfWeek.add(i, 'day').format('YYYY-MM-DD')
-  )
-
-  const weekPractices = await getOwnPracticesOffline(
-    offlineTimestamp,
-    [
-      Q.where('date', Q.oneOf(weekDays)),
-      Q.sortBy('date', 'desc')
-    ]
-  )
-
-  const streakData = await streakCalculator.getStreakData()
-
-  return _getUserWeeklyStats(weekPractices, startOfWeek, today, streakData)
-}
-
-export async function getUserMonthlyStatsOffline(
-  offlineTimestamp: number,
-  params: { month?: number, year?: number }
-) {
-  const practices = await getOwnPracticesOffline(offlineTimestamp)
-
-  const streakData = await streakCalculator.getStreakData()
-
-  return _getUserMonthlyStats(practices, streakData, params)
-}
-
-export async function calculateLongestStreaksOffline(offlineTimestamp: number) {
-  let practices = await getOwnPracticesOffline(offlineTimestamp)
-  return _calculateLongestStreaks(practices)
 }
 
 
@@ -205,11 +153,11 @@ export async function recordWatchSessionOffline(
     instrumentId = null,
     categoryId = null,
   }: {
-    collection: CollectionParameter|null,
-    prevSession: string|null,
-    instrumentId: number|null,
-    categoryId: number|null
-  }
+    collection?: CollectionParameter|null,
+    prevSession?: string|null,
+    instrumentId?: number|null,
+    categoryId?: number|null
+  } = {}
 ) {
   return _recordWatchSession(
     contentId,

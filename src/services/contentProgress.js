@@ -637,7 +637,7 @@ async function saveContentProgress(
   // skip bubbling if progress hasnt changed, or if offline
   if (progress === currentProgress || offline) {
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
-    return
+    return response
   }
 
   const bubbledProgresses = await bubbleProgress(hierarchy, contentId, collection)
@@ -702,7 +702,7 @@ async function setStartedOrCompletedStatus(contentId, collection, isCompleted, {
   // skip bubbling if offline
   if (offline) {
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
-    return
+    return response
   }
 
   let progresses = {
@@ -754,7 +754,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
   // skip bubbling if offline
   if (offline) {
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
-    return
+    return response
   }
 
   let progresses = {}
@@ -808,7 +808,7 @@ async function resetStatus(contentId, collection = null, { hierarchy = null, ski
   // skip bubbling if offline
   if (offline) {
     if (!skipPush) db.contentProgress.requestPushUnsynced('save-content-progress')
-    return
+    return response
   }
 
   let progresses = {
