@@ -5,6 +5,7 @@ import { setupDefaultMocks, setupAwardEventListeners } from './helpers'
 import { mockCompletionStates, mockAllCompleted, mockNoneCompleted } from './helpers/completion-mock'
 
 jest.mock('../../src/services/sanity', () => ({
+  ...jest.requireActual('../../src/services/sanity'),
   default: { fetch: jest.fn() },
   fetchSanity: jest.fn()
 }))
@@ -70,7 +71,7 @@ describe('Award Progress Calculation', () => {
         award._id,
         100,
         expect.objectContaining({
-          completedAt: expect.any(Number),
+          completedAt: expect.any(String),
           completionData: expect.objectContaining({
             content_title: award.content_title,
             days_user_practiced: expect.any(Number),
@@ -155,7 +156,7 @@ describe('Award Progress Calculation', () => {
         award._id,
         100,
         expect.objectContaining({
-          completedAt: expect.any(Number),
+          completedAt: expect.any(String),
           progressData: expect.objectContaining({
             totalLessons: 10,
             completedCount: 10

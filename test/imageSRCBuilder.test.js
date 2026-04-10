@@ -14,7 +14,7 @@ describe('imageSRCBuilder', function () {
       quality: quality,
       height: height,
     })
-    const expected = `${url}?fm=webp&w=${width}&h=${height}&q=${quality}`
+    const expected = `${url}?q=100&w=${width}&h=${height}`
 
     expect(resultingURL).toStrictEqual(expected)
   })

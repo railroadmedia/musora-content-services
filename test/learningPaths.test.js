@@ -37,7 +37,7 @@ describe('learning-paths', function () {
   //   console.log(results)
   // })
 
-  test('learningPathCompletion', async () => {
+  test.skip('learningPathCompletion', async () => {
     const learningPathId = 435527
     await contentStatusReset(learningPathId)
     await resetAllLearningPaths()

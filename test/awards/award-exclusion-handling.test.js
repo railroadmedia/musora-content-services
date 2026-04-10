@@ -7,6 +7,7 @@ import { setupDefaultMocks, setupAwardEventListeners } from './helpers'
 import { mockCompletionStates, mockAllCompleted, mockNoneCompleted } from './helpers/completion-mock'
 
 jest.mock('../../src/services/sanity', () => ({
+  ...jest.requireActual('../../src/services/sanity'),
   default: { fetch: jest.fn() },
   fetchSanity: jest.fn()
 }))
@@ -81,7 +82,7 @@ describe('Award Content Exclusion Handling - E2E Scenarios', () => {
         expect.any(String),
         100,
         expect.objectContaining({
-          completedAt: expect.any(Number),
+          completedAt: expect.any(String),
           immediate: true
         })
       )
@@ -144,7 +145,7 @@ describe('Award Content Exclusion Handling - E2E Scenarios', () => {
         expect.any(String),
         100,
         expect.objectContaining({
-          completedAt: expect.any(Number),
+          completedAt: expect.any(String),
           immediate: true
         })
       )
@@ -198,7 +199,7 @@ describe('Award Content Exclusion Handling - E2E Scenarios', () => {
         expect.any(String),
         100,
         expect.objectContaining({
-          completedAt: expect.any(Number),
+          completedAt: expect.any(String),
           immediate: true
         })
       )
@@ -233,7 +234,7 @@ describe('Award Content Exclusion Handling - E2E Scenarios', () => {
         expect.any(String),
         100,
         expect.objectContaining({
-          completedAt: expect.any(Number),
+          completedAt: expect.any(String),
           immediate: true
         })
       )

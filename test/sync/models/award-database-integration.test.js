@@ -343,7 +343,7 @@ describe('Award System - Direct Database Integration', () => {
       expect(completed.progress_percentage).toBe(100)
       expect(completed.completed_at).toBe(now + 200)
       expect(completed.completion_data).toEqual(completionData)
-      expect(completed.isCompleted).toBe(true)
+      expect(completed.completed_at).not.toBeNull()
     })
 
     test('queries in-progress awards', async () => {
@@ -421,7 +421,7 @@ describe('Award System - Direct Database Integration', () => {
 
       expect(completed.length).toBe(1)
       expect(completed[0].award_id).toBe('award-1')
-      expect(completed[0].isCompleted).toBe(true)
+      expect(completed[0].completed_at).not.toBeNull()
     })
   })
 

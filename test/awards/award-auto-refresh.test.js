@@ -1,6 +1,7 @@
 import { awardDefinitions } from '../../src/services/awards/internal/award-definitions'
 
 jest.mock('../../src/services/sanity', () => ({
+  ...jest.requireActual('../../src/services/sanity'),
   default: {
     fetch: jest.fn()
   },
