@@ -1,7 +1,7 @@
 /**
  * @module GuidedCourses
  */
-import { GET, POST } from '../../infrastructure/http/HttpClient.ts'
+import { GET, POST } from '../../infrastructure/http/HttpClient'
 import { contentStatusStarted, getProgressState } from '../contentProgress.js'
 import './playlists-types.js'
 

@@ -1,6 +1,7 @@
 import { mockAwardDefinitions } from '../mockData/award-definitions'
 
 jest.mock('../../src/services/sanity', () => ({
+  ...jest.requireActual('../../src/services/sanity'),
   default: {
     fetch: jest.fn()
   },
@@ -11,6 +12,7 @@ jest.mock('../../src/services/sync/repository-proxy', () => {
   const mockFns = {
     userAwardProgress: {
       getAll: jest.fn(),
+      getCompleted: jest.fn(),
       getByAwardId: jest.fn(),
       getAwardsForContent: jest.fn()
     }
@@ -58,10 +60,11 @@ describe('Award Query Message Generation', () => {
         award: 'certificate',
         brand: 'drumeo',
         instructor_name: 'Mike Johnston',
-        content_type: 'guided-course'
+        content_type: 'guided-course',
+        type: 'content-award',
       }
 
-      jest.spyOn(db.userAwardProgress, 'getAll').mockResolvedValue({
+      jest.spyOn(db.userAwardProgress, 'getCompleted').mockResolvedValue({
         data: mockProgress
       })
 
@@ -96,10 +99,11 @@ describe('Award Query Message Generation', () => {
         award: 'certificate',
         brand: 'pianote',
         instructor_name: 'Lisa Witt',
-        content_type: 'learning-path-v2'
+        content_type: 'learning-path-v2',
+        type: 'content-award',
       }
 
-      jest.spyOn(db.userAwardProgress, 'getAll').mockResolvedValue({
+      jest.spyOn(db.userAwardProgress, 'getCompleted').mockResolvedValue({
         data: mockProgress
       })
 
@@ -134,10 +138,11 @@ describe('Award Query Message Generation', () => {
         award: 'badge',
         brand: 'guitareo',
         instructor_name: 'Steve Stine',
-        content_type: 'guided-course'
+        content_type: 'guided-course',
+        type: 'content-award',
       }
 
-      jest.spyOn(db.userAwardProgress, 'getAll').mockResolvedValue({
+      jest.spyOn(db.userAwardProgress, 'getCompleted').mockResolvedValue({
         data: mockProgress
       })
 
@@ -170,10 +175,11 @@ describe('Award Query Message Generation', () => {
         award: 'badge',
         brand: 'singeo',
         instructor_name: 'Camille van Niekerk',
-        content_type: 'guided-course'
+        content_type: 'guided-course',
+        type: 'content-award',
       }
 
-      jest.spyOn(db.userAwardProgress, 'getAll').mockResolvedValue({
+      jest.spyOn(db.userAwardProgress, 'getCompleted').mockResolvedValue({
         data: mockProgress
       })
 
@@ -353,10 +359,11 @@ describe('Award Query Message Generation', () => {
         award: 'certificate',
         brand: 'drumeo',
         instructor_name: 'Test Instructor',
-        content_type: 'guided-course'
+        content_type: 'guided-course',
+        type: 'content-award',
       }
 
-      jest.spyOn(db.userAwardProgress, 'getAll').mockResolvedValue({
+      jest.spyOn(db.userAwardProgress, 'getCompleted').mockResolvedValue({
         data: mockProgress
       })
 
@@ -387,10 +394,11 @@ describe('Award Query Message Generation', () => {
         award: 'certificate',
         brand: 'pianote',
         instructor_name: 'Test Instructor',
-        content_type: 'learning-path-v2'
+        content_type: 'learning-path-v2',
+        type: 'content-award',
       }
 
-      jest.spyOn(db.userAwardProgress, 'getAll').mockResolvedValue({
+      jest.spyOn(db.userAwardProgress, 'getCompleted').mockResolvedValue({
         data: mockProgress
       })
 
@@ -421,10 +429,11 @@ describe('Award Query Message Generation', () => {
         award: 'certificate',
         brand: 'guitareo',
         instructor_name: 'Test Instructor',
-        content_type: 'some-unknown-type'
+        content_type: 'some-unknown-type',
+        type: 'content-award',
       }
 
-      jest.spyOn(db.userAwardProgress, 'getAll').mockResolvedValue({
+      jest.spyOn(db.userAwardProgress, 'getCompleted').mockResolvedValue({
         data: mockProgress
       })
 

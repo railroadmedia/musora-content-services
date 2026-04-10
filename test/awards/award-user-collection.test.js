@@ -1,6 +1,7 @@
 import { mockAwardDefinitions } from '../mockData/award-definitions'
 
 jest.mock('../../src/services/sanity', () => ({
+  ...jest.requireActual('../../src/services/sanity'),
   default: {
     fetch: jest.fn()
   },
@@ -11,6 +12,7 @@ jest.mock('../../src/services/sync/repository-proxy', () => {
   const mockFns = {
     userAwardProgress: {
       getAll: jest.fn(),
+      getCompleted: jest.fn(),
       getByAwardId: jest.fn()
     }
   }
@@ -29,6 +31,7 @@ describe('Award User Collection - E2E Scenarios', () => {
     sanityClient.fetch = jest.fn().mockResolvedValue(mockAwardDefinitions)
     fetchSanity.mockResolvedValue(mockAwardDefinitions)
     db.userAwardProgress.getAll = jest.fn()
+    db.userAwardProgress.getCompleted = jest.fn().mockImplementation(() => db.userAwardProgress.getAll())
     db.userAwardProgress.getByAwardId = jest.fn()
 
     await awardDefinitions.refresh()
@@ -87,7 +90,7 @@ describe('Award User Collection - E2E Scenarios', () => {
         awardId: '0f49cb6a-1b23-4628-968e-15df02ffad7f',
         awardTitle: 'Enrolling w/ Kickoff, has product GC (EC)',
         progressPercentage: 100,
-        completedAt: expect.any(String),
+        completedAt: expect.any(Number),
         brand: 'pianote'
       })
     })

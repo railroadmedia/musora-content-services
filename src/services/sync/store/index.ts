@@ -892,7 +892,7 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
 
           default:
             this.telemetry.error(`[store:${this.model.table}] Unknown record status`, {
-              status: existing._raw._status,
+              extra: { status: existing._raw._status },
             })
         }
       } else {
@@ -999,6 +999,11 @@ export default class SyncStore<TModel extends BaseModel = BaseModel> {
         }, 'sync.cleanup')
       })
     }, SyncStore.CLEANUP_INTERVAL)
+
+    // in tests in node env, prevents the timer from keeping the process alive
+    if (typeof (this.cleanupTimer as any).unref === 'function') {
+      (this.cleanupTimer as any).unref()
+    }
   }
 
   private stopCleanupTimer() {

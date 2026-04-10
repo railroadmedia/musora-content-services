@@ -122,7 +122,7 @@ export interface SyncResponseBase {
 
 export type PushPayload = {
   entries: ({
-    record: BaseModel
+    record: Record<string, unknown>
     meta: {
       ids: {
         id: string
@@ -135,21 +135,9 @@ export type PushPayload = {
       ids: {
         id: string
       }
-      deleted_at: EpochMs
+      deleted_at: number
     }
   })[]
-}
-
-interface ServerPushPayload {
-  entries: {
-    record: BaseModel | null
-    meta: {
-      ids: {
-        id: string
-      },
-      deleted_at: EpochMs | null
-    }
-  }[]
 }
 
 export function makeFetchRequest(input: RequestInfo, init?: RequestInit) {

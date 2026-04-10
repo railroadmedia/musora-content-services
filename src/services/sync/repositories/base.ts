@@ -19,6 +19,10 @@ export default class SyncRepository<TModel extends BaseModel> {
     this.store = store
   }
 
+  async getAll() {
+    return this.readAll()
+  }
+
   protected async readOne(id: RecordId) {
     return this._respondToRead(() => this.store.readOne(id))
   }

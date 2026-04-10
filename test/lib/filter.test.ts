@@ -409,26 +409,31 @@ jest.mock('../../src/services/permissions/index')
 const mockUsers = {
   admin: {
     isAdmin: true,
+    isModerator: false,
     permissions: [],
     isABasicMember: false,
   },
   free: {
     isAdmin: false,
+    isModerator: false,
     permissions: [],
     isABasicMember: false,
   },
   basicMember: {
     isAdmin: false,
+    isModerator: false,
     permissions: ['78', '91', '92'],
     isABasicMember: true,
   },
   plusMember: {
     isAdmin: false,
+    isModerator: false,
     permissions: ['78', '108', '91', '92'],
     isABasicMember: true,
   },
   ownedOnly: {
     isAdmin: false,
+    isModerator: false,
     permissions: ['100000234', '100000567'], // Owned content IDs: 234, 567
     isABasicMember: false,
   },
@@ -1137,6 +1142,7 @@ describe('Filters - Async Methods (Integration)', () => {
         isAdmin: false,
         permissions: [],
         isABasicMember: false,
+        isModerator: false,
       }
       setupMockAdapter(emptyUser)
 

@@ -6,6 +6,8 @@
 /**  @typedef {Map} AwardDefinitionsMap */
 /**  @typedef {Map} ContentToAwardsMap */
 
+import { globalConfig } from '../../config'
+
 const STORAGE_KEY = 'musora_award_definitions_last_fetch'
 
 class AwardDefinitionsService {
@@ -173,7 +175,6 @@ class AwardDefinitionsService {
 
   async loadLastFetchFromStorage() {
     try {
-      const { globalConfig } = await import('../../config')
       if (!globalConfig.localStorage) {
         return
       }
@@ -194,8 +195,7 @@ class AwardDefinitionsService {
 
   async saveLastFetchToStorage() {
     try {
-      const { globalConfig } = await import('../../config')
-      if (!globalConfig.localStorage) {
+      if (!globalConfig?.localStorage) {
         return
       }
 

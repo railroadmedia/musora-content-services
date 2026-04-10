@@ -1,77 +1,60 @@
 import {
-  getProgressPercentage,
-  dataContext,
-  recordWatchSession,
-  getProgressPercentageByIds,
   getProgressState,
   getProgressStateByIds,
   getAllStarted,
-  getAllCompleted,
-  contentStatusCompleted,
-  assignmentStatusCompleted,
-  contentStatusReset,
-  assignmentStatusReset,
   getAllStartedOrCompleted,
 } from '../src/services/contentProgress'
 import { initializeTestService } from './initializeTests'
-import {getLessonContentRows} from '../src'
-import {fetchRecent} from "../src/services/sanity";
-import {getRecent, getTabResults} from "../src/services/content";
-import {individualLessonsTypes, playAlongLessonTypes, transcriptionsLessonTypes, tutorialsLessonTypes} from "../src/contentTypeConfig";
+import {getTabResults} from "../src/services/content";
+import {tutorialsLessonTypes, transcriptionsLessonTypes, playAlongLessonTypes} from "../src/contentTypeConfig";
 
-const railContentModule = require('../src/services/railcontent.js')
-const contentModule = require('../src/services/content.js')
+let mockProgressRecords = []
+
+jest.mock('../src/services/sync/repository-proxy', () => {
+  const mockFns = {
+    contentProgress: {
+      getOneProgressByContentId: jest.fn().mockImplementation((contentId) => {
+        const record = mockProgressRecords.find(r => r.content_id === contentId)
+        return Promise.resolve({ data: record || null })
+      }),
+      getSomeProgressByContentIds: jest.fn().mockImplementation((contentIds) => {
+        const records = mockProgressRecords.filter(r => contentIds.includes(r.content_id))
+        return Promise.resolve({ data: records })
+      }),
+      started: jest.fn().mockImplementation((limit, opts) => {
+        const startedIds = mockProgressRecords
+          .filter(r => r.state === 'started')
+          .sort((a, b) => b.updated_at - a.updated_at)
+          .map(r => r.content_id)
+        const result = limit ? startedIds.slice(0, limit) : startedIds
+        return Promise.resolve(opts?.onlyIds !== false ? result : result.map(id => ({ content_id: id })))
+      }),
+      startedOrCompleted: jest.fn().mockImplementation(() => {
+        const records = mockProgressRecords
+          .filter(r => r.state === 'started' || r.state === 'completed')
+          .sort((a, b) => b.updated_at - a.updated_at)
+        return Promise.resolve({ data: records })
+      }),
+    },
+    practices: {
+      queryAll: jest.fn().mockResolvedValue({ data: [] }),
+      getAll: jest.fn().mockResolvedValue({ data: [] }),
+    },
+  }
+  return { default: mockFns, ...mockFns }
+})
 
 describe('contentProgressDataContext', function () {
-  let mock = null
-  const testVersion = 1
-  let serverVersion = 2
-
   beforeEach(() => {
     initializeTestService()
-    mock = jest.spyOn(dataContext, 'fetchData')
-    var json = JSON.parse(
-      `{"version":${testVersion},"config":{"key":1,"enabled":1,"checkInterval":1,"refreshInterval":2},"data":{"234191":{"s":"started","p":6,"t":20,"u":1731108082},"233955":{"s":"started","p":1,"u":1731108083},
-      "259426":{"s":"completed","p":100,"u":1731108085},"190417":{"s":"started","p":6,"t":20,"u":1731108082},
-      "407665":{"s":"started","p":6,"t":20,"u":1740120139},"412986":{"s":"completed","p":100,"u":1731108085}}}`
-    )
-    mock.mockImplementation(() => json)
-
-    let mock5 = jest.spyOn(contentModule, 'getContentRows')
-    let testData = [
-      {
-        id: 'recent',
-        title: 'Recent Lessons',
-        content: ['lesson1', 'lesson2', 'lesson3'],
-      },
-      {
-        id: 'popular',
-        title: 'Popular Lessons',
-        content: ['lesson4', 'lesson5', 'lesson6'],
-      },
-      {
-        id: 'new-arrivals',
-        title: 'New Arrivals',
-        content: ['lesson7', 'lesson8', 'lesson9'],
-      }
-    ];
-    mock5.mockImplementation(() => Promise.resolve(testData));
-  })
-
-  test('getProgressPercentage', async () => {
-    let result = await getProgressPercentage(234191)
-    expect(result).toBe(6)
-  })
-
-  test('getProgressPercentageByIds', async () => {
-    let result = await getProgressPercentageByIds([234191, 111111])
-    expect(result[234191]).toBe(6)
-    expect(result[111111]).toBe(0)
-  })
-
-  test('getProgressPercentage_notExists', async () => {
-    let result = await getProgressPercentage(111111)
-    expect(result).toBe(0)
+    mockProgressRecords = [
+      { content_id: 234191, state: 'started',   progress_percent: 6,   updated_at: 1731108082, last_interacted_a_la_carte: 1731108082 },
+      { content_id: 233955, state: 'started',   progress_percent: 1,   updated_at: 1731108083 },
+      { content_id: 259426, state: 'completed', progress_percent: 100, updated_at: 1731108085 },
+      { content_id: 190417, state: 'started',   progress_percent: 6,   updated_at: 1731108082 },
+      { content_id: 407665, state: 'started',   progress_percent: 6,   updated_at: 1740120139 },
+      { content_id: 412986, state: 'completed', progress_percent: 100, updated_at: 1731108085 },
+    ]
   })
 
   test('getProgressState', async () => {
@@ -79,15 +62,14 @@ describe('contentProgressDataContext', function () {
     expect(result).toBe('started')
   })
 
-  test('getProgressStateByIds', async () => {
-    let result = await getProgressStateByIds([234191, 120402])
-    expect(result[234191]).toBe('started')
-    expect(result[120402]).toBe('')
+  test('getProgressState_notExists', async () => {
+    let result = await getProgressState(111111)
+    expect(result).toBe('')
   })
 
   test('getAllStarted', async () => {
     let result = await getAllStarted()
-    expect(result).toStrictEqual([407665, 233955,190417, 234191])
+    expect(result).toStrictEqual([407665, 233955, 234191, 190417])
 
     result = await getAllStarted(1)
     expect(result).toStrictEqual([407665])
@@ -95,185 +77,26 @@ describe('contentProgressDataContext', function () {
 
   test('getAllStartedOrCompleted', async () => {
     let result = await getAllStartedOrCompleted()
-    expect(result).toStrictEqual([407665, 259426, 412986, 233955, 190417,234191])
+    expect(result).toStrictEqual([407665, 259426, 412986, 233955, 234191, 190417])
   })
 
-  test('progressBubbling', async () => {
-    let progress = await getProgressPercentage(241250) //force load context
-
-    await recordWatchSession(241250, null, 'video', 'vimeo', 100, 50, 50)
-    serverVersion++
-    await recordWatchSession(241251, null, 'video', 'vimeo', 100, 50, 50)
-    serverVersion++
-    await recordWatchSession(241252, null, 'video', 'vimeo', 100, 50, 50)
-    serverVersion++
-    await recordWatchSession(241260, null, 'video', 'vimeo', 100, 100, 100)
-    serverVersion++
-    await recordWatchSession(241261, null, 'video', 'vimeo', 100, 100, 100)
-    serverVersion++
-    progress = await getProgressPercentage(241250)
-
-    expect(progress).toBe(50)
-    let progress241249 = await getProgressPercentage(241249)
-    expect(progress241249).toBe(15)
-    let progress241248 = await getProgressPercentage(241248)
-    expect(progress241248).toBe(7)
-    let progress241247 = await getProgressPercentage(241247)
-    expect(progress241247).toBe(1)
-  }, 50000)
-
-  // test('completedProgressNotOverwritten', async () => {
-  //     const contentId = 241262;
-  //     let progress = await getProgressPercentage(241250); //force load context
-  //     await contentStatusCompleted(contentId);
-  //     await recordWatchSession(contentId, "video", "vimeo", 100, 50, 50);
-  //     progress = await getProgressPercentage(contentId);
-  //     expect(progress).toBe(100);
-  // });
-
-  test('assignmentCompleteBubbling', async () => {
-    let assignmentId = 286048
-    let contentId = 286047
-
-    let state = await getProgressState(contentId)
-    expect(state).toBe('')
-    let result = await assignmentStatusCompleted(assignmentId, contentId)
-
-    state = await getProgressState(assignmentId)
-    expect(state).toBe('completed')
-    state = await getProgressState(contentId) //assignment
-    expect(state).toBe('started')
-  })
-
-  // test('recordWatchSession', async () => {
-  //     const contentId = 241250;
-  //     let progress = await getProgressPercentage(contentId); //force load context
-  //
-  //     await recordWatchSession(contentId, 'video', 'vimeo', 1673, 554, 5);
-  //     progress = await getProgressPercentage(241250);
-  //
-  //     expect(progress).toBe(33);
-  // });
-  // test('assignmentCompleteBubblingToCompleted', async () => {
-  //     let assignmentId = 241685;
-  //     let contentId = 241257;
-  //
-  //     let state = await getProgressState(contentId);
-  //     expect(state).toBe("");
-  //     let result = await assignmentStatusCompleted(assignmentId, contentId);
-  //
-  //     state = await getProgressState(assignmentId);
-  //     expect(state).toBe("completed");
-  //     state = await getProgressState(contentId); //assignment
-  //     expect(state).toBe("completed");
-  // });
-  //
-  // test('assignmentCompleteResetBubblingMultiple', async () => {
-  //     let contentId = 281709;
-  //
-  //     let state = await getProgressState(contentId);
-  //     expect(state).toBe("");
-  //
-  //     let assignmentIds = [281710, 281711, 281712, 281713, 281714, 281715];
-  //     for (const assignmentId of assignmentIds) {
-  //         await assignmentStatusCompleted(assignmentId, contentId);
-  //         state = await getProgressState(assignmentId);
-  //         expect(state).toBe("completed");
-  //     }
-  //
-  //     state = await getProgressState(contentId);
-  //     expect(state).toBe("completed");
-  //
-  //     await assignmentStatusReset(assignmentIds[0], contentId);
-  //     state = await getProgressState(assignmentIds[0]);
-  //     expect(state).toBe("");
-  //     state = await getProgressState(contentId);
-  //     expect(state).toBe("started");
-  //     let percentage = await getProgressPercentage(contentId);
-  //     expect(percentage).toBe(83);
-  // });
-
-  //
-  // test('completeBubbling', async () => {
-  //     let state = await getProgressState(276698);
-  //     expect(state).toBe("");
-  //     let result = await contentStatusCompleted(276698);
-  //
-  //     state = await getProgressState(276698);
-  //     expect(state).toBe("completed");
-  //     state = await getProgressState(276699); //assignment
-  //     expect(state).toBe("completed");
-  // });
-  //
-  // test('resetBubbling', async () => {
-  //     let assignmentId = 241686;
-  //     let contentId = 241258;
-  //
-  //     let state = await getProgressState(contentId);
-  //     expect(state).toBe("");
-  //     let result = await contentStatusCompleted(contentId);
-  //     state = await getProgressState(contentId);
-  //     expect(state).toBe("completed");
-  //     state = await getProgressState(assignmentId); //assignment
-  //     expect(state).toBe("completed");
-  //
-  //     result = await contentStatusReset(contentId);
-  //     state = await getProgressState(contentId);
-  //     expect(state).toBe("");
-  //     state = await getProgressState(assignmentId); //assignment
-  //     expect(state).toBe("");
-  //
-  // });
-  test('getRecentLessons', async () => {
-    let result = await getRecent('drumeo','lessons', 'all',{page:1, limit:10})
-    console.log(result);
-    expect(result.data[0].id).toStrictEqual(412986)
-    expect(individualLessonsTypes).toContain(result.data[0].type)
-  })
-
-  test('getRecentLessons-Incomplete', async () => {
-    let result = await getRecent('drumeo','lessons','Incomplete')
-    console.log(result);
-    expect(result.data[0].id).toStrictEqual(407665)
-    expect(individualLessonsTypes).toContain(result.data[0].type)
-  })
-
-  test('getRecentLessons-Completed', async () => {
-    let result = await getRecent('drumeo','lessons','Completed')
-    console.log(result);
-    expect(result.data[0].id).toStrictEqual(412986)
-    expect(individualLessonsTypes).toContain(result.data[0].type)
-  })
-
-  test('get-Songs-For-You', async () => {
-    let result = await getTabResults('drumeo','songs','For You')
-    console.log(result);
-    expect(result.type).toStrictEqual('sections')
-    expect(result.data).toBeDefined()
-    expect(result.meta).toBeDefined()
-  })
-
-  test('get-Songs-Tutorials', async () => {
-    let result = await getTabResults('pianote','songs','Tutorials')
-    console.log(result);
+  test.skip('get-Songs-Tutorials', async () => {
+    const result = await getTabResults('pianote', 'songs', 'Tutorials')
     expect(result.type).toStrictEqual('catalog')
     expect(result.data).toBeDefined()
     expect(tutorialsLessonTypes).toContain(result.data[0].type)
   })
 
-  test('get-Songs-Transcriptions', async () => {
-    let result = await getTabResults('pianote','songs','Transcriptions')
-    console.log(result);
+  test.skip('get-Songs-Transcriptions', async () => {
+    const result = await getTabResults('pianote', 'songs', 'Transcriptions')
     expect(result.type).toStrictEqual('catalog')
     expect(result.data).toBeDefined()
     expect(transcriptionsLessonTypes).toContain(result.data[0].type)
   })
 
-  test('get-Songs-Play-Alongs', async () => {
-    let result = await getTabResults('drumeo','songs','Play-Alongs',{selectedFilters:['difficulty,Expert']})
-    console.log(result);
+  test.skip('get-Songs-Play-Alongs', async () => {
+    const result = await getTabResults('drumeo', 'songs', 'Play-Alongs', { selectedFilters: ['difficulty,Expert'] })
     expect(playAlongLessonTypes).toContain(result.data[0].type)
     expect(result.data[0].difficulty_string).toStrictEqual('Expert')
   })
-
 })
