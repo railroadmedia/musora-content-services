@@ -8,6 +8,9 @@ export const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net'
 
 // This is used to pull related content by license, so we only show "consumable" content
 export const SONG_TYPES = ['song', 'play-along', 'jam-track', 'song-tutorial-lesson']
+
+export const parentReferenceField = 'parent_content_reference[0]'
+export const grandParentReferenceField = 'parent_content_reference[1]'
 // Oct 2025: It turns out content-meta categories are not really clear
 // THis is used for the page_type field as a post processor so we include parents and children
 // Duplicated in SanityGateway.php if you update this, update that

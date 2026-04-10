@@ -34,6 +34,8 @@ import {
   liveFields,
   postProcessBadge,
   parentRecentTypes,
+  parentReferenceField,
+  grandParentReferenceField,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems } from './recommendations.js'
 import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS, CONTENT_STATUSES } from '../contentMetaData.js'
@@ -959,7 +961,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
         "logo" : logo_image_url.asset->url,
         "dark_mode_logo": dark_mode_logo_url.asset->url,
         "light_mode_logo": light_mode_logo_url.asset->url,
-        ...*[references(^._id) && _type == 'content-award'][0]->{
+        ...*[references(^._id) && _type == 'content-award'][0]{
           "badge": badge.asset->url,
           "badge_rear": badge_rear.asset->url,
           "badge_logo": logo.asset->url,
@@ -1118,14 +1120,14 @@ export async function fetchSiblingContent(railContentId, brand = null) {
     _type,
     parent_type,
     railcontent_id,
-    'parent_id': parent_content_reference[0]->railcontent_id,
-    'grandparent_id': parent_content_reference[1]->railcontent_id,
-    'collection_data': parent_content_reference[1]->{${courseCollectionFields}},
-    'for-calculations': parent_content_reference[0]->{
+    'parent_id': ${parentReferenceField}->railcontent_id,
+    'grandparent_id': ${grandParentReferenceField}->railcontent_id,
+    'collection_data': ${grandParentReferenceField}->{${courseCollectionFields}},
+    'for-calculations': ${parentReferenceField}->{
       'siblings-list': child[]->railcontent_id,
-      'parents-list': parent_content_reference[0]->child[]->railcontent_id
+      'parents-list': ${parentReferenceField}->child[]->railcontent_id
     },
-    "related_lessons" : parent_content_reference[0]->child[${childrenFilter}]->{${queryFields}}
+    "related_lessons" : ${parentReferenceField}->child[${childrenFilter}]->{${queryFields}}
   }`
   let result = await fetchSanity(query, false, { processNeedAccess: true })
 
@@ -1304,7 +1306,7 @@ export async function fetchByReference(
  */
 export async function fetchTopLevelParentId(railcontentId) {
   const query = `*[railcontent_id == ${railcontentId}]{
-      'top_parent': coalesce(parent_content_reference[1]->railcontent_id, parent_content_reference[0]->railcontent_id, railcontent_id),
+      'top_parent': coalesce(${grandParentReferenceField}->railcontent_id, ${parentReferenceField}->railcontent_id, railcontent_id),
     }`
   let response = await fetchSanity(query, false, { processNeedAccess: false })
   if (!response) return null
@@ -1382,31 +1384,18 @@ async function fetchALaCarteHierarchyData(railcontentId) {
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const query = `*[railcontent_id == ${topLevelId}]{
       railcontent_id,
-      'metadata': { brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
+      'metadata': { brand, 'type': _type, 'parent_id':  coalesce(${parentReferenceField}->railcontent_id, 0) },
       'assignments': assignment[]{railcontent_id},
       'children': child[${childrenFilter}]->{
         railcontent_id,
-        'metadata': {
-  brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
+        'metadata': { brand, 'type': _type, 'parent_id':  coalesce(${parentReferenceField}->railcontent_id, 0) },
         'assignments': assignment[]{railcontent_id},
         'children': child[${childrenFilter}]->{
             railcontent_id,
-            'metadata': {
-      brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
+            'metadata': { brand, 'type': _type, 'parent_id':  coalesce(${parentReferenceField}->railcontent_id, 0) },
             'assignments': assignment[]{railcontent_id},
-            'children': child[${childrenFilter}]->{
-               railcontent_id,
-               'metadata': {
-         brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
-               'assignments': assignment[]{railcontent_id},
-               'children': child[${childrenFilter}]->{
-                  railcontent_id,
-                  'metadata': {
-            brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
-            }
-          }
         }
-      },
+      }
     }`
   return await fetchSanity(query, false, { processNeedAccess: false })
 }
