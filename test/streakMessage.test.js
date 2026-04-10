@@ -17,7 +17,6 @@ jest.mock('../src/services/sync/repository-proxy', () => {
   return { default: mockFns, ...mockFns }
 })
 
-const DEBUG = false
 
 // Test Examples are taken from this document
 // https://docs.google.com/spreadsheets/d/1pBmBTAODeRWI5uIO84lXjaQFW-lRPNh6gi7GV0lCwyc/edit?gid=0#gid=0
