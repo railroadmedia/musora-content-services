@@ -55,7 +55,7 @@ jest.mock('../src/services/permissions/index.ts', () => ({
     fetchUserPermissions: jest.fn().mockResolvedValue({ permissions: [108, 91, 92], isAdmin: false }),
     isAdmin: jest.fn().mockReturnValue(false),
     generatePermissionsFilter: jest.fn().mockReturnValue(
-      `(!defined(permission_v2) || array::intersects(permission_v2, [108,91,92]) `
+      `(!defined(permission_v2) || array::intersects(permission_v2, [108,91,92]))`
     ),
   }),
 }))
@@ -541,8 +541,8 @@ describe('Filter Builder', function() {
     const builder = new FilterBuilder(filter)
     const finalFilter = await builder.buildFilter()
     // permissions from initializeTestService: [108, 91, 92]
-    // adapter wraps as: (!defined(permission) || references(...))
-    const expected = `(!defined(permission) || references(*[_type == 'permission' && railcontent_id in [108,91,92]]._id))`
+    // adapter wraps as: (!defined(permission_v2) || array::intersects(...))
+    const expected = `(!defined(permission_v2) || array::intersects(permission_v2, [108,91,92]))`
     const isMatch = finalFilter.includes(expected)
     expect(isMatch).toBeTruthy()
   })
@@ -552,8 +552,8 @@ describe('Filter Builder', function() {
     const builder = new FilterBuilder(filter)
     const finalFilter = await builder.buildFilter()
     // permissions from initializeTestService: [108, 91, 92]
-    // adapter wraps as: (!defined(permission) || references(...))
-    const expected = `(!defined(permission) || references(*[_type == 'permission' && railcontent_id in [108,91,92]]._id))`
+    // adapter wraps as: (!defined(permission_v2) || array::intersects(...))
+    const expected = `(!defined(permission_v2) || array::intersects(permission_v2, [108,91,92]))`
     const isMatch = finalFilter.includes(expected)
     expect(isMatch).toBeTruthy()
   })
@@ -567,7 +567,7 @@ describe('Filter Builder', function() {
     const clauses = spliceFilterForAnds(finalFilter)
     // bypassPermissions: true skips the permission clause entirely
     // clauses: [0] railcontent_id = 111, [1] status in [...], [2] !defined(deprecated_railcontent_id)
-    const expected = `references(*[_type == 'permission' && railcontent_id in [108,91,92]]._id)`
+    const expected = `(!defined(permission_v2) || array::intersects(permission_v2, [108,91,92]))`
     const isMatch = finalFilter.includes(expected)
     expect(isMatch).toBeFalsy()
     expect(clauses[0].field).toBe('railcontent_id')
