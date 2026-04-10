@@ -1,23 +1,8 @@
 import { db } from '../sync'
 import { Q } from '@nozbe/watermelondb'
-import { _recordWatchSession } from '../contentProgress.js'
-import { CollectionParameter, STATE } from '../sync/models/ContentProgress'
+import { STATE } from '../sync/models/ContentProgress'
 import { lessonRecentTypes, SONG_TYPES } from '../../contentTypeConfig.js'
 import dayjs from 'dayjs'
-import { getMonday } from '../dateUtils'
-import { streakCalculator } from '../user/streakCalculator'
-import { _calculateLongestStreaks, _getUserMonthlyStats, _getUserWeeklyStats } from '../userActivity.js'
-
-interface HierarchyParameter {
-  topLevelId: number
-  parents: { [contentId: number]: [parentId: number] }
-  children: { [contentId: number]: [childId: number] }
-  metadata: {
-    brand: string
-    parent_id: number
-    type: string
-  }
-}
 
 interface Activity {
   contentId: number
@@ -106,69 +91,4 @@ function deriveActivitiesFromProgress(progress: Record<any, any>) {
     }
   })
   return activities
-}
-
-
-////////////////////////
-////           PRACTICES
-////////////////////////
-
-export async function getPracticeSessionsOffline(
-  offlineTimestamp: number,
-  { day = dayjs().format('YYYY-MM-DD') }: { day?: string } = {}
-) {
-
-  const query = await db.practices.queryAll(
-    Q.where('updated_at', Q.gte(offlineTimestamp)),
-    Q.where('date', day),
-    Q.sortBy('created_at', 'asc'))
-  const practices = query.data
-
-  if (!practices.length) return { data: { practices: [], practiceDuration: 0 } }
-
-  const practiceDuration = Math.round(practices.reduce(
-    (total, practice) => total + (practice.duration_seconds || 0),
-    0
-  ))
-
-  return { data: { practices, practiceDuration } }
-}
-
-
-////////////////////////
-////    CONTENT PROGRESS
-////////////////////////
-
-// progress read endpoints
-
-export async function recordWatchSessionOffline(
-  contentId: number,
-  mediaLengthSeconds: number,
-  currentSeconds: number,
-  secondsPlayed: number,
-  hierarchy: HierarchyParameter,
-  {
-    collection = null,
-    prevSession = null,
-    instrumentId = null,
-    categoryId = null,
-  }: {
-    collection?: CollectionParameter|null,
-    prevSession?: string|null,
-    instrumentId?: number|null,
-    categoryId?: number|null
-  } = {}
-) {
-  return _recordWatchSession(
-    contentId,
-    mediaLengthSeconds,
-    currentSeconds,
-    secondsPlayed,
-    {
-      collection,
-      prevSession,
-      instrumentId,
-      categoryId,
-      hierarchy,
-    })
 }

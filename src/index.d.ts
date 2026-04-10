@@ -224,10 +224,20 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
-	getPracticeSessionsOffline,
-	getRecentActivityOffline,
+	getRecentActivityOffline
+} from './services/offline/activities.ts';
+
+import {
+	getPracticeSessionsOffline
+} from './services/offline/practices.ts';
+
+import {
+	contentStatusCompletedManyOffline,
+	contentStatusCompletedOffline,
+	contentStatusResetOffline,
+	contentStatusStartedOffline,
 	recordWatchSessionOffline
-} from './services/offline/offline.ts';
+} from './services/offline/progress.ts';
 
 import {
 	emitProgressSaved,
@@ -490,8 +500,12 @@ declare module 'musora-content-services' {
 		confirmEmailChange,
 		contentStatusCompleted,
 		contentStatusCompletedMany,
+		contentStatusCompletedManyOffline,
+		contentStatusCompletedOffline,
 		contentStatusReset,
+		contentStatusResetOffline,
 		contentStatusStarted,
+		contentStatusStartedOffline,
 		convertToTimeZone,
 		createAccount,
 		createComment,
