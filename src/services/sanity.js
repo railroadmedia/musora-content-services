@@ -33,8 +33,9 @@ import {
   SONG_TYPES_WITH_CHILDREN,
   liveFields,
   postProcessBadge,
-  parentField,
-  grandParentField, parentRecentTypes,
+  parentRecentTypes,
+  parentReferenceField,
+  grandParentReferenceField,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems } from './recommendations.js'
 import { getSongType, processMetadata, ALWAYS_VISIBLE_TABS, CONTENT_STATUSES } from '../contentMetaData.js'
@@ -952,7 +953,7 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
   }
 
   const parentQuery = addParent
-    ? `"parent_content_data": *[railcontent_id in [...(^.parent_content_data[].id)]]{
+    ? `"parent_content_data": parent_content_reference[]->{
         "id": railcontent_id,
         title,
         slug,
@@ -960,11 +961,12 @@ export async function fetchLessonContent(railContentId, { addParent = false } = 
         "logo" : logo_image_url.asset->url,
         "dark_mode_logo": dark_mode_logo_url.asset->url,
         "light_mode_logo": light_mode_logo_url.asset->url,
-        "badge": *[references(^._id) && _type == 'content-award'][0].badge.asset->url,
-        "badge_rear": *[references(^._id) && _type == 'content-award'][0].badge_rear.asset->url,
-        "badge_logo": *[references(^._id) && _type == 'content-award'][0].logo.asset->url,
-        'parentCount': coalesce(count(parent_content_data), 0)
-      } | order(parentCount desc),`
+        ...*[references(^._id) && _type == 'content-award'][0]{
+          "badge": badge.asset->url,
+          "badge_rear": badge_rear.asset->url,
+          "badge_logo": logo.asset->url,
+        }
+      },`
     : ''
 
   const fields = `${getFieldsForContentType()}
@@ -1106,19 +1108,6 @@ async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, cou
  * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
  */
 export async function fetchSiblingContent(railContentId, brand = null) {
-  const filterGetParent = await new FilterBuilder(`references(^._id) && _type == ^.parent_type`, {
-    pullFutureContent: true,
-    showMembershipRestrictedContent: true, // Show parent even without permissions
-  }).buildFilter()
-  const filterForParentList = await new FilterBuilder(
-    `references(^._id) && _type == ^.parent_type`,
-    {
-      pullFutureContent: true,
-      isParentFilter: true,
-      showMembershipRestrictedContent: true, // Show parent even without permissions
-    }
-  ).buildFilter()
-
   const childrenFilter = await new FilterBuilder(``, {
     isChildrenFilter: true,
     showMembershipRestrictedContent: true, // Show all lessons in sidebar, need_access applied on individual page
@@ -1126,20 +1115,20 @@ export async function fetchSiblingContent(railContentId, brand = null) {
 
   const brandString = brand ? ` && brand == "${brand}"` : ''
   const queryFields = getFieldsForContentType()
-
+  const courseCollectionFields = await getFieldsForContentTypeWithFilteredChildren('course-collection')
   const query = `*[railcontent_id == ${railContentId}${brandString}]{
     _type,
     parent_type,
     railcontent_id,
-    'parent_id': ${parentField}.id,
-    'grandparent_id':${grandParentField}.id,
-    'for-calculations': *[${filterGetParent}][0]{
-    'siblings-list': child[]->railcontent_id,
-    'parents-list': *[${filterForParentList}][0].child[]->railcontent_id
+    'parent_id': ${parentReferenceField}->railcontent_id,
+    'grandparent_id': ${grandParentReferenceField}->railcontent_id,
+    'collection_data': ${grandParentReferenceField}->{${courseCollectionFields}},
+    'for-calculations': ${parentReferenceField}->{
+      'siblings-list': child[]->railcontent_id,
+      'parents-list': ${parentReferenceField}->child[]->railcontent_id
     },
-    "related_lessons" : *[${filterGetParent}][0].child[${childrenFilter}]->{${queryFields}}
+    "related_lessons" : ${parentReferenceField}->child[${childrenFilter}]->{${queryFields}}
   }`
-
   let result = await fetchSanity(query, false, { processNeedAccess: true })
 
   //there's no way in sanity to retrieve the index of an array, so we must calculate after fetch
@@ -1151,10 +1140,6 @@ export async function fetchSiblingContent(railContentId, brand = null) {
     const currentSiblingIndex = calc['siblings-list'].indexOf(result['railcontent_id']) + 1
 
     delete result['for-calculations']
-
-    if (result['grandparent_id']) {
-      result['collection_data'] = await fetchCourseCollectionData(result['grandparent_id'])
-    }
 
     result = { ...result, parentCount, currentParentIndex, siblingCount, currentSiblingIndex }
     return result
@@ -1320,16 +1305,12 @@ export async function fetchByReference(
  * @returns {Promise<int|null>}
  */
 export async function fetchTopLevelParentId(railcontentId) {
-  const parentFilter = 'railcontent_id in [...(^.parent_content_data[].id)] && (!defined(parent_content_data) || count(parent_content_data) == 0)'
-  const statusFilter = "&& status in ['scheduled', 'published', 'archived', 'unlisted']"
-
   const query = `*[railcontent_id == ${railcontentId}]{
-      railcontent_id,
-      'top_parent': *[${parentFilter} ${statusFilter}][0].railcontent_id
+      'top_parent': coalesce(${grandParentReferenceField}->railcontent_id, ${parentReferenceField}->railcontent_id, railcontent_id),
     }`
   let response = await fetchSanity(query, false, { processNeedAccess: false })
   if (!response) return null
-  return response['top_parent'] ?? response['railcontent_id']
+  return response['top_parent'] ?? railcontentId
 }
 
 export async function getHierarchy(contentId, collection) {
@@ -1403,31 +1384,18 @@ async function fetchALaCarteHierarchyData(railcontentId) {
   const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
   const query = `*[railcontent_id == ${topLevelId}]{
       railcontent_id,
-      'metadata': { brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
+      'metadata': { brand, 'type': _type, 'parent_id':  coalesce(${parentReferenceField}->railcontent_id, 0) },
       'assignments': assignment[]{railcontent_id},
       'children': child[${childrenFilter}]->{
         railcontent_id,
-        'metadata': {
-  brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
+        'metadata': { brand, 'type': _type, 'parent_id':  coalesce(${parentReferenceField}->railcontent_id, 0) },
         'assignments': assignment[]{railcontent_id},
         'children': child[${childrenFilter}]->{
             railcontent_id,
-            'metadata': {
-      brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
+            'metadata': { brand, 'type': _type, 'parent_id':  coalesce(${parentReferenceField}->railcontent_id, 0) },
             'assignments': assignment[]{railcontent_id},
-            'children': child[${childrenFilter}]->{
-               railcontent_id,
-               'metadata': {
-         brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
-               'assignments': assignment[]{railcontent_id},
-               'children': child[${childrenFilter}]->{
-                  railcontent_id,
-                  'metadata': {
-            brand, 'type': _type, 'parent_id':  coalesce(parent_content_data[0].id, 0) },
-            }
-          }
         }
-      },
+      }
     }`
   return await fetchSanity(query, false, { processNeedAccess: false })
 }
@@ -2000,7 +1968,7 @@ export async function fetchTabData(
     ? `&& !(railcontent_id in [${excludeIds.join(',')}])`
     : ''
 
-  const excludeCoursesInCourseCollectionsFilter = `&& !(_type == 'course' && defined(parent_content_data))`
+  const excludeCoursesInCourseCollectionsFilter = `&& !(_type == 'course' && defined(parent_content_reference) && count(parent_content_reference[]) > 0)`
 
   filter = `brand == "${brand}" && (defined(railcontent_id)) ${includedFieldsFilter} ${progressFilter} ${excludedIdsFilter} ${excludeCoursesInCourseCollectionsFilter}`
   const childrenFilter = await new FilterBuilder(``, {

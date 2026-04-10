@@ -8,6 +8,9 @@ export const CloudFrontURl = 'https://d3fzm1tzeyr5n3.cloudfront.net'
 
 // This is used to pull related content by license, so we only show "consumable" content
 export const SONG_TYPES = ['song', 'play-along', 'jam-track', 'song-tutorial-lesson']
+
+export const parentReferenceField = 'parent_content_reference[0]'
+export const grandParentReferenceField = 'parent_content_reference[1]'
 // Oct 2025: It turns out content-meta categories are not really clear
 // THis is used for the page_type field as a post processor so we include parents and children
 // Duplicated in SanityGateway.php if you update this, update that
@@ -22,10 +25,6 @@ export const SONG_TYPES_WITH_CHILDREN = [
 export const SINGLE_PARENT_TYPES = ['course-lesson', 'pack-bundle-lesson', 'song-tutorial-lesson']
 
 export const LEARNING_PATH_LESSON = 'learning-path-lesson-v2'
-
-export const parentField = 'parent_content_data[0]'
-
-export const grandParentField = 'parent_content_data[1]'
 
 export const genreField = `genre[]->{
   name,
@@ -45,7 +44,7 @@ export const instructorField = `instructor[]->{
 
 export const artistField = `select(
           defined(artist) => artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url},
-          defined(parent_content_data) => *[_type == ^.parent_content_data[0].type && railcontent_id == ^.parent_content_data[0].id][0].artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url}
+          defined(parent_content_reference) => ${parentReferenceField}->artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url}
         )`
 
 export const DEFAULT_FIELDS = [
@@ -68,8 +67,8 @@ export const DEFAULT_FIELDS = [
   "'slug' : slug.current",
   "'permission_id': permission_v2",
   'child_count',
-  '"parent_id": parent_content_data[0].id',
-  '"grandparent_id": parent_content_data[1].id',
+  `"parent_id": ${parentReferenceField}->railcontent_id`,
+  `"grandparent_id": ${grandParentReferenceField}->railcontent_id`,
   'live_event_start_time',
   'live_event_end_time',
   'enrollment_start_time',
@@ -96,8 +95,8 @@ export const DEFAULT_CHILD_FIELDS = [
   "'slug' : slug.current",
   "'permission_id': permission_v2",
   'child_count',
-  '"parent_id": parent_content_data[0].id',
-  '"grandparent_id": parent_content_data[1].id',
+  `"parent_id": ${parentReferenceField}->railcontent_id`,
+  `"grandparent_id": ${grandParentReferenceField}->railcontent_id`,
 ]
 
 export const playAlongMp3sField = `{
@@ -118,7 +117,7 @@ export const descriptionField = 'description[0].children[0].text'
 // this pulls both any defined resources for the document as well as any resources in the parent document
 export const resourcesField = `[
           ... resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
-          ... *[defined(resource) && railcontent_id in [...(^.parent_content_data[].id)]].resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )},
+          ... coalesce(parent_content_reference[]->resource[]{resource_name, _key, "resource_url": coalesce('${CloudFrontURl}'+string::split(resource_aws.asset->fileURL, '${AWSUrl}')[1], resource_url )}, []),
           ]`
 
 export const contentAwardField = "*[references(^._id) && _type == 'content-award'][0]"
@@ -405,7 +404,7 @@ export let contentTypeConfig = {
   },
   'progress-tracker': {
     fields: [
-      '"parent_content_data": parent_content_data[].id',
+      '"parent_content_data": parent_content_reference[]->railcontent_id',
       `"badge" : ${contentAwardField}.badge.asset->url`,
       `"badge_rear" : ${contentAwardField}.badge_rear.asset->url`,
       `"badge_logo" : ${contentAwardField}.logo.asset->url`,
@@ -528,9 +527,9 @@ export let contentTypeConfig = {
     ],
     includeChildFields: true,
     childFields: [
-      `"parent_data": parent_content_data[0] {
-        "id": id,
-        "title": *[railcontent_id == ^.id][0].title,
+      `"parent_data": ${parentReferenceField}->{
+        "id": railcontent_id,
+        title,
     }`,
     ],
   },
