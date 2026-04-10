@@ -44,7 +44,7 @@ export const instructorField = `instructor[]->{
 
 export const artistField = `select(
           defined(artist) => artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url},
-          defined(parent_content_reference) => parent_content_reference[0]->artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url}
+          defined(parent_content_reference) => ${parentReferenceField}->artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url}
         )`
 
 export const DEFAULT_FIELDS = [
@@ -67,8 +67,8 @@ export const DEFAULT_FIELDS = [
   "'slug' : slug.current",
   "'permission_id': permission_v2",
   'child_count',
-  '"parent_id": parent_content_reference[0]->railcontent_id',
-  '"grandparent_id": parent_content_reference[1]->railcontent_id',
+  `"parent_id": ${parentReferenceField}->railcontent_id`,
+  `"grandparent_id": ${grandParentReferenceField}->railcontent_id`,
   'live_event_start_time',
   'live_event_end_time',
 ]
@@ -93,8 +93,8 @@ export const DEFAULT_CHILD_FIELDS = [
   "'slug' : slug.current",
   "'permission_id': permission_v2",
   'child_count',
-  '"parent_id": parent_content_reference[0]->railcontent_id',
-  '"grandparent_id": parent_content_reference[1]->railcontent_id',
+  `"parent_id": ${parentReferenceField}->railcontent_id`,
+  `"grandparent_id": ${grandParentReferenceField}->railcontent_id`,
 ]
 
 export const playAlongMp3sField = `{
@@ -525,7 +525,7 @@ export let contentTypeConfig = {
     ],
     includeChildFields: true,
     childFields: [
-      `"parent_data": parent_content_reference[0]->{
+      `"parent_data": ${parentReferenceField}->{
         "id": railcontent_id,
         title,
     }`,
