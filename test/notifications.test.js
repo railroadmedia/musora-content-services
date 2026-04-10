@@ -1,23 +1,42 @@
 import { initializeTestService } from './initializeTests.js'
 import * as UserNotifications from "../src/services/user/notifications.js";
-import { fetchHandler } from '../src/services/railcontent.js'
 
+jest.mock('../src/infrastructure/http/HttpClient.ts', () => ({
+  GET: jest.fn(),
+  POST: jest.fn(),
+  PUT: jest.fn(),
+  PATCH: jest.fn(),
+  DELETE: jest.fn(),
+  HttpClient: jest.fn(),
+}))
 
 jest.mock('../src/services/railcontent.js', () => ({
   fetchUserPermissionsData: jest.fn(() => ({ permissions: [78, 91, 92], isAdmin: false })),
   fetchHandler: jest.fn(),
 }))
 
+jest.mock('../src/services/eventsAPI.js', () => ({
+  __esModule: true,
+  default: {
+    pauseLiveEventCheck: jest.fn().mockResolvedValue(undefined),
+  }
+}))
+
+const { GET, PUT, DELETE } = require('../src/infrastructure/http/HttpClient.ts')
+
 const baseUrl = `/api/notifications`
 
 describe('UserNotifications module', function () {
   beforeEach(() => {
     initializeTestService()
+    GET.mockReset()
+    PUT.mockReset()
+    DELETE.mockReset()
   })
 
   describe('fetchNotifications', () => {
-    it('calls fetchHandler with correct url and method', async () => {
-      fetchHandler.mockResolvedValueOnce([{ id: 1 }])
+    it('calls GET with correct url', async () => {
+      GET.mockResolvedValueOnce([{ id: 1 }])
 
       const result = await UserNotifications.fetchNotifications({
         limit: 5,
@@ -25,10 +44,7 @@ describe('UserNotifications module', function () {
         page: 2,
       })
 
-      expect(fetchHandler).toHaveBeenCalledWith(
-        `${baseUrl}/v1?limit=5&page=2&unread=1`,
-        'get'
-      )
+      expect(GET).toHaveBeenCalledWith(`${baseUrl}/v1?limit=5&page=2&unread=1`)
       expect(result).toEqual([{ id: 1 }])
     })
   })
@@ -38,21 +54,21 @@ describe('UserNotifications module', function () {
       await expect(UserNotifications.markNotificationAsRead()).rejects.toThrow('notificationId is required')
     })
 
-    it('calls fetchHandler with correct url and method', async () => {
-      fetchHandler.mockResolvedValueOnce({ success: true })
+    it('calls PUT with correct url', async () => {
+      PUT.mockResolvedValueOnce({ success: true })
 
       const result = await UserNotifications.markNotificationAsRead(123)
-      expect(fetchHandler).toHaveBeenCalledWith(`${baseUrl}/v1/read?id=123`, 'put')
+      expect(PUT).toHaveBeenCalledWith(`${baseUrl}/v1/read?id=123`, null)
       expect(result).toEqual({ success: true })
     })
   })
 
   describe('markAllNotificationsAsRead', () => {
-    it('calls fetchHandler with correct url and method', async () => {
-      fetchHandler.mockResolvedValueOnce({ success: true })
+    it('calls PUT with correct url', async () => {
+      PUT.mockResolvedValueOnce({ success: true })
 
-      const result = await UserNotifications.markAllNotificationsAsRead('drumeo')
-      expect(fetchHandler).toHaveBeenCalledWith(`${baseUrl}/v1/read?brand=drumeo`, 'put')
+      const result = await UserNotifications.markAllNotificationsAsRead()
+      expect(PUT).toHaveBeenCalledWith(`${baseUrl}/v1/read`, null)
       expect(result).toEqual({ success: true })
     })
   })
@@ -62,11 +78,11 @@ describe('UserNotifications module', function () {
       await expect(UserNotifications.markNotificationAsUnread()).rejects.toThrow('notificationId is required')
     })
 
-    it('calls fetchHandler with correct url and method', async () => {
-      fetchHandler.mockResolvedValueOnce({ success: true })
+    it('calls PUT with correct url', async () => {
+      PUT.mockResolvedValueOnce({ success: true })
 
       const result = await UserNotifications.markNotificationAsUnread(456)
-      expect(fetchHandler).toHaveBeenCalledWith(`${baseUrl}/v1/unread?id=456`, 'put')
+      expect(PUT).toHaveBeenCalledWith(`${baseUrl}/v1/unread?id=456`, null)
       expect(result).toEqual({ success: true })
     })
   })
@@ -76,36 +92,36 @@ describe('UserNotifications module', function () {
       await expect(UserNotifications.deleteNotification()).rejects.toThrow('notificationId is required')
     })
 
-    it('calls fetchHandler with correct url and method', async () => {
-      fetchHandler.mockResolvedValueOnce({ success: true })
+    it('calls DELETE with correct url', async () => {
+      DELETE.mockResolvedValueOnce({ success: true })
 
       const result = await UserNotifications.deleteNotification(789)
-      expect(fetchHandler).toHaveBeenCalledWith(`${baseUrl}/v1/789`, 'delete')
+      expect(DELETE).toHaveBeenCalledWith(`${baseUrl}/v1/789`)
       expect(result).toEqual({ success: true })
     })
   })
 
   describe('fetchUnreadCount', () => {
-    it('calls fetchHandler with correct url and method', async () => {
-      fetchHandler.mockResolvedValueOnce({ unread_count: 42 })
+    it('returns unread count when data is greater than 0', async () => {
+      GET.mockResolvedValueOnce({ data: 42 })
 
       const result = await UserNotifications.fetchUnreadCount()
-      expect(fetchHandler).toHaveBeenCalledWith(`${baseUrl}/v1/unread-count`, 'get')
-      expect(result).toEqual({ unread_count: 42 })
+      expect(GET).toHaveBeenCalledWith(`${baseUrl}/v1/unread-count`)
+      expect(result).toEqual({ data: 42 })
     })
   })
 
   describe('fetchNotificationSettings', () => {
     it('returns empty object if settings is falsy or not object', async () => {
-      fetchHandler.mockResolvedValueOnce(null)
+      GET.mockResolvedValueOnce(null)
       expect(await UserNotifications.fetchNotificationSettings()).toEqual({})
 
-      fetchHandler.mockResolvedValueOnce('string')
+      GET.mockResolvedValueOnce('string')
       expect(await UserNotifications.fetchNotificationSettings()).toEqual({})
     })
 
     it('returns transformed settings grouped by brand', async () => {
-      fetchHandler.mockResolvedValueOnce({
+      GET.mockResolvedValueOnce({
         drumeo: {
           new_lessons_and_features: { channel: 'email', value: true, brand: 'drumeo' },
           membership_perks_promotions: { channel: 'push', value: false, brand: 'drumeo' },
@@ -140,8 +156,8 @@ describe('UserNotifications module', function () {
       ).rejects.toThrow('At least one channel (email, push, or bell) must be provided.')
     })
 
-    it('calls fetchHandler with correct payload and url', async () => {
-      fetchHandler.mockResolvedValueOnce({ success: true })
+    it('calls PUT with correct payload and url', async () => {
+      PUT.mockResolvedValueOnce({ success: true })
 
       const result = await UserNotifications.updateNotificationSetting({
         brand: 'drumeo',
@@ -150,10 +166,8 @@ describe('UserNotifications module', function () {
         push: false,
       })
 
-      expect(fetchHandler).toHaveBeenCalledWith(
-        '/api/notification-settings/v1',
-        'PUT',
-        null,
+      expect(PUT).toHaveBeenCalledWith(
+        '/api/notifications/v1/settings',
         {
           settings: [
             { name: 'membership_perks_promotions', channel: 'email', value: true, brand: 'drumeo' },
@@ -164,6 +178,4 @@ describe('UserNotifications module', function () {
       expect(result).toEqual({ success: true })
     })
   })
-
-
 })

@@ -43,7 +43,7 @@ class StreakCalculator {
   }
 
   private async fetchAllPractices(): Promise<PracticeData> {
-    const query = await db.practices.queryAll()
+    const query = await db.practices.getAll()
 
     return query.data.reduce((acc, practice) => {
       acc[practice.date] = acc[practice.date] || []

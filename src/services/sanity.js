@@ -28,9 +28,9 @@ import {
   SONG_TYPES,
   SONG_TYPES_WITH_CHILDREN,
   postProcessBadge,
-  parentField,
-  grandParentField,
   parentRecentTypes,
+  parentReferenceField,
+  grandParentReferenceField,
   getLiveFields,
 } from '../contentTypeConfig.js'
 import { fetchSimilarItems } from './recommendations.js'
@@ -959,7 +959,56 @@ export async function fetchLessonContent(railContentId, { forDownload = false } 
     showMembershipRestrictedContent: true,
   }
 
+<<<<<<< feat/BEHSTP-167_offline-support-hierarchy
   const fields = getFieldsForContentType('download')
+=======
+  const parentQuery = addParent
+    ? `"parent_content_data": parent_content_reference[]->{
+        "id": railcontent_id,
+        title,
+        slug,
+        "type": _type,
+        "logo" : logo_image_url.asset->url,
+        "dark_mode_logo": dark_mode_logo_url.asset->url,
+        "light_mode_logo": light_mode_logo_url.asset->url,
+        ...*[references(^._id) && _type == 'content-award'][0]{
+          "badge": badge.asset->url,
+          "badge_rear": badge_rear.asset->url,
+          "badge_logo": logo.asset->url,
+        }
+      },`
+    : ''
+
+  const fields = `${getFieldsForContentType()}
+    "resources": ${resourcesField},
+    soundslice,
+    instrumentless,
+    soundslice_slug,
+    "description": ${descriptionField},
+    "chapters": ${chapterField},
+    "instructors":instructor[]->name,
+    "instructor": ${instructorField},
+    ${assignmentsField}
+    video,
+    "length_in_seconds": coalesce(soundslice[0].soundslice_length_in_second, length_in_seconds),
+    mp3_no_drums_no_click_url,
+    mp3_no_drums_yes_click_url,
+    mp3_yes_drums_no_click_url,
+    mp3_yes_drums_yes_click_url,
+    "permission_id": permission_v2,
+    ${parentQuery}
+    ...select(
+      defined(live_event_start_time) => {
+        live_event_start_time,
+        live_event_end_time,
+        live_event_stream_id,
+        "vimeo_live_event_id": vimeo_live_event_id,
+        "videoId": coalesce(live_event_stream_id, video.external_id),
+        "live_event_is_global": live_global_event == true
+      }
+    )
+  `
+>>>>>>> main
 
   const query = await buildQuery(`railcontent_id == ${railContentId}`, filterParams, fields, {
     isSingle: true,
@@ -1080,19 +1129,6 @@ async function fetchRelatedByLicense(railcontentId, brand, onlyUseSongTypes, cou
  * @returns {Promise<Array<Object>|null>} - The fetched related lessons data or null if not found.
  */
 export async function fetchSiblingContent(railContentId, brand = null) {
-  const filterGetParent = await new FilterBuilder(`references(^._id) && _type == ^.parent_type`, {
-    pullFutureContent: true,
-    showMembershipRestrictedContent: true, // Show parent even without permissions
-  }).buildFilter()
-  const filterForParentList = await new FilterBuilder(
-    `references(^._id) && _type == ^.parent_type`,
-    {
-      pullFutureContent: true,
-      isParentFilter: true,
-      showMembershipRestrictedContent: true, // Show parent even without permissions
-    }
-  ).buildFilter()
-
   const childrenFilter = await new FilterBuilder(``, {
     isChildrenFilter: true,
     showMembershipRestrictedContent: true, // Show all lessons in sidebar, need_access applied on individual page
@@ -1100,20 +1136,28 @@ export async function fetchSiblingContent(railContentId, brand = null) {
 
   const brandString = brand ? ` && brand == "${brand}"` : ''
   const queryFields = getFieldsForContentType()
-
+  const courseCollectionFields = await getFieldsForContentTypeWithFilteredChildren('course-collection')
   const query = `*[railcontent_id == ${railContentId}${brandString}]{
     _type,
     parent_type,
     railcontent_id,
+<<<<<<< feat/BEHSTP-167_offline-support-hierarchy
     'parent_id': ${parentField}->railcontent_id,
     'grandparent_id':${grandParentField}->railcontent_id,
     'for-calculations': *[${filterGetParent}][0]{
     'siblings-list': child[]->railcontent_id,
     'parents-list': *[${filterForParentList}][0].child[]->railcontent_id
+=======
+    'parent_id': ${parentReferenceField}->railcontent_id,
+    'grandparent_id': ${grandParentReferenceField}->railcontent_id,
+    'collection_data': ${grandParentReferenceField}->{${courseCollectionFields}},
+    'for-calculations': ${parentReferenceField}->{
+      'siblings-list': child[]->railcontent_id,
+      'parents-list': ${parentReferenceField}->child[]->railcontent_id
+>>>>>>> main
     },
-    "related_lessons" : *[${filterGetParent}][0].child[${childrenFilter}]->{${queryFields}}
+    "related_lessons" : ${parentReferenceField}->child[${childrenFilter}]->{${queryFields}}
   }`
-
   let result = await fetchSanity(query, false, { processNeedAccess: true })
 
   //there's no way in sanity to retrieve the index of an array, so we must calculate after fetch
@@ -1125,10 +1169,6 @@ export async function fetchSiblingContent(railContentId, brand = null) {
     const currentSiblingIndex = calc['siblings-list'].indexOf(result['railcontent_id']) + 1
 
     delete result['for-calculations']
-
-    if (result['grandparent_id']) {
-      result['collection_data'] = await fetchCourseCollectionData(result['grandparent_id'])
-    }
 
     result = { ...result, parentCount, currentParentIndex, siblingCount, currentSiblingIndex }
     return result
@@ -1293,6 +1333,7 @@ export async function fetchByReference(
  * @param {int} railcontentId
  * @returns {Promise<int|null>}
  */
+<<<<<<< feat/BEHSTP-167_offline-support-hierarchy
 async function fetchTopLevelParentId(railcontentId) {
   const query = `*[railcontent_id == ${railcontentId}]{
     railcontent_id,
@@ -1302,9 +1343,15 @@ async function fetchTopLevelParentId(railcontentId) {
       railcontent_id
       ),
   }`
+=======
+export async function fetchTopLevelParentId(railcontentId) {
+  const query = `*[railcontent_id == ${railcontentId}]{
+      'top_parent': coalesce(${grandParentReferenceField}->railcontent_id, ${parentReferenceField}->railcontent_id, railcontent_id),
+    }`
+>>>>>>> main
   let response = await fetchSanity(query, false, { processNeedAccess: false })
   if (!response) return null
-  return response['top_parent'] ?? response['railcontent_id']
+  return response['top_parent'] ?? railcontentId
 }
 
 /**
@@ -1466,6 +1513,7 @@ async function fetchLearningPathHierarchyDataForIds(railcontentIds, collection) 
  * @returns {Promise<object|null>}
  */
 async function fetchALaCarteHierarchyData(railcontentId) {
+<<<<<<< feat/BEHSTP-167_offline-support-hierarchy
   const topLevelId = await fetchTopLevelParentId(railcontentId)
   const childrenFilter = await new FilterBuilder('', { isChildrenFilter: true }).buildFilter()
   const query = buildHierarchyQuery(childrenFilter, `railcontent_id == ${topLevelId}`)
@@ -1496,6 +1544,26 @@ function buildHierarchyQuery(filter, rootSelector) {
     : `${HIERARCHY_NODE_FIELDS}, 'children': child[${filter}]->{${node(depth - 1)}}`
 
   return `*[${rootSelector}]{ ${node(3)} }`
+=======
+  let topLevelId = await fetchTopLevelParentId(railcontentId)
+  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
+  const query = `*[railcontent_id == ${topLevelId}]{
+      railcontent_id,
+      'metadata': { brand, 'type': _type, 'parent_id':  coalesce(${parentReferenceField}->railcontent_id, 0) },
+      'assignments': assignment[]{railcontent_id},
+      'children': child[${childrenFilter}]->{
+        railcontent_id,
+        'metadata': { brand, 'type': _type, 'parent_id':  coalesce(${parentReferenceField}->railcontent_id, 0) },
+        'assignments': assignment[]{railcontent_id},
+        'children': child[${childrenFilter}]->{
+            railcontent_id,
+            'metadata': { brand, 'type': _type, 'parent_id':  coalesce(${parentReferenceField}->railcontent_id, 0) },
+            'assignments': assignment[]{railcontent_id},
+        }
+      }
+    }`
+  return await fetchSanity(query, false, { processNeedAccess: false })
+>>>>>>> main
 }
 
 function populateHierarchyLookups(currentLevel, data, parentId) {
@@ -2066,7 +2134,11 @@ export async function fetchTabData(
     ? `&& !(railcontent_id in [${excludeIds.join(',')}])`
     : ''
 
+<<<<<<< feat/BEHSTP-167_offline-support-hierarchy
   const excludeCoursesInCourseCollectionsFilter = `&& !(_type == 'course' && defined(parent_content_reference))`
+=======
+  const excludeCoursesInCourseCollectionsFilter = `&& !(_type == 'course' && defined(parent_content_reference) && count(parent_content_reference[]) > 0)`
+>>>>>>> main
 
   filter = `brand == "${brand}" && (defined(railcontent_id)) ${includedFieldsFilter} ${progressFilter} ${excludedIdsFilter} ${excludeCoursesInCourseCollectionsFilter}`
   const childrenFilter = await new FilterBuilder(``, {

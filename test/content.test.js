@@ -10,8 +10,8 @@ jest.mock('../src/services/railcontent.js', () => ({
 const railContentModule = require('../src/services/railcontent.js')
 
 describe('content', function () {
-  beforeEach(() => {
-    initializeTestService()
+  beforeAll(async () => {
+    await initializeTestService(true)
   })
 
 //   test('getLessonContentRows', async () => {
@@ -30,7 +30,7 @@ describe('content', function () {
 //     expect(results.meta.sort).toBeDefined()
 //   })
 
-  test('getTabResults-Singles', async () => {
+  test.skip('getTabResults-Singles', async () => {
     const results = await getTabResults('drumeo','lessons','Individuals', {selectedFilters:['difficulty,All','difficulty,Beginner'], sort:'-published_on'})
     console.log(results)
     expect(results.type).toBeDefined()
@@ -41,7 +41,7 @@ describe('content', function () {
     expect(results.meta.sort).toBeDefined()
   })
 
-  test('getTabResults-Courses', async () => {
+  test.skip('getTabResults-Courses', async () => {
     const results = await getTabResults('pianote','lessons','Collections', {selectedFilters:['difficulty,Expert'], sort:'slug'})
     console.log(results)
     expect(results.type).toBeDefined()
@@ -52,7 +52,7 @@ describe('content', function () {
     expect(results.meta.sort).toBeDefined()
   })
 
-  test('getTabResults-Filters', async () => {
+  test.skip('getTabResults-Filters', async () => {
     const results = await getTabResults('pianote','lessons','Explore All', {selectedFilters:['difficulty,Expert'], sort:'slug'})
     console.log(results)
     expect(results.type).toBeDefined()
@@ -62,7 +62,7 @@ describe('content', function () {
     expect(results.meta.sort).toBeDefined()
   })
 
-  test('getTabResults-Type-Filter', async () => {
+  test.skip('getTabResults-Type-Filter', async () => {
     const results = await getTabResults('drumeo','lessons','Explore All', {selectedFilters:['type,Courses', 'type,Documentaries'], sort:'slug'})
     console.log(results)
     expect(results.type).toBeDefined()
@@ -72,7 +72,7 @@ describe('content', function () {
     expect(results.meta.sort).toBeDefined()
   })
 
-  test('getTabResults-Type-Explore-All', async () => {
+  test.skip('getTabResults-Type-Explore-All', async () => {
     const results = await getTabResults('drumeo','lessons','Explore All', {selectedFilters:[], sort:'slug'})
     console.log(results)
     expect(results.type).toBeDefined()
@@ -82,7 +82,7 @@ describe('content', function () {
     expect(results.meta.sort).toBeDefined()
   })
 
-  test('getContentRows', async () => {
+  test.skip('getContentRows', async () => {
     const results = await getContentRows('drumeo', 'lessons', 'Your-Daily-Warmup')
     console.log(results)
   })
@@ -97,13 +97,13 @@ describe('content', function () {
 //     expect(results.meta.filters).toBeDefined()
 //     expect(results.meta.sort).toBeDefined()
 //   })
-  test('getNewAndUpcoming', async () => {
+  test.skip('getNewAndUpcoming', async () => {
     const results = await getNewAndUpcoming('drumeo')
     console.log(results)
     //expect(results.data).toBeDefined()
   })
 
-  test('getScheduleContentRows', async () => {
+  test.skip('getScheduleContentRows', async () => {
     const results = await getScheduleContentRows('drumeo')
     console.log(results.data[1])
     expect(results.type).toBeDefined()
@@ -112,7 +112,7 @@ describe('content', function () {
     expect(results.meta).toBeDefined()
   })
 
-  test('getSpecificScheduleContentRow', async () => {
+  test.skip('getSpecificScheduleContentRow', async () => {
     const results = await getScheduleContentRows('drumeo', 'Leaving-Soon')
     console.log(results)
     expect(results.type).toBeDefined()

@@ -180,7 +180,7 @@ describe('HttpClient', () => {
       const url = '/test'
       const dataVersion = '1.2.3'
 
-      await httpClient.get(url, dataVersion)
+      await httpClient.get(url, { dataVersion })
 
       // Check the actual calls that were made
       expect(mockRequestExecutor.execute.mock.calls.length).toBe(1)
@@ -213,7 +213,7 @@ describe('HttpClient', () => {
       // Create a completely fresh HttpClient instance
       const testClient = new HttpClient(baseUrl, token, testHeaderProvider, testRequestExecutor)
 
-      await testClient.get(url, dataVersion)
+      await testClient.get(url, { dataVersion })
 
       console.log('Headers used in request:', testRequestExecutor.execute.mock.calls[0][1].headers)
 

@@ -7,6 +7,7 @@ import { mockCompletionStates } from './helpers/completion-mock'
 import { COLLECTION_TYPE, waitForDebounce } from './helpers/progress-emitter'
 
 jest.mock('../../src/services/sanity', () => ({
+  ...jest.requireActual('../../src/services/sanity'),
   default: { fetch: jest.fn() },
   fetchSanity: jest.fn()
 }))
