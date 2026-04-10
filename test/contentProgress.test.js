@@ -44,9 +44,6 @@ jest.mock('../src/services/sync/repository-proxy', () => {
   return { default: mockFns, ...mockFns }
 })
 
-jest.mock('../src/services/railcontent', () => ({
-  ...jest.requireActual('../src/services/railcontent'),
-  fetchUserPermissionsData: jest.fn(() => ({ permissions: [78, 91, 92], isAdmin: false }))
 }))
 
 describe('contentProgressDataContext', function () {
