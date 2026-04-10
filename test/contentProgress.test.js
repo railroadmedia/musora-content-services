@@ -44,8 +44,6 @@ jest.mock('../src/services/sync/repository-proxy', () => {
   return { default: mockFns, ...mockFns }
 })
 
-}))
-
 describe('contentProgressDataContext', function () {
   beforeEach(() => {
     initializeTestService()
