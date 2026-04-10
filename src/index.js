@@ -228,11 +228,8 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
-	calculateLongestStreaksOffline,
 	getPracticeSessionsOffline,
 	getRecentActivityOffline,
-	getUserMonthlyStatsOffline,
-	getUserWeeklyStatsOffline,
 	recordWatchSessionOffline
 } from './services/offline/offline.ts';
 
@@ -484,7 +481,6 @@ export {
 	buildEntityAndTotalQuery,
 	buildImageSRC,
 	calculateLongestStreaks,
-	calculateLongestStreaksOffline,
 	clearAllCachedData,
 	clearState,
 	closeComment,
@@ -684,11 +680,9 @@ export {
 	getUpgradePrice,
 	getUserData,
 	getUserMonthlyStats,
-	getUserMonthlyStatsOffline,
 	getUserPinProgressKey,
 	getUserSignature,
 	getUserWeeklyStats,
-	getUserWeeklyStatsOffline,
 	getWeekNumber,
 	globalConfig,
 	guidedCourses,

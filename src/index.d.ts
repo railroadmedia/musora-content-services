@@ -224,11 +224,8 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
-	calculateLongestStreaksOffline,
 	getPracticeSessionsOffline,
 	getRecentActivityOffline,
-	getUserMonthlyStatsOffline,
-	getUserWeeklyStatsOffline,
 	recordWatchSessionOffline
 } from './services/offline/offline.ts';
 
@@ -485,7 +482,6 @@ declare module 'musora-content-services' {
 		buildEntityAndTotalQuery,
 		buildImageSRC,
 		calculateLongestStreaks,
-		calculateLongestStreaksOffline,
 		clearAllCachedData,
 		clearState,
 		closeComment,
@@ -685,11 +681,9 @@ declare module 'musora-content-services' {
 		getUpgradePrice,
 		getUserData,
 		getUserMonthlyStats,
-		getUserMonthlyStatsOffline,
 		getUserPinProgressKey,
 		getUserSignature,
 		getUserWeeklyStats,
-		getUserWeeklyStatsOffline,
 		getWeekNumber,
 		globalConfig,
 		guidedCourses,
