@@ -22,7 +22,7 @@ import {
   lessonTypesMapping,
   ownedContentTypes
 } from "../contentTypeConfig";
-import {getPermissionsAdapter} from "./permissions/index.ts";
+import { getPermissionsAdapter, isUserFreeTier } from './permissions/index.ts'
 import {MEMBERSHIP_PERMISSIONS} from "../constants/membership-permissions.ts";
 
 
@@ -109,6 +109,8 @@ export async function getTabResults(brand, pageName, tabName, {
   const tabRecSysSection = tabMatch?.recSysSection || ''
   const mergedIncludedFields = tabValue ? [...filteredSelectedFilters, tabValue] : filteredSelectedFilters;
 
+  const free = await isUserFreeTier()
+
   // Fetch data
   let results
   if( tabName === Tabs.ForYou.name ) {
@@ -131,6 +133,10 @@ export async function getTabResults(brand, pageName, tabName, {
 
       recommendedContent = filterCoursesInCourseCollections(recommendedContent)
 
+      if (free) {
+        recommendedContent = postSortFreeContent(recommendedContent)
+      }
+
       const start = (page - 1) * limit
       const end = start + limit
       const pagesFilledByRec = Math.floor(recommendedContent.length / limit)
@@ -143,7 +149,8 @@ export async function getTabResults(brand, pageName, tabName, {
           sort: '-published_on',
           includedFields: mergedIncludedFields,
           progress: progressValue,
-          excludeIds: recommendedContent.map(c => c.id)
+          excludeIds: recommendedContent.map(c => c.id),
+          sortFreeContent: free,
         })
 
         // Filter out duplicates and combine
@@ -163,7 +170,8 @@ export async function getTabResults(brand, pageName, tabName, {
         limit,
         sort: '-published_on',
         includedFields: mergedIncludedFields,
-        progress: progressValue
+        progress: progressValue,
+        sortFreeContent: free,
       })
       contentToDisplay = temp.entity
     }
@@ -175,7 +183,17 @@ export async function getTabResults(brand, pageName, tabName, {
       addProgressStatus: true
     })
   } else {
-    let temp = await fetchTabData(brand, pageName, { page, limit, sort, includedFields: mergedIncludedFields, progress: progressValue });
+    let temp = await fetchTabData(
+      brand,
+      pageName,
+      {
+        page,
+        limit,
+        sort,
+        includedFields: mergedIncludedFields,
+        progress: progressValue,
+        sortFreeContent: free,
+      });
     const [ranking, contextResults] = await Promise.all([
       sort === 'recommended' ? rankItems(brand, temp.entity.map(e => e.id)) : [],
       addContextToContent(() => temp.entity, {
@@ -624,4 +642,15 @@ export async function getOwnedContent(brand, {
 
 export function filterCoursesInCourseCollections(data) {
   return data.filter(c => !(c.type === 'course' && c.parent_id))
+}
+
+function postSortFreeContent(contentList) {
+  contentList.sort((a, b) => {
+    const hasAccess = (item) =>
+      item.permission_id?.includes(134)
+
+    return hasAccess(b) - hasAccess(a);
+  });
+
+  return contentList;
 }

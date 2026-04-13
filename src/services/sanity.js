@@ -50,6 +50,7 @@ import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
 import { query } from '../lib/sanity/query'
 import { Filters as f } from '../lib/sanity/filter'
 import { COLLECTION_TYPE } from './sync/models/ContentProgress'
+import { isUserFreeTier } from './permissions'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -1926,7 +1927,7 @@ export async function fetchTabData(
     includedFields = [],
     progressIds = undefined,
     progress = 'all',
-    showMembershipRestrictedContent = false,
+    sortFreeContent = false,
     excludeIds = [],
   } = {}
 ) {
@@ -1937,6 +1938,10 @@ export async function fetchTabData(
     includedFields.length > 0 ? filtersToGroq(includedFields, [], pageName) : ''
 
   let sortOrder = getSortOrder(sort, brand, '')
+
+  if (sortFreeContent) {
+    sortOrder = sortFreeContentFirst(sortOrder)
+  }
 
   switch (progress) {
     case 'recent':
@@ -2519,4 +2524,8 @@ export async function hasAnyMethodV2IntroCompleted() {
 
   const completedVideos = await getAllCompletedByIds(ids)
   return (completedVideos?.data?.length || 0) > 0
+}
+
+function sortFreeContentFirst(sortOrder) {
+  return `select(membership_tier == 'free' => 1, 0) desc, ${sortOrder}`
 }
