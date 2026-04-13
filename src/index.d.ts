@@ -149,7 +149,8 @@ import {
 	getWeekNumber,
 	isNextDay,
 	isSameDate,
-	toDayjs
+	toDayjs,
+	toLocalDay
 } from './services/dateUtils.js';
 
 import {
@@ -420,11 +421,6 @@ import {
 } from './services/user/payments.ts';
 
 import {
-	fetchUserPermissions,
-	reset
-} from './services/user/permissions.js';
-
-import {
 	deleteProfilePicture,
 	otherStats
 } from './services/user/profile.js';
@@ -603,7 +599,6 @@ declare module 'musora-content-services' {
 		fetchUninterests,
 		fetchUnreadCount,
 		fetchUpcomingEvents,
-		fetchUserPermissions,
 		fetchUserPermissionsData,
 		fetchUserPlaylists,
 		fetchUserPracticeMeta,
@@ -736,7 +731,6 @@ declare module 'musora-content-services' {
 		reportPlaylist,
 		requestEmailChange,
 		rescindInvite,
-		reset,
 		resetAllAwards,
 		resetAllLearningPaths,
 		resetPassword,
@@ -759,6 +753,7 @@ declare module 'musora-content-services' {
 		startOnboarding,
 		status,
 		toDayjs,
+		toLocalDay,
 		togglePlaylistPrivate,
 		toggleSignaturePrivate,
 		toggleStudentView,

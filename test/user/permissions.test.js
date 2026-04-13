@@ -1,4 +1,4 @@
-const { fetchUserPermissions, reset } = require('../../src/services/user/permissions')
+const { fetchUserPermissions, reset } = require('../../src/services/permissions/permissions')
 const { initializeTestService } = require('../initializeTests')
 
 describe('user.permissions', function () {

@@ -16,7 +16,7 @@ import {
 } from './PermissionsAdapter'
 import {
   fetchUserPermissions as fetchUserPermissionsV2,
-} from '../user/permissions.js'
+} from './permissions'
 import {arrayToRawRepresentation, arrayToStringRepresentation} from '../../filterBuilder.js'
 import {basicMembershipTier, plusMembershipPermissions, plusMembershipTier} from "../../contentTypeConfig";
 

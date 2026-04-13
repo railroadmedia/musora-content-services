@@ -13,7 +13,7 @@ import {
 } from './PermissionsAdapter'
 import {
   fetchUserPermissions as fetchUserPermissionsV1,
-} from '../user/permissions.js'
+} from './permissions'
 import { plusMembershipPermissions, membershipPermissions } from '../../contentTypeConfig.js'
 import { arrayToRawRepresentation } from '../../filterBuilder.js'
 

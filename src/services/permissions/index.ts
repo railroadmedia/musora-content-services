@@ -46,10 +46,17 @@ export { PermissionsAdapter } from './PermissionsAdapter'
 
 // Export TypeScript types only (not runtime values)
 export type {
-  UserPermissions,
   PermissionFilterOptions,
   ContentItem,
 } from './PermissionsAdapter'
+
+export type { UserPermissions } from './types'
+
+export {
+  fetchUserPermissions,
+  reset,
+  isUserFreeTier,
+} from './permissions'
 
 // Export adapter implementations (runtime values)
 export { PermissionsV1Adapter } from './PermissionsV1Adapter'

@@ -6,21 +6,7 @@
  * (v1 and v2) without changing consumer code.
  */
 
-/**
- * User permissions data structure
- */
-export interface UserPermissions {
-  /** Array of permission IDs the user has access to */
-  permissions: string[]
-  /** Whether the user is an admin */
-  isAdmin: boolean
-  /** Whether the user is a moderator */
-  isModerator: boolean
-  /** Whether the user has basic membership */
-  isABasicMember: boolean
-  /** User's access level (v2 - for future use) */
-  access_level?: string
-}
+import { UserPermissions } from './types'
 
 /**
  * Options for generating permission filters

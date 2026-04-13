@@ -3,14 +3,9 @@
  */
 import { setLastUpdatedTime, wasLastUpdateOlderThanXSeconds } from '../../lib/lastUpdated.js'
 import { fetchUserPermissionsData } from '../railcontent.js'
-import './types.js'
+import { UserPermissions } from './types'
+import { getPermissionsAdapter } from './PermissionsAdapterFactory'
 
-/**
- * Exported functions that are excluded from index generation.
- *
- * @type {string[]}
- */
-const excludeFromGeneratedIndex = []
 let userPermissionsPromise = null
 let lastUpdatedKey = `userPermissions_lastUpdated`
 
@@ -19,7 +14,7 @@ let lastUpdatedKey = `userPermissions_lastUpdated`
  *
  * @returns {Promise<UserPermissions>} - The user permissions data.
  */
-export async function fetchUserPermissions() {
+export async function fetchUserPermissions(): Promise<UserPermissions> {
   if (!userPermissionsPromise || await wasLastUpdateOlderThanXSeconds(10, lastUpdatedKey)) {
     userPermissionsPromise = fetchUserPermissionsData()
     setLastUpdatedTime(lastUpdatedKey)
@@ -33,6 +28,12 @@ export async function fetchUserPermissions() {
  *
  * @returns {Promise<void>}
  */
-export async function reset() {
+export async function reset(): Promise<void> {
   userPermissionsPromise = null
+}
+
+export async function isUserFreeTier(): Promise<boolean> {
+  const adapter = getPermissionsAdapter()
+  const userData = await adapter.fetchUserPermissions()
+  return userData.membershipTier === 'free'
 }

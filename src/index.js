@@ -153,7 +153,8 @@ import {
 	getWeekNumber,
 	isNextDay,
 	isSameDate,
-	toDayjs
+	toDayjs,
+	toLocalDay
 } from './services/dateUtils.js';
 
 import {
@@ -424,11 +425,6 @@ import {
 } from './services/user/payments.ts';
 
 import {
-	fetchUserPermissions,
-	reset
-} from './services/user/permissions.js';
-
-import {
 	deleteProfilePicture,
 	otherStats
 } from './services/user/profile.js';
@@ -602,7 +598,6 @@ export {
 	fetchUninterests,
 	fetchUnreadCount,
 	fetchUpcomingEvents,
-	fetchUserPermissions,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
 	fetchUserPracticeMeta,
@@ -735,7 +730,6 @@ export {
 	reportPlaylist,
 	requestEmailChange,
 	rescindInvite,
-	reset,
 	resetAllAwards,
 	resetAllLearningPaths,
 	resetPassword,
@@ -758,6 +752,7 @@ export {
 	startOnboarding,
 	status,
 	toDayjs,
+	toLocalDay,
 	togglePlaylistPrivate,
 	toggleSignaturePrivate,
 	toggleStudentView,
