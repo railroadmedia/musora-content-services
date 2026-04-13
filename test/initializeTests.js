@@ -57,5 +57,7 @@ export async function initializeTestService(useLive = false, isAdmin = false) {
   let permissionsData = { permissions: [108, 91, 92], isAdmin: isAdmin }
   permissionsMock.mockImplementation(() => permissionsData)
 
-  initializeSyncManager(userId)
+  if (useLive) {
+    initializeSyncManager(userId)
+  }
 }
