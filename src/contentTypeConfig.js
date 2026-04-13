@@ -435,12 +435,12 @@ export let contentTypeConfig = {
     fields: [
       'railcontent_id',
       '"assignments": assignment[]{railcontent_id}',
-      `"metadata": { brand, "type": _type, "parent_id":  coalesce(${parentField}->railcontent_id, 0) }`,
+      `"metadata": { brand, "type": _type, "parent_id":  coalesce(${parentReferenceField}->railcontent_id, 0) }`,
       ],
     childFields: [
       'railcontent_id',
       '"assignments": assignment[]{railcontent_id}',
-      `"metadata": { brand, "type": _type, "parent_id":  coalesce(${parentField}->railcontent_id, 0) }`,
+      `"metadata": { brand, "type": _type, "parent_id":  coalesce(${parentReferenceField}->railcontent_id, 0) }`,
     ],
   },
   song: {
