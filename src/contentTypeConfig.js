@@ -26,13 +26,6 @@ export const SINGLE_PARENT_TYPES = ['course-lesson', 'pack-bundle-lesson', 'song
 
 export const LEARNING_PATH_LESSON = 'learning-path-lesson-v2'
 
-<<<<<<< feat/BEHSTP-167_offline-support-hierarchy
-export const parentField = 'parent_content_reference[0]'
-
-export const grandParentField = 'parent_content_reference[1]'
-
-=======
->>>>>>> main
 export const genreField = `genre[]->{
   name,
   'slug': slug.current,
@@ -51,11 +44,7 @@ export const instructorField = `instructor[]->{
 
 export const artistField = `select(
           defined(artist) => artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url},
-<<<<<<< feat/BEHSTP-167_offline-support-hierarchy
-          defined(parent_content_reference) => ${parentField}->artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url}
-=======
           defined(parent_content_reference) => ${parentReferenceField}->artist->{ 'name': name, 'slug': slug.current, 'thumbnail': thumbnail_url.asset->url}
->>>>>>> main
         )`
 
 export const DEFAULT_FIELDS = [
@@ -78,13 +67,8 @@ export const DEFAULT_FIELDS = [
   "'slug' : slug.current",
   "'permission_id': permission_v2",
   'child_count',
-<<<<<<< feat/BEHSTP-167_offline-support-hierarchy
-  `"parent_id": ${parentField}->railcontent_id`,
-  `"grandparent_id": ${grandParentField}->railcontent_id`,
-=======
   `"parent_id": ${parentReferenceField}->railcontent_id`,
   `"grandparent_id": ${grandParentReferenceField}->railcontent_id`,
->>>>>>> main
   'live_event_start_time',
   'live_event_end_time',
   'enrollment_start_time',

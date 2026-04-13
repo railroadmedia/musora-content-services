@@ -1444,7 +1444,6 @@ async function fetchLearningPathHierarchyDataForIds(railcontentIds, collection) 
  * @returns {Promise<object|null>}
  */
 async function fetchALaCarteHierarchyData(railcontentId) {
-<<<<<<< feat/BEHSTP-167_offline-support-hierarchy
   const topLevelId = await fetchTopLevelParentId(railcontentId)
   const childrenFilter = await new FilterBuilder('', { isChildrenFilter: true }).buildFilter()
   const query = buildHierarchyQuery(childrenFilter, `railcontent_id == ${topLevelId}`)
@@ -1475,26 +1474,6 @@ function buildHierarchyQuery(filter, rootSelector) {
     : `${HIERARCHY_NODE_FIELDS}, 'children': child[${filter}]->{${node(depth - 1)}}`
 
   return `*[${rootSelector}]{ ${node(3)} }`
-=======
-  let topLevelId = await fetchTopLevelParentId(railcontentId)
-  const childrenFilter = await new FilterBuilder(``, { isChildrenFilter: true }).buildFilter()
-  const query = `*[railcontent_id == ${topLevelId}]{
-      railcontent_id,
-      'metadata': { brand, 'type': _type, 'parent_id':  coalesce(${parentReferenceField}->railcontent_id, 0) },
-      'assignments': assignment[]{railcontent_id},
-      'children': child[${childrenFilter}]->{
-        railcontent_id,
-        'metadata': { brand, 'type': _type, 'parent_id':  coalesce(${parentReferenceField}->railcontent_id, 0) },
-        'assignments': assignment[]{railcontent_id},
-        'children': child[${childrenFilter}]->{
-            railcontent_id,
-            'metadata': { brand, 'type': _type, 'parent_id':  coalesce(${parentReferenceField}->railcontent_id, 0) },
-            'assignments': assignment[]{railcontent_id},
-        }
-      }
-    }`
-  return await fetchSanity(query, false, { processNeedAccess: false })
->>>>>>> main
 }
 
 function populateHierarchyLookups(currentLevel, data, parentId) {
