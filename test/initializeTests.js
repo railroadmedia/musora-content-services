@@ -1,6 +1,6 @@
 import { globalConfig, initializeService } from '../src'
 import { LocalStorageMock } from './localStorageMock'
-import { initializeSyncManager } from './sync/initialize-sync-manager'
+import { initializeSyncManager } from './unit/sync/initialize-sync-manager'
 const railContentModule = require('../src/services/railcontent.js')
 let token = null
 let userId = process.env.RAILCONTENT_USER_ID ?? null

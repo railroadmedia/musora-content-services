@@ -92,7 +92,10 @@ export default {
   // moduleNameMapper: {},
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
-  modulePathIgnorePatterns: ['<rootDir>/test/live'],
+  modulePathIgnorePatterns: [
+    '<rootDir>/test/live',
+    '<rootDir>/test/integration'
+  ],
 
   // Activates notifications for test results
   // notify: false,
@@ -136,7 +139,11 @@ export default {
   // setupFiles: [],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
-  setupFilesAfterEnv: ['dotenv/config', '<rootDir>/test/setupConsole.js'],
+  setupFilesAfterEnv: [
+    'dotenv/config',
+    '<rootDir>/test/setupConsole.js',
+    '<rootDir>/test/setupNetworkGuard.js'
+  ],
 
   // The number of seconds after which a test is considered as slow and reported as such in the results.
   // slowTestThreshold: 5,
