@@ -6,7 +6,7 @@ import dayjs from 'dayjs'
 
 interface Activity {
   contentId: number
-  action: 'start' | 'complete'
+  action: 'Start' | 'Complete'
   contentType: 'lesson' | 'song'
   date: string
   brand: string
@@ -78,17 +78,17 @@ function deriveActivitiesFromProgress(progress: Record<any, any>) {
 
     activities.push({
       contentId: p.content_id,
-      action: 'start',
+      action: 'Start',
       contentType: type,
-      date: dayjs(p.created_at).format('YYYY-MM-DD'),
+      date: dayjs(p.created_at).toISOString(),
       brand: p.content_brand,
     })
     if (p.state === STATE.COMPLETED) {
       activities.push({
         contentId: p.content_id,
-        action: 'complete',
+        action: 'Complete',
         contentType: type,
-        date: dayjs(p.updated_at).format('YYYY-MM-DD'),
+        date: dayjs(p.updated_at).toISOString(),
         brand: p.content_brand,
       })
     }
