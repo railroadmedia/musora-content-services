@@ -1,6 +1,8 @@
 import { db } from '../sync'
 import { Q } from '@nozbe/watermelondb'
 import dayjs from 'dayjs'
+import { globalConfig } from '../config'
+import { calculateLongestStreaks } from '../userActivity.js'
 
 /**
  * @param offlineTimestamp - Minimum `updated_at` epoch ms to include
@@ -26,4 +28,20 @@ export async function getPracticeSessionsOffline(
   ))
 
   return { data: { practices, practiceDuration } }
+}
+
+export async function otherStatsOffline(userId = globalConfig.sessionConfig.userId) {
+  const longestStreaks = await calculateLongestStreaks(userId)
+
+  return {
+    longest_day_streak: {
+      type: 'day',
+      length: longestStreaks.longestDailyStreak,
+    },
+    longest_week_streak: {
+      type: 'week',
+      length: longestStreaks.longestWeeklyStreak,
+    },
+    total_practice_time: longestStreaks.totalPracticeSeconds,
+  }
 }

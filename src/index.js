@@ -232,7 +232,8 @@ import {
 } from './services/offline/activities.ts';
 
 import {
-	getPracticeSessionsOffline
+	getPracticeSessionsOffline,
+	otherStatsOffline
 } from './services/offline/practices.ts';
 
 import {
@@ -338,6 +339,7 @@ import {
 	fetchSongArtistCount,
 	fetchSongById,
 	fetchTabData,
+	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	getHierarchies,
 	getHierarchy,
@@ -617,6 +619,7 @@ export {
 	fetchThread,
 	fetchThreads,
 	fetchTopComment,
+	fetchTopLevelParentId,
 	fetchUninterests,
 	fetchUnreadCount,
 	fetchUpcomingEvents,
@@ -732,6 +735,7 @@ export {
 	onProgressSaved,
 	openComment,
 	otherStats,
+	otherStatsOffline,
 	pauseLiveEventPolling,
 	pinProgressRow,
 	pinThread,

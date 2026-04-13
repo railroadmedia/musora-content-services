@@ -228,7 +228,8 @@ import {
 } from './services/offline/activities.ts';
 
 import {
-	getPracticeSessionsOffline
+	getPracticeSessionsOffline,
+	otherStatsOffline
 } from './services/offline/practices.ts';
 
 import {
@@ -334,6 +335,7 @@ import {
 	fetchSongArtistCount,
 	fetchSongById,
 	fetchTabData,
+	fetchTopLevelParentId,
 	fetchUpcomingEvents,
 	getHierarchies,
 	getHierarchy,
@@ -618,6 +620,7 @@ declare module 'musora-content-services' {
 		fetchThread,
 		fetchThreads,
 		fetchTopComment,
+		fetchTopLevelParentId,
 		fetchUninterests,
 		fetchUnreadCount,
 		fetchUpcomingEvents,
@@ -733,6 +736,7 @@ declare module 'musora-content-services' {
 		onProgressSaved,
 		openComment,
 		otherStats,
+		otherStatsOffline,
 		pauseLiveEventPolling,
 		pinProgressRow,
 		pinThread,
