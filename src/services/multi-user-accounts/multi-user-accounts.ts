@@ -53,6 +53,10 @@ export interface CreateInvitesParams {
   emails: string[]
 }
 
+export interface UpdateMultiUserAccountParams {
+  show_welcome: boolean
+}
+
 
 /**
  * Creates a new multi-user account with optional invites and seat count.
@@ -124,4 +128,16 @@ export async function rescindInvite(inviteId: number): Promise<void> {
  */
 export async function removeUserFromActiveMultiUserAccount(userId: number): Promise<MultiUserAccountResponse|void> {
   return DELETE(`${globalConfig.baseUrl}${baseUrl}/${userId}/remove`, {})
+}
+
+/**
+ * Updates specified fields on a multi-user account. Authorized user must be the primary account owner
+ *
+ * @param {UpdateMultiUserAccountParams} params - The parameters for updating the account.
+ * @returns {Promise<MultiUserAccountResponse>} - Updated MultiUserAccountResponse if account owner
+ * @throws {HttpError} - If the request fails.
+ */
+export async function updateMultiUserAccount(params: UpdateMultiUserAccountParams): Promise<MultiUserAccountResponse> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.patch(`${globalConfig.baseUrl}${baseUrl}/update`, params)
 }

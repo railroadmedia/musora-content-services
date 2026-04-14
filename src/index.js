@@ -153,7 +153,8 @@ import {
 	getWeekNumber,
 	isNextDay,
 	isSameDate,
-	toDayjs
+	toDayjs,
+	toLocalDay
 } from './services/dateUtils.js';
 
 import {
@@ -223,7 +224,8 @@ import {
 	createInvites,
 	fetchUsersMultiAccountDetails,
 	removeUserFromActiveMultiUserAccount,
-	rescindInvite
+	rescindInvite,
+	updateMultiUserAccount
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
@@ -758,6 +760,7 @@ export {
 	startOnboarding,
 	status,
 	toDayjs,
+	toLocalDay,
 	togglePlaylistPrivate,
 	toggleSignaturePrivate,
 	toggleStudentView,
@@ -778,6 +781,7 @@ export {
 	updateDailySession,
 	updateDisplayName,
 	updateForumCategory,
+	updateMultiUserAccount,
 	updateNotificationSetting,
 	updateOnboarding,
 	updatePlaylist,
