@@ -52,12 +52,6 @@ export type {
 
 export type { UserPermissions } from './types'
 
-export {
-  fetchUserPermissions,
-  reset,
-  isUserFreeTier,
-} from './permissions'
-
 // Export adapter implementations (runtime values)
 export { PermissionsV1Adapter } from './PermissionsV1Adapter'
 export { PermissionsV2Adapter } from './PermissionsV2Adapter'
@@ -70,3 +64,10 @@ export {
 
 // Export PermissionsVersion type only (not runtime value)
 export type { PermissionsVersion } from './PermissionsAdapterFactory'
+
+// Export high-level functions for fetching permissions (runtime values)
+export {
+  fetchUserPermissions,
+  reset,
+  getUserMembershipTier,
+} from './permissions'

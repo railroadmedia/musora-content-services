@@ -27,6 +27,12 @@ function extractExportedFunctions(filePath) {
   const variableMatches = [...fileContent.matchAll(exportVariableRegex)].map((match) => match[2])
   matches = matches.concat(variableMatches)
 
+  // Match named re-exports: export { foo, bar } from '...' (skip export type { ... })
+  const reExportRegex = /\nexport\s+(?!type\s)\{([\s\S]+?)\}\s*from/g
+  const reExportMatches = [...fileContent.matchAll(reExportRegex)]
+    .flatMap((match) => match[1].split(',').map((name) => name.trim()).filter(Boolean))
+  matches = matches.concat(reExportMatches)
+
   const moduleExportsMatch = moduleExportsRegex.exec(fileContent)
   if (moduleExportsMatch) {
     const exportsList = moduleExportsMatch[1].split(',').map((exp) => exp.split(':')[0].trim())
@@ -79,8 +85,9 @@ treeElements.forEach((treeNode) => {
       console.log(`Skipping directory: ${treeNode} due to .indexignore`)
       return
     }
-    // Skip the permissions directory - it has its own index.ts barrel export
+    // Skip permissions directory except its index.ts barrel export
     if (treeNode === 'permissions') {
+      addFunctionsToFileExports(path.join(filePath, 'index.ts'), treeNode + '/index.ts')
       return
     }
 

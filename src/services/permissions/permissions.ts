@@ -3,7 +3,7 @@
  */
 import { setLastUpdatedTime, wasLastUpdateOlderThanXSeconds } from '../../lib/lastUpdated.js'
 import { fetchUserPermissionsData } from '../railcontent.js'
-import { UserPermissions } from './types'
+import { UserMembershipTier, UserPermissions } from './types'
 import { getPermissionsAdapter } from './PermissionsAdapterFactory'
 
 let userPermissionsPromise = null
@@ -32,8 +32,8 @@ export async function reset(): Promise<void> {
   userPermissionsPromise = null
 }
 
-export async function isUserFreeTier(): Promise<boolean> {
+export async function getUserMembershipTier(): Promise<UserMembershipTier> {
   const adapter = getPermissionsAdapter()
   const userData = await adapter.fetchUserPermissions()
-  return userData.membershipTier === 'free'
+  return userData.membershipTier
 }

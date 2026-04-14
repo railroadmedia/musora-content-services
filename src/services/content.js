@@ -16,13 +16,12 @@ import {
 import {TabResponseType, Tabs, capitalizeFirstLetter} from '../contentMetaData.js'
 import {recommendations, rankCategories, rankItems} from "./recommendations";
 import {addContextToContent} from "./contentAggregator.js";
-import {globalConfig} from "./config";
 import {getUserData} from "./user/management";
 import {
   lessonTypesMapping,
   ownedContentTypes
 } from "../contentTypeConfig";
-import { getPermissionsAdapter, isUserFreeTier } from './permissions/index.ts'
+import { getPermissionsAdapter, getUserMembershipTier } from './permissions/index.ts'
 import {MEMBERSHIP_PERMISSIONS} from "../constants/membership-permissions.ts";
 
 
@@ -109,7 +108,7 @@ export async function getTabResults(brand, pageName, tabName, {
   const tabRecSysSection = tabMatch?.recSysSection || ''
   const mergedIncludedFields = tabValue ? [...filteredSelectedFilters, tabValue] : filteredSelectedFilters;
 
-  const userIsFreeTier = await isUserFreeTier()
+  const isUserFreeTier = (await getUserMembershipTier()) === 'free';
 
   // Fetch data
   let results
@@ -133,7 +132,7 @@ export async function getTabResults(brand, pageName, tabName, {
 
       recommendedContent = filterCoursesInCourseCollections(recommendedContent)
 
-      if (userIsFreeTier) {
+      if (isUserFreeTier) {
         recommendedContent = postSortFreeContent(recommendedContent)
       }
 
@@ -150,7 +149,7 @@ export async function getTabResults(brand, pageName, tabName, {
           includedFields: mergedIncludedFields,
           progress: progressValue,
           excludeIds: recommendedContent.map(c => c.id),
-          sortFreeContent: userIsFreeTier,
+          sortFreeContent: isUserFreeTier,
         })
 
         // Filter out duplicates and combine
@@ -171,7 +170,7 @@ export async function getTabResults(brand, pageName, tabName, {
         sort: '-published_on',
         includedFields: mergedIncludedFields,
         progress: progressValue,
-        sortFreeContent: userIsFreeTier,
+        sortFreeContent: isUserFreeTier,
       })
       contentToDisplay = temp.entity
     }
@@ -192,7 +191,7 @@ export async function getTabResults(brand, pageName, tabName, {
         sort,
         includedFields: mergedIncludedFields,
         progress: progressValue,
-        sortFreeContent: userIsFreeTier,
+        sortFreeContent: isUserFreeTier,
       });
     const [ranking, contextResults] = await Promise.all([
       sort === 'recommended' ? rankItems(brand, temp.entity.map(e => e.id)) : [],

@@ -228,6 +228,17 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
+	PermissionsAdapter,
+	PermissionsV1Adapter,
+	PermissionsV2Adapter,
+	fetchUserPermissions,
+	getPermissionsAdapter,
+	getPermissionsVersion,
+	getUserMembershipTier,
+	reset
+} from './services/permissions/index.ts';
+
+import {
 	emitProgressSaved,
 	onProgressSaved
 } from './services/progress-events.js';
@@ -460,6 +471,9 @@ import {
 } from './services/userActivity.js';
 
 export {
+	PermissionsAdapter,
+	PermissionsV1Adapter,
+	PermissionsV2Adapter,
 	acceptInvite,
 	addContextToContent,
 	addContextToLearningPaths,
@@ -598,6 +612,7 @@ export {
 	fetchUninterests,
 	fetchUnreadCount,
 	fetchUpcomingEvents,
+	fetchUserPermissions,
 	fetchUserPermissionsData,
 	fetchUserPlaylists,
 	fetchUserPracticeMeta,
@@ -644,6 +659,8 @@ export {
 	getNewAndUpcoming,
 	getOnboardingRecommendedContent,
 	getOwnedContent,
+	getPermissionsAdapter,
+	getPermissionsVersion,
 	getPracticeNotes,
 	getPracticeSessions,
 	getProgressDataByIds,
@@ -669,6 +686,7 @@ export {
 	getToday,
 	getUpgradePrice,
 	getUserData,
+	getUserMembershipTier,
 	getUserMonthlyStats,
 	getUserPinProgressKey,
 	getUserSignature,
@@ -730,6 +748,7 @@ export {
 	reportPlaylist,
 	requestEmailChange,
 	rescindInvite,
+	reset,
 	resetAllAwards,
 	resetAllLearningPaths,
 	resetPassword,

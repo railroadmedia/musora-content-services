@@ -224,6 +224,17 @@ import {
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
+	PermissionsAdapter,
+	PermissionsV1Adapter,
+	PermissionsV2Adapter,
+	fetchUserPermissions,
+	getPermissionsAdapter,
+	getPermissionsVersion,
+	getUserMembershipTier,
+	reset
+} from './services/permissions/index.ts';
+
+import {
 	emitProgressSaved,
 	onProgressSaved
 } from './services/progress-events.js';
@@ -461,6 +472,9 @@ import {
 
 declare module 'musora-content-services' {
 	export {
+		PermissionsAdapter,
+		PermissionsV1Adapter,
+		PermissionsV2Adapter,
 		acceptInvite,
 		addContextToContent,
 		addContextToLearningPaths,
@@ -599,6 +613,7 @@ declare module 'musora-content-services' {
 		fetchUninterests,
 		fetchUnreadCount,
 		fetchUpcomingEvents,
+		fetchUserPermissions,
 		fetchUserPermissionsData,
 		fetchUserPlaylists,
 		fetchUserPracticeMeta,
@@ -645,6 +660,8 @@ declare module 'musora-content-services' {
 		getNewAndUpcoming,
 		getOnboardingRecommendedContent,
 		getOwnedContent,
+		getPermissionsAdapter,
+		getPermissionsVersion,
 		getPracticeNotes,
 		getPracticeSessions,
 		getProgressDataByIds,
@@ -670,6 +687,7 @@ declare module 'musora-content-services' {
 		getToday,
 		getUpgradePrice,
 		getUserData,
+		getUserMembershipTier,
 		getUserMonthlyStats,
 		getUserPinProgressKey,
 		getUserSignature,
@@ -731,6 +749,7 @@ declare module 'musora-content-services' {
 		reportPlaylist,
 		requestEmailChange,
 		rescindInvite,
+		reset,
 		resetAllAwards,
 		resetAllLearningPaths,
 		resetPassword,
