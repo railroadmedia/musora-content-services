@@ -109,7 +109,7 @@ export async function getTabResults(brand, pageName, tabName, {
   const tabRecSysSection = tabMatch?.recSysSection || ''
   const mergedIncludedFields = tabValue ? [...filteredSelectedFilters, tabValue] : filteredSelectedFilters;
 
-  const free = await isUserFreeTier()
+  const userIsFreeTier = await isUserFreeTier()
 
   // Fetch data
   let results
@@ -133,7 +133,7 @@ export async function getTabResults(brand, pageName, tabName, {
 
       recommendedContent = filterCoursesInCourseCollections(recommendedContent)
 
-      if (free) {
+      if (userIsFreeTier) {
         recommendedContent = postSortFreeContent(recommendedContent)
       }
 
@@ -150,7 +150,7 @@ export async function getTabResults(brand, pageName, tabName, {
           includedFields: mergedIncludedFields,
           progress: progressValue,
           excludeIds: recommendedContent.map(c => c.id),
-          sortFreeContent: free,
+          sortFreeContent: userIsFreeTier,
         })
 
         // Filter out duplicates and combine
@@ -171,7 +171,7 @@ export async function getTabResults(brand, pageName, tabName, {
         sort: '-published_on',
         includedFields: mergedIncludedFields,
         progress: progressValue,
-        sortFreeContent: free,
+        sortFreeContent: userIsFreeTier,
       })
       contentToDisplay = temp.entity
     }
@@ -192,7 +192,7 @@ export async function getTabResults(brand, pageName, tabName, {
         sort,
         includedFields: mergedIncludedFields,
         progress: progressValue,
-        sortFreeContent: free,
+        sortFreeContent: userIsFreeTier,
       });
     const [ranking, contextResults] = await Promise.all([
       sort === 'recommended' ? rankItems(brand, temp.entity.map(e => e.id)) : [],
