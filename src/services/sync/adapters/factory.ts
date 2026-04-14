@@ -1,4 +1,5 @@
 import schema from '../schema'
+import migrations from '../schema/migrations'
 import type { SyncUserScope } from '../index'
 import { SyncError } from '../errors'
 import { globalConfig } from '../../config.js'
@@ -39,7 +40,7 @@ export default function syncAdapterFactory<T extends DatabaseAdapter, E = SQLite
       ...opts,
       dbName: `musora:sync:${userScope.initialId}${dbSuffix}`,
       schema,
-      migrations: undefined
+      migrations
     }, extensions)
 
     return adapter

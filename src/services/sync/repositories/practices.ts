@@ -2,6 +2,21 @@ import SyncRepository, { Q } from "./base";
 import Practice from "../models/Practice";
 import { RecordId } from "@nozbe/watermelondb";
 
+function extractPracticeFields(practice: Practice) {
+  return {
+    id: practice.content_id as number,
+    auto: practice.auto,
+    content_id: practice.content_id,
+    date: practice.date,
+    duration_seconds: practice.duration_seconds,
+    title: practice.title,
+    thumbnail_url: practice.thumbnail_url,
+    category_id: practice.category_id,
+    instrument_id: practice.instrument_id,
+    created_at: (practice as any)._raw?.created_at ?? null,
+  }
+}
+
 export default class PracticesRepository extends SyncRepository<Practice> {
   async sumPracticeMinutesForContent(contentIds: number[]): Promise<number> {
     if (contentIds.length === 0) return 0
@@ -18,43 +33,21 @@ export default class PracticesRepository extends SyncRepository<Practice> {
     return Math.round(totalSeconds / 60)
   }
 
-  async trackAutoPractice(contentId: number, date: string, incrementalDurationSeconds: number, skipPush = true) {
-    this.store.log('trackUserPractice:before', {
-      now: performance.now(),
-      contentId,
-      date,
-      incrementalDurationSeconds
-    })
+  async trackAutoPractice(contentId: number, date: string, sessionId: string, incrementalDurationSeconds: number, skipPush = true) {
+    const autoId = Practice.generateAutoId(contentId, date, sessionId)
 
-    const result = await this.upsertOne(Practice.generateAutoId(contentId, date), r => {
-      const oldDurationSeconds = r.duration_seconds;
-
-      r._raw.id = Practice.generateAutoId(contentId, date);
+    const result = await this.upsertOne(autoId, r => {
+      r._raw.id = autoId;
       r.auto = true;
       r.content_id = contentId;
       r.date = date;
+      r.session_id = sessionId;
 
       r.duration_seconds = typeof incrementalDurationSeconds === 'number'
         ? Math.min((r.duration_seconds || 0) + incrementalDurationSeconds, 59999)
         : r.duration_seconds;
-
-      this.store.log('trackUserPractice:around', {
-        now: performance.now(),
-        contentId,
-        date,
-        incrementalDurationSeconds,
-        before: oldDurationSeconds,
-        after: r.duration_seconds
-      })
     }, { skipPush })
 
-    this.store.log('trackUserPractice:after', {
-      now: performance.now(),
-      contentId,
-      date,
-      incrementalDurationSeconds,
-      after: result.data.duration_seconds
-    })
 
     return result
   }
@@ -87,12 +80,35 @@ export default class PracticesRepository extends SyncRepository<Practice> {
     })
   }
 
+  async deleteAutoSessionsByContentId(contentId: number, date: string) {
+    const ids = await this.queryAllIds(
+      Q.where('content_id', contentId),
+      Q.where('date', date),
+      Q.where('auto', true)
+    )
+    return await this.deleteSome(ids.data)
+  }
 
   async getAutoPracticesOnDate(date: string) {
-    return await this.queryAll(
+    const result = await this.queryAll(
       Q.where('date', date),
       Q.where('auto', true),
       Q.sortBy('created_at', 'asc')
     )
+
+    const grouped = new Map<number, ReturnType<typeof extractPracticeFields>>()
+    for (const practice of result.data) {
+      const contentId = practice.content_id!
+      if (grouped.has(contentId)) {
+        grouped.get(contentId)!.duration_seconds = Math.min(
+          grouped.get(contentId)!.duration_seconds + practice.duration_seconds,
+          59999
+        )
+      } else {
+        grouped.set(contentId, extractPracticeFields(practice))
+      }
+    }
+
+    return { ...result, data: Array.from(grouped.values()) }
   }
 }

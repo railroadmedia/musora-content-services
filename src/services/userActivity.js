@@ -289,11 +289,9 @@ export async function recordUserPractice(practiceDetails) {
   return result
 }
 
-export async function trackUserPractice(contentId, incSeconds) {
+export async function trackUserPractice(contentId, sessionId, incSeconds) {
   const day = new Date().toLocaleDateString('sv-SE') // YYYY-MM-DD wall clock date in user's timezone
-  const result = await db.practices.trackAutoPractice(contentId, day, incSeconds, {
-    skipPush: true,
-  }) // NOTE - SKIPS PUSH
+  const result = await db.practices.trackAutoPractice(contentId, day, sessionId, incSeconds, true) // NOTE - SKIPS PUSH
 
   streakCalculator.invalidate()
   return result
@@ -336,8 +334,10 @@ export async function updateUserPractice(id, practiceDetails) {
  *   .then(() => console.log("Practice session removed successfully"))
  *   .catch(error => console.error(error));
  */
-export async function removeUserPractice(id) {
-  const result = await db.practices.deleteOne(id)
+export async function removeUserPractice(id, date) {
+  const result = typeof id === 'number'
+    ? await db.practices.deleteAutoSessionsByContentId(id, date)
+    : await db.practices.deleteOne(id)
   streakCalculator.invalidate()
   return result
 }
@@ -448,7 +448,20 @@ export async function getPracticeSessions(params = {}, options = {}) {
     }
 
     const query = await db.practices.queryAll(Q.where('date', day), Q.sortBy('created_at', 'asc'))
-    data = query.data
+    const { grouped, manuals } = query.data.reduce((acc, practice) => {
+      if (practice.auto) {
+        const existing = acc.grouped.get(practice.content_id)
+        if (existing) {
+          existing.duration_seconds = Math.min(existing.duration_seconds + practice.duration_seconds, 59999)
+        } else {
+          acc.grouped.set(practice.content_id, { ...practice._raw, id: practice.content_id })
+        }
+      } else {
+        acc.manuals.push(practice)
+      }
+      return acc
+    }, { grouped: new Map(), manuals: [] })
+    data = [...grouped.values(), ...manuals]
   } else {
     const query = await fetchUserPracticeMeta(day, userId)
     data = query.data
@@ -809,6 +822,7 @@ async function formatPracticeMeta(practices = []) {
     return {
       id: practice.id,
       auto: practice.auto,
+      date: practice.date,
       thumbnail: practice.content_id ? content?.thumbnail : practice.thumbnail_url || '',
       thumbnail_url: practice.content_id ? content?.thumbnail : practice.thumbnail_url || '',
       duration: practice.duration_seconds || 0,

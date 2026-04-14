@@ -6,6 +6,7 @@ import {
   nullableUint,
   nullableUint8,
   nullableVarchar,
+  varchar,
   numberInRange,
   string,
   number,
@@ -13,6 +14,7 @@ import {
 
 export const validators = {
   manual_id: nullableChar(26),
+  session_id: varchar(26),
   content_id: nullableUint,
   date: string,
   auto: boolean,
@@ -25,6 +27,7 @@ export const validators = {
 
 export default class Practice extends BaseModel<{
   manual_id: string | null
+  session_id: string
   content_id: number | null
   date: string
   auto: boolean
@@ -38,6 +41,9 @@ export default class Practice extends BaseModel<{
 
   get manual_id() {
     return this._getRaw('manual_id') as string | null
+  }
+  get session_id() {
+    return this._getRaw('session_id') as string
   }
   get content_id() {
     return this._getRaw('content_id') as number | null
@@ -67,6 +73,9 @@ export default class Practice extends BaseModel<{
   set manual_id(value: string | null) {
     this._setRaw('manual_id', validators.manual_id(value))
   }
+  set session_id(value: string) {
+    this._setRaw('session_id', validators.session_id(value))
+  }
   set content_id(value: number | null) {
     this._setRaw('content_id', validators.content_id(value))
   }
@@ -92,10 +101,11 @@ export default class Practice extends BaseModel<{
     this._setRaw('instrument_id', validators.instrument_id(value))
   }
 
-  static generateAutoId(contentId: number, date: string) {
+  static generateAutoId(contentId: number, date: string, sessionId: string) {
     number(contentId)
     string(date)
-    return ['auto', contentId.toString(), date].join(':')
+    string(sessionId)
+    return ['auto', contentId.toString(), date, sessionId].join(':')
   }
 
   static generateManualId(manualId: string) {
