@@ -75,7 +75,7 @@ non-active LP                                       →  countdown-up-next  (nex
 // Return value
 {
   variant:           'countdown-up-next' | 'course-complete' | 'path-complete' | 'what-to-do-today'
-  upNext:            object | null  // null only for path-complete and method-session-complete
+  upNext:            object | null  // null only for path-complete
   countdownAutoplay: boolean
   ctaLabels:         { primary: string, secondary: string }
 }
