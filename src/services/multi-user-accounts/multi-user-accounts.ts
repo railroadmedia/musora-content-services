@@ -31,7 +31,7 @@ export interface UsersMultiAccountResponse {
   last_cancelled_multi_user_account: MultiUserAccountResponse
   is_active_primary: boolean
   is_active_sub: boolean
-  active_invite: InviteResponse
+  active_invites: InviteResponse[]
 }
 
 export interface MultiUserAccountResponse {
@@ -39,7 +39,7 @@ export interface MultiUserAccountResponse {
   product_name: string
   is_active: boolean
   primary_user: User
-  active_invited_emails: string[]
+  active_invited_emails: InviteResponse[]
   available_seats: number
   available_invites: InviteResponse[]
   total_seats: number
