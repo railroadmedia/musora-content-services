@@ -1,10 +1,10 @@
-jest.mock('../../../src/services/sync/manager', () => ({ default: class SyncManager {} }))
-jest.mock('../../../src/services/sync/repository-proxy', () => ({ db: {} }))
+jest.mock('../../../../src/services/sync/manager', () => ({ default: class SyncManager {} }))
+jest.mock('../../../../src/services/sync/repository-proxy', () => ({ db: {} }))
 
 import { Database } from '@nozbe/watermelondb'
 import { makeDatabase, makeStore, resetDatabase } from '../helpers/index'
-import Practice from '../../../src/services/sync/models/Practice'
-import PracticesRepository from '../../../src/services/sync/repositories/practices'
+import Practice from '../../../../src/services/sync/models/Practice'
+import PracticesRepository from '../../../../src/services/sync/repositories/practices'
 
 let db: Database
 let repo: PracticesRepository

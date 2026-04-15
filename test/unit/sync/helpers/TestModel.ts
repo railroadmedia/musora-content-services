@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb'
 import { Database } from '@nozbe/watermelondb'
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
-import BaseModel from '../../../src/services/sync/models/Base'
+import BaseModel from '../../../../src/services/sync/models/Base'
 
 export const TEST_TABLE = 'test_items'
 

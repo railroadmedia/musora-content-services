@@ -1,22 +1,22 @@
 import { Database } from '@nozbe/watermelondb'
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
-import { SyncTelemetry, SeverityLevel } from '../../../src/services/sync/telemetry/index'
-import SyncContext from '../../../src/services/sync/context/index'
+import { SyncTelemetry, SeverityLevel } from '../../../../src/services/sync/telemetry/index'
+import SyncContext from '../../../../src/services/sync/context/index'
 import {
   BaseSessionProvider,
   BaseConnectivityProvider,
   BaseVisibilityProvider,
   NullTabsProvider,
   BaseDurabilityProvider,
-} from '../../../src/services/sync/context/providers/index'
-import SyncRetry from '../../../src/services/sync/retry'
-import SyncRunScope from '../../../src/services/sync/run-scope'
-import SyncStore, { type SyncStoreConfig } from '../../../src/services/sync/store/index'
-import schema from '../../../src/services/sync/schema/index'
-import * as modelClasses from '../../../src/services/sync/models/index'
-import type BaseModel from '../../../src/services/sync/models/Base'
-import type { ModelClass, SyncUserScope } from '../../../src/services/sync/index'
-import type { SyncPullResponse, SyncPushResponse } from '../../../src/services/sync/fetch'
+} from '../../../../src/services/sync/context/providers/index'
+import SyncRetry from '../../../../src/services/sync/retry'
+import SyncRunScope from '../../../../src/services/sync/run-scope'
+import SyncStore, { type SyncStoreConfig } from '../../../../src/services/sync/store/index'
+import schema from '../../../../src/services/sync/schema/index'
+import * as modelClasses from '../../../../src/services/sync/models/index'
+import type BaseModel from '../../../../src/services/sync/models/Base'
+import type { ModelClass, SyncUserScope } from '../../../../src/services/sync/index'
+import type { SyncPullResponse, SyncPushResponse } from '../../../../src/services/sync/fetch'
 
 // --- Sentry / Telemetry ---
 

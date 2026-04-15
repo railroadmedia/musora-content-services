@@ -1,9 +1,9 @@
 import { Database } from '@nozbe/watermelondb'
 import { makeTelemetry, makeContext, makeUserScope, makePullMock, makePushMock } from '../helpers/index'
 import TestModel, { makeTestDatabase } from '../helpers/TestModel'
-import SyncStore from '../../../src/services/sync/store/index'
-import SyncRetry from '../../../src/services/sync/retry'
-import SyncRunScope from '../../../src/services/sync/run-scope'
+import SyncStore from '../../../../src/services/sync/store/index'
+import SyncRetry from '../../../../src/services/sync/retry'
+import SyncRunScope from '../../../../src/services/sync/run-scope'
 
 let db: Database
 
