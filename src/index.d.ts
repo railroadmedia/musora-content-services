@@ -153,8 +153,7 @@ import {
 } from './services/dateUtils.js';
 
 import {
-	getEndScreen,
-	getLearningPathEndScreen
+	getEndScreen
 } from './services/endScreen/endScreen.ts';
 
 import {
@@ -626,7 +625,6 @@ declare module 'musora-content-services' {
 		getContentRows,
 		getDailySession,
 		getEndScreen,
-		getLearningPathEndScreen,
 		getEnrichedLearningPath,
 		getEnrichedLearningPaths,
 		getHierarchy,

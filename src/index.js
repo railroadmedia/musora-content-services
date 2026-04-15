@@ -157,8 +157,7 @@ import {
 } from './services/dateUtils.js';
 
 import {
-	getEndScreen,
-	getLearningPathEndScreen
+	getEndScreen
 } from './services/endScreen/endScreen.ts';
 
 import {
@@ -625,7 +624,6 @@ export {
 	getContentRows,
 	getDailySession,
 	getEndScreen,
-	getLearningPathEndScreen,
 	getEnrichedLearningPath,
 	getEnrichedLearningPaths,
 	getHierarchy,
