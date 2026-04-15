@@ -37,11 +37,12 @@ export interface MultiUserAccountResponse {
   primary_user: User
   active_invited_emails: string[]
   available_seats: number
-  available_invites: number
+  available_invites: InviteResponse[]
   total_seats: number
   active_subs: User[]
   end_time: string
   is_primary_account_holder: boolean
+  show_welcome: boolean
 }
 
 export interface CreateAccountParams {
