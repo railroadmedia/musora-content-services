@@ -149,7 +149,8 @@ import {
 	getWeekNumber,
 	isNextDay,
 	isSameDate,
-	toDayjs
+	toDayjs,
+	toLocalDay
 } from './services/dateUtils.js';
 
 import {
@@ -217,6 +218,7 @@ import {
 	acceptInvite,
 	createAccount,
 	createInvites,
+	fetchInvite,
 	fetchUsersMultiAccountDetails,
 	removeUserFromActiveMultiUserAccount,
 	rescindInvite
@@ -550,6 +552,7 @@ declare module 'musora-content-services' {
 		fetchInstructorLessons,
 		fetchInstructors,
 		fetchInterests,
+		fetchInvite,
 		fetchLastSubscriptionPlatform,
 		fetchLatestThreads,
 		fetchLearningPathLessons,
@@ -759,6 +762,7 @@ declare module 'musora-content-services' {
 		startOnboarding,
 		status,
 		toDayjs,
+		toLocalDay,
 		togglePlaylistPrivate,
 		toggleSignaturePrivate,
 		toggleStudentView,

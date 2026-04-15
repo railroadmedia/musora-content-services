@@ -19,6 +19,10 @@ export interface InviteResponse {
   created_at: string
   expires_at: string
   existing_user_details: User
+  can_be_accepted: boolean
+  is_account_valid: boolean
+  is_invite_active: boolean
+  can_user_join: boolean
 }
 
 export interface UsersMultiAccountResponse {
@@ -76,6 +80,19 @@ export async function createAccount(params: CreateAccountParams): Promise<MultiU
 export async function fetchUsersMultiAccountDetails(userId: number): Promise<UsersMultiAccountResponse> {
   const httpClient = new HttpClient(globalConfig.baseUrl)
   return httpClient.get<UsersMultiAccountResponse>(`${baseUrl}/${userId}/details`)
+}
+
+
+/**
+ * Fetch invite details
+ *
+ * @param {number} inviteId - The ID of the invite to check
+ * @returns {Promise<InviteResponse>} - A promise that resolves to the invite details.
+ * @throws {HttpError} - If the HTTP request fails.
+ */
+export async function fetchInvite(inviteId: number): Promise<InviteResponse> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.get<InviteResponse>(`${baseUrl}/invite/${inviteId}`)
 }
 
 /**
