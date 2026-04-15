@@ -116,7 +116,7 @@ async function fetchEndScreenRecommendation(
   excludeId: number | null = null
 ): Promise<any | null> {
   try {
-    let recData: number[] = await fetchSimilarItems(contentId, brand, 500)
+    let recData: number[] = await fetchSimilarItems(contentId, brand, 50)
     if (!Array.isArray(recData) || recData.length === 0) {
       //TODO: will be defined in config, need to decide with Chris about the ids
       recData = [373201]

@@ -39,6 +39,7 @@ export interface CourseInCollection {
 export interface Collection {
   id: number
   type: string
+  parent_id?: number
   children?: CourseInCollection[]
 }
 
