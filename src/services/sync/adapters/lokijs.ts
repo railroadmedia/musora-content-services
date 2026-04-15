@@ -1,6 +1,8 @@
 import { SyncTelemetry } from '../telemetry'
 
-import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
+const LokiJSAdapter = require('@nozbe/watermelondb/adapters/lokijs').default
 
 import { deleteDatabase, lokiFatalError } from '@nozbe/watermelondb/adapters/lokijs/worker/lokiExtensions'
 
