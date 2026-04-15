@@ -23,7 +23,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       Q.sortBy('updated_at', 'desc'),
 
       ...(limit ? [Q.take(limit)] : []),
-    ])
+    ].filter(Boolean) as Q.Clause[])
 
     return opts.onlyIds
         ? results.data.map((r) => r.content_id)
@@ -44,7 +44,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       Q.sortBy('updated_at', 'desc'),
 
       ...(limit ? [Q.take(limit)] : []),
-    ])
+    ].filter(Boolean) as Q.Clause[])
 
     return opts.onlyIds
       ? results.data.map((r) => r.content_id)
@@ -78,7 +78,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
       Q.or(Q.where('state', STATE.STARTED), Q.where('state', STATE.COMPLETED)),
       Q.sortBy('updated_at', 'desc'),
-    ]
+    ].filter(Boolean) as Q.Clause[]
 
     if (opts.updatedAfter) {
       clauses.push(Q.where('updated_at', Q.gte(opts.updatedAfter)))

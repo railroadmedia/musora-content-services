@@ -10,7 +10,7 @@ export type SentryLike = {
   captureMessage: typeof InjectedSentry.captureMessage
   addBreadcrumb: typeof InjectedSentry.addBreadcrumb
   startSpan: typeof InjectedSentry.startSpan
-  logger: typeof InjectedSentry.logger
+  logger: { debug: (...args: any[]) => void; info: (...args: any[]) => void }
 }
 
 export type StartSpanOptions = Parameters<typeof InjectedSentry.startSpan>[0]
