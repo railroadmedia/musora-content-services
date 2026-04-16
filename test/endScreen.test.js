@@ -33,7 +33,8 @@ jest.mock('../src/services/sanity.js', () => ({
   getSanityDate: jest.fn((date) => date.toISOString()),
   fetchSimilarItems: jest.fn(),
   fetchByRailContentIds: jest.fn(),
-  fetchCourseCollectionData: jest.fn()
+  fetchCourseCollectionData: jest.fn(),
+  fetchRelatedLessons: jest.fn()
 }))
 
 jest.mock('../src/services/recommendations.js', () => ({
@@ -79,6 +80,7 @@ describe('getEndScreen', () => {
     test('single lesson uses fallback lesson when RecSys returns empty array', async () => {
       const fallbackLesson = { id: 373201, type: 'lesson', title: 'Fallback Lesson' }
       jest.spyOn(recommendationsModule, 'fetchSimilarItems').mockResolvedValue([])
+      jest.spyOn(sanityModule, 'fetchRelatedLessons').mockResolvedValue({ related_lessons: [{ id: 373201 }] })
       jest.spyOn(sanityModule, 'fetchByRailContentIds').mockResolvedValue([fallbackLesson])
 
       const result = await getEndScreen({
