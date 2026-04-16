@@ -1,11 +1,11 @@
 import { Database } from '@nozbe/watermelondb'
 import { makeTelemetry, makeContext, makePullMock, makePushMock } from '../helpers/index'
 import TestModel, { makeTestDatabase } from '../helpers/TestModel'
-import SyncStore from '../../../../src/services/sync/store/index'
-import SyncRetry from '../../../../src/services/sync/retry'
-import SyncRunScope from '../../../../src/services/sync/run-scope'
-import type { SyncUserScope } from '../../../../src/services/sync/index'
-import { SyncError } from '../../../../src/services/sync/errors/index'
+import SyncStore from '@/services/sync/store/index'
+import SyncRetry from '@/services/sync/retry'
+import SyncRunScope from '@/services/sync/run-scope'
+import type { SyncUserScope } from '@/services/sync/index'
+import { SyncError } from '@/services/sync/errors/index'
 
 // ---
 

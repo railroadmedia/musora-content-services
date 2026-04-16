@@ -1,4 +1,4 @@
-import { createThrottleState, dropThrottle, queueThrottle } from '../../../../src/services/sync/utils/throttle'
+import { createThrottleState, dropThrottle, queueThrottle } from '@/services/sync/utils/throttle'
 
 // ---
 

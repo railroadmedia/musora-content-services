@@ -1,6 +1,6 @@
-import SyncRetry from '../../../src/services/sync/retry'
-import type SyncContext from '../../../src/services/sync/context/index'
-import type { SyncTelemetry } from '../../../src/services/sync/telemetry/index'
+import SyncRetry from '@/services/sync/retry'
+import type SyncContext from '@/services/sync/context/index'
+import type { SyncTelemetry } from '@/services/sync/telemetry/index'
 
 // Subclass exposes sleep as a spy — no `as any` access to private internals
 class TestableSyncRetry extends SyncRetry {

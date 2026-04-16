@@ -1,6 +1,6 @@
-import PushCoalescer from '../../../../src/services/sync/store/push-coalescer'
-import type BaseModel from '../../../../src/services/sync/models/Base'
-import type { SyncPushResponse } from '../../../../src/services/sync/fetch'
+import PushCoalescer from '@/services/sync/store/push-coalescer'
+import type BaseModel from '@/services/sync/models/Base'
+import type { SyncPushResponse } from '@/services/sync/fetch'
 
 const BASE_TIME = 1700000000000
 const SUCCESS_RESPONSE: SyncPushResponse = { ok: true, results: [] }

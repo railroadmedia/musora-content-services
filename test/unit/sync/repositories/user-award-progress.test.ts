@@ -1,5 +1,5 @@
-jest.mock('../../../../src/services/sync/manager', () => ({ default: class SyncManager {} }))
-jest.mock('../../../../src/services/sync/repository-proxy', () => ({ db: {} }))
+jest.mock('@/services/sync/manager', () => ({ default: class SyncManager {} }))
+jest.mock('@/services/sync/repository-proxy', () => ({ db: {} }))
 jest.mock('../../../../src/services/awards/internal/award-definitions', () => ({
   awardDefinitions: {
     getByContentId: jest.fn(),
@@ -9,8 +9,8 @@ jest.mock('../../../../src/services/awards/internal/award-definitions', () => ({
 
 import { Database } from '@nozbe/watermelondb'
 import { makeDatabase, makeStore, resetDatabase } from '../helpers/index'
-import UserAwardProgress from '../../../../src/services/sync/models/UserAwardProgress'
-import UserAwardProgressRepository from '../../../../src/services/sync/repositories/user-award-progress'
+import UserAwardProgress from '@/services/sync/models/UserAwardProgress'
+import UserAwardProgressRepository from '@/services/sync/repositories/user-award-progress'
 import type { CompletionData, AwardDefinition } from '../../../../src/services/awards/types'
 
 let db: Database

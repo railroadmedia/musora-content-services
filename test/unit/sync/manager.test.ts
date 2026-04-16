@@ -1,10 +1,10 @@
-import SyncManager from '../../../src/services/sync/manager'
-import { SyncTelemetry } from '../../../src/services/sync/telemetry/index'
-import { SyncError } from '../../../src/services/sync/errors/index'
-import BaseModel from '../../../src/services/sync/models/Base'
-import createStoreConfigs from '../../../src/services/sync/store-configs'
+import SyncManager from '@/services/sync/manager'
+import { SyncTelemetry } from '@/services/sync/telemetry/index'
+import { SyncError } from '@/services/sync/errors/index'
+import BaseModel from '@/services/sync/models/Base'
+import createStoreConfigs from '@/services/sync/store-configs'
 import { makeTelemetry, makeContext, makeUserScope, makeDatabase } from './helpers/index'
-import type { ModelClass, SyncUserScope } from '../../../src/services/sync/index'
+import type { ModelClass, SyncUserScope } from '@/services/sync/index'
 
 class DummyModelA extends BaseModel { static table = 'dummy_a' }
 class DummyModelB extends BaseModel { static table = 'dummy_b' }

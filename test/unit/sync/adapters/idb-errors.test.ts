@@ -12,7 +12,7 @@ import {
   simulateIndexedDBUnavailable,
   simulateIndexedDBFailure,
   simulateIndexedDBQuotaExceeded,
-} from '../../../../src/services/sync/adapters/lokijs'
+} from '@/services/sync/adapters/lokijs'
 
 // Each test gets a fresh indexedDB instance so patches don't bleed between tests
 let originalOpen: typeof indexedDB.open

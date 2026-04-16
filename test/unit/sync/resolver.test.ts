@@ -1,6 +1,6 @@
-import SyncResolver, { updatedAtComparator } from '../../../src/services/sync/resolver'
-import type { SyncEntry, SyncEntryNonDeleted, EpochMs } from '../../../src/services/sync/index'
-import type BaseModel from '../../../src/services/sync/models/Base'
+import SyncResolver, { updatedAtComparator } from '@/services/sync/resolver'
+import type { SyncEntry, SyncEntryNonDeleted, EpochMs } from '@/services/sync/index'
+import type BaseModel from '@/services/sync/models/Base'
 
 // ---
 

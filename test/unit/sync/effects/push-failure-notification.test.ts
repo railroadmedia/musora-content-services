@@ -1,5 +1,5 @@
-import createPushFailureNotificationEffect from '../../../../src/services/sync/effects/push-failure-notification'
-import type SyncStore from '../../../../src/services/sync/store/index'
+import createPushFailureNotificationEffect from '@/services/sync/effects/push-failure-notification'
+import type SyncStore from '@/services/sync/store/index'
 import { makeContext } from '../helpers/index'
 
 const COOLDOWN_MS = 60_000 * 10

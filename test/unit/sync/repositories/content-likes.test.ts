@@ -1,10 +1,10 @@
-jest.mock('../../../../src/services/sync/manager', () => ({ default: class SyncManager {} }))
-jest.mock('../../../../src/services/sync/repository-proxy', () => ({ db: {} }))
+jest.mock('@/services/sync/manager', () => ({ default: class SyncManager {} }))
+jest.mock('@/services/sync/repository-proxy', () => ({ db: {} }))
 
 import { Database } from '@nozbe/watermelondb'
 import { makeDatabase, makeStore, resetDatabase } from '../helpers/index'
-import ContentLike from '../../../../src/services/sync/models/ContentLike'
-import LikesRepository from '../../../../src/services/sync/repositories/content-likes'
+import ContentLike from '@/services/sync/models/ContentLike'
+import LikesRepository from '@/services/sync/repositories/content-likes'
 
 let db: Database
 let repo: LikesRepository

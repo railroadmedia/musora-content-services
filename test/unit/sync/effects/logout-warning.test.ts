@@ -1,5 +1,5 @@
-import createLogoutWarningEffect from '../../../../src/services/sync/effects/logout-warning'
-import type SyncStore from '../../../../src/services/sync/store/index'
+import createLogoutWarningEffect from '@/services/sync/effects/logout-warning'
+import type SyncStore from '@/services/sync/store/index'
 import { makeContext } from '../helpers/index'
 
 // ---
