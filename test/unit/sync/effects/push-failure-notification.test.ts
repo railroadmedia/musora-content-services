@@ -1,4 +1,6 @@
 import createPushFailureNotificationEffect from '../../../../src/services/sync/effects/push-failure-notification'
+import type SyncStore from '../../../../src/services/sync/store/index'
+import { makeContext } from '../helpers/index'
 
 const COOLDOWN_MS = 60_000 * 10
 const MUTE_MS = 60_000 * 60 * 3
@@ -28,7 +30,7 @@ function makeMockStore() {
         if (idx >= 0) list.splice(idx, 1)
       }
     }),
-  } as any
+  } as unknown as SyncStore
 
   const emit = (event: string) => listeners.get(event)?.forEach(h => h())
 
@@ -47,7 +49,7 @@ describe('notification triggering', () => {
     const { store, emit } = makeMockStore()
     const { effect, notify } = makeEffect()
 
-    effect(null as any, [store])
+    effect(makeContext(), [store])
     emit('failedPush')
 
     expect(notify).toHaveBeenCalledTimes(1)
@@ -57,7 +59,7 @@ describe('notification triggering', () => {
     const { store, emit } = makeMockStore()
     const { effect, notify } = makeEffect()
 
-    effect(null as any, [store])
+    effect(makeContext(), [store])
     emit('failedPush')
 
     expect(notify.mock.calls[0][0]).toHaveProperty('mute')
@@ -69,7 +71,7 @@ describe('notification triggering', () => {
     const s2 = makeMockStore()
     const { effect, notify } = makeEffect()
 
-    effect(null as any, [s1.store, s2.store])
+    effect(makeContext(), [s1.store, s2.store])
 
     s2.emit('failedPush')
 
@@ -84,7 +86,7 @@ describe('cooldown', () => {
     const { store, emit } = makeMockStore()
     const { effect, notify } = makeEffect()
 
-    effect(null as any, [store])
+    effect(makeContext(), [store])
     emit('failedPush')
     emit('failedPush')
 
@@ -95,7 +97,7 @@ describe('cooldown', () => {
     const { store, emit } = makeMockStore()
     const { effect, notify } = makeEffect()
 
-    effect(null as any, [store])
+    effect(makeContext(), [store])
     emit('failedPush')
 
     jest.advanceTimersByTime(COOLDOWN_MS)
@@ -108,7 +110,7 @@ describe('cooldown', () => {
     const { store, emit } = makeMockStore()
     const { effect, notify } = makeEffect()
 
-    effect(null as any, [store])
+    effect(makeContext(), [store])
     emit('failedPush')
 
     jest.advanceTimersByTime(COOLDOWN_MS - 1)
@@ -125,7 +127,7 @@ describe('mute', () => {
     const { store, emit } = makeMockStore()
     const { effect, notify } = makeEffect()
 
-    effect(null as any, [store])
+    effect(makeContext(), [store])
     emit('failedPush')
 
     const { mute } = notify.mock.calls[0][0]
@@ -141,7 +143,7 @@ describe('mute', () => {
     const { store, emit } = makeMockStore()
     const { effect, notify } = makeEffect()
 
-    effect(null as any, [store])
+    effect(makeContext(), [store])
     emit('failedPush')
 
     const { mute } = notify.mock.calls[0][0]
@@ -157,7 +159,7 @@ describe('mute', () => {
     const { store, emit } = makeMockStore()
     const { effect, notify } = makeEffect()
 
-    effect(null as any, [store])
+    effect(makeContext(), [store])
     emit('failedPush')
 
     expect(notify).toHaveBeenCalledTimes(1)
@@ -171,7 +173,7 @@ describe('teardown', () => {
     const { store, emit } = makeMockStore()
     const { effect, notify } = makeEffect()
 
-    const teardown = effect(null as any, [store])
+    const teardown = effect(makeContext(), [store])
     teardown()
 
     jest.advanceTimersByTime(COOLDOWN_MS)
@@ -185,7 +187,7 @@ describe('teardown', () => {
     const s2 = makeMockStore()
     const { effect, notify } = makeEffect()
 
-    const teardown = effect(null as any, [s1.store, s2.store])
+    const teardown = effect(makeContext(), [s1.store, s2.store])
     teardown()
 
     jest.advanceTimersByTime(COOLDOWN_MS)

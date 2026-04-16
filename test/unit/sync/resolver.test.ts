@@ -1,5 +1,5 @@
 import SyncResolver, { updatedAtComparator } from '../../../src/services/sync/resolver'
-import type { SyncEntry } from '../../../src/services/sync/index'
+import type { SyncEntry, SyncEntryNonDeleted, EpochMs } from '../../../src/services/sync/index'
 import type BaseModel from '../../../src/services/sync/models/Base'
 
 // ---
@@ -10,20 +10,20 @@ function makeEntry(id: string, overrides: { updatedAt?: number; deletedAt?: numb
   const updatedAt = overrides.updatedAt ?? T
   const deletedAt = overrides.deletedAt !== undefined ? overrides.deletedAt : null
   return {
-    record: deletedAt ? null : ({ id } as any),
+    record: deletedAt ? null : ({ id } as unknown as BaseModel),
     meta: {
       ids: { id },
       lifecycle: {
-        created_at: updatedAt as any,
-        updated_at: updatedAt as any,
-        deleted_at: deletedAt as any,
+        created_at: updatedAt as EpochMs,
+        updated_at: updatedAt as EpochMs,
+        deleted_at: deletedAt as EpochMs | null,
       },
     },
   }
 }
 
-function makeLocal(id: string, updatedAt = T): Partial<BaseModel> & { id: string; updated_at: number } {
-  return { id, updated_at: updatedAt } as any
+function makeLocal(id: string, updatedAt = T): BaseModel {
+  return { id, updated_at: updatedAt } as unknown as BaseModel
 }
 
 // ---
@@ -32,19 +32,19 @@ describe('updatedAtComparator', () => {
   test('returns SERVER when server updated_at is greater than local', () => {
     const server = makeEntry('x', { updatedAt: T + 1 })
     const local = makeLocal('x', T)
-    expect(updatedAtComparator(server as any, local as any)).toBe('SERVER')
+    expect(updatedAtComparator(server as unknown as SyncEntryNonDeleted, local)).toBe('SERVER')
   })
 
   test('returns SERVER when timestamps are equal', () => {
     const server = makeEntry('x', { updatedAt: T })
     const local = makeLocal('x', T)
-    expect(updatedAtComparator(server as any, local as any)).toBe('SERVER')
+    expect(updatedAtComparator(server as unknown as SyncEntryNonDeleted, local)).toBe('SERVER')
   })
 
   test('returns LOCAL when local updated_at is greater than server', () => {
     const server = makeEntry('x', { updatedAt: T - 1 })
     const local = makeLocal('x', T)
-    expect(updatedAtComparator(server as any, local as any)).toBe('LOCAL')
+    expect(updatedAtComparator(server as unknown as SyncEntryNonDeleted, local)).toBe('LOCAL')
   })
 })
 
@@ -80,7 +80,7 @@ describe('againstSynced', () => {
     const resolver = new SyncResolver()
     const local = makeLocal('rec-1', T)
 
-    resolver.againstSynced(local as any, makeEntry('rec-1', { deletedAt: T }))
+    resolver.againstSynced(local, makeEntry('rec-1', { deletedAt: T }))
 
     expect(resolver.result.idsForDestroy).toContain('rec-1')
   })
@@ -90,7 +90,7 @@ describe('againstSynced', () => {
     const local = makeLocal('rec-1', T)
     const server = makeEntry('rec-1', { updatedAt: T + 1 })
 
-    resolver.againstSynced(local as any, server)
+    resolver.againstSynced(local, server)
 
     expect(resolver.result.tuplesForUpdate).toHaveLength(1)
     expect(resolver.result.tuplesForUpdate[0][0]).toBe(local)
@@ -99,7 +99,7 @@ describe('againstSynced', () => {
 
   test('server older → no action (stale pull ignored)', () => {
     const resolver = new SyncResolver()
-    resolver.againstSynced(makeLocal('rec-1', T + 1) as any, makeEntry('rec-1', { updatedAt: T }))
+    resolver.againstSynced(makeLocal('rec-1', T + 1), makeEntry('rec-1', { updatedAt: T }))
 
     const { tuplesForUpdate, idsForDestroy, recordsForSynced } = resolver.result
     expect(tuplesForUpdate).toHaveLength(0)
@@ -113,7 +113,7 @@ describe('againstSynced', () => {
 describe('againstCreated', () => {
   test('server deleted → idsForDestroy (local changes discarded)', () => {
     const resolver = new SyncResolver()
-    resolver.againstCreated(makeLocal('rec-1', T + 1) as any, makeEntry('rec-1', { deletedAt: T }))
+    resolver.againstCreated(makeLocal('rec-1', T + 1), makeEntry('rec-1', { deletedAt: T }))
 
     expect(resolver.result.idsForDestroy).toContain('rec-1')
   })
@@ -123,7 +123,7 @@ describe('againstCreated', () => {
     const local = makeLocal('rec-1', T)
     const server = makeEntry('rec-1', { updatedAt: T + 1 })
 
-    resolver.againstCreated(local as any, server)
+    resolver.againstCreated(local, server)
 
     expect(resolver.result.tuplesForUpdate).toHaveLength(1)
     expect(resolver.result.tuplesForUpdate[0][1]).toBe(server)
@@ -133,7 +133,7 @@ describe('againstCreated', () => {
     const resolver = new SyncResolver()
     const local = makeLocal('rec-1', T + 1)
 
-    resolver.againstCreated(local as any, makeEntry('rec-1', { updatedAt: T }))
+    resolver.againstCreated(local, makeEntry('rec-1', { updatedAt: T }))
 
     expect(resolver.result.recordsForSynced).toContain(local)
     expect(resolver.result.tuplesForUpdate).toHaveLength(0)
@@ -145,7 +145,7 @@ describe('againstCreated', () => {
 describe('againstUpdated', () => {
   test('server deleted → idsForDestroy (local changes discarded)', () => {
     const resolver = new SyncResolver()
-    resolver.againstUpdated(makeLocal('rec-1', T + 1) as any, makeEntry('rec-1', { deletedAt: T }))
+    resolver.againstUpdated(makeLocal('rec-1', T + 1), makeEntry('rec-1', { deletedAt: T }))
 
     expect(resolver.result.idsForDestroy).toContain('rec-1')
   })
@@ -155,7 +155,7 @@ describe('againstUpdated', () => {
     const local = makeLocal('rec-1', T)
     const server = makeEntry('rec-1', { updatedAt: T + 1 })
 
-    resolver.againstUpdated(local as any, server)
+    resolver.againstUpdated(local, server)
 
     expect(resolver.result.tuplesForUpdate).toHaveLength(1)
   })
@@ -164,7 +164,7 @@ describe('againstUpdated', () => {
     const resolver = new SyncResolver()
     const local = makeLocal('rec-1', T + 1)
 
-    resolver.againstUpdated(local as any, makeEntry('rec-1', { updatedAt: T }))
+    resolver.againstUpdated(local, makeEntry('rec-1', { updatedAt: T }))
 
     expect(resolver.result.recordsForSynced).toContain(local)
     expect(resolver.result.tuplesForUpdate).toHaveLength(0)
@@ -176,7 +176,7 @@ describe('againstUpdated', () => {
 describe('againstDeleted', () => {
   test('server also deleted → idsForDestroy', () => {
     const resolver = new SyncResolver()
-    resolver.againstDeleted(makeLocal('rec-1', T) as any, makeEntry('rec-1', { deletedAt: T }))
+    resolver.againstDeleted(makeLocal('rec-1', T), makeEntry('rec-1', { deletedAt: T }))
 
     expect(resolver.result.idsForDestroy).toContain('rec-1')
   })
@@ -186,7 +186,7 @@ describe('againstDeleted', () => {
     const local = makeLocal('rec-1', T)
     const server = makeEntry('rec-1', { updatedAt: T })
 
-    resolver.againstDeleted(local as any, server)
+    resolver.againstDeleted(local, server)
 
     expect(resolver.result.tuplesForRestore).toHaveLength(1)
     expect(resolver.result.tuplesForRestore[0][0]).toBe(local)
@@ -195,7 +195,7 @@ describe('againstDeleted', () => {
 
   test('server older than local deleted_at → idsForDestroy (delete wins)', () => {
     const resolver = new SyncResolver()
-    resolver.againstDeleted(makeLocal('rec-1', T + 1) as any, makeEntry('rec-1', { updatedAt: T }))
+    resolver.againstDeleted(makeLocal('rec-1', T + 1), makeEntry('rec-1', { updatedAt: T }))
 
     expect(resolver.result.idsForDestroy).toContain('rec-1')
     expect(resolver.result.tuplesForRestore).toHaveLength(0)
@@ -211,7 +211,7 @@ describe('custom comparator', () => {
     const local = makeLocal('rec-1', T)
     const server = makeEntry('rec-1', { updatedAt: T + 9999 })
 
-    resolver.againstSynced(local as any, server)
+    resolver.againstSynced(local, server)
 
     expect(resolver.result.tuplesForUpdate).toHaveLength(0)
     expect(resolver.result.recordsForSynced).toHaveLength(0)
@@ -224,7 +224,7 @@ describe('custom comparator', () => {
     const local = makeLocal('rec-1', T + 9999)
     const server = makeEntry('rec-1', { updatedAt: T })
 
-    resolver.againstSynced(local as any, server)
+    resolver.againstSynced(local, server)
 
     expect(resolver.result.tuplesForUpdate).toHaveLength(1)
   })

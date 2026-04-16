@@ -1,4 +1,6 @@
 import SyncRetry from '../../../src/services/sync/retry'
+import type SyncContext from '../../../src/services/sync/context/index'
+import type { SyncTelemetry } from '../../../src/services/sync/telemetry/index'
 
 // Subclass exposes sleep as a spy — no `as any` access to private internals
 class TestableSyncRetry extends SyncRetry {
@@ -20,8 +22,8 @@ function makeRetry(online = true) {
       return () => { connectivityListener = null }
     }),
   }
-  const context = { connectivity } as any
-  const telemetry = { debug: jest.fn() } as any
+  const context = { connectivity } as unknown as SyncContext
+  const telemetry = { debug: jest.fn() } as unknown as SyncTelemetry
   const retry = new TestableSyncRetry(context, telemetry)
 
   const triggerConnectivity = (isOnline: boolean) => {

@@ -1,11 +1,12 @@
 import * as fflate from 'fflate'
-import { handlePull } from '../../../src/services/sync/fetch'
+import { handlePull, type SyncPullResponse } from '../../../src/services/sync/fetch'
 import { makeContext } from './helpers/index'
+import type { EpochMs } from '../../../src/services/sync/index'
 
 // ---
 
 const USER_ID = 1
-const TOKEN = 1700000001000 as any
+const TOKEN = 1700000001000 as EpochMs
 const TABLE = 'content_progress'
 
 function gzipBase64(data: object): string {
@@ -64,7 +65,7 @@ describe('plain JSON response', () => {
   })
 
   test('falls back to timestamp when max_updated_at is null', async () => {
-    const timestamp = 1700000009999 as any
+    const timestamp = 1700000009999 as EpochMs
     jest.spyOn(global, 'fetch').mockResolvedValueOnce(
       mockResponse(JSON.stringify({ meta: { since: null, max_updated_at: null, timestamp }, entries: [] }))
     )
@@ -137,7 +138,7 @@ describe('gzip-base64 response', () => {
     const result = await callPull(makePull())
 
     expect(result).toMatchObject({ ok: true, entries: expect.arrayContaining([expect.objectContaining({ record: expect.objectContaining({ id: 'rec-0' }) })]) })
-    expect((result as any).entries).toHaveLength(500)
+    expect((result as Extract<SyncPullResponse, { ok: true }>).entries).toHaveLength(500)
   })
 })
 

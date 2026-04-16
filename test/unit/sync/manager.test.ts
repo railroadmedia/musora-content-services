@@ -1,12 +1,14 @@
 import SyncManager from '../../../src/services/sync/manager'
 import { SyncTelemetry } from '../../../src/services/sync/telemetry/index'
 import { SyncError } from '../../../src/services/sync/errors/index'
+import BaseModel from '../../../src/services/sync/models/Base'
 import createStoreConfigs from '../../../src/services/sync/store-configs'
 import { makeTelemetry, makeContext, makeUserScope, makeDatabase } from './helpers/index'
-import type { SyncUserScope } from '../../../src/services/sync/index'
+import type { ModelClass, SyncUserScope } from '../../../src/services/sync/index'
 
-const DummyModelA = { table: 'dummy_a' } as any
-const DummyModelB = { table: 'dummy_b' } as any
+class DummyModelA extends BaseModel { static table = 'dummy_a' }
+class DummyModelB extends BaseModel { static table = 'dummy_b' }
+class UnknownModel extends BaseModel { static table = 'not_a_real_table' }
 
 jest.mock('../../../src/services/awards/internal/content-progress-observer', () => ({
   contentProgressObserver: {
@@ -132,14 +134,13 @@ describe('store registry', () => {
 
   test('getStore returns store for a registered model', async () => {
     const { manager, teardown } = setupManager()
-    const anyConfiguredModel = createStoreConfigs()[0].model as any
+    const anyConfiguredModel = createStoreConfigs()[0].model as unknown as ModelClass
     expect(manager.getStore(anyConfiguredModel)).toBeDefined()
     await teardown()
   })
 
   test('getStore throws SyncError for unregistered model', async () => {
     const { manager, teardown } = setupManager()
-    const UnknownModel = { table: 'not_a_real_table' } as any
     expect(() => manager.getStore(UnknownModel)).toThrow(SyncError)
     await teardown()
   })

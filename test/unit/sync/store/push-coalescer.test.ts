@@ -9,7 +9,7 @@ class TestSetup {
   coalescer = new PushCoalescer()
 
   record(id: string, timeOffset = 0): BaseModel {
-    return { id, updated_at: BASE_TIME + timeOffset } as any
+    return { id, updated_at: BASE_TIME + timeOffset } as unknown as BaseModel
   }
 
   mockPusher() {

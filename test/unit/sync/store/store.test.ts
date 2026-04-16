@@ -339,7 +339,7 @@ describe('importUpsert / importDeletion', () => {
     const now = Date.now()
 
     await store.importUpsert([
-      { id: 'import-1', value: 'imported', score: 99, server_record_id: 0, created_at: now, updated_at: now, _status: 'synced', _changed: '' } as any,
+      { id: 'import-1', value: 'imported', score: 99, server_record_id: 0, created_at: now, updated_at: now, _status: 'synced', _changed: '' } as unknown as TestModel['_raw'],
     ])
 
     const record = await store.readOne('import-1')

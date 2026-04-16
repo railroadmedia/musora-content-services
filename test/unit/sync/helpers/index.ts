@@ -44,7 +44,7 @@ function makeDummySentry() {
       trace: jest.fn(),
       fatal: jest.fn(),
       fmt: jest.fn(),
-    } as any,
+    },
   }
 }
 

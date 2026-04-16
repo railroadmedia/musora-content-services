@@ -1,4 +1,6 @@
 import createLogoutWarningEffect from '../../../../src/services/sync/effects/logout-warning'
+import type SyncStore from '../../../../src/services/sync/store/index'
+import { makeContext } from '../helpers/index'
 
 // ---
 
@@ -17,7 +19,7 @@ function makeMockStore(model: any = { table: 'test' }) {
         }),
       }),
     },
-  } as any
+  } as unknown as SyncStore
 
   const push = (records: any[]) => handler?.(records)
 
@@ -31,7 +33,7 @@ describe('notification on unsynced records', () => {
     const notify = jest.fn()
     const { store, push } = makeMockStore()
 
-    createLogoutWarningEffect(notify)(null as any, [store])
+    createLogoutWarningEffect(notify)(makeContext(), [store])
     push([{ id: 'rec-1' }])
 
     expect(notify).toHaveBeenCalledTimes(1)
@@ -42,7 +44,7 @@ describe('notification on unsynced records', () => {
     const model = { table: 'content_progress' }
     const { store, push } = makeMockStore(model)
 
-    createLogoutWarningEffect(notify)(null as any, [store])
+    createLogoutWarningEffect(notify)(makeContext(), [store])
     push([{ id: 'rec-1' }])
 
     expect(notify.mock.calls[0][0]).toContain(model)
@@ -52,7 +54,7 @@ describe('notification on unsynced records', () => {
     const notify = jest.fn()
     const { store, push } = makeMockStore()
 
-    createLogoutWarningEffect(notify)(null as any, [store])
+    createLogoutWarningEffect(notify)(makeContext(), [store])
     push([{ id: 'rec-1' }])
     push([])
 
@@ -65,7 +67,7 @@ describe('notification on unsynced records', () => {
     const model = { table: 'content_progress' }
     const { store, push } = makeMockStore(model)
 
-    createLogoutWarningEffect(notify)(null as any, [store])
+    createLogoutWarningEffect(notify)(makeContext(), [store])
     push([{ id: 'rec-1' }])
     push([])
 
@@ -83,7 +85,7 @@ describe('multiple stores', () => {
     const storeA = makeMockStore(modelA)
     const storeB = makeMockStore(modelB)
 
-    createLogoutWarningEffect(notify)(null as any, [storeA.store, storeB.store])
+    createLogoutWarningEffect(notify)(makeContext(), [storeA.store, storeB.store])
 
     storeA.push([{ id: 'rec-1' }])
     storeB.push([{ id: 'rec-2' }])
@@ -100,7 +102,7 @@ describe('multiple stores', () => {
     const storeA = makeMockStore(modelA)
     const storeB = makeMockStore(modelB)
 
-    createLogoutWarningEffect(notify)(null as any, [storeA.store, storeB.store])
+    createLogoutWarningEffect(notify)(makeContext(), [storeA.store, storeB.store])
 
     storeA.push([{ id: 'rec-1' }])
     storeB.push([{ id: 'rec-2' }])
@@ -116,7 +118,7 @@ describe('multiple stores', () => {
     const storeA = makeMockStore({ table: 'a' })
     const storeB = makeMockStore({ table: 'b' })
 
-    createLogoutWarningEffect(notify)(null as any, [storeA.store, storeB.store])
+    createLogoutWarningEffect(notify)(makeContext(), [storeA.store, storeB.store])
 
     storeA.push([{ id: '1' }])
     storeA.push([{ id: '1' }])
@@ -133,7 +135,7 @@ describe('teardown', () => {
     const notify = jest.fn()
     const { store, push } = makeMockStore()
 
-    const teardown = createLogoutWarningEffect(notify)(null as any, [store])
+    const teardown = createLogoutWarningEffect(notify)(makeContext(), [store])
     teardown()
     push([{ id: 'rec-1' }])
 
@@ -145,7 +147,7 @@ describe('teardown', () => {
     const storeA = makeMockStore({ table: 'a' })
     const storeB = makeMockStore({ table: 'b' })
 
-    const teardown = createLogoutWarningEffect(notify)(null as any, [storeA.store, storeB.store])
+    const teardown = createLogoutWarningEffect(notify)(makeContext(), [storeA.store, storeB.store])
     teardown()
 
     storeA.push([{ id: '1' }])
