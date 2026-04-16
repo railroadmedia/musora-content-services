@@ -108,7 +108,7 @@ export class SyncTelemetry {
 
       this.consoleLog(SeverityLevel.DEBUG, 'info', `[trace:start] ${options.name} (${desc})`, options.attributes)
       const result = callback(span)
-      Promise.resolve(result).finally(() => this.consoleLog(SeverityLevel.DEBUG, 'info', `[trace:end] ${options.name} (${desc})`, options.attributes))
+      Promise.resolve(result).catch(() => {}).finally(() => this.consoleLog(SeverityLevel.DEBUG, 'info', `[trace:end] ${options.name} (${desc})`, options.attributes))
 
       return result
     })
