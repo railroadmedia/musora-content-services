@@ -6,6 +6,10 @@ import { initializeTestService } from '../initializeTests.js';
 import mockData_progress_content from '../mockData/mockData_progress_content.json';
 import mockData_sanity_progress_content from "../mockData/mockData_sanity_progress_content.json";
 
+jest.mock('../../src/services/progress-row/rows/method-card.js', () => ({
+  getMethodCard: jest.fn().mockResolvedValue(null),
+}))
+
 jest.mock('../../src/services/sync/repository-proxy.ts', () => {
   const mockFns = {
     contentProgress: {
