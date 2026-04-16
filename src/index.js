@@ -222,6 +222,15 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	acceptInvite,
+	createAccount,
+	createInvites,
+	fetchUsersMultiAccountDetails,
+	removeUserFromActiveMultiUserAccount,
+	rescindInvite
+} from './services/multi-user-accounts/multi-user-accounts.ts';
+
+import {
 	emitProgressSaved,
 	onProgressSaved
 } from './services/progress-events.js';
@@ -323,6 +332,7 @@ import {
 	getSanityDate,
 	getSongTypesFor,
 	getSortOrder,
+	hasAnyMethodV2IntroCompleted,
 	jumpToContinueContent
 } from './services/sanity.js';
 
@@ -458,6 +468,7 @@ import {
 } from './services/userActivity.js';
 
 export {
+	acceptInvite,
 	addContextToContent,
 	addContextToLearningPaths,
 	addItemToPlaylist,
@@ -480,8 +491,10 @@ export {
 	contentStatusReset,
 	contentStatusStarted,
 	convertToTimeZone,
+	createAccount,
 	createComment,
 	createForumCategory,
+	createInvites,
 	createPlaylist,
 	createPost,
 	createPracticeNotes,
@@ -599,6 +612,7 @@ export {
 	fetchUserPracticeMeta,
 	fetchUserPracticeNotes,
 	fetchUserPractices,
+	fetchUsersMultiAccountDetails,
 	filterCoursesInCourseCollections,
 	findIncompleteLesson,
 	flushWatchSession,
@@ -672,6 +686,7 @@ export {
 	getWeekNumber,
 	globalConfig,
 	guidedCourses,
+	hasAnyMethodV2IntroCompleted,
 	initializeEnvVar,
 	initializeService,
 	isBucketUrl,
@@ -717,12 +732,14 @@ export {
 	registerProgressCallback,
 	removeContentAsInterested,
 	removeContentAsNotInterested,
+	removeUserFromActiveMultiUserAccount,
 	removeUserPractice,
 	replyToComment,
 	report,
 	reportComment,
 	reportPlaylist,
 	requestEmailChange,
+	rescindInvite,
 	reset,
 	resetAllAwards,
 	resetAllLearningPaths,

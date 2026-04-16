@@ -23,7 +23,7 @@ export interface CreatePostParams {
  * @throws {HttpError} - If the request fails.
  */
 export async function createPost(threadId: number, params: CreatePostParams): Promise<ForumPost> {
-  const { generateForumPostUrl } = await import('../urlBuilder.ts')
+  const { generateForumPostUrl } = await import('../urlBuilder')
 
   // Generate forum post URL
   const contentUrl = generateForumPostUrl({
@@ -114,7 +114,7 @@ export async function fetchPosts(
  * @throws {HttpError} - If the request fails.
  */
 export async function likePost(postId: number, brand: string): Promise<void> {
-  const { generateForumPostUrl } = await import('../urlBuilder.ts')
+  const { generateForumPostUrl } = await import('../urlBuilder')
 
   // Generate forum post URL
   const contentUrl = generateForumPostUrl({

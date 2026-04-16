@@ -23,7 +23,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       Q.sortBy('updated_at', 'desc'),
 
       ...(limit ? [Q.take(limit)] : []),
-    ])
+    ].filter(Boolean) as Q.Clause[])
 
     return opts.onlyIds
         ? results.data.map((r) => r.content_id)
@@ -44,7 +44,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       Q.sortBy('updated_at', 'desc'),
 
       ...(limit ? [Q.take(limit)] : []),
-    ])
+    ].filter(Boolean) as Q.Clause[])
 
     return opts.onlyIds
       ? results.data.map((r) => r.content_id)
@@ -78,7 +78,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
       Q.or(Q.where('state', STATE.STARTED), Q.where('state', STATE.COMPLETED)),
       Q.sortBy('updated_at', 'desc'),
-    ]
+    ].filter(Boolean) as Q.Clause[]
 
     if (opts.updatedAfter) {
       clauses.push(Q.where('updated_at', Q.gte(opts.updatedAfter)))
@@ -166,7 +166,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return await this.readSome(ids)
   }
 
-  recordProgress(
+  async recordProgress(
     contentId: number,
     collection: CollectionParameter | null,
     progressPct: number,
@@ -179,7 +179,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
       accessedDirectly = false
     }
 
-    const result = this.upsertOne(id, (r) => {
+    const result = await this.upsertOne(id, (r) => {
       r.content_id = contentId
       r.collection_type = collection?.type ?? COLLECTION_TYPE.SELF
       r.collection_id = collection?.id ?? COLLECTION_ID_SELF
@@ -202,13 +202,11 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
 
     }, { skipPush })
 
-    // Emit event AFTER database write completes
-    result.then(() => {
-      return Promise.all([
-        import('../../progress-events'),
-        import('../../config')
-      ])
-    }).then(([progressEventsModule, { globalConfig }]) => {
+    // Emit event AFTER database write completes (don't let emit failures affect the result)
+    Promise.all([
+      import('../../progress-events'),
+      import('../../config')
+    ]).then(([progressEventsModule, { globalConfig }]) => {
       progressEventsModule.emitProgressSaved({
         userId: Number(globalConfig.railcontentConfig?.userId) || 0,
         contentId,
@@ -227,7 +225,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
     return result
   }
 
-  recordProgressMany(
+  async recordProgressMany(
     contentProgresses: Record<string, number>, // Accept plain object
     collection: CollectionParameter | null,
     metadata: Record<string, MetadataParameter>,
@@ -257,7 +255,7 @@ export default class ProgressRepository extends SyncRepository<ContentProgress> 
         },
       ])
     )
-    return this.upsertSome(data, { skipPush })
+    return await this.upsertSome(data, { skipPush })
 
     //todo add event emitting for bulk updates?
   }

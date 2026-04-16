@@ -4,7 +4,7 @@ import { SyncError } from '../errors'
 import { globalConfig } from '../../config.js'
 
 import type { default as SQLiteAdapter, SQLiteExtensions } from './sqlite'
-import type LokiJSAdapter from './lokijs'
+import type { default as LokiJSAdapter, LokiExtensions } from './lokijs'
 
 export type DatabaseAdapter = SQLiteAdapter | LokiJSAdapter
 
@@ -13,10 +13,10 @@ type LokiJSAdapterOptions = ConstructorParameters<typeof LokiJSAdapter>[0]
 
 type DatabaseAdapterOptions = SQLiteAdapterOptions & LokiJSAdapterOptions
 
-export default function syncAdapterFactory<T extends DatabaseAdapter>(
-  AdapterClass: new (options: DatabaseAdapterOptions, extensions?: SQLiteExtensions) => T,
+export default function syncAdapterFactory<T extends DatabaseAdapter, E = SQLiteExtensions | LokiExtensions>(
+  AdapterClass: new (options: DatabaseAdapterOptions, extensions?: E) => T,
   opts: Omit<DatabaseAdapterOptions, 'schema' | 'migrations'>,
-  extensions?: SQLiteExtensions
+  extensions?: E
 ): (userScope: SyncUserScope) => T {
   // IMPORTANT: we rely on namespaced databases to prevent data clobbering
   // when localStorage.userId somehow changes outside of an explicit, app-managed logout

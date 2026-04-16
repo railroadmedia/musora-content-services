@@ -1,7 +1,7 @@
 import { globalConfig, initializeService } from '../src'
 import { LocalStorageMock } from './localStorageMock'
-import { initializeSyncManager } from './sync/initialize-sync-manager'
 const railContentModule = require('../src/services/railcontent.js')
+const awardDefsModule = require('../src/services/awards/internal/award-definitions.js')
 let token = null
 let userId = process.env.RAILCONTENT_USER_ID ?? null
 
@@ -51,11 +51,10 @@ export async function initializeTestService(useLive = false, isAdmin = false) {
     localStorage: new LocalStorageMock(),
     isMA: true,
   }
+  jest.spyOn(awardDefsModule.awardDefinitions, 'initialize').mockResolvedValue()
   initializeService(config)
   // Mock user permissions
   let permissionsMock = jest.spyOn(railContentModule, 'fetchUserPermissionsData')
   let permissionsData = { permissions: [108, 91, 92], isAdmin: isAdmin }
   permissionsMock.mockImplementation(() => permissionsData)
-
-  initializeSyncManager(userId)
 }

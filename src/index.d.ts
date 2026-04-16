@@ -218,6 +218,15 @@ import {
 } from './services/liveTesting.ts';
 
 import {
+	acceptInvite,
+	createAccount,
+	createInvites,
+	fetchUsersMultiAccountDetails,
+	removeUserFromActiveMultiUserAccount,
+	rescindInvite
+} from './services/multi-user-accounts/multi-user-accounts.ts';
+
+import {
 	emitProgressSaved,
 	onProgressSaved
 } from './services/progress-events.js';
@@ -319,6 +328,7 @@ import {
 	getSanityDate,
 	getSongTypesFor,
 	getSortOrder,
+	hasAnyMethodV2IntroCompleted,
 	jumpToContinueContent
 } from './services/sanity.js';
 
@@ -459,6 +469,7 @@ import {
 
 declare module 'musora-content-services' {
 	export {
+		acceptInvite,
 		addContextToContent,
 		addContextToLearningPaths,
 		addItemToPlaylist,
@@ -481,8 +492,10 @@ declare module 'musora-content-services' {
 		contentStatusReset,
 		contentStatusStarted,
 		convertToTimeZone,
+		createAccount,
 		createComment,
 		createForumCategory,
+		createInvites,
 		createPlaylist,
 		createPost,
 		createPracticeNotes,
@@ -600,6 +613,7 @@ declare module 'musora-content-services' {
 		fetchUserPracticeMeta,
 		fetchUserPracticeNotes,
 		fetchUserPractices,
+		fetchUsersMultiAccountDetails,
 		filterCoursesInCourseCollections,
 		findIncompleteLesson,
 		flushWatchSession,
@@ -673,6 +687,7 @@ declare module 'musora-content-services' {
 		getWeekNumber,
 		globalConfig,
 		guidedCourses,
+		hasAnyMethodV2IntroCompleted,
 		initializeEnvVar,
 		initializeService,
 		isBucketUrl,
@@ -718,12 +733,14 @@ declare module 'musora-content-services' {
 		registerProgressCallback,
 		removeContentAsInterested,
 		removeContentAsNotInterested,
+		removeUserFromActiveMultiUserAccount,
 		removeUserPractice,
 		replyToComment,
 		report,
 		reportComment,
 		reportPlaylist,
 		requestEmailChange,
+		rescindInvite,
 		reset,
 		resetAllAwards,
 		resetAllLearningPaths,
