@@ -50,6 +50,7 @@ import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
 import { query } from '../lib/sanity/query'
 import { Filters as f } from '../lib/sanity/filter'
 import { COLLECTION_TYPE } from './sync/models/ContentProgress'
+import { MEMBERSHIP_PERMISSIONS } from '../constants/membership-permissions.js'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -795,7 +796,13 @@ const SORT_STRATEGIES = {
   recommended: () => 'published_on desc',
 }
 
-export function getSortOrder(sort = '-published_on', brand, groupBy) {
+export function getSortOrder(
+  {
+    sort = '-published_on',
+    brand,
+    groupBy,
+    permissionIds
+  }) {
   const sanitized = sort?.trim() || '-published_on'
   const isDesc = sanitized.startsWith('-')
   const field = isDesc ? sanitized.slice(1) : sanitized
@@ -1929,7 +1936,7 @@ export async function fetchTabData(
   let sortOrder = getSortOrder(sort, brand, '', )
 
   if (sortFreeContent) {
-    sortOrder = sortFreeContentFirst(sortOrder)
+    sortOrder = applyPermissionSort(sortOrder, MEMBERSHIP_PERMISSIONS.free)
   }
 
   switch (progress) {
@@ -2515,6 +2522,6 @@ export async function hasAnyMethodV2IntroCompleted() {
   return (completedVideos?.data?.length || 0) > 0
 }
 
-function sortFreeContentFirst(sortOrder) {
-  return `select(membership_tier == 'free' => 1, 0) desc, ${sortOrder}`
+function applyPermissionSort(sortOrder, membershipTier) {
+  return `select(membership_tier == '${membershipTier}' => 1, 0) desc, ${sortOrder}`
 }
