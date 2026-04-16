@@ -24,7 +24,7 @@ course (last, has next course) →  course-complete    +  first lesson of next c
 course (last, no next course)  →  course-complete    +  RecSys recommendation
 ```
 
-RecSys fallback: if the recommender returns nothing, a default lesson is used (Need to decide with Chris about default lessons).
+RecSys fallback: if the recommender returns nothing → related lesson (standalone) or related course (course-complete)
 
 
 ## API Reference
@@ -44,7 +44,7 @@ RecSys fallback: if the recommender returns nothing, a default lesson is used (N
 // Return value
 {
   variant:           'countdown-up-next' | 'course-complete'
-  upNext:            object 
+  upNext:            object | null   // null if RecSys and related content both return nothing
   countdownAutoplay: boolean
   ctaLabels:         { primary: string, secondary: string }
 }
@@ -58,35 +58,4 @@ RecSys fallback: if the recommender returns nothing, a default lesson is used (N
 
 Call `getEndScreen` **at page load**, not when the video ends. RecSys calls happen in the background while the user watches — by the time the video ends, the result is ready.
 
-### Recommendation for Mobile App (MA)
-
-Use `getEndScreen` for content types (without learning paths):
-
-```typescript
-// On page load, after lesson data is available:
-const endScreen = await getEndScreen({
-  lesson:      { id: lesson.id, type: lesson.type },
-  brand:       currentBrand,
-  course:      course ?? null,
-  collection:  collection ?? null,
-})
-
-// When video ends, use the stored result:
-showEndScreen(endScreen)
-```
-
-### Recommendation for Web Platform (FE)
-
-For lessons, courses and playlists use `getEndScreen` in a `watch`:
-
-```typescript
-watch(lesson, async (newLesson) => {
-  if (!newLesson) return
-  endScreenData.value = await getEndScreen({
-    lesson: { id: newLesson.id, type: newLesson.type },
-    brand:  currentBrand.value,
-    course: course.value ?? null,
-  })
-})
-```
 

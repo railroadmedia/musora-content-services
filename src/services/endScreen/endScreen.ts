@@ -1,5 +1,5 @@
 import {fetchSimilarItems, rankCategories} from '../recommendations.js'
-import { fetchByRailContentIds, fetchCourseCollectionData } from '../sanity.js'
+import {fetchByRailContentIds, fetchCourseCollectionData, fetchRelatedLessons} from '../sanity.js'
 import { addContextToContent } from '../contentAggregator.js'
 import { playAlongLessonTypes, jamTrackLessonTypes, lessonTypesMapping } from '../../contentTypeConfig.js'
 import type {
@@ -21,8 +21,6 @@ const SINGLE_SONG_LESSON_TYPES: string[] = [
 ]
 const COURSE_COMPLETE_CTA: CtaLabels = { primary: 'Play Now', secondary: 'Back to Home' }
 const COUNTDOWN_CTA: CtaLabels = { primary: 'Play Now', secondary: 'Cancel' }
-
-// ─── Public API ───────────────────────────────────────────────────────────────
 
 export async function getEndScreen({
   lesson,
@@ -65,7 +63,7 @@ export async function getEndScreen({
     return buildCourseComplete(nextCourseFirstLesson)
   }
 
-  return buildCourseComplete(await fetchEndScreenRecommendation(brand, course.id, course.id))
+  return buildCourseComplete(await fetchEndScreenRecommendation(brand, lesson.id, course.id))
 }
 
 // ─── Builders ─────────────────────────────────────────────────────────────────
@@ -113,21 +111,23 @@ function getFirstLessonOfNextCourseOrNull(
 async function fetchEndScreenRecommendation(
   brand: string,
   contentId: number,
-  excludeId: number | null = null
+  parentId: number | null = null
 ): Promise<any | null> {
   try {
     let recData: number[] = await fetchSimilarItems(contentId, brand, 50)
+    let recommended = null
     if (!Array.isArray(recData) || recData.length === 0) {
-      //TODO: will be defined in config, need to decide with Chris about the ids
-      recData = [373201]
+      const relatedLesson =  await fetchRelatedLessons(parentId ?? contentId).then((result) =>
+        result.related_lessons?.[0] ?? null
+      )
+      recData = relatedLesson?.id ? [relatedLesson.id] : []
     }
-    let rankItems = await rankCategories(brand, recData)
-    const ids = rankItems.map(item => item.items);
-    const contents: ContentItem[] = await fetchByRailContentIds(ids)
-    const recommended =
-      contents?.find((c) => c.id !== excludeId && (!c.parent_id || c.parent_id !== excludeId)) ??
-      null
-    if (!recommended) return null
+
+    const contents: ContentItem[] = await fetchByRailContentIds(recData)
+       recommended =
+        contents?.find((c) => c.id !== parentId && (!c.parent_id || c.parent_id !== parentId)) ??
+        null
+
     return await addContextToContent(() => recommended, {
       addProgressPercentage: true,
       addProgressStatus: true,
