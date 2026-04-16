@@ -646,7 +646,7 @@ export function filterCoursesInCourseCollections(data) {
 function postSortFreeContent(contentList) {
   contentList.sort((a, b) => {
     const hasAccess = (item) =>
-      item.permission_id?.includes(134)
+      item.permission_id?.includes(MEMBERSHIP_PERMISSIONS.free)
 
     return hasAccess(b) - hasAccess(a);
   });
