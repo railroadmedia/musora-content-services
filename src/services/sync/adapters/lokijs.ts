@@ -1,14 +1,17 @@
 import { SyncTelemetry } from '../telemetry'
 
-import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
+import _LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 
 import { deleteDatabase, lokiFatalError } from '@nozbe/watermelondb/adapters/lokijs/worker/lokiExtensions'
+
+// Handle CJS/ESM interop: in Node.js ESM the default import is the exports object
+const LokiJSAdapter = (_LokiJSAdapter as any).default ?? _LokiJSAdapter
 
 export type LokiExtensions = {
   onPersistenceError?: (err: Error) => void
 }
 
-export default class LokiPersistenceErrorAwareAdapter extends LokiJSAdapter {
+export default class LokiPersistenceErrorAwareAdapter extends (LokiJSAdapter as typeof _LokiJSAdapter) {
   constructor(options: any, extensions: LokiExtensions = {}) {
     super(options);
     const that = this;
