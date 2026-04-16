@@ -45,12 +45,11 @@ import { globalConfig } from './config.js'
 
 import { arrayToStringRepresentation, FilterBuilder } from '../filterBuilder.js'
 import { getPermissionsAdapter } from './permissions/index.ts'
-import {getAllCompleted, getAllCompletedByIds, getAllStarted, getAllStartedOrCompleted} from './contentProgress.js'
+import { getAllCompleted, getAllCompletedByIds, getAllStarted, getAllStartedOrCompleted } from './contentProgress.js'
 import { fetchRecentActivitiesActiveTabs } from './userActivity.js'
 import { query } from '../lib/sanity/query'
 import { Filters as f } from '../lib/sanity/filter'
 import { COLLECTION_TYPE } from './sync/models/ContentProgress'
-import { isUserFreeTier } from './permissions'
 
 /**
  * Exported functions that are excluded from index generation.
@@ -779,44 +778,34 @@ async function getProgressFilter(progress, progressIds) {
   }
 }
 
+const SORT_STRATEGIES = {
+  slug: ({ groupBy, isDesc }) => {
+    if (groupBy) return 'name'
+    const dir = isDesc ? 'desc' : 'asc'
+    return `!defined(title_for_sort), title_for_sort ${dir}, !defined(title), lower(title)`
+  },
+
+  popularity: ({ brand, groupBy, isDesc }) => {
+    const field = (groupBy === 'artist' || groupBy === 'genre')
+      ? `popularity.${brand}`
+      : 'popularity'
+    return isDesc ? `coalesce(${field}, -1) desc` : `${field} asc`
+  },
+
+  recommended: () => 'published_on desc',
+}
+
 export function getSortOrder(sort = '-published_on', brand, groupBy) {
-  const sanitizedSort = sort?.trim() || '-published_on'
-  let isDesc = sanitizedSort.startsWith('-')
-  const sortField = isDesc ? sanitizedSort.substring(1) : sanitizedSort
+  const sanitized = sort?.trim() || '-published_on'
+  const isDesc = sanitized.startsWith('-')
+  const field = isDesc ? sanitized.slice(1) : sanitized
 
-  let sortOrder = ''
-
-  switch (sortField) {
-    case 'slug':
-      if (groupBy) {
-        sortOrder = 'name'
-      } else {
-        sortOrder = '!defined(title_for_sort), title_for_sort'
-        sortOrder += isDesc ? ' desc' : ' asc'
-        sortOrder += ', !defined(title), lower(title)' // title fallback
-      }
-      break
-
-    case 'popularity':
-      if (groupBy == 'artist' || groupBy == 'genre') {
-        sortOrder = isDesc ? `coalesce(popularity.${brand}, -1)` : 'popularity'
-      } else {
-        sortOrder = isDesc ? 'coalesce(popularity, -1)' : 'popularity'
-      }
-      break
-
-    case 'recommended':
-      sortOrder = 'published_on'
-      isDesc = true
-      break
-
-    default:
-      sortOrder = sortField
-      break
+  const strategy = SORT_STRATEGIES[field]
+  if (strategy) {
+    return strategy({ brand, groupBy, isDesc })
   }
 
-  sortOrder += isDesc ? ' desc' : ' asc'
-  return sortOrder
+  return `${field} ${isDesc ? 'desc' : 'asc'}`
 }
 
 /**
@@ -1937,7 +1926,7 @@ export async function fetchTabData(
   const includedFieldsFilter =
     includedFields.length > 0 ? filtersToGroq(includedFields, [], pageName) : ''
 
-  let sortOrder = getSortOrder(sort, brand, '')
+  let sortOrder = getSortOrder(sort, brand, '', )
 
   if (sortFreeContent) {
     sortOrder = sortFreeContentFirst(sortOrder)
