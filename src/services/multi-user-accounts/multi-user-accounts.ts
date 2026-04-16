@@ -41,11 +41,12 @@ export interface MultiUserAccountResponse {
   primary_user: User
   active_invited_emails: string[]
   available_seats: number
-  available_invites: number
+  available_invites: InviteResponse[]
   total_seats: number
   active_subs: User[]
   end_time: string
   is_primary_account_holder: boolean
+  show_welcome: boolean
 }
 
 export interface CreateAccountParams {
@@ -55,6 +56,10 @@ export interface CreateAccountParams {
 export interface CreateInvitesParams {
   multi_user_account_id: number
   emails: string[]
+}
+
+export interface UpdateMultiUserAccountParams {
+  show_welcome: boolean
 }
 
 
@@ -141,4 +146,16 @@ export async function rescindInvite(inviteId: number): Promise<void> {
  */
 export async function removeUserFromActiveMultiUserAccount(userId: number): Promise<MultiUserAccountResponse|void> {
   return DELETE(`${globalConfig.baseUrl}${baseUrl}/${userId}/remove`, {})
+}
+
+/**
+ * Updates specified fields on a multi-user account. Authorized user must be the primary account owner
+ *
+ * @param {UpdateMultiUserAccountParams} params - The parameters for updating the account.
+ * @returns {Promise<MultiUserAccountResponse>} - Updated MultiUserAccountResponse if account owner
+ * @throws {HttpError} - If the request fails.
+ */
+export async function updateMultiUserAccount(params: UpdateMultiUserAccountParams): Promise<MultiUserAccountResponse> {
+  const httpClient = new HttpClient(globalConfig.baseUrl)
+  return httpClient.patch(`${globalConfig.baseUrl}${baseUrl}/update`, params)
 }

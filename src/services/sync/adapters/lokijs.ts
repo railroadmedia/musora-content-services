@@ -165,7 +165,7 @@ export function simulateIndexedDBQuotaExceeded() {
   })
 }
 
-export function abortWritesToDatabase(adapter: LokiJSAdapter) {
+export function abortWritesToDatabase(adapter: typeof LokiJSAdapter) {
   // acts as handy helper to disable loki's save methods entirely
   lokiFatalError(adapter._driver.loki)
   return Promise.resolve()
@@ -177,7 +177,7 @@ export function abortWritesToDatabase(adapter: LokiJSAdapter) {
  * Haven't encountered live issues related to this yet, but theoretically provides
  * the cleanest slate for a user to recover from schema issues?
  */
-export function destroyDatabase(dbName: string, adapter: LokiJSAdapter): Promise<void> {
+export function destroyDatabase(dbName: string, adapter: typeof LokiJSAdapter): Promise<void> {
   return new Promise(async (resolve, reject) => {
     if (adapter._driver) {
       try {

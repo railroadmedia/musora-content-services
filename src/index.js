@@ -225,7 +225,8 @@ import {
 	fetchInvite,
 	fetchUsersMultiAccountDetails,
 	removeUserFromActiveMultiUserAccount,
-	rescindInvite
+	rescindInvite,
+	updateMultiUserAccount
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
@@ -782,6 +783,7 @@ export {
 	updateDailySession,
 	updateDisplayName,
 	updateForumCategory,
+	updateMultiUserAccount,
 	updateNotificationSetting,
 	updateOnboarding,
 	updatePlaylist,
