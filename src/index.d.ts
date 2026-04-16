@@ -149,7 +149,8 @@ import {
 	getWeekNumber,
 	isNextDay,
 	isSameDate,
-	toDayjs
+	toDayjs,
+	toLocalDay
 } from './services/dateUtils.js';
 
 import {
@@ -219,7 +220,8 @@ import {
 	createInvites,
 	fetchUsersMultiAccountDetails,
 	removeUserFromActiveMultiUserAccount,
-	rescindInvite
+	rescindInvite,
+	updateMultiUserAccount
 } from './services/multi-user-accounts/multi-user-accounts.ts';
 
 import {
@@ -759,6 +761,7 @@ declare module 'musora-content-services' {
 		startOnboarding,
 		status,
 		toDayjs,
+		toLocalDay,
 		togglePlaylistPrivate,
 		toggleSignaturePrivate,
 		toggleStudentView,
@@ -779,6 +782,7 @@ declare module 'musora-content-services' {
 		updateDailySession,
 		updateDisplayName,
 		updateForumCategory,
+		updateMultiUserAccount,
 		updateNotificationSetting,
 		updateOnboarding,
 		updatePlaylist,
