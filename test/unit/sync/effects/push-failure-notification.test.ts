@@ -1,9 +1,6 @@
-import createPushFailureNotificationEffect from '@/services/sync/effects/push-failure-notification'
+import createPushFailureNotificationEffect, { NOTIFICATION_COOLDOWN, MUTE_PERIOD } from '@/services/sync/effects/push-failure-notification'
 import type SyncStore from '@/services/sync/store/index'
 import { makeContext } from '../helpers/index'
-
-const COOLDOWN_MS = 60_000 * 10
-const MUTE_MS = 60_000 * 60 * 3
 
 // ---
 
@@ -100,7 +97,7 @@ describe('cooldown', () => {
     effect(makeContext(), [store])
     emit('failedPush')
 
-    jest.advanceTimersByTime(COOLDOWN_MS)
+    jest.advanceTimersByTime(NOTIFICATION_COOLDOWN)
     emit('failedPush')
 
     expect(notify).toHaveBeenCalledTimes(2)
@@ -113,7 +110,7 @@ describe('cooldown', () => {
     effect(makeContext(), [store])
     emit('failedPush')
 
-    jest.advanceTimersByTime(COOLDOWN_MS - 1)
+    jest.advanceTimersByTime(NOTIFICATION_COOLDOWN - 1)
     emit('failedPush')
 
     expect(notify).toHaveBeenCalledTimes(1)
@@ -133,7 +130,7 @@ describe('mute', () => {
     const { mute } = notify.mock.calls[0][0]
     mute()
 
-    jest.advanceTimersByTime(COOLDOWN_MS)
+    jest.advanceTimersByTime(NOTIFICATION_COOLDOWN)
     emit('failedPush')
 
     expect(notify).toHaveBeenCalledTimes(1)
@@ -149,7 +146,7 @@ describe('mute', () => {
     const { mute } = notify.mock.calls[0][0]
     mute()
 
-    jest.advanceTimersByTime(MUTE_MS + COOLDOWN_MS)
+    jest.advanceTimersByTime(MUTE_PERIOD + NOTIFICATION_COOLDOWN)
     emit('failedPush')
 
     expect(notify).toHaveBeenCalledTimes(2)
@@ -176,7 +173,7 @@ describe('teardown', () => {
     const teardown = effect(makeContext(), [store])
     teardown()
 
-    jest.advanceTimersByTime(COOLDOWN_MS)
+    jest.advanceTimersByTime(NOTIFICATION_COOLDOWN)
     emit('failedPush')
 
     expect(notify).not.toHaveBeenCalled()
@@ -190,7 +187,7 @@ describe('teardown', () => {
     const teardown = effect(makeContext(), [s1.store, s2.store])
     teardown()
 
-    jest.advanceTimersByTime(COOLDOWN_MS)
+    jest.advanceTimersByTime(NOTIFICATION_COOLDOWN)
     s1.emit('failedPush')
     s2.emit('failedPush')
 
