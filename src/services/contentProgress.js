@@ -670,7 +670,7 @@ async function setStartedOrCompletedStatusMany(contentIds, collection, isComplet
   return response
 }
 
-async function resetStatus(contentId, collection = null, {skipPush = false, skipBubbleTrickle = false} = {}) {
+async function resetStatus(contentId, collection = null, {skipPush = false} = {}) {
   const isLP = collection?.type === COLLECTION_TYPE.LEARNING_PATH
 
   const progress = 0
@@ -682,15 +682,14 @@ async function resetStatus(contentId, collection = null, {skipPush = false, skip
   let allProgresses = {}
   allProgresses[contentId] = progress
 
-  if (!skipBubbleTrickle) {
-    let progresses = {
-      ...trickleProgress(hierarchy, contentId, collection, progress),
-      ...await bubbleProgress(hierarchy, contentId, collection)
-    }
-    Object.assign(allProgresses, progresses)
-
-    await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, true)
+  let progresses = {
+    ...trickleProgress(hierarchy, contentId, collection, progress),
+    ...await bubbleProgress(hierarchy, contentId, collection)
   }
+  Object.assign(allProgresses, progresses)
+
+  await bubbleAndTrickleProgressesSafely(progresses, collection, metadata, true)
+
 
   if (isLP) {
     await duplicateProgressToALaCarte(allProgresses, collection, {skipPush: true})
